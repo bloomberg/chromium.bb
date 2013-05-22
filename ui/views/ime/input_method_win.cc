@@ -7,14 +7,17 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/win/metro.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/views/win/hwnd_util.h"
 
 // Extra number of chars before and after selection (or composition) range which
 // is returned to IME for improving conversion accuracy.
@@ -46,11 +49,32 @@ void InputMethodWin::Init(Widget* widget) {
 }
 
 void InputMethodWin::OnFocus() {
-  UpdateIMEState();
+  if (base::win::IsTSFAwareRequired()) {
+    if (GetTextInputClient()) {
+      ui::TSFBridge* tsf_bridge = ui::TSFBridge::GetInstance();
+      tsf_bridge->SetFocusedClient(hwnd_, GetTextInputClient());
+    }
+  } else {
+    // Use switch here in case we are going to add more text input types.
+    // We disable input method in password field.
+    switch (GetTextInputType()) {
+      case ui::TEXT_INPUT_TYPE_NONE:
+      case ui::TEXT_INPUT_TYPE_PASSWORD:
+        ime_input_.DisableIME(hwnd_);
+        break;
+      default:
+        ime_input_.EnableIME(hwnd_);
+      break;
+    }
+    OnTextInputTypeChanged(GetFocusedView());
+    OnCaretBoundsChanged(GetFocusedView());
+  }
 }
 
 void InputMethodWin::OnBlur() {
   ConfirmCompositionText();
+  if (base::win::IsTSFAwareRequired() && GetTextInputClient())
+    ui::TSFBridge::GetInstance()->RemoveFocusedClient(GetTextInputClient());
 }
 
 void InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& key) {
@@ -79,22 +103,49 @@ void InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& key) {
 
 void InputMethodWin::OnTextInputTypeChanged(View* view) {
   if (IsViewFocused(view)) {
-    ime_input_.CancelIME(hwnd_);
-    UpdateIMEState();
+    if (base::win::IsTSFAwareRequired()) {
+      if (GetTextInputClient()) {
+        ui::TSFBridge::GetInstance()->OnTextInputTypeChanged(
+            GetTextInputClient());
+      }
+    } else {
+      ime_input_.CancelIME(hwnd_);
+      // Use switch here in case we are going to add more text input types.
+      // We disable input method in password field.
+      switch (GetTextInputType()) {
+        case ui::TEXT_INPUT_TYPE_NONE:
+        case ui::TEXT_INPUT_TYPE_PASSWORD:
+          ime_input_.DisableIME(hwnd_);
+          break;
+        default:
+          ime_input_.EnableIME(hwnd_);
+          break;
+      }
+      OnCaretBoundsChanged(GetFocusedView());
+    }
   }
   InputMethodBase::OnTextInputTypeChanged(view);
 }
 
 void InputMethodWin::OnCaretBoundsChanged(View* view) {
-  gfx::Rect rect;
-  if (!IsViewFocused(view) || !GetCaretBoundsInWidget(&rect))
-    return;
-  ime_input_.UpdateCaretRect(hwnd_, rect);
+  if (base::win::IsTSFAwareRequired()) {
+    ui::TSFBridge::GetInstance()->OnTextLayoutChanged();
+  } else {
+    gfx::Rect rect;
+    if (!IsViewFocused(view) || !GetCaretBoundsInWidget(&rect))
+      return;
+    ime_input_.UpdateCaretRect(hwnd_, rect);
+  }
 }
 
 void InputMethodWin::CancelComposition(View* view) {
-  if (IsViewFocused(view))
-    ime_input_.CancelIME(hwnd_);
+  if (IsViewFocused(view)) {
+    if (base::win::IsTSFAwareRequired()) {
+      ui::TSFBridge::GetInstance()->CancelComposition();
+    } else {
+      ime_input_.CancelIME(hwnd_);
+    }
+  }
 }
 
 std::string InputMethodWin::GetInputLocale() {
@@ -156,7 +207,26 @@ void InputMethodWin::OnWillChangeFocus(View* focused_before, View* focused) {
 }
 
 void InputMethodWin::OnDidChangeFocus(View* focused_before, View* focused) {
-  UpdateIMEState();
+  if (base::win::IsTSFAwareRequired()) {
+    if (GetTextInputClient()) {
+      ui::TSFBridge::GetInstance()->SetFocusedClient(HWNDForView(focused),
+                                                     GetTextInputClient());
+    }
+  } else {
+    // Use switch here in case we are going to add more text input types.
+    // We disable input method in password field.
+    switch (GetTextInputType()) {
+      case ui::TEXT_INPUT_TYPE_NONE:
+      case ui::TEXT_INPUT_TYPE_PASSWORD:
+        ime_input_.DisableIME(hwnd_);
+        break;
+      default:
+        ime_input_.EnableIME(hwnd_);
+        break;
+    }
+    OnTextInputTypeChanged(GetFocusedView());
+    OnCaretBoundsChanged(GetFocusedView());
+  }
 }
 
 void InputMethodWin::OnInputLangChange(DWORD character_set,
@@ -279,7 +349,7 @@ LRESULT InputMethodWin::OnChar(
 
   // Explicitly show the system menu at a good location on [Alt]+[Space].
   // Note: Setting |handled| to FALSE for DefWindowProc triggering of the system
-  //       menu causes unsdesirable titlebar artifacts in the classic theme.
+  //       menu causes undesirable titlebar artifacts in the classic theme.
   if (message == WM_SYSCHAR && wparam == VK_SPACE)
     ui::ShowSystemMenu(hwnd_);
 
@@ -364,7 +434,7 @@ LRESULT InputMethodWin::OnDocumentFeed(RECONVERTSTRING* reconv) {
   memcpy((char*)reconv + sizeof(RECONVERTSTRING),
          text.c_str(), len * sizeof(WCHAR));
 
-  // According to Microsft API document, IMR_RECONVERTSTRING and
+  // According to Microsoft API document, IMR_RECONVERTSTRING and
   // IMR_DOCUMENTFEED should return reconv, but some applications return
   // need_size.
   return reinterpret_cast<LRESULT>(reconv);
@@ -447,26 +517,20 @@ LRESULT InputMethodWin::OnQueryCharPosition(IMECHARPOSITION *char_positon) {
 
 void InputMethodWin::ConfirmCompositionText() {
   if (!IsTextInputTypeNone()) {
-    ime_input_.CleanupComposition(hwnd_);
-    // Though above line should confirm the client's composition text by sending
-    // a result text to us, in case the input method and the client are in
-    // inconsistent states, we check the client's composition state again.
-    if (GetTextInputClient()->HasCompositionText())
-      GetTextInputClient()->ConfirmCompositionText();
-  }
-}
-
-void InputMethodWin::UpdateIMEState() {
-  // Use switch here in case we are going to add more text input types.
-  // We disable input method in password field.
-  switch (GetTextInputType()) {
-    case ui::TEXT_INPUT_TYPE_NONE:
-    case ui::TEXT_INPUT_TYPE_PASSWORD:
-      ime_input_.DisableIME(hwnd_);
-      break;
-    default:
-      ime_input_.EnableIME(hwnd_);
-      break;
+    if (base::win::IsTSFAwareRequired()) {
+      // TSFBridge has not implemented ConfirmComposition yet. So here cancel
+      // the composition instead as a workaround.
+      // TODO(ime): Implement ConfirmComposition for TSF.
+      ui::TSFBridge::GetInstance()->CancelComposition();
+    } else {
+      ime_input_.CleanupComposition(hwnd_);
+      // Though above line should confirm the client's composition text by
+      // sending a result text to us, in case the input method and the client
+      // are in inconsistent states, we check the client's composition state
+      // again.
+      if (GetTextInputClient()->HasCompositionText())
+        GetTextInputClient()->ConfirmCompositionText();
+    }
   }
 }
 

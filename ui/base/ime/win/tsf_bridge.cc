@@ -39,6 +39,7 @@ class TSFBridgeDelegate : public TSFBridge {
   // TsfBridge:
   virtual void Shutdown() OVERRIDE;
   virtual void OnTextInputTypeChanged(TextInputClient* client) OVERRIDE;
+  virtual void OnTextLayoutChanged() OVERRIDE;
   virtual bool CancelComposition() OVERRIDE;
   virtual void SetFocusedClient(HWND focused_window,
                                 TextInputClient* client) OVERRIDE;
@@ -74,13 +75,6 @@ class TSFBridgeDelegate : public TSFBridge {
   // Returns true if already initialized.
   bool IsInitialized();
 
-  // Returns an instance of ITfDocumentMgr that is associated with the
-  // current TextInputType of |client_|.
-  base::win::ScopedComPtr<ITfDocumentMgr> GetAssociatedDocumentManager();
-
-  // An ITfThreadMgr object to be used in focus and document management.
-  base::win::ScopedComPtr<ITfThreadMgr> thread_manager_;
-
   // A triple of document manager, text store and binding cookie between
   // a context owned by the document manager and the text store. This is a
   // minimum working set of an editable document in TSF.
@@ -95,10 +89,17 @@ class TSFBridgeDelegate : public TSFBridge {
     DWORD cookie;
   };
 
+  // Returns a pointer to TSFDocument that is associated with the current
+  // TextInputType of |client_|.
+  TSFDocument* GetAssociatedDocument();
+
+  // An ITfThreadMgr object to be used in focus and document management.
+  base::win::ScopedComPtr<ITfThreadMgr> thread_manager_;
+
   // A map from TextInputType to an editable document for TSF. We use multiple
   // TSF documents that have different InputScopes and TSF attributes based on
   // the TextInputType associated with the target document. For a TextInputType
-  // that is not coverted by this map, a default document, e.g. the document
+  // that is not converted by this map, a default document, e.g. the document
   // for TEXT_INPUT_TYPE_TEXT, should be used.
   // Note that some IMEs don't change their state unless the document focus is
   // changed. This is why we use multiple documents instead of changing TSF
@@ -198,8 +199,20 @@ void TSFBridgeDelegate::OnTextInputTypeChanged(TextInputClient* client) {
     // Called from not focusing client. Do nothing.
     return;
   }
+  TSFDocument* document = GetAssociatedDocument();
+  if (!document)
+    return;
+  thread_manager_->SetFocus(document->document_manager.get());
+  OnTextLayoutChanged();
+}
 
-  thread_manager_->SetFocus(GetAssociatedDocumentManager().get());
+void TSFBridgeDelegate::OnTextLayoutChanged() {
+  TSFDocument* document = GetAssociatedDocument();
+  if (!document)
+    return;
+  if (!document->text_store)
+    return;
+  document->text_store->SendOnLayoutChange();
 }
 
 bool TSFBridgeDelegate::CancelComposition() {
@@ -417,13 +430,14 @@ bool TSFBridgeDelegate::IsInitialized() {
   return client_id_ != TF_CLIENTID_NULL;
 }
 
-base::win::ScopedComPtr<ITfDocumentMgr>
-TSFBridgeDelegate::GetAssociatedDocumentManager() {
-  TSFDocumentMap::const_iterator it =
+TSFBridgeDelegate::TSFDocument* TSFBridgeDelegate::GetAssociatedDocument() {
+  if (!client_)
+    return NULL;
+  TSFDocumentMap::iterator it =
       tsf_document_map_.find(client_->GetTextInputType());
   if (it == tsf_document_map_.end())
-    return tsf_document_map_[TEXT_INPUT_TYPE_TEXT].document_manager;
-  return it->second.document_manager;
+    return &tsf_document_map_[TEXT_INPUT_TYPE_TEXT];
+  return &it->second;
 }
 
 }  // namespace
