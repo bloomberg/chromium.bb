@@ -30,22 +30,15 @@
 
 #include "core/rendering/svg/SVGRenderTreeAsText.h"
 
-#include "HTMLNames.h"
 #include "SVGNames.h"
-#include "core/dom/NodeRenderStyle.h"
 #include "core/platform/graphics/GraphicsTypes.h"
-#include "core/platform/graphics/Path.h"
 #include "core/rendering/InlineTextBox.h"
-#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderTreeAsText.h"
-#include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
-#include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
-#include "core/rendering/svg/RenderSVGResourceGradient.h"
 #include "core/rendering/svg/RenderSVGResourceLinearGradient.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
@@ -72,7 +65,6 @@
 #include "core/svg/SVGRadialGradientElement.h"
 #include "core/svg/SVGRectElement.h"
 #include "core/svg/SVGStopElement.h"
-#include "core/svg/SVGStyledElement.h"
 
 #include <math.h>
 

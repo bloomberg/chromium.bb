@@ -22,14 +22,10 @@
 #include "config.h"
 #include "core/rendering/RenderTextControl.h"
 
-#include "core/editing/TextIterator.h"
-#include "core/editing/VisiblePosition.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTheme.h"
-#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/unicode/CharacterNames.h>
 
 using namespace std;

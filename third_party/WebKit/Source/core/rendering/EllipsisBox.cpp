@@ -20,7 +20,6 @@
 #include "config.h"
 #include "core/rendering/EllipsisBox.h"
 
-#include "core/dom/Document.h"
 #include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"

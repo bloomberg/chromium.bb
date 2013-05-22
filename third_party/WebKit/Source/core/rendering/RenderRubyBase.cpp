@@ -32,7 +32,6 @@
 
 #include "core/rendering/RenderRubyBase.h"
 #include "core/rendering/RenderRubyRun.h"
-#include "core/rendering/RenderRubyText.h"
 
 using namespace std;
 

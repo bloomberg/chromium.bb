@@ -29,7 +29,6 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"

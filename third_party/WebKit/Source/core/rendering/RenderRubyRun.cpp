@@ -35,8 +35,6 @@
 #include "core/rendering/RenderRubyBase.h"
 #include "core/rendering/RenderRubyText.h"
 #include "core/rendering/RenderText.h"
-#include "core/rendering/RenderView.h"
-#include "core/rendering/style/StyleInheritedData.h"
 
 using namespace std;
 

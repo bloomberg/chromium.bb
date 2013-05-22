@@ -28,14 +28,12 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/Icon.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderButton.h"
-#include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTheme.h"
 
 using namespace std;

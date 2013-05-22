@@ -33,8 +33,6 @@
 
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "core/page/Page.h"
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 
 namespace WebCore {

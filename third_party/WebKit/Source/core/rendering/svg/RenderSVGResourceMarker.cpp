@@ -30,7 +30,6 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGMarkerElement.h"
 #include "core/svg/SVGStyledElement.h"
-#include "core/svg/SVGStyledTransformableElement.h"
 
 namespace WebCore {
 

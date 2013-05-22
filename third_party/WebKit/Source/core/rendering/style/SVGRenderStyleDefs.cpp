@@ -29,7 +29,6 @@
 
 #include "core/rendering/style/SVGRenderStyleDefs.h"
 
-#include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 
 namespace WebCore {

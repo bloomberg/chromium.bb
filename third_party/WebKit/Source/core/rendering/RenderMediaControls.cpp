@@ -27,12 +27,6 @@
 
 #include "core/rendering/RenderMediaControls.h"
 
-#include "HTMLNames.h"
-#include "core/html/HTMLMediaElement.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderTheme.h"
-
 // FIXME: Unify more of the code for Mac and Win.
 
 using namespace std;

@@ -26,10 +26,6 @@
 #include "config.h"
 #include "core/rendering/style/StyleFilterData.h"
 
-#include "core/platform/graphics/filters/FEGaussianBlur.h"
-
-#include "core/rendering/style/RenderStyle.h"
-
 namespace WebCore {
 
 StyleFilterData::StyleFilterData()

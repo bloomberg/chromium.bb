@@ -25,7 +25,6 @@
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCycleSolver.h"
 #include "core/svg/SVGDocumentExtensions.h"
-#include "core/svg/SVGStyledElement.h"
 
 namespace WebCore {
 

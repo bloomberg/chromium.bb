@@ -20,7 +20,6 @@
 #include "config.h"
 #include "core/rendering/svg/SVGTextQuery.h"
 
-#include "core/editing/VisiblePosition.h"
 #include "core/platform/FloatConversion.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/RenderBlock.h"

@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/rendering/RenderLazyBlock.h"
 
-#include "core/dom/ClientRect.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"

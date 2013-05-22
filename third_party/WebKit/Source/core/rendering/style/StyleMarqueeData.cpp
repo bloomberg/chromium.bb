@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/style/StyleBackgroundData.h"
+#include "core/rendering/style/StyleMarqueeData.h"
 
 #include "core/rendering/style/RenderStyle.h"
 

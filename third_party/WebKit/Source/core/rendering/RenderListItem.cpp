@@ -27,10 +27,8 @@
 #include "HTMLNames.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLOListElement.h"
-#include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>
 

@@ -30,7 +30,6 @@
 
 #include "core/loader/cache/CachedImage.h"
 #include "core/platform/graphics/Image.h"
-#include "core/rendering/RenderImageResourceStyleImage.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {

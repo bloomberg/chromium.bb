@@ -30,13 +30,10 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PointerEventsHitRules.h"
-#include "core/rendering/RenderBlock.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
-#include "core/rendering/svg/SVGRootInlineBox.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 
 using namespace std;

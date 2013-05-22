@@ -22,14 +22,11 @@
 
 #include "config.h"
 
-#include "core/page/Settings.h"
-#include "core/platform/Logging.h"
 #include "core/platform/text/BidiResolver.h"
 #include "core/platform/text/Hyphenation.h"
 #include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
-#include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderFlowThread.h"

@@ -24,15 +24,11 @@
 #include "config.h"
 #include "core/rendering/RenderReplaced.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/VisiblePosition.h"
-#include "core/page/Frame.h"
-#include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 
 using namespace std;

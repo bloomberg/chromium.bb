@@ -26,9 +26,6 @@
 
 #include "core/rendering/RenderFullScreen.h"
 
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderLayerCompositor.h"
-
 using namespace WebCore;
 
 class RenderFullScreenPlaceholder FINAL : public RenderBlock {

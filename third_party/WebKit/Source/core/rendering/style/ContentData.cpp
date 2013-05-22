@@ -29,7 +29,6 @@
 #include "core/rendering/RenderQuote.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {
 

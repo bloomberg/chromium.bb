@@ -21,7 +21,6 @@
 
 #include "core/rendering/svg/SVGTextMetrics.h"
 
-#include "core/platform/graphics/WidthIterator.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 

@@ -21,19 +21,14 @@
 
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 
-#include "core/dom/Element.h"
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageBuffer.h"
-#include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGMaskElement.h"
-#include "core/svg/SVGStyledElement.h"
 #include "core/svg/SVGUnitTypes.h"
 
 #include <wtf/UnusedParam.h>

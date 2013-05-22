@@ -30,22 +30,16 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/RenderSVGContainer.h"
-#include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
-#include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
-#include "core/svg/SVGLength.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGStyledElement.h"
-#include "core/svg/SVGViewSpec.h"
 
 using namespace std;
 

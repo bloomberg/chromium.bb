@@ -24,10 +24,7 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/RenderTextFragment.h"
-#include "core/rendering/RenderTheme.h"
-#include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {
 

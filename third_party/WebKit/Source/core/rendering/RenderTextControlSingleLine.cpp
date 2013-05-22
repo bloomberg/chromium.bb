@@ -25,22 +25,12 @@
 #include "core/rendering/RenderTextControlSingleLine.h"
 
 #include "CSSValueKeywords.h"
-#include "HTMLNames.h"
-#include "core/css/CSSFontSelector.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/editing/FrameSelection.h"
-#include "core/html/shadow/TextControlInnerElements.h"
-#include "core/page/Chrome.h"
 #include "core/page/Frame.h"
-#include "core/page/FrameView.h"
-#include "core/page/Page.h"
-#include "core/page/Settings.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderTheme.h"
 
 using namespace std;

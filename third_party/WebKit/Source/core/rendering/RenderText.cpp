@@ -26,9 +26,7 @@
 #include "core/rendering/RenderText.h"
 
 #include "core/accessibility/AXObjectCache.h"
-#include "core/dom/Range.h"
 #include "core/dom/Text.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/page/FrameView.h"
@@ -39,7 +37,6 @@
 #include "core/platform/text/transcoder/FontTranscoder.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/InlineTextBox.h"
-#include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderLayer.h"

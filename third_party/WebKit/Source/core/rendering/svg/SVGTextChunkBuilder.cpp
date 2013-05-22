@@ -23,7 +23,6 @@
 
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
-#include "core/svg/SVGElement.h"
 #include "core/svg/SVGLengthContext.h"
 
 namespace WebCore {

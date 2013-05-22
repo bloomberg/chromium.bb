@@ -22,9 +22,7 @@
 
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 
-#include "core/page/FrameView.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/PatternAttributes.h"

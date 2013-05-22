@@ -21,25 +21,8 @@
 #include "config.h"
 #include "core/rendering/RenderSlider.h"
 
-#include "CSSPropertyNames.h"
-#include "HTMLNames.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Document.h"
-#include "core/dom/Event.h"
-#include "core/dom/EventNames.h"
-#include "core/dom/MouseEvent.h"
-#include "core/dom/Node.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/StepRange.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/shadow/MediaControlElements.h"
 #include "core/html/shadow/SliderThumbElement.h"
-#include "core/page/EventHandler.h"
-#include "core/page/Frame.h"
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderTheme.h"
-#include "core/rendering/RenderView.h"
 #include <wtf/MathExtras.h>
 
 using std::min;

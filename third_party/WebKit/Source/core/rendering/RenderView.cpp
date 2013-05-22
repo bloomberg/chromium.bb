@@ -23,7 +23,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/page/Frame.h"
@@ -41,11 +40,8 @@
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderLazyBlock.h"
-#include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderSelectionInfo.h"
 #include "core/rendering/RenderWidget.h"
-#include "core/rendering/RenderWidgetProtector.h"
-#include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {
 

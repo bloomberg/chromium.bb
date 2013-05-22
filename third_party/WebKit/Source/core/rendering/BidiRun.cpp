@@ -23,7 +23,6 @@
 
 #include "config.h"
 #include "core/rendering/BidiRun.h"
-#include "core/rendering/InlineBox.h"
 #include "core/rendering/RenderArena.h"
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/StdLibExtras.h>

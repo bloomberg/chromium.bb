@@ -30,8 +30,6 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "core/page/Page.h"
-#include "core/page/Settings.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {

@@ -25,10 +25,6 @@
 
 #include "config.h"
 #include <limits>
-#include "HTMLNames.h"
-#include "core/dom/Document.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/loader/cache/CachedImage.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTableCell.h"
@@ -36,7 +32,6 @@
 #include "core/rendering/RenderTableRow.h"
 #include "core/rendering/RenderTableSection.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/HashSet.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>

@@ -22,7 +22,6 @@
 
 #include "core/rendering/RenderMeter.h"
 
-#include "HTMLNames.h"
 #include "core/html/HTMLMeterElement.h"
 #include "core/rendering/RenderTheme.h"
 

@@ -26,10 +26,7 @@
 
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/svg/RenderSVGShape.h"
-#include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
-#include "core/svg/GradientAttributes.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

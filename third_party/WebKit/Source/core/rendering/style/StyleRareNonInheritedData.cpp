@@ -22,14 +22,11 @@
 #include "config.h"
 #include "core/rendering/style/StyleRareNonInheritedData.h"
 
-#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/rendering/RenderCounter.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowData.h"
 #include "core/rendering/style/StyleFilterData.h"
-#include "core/rendering/style/StyleImage.h"
 #include "core/rendering/style/StyleTransformData.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationVector.h>

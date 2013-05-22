@@ -22,14 +22,9 @@
 #include "core/rendering/svg/RenderSVGTextPath.h"
 
 #include "SVGNames.h"
-#include "core/platform/graphics/FloatQuad.h"
-#include "core/rendering/RenderBlock.h"
-#include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGPathData.h"
-#include "core/rendering/svg/SVGRootInlineBox.h"
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGTextPathElement.h"
-#include "core/svg/SVGTransformList.h"
 
 namespace WebCore {
 

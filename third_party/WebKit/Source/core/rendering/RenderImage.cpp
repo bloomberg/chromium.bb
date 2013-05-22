@@ -37,7 +37,6 @@
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"

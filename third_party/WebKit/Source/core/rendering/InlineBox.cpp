@@ -21,10 +21,7 @@
 #include "core/rendering/InlineBox.h"
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "core/page/Frame.h"
-#include "core/page/Page.h"
 #include "core/platform/graphics/FontMetrics.h"
-#include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderArena.h"

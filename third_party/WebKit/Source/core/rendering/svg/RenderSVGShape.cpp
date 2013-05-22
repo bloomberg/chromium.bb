@@ -30,13 +30,11 @@
 #include "core/rendering/svg/RenderSVGShape.h"
 
 #include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/StrokeStyleApplier.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PointerEventsHitRules.h"
-#include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
 #include "core/rendering/svg/SVGPathData.h"
@@ -44,8 +42,6 @@
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGStyledTransformableElement.h"
-#include "core/svg/SVGTransformList.h"
-#include "core/svg/SVGURIReference.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

@@ -33,11 +33,9 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFullScreen.h"
-#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

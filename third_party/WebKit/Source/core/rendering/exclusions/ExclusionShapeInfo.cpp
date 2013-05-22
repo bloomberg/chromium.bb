@@ -31,8 +31,6 @@
 #include "core/rendering/exclusions/ExclusionShapeInfo.h"
 
 #include "core/rendering/exclusions/ExclusionShape.h"
-#include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/style/RenderStyle.h"
 
