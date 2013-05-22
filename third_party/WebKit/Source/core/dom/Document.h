@@ -636,7 +636,7 @@ public:
     Node* focusedNode() const { return m_focusedNode.get(); }
     UserActionElementSet& userActionElements()  { return m_userActionElements; }
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }
-
+    void didRunCheckFocusedNodeTask() { m_didPostCheckFocusedNodeTask = false; }
     void getFocusableNodes(Vector<RefPtr<Node> >&);
     
     // The m_ignoreAutofocus flag specifies whether or not the document has been changed by the user enough 
@@ -1239,6 +1239,7 @@ private:
 
     Color m_textColor;
 
+    bool m_didPostCheckFocusedNodeTask;
     RefPtr<Node> m_focusedNode;
     RefPtr<Node> m_hoverNode;
     RefPtr<Element> m_activeElement;

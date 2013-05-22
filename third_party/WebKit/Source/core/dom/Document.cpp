@@ -370,6 +370,31 @@ static void printNavigationErrorMessage(Frame* frame, const KURL& activeURL, con
 
 uint64_t Document::s_globalTreeVersion = 0;
 
+// This class should be passed only to Document::postTask.
+class CheckFocusedNodeTask FINAL : public ScriptExecutionContext::Task {
+public:
+    static PassOwnPtr<CheckFocusedNodeTask> create()
+    {
+        return adoptPtr(new CheckFocusedNodeTask());
+    }
+    virtual ~CheckFocusedNodeTask() { }
+
+private:
+    CheckFocusedNodeTask() { }
+    virtual void performTask(ScriptExecutionContext* context) OVERRIDE
+    {
+        ASSERT(context->isDocument());
+        Document* document = toDocument(context);
+        document->didRunCheckFocusedNodeTask();
+        if (!document->focusedNode())
+            return;
+        if (document->focusedNode()->renderer() && document->focusedNode()->renderer()->needsLayout())
+            return;
+        if (!document->focusedNode()->isFocusable())
+            document->setFocusedNode(0);
+    }
+};
+
 Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument)
     , TreeScope(this)
@@ -379,6 +404,7 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , m_contextFeatures(ContextFeatures::defaultSwitch())
     , m_compatibilityMode(NoQuirksMode)
     , m_compatibilityModeLocked(false)
+    , m_didPostCheckFocusedNodeTask(false)
     , m_domTreeVersion(++s_globalTreeVersion)
     , m_mutationObserverTypes(0)
     , m_styleSheetCollection(DocumentStyleSheetCollection::create(this))
@@ -1707,6 +1733,12 @@ void Document::updateLayout()
     // Only do a layout if changes have occurred that make it necessary.
     if (frameView && renderer() && (frameView->layoutPending() || renderer()->needsLayout()))
         frameView->layout();
+
+    // FIXME: Using a Task doesn't look a good idea.
+    if (m_focusedNode && !m_didPostCheckFocusedNodeTask) {
+        postTask(CheckFocusedNodeTask::create());
+        m_didPostCheckFocusedNodeTask = true;
+    }
 }
 
 // FIXME: This is a bad idea and needs to be removed eventually.
