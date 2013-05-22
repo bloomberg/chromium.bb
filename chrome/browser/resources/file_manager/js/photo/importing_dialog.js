@@ -91,16 +91,11 @@ ImportingDialog.prototype.show = function(entries, move) {
  */
 ImportingDialog.prototype.start = function(destination) {
   this.destination_ = destination;
-  var files = this.entries_.map(function(e) { return e.fullPath }).join('\n');
-  var operationInfo = {
-    isCut: this.move_ ? 'true' : 'false',
-    isOnDrive:
-        PathUtil.getRootType(this.entries_[0].fullPath) == RootType.DRIVE,
-    sourceDir: null,
-    directories: '',
-    files: files
-  };
-  this.copyManager_.paste(operationInfo, this.destination_.fullPath, true);
+  var files = this.entries_.map(function(e) { return e.fullPath });
+  var isOnDrive =
+      PathUtil.getRootType(files[0].fullPath) == RootType.DRIVE;
+  this.copyManager_.paste(files, [], this.move_, isOnDrive,
+                          this.destination_.fullPath, true);
 };
 
 /**

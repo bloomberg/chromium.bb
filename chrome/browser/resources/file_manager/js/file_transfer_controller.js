@@ -144,10 +144,9 @@ FileTransferController.prototype = {
 
     // Tag to check it's filemanager data.
     dataTransfer.setData('fs/tag', 'filemanager-data');
-
     dataTransfer.setData('fs/isOnDrive', this.isOnDrive);
-    if (this.currentDirectory)
-      dataTransfer.setData('fs/sourceDir', this.currentDirectory.fullPath);
+    dataTransfer.setData('fs/sourceRoot',
+                         this.directoryModel_.getCurrentRootPath());
     dataTransfer.setData('fs/directories', directories.join('\n'));
     dataTransfer.setData('fs/files', files.join('\n'));
     dataTransfer.effectAllowed = effectAllowed;
@@ -166,15 +165,9 @@ FileTransferController.prototype = {
    * @return {string} Path or empty string (if unknown).
    */
   getSourceRoot_: function(dataTransfer) {
-    var sourceDir = dataTransfer.getData('fs/sourceDir');
-    if (sourceDir)
-      return PathUtil.getRootPath(sourceDir);
-
-    // For drive search, sourceDir will be set to null, so we should double
-    // check that we are not on drive.
-    // TODO(haruki): Investigate if this still is the case.
-    if (dataTransfer.getData('fs/isOnDrive') == 'true')
-      return RootDirectory.DRIVE;
+    var sourceRoot = dataTransfer.getData('fs/sourceRoot');
+    if (sourceRoot)
+      return sourceRoot;
 
     // |dataTransfer| in protected mode.
     if (window[DRAG_AND_DROP_GLOBAL_DATA])
@@ -207,29 +200,21 @@ FileTransferController.prototype = {
                           this.directoryModel_.getCurrentDirPath();
     // effectAllowed set in copy/pase handlers stay uninitialized. DnD handlers
     // work fine.
+    var files = (dataTransfer.getData('fs/files') || '').split('\n');
+    var directories =
+        (dataTransfer.getData('fs/directories') || '').split('\n');
     var effectAllowed = dataTransfer.effectAllowed != 'uninitialized' ?
         dataTransfer.effectAllowed : dataTransfer.getData('fs/effectallowed');
-
     var toMove = effectAllowed == 'move' ||
         (effectAllowed == 'copyMove' && opt_effect == 'move');
-
-    var operationInfo = {
-      isCut: String(toMove),
-      isOnDrive: dataTransfer.getData('fs/isOnDrive'),
-      sourceDir: dataTransfer.getData('fs/sourceDir'),
-      directories: dataTransfer.getData('fs/directories'),
-      files: dataTransfer.getData('fs/files')
-    };
-
-    // Check if not moving to the same directory as the source one.
-    if (!toMove || operationInfo.sourceDir != destinationPath) {
-      var targetOnDrive = (PathUtil.getRootType(destinationPath) ===
-                           RootType.DRIVE);
-      this.copyManager_.paste(operationInfo,
-                              destinationPath,
-                              targetOnDrive);
-    }
-
+    var targetOnDrive = (PathUtil.getRootType(destinationPath) ===
+                         RootType.DRIVE);
+    this.copyManager_.paste(files,
+                            directories,
+                            toMove,
+                            dataTransfer.getData('fs/isOnDrive') == 'true',
+                            destinationPath,
+                            targetOnDrive);
     return toMove ? 'move' : 'copy';
   },
 
@@ -642,6 +627,9 @@ FileTransferController.prototype = {
     if (this.directoryModel_.isPathReadOnly(destinationPath)) {
       return false;
     }
+    // TODO(hirono): Following two lines disable copying files from search
+    // results and should be removed after fixing blocker
+    // bugs. http://crbug.com/168271
     if (this.directoryModel_.isSearching())
       return false;
 
@@ -751,15 +739,6 @@ FileTransferController.prototype = {
     } else {
       prepareFileObjects();
     }
-  },
-
-  /**
-   * @this {FileTransferController}
-   */
-  get currentDirectory() {
-    if (this.directoryModel_.isSearching() && this.isOnDrive)
-      return null;
-    return this.directoryModel_.getCurrentDirEntry();
   },
 
   /**

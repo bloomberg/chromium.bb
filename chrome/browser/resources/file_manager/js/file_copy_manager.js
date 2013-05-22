@@ -49,13 +49,14 @@ FileCopyManager.getInstance = function(root) {
  * Tasks may be added while the queue is being serviced.  Though a
  * cancel operation cancels everything in the queue.
  *
- * @param {DirectoryEntry} sourceDirEntry Source directory.
  * @param {DirectoryEntry} targetDirEntry Target directory.
+ * @param {DirectoryEntry=} opt_zipBaseDirEntry Base directory dealt as a root
+ *     in ZIP archive.
  * @constructor
  */
-FileCopyManager.Task = function(sourceDirEntry, targetDirEntry) {
-  this.sourceDirEntry = sourceDirEntry;
+FileCopyManager.Task = function(targetDirEntry, opt_zipBaseDirEntry) {
   this.targetDirEntry = targetDirEntry;
+  this.zipBaseDirEntry = opt_zipBaseDirEntry;
   this.originalEntries = null;
 
   this.pendingDirectories = [];
@@ -452,87 +453,72 @@ FileCopyManager.prototype.maybeCancel_ = function() {
 };
 
 /**
- * Convert string in clipboard to entries and kick off pasting.
+ * Kick off pasting.
  *
- * @param {Object} clipboard Clipboard contents.
+ * @param {Array.<string>} files Pathes of source files.
+ * @param {Array.<string>} directories Pathes of source directories.
+ * @param {boolean} isCut If the source items are removed from original
+ *     location.
+ * @param {boolean} isOnDrive If the source items are on Google Drive.
  * @param {string} targetPath Target path.
  * @param {boolean} targetOnDrive If target is on Drive.
  */
-FileCopyManager.prototype.paste = function(clipboard, targetPath,
-                                           targetOnDrive) {
+FileCopyManager.prototype.paste = function(files, directories, isCut, isOnDrive,
+                                           targetPath, targetOnDrive) {
   var self = this;
-  var results = {
-    sourceDirEntry: null,
-    entries: [],
-    isCut: false,
-    isOnDrive: false
-  };
+  var entries = [];
 
   var onPathError = function(err) {
     self.sendProgressEvent_('ERROR',
                             new FileCopyManager.Error('FILESYSTEM_ERROR', err));
   };
 
-  var onSourceEntryFound = function(dirEntry) {
-    var onTargetEntryFound = function(targetEntry) {
-      self.queueCopy(results.sourceDirEntry,
-            targetEntry,
-            results.entries,
-            results.isCut,
-            results.isOnDrive,
-            targetOnDrive);
-    };
-
-    var onComplete = function() {
-      self.root_.getDirectory(targetPath, {},
-                              onTargetEntryFound, onPathError);
-    };
-
-    var onEntryFound = function(entry) {
-      // When getDirectories/getFiles finish, they call addEntry with null.
-      // We don't want to add null to our entries.
-      if (entry != null) {
-        results.entries.push(entry);
-        added++;
-        if (added == total)
-          onComplete();
-      }
-    };
-
-    results.sourceDirEntry = dirEntry;
-    var directories = [];
-    var files = [];
-
-    if (clipboard.directories) {
-      directories = clipboard.directories.split('\n');
-      directories = directories.filter(function(d) { return d != '' });
-    }
-    if (clipboard.files) {
-      files = clipboard.files.split('\n');
-      files = files.filter(function(f) { return f != '' });
-    }
-
-    var total = directories.length + files.length;
-    var added = 0;
-
-    results.isCut = (clipboard.isCut == 'true');
-    results.isOnDrive = (clipboard.isOnDrive == 'true');
-
-    util.getDirectories(self.root_, {create: false}, directories, onEntryFound,
-                        onPathError);
-    util.getFiles(self.root_, {create: false}, files, onEntryFound,
-                  onPathError);
+  var onTargetEntryFound = function(targetEntry) {
+    self.queueCopy_(targetEntry,
+                    entries,
+                    isCut,
+                    isOnDrive,
+                    targetOnDrive);
   };
 
-  if (clipboard.sourceDir &&
-      !PathUtil.isSpecialSearchRoot(clipboard.sourceDir)) {
-    this.root_.getDirectory(clipboard.sourceDir,
-                            {create: false},
-                            onSourceEntryFound,
-                            onPathError);
-  } else {
-    onSourceEntryFound(null);
-  }
+  var onComplete = function() {
+    self.root_.getDirectory(targetPath, {},
+                            onTargetEntryFound, onPathError);
+  };
+
+  var added = 0;
+  var onEntryFound = function(entry) {
+    // When getDirectories/getFiles finish, they call addEntry with null.
+    // We don't want to add null to our entries.
+    if (entry != null) {
+      entries.push(entry);
+      added++;
+      if (added == total)
+        onComplete();
+    }
+  };
+
+  var entryFilterFunc = function(entry) {
+    if (entry == '') {
+      return false;
+    } else if (isCut && entry.replace(/\/[^\/]+$/, '') == targetPath) {
+      // Moving to the same directory is a redundant operation
+      return false;
+    } else {
+      return true;
+    }
+  };
+  directories = directories ? directories.filter(entryFilterFunc) : [];
+  files = files ? files.filter(entryFilterFunc) : [];
+
+  var total = directories.length + files.length;
+  if (total == 0)
+    return;
+
+  util.getDirectories(self.root_, {create: false}, directories, onEntryFound,
+                      onPathError);
+  util.getFiles(self.root_, {create: false}, files, onEntryFound,
+                onPathError);
 };
 
 /**
@@ -553,22 +539,22 @@ FileCopyManager.prototype.isOnSameRoot = function(sourceEntry,
 /**
  * Initiate a file copy.
  *
- * @param {DirectoryEntry} sourceDirEntry Source directory.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @param {Array.<Entry>} entries Entries to copy.
  * @param {boolean} deleteAfterCopy In case of move.
  * @param {boolean} sourceOnDrive Source directory on Drive.
  * @param {boolean} targetOnDrive Target directory on Drive.
  * @return {FileCopyManager.Task} Copy task.
+ * @private
  */
-FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
-                                               targetDirEntry,
-                                               entries,
-                                               deleteAfterCopy,
-                                               sourceOnDrive,
-                                               targetOnDrive) {
+FileCopyManager.prototype.queueCopy_ = function(targetDirEntry,
+                                                entries,
+                                                deleteAfterCopy,
+                                                sourceOnDrive,
+                                                targetOnDrive) {
   var self = this;
-  var copyTask = new FileCopyManager.Task(sourceDirEntry, targetDirEntry);
+  // When copying files, null can be specified as source directory.
+  var copyTask = new FileCopyManager.Task(targetDirEntry);
   if (deleteAfterCopy) {
     // |sourecDirEntry| may be null, so let's check the root for the first of
     // the entries scheduled to be copied.
@@ -1047,7 +1033,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 FileCopyManager.prototype.serviceZipTask_ = function(task, completeCallback,
                                                      errorCallback) {
   var self = this;
-  var dirURL = task.sourceDirEntry.toURL();
+  var dirURL = task.zipBaseDirEntry.toURL();
   var selectionURLs = [];
   for (var i = 0; i < task.pendingDirectories.length; i++)
     selectionURLs.push(task.pendingDirectories[i].toURL());
