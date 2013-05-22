@@ -270,8 +270,6 @@ NotificationsApiFunction::MapApiTemplateTypeToType(
     api::notifications::TemplateType type) {
   switch (type) {
     case api::notifications::TEMPLATE_TYPE_NONE:
-    case api::notifications::TEMPLATE_TYPE_SIMPLE:
-      return message_center::NOTIFICATION_TYPE_SIMPLE;
     case api::notifications::TEMPLATE_TYPE_BASIC:
       return message_center::NOTIFICATION_TYPE_BASE_FORMAT;
     case api::notifications::TEMPLATE_TYPE_IMAGE:

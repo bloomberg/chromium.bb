@@ -4,9 +4,6 @@
 
 namespace notifications {
   enum TemplateType {
-    // icon, title, message
-    simple,
-
     // icon, title, message, expandedMessage, up to two buttons
     basic,
 
