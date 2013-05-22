@@ -120,7 +120,7 @@ SharedMemory* SafeSharedMemoryPool::DuplicateSharedMemory(
   if (!shared_memory->ShareToProcess(
       base::GetCurrentProcessHandle(),
       &duped_shared_memory_handle)) {
-    LOG(ERROR) << "Failed SharedMemory::ShareToProcess";
+    PLOG(ERROR) << "Failed SharedMemory::ShareToProcess";
     LOG(ERROR) << "Total handles acquired " << handles_acquired_;
     LOG(ERROR) << "Total handles open " << handles_consumed_;
     LOG(ERROR) << "Total address space " << address_space_consumed_;
@@ -134,7 +134,7 @@ SharedMemory* SafeSharedMemoryPool::DuplicateSharedMemory(
       new SharedMemory(duped_shared_memory_handle, false));
   // Map the shared memory into this process. This validates the size.
   if (!duped_shared_memory->Map(size)) {
-    LOG(ERROR) << "Failed SharedMemory::Map";
+    PLOG(ERROR) << "Failed SharedMemory::Map(" << size << ")";
     LOG(ERROR) << "Total handles acquired " << handles_acquired_;
     LOG(ERROR) << "Total handles open " << handles_consumed_;
     LOG(ERROR) << "Total address space " << address_space_consumed_;
