@@ -268,6 +268,8 @@
         'browser/chromeos/drive/file_write_helper.h',
         'browser/chromeos/drive/job_list.cc',
         'browser/chromeos/drive/job_list.h',
+        'browser/chromeos/drive/job_queue.cc',
+        'browser/chromeos/drive/job_queue.h',
         'browser/chromeos/drive/job_scheduler.cc',
         'browser/chromeos/drive/job_scheduler.h',
         'browser/chromeos/drive/local_file_reader.cc',

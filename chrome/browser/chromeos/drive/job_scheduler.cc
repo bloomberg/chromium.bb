@@ -9,13 +9,10 @@
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
-#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
-#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -94,12 +91,6 @@ JobScheduler::JobEntry::~JobEntry() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-bool JobScheduler::JobEntry::Less(const JobEntry& left, const JobEntry& right) {
-  // Lower values of ContextType are higher priority.
-  // See also the comment at ContextType.
-  return (left.context.type < right.context.type);
-}
-
 struct JobScheduler::ResumeUploadParams {
   base::FilePath drive_file_path;
   base::FilePath local_file_path;
@@ -116,9 +107,9 @@ JobScheduler::JobScheduler(
       profile_(profile),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  for (int i = 0; i < NUM_QUEUES; ++i) {
-    jobs_running_[i] = 0;
-  }
+
+  for (int i = 0; i < NUM_QUEUES; ++i)
+    queue_[i].reset(new JobQueue(kMaxJobCount[i], NUM_CONTEXT_TYPES));
 
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 }
@@ -126,13 +117,10 @@ JobScheduler::JobScheduler(
 JobScheduler::~JobScheduler() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  size_t num_pending_jobs = 0;
-  size_t num_running_jobs = 0;
-  for (int i = 0; i < NUM_QUEUES; ++i) {
-    num_pending_jobs += queue_[i].size();
-    num_running_jobs += jobs_running_[i];
-  }
-  DCHECK_EQ(num_pending_jobs + num_running_jobs, job_map_.size());
+  size_t num_queued_jobs = 0;
+  for (int i = 0; i < NUM_QUEUES; ++i)
+    num_queued_jobs += queue_[i]->GetNumberOfJobs();
+  DCHECK_EQ(num_queued_jobs, job_map_.size());
 
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
@@ -610,7 +598,7 @@ void JobScheduler::StartJob(JobEntry* job) {
 
   QueueJob(job->job_info.job_id);
   NotifyJobAdded(job->job_info);
-  StartJobLoop(GetJobQueueType(job->job_info.job_type));
+  DoJobLoop(GetJobQueueType(job->job_info.job_type));
 }
 
 void JobScheduler::QueueJob(JobID job_id) {
@@ -621,47 +609,23 @@ void JobScheduler::QueueJob(JobID job_id) {
   const JobInfo& job_info = job_entry->job_info;
 
   QueueType queue_type = GetJobQueueType(job_info.job_type);
-  std::list<JobID>* queue = &queue_[queue_type];
-
-  std::list<JobID>::iterator it = queue->begin();
-  for (; it != queue->end(); ++it) {
-    JobEntry* job_entry2 = job_map_.Lookup(*it);
-    if (JobEntry::Less(*job_entry, *job_entry2))
-      break;
-  }
-  queue->insert(it, job_id);
+  queue_[queue_type]->Push(job_id, job_entry->context.type);
 
   util::Log("Job queued: %s - %s", job_info.ToString().c_str(),
             GetQueueInfo(queue_type).c_str());
 }
 
-void JobScheduler::StartJobLoop(QueueType queue_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (jobs_running_[queue_type] < kMaxJobCount[queue_type])
-    DoJobLoop(queue_type);
-}
-
 void JobScheduler::DoJobLoop(QueueType queue_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (queue_[queue_type].empty()) {
+  JobID job_id = -1;
+  if (!queue_[queue_type]->PopForRun(GetCurrentAcceptedPriority(queue_type),
+                                     &job_id)) {
     return;
   }
 
-  JobID job_id = queue_[queue_type].front();
   JobEntry* entry = job_map_.Lookup(job_id);
   DCHECK(entry);
-
-  // Check if we should defer based on the first item in the queue
-  if (ShouldStopJobLoop(queue_type, entry->context)) {
-    return;
-  }
-
-  // Increment the number of jobs.
-  ++jobs_running_[queue_type];
-
-  queue_[queue_type].pop_front();
 
   JobInfo* job_info = &entry->job_info;
   job_info->state = STATE_RUNNING;
@@ -675,38 +639,30 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
             GetQueueInfo(queue_type).c_str());
 }
 
-bool JobScheduler::ShouldStopJobLoop(QueueType queue_type,
-                                     const DriveClientContext& context) {
+int JobScheduler::GetCurrentAcceptedPriority(QueueType queue_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const int kNoJobShouldRun = -1;
 
   // Should stop if the gdata feature was disabled while running the fetch
   // loop.
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDrive))
-    return true;
+    return kNoJobShouldRun;
 
   // Should stop if the network is not online.
   if (net::NetworkChangeNotifier::IsOffline())
-    return true;
+    return kNoJobShouldRun;
 
-  // Should stop background jobs if the current connection is on cellular
-  // network, and fetching is disabled over cellular.
-  bool should_stop_on_cellular_network = false;
-  switch (context.type) {
-    case USER_INITIATED:
-      should_stop_on_cellular_network = false;
-      break;
-    case BACKGROUND:
-      should_stop_on_cellular_network = (queue_type == FILE_QUEUE);
-      break;
-  }
-  if (should_stop_on_cellular_network &&
+  // For the file queue, if it is on cellular network, only user initiated
+  // operations are allowed to start.
+  if (queue_type == FILE_QUEUE &&
       profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular) &&
       net::NetworkChangeNotifier::IsConnectionCellular(
-          net::NetworkChangeNotifier::GetConnectionType())) {
-    return true;
-  }
+          net::NetworkChangeNotifier::GetConnectionType()))
+    return USER_INITIATED;
 
-  return false;
+  // Otherwise, every operations including background tasks are allowed.
+  return BACKGROUND;
 }
 
 void JobScheduler::ThrottleAndContinueJobLoop(QueueType queue_type) {
@@ -753,9 +709,7 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
   DCHECK(job_entry);
   JobInfo* job_info = &job_entry->job_info;
   QueueType queue_type = GetJobQueueType(job_info->job_type);
-
-  // Decrement the number of jobs for this queue.
-  --jobs_running_[queue_type];
+  queue_[queue_type]->MarkFinished(job_id);
 
   const base::TimeDelta elapsed = base::Time::Now() - job_info->start_time;
   util::Log("Job done: %s => %s (elapsed time: %sms) - %s",
@@ -916,7 +870,7 @@ void JobScheduler::OnConnectionTypeChanged(
   // ShouldStopJobLoop() as soon as the loop is resumed.
   if (!net::NetworkChangeNotifier::IsOffline()) {
     for (int i = METADATA_QUEUE; i < NUM_QUEUES; ++i) {
-      StartJobLoop(static_cast<QueueType>(i));
+      DoJobLoop(static_cast<QueueType>(i));
     }
   }
 }
@@ -968,10 +922,7 @@ void JobScheduler::NotifyJobUpdated(const JobInfo& job_info) {
 }
 
 std::string JobScheduler::GetQueueInfo(QueueType type) const {
-  return base::StringPrintf("%s: pending: %d, running: %d",
-                            QueueTypeToString(type).c_str(),
-                            static_cast<int>(queue_[type].size()),
-                            jobs_running_[type]);
+  return QueueTypeToString(type) + " " + queue_[type]->ToString();
 }
 
 // static
@@ -982,11 +933,10 @@ std::string JobScheduler::QueueTypeToString(QueueType type) {
     case FILE_QUEUE:
       return "FILE_QUEUE";
     case NUM_QUEUES:
-      return "NUM_QUEUES";
+      break;  // This value is just a sentinel. Should never be used.
   }
   NOTREACHED();
   return "";
 }
-
 
 }  // namespace drive

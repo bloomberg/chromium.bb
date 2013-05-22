@@ -126,6 +126,8 @@ typedef base::Callback<void(const FileSystemMetadata&)>
 enum ContextType {
   USER_INITIATED,
   BACKGROUND,
+  // Indicates the number of values of this enum.
+  NUM_CONTEXT_TYPES,
 };
 
 struct DriveClientContext {

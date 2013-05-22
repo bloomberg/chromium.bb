@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_JOB_SCHEDULER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_JOB_SCHEDULER_H_
 
-#include <list>
 #include <vector>
 
 #include "base/id_map.h"
@@ -13,6 +12,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
+#include "chrome/browser/chromeos/drive/job_queue.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "net/base/network_change_notifier.h"
@@ -188,10 +188,6 @@ class JobScheduler
     explicit JobEntry(JobType type);
     ~JobEntry();
 
-    // Returns true when |left| is in higher priority than |right|.
-    // Used for sorting entries from high priority to low priority.
-    static bool Less(const JobEntry& left, const JobEntry& right);
-
     JobInfo job_info;
 
     // Context of the job.
@@ -215,18 +211,12 @@ class JobScheduler
   // Adds the specified job to the queue.
   void QueueJob(JobID job_id);
 
-  // Starts the job loop, if it is not already running.
-  void StartJobLoop(QueueType queue_type);
-
   // Determines the next job that should run, and starts it.
   void DoJobLoop(QueueType queue_type);
 
-  // Checks if operations should be suspended, such as if the network is
-  // disconnected.
-  //
-  // Returns true when it should stop, and false if it should continue.
-  bool ShouldStopJobLoop(QueueType queue_type,
-                         const  DriveClientContext& context);
+  // Returns the lowest acceptable priority level of the operations that is
+  // currently allowed to start for the |queue_type|.
+  int GetCurrentAcceptedPriority(QueueType queue_type);
 
   // Increases the throttle delay if it's below the maximum value, and posts a
   // task to continue the loop after the delay.
@@ -312,9 +302,6 @@ class JobScheduler
   // Returns a string representation of QueueType.
   static std::string QueueTypeToString(QueueType type);
 
-  // Number of jobs in flight for each queue.
-  int jobs_running_[NUM_QUEUES];
-
   // The number of times operations have failed in a row, capped at
   // kMaxThrottleCount.  This is used to calculate the delay before running the
   // next task.
@@ -324,9 +311,9 @@ class JobScheduler
   bool disable_throttling_;
 
   // The queues of jobs.
-  std::list<JobID> queue_[NUM_QUEUES];
+  scoped_ptr<JobQueue> queue_[NUM_QUEUES];
 
-  // The list of unfinished (= queued or running) job info indexed by job IDs.
+  // The list of queued job info indexed by job IDs.
   typedef IDMap<JobEntry, IDMapOwnPointer> JobIDMap;
   JobIDMap job_map_;
 
