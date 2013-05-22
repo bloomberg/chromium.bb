@@ -43,6 +43,38 @@ const int kMinutesInMilliSeconds = 60 * 1000;
 const int64 kReportHistogramInterval = 60 * 60 * 1000;  // 1 hour
 const double kTemporaryQuotaRatioToAvail = 0.5;  // 50%
 
+}  // namespace
+
+// Arbitrary for now, but must be reasonably small so that
+// in-memory databases can fit.
+// TODO(kinuko): Refer SysInfo::AmountOfPhysicalMemory() to determine this.
+const int64 QuotaManager::kIncognitoDefaultQuotaLimit = 100 * kMBytes;
+
+const int64 QuotaManager::kNoLimit = kint64max;
+
+const int QuotaManager::kPerHostTemporaryPortion = 5;  // 20%
+
+const char QuotaManager::kDatabaseName[] = "QuotaManager";
+
+// Preserve kMinimumPreserveForSystem disk space for system book-keeping
+// when returning the quota to unlimited apps/extensions.
+// TODO(kinuko): This should be like 10% of the actual disk space.
+// For now we simply use a constant as getting the disk size needs
+// platform-dependent code. (http://crbug.com/178976)
+const int64 QuotaManager::kMinimumPreserveForSystem = 1024 * kMBytes;
+
+const int QuotaManager::kThresholdOfErrorsToBeBlacklisted = 3;
+
+const int QuotaManager::kEvictionIntervalInMilliSeconds =
+    30 * kMinutesInMilliSeconds;
+
+// Heuristics: assuming average cloud server allows a few Gigs storage
+// on the server side and the storage needs to be shared for user data
+// and by multiple apps.
+int64 QuotaManager::kSyncableStorageDefaultHostQuota = 500 * kMBytes;
+
+namespace {
+
 void CountOriginType(const std::set<GURL>& origins,
                      SpecialStoragePolicy* policy,
                      size_t* protected_origins,
@@ -159,35 +191,35 @@ int64 CallSystemGetAmountOfFreeDiskSpace(const base::FilePath& profile_path) {
   return base::SysInfo::AmountOfFreeDiskSpace(profile_path);
 }
 
-}  // anonymous namespace
+int64 CalculateTemporaryGlobalQuota(int64 global_usage,
+                                    int64 global_unlimited_usage,
+                                    int64 available_space) {
+    DCHECK_GE(global_usage, global_unlimited_usage);
+    int64 limited_usage = global_usage - global_unlimited_usage;
+    int64 avail_space = available_space;
+    if (avail_space < kint64max - limited_usage) {
+      // We basically calculate the temporary quota by
+      // [available_space + space_used_for_temp] * kTempQuotaRatio,
+      // but make sure we'll have no overflow.
+      avail_space += limited_usage;
+    }
+    return avail_space * kTemporaryQuotaRatioToAvail;
+}
 
-// Arbitrary for now, but must be reasonably small so that
-// in-memory databases can fit.
-// TODO(kinuko): Refer SysInfo::AmountOfPhysicalMemory() to determine this.
-const int64 QuotaManager::kIncognitoDefaultQuotaLimit = 100 * kMBytes;
+void DispatchTemporaryGlobalQuotaCallback(
+    const QuotaCallback& callback,
+    QuotaStatusCode status,
+    const UsageAndQuota& usage_and_quota) {
+  if (status != kQuotaStatusOk) {
+    callback.Run(status, 0);
+    return;
+  }
 
-const int64 QuotaManager::kNoLimit = kint64max;
-
-const int QuotaManager::kPerHostTemporaryPortion = 5;  // 20%
-
-const char QuotaManager::kDatabaseName[] = "QuotaManager";
-
-// Preserve kMinimumPreserveForSystem disk space for system book-keeping
-// when returning the quota to unlimited apps/extensions.
-// TODO(kinuko): This should be like 10% of the actual disk space.
-// For now we simply use a constant as getting the disk size needs
-// platform-dependent code. (http://crbug.com/178976)
-const int64 QuotaManager::kMinimumPreserveForSystem = 1024 * kMBytes;
-
-const int QuotaManager::kThresholdOfErrorsToBeBlacklisted = 3;
-
-const int QuotaManager::kEvictionIntervalInMilliSeconds =
-    30 * kMinutesInMilliSeconds;
-
-// Heuristics: assuming average cloud server allows a few Gigs storage
-// on the server side and the storage needs to be shared for user data
-// and by multiple apps.
-int64 QuotaManager::kSyncableStorageDefaultHostQuota = 500 * kMBytes;
+  callback.Run(status, CalculateTemporaryGlobalQuota(
+      usage_and_quota.global_usage,
+      usage_and_quota.global_unlimited_usage,
+      usage_and_quota.available_disk_space));
+}
 
 int64 CalculateQuotaWithDiskSpace(
     int64 available_disk_space, int64 usage, int64 quota) {
@@ -204,170 +236,194 @@ int64 CalculateQuotaWithDiskSpace(
   return quota;
 }
 
-// Callback translators.
-void CallGetUsageAndQuotaCallback(
-    const QuotaManager::GetUsageAndQuotaCallback& callback,
+int64 CalculateTemporaryHostQuota(int64 host_usage,
+                                  int64 global_quota,
+                                  int64 global_usage,
+                                  int64 global_unlimited_usage) {
+  DCHECK_GE(global_usage, global_unlimited_usage);
+    int64 limited_global_usage = global_usage - global_unlimited_usage;
+    int64 host_quota = global_quota / QuotaManager::kPerHostTemporaryPortion;
+    if (limited_global_usage > global_quota)
+      host_quota = std::min(host_quota, host_usage);
+    return host_quota;
+}
+
+void DispatchUsageAndQuotaForWebApps(
+    StorageType type,
     bool is_incognito,
-    bool unlimited,
+    bool is_unlimited,
     bool can_query_disk_size,
+    const QuotaManager::GetUsageAndQuotaCallback& callback,
     QuotaStatusCode status,
-    const QuotaAndUsage& quota_and_usage) {
-  // Incognito case.  Cap the quota by kIncognitoDefaultQuotaLimit, but
-  // no need to refer the actual disk size (because data will be stored
-  // in-memory in incognito mode).
+    const UsageAndQuota& usage_and_quota) {
+  if (status != kQuotaStatusOk) {
+    callback.Run(status, 0, 0);
+    return;
+  }
+
+  int64 usage = usage_and_quota.usage;
+  int64 quota = usage_and_quota.quota;
+
+  if (type == kStorageTypeTemporary) {
+    quota = CalculateTemporaryHostQuota(
+        usage, quota,
+        usage_and_quota.global_usage,
+        usage_and_quota.global_unlimited_usage);
+  }
+
   if (is_incognito) {
-    int64 quota = unlimited ? QuotaManager::kNoLimit : quota_and_usage.quota;
-    callback.Run(status,
-                 quota_and_usage.usage,
-                 std::min(quota, QuotaManager::kIncognitoDefaultQuotaLimit));
+    quota = std::min(quota, QuotaManager::kIncognitoDefaultQuotaLimit);
+    callback.Run(status, usage, quota);
     return;
   }
 
-  // Regular limited case.
-  if (!unlimited) {
-    if (can_query_disk_size) {
-      // Cap the quota by the available disk space.
-      callback.Run(status, quota_and_usage.usage,
-                   CalculateQuotaWithDiskSpace(
-                       quota_and_usage.available_disk_space,
-                       quota_and_usage.usage,
-                       quota_and_usage.quota));
-      return;
-    }
-    callback.Run(status, quota_and_usage.usage, quota_and_usage.quota);
+  // For apps with unlimited permission or can_query_disk_size is true (and not
+  // in incognito mode).
+  // We assume we can expose the actual disk size for them and cap the quota by
+  // the available disk space.
+  if (is_unlimited || can_query_disk_size) {
+    callback.Run(
+        status, usage,
+        CalculateQuotaWithDiskSpace(
+            usage_and_quota.available_disk_space,
+            usage, quota));
     return;
   }
 
-  // Unlimited case: this must be only for apps with unlimitedStorage permission
-  // or only when --unlimited-storage flag is given.
-  // We assume we can expose the disk size for them and return the available
-  // disk space (minus kMinimumPreserveForSystem).
-  int64 usage = quota_and_usage.unlimited_usage;
-  callback.Run(status, usage,
-               CalculateQuotaWithDiskSpace(
-                   quota_and_usage.available_disk_space,
-                   usage, QuotaManager::kNoLimit));
+  callback.Run(status, usage, quota);
 }
 
-void CallQuotaCallback(
-    const QuotaCallback& callback,
-    QuotaStatusCode status,
-    const QuotaAndUsage& quota_and_usage) {
-  callback.Run(status, quota_and_usage.quota);
-}
+}  // namespace
 
-QuotaAndUsage::QuotaAndUsage()
+UsageAndQuota::UsageAndQuota()
     : usage(0),
-      unlimited_usage(0),
+      global_usage(0),
+      global_unlimited_usage(0),
       quota(0),
       available_disk_space(0) {
 }
 
-QuotaAndUsage::QuotaAndUsage(
+UsageAndQuota::UsageAndQuota(
     int64 usage,
-    int64 unlimited_usage,
+    int64 global_usage,
+    int64 global_unlimited_usage,
     int64 quota,
     int64 available_disk_space)
     : usage(usage),
-      unlimited_usage(unlimited_usage),
+      global_usage(global_usage),
+      global_unlimited_usage(global_unlimited_usage),
       quota(quota),
       available_disk_space(available_disk_space) {
 }
 
-// static
-QuotaAndUsage QuotaAndUsage::CreateForUnlimitedStorage() {
-  return QuotaAndUsage(0, 0, QuotaManager::kNoLimit, QuotaManager::kNoLimit);
-}
-
-// This class is for posting GetUsage/GetQuota tasks, gathering
-// results and dispatching GetAndQuota callbacks.
-// This class is self-destructed.
-class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
+class UsageAndQuotaCallbackDispatcher
+    : public QuotaTask,
+      public base::SupportsWeakPtr<UsageAndQuotaCallbackDispatcher> {
  public:
-  typedef UsageAndQuotaDispatcherCallback Callback;
-  typedef std::deque<Callback> CallbackList;
+  UsageAndQuotaCallbackDispatcher(QuotaManager* manager)
+      : QuotaTask(manager),
+        has_usage_(false),
+        has_global_usage_(false),
+        has_quota_(false),
+        has_available_disk_space_(false),
+        status_(kQuotaStatusUnknown),
+        usage_and_quota_(-1, -1, -1, -1, -1),
+        waiting_callbacks_(1) {}
 
-  static UsageAndQuotaDispatcherTask* Create(
-      QuotaManager* manager,
-      bool global,
-      const HostAndType& host_and_type);
+  virtual ~UsageAndQuotaCallbackDispatcher() {}
 
-  // Returns true if it is the first call for this task; which means
-  // the caller needs to call Start().
-  bool AddCallback(const Callback& callback) {
-    callbacks_.push_back(callback);
-    return (callbacks_.size() == 1);
+  void WaitForResults(const QuotaManager::UsageAndQuotaCallback& callback) {
+    callback_ = callback;
+    Start();
   }
 
-  void DidGetGlobalUsage(StorageType type, int64 usage, int64 unlimited_usage) {
-    DCHECK_EQ(this->type(), type);
-    DCHECK_GE(usage, unlimited_usage);
-    if (quota_status_ == kQuotaStatusUnknown)
-      quota_status_ = kQuotaStatusOk;
-    global_usage_ = usage;
-    global_unlimited_usage_ = unlimited_usage;
+  void set_usage(int64 usage) {
+    usage_and_quota_.usage = usage;
+    has_usage_ = true;
+  }
+
+  void set_global_usage(int64 global_usage) {
+    usage_and_quota_.global_usage = global_usage;
+    has_global_usage_ = true;
+  }
+
+  void set_global_unlimited_usage(int64 global_unlimited_usage) {
+    usage_and_quota_.global_unlimited_usage = global_unlimited_usage;
+    has_global_usage_ = true;
+  }
+
+  void set_quota(int64 quota) {
+    usage_and_quota_.quota = quota;
+    has_quota_ = true;
+  }
+
+  void set_available_disk_space(int64 available_disk_space) {
+    usage_and_quota_.available_disk_space = available_disk_space;
+    has_available_disk_space_ = true;
+  }
+
+  UsageCallback GetHostUsageCallback() {
+    ++waiting_callbacks_;
+    has_usage_ = true;
+    return base::Bind(&UsageAndQuotaCallbackDispatcher::DidGetHostUsage,
+                      AsWeakPtr());
+  }
+
+  GlobalUsageCallback GetGlobalUsageCallback() {
+    ++waiting_callbacks_;
+    has_global_usage_ = true;
+    return base::Bind(&UsageAndQuotaCallbackDispatcher::DidGetGlobalUsage,
+                      AsWeakPtr());
+  }
+
+  QuotaCallback GetQuotaCallback() {
+    ++waiting_callbacks_;
+    has_quota_ = true;
+    return base::Bind(&UsageAndQuotaCallbackDispatcher::DidGetQuota,
+                      AsWeakPtr());
+  }
+
+  QuotaCallback GetAvailableSpaceCallback() {
+    ++waiting_callbacks_;
+    has_available_disk_space_ = true;
+    return base::Bind(&UsageAndQuotaCallbackDispatcher::DidGetAvailableSpace,
+                      AsWeakPtr());
+  }
+
+ private:
+  void DidGetHostUsage(int64 usage) {
+    if (status_ == kQuotaStatusUnknown)
+      status_ = kQuotaStatusOk;
+    usage_and_quota_.usage = usage;
     CheckCompleted();
   }
 
-  void DidGetHostUsage(const std::string& host, StorageType type, int64 usage) {
-    DCHECK_EQ(this->host(), host);
-    DCHECK_EQ(this->type(), type);
-    if (quota_status_ == kQuotaStatusUnknown)
-      quota_status_ = kQuotaStatusOk;
-    host_usage_ = usage;
+  void DidGetGlobalUsage(StorageType type,
+                         int64 usage,
+                         int64 unlimited_usage) {
+    if (status_ == kQuotaStatusUnknown)
+      status_ = kQuotaStatusOk;
+    usage_and_quota_.global_usage = usage;
+    usage_and_quota_.global_unlimited_usage = unlimited_usage;
     CheckCompleted();
   }
 
-  void DidGetHostQuota(const std::string& host,
-                       StorageType type,
-                       QuotaStatusCode status,
-                       int64 host_quota) {
-    DCHECK_EQ(this->host(), host);
-    DCHECK_EQ(this->type(), type);
-    if (quota_status_ == kQuotaStatusUnknown || quota_status_ == kQuotaStatusOk)
-      quota_status_ = status;
-    host_quota_ = host_quota;
+  void DidGetQuota(QuotaStatusCode status, int64 quota) {
+    if (status_ == kQuotaStatusUnknown || status_ == kQuotaStatusOk)
+      status_ = status;
+    usage_and_quota_.quota = quota;
     CheckCompleted();
   }
 
   void DidGetAvailableSpace(QuotaStatusCode status, int64 space) {
     DCHECK_GE(space, 0);
-    if (quota_status_ == kQuotaStatusUnknown || quota_status_ == kQuotaStatusOk)
-      quota_status_ = status;
-    available_space_ = space;
+    if (status_ == kQuotaStatusUnknown || status_ == kQuotaStatusOk)
+      status_ = status;
+    usage_and_quota_.available_disk_space = space;
     CheckCompleted();
   }
 
-  bool IsStartable() const {
-    return !started_ && !callbacks_.empty();
-  }
-
- protected:
-  UsageAndQuotaDispatcherTask(
-      QuotaManager* manager,
-      const HostAndType& host_and_type)
-      : QuotaTask(manager),
-        host_and_type_(host_and_type),
-        started_(false),
-        host_quota_(-1),
-        global_usage_(-1),
-        global_unlimited_usage_(-1),
-        host_usage_(-1),
-        available_space_(-1),
-        quota_status_(kQuotaStatusUnknown),
-        waiting_callbacks_(1),
-        weak_factory_(this) {}
-
-  virtual ~UsageAndQuotaDispatcherTask() {}
-
-  // Subclasses must implement them.
-  virtual void RunBody() = 0;
-  virtual void DispatchCallbacks() = 0;
-
   virtual void Run() OVERRIDE {
-    DCHECK(!started_);
-    started_ = true;
-    RunBody();
     // We initialize waiting_callbacks to 1 so that we won't run
     // the completion callback until here even some of the callbacks
     // are dispatched synchronously.
@@ -375,112 +431,41 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
   }
 
   virtual void Aborted() OVERRIDE {
-    CallCallbacksAndClear(kQuotaErrorAbort, 0, 0, 0, 0);
+    callback_.Run(kQuotaErrorAbort, UsageAndQuota());
     DeleteSoon();
   }
 
   virtual void Completed() OVERRIDE {
+    DCHECK(!has_usage_ || usage_and_quota_.usage >= 0);
+    DCHECK_LE(usage_and_quota_.global_unlimited_usage,
+              usage_and_quota_.global_usage);
+    DCHECK(!has_global_usage_ ||
+           usage_and_quota_.global_unlimited_usage >= 0);
+    DCHECK(!has_quota_ || usage_and_quota_.quota >= 0);
+    DCHECK(!has_available_disk_space_ ||
+           usage_and_quota_.available_disk_space >= 0);
+
+    callback_.Run(status_, usage_and_quota_);
     DeleteSoon();
   }
 
-  void CallCallbacksAndClear(
-      QuotaStatusCode status,
-      int64 usage, int64 unlimited_usage, int64 quota,
-      int64 available_space) {
-    QuotaAndUsage qau(usage, unlimited_usage, quota, available_space);
-    for (CallbackList::iterator iter = callbacks_.begin();
-         iter != callbacks_.end(); ++iter) {
-      (*iter).Run(status, qau);
-    }
-    callbacks_.clear();
-  }
-
-  QuotaManager* manager() const {
-    return static_cast<QuotaManager*>(observer());
-  }
-
-  std::string host() const { return host_and_type_.first; }
-  virtual StorageType type() const { return host_and_type_.second; }
-  int64 host_quota() const { return host_quota_; }
-  int64 global_usage() const { return global_usage_; }
-  int64 global_unlimited_usage() const { return global_unlimited_usage_; }
-  int64 host_usage() const { return host_usage_; }
-  int64 available_space() const { return available_space_; }
-  QuotaStatusCode quota_status() const { return quota_status_; }
-  CallbackList& callbacks() { return callbacks_; }
-
-  // The main logic that determines the temporary global quota.
-  int64 temporary_global_quota() const {
-    DCHECK_EQ(type(), kStorageTypeTemporary);
-    DCHECK(manager());
-    DCHECK_GE(global_usage(), global_unlimited_usage());
-    if (manager()->temporary_quota_override_ > 0) {
-      // If the user has specified an explicit temporary quota, use the value.
-      return manager()->temporary_quota_override_;
-    }
-    int64 limited_usage = global_usage() - global_unlimited_usage();
-    int64 avail_space = available_space();
-    if (avail_space < kint64max - limited_usage) {
-      // We basically calculate the temporary quota by
-      // [available_space + space_used_for_temp] * kTempQuotaRatio,
-      // but make sure we'll have no overflow.
-      avail_space += limited_usage;
-    }
-    return avail_space * kTemporaryQuotaRatioToAvail;
-  }
-
-  // Subclasses must call following methods to create a new 'waitable'
-  // callback, which decrements waiting_callbacks when it is called.
-  GlobalUsageCallback NewWaitableGlobalUsageCallback() {
-    ++waiting_callbacks_;
-    return base::Bind(&UsageAndQuotaDispatcherTask::DidGetGlobalUsage,
-                      weak_factory_.GetWeakPtr());
-  }
-  UsageCallback NewWaitableHostUsageCallback() {
-    ++waiting_callbacks_;
-    return base::Bind(&UsageAndQuotaDispatcherTask::DidGetHostUsage,
-                      weak_factory_.GetWeakPtr(), host(), type());
-  }
-  QuotaCallback NewWaitableHostQuotaCallback() {
-    ++waiting_callbacks_;
-    return base::Bind(&UsageAndQuotaDispatcherTask::DidGetHostQuota,
-                      weak_factory_.GetWeakPtr(), host(), type());
-  }
-  AvailableSpaceCallback NewWaitableAvailableSpaceCallback() {
-    ++waiting_callbacks_;
-    return base::Bind(&UsageAndQuotaDispatcherTask::DidGetAvailableSpace,
-                      weak_factory_.GetWeakPtr());
-  }
-
-
- private:
   void CheckCompleted() {
-    if (--waiting_callbacks_ <= 0) {
-      DispatchCallbacks();
-      DCHECK(callbacks_.empty());
-
-      UsageAndQuotaDispatcherTaskMap& dispatcher_map =
-          manager()->usage_and_quota_dispatchers_;
-      DCHECK(dispatcher_map.find(host_and_type_) != dispatcher_map.end());
-      dispatcher_map.erase(host_and_type_);
+    if (--waiting_callbacks_ <= 0)
       CallCompleted();
-    }
   }
 
-  const std::string host_;
-  const HostAndType host_and_type_;
-  bool started_;
-  int64 host_quota_;
-  int64 global_usage_;
-  int64 global_unlimited_usage_;
-  int64 host_usage_;
-  int64 available_space_;
-  QuotaStatusCode quota_status_;
-  CallbackList callbacks_;
-  int waiting_callbacks_;
-  base::WeakPtrFactory<UsageAndQuotaDispatcherTask> weak_factory_;
+  // For sanity checks, they're checked only when DCHECK is on.
+  bool has_usage_;
+  bool has_global_usage_;
+  bool has_quota_;
+  bool has_available_disk_space_;
 
-  DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaDispatcherTask);
+  QuotaStatusCode status_;
+  UsageAndQuota usage_and_quota_;
+  QuotaManager::UsageAndQuotaCallback callback_;
+  int waiting_callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaCallbackDispatcher);
 };
 
 class QuotaManager::GetUsageInfoTask : public QuotaTask {
@@ -549,135 +534,6 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
 
   DISALLOW_COPY_AND_ASSIGN(GetUsageInfoTask);
 };
-
-class QuotaManager::UsageAndQuotaDispatcherTaskForTemporary
-    : public QuotaManager::UsageAndQuotaDispatcherTask {
- public:
-  UsageAndQuotaDispatcherTaskForTemporary(
-      QuotaManager* manager, const HostAndType& host_and_type)
-      : UsageAndQuotaDispatcherTask(manager, host_and_type) {}
-
- protected:
-  virtual void RunBody() OVERRIDE {
-    manager()->GetUsageTracker(type())->GetGlobalUsage(
-        NewWaitableGlobalUsageCallback());
-    manager()->GetUsageTracker(type())->GetHostUsage(
-        host(), NewWaitableHostUsageCallback());
-    manager()->GetAvailableSpace(NewWaitableAvailableSpaceCallback());
-  }
-
-  virtual void DispatchCallbacks() OVERRIDE {
-    // Allow an individual host to utilize a fraction of the total
-    // pool available for temp storage.
-    int64 host_quota = temporary_global_quota() / kPerHostTemporaryPortion;
-
-    // But if total temp usage is over-budget, stop letting new data in
-    // until we reclaim space.
-    DCHECK_GE(global_usage(), global_unlimited_usage());
-    int64 limited_global_usage = global_usage() - global_unlimited_usage();
-    if (limited_global_usage > temporary_global_quota())
-      host_quota = std::min(host_quota, host_usage());
-
-    CallCallbacksAndClear(quota_status(),
-                          host_usage(), host_usage(), host_quota,
-                          available_space());
-  }
-};
-
-class QuotaManager::UsageAndQuotaDispatcherTaskForPersistent
-    : public QuotaManager::UsageAndQuotaDispatcherTask {
- public:
-  UsageAndQuotaDispatcherTaskForPersistent(
-      QuotaManager* manager, const HostAndType& host_and_type)
-      : UsageAndQuotaDispatcherTask(manager, host_and_type) {}
-
- protected:
-  virtual void RunBody() OVERRIDE {
-    manager()->GetUsageTracker(type())->GetHostUsage(
-        host(), NewWaitableHostUsageCallback());
-    manager()->GetPersistentHostQuota(
-        host(), NewWaitableHostQuotaCallback());
-    manager()->GetAvailableSpace(NewWaitableAvailableSpaceCallback());
-  }
-
-  virtual void DispatchCallbacks() OVERRIDE {
-    CallCallbacksAndClear(quota_status(),
-                          host_usage(), host_usage(), host_quota(),
-                          available_space());
-  }
-};
-
-class QuotaManager::UsageAndQuotaDispatcherTaskForSyncable
-    : public QuotaManager::UsageAndQuotaDispatcherTask {
- public:
-  UsageAndQuotaDispatcherTaskForSyncable(
-      QuotaManager* manager, const HostAndType& host_and_type)
-      : UsageAndQuotaDispatcherTask(manager, host_and_type) {}
-
- protected:
-  virtual void RunBody() OVERRIDE {
-    manager()->GetUsageTracker(type())->GetHostUsage(
-        host(), NewWaitableHostUsageCallback());
-    manager()->GetAvailableSpace(NewWaitableAvailableSpaceCallback());
-  }
-
-  virtual void DispatchCallbacks() OVERRIDE {
-    // TODO(kinuko): We should reflect the backend's actual quota instead
-    // of returning a fixed default value.
-    CallCallbacksAndClear(quota_status(),
-                          host_usage(), host_usage(),
-                          kSyncableStorageDefaultHostQuota,
-                          available_space());
-  }
-};
-
-class QuotaManager::UsageAndQuotaDispatcherTaskForTemporaryGlobal
-    : public QuotaManager::UsageAndQuotaDispatcherTask {
- public:
-  UsageAndQuotaDispatcherTaskForTemporaryGlobal(
-      QuotaManager* manager, const HostAndType& host_and_type)
-      : UsageAndQuotaDispatcherTask(manager, host_and_type) {}
-
- protected:
-  virtual void RunBody() OVERRIDE {
-    manager()->GetUsageTracker(type())->GetGlobalUsage(
-        NewWaitableGlobalUsageCallback());
-    manager()->GetAvailableSpace(NewWaitableAvailableSpaceCallback());
-  }
-
-  virtual void DispatchCallbacks() OVERRIDE {
-    CallCallbacksAndClear(quota_status(),
-                          global_usage(), global_unlimited_usage(),
-                          temporary_global_quota(),
-                          available_space());
-  }
-
-  virtual StorageType type() const OVERRIDE { return kStorageTypeTemporary; }
-};
-
-// static
-QuotaManager::UsageAndQuotaDispatcherTask*
-QuotaManager::UsageAndQuotaDispatcherTask::Create(
-    QuotaManager* manager, bool global,
-    const QuotaManager::HostAndType& host_and_type) {
-  if (global)
-    return new UsageAndQuotaDispatcherTaskForTemporaryGlobal(
-        manager, host_and_type);
-  switch (host_and_type.second) {
-    case kStorageTypeTemporary:
-      return new UsageAndQuotaDispatcherTaskForTemporary(
-          manager, host_and_type);
-    case kStorageTypePersistent:
-      return new UsageAndQuotaDispatcherTaskForPersistent(
-          manager, host_and_type);
-    case kStorageTypeSyncable:
-      return new UsageAndQuotaDispatcherTaskForSyncable(
-          manager, host_and_type);
-    default:
-      NOTREACHED();
-  }
-  return NULL;
-}
 
 class QuotaManager::OriginDataDeleter : public QuotaTask {
  public:
@@ -979,13 +835,48 @@ void QuotaManager::GetUsageAndQuotaForWebApps(
     const GURL& origin,
     StorageType type,
     const GetUsageAndQuotaCallback& callback) {
+  if (type != kStorageTypeTemporary &&
+      type != kStorageTypePersistent &&
+      type != kStorageTypeSyncable) {
+    callback.Run(kQuotaErrorNotSupported, 0, 0);
+    return;
+  }
+
   DCHECK(origin == origin.GetOrigin());
-  GetUsageAndQuotaInternal(
-      origin, type, false /* global */,
-      base::Bind(&CallGetUsageAndQuotaCallback, callback,
-                 is_incognito_,
-                 IsStorageUnlimited(origin, type),
-                 CanQueryDiskSize(origin)));
+  LazyInitialize();
+
+  bool unlimited = IsStorageUnlimited(origin, type);
+  bool can_query_disk_size = CanQueryDiskSize(origin);
+
+  UsageAndQuotaCallbackDispatcher* dispatcher =
+      new UsageAndQuotaCallbackDispatcher(this);
+
+  UsageAndQuota usage_and_quota;
+  if (unlimited) {
+    dispatcher->set_quota(kNoLimit);
+  } else {
+    if (type == kStorageTypeTemporary) {
+      GetUsageTracker(type)->GetGlobalUsage(
+          dispatcher->GetGlobalUsageCallback());
+      GetTemporaryGlobalQuota(dispatcher->GetQuotaCallback());
+    } else if (type == kStorageTypePersistent) {
+      GetPersistentHostQuota(net::GetHostOrSpecFromURL(origin),
+                             dispatcher->GetQuotaCallback());
+    } else {
+      dispatcher->set_quota(kSyncableStorageDefaultHostQuota);
+    }
+  }
+
+  GetUsageTracker(type)->GetHostUsage(net::GetHostOrSpecFromURL(origin),
+                                      dispatcher->GetHostUsageCallback());
+
+  if (!is_incognito_ && (unlimited || can_query_disk_size))
+    GetAvailableSpace(dispatcher->GetAvailableSpaceCallback());
+
+  dispatcher->WaitForResults(base::Bind(
+      &DispatchUsageAndQuotaForWebApps,
+      type, is_incognito_, unlimited, can_query_disk_size,
+      callback));
 }
 
 void QuotaManager::GetUsageAndQuota(
@@ -994,10 +885,7 @@ void QuotaManager::GetUsageAndQuota(
   DCHECK(origin == origin.GetOrigin());
 
   if (IsStorageUnlimited(origin, type)) {
-    CallGetUsageAndQuotaCallback(
-        callback, is_incognito_,
-        false /* unlimited */, CanQueryDiskSize(origin),
-        kQuotaStatusOk, QuotaAndUsage::CreateForUnlimitedStorage());
+    callback.Run(kQuotaStatusOk, 0, kNoLimit);
     return;
   }
 
@@ -1073,23 +961,38 @@ void QuotaManager::DeleteHostData(const std::string& host,
 }
 
 void QuotaManager::GetAvailableSpace(const AvailableSpaceCallback& callback) {
+  if (!available_space_callbacks_.Add(callback))
+    return;
+
   PostTaskAndReplyWithResult(
       db_thread_,
       FROM_HERE,
       base::Bind(get_disk_space_fn_, profile_path_),
       base::Bind(&QuotaManager::DidGetAvailableSpace,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void QuotaManager::GetTemporaryGlobalQuota(const QuotaCallback& callback) {
+  LazyInitialize();
+  if (!temporary_quota_initialized_) {
+    db_initialization_callbacks_.Add(base::Bind(
+        &QuotaManager::GetTemporaryGlobalQuota,
+        weak_factory_.GetWeakPtr(), callback));
+    return;
+  }
+
   if (temporary_quota_override_ > 0) {
     callback.Run(kQuotaStatusOk, temporary_quota_override_);
     return;
   }
-  GetUsageAndQuotaInternal(
-      GURL(), kStorageTypeTemporary, true /* global */,
-      base::Bind(&CallQuotaCallback, callback));
+
+  UsageAndQuotaCallbackDispatcher* dispatcher =
+      new UsageAndQuotaCallbackDispatcher(this);
+  GetGlobalUsage(kStorageTypeTemporary,
+                 dispatcher->GetGlobalUsageCallback());
+  GetAvailableSpace(dispatcher->GetAvailableSpaceCallback());
+  dispatcher->WaitForResults(
+      base::Bind(&DispatchTemporaryGlobalQuotaCallback, callback));
 }
 
 void QuotaManager::SetTemporaryGlobalOverrideQuota(
@@ -1130,6 +1033,9 @@ void QuotaManager::GetPersistentHostQuota(const std::string& host,
     return;
   }
 
+  if (!persistent_host_quota_callbacks_.Add(host, callback))
+    return;
+
   int64* quota_ptr = new int64(0);
   PostTaskAndReplyWithResultForDBThread(
       FROM_HERE,
@@ -1138,7 +1044,6 @@ void QuotaManager::GetPersistentHostQuota(const std::string& host,
                  base::Unretained(quota_ptr)),
       base::Bind(&QuotaManager::DidGetPersistentHostQuota,
                  weak_factory_.GetWeakPtr(),
-                 callback,
                  host,
                  base::Owned(quota_ptr)));
 }
@@ -1367,46 +1272,6 @@ void QuotaManager::NotifyStorageModifiedInternal(
                  weak_factory_.GetWeakPtr()));
 }
 
-void QuotaManager::GetUsageAndQuotaInternal(
-    const GURL& origin, StorageType type, bool global,
-    const UsageAndQuotaDispatcherCallback& callback) {
-  LazyInitialize();
-
-  StorageType requested_type = type;
-  if (type == kStorageTypeUnknown) {
-    // Quota only supports temporary/persistent types.
-    callback.Run(kQuotaErrorNotSupported, QuotaAndUsage());
-    return;
-  }
-
-  // Special internal type for querying global usage and quota.
-  const int kStorageTypeTemporaryGlobal = kStorageTypeTemporary + 100;
-  if (global) {
-    DCHECK_EQ(kStorageTypeTemporary, type);
-    type = static_cast<StorageType>(kStorageTypeTemporaryGlobal);
-  }
-
-  std::string host = net::GetHostOrSpecFromURL(origin);
-  HostAndType host_and_type = std::make_pair(host, type);
-  UsageAndQuotaDispatcherTaskMap::iterator found =
-      usage_and_quota_dispatchers_.find(host_and_type);
-  if (found == usage_and_quota_dispatchers_.end()) {
-    UsageAndQuotaDispatcherTask* dispatcher =
-        UsageAndQuotaDispatcherTask::Create(this, global, host_and_type);
-    found = usage_and_quota_dispatchers_.insert(
-        std::make_pair(host_and_type, dispatcher)).first;
-  }
-  // Start the dispatcher if it is the first one and temporary_quota_override
-  // is already initialized iff the requested type is temporary.
-  // (The first dispatcher task for temporary will be kicked in
-  // DidInitialize if temporary_quota_initialized_ is false here.)
-  if (found->second->AddCallback(callback) &&
-      (requested_type != kStorageTypeTemporary ||
-       temporary_quota_initialized_)) {
-    found->second->Start();
-  }
-}
-
 void QuotaManager::DumpQuotaTable(const DumpQuotaTableCallback& callback) {
   DumpQuotaTableHelper* helper = new DumpQuotaTableHelper;
   PostTaskAndReplyWithResultForDBThread(
@@ -1583,10 +1448,16 @@ void QuotaManager::EvictOriginData(
 }
 
 void QuotaManager::GetUsageAndQuotaForEviction(
-    const GetUsageAndQuotaForEvictionCallback& callback) {
+    const UsageAndQuotaCallback& callback) {
   DCHECK(io_thread_->BelongsToCurrentThread());
-  GetUsageAndQuotaInternal(
-      GURL(), kStorageTypeTemporary, true /* global */, callback);
+
+  UsageAndQuotaCallbackDispatcher* dispatcher =
+      new UsageAndQuotaCallbackDispatcher(this);
+  GetGlobalUsage(kStorageTypeTemporary,
+                 dispatcher->GetGlobalUsageCallback());
+  GetTemporaryGlobalQuota(dispatcher->GetQuotaCallback());
+  GetAvailableSpace(dispatcher->GetAvailableSpaceCallback());
+  dispatcher->WaitForResults(callback);
 }
 
 void QuotaManager::DidSetTemporaryGlobalOverrideQuota(
@@ -1606,12 +1477,12 @@ void QuotaManager::DidSetTemporaryGlobalOverrideQuota(
   callback.Run(status, *new_quota);
 }
 
-void QuotaManager::DidGetPersistentHostQuota(const QuotaCallback& callback,
-                                             const std::string& host,
+void QuotaManager::DidGetPersistentHostQuota(const std::string& host,
                                              const int64* quota,
                                              bool success) {
   DidDatabaseWork(success);
-  callback.Run(kQuotaStatusOk, *quota);
+  persistent_host_quota_callbacks_.Run(
+      host, MakeTuple(kQuotaStatusOk, *quota));
 }
 
 void QuotaManager::DidSetPersistentHostQuota(const std::string& host,
@@ -1635,19 +1506,7 @@ void QuotaManager::DidInitialize(int64* temporary_quota_override,
                              kReportHistogramInterval),
                          this, &QuotaManager::ReportHistogram);
 
-  DCHECK(temporary_quota_initialized_);
-
-  // Kick the tasks that have been waiting for the
-  // temporary_quota_initialized_ to be initialized (if there're any).
-  for (UsageAndQuotaDispatcherTaskMap::iterator iter =
-           usage_and_quota_dispatchers_.begin();
-       iter != usage_and_quota_dispatchers_.end(); ++iter) {
-    if (iter->second->IsStartable())
-      iter->second->Start();
-  }
-
-  // Kick the first GetTemporaryGlobalQuota. This internally fetches (and
-  // caches) the usage of all origins and checks the available disk space.
+  db_initialization_callbacks_.Run(MakeTuple());
   GetTemporaryGlobalQuota(
       base::Bind(&QuotaManager::DidGetInitialTemporaryGlobalQuota,
                  weak_factory_.GetWeakPtr()));
@@ -1690,9 +1549,8 @@ void QuotaManager::DidInitializeTemporaryOriginsInfo(bool success) {
     StartEviction();
 }
 
-void QuotaManager::DidGetAvailableSpace(const AvailableSpaceCallback& callback,
-                                        int64 space) {
-  callback.Run(kQuotaStatusOk, space);
+void QuotaManager::DidGetAvailableSpace(int64 space) {
+  available_space_callbacks_.Run(MakeTuple(kQuotaStatusOk, space));
 }
 
 void QuotaManager::DidDatabaseWork(bool success) {

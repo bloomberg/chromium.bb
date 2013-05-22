@@ -46,18 +46,19 @@ class UsageTracker;
 
 struct QuotaManagerDeleter;
 
-struct WEBKIT_STORAGE_EXPORT QuotaAndUsage {
+struct WEBKIT_STORAGE_EXPORT UsageAndQuota {
   int64 usage;
-  int64 unlimited_usage;
+  int64 global_usage;
+  int64 global_unlimited_usage;
   int64 quota;
   int64 available_disk_space;
 
-  QuotaAndUsage();
-  QuotaAndUsage(int64 usage,
-                int64 unlimited_usage,
+  UsageAndQuota();
+  UsageAndQuota(int64 usage,
+                int64 global_usage,
+                int64 global_unlimited_usage,
                 int64 quota,
                 int64 available_disk_space);
-  static QuotaAndUsage CreateForUnlimitedStorage();
 };
 
 // An interface called by QuotaTemporaryStorageEvictor.
@@ -65,9 +66,9 @@ class WEBKIT_STORAGE_EXPORT QuotaEvictionHandler {
  public:
   typedef base::Callback<void(const GURL&)> GetLRUOriginCallback;
   typedef StatusCallback EvictOriginDataCallback;
-  typedef base::Callback<void(QuotaStatusCode,
-                              const QuotaAndUsage& quota_and_usage)>
-      GetUsageAndQuotaForEvictionCallback;
+  typedef base::Callback<void(QuotaStatusCode status,
+                              const UsageAndQuota& usage_and_quota)>
+      UsageAndQuotaCallback;
 
   // Returns the least recently used origin.  It might return empty
   // GURL when there are no evictable origins.
@@ -81,7 +82,7 @@ class WEBKIT_STORAGE_EXPORT QuotaEvictionHandler {
       const EvictOriginDataCallback& callback) = 0;
 
   virtual void GetUsageAndQuotaForEviction(
-      const GetUsageAndQuotaForEvictionCallback& callback) = 0;
+      const UsageAndQuotaCallback& callback) = 0;
 
  protected:
   virtual ~QuotaEvictionHandler() {}
@@ -252,11 +253,6 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
   friend struct QuotaManagerDeleter;
 
   class GetUsageInfoTask;
-  class UsageAndQuotaDispatcherTask;
-  class UsageAndQuotaDispatcherTaskForTemporary;
-  class UsageAndQuotaDispatcherTaskForPersistent;
-  class UsageAndQuotaDispatcherTaskForSyncable;
-  class UsageAndQuotaDispatcherTaskForTemporaryGlobal;
 
   class OriginDataDeleter;
   class HostDataDeleter;
@@ -288,11 +284,7 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
     EvictOriginDataCallback evict_origin_data_callback;
   };
 
-  typedef std::pair<std::string, StorageType> HostAndType;
-  typedef std::map<HostAndType, UsageAndQuotaDispatcherTask*>
-      UsageAndQuotaDispatcherTaskMap;
-
-  typedef QuotaEvictionHandler::GetUsageAndQuotaForEvictionCallback
+  typedef QuotaEvictionHandler::UsageAndQuotaCallback
       UsageAndQuotaDispatcherCallback;
 
   // This initialization method is lazily called on the IO thread
@@ -325,13 +317,6 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
       int64 delta,
       base::Time modified_time);
 
-  // |origin| can be empty if |global| is true.
-  void GetUsageAndQuotaInternal(
-      const GURL& origin,
-      StorageType type,
-      bool global,
-      const UsageAndQuotaDispatcherCallback& callback);
-
   void DumpQuotaTable(const DumpQuotaTableCallback& callback);
   void DumpOriginInfoTable(const DumpOriginInfoTableCallback& callback);
 
@@ -358,13 +343,12 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
       StorageType type,
       const EvictOriginDataCallback& callback) OVERRIDE;
   virtual void GetUsageAndQuotaForEviction(
-      const GetUsageAndQuotaForEvictionCallback& callback) OVERRIDE;
+      const UsageAndQuotaCallback& callback) OVERRIDE;
 
   void DidSetTemporaryGlobalOverrideQuota(const QuotaCallback& callback,
                                           const int64* new_quota,
                                           bool success);
-  void DidGetPersistentHostQuota(const QuotaCallback& callback,
-                                 const std::string& host,
+  void DidGetPersistentHostQuota(const std::string& host,
                                  const int64* quota,
                                  bool success);
   void DidSetPersistentHostQuota(const std::string& host,
@@ -379,8 +363,7 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
   void DidGetInitialTemporaryGlobalQuota(QuotaStatusCode status,
                                          int64 quota_unused);
   void DidInitializeTemporaryOriginsInfo(bool success);
-  void DidGetAvailableSpace(const AvailableSpaceCallback& callback,
-                            int64 space);
+  void DidGetAvailableSpace(int64 space);
   void DidDatabaseWork(bool success);
 
   void DeleteOnCorrectThread() const;
@@ -414,7 +397,10 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
   scoped_ptr<QuotaTemporaryStorageEvictor> temporary_storage_evictor_;
   EvictionContext eviction_context_;
 
-  UsageAndQuotaDispatcherTaskMap usage_and_quota_dispatchers_;
+  ClosureQueue db_initialization_callbacks_;
+  AvailableSpaceCallbackQueue available_space_callbacks_;
+  GlobalQuotaCallbackQueue temporary_global_quota_callbacks_;
+  HostQuotaCallbackMap persistent_host_quota_callbacks_;
 
   bool temporary_quota_initialized_;
   int64 temporary_quota_override_;

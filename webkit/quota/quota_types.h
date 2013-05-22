@@ -84,6 +84,13 @@ class CallbackQueue {
 typedef CallbackQueue<GlobalUsageCallback,
                       Tuple3<StorageType, int64, int64> >
     GlobalUsageCallbackQueue;
+typedef CallbackQueue<AvailableSpaceCallback,
+                      Tuple2<QuotaStatusCode, int64> >
+    AvailableSpaceCallbackQueue;
+typedef CallbackQueue<QuotaCallback,
+                      Tuple2<QuotaStatusCode, int64> >
+    GlobalQuotaCallbackQueue;
+typedef CallbackQueue<base::Closure, Tuple0> ClosureQueue;
 
 template <typename CallbackType, typename Key, typename Args>
 class CallbackQueueMap {
@@ -125,6 +132,9 @@ class CallbackQueueMap {
 
 typedef CallbackQueueMap<UsageCallback, std::string, Tuple1<int64> >
     HostUsageCallbackMap;
+typedef CallbackQueueMap<QuotaCallback, std::string,
+                         Tuple2<QuotaStatusCode, int64> >
+    HostQuotaCallbackMap;
 
 }  // namespace quota
 

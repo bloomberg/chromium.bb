@@ -47,15 +47,15 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
   }
 
   virtual void GetUsageAndQuotaForEviction(
-      const GetUsageAndQuotaForEvictionCallback& callback) OVERRIDE {
+      const UsageAndQuotaCallback& callback) OVERRIDE {
     if (error_on_get_usage_and_quota_) {
-      callback.Run(quota::kQuotaErrorInvalidAccess, QuotaAndUsage());
+      callback.Run(quota::kQuotaErrorInvalidAccess, UsageAndQuota());
       return;
     }
     if (!task_for_get_usage_and_quota_.is_null())
       task_for_get_usage_and_quota_.Run();
-    QuotaAndUsage quota_and_usage(
-        GetUsage(), unlimited_usage_, quota_, available_space_);
+    UsageAndQuota quota_and_usage(
+        0, GetUsage(), unlimited_usage_, quota_, available_space_);
     callback.Run(quota::kQuotaStatusOk, quota_and_usage);
   }
 

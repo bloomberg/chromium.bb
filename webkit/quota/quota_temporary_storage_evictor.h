@@ -19,7 +19,7 @@ class GURL;
 namespace quota {
 
 class QuotaEvictionHandler;
-struct QuotaAndUsage;
+struct UsageAndQuota;
 
 class WEBKIT_STORAGE_EXPORT_PRIVATE QuotaTemporaryStorageEvictor
     : public base::NonThreadSafe {
@@ -90,7 +90,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE QuotaTemporaryStorageEvictor
   void ConsiderEviction();
   void OnGotUsageAndQuotaForEviction(
       QuotaStatusCode status,
-      const QuotaAndUsage& quota_and_usage);
+      const UsageAndQuota& quota_and_usage);
   void OnGotLRUOrigin(const GURL& origin);
   void OnEvictionComplete(QuotaStatusCode status);
 

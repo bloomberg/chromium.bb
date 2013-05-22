@@ -358,12 +358,12 @@ class QuotaManagerTest : public testing::Test {
   }
 
   void DidGetUsageAndQuotaForEviction(QuotaStatusCode status,
-                                      const QuotaAndUsage& quota_and_usage) {
+                                      const UsageAndQuota& usage_and_quota) {
     quota_status_ = status;
-    usage_ = quota_and_usage.usage;
-    unlimited_usage_ = quota_and_usage.unlimited_usage;
-    quota_ = quota_and_usage.quota;
-    available_space_ = quota_and_usage.available_disk_space;
+    usage_ = usage_and_quota.global_usage;
+    unlimited_usage_ = usage_and_quota.global_unlimited_usage;
+    quota_ = usage_and_quota.quota;
+    available_space_ = usage_and_quota.available_disk_space;
   }
 
   void DidGetLRUOrigin(const GURL& origin) {
