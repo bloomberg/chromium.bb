@@ -136,7 +136,7 @@ void HTMLIFrameElement::didRecalcStyle(StyleChange styleChange)
     if (!shouldDisplaySeamlessly())
         return;
     Document* childDocument = contentDocument();
-    if (styleChange >= Inherit || childDocument->childNeedsStyleRecalc() || childDocument->needsStyleRecalc())
+    if (shouldRecalcStyle(styleChange, childDocument))
         contentDocument()->recalcStyle(styleChange);
 }
 
