@@ -360,47 +360,61 @@ def main(argv):
     chain = DriverChain(inputs, output, tng)
     chain.add(LinkBC, 'pre_opt.' + bitcode_type)
 
-    if env.getbool('STATIC'):
-      # ABI simplification passes.
-      passes = []
-      if not env.getbool('ALLOW_CXX_EXCEPTIONS'):
-        # '-lowerinvoke' prevents use of C++ exception handling, which
-        # is not yet supported in the PNaCl ABI.  '-simplifycfg'
-        # removes landingpad blocks made unreachable by
-        # '-lowerinvoke'.
-        passes += ['-lowerinvoke',
-                   '-simplifycfg']
-      if len(native_objects) == 0:
-        # These passes assume the whole program is available and should not be
-        # used if we are linking .o files, otherwise:
-        #  * -expand-varargs will mix calling conventions;
-        #  * -nacl-expand-ctors will drop constructors;
-        #  * -nacl-expand-tls leave TLS variables unconverted.
-        passes += ['-expand-varargs',
-                   '-nacl-expand-ctors',
-                   '-resolve-aliases',
-                   '-nacl-expand-tls',
-                   # Strip dead prototytes to appease the intrinsic ABI checks
-                   # (expand-varargs leaves around var-arg intrinsics).
-                   '-strip-dead-prototypes']
-        # Global cleanup needs to run after -expand-tls because
-        # __tls_template_start etc. are extern_weak before expansion.
-        # Disable this pass if build IDs are enabled so that
-        # __ehdr_start can remain as a weak external symbol.
-        if not env.getbool('ALLOW_NEXE_BUILD_ID'):
-          passes += ['-nacl-global-cleanup']
-      chain.add(DoLLVMPasses(passes), 'expand_features.' + bitcode_type)
+    # Some ABI simplification passes assume the whole program is
+    # available (e.g. -expand-varargs, -nacl-expand-ctors and
+    # -nacl-expand-tls).  While we could try running a subset of
+    # simplification passes when linking native objects or enabling
+    # C++ exception handling, we don't do this because it complicates
+    # testing.  For example, it requires '-expand-constant-expr' to be
+    # able to handle 'landingpad' instructions.
+    abi_simplify = (env.getbool('STATIC') and
+                    len(native_objects) == 0 and
+                    not env.getbool('ALLOW_CXX_EXCEPTIONS') and
+                    not env.getbool('ALLOW_NEXE_BUILD_ID'))
+
+    preopt_passes = []
+    if not env.getbool('ALLOW_CXX_EXCEPTIONS'):
+      # '-lowerinvoke' prevents use of C++ exception handling, which
+      # is not yet supported in the PNaCl ABI.  '-simplifycfg' removes
+      # landingpad blocks made unreachable by '-lowerinvoke'.
+      #
+      # We must run this even if abi_simplify is False in order to
+      # remove 'resume' instructions, otherwise these are translated
+      # to calls to _Unwind_Resume(), which will not be available at
+      # native link time.
+      preopt_passes += ['-lowerinvoke', '-simplifycfg']
+    if abi_simplify:
+      # TODO(mseaborn): Replace this list with
+      # '-pnacl-abi-simplify-preopt' when it is added on the LLVM side.
+      preopt_passes += [
+          '-expand-varargs',
+          '-nacl-expand-ctors',
+          '-resolve-aliases',
+          '-nacl-expand-tls',
+          # Global cleanup needs to run after expand-tls because
+          # __tls_template_start etc are extern_weak before expansion
+          '-nacl-global-cleanup',
+          # Strip dead prototytes to appease the intrinsic ABI checks
+          # (expand-varargs leaves around var-arg intrinsics).
+          '-strip-dead-prototypes',
+          ]
+    elif env.getbool('STATIC'):
+      # On x86-64, the native linker's TLS templates are not
+      # compatible with src/untrusted/nacl/tls.c because tls.c expects
+      # to find ELFCLASS32 ELF headers, and the native linker uses
+      # ELFCLASS64 on x86-64.  This means we must always run
+      # -nacl-expand-tls.  Note that running this means we do not
+      # support linking against native code that uses TLS variables.
+      preopt_passes += ['-nacl-expand-tls']
+    if len(preopt_passes) != 0:
+      chain.add(DoLLVMPasses(preopt_passes), 'simplify_preopt.' + bitcode_type)
 
     if env.getone('OPT_LEVEL') != '' and env.getone('OPT_LEVEL') != '0':
       chain.add(DoLTO, 'opt.' + bitcode_type)
     elif env.getone('STRIP_MODE') != 'none':
       chain.add(DoStrip, 'stripped.' + bitcode_type)
 
-    if env.getbool('STATIC'):
-      # ABI simplification passes.
-      passes = []
-      if len(native_objects) == 0:
-        passes += ['-expand-byval']
+    if abi_simplify:
       # We should not place arbitrary passes after
       # '-expand-constant-expr' because they might reintroduce
       # ConstantExprs.  However, '-expand-getelementptr' must follow
@@ -408,20 +422,23 @@ def main(argv):
       # instructions it creates.
       # We place '-strip-metadata' after optimization passes since
       # optimizations depend on the metadata.
-      passes += ['-strip-metadata',
-                 '-flatten-globals',
-                 '-expand-constant-expr',
-                 '-expand-getelementptr']
-      if (not env.getbool('DISABLE_ABI_CHECK') and
-          not env.getbool('ALLOW_CXX_EXCEPTIONS') and
-          not env.getbool('ALLOW_NEXE_BUILD_ID') and
-          len(native_objects) == 0):
-        passes += ['-verify-pnaclabi-module',
-                   '-verify-pnaclabi-functions',
-                   # A flag for the above -verify-pnaclabi-* passes.
-                   '-pnaclabi-allow-debug-metadata']
-      chain.add(DoLLVMPasses(passes),
-                'expand_features_after_opt.' + bitcode_type)
+      # TODO(mseaborn): Replace this list with
+      # '-pnacl-abi-simplify-postopt' when it is added on the LLVM side.
+      postopt_passes = [
+          '-expand-byval',
+          '-strip-metadata',
+          '-flatten-globals',
+          '-expand-constant-expr',
+          '-expand-getelementptr',
+          ]
+      if not env.getbool('DISABLE_ABI_CHECK'):
+        postopt_passes += [
+            '-verify-pnaclabi-module',
+            '-verify-pnaclabi-functions',
+            # A flag for the above -verify-pnaclabi-* passes.
+            '-pnaclabi-allow-debug-metadata']
+      chain.add(DoLLVMPasses(postopt_passes),
+                'simplify_postopt.' + bitcode_type)
   else:
     chain = DriverChain('', output, tng)
 
