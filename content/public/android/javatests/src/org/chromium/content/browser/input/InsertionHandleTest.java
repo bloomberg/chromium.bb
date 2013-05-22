@@ -12,25 +12,50 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.text.Editable;
 import android.text.Selection;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
 public class InsertionHandleTest extends ContentShellTestBase {
+    private static final String META_DISABLE_ZOOM =
+        "<meta name=\"viewport\" content=\"" +
+        "height=device-height," +
+        "width=device-width," +
+        "initial-scale=1.0," +
+        "minimum-scale=1.0," +
+        "maximum-scale=1.0," +
+        "\" />";
 
-    private static final String TEXTAREA_FILENAME =
-        "content/insertion_handle/editable_long_text.html";
     private static final String TEXTAREA_ID = "textarea";
-    private static final String INPUT_TEXT_FILENAME = "content/insertion_handle/input_text.html";
+    private static final String TEXTAREA_DATA_URL = UrlUtils.encodeHtmlDataUri(
+            "<html><head>" + META_DISABLE_ZOOM + "</head><body>" +
+            "<textarea id=\"" + TEXTAREA_ID + "\" cols=\"20\" rows=\"10\">" +
+            "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor " +
+            "incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud " +
+            "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute " +
+            "irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla " +
+            "pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui " +
+            "officia deserunt mollit anim id est laborum." +
+            "</textarea>" +
+            "</body></html>");
+
     private static final String INPUT_TEXT_ID = "input_text";
+    private static final String INPUT_TEXT_DATA_URL = UrlUtils.encodeHtmlDataUri(
+            "<html><head>" + META_DISABLE_ZOOM + "</head><body>" +
+            "<input id=\"input_text\" type=\"text\" value=\"" +
+            "T0D0(cjhopman): put amusing sample text here. Make sure it is at least " +
+            "100 characters.  123456789012345678901234567890\" size=20></input>" +
+            "</body></html>");
+
     // Offset to compensate for the fact that the handle is below the text.
     private static final int VERTICAL_OFFSET = 10;
     private static final int HANDLE_POSITION_TOLERANCE = 20;
@@ -48,20 +73,21 @@ public class InsertionHandleTest extends ContentShellTestBase {
         }));
     }
 
-    @Override
-    public void startActivityWithTestUrl(String filename) throws Throwable {
-        super.startActivityWithTestUrl(filename);
+    public void launchWithUrl(String url) throws Throwable {
+        super.launchContentShellWithUrl(url);
+        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
         assertWaitForPageScaleFactor(1);
+
+        // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is never
+        // brought up.
+        getImeAdapter().setInputMethodManagerWrapper(
+                new TestInputMethodManagerWrapper(getContentViewCore()));
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"TextSelection", "TextInput", "Main"})
-     * http://crbug.com/169648
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"TextSelection", "TextInput", "Main"})
     public void testUnselectHidesHandle() throws Throwable {
-        startActivityWithTestUrl(TEXTAREA_FILENAME);
+        launchWithUrl(TEXTAREA_DATA_URL);
         clickNodeToShowInsertionHandle(TEXTAREA_ID);
 
         // Unselecting should cause the handle to disappear.
@@ -69,14 +95,10 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertTrue(waitForHandleShowingEquals(false));
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"TextSelection", "TextInput", "Main"})
-     * http://crbug.com/169648
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"TextSelection", "TextInput", "Main"})
     public void testDragInsertionHandle() throws Throwable {
-        startActivityWithTestUrl(TEXTAREA_FILENAME);
+        launchWithUrl(TEXTAREA_DATA_URL);
 
         clickNodeToShowInsertionHandle(TEXTAREA_ID);
 
@@ -92,14 +114,10 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertWaitForHandleNear(dragToX, dragToY);
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"TextSelection", "TextInput"})
-     * http://crbug.com/169648
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"TextSelection", "TextInput", "Main"})
     public void testPasteAtInsertionHandle() throws Throwable {
-        startActivityWithTestUrl(TEXTAREA_FILENAME);
+        launchWithUrl(TEXTAREA_DATA_URL);
 
         clickNodeToShowInsertionHandle(TEXTAREA_ID);
 
@@ -115,14 +133,10 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertTrue(waitForHandleShowingEquals(false));
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"TextSelection", "TextInput", "Main"})
-     * http://crbug.com/169648
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"TextSelection", "TextInput", "Main"})
     public void testDragInsertionHandleInputText() throws Throwable {
-        startActivityWithTestUrl(INPUT_TEXT_FILENAME);
+        launchWithUrl(INPUT_TEXT_DATA_URL);
 
         clickNodeToShowInsertionHandle(INPUT_TEXT_ID);
 
@@ -146,14 +160,10 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertWaitForHandleNear(initialX, initialY);
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"TextSelection", "TextInput", "Main"})
-     * http://crbug.com/169648
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"TextSelection", "TextInput", "Main"})
     public void testDragInsertionHandleInputTextOutsideBounds() throws Throwable {
-        startActivityWithTestUrl(INPUT_TEXT_FILENAME);
+        launchWithUrl(INPUT_TEXT_DATA_URL);
 
         clickNodeToShowInsertionHandle(INPUT_TEXT_ID);
 
