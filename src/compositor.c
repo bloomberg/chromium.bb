@@ -93,6 +93,8 @@ sigchld_handler(int signal_number, void *data)
 
 static void
 weston_output_transform_init(struct weston_output *output, uint32_t transform);
+static void
+weston_output_scale_init(struct weston_output *output, uint32_t scale);
 
 WL_EXPORT int
 weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode)
@@ -113,6 +115,7 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 
 	/* Update output region and transformation matrix */
 	weston_output_transform_init(output, output->transform);
+	weston_output_scale_init(output, output->scale);
 
 	pixman_region32_init(&output->previous_damage);
 	pixman_region32_init_rect(&output->region, output->x, output->y,
@@ -291,7 +294,9 @@ weston_surface_create(struct weston_compositor *compositor)
 	}
 
 	surface->buffer_transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	surface->buffer_scale = 1;
 	surface->pending.buffer_transform = surface->buffer_transform;
+	surface->pending.buffer_scale = surface->buffer_scale;
 	surface->output = NULL;
 	surface->plane = &compositor->primary_plane;
 	surface->pending.newly_attached = 0;
@@ -360,6 +365,7 @@ weston_surface_to_global_float(struct weston_surface *surface,
 WL_EXPORT void
 weston_transformed_coord(int width, int height,
 			 enum wl_output_transform transform,
+			 uint32_t scale,
 			 float sx, float sy, float *bx, float *by)
 {
 	switch (transform) {
@@ -397,20 +403,24 @@ weston_transformed_coord(int width, int height,
 		*by = sx;
 		break;
 	}
+
+	*bx *= scale;
+	*by *= scale;
 }
 
 WL_EXPORT pixman_box32_t
 weston_transformed_rect(int width, int height,
 			enum wl_output_transform transform,
+			uint32_t scale,
 			pixman_box32_t rect)
 {
 	float x1, x2, y1, y2;
 
 	pixman_box32_t ret;
 
-	weston_transformed_coord(width, height, transform,
+	weston_transformed_coord(width, height, transform, scale,
 				 rect.x1, rect.y1, &x1, &y1);
-	weston_transformed_coord(width, height, transform,
+	weston_transformed_coord(width, height, transform, scale,
 				 rect.x2, rect.y2, &x2, &y2);
 
 	if (x1 <= x2) {
@@ -439,7 +449,23 @@ weston_surface_to_buffer_float(struct weston_surface *surface,
 	weston_transformed_coord(surface->geometry.width,
 				 surface->geometry.height,
 				 surface->buffer_transform,
+				 surface->buffer_scale,
 				 sx, sy, bx, by);
+}
+
+WL_EXPORT void
+weston_surface_to_buffer(struct weston_surface *surface,
+			 int sx, int sy, int *bx, int *by)
+{
+	float bxf, byf;
+
+	weston_transformed_coord(surface->geometry.width,
+				 surface->geometry.height,
+				 surface->buffer_transform,
+				 surface->buffer_scale,
+				 sx, sy, &bxf, &byf);
+	*bx = floorf(bxf);
+	*by = floorf(byf);
 }
 
 WL_EXPORT pixman_box32_t
@@ -448,7 +474,9 @@ weston_surface_to_buffer_rect(struct weston_surface *surface,
 {
 	return weston_transformed_rect(surface->geometry.width,
 				       surface->geometry.height,
-				       surface->buffer_transform, rect);
+				       surface->buffer_transform,
+				       surface->buffer_scale,
+				       rect);
 }
 
 WL_EXPORT void
@@ -877,29 +905,37 @@ weston_surface_is_mapped(struct weston_surface *surface)
 WL_EXPORT int32_t
 weston_surface_buffer_width(struct weston_surface *surface)
 {
+	int32_t width;
 	switch (surface->buffer_transform) {
 	case WL_OUTPUT_TRANSFORM_90:
 	case WL_OUTPUT_TRANSFORM_270:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		return surface->buffer_ref.buffer->height;
+		width = surface->buffer_ref.buffer->height;
+                break;
 	default:
-		return surface->buffer_ref.buffer->width;
+		width = surface->buffer_ref.buffer->width;
+                break;
 	}
+	return width / surface->buffer_scale;
 }
 
 WL_EXPORT int32_t
 weston_surface_buffer_height(struct weston_surface *surface)
 {
+	int32_t height;
 	switch (surface->buffer_transform) {
 	case WL_OUTPUT_TRANSFORM_90:
 	case WL_OUTPUT_TRANSFORM_270:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		return surface->buffer_ref.buffer->width;
+		height = surface->buffer_ref.buffer->width;
+                break;
 	default:
-		return surface->buffer_ref.buffer->height;
+		height = surface->buffer_ref.buffer->height;
+                break;
 	}
+	return height / surface->buffer_scale;
 }
 
 WL_EXPORT uint32_t
@@ -1485,25 +1521,28 @@ static void
 weston_surface_commit(struct weston_surface *surface)
 {
 	pixman_region32_t opaque;
-	int buffer_width = 0;
-	int buffer_height = 0;
+	int surface_width = 0;
+	int surface_height = 0;
 
-	/* wl_surface.set_buffer_rotation */
+	/* wl_surface.set_buffer_transform */
 	surface->buffer_transform = surface->pending.buffer_transform;
+
+	/* wl_surface.set_buffer_scale */
+	surface->buffer_scale = surface->pending.buffer_scale;
 
 	/* wl_surface.attach */
 	if (surface->pending.buffer || surface->pending.newly_attached)
 		weston_surface_attach(surface, surface->pending.buffer);
 
 	if (surface->buffer_ref.buffer) {
-		buffer_width = weston_surface_buffer_width(surface);
-		buffer_height = weston_surface_buffer_height(surface);
+		surface_width = weston_surface_buffer_width(surface);
+		surface_height = weston_surface_buffer_height(surface);
 	}
 
 	if (surface->configure && surface->pending.newly_attached)
 		surface->configure(surface,
 				   surface->pending.sx, surface->pending.sy,
-				   buffer_width, buffer_height);
+				   surface_width, surface_height);
 
 	if (surface->pending.buffer)
 		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
@@ -1588,6 +1627,16 @@ surface_set_buffer_transform(struct wl_client *client,
 	surface->pending.buffer_transform = transform;
 }
 
+static void
+surface_set_buffer_scale(struct wl_client *client,
+			 struct wl_resource *resource,
+			 uint32_t scale)
+{
+	struct weston_surface *surface = resource->data;
+
+	surface->pending.buffer_scale = scale;
+}
+
 static const struct wl_surface_interface surface_interface = {
 	surface_destroy,
 	surface_attach,
@@ -1596,7 +1645,8 @@ static const struct wl_surface_interface surface_interface = {
 	surface_set_opaque_region,
 	surface_set_input_region,
 	surface_commit,
-	surface_set_buffer_transform
+	surface_set_buffer_transform,
+	surface_set_buffer_scale
 };
 
 static void
@@ -1702,11 +1752,14 @@ weston_subsurface_commit_from_cache(struct weston_subsurface *sub)
 {
 	struct weston_surface *surface = sub->surface;
 	pixman_region32_t opaque;
-	int buffer_width = 0;
-	int buffer_height = 0;
+	int surface_width = 0;
+	int surface_height = 0;
 
-	/* wl_surface.set_buffer_rotation */
+	/* wl_surface.set_buffer_transform */
 	surface->buffer_transform = sub->cached.buffer_transform;
+
+	/* wl_surface.set_buffer_scale */
+	surface->buffer_scale = sub->cached.buffer_scale;
 
 	/* wl_surface.attach */
 	if (sub->cached.buffer_ref.buffer || sub->cached.newly_attached)
@@ -1714,13 +1767,13 @@ weston_subsurface_commit_from_cache(struct weston_subsurface *sub)
 	weston_buffer_reference(&sub->cached.buffer_ref, NULL);
 
 	if (surface->buffer_ref.buffer) {
-		buffer_width = weston_surface_buffer_width(surface);
-		buffer_height = weston_surface_buffer_height(surface);
+		surface_width = weston_surface_buffer_width(surface);
+		surface_height = weston_surface_buffer_height(surface);
 	}
 
 	if (surface->configure && sub->cached.newly_attached)
 		surface->configure(surface, sub->cached.sx, sub->cached.sy,
-				   buffer_width, buffer_height);
+				   surface_width, surface_height);
 	sub->cached.sx = 0;
 	sub->cached.sy = 0;
 	sub->cached.newly_attached = 0;
@@ -1797,6 +1850,7 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 	surface->pending.newly_attached = 0;
 
 	sub->cached.buffer_transform = surface->pending.buffer_transform;
+	sub->cached.buffer_scale = surface->pending.buffer_scale;
 
 	pixman_region32_copy(&sub->cached.opaque, &surface->pending.opaque);
 
@@ -2466,6 +2520,9 @@ bind_output(struct wl_client *client,
 				output->subpixel,
 				output->make, output->model,
 				output->transform);
+	if (version >= 2)
+		wl_output_send_scale(resource,
+				     output->scale);
 
 	wl_list_for_each (mode, &output->mode_list, link) {
 		wl_output_send_mode(resource,
@@ -2474,6 +2531,9 @@ bind_output(struct wl_client *client,
 				    mode->height,
 				    mode->refresh);
 	}
+
+	if (version >= 2)
+		wl_output_send_done(resource);
 }
 
 WL_EXPORT void
@@ -2608,6 +2668,12 @@ weston_output_transform_init(struct weston_output *output, uint32_t transform)
 	}
 }
 
+static void
+weston_output_scale_init(struct weston_output *output, uint32_t scale)
+{
+        output->scale = scale;
+}
+
 WL_EXPORT void
 weston_output_move(struct weston_output *output, int x, int y)
 {
@@ -2622,7 +2688,8 @@ weston_output_move(struct weston_output *output, int x, int y)
 
 WL_EXPORT void
 weston_output_init(struct weston_output *output, struct weston_compositor *c,
-		   int x, int y, int width, int height, uint32_t transform)
+		   int x, int y, int width, int height, uint32_t transform,
+		   uint32_t scale)
 {
 	output->compositor = c;
 	output->x = x;
@@ -2636,6 +2703,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->dirty = 1;
 
 	weston_output_transform_init(output, transform);
+	weston_output_scale_init(output, scale);
 	weston_output_init_zoom(output);
 
 	weston_output_move(output, x, y);

@@ -59,6 +59,7 @@
 static char *output_name;
 static char *output_mode;
 static char *output_transform;
+static char *output_scale;
 static int option_width;
 static int option_height;
 static int option_count;
@@ -68,6 +69,7 @@ struct x11_configured_output {
 	char *name;
 	int width, height;
 	uint32_t transform;
+	unsigned int scale;
 	struct wl_list link;
 };
 
@@ -125,6 +127,7 @@ struct x11_output {
 	int			shm_id;
 	void		       *buf;
 	uint8_t			depth;
+	uint32_t                scale;
 };
 
 static struct xkb_keymap *
@@ -534,8 +537,12 @@ x11_output_wait_for_map(struct x11_compositor *c, struct x11_output *output)
 			configure_notify =
 				(xcb_configure_notify_event_t *) event;
 
-			output->mode.width = configure_notify->width;
-			output->mode.height = configure_notify->height;
+
+			if (configure_notify->width % output->scale != 0 ||
+			    configure_notify->height % output->scale != 0)
+				weston_log("Resolution is not a multiple of screen size, rounding\n");
+			output->mode.width = configure_notify->width / output->scale;
+			output->mode.height = configure_notify->height / output->scale;
 			configured = 1;
 			break;
 		}
@@ -677,7 +684,7 @@ static struct x11_output *
 x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			     int width, int height, int fullscreen,
 			     int no_input, char *configured_name,
-			     uint32_t transform)
+			     uint32_t transform, uint32_t scale)
 {
 	static const char name[] = "Weston Compositor";
 	static const char class[] = "weston-1\0Weston Compositor";
@@ -686,6 +693,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	xcb_screen_iterator_t iter;
 	struct wm_normal_hints normal_hints;
 	struct wl_event_loop *loop;
+	int output_width, output_height;
 	uint32_t mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
 	xcb_atom_t atom_list[1];
 	uint32_t values[2] = {
@@ -693,6 +701,9 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 		XCB_EVENT_MASK_STRUCTURE_NOTIFY,
 		0
 	};
+
+	output_width = width * scale;
+	output_height = height * scale;
 
 	if (configured_name)
 		sprintf(title, "%s - %s", name, configured_name);
@@ -719,9 +730,13 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 
 	output->mode.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+	if (output->scale != 1)
+		output->mode.flags |= WL_OUTPUT_MODE_SCALED;
+
 	output->mode.width = width;
 	output->mode.height = height;
 	output->mode.refresh = 60000;
+	output->scale = scale;
 	wl_list_init(&output->base.mode_list);
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
@@ -733,7 +748,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			  output->window,
 			  iter.data->root,
 			  0, 0,
-			  width, height,
+			  output_width, output_height,
 			  0,
 			  XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			  iter.data->root_visual,
@@ -751,10 +766,10 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 		memset(&normal_hints, 0, sizeof normal_hints);
 		normal_hints.flags =
 			WM_NORMAL_HINTS_MAX_SIZE | WM_NORMAL_HINTS_MIN_SIZE;
-		normal_hints.min_width = width;
-		normal_hints.min_height = height;
-		normal_hints.max_width = width;
-		normal_hints.max_height = height;
+		normal_hints.min_width = output_width;
+		normal_hints.min_height = output_height;
+		normal_hints.max_width = output_width;
+		normal_hints.max_height = output_height;
 		xcb_change_property(c->conn, XCB_PROP_MODE_REPLACE, output->window,
 				    c->atom.wm_normal_hints,
 				    c->atom.wm_size_hints, 32,
@@ -794,10 +809,10 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.make = "xwayland";
 	output->base.model = "none";
 	weston_output_init(&output->base, &c->base,
-			   x, y, width, height, transform);
+			   x, y, width, height, transform, scale);
 
 	if (c->use_pixman) {
-		if (x11_output_init_shm(c, output, width, height) < 0)
+		if (x11_output_init_shm(c, output, output_width, output_height) < 0)
 			return NULL;
 		if (pixman_renderer_output_create(&output->base) < 0) {
 			x11_output_deinit_shm(c, output);
@@ -960,8 +975,8 @@ x11_output_transform_coordinate(struct x11_output *x11_output,
 {
 	struct weston_output *output = &x11_output->base;
 	wl_fixed_t tx, ty;
-	wl_fixed_t width = wl_fixed_from_int(output->width - 1);
-	wl_fixed_t height = wl_fixed_from_int(output->height - 1);
+	wl_fixed_t width = wl_fixed_from_int(output->width * output->scale - 1);
+	wl_fixed_t height = wl_fixed_from_int(output->height * output->scale - 1);
 
 	switch(output->transform) {
 	case WL_OUTPUT_TRANSFORM_NORMAL:
@@ -998,6 +1013,9 @@ x11_output_transform_coordinate(struct x11_output *x11_output,
 		ty = *x;
 		break;
 	}
+
+	tx /= output->scale;
+	ty /= output->scale;
 
 	tx += wl_fixed_from_int(output->x);
 	ty += wl_fixed_from_int(output->y);
@@ -1457,7 +1475,7 @@ x11_compositor_create(struct wl_display *display,
 						      option_height ? height :
 						      o->height,
 						      fullscreen, no_input,
-						      o->name, o->transform);
+						      o->name, o->transform, o->scale);
 		if (output == NULL)
 			goto err_x11_input;
 
@@ -1471,7 +1489,7 @@ x11_compositor_create(struct wl_display *display,
 	for (i = output_count; i < count; i++) {
 		output = x11_compositor_create_output(c, x, 0, width, height,
 						      fullscreen, no_input, NULL,
-						      WL_OUTPUT_TRANSFORM_NORMAL);
+						      WL_OUTPUT_TRANSFORM_NORMAL, wl_fixed_from_int(1));
 		if (output == NULL)
 			goto err_x11_input;
 		x = pixman_region32_extents(&output->base.region)->x2;
@@ -1536,7 +1554,7 @@ output_section_done(void *data)
 	output = malloc(sizeof *output);
 
 	if (!output || !output_name || (output_name[0] != 'X') ||
-				(!output_mode && !output_transform)) {
+				(!output_mode && !output_transform && !output_scale)) {
 		if (output_name)
 			free(output_name);
 		output_name = NULL;
@@ -1559,6 +1577,16 @@ output_section_done(void *data)
 		output->height = 640;
 	}
 
+	output->scale = 1;
+	if (output_scale) {
+		if (sscanf(output_scale, "%d", &output->scale) != 1) {
+			weston_log("Invalid scale \"%s\" for output %s\n",
+				   output_scale, output_name);
+			x11_free_configured_output(output);
+			goto err_free;
+		}
+	}
+
 	x11_output_set_transform(output);
 
 	wl_list_insert(configured_output_list.prev, &output->link);
@@ -1570,6 +1598,7 @@ err_free:
 		free(output_transform);
 	output_mode = NULL;
 	output_transform = NULL;
+	output_scale = NULL;
 }
 
 WL_EXPORT struct weston_compositor *
@@ -1597,6 +1626,7 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		{ "name", CONFIG_KEY_STRING, &output_name },
 		{ "mode", CONFIG_KEY_STRING, &output_mode },
 		{ "transform", CONFIG_KEY_STRING, &output_transform },
+		{ "scale", CONFIG_KEY_STRING, &output_scale },
 	};
 
 	const struct config_section config_section[] = {

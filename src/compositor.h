@@ -183,7 +183,8 @@ struct weston_output {
 	char *make, *model, *serial_number;
 	uint32_t subpixel;
 	uint32_t transform;
-	
+	uint32_t scale;
+
 	struct weston_mode *current;
 	struct weston_mode *origin;
 	struct wl_list mode_list;
@@ -601,6 +602,9 @@ struct weston_subsurface {
 
 		/* wl_surface.set_buffer_transform */
 		uint32_t buffer_transform;
+
+		/* wl_surface.set_buffer_scale */
+		uint32_t buffer_scale;
 	} cached;
 
 	int synchronized;
@@ -704,6 +708,7 @@ struct weston_surface {
 
 	struct weston_buffer_reference buffer_ref;
 	uint32_t buffer_transform;
+	uint32_t buffer_scale;
 	int keep_buffer; /* bool for backends to prevent early release */
 
 	/* All the pending state, that wl_surface.commit will apply. */
@@ -729,6 +734,9 @@ struct weston_surface {
 
 		/* wl_surface.set_buffer_transform */
 		uint32_t buffer_transform;
+
+		/* wl_surface.set_scaling_factor */
+		uint32_t buffer_scale;
 	} pending;
 
 	/*
@@ -787,6 +795,10 @@ weston_surface_buffer_height(struct weston_surface *surface);
 WL_EXPORT void
 weston_surface_to_buffer_float(struct weston_surface *surface,
 			       float x, float y, float *bx, float *by);
+WL_EXPORT void
+weston_surface_to_buffer(struct weston_surface *surface,
+                         int sx, int sy, int *bx, int *by);
+
 pixman_box32_t
 weston_surface_to_buffer_rect(struct weston_surface *surface,
 			      pixman_box32_t rect);
@@ -1005,7 +1017,7 @@ void
 weston_output_move(struct weston_output *output, int x, int y);
 void
 weston_output_init(struct weston_output *output, struct weston_compositor *c,
-		   int x, int y, int width, int height, uint32_t transform);
+		   int x, int y, int width, int height, uint32_t transform, uint32_t scale);
 void
 weston_output_destroy(struct weston_output *output);
 
@@ -1136,10 +1148,12 @@ module_init(struct weston_compositor *compositor,
 void
 weston_transformed_coord(int width, int height,
 			 enum wl_output_transform transform,
+			 uint32_t scale,
 			 float sx, float sy, float *bx, float *by);
 pixman_box32_t
 weston_transformed_rect(int width, int height,
 			enum wl_output_transform transform,
+			uint32_t scale,
 			pixman_box32_t rect);
 
 #ifdef  __cplusplus

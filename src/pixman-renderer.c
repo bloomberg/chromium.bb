@@ -105,6 +105,36 @@ pixman_renderer_read_pixels(struct weston_output *output,
 }
 
 static void
+box_scale(pixman_box32_t *dst, int scale)
+{
+	dst->x1 *= scale;
+	dst->x2 *= scale;
+	dst->y1 *= scale;
+	dst->y2 *= scale;
+}
+
+static void
+scale_region (pixman_region32_t *region, int scale)
+{
+	pixman_box32_t *rects, *scaled_rects;
+	int nrects, i;
+
+	if (scale != 1)	{
+		rects = pixman_region32_rectangles(region, &nrects);
+		scaled_rects = calloc(nrects, sizeof(pixman_box32_t));
+
+		for (i = 0; i < nrects; i++) {
+			scaled_rects[i] = rects[i];
+			box_scale(&scaled_rects[i], scale);
+		}
+		pixman_region32_clear(region);
+
+		pixman_region32_init_rects (region, scaled_rects, nrects);
+		free (scaled_rects);
+	}
+}
+
+static void
 transform_region (pixman_region32_t *region, int width, int height, enum wl_output_transform transform)
 {
 	pixman_box32_t *rects, *transformed_rects;
@@ -180,6 +210,7 @@ region_global_to_output(struct weston_output *output, pixman_region32_t *region)
 {
 	pixman_region32_translate(region, -output->x, -output->y);
 	transform_region (region, output->width, output->height, output->transform);
+	scale_region (region, output->scale);
 }
 
 #define D2F(v) pixman_double_to_fixed((double)v)
@@ -229,9 +260,12 @@ repaint_region(struct weston_surface *es, struct weston_output *output,
 	pixman_image_set_clip_region32 (po->shadow_image, &final_region);
 
 	/* Set up the source transformation based on the surface
-	   position, the output position/transform and the client
-	   specified buffer transform */
+	   position, the output position/transform/scale and the client
+	   specified buffer transform/scale */
 	pixman_transform_init_identity(&transform);
+	pixman_transform_scale(&transform, NULL,
+			       pixman_double_to_fixed ((double)1.0/output->scale),
+			       pixman_double_to_fixed ((double)1.0/output->scale));
 
 	fw = pixman_int_to_fixed(output->width);
 	fh = pixman_int_to_fixed(output->height);
@@ -338,9 +372,13 @@ repaint_region(struct weston_surface *es, struct weston_output *output,
 		break;
 	}
 
+	pixman_transform_scale(&transform, NULL,
+			       pixman_double_to_fixed ((double)es->buffer_scale),
+			       pixman_double_to_fixed ((double)es->buffer_scale));
+
 	pixman_image_set_transform(ps->image, &transform);
 
-	if (es->transform.enabled)
+	if (es->transform.enabled || output->scale != es->buffer_scale)
 		pixman_image_set_filter(ps->image, PIXMAN_FILTER_BILINEAR, NULL, 0);
 	else
 		pixman_image_set_filter(ps->image, PIXMAN_FILTER_NEAREST, NULL, 0);
@@ -651,8 +689,8 @@ pixman_renderer_output_create(struct weston_output *output)
 		return -1;
 
 	/* set shadow image transformation */
-	w = output->current->width;
-	h = output->current->height;
+	w = output->current->width * output->scale;
+	h = output->current->height * output->scale;
 
 	po->shadow_buffer = malloc(w * h * 4);
 

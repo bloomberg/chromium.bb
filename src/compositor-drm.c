@@ -858,7 +858,8 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	box = pixman_region32_extents(&dest_rect);
 	tbox = weston_transformed_rect(output_base->width,
 				       output_base->height,
-				       output_base->transform, *box);
+				       output_base->transform,
+				       1, *box);
 	s->dest_x = tbox.x1;
 	s->dest_y = tbox.y1;
 	s->dest_w = tbox.x2 - tbox.x1;
@@ -895,7 +896,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 
 	tbox = weston_transformed_rect(wl_fixed_from_int(es->geometry.width),
 				       wl_fixed_from_int(es->geometry.height),
-				       es->buffer_transform, tbox);
+				       es->buffer_transform, 1, tbox);
 
 	s->src_x = tbox.x1 << 8;
 	s->src_y = tbox.y1 << 8;
@@ -1813,7 +1814,7 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	weston_output_init(&output->base, &ec->base, x, y,
 			   connector->mmWidth, connector->mmHeight,
-			   o ? o->transform : WL_OUTPUT_TRANSFORM_NORMAL);
+			   o ? o->transform : WL_OUTPUT_TRANSFORM_NORMAL, 1);
 
 	if (ec->use_pixman) {
 		if (drm_output_init_pixman(output, ec) < 0) {

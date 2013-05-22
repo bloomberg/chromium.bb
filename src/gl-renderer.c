@@ -68,6 +68,7 @@ struct gl_surface_state {
 
 	struct weston_buffer_reference buffer_ref;
 	int pitch; /* in pixels */
+	int height; /* in pixels */
 };
 
 struct gl_renderer {
@@ -552,17 +553,7 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 	vtxcnt = wl_array_add(&gr->vtxcnt, nrects * nsurf * sizeof *vtxcnt);
 
 	inv_width = 1.0 / gs->pitch;
-
-	switch (es->buffer_transform) {
-	case WL_OUTPUT_TRANSFORM_90:
-	case WL_OUTPUT_TRANSFORM_270:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		inv_height = 1.0 / es->geometry.width;
-		break;
-	default:
-		inv_height = 1.0 / es->geometry.height;
-	}
+        inv_height = 1.0 / gs->height;
 
 	for (i = 0; i < nrects; i++) {
 		pixman_box32_t *rect = &rects[i];
@@ -791,7 +782,7 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	use_shader(gr, gs->shader);
 	shader_uniforms(gs->shader, es, output);
 
-	if (es->transform.enabled || output->zoom.active)
+	if (es->transform.enabled || output->zoom.active || output->scale != es->buffer_scale)
 		filter = GL_LINEAR;
 	else
 		filter = GL_NEAREST;
@@ -1023,9 +1014,9 @@ gl_renderer_repaint_output(struct weston_output *output,
 	int32_t width, height;
 	pixman_region32_t buffer_damage, total_damage;
 
-	width = output->current->width +
+	width = output->current->width * output->scale +
 		output->border.left + output->border.right;
-	height = output->current->height +
+	height = output->current->height * output->scale +
 		output->border.top + output->border.bottom;
 
 	glViewport(0, 0, width, height);
@@ -1214,6 +1205,7 @@ gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 
 	if (wl_buffer_is_shm(buffer)) {
 		gs->pitch = wl_shm_buffer_get_stride(buffer) / 4;
+		gs->height = wl_shm_buffer_get_height(buffer);
 		gs->target = GL_TEXTURE_2D;
 
 		ensure_textures(gs, 1);
@@ -1279,6 +1271,7 @@ gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 		}
 
 		gs->pitch = buffer->width;
+		gs->height = buffer->height;
 	} else {
 		weston_log("unhandled buffer type!\n");
 		weston_buffer_reference(&gs->buffer_ref, NULL);

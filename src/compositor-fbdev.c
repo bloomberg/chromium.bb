@@ -537,7 +537,8 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 	weston_output_init(&output->base, &compositor->base,
 	                   0, 0, output->fb_info.width_mm,
 	                   output->fb_info.height_mm,
-	                   WL_OUTPUT_TRANSFORM_NORMAL);
+	                   WL_OUTPUT_TRANSFORM_NORMAL,
+			   1);
 
 	width = output->fb_info.x_resolution;
 	height = output->fb_info.y_resolution;

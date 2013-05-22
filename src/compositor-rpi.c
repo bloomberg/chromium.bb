@@ -1080,7 +1080,8 @@ rpi_output_create(struct rpi_compositor *compositor)
 
 	weston_output_init(&output->base, &compositor->base,
 			   0, 0, round(mm_width), round(mm_height),
-			   WL_OUTPUT_TRANSFORM_NORMAL);
+			   WL_OUTPUT_TRANSFORM_NORMAL,
+			   1);
 
 	if (gl_renderer_output_create(&output->base,
 			(EGLNativeWindowType)&output->egl_window) < 0)

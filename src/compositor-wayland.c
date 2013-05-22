@@ -267,7 +267,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 
 	output->base.current = &output->mode;
 	weston_output_init(&output->base, &c->base, 0, 0, width, height,
-						WL_OUTPUT_TRANSFORM_NORMAL);
+			   WL_OUTPUT_TRANSFORM_NORMAL, 1);
 
 	output->base.make = "waywayland";
 	output->base.model = "none";
