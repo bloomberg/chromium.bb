@@ -201,12 +201,10 @@ static void
 panel_launcher_redraw_handler(struct widget *widget, void *data)
 {
 	struct panel_launcher *launcher = data;
-	cairo_surface_t *surface;
 	struct rectangle allocation;
 	cairo_t *cr;
 
-	surface = window_get_surface(launcher->panel->window);
-	cr = cairo_create(surface);
+	cr = widget_cairo_create(launcher->panel->widget);
 
 	widget_get_allocation(widget, &allocation);
 	if (launcher->pressed) {
@@ -255,13 +253,13 @@ panel_redraw_handler(struct widget *widget, void *data)
 	cairo_t *cr;
 	struct panel *panel = data;
 
-	surface = window_get_surface(panel->window);
-	cr = cairo_create(surface);
+	cr = widget_cairo_create(panel->widget);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	set_hex_color(cr, key_panel_color);
 	cairo_paint(cr);
 
 	cairo_destroy(cr);
+	surface = window_get_surface(panel->window);
 	cairo_surface_destroy(surface);
 }
 
@@ -317,7 +315,6 @@ clock_func(struct task *task, uint32_t events)
 static void
 panel_clock_redraw_handler(struct widget *widget, void *data)
 {
-	cairo_surface_t *surface;
 	struct panel_clock *clock = data;
 	cairo_t *cr;
 	struct rectangle allocation;
@@ -335,8 +332,7 @@ panel_clock_redraw_handler(struct widget *widget, void *data)
 	if (allocation.width == 0)
 		return;
 
-	surface = window_get_surface(clock->panel->window);
-	cr = cairo_create(surface);
+	cr = widget_cairo_create(clock->panel->widget);
 	cairo_select_font_face(cr, "sans",
 			       CAIRO_FONT_SLANT_NORMAL,
 			       CAIRO_FONT_WEIGHT_NORMAL);
@@ -644,7 +640,7 @@ background_draw(struct widget *widget, void *data)
 
 	surface = window_get_surface(background->window);
 
-	cr = cairo_create(surface);
+	cr = widget_cairo_create(background->widget);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.2, 1.0);
 	cairo_paint(cr);
@@ -713,13 +709,12 @@ unlock_dialog_redraw_handler(struct widget *widget, void *data)
 {
 	struct unlock_dialog *dialog = data;
 	struct rectangle allocation;
-	cairo_t *cr;
 	cairo_surface_t *surface;
+	cairo_t *cr;
 	cairo_pattern_t *pat;
 	double cx, cy, r, f;
 
-	surface = window_get_surface(dialog->window);
-	cr = cairo_create(surface);
+	cr = widget_cairo_create(widget);
 
 	widget_get_allocation(dialog->widget, &allocation);
 	cairo_rectangle(cr, allocation.x, allocation.y,
@@ -752,6 +747,7 @@ unlock_dialog_redraw_handler(struct widget *widget, void *data)
 
 	cairo_destroy(cr);
 
+	surface = window_get_surface(dialog->window);
 	cairo_surface_destroy(surface);
 }
 
@@ -1025,6 +1021,57 @@ desktop_destroy_outputs(struct desktop *desktop)
 }
 
 static void
+output_handle_geometry(void *data,
+                       struct wl_output *wl_output,
+                       int x, int y,
+                       int physical_width,
+                       int physical_height,
+                       int subpixel,
+                       const char *make,
+                       const char *model,
+                       int transform)
+{
+	struct output *output = data;
+
+	window_set_buffer_transform(output->panel->window, transform);
+	window_set_buffer_transform(output->background->window, transform);
+}
+
+static void
+output_handle_mode(void *data,
+		   struct wl_output *wl_output,
+		   uint32_t flags,
+		   int width,
+		   int height,
+		   int refresh)
+{
+}
+
+static void
+output_handle_done(void *data,
+                   struct wl_output *wl_output)
+{
+}
+
+static void
+output_handle_scale(void *data,
+                    struct wl_output *wl_output,
+                    uint32_t scale)
+{
+	struct output *output = data;
+
+	window_set_buffer_scale(output->panel->window, scale);
+	window_set_buffer_scale(output->background->window, scale);
+}
+
+static const struct wl_output_listener output_listener = {
+	output_handle_geometry,
+	output_handle_mode,
+	output_handle_done,
+	output_handle_scale
+};
+
+static void
 create_output(struct desktop *desktop, uint32_t id)
 {
 	struct output *output;
@@ -1034,7 +1081,9 @@ create_output(struct desktop *desktop, uint32_t id)
 		return;
 
 	output->output =
-		display_bind(desktop->display, id, &wl_output_interface, 1);
+		display_bind(desktop->display, id, &wl_output_interface, 2);
+
+	wl_output_add_listener(output->output, &output_listener, output);
 
 	wl_list_insert(&desktop->outputs, &output->link);
 }
