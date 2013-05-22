@@ -2168,6 +2168,13 @@ other types of suffix sets.
   <summary>Measures the time taken for AudioOutputController::</summary>
 </histogram>
 
+<histogram name="Media.AudioOutputControllerDataNotReady" units="ms">
+  <summary>
+    Time spent waiting in AudioOutputController::WaitTillDataReady() if the data
+    was not initially available.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioRendererEvents" enum="AudioRendererEvents">
   <summary>Captures statistics for various AudioRendererImpl events.</summary>
 </histogram>
