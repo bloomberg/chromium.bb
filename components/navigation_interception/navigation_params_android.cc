@@ -9,7 +9,7 @@
 
 using base::android::ConvertUTF8ToJavaString;
 
-namespace components {
+namespace navigation_interception {
 
 base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationParams(
     JNIEnv* env,
@@ -31,4 +31,4 @@ bool RegisterNavigationParams(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace components
+}  // namespace navigation_interception

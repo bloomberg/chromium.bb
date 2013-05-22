@@ -78,6 +78,10 @@ using content::ResourceRequestInfo;
 using extensions::Extension;
 using extensions::StreamsPrivateAPI;
 
+#if defined(OS_ANDROID)
+using navigation_interception::InterceptNavigationDelegate;
+#endif
+
 namespace {
 
 void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
@@ -213,7 +217,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 #if defined(OS_ANDROID)
   if (!is_prerendering && resource_type == ResourceType::MAIN_FRAME) {
     throttles->push_back(
-        components::InterceptNavigationDelegate::CreateThrottleFor(request));
+        InterceptNavigationDelegate::CreateThrottleFor(request));
   }
 #endif
 #if defined(OS_CHROMEOS)

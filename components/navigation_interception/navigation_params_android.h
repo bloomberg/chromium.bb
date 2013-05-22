@@ -9,9 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "components/navigation_interception/navigation_params.h"
 
-class GURL;
-
-namespace components {
+namespace navigation_interception {
 
 base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationParams(
     JNIEnv* env,
@@ -19,6 +17,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationParams(
 
 bool RegisterNavigationParams(JNIEnv* env);
 
-}  // namespace components
+}  // namespace navigation_interception
 
 #endif  // COMPONENTS_NAVIGATION_INTERCEPTION_NAVIGATION_PARAMS_ANDROID_H_

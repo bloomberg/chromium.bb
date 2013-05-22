@@ -4,7 +4,7 @@
 
 #include "components/navigation_interception/navigation_params.h"
 
-namespace components {
+namespace navigation_interception {
 
 NavigationParams::NavigationParams(const NavigationParams& other) {
   Assign(other);
@@ -38,5 +38,5 @@ void NavigationParams::Assign(const NavigationParams& other) {
   is_redirect_ = other.is_redirect();
 }
 
-}  // namespace components
+}  // namespace navigation_interception
 

@@ -10,7 +10,7 @@
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 
-namespace components {
+namespace navigation_interception {
 
 class NavigationParams {
  public:
@@ -32,17 +32,16 @@ class NavigationParams {
   bool is_redirect() const { return is_redirect_; }
 
  private:
+  void Assign(const NavigationParams& other);
+
   GURL url_;
   content::Referrer referrer_;
   bool has_user_gesture_;
   bool is_post_;
   content::PageTransition transition_type_;
   bool is_redirect_;
-
-  void Assign(const NavigationParams& other);
 };
 
-}  // namespace components
+}  // namespace navigation_interception
 
 #endif  // COMPONENTS_NAVIGATION_INTERCEPTION_NAVIGATION_PARAMS_H_
-

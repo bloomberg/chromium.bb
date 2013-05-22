@@ -23,7 +23,7 @@ using content::PageTransition;
 using content::RenderViewHost;
 using content::WebContents;
 
-namespace components {
+namespace navigation_interception {
 
 namespace {
 
@@ -104,4 +104,4 @@ bool RegisterInterceptNavigationDelegate(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace components
+}  // namespace navigation_interception

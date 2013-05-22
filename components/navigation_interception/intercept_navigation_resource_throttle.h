@@ -21,7 +21,7 @@ namespace net {
 class URLRequest;
 }
 
-namespace components {
+namespace navigation_interception {
 
 class NavigationParams;
 
@@ -54,6 +54,6 @@ class InterceptNavigationResourceThrottle : public content::ResourceThrottle {
   DISALLOW_COPY_AND_ASSIGN(InterceptNavigationResourceThrottle);
 };
 
-}  // namespace components
+}  // namespace navigation_interception
 
 #endif  // COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_RESOURCE_THROTTLE_H_

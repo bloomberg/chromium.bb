@@ -24,8 +24,8 @@
 #include "net/url_request/url_request.h"
 
 using android_webview::AwContentsIoThreadClient;
-using components::InterceptNavigationDelegate;
 using content::BrowserThread;
+using navigation_interception::InterceptNavigationDelegate;
 
 namespace {
 

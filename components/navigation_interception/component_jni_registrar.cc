@@ -9,7 +9,7 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/navigation_interception/navigation_params_android.h"
 
-namespace components {
+namespace navigation_interception {
 
 static base::android::RegistrationMethod kComponentRegisteredMethods[] = {
   { "InterceptNavigationDelegate", RegisterInterceptNavigationDelegate },
@@ -17,8 +17,8 @@ static base::android::RegistrationMethod kComponentRegisteredMethods[] = {
 };
 
 bool RegisterNavigationInterceptionJni(JNIEnv* env) {
-  return RegisterNativeMethods(env,
-      kComponentRegisteredMethods, arraysize(kComponentRegisteredMethods));
+  return RegisterNativeMethods(
+      env, kComponentRegisteredMethods, arraysize(kComponentRegisteredMethods));
 }
 
-}  // namespace components
+}  // namespace navigation_interception

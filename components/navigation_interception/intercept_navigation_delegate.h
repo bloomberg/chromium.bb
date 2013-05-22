@@ -21,7 +21,7 @@ namespace net {
 class URLRequest;
 }
 
-namespace components {
+namespace navigation_interception {
 
 class NavigationParams;
 
@@ -64,6 +64,6 @@ class InterceptNavigationDelegate : public base::SupportsUserData::Data {
 
 bool RegisterInterceptNavigationDelegate(JNIEnv* env);
 
-}  // namespace components
+}  // namespace navigation_interception
 
 #endif  // COMPONENTS_NAVIGATION_INTERCEPTION_INTERCEPT_NAVIGATION_DELEGATE_H_

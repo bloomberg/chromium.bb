@@ -22,7 +22,7 @@ using content::Referrer;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
 
-namespace components {
+namespace navigation_interception {
 
 namespace {
 
@@ -125,4 +125,4 @@ void InterceptNavigationResourceThrottle::OnResultObtained(
   }
 }
 
-}  // namespace components
+}  // namespace navigation_interception

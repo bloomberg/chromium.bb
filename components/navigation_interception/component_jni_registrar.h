@@ -7,12 +7,12 @@
 
 #include <jni.h>
 
-namespace components {
+namespace navigation_interception {
 
 // Register all JNI bindings necessary for the navigation_interception
 // component.
 bool RegisterNavigationInterceptionJni(JNIEnv* env);
 
-}  // namespace components
+}  // namespace navigation_interception
 
 #endif  // COMPONENTS_NAVIGATION_INTERCEPTION_COMPONENT_JNI_REGISTRAR_H_

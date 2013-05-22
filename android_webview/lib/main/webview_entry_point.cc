@@ -14,7 +14,7 @@
 static base::android::RegistrationMethod
     kWebViewDependencyRegisteredMethods[] = {
     { "NavigationInterception",
-        components::RegisterNavigationInterceptionJni },
+        navigation_interception::RegisterNavigationInterceptionJni },
     { "WebContentsDelegateAndroid",
         components::RegisterWebContentsDelegateAndroidJni },
 };

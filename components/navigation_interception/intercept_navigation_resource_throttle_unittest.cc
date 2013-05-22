@@ -32,7 +32,7 @@ using testing::Property;
 using testing::Ne;
 using testing::Return;
 
-namespace components {
+namespace navigation_interception {
 
 namespace {
 
@@ -425,4 +425,4 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   message_loop_.Run();
 }
 
-}  // namespace components
+}  // namespace navigation_interception
