@@ -39,6 +39,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8RecursionScope.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/page/DOMWindow.h"
 #include "wtf/RefPtr.h"
@@ -76,9 +77,10 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHos
 
 ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSource, ScriptState* inspectedScriptState, int id)
 {
-    v8::HandleScope scope;
+    v8::HandleScope handleScope;
 
     v8::Local<v8::Context> inspectedContext = inspectedScriptState->context();
+    v8::Isolate* isolate = inspectedContext->GetIsolate();
     v8::Context::Scope contextScope(inspectedContext);
 
     // Call custom code to create InjectedScripHost wrapper specific for the context
@@ -89,25 +91,23 @@ ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSou
     if (scriptHostWrapper.IsEmpty())
         return ScriptObject();
 
-    v8::Local<v8::Object> windowGlobal = inspectedContext->Global();
-
     // Inject javascript into the context. The compiled script is supposed to evaluate into
     // a single anonymous function(it's anonymous to avoid cluttering the global object with
     // inspector's stuff) the function is called a few lines below with InjectedScriptHost wrapper,
     // injected script id and explicit reference to the inspected global object. The function is expected
     // to create and configure InjectedScript instance that is going to be used by the inspector.
-    v8::Local<v8::Script> script = v8::Script::Compile(v8String(scriptSource, inspectedContext->GetIsolate()));
-    V8RecursionScope::MicrotaskSuppression recursionScope;
-    v8::Local<v8::Value> v = script->Run();
-    ASSERT(!v.IsEmpty());
-    ASSERT(v->IsFunction());
+    v8::Local<v8::Value> value = V8ScriptRunner::compileAndRunInternalScript(v8String(scriptSource, isolate), isolate, inspectedContext);
+    ASSERT(!value.IsEmpty());
+    ASSERT(value->IsFunction());
 
+    V8RecursionScope::MicrotaskSuppression recursionScope;
+    v8::Local<v8::Object> windowGlobal = inspectedContext->Global();
     v8::Handle<v8::Value> args[] = {
       scriptHostWrapper,
       windowGlobal,
       v8::Number::New(id),
     };
-    v8::Local<v8::Value> injectedScriptValue = v8::Function::Cast(*v)->Call(windowGlobal, 3, args);
+    v8::Local<v8::Value> injectedScriptValue = v8::Function::Cast(*value)->Call(windowGlobal, 3, args);
     return ScriptObject(inspectedScriptState, v8::Handle<v8::Object>::Cast(injectedScriptValue));
 }
 
