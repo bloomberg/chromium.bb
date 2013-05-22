@@ -411,6 +411,22 @@ void GDataWapiService::RenameResource(
                                   new_name));
 }
 
+void GDataWapiService::TouchResource(
+    const std::string& resource_id,
+    const base::Time& modified_date,
+    const base::Time& last_viewed_by_me_date,
+    const GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!modified_date.is_null());
+  DCHECK(!last_viewed_by_me_date.is_null());
+  DCHECK(!callback.is_null());
+
+  // Unfortunately, there is no way to support this method on GData WAPI.
+  // So, this should always return an error.
+  // TODO(hidehiko): Implement this method.
+  NOTIMPLEMENTED();
+}
+
 void GDataWapiService::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,

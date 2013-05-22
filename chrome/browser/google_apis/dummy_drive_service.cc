@@ -96,6 +96,12 @@ void DummyDriveService::RenameResource(const std::string& resource_id,
                                        const std::string& new_name,
                                        const EntryActionCallback& callback) {}
 
+void DummyDriveService::TouchResource(
+    const std::string& resource_id,
+    const base::Time& modified_date,
+    const base::Time& last_viewed_by_me_date,
+    const GetResourceEntryCallback& callback) {}
+
 void DummyDriveService::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,

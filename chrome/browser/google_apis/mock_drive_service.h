@@ -74,6 +74,11 @@ class MockDriveService : public DriveServiceInterface {
       void(const std::string& resource_id,
           const std::string& new_name,
           const EntryActionCallback& callback));
+  MOCK_METHOD4(TouchResource,
+      void(const std::string& resource_id,
+          const base::Time& modified_date,
+          const base::Time& last_viewed_by_me_date,
+          const GetResourceEntryCallback& callback));
   MOCK_METHOD3(AddResourceToDirectory,
       void(const std::string& parent_resource_id,
           const std::string& resource_id,

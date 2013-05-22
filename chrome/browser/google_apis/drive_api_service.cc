@@ -548,6 +548,20 @@ void DriveAPIService::RenameResource(
           callback));
 }
 
+void DriveAPIService::TouchResource(
+    const std::string& resource_id,
+    const base::Time& modified_date,
+    const base::Time& last_viewed_by_me_date,
+    const GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!modified_date.is_null());
+  DCHECK(!last_viewed_by_me_date.is_null());
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this. (crbug.com/144369)
+  NOTIMPLEMENTED();
+}
+
 void DriveAPIService::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,

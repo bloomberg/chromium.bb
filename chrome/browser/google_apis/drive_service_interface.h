@@ -242,6 +242,16 @@ class DriveServiceInterface {
                               const std::string& new_name,
                               const EntryActionCallback& callback) = 0;
 
+  // Touches the resource with |resource_id|.
+  // Its modifiedDate and lastViewedByMeDate fields on the server will be
+  // updated to |modified_date| and |last_viewed_by_me_date| respectively.
+  // Upon completion, invokes |callback| with the updated resource data.
+  // |modified_date|, |last_viewed_by_me_date| and |callback| must not be null.
+  virtual void TouchResource(const std::string& resource_id,
+                             const base::Time& modified_date,
+                             const base::Time& last_viewed_by_me_date,
+                             const GetResourceEntryCallback& callback) = 0;
+
   // Adds a resource (document, file, or collection) identified by its
   // |resource_id| to a collection represented by the |parent_resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.

@@ -653,6 +653,18 @@ void FakeDriveService::RenameResource(
       FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
 }
 
+void FakeDriveService::TouchResource(
+    const std::string& resource_id,
+    const base::Time& modified_date,
+    const base::Time& last_viewed_by_me_date,
+    const GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this. (crbug.com/144369).
+  NOTIMPLEMENTED();
+}
+
 void FakeDriveService::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
