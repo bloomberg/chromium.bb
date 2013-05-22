@@ -555,7 +555,7 @@ rdp_peer_context_new(freerdp_peer* client, RdpPeerContext* context)
 	rfx_context_set_pixel_format(context->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
 
 	context->nsc_context = nsc_context_new();
-	rfx_context_set_pixel_format(context->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
+	nsc_context_set_pixel_format(context->nsc_context, RDP_PIXEL_FORMAT_B8G8R8A8);
 
 	context->encode_stream = Stream_New(NULL, 65536);
 }
@@ -703,6 +703,8 @@ xf_peer_post_connect(freerdp_peer* client)
 static BOOL
 xf_peer_activate(freerdp_peer *client)
 {
+	RdpPeerContext *context = (RdpPeerContext *)client->context;
+	rfx_context_reset(context->rfx_context);
 	return TRUE;
 }
 
