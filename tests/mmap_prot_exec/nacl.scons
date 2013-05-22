@@ -31,16 +31,6 @@ def MakeTempDir():
   atexit.register(Cleanup)
   return temporary_dir
 
-# TODO(dschuff): remove temporary workaround for pnacl bug.  This is a
-# generic workaround, rather than just creating the file with the
-# correct permission bits here, so that other pnacl users who are
-# affected by the bug can copy this.
-#
-# See https://code.google.com/p/nativeclient/issues/detail?id=3374
-if env.Bit('bitcode'):
-  env.Append(TRANSLATEFLAGS=['-O0'])
-  env.Append(LINKFLAGS=['-O0'])
-
 
 nexe = env.ComponentProgram('mmap_prot_exec',
                             'mmap_prot_exec.c',
