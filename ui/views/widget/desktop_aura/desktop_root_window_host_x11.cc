@@ -1061,6 +1061,15 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
               }
               break;
             }
+          } else if (type == ui::ET_MOUSE_RELEASED) {
+            XIDeviceEvent* xievent =
+                static_cast<XIDeviceEvent*>(xev->xcookie.data);
+            int button = xievent->detail;
+            if (button == kBackMouseButton || button == kForwardMouseButton) {
+              // We've already passed the back/forward mouse down to the user
+              // action client; we want to swallow the corresponding release.
+              break;
+            }
           }
           ui::MouseEvent mouseev(xev);
           DispatchMouseEvent(&mouseev);
