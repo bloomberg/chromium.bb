@@ -781,7 +781,7 @@ webkit.org/b/52063 [ Win ] http/tests/navigation/ping-cross-origin.html [ Pass T
 
 # These were flaky, now failing more consistently after r75169.
 webkit.org/b/52061 [ Debug ] transitions/suspend-transform-transition.html [ ImageOnlyFailure Pass ]
-webkit.org/b/52061 [ Debug ] transitions/change-values-during-transition.html [ Failure Pass ]
+webkit.org/b/52061 transitions/change-values-during-transition.html [ Failure Pass ]
 
 # New test added in r75720
 crbug.com/69571 plugins/destroy-on-setwindow.html [ Crash ]
@@ -799,7 +799,7 @@ webkit.org/b/49629 compositing/lots-of-img-layers.html [ Failure Timeout ]
 webkit.org/b/49629 [ Win Debug ] virtual/softwarecompositing/lots-of-img-layers.html [ Slow ]
 webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ Failure Timeout ]
 
-webkit.org/b/54051 [ Mac ] plugins/windowless_plugin_paint_test.html [ Timeout ]
+webkit.org/b/54051 [ Mac ] plugins/windowless_plugin_paint_test.html [ Failure Timeout ]
 
 crbug.com/76550 [ Win Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Slow ]
 crbug.com/76550 [ Lion SnowLeopard Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Timeout ]
@@ -844,7 +844,7 @@ crbug.com/86340 [ Win Debug ] fast/filesystem/workers/file-writer-write-overlapp
 crbug.com/82281 fast/xpath/xpath-iterator-result-should-mark-its-nodeset.html [ Failure Timeout ]
 
 # New test added at r86467, doesn't pass.
-webkit.org/b/60822 plugins/get-url-with-javascript-url.html [ Timeout ]
+webkit.org/b/60822 plugins/get-url-with-javascript-url.html [ Failure Timeout ]
 
 # New test added at r86476, crashes.
 webkit.org/b/60822 plugins/get-url-notify-with-url-that-fails-to-load.html [ Crash ]
@@ -936,10 +936,10 @@ webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_ev
 
 # Animations tests use an inherently-flaky timer-based design.
 webkit.org/b/66953 [ Mac Win Debug ] animations/change-one-anim.html [ Failure Pass ]
-webkit.org/b/66953 [ Debug ] animations/play-state-paused.html [ Failure Pass ]
-webkit.org/b/66953 animations/play-state-suspend.html [ Failure Pass ]
-webkit.org/b/66953 animations/suspend-resume-animation.html [ Failure Pass ]
-webkit.org/b/66953 [ Mac Win Debug ] animations/animation-direction-reverse.html [ Failure Pass ]
+webkit.org/b/66953 animations/play-state-paused.html [ Failure Pass Timeout ]
+webkit.org/b/66953 animations/play-state-suspend.html [ Failure Pass Timeout ]
+webkit.org/b/66953 animations/suspend-resume-animation.html [ Failure Pass Timeout ]
+webkit.org/b/66953 [ Mac Win Debug ] animations/animation-direction-reverse.html [ Failure Pass Timeout ]
 
 webkit.org/b/111612 animations/animation-delay-changed.html [ Failure Pass ]
 
@@ -1073,9 +1073,7 @@ webkit.org/b/86909 [ Win ] http/tests/inspector/network/network-content-replacem
 webkit.org/b/87175 [ Win Linux ] fast/regions/floats-basic-in-variable-width-regions.html [ ImageOnlyFailure ]
 webkit.org/b/87175 [ Win Linux MountainLion ] fast/regions/overflow-in-uniform-regions.html [ ImageOnlyFailure ]
 
-webkit.org/b/87321 [ XP Release ] fast/history/history-subframe-with-name.html [ Failure Pass ]
-webkit.org/b/87321 [ Debug ] fast/history/history-subframe-with-name.html [ Pass Timeout ]
-webkit.org/b/87321 [ Win Debug ] fast/history/history-traversal-is-asynchronous.html [ Pass Timeout ]
+webkit.org/b/87321 fast/history/history-subframe-with-name.html [ Failure Pass Timeout ]
 
 # Shadow DOM for replaced elements is not rendered correctly yet.
 webkit.org/b/90860 fast/dom/shadow/shadowdom-for-object-complex-shadow.html [ ImageOnlyFailure ]
@@ -1807,3 +1805,69 @@ crbug.com/242547 [ Linux ] fast/text/chromium-linux-text-subpixel-positioning.ht
 crbug.com/242547 [ Linux ] svg/filters/filter-hidden-content.svg [ Failure ]
 crbug.com/242547 [ Linux ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Failure ]
 crbug.com/242547 [ Linux ] virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ Timeout ]
+
+# New content shell expectatiosn (Mac)
+crbug.com/242465 [ Mac ] editing/pasteboard/file-input-files-access.html [ Failure ]
+crbug.com/242465 [ Mac ] fast/canvas/webgl/oes-vertex-array-object.html [ Failure ]
+crbug.com/242465 [ Mac ] fast/dom/location-hash.html [ Failure ]
+crbug.com/242465 [ Mac ] fast/events/drag-dataTransferItemList-file-handling.html [ Failure ]
+crbug.com/242465 [ Mac ] fast/events/scroll-after-click-on-tab-index.html [ Failure ]
+crbug.com/242465 [ Mac ] fast/forms/file/file-input-change-event.html [ Failure ]
+crbug.com/242465 [ Mac ] fast/forms/file/input-file-value.html [ Failure ]
+crbug.com/242465 [ Mac ] fast/forms/file/input-file-write-files.html [ Failure ]
+crbug.com/242465 [ Mac ] fast/forms/file/selected-files-from-history-state.html [ Failure ]
+crbug.com/242465 [ Mac ] fast/forms/select/popup-closes-on-blur.html [ Failure ]
+crbug.com/242465 [ Mac ] http/tests/appcache/different-https-origin-resource-main.html [ Failure ]
+crbug.com/242465 [ Mac ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Failure ]
+crbug.com/242465 [ Mac ] http/tests/misc/image-checks-for-accept.html [ Failure ]
+crbug.com/242465 [ Mac ] http/tests/misc/webtiming-ssl.php [ Failure ]
+crbug.com/242465 [ Mac ] http/tests/plugins/local-geturl-from-remote.html [ Failure ]
+crbug.com/242465 [ Mac ] http/tests/security/clipboard/clipboard-file-access.html [ Failure ]
+crbug.com/242465 [ Mac ] http/tests/security/cross-frame-access-put.html [ Failure ]
+crbug.com/242465 [ Mac ] http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_exceptions.htm [ Failure ]
+crbug.com/242465 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure ]
+crbug.com/242465 [ Mac ] plugins/npruntime/plugin-scriptable-object-invoke-default.html [ Failure ]
+crbug.com/242465 [ Mac ] plugins/plugin-initiate-popup-window.html [ Failure ]
+crbug.com/242465 [ Mac ] transitions/cancel-transition.html [ Failure ]
+crbug.com/242465 [ Mac ] transitions/extra-transition.html [ Failure ]
+crbug.com/242465 [ Mac ] transitions/interrupt-transform-transition.html [ Failure ]
+crbug.com/242465 [ Mac ] transitions/start-transform-transition.html [ Failure ]
+crbug.com/242465 [ Mac ] transitions/transition-end-event-multiple-04.html [ Failure ]
+crbug.com/242465 [ Mac ] virtual/gpu/fast/canvas/webgl/oes-vertex-array-object.html [ Failure ]
+crbug.com/242465 [ Mac ] webexposed/global-constructors-listing.html [ Failure ]
+crbug.com/242465 [ Mac ] compositing/overflow/overflow-positioning.html [ ImageOnlyFailure ]
+crbug.com/242465 [ Mac ] compositing/reflections/nested-reflection-transition.html [ ImageOnlyFailure ]
+crbug.com/242465 [ Mac ] compositing/transitions/scale-transition-no-start.html [ ImageOnlyFailure ]
+crbug.com/242465 [ Mac ] compositing/transitions/singular-scale-transition.html [ ImageOnlyFailure ]
+crbug.com/242465 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
+crbug.com/242465 [ Mac ] fast/css/line-height-determined-by-primary-font.html [ ImageOnlyFailure ]
+crbug.com/242465 [ Mac ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure ]
+crbug.com/242465 [ Mac ] virtual/gpu/fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure ]
+crbug.com/242465 [ Mac ] editing/pasteboard/drop-file-svg.html [ Crash ]
+crbug.com/242465 [ Mac ] editing/pasteboard/file-drag-to-editable.html [ Crash ]
+crbug.com/242465 [ Mac ] fast/loader/recursive-before-unload-crash.html [ Crash ]
+crbug.com/242465 [ Mac ] fast/writing-mode/vertical-font-vmtx-units-per-em.html [ Crash ]
+crbug.com/242465 [ Mac ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash ]
+crbug.com/242465 [ Mac ] animations/3d/matrix-transform-type-animation.html [ Timeout ]
+crbug.com/242465 [ Mac ] animations/3d/replace-filling-transform.html [ Timeout ]
+crbug.com/242465 [ Mac ] animations/animation-direction-normal.html [ Timeout ]
+crbug.com/242465 [ Mac ] animations/dynamic-stylesheet-loading.html [ Timeout ]
+crbug.com/242465 [ Mac ] animations/fill-mode-forwards.html [ Timeout ]
+crbug.com/242465 [ Mac ] animations/play-state.html [ Timeout ]
+crbug.com/242465 [ Mac ] animations/transition-and-animation-1.html [ Timeout ]
+crbug.com/242465 [ Mac ] animations/transition-and-animation-2.html [ Timeout ]
+crbug.com/242465 [ Mac ] compositing/animation/animation-compositing.html [ Timeout ]
+crbug.com/242465 [ Mac ] compositing/layer-creation/animation-overlap-with-children.html [ Timeout ]
+crbug.com/242465 [ Mac ] compositing/layer-creation/overlap-animation-clipping.html [ Timeout ]
+crbug.com/242465 [ Mac ] compositing/reflections/nested-reflection-animated.html [ Timeout ]
+crbug.com/242465 [ Mac ] editing/input/reveal-contenteditable-on-input-vertically.html [ Timeout ]
+crbug.com/242465 [ Mac ] editing/input/reveal-edit-on-input-vertically.html [ Timeout ]
+crbug.com/242465 [ Mac ] http/tests/history/back-with-fragment-change.php [ Timeout ]
+crbug.com/242465 [ Mac ] http/tests/inspector-enabled/injected-script-discard.html [ Timeout ]
+crbug.com/242465 [ Mac ] transitions/3d/interrupted-transition.html [ Timeout ]
+crbug.com/242465 [ Mac ] transitions/move-after-transition.html [ Timeout ]
+crbug.com/242465 [ Mac ] transitions/transition-end-event-rendering.html [ Timeout ]
+crbug.com/242465 [ Mac ] fast/css/font-family-pictograph.html [ Failure ]
+crbug.com/242465 [ Mac ] fast/repaint/fixed-move-after-keyboard-scroll.html [ Failure ]
+crbug.com/242465 [ Mac ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Failure ]
+crbug.com/242465 [ Mac ] svg/filters/filter-hidden-content.svg [ Failure ]
