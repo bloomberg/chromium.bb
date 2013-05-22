@@ -727,14 +727,6 @@ function HistoryView(model) {
   $('clear-browsing-data').addEventListener('click', openClearBrowsingData);
   $('remove-selected').addEventListener('click', removeItems);
 
-  $('allow-selected').addEventListener('click', function(e) {
-    processManagedList(true);
-  });
-
-  $('block-selected').addEventListener('click', function(e) {
-    processManagedList(false);
-  });
-
   // Add handlers for the page navigation buttons at the bottom.
   $('newest-button').addEventListener('click', function() {
     self.setPage(0);
@@ -926,44 +918,6 @@ HistoryView.prototype.updateSelectionEditButtons = function() {
     $('remove-selected').disabled = !anyChecked;
   } else {
     $('remove-selected').disabled = true;
-  }
-  $('allow-selected').disabled = !anyChecked;
-  $('block-selected').disabled = !anyChecked;
-};
-
-/**
- * Callback triggered by the backend after the manual allow or block changes
- * have been commited. Once the changes are commited the backend builds an
- * updated set of data which contains the new managed mode status and passes
- * it through this function to the client. The function takes that data and
- * updates the individiual host/URL elements with their new managed mode status.
- * @param {Array} entries List of two dictionaries which contain the updated
- *     information for both the hosts and the URLs.
- */
-HistoryView.prototype.updateManagedEntries = function(entries) {
-  // |hostEntries| and |urlEntries| are dictionaries which have hosts and URLs
-  // as keys and dictionaries with two values (|inContentPack| and
-  // |manualBehavior|) as values.
-  var hostEntries = entries[0];
-  var urlEntries = entries[1];
-  var hostElements = document.querySelectorAll('.site-domain');
-  for (var i = 0; i < hostElements.length; i++) {
-    var host = hostElements[i].firstChild.textContent;
-    var siteDomainWrapperDiv = hostElements[i].parentNode;
-    siteDomainWrapperDiv.querySelector('input[type=checkbox]').checked = false;
-    var filterStatusDiv = hostElements[i].nextSibling;
-    if (host in hostEntries)
-      updateHostStatus(filterStatusDiv, hostEntries[host]);
-  }
-
-  var urlElements = document.querySelectorAll('.entry-box .title');
-  for (var i = 0; i < urlElements.length; i++) {
-    var url = urlElements[i].querySelector('a').href;
-    var entry = findAncestorByClass(urlElements[i], 'entry');
-    var filterStatusDiv = entry.querySelector('.filter-status');
-    entry.querySelector('input[type=checkbox]').checked = false;
-    if (url in urlEntries)
-      updateHostStatus(filterStatusDiv, urlEntries[url]);
   }
 };
 
@@ -1529,18 +1483,6 @@ function load() {
       loadTimeData.getBoolean('isManagedProfile')) {
     $('filter-controls').hidden = false;
   }
-  if (loadTimeData.getBoolean('isManagedProfile')) {
-    $('allow-selected').hidden = false;
-    $('block-selected').hidden = false;
-    if (!cr.isChromeOS) {
-      $('lock-unlock-button').classList.add('profile-is-managed');
-      $('lock-unlock-button').addEventListener('click', function(e) {
-        var isLocked = document.body.classList.contains('managed-user-locked');
-        chrome.send('setManagedUserElevated', [isLocked]);
-      });
-      chrome.send('getManagedUserElevated');
-    }
-  }
 
   var title = loadTimeData.getString('title');
   uber.invokeMethodOnParent('setTitle', {title: title});
@@ -1575,35 +1517,6 @@ function load() {
     });
     searchField.focus();
   }
-}
-
-/**
- * Adds manual rules for allowing or blocking the the selected items.
- * @param {boolean} allow Whether to allow (for true) or block (for false) the
- *    selected items.
- */
-function processManagedList(allow) {
-  var hosts = $('results-display').querySelectorAll(
-      '.site-domain-wrapper input[type=checkbox]');
-  var urls = $('results-display').querySelectorAll(
-      '.site-results input[type=checkbox]');
-  // Get each domain and whether it is checked or not.
-  var hostsToSend = [];
-  for (var i = 0; i < hosts.length; i++) {
-    var hostParent = findAncestorByClass(hosts[i], 'site-domain-wrapper');
-    var host = hostParent.querySelector('button').textContent;
-    hostsToSend.push([hosts[i].checked, host]);
-  }
-  // Get each URL and whether it is checked or not.
-  var urlsToSend = [];
-  for (var i = 0; i < urls.length; i++) {
-    var urlParent = findAncestorByClass(urls[i], 'site-entry');
-    var urlChecked =
-        urlParent.querySelector('.site-domain-wrapper input').checked;
-    urlsToSend.push([urls[i].checked, urlChecked,
-        findAncestorByClass(urls[i], 'entry-box').querySelector('a').href]);
-  }
-  chrome.send('processManagedUrls', [allow, hostsToSend, urlsToSend]);
 }
 
 /**
@@ -1939,33 +1852,6 @@ function historyDeleted() {
   // TODO(dubroy): We should just reload the page & restore the checked items.
   if (!anyChecked)
     historyView.reload();
-}
-
-/**
- * Called when the allow/block changes have been commited. This leads to the
- * status of all the elements on the page being updated.
- * @param {Object} entries The new updated results.
- */
-function updateEntries(entries) {
-  historyView.updateManagedEntries(entries);
-}
-
-/**
- * Called when the page is initialized or when the authentication status
- * of the managed user changes.
- * @param {Object} isElevated Contains the information if the current profile is
- * in elevated state.
- */
-function managedUserElevated(isElevated) {
-  if (isElevated) {
-    document.body.classList.remove('managed-user-locked');
-    $('lock-unlock-button').textContent =
-        loadTimeData.getString('lockButton');
-  } else {
-    document.body.classList.add('managed-user-locked');
-    $('lock-unlock-button').textContent =
-        loadTimeData.getString('unlockButton');
-  }
 }
 
 // Add handlers to HTML elements.

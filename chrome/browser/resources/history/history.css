@@ -16,12 +16,6 @@ html[dir='rtl'] body.uber-frame > .page {
   white-space: nowrap;
 }
 
-#lock-unlock-button:not(.profile-is-managed),
-.managed-user-locked #allow-selected,
-.managed-user-locked #block-selected {
-  display: none;
-}
-
 #search-button {
   margin: 0;
 }

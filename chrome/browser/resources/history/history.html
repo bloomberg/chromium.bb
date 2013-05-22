@@ -93,9 +93,6 @@
           <option i18n-content="rangeMonth" value="2"></option>
         </select>
       </label>
-      <if expr="not pp_ifdef('chromeos')">
-        <button id="lock-unlock-button" i18n-content="unlockButton"></button>
-      </if>
     </div>
   </div>
 <if expr="not is_android">
@@ -106,12 +103,6 @@
       <button id="clear-browsing-data" i18n-content="clearAllHistory"></button>
       <button id="remove-selected" disabled="disabled"
           i18n-content="removeSelected"></button>
-      <button id="allow-selected" i18n-content="allowItems" disabled="disabled"
-          hidden>
-      </button>
-      <button id="block-selected" i18n-content="blockItems" disabled="disabled"
-          hidden>
-      </button>
     </div>
     <div id="notification-bar" hidden></div>
   </div>
