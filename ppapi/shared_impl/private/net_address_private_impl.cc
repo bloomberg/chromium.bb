@@ -395,8 +395,6 @@ GetPPB_NetAddress_Private_1_1_Thunk() {
 
 // For the NaCl target, all we need are the API functions and the thunk.
 #if !defined(OS_NACL)
-// static
-const PP_NetAddress_Private NetAddressPrivateImpl::kInvalidNetAddress = { 0 };
 
 // static
 bool NetAddressPrivateImpl::ValidateNetAddress(

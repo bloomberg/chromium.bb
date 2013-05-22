@@ -156,6 +156,7 @@
     (r'\bnet\.lib$', r'http_request_headers\.obj$'),
     (r'\bnet\.lib$', r'net_errors\.obj$'),
     (r'ppapi_shared\.lib$', r'ppapi_switches\.obj$'),
+    (r'ppapi_shared\.lib$', r'net_address_private_impl_constants\.obj$'),
     (r'printing\.lib$', r'print_job_constants\.obj$'),
     (r'skia\.lib$', r'skunpremultiply\.obj$'),
     (r'\bui\.lib$', r'clipboard_constants\.obj$'),

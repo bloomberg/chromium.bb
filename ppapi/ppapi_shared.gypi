@@ -112,6 +112,7 @@
           'shared_impl/var_value_conversions.h',
           # TODO(viettrungluu): Split these out; it won't be used in NaCl.
           'shared_impl/private/net_address_private_impl.cc',
+          'shared_impl/private/net_address_private_impl_constants.cc',
           'shared_impl/private/net_address_private_impl.h',
 
           'shared_impl/private/ppb_char_set_shared.cc',
