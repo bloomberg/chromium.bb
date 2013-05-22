@@ -335,7 +335,6 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
   if (is_cld_reliable_p != NULL)
     *is_cld_reliable_p = is_cld_reliable;
   ConvertLanguageCodeSynonym(&cld_language);
-  VLOG(9) << "CLD determined language code: " << cld_language;
 #endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
   // Correct well-known format errors.
@@ -347,7 +346,6 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
   // gets converted to an empty string.
   ConvertLanguageCodeSynonym(&language);
   ResetInvalidLanguageCode(&language);
-  VLOG(9) << "Content-Language based language code: " << language;
 
   TranslateHelperMetrics::ReportContentLanguage(code, language);
 
@@ -371,7 +369,6 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
     // is written in another language with confidence.
     // In this case, Chrome doesn't rely on any of the language codes, and
     // gives up suggesting a translation.
-    VLOG(9) << "CLD disagreed with the Content-Language value with confidence.";
     return std::string(chrome::kUnknownLanguageCode);
   } else {
     TranslateHelperMetrics::ReportLanguageVerification(
