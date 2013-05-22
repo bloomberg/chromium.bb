@@ -35,7 +35,7 @@ void CheckLongConversion(
   ASSERT_TRUE(longs.obj());
 
   jsize java_array_len = env->GetArrayLength(longs.obj());
-  ASSERT_EQ(static_cast<jsize>(len), java_array_len);
+  ASSERT_EQ(static_cast<int>(len), java_array_len);
 
   jlong value;
   for (size_t i = 0; i < len; ++i) {
@@ -53,59 +53,6 @@ TEST(JniArray, LongConversions) {
 
   const std::vector<int64> vec(kLongs, kLongs + kLen);
   CheckLongConversion(env, kLongs, kLen, ToJavaLongArray(env, vec));
-}
-
-TEST(JniArray, JavaIntArrayToIntVector) {
-  const int kInts[] = {0, 1, -1};
-  const size_t kLen = arraysize(kInts);
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jintArray> jints(env, env->NewIntArray(kLen));
-  ASSERT_TRUE(jints.obj());
-
-  for (size_t i = 0; i < kLen; ++i) {
-    jint j = static_cast<jint>(kInts[i]);
-    env->SetIntArrayRegion(jints.obj(), i, 1, &j);
-    ASSERT_FALSE(HasException(env));
-  }
-
-  std::vector<int> ints;
-  JavaIntArrayToIntVector(env, jints.obj(), &ints);
-
-  ASSERT_EQ(static_cast<jsize>(ints.size()), env->GetArrayLength(jints.obj()));
-
-  jint value;
-  for (size_t i = 0; i < kLen; ++i) {
-    env->GetIntArrayRegion(jints.obj(), i, 1, &value);
-    ASSERT_EQ(ints[i], value);
-  }
-}
-
-TEST(JniArray, JavaFloatArrayToFloatVector) {
-  const float kFloats[] = {0.0, 0.5, -0.5};
-  const size_t kLen = arraysize(kFloats);
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jfloatArray> jfloats(env, env->NewFloatArray(kLen));
-  ASSERT_TRUE(jfloats.obj());
-
-  for (size_t i = 0; i < kLen; ++i) {
-    jfloat j = static_cast<jfloat>(kFloats[i]);
-    env->SetFloatArrayRegion(jfloats.obj(), i, 1, &j);
-    ASSERT_FALSE(HasException(env));
-  }
-
-  std::vector<float> floats;
-  JavaFloatArrayToFloatVector(env, jfloats.obj(), &floats);
-
-  ASSERT_EQ(static_cast<jsize>(floats.size()),
-      env->GetArrayLength(jfloats.obj()));
-
-  jfloat value;
-  for (size_t i = 0; i < kLen; ++i) {
-    env->GetFloatArrayRegion(jfloats.obj(), i, 1, &value);
-    ASSERT_EQ(floats[i], value);
-  }
 }
 
 TEST(JniArray, JavaArrayOfByteArrayToStringVector) {

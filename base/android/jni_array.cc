@@ -139,29 +139,16 @@ void JavaByteArrayToByteVector(JNIEnv* env,
 }
 
 void JavaIntArrayToIntVector(JNIEnv* env,
-                             jintArray int_array,
+                             jintArray array,
                              std::vector<int>* out) {
   DCHECK(out);
   out->clear();
-  jsize len = env->GetArrayLength(int_array);
-  jint* ints = env->GetIntArrayElements(int_array, NULL);
+  jsize len = env->GetArrayLength(array);
+  jint* ints = env->GetIntArrayElements(array, NULL);
   for (jsize i = 0; i < len; ++i) {
     out->push_back(static_cast<int>(ints[i]));
   }
-  env->ReleaseIntArrayElements(int_array, ints, JNI_ABORT);
-}
-
-void JavaFloatArrayToFloatVector(JNIEnv* env,
-                                 jfloatArray float_array,
-                                 std::vector<float>* out) {
-  DCHECK(out);
-  out->clear();
-  jsize len = env->GetArrayLength(float_array);
-  jfloat* floats = env->GetFloatArrayElements(float_array, NULL);
-  for (jsize i = 0; i < len; ++i) {
-    out->push_back(static_cast<float>(floats[i]));
-  }
-  env->ReleaseFloatArrayElements(float_array, floats, JNI_ABORT);
+  env->ReleaseIntArrayElements(array, ints, JNI_ABORT);
 }
 
 void JavaArrayOfByteArrayToStringVector(
