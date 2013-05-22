@@ -339,10 +339,8 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
   ASSERT_EQ(1U, cards2.size());
   EXPECT_NE(profile.origin(), profiles2[0]->origin());
   EXPECT_NE(credit_card.origin(), cards2[0]->origin());
-  // TODO(isherman): Verify that the origins match once they are saved and read
-  // from the database.  http://crbug.com/170401
-  // EXPECT_EQ(original_profile.origin(), profiles2[0]->origin());
-  // EXPECT_EQ(original_credit_card.origin(), cards2[0]->origin());
+  EXPECT_EQ(original_profile.origin(), profiles2[0]->origin());
+  EXPECT_EQ(original_credit_card.origin(), cards2[0]->origin());
 
   // Try to update with data changed as well.
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
@@ -363,10 +361,8 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
   ASSERT_EQ(1U, cards3.size());
   EXPECT_EQ(0, profile.Compare(*profiles3[0]));
   EXPECT_EQ(0, credit_card.Compare(*cards3[0]));
-  // TODO(isherman): Verify that the origins match once they are saved and read
-  // from the database.  http://crbug.com/170401
-  // EXPECT_EQ(profile.origin(), profiles3[0]->origin());
-  // EXPECT_EQ(credit_card.origin(), cards3[0]->origin());
+  EXPECT_EQ(profile.origin(), profiles3[0]->origin());
+  EXPECT_EQ(credit_card.origin(), cards3[0]->origin());
 }
 
 TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
@@ -1923,10 +1919,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithSeparators) {
 
 // Ensure that if a verified profile already exists, aggregated profiles cannot
 // modify it in any way.
-// TODO(isherman): Enable this test once origins are saved and read from the
-// database.  http://crbug.com/170401
-TEST_F(PersonalDataManagerTest,
-       DISABLED_AggregateExistingVerifiedProfileWithConflict) {
+TEST_F(PersonalDataManagerTest, AggregateExistingVerifiedProfileWithConflict) {
   // Start with a verified profile.
   AutofillProfile profile;
   profile.set_origin("Chrome settings");
@@ -1986,10 +1979,8 @@ TEST_F(PersonalDataManagerTest,
 
 // Ensure that if a verified credit card already exists, aggregated credit cards
 // cannot modify it in any way.
-// TODO(isherman): Enable this test once origins are saved and read from the
-// database.  http://crbug.com/170401
 TEST_F(PersonalDataManagerTest,
-       DISABLED_AggregateExistingVerifiedCreditCardWithConflict) {
+       AggregateExistingVerifiedCreditCardWithConflict) {
   // Start with a verified credit card.
   CreditCard credit_card;
   credit_card.set_origin("Chrome settings");

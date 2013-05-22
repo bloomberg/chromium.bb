@@ -135,6 +135,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       main_context_getter_(profile->GetRequestContext()),
       media_context_getter_(profile->GetMediaRequestContext()),
       deauthorize_content_licenses_request_id_(0),
+      waiting_for_clear_autofill_origin_urls_(false),
       waiting_for_clear_cache_(false),
       waiting_for_clear_content_licenses_(false),
       waiting_for_clear_cookies_count_(0),
@@ -311,6 +312,30 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         session_service->DeleteLastSession();
 #endif
     }
+
+    // The saved Autofill profiles and credit cards can include the origin from
+    // which these profiles and credit cards were learned.  These are a form of
+    // history, so clear them as well.
+    scoped_refptr<autofill::AutofillWebDataService> web_data_service =
+        autofill::AutofillWebDataService::FromBrowserContext(profile_);
+    if (web_data_service.get()) {
+      waiting_for_clear_autofill_origin_urls_ = true;
+      web_data_service->RemoveOriginURLsModifiedBetween(
+          delete_begin_, delete_end_);
+      // The above calls are done on the UI thread but do their work on the DB
+      // thread. So wait for it.
+      BrowserThread::PostTaskAndReply(
+          BrowserThread::DB, FROM_HERE,
+          base::Bind(&base::DoNothing),
+          base::Bind(&BrowsingDataRemover::OnClearedAutofillOriginURLs,
+                     base::Unretained(this)));
+
+      autofill::PersonalDataManager* data_manager =
+          autofill::PersonalDataManagerFactory::GetForProfile(profile_);
+      if (data_manager)
+        data_manager->Refresh();
+    }
+
   }
 
   if ((remove_mask & REMOVE_DOWNLOADS) && may_delete_history) {
@@ -452,16 +477,16 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
           delete_begin_, delete_end_);
       // The above calls are done on the UI thread but do their work on the DB
       // thread. So wait for it.
-      BrowserThread::PostTask(
+      BrowserThread::PostTaskAndReply(
           BrowserThread::DB, FROM_HERE,
-          base::Bind(&BrowsingDataRemover::FormDataDBThreadHop,
+          base::Bind(&base::DoNothing),
+          base::Bind(&BrowsingDataRemover::OnClearedFormData,
                      base::Unretained(this)));
 
       autofill::PersonalDataManager* data_manager =
           autofill::PersonalDataManagerFactory::GetForProfile(profile_);
-      if (data_manager) {
+      if (data_manager)
         data_manager->Refresh();
-      }
     }
   }
 
@@ -575,6 +600,7 @@ base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
 
 bool BrowsingDataRemover::AllDone() {
   return registrar_.IsEmpty() &&
+      !waiting_for_clear_autofill_origin_urls_ &&
       !waiting_for_clear_cache_ &&
       !waiting_for_clear_nacl_cache_ &&
       !waiting_for_clear_cookies_count_&&
@@ -1067,16 +1093,14 @@ void BrowsingDataRemover::OnClearedServerBoundCerts() {
   NotifyAndDeleteIfDone();
 }
 
-void BrowsingDataRemover::FormDataDBThreadHop() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowsingDataRemover::OnClearedFormData,
-                 base::Unretained(this)));
-}
-
 void BrowsingDataRemover::OnClearedFormData() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   waiting_for_clear_form_ = false;
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::OnClearedAutofillOriginURLs() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  waiting_for_clear_autofill_origin_urls_ = false;
   NotifyAndDeleteIfDone();
 }

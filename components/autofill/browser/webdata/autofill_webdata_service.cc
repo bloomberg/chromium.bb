@@ -177,6 +177,14 @@ void AutofillWebDataService::RemoveAutofillDataModifiedBetween(
            autofill_backend_, delete_begin, delete_end));
 }
 
+void AutofillWebDataService::RemoveOriginURLsModifiedBetween(
+    const Time& delete_begin, const Time& delete_end) {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE,
+      Bind(&AutofillWebDataBackendImpl::RemoveOriginURLsModifiedBetween,
+           autofill_backend_, delete_begin, delete_end));
+}
+
 void AutofillWebDataService::AddObserver(
     AutofillWebDataServiceObserverOnDBThread* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));

@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/prefs/testing_pref_service.h"
@@ -58,6 +59,10 @@ const char kTestOrigin2[] = "http://host2:1/";
 const char kTestOrigin3[] = "http://host3:1/";
 const char kTestOriginExt[] = "chrome-extension://abcdefghijklmnopqrstuvwxyz/";
 const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw/";
+
+// For Autofill.
+const char kChromeOrigin[] = "Chrome settings";
+const char kWebOrigin[] = "https://www.example.com/";
 
 const GURL kOrigin1(kTestOrigin1);
 const GURL kOrigin2(kTestOrigin2);
@@ -396,26 +401,62 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
            !personal_data_manager_->GetCreditCards().empty();
   }
 
-  void AddProfile() {
+  bool HasOrigin(const std::string& origin) {
+    const std::vector<autofill::AutofillProfile*>& profiles =
+        personal_data_manager_->GetProfiles();
+    for (std::vector<autofill::AutofillProfile*>::const_iterator it =
+             profiles.begin();
+         it != profiles.end(); ++it) {
+      if ((*it)->origin() == origin)
+        return true;
+    }
+
+    const std::vector<autofill::CreditCard*>& credit_cards =
+        personal_data_manager_->GetCreditCards();
+    for (std::vector<autofill::CreditCard*>::const_iterator it =
+             credit_cards.begin();
+         it != credit_cards.end(); ++it) {
+      if ((*it)->origin() == origin)
+        return true;
+    }
+
+    return false;
+  }
+
+  // Add two profiles and two credit cards to the database.  In each pair, one
+  // entry has a web origin and the other has a Chrome origin.
+  void AddProfilesAndCards() {
+    std::vector<autofill::AutofillProfile> profiles;
     autofill::AutofillProfile profile;
+    profile.set_guid(base::GenerateGUID());
+    profile.set_origin(kWebOrigin);
     profile.SetRawInfo(autofill::NAME_FIRST, ASCIIToUTF16("Bob"));
     profile.SetRawInfo(autofill::NAME_LAST, ASCIIToUTF16("Smith"));
     profile.SetRawInfo(autofill::ADDRESS_HOME_ZIP, ASCIIToUTF16("94043"));
     profile.SetRawInfo(autofill::EMAIL_ADDRESS,
                        ASCIIToUTF16("sue@example.com"));
     profile.SetRawInfo(autofill::COMPANY_NAME, ASCIIToUTF16("Company X"));
-
-    std::vector<autofill::AutofillProfile> profiles;
     profiles.push_back(profile);
+
+    profile.set_guid(base::GenerateGUID());
+    profile.set_origin(kChromeOrigin);
+    profiles.push_back(profile);
+
     personal_data_manager_->SetProfiles(&profiles);
     MessageLoop::current()->Run();
 
+    std::vector<autofill::CreditCard> cards;
     autofill::CreditCard card;
+    card.set_guid(base::GenerateGUID());
+    card.set_origin(kWebOrigin);
     card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
                     ASCIIToUTF16("1234-5678-9012-3456"));
-
-    std::vector<autofill::CreditCard> cards;
     cards.push_back(card);
+
+    card.set_guid(base::GenerateGUID());
+    card.set_origin(kChromeOrigin);
+    cards.push_back(card);
+
     personal_data_manager_->SetCreditCards(&cards);
     MessageLoop::current()->Run();
   }
@@ -1309,7 +1350,7 @@ TEST_F(BrowsingDataRemoverTest, AutofillRemovalLastHour) {
   RemoveAutofillTester tester(GetProfile());
 
   ASSERT_FALSE(tester.HasProfile());
-  tester.AddProfile();
+  tester.AddProfilesAndCards();
   ASSERT_TRUE(tester.HasProfile());
 
   BlockUntilBrowsingDataRemoved(
@@ -1326,7 +1367,7 @@ TEST_F(BrowsingDataRemoverTest, AutofillRemovalEverything) {
   RemoveAutofillTester tester(GetProfile());
 
   ASSERT_FALSE(tester.HasProfile());
-  tester.AddProfile();
+  tester.AddProfilesAndCards();
   ASSERT_TRUE(tester.HasProfile());
 
   BlockUntilBrowsingDataRemoved(
@@ -1336,4 +1377,25 @@ TEST_F(BrowsingDataRemoverTest, AutofillRemovalEverything) {
   EXPECT_EQ(BrowsingDataRemover::REMOVE_FORM_DATA, GetRemovalMask());
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   ASSERT_FALSE(tester.HasProfile());
+}
+
+// Verify that clearing autofill form data works.
+TEST_F(BrowsingDataRemoverTest, AutofillOriginsRemovedWithHistory) {
+  GetProfile()->CreateWebDataService();
+  RemoveAutofillTester tester(GetProfile());
+
+  tester.AddProfilesAndCards();
+  EXPECT_FALSE(tester.HasOrigin(std::string()));
+  EXPECT_TRUE(tester.HasOrigin(kWebOrigin));
+  EXPECT_TRUE(tester.HasOrigin(kChromeOrigin));
+
+  BlockUntilBrowsingDataRemoved(
+      BrowsingDataRemover::LAST_HOUR,
+      BrowsingDataRemover::REMOVE_HISTORY, false);
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
+  EXPECT_TRUE(tester.HasOrigin(std::string()));
+  EXPECT_FALSE(tester.HasOrigin(kWebOrigin));
+  EXPECT_TRUE(tester.HasOrigin(kChromeOrigin));
 }

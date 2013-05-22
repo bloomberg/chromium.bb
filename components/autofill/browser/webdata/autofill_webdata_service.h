@@ -88,6 +88,8 @@ class AutofillWebDataService : public AutofillWebData,
       WebDataServiceConsumer* consumer) OVERRIDE;
   virtual void RemoveAutofillDataModifiedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
+  virtual void RemoveOriginURLsModifiedBetween(
+      const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
 
   void AddObserver(AutofillWebDataServiceObserverOnDBThread* observer);
   void RemoveObserver(AutofillWebDataServiceObserverOnDBThread* observer);

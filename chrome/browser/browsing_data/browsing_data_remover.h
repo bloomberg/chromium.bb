@@ -341,12 +341,12 @@ class BrowsingDataRemover : public content::NotificationObserver
   // NotifyAndDeleteIfDone.
   void OnClearedServerBoundCerts();
 
-  // Callback on the DB thread so that we can wait for the form data to be
-  // cleared.
-  void FormDataDBThreadHop();
-
   // Callback from the above method.
   void OnClearedFormData();
+
+  // Callback when the Autofill profile and credit card origin URLs have been
+  // deleted.
+  void OnClearedAutofillOriginURLs();
 
   // Callback when the shader cache has been deleted.
   // Invokes NotifyAndDeleteIfDone.
@@ -401,6 +401,7 @@ class BrowsingDataRemover : public content::NotificationObserver
   uint32 deauthorize_content_licenses_request_id_;
   // True if we're waiting for various data to be deleted.
   // These may only be accessed from UI thread in order to avoid races!
+  bool waiting_for_clear_autofill_origin_urls_;
   bool waiting_for_clear_cache_;
   bool waiting_for_clear_content_licenses_;
   // Non-zero if waiting for cookies to be cleared.

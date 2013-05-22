@@ -27,6 +27,7 @@
 #include "components/autofill/common/form_field_data.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/encryptor/encryptor.h"
+#include "googleurl/src/gurl.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -76,6 +77,7 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
   text = profile.GetRawInfo(ADDRESS_HOME_COUNTRY);
   s->BindString16(8, LimitDataSize(text));
   s->BindInt64(9, Time::Now().ToTimeT());
+  s->BindString(10, profile.origin());
 }
 
 AutofillProfile* AutofillProfileFromStatement(const sql::Statement& s,
@@ -93,6 +95,7 @@ AutofillProfile* AutofillProfileFromStatement(const sql::Statement& s,
   // Intentionally skip column 7, which stores the localized country name.
   profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(8));
   // Intentionally skip column 9, which stores the profile's modification date.
+  profile->set_origin(s.ColumnString(10));
 
   return profile;
 }
@@ -114,6 +117,7 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   s->BindBlob(4, encrypted_data.data(),
               static_cast<int>(encrypted_data.length()));
   s->BindInt64(5, Time::Now().ToTimeT());
+  s->BindString(6, credit_card.origin());
 }
 
 CreditCard* CreditCardFromStatement(const sql::Statement& s) {
@@ -135,6 +139,7 @@ CreditCard* CreditCardFromStatement(const sql::Statement& s) {
   }
   credit_card->SetRawInfo(CREDIT_CARD_NUMBER, credit_card_number);
   // Intentionally skip column 5, which stores the modification date.
+  credit_card->set_origin(s.ColumnString(6));
 
   return credit_card;
 }
@@ -332,6 +337,13 @@ WebDatabaseTable::TypeKey GetKey() {
   return reinterpret_cast<void*>(&table_key);
 }
 
+time_t GetEndTime(const base::Time& end) {
+  if (end.is_null() || end == base::Time::Max())
+    return std::numeric_limits<time_t>::max();
+
+  return end.ToTimeT();
+}
+
 }  // namespace
 
 // The maximum length allowed for form data.
@@ -405,9 +417,11 @@ bool AutofillTable::MigrateToVersion(int version,
     case 37:
       *update_compatible_version = true;
       return MigrateToVersion37MergeAndCullOlderProfiles();
-
-    case 50:
-      return MigrateToVersion50AddOriginColumn();
+    case 51:
+      // Combine migrations 50 and 51.  The migration code from version 49 to 50
+      // worked correctly for users with existing 'origin' columns, but failed
+      // to create these columns for new users.
+      return MigrateToVersion51AddOriginColumn();
   }
   return true;
 }
@@ -951,8 +965,8 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT INTO autofill_profiles"
       "(guid, company_name, address_line_1, address_line_2, city, state,"
-      " zipcode, country, country_code, date_modified)"
-      "VALUES (?,?,?,?,?,?,?,?,?,?)"));
+      " zipcode, country, country_code, date_modified, origin)"
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?)"));
   BindAutofillProfileToStatement(profile, &s, app_locale_);
 
   if (!s.Run())
@@ -967,7 +981,7 @@ bool AutofillTable::GetAutofillProfile(const std::string& guid,
   DCHECK(profile);
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, company_name, address_line_1, address_line_2, city, state,"
-      " zipcode, country, country_code, date_modified "
+      " zipcode, country, country_code, date_modified, origin "
       "FROM autofill_profiles "
       "WHERE guid=?"));
   s.BindString(0, guid);
@@ -1059,17 +1073,18 @@ bool AutofillTable::UpdateAutofillProfileMulti(const AutofillProfile& profile) {
 
   // Preserve appropriate modification dates by not updating unchanged profiles.
   scoped_ptr<AutofillProfile> old_profile(tmp_profile);
-  if (old_profile->Compare(profile) == 0)
+  if (old_profile->Compare(profile) == 0 &&
+      old_profile->origin() == profile.origin())
     return true;
 
   sql::Statement s(db_->GetUniqueStatement(
       "UPDATE autofill_profiles "
       "SET guid=?, company_name=?, address_line_1=?, address_line_2=?, "
       "    city=?, state=?, zipcode=?, country=?, country_code=?, "
-      "    date_modified=? "
+      "    date_modified=?, origin=? "
       "WHERE guid=?"));
   BindAutofillProfileToStatement(profile, &s, app_locale_);
-  s.BindString(10, profile.guid());
+  s.BindString(11, profile.guid());
 
   bool result = s.Run();
   DCHECK_GT(db_->GetLastChangeCount(), 0);
@@ -1135,8 +1150,8 @@ bool AutofillTable::AddCreditCard(const CreditCard& credit_card) {
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT INTO credit_cards"
       "(guid, name_on_card, expiration_month, expiration_year, "
-      "card_number_encrypted, date_modified)"
-      "VALUES (?,?,?,?,?,?)"));
+      " card_number_encrypted, date_modified, origin)"
+      "VALUES (?,?,?,?,?,?,?)"));
   BindCreditCardToStatement(credit_card, &s);
 
   if (!s.Run())
@@ -1151,7 +1166,7 @@ bool AutofillTable::GetCreditCard(const std::string& guid,
   DCHECK(base::IsValidGUID(guid));
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, name_on_card, expiration_month, expiration_year, "
-      "card_number_encrypted, date_modified "
+      "       card_number_encrypted, date_modified, origin "
       "FROM credit_cards "
       "WHERE guid = ?"));
   s.BindString(0, guid);
@@ -1198,10 +1213,11 @@ bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
   sql::Statement s(db_->GetUniqueStatement(
       "UPDATE credit_cards "
       "SET guid=?, name_on_card=?, expiration_month=?, "
-      "    expiration_year=?, card_number_encrypted=?, date_modified=? "
+      "    expiration_year=?, card_number_encrypted=?, date_modified=?, "
+      "    origin=? "
       "WHERE guid=?"));
   BindCreditCardToStatement(credit_card, &s);
-  s.BindString(6, credit_card.guid());
+  s.BindString(7, credit_card.guid());
 
   bool result = s.Run();
   DCHECK_GT(db_->GetLastChangeCount(), 0);
@@ -1225,9 +1241,7 @@ bool AutofillTable::RemoveAutofillDataModifiedBetween(
   DCHECK(delete_end.is_null() || delete_begin < delete_end);
 
   time_t delete_begin_t = delete_begin.ToTimeT();
-  time_t delete_end_t =
-      (delete_end.is_null() || delete_end == base::Time::Max()) ?
-          std::numeric_limits<time_t>::max() : delete_end.ToTimeT();
+  time_t delete_end_t = GetEndTime(delete_end);
 
   // Remember Autofill profiles in the time range.
   sql::Statement s_profiles_get(db_->GetUniqueStatement(
@@ -1277,6 +1291,78 @@ bool AutofillTable::RemoveAutofillDataModifiedBetween(
   s_credit_cards.BindInt64(1, delete_end_t);
 
   return s_credit_cards.Run();
+}
+
+bool AutofillTable::RemoveOriginURLsModifiedBetween(
+    const Time& delete_begin,
+    const Time& delete_end,
+    ScopedVector<AutofillProfile>* profiles) {
+  DCHECK(delete_end.is_null() || delete_begin < delete_end);
+
+  time_t delete_begin_t = delete_begin.ToTimeT();
+  time_t delete_end_t = GetEndTime(delete_end);
+
+  // Remember Autofill profiles with URL origins in the time range.
+  sql::Statement s_profiles_get(db_->GetUniqueStatement(
+      "SELECT guid, origin FROM autofill_profiles "
+      "WHERE date_modified >= ? AND date_modified < ?"));
+  s_profiles_get.BindInt64(0, delete_begin_t);
+  s_profiles_get.BindInt64(1, delete_end_t);
+
+  std::vector<std::string> profile_guids;
+  while (s_profiles_get.Step()) {
+    std::string guid = s_profiles_get.ColumnString(0);
+    std::string origin = s_profiles_get.ColumnString(1);
+    if (GURL(origin).is_valid())
+      profile_guids.push_back(guid);
+  }
+  if (!s_profiles_get.Succeeded())
+    return false;
+
+  // Clear out the origins for the found Autofill profiles.
+  for (std::vector<std::string>::const_iterator it = profile_guids.begin();
+       it != profile_guids.end(); ++it) {
+    sql::Statement s_profile(db_->GetUniqueStatement(
+        "UPDATE autofill_profiles SET origin='' WHERE guid=?"));
+    s_profile.BindString(0, *it);
+    if (!s_profile.Run())
+      return false;
+
+    AutofillProfile* profile;
+    if (!GetAutofillProfile(*it, &profile))
+      return false;
+
+    profiles->push_back(profile);
+  }
+
+  // Remember Autofill credit cards with URL origins in the time range.
+  sql::Statement s_credit_cards_get(db_->GetUniqueStatement(
+      "SELECT guid, origin FROM credit_cards "
+      "WHERE date_modified >= ? AND date_modified < ?"));
+  s_credit_cards_get.BindInt64(0, delete_begin_t);
+  s_credit_cards_get.BindInt64(1, delete_end_t);
+
+  std::vector<std::string> credit_card_guids;
+  while (s_credit_cards_get.Step()) {
+    std::string guid = s_credit_cards_get.ColumnString(0);
+    std::string origin = s_credit_cards_get.ColumnString(1);
+    if (GURL(origin).is_valid())
+      credit_card_guids.push_back(guid);
+  }
+  if (!s_credit_cards_get.Succeeded())
+    return false;
+
+  // Clear out the origins for the found credit cards.
+  for (std::vector<std::string>::const_iterator it = credit_card_guids.begin();
+       it != credit_card_guids.end(); ++it) {
+    sql::Statement s_credit_card(db_->GetUniqueStatement(
+        "UPDATE credit_cards SET origin='' WHERE guid=?"));
+    s_credit_card.BindString(0, *it);
+    if (!s_credit_card.Run())
+      return false;
+  }
+
+  return true;
 }
 
 bool AutofillTable::GetAutofillProfilesInTrash(
@@ -1374,7 +1460,8 @@ bool AutofillTable::InitCreditCardsTable() {
                       "expiration_month INTEGER, "
                       "expiration_year INTEGER, "
                       "card_number_encrypted BLOB, "
-                      "date_modified INTEGER NOT NULL DEFAULT 0)")) {
+                      "date_modified INTEGER NOT NULL DEFAULT 0, "
+                      "origin VARCHAR DEFAULT '')")) {
       NOTREACHED();
       return false;
     }
@@ -1412,7 +1499,8 @@ bool AutofillTable::InitProfilesTable() {
                       "zipcode VARCHAR, "
                       "country VARCHAR, "
                       "country_code VARCHAR, "
-                      "date_modified INTEGER NOT NULL DEFAULT 0)")) {
+                      "date_modified INTEGER NOT NULL DEFAULT 0, "
+                      "origin VARCHAR DEFAULT '')")) {
       NOTREACHED();
       return false;
     }
@@ -2003,16 +2091,46 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
     int64 date_modified = s.ColumnInt64(1);
     modification_map.insert(
         std::pair<std::string, int64>(guid, date_modified));
-    AutofillProfile* profile = NULL;
-    if (!GetAutofillProfile(guid, &profile))
+
+    sql::Statement s(db_->GetUniqueStatement(
+        "SELECT guid, company_name, address_line_1, address_line_2, city, "
+        " state, zipcode, country, country_code, date_modified "
+        "FROM autofill_profiles "
+        "WHERE guid=?"));
+    s.BindString(0, guid);
+
+    if (!s.Step())
       return false;
 
-    scoped_ptr<AutofillProfile> p(profile);
+    scoped_ptr<AutofillProfile> profile(new AutofillProfile);
+    profile->set_guid(s.ColumnString(0));
+    DCHECK(base::IsValidGUID(profile->guid()));
 
-    if (PersonalDataManager::IsValidLearnableProfile(*p, app_locale_)) {
+    profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(1));
+    profile->SetRawInfo(ADDRESS_HOME_LINE1, s.ColumnString16(2));
+    profile->SetRawInfo(ADDRESS_HOME_LINE2, s.ColumnString16(3));
+    profile->SetRawInfo(ADDRESS_HOME_CITY, s.ColumnString16(4));
+    profile->SetRawInfo(ADDRESS_HOME_STATE, s.ColumnString16(5));
+    profile->SetRawInfo(ADDRESS_HOME_ZIP, s.ColumnString16(6));
+    // Intentionally skip column 7, which stores the localized country name.
+    profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(8));
+    // Intentionally skip column 9, which stores the profile's modification
+    // date.
+    profile->set_origin(s.ColumnString(10));
+
+    // Get associated name info.
+    AddAutofillProfileNamesToProfile(db_, profile.get());
+
+    // Get associated email info.
+    AddAutofillProfileEmailsToProfile(db_, profile.get());
+
+    // Get associated phone info.
+    AddAutofillProfilePhonesToProfile(db_, profile.get());
+
+    if (PersonalDataManager::IsValidLearnableProfile(*profile, app_locale_)) {
       std::vector<AutofillProfile> merged_profiles;
       bool merged = PersonalDataManager::MergeProfile(
-          *p, accumulated_profiles_p, app_locale_, &merged_profiles);
+          *profile, accumulated_profiles_p, app_locale_, &merged_profiles);
 
       std::swap(accumulated_profiles, merged_profiles);
 
@@ -2025,11 +2143,11 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
 
       // If the profile got merged trash the original.
       if (merged)
-        AddAutofillGUIDToTrash(p->guid());
+        AddAutofillGUIDToTrash(profile->guid());
 
     } else {
       // An invalid profile, so trash it.
-      AddAutofillGUIDToTrash(p->guid());
+      AddAutofillGUIDToTrash(profile->guid());
     }
   }  // endwhile
   if (!s.Succeeded())
@@ -2044,40 +2162,61 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
           iter = accumulated_profiles.begin();
        iter != accumulated_profiles.end();
        ++iter) {
-    if (!AddAutofillProfile(*iter))
-      return false;
-
-    // Fix up the original modification date.
+    // Save the profile with its original modification date.
     std::map<std::string, int64>::const_iterator date_item =
         modification_map.find(iter->guid());
     if (date_item == modification_map.end())
       return false;
 
-    sql::Statement s_date(db_->GetUniqueStatement(
-        "UPDATE autofill_profiles SET date_modified=? "
-        "WHERE guid=?"));
-    s_date.BindInt64(0, date_item->second);
-    s_date.BindString(1, iter->guid());
+    sql::Statement s(db_->GetUniqueStatement(
+        "INSERT INTO autofill_profiles"
+        "(guid, company_name, address_line_1, address_line_2, city, state,"
+        " zipcode, country, country_code, date_modified)"
+        "VALUES (?,?,?,?,?,?,?,?,?,?)"));
+    s.BindString(0, iter->guid());
+    base::string16 text = iter->GetRawInfo(COMPANY_NAME);
+    s.BindString16(1, LimitDataSize(text));
+    text = iter->GetRawInfo(ADDRESS_HOME_LINE1);
+    s.BindString16(2, LimitDataSize(text));
+    text = iter->GetRawInfo(ADDRESS_HOME_LINE2);
+    s.BindString16(3, LimitDataSize(text));
+    text = iter->GetRawInfo(ADDRESS_HOME_CITY);
+    s.BindString16(4, LimitDataSize(text));
+    text = iter->GetRawInfo(ADDRESS_HOME_STATE);
+    s.BindString16(5, LimitDataSize(text));
+    text = iter->GetRawInfo(ADDRESS_HOME_ZIP);
+    s.BindString16(6, LimitDataSize(text));
+    text = iter->GetInfo(ADDRESS_HOME_COUNTRY, app_locale_);
+    s.BindString16(7, LimitDataSize(text));
+    text = iter->GetRawInfo(ADDRESS_HOME_COUNTRY);
+    s.BindString16(8, LimitDataSize(text));
+    s.BindInt64(9, date_item->second);
 
-    if (!s_date.Run())
+    if (!s.Run())
+      return false;
+
+    if (!AddAutofillProfilePieces(*iter, db_))
       return false;
   }
 
   return true;
 }
 
-bool AutofillTable::MigrateToVersion50AddOriginColumn() {
+bool AutofillTable::MigrateToVersion51AddOriginColumn() {
   sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return false;
 
   // Add origin to autofill_profiles.
-  if (!transaction.Begin() ||
+  if (!db_->DoesColumnExist("autofill_profiles", "origin") &&
       !db_->Execute("ALTER TABLE autofill_profiles "
                     "ADD COLUMN origin VARCHAR DEFAULT ''")) {
     return false;
   }
 
   // Add origin to credit_cards.
-  if (!db_->Execute("ALTER TABLE credit_cards "
+  if (!db_->DoesColumnExist("credit_cards", "origin") &&
+      !db_->Execute("ALTER TABLE credit_cards "
                     "ADD COLUMN origin VARCHAR DEFAULT ''")) {
       return false;
   }

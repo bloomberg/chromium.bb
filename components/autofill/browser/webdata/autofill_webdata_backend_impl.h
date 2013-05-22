@@ -118,6 +118,13 @@ class AutofillWebDataBackendImpl
       const base::Time& delete_end,
       WebDatabase* db);
 
+  // Removes origin URLs associated with Autofill profiles and credit cards from
+  // the database.
+  WebDatabase::State RemoveOriginURLsModifiedBetween(
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
+      WebDatabase* db);
+
  protected:
   virtual ~AutofillWebDataBackendImpl();
 

@@ -5,6 +5,7 @@
 #include "components/autofill/browser/webdata/autofill_webdata_backend_impl.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
@@ -103,13 +104,14 @@ scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::HasFormElements(
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::RemoveFormElementsAddedBetween(
-    const base::Time& delete_begin, const base::Time& delete_end,
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
     WebDatabase* db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   AutofillChangeList changes;
 
   if (AutofillTable::FromWebDatabase(db)->RemoveFormElementsAddedBetween(
-      delete_begin, delete_end, &changes)) {
+          delete_begin, delete_end, &changes)) {
     if (!changes.empty()) {
       // Post the notifications including the list of affected keys.
       // This is sent here so that work resulting from this notification
@@ -314,6 +316,29 @@ WebDatabase::State
     for (std::vector<std::string>::iterator iter = profile_guids.begin();
          iter != profile_guids.end(); ++iter) {
       AutofillProfileChange change(AutofillProfileChange::REMOVE, *iter, NULL);
+      FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
+                        db_observer_list_,
+                        AutofillProfileChanged(change));
+    }
+    // Note: It is the caller's responsibility to post notifications for any
+    // changes, e.g. by calling the Refresh() method of PersonalDataManager.
+    return WebDatabase::COMMIT_NEEDED;
+  }
+  return WebDatabase::COMMIT_NOT_NEEDED;
+}
+
+WebDatabase::State AutofillWebDataBackendImpl::RemoveOriginURLsModifiedBetween(
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
+    WebDatabase* db) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  ScopedVector<AutofillProfile> profiles;
+  if (AutofillTable::FromWebDatabase(db)->RemoveOriginURLsModifiedBetween(
+          delete_begin, delete_end, &profiles)) {
+    for (std::vector<AutofillProfile*>::const_iterator it = profiles.begin();
+         it != profiles.end(); ++it) {
+      AutofillProfileChange change(AutofillProfileChange::UPDATE,
+                                   (*it)->guid(), *it);
       FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
                         db_observer_list_,
                         AutofillProfileChanged(change));

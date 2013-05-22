@@ -15,7 +15,7 @@
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
 // static
-const int WebDatabase::kCurrentVersionNumber = 50;
+const int WebDatabase::kCurrentVersionNumber = 51;
 
 namespace {
 

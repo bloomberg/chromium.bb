@@ -232,7 +232,8 @@ TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
   EXPECT_EQ(guid_present1, data[0].GetSpecifics().autofill_profile().guid());
   EXPECT_EQ(guid_present2, data[1].GetSpecifics().autofill_profile().guid());
   // TODO(isherman): Verify that the origins match once they are saved and read
-  // from the database.  http://crbug.com/170401
+  // from the database and included in the Sync protocol buffers.
+  // http://crbug.com/170401
   // EXPECT_EQ(kHttpOrigin, data[0].GetSpecifics().autofill_profile().origin());
   // EXPECT_EQ(kHttpsOrigin,
   //           data[1].GetSpecifics().autofill_profile().origin());

@@ -507,6 +507,7 @@ TEST_F(AutofillTableTest, Autofill_AddFormFieldValues) {
 TEST_F(AutofillTableTest, AutofillProfile) {
   // Add a 'Home' profile.
   AutofillProfile home_profile;
+  home_profile.set_origin(std::string());
   home_profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
   home_profile.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("Q."));
   home_profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
@@ -542,6 +543,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   // Add a 'Billing' profile.
   AutofillProfile billing_profile = home_profile;
   billing_profile.set_guid(base::GenerateGUID());
+  billing_profile.set_origin("https://www.example.com/");
   billing_profile.SetRawInfo(ADDRESS_HOME_LINE1,
                              ASCIIToUTF16("5678 Bottom Street"));
   billing_profile.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("suite 3"));
@@ -583,6 +585,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   delete db_profile;
 
   // Update the 'Billing' profile.
+  billing_profile.set_origin("Chrome settings");
   billing_profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Janice"));
   billing_profile.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("C."));
   billing_profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Joplin"));
@@ -855,6 +858,7 @@ TEST_F(AutofillTableTest, AutofillProfileTrashInteraction) {
 TEST_F(AutofillTableTest, CreditCard) {
   // Add a 'Work' credit card.
   CreditCard work_creditcard;
+  work_creditcard.set_origin("https://www.example.com/");
   work_creditcard.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
   work_creditcard.SetRawInfo(CREDIT_CARD_NUMBER,
                              ASCIIToUTF16("1234567890123456"));
@@ -884,6 +888,7 @@ TEST_F(AutofillTableTest, CreditCard) {
 
   // Add a 'Target' credit card.
   CreditCard target_creditcard;
+  target_creditcard.set_origin(std::string());
   target_creditcard.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
   target_creditcard.SetRawInfo(CREDIT_CARD_NUMBER,
                                ASCIIToUTF16("1111222233334444"));
@@ -909,6 +914,7 @@ TEST_F(AutofillTableTest, CreditCard) {
   delete db_creditcard;
 
   // Update the 'Target' credit card.
+  target_creditcard.set_origin("Interactive Autofill dialog");
   target_creditcard.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Charles Grady"));
   Time pre_modification_time = Time::Now();
   EXPECT_TRUE(table_->UpdateCreditCard(target_creditcard));
@@ -1070,7 +1076,7 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
   // The modification date should not change.
   table_->UpdateCreditCard(credit_card);
 
-  // Get the profile.
+  // Get the credit card.
   ASSERT_TRUE(table_->GetCreditCard(credit_card.guid(), &tmp_credit_card));
   db_credit_card.reset(tmp_credit_card);
   EXPECT_EQ(credit_card, *db_credit_card);
@@ -1080,6 +1086,108 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
   ASSERT_TRUE(s_unchanged.Step());
   EXPECT_EQ(mock_modification_date, s_unchanged.ColumnInt64(0));
   EXPECT_FALSE(s_unchanged.Step());
+}
+
+TEST_F(AutofillTableTest, UpdateProfileOriginOnly) {
+  // Add a profile to the db.
+  AutofillProfile profile;
+  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
+  profile.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("Q."));
+  profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
+  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("js@example.com"));
+  profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Google"));
+  profile.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1234 Apple Way"));
+  profile.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("unit 5"));
+  profile.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Los Angeles"));
+  profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
+  profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
+  table_->AddAutofillProfile(profile);
+
+  // Set a mocked value for the profile's creation time.
+  const time_t mock_creation_date = Time::Now().ToTimeT() - 13;
+  sql::Statement s_mock_creation_date(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "UPDATE autofill_profiles SET date_modified = ?"));
+  ASSERT_TRUE(s_mock_creation_date.is_valid());
+  s_mock_creation_date.BindInt64(0, mock_creation_date);
+  ASSERT_TRUE(s_mock_creation_date.Run());
+
+  // Get the profile.
+  AutofillProfile* tmp_profile;
+  ASSERT_TRUE(table_->GetAutofillProfile(profile.guid(), &tmp_profile));
+  scoped_ptr<AutofillProfile> db_profile(tmp_profile);
+  EXPECT_EQ(profile, *db_profile);
+  sql::Statement s_original(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT date_modified FROM autofill_profiles"));
+  ASSERT_TRUE(s_original.is_valid());
+  ASSERT_TRUE(s_original.Step());
+  EXPECT_EQ(mock_creation_date, s_original.ColumnInt64(0));
+  EXPECT_FALSE(s_original.Step());
+
+  // Now, update just the profile's origin and save the update to the database.
+  // The modification date should change to reflect the update.
+  profile.set_origin("https://www.example.com/");
+  table_->UpdateAutofillProfileMulti(profile);
+
+  // Get the profile.
+  ASSERT_TRUE(table_->GetAutofillProfile(profile.guid(), &tmp_profile));
+  db_profile.reset(tmp_profile);
+  EXPECT_EQ(profile, *db_profile);
+  sql::Statement s_updated(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT date_modified FROM autofill_profiles"));
+  ASSERT_TRUE(s_updated.is_valid());
+  ASSERT_TRUE(s_updated.Step());
+  EXPECT_LT(mock_creation_date, s_updated.ColumnInt64(0));
+  EXPECT_FALSE(s_updated.Step());
+}
+
+TEST_F(AutofillTableTest, UpdateCreditCardOriginOnly) {
+  // Add a credit card to the db.
+  CreditCard credit_card;
+  credit_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Jack Torrance"));
+  credit_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1234567890123456"));
+  credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("04"));
+  credit_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2013"));
+  table_->AddCreditCard(credit_card);
+
+  // Set a mocked value for the credit card's creation time.
+  const time_t mock_creation_date = Time::Now().ToTimeT() - 13;
+  sql::Statement s_mock_creation_date(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "UPDATE credit_cards SET date_modified = ?"));
+  ASSERT_TRUE(s_mock_creation_date.is_valid());
+  s_mock_creation_date.BindInt64(0, mock_creation_date);
+  ASSERT_TRUE(s_mock_creation_date.Run());
+
+  // Get the credit card.
+  CreditCard* tmp_credit_card;
+  ASSERT_TRUE(table_->GetCreditCard(credit_card.guid(), &tmp_credit_card));
+  scoped_ptr<CreditCard> db_credit_card(tmp_credit_card);
+  EXPECT_EQ(credit_card, *db_credit_card);
+  sql::Statement s_original(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT date_modified FROM credit_cards"));
+  ASSERT_TRUE(s_original.is_valid());
+  ASSERT_TRUE(s_original.Step());
+  EXPECT_EQ(mock_creation_date, s_original.ColumnInt64(0));
+  EXPECT_FALSE(s_original.Step());
+
+  // Now, update just the credit card's origin and save the update to the
+  // database.  The modification date should change to reflect the update.
+  credit_card.set_origin("https://www.example.com/");
+  table_->UpdateCreditCard(credit_card);
+
+  // Get the credit card.
+  ASSERT_TRUE(table_->GetCreditCard(credit_card.guid(), &tmp_credit_card));
+  db_credit_card.reset(tmp_credit_card);
+  EXPECT_EQ(credit_card, *db_credit_card);
+  sql::Statement s_updated(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT date_modified FROM credit_cards"));
+  ASSERT_TRUE(s_updated.is_valid());
+  ASSERT_TRUE(s_updated.Step());
+  EXPECT_LT(mock_creation_date, s_updated.ColumnInt64(0));
+  EXPECT_FALSE(s_updated.Step());
 }
 
 TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
@@ -1194,6 +1302,91 @@ TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
           "SELECT date_modified FROM credit_cards"));
   ASSERT_TRUE(s_credit_cards_empty.is_valid());
   EXPECT_FALSE(s_credit_cards_empty.Step());
+}
+
+TEST_F(AutofillTableTest, RemoveOriginURLsModifiedBetween) {
+  // Populate the autofill_profiles and credit_cards tables.
+  ASSERT_TRUE(db_->GetSQLConnection()->Execute(
+      "INSERT INTO autofill_profiles (guid, origin, date_modified) "
+      "VALUES('00000000-0000-0000-0000-000000000000', '', 11);"
+      "INSERT INTO autofill_profiles (guid, origin, date_modified) "
+      "VALUES('00000000-0000-0000-0000-000000000001', "
+      "       'https://www.example.com/', 21);"
+      "INSERT INTO autofill_profiles (guid, origin, date_modified) "
+      "VALUES('00000000-0000-0000-0000-000000000002', 'Chrome settings', 31);"
+      "INSERT INTO credit_cards (guid, origin, date_modified) "
+      "VALUES('00000000-0000-0000-0000-000000000003', '', 17);"
+      "INSERT INTO credit_cards (guid, origin, date_modified) "
+      "VALUES('00000000-0000-0000-0000-000000000004', "
+      "       'https://www.example.com/', 27);"
+      "INSERT INTO credit_cards (guid, origin, date_modified) "
+      "VALUES('00000000-0000-0000-0000-000000000005', 'Chrome settings', "
+      "       37);"));
+
+  // Remove all origin URLs set in the bounded time range [21,27).
+  ScopedVector<AutofillProfile> profiles;
+  table_->RemoveOriginURLsModifiedBetween(
+      Time::FromTimeT(21), Time::FromTimeT(27), &profiles);
+  ASSERT_EQ(1UL, profiles.size());
+  EXPECT_EQ("00000000-0000-0000-0000-000000000001", profiles[0]->guid());
+  sql::Statement s_autofill_profiles_bounded(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT date_modified, origin FROM autofill_profiles"));
+  ASSERT_TRUE(s_autofill_profiles_bounded.is_valid());
+  ASSERT_TRUE(s_autofill_profiles_bounded.Step());
+  EXPECT_EQ(11, s_autofill_profiles_bounded.ColumnInt64(0));
+  EXPECT_EQ(std::string(), s_autofill_profiles_bounded.ColumnString(1));
+  ASSERT_TRUE(s_autofill_profiles_bounded.Step());
+  EXPECT_EQ(21, s_autofill_profiles_bounded.ColumnInt64(0));
+  EXPECT_EQ(std::string(), s_autofill_profiles_bounded.ColumnString(1));
+  ASSERT_TRUE(s_autofill_profiles_bounded.Step());
+  EXPECT_EQ(31, s_autofill_profiles_bounded.ColumnInt64(0));
+  EXPECT_EQ("Chrome settings", s_autofill_profiles_bounded.ColumnString(1));
+  sql::Statement s_credit_cards_bounded(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT date_modified, origin FROM credit_cards"));
+  ASSERT_TRUE(s_credit_cards_bounded.is_valid());
+  ASSERT_TRUE(s_credit_cards_bounded.Step());
+  EXPECT_EQ(17, s_credit_cards_bounded.ColumnInt64(0));
+  EXPECT_EQ(std::string(), s_credit_cards_bounded.ColumnString(1));
+  ASSERT_TRUE(s_credit_cards_bounded.Step());
+  EXPECT_EQ(27, s_credit_cards_bounded.ColumnInt64(0));
+  EXPECT_EQ("https://www.example.com/",
+            s_credit_cards_bounded.ColumnString(1));
+  ASSERT_TRUE(s_credit_cards_bounded.Step());
+  EXPECT_EQ(37, s_credit_cards_bounded.ColumnInt64(0));
+  EXPECT_EQ("Chrome settings", s_credit_cards_bounded.ColumnString(1));
+
+  // Remove all origin URLS.
+  profiles.clear();
+  table_->RemoveOriginURLsModifiedBetween(Time(), Time(), &profiles);
+  EXPECT_EQ(0UL, profiles.size());
+  sql::Statement s_autofill_profiles_all(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT date_modified, origin FROM autofill_profiles"));
+  ASSERT_TRUE(s_autofill_profiles_all.is_valid());
+  ASSERT_TRUE(s_autofill_profiles_all.Step());
+  EXPECT_EQ(11, s_autofill_profiles_all.ColumnInt64(0));
+  EXPECT_EQ(std::string(), s_autofill_profiles_all.ColumnString(1));
+  ASSERT_TRUE(s_autofill_profiles_all.Step());
+  EXPECT_EQ(21, s_autofill_profiles_all.ColumnInt64(0));
+  EXPECT_EQ(std::string(), s_autofill_profiles_all.ColumnString(1));
+  ASSERT_TRUE(s_autofill_profiles_all.Step());
+  EXPECT_EQ(31, s_autofill_profiles_all.ColumnInt64(0));
+  EXPECT_EQ("Chrome settings", s_autofill_profiles_all.ColumnString(1));
+  sql::Statement s_credit_cards_all(
+      db_->GetSQLConnection()->GetUniqueStatement(
+          "SELECT date_modified, origin FROM credit_cards"));
+  ASSERT_TRUE(s_credit_cards_all.is_valid());
+  ASSERT_TRUE(s_credit_cards_all.Step());
+  EXPECT_EQ(17, s_credit_cards_all.ColumnInt64(0));
+  EXPECT_EQ(std::string(), s_credit_cards_all.ColumnString(1));
+  ASSERT_TRUE(s_credit_cards_all.Step());
+  EXPECT_EQ(27, s_credit_cards_all.ColumnInt64(0));
+  EXPECT_EQ(std::string(), s_credit_cards_all.ColumnString(1));
+  ASSERT_TRUE(s_credit_cards_all.Step());
+  EXPECT_EQ(37, s_credit_cards_all.ColumnInt64(0));
+  EXPECT_EQ("Chrome settings", s_credit_cards_all.ColumnString(1));
 }
 
 TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_NoResults) {
