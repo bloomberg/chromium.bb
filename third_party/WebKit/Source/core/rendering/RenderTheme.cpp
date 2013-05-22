@@ -29,6 +29,7 @@
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMeterElement.h"
+#include "core/html/InputTypeNames.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/html/shadow/SpinButtonElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
@@ -893,7 +894,7 @@ bool RenderTheme::paintMeter(RenderObject*, const PaintInfo&, const IntRect&)
 #if ENABLE(DATALIST_ELEMENT)
 LayoutUnit RenderTheme::sliderTickSnappingThreshold() const
 {
-    return 0;
+    return 5;
 }
 
 void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, const IntRect& rect)
@@ -1191,5 +1192,32 @@ bool RenderTheme::shouldOpenPickerWithF4Key() const
 {
     return false;
 }
+
+bool RenderTheme::supportsDataListUI(const AtomicString& type) const
+{
+    return type == InputTypeNames::text() || type == InputTypeNames::search() || type == InputTypeNames::url()
+        || type == InputTypeNames::telephone() || type == InputTypeNames::email() || type == InputTypeNames::number()
+#if ENABLE(INPUT_TYPE_COLOR)
+        || type == InputTypeNames::color()
+#endif
+        || type == InputTypeNames::date()
+        || type == InputTypeNames::datetime()
+        || type == InputTypeNames::datetimelocal()
+        || type == InputTypeNames::month()
+        || type == InputTypeNames::week()
+        || type == InputTypeNames::time()
+        || type == InputTypeNames::range();
+}
+
+#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+bool RenderTheme::supportsCalendarPicker(const AtomicString& type) const
+{
+    return type == InputTypeNames::date()
+        || type == InputTypeNames::datetime()
+        || type == InputTypeNames::datetimelocal()
+        || type == InputTypeNames::month()
+        || type == InputTypeNames::week();
+}
+#endif
 
 } // namespace WebCore

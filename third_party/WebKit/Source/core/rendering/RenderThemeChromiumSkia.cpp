@@ -106,18 +106,6 @@ bool RenderThemeChromiumSkia::supportsFocusRing(const RenderStyle* style) const
     return false;
 }
 
-bool RenderThemeChromiumSkia::supportsDataListUI(const AtomicString& type) const
-{
-    return RenderThemeChromiumCommon::supportsDataListUI(type);
-}
-
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI) && ENABLE(CALENDAR_PICKER)
-bool RenderThemeChromiumSkia::supportsCalendarPicker(const AtomicString& type) const
-{
-    return RenderThemeChromiumCommon::supportsCalendarPicker(type);
-}
-#endif
-
 bool RenderThemeChromiumSkia::supportsClosedCaptioning() const
 {
     return true;
@@ -459,13 +447,6 @@ bool RenderThemeChromiumSkia::shouldShowPlaceholderWhenFocused() const
 {
     return true;
 }
-
-#if ENABLE(DATALIST_ELEMENT)
-LayoutUnit RenderThemeChromiumSkia::sliderTickSnappingThreshold() const
-{
-    return RenderThemeChromiumCommon::sliderTickSnappingThreshold();
-}
-#endif
 
 //
 // Following values are come from default of GTK+

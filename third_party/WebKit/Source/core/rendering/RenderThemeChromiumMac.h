@@ -25,10 +25,8 @@
 #define RenderThemeChromiumMac_h
 
 #import "core/rendering/RenderTheme.h"
-#import "core/rendering/RenderThemeChromiumCommon.h"
-
-#import <wtf/HashMap.h>
-#import <wtf/RetainPtr.h>
+#import "wtf/HashMap.h"
+#import "wtf/RetainPtr.h"
 
 OBJC_CLASS WebCoreRenderThemeNotificationObserver;
 
@@ -37,8 +35,6 @@ namespace WebCore {
 class RenderThemeChromiumMac : public RenderTheme {
 public:
     static PassRefPtr<RenderTheme> create();
-
-    virtual bool supportsDataListUI(const AtomicString& type) const OVERRIDE;
 
     // A method asking if the control changes its tint when the window has focus or not.
     virtual bool controlSupportsTints(const RenderObject*) const;
@@ -212,12 +208,6 @@ private:
     virtual Color disabledTextColor(const Color& textColor, const Color&) const OVERRIDE { return textColor; }
     virtual void updateActiveState(NSCell*, const RenderObject*);
     virtual String extraDefaultStyleSheet();
-#if ENABLE(DATALIST_ELEMENT)
-    virtual LayoutUnit sliderTickSnappingThreshold() const OVERRIDE;
-#endif
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-    virtual bool supportsCalendarPicker(const AtomicString& type) const OVERRIDE;
-#endif
     virtual bool shouldShowPlaceholderWhenFocused() const OVERRIDE;
 
     mutable RetainPtr<NSPopUpButtonCell> m_popupButton;

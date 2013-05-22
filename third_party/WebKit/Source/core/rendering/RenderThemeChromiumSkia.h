@@ -29,7 +29,6 @@
 #define RenderThemeChromiumSkia_h
 
 #include "core/rendering/RenderTheme.h"
-#include "core/rendering/RenderThemeChromiumCommon.h"
 
 namespace WebCore {
 
@@ -54,8 +53,6 @@ public:
 
     // A method asking if the theme is able to draw the focus ring.
     virtual bool supportsFocusRing(const RenderStyle*) const;
-
-    virtual bool supportsDataListUI(const AtomicString& type) const OVERRIDE;
 
     virtual bool supportsClosedCaptioning() const OVERRIDE;
     // The platform selection color.
@@ -161,13 +158,6 @@ protected:
 private:
     virtual Color disabledTextColor(const Color& textColor, const Color&) const OVERRIDE { return textColor; }
     virtual bool shouldShowPlaceholderWhenFocused() const OVERRIDE;
-
-#if ENABLE(DATALIST_ELEMENT)
-    virtual LayoutUnit sliderTickSnappingThreshold() const OVERRIDE;
-#endif
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-    virtual bool supportsCalendarPicker(const AtomicString& type) const OVERRIDE;
-#endif
 
     int menuListInternalPadding(RenderStyle*, int paddingType) const;
     bool paintMediaButtonInternal(GraphicsContext*, const IntRect&, Image*);

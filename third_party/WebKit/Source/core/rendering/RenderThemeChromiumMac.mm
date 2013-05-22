@@ -1855,11 +1855,6 @@ PassRefPtr<RenderTheme> RenderThemeChromiumMac::create()
     return adoptRef(new RenderThemeChromiumMac);
 }
 
-bool RenderThemeChromiumMac::supportsDataListUI(const AtomicString& type) const
-{
-    return RenderThemeChromiumCommon::supportsDataListUI(type);
-}
-
 bool RenderThemeChromiumMac::usesTestModeFocusRingColor() const
 {
     return isRunningLayoutTest();
@@ -1930,20 +1925,6 @@ String RenderThemeChromiumMac::extraDefaultStyleSheet()
     return RenderTheme::extraDefaultStyleSheet() +
            String(themeChromiumUserAgentStyleSheet, sizeof(themeChromiumUserAgentStyleSheet));
 }
-
-#if ENABLE(DATALIST_ELEMENT)
-LayoutUnit RenderThemeChromiumMac::sliderTickSnappingThreshold() const
-{
-    return RenderThemeChromiumCommon::sliderTickSnappingThreshold();
-}
-#endif
-
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI) && ENABLE(CALENDAR_PICKER)
-bool RenderThemeChromiumMac::supportsCalendarPicker(const AtomicString& type) const
-{
-    return RenderThemeChromiumCommon::supportsCalendarPicker(type);
-}
-#endif
 
 bool RenderThemeChromiumMac::paintMediaVolumeSliderContainer(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {

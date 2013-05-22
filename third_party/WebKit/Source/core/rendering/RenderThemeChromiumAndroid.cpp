@@ -103,4 +103,9 @@ int RenderThemeChromiumAndroid::menuListArrowPadding() const
     return scrollbarSize.width();
 }
 
+bool RenderThemeChromiumAndroid::supportsDataListUI(const AtomicString& type) const
+{
+    return false;
+}
+
 } // namespace WebCore

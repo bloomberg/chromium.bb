@@ -44,7 +44,6 @@
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderProgress.h"
 #include "core/rendering/RenderSlider.h"
-#include "core/rendering/RenderThemeChromiumCommon.h"
 #include <public/Platform.h>
 #include <public/WebColor.h>
 #include <public/WebRect.h>

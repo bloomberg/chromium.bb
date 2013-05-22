@@ -1439,8 +1439,6 @@
             'rendering/RenderTheme.h',
             'rendering/RenderThemeChromiumAndroid.cpp',
             'rendering/RenderThemeChromiumAndroid.h',
-            'rendering/RenderThemeChromiumCommon.cpp',
-            'rendering/RenderThemeChromiumCommon.h',
             'rendering/RenderThemeChromiumDefault.cpp',
             'rendering/RenderThemeChromiumDefault.h',
             'rendering/RenderThemeChromiumFontProvider.cpp',
