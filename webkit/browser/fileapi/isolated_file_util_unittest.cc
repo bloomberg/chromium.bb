@@ -24,7 +24,6 @@
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/local_file_system_operation.h"
-#include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/mock_file_system_context.h"
 #include "webkit/fileapi/test_file_set.h"
 
