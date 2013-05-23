@@ -9,11 +9,17 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time.h"
 #include "net/base/net_export.h"
 #include "net/base/rand_callback.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_socket_pool.h"
+
+namespace base {
+class BucketRanges;
+class SampleVector;
+}
 
 namespace net {
 
@@ -63,8 +69,15 @@ class NET_EXPORT_PRIVATE DnsSession
   // Return the index of the first configured server to use on first attempt.
   int NextFirstServerIndex();
 
-  // Return the timeout for the next query.
-  base::TimeDelta NextTimeout(int attempt);
+  // Record how long it took to receive a response from the server.
+  void RecordRTT(unsigned server_index, base::TimeDelta rtt);
+
+  // Record suspected loss of a packet for a specific server.
+  void RecordLostPacket(unsigned server_index, int attempt);
+
+  // Return the timeout for the next query. |attempt| counts from 0 and is used
+  // for exponential backoff.
+  base::TimeDelta NextTimeout(unsigned server_index, int attempt);
 
   // Allocate a socket, already connected to the server address.
   // When the SocketLease is destroyed, the socket will be freed.
@@ -84,6 +97,12 @@ class NET_EXPORT_PRIVATE DnsSession
   void FreeSocket(unsigned server_index,
                   scoped_ptr<DatagramClientSocket> socket);
 
+  // Return the timeout using the TCP timeout method.
+  base::TimeDelta NextTimeoutFromJacobson(unsigned server_index, int attempt);
+
+  // Compute the timeout using the histogram method.
+  base::TimeDelta NextTimeoutFromHistogram(unsigned server_index, int attempt);
+
   const DnsConfig config_;
   scoped_ptr<DnsSocketPool> socket_pool_;
   RandCallback rand_callback_;
@@ -92,8 +111,15 @@ class NET_EXPORT_PRIVATE DnsSession
   // Current index into |config_.nameservers| to begin resolution with.
   int server_index_;
 
-  // TODO(szym): Add current RTT estimate.
-  // TODO(szym): Add TCP connection pool to support DNS over TCP.
+  // Estimated RTT for each name server using moving average.
+  std::vector<base::TimeDelta> rtt_estimates_;
+  // Estimated error in the above for each name server.
+  std::vector<base::TimeDelta> rtt_deviations_;
+
+  // Buckets shared for all |rtt_histograms_|.
+  scoped_ptr<base::BucketRanges> rtt_buckets_;
+  // A histogram of observed RTT for each name server.
+  ScopedVector<base::SampleVector> rtt_histograms_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsSession);
 };
