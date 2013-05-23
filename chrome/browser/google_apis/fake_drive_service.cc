@@ -677,10 +677,37 @@ void FakeDriveService::TouchResource(
     const base::Time& last_viewed_by_me_date,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!modified_date.is_null());
+  DCHECK(!last_viewed_by_me_date.is_null());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this. (crbug.com/144369).
-  NOTIMPLEMENTED();
+  if (offline_) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, GDATA_NO_CONNECTION,
+                   base::Passed(scoped_ptr<ResourceEntry>())));
+    return;
+  }
+
+  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  if (!entry) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_NOT_FOUND,
+                   base::Passed(scoped_ptr<ResourceEntry>())));
+    return;
+  }
+
+  entry->SetString("updated.$t",
+                   util::FormatTimeAsString(modified_date));
+  entry->SetString("gd$lastViewed.$t",
+                   util::FormatTimeAsString(last_viewed_by_me_date));
+  AddNewChangestamp(entry);
+
+  scoped_ptr<ResourceEntry> parsed_entry(ResourceEntry::CreateFrom(*entry));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_SUCCESS, base::Passed(&parsed_entry)));
 }
 
 void FakeDriveService::AddResourceToDirectory(

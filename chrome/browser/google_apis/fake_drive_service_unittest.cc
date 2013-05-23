@@ -1070,6 +1070,84 @@ TEST_F(FakeDriveServiceTest, RenameResource_Offline) {
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
 
+TEST_F(FakeDriveServiceTest, TouchResource_ExistingFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+
+  const std::string kResourceId = "file:2_file_resource_id";
+  const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
+  const base::Time::Exploded kLastViewedByMeDate =
+      {2013, 7, 0, 19, 15, 59, 13, 123};
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> entry;
+  fake_service_.TouchResource(
+      kResourceId,
+      base::Time::FromUTCExploded(kModifiedDate),
+      base::Time::FromUTCExploded(kLastViewedByMeDate),
+      test_util::CreateCopyResultCallback(&error, &entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(base::Time::FromUTCExploded(kModifiedDate),
+            entry->updated_time());
+  EXPECT_EQ(base::Time::FromUTCExploded(kLastViewedByMeDate),
+            entry->last_viewed_time());
+
+  // Should be incremented as a file was renamed.
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
+}
+
+TEST_F(FakeDriveServiceTest, TouchResource_NonexistingFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+
+  const std::string kResourceId = "file:nonexisting_file";
+  const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
+  const base::Time::Exploded kLastViewedByMeDate =
+      {2013, 7, 0, 19, 15, 59, 13, 123};
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> entry;
+  fake_service_.TouchResource(
+      kResourceId,
+      base::Time::FromUTCExploded(kModifiedDate),
+      base::Time::FromUTCExploded(kLastViewedByMeDate),
+      test_util::CreateCopyResultCallback(&error, &entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
+TEST_F(FakeDriveServiceTest, TouchResource_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "chromeos/gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  const std::string kResourceId = "file:2_file_resource_id";
+  const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
+  const base::Time::Exploded kLastViewedByMeDate =
+      {2013, 7, 0, 19, 15, 59, 13, 123};
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> entry;
+  fake_service_.TouchResource(
+      kResourceId,
+      base::Time::FromUTCExploded(kModifiedDate),
+      base::Time::FromUTCExploded(kLastViewedByMeDate),
+      test_util::CreateCopyResultCallback(&error, &entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+}
+
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
