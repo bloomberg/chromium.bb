@@ -383,6 +383,28 @@ void JobScheduler::RenameResource(
   StartJob(new_job);
 }
 
+void JobScheduler::TouchResource(
+    const std::string& resource_id,
+    const base::Time& modified_date,
+    const base::Time& last_viewed_by_me_date,
+    const google_apis::GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  JobEntry* new_job = CreateNewJob(TYPE_TOUCH_RESOURCE);
+  new_job->task = base::Bind(
+      &google_apis::DriveServiceInterface::TouchResource,
+      base::Unretained(drive_service_),
+      resource_id,
+      modified_date,
+      last_viewed_by_me_date,
+      base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 new_job->job_info.job_id,
+                 callback));
+  StartJob(new_job);
+}
+
 void JobScheduler::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
@@ -889,6 +911,7 @@ JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
     case TYPE_COPY_RESOURCE:
     case TYPE_COPY_HOSTED_DOCUMENT:
     case TYPE_RENAME_RESOURCE:
+    case TYPE_TOUCH_RESOURCE:
     case TYPE_ADD_RESOURCE_TO_DIRECTORY:
     case TYPE_REMOVE_RESOURCE_FROM_DIRECTORY:
     case TYPE_ADD_NEW_DIRECTORY:

@@ -120,6 +120,12 @@ class JobScheduler
                       const std::string& new_name,
                       const google_apis::EntryActionCallback& callback);
 
+  // Adds a TouchResource operation to the queue.
+  void TouchResource(const std::string& resource_id,
+                     const base::Time& modified_date,
+                     const base::Time& last_viewed_by_me_date,
+                     const google_apis::GetResourceEntryCallback& callback);
+
   // Adds a AddResourceToDirectory operation to the queue.
   void AddResourceToDirectory(const std::string& parent_resource_id,
                               const std::string& resource_id,
