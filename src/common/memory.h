@@ -30,12 +30,13 @@
 #ifndef GOOGLE_BREAKPAD_COMMON_MEMORY_H_
 #define GOOGLE_BREAKPAD_COMMON_MEMORY_H_
 
-#include <memory>
-#include <vector>
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/mman.h>
+
+#include <memory>
+#include <vector>
 
 #ifdef __APPLE__
 #define sys_mmap mmap
@@ -87,10 +88,25 @@ class PageAllocator {
     if (!ret)
       return NULL;
 
-    page_offset_ = (page_size_ - (page_size_ * pages - (bytes + sizeof(PageHeader)))) % page_size_;
+    page_offset_ =
+        (page_size_ - (page_size_ * pages - (bytes + sizeof(PageHeader)))) %
+        page_size_;
     current_page_ = page_offset_ ? ret + page_size_ * (pages - 1) : NULL;
 
     return ret + sizeof(PageHeader);
+  }
+
+  // Checks whether the page allocator owns the passed-in pointer.
+  // This method exists for testing pursposes only.
+  bool OwnsPointer(const void* p) {
+    PageHeader* header = last_;
+    for (header = last_; header; header = header->next) {
+      const char* current = reinterpret_cast<char*>(header);
+      if ((p >= current) && (p < current + header->num_pages * page_size_))
+        return true;
+    }
+
+    return false;
   }
 
  private:
@@ -135,16 +151,16 @@ class PageAllocator {
 
 // Wrapper to use with STL containers
 template <typename T>
-struct PageStdAllocator: public std::allocator<T> {
+struct PageStdAllocator : public std::allocator<T> {
   typedef typename std::allocator<T>::pointer pointer;
   typedef typename std::allocator<T>::size_type size_type;
 
-  PageStdAllocator(PageAllocator& allocator): allocator_(allocator) {}
-  template <class Other> PageStdAllocator(const PageStdAllocator<Other>& other):
-    allocator_(other.allocator_) {}
+  explicit PageStdAllocator(PageAllocator& allocator): allocator_(allocator) {}
+  template <class Other> PageStdAllocator(const PageStdAllocator<Other>& other)
+      : allocator_(other.allocator_) {}
 
-  inline pointer allocator(size_type n, const void* = 0) {
-    return allocator_.Alloc(sizeof(T) * n);
+  inline pointer allocate(size_type n, const void* = 0) {
+    return static_cast<pointer>(allocator_.Alloc(sizeof(T) * n));
   }
 
   inline void deallocate(pointer, size_type) {
@@ -155,7 +171,7 @@ struct PageStdAllocator: public std::allocator<T> {
     typedef PageStdAllocator<U> other;
   };
 
-private:
+ private:
   PageAllocator& allocator_;
 };
 
@@ -163,7 +179,7 @@ private:
 // PageAllocator. It's wasteful because, when resizing, it always allocates a
 // whole new array since the PageAllocator doesn't support realloc.
 template<class T>
-class wasteful_vector: public std::vector<T, PageStdAllocator<T> > {
+class wasteful_vector : public std::vector<T, PageStdAllocator<T> > {
  public:
   wasteful_vector(PageAllocator* allocator, unsigned size_hint = 16)
       : std::vector<T, PageStdAllocator<T> >(PageStdAllocator<T>(*allocator)) {
@@ -175,7 +191,7 @@ class wasteful_vector: public std::vector<T, PageStdAllocator<T> > {
 
 inline void* operator new(size_t nbytes,
                           google_breakpad::PageAllocator& allocator) {
-   return allocator.Alloc(nbytes);
+  return allocator.Alloc(nbytes);
 }
 
 #endif  // GOOGLE_BREAKPAD_COMMON_MEMORY_H_
