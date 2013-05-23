@@ -5,9 +5,11 @@
 #ifndef ASH_SYSTEM_USER_USER_OBSERVER_H_
 #define ASH_SYSTEM_USER_USER_OBSERVER_H_
 
+#include "ash/ash_export.h"
+
 namespace ash {
 
-class UserObserver {
+class ASH_EXPORT UserObserver {
  public:
   virtual ~UserObserver() {}
 
