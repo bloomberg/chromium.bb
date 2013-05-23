@@ -27,25 +27,18 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #ifndef PopupListBox_h
 #define PopupListBox_h
 
 #include "core/dom/Node.h"
 #include "core/platform/chromium/FramelessScrollView.h"
 #include "core/platform/text/TextDirection.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 typedef unsigned long long TimeStamp;
-
-static const int kLabelToIconPadding = 5;
-static const int kLinePaddingHeight = 3; // Padding height put at the top and bottom of each line.
-static const int kMaxHeight = 500;
-static const int kMaxVisibleRows = 20;
-static const int kMinEndOfLinePadding = 2;
-static const int kTextToLabelPadding = 10;
-static const TimeStamp kTypeAheadTimeoutMs = 1000;
 
 class Font;
 class GraphicsContext;
@@ -124,17 +117,17 @@ public:
     }
 
     // FramelessScrollView
-    virtual void paint(GraphicsContext*, const IntRect&);
-    virtual bool handleMouseDownEvent(const PlatformMouseEvent&);
-    virtual bool handleMouseMoveEvent(const PlatformMouseEvent&);
-    virtual bool handleMouseReleaseEvent(const PlatformMouseEvent&);
-    virtual bool handleWheelEvent(const PlatformWheelEvent&);
-    virtual bool handleKeyEvent(const PlatformKeyboardEvent&);
-    virtual bool handleTouchEvent(const PlatformTouchEvent&);
-    virtual bool handleGestureEvent(const PlatformGestureEvent&);
+    virtual void paint(GraphicsContext*, const IntRect&) OVERRIDE;
+    virtual bool handleMouseDownEvent(const PlatformMouseEvent&) OVERRIDE;
+    virtual bool handleMouseMoveEvent(const PlatformMouseEvent&) OVERRIDE;
+    virtual bool handleMouseReleaseEvent(const PlatformMouseEvent&) OVERRIDE;
+    virtual bool handleWheelEvent(const PlatformWheelEvent&) OVERRIDE;
+    virtual bool handleKeyEvent(const PlatformKeyboardEvent&) OVERRIDE;
+    virtual bool handleTouchEvent(const PlatformTouchEvent&) OVERRIDE;
+    virtual bool handleGestureEvent(const PlatformGestureEvent&) OVERRIDE;
 
     // ScrollView
-    virtual HostWindow* hostWindow() const;
+    virtual HostWindow* hostWindow() const OVERRIDE;
 
     // PopupListBox methods
 
@@ -150,9 +143,9 @@ public:
     // Sets the index of the option that is displayed in the <select> widget in the page
     void setOriginalIndex(int);
 
-    // Gets the index of the item that the user is currently moused over or has selected with
-    // the keyboard. This is not the same as the original index, since the user has not yet
-    // accepted this input.
+    // Gets the index of the item that the user is currently moused over or has
+    // selected with the keyboard. This is not the same as the original index,
+    // since the user has not yet accepted this input.
     int selectedIndex() const { return m_selectedIndex; }
 
     // Moves selection down/up the given number of items, scrolling if necessary.
@@ -186,6 +179,8 @@ public:
 
     virtual int popupContentHeight() const OVERRIDE;
 
+    static const int defaultMaxHeight;
+
 private:
     friend class PopupContainer;
     friend class RefCounted<PopupListBox>;
@@ -207,8 +202,9 @@ private:
     // Select an index in the list, scrolling if necessary.
     void selectIndex(int index);
 
-    // Accepts the selected index as the value to be displayed in the <select> widget on
-    // the web page, and closes the popup. Returns true if index is accepted.
+    // Accepts the selected index as the value to be displayed in the <select>
+    // widget on the web page, and closes the popup. Returns true if index is
+    // accepted.
     bool acceptIndex(int index);
 
     // Clears the selection (so no row appears selected).
@@ -247,13 +243,13 @@ private:
     // The settings that specify the behavior for this Popup window.
     PopupContainerSettings m_settings;
 
-    // This is the index of the item marked as "selected" - i.e. displayed in the widget on the
-    // page.
+    // This is the index of the item marked as "selected" - i.e. displayed in
+    // the widget on the page.
     int m_originalIndex;
 
-    // This is the index of the item that the user is hovered over or has selected using the
-    // keyboard in the list. They have not confirmed this selection by clicking or pressing
-    // enter yet however.
+    // This is the index of the item that the user is hovered over or has
+    // selected using the keyboard in the list. They have not confirmed this
+    // selection by clicking or pressing enter yet however.
     int m_selectedIndex;
 
     // If >= 0, this is the index we should accept if the popup is "abandoned".
@@ -262,9 +258,9 @@ private:
     // acceptOnAbandon field is true.
     int m_acceptedIndexOnAbandon;
 
-    // This is the number of rows visible in the popup. The maximum number visible at a time is
-    // defined as being kMaxVisibleRows. For a scrolled popup, this can be thought of as the
-    // page size in data units.
+    // This is the number of rows visible in the popup. The maximum number
+    // visible at a time is defined as being kMaxVisibleRows. For a scrolled
+    // popup, this can be thought of as the page size in data units.
     int m_visibleRows;
 
     // Our suggested width, not including scrollbar.
@@ -300,7 +296,6 @@ private:
 
     // To forward last mouse release event.
     RefPtr<Node> m_focusedNode;
-
 };
 
 } // namespace WebCore

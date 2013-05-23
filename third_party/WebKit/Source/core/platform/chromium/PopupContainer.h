@@ -49,22 +49,21 @@ public:
         Suggestion, // Autocomplete/autofill popup.
     };
 
-    static PassRefPtr<PopupContainer> create(PopupMenuClient*, PopupType,
-                                             const PopupContainerSettings&);
+    static PassRefPtr<PopupContainer> create(PopupMenuClient*, PopupType, const PopupContainerSettings&);
 
     // Whether a key event should be sent to this popup.
-    virtual bool isInterestedInEventForKey(int keyCode);
+    bool isInterestedInEventForKey(int keyCode);
 
     // FramelessScrollView
-    virtual void paint(GraphicsContext*, const IntRect&);
-    virtual void hide();
-    virtual bool handleMouseDownEvent(const PlatformMouseEvent&);
-    virtual bool handleMouseMoveEvent(const PlatformMouseEvent&);
-    virtual bool handleMouseReleaseEvent(const PlatformMouseEvent&);
-    virtual bool handleWheelEvent(const PlatformWheelEvent&);
-    virtual bool handleKeyEvent(const PlatformKeyboardEvent&);
-    virtual bool handleTouchEvent(const PlatformTouchEvent&);
-    virtual bool handleGestureEvent(const PlatformGestureEvent&);
+    virtual void paint(GraphicsContext*, const IntRect&) OVERRIDE;
+    virtual void hide() OVERRIDE;
+    virtual bool handleMouseDownEvent(const PlatformMouseEvent&) OVERRIDE;
+    virtual bool handleMouseMoveEvent(const PlatformMouseEvent&) OVERRIDE;
+    virtual bool handleMouseReleaseEvent(const PlatformMouseEvent&) OVERRIDE;
+    virtual bool handleWheelEvent(const PlatformWheelEvent&) OVERRIDE;
+    virtual bool handleKeyEvent(const PlatformKeyboardEvent&) OVERRIDE;
+    virtual bool handleTouchEvent(const PlatformTouchEvent&) OVERRIDE;
+    virtual bool handleGestureEvent(const PlatformGestureEvent&) OVERRIDE;
 
     // PopupContainer methods
 
@@ -138,13 +137,18 @@ private:
     PopupContainerSettings m_settings;
     PopupType m_popupType;
 
-    // m_controlPosition contains the transformed position of the <select>/<input> associated with this popup.
-    // m_controlSize is the size of the <select>/<input> without transform.
+    // m_controlPosition contains the transformed position of the
+    // <select>/<input> associated with this popup. m_controlSize is the size
+    // of the <select>/<input> without transform.
     // The popup menu will be positioned as follows:
-    // LTR : If the popup is positioned down it will align with the bottom left of m_controlPosition (p4)
-    //       If the popup is positioned up it will align with the top left of m_controlPosition (p1)
-    // RTL : If the popup is positioned down it will align with the bottom right of m_controlPosition (p3)
-    //       If the popup is positioned up it will align with the top right of m_controlPosition (p2)
+    // LTR : If the popup is positioned down it will align with the bottom left
+    //       of m_controlPosition (p4)
+    //       If the popup is positioned up it will align with the top left of
+    //       m_controlPosition (p1)
+    // RTL : If the popup is positioned down it will align with the bottom right
+    //       of m_controlPosition (p3)
+    //       If the popup is positioned up it will align with the top right of
+    //       m_controlPosition (p2)
     FloatQuad m_controlPosition;
     IntSize m_controlSize;
 

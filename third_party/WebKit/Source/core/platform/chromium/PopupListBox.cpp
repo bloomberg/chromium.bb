@@ -27,11 +27,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include "config.h"
 #include "core/platform/chromium/PopupListBox.h"
 
-#include <ctype.h>
-#include <limits>
 #include "CSSValueKeywords.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/platform/PlatformGestureEvent.h"
@@ -53,13 +52,22 @@
 #include "core/platform/graphics/StringTruncator.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/rendering/RenderTheme.h"
-#include <wtf/CurrentTime.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/CurrentTime.h"
+#include <limits>
 
 namespace WebCore {
 
-using namespace std;
-using namespace WTF;
-using namespace Unicode;
+using namespace WTF::Unicode;
+
+static const int labelToIconPadding = 5;
+// Padding height put at the top and bottom of each line.
+static const int autofillLinePaddingHeight = 3;
+const int PopupListBox::defaultMaxHeight = 500;
+static const int maxVisibleRows = 20;
+static const int minEndOfLinePadding = 2;
+static const int textToLabelPadding = 10;
+static const TimeStamp typeAheadTimeoutMs = 1000;
 
 PopupListBox::PopupListBox(PopupMenuClient* client, const PopupContainerSettings& settings)
     : m_settings(settings)
@@ -68,7 +76,7 @@ PopupListBox::PopupListBox(PopupMenuClient* client, const PopupContainerSettings
     , m_acceptedIndexOnAbandon(-1)
     , m_visibleRows(0)
     , m_baseWidth(0)
-    , m_maxHeight(kMaxHeight)
+    , m_maxHeight(defaultMaxHeight)
     , m_popupClient(client)
     , m_repeatingChar(0)
     , m_lastCharTime(0)
@@ -130,13 +138,15 @@ bool PopupListBox::handleMouseReleaseEvent(const PlatformMouseEvent& event)
     if (!isPointInBounds(event.position()))
         return true;
 
-    // Need to check before calling acceptIndex(), because m_popupClient might be removed in acceptIndex() calling because of event handler.
+    // Need to check before calling acceptIndex(), because m_popupClient might
+    // be removed in acceptIndex() calling because of event handler.
     bool isSelectPopup = m_popupClient->menuStyle().menuType() == PopupMenuStyle::SelectPopup;
     if (acceptIndex(pointToRowIndex(event.position())) && m_focusedNode && isSelectPopup) {
         m_focusedNode->dispatchMouseEvent(event, eventNames().mouseupEvent);
         m_focusedNode->dispatchMouseEvent(event, eventNames().clickEvent);
 
-        // Clear m_focusedNode here, because we cannot clear in hidePopup() which is called before dispatchMouseEvent() is called.
+        // Clear m_focusedNode here, because we cannot clear in hidePopup()
+        // which is called before dispatchMouseEvent() is called.
         m_focusedNode = 0;
     }
 
@@ -214,8 +224,9 @@ bool PopupListBox::handleKeyEvent(const PlatformKeyboardEvent& event)
         return true;
     case VKEY_UP:
     case VKEY_DOWN:
-        // We have to forward only shift + up combination to focused node when autofill popup.
-        // Because all characters from the cursor to the start of the text area should selected when you press shift + up arrow.
+        // We have to forward only shift + up combination to focused node when
+        // autofill popup. Because all characters from the cursor to the start
+        // of the text area should selected when you press shift + up arrow.
         // shift + down should be the similar way to shift + up.
         if (event.modifiers() && m_popupClient->menuStyle().menuType() == PopupMenuStyle::AutofillPopup)
             m_focusedNode->dispatchKeyEvent(event);
@@ -287,7 +298,7 @@ static String stripLeadingWhiteSpace(const String& string)
     int i;
     for (i = 0; i < length; ++i)
         if (string[i] != noBreakSpace
-            && (string[i] <= 0x7F ? !isspace(string[i]) : (direction(string[i]) != WhiteSpaceNeutral)))
+            && (string[i] <= 0x7F ? !isASCIISpace(string[i]) : (direction(string[i]) != WhiteSpaceNeutral)))
             break;
 
     return string.substring(i, length - i);
@@ -308,26 +319,27 @@ void PopupListBox::typeAheadFind(const PlatformKeyboardEvent& event)
 
     String prefix;
     int searchStartOffset = 1;
-    if (delta > kTypeAheadTimeoutMs) {
+    if (delta > typeAheadTimeoutMs) {
         m_typedString = prefix = String(&c, 1);
         m_repeatingChar = c;
     } else {
         m_typedString.append(c);
 
-        if (c == m_repeatingChar)
-            // The user is likely trying to cycle through all the items starting with this character, so just search on the character
+        if (c == m_repeatingChar) {
+            // The user is likely trying to cycle through all the items starting
+            // with this character, so just search on the character.
             prefix = String(&c, 1);
-        else {
+        } else {
             m_repeatingChar = 0;
             prefix = m_typedString;
             searchStartOffset = 0;
         }
     }
 
-    // Compute a case-folded copy of the prefix string before beginning the search for
-    // a matching element. This code uses foldCase to work around the fact that
-    // String::startWith does not fold non-ASCII characters. This code can be changed
-    // to use startWith once that is fixed.
+    // Compute a case-folded copy of the prefix string before beginning the
+    // search for a matching element. This code uses foldCase to work around the
+    // fact that String::startWith does not fold non-ASCII characters. This code
+    // can be changed to use startWith once that is fixed.
     String prefixWithCaseFolded(prefix.foldCase());
     int itemCount = numItems();
     int index = (max(0, m_selectedIndex) + searchStartOffset) % itemCount;
@@ -344,14 +356,14 @@ void PopupListBox::typeAheadFind(const PlatformKeyboardEvent& event)
 
 void PopupListBox::paint(GraphicsContext* gc, const IntRect& rect)
 {
-    // adjust coords for scrolled frame
+    // Adjust coords for scrolled frame.
     IntRect r = intersection(rect, frameRect());
     int tx = x() - scrollX();
     int ty = y() - scrollY();
 
     r.move(-tx, -ty);
 
-    // set clip rect to match revised damage rect
+    // Set clip rect to match revised damage rect.
     gc->save();
     gc->translate(static_cast<float>(tx), static_cast<float>(ty));
     gc->clip(r);
@@ -453,12 +465,12 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
         String str = StringTruncator::rightTruncate(itemText, maxWidth, itemFont);
         if (str != itemText) {
             itemText = str;
-            // Don't display the label or icon, we already don't have enough room for the item text.
+            // Don't display the label or icon, we already don't have enough
+            // room for the item text.
             itemLabel = "";
             itemIcon = "";
         } else if (!itemLabel.isEmpty()) {
-            int availableWidth = maxWidth - kTextToLabelPadding -
-                StringTruncator::width(itemText, itemFont);
+            int availableWidth = maxWidth - textToLabelPadding - StringTruncator::width(itemText, itemFont);
             itemLabel = StringTruncator::rightTruncate(itemLabel, availableWidth, itemFont);
         }
     }
@@ -485,7 +497,7 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
     RefPtr<Image> image(Image::loadPlatformResource(itemIcon.utf8().data()));
     if (image && !image->isNull()) {
         IntRect imageRect = image->rect();
-        remainingWidth -= (imageRect.width() + kLabelToIconPadding);
+        remainingWidth -= (imageRect.width() + labelToIconPadding);
         imageRect.setX(rowRect.width() - rightPadding - imageRect.width());
         imageRect.setY(rowRect.y() + (rowRect.height() - imageRect.height()) / 2);
         gc->drawImage(image.get(), ColorSpaceDeviceRGB, imageRect);
@@ -636,7 +648,7 @@ int PopupListBox::getRowHeight(int index)
     int fontHeight = getRowFont(index).fontMetrics().height();
     int iconHeight = (image && !image->isNull()) ? image->rect().height() : 0;
 
-    int linePaddingHeight = m_popupClient->menuStyle().menuType() == PopupMenuStyle::AutofillPopup ? kLinePaddingHeight : 0;
+    int linePaddingHeight = m_popupClient->menuStyle().menuType() == PopupMenuStyle::AutofillPopup ? autofillLinePaddingHeight : 0;
     int calculatedRowHeight = max(fontHeight, iconHeight) + linePaddingHeight * 2;
     return max(calculatedRowHeight, minimumHeight);
 }
@@ -722,7 +734,7 @@ void PopupListBox::selectPreviousRow()
 void PopupListBox::adjustSelectedIndex(int delta)
 {
     int targetIndex = m_selectedIndex + delta;
-    targetIndex = min(max(targetIndex, 0), numItems() - 1);
+    targetIndex = std::min(std::max(targetIndex, 0), numItems() - 1);
     if (!isSelectableItem(targetIndex)) {
         // We didn't land on an option. Try to find one.
         // We try to select the closest index to target, prioritizing any in
@@ -826,17 +838,18 @@ void PopupListBox::layout()
             width = itemFont.width(TextRun(text));
         if (!label.isEmpty()) {
             if (width > 0)
-                width += kTextToLabelPadding;
+                width += textToLabelPadding;
             width += itemFont.width(TextRun(label));
         }
         if (iconImage && !iconImage->isNull()) {
             if (width > 0)
-                width += kLabelToIconPadding;
+                width += labelToIconPadding;
             width += iconImage->rect().width();
         }
 
         baseWidth = max(baseWidth, width);
-        // FIXME: http://b/1210481 We should get the padding of individual option elements.
+        // FIXME: http://b/1210481 We should get the padding of individual
+        // option elements.
         paddingWidth = max<int>(paddingWidth,
             m_popupClient->clientPaddingLeft() + m_popupClient->clientPaddingRight());
         lineEndPaddingWidth = max<int>(lineEndPaddingWidth,
@@ -845,7 +858,7 @@ void PopupListBox::layout()
 
     // Calculate scroll bar width.
     int windowHeight = 0;
-    m_visibleRows = min(numItems(), kMaxVisibleRows);
+    m_visibleRows = std::min(numItems(), maxVisibleRows);
 
     for (int i = 0; i < m_visibleRows; ++i) {
         int rowHeight = getRowHeight(i);
@@ -864,11 +877,11 @@ void PopupListBox::layout()
     if (m_visibleRows < numItems()) {
         scrollbarWidth = ScrollbarTheme::theme()->scrollbarThickness();
 
-        // Use kMinEndOfLinePadding when there is a scrollbar so that we use
-        // as much as (lineEndPaddingWidth - kMinEndOfLinePadding) padding
+        // Use minEndOfLinePadding when there is a scrollbar so that we use
+        // as much as (lineEndPaddingWidth - minEndOfLinePadding) padding
         // space for scrollbar and allow user to use CSS padding to make the
         // popup listbox align with the select element.
-        paddingWidth = paddingWidth - lineEndPaddingWidth + kMinEndOfLinePadding;
+        paddingWidth = paddingWidth - lineEndPaddingWidth + minEndOfLinePadding;
     }
 
     int windowWidth;
