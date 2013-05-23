@@ -62,10 +62,10 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/options/network_connect.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
-#include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/google/google_util.h"
@@ -225,7 +225,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public AudioHandler::VolumeObserver,
                            public PowerManagerClient::Observer,
                            public SessionManagerClient::Observer,
-                           public NetworkMenu::Delegate,
                            public NetworkLibrary::NetworkManagerObserver,
                            public drive::JobListObserver,
                            public content::NotificationObserver,
@@ -249,11 +248,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         cellular_activating_(false),
         cellular_out_of_credits_(false),
         volume_control_delegate_(new VolumeController()) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
-      network_menu_.reset(new NetworkMenu(this));
-    }
-
     // Register notifications on construction so that events such as
     // PROFILE_CREATED do not get missed if they happen before Initialize().
     registrar_.Add(this,
@@ -550,8 +544,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (status == ash::user::LOGGED_IN_NONE ||
         status == ash::user::LOGGED_IN_LOCKED) {
       scoped_refptr<chromeos::HelpAppLauncher> help_app(
-         new chromeos::HelpAppLauncher(
-            GetNativeWindowByStatus(GetUserLoginStatus())));
+         new chromeos::HelpAppLauncher(GetNativeWindow()));
       help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);
     } else {
       GURL url(google_util::StringAppendGoogleLocaleParam(
@@ -768,12 +761,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
     DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
         chromeos::switches::kUseNewNetworkConfigurationHandlers));
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    Network* network = crosnet->FindNetworkByPath(network_id);
-    if (network)
-      network_menu_->ConnectToNetwork(network);  // Shows settings if connected
-    else
+    network_connect::ConnectResult result =
+        network_connect::ConnectToNetwork(network_id, GetNativeWindow());
+    if (result == network_connect::NETWORK_NOT_FOUND)
       ShowNetworkSettings("");
+    else if (result == network_connect::CONNECT_NOT_STARTED)
+      ShowNetworkSettings(network_id);
   }
 
   virtual void AddBluetoothDevice() OVERRIDE {
@@ -1021,16 +1014,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // TODO(sad): Override more from PowerManagerClient::Observer here.
 
-  // Overridden from NetworkMenu::Delegate.
-  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE {
+  gfx::NativeWindow GetNativeWindow() const {
     return GetNativeWindowByStatus(GetUserLoginStatus());
-  }
-
-  virtual void OpenButtonOptions() OVERRIDE {
-  }
-
-  virtual bool ShouldOpenButtonOptions() const OVERRIDE {
-    return false;
   }
 
   // Overridden from NetworkLibrary::NetworkManagerObserver.
@@ -1298,7 +1283,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   scoped_ptr<base::WeakPtrFactory<SystemTrayDelegate> > ui_weak_ptr_factory_;
-  scoped_ptr<NetworkMenu> network_menu_;
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar local_state_registrar_;
   scoped_ptr<PrefChangeRegistrar> user_pref_registrar_;

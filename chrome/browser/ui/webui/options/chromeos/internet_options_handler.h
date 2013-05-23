@@ -74,11 +74,6 @@ class InternetOptionsHandler
 
   // Helper functions called by NetworkCommandCallback(...)
   void AddConnection(chromeos::ConnectionType type);
-  void ConnectToNetwork(chromeos::Network* network);
-
-  // Used to finish up async connection to the |network|.  |network| cannot
-  // be NULL.
-  void DoConnect(chromeos::Network* network);
 
   void SetCellularButtonsVisibility(
       const chromeos::CellularNetwork* cellular,

@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/options/network_connect.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
@@ -1661,7 +1662,8 @@ void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {
         base::Bind(&InternetOptionsHandler::PopulateDictionaryDetailsCallback,
                    weak_factory_.GetWeakPtr()));
   } else if (command == kTagConnect) {
-    ConnectToNetwork(network);
+    chromeos::network_connect::ConnectToNetwork(
+        service_path, GetNativeWindow());
   } else if (command == kTagDisconnect && type != chromeos::TYPE_ETHERNET) {
     cros_->DisconnectFromNetwork(network);
   } else if (command == kTagActivate && type == chromeos::TYPE_CELLULAR) {
@@ -1700,58 +1702,6 @@ void InternetOptionsHandler::AddConnection(chromeos::ConnectionType type) {
       break;
     default:
       NOTREACHED();
-  }
-}
-
-void InternetOptionsHandler::ConnectToNetwork(chromeos::Network* network) {
-  if (network->type() == chromeos::TYPE_CELLULAR) {
-    cros_->ConnectToCellularNetwork(
-        static_cast<chromeos::CellularNetwork*>(network));
-  } else {
-    network->SetEnrollmentDelegate(
-        chromeos::CreateEnrollmentDelegate(
-            GetNativeWindow(),
-            network->name(),
-            ProfileManager::GetLastUsedProfile()));
-    network->AttemptConnection(base::Bind(&InternetOptionsHandler::DoConnect,
-                                          weak_factory_.GetWeakPtr(),
-                                          network));
-  }
-}
-
-void InternetOptionsHandler::DoConnect(chromeos::Network* network) {
-  if (network->type() == chromeos::TYPE_VPN) {
-    chromeos::VirtualNetwork* vpn =
-        static_cast<chromeos::VirtualNetwork*>(network);
-    if (vpn->NeedMoreInfoToConnect()) {
-      chromeos::NetworkConfigView::Show(network, GetNativeWindow());
-    } else {
-      cros_->ConnectToVirtualNetwork(vpn);
-      // Connection failures are responsible for updating the UI, including
-      // reopening dialogs.
-    }
-  } else if (network->type() == chromeos::TYPE_WIFI) {
-    chromeos::WifiNetwork* wifi = static_cast<chromeos::WifiNetwork*>(network);
-    if (wifi->IsPassphraseRequired()) {
-      // Show the connection UI if we require a passphrase.
-      chromeos::NetworkConfigView::Show(wifi, GetNativeWindow());
-    } else {
-      cros_->ConnectToWifiNetwork(wifi);
-      // Connection failures are responsible for updating the UI, including
-      // reopening dialogs.
-    }
-  } else if (network->type() == chromeos::TYPE_WIMAX) {
-    chromeos::WimaxNetwork* wimax =
-        static_cast<chromeos::WimaxNetwork*>(network);
-    if (wimax->passphrase_required()) {
-      // Show the connection UI if we require a passphrase.
-      // TODO(stevenjb): Implement WiMAX connection UI.
-      chromeos::NetworkConfigView::Show(wimax, GetNativeWindow());
-    } else {
-      cros_->ConnectToWimaxNetwork(wimax);
-      // Connection failures are responsible for updating the UI, including
-      // reopening dialogs.
-    }
   }
 }
 

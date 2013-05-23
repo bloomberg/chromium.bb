@@ -15,10 +15,12 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/options/network_connect.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/defaults.h"
@@ -61,20 +63,6 @@ std::string EscapeAmpersands(const std::string& input) {
     found = str.find('&', found + 2);
   }
   return str;
-}
-
-// Activate a cellular network.
-void ActivateCellular(chromeos::CellularNetwork* cellular) {
-  DCHECK(cellular);
-
-  chromeos::NetworkLibrary* cros =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  if (cros->CellularDeviceUsesDirectActivation()) {
-    cellular->StartActivation();
-  } else {
-    ash::Shell::GetInstance()->delegate()->OpenMobileSetup(
-        cellular->service_path());
-  }
 }
 
 // Decides whether a network should be highlighted in the UI.
@@ -274,58 +262,18 @@ class MainMenuModel : public NetworkMenuModel {
 // NetworkMenuModel, public methods:
 
 void NetworkMenuModel::ConnectToNetworkAt(int index) {
-  int flags = menu_items_[index].flags;
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   const std::string& service_path = menu_items_[index].service_path;
-  if (flags & FLAG_WIFI) {
-    WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path);
-    if (wifi) {
-      owner_->ConnectToNetwork(wifi);
-    } else {
-      // If we are attempting to connect to a network that no longer exists,
-      // display a notification.
-      LOG(WARNING) << "Wi-fi network does not exist to connect to: "
-                   << service_path;
-      // TODO(stevenjb): Show notification.
-    }
-  } else if (flags & FLAG_WIMAX) {
-    WimaxNetwork* wimax = cros->FindWimaxNetworkByPath(service_path);
-    if (wimax) {
-      owner_->ConnectToNetwork(wimax);
-    } else {
-      // If we are attempting to connect to a network that no longer exists,
-      // display a notification.
-      LOG(WARNING) << "Wimax network does not exist to connect to: "
-                   << service_path;
-    }
-  } else if (flags & FLAG_CELLULAR) {
-    CellularNetwork* cellular = cros->FindCellularNetworkByPath(
-        service_path);
-    if (cellular) {
-      owner_->ConnectToNetwork(cellular);
-    } else {
-      // If we are attempting to connect to a network that no longer exists,
-      // display a notification.
-      LOG(WARNING) << "Cellular network does not exist to connect to: "
-                   << service_path;
-      // TODO(stevenjb): Show notification.
-    }
-  } else if (flags & FLAG_ADD_WIFI) {
-    ShowOther(TYPE_WIFI);
-  } else if (flags & FLAG_ADD_CELLULAR) {
-    ShowOther(TYPE_CELLULAR);
-  } else if (flags & FLAG_ADD_VPN) {
-    ShowOther(TYPE_VPN);
-  } else if (flags & FLAG_VPN) {
-    VirtualNetwork* vpn = cros->FindVirtualNetworkByPath(service_path);
-    if (vpn) {
-      owner_->ConnectToNetwork(vpn);
-    } else {
-      // If we are attempting to connect to a network that no longer exists,
-      // display a notification.
-      LOG(WARNING) << "VPN does not exist to connect to: " << service_path;
-      // TODO(stevenjb): Show notification.
-    }
+  network_connect::ConnectResult result =
+      network_connect::ConnectToNetwork(
+          service_path, owner_->delegate()->GetNativeWindow());
+  if (result == network_connect::NETWORK_NOT_FOUND) {
+    // If we are attempting to connect to a network that no longer exists,
+    // display a notification.
+    LOG(WARNING) << "Network does not exist to connect to: "
+                 << service_path;
+    // TODO(stevenjb): Show notification.
+  } else if (result == network_connect::CONNECT_NOT_STARTED) {
+    owner_->ShowTabbedNetworkSettings(service_path);
   }
 }
 
@@ -427,13 +375,18 @@ void NetworkMenuModel::ActivatedAt(int index) {
   } else if (flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
   } else if (flags & FLAG_ETHERNET) {
-    if (cros->ethernet_connected())
-      owner_->ShowTabbedNetworkSettings(cros->ethernet_network());
-  } else if (flags & (FLAG_WIFI | FLAG_ADD_WIFI |
-                      FLAG_WIMAX |
-                      FLAG_CELLULAR | FLAG_ADD_CELLULAR |
-                      FLAG_VPN | FLAG_ADD_VPN)) {
+    if (cros->ethernet_connected()) {
+      owner_->ShowTabbedNetworkSettings(
+          cros->ethernet_network()->service_path());
+    }
+  } else if (flags & (FLAG_WIFI | FLAG_WIMAX | FLAG_CELLULAR | FLAG_VPN)) {
     ConnectToNetworkAt(index);
+  } else if (flags & FLAG_ADD_WIFI) {
+    ShowOther(TYPE_WIFI);
+  } else if (flags & FLAG_ADD_CELLULAR) {
+    ShowOther(TYPE_CELLULAR);
+  } else if (flags & FLAG_ADD_VPN) {
+    ShowOther(TYPE_VPN);
   } else if (flags & FLAG_DISCONNECT_VPN) {
     const VirtualNetwork* active_vpn = cros->virtual_network();
     if (active_vpn)
@@ -932,141 +885,27 @@ void NetworkMenu::UpdateMenu() {
   refreshing_menu_ = false;
 }
 
-void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
+void NetworkMenu::ShowTabbedNetworkSettings(
+    const std::string& service_path) const {
   if (!UserManager::Get()->IsSessionStarted())
     return;
 
-  DCHECK(network);
-  Browser* browser = GetAppropriateBrowser();
-
-  std::string network_name(network->name());
-  if (network_name.empty() && network->type() == chromeos::TYPE_ETHERNET) {
-    network_name = l10n_util::GetStringUTF8(
-        IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+  std::string page = chrome::kInternetOptionsSubPage;
+  chromeos::Network* network = CrosLibrary::Get()->GetNetworkLibrary()->
+      FindNetworkByPath(service_path);
+  if (network) {
+    std::string network_name(network->name());
+    if (network_name.empty() && network->type() == chromeos::TYPE_ETHERNET) {
+      network_name = l10n_util::GetStringUTF8(
+          IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+    }
+    page += base::StringPrintf(
+        "?servicePath=%s&networkType=%d&networkName=%s",
+        net::EscapeUrlEncodedData(network->service_path(), true).c_str(),
+        network->type(),
+        net::EscapeUrlEncodedData(network_name, false).c_str());
   }
-  std::string page = base::StringPrintf(
-      "%s?servicePath=%s&networkType=%d&networkName=%s",
-      chrome::kInternetOptionsSubPage,
-      net::EscapeUrlEncodedData(network->service_path(), true).c_str(),
-      network->type(),
-      net::EscapeUrlEncodedData(network_name, false).c_str());
-  chrome::ShowSettingsSubPage(browser, page);
-}
-
-void NetworkMenu::DoConnect(Network* network) {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  if (network->type() == TYPE_VPN) {
-    VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network);
-    if (vpn->NeedMoreInfoToConnect()) {
-      // Show the connection UI if info for a field is missing.
-      NetworkConfigView::Show(vpn, delegate()->GetNativeWindow());
-    } else {
-      cros->ConnectToVirtualNetwork(vpn);
-      // Connection failures are responsible for updating the UI, including
-      // reopening dialogs.
-    }
-  } else if (network->type() == TYPE_WIFI) {
-    WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
-    if (wifi->IsPassphraseRequired()) {
-      // Show the connection UI if we require a passphrase.
-      NetworkConfigView::Show(wifi, delegate()->GetNativeWindow());
-    } else {
-      cros->ConnectToWifiNetwork(wifi);
-      // Connection failures are responsible for updating the UI, including
-      // reopening dialogs.
-    }
-  } else if (network->type() == TYPE_WIMAX) {
-    WimaxNetwork* wimax = static_cast<WimaxNetwork*>(network);
-    if (wimax->passphrase_required()) {
-      // Show the connection UI if we require a passphrase.
-      NetworkConfigView::Show(wimax, delegate()->GetNativeWindow());
-    } else {
-      cros->ConnectToWimaxNetwork(wimax);
-      // Connection failures are responsible for updating the UI, including
-      // reopening dialogs.
-    }
-  } else if (network->type() == TYPE_CELLULAR) {
-    CellularNetwork* cellular = static_cast<CellularNetwork*>(network);
-    if (cellular->activation_state() != ACTIVATION_STATE_ACTIVATED ||
-        cellular->out_of_credits()) {
-      ActivateCellular(cellular);
-    } else {
-      cros->ConnectToCellularNetwork(cellular);
-    }
-  }
-}
-
-void NetworkMenu::ConnectToNetwork(Network* network) {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  switch (network->type()) {
-    case TYPE_ETHERNET: {
-      ShowTabbedNetworkSettings(network);
-      break;
-    }
-    case TYPE_WIFI: {
-      WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
-      if (wifi->connecting_or_connected()) {
-        ShowTabbedNetworkSettings(wifi);
-      } else {
-        wifi->SetEnrollmentDelegate(
-            CreateEnrollmentDelegate(delegate()->GetNativeWindow(),
-                                     wifi->name(),
-                                     ProfileManager::GetLastUsedProfile()));
-        wifi->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
-                                           weak_pointer_factory_.GetWeakPtr(),
-                                           wifi));
-      }
-      break;
-    }
-
-    case TYPE_WIMAX: {
-      WimaxNetwork* wimax = static_cast<WimaxNetwork*>(network);
-      if (wimax->connecting_or_connected()) {
-        ShowTabbedNetworkSettings(wimax);
-      } else {
-        wimax->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
-                                            weak_pointer_factory_.GetWeakPtr(),
-                                            wimax));
-      }
-      break;
-    }
-
-    case TYPE_CELLULAR: {
-      CellularNetwork* cell = static_cast<CellularNetwork*>(network);
-      if (cell->NeedsActivation() || cell->out_of_credits()) {
-        ActivateCellular(cell);
-      } else if (cell->connecting_or_connected() ||
-                 cell->activation_state() == ACTIVATION_STATE_ACTIVATING) {
-        // Cellular network is connecting, connected, or activating,
-        // so we show the config settings for the cellular network.
-        ShowTabbedNetworkSettings(cell);
-      } else {
-        // Clicked on a disconnected cellular network, so connect to it.
-        cros->ConnectToCellularNetwork(cell);
-      }
-      break;
-    }
-
-    case TYPE_VPN: {
-      VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network);
-      // Connect or reconnect.
-      if (vpn->connecting_or_connected()) {
-        ShowTabbedNetworkSettings(vpn);
-      } else {
-        vpn->SetEnrollmentDelegate(
-            CreateEnrollmentDelegate(delegate()->GetNativeWindow(),
-                                     vpn->name(),
-                                     ProfileManager::GetLastUsedProfile()));
-        vpn->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
-                                          weak_pointer_factory_.GetWeakPtr(),
-                                          vpn));
-      }
-      break;
-    }
-
-    default:
-      break;
-  }
+  chrome::ShowSettingsSubPage(GetAppropriateBrowser(), page);
 }
 
 void NetworkMenu::ToggleWifi() {

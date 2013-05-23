@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/cros/network_library.h"  // ConnectionType
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 
 class Browser;
@@ -79,15 +78,14 @@ class NetworkMenu {
   // Update the menu (e.g. when the network list or status has changed).
   virtual void UpdateMenu();
 
+ private:
+  friend class NetworkMenuModel;
+
   // Shows network details in Web UI options window.
-  void ShowTabbedNetworkSettings(const Network* network) const;
+  void ShowTabbedNetworkSettings(const std::string& service_path) const;
 
   // Getters.
   Delegate* delegate() const { return delegate_; }
-
-  // Attempts to connect to the specified network. If the network is already
-  // connected, or is connecting, then it shows the settings for the network.
-  void ConnectToNetwork(Network* network);
 
   // Enables/disables wifi/cellular network device.
   void ToggleWifi();
@@ -101,12 +99,6 @@ class NetworkMenu {
 
   // Shows UI to user to search for cellular networks.
   void ShowOtherCellular();
-
- private:
-  friend class NetworkMenuModel;
-
-  // Used in a closure for doing actual network connection.
-  void DoConnect(Network* network);
 
   // Weak ptr to delegate.
   Delegate* delegate_;
