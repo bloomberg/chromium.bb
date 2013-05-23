@@ -1595,7 +1595,7 @@ x11_compositor_create(struct wl_display *display,
 	for (i = output_count; i < count; i++) {
 		output = x11_compositor_create_output(c, x, 0, width, height,
 						      fullscreen, no_input, NULL,
-						      WL_OUTPUT_TRANSFORM_NORMAL, wl_fixed_from_int(1));
+						      WL_OUTPUT_TRANSFORM_NORMAL, 1);
 		if (output == NULL)
 			goto err_x11_input;
 		x = pixman_region32_extents(&output->base.region)->x2;
