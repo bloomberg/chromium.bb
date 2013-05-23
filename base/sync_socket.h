@@ -119,6 +119,12 @@ class BASE_EXPORT CancelableSyncSocket : public SyncSocket {
   DISALLOW_COPY_AND_ASSIGN(CancelableSyncSocket);
 };
 
+#if defined(OS_WIN) && !defined(COMPONENT_BUILD)
+// TODO(cpu): remove this once chrome is split in two dlls.
+__declspec(selectany)
+    const SyncSocket::Handle SyncSocket::kInvalidHandle = INVALID_HANDLE_VALUE;
+#endif
+
 }  // namespace base
 
 #endif  // BASE_SYNC_SOCKET_H_

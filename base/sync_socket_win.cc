@@ -168,7 +168,9 @@ size_t CancelableFileOperation(Function operation, HANDLE file,
 
 }  // namespace
 
+#if defined(COMPONENT_BUILD)
 const SyncSocket::Handle SyncSocket::kInvalidHandle = INVALID_HANDLE_VALUE;
+#endif
 
 SyncSocket::SyncSocket() : handle_(kInvalidHandle) {}
 
