@@ -499,6 +499,8 @@ private:
     inline void detectAtToken(int, bool);
     template <typename CharacterType>
     inline void detectSupportsToken(int);
+    template <typename CharacterType>
+    inline bool detectCSSVariablesToken(int);
 
     void setStyleSheet(StyleSheetContents* styleSheet) { m_styleSheet = styleSheet; }
 

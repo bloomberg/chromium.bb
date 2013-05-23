@@ -10247,6 +10247,17 @@ inline void CSSParser::detectSupportsToken(int length)
     }
 }
 
+template <typename CharacterType>
+inline bool CSSParser::detectCSSVariablesToken(int length)
+{
+    ASSERT(tokenStart<CharacterType>()[0] == '-');
+    if (length < sizeof("-webkit-var-*") - 1)
+        return false;
+    CharacterType* name = tokenStart<CharacterType>();
+    return name[11] == '-' && isIdentifierStartAfterDash(name + 12) && isEqualToCSSIdentifier(name + 1, "webkit-var");
+}
+
+
 template <typename SrcCharacterType>
 int CSSParser::realLex(void* yylvalWithoutType)
 {
@@ -10430,7 +10441,7 @@ restartAfterComment:
             parseIdentifier(result, resultString, hasEscape);
             m_token = IDENT;
 
-            if (cssVariablesEnabled() && isEqualToCSSIdentifier(tokenStart<SrcCharacterType>() + 1, "webkit-var") && tokenStart<SrcCharacterType>()[11] == '-' && isIdentifierStartAfterDash(tokenStart<SrcCharacterType>() + 12))
+            if (cssVariablesEnabled() && detectCSSVariablesToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>()))
                 m_token = VAR_DEFINITION;
             else if (*currentCharacter<SrcCharacterType>() == '(') {
                 m_token = FUNCTION;
