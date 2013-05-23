@@ -5,7 +5,8 @@
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_nss.h"
 
-#include <cert.h>
+#include <cert.h>  // Must be included before certdb.h
+#include <certdb.h>
 #include <cryptohi.h>
 #include <nss.h>
 #include <pk11pub.h>
@@ -19,6 +20,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/pickle.h"
+#include "base/stringprintf.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
@@ -596,6 +598,34 @@ bool IsCertificateIssuedBy(const std::vector<CERTCertificate*>& cert_chain,
     }
   }
   return false;
+}
+
+std::string GetUniqueNicknameForSlot(const std::string& nickname,
+                                     const SECItem* subject,
+                                     PK11SlotInfo* slot) {
+  int index = 2;
+  std::string new_name = nickname;
+  std::string temp_nickname = new_name;
+  std::string token_name;
+
+  if (!slot)
+    return new_name;
+
+  if (!PK11_IsInternalKeySlot(slot)) {
+    token_name.assign(PK11_GetTokenName(slot));
+    token_name.append(":");
+
+    temp_nickname = token_name + new_name;
+  }
+
+  while (SEC_CertNicknameConflict(temp_nickname.c_str(),
+                                  const_cast<SECItem*>(subject),
+                                  CERT_GetDefaultCertDB())) {
+    base::SStringPrintf(&new_name, "%s #%d", nickname.c_str(), index++);
+    temp_nickname = token_name + new_name;
+  }
+
+  return new_name;
 }
 
 #endif  // defined(USE_NSS) || defined(OS_IOS)

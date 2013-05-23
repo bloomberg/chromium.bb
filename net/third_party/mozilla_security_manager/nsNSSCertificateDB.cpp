@@ -48,6 +48,7 @@
 #include "crypto/scoped_nss_types.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 
 #if !defined(CERTDB_TERMINAL_RECORD)
 /* NSS 3.13 renames CERTDB_VALID_PEER to CERTDB_TERMINAL_RECORD
@@ -95,7 +96,10 @@ bool ImportCACerts(const net::CertificateList& certificates,
         slot.get(),
         root->os_cert_handle(),
         CK_INVALID_HANDLE,
-        root->GetDefaultNickname(net::CA_CERT).c_str(),
+        net::x509_util::GetUniqueNicknameForSlot(
+            root->GetDefaultNickname(net::CA_CERT),
+            &root->os_cert_handle()->derSubject,
+            slot.get()).c_str(),
         PR_FALSE /* includeTrust (unused) */);
     if (srv != SECSuccess) {
       LOG(ERROR) << "PK11_ImportCert failed with error " << PORT_GetError();
@@ -152,7 +156,10 @@ bool ImportCACerts(const net::CertificateList& certificates,
         slot.get(),
         cert->os_cert_handle(),
         CK_INVALID_HANDLE,
-        cert->GetDefaultNickname(net::CA_CERT).c_str(),
+        net::x509_util::GetUniqueNicknameForSlot(
+            cert->GetDefaultNickname(net::CA_CERT),
+            &cert->os_cert_handle()->derSubject,
+            slot.get()).c_str(),
         PR_FALSE /* includeTrust (unused) */);
     if (srv != SECSuccess) {
       LOG(ERROR) << "PK11_ImportCert failed with error " << PORT_GetError();
@@ -190,7 +197,10 @@ bool ImportServerCert(
         slot.get(),
         cert->os_cert_handle(),
         CK_INVALID_HANDLE,
-        cert->GetDefaultNickname(net::SERVER_CERT).c_str(),
+        net::x509_util::GetUniqueNicknameForSlot(
+            cert->GetDefaultNickname(net::SERVER_CERT),
+            &cert->os_cert_handle()->derSubject,
+            slot.get()).c_str(),
         PR_FALSE /* includeTrust (unused) */);
     if (srv != SECSuccess) {
       LOG(ERROR) << "PK11_ImportCert failed with error " << PORT_GetError();

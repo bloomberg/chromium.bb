@@ -11,9 +11,11 @@
 #include "base/logging.h"
 #include "base/observer_list_threadsafe.h"
 #include "crypto/nss_util.h"
+#include "crypto/scoped_nss_types.h"
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 
 namespace net {
 
@@ -82,21 +84,27 @@ int CertDatabase::CheckUserCert(X509Certificate* cert_obj) {
 
 int CertDatabase::AddUserCert(X509Certificate* cert_obj) {
   CERTCertificate* cert = cert_obj->os_cert_handle();
-  PK11SlotInfo* slot = NULL;
+  CK_OBJECT_HANDLE key;
+  crypto::ScopedPK11Slot slot(PK11_KeyForCertExists(cert, &key, NULL));
+  if (!slot.get())
+    return ERR_NO_PRIVATE_KEY_FOR_CERT;
 
+  std::string nickname = x509_util::GetUniqueNicknameForSlot(
+      cert_obj->GetDefaultNickname(USER_CERT),
+      &cert->derSubject,
+      slot.get());
+
+  SECStatus rv;
   {
     crypto::AutoNSSWriteLock lock;
-    slot = PK11_ImportCertForKey(
-        cert,
-        cert_obj->GetDefaultNickname(net::USER_CERT).c_str(),
-        NULL);
+    rv = PK11_ImportCert(slot.get(), cert, key, nickname.c_str(), PR_FALSE);
   }
 
-  if (!slot) {
-    LOG(ERROR) << "Couldn't import user certificate.";
+  if (rv != SECSuccess) {
+    LOG(ERROR) << "Couldn't import user certificate. " << PORT_GetError();
     return ERR_ADD_USER_CERT_FAILED;
   }
-  PK11_FreeSlot(slot);
+
   NotifyObserversOfCertAdded(cert_obj);
   return OK;
 }

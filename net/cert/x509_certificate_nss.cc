@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
@@ -66,7 +67,7 @@ std::string X509Certificate::GetDefaultNickname(CertType type) const {
   if (type == USER_CERT && cert_handle_->slot) {
     // Find the private key for this certificate and see if it has a
     // nickname.  If there is a private key, and it has a nickname, then
-    // we return that nickname.
+    // return that nickname.
     SECKEYPrivateKey* private_key = PK11_FindPrivateKeyFromCert(
         cert_handle_->slot,
         cert_handle_,
@@ -90,28 +91,13 @@ std::string X509Certificate::GetDefaultNickname(CertType type) const {
       PORT_Free(nickname);
       break;
     }
-    case USER_CERT: {
-      // Create a nickname for a user certificate.
-      // We use the scheme used by Firefox:
-      // --> <subject's common name>'s <issuer's common name> ID.
-      // TODO(gspencer): internationalize this: it's wrong to
-      // hard code English.
-
-      std::string username, ca_name;
-      char* temp_username = CERT_GetCommonName(
-          &cert_handle_->subject);
-      char* temp_ca_name = CERT_GetCommonName(&cert_handle_->issuer);
-      if (temp_username) {
-        username = temp_username;
-        PORT_Free(temp_username);
-      }
-      if (temp_ca_name) {
-        ca_name = temp_ca_name;
-        PORT_Free(temp_ca_name);
-      }
-      result = username + "'s " + ca_name + " ID";
+    case USER_CERT:
+      // TODO(gspencer): Internationalize this. It's wrong to assume English
+      // here.
+      result = base::StringPrintf("%s's %s ID",
+                                  subject_.GetDisplayName().c_str(),
+                                  issuer_.GetDisplayName().c_str());
       break;
-    }
     case SERVER_CERT:
       result = subject_.GetDisplayName();
       break;

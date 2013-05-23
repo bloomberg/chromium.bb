@@ -16,9 +16,10 @@ class PickleIterator;
 
 typedef struct CERTCertificateStr CERTCertificate;
 typedef struct CERTNameStr CERTName;
+typedef struct PK11SlotInfoStr PK11SlotInfo;
 typedef struct PLArenaPool PLArenaPool;
-typedef struct SECKEYPrivateKeyStr SECKEYPrivateKey;
 typedef struct SECItemStr SECItem;
+typedef struct SECKEYPrivateKeyStr SECKEYPrivateKey;
 typedef struct SECKEYPublicKeyStr SECKEYPublicKey;
 
 namespace net {
@@ -93,6 +94,16 @@ bool GetIssuersFromEncodedList(
 bool IsCertificateIssuedBy(const std::vector<CERTCertificate*>& cert_chain,
                            const std::vector<CERTName*>& valid_issuers);
 
+// Generates a unique nickname for |slot|, returning |nickname| if it is
+// already unique.
+//
+// Note: The nickname returned will NOT include the token name, thus the
+// token name must be prepended if calling an NSS function that expects
+// <token>:<nickname>.
+// TODO(gspencer): Internationalize this: it's wrong to hard-code English.
+std::string GetUniqueNicknameForSlot(const std::string& nickname,
+                                     const SECItem* subject,
+                                     PK11SlotInfo* slot);
 #endif  // defined(USE_NSS) || defined(OS_IOS)
 
 } // namespace x509_util

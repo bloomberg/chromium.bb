@@ -938,4 +938,47 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa4) {
   EXPECT_EQ(0U, verify_result2.cert_status);
 }
 
+// Importing two certificates with the same issuer and subject common name,
+// but overall distinct subject names, should succeed and generate a unique
+// nickname for the second certificate.
+TEST_F(CertDatabaseNSSTest, ImportDuplicateCommonName) {
+  CertificateList certs =
+      CreateCertificateListFromFile(GetTestCertsDirectory(),
+                                    "duplicate_cn_1.pem",
+                                    X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+
+  EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
+
+  // Import server cert with default trust.
+  NSSCertDatabase::ImportCertFailureList failed;
+  EXPECT_TRUE(cert_db_->ImportServerCert(
+      certs, NSSCertDatabase::TRUST_DEFAULT, &failed));
+  EXPECT_EQ(0U, failed.size());
+  EXPECT_EQ(NSSCertDatabase::TRUST_DEFAULT,
+            cert_db_->GetCertTrust(certs[0], SERVER_CERT));
+
+  CertificateList new_certs = ListCertsInSlot(slot_->os_module_handle());
+  ASSERT_EQ(1U, new_certs.size());
+
+  // Now attempt to import a different certificate with the same common name.
+  CertificateList certs2 =
+      CreateCertificateListFromFile(GetTestCertsDirectory(),
+                                    "duplicate_cn_2.pem",
+                                    X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs2.size());
+
+  // Import server cert with default trust.
+  EXPECT_TRUE(cert_db_->ImportServerCert(
+      certs2, NSSCertDatabase::TRUST_DEFAULT, &failed));
+  EXPECT_EQ(0U, failed.size());
+  EXPECT_EQ(NSSCertDatabase::TRUST_DEFAULT,
+            cert_db_->GetCertTrust(certs2[0], SERVER_CERT));
+
+  new_certs = ListCertsInSlot(slot_->os_module_handle());
+  ASSERT_EQ(2U, new_certs.size());
+  EXPECT_STRNE(new_certs[0]->os_cert_handle()->nickname,
+               new_certs[1]->os_cert_handle()->nickname);
+}
+
 }  // namespace net

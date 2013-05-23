@@ -171,3 +171,15 @@ unit tests.
      present). Since codeSigning is not valid for web server auth, the checks
      should fail.
 
+- duplicate_cn_1.p12
+- duplicate_cn_1.pem
+- duplicate_cn_2.p12
+- duplicate_cn_2.pem
+     Two certificates from the same issuer that share the same common name,
+     but have distinct subject names (namely, their O fields differ). NSS
+     requires that certificates have unique nicknames if they do not share the
+     same subject, and these certificates are used to test that the nickname
+     generation algorithm generates unique nicknames.
+     The .pem versions contain just the certs, while the .p12 versions contain
+     both the cert and a private key, since there are multiple ways to import
+     certificates into NSS.

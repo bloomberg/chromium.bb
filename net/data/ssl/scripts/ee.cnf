@@ -1,10 +1,13 @@
+SUBJECT_NAME = req_dn
+KEY_SIZE = 2048
+
 [req]
-default_bits       = $ENV::KEY_SIZE
+default_bits       = ${ENV::KEY_SIZE}
 default_md         = sha1
 string_mask        = utf8only
 prompt             = no
 encrypt_key        = no
-distinguished_name = req_dn
+distinguished_name = ${ENV::SUBJECT_NAME}
 req_extensions     = req_extensions
 
 [req_dn]
@@ -13,6 +16,14 @@ ST = California
 L  = Mountain View
 O  = Test CA
 CN = 127.0.0.1
+
+[req_duplicate_cn_1]
+O  = Foo
+CN = Duplicate
+
+[req_duplicate_cn_2]
+O  = Bar
+CN = Duplicate
 
 [req_extensions]
 subjectAltName = IP:127.0.0.1
