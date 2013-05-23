@@ -16,14 +16,11 @@ import time
 import urllib2
 import zipfile
 
-_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
-
-from common import chrome_paths
-from common import util
-
 import archive
+import chrome_paths
+import util
 
+_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 GS_BUCKET = 'gs://chromedriver-prebuilts'
 GS_ZIP_PREFIX = 'chromedriver2_prebuilts'
 SLAVE_SCRIPT_DIR = os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
@@ -34,7 +31,7 @@ DOWNLOAD_SCRIPT = os.path.join(SLAVE_SCRIPT_DIR, 'gsutil_download.py')
 
 
 def Archive(revision):
-  print '@@@BUILD_STEP archive@@@'
+  util.MarkBuildStepStart('archive')
   prebuilts = ['libchromedriver2.so', 'chromedriver2_server',
                'chromedriver2_unittests', 'chromedriver2_tests']
   build_dir = chrome_paths.GetBuildDir(prebuilts[0:1])
@@ -54,11 +51,11 @@ def Archive(revision):
       '--dest_gsbase=%s' % GS_BUCKET
   ]
   if util.RunCommand(cmd):
-    print '@@@STEP_FAILURE@@@'
+    util.MarkBuildStepError()
 
 
 def Download():
-  print '@@@BUILD_STEP Download chromedriver prebuilts@@@'
+  util.MarkBuildStepStart('Download chromedriver prebuilts')
 
   temp_dir = util.MakeTempDir()
   zip_path = os.path.join(temp_dir, 'chromedriver2_prebuilts.zip')
@@ -70,7 +67,7 @@ def Download():
       '--dst=%s' % zip_path
   ]
   if util.RunCommand(cmd):
-    print '@@@STEP_FAILURE@@@'
+    util.MarkBuildStepError()
 
   build_dir = chrome_paths.GetBuildDir(['host_forwarder'])
   print 'Unzipping prebuilts %s to %s' % (zip_path, build_dir)
@@ -101,7 +98,7 @@ def MaybeRelease(revision):
   if zip_name in downloads:
     return 0
 
-  print '@@@BUILD_STEP releasing %s@@@' % zip_name
+  util.MarkBuildStepStart('releasing %s' % zip_name)
   if util.IsWindows():
     server_orig_name = 'chromedriver2_server.exe'
     server_name = 'chromedriver.exe'
@@ -130,7 +127,7 @@ def MaybeRelease(revision):
   ]
   with open(os.devnull, 'wb') as no_output:
     if subprocess.Popen(cmd, stdout=no_output, stderr=no_output).wait():
-      print '@@@STEP_FAILURE@@@'
+      util.MarkBuildStepError()
 
 
 def KillChromes():
@@ -157,7 +154,7 @@ def CleanTmpDir():
 
 
 def WaitForLatestSnapshot(revision):
-  print '@@@BUILD_STEP wait_for_snapshot@@@'
+  util.MarkBuildStepStart('wait_for_snapshot')
   while True:
     snapshot_revision = archive.GetLatestRevision(archive.Site.SNAPSHOT)
     if snapshot_revision >= revision:

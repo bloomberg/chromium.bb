@@ -13,18 +13,15 @@ import tempfile
 import time
 import unittest
 
-_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
-
-_TEST_DATA_DIR = os.path.join(_THIS_DIR, os.pardir, 'data', 'chromedriver')
-
-from common import chrome_paths
-from common import unittest_util
-from common import util
-
+import chrome_paths
 import chromedriver
+import unittest_util
+import util
 from webelement import WebElement
 import webserver
+
+_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+_TEST_DATA_DIR = os.path.join(_THIS_DIR, os.pardir, 'data', 'chromedriver')
 
 if util.IsLinux():
   sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,

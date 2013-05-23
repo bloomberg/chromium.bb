@@ -9,13 +9,11 @@ import optparse
 import os
 import sys
 
-_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
-
-from common import chrome_paths
-from common import util
-
 import archive
+import chrome_paths
+import util
+
+_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 def _AppendEnvironmentPath(env_name, path):
@@ -68,12 +66,12 @@ def RunPythonTests(chromedriver, chrome=None, chrome_version=None,
   version_info = ''
   if chrome_version_name:
     version_info = '(v%s)' % chrome_version_name
-  print '@@@BUILD_STEP python_tests%s@@@' % version_info
+  util.MarkBuildStepStart('python_tests%s' % version_info)
   code = util.RunCommand(
       _GenerateTestCommand('run_py_tests.py', chromedriver, chrome,
                            chrome_version, android_package))
   if code:
-    print '\n@@@STEP_FAILURE@@@'
+    util.MarkBuildStepError()
   return code
 
 
@@ -82,20 +80,20 @@ def RunJavaTests(chromedriver, chrome=None, chrome_version=None,
   version_info = ''
   if chrome_version_name:
     version_info = '(v%s)' % chrome_version_name
-  print '@@@BUILD_STEP java_tests%s@@@' % version_info
+  util.MarkBuildStepStart('java_tests%s' % version_info)
   code = util.RunCommand(
       _GenerateTestCommand('run_java_tests.py', chromedriver, chrome,
                            chrome_version, android_package))
   if code:
-    print '@@@STEP_FAILURE@@@'
+    util.MarkBuildStepError()
   return code
 
 
 def RunCppTests(cpp_tests):
-  print '@@@BUILD_STEP chromedriver2_tests@@@'
+  util.MarkBuildStepStart('chromedriver2_tests')
   code = util.RunCommand([cpp_tests])
   if code:
-    print '@@@STEP_FAILURE@@@'
+    util.MarkBuildStepError()
   return code
 
 
@@ -167,7 +165,8 @@ def main():
       if version_name == 'HEAD':
         version_name = version[1]
         download_site = archive.Site.SNAPSHOT
-      chrome_path = archive.DownloadChrome(version[1], util.MakeTempDir(),
+      chrome_path = archive.DownloadChrome(version[1],
+                                           util.MakeTempDir(),
                                            download_site)
       code1 = RunPythonTests(chromedriver, chrome=chrome_path,
                              chrome_version=version[0],

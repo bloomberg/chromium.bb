@@ -17,14 +17,9 @@ import shutil
 import sys
 import xml.dom.minidom as minidom
 
-_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-
-sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
-
-from common import chrome_paths
-from common import util
-
+import chrome_paths
 import test_environment
+import util
 
 
 class TestResult(object):
@@ -206,12 +201,13 @@ def PrintTestResults(results):
 
   print 'Ran %s tests' % len(results)
   print 'Failed %s:' % len(failures)
+  util.AddBuildStepText('failed %s/%s' % (len(failures), len(results))
   for result in failures:
     print '=' * 80
     print '=' * 10, result.GetName(), '(%ss)' % result.GetTime()
     print result.GetFailureMessage()
-  if failures:
-    print '@@@STEP_TEXT@Failed %s tests@@@' % len(failures)
+    if len(failures) < 10:
+      util.AddBuildStepText('.'.join(result.GetName.split('.')[-2:]))
   print 'Rerun failing tests with filter:', ':'.join(failureNames)
   return len(failures)
 
