@@ -489,7 +489,7 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitGridAutoRows: return 417;
     case CSSPropertyWebkitGridAutoColumns: return 418;
     case CSSPropertyBackgroundBlendMode: return 419;
-    case CSSPropertyMixBlendMode: return 4;
+    case CSSPropertyMixBlendMode: return 420;
 
     // Add new features above this line (don't change the assigned numbers of the existing
     // items) and update maximumCSSSampleId() with the new maximum value.
