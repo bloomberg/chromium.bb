@@ -5824,6 +5824,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Platform.CpuFrequencyThermalScaling" units="percent">
+  <summary>
+    CPU frequency as percent of the baseline frequency, sampled every 30s. This
+    may be throttled down from 100% due to power dissipation issues (too high
+    temperature).  It may also be throttled up (turbo), but the kernel does not
+    report the actual turbo frequency, so we put such samples in the 101%
+    bucket.
+  </summary>
+</histogram>
+
 <histogram name="Platform.CpuUsage" units="%">
   <summary>
     Peak total (single core) CPU usage for the last sample interval.  The sample
