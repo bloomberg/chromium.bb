@@ -35,8 +35,6 @@ using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemOperationContext;
 using fileapi::FileSystemURL;
-using picasa::PicasaDataProvider;
-using picasa::PicasaFileUtil;
 
 namespace picasa {
 
@@ -380,9 +378,12 @@ TEST_F(PicasaFileUtilTest, NameDeduplication) {
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(file_system_context().get()));
 
+  scoped_ptr<chrome::MediaPathFilter> media_path_filter(
+      new chrome::MediaPathFilter());
+
   operation_context->SetUserValue(
       chrome::MediaFileSystemMountPointProvider::kMediaPathFilterKey,
-      new chrome::MediaPathFilter());
+      media_path_filter.get());
 
   scoped_ptr<PicasaDataProvider> data_provider(
       new TestPicasaDataProvider(std::vector<AlbumInfo>(), folders));

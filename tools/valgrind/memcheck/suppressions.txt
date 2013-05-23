@@ -7258,12 +7258,6 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN10extensions19TestGaiaWebAuthFlow5StartEv
 }
 {
-   bug_242975
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6picasa41PicasaFileUtilTest_NameDeduplication_Test8TestBodyEv
-}
-{
    bug_243132
    Memcheck:Leak
    fun:malloc

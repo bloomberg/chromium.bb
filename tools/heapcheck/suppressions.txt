@@ -1863,8 +1863,3 @@
    fun:extensions::GaiaWebAuthFlow::OnUbertokenSuccess
    fun:extensions::TestGaiaWebAuthFlow::Start
 }
-{
-   bug_242975
-   Heapcheck:Leak
-   fun:picasa::PicasaFileUtilTest_NameDeduplication_Test::TestBody
-}
