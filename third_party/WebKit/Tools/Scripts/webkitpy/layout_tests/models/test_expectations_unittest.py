@@ -243,6 +243,24 @@ class MiscTests(Base):
                                                      'failures/expected/text.html') in
                          self._exp.get_tests_with_result_type(SKIP))
 
+    def test_bot_test_expectations(self):
+        test_name = 'failures/expected/text.html'
+
+        expectations_dict = OrderedDict()
+        expectations_dict['expectations'] = "Bug(x) %s [ ImageOnlyFailure ]\n" % test_name
+        self._port.expectations_dict = lambda: expectations_dict
+
+        expectations = TestExpectations(self._port, self.get_basic_tests())
+        self.assertEqual(expectations.get_expectations(self.get_test(test_name)), set([IMAGE]))
+
+        def bot_expectations():
+            return {test_name: ['PASS', 'IMAGE']}
+        self._port.bot_expectations = bot_expectations
+        self._port._options.ignore_flaky = 'very-flaky'
+
+        expectations = TestExpectations(self._port, self.get_basic_tests())
+        self.assertEqual(expectations.get_expectations(self.get_test(test_name)), set([PASS, IMAGE]))
+
 
 class SkippedTests(Base):
     def check(self, expectations, overrides, skips, lint=False):
@@ -567,6 +585,30 @@ class RebaseliningTest(Base):
 
         self.parse_exp(self.get_basic_expectations())
         self.assertEqual(len(self._exp.get_rebaselining_failures()), 0)
+
+
+class TestExpectationsParserTests(unittest.TestCase):
+    def __init__(self, testFunc):
+        host = MockHost()
+        test_port = host.port_factory.get('test-win-xp', None)
+        self._converter = TestConfigurationConverter(test_port.all_test_configurations(), test_port.configuration_specifier_macros())
+        unittest.TestCase.__init__(self, testFunc)
+        self._parser = TestExpectationParser(host.port_factory.get('test-win-xp', None), [], allow_rebaseline_modifier=False)
+
+    def test_expectation_line_for_test(self):
+        # This is kind of a silly test, but it at least ensures that we don't throw an error.
+        test_name = 'foo/test.html'
+        expectations = set(["PASS", "IMAGE"])
+
+        expectation_line = TestExpectationLine()
+        expectation_line.original_string = test_name
+        expectation_line.name = test_name
+        expectation_line.filename = '<Bot TestExpectations>'
+        expectation_line.line_number = 0
+        expectation_line.expectations = expectations
+        self._parser._parse_line(expectation_line)
+
+        self.assertEqual(self._parser.expectation_line_for_test(test_name, expectations), expectation_line)
 
 
 class TestExpectationSerializationTests(unittest.TestCase):
