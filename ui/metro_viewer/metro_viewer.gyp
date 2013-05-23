@@ -8,7 +8,7 @@
   },
   'targets': [
     {
-      'target_name': 'metro_viewer',
+      'target_name': 'metro_viewer_messages',
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
@@ -25,4 +25,3 @@
     },
   ],
 }
-

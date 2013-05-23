@@ -9,7 +9,7 @@
 #include "base/process_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metro_viewer/metro_viewer_process_host_win.h"
+#include "chrome/browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.h"
 #include "chrome/common/chrome_switches.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart() {
@@ -29,7 +29,7 @@ void BrowserProcessPlatformPart::PlatformSpecificCommandLineProcessing(
       !metro_viewer_process_host_.get()) {
     // Tell the metro viewer process host to connect to the given IPC channel.
     metro_viewer_process_host_.reset(
-        new MetroViewerProcessHost(
+        new ChromeMetroViewerProcessHost(
             command_line.GetSwitchValueASCII(switches::kViewerConnection)));
   }
 }

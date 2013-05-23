@@ -58,7 +58,7 @@
             '../../google_update/google_update.gyp:google_update',
             '../../ipc/ipc.gyp:ipc',
             '../../sandbox/sandbox.gyp:sandbox',
-            '../../ui/metro_viewer/metro_viewer.gyp:metro_viewer',
+            '../../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
             '../win8.gyp:check_sdk_patch',
             'metro_driver_version_resources',
           ],
