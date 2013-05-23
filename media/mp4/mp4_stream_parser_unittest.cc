@@ -82,6 +82,11 @@ class MP4StreamParserTest : public testing::Test {
     return true;
   }
 
+  bool NewTextBuffersF(TextTrack* text_track,
+                       const StreamParser::BufferQueue& buffers) {
+    return true;
+  }
+
   bool KeyNeededF(const std::string& type,
                   scoped_ptr<uint8[]> init_data, int init_data_size) {
     DVLOG(1) << "KeyNeededF: " << init_data_size;
@@ -89,6 +94,13 @@ class MP4StreamParserTest : public testing::Test {
     EXPECT_TRUE(init_data.get());
     EXPECT_GT(init_data_size, 0);
     return true;
+  }
+
+  scoped_ptr<TextTrack> AddTextTrackF(
+      TextKind kind,
+      const std::string& label,
+      const std::string& language) {
+    return scoped_ptr<TextTrack>();
   }
 
   void NewSegmentF(TimeDelta start_dts) {
@@ -106,7 +118,10 @@ class MP4StreamParserTest : public testing::Test {
         base::Bind(&MP4StreamParserTest::NewConfigF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewBuffersF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewBuffersF, base::Unretained(this)),
+        base::Bind(&MP4StreamParserTest::NewTextBuffersF,
+                   base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::KeyNeededF, base::Unretained(this)),
+        base::Bind(&MP4StreamParserTest::AddTextTrackF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewSegmentF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::EndOfSegmentF,
                    base::Unretained(this)),

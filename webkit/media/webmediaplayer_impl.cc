@@ -44,7 +44,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
 #include "webkit/media/buffered_data_source.h"
+#include "webkit/media/texttrack_impl.h"
 #include "webkit/media/webaudiosourceprovider_impl.h"
+#include "webkit/media/webinbandtexttrack_impl.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/media/webmediaplayer_params.h"
 #include "webkit/media/webmediaplayer_util.h"
@@ -146,7 +148,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       chunk_demuxer_(NULL),
       pending_repaint_(false),
       pending_size_change_(false),
-      video_frame_provider_client_(NULL) {
+      video_frame_provider_client_(NULL),
+      text_track_index_(0) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -989,6 +992,23 @@ void WebMediaPlayerImpl::OnNeedKey(const std::string& key_system,
                          init_data_size);
 }
 
+scoped_ptr<media::TextTrack>
+WebMediaPlayerImpl::OnTextTrack(media::TextKind kind,
+                                const std::string& label,
+                                const std::string& language) {
+  typedef WebInbandTextTrackImpl::Kind webkind_t;
+  const webkind_t webkind = static_cast<webkind_t>(kind);
+  const WebKit::WebString weblabel = WebKit::WebString::fromUTF8(label);
+  const WebKit::WebString weblanguage = WebKit::WebString::fromUTF8(language);
+
+  WebInbandTextTrackImpl* const text_track =
+    new WebInbandTextTrackImpl(webkind, weblabel, weblanguage,
+                               text_track_index_++);
+  GetClient()->addTextTrack(text_track);
+
+  return scoped_ptr<media::TextTrack>(new TextTrackImpl(text_track));
+}
+
 #define COMPILE_ASSERT_MATCHING_ENUM(name) \
   COMPILE_ASSERT(static_cast<int>(WebKit::WebMediaPlayerClient::name) == \
                  static_cast<int>(media::Decryptor::k ## name), \
@@ -1084,6 +1104,7 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
         BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnDemuxerOpened,
                               base::Passed(&ms)),
         BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""),
+        base::Bind(&WebMediaPlayerImpl::OnTextTrack, base::Unretained(this)),
         base::Bind(&LogMediaSourceError, media_log_));
     demuxer_.reset(chunk_demuxer_);
 

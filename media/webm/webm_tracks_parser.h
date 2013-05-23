@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_log.h"
+#include "media/base/text_track.h"
 #include "media/base/video_decoder_config.h"
 #include "media/webm/webm_audio_client.h"
 #include "media/webm/webm_content_encodings_client.h"

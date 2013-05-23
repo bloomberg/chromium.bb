@@ -15,6 +15,7 @@
 #include "media/base/demuxer.h"
 #include "media/base/ranges.h"
 #include "media/base/stream_parser.h"
+#include "media/base/text_track.h"
 #include "media/filters/source_buffer_stream.h"
 
 namespace media {
@@ -41,9 +42,13 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   //   is ready to receive media data via AppenData().
   // |need_key_cb| Run when the demuxer determines that an encryption key is
   //   needed to decrypt the content.
+  // |add_text_track_cb| Run when demuxer detects the presence of an inband
+  //   text track.
   // |log_cb| Run when parsing error messages need to be logged to the error
   //   console.
-  ChunkDemuxer(const base::Closure& open_cb, const NeedKeyCB& need_key_cb,
+  ChunkDemuxer(const base::Closure& open_cb,
+               const NeedKeyCB& need_key_cb,
+               const AddTextTrackCB& add_text_track_cb,
                const LogCB& log_cb);
   virtual ~ChunkDemuxer();
 
@@ -134,6 +139,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
                     const VideoDecoderConfig& video_config);
   bool OnAudioBuffers(const StreamParser::BufferQueue& buffers);
   bool OnVideoBuffers(const StreamParser::BufferQueue& buffers);
+  bool OnTextBuffers(TextTrack* text_track,
+                     const StreamParser::BufferQueue& buffers);
   bool OnNeedKey(const std::string& type,
                  scoped_ptr<uint8[]> init_data,
                  int init_data_size);
@@ -175,6 +182,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   DemuxerHost* host_;
   base::Closure open_cb_;
   NeedKeyCB need_key_cb_;
+  AddTextTrackCB add_text_track_cb_;
   // Callback used to report error strings that can help the web developer
   // figure out what is wrong with the content.
   LogCB log_cb_;

@@ -14,6 +14,7 @@
 #include "media/base/demuxer.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
+#include "media/base/text_track.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 
 namespace media {
@@ -105,6 +106,9 @@ class MediaSourceDelegate : public media::DemuxerHost {
                  scoped_ptr<uint8[]> init_data,
                  int init_data_size);
   void OnDecryptorReady(media::Decryptor*);
+  scoped_ptr<media::TextTrack> OnAddTextTrack(media::TextKind kind,
+                                              const std::string& label,
+                                              const std::string& language);
 
   // Reads an access unit from the demuxer stream |stream| and stores it in
   // the |index|th access unit in |params|.

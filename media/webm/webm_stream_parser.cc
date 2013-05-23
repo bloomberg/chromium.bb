@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "media/webm/webm_cluster_parser.h"
 #include "media/webm/webm_constants.h"
 #include "media/webm/webm_content_encodings.h"
@@ -22,13 +23,17 @@ WebMStreamParser::WebMStreamParser()
       waiting_for_buffers_(false) {
 }
 
-WebMStreamParser::~WebMStreamParser() {}
+WebMStreamParser::~WebMStreamParser() {
+  STLDeleteValues(&text_track_map_);
+}
 
 void WebMStreamParser::Init(const InitCB& init_cb,
                             const NewConfigCB& config_cb,
                             const NewBuffersCB& audio_cb,
                             const NewBuffersCB& video_cb,
+                            const NewTextBuffersCB& text_cb,
                             const NeedKeyCB& need_key_cb,
+                            const AddTextTrackCB& add_text_track_cb,
                             const NewMediaSegmentCB& new_segment_cb,
                             const base::Closure& end_of_segment_cb,
                             const LogCB& log_cb) {
@@ -37,6 +42,7 @@ void WebMStreamParser::Init(const InitCB& init_cb,
   DCHECK(!init_cb.is_null());
   DCHECK(!config_cb.is_null());
   DCHECK(!audio_cb.is_null() || !video_cb.is_null());
+  DCHECK(!text_cb.is_null());
   DCHECK(!need_key_cb.is_null());
   DCHECK(!new_segment_cb.is_null());
   DCHECK(!end_of_segment_cb.is_null());
@@ -46,7 +52,9 @@ void WebMStreamParser::Init(const InitCB& init_cb,
   config_cb_ = config_cb;
   audio_cb_ = audio_cb;
   video_cb_ = video_cb;
+  text_cb_ = text_cb;
   need_key_cb_ = need_key_cb;
+  add_text_track_cb_ = add_text_track_cb;
   new_segment_cb_ = new_segment_cb;
   end_of_segment_cb_ = end_of_segment_cb;
   log_cb_ = log_cb;
@@ -198,11 +206,32 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
     return -1;
   }
 
+  typedef WebMTracksParser::TextTracks TextTracks;
+  const TextTracks& text_tracks = tracks_parser.text_tracks();
+
+  for (TextTracks::const_iterator itr = text_tracks.begin();
+       itr != text_tracks.end(); ++itr) {
+    const WebMTracksParser::TextTrackInfo& text_track_info = itr->second;
+
+    // TODO(matthewjheaney): verify that WebVTT uses ISO 639-2 for lang
+    scoped_ptr<TextTrack> text_track =
+        add_text_track_cb_.Run(text_track_info.kind,
+                               text_track_info.name,
+                               text_track_info.language);
+
+    // Assume ownership of pointer, and cache the text track object, for use
+    // later when we have text track buffers. (The text track objects are
+    // deallocated in the dtor for this class.)
+
+    if (text_track)
+      text_track_map_.insert(std::make_pair(itr->first, text_track.release()));
+  }
+
   cluster_parser_.reset(new WebMClusterParser(
       info_parser.timecode_scale(),
       tracks_parser.audio_track_num(),
       tracks_parser.video_track_num(),
-      tracks_parser.text_tracks(),
+      text_tracks,
       tracks_parser.ignored_tracks(),
       tracks_parser.audio_encryption_key_id(),
       tracks_parser.video_encryption_key_id(),
@@ -267,6 +296,24 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
 
   if (!video_buffers.empty() && !video_cb_.Run(video_buffers))
     return -1;
+
+  WebMClusterParser::TextTrackIterator text_track_iter =
+    cluster_parser_->CreateTextTrackIterator();
+
+  int text_track_num;
+  const BufferQueue* text_buffers;
+
+  while (text_track_iter(&text_track_num, &text_buffers)) {
+    TextTrackMap::iterator find_result = text_track_map_.find(text_track_num);
+
+    if (find_result == text_track_map_.end())
+      continue;
+
+    TextTrack* const text_track = find_result->second;
+
+    if (!text_buffers->empty() && !text_cb_.Run(text_track, *text_buffers))
+      return -1;
+  }
 
   if (cluster_ended)
     end_of_segment_cb_.Run();

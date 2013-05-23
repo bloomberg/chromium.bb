@@ -31,7 +31,9 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   virtual void Init(const InitCB& init_cb, const NewConfigCB& config_cb,
                     const NewBuffersCB& audio_cb,
                     const NewBuffersCB& video_cb,
+                    const NewTextBuffersCB& text_cb,
                     const NeedKeyCB& need_key_cb,
+                    const AddTextTrackCB& add_text_track_cb,
                     const NewMediaSegmentCB& new_segment_cb,
                     const base::Closure& end_of_segment_cb,
                     const LogCB& log_cb) OVERRIDE;

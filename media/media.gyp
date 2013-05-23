@@ -289,6 +289,7 @@
         'base/stream_parser.h',
         'base/stream_parser_buffer.cc',
         'base/stream_parser_buffer.h',
+        'base/text_track.h',
         'base/video_decoder.cc',
         'base/video_decoder.h',
         'base/video_decoder_config.cc',
@@ -445,6 +446,8 @@
         'webm/webm_tracks_parser.h',
         'webm/webm_video_client.cc',
         'webm/webm_video_client.h',
+        'webm/webm_webvtt_parser.cc',
+        'webm/webm_webvtt_parser.h'
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -1004,6 +1007,7 @@
         'webm/webm_content_encodings_client_unittest.cc',
         'webm/webm_parser_unittest.cc',
         'webm/webm_tracks_parser_unittest.cc',
+        'webm/webm_webvtt_parser_unittest.cc',
       ],
       'conditions': [
         ['arm_neon == 1', {

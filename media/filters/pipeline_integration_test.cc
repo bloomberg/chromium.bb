@@ -238,6 +238,8 @@ class MockMediaSource {
                        base::Unretained(this)),
             base::Bind(&MockMediaSource::DemuxerNeedKey,
                        base::Unretained(this)),
+            base::Bind(&MockMediaSource::OnTextTrack,
+                       base::Unretained(this)),
             LogCB())),
         owned_chunk_demuxer_(chunk_demuxer_) {
 
@@ -323,6 +325,12 @@ class MockMediaSource {
     CHECK(!need_key_cb_.is_null());
     need_key_cb_.Run(
         std::string(), std::string(), type, init_data.Pass(), init_data_size);
+  }
+
+  scoped_ptr<TextTrack> OnTextTrack(TextKind kind,
+                                    const std::string& label,
+                                    const std::string& language) {
+    return scoped_ptr<TextTrack>();
   }
 
  private:
@@ -945,6 +953,14 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_EQ(last_video_frame_format_, VideoFrame::YV12A);
+}
+
+// Verify that VP8 video with inband text track can be played back.
+TEST_F(PipelineIntegrationTest, BasicPlayback_VP8_WebVTT_WebM) {
+  ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp8-webvtt.webm"),
+                    PIPELINE_OK));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
 }
 
 }  // namespace media

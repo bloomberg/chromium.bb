@@ -152,7 +152,10 @@ class ChunkDemuxerTest : public testing::Test {
         base::Bind(&ChunkDemuxerTest::DemuxerOpened, base::Unretained(this));
     ChunkDemuxer::NeedKeyCB need_key_cb =
         base::Bind(&ChunkDemuxerTest::DemuxerNeedKey, base::Unretained(this));
-    demuxer_.reset(new ChunkDemuxer(open_cb, need_key_cb, LogCB()));
+    AddTextTrackCB add_text_track_cb =
+        base::Bind(&ChunkDemuxerTest::OnTextTrack, base::Unretained(this));
+    demuxer_.reset(new ChunkDemuxer(open_cb, need_key_cb,
+                                    add_text_track_cb, LogCB()));
   }
 
   virtual ~ChunkDemuxerTest() {
@@ -773,6 +776,12 @@ class ChunkDemuxerTest : public testing::Test {
   void DemuxerNeedKey(const std::string& type,
                       scoped_ptr<uint8[]> init_data, int init_data_size) {
     NeedKeyMock(type, init_data.get(), init_data_size);
+  }
+
+  scoped_ptr<TextTrack> OnTextTrack(TextKind kind,
+                                    const std::string& label,
+                                    const std::string& language) {
+    return scoped_ptr<TextTrack>();
   }
 
   base::MessageLoop message_loop_;

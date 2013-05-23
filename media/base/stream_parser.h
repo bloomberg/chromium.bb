@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
+#include "media/base/text_track.h"
 
 namespace media {
 
@@ -55,6 +56,14 @@ class MEDIA_EXPORT StreamParser {
   //                error should be signalled.
   typedef base::Callback<bool(const BufferQueue&)> NewBuffersCB;
 
+  // New stream buffers of inband text have been parsed.
+  // First parameter - The text track to which these cues will be added.
+  // Second parameter - A queue of newly parsed buffers.
+  // Return value - True indicates that the buffers are accepted.
+  //                False if something was wrong with the buffers and a parsing
+  //                error should be signalled.
+  typedef base::Callback<bool(TextTrack*, const BufferQueue&)> NewTextBuffersCB;
+
   // Signals the beginning of a new media segment.
   // First parameter - The earliest timestamp of all the streams in the segment.
   typedef base::Callback<void(base::TimeDelta)> NewMediaSegmentCB;
@@ -78,7 +87,9 @@ class MEDIA_EXPORT StreamParser {
                     const NewConfigCB& config_cb,
                     const NewBuffersCB& audio_cb,
                     const NewBuffersCB& video_cb,
+                    const NewTextBuffersCB& text_cb,
                     const NeedKeyCB& need_key_cb,
+                    const AddTextTrackCB& add_text_track_cb,
                     const NewMediaSegmentCB& new_segment_cb,
                     const base::Closure& end_of_segment_cb,
                     const LogCB& log_cb) = 0;

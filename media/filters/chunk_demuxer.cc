@@ -16,6 +16,7 @@
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/filters/stream_parser_factory.h"
+#include "media/webm/webm_webvtt_parser.h"
 
 using base::TimeDelta;
 
@@ -30,7 +31,9 @@ class SourceState {
             const StreamParser::NewConfigCB& config_cb,
             const StreamParser::NewBuffersCB& audio_cb,
             const StreamParser::NewBuffersCB& video_cb,
+            const StreamParser::NewTextBuffersCB& text_cb,
             const StreamParser::NeedKeyCB& need_key_cb,
+            const AddTextTrackCB& add_text_track_cb,
             const StreamParser::NewMediaSegmentCB& new_segment_cb,
             const LogCB& log_cb);
 
@@ -68,6 +71,15 @@ class SourceState {
   bool OnBuffers(const StreamParser::NewBuffersCB& new_buffers_cb,
                  const StreamParser::BufferQueue& buffers);
 
+  // Called by the |stream_parser_| when new text buffers have been parsed. It
+  // applies |timestamp_offset_| to all buffers in |buffers| and then calls
+  // |new_buffers_cb| with the modified buffers.
+  // Returns true on a successful call. Returns false if an error occured while
+  // processing the buffers.
+  bool OnTextBuffers(const StreamParser::NewTextBuffersCB& new_buffers_cb,
+                     TextTrack* text_track,
+                     const StreamParser::BufferQueue& buffers);
+
   // Helper function that adds |timestamp_offset_| to each buffer in |buffers|.
   void AdjustBufferTimestamps(const StreamParser::BufferQueue& buffers);
 
@@ -92,7 +104,9 @@ void SourceState::Init(const StreamParser::InitCB& init_cb,
                        const StreamParser::NewConfigCB& config_cb,
                        const StreamParser::NewBuffersCB& audio_cb,
                        const StreamParser::NewBuffersCB& video_cb,
+                       const StreamParser::NewTextBuffersCB& text_cb,
                        const StreamParser::NeedKeyCB& need_key_cb,
+                       const AddTextTrackCB& add_text_track_cb,
                        const StreamParser::NewMediaSegmentCB& new_segment_cb,
                        const LogCB& log_cb) {
   stream_parser_->Init(init_cb, config_cb,
@@ -100,7 +114,10 @@ void SourceState::Init(const StreamParser::InitCB& init_cb,
                                   base::Unretained(this), audio_cb),
                        base::Bind(&SourceState::OnBuffers,
                                   base::Unretained(this), video_cb),
+                       base::Bind(&SourceState::OnTextBuffers,
+                                  base::Unretained(this), text_cb),
                        need_key_cb,
+                       add_text_track_cb,
                        base::Bind(&SourceState::OnNewMediaSegment,
                                   base::Unretained(this), new_segment_cb),
                        base::Bind(&SourceState::OnEndOfMediaSegment,
@@ -161,6 +178,18 @@ bool SourceState::OnBuffers(const StreamParser::NewBuffersCB& new_buffers_cb,
   AdjustBufferTimestamps(buffers);
 
   return new_buffers_cb.Run(buffers);
+}
+
+bool SourceState::OnTextBuffers(
+    const StreamParser::NewTextBuffersCB& new_buffers_cb,
+    TextTrack* text_track,
+    const StreamParser::BufferQueue& buffers) {
+  if (new_buffers_cb.is_null())
+    return false;
+
+  AdjustBufferTimestamps(buffers);
+
+  return new_buffers_cb.Run(text_track, buffers);
 }
 
 class ChunkDemuxerStream : public DemuxerStream {
@@ -545,11 +574,13 @@ bool ChunkDemuxerStream::GetNextBuffer_Locked(
 
 ChunkDemuxer::ChunkDemuxer(const base::Closure& open_cb,
                            const NeedKeyCB& need_key_cb,
+                           const AddTextTrackCB& add_text_track_cb,
                            const LogCB& log_cb)
     : state_(WAITING_FOR_INIT),
       host_(NULL),
       open_cb_(open_cb),
       need_key_cb_(need_key_cb),
+      add_text_track_cb_(add_text_track_cb),
       log_cb_(log_cb),
       duration_(kNoTimestamp()),
       user_specified_duration_(-1) {
@@ -710,7 +741,9 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
                  has_audio, has_video),
       audio_cb,
       video_cb,
+      base::Bind(&ChunkDemuxer::OnTextBuffers, base::Unretained(this)),
       base::Bind(&ChunkDemuxer::OnNeedKey, base::Unretained(this)),
+      add_text_track_cb_,
       base::Bind(&ChunkDemuxer::OnNewMediaSegment, base::Unretained(this), id),
       log_cb_);
 
@@ -1183,6 +1216,32 @@ bool ChunkDemuxer::OnVideoBuffers(const StreamParser::BufferQueue& buffers) {
     return false;
 
   IncreaseDurationIfNecessary(buffers, video_.get());
+  return true;
+}
+
+bool ChunkDemuxer::OnTextBuffers(
+  TextTrack* text_track,
+  const StreamParser::BufferQueue& buffers) {
+  lock_.AssertAcquired();
+  DCHECK_NE(state_, SHUTDOWN);
+
+  // TODO(matthewjheaney): IncreaseDurationIfNecessary
+
+  for (StreamParser::BufferQueue::const_iterator itr = buffers.begin();
+       itr != buffers.end(); ++itr) {
+    const StreamParserBuffer* const buffer = itr->get();
+    const base::TimeDelta start = buffer->GetTimestamp();
+    const base::TimeDelta end = start + buffer->GetDuration();
+
+    std::string id, settings, content;
+
+    WebMWebVTTParser::Parse(buffer->GetData(),
+                            buffer->GetDataSize(),
+                            &id, &settings, &content);
+
+    text_track->addWebVTTCue(start, end, id, content, settings);
+  }
+
   return true;
 }
 

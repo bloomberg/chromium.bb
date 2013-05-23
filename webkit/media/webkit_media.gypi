@@ -73,10 +73,14 @@
         'preload.h',
         'simple_video_frame_provider.cc',
         'simple_video_frame_provider.h',
+        'texttrack_impl.cc',
+        'texttrack_impl.h',
         'video_frame_provider.cc',
         'video_frame_provider.h',
         'webaudiosourceprovider_impl.cc',
         'webaudiosourceprovider_impl.h',
+        'webinbandtexttrack_impl.cc',
+        'webinbandtexttrack_impl.h',
         'webmediaplayer_delegate.h',
         'webmediaplayer_impl.cc',
         'webmediaplayer_impl.h',
@@ -89,7 +93,7 @@
         'webmediasourceclient_impl.cc',
         'webmediasourceclient_impl.h',
         'websourcebuffer_impl.cc',
-        'websourcebuffer_impl.h',
+        'websourcebuffer_impl.h'
       ],
       'conditions': [
         ['OS == "android"', {

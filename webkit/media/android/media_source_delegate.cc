@@ -100,6 +100,8 @@ void MediaSourceDelegate::Initialize(
   chunk_demuxer_.reset(new media::ChunkDemuxer(
       BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerOpened),
       BIND_TO_RENDER_LOOP_2(&MediaSourceDelegate::OnNeedKey, "", ""),
+      base::Bind(&MediaSourceDelegate::OnAddTextTrack,
+                 base::Unretained(this)),
       base::Bind(&LogMediaSourceError, media_log_)));
   chunk_demuxer_->Initialize(this,
       BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerInitDone));
@@ -455,5 +457,12 @@ void MediaSourceDelegate::OnNeedKey(const std::string& key_system,
 }
 
 void MediaSourceDelegate::OnDecryptorReady(media::Decryptor* decryptor) {}
+
+scoped_ptr<media::TextTrack> MediaSourceDelegate::OnAddTextTrack(
+    media::TextKind kind,
+    const std::string& label,
+    const std::string& language) {
+  return scoped_ptr<media::TextTrack>();
+}
 
 }  // namespace webkit_media

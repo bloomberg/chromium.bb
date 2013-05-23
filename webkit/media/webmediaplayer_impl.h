@@ -31,6 +31,7 @@
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
 #include "media/base/pipeline.h"
+#include "media/base/text_track.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "media/filters/skcanvas_video_renderer.h"
 #include "skia/ext/platform_canvas.h"
@@ -68,6 +69,7 @@ class MediaStreamClient;
 class WebAudioSourceProviderImpl;
 class WebMediaPlayerDelegate;
 class WebMediaPlayerParams;
+class WebTextTrackImpl;
 
 class WebMediaPlayerImpl
     : public WebKit::WebMediaPlayer,
@@ -210,6 +212,9 @@ class WebMediaPlayerImpl
                  const std::string& session_id,
                  scoped_ptr<uint8[]> init_data,
                  int init_data_size);
+  scoped_ptr<media::TextTrack> OnTextTrack(media::TextKind kind,
+                                           const std::string& label,
+                                           const std::string& language);
   void SetOpaque(bool);
 
  private:
@@ -369,6 +374,9 @@ class WebMediaPlayerImpl
   // A pointer back to the compositor to inform it about state changes. This is
   // not NULL while the compositor is actively using this webmediaplayer.
   cc::VideoFrameProvider::Client* video_frame_provider_client_;
+
+  // Text track objects get a unique index value when they're created.
+  int text_track_index_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
