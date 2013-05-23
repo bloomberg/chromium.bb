@@ -238,7 +238,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   // Data that will be loaded asynchronously.
   scoped_ptr<base::ListValue> fonts_;
   std::vector<webkit::WebPluginInfo> plugins_;
-  bool has_loaded_plugins_;
+  bool waiting_on_plugins_;
   content::Geoposition geoposition_;
 
   // The current application locale.
@@ -272,7 +272,7 @@ FingerprintDataLoader::FingerprintDataLoader(
       accept_languages_(accept_languages),
       install_time_(install_time),
       dialog_type_(dialog_type),
-      has_loaded_plugins_(false),
+      waiting_on_plugins_(true),
       callback_(callback) {
   DCHECK(!install_time_.is_null());
 
@@ -282,9 +282,13 @@ FingerprintDataLoader::FingerprintDataLoader(
     gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
   }
 
+#if defined(ENABLE_PLUGINS)
   // Load plugin data.
   content::PluginService::GetInstance()->GetPlugins(
       base::Bind(&FingerprintDataLoader::OnGotPlugins, base::Unretained(this)));
+#else
+  waiting_on_plugins_ = false;
+#endif
 
   // Load font data.
   content::GetFontListAsync(
@@ -316,8 +320,8 @@ void FingerprintDataLoader::OnGotFonts(scoped_ptr<base::ListValue> fonts) {
 
 void FingerprintDataLoader::OnGotPlugins(
     const std::vector<webkit::WebPluginInfo>& plugins) {
-  DCHECK(!has_loaded_plugins_);
-  has_loaded_plugins_ = true;
+  DCHECK(waiting_on_plugins_);
+  waiting_on_plugins_ = false;
   plugins_ = plugins;
   MaybeFillFingerprint();
 }
@@ -362,7 +366,7 @@ void FingerprintDataLoader::MaybeFillFingerprint() {
   // If all of the data has been loaded, fill the fingerprint and clean up.
   if (gpu_data_manager_->IsCompleteGpuInfoAvailable() &&
       fonts_ &&
-      has_loaded_plugins_ &&
+      !waiting_on_plugins_ &&
       (geoposition_.Validate() ||
        geoposition_.error_code != content::Geoposition::ERROR_CODE_NONE)) {
     FillFingerprint();
