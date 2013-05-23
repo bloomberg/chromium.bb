@@ -1809,3 +1809,4 @@ crbug.com/243300 [ Debug ] http/tests/security/popup-allowed-by-sandbox-when-all
 crbug.com/168853 [ Debug ] fast/loader/stateobjects/replacestate-in-onunload.html [ Crash ]
 crbug.com/243302 [ Debug ] svg/custom/unicode-in-tspan-multi-svg-crash.html [ Crash ]
 crbug.com/243303 fast/dom/shadow/transition-on-shadow-host-with-distributed-node.html [ Failure Pass ]
+crbug.com/243308 [ Win ] fast/text/international/danda-space.html [ ImageOnlyFailure ]
