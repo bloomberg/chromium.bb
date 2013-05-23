@@ -340,4 +340,15 @@ void FakeWebGraphicsContext3D::loseContextCHROMIUM(WGC3Denum current,
                                                    WGC3Denum other) {
 }
 
+WebKit::WGC3Duint FakeWebGraphicsContext3D::createImageCHROMIUM(
+     WebKit::WGC3Dsizei width, WebKit::WGC3Dsizei height,
+     WebKit::WGC3Denum internalformat) {
+  return 0;
+}
+
+void* FakeWebGraphicsContext3D::mapImageCHROMIUM(WebKit::WGC3Duint image_id,
+                                                 WebKit::WGC3Denum access) {
+  return 0;
+}
+
 }  // namespace cc

@@ -292,6 +292,22 @@ class CC_EXPORT ResourceProvider {
   bool DidSetPixelsComplete(ResourceId id);
   void AbortSetPixels(ResourceId id);
 
+  // Acquire and release an image. The image allows direct
+  // manipulation of texture memory.
+  void AcquireImage(ResourceId id);
+  void ReleaseImage(ResourceId id);
+
+  // Maps the acquired image so that its pixels could be modified.
+  // Unmap is called when all pixels are set.
+  uint8_t* MapImage(ResourceId id);
+  void UnmapImage(ResourceId id);
+
+  // Binds the image to a texture.
+  void BindImage(ResourceId id);
+
+  // Returns the stride for the image.
+  int GetImageStride(ResourceId id);
+
   // For tests only! This prevents detecting uninitialized reads.
   // Use SetPixels or LockForWrite to allocate implicitly.
   void AllocateForTesting(ResourceId id);
@@ -347,6 +363,7 @@ class CC_EXPORT ResourceProvider {
     GLenum format;
     // TODO(skyostil): Use a separate sampler object for filter state.
     GLenum filter;
+    unsigned image_id;
     ResourceType type;
   };
   typedef base::hash_map<ResourceId, Resource> ResourceMap;

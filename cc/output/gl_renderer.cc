@@ -198,6 +198,10 @@ bool GLRenderer::Initialize() {
 
   capabilities_.using_offscreen_context3d = true;
 
+  capabilities_.using_map_image =
+      extensions.count("GL_CHROMIUM_map_image") > 0 &&
+      Settings().use_map_image;
+
   is_using_bind_uniform_ =
       extensions.count("GL_CHROMIUM_bind_uniform_location") > 0;
 

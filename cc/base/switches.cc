@@ -132,6 +132,9 @@ const char kUIShowOccludingRects[] = "ui-show-occluding-rects";
 const char kShowNonOccludingRects[] = "show-nonoccluding-rects";
 const char kUIShowNonOccludingRects[] = "ui-show-nonoccluding-rects";
 
+// Enable the codepath that uses images within TileManager.
+const char kUseMapImage[] = "use-map-image";
+
 // Prevents the layer tree unit tests from timing out.
 const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
 

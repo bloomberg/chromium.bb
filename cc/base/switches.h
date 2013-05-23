@@ -38,6 +38,7 @@ CC_EXPORT extern const char kMaxTilesForInterestArea[];
 CC_EXPORT extern const char kMaxUnusedResourceMemoryUsagePercentage[];
 CC_EXPORT extern const char kEnablePartialSwap[];
 CC_EXPORT extern const char kStrictLayerPropertyChangeChecking[];
+CC_EXPORT extern const char kUseMapImage[];
 
 // Switches for both the renderer and ui compositors.
 CC_EXPORT extern const char kUIDisablePartialSwap[];

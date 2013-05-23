@@ -82,6 +82,7 @@ struct CC_EXPORT RendererCapabilities {
   bool using_offscreen_context3d;
   int max_texture_size;
   bool avoid_pow2_textures;
+  bool using_map_image;
 };
 
 class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {

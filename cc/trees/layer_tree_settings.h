@@ -60,6 +60,7 @@ class CC_EXPORT LayerTreeSettings {
   int highp_threshold_min;
   bool force_direct_layer_drawing;  // With Skia GPU backend.
   bool strict_layer_property_change_checking;
+  bool use_map_image;
 
   LayerTreeDebugState initial_debug_state;
 };

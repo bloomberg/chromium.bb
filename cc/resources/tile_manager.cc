@@ -110,7 +110,8 @@ scoped_ptr<TileManager> TileManager::Create(
     ResourceProvider* resource_provider,
     size_t num_raster_threads,
     bool use_color_estimator,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
+    RenderingStatsInstrumentation* rendering_stats_instrumentation,
+    bool use_map_image) {
   scoped_ptr<RasterWorkerPool> raster_worker_pool =
       RasterWorkerPool::Create(num_raster_threads);
   return make_scoped_ptr(new TileManager(client,
@@ -118,7 +119,8 @@ scoped_ptr<TileManager> TileManager::Create(
                                          raster_worker_pool.Pass(),
                                          num_raster_threads,
                                          use_color_estimator,
-                                         rendering_stats_instrumentation));
+                                         rendering_stats_instrumentation,
+                                         use_map_image));
 }
 
 TileManager::TileManager(
@@ -127,7 +129,8 @@ TileManager::TileManager(
     scoped_ptr<RasterWorkerPool> raster_worker_pool,
     size_t num_raster_threads,
     bool use_color_estimator,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation)
+    RenderingStatsInstrumentation* rendering_stats_instrumentation,
+    bool use_map_image)
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
       raster_worker_pool_(raster_worker_pool.Pass()),

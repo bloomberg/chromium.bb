@@ -14,5 +14,6 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   RasterWorkerPool::Create(1),
                   1,
                   false,
-                  NULL) {}
+                  NULL,
+                  false) {}
 }

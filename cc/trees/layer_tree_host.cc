@@ -54,7 +54,8 @@ RendererCapabilities::RendererCapabilities()
       allow_partial_texture_updates(false),
       using_offscreen_context3d(false),
       max_texture_size(0),
-      avoid_pow2_textures(false) {}
+      avoid_pow2_textures(false),
+      using_map_image(false) {}
 
 RendererCapabilities::~RendererCapabilities() {}
 

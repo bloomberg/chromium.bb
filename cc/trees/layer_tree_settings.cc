@@ -55,7 +55,8 @@ LayerTreeSettings::LayerTreeSettings()
       max_unused_resource_memory_percentage(100),
       highp_threshold_min(0),
       force_direct_layer_drawing(false),
-      strict_layer_property_change_checking(false) {
+      strict_layer_property_change_checking(false),
+      use_map_image(false) {
   // TODO(danakj): Renable surface caching when we can do it more realiably.
   // crbug.com/170713
   cache_render_pass_contents = false;

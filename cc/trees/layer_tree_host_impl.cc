@@ -1433,15 +1433,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
     if (!resource_provider)
       return false;
 
-    if (settings_.impl_side_painting) {
-      tile_manager_ = TileManager::Create(this,
-                                          resource_provider.get(),
-                                          settings_.num_raster_threads,
-                                          settings_.use_color_estimator,
-                                          rendering_stats_instrumentation_);
-      UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
-    }
-
     if (output_surface->capabilities().has_parent_compositor) {
       renderer_ = DelegatingRenderer::Create(this, output_surface.get(),
                                              resource_provider.get());
@@ -1458,6 +1449,17 @@ bool LayerTreeHostImpl::InitializeRenderer(
     }
     if (!renderer_)
       return false;
+
+    if (settings_.impl_side_painting) {
+      bool using_map_image = GetRendererCapabilities().using_map_image;
+      tile_manager_ = TileManager::Create(this,
+                                          resource_provider.get(),
+                                          settings_.num_raster_threads,
+                                          settings_.use_color_estimator,
+                                          rendering_stats_instrumentation_,
+                                          using_map_image);
+      UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
+    }
 
     resource_provider_ = resource_provider.Pass();
   }

@@ -67,8 +67,8 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       ResourceProvider* resource_provider,
       size_t num_raster_threads,
       bool use_color_estimator,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation);
-
+      RenderingStatsInstrumentation* rendering_stats_instrumentation,
+      bool use_map_image);
   virtual ~TileManager();
 
   const GlobalStateThatImpactsTilePriority& GlobalState() const {
@@ -107,7 +107,8 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
               scoped_ptr<RasterWorkerPool> raster_worker_pool,
               size_t num_raster_threads,
               bool use_color_estimator,
-              RenderingStatsInstrumentation* rendering_stats_instrumentation);
+              RenderingStatsInstrumentation* rendering_stats_instrumentation,
+              bool use_map_image);
 
   // Methods called by Tile
   friend class Tile;

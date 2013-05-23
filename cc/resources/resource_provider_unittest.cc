@@ -24,6 +24,7 @@
 using testing::Mock;
 using testing::NiceMock;
 using testing::Return;
+using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::_;
 using WebKit::WGC3Dbyte;
@@ -1235,7 +1236,15 @@ class AllocationTrackingContext3D : public TestWebGraphicsContext3D {
                     WGC3Denum format,
                     WGC3Denum type,
                     const void* pixels));
-  MOCK_METHOD1(waitAsyncTexImage2DCHROMIUM, void(WGC3Denum target));
+  MOCK_METHOD1(waitAsyncTexImage2DCHROMIUM, void(WGC3Denum));
+  MOCK_METHOD3(createImageCHROMIUM, WGC3Duint(WGC3Dsizei, WGC3Dsizei,
+                                              WGC3Denum));
+  MOCK_METHOD1(destroyImageCHROMIUM, void(WGC3Duint));
+  MOCK_METHOD2(mapImageCHROMIUM, void*(WGC3Duint, WGC3Denum));
+  MOCK_METHOD3(getImageParameterivCHROMIUM, void(WGC3Duint, WGC3Denum,
+                                                 GLint*));
+  MOCK_METHOD1(unmapImageCHROMIUM, void(WGC3Duint));
+  MOCK_METHOD2(bindTexImage2DCHROMIUM, void(WGC3Denum, WGC3Dint));
 };
 
 TEST_P(ResourceProviderTest, TextureAllocation) {
@@ -1415,6 +1424,82 @@ TEST_P(ResourceProviderTest, PixelBufferLostContext) {
   resource_provider->UnmapPixelBuffer(id);
   resource_provider->ReleasePixelBuffer(id);
   Mock::VerifyAndClearExpectations(context);
+}
+
+TEST_P(ResourceProviderTest, GpuMemoryBuffers) {
+  // Only for GL textures.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+  scoped_ptr<WebKit::WebGraphicsContext3D> mock_context(
+      static_cast<WebKit::WebGraphicsContext3D*>(
+          new StrictMock<AllocationTrackingContext3D>));
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(mock_context.Pass()));
+
+  const int kWidth = 2;
+  const int kHeight = 2;
+  gfx::Size size(kWidth, kHeight);
+  WGC3Denum format = GL_RGBA;
+  ResourceProvider::ResourceId id = 0;
+  const unsigned kTextureId = 123u;
+  const unsigned kImageId = 234u;
+
+  AllocationTrackingContext3D* context =
+      static_cast<AllocationTrackingContext3D*>(output_surface->context3d());
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(), 0));
+
+  EXPECT_CALL(*context, createTexture())
+      .WillOnce(Return(kTextureId))
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
+  id = resource_provider->CreateResource(
+      size, format, ResourceProvider::TextureUsageAny);
+  EXPECT_CALL(*context, createImageCHROMIUM(kWidth, kHeight, GL_RGBA8_OES))
+      .WillOnce(Return(kImageId))
+      .RetiresOnSaturation();
+  resource_provider->AcquireImage(id);
+
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId)).Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  resource_provider->BindImage(id);
+
+  void* dummy_mapped_buffer_address = NULL;
+  EXPECT_CALL(*context, mapImageCHROMIUM(kImageId, GL_READ_WRITE))
+      .WillOnce(Return(dummy_mapped_buffer_address))
+      .RetiresOnSaturation();
+  resource_provider->MapImage(id);
+
+  const int kStride = 4;
+  EXPECT_CALL(*context, getImageParameterivCHROMIUM(kImageId,
+                                                    GL_IMAGE_ROWBYTES_CHROMIUM,
+                                                    _))
+      .WillOnce(SetArgPointee<2>(kStride))
+      .RetiresOnSaturation();
+  int stride = resource_provider->GetImageStride(id);
+  EXPECT_EQ(kStride, stride);
+
+  EXPECT_CALL(*context, unmapImageCHROMIUM(kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  resource_provider->UnmapImage(id);
+
+  EXPECT_CALL(*context, destroyImageCHROMIUM(kImageId))
+      .Times(1)
+      .RetiresOnSaturation();
+  resource_provider->ReleaseImage(id);
+
+  // Texture will be deleted when ResourceProvider destructor is
+  // called when it goes out of scope when this method returns.
+  EXPECT_CALL(*context, deleteTexture(kTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
 }
 
 INSTANTIATE_TEST_CASE_P(
