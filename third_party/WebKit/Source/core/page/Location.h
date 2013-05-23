@@ -51,8 +51,8 @@ public:
     void setHref(const String&, DOMWindow* activeWindow, DOMWindow* firstWindow);
     String href() const;
 
-    void assign(const String&, DOMWindow* activeWindow, DOMWindow* firstWindow);
-    void replace(const String&, DOMWindow* activeWindow, DOMWindow* firstWindow);
+    void assign(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
+    void replace(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
     void reload(DOMWindow* activeWindow);
 
     void setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&, ExceptionCode&);

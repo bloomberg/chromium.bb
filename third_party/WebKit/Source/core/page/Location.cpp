@@ -230,14 +230,14 @@ void Location::setHash(DOMWindow* activeWindow, DOMWindow* firstWindow, const St
     setLocation(url.string(), activeWindow, firstWindow);
 }
 
-void Location::assign(const String& url, DOMWindow* activeWindow, DOMWindow* firstWindow)
+void Location::assign(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& url)
 {
     if (!m_frame)
         return;
     setLocation(url, activeWindow, firstWindow);
 }
 
-void Location::replace(const String& url, DOMWindow* activeWindow, DOMWindow* firstWindow)
+void Location::replace(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& url)
 {
     if (!m_frame)
         return;

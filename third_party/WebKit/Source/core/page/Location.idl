@@ -31,12 +31,9 @@
 ] interface Location {
     [DoNotCheckSecurityOnSetter, CustomSetter, Unforgeable] attribute DOMString href;
 
-    [Custom, Unforgeable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void assign([Default=Undefined] optional DOMString url);
-    [Custom, Unforgeable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void replace([Default=Undefined] optional DOMString url);
-    [Custom, Unforgeable] void reload();
-    [CustomGetter, DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute void assign;
-    [CustomGetter, DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute void replace;
-    [CustomGetter, DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute void reload;
+    [CallWith=ActiveWindow|FirstWindow, DoNotCheckSecurity, Unforgeable, ReadOnly, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void assign([Default=Undefined] optional DOMString url);
+    [CallWith=ActiveWindow|FirstWindow, DoNotCheckSecurity, Unforgeable, ReadOnly, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void replace([Default=Undefined] optional DOMString url);
+    [CallWith=ActiveWindow, DoNotCheckSecurity, Unforgeable, ReadOnly] void reload();
 
     // URI decomposition attributes
     [CallWith=ActiveWindow|FirstWindow, SetterRaisesException] attribute DOMString protocol;

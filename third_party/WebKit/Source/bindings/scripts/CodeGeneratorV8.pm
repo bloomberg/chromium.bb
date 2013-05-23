@@ -2972,6 +2972,7 @@ sub GenerateNonStandardFunction
     }
 
     if ($interface->extendedAttributes->{"CheckSecurity"} && $attrExt->{"DoNotCheckSecurity"}) {
+        my $setter = $attrExt->{"ReadOnly"} ? "0" : "${implClassName}V8Internal::${implClassName}DomainSafeFunctionSetter";
         # Functions that are marked DoNotCheckSecurity are always readable but if they are changed
         # and then accessed on a different domain we do not return the underlying value but instead
         # return a new copy of the original function. This is achieved by storing the changed value
@@ -2979,7 +2980,7 @@ sub GenerateNonStandardFunction
         $code .= <<END;
 
     // $commentInfo
-    ${conditional}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}AttrGetterCallback, ${implClassName}V8Internal::${implClassName}DomainSafeFunctionSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
+    ${conditional}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}AttrGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
 END
         return $code;
     }
@@ -3465,7 +3466,9 @@ END
         if ($interface->extendedAttributes->{"CheckSecurity"} && $function->signature->extendedAttributes->{"DoNotCheckSecurity"}) {
             if (!HasCustomMethod($function->signature->extendedAttributes) || $function->{overloadIndex} == 1) {
                 GenerateDomainSafeFunctionGetter($function, $interface);
-                $needsDomainSafeFunctionSetter = 1;
+                if (!$function->signature->extendedAttributes->{"ReadOnly"}) {
+                    $needsDomainSafeFunctionSetter = 1;
+                }
             }
         }
 
