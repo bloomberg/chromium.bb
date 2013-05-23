@@ -294,21 +294,15 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     WorkspaceWindowState window_state(workspace_controller_->GetWindowState());
     switch (window_state) {
       case WORKSPACE_WINDOW_STATE_FULL_SCREEN:
-      {
-        aura::Window* fullscreen_window =
-            GetRootWindowController(root_window_)->GetFullscreenWindow();
-        if (fullscreen_window->GetProperty(kFullscreenUsesMinimalChromeKey)) {
-          DCHECK_NE(auto_hide_behavior_, SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+        if (FullscreenWithMinimalChrome()) {
           SetState(SHELF_AUTO_HIDE);
         } else {
           SetState(SHELF_HIDDEN);
         }
         break;
-      }
       case WORKSPACE_WINDOW_STATE_MAXIMIZED:
         SetState(CalculateShelfVisibility());
         break;
-
       case WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
       case WORKSPACE_WINDOW_STATE_DEFAULT:
         SetState(CalculateShelfVisibility());
@@ -438,17 +432,21 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
     CancelGestureDrag();
     return;
   }
-
+  if (shelf_) {
+    shelf_->Deactivate();
+    shelf_->status_area_widget()->Deactivate();
+  }
   gesture_drag_auto_hide_state_ =
       gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN ?
       SHELF_AUTO_HIDE_HIDDEN : SHELF_AUTO_HIDE_SHOWN;
-  if (shelf_)
-    shelf_->Deactivate();
-  shelf_->status_area_widget()->Deactivate();
   if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_HIDDEN &&
       auto_hide_behavior_ != SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
     gesture_drag_status_ = GESTURE_DRAG_NONE;
-    SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+    if (!FullscreenWithMinimalChrome()) {
+      SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+    } else {
+      UpdateVisibilityState();
+    }
   } else if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN &&
              auto_hide_behavior_ != SHELF_AUTO_HIDE_BEHAVIOR_NEVER) {
     gesture_drag_status_ = GESTURE_DRAG_NONE;
@@ -515,6 +513,18 @@ void ShelfLayoutManager::OnWindowActivated(aura::Window* gained_active,
 bool ShelfLayoutManager::IsHorizontalAlignment() const {
   return alignment_ == SHELF_ALIGNMENT_BOTTOM ||
          alignment_ == SHELF_ALIGNMENT_TOP;
+}
+
+bool ShelfLayoutManager::FullscreenWithMinimalChrome() const {
+  RootWindowController* controller = GetRootWindowController(root_window_);
+  if (!controller)
+    return false;
+  aura::Window* window = controller->GetFullscreenWindow();
+  if (!window)
+    return false;
+  if (!window->GetProperty(kFullscreenUsesMinimalChromeKey))
+    return false;
+  return true;
 }
 
 // static

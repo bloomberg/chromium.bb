@@ -184,6 +184,10 @@ class ASH_EXPORT ShelfLayoutManager :
   // Is the shelf's alignment horizontal?
   bool IsHorizontalAlignment() const;
 
+  // Tests if the browser is currently in fullscreen mode with minimal
+  // Chrome. When minimal Chrome is present the shelf should be displayed.
+  bool FullscreenWithMinimalChrome() const;
+
   // Returns a ShelfLayoutManager on the display which has a launcher for
   // given |window|. See RootWindowController::ForLauncher for more info.
   static ShelfLayoutManager* ForLauncher(aura::Window* window);
