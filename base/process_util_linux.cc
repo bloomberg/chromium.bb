@@ -12,10 +12,10 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/process/internal_linux.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_tokenizer.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -23,143 +23,14 @@ namespace base {
 
 namespace {
 
-enum ParsingState {
-  KEY_NAME,
-  KEY_VALUE
-};
-
-const char kProcDir[] = "/proc";
-const char kStatFile[] = "stat";
-
-// Returns a FilePath to "/proc/pid".
-FilePath GetProcPidDir(pid_t pid) {
-  return FilePath(kProcDir).Append(IntToString(pid));
-}
-
-// Fields from /proc/<pid>/stat, 0-based. See man 5 proc.
-// If the ordering ever changes, carefully review functions that use these
-// values.
-enum ProcStatsFields {
-  VM_COMM           = 1,   // Filename of executable, without parentheses.
-  VM_STATE          = 2,   // Letter indicating the state of the process.
-  VM_PPID           = 3,   // PID of the parent.
-  VM_PGRP           = 4,   // Process group id.
-  VM_UTIME          = 13,  // Time scheduled in user mode in clock ticks.
-  VM_STIME          = 14,  // Time scheduled in kernel mode in clock ticks.
-  VM_NUMTHREADS     = 19,  // Number of threads.
-  VM_VSIZE          = 22,  // Virtual memory size in bytes.
-  VM_RSS            = 23,  // Resident Set Size in pages.
-};
-
-// Reads /proc/<pid>/stat into |buffer|. Returns true if the file can be read
-// and is non-empty.
-bool ReadProcStats(pid_t pid, std::string* buffer) {
-  buffer->clear();
-  // Synchronously reading files in /proc is safe.
-  ThreadRestrictions::ScopedAllowIO allow_io;
-
-  FilePath stat_file = GetProcPidDir(pid).Append(kStatFile);
-  if (!file_util::ReadFileToString(stat_file, buffer)) {
-    DLOG(WARNING) << "Failed to get process stats.";
-    return false;
-  }
-  return !buffer->empty();
-}
-
-// Takes |stats_data| and populates |proc_stats| with the values split by
-// spaces. Taking into account the 2nd field may, in itself, contain spaces.
-// Returns true if successful.
-bool ParseProcStats(const std::string& stats_data,
-                    std::vector<std::string>* proc_stats) {
-  // |stats_data| may be empty if the process disappeared somehow.
-  // e.g. http://crbug.com/145811
-  if (stats_data.empty())
-    return false;
-
-  // The stat file is formatted as:
-  // pid (process name) data1 data2 .... dataN
-  // Look for the closing paren by scanning backwards, to avoid being fooled by
-  // processes with ')' in the name.
-  size_t open_parens_idx = stats_data.find(" (");
-  size_t close_parens_idx = stats_data.rfind(") ");
-  if (open_parens_idx == std::string::npos ||
-      close_parens_idx == std::string::npos ||
-      open_parens_idx > close_parens_idx) {
-    DLOG(WARNING) << "Failed to find matched parens in '" << stats_data << "'";
-    NOTREACHED();
-    return false;
-  }
-  open_parens_idx++;
-
-  proc_stats->clear();
-  // PID.
-  proc_stats->push_back(stats_data.substr(0, open_parens_idx));
-  // Process name without parentheses.
-  proc_stats->push_back(
-      stats_data.substr(open_parens_idx + 1,
-                        close_parens_idx - (open_parens_idx + 1)));
-
-  // Split the rest.
-  std::vector<std::string> other_stats;
-  SplitString(stats_data.substr(close_parens_idx + 2), ' ', &other_stats);
-  for (size_t i = 0; i < other_stats.size(); ++i)
-    proc_stats->push_back(other_stats[i]);
-  return true;
-}
-
-// Reads the |field_num|th field from |proc_stats|. Returns 0 on failure.
-// This version does not handle the first 3 values, since the first value is
-// simply |pid|, and the next two values are strings.
-int GetProcStatsFieldAsInt(const std::vector<std::string>& proc_stats,
-                           ProcStatsFields field_num) {
-  DCHECK_GE(field_num, VM_PPID);
-  CHECK_LT(static_cast<size_t>(field_num), proc_stats.size());
-
-  int value;
-  return StringToInt(proc_stats[field_num], &value) ? value : 0;
-}
-
-// Same as GetProcStatsFieldAsInt(), but for size_t values.
-size_t GetProcStatsFieldAsSizeT(const std::vector<std::string>& proc_stats,
-                                ProcStatsFields field_num) {
-  DCHECK_GE(field_num, VM_PPID);
-  CHECK_LT(static_cast<size_t>(field_num), proc_stats.size());
-
-  size_t value;
-  return StringToSizeT(proc_stats[field_num], &value) ? value : 0;
-}
-
-// Convenience wrapper around GetProcStatsFieldAsInt(), ParseProcStats() and
-// ReadProcStats(). See GetProcStatsFieldAsInt() for details.
-int ReadProcStatsAndGetFieldAsInt(pid_t pid, ProcStatsFields field_num) {
-  std::string stats_data;
-  if (!ReadProcStats(pid, &stats_data))
-    return 0;
-  std::vector<std::string> proc_stats;
-  if (!ParseProcStats(stats_data, &proc_stats))
-    return 0;
-  return GetProcStatsFieldAsInt(proc_stats, field_num);
-}
-
-// Same as ReadProcStatsAndGetFieldAsInt() but for size_t values.
-size_t ReadProcStatsAndGetFieldAsSizeT(pid_t pid, ProcStatsFields field_num) {
-  std::string stats_data;
-  if (!ReadProcStats(pid, &stats_data))
-    return 0;
-  std::vector<std::string> proc_stats;
-  if (!ParseProcStats(stats_data, &proc_stats))
-    return 0;
-  return GetProcStatsFieldAsSizeT(proc_stats, field_num);
-}
-
 // Reads the |field_num|th field from |proc_stats|.
 // Returns an empty string on failure.
 // This version only handles VM_COMM and VM_STATE, which are the only fields
 // that are strings.
 std::string GetProcStatsFieldAsString(
     const std::vector<std::string>& proc_stats,
-    ProcStatsFields field_num) {
-  if (field_num < VM_COMM || field_num > VM_STATE) {
+    internal::ProcStatsFields field_num) {
+  if (field_num < internal::VM_COMM || field_num > internal::VM_STATE) {
     NOTREACHED();
     return std::string();
   }
@@ -180,7 +51,7 @@ bool GetProcCmdline(pid_t pid, std::vector<std::string>* proc_cmd_line_args) {
   // Synchronously reading files in /proc is safe.
   ThreadRestrictions::ScopedAllowIO allow_io;
 
-  FilePath cmd_line_file = GetProcPidDir(pid).Append("cmdline");
+  FilePath cmd_line_file = internal::GetProcPidDir(pid).Append("cmdline");
   std::string cmd_line;
   if (!file_util::ReadFileToString(cmd_line_file, &cmd_line))
     return false;
@@ -188,113 +59,6 @@ bool GetProcCmdline(pid_t pid, std::vector<std::string>* proc_cmd_line_args) {
   delimiters.push_back('\0');
   Tokenize(cmd_line, delimiters, proc_cmd_line_args);
   return true;
-}
-
-// Take a /proc directory entry named |d_name|, and if it is the directory for
-// a process, convert it to a pid_t.
-// Returns 0 on failure.
-// e.g. /proc/self/ will return 0, whereas /proc/1234 will return 1234.
-pid_t ProcDirSlotToPid(const char* d_name) {
-  int i;
-  for (i = 0; i < NAME_MAX && d_name[i]; ++i) {
-    if (!IsAsciiDigit(d_name[i])) {
-      return 0;
-    }
-  }
-  if (i == NAME_MAX)
-    return 0;
-
-  // Read the process's command line.
-  pid_t pid;
-  std::string pid_string(d_name);
-  if (!StringToInt(pid_string, &pid)) {
-    NOTREACHED();
-    return 0;
-  }
-  return pid;
-}
-
-// Get the total CPU of a single process.  Return value is number of jiffies
-// on success or -1 on error.
-int GetProcessCPU(pid_t pid) {
-  // Use /proc/<pid>/task to find all threads and parse their /stat file.
-  FilePath task_path = GetProcPidDir(pid).Append("task");
-
-  DIR* dir = opendir(task_path.value().c_str());
-  if (!dir) {
-    DPLOG(ERROR) << "opendir(" << task_path.value() << ")";
-    return -1;
-  }
-
-  int total_cpu = 0;
-  while (struct dirent* ent = readdir(dir)) {
-    pid_t tid = ProcDirSlotToPid(ent->d_name);
-    if (!tid)
-      continue;
-
-    // Synchronously reading files in /proc is safe.
-    ThreadRestrictions::ScopedAllowIO allow_io;
-
-    std::string stat;
-    FilePath stat_path = task_path.Append(ent->d_name).Append(kStatFile);
-    if (file_util::ReadFileToString(stat_path, &stat)) {
-      int cpu = ParseProcStatCPU(stat);
-      if (cpu > 0)
-        total_cpu += cpu;
-    }
-  }
-  closedir(dir);
-
-  return total_cpu;
-}
-
-// Read /proc/<pid>/status and returns the value for |field|, or 0 on failure.
-// Only works for fields in the form of "Field: value kB".
-size_t ReadProcStatusAndGetFieldAsSizeT(pid_t pid, const std::string& field) {
-  FilePath stat_file = GetProcPidDir(pid).Append("status");
-  std::string status;
-  {
-    // Synchronously reading files in /proc is safe.
-    ThreadRestrictions::ScopedAllowIO allow_io;
-    if (!file_util::ReadFileToString(stat_file, &status))
-      return 0;
-  }
-
-  StringTokenizer tokenizer(status, ":\n");
-  ParsingState state = KEY_NAME;
-  StringPiece last_key_name;
-  while (tokenizer.GetNext()) {
-    switch (state) {
-      case KEY_NAME:
-        last_key_name = tokenizer.token_piece();
-        state = KEY_VALUE;
-        break;
-      case KEY_VALUE:
-        DCHECK(!last_key_name.empty());
-        if (last_key_name == field) {
-          std::string value_str;
-          tokenizer.token_piece().CopyToString(&value_str);
-          std::string value_str_trimmed;
-          TrimWhitespaceASCII(value_str, TRIM_ALL, &value_str_trimmed);
-          std::vector<std::string> split_value_str;
-          SplitString(value_str_trimmed, ' ', &split_value_str);
-          if (split_value_str.size() != 2 || split_value_str[1] != "kB") {
-            NOTREACHED();
-            return 0;
-          }
-          size_t value;
-          if (!StringToSizeT(split_value_str[0], &value)) {
-            NOTREACHED();
-            return 0;
-          }
-          return value;
-        }
-        state = KEY_NAME;
-        break;
-    }
-  }
-  NOTREACHED();
-  return 0;
 }
 
 }  // namespace
@@ -306,14 +70,15 @@ size_t g_oom_size = 0U;
 const char kProcSelfExe[] = "/proc/self/exe";
 
 ProcessId GetParentProcessId(ProcessHandle process) {
-  ProcessId pid = ReadProcStatsAndGetFieldAsInt(process, VM_PPID);
+  ProcessId pid =
+      internal::ReadProcStatsAndGetFieldAsInt(process, internal::VM_PPID);
   if (pid)
     return pid;
   return -1;
 }
 
 FilePath GetProcessExecutablePath(ProcessHandle process) {
-  FilePath stat_file = GetProcPidDir(process).Append("exe");
+  FilePath stat_file = internal::GetProcPidDir(process).Append("exe");
   FilePath exe_name;
   if (!file_util::ReadSymbolicLink(stat_file, &exe_name)) {
     // No such process.  Happens frequently in e.g. TerminateAllChromeProcesses
@@ -324,7 +89,7 @@ FilePath GetProcessExecutablePath(ProcessHandle process) {
 
 ProcessIterator::ProcessIterator(const ProcessFilter* filter)
     : filter_(filter) {
-  procfs_dir_ = opendir(kProcDir);
+  procfs_dir_ = opendir(internal::kProcDir);
 }
 
 ProcessIterator::~ProcessIterator() {
@@ -353,7 +118,7 @@ bool ProcessIterator::CheckForNextProcess() {
       return false;
 
     // If not a process, keep looking for one.
-    pid = ProcDirSlotToPid(slot->d_name);
+    pid = internal::ProcDirSlotToPid(slot->d_name);
     if (!pid) {
       skipped++;
       continue;
@@ -362,12 +127,13 @@ bool ProcessIterator::CheckForNextProcess() {
     if (!GetProcCmdline(pid, &cmd_line_args))
       continue;
 
-    if (!ReadProcStats(pid, &stats_data))
+    if (!internal::ReadProcStats(pid, &stats_data))
       continue;
-    if (!ParseProcStats(stats_data, &proc_stats))
+    if (!internal::ParseProcStats(stats_data, &proc_stats))
       continue;
 
-    std::string runstate = GetProcStatsFieldAsString(proc_stats, VM_STATE);
+    std::string runstate =
+        GetProcStatsFieldAsString(proc_stats, internal::VM_STATE);
     if (runstate.size() != 1) {
       NOTREACHED();
       continue;
@@ -388,8 +154,8 @@ bool ProcessIterator::CheckForNextProcess() {
   }
 
   entry_.pid_ = pid;
-  entry_.ppid_ = GetProcStatsFieldAsInt(proc_stats, VM_PPID);
-  entry_.gid_ = GetProcStatsFieldAsInt(proc_stats, VM_PGRP);
+  entry_.ppid_ = GetProcStatsFieldAsInt(proc_stats, internal::VM_PPID);
+  entry_.gid_ = GetProcStatsFieldAsInt(proc_stats, internal::VM_PGRP);
   entry_.cmd_line_args_.assign(cmd_line_args.begin(), cmd_line_args.end());
   entry_.exe_file_ = GetProcessExecutablePath(pid).BaseName().value();
   return true;
@@ -402,329 +168,9 @@ bool NamedProcessIterator::IncludeEntry() {
 }
 
 
-// static
-ProcessMetrics* ProcessMetrics::CreateProcessMetrics(ProcessHandle process) {
-  return new ProcessMetrics(process);
-}
-
-// On linux, we return vsize.
-size_t ProcessMetrics::GetPagefileUsage() const {
-  return ReadProcStatsAndGetFieldAsSizeT(process_, VM_VSIZE);
-}
-
-// On linux, we return the high water mark of vsize.
-size_t ProcessMetrics::GetPeakPagefileUsage() const {
-  return ReadProcStatusAndGetFieldAsSizeT(process_, "VmPeak") * 1024;
-}
-
-// On linux, we return RSS.
-size_t ProcessMetrics::GetWorkingSetSize() const {
-  return ReadProcStatsAndGetFieldAsSizeT(process_, VM_RSS) * getpagesize();
-}
-
-// On linux, we return the high water mark of RSS.
-size_t ProcessMetrics::GetPeakWorkingSetSize() const {
-  return ReadProcStatusAndGetFieldAsSizeT(process_, "VmHWM") * 1024;
-}
-
-bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,
-                                    size_t* shared_bytes) {
-  WorkingSetKBytes ws_usage;
-  if (!GetWorkingSetKBytes(&ws_usage))
-    return false;
-
-  if (private_bytes)
-    *private_bytes = ws_usage.priv * 1024;
-
-  if (shared_bytes)
-    *shared_bytes = ws_usage.shared * 1024;
-
-  return true;
-}
-
-// Private and Shared working set sizes are obtained from /proc/<pid>/statm.
-bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
-  // Use statm instead of smaps because smaps is:
-  // a) Large and slow to parse.
-  // b) Unavailable in the SUID sandbox.
-
-  // First we need to get the page size, since everything is measured in pages.
-  // For details, see: man 5 proc.
-  const int page_size_kb = getpagesize() / 1024;
-  if (page_size_kb <= 0)
-    return false;
-
-  std::string statm;
-  {
-    FilePath statm_file = GetProcPidDir(process_).Append("statm");
-    // Synchronously reading files in /proc is safe.
-    ThreadRestrictions::ScopedAllowIO allow_io;
-    bool ret = file_util::ReadFileToString(statm_file, &statm);
-    if (!ret || statm.length() == 0)
-      return false;
-  }
-
-  std::vector<std::string> statm_vec;
-  SplitString(statm, ' ', &statm_vec);
-  if (statm_vec.size() != 7)
-    return false;  // Not the format we expect.
-
-  int statm_rss, statm_shared;
-  StringToInt(statm_vec[1], &statm_rss);
-  StringToInt(statm_vec[2], &statm_shared);
-
-  ws_usage->priv = (statm_rss - statm_shared) * page_size_kb;
-  ws_usage->shared = statm_shared * page_size_kb;
-
-  // Sharable is not calculated, as it does not provide interesting data.
-  ws_usage->shareable = 0;
-
-  return true;
-}
-
-double ProcessMetrics::GetCPUUsage() {
-  // This queries the /proc-specific scaling factor which is
-  // conceptually the system hertz.  To dump this value on another
-  // system, try
-  //   od -t dL /proc/self/auxv
-  // and look for the number after 17 in the output; mine is
-  //   0000040          17         100           3   134512692
-  // which means the answer is 100.
-  // It may be the case that this value is always 100.
-  static const int kHertz = sysconf(_SC_CLK_TCK);
-
-  struct timeval now;
-  int retval = gettimeofday(&now, NULL);
-  if (retval)
-    return 0;
-  int64 time = TimeValToMicroseconds(now);
-
-  if (last_time_ == 0) {
-    // First call, just set the last values.
-    last_time_ = time;
-    last_cpu_ = GetProcessCPU(process_);
-    return 0;
-  }
-
-  int64 time_delta = time - last_time_;
-  DCHECK_NE(time_delta, 0);
-  if (time_delta == 0)
-    return 0;
-
-  int cpu = GetProcessCPU(process_);
-
-  // We have the number of jiffies in the time period.  Convert to percentage.
-  // Note this means we will go *over* 100 in the case where multiple threads
-  // are together adding to more than one CPU's worth.
-  int percentage = 100 * (cpu - last_cpu_) /
-      (kHertz * TimeDelta::FromMicroseconds(time_delta).InSecondsF());
-
-  last_time_ = time;
-  last_cpu_ = cpu;
-
-  return percentage;
-}
-
-// To have /proc/self/io file you must enable CONFIG_TASK_IO_ACCOUNTING
-// in your kernel configuration.
-bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
-  // Synchronously reading files in /proc is safe.
-  ThreadRestrictions::ScopedAllowIO allow_io;
-
-  std::string proc_io_contents;
-  FilePath io_file = GetProcPidDir(process_).Append("io");
-  if (!file_util::ReadFileToString(io_file, &proc_io_contents))
-    return false;
-
-  (*io_counters).OtherOperationCount = 0;
-  (*io_counters).OtherTransferCount = 0;
-
-  StringTokenizer tokenizer(proc_io_contents, ": \n");
-  ParsingState state = KEY_NAME;
-  StringPiece last_key_name;
-  while (tokenizer.GetNext()) {
-    switch (state) {
-      case KEY_NAME:
-        last_key_name = tokenizer.token_piece();
-        state = KEY_VALUE;
-        break;
-      case KEY_VALUE:
-        DCHECK(!last_key_name.empty());
-        if (last_key_name == "syscr") {
-          StringToInt64(tokenizer.token_piece(),
-              reinterpret_cast<int64*>(&(*io_counters).ReadOperationCount));
-        } else if (last_key_name == "syscw") {
-          StringToInt64(tokenizer.token_piece(),
-              reinterpret_cast<int64*>(&(*io_counters).WriteOperationCount));
-        } else if (last_key_name == "rchar") {
-          StringToInt64(tokenizer.token_piece(),
-              reinterpret_cast<int64*>(&(*io_counters).ReadTransferCount));
-        } else if (last_key_name == "wchar") {
-          StringToInt64(tokenizer.token_piece(),
-              reinterpret_cast<int64*>(&(*io_counters).WriteTransferCount));
-        }
-        state = KEY_NAME;
-        break;
-    }
-  }
-  return true;
-}
-
-ProcessMetrics::ProcessMetrics(ProcessHandle process)
-    : process_(process),
-      last_time_(0),
-      last_system_time_(0),
-      last_cpu_(0) {
-  processor_count_ = SysInfo::NumberOfProcessors();
-}
-
-
-// Exposed for testing.
-int ParseProcStatCPU(const std::string& input) {
-  std::vector<std::string> proc_stats;
-  if (!ParseProcStats(input, &proc_stats))
-    return -1;
-
-  if (proc_stats.size() <= VM_STIME)
-    return -1;
-  int utime = GetProcStatsFieldAsInt(proc_stats, VM_UTIME);
-  int stime = GetProcStatsFieldAsInt(proc_stats, VM_STIME);
-  return utime + stime;
-}
-
 int GetNumberOfThreads(ProcessHandle process) {
-  return ReadProcStatsAndGetFieldAsInt(process, VM_NUMTHREADS);
-}
-
-namespace {
-
-// The format of /proc/meminfo is:
-//
-// MemTotal:      8235324 kB
-// MemFree:       1628304 kB
-// Buffers:        429596 kB
-// Cached:        4728232 kB
-// ...
-const size_t kMemTotalIndex = 1;
-const size_t kMemFreeIndex = 4;
-const size_t kMemBuffersIndex = 7;
-const size_t kMemCachedIndex = 10;
-const size_t kMemActiveAnonIndex = 22;
-const size_t kMemInactiveAnonIndex = 25;
-const size_t kMemActiveFileIndex = 28;
-const size_t kMemInactiveFileIndex = 31;
-
-}  // namespace
-
-SystemMemoryInfoKB::SystemMemoryInfoKB()
-    : total(0),
-      free(0),
-      buffers(0),
-      cached(0),
-      active_anon(0),
-      inactive_anon(0),
-      active_file(0),
-      inactive_file(0),
-      shmem(0),
-      gem_objects(-1),
-      gem_size(-1) {
-}
-
-bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
-  // Synchronously reading files in /proc is safe.
-  ThreadRestrictions::ScopedAllowIO allow_io;
-
-  // Used memory is: total - free - buffers - caches
-  FilePath meminfo_file("/proc/meminfo");
-  std::string meminfo_data;
-  if (!file_util::ReadFileToString(meminfo_file, &meminfo_data)) {
-    DLOG(WARNING) << "Failed to open " << meminfo_file.value();
-    return false;
-  }
-  std::vector<std::string> meminfo_fields;
-  SplitStringAlongWhitespace(meminfo_data, &meminfo_fields);
-
-  if (meminfo_fields.size() < kMemCachedIndex) {
-    DLOG(WARNING) << "Failed to parse " << meminfo_file.value()
-                  << ".  Only found " << meminfo_fields.size() << " fields.";
-    return false;
-  }
-
-  DCHECK_EQ(meminfo_fields[kMemTotalIndex-1], "MemTotal:");
-  DCHECK_EQ(meminfo_fields[kMemFreeIndex-1], "MemFree:");
-  DCHECK_EQ(meminfo_fields[kMemBuffersIndex-1], "Buffers:");
-  DCHECK_EQ(meminfo_fields[kMemCachedIndex-1], "Cached:");
-  DCHECK_EQ(meminfo_fields[kMemActiveAnonIndex-1], "Active(anon):");
-  DCHECK_EQ(meminfo_fields[kMemInactiveAnonIndex-1], "Inactive(anon):");
-  DCHECK_EQ(meminfo_fields[kMemActiveFileIndex-1], "Active(file):");
-  DCHECK_EQ(meminfo_fields[kMemInactiveFileIndex-1], "Inactive(file):");
-
-  StringToInt(meminfo_fields[kMemTotalIndex], &meminfo->total);
-  StringToInt(meminfo_fields[kMemFreeIndex], &meminfo->free);
-  StringToInt(meminfo_fields[kMemBuffersIndex], &meminfo->buffers);
-  StringToInt(meminfo_fields[kMemCachedIndex], &meminfo->cached);
-  StringToInt(meminfo_fields[kMemActiveAnonIndex], &meminfo->active_anon);
-  StringToInt(meminfo_fields[kMemInactiveAnonIndex],
-                    &meminfo->inactive_anon);
-  StringToInt(meminfo_fields[kMemActiveFileIndex], &meminfo->active_file);
-  StringToInt(meminfo_fields[kMemInactiveFileIndex],
-                    &meminfo->inactive_file);
-#if defined(OS_CHROMEOS)
-  // Chrome OS has a tweaked kernel that allows us to query Shmem, which is
-  // usually video memory otherwise invisible to the OS.  Unfortunately, the
-  // meminfo format varies on different hardware so we have to search for the
-  // string.  It always appears after "Cached:".
-  for (size_t i = kMemCachedIndex+2; i < meminfo_fields.size(); i += 3) {
-    if (meminfo_fields[i] == "Shmem:") {
-      StringToInt(meminfo_fields[i+1], &meminfo->shmem);
-      break;
-    }
-  }
-
-  // Report on Chrome OS GEM object graphics memory. /var/run/debugfs_gpu is a
-  // bind mount into /sys/kernel/debug and synchronously reading the in-memory
-  // files in /sys is fast.
-#if defined(ARCH_CPU_ARM_FAMILY)
-  FilePath geminfo_file("/var/run/debugfs_gpu/exynos_gem_objects");
-#else
-  FilePath geminfo_file("/var/run/debugfs_gpu/i915_gem_objects");
-#endif
-  std::string geminfo_data;
-  meminfo->gem_objects = -1;
-  meminfo->gem_size = -1;
-  if (file_util::ReadFileToString(geminfo_file, &geminfo_data)) {
-    int gem_objects = -1;
-    long long gem_size = -1;
-    int num_res = sscanf(geminfo_data.c_str(),
-                         "%d objects, %lld bytes",
-                         &gem_objects, &gem_size);
-    if (num_res == 2) {
-      meminfo->gem_objects = gem_objects;
-      meminfo->gem_size = gem_size;
-    }
-  }
-
-#if defined(ARCH_CPU_ARM_FAMILY)
-  // Incorporate Mali graphics memory if present.
-  FilePath mali_memory_file("/sys/devices/platform/mali.0/memory");
-  std::string mali_memory_data;
-  if (file_util::ReadFileToString(mali_memory_file, &mali_memory_data)) {
-    long long mali_size = -1;
-    int num_res = sscanf(mali_memory_data.c_str(), "%lld bytes", &mali_size);
-    if (num_res == 1)
-      meminfo->gem_size += mali_size;
-  }
-#endif  // defined(ARCH_CPU_ARM_FAMILY)
-#endif  // defined(OS_CHROMEOS)
-
-  return true;
-}
-
-size_t GetSystemCommitCharge() {
-  SystemMemoryInfoKB meminfo;
-  if (!GetSystemMemoryInfo(&meminfo))
-    return 0;
-  return meminfo.total - meminfo.free - meminfo.buffers - meminfo.cached;
+  return internal::ReadProcStatsAndGetFieldAsInt(process,
+                                                 internal::VM_NUMTHREADS);
 }
 
 namespace {
@@ -859,7 +305,7 @@ bool AdjustOOMScore(ProcessId process, int score) {
   if (score < 0 || score > kMaxOomScore)
     return false;
 
-  FilePath oom_path(GetProcPidDir(process));
+  FilePath oom_path(internal::GetProcPidDir(process));
 
   // Attempt to write the newer oom_score_adj file first.
   FilePath oom_file = oom_path.AppendASCII("oom_score_adj");

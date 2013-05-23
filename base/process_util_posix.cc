@@ -771,8 +771,6 @@ bool LaunchProcess(const CommandLine& cmdline,
   return LaunchProcess(cmdline.argv(), options, process_handle);
 }
 
-ProcessMetrics::~ProcessMetrics() { }
-
 void RaiseProcessToHighPriority() {
   // On POSIX, we don't actually do anything here.  We could try to nice() or
   // setpriority() or sched_getscheduler, but these all require extra rights.
@@ -944,14 +942,6 @@ bool WaitForSingleProcess(ProcessHandle handle, base::TimeDelta wait) {
   } else {
     return false;
   }
-}
-
-int64 TimeValToMicroseconds(const struct timeval& tv) {
-  static const int kMicrosecondsPerSecond = 1000000;
-  int64 ret = tv.tv_sec;  // Avoid (int * int) integer overflow.
-  ret *= kMicrosecondsPerSecond;
-  ret += tv.tv_usec;
-  return ret;
 }
 
 // Return value used by GetAppOutputInternal to encapsulate the various exit
