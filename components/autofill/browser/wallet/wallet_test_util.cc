@@ -28,18 +28,28 @@ int FutureYear() {
 
 }  // namespace
 
-scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentWithId(
-    const std::string& id) {
+scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentWithDetails(
+    const std::string& id,
+    WalletItems::MaskedInstrument::Type type,
+    WalletItems::MaskedInstrument::Status status) {
   return scoped_ptr<WalletItems::MaskedInstrument>(
       new WalletItems::MaskedInstrument(ASCIIToUTF16("descriptive_name"),
-                                        WalletItems::MaskedInstrument::VISA,
+                                        type,
                                         std::vector<base::string16>(),
                                         ASCIIToUTF16("1111"),
                                         12,
                                         FutureYear(),
                                         GetTestAddress(),
-                                        WalletItems::MaskedInstrument::VALID,
+                                        status,
                                         id));
+}
+
+scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentWithId(
+    const std::string& id) {
+  return GetTestMaskedInstrumentWithDetails(
+      id,
+      WalletItems::MaskedInstrument::VISA,
+      WalletItems::MaskedInstrument::VALID);
 }
 
 scoped_ptr<Address> GetTestAddress() {
@@ -84,6 +94,20 @@ scoped_ptr<WalletItems::LegalDocument> GetTestLegalDocument() {
 
 scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrument() {
   return GetTestMaskedInstrumentWithId("default_instrument_id");
+}
+
+scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentInvalid() {
+  return GetTestMaskedInstrumentWithDetails(
+      "default_instrument_id",
+      WalletItems::MaskedInstrument::VISA,
+      WalletItems::MaskedInstrument::DECLINED);
+}
+
+scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentAmex() {
+  return GetTestMaskedInstrumentWithDetails(
+      "default_instrument_id",
+      WalletItems::MaskedInstrument::AMEX,
+      WalletItems::MaskedInstrument::VALID);
 }
 
 scoped_ptr<WalletItems::MaskedInstrument> GetTestNonDefaultMaskedInstrument() {

@@ -95,6 +95,9 @@ const char kSameAsBillingKey[] = "same-as-billing";
 // time.
 const char kAutofillDialogOrigin[] = "Chrome Autofill dialog";
 
+// HSL shift to gray out an image.
+const color_utils::HSL kGrayImageShift = {-1, 0, 0.8};
+
 // Returns true if |input| should be shown when |field_type| has been requested.
 bool InputTypeMatchesFieldType(const DetailInput& input,
                                AutofillFieldType field_type) {
@@ -234,6 +237,15 @@ string16 GetValueForType(const DetailOutputMap& output,
   }
   NOTREACHED();
   return string16();
+}
+
+// Check if a given MaskedInstrument is allowed for the purchase.
+bool IsInstrumentAllowed(
+    const wallet::WalletItems::MaskedInstrument& instrument) {
+  return (instrument.status() == wallet::WalletItems::MaskedInstrument::VALID ||
+      instrument.status() == wallet::WalletItems::MaskedInstrument::PENDING) &&
+      instrument.type() != wallet::WalletItems::MaskedInstrument::AMEX &&
+      instrument.type() != wallet::WalletItems::MaskedInstrument::UNKNOWN;
 }
 
 // Signals that the user has opted in to geolocation services.  Factored out
@@ -1047,10 +1059,9 @@ gfx::Image AutofillDialogControllerImpl::IconForField(
       int idr = card_idrs[i];
       gfx::ImageSkia card_image = *rb.GetImageSkiaNamed(idr);
       if (card.IconResourceId() != idr) {
-        color_utils::HSL shift = {-1, 0, 0.8};
         SkBitmap disabled_bitmap =
             SkBitmapOperations::CreateHSLShiftedBitmap(*card_image.bitmap(),
-                                                       shift);
+                                                       kGrayImageShift);
         card_image = gfx::ImageSkia::CreateFrom1xBitmap(disabled_bitmap);
       }
 
@@ -1819,17 +1830,33 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     if (!IsSubmitPausedOn(wallet::VERIFY_CVV)) {
       const std::vector<wallet::WalletItems::MaskedInstrument*>& instruments =
           wallet_items_->instruments();
+      std::string first_active_instrument_key;
+      std::string default_instrument_key;
       for (size_t i = 0; i < instruments.size(); ++i) {
+        bool allowed = IsInstrumentAllowed(*instruments[i]);
+        gfx::Image icon = instruments[i]->CardIcon();
+        if (!allowed && !icon.IsEmpty()) {
+          // Create a grayed disabled icon.
+          SkBitmap disabled_bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(
+              *icon.ToSkBitmap(), kGrayImageShift);
+          icon = gfx::Image(
+              gfx::ImageSkia::CreateFrom1xBitmap(disabled_bitmap));
+        }
         std::string key = base::IntToString(i);
         suggested_cc_billing_.AddKeyedItemWithSublabelAndIcon(
             key,
             instruments[i]->DisplayName(),
             instruments[i]->DisplayNameDetail(),
-            instruments[i]->CardIcon());
+            icon);
+        suggested_cc_billing_.SetEnabled(key, allowed);
 
-        if (instruments[i]->object_id() ==
-                wallet_items_->default_instrument_id()) {
-          suggested_cc_billing_.SetCheckedItem(key);
+        if (allowed) {
+          if (first_active_instrument_key.empty())
+            first_active_instrument_key = key;
+          if (instruments[i]->object_id() ==
+              wallet_items_->default_instrument_id()) {
+            default_instrument_key = key;
+          }
         }
       }
 
@@ -1841,6 +1868,14 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
           kManageItemsKey,
           l10n_util::GetStringUTF16(
               IDS_AUTOFILL_DIALOG_MANAGE_BILLING_DETAILS));
+
+      // Determine which instrument item should be selected.
+      if (!default_instrument_key.empty())
+        suggested_cc_billing_.SetCheckedItem(default_instrument_key);
+      else if (!first_active_instrument_key.empty())
+        suggested_cc_billing_.SetCheckedItem(first_active_instrument_key);
+      else
+        suggested_cc_billing_.SetCheckedItem(kAddNewItemKey);
     }
   } else {
     PersonalDataManager* manager = GetManager();

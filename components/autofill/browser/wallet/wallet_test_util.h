@@ -20,6 +20,8 @@ scoped_ptr<FullWallet> GetTestFullWallet();
 scoped_ptr<Instrument> GetTestInstrument();
 scoped_ptr<WalletItems::LegalDocument> GetTestLegalDocument();
 scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrument();
+scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentInvalid();
+scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentAmex();
 scoped_ptr<WalletItems::MaskedInstrument> GetTestNonDefaultMaskedInstrument();
 scoped_ptr<Address> GetTestSaveableAddress();
 scoped_ptr<Address> GetTestShippingAddress();

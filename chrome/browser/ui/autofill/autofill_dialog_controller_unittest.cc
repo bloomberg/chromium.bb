@@ -643,6 +643,52 @@ TEST_F(AutofillDialogControllerTest, WalletDefaultItems) {
       IsItemCheckedAt(4));
 }
 
+// Tests that invalid and AMEX default instruments are ignored.
+TEST_F(AutofillDialogControllerTest, SelectInstrument) {
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  // Tests if default instrument is invalid, then, the first valid instrument is
+  // selected instead of the default instrument.
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentInvalid());
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  // 4 suggestions and "add", "manage".
+  EXPECT_EQ(6,
+      controller()->MenuModelForSection(SECTION_CC_BILLING)->GetItemCount());
+  EXPECT_TRUE(controller()->MenuModelForSection(SECTION_CC_BILLING)->
+      IsItemCheckedAt(0));
+
+  // Tests if default instrument is AMEX, then, the first valid instrument is
+  // selected instead of the default instrument.
+  wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentAmex());
+  wallet_items->AddInstrument(wallet::GetTestNonDefaultMaskedInstrument());
+
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  // 4 suggestions and "add", "manage".
+  EXPECT_EQ(6,
+      controller()->MenuModelForSection(SECTION_CC_BILLING)->GetItemCount());
+  EXPECT_TRUE(controller()->MenuModelForSection(SECTION_CC_BILLING)->
+      IsItemCheckedAt(0));
+
+  // Tests if only have AMEX and invalid instrument, then "add" is selected.
+  wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentInvalid());
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentAmex());
+
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  // 2 suggestions and "add", "manage".
+  EXPECT_EQ(4,
+      controller()->MenuModelForSection(SECTION_CC_BILLING)->GetItemCount());
+  // "add"
+  EXPECT_TRUE(controller()->MenuModelForSection(SECTION_CC_BILLING)->
+      IsItemCheckedAt(2));
+}
+
 TEST_F(AutofillDialogControllerTest, SaveAddress) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
@@ -661,6 +707,18 @@ TEST_F(AutofillDialogControllerTest, SaveInstrument) {
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnAccept();
+}
+
+TEST_F(AutofillDialogControllerTest, SaveInstrumentWithInvalidInstruments) {
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              SaveInstrument(_, _, _)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentInvalid());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
 }
