@@ -89,6 +89,9 @@ class NativeAppWindowCocoa : public NativeAppWindow {
   // Called when the window is un-minimized.
   void WindowDidDeminiaturize();
 
+  // Called when the window is zoomed (maximized or de-maximized).
+  void WindowWillZoom();
+
   // Called to handle a key event.
   bool HandledByExtensionCommand(NSEvent* event);
 
@@ -148,6 +151,7 @@ class NativeAppWindowCocoa : public NativeAppWindow {
 
   bool has_frame_;
 
+  bool is_maximized_;
   bool is_fullscreen_;
   NSRect restored_bounds_;
 

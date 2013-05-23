@@ -131,23 +131,25 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
    function testMinSizeRestore() {
      chrome.app.window.create('test.html', {
-       bounds: { width: 250, height: 250 },
-       minWidth: 400, minHeight: 450,
+       bounds: { width: 100, height: 150 },
+       minWidth: 200, minHeight: 250,
+       maxWidth: 200, maxHeight: 250,
        id: 'test-id', singleton: false
      }, callbackPass(function(win) {
        var w = win.contentWindow;
-       chrome.test.assertEq(400, w.innerWidth);
-       chrome.test.assertEq(450, w.innerHeight);
+       chrome.test.assertEq(200, w.innerWidth);
+       chrome.test.assertEq(250, w.innerHeight);
        w.close();
 
        chrome.app.window.create('test.html', {
-         bounds: { width: 250, height: 250 },
-         minWidth: 500, minHeight: 550,
+         bounds: { width: 500, height: 550 },
+         minWidth: 400, minHeight: 450,
+         maxWidth: 600, maxHeight: 650,
          id: 'test-id', singleton: false
        }, callbackPass(function(win) {
          var w = win.contentWindow;
-         chrome.test.assertEq(500, w.innerWidth);
-         chrome.test.assertEq(550, w.innerHeight);
+         chrome.test.assertEq(400, w.innerWidth);
+         chrome.test.assertEq(450, w.innerHeight);
          w.close();
        }));
      }));

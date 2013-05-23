@@ -77,6 +77,13 @@ enum {
     appWindow_->WindowDidDeminiaturize();
 }
 
+- (BOOL)windowShouldZoom:(NSWindow *)window
+                 toFrame:(NSRect)newFrame {
+  if (appWindow_)
+    appWindow_->WindowWillZoom();
+  return YES;
+}
+
 - (void)executeCommand:(int)command {
   // No-op, swallow the event.
 }
@@ -193,6 +200,8 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
     const ShellWindow::CreateParams& params)
     : shell_window_(shell_window),
       has_frame_(params.frame == ShellWindow::FRAME_CHROME),
+      is_maximized_(false),
+      is_fullscreen_(false),
       attention_request_id_(0),
       use_system_drag_(true) {
   // Flip coordinates based on the primary screen.
@@ -323,7 +332,7 @@ bool NativeAppWindowCocoa::IsActive() const {
 }
 
 bool NativeAppWindowCocoa::IsMaximized() const {
-  return [window() isZoomed];
+  return is_maximized_;
 }
 
 bool NativeAppWindowCocoa::IsMinimized() const {
@@ -449,8 +458,9 @@ void NativeAppWindowCocoa::Deactivate() {
 
 void NativeAppWindowCocoa::Maximize() {
   // Zoom toggles so only call if not already maximized.
-  if (!IsMaximized())
+  if (![window() isZoomed])
     [window() zoom:window_controller_];
+  is_maximized_ = true;
 }
 
 void NativeAppWindowCocoa::Minimize() {
@@ -458,10 +468,11 @@ void NativeAppWindowCocoa::Minimize() {
 }
 
 void NativeAppWindowCocoa::Restore() {
-  if (IsMaximized())
+  if ([window() isZoomed])
     [window() zoom:window_controller_];  // Toggles zoom mode.
   else if (IsMinimized())
     [window() deminiaturize:window_controller_];
+  is_maximized_ = false;
 }
 
 void NativeAppWindowCocoa::SetBounds(const gfx::Rect& bounds) {
@@ -765,6 +776,10 @@ void NativeAppWindowCocoa::WindowDidMiniaturize() {
 
 void NativeAppWindowCocoa::WindowDidDeminiaturize() {
   shell_window_->OnNativeWindowChanged();
+}
+
+void NativeAppWindowCocoa::WindowWillZoom() {
+  is_maximized_ = ![window() isZoomed];
 }
 
 bool NativeAppWindowCocoa::HandledByExtensionCommand(NSEvent* event) {
