@@ -216,6 +216,24 @@
           'msvs_cygwin_shell': 1,
         },
         {
+          'action_name': 'StyleBuilder',
+          'inputs': [
+            '<@(scripts_for_in_files)',
+            '../scripts/make_style_builder.py',
+            '../css/CSSProperties.in',
+            '../scripts/templates/StyleBuilder.cpp.tmpl',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilder.cpp',
+          ],
+          'action': [
+            'python',
+            '../scripts/make_style_builder.py',
+            '../css/CSSProperties.in',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+          ],
+        },
+        {
           'action_name': 'CSSValueKeywords',
           'inputs': [
             '../css/makevalues.pl',
