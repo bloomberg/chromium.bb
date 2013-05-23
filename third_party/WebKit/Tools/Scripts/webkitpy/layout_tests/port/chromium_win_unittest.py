@@ -126,7 +126,7 @@ class ChromiumWinTest(chromium_port_testcase.ChromiumPortTestCase):
         self.assertEqual('win', self.make_port().operating_system())
 
     def test_driver_name_option(self):
-        self.assertTrue(self.make_port()._path_to_driver().endswith('DumpRenderTree.exe'))
+        self.assertTrue(self.make_port()._path_to_driver().endswith('content_shell.exe'))
         self.assertTrue(self.make_port(options=MockOptions(driver_name='OtherDriver'))._path_to_driver().endswith('OtherDriver.exe'))
 
     def test_path_to_image_diff(self):

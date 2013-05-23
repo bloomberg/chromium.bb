@@ -96,7 +96,7 @@ class ChromiumMacPortTest(chromium_port_testcase.ChromiumPortTestCase):
         self.assertEqual(port._build_path(), '/mock-checkout/xcodebuild/Release')
 
     def test_driver_name_option(self):
-        self.assertTrue(self.make_port()._path_to_driver().endswith('DumpRenderTree'))
+        self.assertTrue(self.make_port()._path_to_driver().endswith('Content Shell'))
         self.assertTrue(self.make_port(options=MockOptions(driver_name='OtherDriver'))._path_to_driver().endswith('OtherDriver'))
 
     def test_path_to_image_diff(self):

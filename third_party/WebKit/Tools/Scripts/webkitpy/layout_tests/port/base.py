@@ -1026,7 +1026,7 @@ class Port(object):
         return expectations
 
     def bot_expectations(self):
-        if self.get_option('ignore_flaky_tests') == 'default':
+        if not self.get_option('ignore_flaky_tests'):
             return {}
 
         full_port_name = self.determine_full_port_name(self.host, self._options, self.port_name)

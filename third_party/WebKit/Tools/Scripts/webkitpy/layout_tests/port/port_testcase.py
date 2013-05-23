@@ -475,7 +475,7 @@ class PortTestCase(unittest.TestCase):
     def test_root_option(self):
         port = TestWebKitPort()
         port._options = MockOptions(root='/foo')
-        self.assertEqual(port._path_to_driver(), "/foo/DumpRenderTree")
+        self.assertEqual(port._path_to_driver(), "/foo/content_shell")
 
     def test_test_expectations(self):
         # Check that we read the expectations file
