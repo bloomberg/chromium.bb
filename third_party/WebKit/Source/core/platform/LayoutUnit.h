@@ -779,16 +779,6 @@ inline int floorToInt(LayoutUnit value)
     return value.floor();
 }
 
-inline LayoutUnit roundedLayoutUnit(float value)
-{
-    return LayoutUnit::fromFloatRound(value);
-}
-
-inline LayoutUnit ceiledLayoutUnit(float value)
-{
-    return LayoutUnit::fromFloatCeil(value);
-}
-
 inline LayoutUnit absoluteValue(const LayoutUnit& value)
 {
     return value.abs();

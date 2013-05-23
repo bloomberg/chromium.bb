@@ -5955,7 +5955,7 @@ static inline void stripTrailingSpace(float& inlineMax, float& inlineMin,
 
 static inline void updatePreferredWidth(LayoutUnit& preferredWidth, float& result)
 {
-    LayoutUnit snappedResult = ceiledLayoutUnit(result);
+    LayoutUnit snappedResult = LayoutUnit::fromFloatCeil(result);
     preferredWidth = max(snappedResult, preferredWidth);
 }
 
@@ -5965,7 +5965,7 @@ static inline void updatePreferredWidth(LayoutUnit& preferredWidth, float& resul
 // pure float accumulation.
 static inline LayoutUnit adjustFloatForSubPixelLayout(float value)
 {
-    return ceiledLayoutUnit(value);
+    return LayoutUnit::fromFloatCeil(value);
 }
 
 

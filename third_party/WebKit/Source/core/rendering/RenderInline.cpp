@@ -1352,7 +1352,7 @@ LayoutSize RenderInline::offsetForInFlowPositionedInline(const RenderBox* child)
     LayoutUnit inlinePosition;
     LayoutUnit blockPosition;
     if (firstLineBox()) {
-        inlinePosition = roundedLayoutUnit(firstLineBox()->logicalLeft());
+        inlinePosition = LayoutUnit::fromFloatRound(firstLineBox()->logicalLeft());
         blockPosition = firstLineBox()->logicalTop();
     } else {
         inlinePosition = layer()->staticInlinePosition();
