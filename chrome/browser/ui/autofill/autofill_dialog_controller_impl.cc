@@ -2152,9 +2152,9 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
   // contains a clear indication to the user as to what data will be collected.
   // Until then, this code should not be called. http://crbug.com/173505
 
-  int64 gaia_id = 0;
-  bool success =
-      base::StringToInt64(wallet_items_->obfuscated_gaia_id(), &gaia_id);
+  uint64 obfuscated_gaia_id = 0;
+  bool success = base::StringToUint64(wallet_items_->obfuscated_gaia_id(),
+                                      &obfuscated_gaia_id);
   DCHECK(success);
 
   gfx::Rect window_bounds =
@@ -2168,9 +2168,9 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
       g_browser_process->local_state()->GetInt64(::prefs::kInstallDate));
 
   risk::GetFingerprint(
-      gaia_id, window_bounds, *web_contents(), chrome::VersionInfo().Version(),
-      charset, accept_languages, install_time, GetDialogType(),
-      g_browser_process->GetApplicationLocale(),
+      obfuscated_gaia_id, window_bounds, *web_contents(),
+      chrome::VersionInfo().Version(), charset, accept_languages, install_time,
+      GetDialogType(), g_browser_process->GetApplicationLocale(),
       base::Bind(&AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData,
                  weak_ptr_factory_.GetWeakPtr()));
 }

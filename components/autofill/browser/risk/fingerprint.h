@@ -37,15 +37,14 @@ class Fingerprint;
 
 // Asynchronously calls |callback| with statistics that, collectively, provide a
 // unique fingerprint for this (machine, user) pair, used for fraud prevention.
-// |gaia_id| should be the user id for Google's authentication system.
-// |window_bounds| should be the bounds of the containing Chrome window.
+// |obfuscated_gaia_id| is an obfuscated user id for Google's authentication
+// system. |window_bounds| should be the bounds of the containing Chrome window.
 // |web_contents| should be the host for the page the user is interacting with.
-// |version| is the version number of the application.
-// |charset| is the default character set.
-// |accept_languages| is the Accept-Languages setting.
+// |version| is the version number of the application. |charset| is the default
+// character set. |accept_languages| is the Accept-Languages setting.
 // |install_time| is the absolute time of installation.
 void GetFingerprint(
-    int64 gaia_id,
+    uint64 obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
     const content::WebContents& web_contents,
     const std::string& version,
@@ -60,7 +59,7 @@ void GetFingerprint(
 namespace internal {
 
 void GetFingerprintInternal(
-    int64 gaia_id,
+    uint64 obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
     const WebKit::WebScreenInfo& screen_info,

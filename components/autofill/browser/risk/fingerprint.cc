@@ -182,7 +182,7 @@ void AddGpuInfoToFingerprint(Fingerprint_MachineCharacteristics* machine) {
 class FingerprintDataLoader : public content::GpuDataManagerObserver {
  public:
   FingerprintDataLoader(
-      int64 gaia_id,
+      uint64 obfuscated_gaia_id,
       const gfx::Rect& window_bounds,
       const gfx::Rect& content_bounds,
       const WebScreenInfo& screen_info,
@@ -225,7 +225,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   content::GeolocationProvider::LocationUpdateCallback geolocation_callback_;
 
   // Data that will be passed on to the next loading phase.
-  const int64 gaia_id_;
+  const uint64 obfuscated_gaia_id_;
   const gfx::Rect window_bounds_;
   const gfx::Rect content_bounds_;
   const WebScreenInfo screen_info_;
@@ -251,7 +251,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
 };
 
 FingerprintDataLoader::FingerprintDataLoader(
-    int64 gaia_id,
+    uint64 obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
     const WebScreenInfo& screen_info,
@@ -263,7 +263,7 @@ FingerprintDataLoader::FingerprintDataLoader(
     const std::string& app_locale,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback)
     : gpu_data_manager_(content::GpuDataManager::GetInstance()),
-      gaia_id_(gaia_id),
+      obfuscated_gaia_id_(obfuscated_gaia_id),
       window_bounds_(window_bounds),
       content_bounds_(content_bounds),
       screen_info_(screen_info),
@@ -425,7 +425,7 @@ void FingerprintDataLoader::FillFingerprint() {
   Fingerprint_Metadata* metadata = fingerprint->mutable_metadata();
   metadata->set_timestamp_ms(
       (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds());
-  metadata->set_gaia_id(gaia_id_);
+  metadata->set_obfuscated_gaia_id(obfuscated_gaia_id_);
   metadata->set_fingerprinter_version(kFingerprinterVersion);
 
   callback_.Run(fingerprint.Pass());
@@ -434,7 +434,7 @@ void FingerprintDataLoader::FillFingerprint() {
 }  // namespace
 
 void GetFingerprint(
-    int64 gaia_id,
+    uint64 obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
     const content::WebContents& web_contents,
     const std::string& version,
@@ -454,14 +454,15 @@ void GetFingerprint(
     host_view->GetRenderWidgetHost()->GetWebScreenInfo(&screen_info);
 
   internal::GetFingerprintInternal(
-      gaia_id, window_bounds, content_bounds, screen_info, version, charset,
-      accept_languages, install_time, dialog_type, app_locale, callback);
+      obfuscated_gaia_id, window_bounds, content_bounds, screen_info, version,
+      charset, accept_languages, install_time, dialog_type, app_locale,
+      callback);
 }
 
 namespace internal {
 
 void GetFingerprintInternal(
-    int64 gaia_id,
+    uint64 obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
     const WebKit::WebScreenInfo& screen_info,
@@ -474,9 +475,9 @@ void GetFingerprintInternal(
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
   // Begin loading all of the data that we need to load asynchronously.
   // This class is responsible for freeing its own memory.
-  new FingerprintDataLoader(gaia_id, window_bounds, content_bounds, screen_info,
-                            version, charset, accept_languages, install_time,
-                            dialog_type, app_locale, callback);
+  new FingerprintDataLoader(obfuscated_gaia_id, window_bounds, content_bounds,
+                            screen_info, version, charset, accept_languages,
+                            install_time, dialog_type, app_locale, callback);
 }
 
 }  // namespace internal

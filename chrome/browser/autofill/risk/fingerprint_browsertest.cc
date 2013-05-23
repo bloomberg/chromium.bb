@@ -21,7 +21,7 @@
 namespace autofill {
 namespace risk {
 
-const int64 kGaiaId = GG_INT64_C(99194853094755497);
+const uint64 kObfuscatedGaiaId = GG_UINT64_C(16571487432910023183);
 const char kCharset[] = "UTF-8";
 const char kAcceptLanguages[] = "en-US,en";
 const int kScreenColorDepth = 53;
@@ -98,7 +98,7 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
 
     ASSERT_TRUE(fingerprint->has_metadata());
     ASSERT_TRUE(fingerprint->metadata().has_timestamp_ms());
-    ASSERT_TRUE(fingerprint->metadata().has_gaia_id());
+    ASSERT_TRUE(fingerprint->metadata().has_obfuscated_gaia_id());
     ASSERT_TRUE(fingerprint->metadata().has_fingerprinter_version());
 
     // Some values have exact known (mocked out) values:
@@ -122,7 +122,7 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
               transient_state.outer_window_size().width());
     EXPECT_EQ(kWindowBounds.height(),
               transient_state.outer_window_size().height());
-    EXPECT_EQ(kGaiaId, fingerprint->metadata().gaia_id());
+    EXPECT_EQ(kObfuscatedGaiaId, fingerprint->metadata().obfuscated_gaia_id());
     EXPECT_EQ(kAltitude, location.altitude());
     EXPECT_EQ(kLatitude, location.latitude());
     EXPECT_EQ(kLongitude, location.longitude());
@@ -169,9 +169,9 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, MAYBE_GetFingerprint) {
   screen_info.availableRect = WebKit::WebRect(kAvailableScreenBounds);
 
   internal::GetFingerprintInternal(
-      kGaiaId, kWindowBounds, kContentBounds, screen_info, "25.0.0.123",
-      kCharset, kAcceptLanguages, base::Time::Now(), DIALOG_TYPE_AUTOCHECKOUT,
-      g_browser_process->GetApplicationLocale(),
+      kObfuscatedGaiaId, kWindowBounds, kContentBounds, screen_info,
+      "25.0.0.123", kCharset, kAcceptLanguages, base::Time::Now(),
+      DIALOG_TYPE_AUTOCHECKOUT, g_browser_process->GetApplicationLocale(),
       base::Bind(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,
                  base::Unretained(this)));
 

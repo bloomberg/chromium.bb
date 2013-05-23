@@ -202,8 +202,8 @@ message Fingerprint {
   message Metadata {
     // When this data was collected / received, in milliseconds since the epoch.
     optional int64 timestamp_ms = 1;
-    // Gaia id associated with transaction.
-    optional int64 gaia_id = 2;
+    // Obfuscated Gaia id associated with transaction.
+    optional uint64 obfuscated_gaia_id = 2;
     // Version of the native library generating this proto.
     // This may be manually bumped when the code populating the proto has
     // significantly changed.
