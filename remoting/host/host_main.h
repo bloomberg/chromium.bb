@@ -16,17 +16,11 @@ extern const char kElevateSwitchName[];
 // "--type=<type>" specifies the kind of process to run.
 extern const char kProcessTypeSwitchName[];
 
-extern const char kProcessTypeHost[];
-
-#if defined(REMOTING_MULTI_PROCESS)
+extern const char kProcessTypeController[];
 extern const char kProcessTypeDaemon[];
 extern const char kProcessTypeDesktop[];
-#endif  // defined(REMOTING_MULTI_PROCESS)
-
-#if defined(OS_WIN)
-extern const char kProcessTypeController[];
+extern const char kProcessTypeHost[];
 extern const char kProcessTypeRdpDesktopSession[];
-#endif  // defined(OS_WIN)
 
 // The common entry point exported from remoting_core.dll. It uses
 // "--type==<type>" command line parameter to determine the kind of process it

@@ -59,10 +59,6 @@ IPC_MESSAGE_CONTROL3(ChromotingDaemonNetworkMsg_DesktopAttached,
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the network to the daemon process.
 
-// Asks the daemon to send Secure Attention Sequence (SAS) to the current
-// console session.
-IPC_MESSAGE_CONTROL0(ChromotingNetworkDaemonMsg_SendSasToConsole)
-
 // Connects the terminal |terminal_id| (i.e. a remote client) to a desktop
 // session.
 IPC_MESSAGE_CONTROL3(ChromotingNetworkHostMsg_ConnectTerminal,

@@ -33,32 +33,20 @@
 namespace remoting {
 
 // Known entry points.
-int HostProcessMain();
-
-#if defined(REMOTING_MULTI_PROCESS)
 int DaemonProcessMain();
 int DesktopProcessMain();
-#endif  // defined(REMOTING_MULTI_PROCESS)
-
-#if defined(OS_WIN)
 int ElevatedControllerMain();
+int HostProcessMain();
 int RdpDesktopSessionMain();
-#endif  // defined(OS_WIN)
 
 const char kElevateSwitchName[] = "elevate";
 const char kProcessTypeSwitchName[] = "type";
 
-const char kProcessTypeHost[] = "host";
-
-#if defined(REMOTING_MULTI_PROCESS)
+const char kProcessTypeController[] = "controller";
 const char kProcessTypeDaemon[] = "daemon";
 const char kProcessTypeDesktop[] = "desktop";
-#endif  // defined(REMOTING_MULTI_PROCESS)
-
-#if defined(OS_WIN)
-const char kProcessTypeController[] = "controller";
+const char kProcessTypeHost[] = "host";
 const char kProcessTypeRdpDesktopSession[] = "rdp_desktop_session";
-#endif  // defined(OS_WIN)
 
 namespace {
 
@@ -133,29 +121,44 @@ int RunElevated() {
   return kSuccessExitCode;
 }
 
-#endif  // defined(OS_WIN)
+#else  // !defined(OS_WIN)
+
+// Fake entry points that exist only on Windows.
+int DaemonProcessMain() {
+  NOTREACHED();
+  return kInitializationFailed;
+}
+
+int DesktopProcessMain() {
+  NOTREACHED();
+  return kInitializationFailed;
+}
+
+int ElevatedControllerMain() {
+  NOTREACHED();
+  return kInitializationFailed;
+}
+
+int RdpDesktopSessionMain() {
+  NOTREACHED();
+  return kInitializationFailed;
+}
+
+#endif  // !defined(OS_WIN)
 
 // Select the entry point corresponding to the process type.
 MainRoutineFn SelectMainRoutine(const std::string& process_type) {
   MainRoutineFn main_routine = NULL;
 
-#if defined(REMOTING_MULTI_PROCESS)
   if (process_type == kProcessTypeDaemon) {
     main_routine = &DaemonProcessMain;
   } else if (process_type == kProcessTypeDesktop) {
     main_routine = &DesktopProcessMain;
-  }
-#endif  // defined(REMOTING_MULTI_PROCESS)
-
-#if defined(OS_WIN)
-  if (process_type == kProcessTypeController) {
+  } else if (process_type == kProcessTypeController) {
     main_routine = &ElevatedControllerMain;
   } else if (process_type == kProcessTypeRdpDesktopSession) {
     main_routine = &RdpDesktopSessionMain;
-  }
-#endif  // defined(OS_WIN)
-
-  if (process_type == kProcessTypeHost) {
+  } else if (process_type == kProcessTypeHost) {
     main_routine = &HostProcessMain;
   }
 

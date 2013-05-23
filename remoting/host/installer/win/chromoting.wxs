@@ -189,16 +189,6 @@
               KeyPath="yes"
               Name="remoting_desktop.exe"
               Vital="yes"/>
-
-        <?if $(var.RemotingMultiProcess) = 0 ?>
-          <fire:FirewallException xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension"
-                                  Id="me2me_firewall_exception"
-                                  IgnoreFailure="yes"
-                                  Name="$(var.FirewallName)"
-                                  Profile="all"
-                                  Program="[#remoting_desktop.exe]"
-                                  Scope="any" />
-        <?endif?>
       </Component>
 
       <Component Id="remoting_host" Guid="*">
@@ -236,15 +226,13 @@
                         Name="$(var.ServiceName)"
                         Wait="yes" />
 
-        <?if $(var.RemotingMultiProcess) != 0 ?>
-          <fire:FirewallException xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension"
-                                  Id="me2me_firewall_exception"
-                                  IgnoreFailure="yes"
-                                  Name="$(var.FirewallName)"
-                                  Profile="all"
-                                  Program="[#remoting_host.exe]"
-                                  Scope="any" />
-        <?endif?>
+        <fire:FirewallException xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension"
+                                Id="me2me_firewall_exception"
+                                IgnoreFailure="yes"
+                                Name="$(var.FirewallName)"
+                                Profile="all"
+                                Program="[#remoting_host.exe]"
+                                Scope="any" />
       </Component>
 
       <?if $(var.OfficialBuild) != 0 ?>

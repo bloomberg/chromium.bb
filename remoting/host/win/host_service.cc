@@ -27,20 +27,12 @@
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/base/stoppable.h"
 #include "remoting/host/branding.h"
+#include "remoting/host/daemon_process.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
-#include "remoting/host/win/security_descriptor.h"
-
-#if defined(REMOTING_MULTI_PROCESS)
-#include "remoting/host/daemon_process.h"
-#endif  // defined(REMOTING_MULTI_PROCESS)
-
 #include "remoting/host/win/core_resource.h"
+#include "remoting/host/win/security_descriptor.h"
 #include "remoting/host/win/wts_terminal_observer.h"
-
-#if !defined(REMOTING_MULTI_PROCESS)
-#include "remoting/host/win/wts_console_session_process_driver.h"
-#endif  // !defined(REMOTING_MULTI_PROCESS)
 
 namespace remoting {
 
@@ -283,24 +275,11 @@ void HostService::CreateLauncher(
     return;
   }
 
-#if defined(REMOTING_MULTI_PROCESS)
-
   child_ = DaemonProcess::Create(
       task_runner,
       io_task_runner,
       base::Bind(&HostService::OnChildStopped,
                  base::Unretained(this))).PassAs<Stoppable>();
-
-#else  // !defined(REMOTING_MULTI_PROCESS)
-
-  // Create the console session process driver.
-  child_.reset(new WtsConsoleSessionProcessDriver(
-      base::Bind(&HostService::OnChildStopped, base::Unretained(this)),
-      this,
-      task_runner,
-      io_task_runner));
-
-#endif  // !defined(REMOTING_MULTI_PROCESS)
 }
 
 void HostService::OnChildStopped() {

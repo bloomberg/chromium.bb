@@ -1484,8 +1484,6 @@
             'host/win/unprivileged_process_delegate.h',
             'host/win/worker_process_launcher.cc',
             'host/win/worker_process_launcher.h',
-            'host/win/wts_console_session_process_driver.cc',
-            'host/win/wts_console_session_process_driver.h',
             'host/win/wts_session_process_delegate.cc',
             'host/win/wts_session_process_delegate.h',
             'host/worker_process_ipc_delegate.h',
@@ -1842,7 +1840,6 @@
             'BRANDING=<(branding)',
             'DAEMON_CONTROLLER_CLSID={<(daemon_controller_clsid)}',
             'RDP_DESKTOP_SESSION_CLSID={<(rdp_desktop_session_clsid)}',
-            'REMOTING_MULTI_PROCESS=<(remoting_multi_process)',
             'VERSION=<(version_full)',
           ],
           'generated_files': [

@@ -190,9 +190,6 @@ class HostProcess
   // Called on the network thread to set the host's Authenticator factory.
   void CreateAuthenticatorFactory();
 
-  // Asks the daemon to inject Secure Attention Sequence to the console.
-  void SendSasToConsole();
-
   // Tear down resources that run on the UI thread.
   void ShutdownOnUiThread();
 
@@ -564,8 +561,6 @@ void HostProcess::StartOnUiThread() {
   // Create a desktop environment factory appropriate to the build type &
   // platform.
 #if defined(OS_WIN)
-
-#if defined(REMOTING_MULTI_PROCESS)
   IpcDesktopEnvironmentFactory* desktop_environment_factory =
       new IpcDesktopEnvironmentFactory(
           context_->audio_task_runner(),
@@ -574,16 +569,6 @@ void HostProcess::StartOnUiThread() {
           context_->network_task_runner(),
           daemon_channel_.get());
   desktop_session_connector_ = desktop_environment_factory;
-#else // !defined(REMOTING_MULTI_PROCESS)
-  DesktopEnvironmentFactory* desktop_environment_factory =
-      new SessionDesktopEnvironmentFactory(
-          context_->network_task_runner(),
-          context_->input_task_runner(),
-          context_->ui_task_runner(),
-          ui_strings,
-          base::Bind(&HostProcess::SendSasToConsole, this));
-#endif  // !defined(REMOTING_MULTI_PROCESS)
-
 #else  // !defined(OS_WIN)
   DesktopEnvironmentFactory* desktop_environment_factory =
       new Me2MeDesktopEnvironmentFactory(
@@ -598,13 +583,6 @@ void HostProcess::StartOnUiThread() {
   context_->network_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&HostProcess::StartOnNetworkThread, this));
-}
-
-void HostProcess::SendSasToConsole() {
-  DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
-
-  if (daemon_channel_)
-    daemon_channel_->Send(new ChromotingNetworkDaemonMsg_SendSasToConsole());
 }
 
 void HostProcess::ShutdownOnUiThread() {
