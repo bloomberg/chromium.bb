@@ -27,7 +27,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Get or set the image shown for the specified button state.
   // GetImage returns the image for STATE_NORMAL if the state's image is empty.
-  const gfx::ImageSkia& GetImage(ButtonState for_state);
+  virtual const gfx::ImageSkia& GetImage(ButtonState for_state);
   void SetImage(ButtonState for_state, const gfx::ImageSkia& image);
 
   // Get or set the text shown on the button.
@@ -45,7 +45,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   const gfx::Font& GetFont() const;
   void SetFont(const gfx::Font& font);
 
-  // Get or set the horizontal alignment used for the button.
+  // Get or set the horizontal alignment used for the button; reversed in RTL.
   // The optional image will lead the text, unless the button is right-aligned.
   gfx::HorizontalAlignment GetHorizontalAlignment() const;
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
@@ -64,7 +64,17 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
+
+ protected:
+   Label* label() const { return label_; }
+
+  // Fill |params| with information about the button.
+  virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
+
+  // Updates the image view to contain the appropriate button state image.
+  void UpdateImage();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Init);
@@ -80,7 +90,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   virtual void StateChanged() OVERRIDE;
 
   // Overridden from View:
-  virtual void Layout() OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
@@ -94,9 +103,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
       ui::NativeTheme::ExtraParams* params) const OVERRIDE;
   virtual ui::NativeTheme::State GetForegroundThemeState(
       ui::NativeTheme::ExtraParams* params) const OVERRIDE;
-
-  // Fill |params| with information about the button.
-  virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
 
   // The image and label shown in the button.
   ImageView* image_;

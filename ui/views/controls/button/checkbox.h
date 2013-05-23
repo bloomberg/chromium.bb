@@ -9,44 +9,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 
 namespace views {
 
-// A border with zero left inset.
-class VIEWS_EXPORT CheckboxNativeThemeBorder
-    : public TextButtonNativeThemeBorder {
- public:
-  explicit CheckboxNativeThemeBorder(views::NativeThemeDelegate* delegate)
-      : TextButtonNativeThemeBorder(delegate),
-        use_custom_insets_(false) {}
-  virtual ~CheckboxNativeThemeBorder() {}
-
-  // The insets apply to the whole view (checkbox + text), not just the square
-  // with the checkmark in it. The insets do not visibly affect the checkbox,
-  // except to ensure that there is enough padding between this and other
-  // elements.
-  virtual gfx::Insets GetInsets() const OVERRIDE;
-
-  // Use the |custom_insets_| provided instead of those from the theme.
-  void SetCustomInsets(const gfx::Insets& custom_insets);
-
-  // Use the default insets and ignore any |custom_insets_| that may be set.
-  void UseDefaultInsets();
-
- private:
-  // Only used if |use_custom_insets_| is true.
-  gfx::Insets custom_insets_;
-
-  // Whether |custom_insets_| should be used in |GetInsets()|.
-  bool use_custom_insets_;
-
-  DISALLOW_COPY_AND_ASSIGN(CheckboxNativeThemeBorder);
-};
-
 // A native themed class representing a checkbox.  This class does not use
 // platform specific objects to replicate the native platforms looks and feel.
-class VIEWS_EXPORT Checkbox : public TextButtonBase {
+class VIEWS_EXPORT Checkbox : public LabelButton {
  public:
   static const char kViewClassName[];
 
@@ -62,25 +31,34 @@ class VIEWS_EXPORT Checkbox : public TextButtonBase {
   bool checked() const { return checked_; }
 
  protected:
-  // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  // Overridden from LabelButton:
+  virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
+  virtual const gfx::ImageSkia& GetImage(ButtonState for_state) OVERRIDE;
+
+  // Set the image shown for each button state depending on whether it is
+  // [checked] or [focused].
+  void SetCustomImage(bool checked,
+                      bool focused,
+                      ButtonState for_state,
+                      const gfx::ImageSkia& image);
 
  private:
   // Overridden from Button:
   virtual void NotifyClick(const ui::Event& event) OVERRIDE;
 
-  // Overridden from TextButtonBase:
   virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;
-  virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
   virtual void GetExtraParams(
       ui::NativeTheme::ExtraParams* params) const OVERRIDE;
-  virtual gfx::Rect GetTextBounds() const OVERRIDE;
 
   // True if the checkbox is checked.
   bool checked_;
+
+  // The images for each button state.
+  gfx::ImageSkia images_[2][2][STATE_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(Checkbox);
 };

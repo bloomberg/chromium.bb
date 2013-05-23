@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/painter.h"
@@ -26,6 +27,8 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Insets GetInsets() const OVERRIDE;
 
+  void set_insets(const gfx::Insets& insets) { insets_ = insets; }
+
   // Get or set the painter used for the specified |focused| button |state|.
   // LabelButtonBorder takes and retains ownership of |painter|.
   Painter* GetPainter(bool focused, Button::ButtonState state);
@@ -37,6 +40,8 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
 
   // The button style supplied in part by this border.
   Button::ButtonStyle style_;
+
+  gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(LabelButtonBorder);
 };

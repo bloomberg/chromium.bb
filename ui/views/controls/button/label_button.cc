@@ -68,7 +68,7 @@ const gfx::ImageSkia& LabelButton::GetImage(ButtonState for_state) {
 
 void LabelButton::SetImage(ButtonState for_state, const gfx::ImageSkia& image) {
   button_state_images_[for_state] = image;
-  image_->SetImage(GetImage(state()));
+  UpdateImage();
 }
 
 const string16& LabelButton::GetText() const {
@@ -190,8 +190,70 @@ gfx::Size LabelButton::GetPreferredSize() {
   return size;
 }
 
+void LabelButton::Layout() {
+  gfx::HorizontalAlignment adjusted_alignment = GetHorizontalAlignment();
+  if (base::i18n::IsRTL() && adjusted_alignment != gfx::ALIGN_CENTER)
+    adjusted_alignment = (adjusted_alignment == gfx::ALIGN_LEFT) ?
+        gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT;
+
+  gfx::Rect child_area(GetLocalBounds());
+  child_area.Inset(GetInsets());
+
+  gfx::Size image_size(image_->GetPreferredSize());
+  image_size.set_width(std::min(image_size.width(), child_area.width()));
+  image_size.set_height(std::min(image_size.height(), child_area.height()));
+
+  // The label takes any remaining width after sizing the image, unless both
+  // views are centered. In that case, using the tighter preferred label width
+  // avoids wasted space within the label that would look like awkward padding.
+  gfx::Size label_size(child_area.size());
+  if (!image_size.IsEmpty() && !label_size.IsEmpty()) {
+    label_size.set_width(
+        std::max(child_area.width() - image_size.width() - kSpacing, 0));
+    if (adjusted_alignment == gfx::ALIGN_CENTER) {
+      // Ensure multi-line labels paired with images use their available width.
+      if (GetTextMultiLine())
+        label_->SizeToFit(label_size.width());
+      label_size.set_width(
+          std::min(label_size.width(), label_->GetPreferredSize().width()));
+    }
+  }
+
+  gfx::Point image_origin(child_area.origin());
+  image_origin.Offset(0, (child_area.height() - image_size.height()) / 2);
+  if (adjusted_alignment == gfx::ALIGN_CENTER) {
+    const int total_width = image_size.width() + label_size.width() +
+        ((image_size.width() > 0 && label_size.width() > 0) ? kSpacing : 0);
+    image_origin.Offset((child_area.width() - total_width) / 2, 0);
+  } else if (adjusted_alignment == gfx::ALIGN_RIGHT) {
+    image_origin.Offset(child_area.width() - image_size.width(), 0);
+  }
+
+  gfx::Point label_origin(child_area.origin());
+  if (!image_size.IsEmpty() &&adjusted_alignment != gfx::ALIGN_RIGHT)
+    label_origin.set_x(image_origin.x() + image_size.width() + kSpacing);
+
+  image_->SetBoundsRect(gfx::Rect(image_origin, image_size));
+  label_->SetBoundsRect(gfx::Rect(label_origin, label_size));
+}
+
 const char* LabelButton::GetClassName() const {
   return kViewClassName;
+}
+
+void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
+  params->button.checked = false;
+  params->button.indeterminate = false;
+  params->button.is_default = is_default_;
+  params->button.is_focused = HasFocus() && IsAccessibilityFocusable();
+  params->button.has_border = style() == STYLE_NATIVE_TEXTBUTTON;
+  params->button.classic_state = 0;
+  params->button.background_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_ButtonBackgroundColor);
+}
+
+void LabelButton::UpdateImage() {
+  image_->SetImage(GetImage(state()));
 }
 
 void LabelButton::ResetColorsFromNativeTheme() {
@@ -222,55 +284,13 @@ void LabelButton::ResetColorsFromNativeTheme() {
 
 void LabelButton::StateChanged() {
   const gfx::Size previous_image_size(image_->GetPreferredSize());
-  image_->SetImage(GetImage(state()));
+  UpdateImage();
   const SkColor color = button_state_colors_[state()];
   if (state() != STATE_DISABLED && label_->enabled_color() != color)
     label_->SetEnabledColor(color);
   label_->SetEnabled(state() != STATE_DISABLED);
   if (image_->GetPreferredSize() != previous_image_size)
     Layout();
-}
-
-void LabelButton::Layout() {
-  gfx::Rect child_area(GetLocalBounds());
-  child_area.Inset(GetInsets());
-
-  gfx::Size image_size(image_->GetPreferredSize());
-  image_size.set_width(std::min(image_size.width(), child_area.width()));
-  image_size.set_height(std::min(image_size.height(), child_area.height()));
-
-  // The label takes any remaining width after sizing the image, unless both
-  // views are centered. In that case, using the tighter preferred label width
-  // avoids wasted space within the label that would look like awkward padding.
-  gfx::Size label_size(child_area.size());
-  if (!image_size.IsEmpty() && !label_size.IsEmpty()) {
-    label_size.set_width(
-        std::max(child_area.width() - image_size.width() - kSpacing, 0));
-    if (GetHorizontalAlignment() == gfx::ALIGN_CENTER) {
-      // Ensure multi-line labels paired with images use their available width.
-      if (GetTextMultiLine())
-        label_->SizeToFit(label_size.width());
-      label_size.set_width(
-          std::min(label_size.width(), label_->GetPreferredSize().width()));
-    }
-  }
-
-  gfx::Point image_origin(child_area.origin());
-  image_origin.Offset(0, (child_area.height() - image_size.height()) / 2);
-  if (GetHorizontalAlignment() == gfx::ALIGN_CENTER) {
-    const int total_width = image_size.width() + label_size.width() +
-        ((image_size.width() > 0 && label_size.width() > 0) ? kSpacing : 0);
-    image_origin.Offset((child_area.width() - total_width) / 2, 0);
-  } else if (GetHorizontalAlignment() == gfx::ALIGN_RIGHT) {
-    image_origin.Offset(child_area.width() - image_size.width(), 0);
-  }
-
-  gfx::Point label_origin(child_area.origin());
-  if (!image_size.IsEmpty() && GetHorizontalAlignment() != gfx::ALIGN_RIGHT)
-    label_origin.set_x(image_origin.x() + image_size.width() + kSpacing);
-
-  image_->SetBoundsRect(gfx::Rect(image_origin, image_size));
-  label_->SetBoundsRect(gfx::Rect(label_origin, label_size));
 }
 
 void LabelButton::ChildPreferredSizeChanged(View* child) {
@@ -292,7 +312,7 @@ gfx::Rect LabelButton::GetThemePaintRect() const {
 ui::NativeTheme::State LabelButton::GetThemeState(
     ui::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
-  switch(state()) {
+  switch (state()) {
     case STATE_NORMAL:   return ui::NativeTheme::kNormal;
     case STATE_HOVERED:  return ui::NativeTheme::kHovered;
     case STATE_PRESSED:  return ui::NativeTheme::kPressed;
@@ -323,17 +343,6 @@ ui::NativeTheme::State LabelButton::GetForegroundThemeState(
     ui::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
   return ui::NativeTheme::kHovered;
-}
-
-void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
-  params->button.checked = false;
-  params->button.indeterminate = false;
-  params->button.is_default = is_default_;
-  params->button.is_focused = HasFocus() && IsAccessibilityFocusable();
-  params->button.has_border = style() == STYLE_NATIVE_TEXTBUTTON;
-  params->button.classic_state = 0;
-  params->button.background_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_ButtonBackgroundColor);
 }
 
 }  // namespace views

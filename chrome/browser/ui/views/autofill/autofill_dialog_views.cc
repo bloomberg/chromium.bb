@@ -33,6 +33,7 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -505,18 +506,20 @@ void AutofillDialogViews::NotificationArea::SetNotifications(
       checkbox_ = checkbox.get();
       // We have to do this instead of using set_border() because a border
       // is being used to draw the check square.
-      static_cast<views::CheckboxNativeThemeBorder*>(checkbox->border())->
-          SetCustomInsets(gfx::Insets(kNotificationPadding,
-                                      kNotificationPadding,
-                                      kNotificationPadding,
-                                      kNotificationPadding));
+      static_cast<views::LabelButtonBorder*>(checkbox->border())->
+          set_insets(gfx::Insets(kNotificationPadding,
+                                 kNotificationPadding,
+                                 kNotificationPadding,
+                                 kNotificationPadding));
       if (!notification.interactive())
         checkbox->SetState(views::Button::STATE_DISABLED);
       checkbox->SetText(notification.display_text());
-      checkbox->SetMultiLine(true);
-      checkbox->set_alignment(views::TextButtonBase::ALIGN_LEFT);
-      checkbox->SetEnabledColor(notification.GetTextColor());
-      checkbox->SetHoverColor(notification.GetTextColor());
+      checkbox->SetTextMultiLine(true);
+      checkbox->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      checkbox->SetTextColor(views::Button::STATE_NORMAL,
+                             notification.GetTextColor());
+      checkbox->SetTextColor(views::Button::STATE_HOVERED,
+                             notification.GetTextColor());
       checkbox->SetChecked(notification.checked());
       checkbox->set_listener(this);
       view.reset(checkbox.release());

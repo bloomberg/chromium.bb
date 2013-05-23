@@ -29,7 +29,6 @@ class VIEWS_EXPORT Button : public View {
   virtual ~Button();
 
   // Button states for various button sub-types.
-  // TODO(msw): Add toggled state for checkboxes, radio buttons, etc.
   enum ButtonState {
     STATE_NORMAL = 0,
     STATE_HOVERED,
@@ -39,7 +38,7 @@ class VIEWS_EXPORT Button : public View {
   };
 
   // Button styles with associated images and border painters.
-  // TODO(msw): Add "Blue Button", Checkbox, Radio, Menu, ComboBox, etc.
+  // TODO(msw): Add "Blue Button", Menu, ComboBox, etc.
   enum ButtonStyle {
     STYLE_BUTTON = 0,
     STYLE_TEXTBUTTON,

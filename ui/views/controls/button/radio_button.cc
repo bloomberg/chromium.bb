@@ -5,7 +5,9 @@
 #include "ui/views/controls/button/radio_button.h"
 
 #include "base/logging.h"
+#include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -16,7 +18,44 @@ const char RadioButton::kViewClassName[] = "views/RadioButton";
 RadioButton::RadioButton(const string16& label, int group_id)
     : Checkbox(label) {
   SetGroup(group_id);
-  set_focusable(true);
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  // Unchecked/Unfocused images.
+  SetCustomImage(false, false, STATE_NORMAL,
+                 *rb.GetImageSkiaNamed(IDR_RADIO));
+  SetCustomImage(false, false, STATE_HOVERED,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_HOVER));
+  SetCustomImage(false, false, STATE_PRESSED,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_PRESSED));
+  SetCustomImage(false, false, STATE_DISABLED,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_DISABLED));
+
+  // Checked/Unfocused images.
+  SetCustomImage(true, false, STATE_NORMAL,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED));
+  SetCustomImage(true, false, STATE_HOVERED,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED_HOVER));
+  SetCustomImage(true, false, STATE_PRESSED,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED_PRESSED));
+  SetCustomImage(true, false, STATE_DISABLED,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED_DISABLED));
+
+  // Unchecked/Focused images.
+  SetCustomImage(false, true, STATE_NORMAL,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED));
+  SetCustomImage(false, true, STATE_HOVERED,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_HOVER));
+  SetCustomImage(false, true, STATE_PRESSED,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_PRESSED));
+
+  // Checked/Focused images.
+  SetCustomImage(true, true, STATE_NORMAL,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_CHECKED));
+  SetCustomImage(true, true, STATE_HOVERED,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_CHECKED_HOVER));
+  SetCustomImage(true, true, STATE_PRESSED,
+                 *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_CHECKED_PRESSED));
 }
 
 RadioButton::~RadioButton() {
@@ -85,7 +124,7 @@ void RadioButton::OnFocus() {
   Checkbox::OnFocus();
   SetChecked(true);
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), 0);
-  TextButtonBase::NotifyClick(event);
+  LabelButton::NotifyClick(event);
 }
 
 void RadioButton::NotifyClick(const ui::Event& event) {
@@ -94,7 +133,7 @@ void RadioButton::NotifyClick(const ui::Event& event) {
   if (!checked())
     SetChecked(true);
   RequestFocus();
-  TextButtonBase::NotifyClick(event);
+  LabelButton::NotifyClick(event);
 }
 
 ui::NativeTheme::Part RadioButton::GetThemePart() const {

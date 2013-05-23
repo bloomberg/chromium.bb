@@ -4,53 +4,68 @@
 
 #include "ui/views/controls/button/checkbox.h"
 
-#include "base/logging.h"
+#include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/gfx/canvas.h"
-#include "ui/views/controls/label.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/button/label_button_border.h"
 
 namespace views {
-
-namespace {
-
-const int kCheckboxLabelSpacing = 4;
-
-const int kFocusBorderWidth = 1;
-
-}  // namespace
 
 // static
 const char Checkbox::kViewClassName[] = "views/Checkbox";
 
-////////////////////////////////////////////////////////////////////////////////
-// CheckboxNativeThemeBorder, public:
-
-gfx::Insets CheckboxNativeThemeBorder::GetInsets() const {
-  if (use_custom_insets_)
-    return custom_insets_;
-
-  const gfx::Insets& insets = TextButtonNativeThemeBorder::GetInsets();
-  return gfx::Insets(insets.top(), 0, insets.bottom(), 0);
-}
-
-void CheckboxNativeThemeBorder::SetCustomInsets(
-    const gfx::Insets& custom_insets) {
- custom_insets_ = custom_insets;
- use_custom_insets_ = true;
-}
-
-void CheckboxNativeThemeBorder::UseDefaultInsets() {
-  use_custom_insets_ = false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Checkbox, public:
-
 Checkbox::Checkbox(const string16& label)
-    : TextButtonBase(NULL, label),
+    : LabelButton(NULL, label),
       checked_(false) {
-  set_border(new CheckboxNativeThemeBorder(this));
+  SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  LabelButtonBorder* button_border = static_cast<LabelButtonBorder*>(border());
+  button_border->SetPainter(false, STATE_HOVERED, NULL);
+  button_border->SetPainter(false, STATE_PRESSED, NULL);
+  // Inset the trailing side by a couple pixels for the focus border.
+  button_border->set_insets(gfx::Insets(0, 0, 0, 2));
   set_focusable(true);
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  // Unchecked/Unfocused images.
+  SetCustomImage(false, false, STATE_NORMAL,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX));
+  SetCustomImage(false, false, STATE_HOVERED,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_HOVER));
+  SetCustomImage(false, false, STATE_PRESSED,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_PRESSED));
+  SetCustomImage(false, false, STATE_DISABLED,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_DISABLED));
+
+  // Checked/Unfocused images.
+  SetCustomImage(true, false, STATE_NORMAL,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_CHECKED));
+  SetCustomImage(true, false, STATE_HOVERED,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_CHECKED_HOVER));
+  SetCustomImage(true, false, STATE_PRESSED,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_CHECKED_PRESSED));
+  SetCustomImage(true, false, STATE_DISABLED,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_CHECKED_DISABLED));
+
+  // Unchecked/Focused images.
+  SetCustomImage(false, true, STATE_NORMAL,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_FOCUSED));
+  SetCustomImage(false, true, STATE_HOVERED,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_FOCUSED_HOVER));
+  SetCustomImage(false, true, STATE_PRESSED,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_FOCUSED_PRESSED));
+
+  // Checked/Focused images.
+  SetCustomImage(true, true, STATE_NORMAL,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_FOCUSED_CHECKED));
+  SetCustomImage(true, true, STATE_HOVERED,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_FOCUSED_CHECKED_HOVER));
+  SetCustomImage(true, true, STATE_PRESSED,
+                 *rb.GetImageSkiaNamed(IDR_CHECKBOX_FOCUSED_CHECKED_PRESSED));
+
+  // Limit the checkbox height to match the legacy appearance.
+  const gfx::Size preferred_size(LabelButton::GetPreferredSize());
+  set_min_size(gfx::Size(0, preferred_size.height() + 4));
 }
 
 Checkbox::~Checkbox() {
@@ -58,21 +73,17 @@ Checkbox::~Checkbox() {
 
 void Checkbox::SetChecked(bool checked) {
   checked_ = checked;
-  SchedulePaint();
+  UpdateImage();
 }
 
-gfx::Size Checkbox::GetPreferredSize() {
-  gfx::Size prefsize(TextButtonBase::GetPreferredSize());
-  ui::NativeTheme::ExtraParams extra;
-  ui::NativeTheme::State state = GetThemeState(&extra);
-  gfx::Size size = GetNativeTheme()->GetPartSize(GetThemePart(), state, extra);
-  prefsize.Enlarge(size.width() + kCheckboxLabelSpacing + kFocusBorderWidth, 0);
-  prefsize.set_height(std::max(prefsize.height(), size.height()));
+void Checkbox::Layout() {
+  LabelButton::Layout();
 
-  if (max_width_ > 0)
-    prefsize.set_width(std::min(max_width_, prefsize.width()));
-
-  return prefsize;
+  // Construct a focus border that only surrounds the label area.
+  gfx::Rect rect = label()->GetMirroredBounds();
+  rect.Inset(-2, 3);
+  set_focus_border(FocusBorder::CreateDashedFocusBorder(
+      rect.x(), rect.y(), width() - rect.right(), height() - rect.bottom()));
 }
 
 const char* Checkbox::GetClassName() const {
@@ -80,57 +91,50 @@ const char* Checkbox::GetClassName() const {
 }
 
 void Checkbox::GetAccessibleState(ui::AccessibleViewState* state) {
-  TextButtonBase::GetAccessibleState(state);
+  LabelButton::GetAccessibleState(state);
   state->role = ui::AccessibilityTypes::ROLE_CHECKBUTTON;
   state->state = checked() ? ui::AccessibilityTypes::STATE_CHECKED : 0;
 }
 
-void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
-    gfx::Rect bounds(GetTextBounds());
-    // Increate the bounding box by one on each side so that that focus border
-    // does not draw on top of the letters.
-    bounds.Inset(-kFocusBorderWidth,
-                 -kFocusBorderWidth,
-                 -kFocusBorderWidth,
-                 -kFocusBorderWidth);
-    canvas->DrawFocusRect(bounds);
-  }
+void Checkbox::OnFocus() {
+  UpdateImage();
+}
+
+void Checkbox::OnBlur() {
+  UpdateImage();
+}
+
+const gfx::ImageSkia& Checkbox::GetImage(ButtonState for_state) {
+  const size_t checked_index = checked_ ? 1 : 0;
+  const size_t focused_index = HasFocus() ? 1 : 0;
+  if (for_state != STATE_NORMAL &&
+      images_[checked_index][focused_index][for_state].isNull())
+    return images_[checked_index][focused_index][STATE_NORMAL];
+  return images_[checked_index][focused_index][for_state];
+}
+
+void Checkbox::SetCustomImage(bool checked,
+                              bool focused,
+                              ButtonState for_state,
+                              const gfx::ImageSkia& image) {
+  const size_t checked_index = checked ? 1 : 0;
+  const size_t focused_index = focused ? 1 : 0;
+  images_[checked_index][focused_index][for_state] = image;
+  UpdateImage();
 }
 
 void Checkbox::NotifyClick(const ui::Event& event) {
   SetChecked(!checked());
-  RequestFocus();
-  TextButtonBase::NotifyClick(event);
+  LabelButton::NotifyClick(event);
 }
 
 ui::NativeTheme::Part Checkbox::GetThemePart() const {
   return ui::NativeTheme::kCheckbox;
 }
 
-gfx::Rect Checkbox::GetThemePaintRect() const {
-  ui::NativeTheme::ExtraParams extra;
-  ui::NativeTheme::State state = GetThemeState(&extra);
-  gfx::Size size(GetNativeTheme()->GetPartSize(GetThemePart(), state, extra));
-  gfx::Insets insets = GetInsets();
-  int y_offset = (height() - size.height()) / 2;
-  gfx::Rect rect(insets.left(), y_offset, size.width(), size.height());
-  rect.set_x(GetMirroredXForRect(rect));
-  return rect;
-}
-
 void Checkbox::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
-  TextButtonBase::GetExtraParams(params);
+  LabelButton::GetExtraParams(params);
   params->button.checked = checked_;
-}
-
-gfx::Rect Checkbox::GetTextBounds() const {
-  gfx::Rect bounds(TextButtonBase::GetTextBounds());
-  ui::NativeTheme::ExtraParams extra;
-  ui::NativeTheme::State state = GetThemeState(&extra);
-  gfx::Size size(GetNativeTheme()->GetPartSize(GetThemePart(), state, extra));
-  bounds.Offset(size.width() + kCheckboxLabelSpacing, 0);
-  return bounds;
 }
 
 }  // namespace views
