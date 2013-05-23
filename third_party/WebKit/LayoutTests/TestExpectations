@@ -938,9 +938,7 @@ webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_ev
 
 # Animations tests use an inherently-flaky timer-based design.
 webkit.org/b/66953 [ Mac Win Debug ] animations/change-one-anim.html [ Failure Pass ]
-webkit.org/b/66953 [ Debug ] animations/play-state-paused.html [ Failure Pass ]
 webkit.org/b/66953 [ Debug ] animations/play-state-suspend.html [ Failure Pass ]
-webkit.org/b/66953 [ Debug ] animations/suspend-resume-animation.html [ Failure Pass ]
 webkit.org/b/66953 [ Mac Win Debug ] animations/animation-direction-reverse.html [ Failure Pass ]
 
 webkit.org/b/111612 animations/animation-delay-changed.html [ Failure Pass ]
@@ -995,7 +993,7 @@ webkit.org/b/81050 fast/forms/file/recover-file-input-in-unposted-form.html [ Fa
 webkit.org/b/81145 [ Lion MountainLion ] animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure ]
 webkit.org/b/81145 [ Mac ] fast/frames/invalid.html [ Pass ImageOnlyFailure Slow ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ Crash ]
-webkit.org/b/81145 fast/writing-mode/broken-ideographic-font.html [ Crash ImageOnlyFailure ]
+webkit.org/b/81145 fast/writing-mode/broken-ideographic-font.html [ Crash Failure ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash ]
 
 webkit.org/b/81537 fast/events/touch/gesture/pad-gesture-fling.html [ Failure Pass ]
@@ -1553,7 +1551,6 @@ crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-out-of-order.ht
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-simple.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/resize-corner-hidpi.html [ Pass Timeout ]
-crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/video-controls-in-hidpi.html [ Pass Timeout ]
 
 crbug.com/239077 fast/canvas/webgl/index-validation-with-resized-buffer.html  [ Crash ]
 
@@ -1819,8 +1816,13 @@ crbug.com/242851 editing/pasteboard/file-drag-to-editable.html [ Crash ]
 crbug.com/243353 [ Mac ] animations/dynamic-stylesheet-loading.html [ Timeout ]
 crbug.com/243353 [ Mac ] animations/transition-and-animation-1.html [ Timeout ]
 crbug.com/243353 [ Mac ] animations/transition-and-animation-2.html [ Timeout Pass ]
+crbug.com/243353 [ Mac ] animations/suspend-resume-animation.html [ Timeout ]
+crbug.com/243353 [ Win Linux ] animations/suspend-resume-animation.html [ Failure Pass ]
+crbug.com/243353 [ Win ] animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
+crbug.com/243353 [ Mac ] animations/play-state-paused.html [ Timeout ]
+crbug.com/243353 [ Win Linux ] animations/play-state-paused.html [ Failure Pass ]
 crbug.com/243357 [ Linux ] compositing/gestures/ [ ImageOnlyFailure Pass ]
-crbug.com/243360 [ Mac ] fast/repaint/fixed-move-after-keyboard-scroll.html [ ImageOnlyFailure ]
+crbug.com/243360 [ Mac ] fast/repaint/fixed-move-after-keyboard-scroll.html [ Failure ]
 crbug.com/243362 [ Mac ] plugins/destroy-plugin-from-callback.html [ Crash Pass ]
 crbug.com/243366 [ Mac ] editing/input/reveal-contenteditable-on-input-vertically.html [ Timeout ]
 crbug.com/243366 [ Mac ] editing/input/reveal-edit-on-input-vertically.html [ Timeout ]
@@ -1836,3 +1838,4 @@ crbug.com/243420 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_mea
 crbug.com/243477 plugins/plugin-initiate-popup-window.html [ Failure ]
 crbug.com/243479 fast/loader/recursive-before-unload-crash.html [ Crash Pass ]
 crbug.com/243481 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass ]
+crbug.com/243492 [ Win Mac ] http/tests/inspector-enabled/injected-script-discard.html [ Timeout Pass ]
