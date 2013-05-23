@@ -733,12 +733,15 @@
 // Defines visibility for classes in trace_event.h
 #define TRACE_EVENT_API_CLASS_EXPORT BASE_EXPORT
 
+// Not supported in split-dll build. http://crbug.com/237249
+#if !defined(CHROME_SPLIT_DLL)
 // The thread buckets for the sampling profiler.
 TRACE_EVENT_API_CLASS_EXPORT extern TRACE_EVENT_API_ATOMIC_WORD g_trace_state0;
 TRACE_EVENT_API_CLASS_EXPORT extern TRACE_EVENT_API_ATOMIC_WORD g_trace_state1;
 TRACE_EVENT_API_CLASS_EXPORT extern TRACE_EVENT_API_ATOMIC_WORD g_trace_state2;
 #define TRACE_EVENT_API_THREAD_BUCKET(thread_bucket)                           \
   g_trace_state##thread_bucket
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
