@@ -279,6 +279,7 @@ void CertLoader::StartLoadCertificates() {
 
   net::CertificateList* cert_list = new net::CertificateList;
   certificates_update_running_ = true;
+  certificates_update_required_ = false;
   base::WorkerPool::GetTaskRunner(true /* task_is_slow */)->
       PostTaskAndReply(
           FROM_HERE,
