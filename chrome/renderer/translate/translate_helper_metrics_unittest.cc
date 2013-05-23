@@ -79,6 +79,17 @@ class MetricsRecorder {
         GetCount(TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISAGREE));
   }
 
+  void CheckScheme(int expected_http, int expected_https, int expected_others) {
+    ASSERT_EQ(TranslateHelperMetrics::GetMetricsName(
+        TranslateHelperMetrics::UMA_PAGE_SCHEME), key_);
+
+    Snapshot();
+
+    EXPECT_EQ(expected_http, GetCount(TranslateHelperMetrics::SCHEME_HTTP));
+    EXPECT_EQ(expected_https, GetCount(TranslateHelperMetrics::SCHEME_HTTPS));
+    EXPECT_EQ(expected_others, GetCount(TranslateHelperMetrics::SCHEME_OTHERS));
+  }
+
   void CheckTotalCount(int count) {
     Snapshot();
     EXPECT_EQ(count, GetTotalCount());
@@ -206,6 +217,18 @@ TEST(TranslateHelperMetricsTest, ReportUserActionDuration) {
   TranslateHelperMetrics::ReportUserActionDuration(begin, end);
   recorder.CheckValueInLogs(3776000.0);
   recorder.CheckTotalCount(1);
+}
+
+TEST(TranslateHelperMetricsTest, ReportPageScheme) {
+  MetricsRecorder recorder(TranslateHelperMetrics::GetMetricsName(
+      TranslateHelperMetrics::UMA_PAGE_SCHEME));
+  recorder.CheckScheme(0, 0, 0);
+  TranslateHelperMetrics::ReportPageScheme("http");
+  recorder.CheckScheme(1, 0, 0);
+  TranslateHelperMetrics::ReportPageScheme("https");
+  recorder.CheckScheme(1, 1, 0);
+  TranslateHelperMetrics::ReportPageScheme("ftp");
+  recorder.CheckScheme(1, 1, 1);
 }
 
 #if defined(ENABLE_LANGUAGE_DETECTION)

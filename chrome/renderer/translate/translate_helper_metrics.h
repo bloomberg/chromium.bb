@@ -21,6 +21,7 @@ enum MetricsNameIndex {
   UMA_TIME_TO_LOAD,
   UMA_TIME_TO_TRANSLATE,
   UMA_USER_ACTION_DURATION,
+  UMA_PAGE_SCHEME,
   UMA_MAX,
 };
 
@@ -44,6 +45,14 @@ enum LanguageVerificationType {
   LANGUAGE_VERIFICATION_MAX,
 };
 
+// Scheme type of pages Chrome is going to translate.
+enum SchemeType {
+  SCHEME_HTTP,
+  SCHEME_HTTPS,
+  SCHEME_OTHERS,
+  SCHEME_MAX,
+};
+
 // Called after TranslateHelper verifies a server providing Content-Language
 // header. |provided_code| contains a Content-Language header value which
 // server provides. It can be empty string when a server doesn't provide it.
@@ -65,6 +74,9 @@ void ReportTimeToTranslate(double time_in_msec);
 
 // Called when a translation is triggered.
 void ReportUserActionDuration(base::TimeTicks begin, base::TimeTicks end);
+
+// Called when a translation is triggered.
+void ReportPageScheme(const std::string& scheme);
 
 #if defined(ENABLE_LANGUAGE_DETECTION)
 

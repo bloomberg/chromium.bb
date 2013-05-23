@@ -8609,6 +8609,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Translate.PageScheme" enum="TranslateScheme">
+  <summary>Counts translation target page schemes.</summary>
+</histogram>
+
 <histogram name="Translate.ShowErrorInfobar" enum="TranslateError">
   <summary>
     Chrome Translate shows an error infobar when an error happens on translation
@@ -13656,6 +13660,12 @@ other types of suffix sets.
   <int value="2" label="CLD can not determine a language"/>
   <int value="3" label="CLD agrees with Content-Language"/>
   <int value="4" label="CLD disagrees with Content-Language"/>
+</enum>
+
+<enum name="TranslateScheme" type="int">
+  <int value="0" label="http"/>
+  <int value="1" label="https"/>
+  <int value="2" label="unexpected other schemes"/>
 </enum>
 
 <enum name="UniformityTrialGroupNotActive" type="int">

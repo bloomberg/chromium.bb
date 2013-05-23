@@ -18,6 +18,10 @@ const char kTranslateTimeToBeReady[] = "Translate.TimeToBeReady";
 const char kTranslateTimeToLoad[] = "Translate.TimeToLoad";
 const char kTranslateTimeToTranslate[] = "Translate.TimeToTranslate";
 const char kTranslateUserActionDuration[] = "Translate.UserActionDuration";
+const char kTranslatePageScheme[] = "Translate.PageScheme";
+
+const char kSchemeHttp[] = "http";
+const char kSchemeHttps[] = "https";
 
 struct MetricsEntry {
   TranslateHelperMetrics::MetricsNameIndex index;
@@ -40,6 +44,8 @@ const MetricsEntry kMetricsEntries[] = {
     kTranslateTimeToTranslate },
   { TranslateHelperMetrics::UMA_USER_ACTION_DURATION,
     kTranslateUserActionDuration },
+  { TranslateHelperMetrics::UMA_PAGE_SCHEME,
+    kTranslatePageScheme },
 };
 
 COMPILE_ASSERT(arraysize(kMetricsEntries) == TranslateHelperMetrics::UMA_MAX,
@@ -92,6 +98,15 @@ void ReportTimeToTranslate(double time_in_msec) {
 
 void ReportUserActionDuration(base::TimeTicks begin, base::TimeTicks end) {
   UMA_HISTOGRAM_LONG_TIMES(kTranslateUserActionDuration, end - begin);
+}
+
+void ReportPageScheme(const std::string& scheme) {
+  SchemeType type = SCHEME_OTHERS;
+  if (scheme == kSchemeHttp)
+    type = SCHEME_HTTP;
+  else if (scheme == kSchemeHttps)
+    type = SCHEME_HTTPS;
+  UMA_HISTOGRAM_ENUMERATION(kTranslatePageScheme, type, SCHEME_MAX);
 }
 
 #if defined(ENABLE_LANGUAGE_DETECTION)

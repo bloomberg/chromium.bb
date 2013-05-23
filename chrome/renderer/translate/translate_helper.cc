@@ -457,6 +457,9 @@ void TranslateHelper::OnTranslatePage(int page_id,
   TranslateHelperMetrics::ReportUserActionDuration(language_determined_time_,
                                                    base::TimeTicks::Now());
 
+  GURL url(GetMainFrame()->document().url());
+  TranslateHelperMetrics::ReportPageScheme(url.scheme());
+
   if (!IsTranslateLibAvailable()) {
     // Evaluate the script to add the translation related method to the global
     // context of the page.
