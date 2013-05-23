@@ -85,6 +85,28 @@ class InterfaceTest(cros_test_lib.OutputTestCase):
     argv = ['--staging-only', '--build-dir=/path/to/nowhere']
     self.assertParseError(argv)
 
+  def testMountOptionSetsTargetDir(self):
+    argv = list(_REGULAR_TO) + ['--gs-path', _GS_PATH, '--mount']
+    options, _ = _ParseCommandLine(argv)
+    self.assertIsNot(options.target_dir, None)
+
+  def testMountOptionSetsMountDir(self):
+    argv = list(_REGULAR_TO) + ['--gs-path', _GS_PATH, '--mount']
+    options, _ = _ParseCommandLine(argv)
+    self.assertIsNot(options.mount_dir, None)
+
+  def testMountOptionDoesNotOverrideTargetDir(self):
+    argv = list(_REGULAR_TO) + ['--gs-path', _GS_PATH, '--mount',
+                                '--target-dir', '/foo/bar/cow']
+    options, _ = _ParseCommandLine(argv)
+    self.assertEqual(options.target_dir, '/foo/bar/cow')
+
+  def testMountOptionDoesNotOverrideMountDir(self):
+    argv = list(_REGULAR_TO) + ['--gs-path', _GS_PATH, '--mount',
+                                '--mount-dir', '/foo/bar/cow']
+    options, _ = _ParseCommandLine(argv)
+    self.assertEqual(options.mount_dir, '/foo/bar/cow')
+
 
 class DeployChromeMock(partial_mock.PartialMock):
 

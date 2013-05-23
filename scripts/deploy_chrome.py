@@ -55,7 +55,10 @@ MOUNT_RW_COMMAND = 'mount -o remount,rw /'
 LSOF_COMMAND = 'lsof %s/chrome'
 
 _CHROME_DIR = '/opt/google/chrome'
+_CHROME_DIR_MOUNT = '/mnt/stateful_partition/deploy_rootfs/opt/google/chrome'
 
+_BIND_TO_FINAL_DIR_CMD = 'mount --rbind %s %s'
+_SET_MOUNT_FLAGS_CMD = 'mount -o remount,exec,suid %s'
 
 def _UrlBaseName(url):
   """Return the last component of the URL."""
@@ -235,6 +238,16 @@ class DeployChrome(object):
   def _PrepareStagingDir(self):
     _PrepareStagingDir(self.options, self.tempdir, self.staging_dir)
 
+  def _MountTarget(self):
+    logging.info('Mounting Chrome...')
+
+    # Create directory if does not exist
+    self.host.RemoteSh('mkdir -p --mode 0775 %s' % (self.options.mount_dir,))
+    self.host.RemoteSh(_BIND_TO_FINAL_DIR_CMD % (self.options.target_dir,
+                                                 self.options.mount_dir))
+    # Chrome needs partition to have exec and suid flags set
+    self.host.RemoteSh(_SET_MOUNT_FLAGS_CMD % (self.options.mount_dir,))
+
   def Perform(self):
     # If requested, just do the staging step.
     if self.options.staging_only:
@@ -254,6 +267,9 @@ class DeployChrome(object):
     # verification.
     if self._rootfs_is_still_readonly.is_set():
       self._DisableRootfsVerification()
+
+    if self.options.mount_dir is not None:
+      self._MountTarget()
 
     # Actually deploy Chrome to the device.
     self._Deploy()
@@ -294,7 +310,7 @@ def _CreateParser():
                          'environment variable must be set.')
   parser.add_option('--target-dir', type='path',
                     help='Target directory on device to deploy Chrome into.',
-                    default=_CHROME_DIR)
+                    default=None)
   parser.add_option('-g', '--gs-path', type='gs_path',
                     help='GS path that contains the chrome to deploy.')
   parser.add_option('--nostartui', action='store_false', dest='startui',
@@ -310,6 +326,12 @@ def _CreateParser():
                     help='The IP address of the CrOS device to deploy to.')
   parser.add_option('-v', '--verbose', action='store_true', default=False,
                     help='Show more debug output.')
+  parser.add_option('--mount-dir', type='path', default=None,
+                    help='Deploy Chrome in target directory and bind it'
+                         'to directory specified by this flag.')
+  parser.add_option('--mount', action='store_true', default=False,
+                    help='Deploy Chrome to default target directory and bind it'
+                         'to default mount directory.')
 
   group = optparse.OptionGroup(parser, 'Advanced Options')
   group.add_option('-l', '--local-pkg-path', type='path',
@@ -373,6 +395,17 @@ def _ParseCommandLine(argv):
     parser.error('--staging-flags requires --strict to be set.')
   if options.sloppy and options.strict:
     parser.error('Cannot specify both --strict and --sloppy.')
+
+  if options.mount or options.mount_dir:
+    if not options.target_dir:
+      options.target_dir = _CHROME_DIR_MOUNT
+  else:
+    if not options.target_dir:
+      options.target_dir = _CHROME_DIR
+
+  if options.mount and not options.mount_dir:
+    options.mount_dir = _CHROME_DIR
+
   return options, args
 
 
