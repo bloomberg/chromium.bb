@@ -18,6 +18,17 @@ class Profile;
 
 namespace chromeos {
 
+// This helper class is used on Chrome OS to keep track of currently
+// active user profile.
+// Whenever active user is changed (either add another user into session or
+// switch between users), ActiveUserHashChanged() will be called thus
+// internal state |active_user_id_hash_| will be updated.
+// Typical use cases for using this class:
+// 1. Get "signin profile" which is a special type of profile that is only used
+//    during signin flow: GetSigninProfile()
+// 2. Get profile dir of an active user, used by ProfileManager:
+//    GetActiveUserProfileDir()
+// 3. Get mapping from user_id_hash to Profile instance/profile path etc.
 class ProfileHelper : public BrowsingDataRemover::Observer,
                       public UserManager::UserSessionStateObserver {
  public:
@@ -26,6 +37,10 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
 
   // Returns Profile instance that corresponds to |user_id_hash|.
   static Profile* GetProfileByUserIdHash(const std::string& user_id_hash);
+
+  // Returns profile path that corresponds to a given |user_id_hash|.
+  static base::FilePath GetProfilePathByUserIdHash(
+      const std::string& user_id_hash);
 
   // Returns OffTheRecord profile for use during signing phase.
   static Profile* GetSigninProfile();
@@ -81,4 +96,3 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
 } // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_PROFILES_PROFILE_HELPER_H_
-

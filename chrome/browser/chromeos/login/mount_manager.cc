@@ -1,13 +1,13 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/chromeos/login/mount_manager.h"
 
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 
 namespace chromeos {
-
-const char kBaseChromeosMountPath[] = "/home/user";
 
 MountManager* MountManager::Get() {
   if (!instance_)
@@ -19,7 +19,7 @@ MountManager* MountManager::Get() {
 MountManager* MountManager::instance_ = NULL;
 
 base::FilePath MountManager::GetHomeDir(std::string& user_hash) {
-  return base::FilePath(kBaseChromeosMountPath).Append(user_hash);
+  return ProfileHelper::GetProfilePathByUserIdHash(user_hash);
 }
 
 MountManager::MountManager() {}
