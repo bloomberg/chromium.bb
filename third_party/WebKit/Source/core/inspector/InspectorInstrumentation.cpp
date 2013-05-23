@@ -322,6 +322,12 @@ InspectorInstrumentationCookie willDispatchEventImpl(InstrumentingAgents* instru
     return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
 }
 
+void didDispatchEventImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didDispatchEvent();
+}
+
 InspectorInstrumentationCookie willHandleEventImpl(InstrumentingAgents* instrumentingAgents, Event* event)
 {
     if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
@@ -333,12 +339,6 @@ void didHandleEventImpl(const InspectorInstrumentationCookie& cookie)
 {
     if (InspectorDebuggerAgent* debuggerAgent = cookie.instrumentingAgents()->inspectorDebuggerAgent())
         debuggerAgent->didHandleEvent();
-}
-
-void didDispatchEventImpl(const InspectorInstrumentationCookie& cookie)
-{
-    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
-        timelineAgent->didDispatchEvent();
 }
 
 InspectorInstrumentationCookie willDispatchEventOnWindowImpl(InstrumentingAgents* instrumentingAgents, const Event& event, DOMWindow* window)
@@ -521,10 +521,8 @@ void didScheduleStyleRecalculationImpl(InstrumentingAgents* instrumentingAgents,
 
 InspectorInstrumentationCookie willMatchRuleImpl(InstrumentingAgents* instrumentingAgents, StyleRule* rule, InspectorCSSOMWrappers& inspectorCSSOMWrappers, DocumentStyleSheetCollection* sheetCollection)
 {
-    InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent();
-    if (cssAgent)
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
         cssAgent->willMatchRule(rule, inspectorCSSOMWrappers, sheetCollection);
-
     return InspectorInstrumentationCookie(instrumentingAgents, 0);
 }
 
@@ -536,10 +534,8 @@ void didMatchRuleImpl(const InspectorInstrumentationCookie& cookie, bool matched
 
 InspectorInstrumentationCookie willProcessRuleImpl(InstrumentingAgents* instrumentingAgents, StyleRule* rule, StyleResolver* styleResolver)
 {
-    InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent();
-    if (cssAgent)
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
         cssAgent->willProcessRule(rule, styleResolver);
-
     return InspectorInstrumentationCookie(instrumentingAgents, 0);
 }
 
@@ -765,13 +761,10 @@ void domContentLoadedEventFiredImpl(InstrumentingAgents* instrumentingAgents, Fr
 {
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
         timelineAgent->domContentLoadedEventFired(frame);
-
     if (InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent())
         inspectorAgent->domContentLoadedEventFired(frame);
-
     if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
         domAgent->domContentLoadedEventFired(frame);
-
     if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
         pageAgent->domContentLoadedEventFired(frame);
 }
@@ -780,10 +773,8 @@ void loadEventFiredImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
 {
     if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
         domAgent->loadEventFired(frame);
-
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
         timelineAgent->loadEventFired(frame);
-
     if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
         pageAgent->loadEventFired(frame);
 }

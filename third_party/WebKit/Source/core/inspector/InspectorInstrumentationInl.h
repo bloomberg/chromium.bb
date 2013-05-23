@@ -37,8 +37,8 @@ namespace InspectorInstrumentation {
 
 void didClearWindowObjectInWorldImpl(InstrumentingAgents*, Frame*, DOMWrapperWorld*);
 void willInsertDOMNodeImpl(InstrumentingAgents*, Node* parent);
-void willRemoveDOMNodeImpl(InstrumentingAgents*, Node*);
 void didInsertDOMNodeImpl(InstrumentingAgents*, Node*);
+void willRemoveDOMNodeImpl(InstrumentingAgents*, Node*);
 void willModifyDOMAttrImpl(InstrumentingAgents*, Element*, const AtomicString& oldValue, const AtomicString& newValue);
 void didModifyDOMAttrImpl(InstrumentingAgents*, Element*, const AtomicString& name, const AtomicString& value);
 void didRemoveDOMAttrImpl(InstrumentingAgents*, Element*, const AtomicString& name);
@@ -102,6 +102,9 @@ InspectorInstrumentationCookie willReceiveResourceDataImpl(InstrumentingAgents*,
 void didReceiveResourceDataImpl(const InspectorInstrumentationCookie&);
 InspectorInstrumentationCookie willReceiveResourceResponseImpl(InstrumentingAgents*, Frame*, unsigned long identifier, const ResourceResponse&);
 void didReceiveResourceResponseImpl(const InspectorInstrumentationCookie&, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
+void continueAfterXFrameOptionsDeniedImpl(Frame*, DocumentLoader*, unsigned long, const ResourceResponse&);
+void continueWithPolicyDownloadImpl(Frame*, DocumentLoader*, unsigned long, const ResourceResponse&);
+void continueWithPolicyIgnoreImpl(Frame*, DocumentLoader*, unsigned long, const ResourceResponse&);
 void didReceiveDataImpl(InstrumentingAgents*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 void didFinishLoadingImpl(InstrumentingAgents*, unsigned long identifier, DocumentLoader*, double finishTime);
 void didFailLoadingImpl(InstrumentingAgents*, unsigned long identifier, DocumentLoader*, const ResourceError&);
@@ -127,6 +130,7 @@ void frameScheduledNavigationImpl(InstrumentingAgents*, Frame*, double delay);
 void frameClearedScheduledNavigationImpl(InstrumentingAgents*, Frame*);
 InspectorInstrumentationCookie willRunJavaScriptDialogImpl(InstrumentingAgents*, const String& message);
 void didRunJavaScriptDialogImpl(const InspectorInstrumentationCookie&);
+void willDestroyCachedResourceImpl(CachedResource*);
 InspectorInstrumentationCookie willWriteHTMLImpl(InstrumentingAgents*, Document*, unsigned startLine);
 void didWriteHTMLImpl(const InspectorInstrumentationCookie&, unsigned endLine);
 void didRequestAnimationFrameImpl(InstrumentingAgents*, Document*, int callbackId);
@@ -163,18 +167,18 @@ inline void willInsertDOMNode(Document* document, Node* parent)
         willInsertDOMNodeImpl(instrumentingAgents, parent);
 }
 
-inline void willRemoveDOMNode(Document* document, Node* node)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        willRemoveDOMNodeImpl(instrumentingAgents, node);
-}
-
 inline void didInsertDOMNode(Document* document, Node* node)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
         didInsertDOMNodeImpl(instrumentingAgents, node);
+}
+
+inline void willRemoveDOMNode(Document* document, Node* node)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
+        willRemoveDOMNodeImpl(instrumentingAgents, node);
 }
 
 inline void willModifyDOMAttr(Document* document, Element* element, const AtomicString& oldValue, const AtomicString& newValue)
@@ -620,9 +624,26 @@ inline InspectorInstrumentationCookie willReceiveResourceResponse(Frame* frame, 
 
 inline void didReceiveResourceResponse(const InspectorInstrumentationCookie& cookie, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
-    // Call this unconditionally so that we're able to log to console with no front-end attached.
     if (cookie.isValid())
         didReceiveResourceResponseImpl(cookie, identifier, loader, response, resourceLoader);
+}
+
+inline void continueAfterXFrameOptionsDenied(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    continueAfterXFrameOptionsDeniedImpl(frame, loader, identifier, r);
+}
+
+inline void continueWithPolicyDownload(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    continueWithPolicyDownloadImpl(frame, loader, identifier, r);
+}
+
+inline void continueWithPolicyIgnore(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    continueWithPolicyIgnoreImpl(frame, loader, identifier, r);
 }
 
 inline void didReceiveData(Frame* frame, unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
@@ -779,6 +800,12 @@ inline void didRunJavaScriptDialog(const InspectorInstrumentationCookie& cookie)
         didRunJavaScriptDialogImpl(cookie);
 }
 
+inline void willDestroyCachedResource(CachedResource* cachedResource)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    willDestroyCachedResourceImpl(cachedResource);
+}
+
 inline InspectorInstrumentationCookie willWriteHTML(Document* document, unsigned startLine)
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
@@ -826,7 +853,6 @@ inline void didDispatchDOMStorageEvent(Page* page, const String& key, const Stri
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
         didDispatchDOMStorageEventImpl(instrumentingAgents, key, oldValue, newValue, storageType, securityOrigin);
 }
-
 
 inline void didStartWorkerContext(ScriptExecutionContext* context, WorkerContextProxy* proxy, const KURL& url)
 {

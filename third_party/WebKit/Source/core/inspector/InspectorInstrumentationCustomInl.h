@@ -38,10 +38,6 @@ namespace InspectorInstrumentation {
 bool profilerEnabledImpl(InstrumentingAgents*);
 bool isDebuggerPausedImpl(InstrumentingAgents*);
 InspectorInstrumentationCookie willProcessRuleImpl(InstrumentingAgents*, StyleRule*, StyleResolver*);
-void continueAfterXFrameOptionsDeniedImpl(Frame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
-void continueWithPolicyDownloadImpl(Frame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
-void continueWithPolicyIgnoreImpl(Frame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
-void willDestroyCachedResourceImpl(CachedResource*);
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
 
 bool canvasAgentEnabled(ScriptExecutionContext*);
@@ -71,30 +67,6 @@ inline InspectorInstrumentationCookie willProcessRule(Document* document, StyleR
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
         return willProcessRuleImpl(instrumentingAgents, rule, styleResolver);
     return InspectorInstrumentationCookie();
-}
-
-inline void continueAfterXFrameOptionsDenied(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    continueAfterXFrameOptionsDeniedImpl(frame, loader, identifier, r);
-}
-
-inline void continueWithPolicyDownload(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    continueWithPolicyDownloadImpl(frame, loader, identifier, r);
-}
-
-inline void continueWithPolicyIgnore(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    continueWithPolicyIgnoreImpl(frame, loader, identifier, r);
-}
-
-inline void willDestroyCachedResource(CachedResource* cachedResource)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    willDestroyCachedResourceImpl(cachedResource);
 }
 
 inline bool collectingHTMLParseErrors(Page* page)
