@@ -84,8 +84,6 @@ const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_EXCLUSIVE_READ |
                                      base::PLATFORM_FILE_ASYNC;
 
-const char kFileBrowserExtensionId[] = "hhaomjibdihmijegdhdafkllkbggdgoj";
-
 // Returns process id of the process the extension is running in.
 int ExtractProcessFromExtensionId(Profile* profile,
                                   const std::string& extension_id) {
@@ -103,7 +101,7 @@ int ExtractProcessFromExtensionId(Profile* profile,
 }
 
 bool IsBuiltinTask(const FileBrowserHandler* task) {
-  return (task->extension_id() == kFileBrowserExtensionId ||
+  return (task->extension_id() == kFileBrowserDomain ||
           task->extension_id() ==
               extension_misc::kQuickOfficeComponentExtensionId ||
           task->extension_id() == extension_misc::kQuickOfficeDevExtensionId ||

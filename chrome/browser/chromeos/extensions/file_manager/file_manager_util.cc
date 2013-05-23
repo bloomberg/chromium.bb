@@ -69,8 +69,7 @@ using extensions::Extension;
 using file_handler_util::FileTaskExecutor;
 using fileapi::FileSystemURL;
 
-#define FILEBROWSER_EXTENSON_ID "hhaomjibdihmijegdhdafkllkbggdgoj"
-const char kFileBrowserDomain[] = FILEBROWSER_EXTENSON_ID;
+const char kFileBrowserDomain[] = "hhaomjibdihmijegdhdafkllkbggdgoj";
 
 const char kFileBrowserGalleryTaskId[] = "gallery";
 const char kFileBrowserMountArchiveTaskId[] = "mount-archive";
@@ -81,20 +80,6 @@ const char kVideoPlayerAppName[] = "videoplayer";
 
 namespace file_manager_util {
 namespace {
-
-#define FILEBROWSER_URL(PATH) \
-    ("chrome-extension://" FILEBROWSER_EXTENSON_ID "/" PATH)
-// This is the "well known" url for the file manager extension from
-// browser/resources/file_manager.  In the future we may provide a way to swap
-// out this file manager for an aftermarket part, but not yet.
-const char kFileBrowserExtensionUrl[] = FILEBROWSER_URL("");
-const char kBaseFileBrowserUrl[] = FILEBROWSER_URL("main.html");
-const char kBaseFileBrowserNewUIUrl[] = FILEBROWSER_URL("main_new_ui.html");
-const char kMediaPlayerUrl[] = FILEBROWSER_URL("mediaplayer.html");
-const char kVideoPlayerUrl[] = FILEBROWSER_URL("video_player.html");
-const char kActionChoiceUrl[] = FILEBROWSER_URL("action_choice.html");
-#undef FILEBROWSER_URL
-#undef FILEBROWSER_EXTENSON_ID
 
 const char kCRXExtension[] = ".crx";
 const char kPdfExtension[] = ".pdf";
@@ -116,6 +101,11 @@ const char* kUMATrackingExtensions[] = {
   ".xls", ".xlsx", ".ods", ".csv", ".odf", ".rar", ".asf", ".wma", ".wmv",
   ".mov", ".mpg", ".log"
 };
+
+// Returns a file manager URL for the given |path|.
+GURL GetFileManagerUrl(const char* path) {
+  return GURL(std::string("chrome-extension://") + kFileBrowserDomain + path);
+}
 
 bool IsSupportedBrowserExtension(const char* file_extension) {
   for (size_t i = 0; i < arraysize(kBrowserSupportedExtensions); i++) {
@@ -529,20 +519,31 @@ void CheckIfDirectoryExists(
 }  // namespace
 
 GURL GetFileBrowserExtensionUrl() {
-  return GURL(kFileBrowserExtensionUrl);
+  return GetFileManagerUrl("/");
 }
 
 GURL GetFileBrowserUrl() {
-  return GURL(IsFileManagerNewUI() ? kBaseFileBrowserNewUIUrl :
-                                     kBaseFileBrowserUrl);
+  return IsFileManagerNewUI() ? GetFileManagerUrl("/main_new_ui.html") :
+                                GetFileManagerUrl("/main.html");
 }
 
 GURL GetMediaPlayerUrl() {
-  return GURL(kMediaPlayerUrl);
+  return GetFileManagerUrl("/mediaplayer.html");
 }
 
 GURL GetVideoPlayerUrl(const GURL& source_url) {
-  return GURL(kVideoPlayerUrl + std::string("?") + source_url.spec());
+  return GURL(GetFileManagerUrl("/video_player.html").spec() +
+              std::string("?") + source_url.spec());
+}
+
+GURL GetActionChoiceUrl(const base::FilePath& virtual_path,
+                        bool advanced_mode) {
+  std::string url = GetFileManagerUrl("/action_choice.html").spec();
+  if (advanced_mode)
+    url += "?advanced-mode";
+  url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(),
+                                          false);  // Space to %20 instead of +.
+  return GURL(url);
 }
 
 bool ConvertFileToFileSystemUrl(Profile* profile,
@@ -718,12 +719,7 @@ void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode) {
   if (!ConvertFileToRelativeFileSystemPath(profile, kFileBrowserDomain, path,
                                            &virtual_path))
     return;
-  std::string url = kActionChoiceUrl;
-  if (advanced_mode)
-    url += "?advanced-mode";
-  url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(),
-                                          false);  // Space to %20 instead of +.
-  GURL dialog_url(url);
+  GURL dialog_url = GetActionChoiceUrl(virtual_path, advanced_mode);
 
   const gfx::Size screen = ash::Shell::GetScreen()->GetPrimaryDisplay().size();
   const gfx::Rect bounds((screen.width() - kDialogWidth) / 2,
@@ -781,10 +777,6 @@ void ViewItem(const base::FilePath& path) {
 void ShowFileInFolder(const base::FilePath& path) {
   // This action changes the selection so we do not reuse existing tabs.
   OpenFileBrowserImpl(path, REUSE_NEVER, "select");
-}
-
-void OpenFileBrowser() {
-  OpenFileBrowserImpl(base::FilePath(), REUSE_NEVER, "");
 }
 
 bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,
