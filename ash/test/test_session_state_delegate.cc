@@ -14,7 +14,8 @@ TestSessionStateDelegate::TestSessionStateDelegate()
     : has_active_user_(true),
       active_user_session_started_(true),
       can_lock_screen_(true),
-      screen_locked_(false) {
+      screen_locked_(false),
+      logged_in_users_(1) {
 }
 
 TestSessionStateDelegate::~TestSessionStateDelegate() {
@@ -26,7 +27,7 @@ int TestSessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
 
 int TestSessionStateDelegate::NumberOfLoggedInUsers() const {
   // TODO(skuhne): Add better test framework to test multiple profiles.
-  return has_active_user_ ? 1 : 0;
+  return has_active_user_ ? logged_in_users_ : 0;
 }
 
 bool TestSessionStateDelegate::IsActiveUserSessionStarted() const {
@@ -74,7 +75,12 @@ const base::string16 TestSessionStateDelegate::GetUserDisplayName(
 
 const std::string TestSessionStateDelegate::GetUserEmail(
     ash::MultiProfileIndex index) const {
-  return "über@tray";
+  switch (index) {
+    case 0: return "first@tray";
+    case 1: return "second@tray";
+    case 2: return "third@tray";
+    default: return "someone@tray";
+  }
 }
 
 const gfx::ImageSkia& TestSessionStateDelegate::GetUserImage(
@@ -86,6 +92,7 @@ void TestSessionStateDelegate::GetLoggedInUsers(UserEmailList* users) {
 }
 
 void TestSessionStateDelegate::SwitchActiveUser(const std::string& email) {
+  activated_user_ = email;
 }
 
 
