@@ -24,6 +24,10 @@ const char* const kSendContents = "0100000005320000005hello";
 const char* const kReceiveContentsPrefix = "0100000005320000005";
 const size_t kReceiveContentsSuffixSize = 11;
 
+const char* const kMulticastAddress = "237.132.100.133";
+const int32_t kMulticastPort = 11103;
+const char* const kMulticastMessage = "hello world!";
+
 }  // namespace
 
 class MyInstance : public Instance {
@@ -32,7 +36,6 @@ class MyInstance : public Instance {
       : Instance(instance),
         socket_(InstanceHandle(instance)),
         console_interface_(NULL),
-        socket_interface_(NULL),
         port_(0) {
   }
   virtual ~MyInstance() {
@@ -42,11 +45,7 @@ class MyInstance : public Instance {
     console_interface_ = static_cast<const PPB_Console*>(
         Module::Get()->GetBrowserInterface(PPB_CONSOLE_INTERFACE));
 
-    // TODO(yzshen): Remove this one once the cpp wrapper supports all socket
-    // functions.
-    socket_interface_ = static_cast<const PPB_Ext_Socket_Dev*>(
-        Module::Get()->GetBrowserInterface(PPB_EXT_SOCKET_DEV_INTERFACE));
-    if (!console_interface_ || !socket_interface_)
+    if (!console_interface_)
       return false;
 
     PostMessage(Var("ready"));
@@ -86,6 +85,8 @@ class MyInstance : public Instance {
 
       if (test_type_ == "tcp_server") {
         output = TestServerSocket();
+      } else if (test_type_ == "multicast") {
+        output = TestMulticast();
       } else {
         output = TestClientSocket();
       }
@@ -111,16 +112,13 @@ class MyInstance : public Instance {
     }
 
     {
-      TestCompletionCallback callback(pp_instance());
-      PP_Var output = PP_MakeUndefined();
-      callback.WaitForResult(socket_interface_->Listen(
-          pp_instance(), Var(socket_id).pp_var(), Var(address_).pp_var(),
-          Var(port_).pp_var(), PP_MakeUndefined(), &output,
-          callback.GetCallback().pp_completion_callback()));
+      TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+      callback.WaitForResult(socket_.Listen(
+          socket_id, address_, port_, Optional<int32_t>(),
+          callback.GetCallback()));
       if (callback.result() != PP_OK)
         return "Listen(): failed.";
-      Var output_var(PASS_REF, output);
-      if (output_var.AsInt() != 0)
+      if (callback.output() != 0)
         return "Listen(): failed.";
     }
 
@@ -139,16 +137,12 @@ class MyInstance : public Instance {
     }
 
     {
-      TestCompletionCallback callback(pp_instance());
-      PP_Var output = PP_MakeUndefined();
-      callback.WaitForResult(socket_interface_->Connect(
-          pp_instance(), Var(client_socket_id).pp_var(), Var(address_).pp_var(),
-          Var(port_).pp_var(), &output,
-          callback.GetCallback().pp_completion_callback()));
+      TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+      callback.WaitForResult(socket_.Connect(
+          client_socket_id, address_, port_, callback.GetCallback()));
       if (callback.result() != PP_OK)
         return "Connect(): failed.";
-      Var output_var(PASS_REF, output);
-      if (output_var.AsInt() != 0)
+      if (callback.output() != 0)
         return "Connect(): failed.";
     }
 
@@ -202,6 +196,191 @@ class MyInstance : public Instance {
     return std::string();
   }
 
+  std::string TestMulticast() {
+    int32_t socket_id = 0;
+    {
+      TestExtCompletionCallbackWithOutput<socket::CreateInfo_Dev>
+          callback(pp_instance());
+      callback.WaitForResult(socket_.Create(
+          socket::SocketType_Dev::UDP, Optional<socket::CreateOptions_Dev>(),
+          callback.GetCallback()));
+      if (callback.result() != PP_OK)
+        return "Create(): failed.";
+      socket_id = callback.output().socket_id();
+      if (socket_id <= 0)
+        return "Create(): invalid socket ID.";
+    }
+
+    {
+      TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+      callback.WaitForResult(socket_.SetMulticastTimeToLive(
+          socket_id, 0, callback.GetCallback()));
+      if (callback.result() != PP_OK || callback.output() != 0)
+        return "SetMulticastTimeToLive(): failed.";
+    }
+
+    {
+      TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+      callback.WaitForResult(socket_.SetMulticastTimeToLive(
+          socket_id, -3, callback.GetCallback()));
+      if (callback.result() == PP_OK)
+        return "SetMulticastTimeToLive(): succeeded unexpectedly.";
+      if (callback.output() != -4)
+        return "SetMulticastTimeToLive(): returned unexpected result.";
+    }
+
+    {
+      TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+      callback.WaitForResult(socket_.SetMulticastLoopbackMode(
+          socket_id, false, callback.GetCallback()));
+      if (callback.result() != PP_OK || callback.output() != 0)
+        return "SetMulticastLoopbackMode(): failed.";
+    }
+
+    {
+      TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+      callback.WaitForResult(socket_.SetMulticastLoopbackMode(
+          socket_id, true, callback.GetCallback()));
+      if (callback.result() != PP_OK || callback.output() != 0)
+        return "SetMulticastLoopbackMode(): failed.";
+    }
+
+    socket_.Destroy(socket_id);
+    socket_id = 0;
+
+    int32_t server_socket_id = 0;
+    {
+      TestExtCompletionCallbackWithOutput<socket::CreateInfo_Dev>
+          callback(pp_instance());
+      callback.WaitForResult(socket_.Create(
+          socket::SocketType_Dev::UDP, Optional<socket::CreateOptions_Dev>(),
+          callback.GetCallback()));
+      if (callback.result() != PP_OK)
+        return "Create(): failed.";
+      server_socket_id = callback.output().socket_id();
+      if (server_socket_id <= 0)
+        return "Create(): invalid socket ID.";
+    }
+
+    {
+      TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+      callback.WaitForResult(socket_.Bind(
+          server_socket_id, "0.0.0.0", kMulticastPort, callback.GetCallback()));
+      if (callback.result() != PP_OK || callback.output() != 0)
+        return "Bind(): failed";
+    }
+
+    {
+      TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+      callback.WaitForResult(socket_.JoinGroup(
+          server_socket_id, kMulticastAddress, callback.GetCallback()));
+      if (callback.result() != PP_OK || callback.output() != 0)
+        return "JoinGroup(): failed.";
+    }
+
+    {
+      TestExtCompletionCallbackWithOutput<std::vector<std::string> >
+          callback(pp_instance());
+      callback.WaitForResult(socket_.GetJoinedGroups(
+          server_socket_id, callback.GetCallback()));
+      if (callback.result() != PP_OK)
+        return "GetJoinedGroups(): failed.";
+      std::vector<std::string> groups = callback.output();
+      if (groups.size() != 1 || groups[0] != kMulticastAddress) {
+        return "GetJoinedGroups(): the returned groups didn't match those "
+               "joined.";
+      }
+    }
+
+    int32_t client_socket_id = 0;
+    {
+      TestExtCompletionCallbackWithOutput<socket::CreateInfo_Dev>
+          callback(pp_instance());
+      callback.WaitForResult(socket_.Create(
+          socket::SocketType_Dev::UDP, Optional<socket::CreateOptions_Dev>(),
+          callback.GetCallback()));
+      if (callback.result() != PP_OK)
+        return "Create(): failed.";
+      client_socket_id = callback.output().socket_id();
+      if (client_socket_id <= 0)
+        return "Create(): invalid socket ID.";
+    }
+
+    {
+      TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+      callback.WaitForResult(socket_.SetMulticastTimeToLive(
+          client_socket_id, 0, callback.GetCallback()));
+      if (callback.result() != PP_OK || callback.output() != 0)
+        return "SetMulticastTimeToLive(): failed.";
+    }
+
+    {
+      TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+      callback.WaitForResult(socket_.Connect(
+          client_socket_id, kMulticastAddress, kMulticastPort,
+          callback.GetCallback()));
+      if (callback.result() != PP_OK || callback.output() != 0)
+        return "Connnect(): failed.";
+    }
+
+    {
+      VarArrayBuffer input_array_buffer =
+          ConvertToArrayBuffer(kMulticastMessage);
+      size_t bytes_written = 0;
+      int32_t result_code = 0;
+      VarArrayBuffer data;
+
+      TestExtCompletionCallbackWithOutput<socket::RecvFromInfo_Dev>
+          recv_from_callback(pp_instance());
+      int32_t recv_from_result = socket_.RecvFrom(
+          server_socket_id, 1024, recv_from_callback.GetCallback());
+      if (recv_from_result != PP_OK_COMPLETIONPENDING)
+        return "RecvFrom(): did not wait for data.";
+
+      TestExtCompletionCallbackWithOutput<socket::WriteInfo_Dev>
+          write_callback(pp_instance());
+      write_callback.WaitForResult(socket_.Write(
+          client_socket_id, input_array_buffer, write_callback.GetCallback()));
+      if (write_callback.result() != PP_OK)
+        return "Write(): failed.";
+      bytes_written = static_cast<size_t>(
+          write_callback.output().bytes_written());
+
+      recv_from_callback.WaitForResult(recv_from_result);
+      if (recv_from_callback.result() != PP_OK)
+        return "RecvFrom(): failed.";
+      socket::RecvFromInfo_Dev recv_from_info = recv_from_callback.output();
+      result_code = recv_from_info.result_code();
+      data = recv_from_info.data();
+
+      if (bytes_written != strlen(kMulticastMessage))
+        return "Write(): did not send the whole data buffer.";
+
+      if (result_code > 0 &&
+          static_cast<uint32_t>(result_code) != data.ByteLength()) {
+        return "RecvFrom(): inconsistent result code and byte length.";
+      }
+
+      std::string output_string = ConvertFromArrayBuffer(&data);
+      if (output_string != kMulticastMessage) {
+        return std::string("RecvFrom(): mismatched data: ").append(
+            output_string);
+      }
+    }
+
+    {
+      TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+      callback.WaitForResult(socket_.LeaveGroup(
+          server_socket_id, kMulticastAddress, callback.GetCallback()));
+      if (callback.result() != PP_OK || callback.output() != 0)
+        return "LeaveGroup(): failed.";
+    }
+
+    socket_.Destroy(server_socket_id);
+    socket_.Destroy(client_socket_id);
+    return std::string();
+  }
+
   std::string TestClientSocket() {
     socket::SocketType_Dev socket_type;
     if (!socket_type.Populate(Var(test_type_).pp_var()))
@@ -244,28 +423,20 @@ class MyInstance : public Instance {
 
     {
       if (socket_type.value == socket::SocketType_Dev::TCP) {
-        TestCompletionCallback callback(pp_instance());
-        PP_Var output = PP_MakeUndefined();
-        callback.WaitForResult(socket_interface_->Connect(
-            pp_instance(), Var(socket_id).pp_var(), Var(address_).pp_var(),
-            Var(port_).pp_var(), &output,
-            callback.GetCallback().pp_completion_callback()));
+        TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+        callback.WaitForResult(socket_.Connect(
+            socket_id, address_, port_, callback.GetCallback()));
         if (callback.result() != PP_OK)
           return "Connect(): failed.";
-        Var output_var(PASS_REF, output);
-        if (output_var.AsInt() != 0)
+        if (callback.output() != 0)
           return "Connect(): failed.";
       } else {
-        TestCompletionCallback callback(pp_instance());
-        PP_Var output = PP_MakeUndefined();
-        callback.WaitForResult(socket_interface_->Bind(
-            pp_instance(), Var(socket_id).pp_var(), Var("0.0.0.0").pp_var(),
-            Var(0).pp_var(), &output,
-            callback.GetCallback().pp_completion_callback()));
+        TestExtCompletionCallbackWithOutput<int32_t> callback(pp_instance());
+        callback.WaitForResult(socket_.Bind(
+            socket_id, "0.0.0.0", 0, callback.GetCallback()));
         if (callback.result() != PP_OK)
           return "Bind(): failed.";
-        Var output_var(PASS_REF, output);
-        if (output_var.AsInt() != 0)
+        if (callback.output() != 0)
           return "Bind(): failed.";
       }
     }
@@ -310,38 +481,31 @@ class MyInstance : public Instance {
     }
 
     {
-      TestCompletionCallback callback(pp_instance());
-      PP_Var output = PP_MakeUndefined();
-      callback.WaitForResult(socket_interface_->SetNoDelay(
-          pp_instance(), Var(socket_id).pp_var(), Var(true).pp_var(),
-          &output, callback.GetCallback().pp_completion_callback()));
+      TestExtCompletionCallbackWithOutput<bool> callback(pp_instance());
+      callback.WaitForResult(socket_.SetNoDelay(
+          socket_id, true, callback.GetCallback()));
       if (callback.result() != PP_OK)
         return "SetNoDelay(): failed.";
-      Var output_var(PASS_REF, output);
       if (socket_type.value == socket::SocketType_Dev::TCP) {
-        if (!output_var.AsBool())
+        if (!callback.output())
           return "SetNoDelay(): failed for TCP.";
       } else {
-        if (output_var.AsBool())
+        if (callback.output())
           return "SetNoDelay(): did not fail for UDP.";
       }
     }
 
     {
-      TestCompletionCallback callback(pp_instance());
-      PP_Var output = PP_MakeUndefined();
-      callback.WaitForResult(socket_interface_->SetKeepAlive(
-          pp_instance(), Var(socket_id).pp_var(), Var(true).pp_var(),
-          Var(1000).pp_var(), &output,
-          callback.GetCallback().pp_completion_callback()));
+      TestExtCompletionCallbackWithOutput<bool> callback(pp_instance());
+      callback.WaitForResult(socket_.SetKeepAlive(
+          socket_id, true, 1000, callback.GetCallback()));
       if (callback.result() != PP_OK)
         return "SetKeepAlive(): failed.";
-      Var output_var(PASS_REF, output);
       if (socket_type.value == socket::SocketType_Dev::TCP) {
-        if (!output_var.AsBool())
+        if (!callback.output())
           return "SetKeepAlive(): failed for TCP.";
       } else {
-        if (output_var.AsBool())
+        if (callback.output())
           return "SetKeepAlive(): did not fail for UDP.";
       }
     }
@@ -413,9 +577,19 @@ class MyInstance : public Instance {
       size_t prefix_len = strlen(kReceiveContentsPrefix);
       if (output_string.size() != prefix_len + kReceiveContentsSuffixSize ||
           output_string.compare(0, prefix_len, kReceiveContentsPrefix) != 0) {
-        return std::string("Read() or RecvFrom(): mismatch data: ").append(
+        return std::string("Read() or RecvFrom(): mismatched data: ").append(
             output_string);
       }
+    }
+
+    {
+      TestExtCompletionCallbackWithOutput<
+          std::vector<socket::NetworkInterface_Dev> > callback(pp_instance());
+      callback.WaitForResult(socket_.GetNetworkList(callback.GetCallback()));
+      if (callback.result() != PP_OK)
+        return "GetNetworkList(): failed.";
+      if (callback.output().empty())
+        return "GetNetworkList(): returned an empty list.";
     }
 
     socket_.Destroy(socket_id);
@@ -454,7 +628,6 @@ class MyInstance : public Instance {
 
   socket::Socket_Dev socket_;
   const PPB_Console* console_interface_;
-  const PPB_Ext_Socket_Dev* socket_interface_;
 
   std::string test_type_;
   std::string address_;

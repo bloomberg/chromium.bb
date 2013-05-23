@@ -329,4 +329,18 @@ IN_PROC_BROWSER_TEST_F(SocketPpapiTest, TCPServer) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+IN_PROC_BROWSER_TEST_F(SocketPpapiTest, Multicast) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+  ExtensionTestMessageListener listener("info_please", true);
+
+  LaunchTestingApp();
+
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  listener.Reply(
+      base::StringPrintf("multicast:%s:%d", kHostname.c_str(), kPort));
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
 #endif

@@ -14,7 +14,8 @@
         "tcp-connect",
         "tcp-listen",
         "udp-send-to",
-        "udp-bind"
+        "udp-bind",
+        "udp-multicast-membership"
       ]
     }
   ]
