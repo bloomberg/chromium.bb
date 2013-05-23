@@ -8,9 +8,11 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "media/crypto/aes_decryptor.h"
+#include "webkit/media/crypto/key_systems.h"
+
+#if defined(ENABLE_PEPPER_CDMS)
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "webkit/media/crypto/key_systems.h"
 #include "webkit/media/crypto/ppapi_decryptor.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
@@ -19,9 +21,11 @@
 // See: https://bugs.webkit.org/show_bug.cgi?id=92031
 // Fix include order here when the bug is fixed.
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 namespace webkit_media {
 
+#if defined(ENABLE_PEPPER_CDMS)
 // Returns the PluginInstance associated with the Helper Plugin.
 // If a non-NULL pointer is returned, the caller must call closeHelperPlugin()
 // when the Helper Plugin is no longer needed.
@@ -48,6 +52,7 @@ static void DestroyHelperPlugin(
     WebKit::WebMediaPlayerClient* web_media_player_client) {
   web_media_player_client->closeHelperPlugin();
 }
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 ProxyDecryptor::ProxyDecryptor(
     WebKit::WebMediaPlayerClient* web_media_player_client,
@@ -73,8 +78,10 @@ ProxyDecryptor::~ProxyDecryptor() {
     decryptor_.reset();
   }
 
+#if defined(ENABLE_PEPPER_CDMS)
   if (did_create_helper_plugin_)
     DestroyHelperPlugin(web_media_player_client_);
+#endif
 
   web_media_player_client_ = NULL;  // We should be done using it now.
 }
@@ -156,12 +163,13 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& key_system,
   decryptor_->CancelKeyRequest(key_system, session_id);
 }
 
+#if defined(ENABLE_PEPPER_CDMS)
 scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
     const std::string& key_system) {
   DCHECK(web_media_player_client_);
   DCHECK(web_frame_);
 
-  std::string plugin_type = GetPluginType(key_system);
+  std::string plugin_type = GetPepperType(key_system);
   DCHECK(!plugin_type.empty());
   const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance =
       CreateHelperPlugin(plugin_type, web_media_player_client_, web_frame_);
@@ -178,6 +186,7 @@ scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
       base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::NeedKey, weak_ptr_factory_.GetWeakPtr())));
 }
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 scoped_ptr<media::Decryptor> ProxyDecryptor::CreateDecryptor(
     const std::string& key_system) {
@@ -188,10 +197,14 @@ scoped_ptr<media::Decryptor> ProxyDecryptor::CreateDecryptor(
         base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&ProxyDecryptor::NeedKey, weak_ptr_factory_.GetWeakPtr())));
 
+#if defined(ENABLE_PEPPER_CDMS)
   // We only support AesDecryptor and PpapiDecryptor. So if we cannot
   // use the AesDecryptor, then we'll try to create a PpapiDecryptor for given
   // |key_system|.
   return CreatePpapiDecryptor(key_system);
+#else
+  return scoped_ptr<media::Decryptor>();
+#endif  // defined(ENABLE_PEPPER_CDMS)
 }
 
 void ProxyDecryptor::KeyAdded(const std::string& key_system,

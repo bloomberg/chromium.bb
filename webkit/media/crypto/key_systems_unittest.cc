@@ -174,7 +174,9 @@ TEST_F(KeySystemsTest, ClearKey_Basic) {
                KeySystemNameForUMA(WebString::fromUTF8(kClearKey)).c_str());
 
   EXPECT_TRUE(CanUseAesDecryptor(kClearKey));
-  EXPECT_TRUE(GetPluginType(kClearKey).empty());  // Does not use plugin.
+#if defined(ENABLE_PEPPER_CDMS)
+  EXPECT_TRUE(GetPepperType(kClearKey).empty());  // Does not use Pepper.
+#endif
 }
 
 TEST_F(KeySystemsTest, ClearKey_Parent) {
@@ -191,7 +193,9 @@ TEST_F(KeySystemsTest, ClearKey_Parent) {
   EXPECT_STREQ("Unknown",
       KeySystemNameForUMA(WebString::fromUTF8(kClearKeyParent)).c_str());
   EXPECT_FALSE(CanUseAesDecryptor(kClearKeyParent));
-  EXPECT_TRUE(GetPluginType(kClearKeyParent).empty());
+#if defined(ENABLE_PEPPER_CDMS)
+  EXPECT_TRUE(GetPepperType(kClearKeyParent).empty());
+#endif
 }
 
 TEST_F(KeySystemsTest, ClearKey_IsSupportedKeySystem_InvalidVariants) {
@@ -357,8 +361,10 @@ TEST_F(KeySystemsTest, ExternalClearKey_Basic) {
       KeySystemNameForUMA(WebString::fromUTF8(kExternalClearKey)).c_str());
 
   EXPECT_FALSE(CanUseAesDecryptor(kExternalClearKey));
+#if defined(ENABLE_PEPPER_CDMS)
   EXPECT_STREQ("application/x-ppapi-clearkey-cdm",
-               GetPluginType(kExternalClearKey).c_str());
+               GetPepperType(kExternalClearKey).c_str());
+#endif
 }
 
 TEST_F(KeySystemsTest, ExternalClearKey_Parent) {
@@ -378,7 +384,9 @@ TEST_F(KeySystemsTest, ExternalClearKey_Parent) {
                KeySystemNameForUMA(
                    WebString::fromUTF8(kExternalClearKeyParent)).c_str());
   EXPECT_FALSE(CanUseAesDecryptor(kExternalClearKeyParent));
-  EXPECT_TRUE(GetPluginType(kExternalClearKeyParent).empty());
+#if defined(ENABLE_PEPPER_CDMS)
+  EXPECT_TRUE(GetPepperType(kExternalClearKeyParent).empty());
+#endif
 }
 
 TEST_F(KeySystemsTest, ExternalClearKey_IsSupportedKeySystem_InvalidVariants) {
@@ -549,12 +557,15 @@ TEST_F(KeySystemsTest, Widevine_Basic) {
       KeySystemNameForUMA(WebString::fromUTF8(kWidevineAlpha)).c_str());
 
   EXPECT_FALSE(CanUseAesDecryptor(kWidevineAlpha));
+#if defined(ENABLE_PEPPER_CDMS)
 #if defined(WIDEVINE_CDM_AVAILABLE)
   EXPECT_STREQ("application/x-ppapi-widevine-cdm",
-               GetPluginType(kWidevineAlpha).c_str());
+               GetPepperType(kWidevineAlpha).c_str());
 #else
-  EXPECT_TRUE(GetPluginType(kWidevineAlpha).empty());
-#endif
+  EXPECT_TRUE(GetPepperType(kWidevineAlpha).empty());
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
 }
 
 TEST_F(KeySystemsTest, Widevine_Parent) {
@@ -570,7 +581,9 @@ TEST_F(KeySystemsTest, Widevine_Parent) {
   EXPECT_STREQ("Unknown",
       KeySystemNameForUMA(WebString::fromUTF8(kWidevineParent)).c_str());
   EXPECT_FALSE(CanUseAesDecryptor(kWidevineParent));
-  EXPECT_TRUE(GetPluginType(kWidevineParent).empty());
+#if defined(ENABLE_PEPPER_CDMS)
+  EXPECT_TRUE(GetPepperType(kWidevineParent).empty());
+#endif
 }
 
 TEST_F(KeySystemsTest, Widevine_IsSupportedKeySystem_InvalidVariants) {

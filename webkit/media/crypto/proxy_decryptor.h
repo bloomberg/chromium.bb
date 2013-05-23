@@ -51,8 +51,10 @@ class ProxyDecryptor {
 
  private:
   // Helper functions to create decryptors to handle the given |key_system|.
+#if defined(ENABLE_PEPPER_CDMS)
   scoped_ptr<media::Decryptor> CreatePpapiDecryptor(
       const std::string& key_system);
+#endif  // defined(ENABLE_PEPPER_CDMS)
   scoped_ptr<media::Decryptor> CreateDecryptor(const std::string& key_system);
 
   // Callbacks for firing key events.

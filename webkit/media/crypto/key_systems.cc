@@ -149,13 +149,15 @@ bool CanUseAesDecryptor(const std::string& key_system) {
   return CanUseBuiltInAesDecryptor(key_system);
 }
 
-std::string GetPluginType(const std::string& key_system) {
-  for (int i = 0; i < kNumKeySystemToPluginTypeMapping; ++i) {
-    if (kKeySystemToPluginTypeMapping[i].key_system == key_system)
-      return kKeySystemToPluginTypeMapping[i].plugin_type;
+#if defined(ENABLE_PEPPER_CDMS)
+std::string GetPepperType(const std::string& key_system) {
+  for (int i = 0; i < kNumKeySystemToPepperTypeMapping; ++i) {
+    if (kKeySystemToPepperTypeMapping[i].key_system == key_system)
+      return kKeySystemToPepperTypeMapping[i].type;
   }
 
   return std::string();
 }
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 }  // namespace webkit_media

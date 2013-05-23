@@ -120,6 +120,12 @@
             'crypto/key_systems_info.cc',
           ],
         }],
+        ['enable_pepper_cdms != 1', {
+          'sources!': [
+            'crypto/ppapi_decryptor.cc',
+            'crypto/ppapi_decryptor.h',
+          ],
+        }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -164,9 +170,10 @@
             'crypto/ppapi/libvpx_cdm_video_decoder.h',
           ],
         }],
-        ['os_posix == 1 and OS != "mac"', {
+        ['os_posix == 1 and OS != "mac" and enable_pepper_cdms==1', {
           'type': 'loadable_module',  # Must be in PRODUCT_DIR for ASAN bots.
-        }, {  # 'os_posix != 1 or OS == "mac"'
+        }],
+        ['(OS == "mac" or OS == "win") and enable_pepper_cdms==1', {
           'type': 'shared_library',
         }],
         ['OS == "mac"', {
@@ -206,7 +213,7 @@
         'crypto/ppapi/linked_ptr.h',
       ],
       'conditions': [
-        ['os_posix == 1 and OS != "mac"', {
+        ['os_posix == 1 and OS != "mac" and enable_pepper_cdms==1', {
           'cflags': ['-fvisibility=hidden'],
           'type': 'loadable_module',
           # Allow the plugin wrapper to find the CDM in the same directory.
@@ -216,12 +223,12 @@
             '<(PRODUCT_DIR)/libclearkeycdm.so',
           ],
         }],
-        ['OS == "win"', {
+        ['OS == "win" and enable_pepper_cdms==1', {
           'type': 'shared_library',
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         }],
-        ['OS == "mac"', {
+        ['OS == "mac" and enable_pepper_cdms==1', {
           'type': 'loadable_module',
           'product_extension': 'plugin',
           'xcode_settings': {

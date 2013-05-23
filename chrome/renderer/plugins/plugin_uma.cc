@@ -197,8 +197,10 @@ PluginUMAReporter::PluginType PluginUMAReporter::MimeTypeToPluginType(
     return SHOCKWAVE_FLASH;
   }
 
+#if defined(ENABLE_PEPPER_CDMS)
   if (mime_type == kWidevineCdmPluginMimeType)
     return WIDEVINE_CDM;
+#endif
 
   return UNSUPPORTED_MIMETYPE;
 }

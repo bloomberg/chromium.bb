@@ -1412,6 +1412,12 @@
         'use_cups%': 0,
       }],
 
+      ['enable_plugins==1 and (OS=="linux" or OS=="mac" or OS=="win" or google_tv==1)', {
+        'enable_pepper_cdms%': 1,
+      }, {
+        'enable_pepper_cdms%': 0,
+      }],
+
       # Native Client glibc toolchain is enabled
       # by default except on arm and mips.
       ['target_arch=="arm" or target_arch=="mipsel"', {
@@ -1911,6 +1917,9 @@
       }],
       ['enable_viewport==1', {
         'defines': ['ENABLE_VIEWPORT'],
+      }],
+      ['enable_pepper_cdms==1', {
+        'defines': ['ENABLE_PEPPER_CDMS'],
       }],
       ['configuration_policy==1', {
         'defines': ['ENABLE_CONFIGURATION_POLICY'],

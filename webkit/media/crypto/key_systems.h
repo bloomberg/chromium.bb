@@ -34,9 +34,11 @@ std::string KeySystemNameForUMA(const WebKit::WebString& key_system);
 // Returns whether AesDecryptor can be used for the given |key_system|.
 bool CanUseAesDecryptor(const std::string& key_system);
 
-// Returns the plugin type given a |key_system|.
-// Returns an empty string if no plugin type is found for |key_system|.
-std::string GetPluginType(const std::string& key_system);
+#if defined(ENABLE_PEPPER_CDMS)
+// Returns the Pepper MIME type for |key_system|.
+// Returns an empty string if |key_system| is unknown or not Pepper-based.
+std::string GetPepperType(const std::string& key_system);
+#endif
 
 }  // namespace webkit_media
 

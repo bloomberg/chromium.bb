@@ -471,11 +471,12 @@ class PepperContentSettingsTest : public ContentSettingsTest {
 
   // Registers any CDM plugins not registered by default.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+#if defined(ENABLE_PEPPER_CDMS)
     // Platform-specific filename relative to the chrome executable.
 #if defined(OS_WIN)
-    const wchar_t kLibraryName[] = L"clearkeycdmadapter.dll";
     const std::wstring external_clear_key_mime_type =
         ASCIIToWide(kExternalClearKeyMimeType);
+    const char kLibraryName[] = "clearkeycdmadapter.dll";
 #else  // !defined(OS_WIN)
     const char* external_clear_key_mime_type = kExternalClearKeyMimeType;
 #if defined(OS_MACOSX)
@@ -488,7 +489,7 @@ class PepperContentSettingsTest : public ContentSettingsTest {
     // Append the switch to register the External Clear Key CDM.
     base::FilePath plugin_dir;
     EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-    base::FilePath plugin_lib = plugin_dir.Append(kLibraryName);
+    base::FilePath plugin_lib = plugin_dir.AppendASCII(kLibraryName);
     EXPECT_TRUE(file_util::PathExists(plugin_lib));
     base::FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL(
@@ -496,6 +497,8 @@ class PepperContentSettingsTest : public ContentSettingsTest {
     pepper_plugin.append(external_clear_key_mime_type);
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                      pepper_plugin);
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
 #if !defined(DISABLE_NACL)
     // Ensure NaCl can run.
     command_line->AppendSwitch(switches::kEnableNaCl);
@@ -560,18 +563,22 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsTest, PluginSpecialCases) {
   content_settings->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ALLOW);
 
+#if defined(ENABLE_PEPPER_CDMS)
   RunLoadPepperPluginTest(kExternalClearKeyMimeType, true);
+#endif
 
   // Next, test behavior when plug-ins are blocked.
   content_settings->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
 
+#if defined(ENABLE_PEPPER_CDMS)
   // The plugin we loaded above does not load now.
   RunLoadPepperPluginTest(kExternalClearKeyMimeType, false);
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
   RunLoadPepperPluginTest(kWidevineCdmPluginMimeType, true);
 #endif
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if !defined(DISABLE_NACL)
   RunLoadPepperPluginTest("application/x-nacl", true);
@@ -583,12 +590,14 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsTest, PluginSpecialCases) {
   content_settings->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
 
+#if defined(ENABLE_PEPPER_CDMS)
   // This plugin has no special behavior and does not require JavaScript.
   RunJavaScriptBlockedTest("load_clearkey_no_js.html", false);
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
   RunJavaScriptBlockedTest("load_widevine_no_js.html", true);
 #endif
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if !defined(DISABLE_NACL)
   RunJavaScriptBlockedTest("load_nacl_no_js.html", true);

@@ -106,7 +106,11 @@ TEST_F(PluginUMATest, ShockwaveFlash) {
 }
 
 TEST_F(PluginUMATest, WidevineCdm) {
+#if defined(ENABLE_PEPPER_CDMS)
   ExpectPluginType(PluginUMAReporter::WIDEVINE_CDM,
+#else
+  ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,
+#endif
                    "application/x-ppapi-widevine-cdm",
                    GURL("some url"));
   ExpectPluginType(PluginUMAReporter::UNSUPPORTED_MIMETYPE,

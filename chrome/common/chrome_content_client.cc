@@ -49,7 +49,8 @@
 #include "chrome/common/chrome_sandbox_type_mac.h"
 #endif
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && !defined(WIDEVINE_CDM_IS_COMPONENT)
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) && \
+    !defined(WIDEVINE_CDM_IS_COMPONENT)
 #include "chrome/common/widevine_cdm_constants.h"
 #endif
 
@@ -230,7 +231,8 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
     }
   }
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && !defined(WIDEVINE_CDM_IS_COMPONENT)
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) && \
+    !defined(WIDEVINE_CDM_IS_COMPONENT)
   static bool skip_widevine_cdm_file_check = false;
   if (PathService::Get(chrome::FILE_WIDEVINE_CDM_ADAPTER, &path)) {
     if (skip_widevine_cdm_file_check || file_util::PathExists(path)) {
@@ -251,7 +253,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       skip_widevine_cdm_file_check = true;
     }
   }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) &&
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) &&
         // !defined(WIDEVINE_CDM_IS_COMPONENT)
 
   // The Remoting Viewer plugin is built-in.

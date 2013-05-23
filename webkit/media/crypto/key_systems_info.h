@@ -15,10 +15,12 @@ struct MediaFormatAndKeySystem {
   const char* key_system;
 };
 
-struct KeySystemPluginTypePair {
+#if defined(ENABLE_PEPPER_CDMS)
+struct KeySystemPepperTypePair {
   const char* key_system;
-  const char* plugin_type;
+  const char* type;
 };
+#endif
 
 // Specifies the container and codec combinations supported by individual
 // key systems. Each line is a container-codecs combination and the key system
@@ -29,9 +31,11 @@ struct KeySystemPluginTypePair {
 extern const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[];
 extern const int kNumSupportedFormatKeySystemCombinations;
 
+#if defined(ENABLE_PEPPER_CDMS)
 // There should be one entry for each key system.
-extern const KeySystemPluginTypePair kKeySystemToPluginTypeMapping[];
-extern const int kNumKeySystemToPluginTypeMapping;
+extern const KeySystemPepperTypePair kKeySystemToPepperTypeMapping[];
+extern const int kNumKeySystemToPepperTypeMapping;
+#endif
 
 // Returns whether |key_system| is compatible with the user's system.
 bool IsSystemCompatible(const std::string& key_system);

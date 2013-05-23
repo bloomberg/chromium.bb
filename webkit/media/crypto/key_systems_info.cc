@@ -89,16 +89,17 @@ const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
 const int kNumSupportedFormatKeySystemCombinations =
     arraysize(kSupportedFormatKeySystemCombinations);
 
-const KeySystemPluginTypePair kKeySystemToPluginTypeMapping[] = {
-  // TODO(xhwang): Update this with the real plugin name.
+#if defined(ENABLE_PEPPER_CDMS)
+const KeySystemPepperTypePair kKeySystemToPepperTypeMapping[] = {
   { kExternalClearKeyKeySystem, "application/x-ppapi-clearkey-cdm"},
 #if defined(WIDEVINE_CDM_AVAILABLE)
   { kWidevineKeySystem, kWidevineCdmPluginMimeType}
 #endif  // WIDEVINE_CDM_AVAILABLE
 };
 
-const int kNumKeySystemToPluginTypeMapping =
-    arraysize(kKeySystemToPluginTypeMapping);
+const int kNumKeySystemToPepperTypeMapping =
+    arraysize(kKeySystemToPepperTypeMapping);
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 bool IsSystemCompatible(const std::string& key_system) {
 #if defined(WIDEVINE_CDM_AVAILABLE) && \

@@ -27,17 +27,17 @@
 #include <gnu/libc-version.h>
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(OS_LINUX)
 
+#if defined(ENABLE_PEPPER_CDMS)
 // Platform-specific filename relative to the chrome executable.
-#if defined(OS_WIN)
-static const char kClearKeyLibraryName[] = "clearkeycdmadapter.dll";
-static const char kWidevineLibraryName[] = "widevinecdmadapter.dll";
-#elif defined(OS_MACOSX)
-static const char kClearKeyLibraryName[] = "clearkeycdmadapter.plugin";
-static const char kWidevineLibraryName[] = "widevinecdmadapter.plugin";
+static const char kClearKeyCdmAdapterFileName[] =
+#if defined(OS_MACOSX)
+    "clearkeycdmadapter.plugin";
+#elif defined(OS_WIN)
+    "clearkeycdmadapter.dll";
 #elif defined(OS_POSIX)
-static const char kClearKeyLibraryName[] = "libclearkeycdmadapter.so";
-static const char kWidevineLibraryName[] = "libwidevinecdmadapter.so";
+    "libclearkeycdmadapter.so";
 #endif
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 // Available key systems.
 static const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
@@ -104,34 +104,31 @@ class EncryptedMediaTest : public testing::WithParamInterface<const char*>,
   }
 
  protected:
-  // Registers any CDM plugins not registered by default.
+#if defined(ENABLE_PEPPER_CDMS)
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    RegisterPepperPlugin(command_line, kClearKeyLibraryName,
-                         kExternalClearKeyKeySystem);
+    RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName,
+                      kExternalClearKeyKeySystem);
   }
 
-  virtual void RegisterPepperPlugin(CommandLine* command_line,
-                                    const std::string& library_name,
-                                    const std::string& key_system) {
+  virtual void RegisterPepperCdm(CommandLine* command_line,
+                                 const std::string& adapter_name,
+                                 const std::string& key_system) {
     // Append the switch to register the Clear Key CDM Adapter.
     base::FilePath plugin_dir;
     EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-#if defined(OS_WIN)
-    base::FilePath plugin_lib = plugin_dir.Append(ASCIIToWide(library_name));
-#else
-    base::FilePath plugin_lib = plugin_dir.Append(library_name);
-#endif
+    base::FilePath plugin_lib = plugin_dir.AppendASCII(adapter_name);
     EXPECT_TRUE(file_util::PathExists(plugin_lib));
     base::FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL("#CDM#0.1.0.0;"));
 #if defined(OS_WIN)
-    pepper_plugin.append(ASCIIToWide(webkit_media::GetPluginType(key_system)));
+    pepper_plugin.append(ASCIIToWide(webkit_media::GetPepperType(key_system)));
 #else
-    pepper_plugin.append(webkit_media::GetPluginType(key_system));
+    pepper_plugin.append(webkit_media::GetPepperType(key_system));
 #endif
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                      pepper_plugin);
   }
+#endif  // defined(ENABLE_PEPPER_CDMS)
 };
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
@@ -164,20 +161,23 @@ class WVEncryptedMediaTest : public EncryptedMediaTest {
   }
 
  protected:
-  // Registers any CDM plugins not registered by default.
+#if defined(ENABLE_PEPPER_CDMS)
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
-    RegisterPepperPlugin(command_line, kWidevineLibraryName,
-                         kWidevineKeySystem);
+    RegisterPepperCdm(command_line, kWidevineCdmAdapterFileName,
+                      kWidevineKeySystem);
   }
+#endif  // defined(ENABLE_PEPPER_CDMS)
 };
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 INSTANTIATE_TEST_CASE_P(ClearKey, EncryptedMediaTest,
                         ::testing::Values(kClearKeyKeySystem));
 
+// External Clear Key is currently only used on platforms that use Pepper CDMs.
+#if defined(ENABLE_PEPPER_CDMS)
 INSTANTIATE_TEST_CASE_P(ExternalClearKey, EncryptedMediaTest,
                         ::testing::Values(kExternalClearKeyKeySystem));
+#endif
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
   const string16 kExpected = ASCIIToUTF16(
