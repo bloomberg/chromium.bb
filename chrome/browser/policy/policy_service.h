@@ -6,15 +6,16 @@
 #define CHROME_BROWSER_POLICY_POLICY_SERVICE_H_
 
 #include <map>
-#include <set>
 #include <string>
-#include <utility>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
+
+class PolicyDomainDescriptor;
 
 // Policies are namespaced by a (PolicyDomain, ID) pair. The meaning of the ID
 // string depends on the domain; for example, if the PolicyDomain is
@@ -85,15 +86,15 @@ class PolicyService {
 
   virtual void RemoveObserver(PolicyDomain domain, Observer* observer) = 0;
 
-  // Registers the current components of the given policy |domain|, signaling
-  // that there is interest in receiving policy for them.
-  // |component_ids| is the current set of components for that |domain|, and
-  // replaces any previously registered set.
-  // The policy providers will try to load policy for these components, and may
-  // flush cached data for components that aren't registered anymore.
+  // Registers the |descriptor| of a policy domain, indicated by
+  // |descriptor->domain()|. This overrides the descriptor previously set, if
+  // there was one.
+  // This registration signals that there is interest in receiving policy for
+  // the components listed in the descriptor. The policy providers will try to
+  // load policy for these components, and validate it against the descriptor.
+  // Cached data for components that aren't registered anymore may be dropped.
   virtual void RegisterPolicyDomain(
-      PolicyDomain domain,
-      const std::set<std::string>& component_ids) = 0;
+      scoped_refptr<const PolicyDomainDescriptor> descriptor) = 0;
 
   virtual const PolicyMap& GetPolicies(const PolicyNamespace& ns) const = 0;
 

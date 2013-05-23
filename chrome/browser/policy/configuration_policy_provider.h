@@ -5,16 +5,16 @@
 #ifndef CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_
 
-#include <set>
-#include <string>
-
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_service.h"
 
 namespace policy {
+
+class PolicyDomainDescriptor;
 
 // A mostly-abstract super class for platform-specific policy providers.
 // Platform-specific policy providers (Windows Group Policy, gconf,
@@ -68,13 +68,12 @@ class ConfigurationPolicyProvider {
   virtual void RemoveObserver(Observer* observer);
 
   // Notifies the provider that there is interest in loading policy for the
-  // listed components of the given |domain|. The list is complete; all the
+  // listed components in the given |descriptor|. The list is complete; all the
   // components that matter for the domain are included, and components not
   // included can be discarded. The provider can ignore this information or use
   // it to selectively load the corresponding policy from its sources.
   virtual void RegisterPolicyDomain(
-      PolicyDomain domain,
-      const std::set<std::string>& component_ids);
+      scoped_refptr<const PolicyDomainDescriptor> descriptor);
 
  protected:
   // Subclasses must invoke this to update the policies currently served by

@@ -6,11 +6,14 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_domain_descriptor.h"
+#include "chrome/browser/policy/policy_schema.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -627,27 +630,46 @@ TEST_F(PolicyServiceTest, IsInitializationComplete) {
 }
 
 TEST_F(PolicyServiceTest, RegisterPolicyDomain) {
-  EXPECT_CALL(provider1_, RegisterPolicyDomain(_, _)).Times(AnyNumber());
-  EXPECT_CALL(provider2_, RegisterPolicyDomain(_, _)).Times(AnyNumber());
+  EXPECT_CALL(provider1_, RegisterPolicyDomain(_)).Times(AnyNumber());
+  EXPECT_CALL(provider2_, RegisterPolicyDomain(_)).Times(AnyNumber());
 
-  const std::set<std::string> empty_set;
-  EXPECT_CALL(provider0_,
-              RegisterPolicyDomain(POLICY_DOMAIN_CHROME, empty_set));
-  policy_service_->RegisterPolicyDomain(POLICY_DOMAIN_CHROME, empty_set);
+  scoped_refptr<const PolicyDomainDescriptor> chrome_descriptor =
+      new PolicyDomainDescriptor(POLICY_DOMAIN_CHROME);
+  EXPECT_CALL(provider0_, RegisterPolicyDomain(chrome_descriptor));
+  policy_service_->RegisterPolicyDomain(chrome_descriptor);
   Mock::VerifyAndClearExpectations(&provider0_);
 
   // Register another namespace.
-  std::set<std::string> extensions;
-  extensions.insert(kExtension);
-  EXPECT_CALL(provider0_,
-              RegisterPolicyDomain(POLICY_DOMAIN_EXTENSIONS, extensions));
-  policy_service_->RegisterPolicyDomain(POLICY_DOMAIN_EXTENSIONS, extensions);
+  std::string error;
+  scoped_ptr<PolicySchema> schema = PolicySchema::Parse(
+      "{"
+      "  \"$schema\":\"http://json-schema.org/draft-03/schema#\","
+      "  \"type\":\"object\","
+      "  \"properties\": {"
+      "    \"Boolean\": { \"type\": \"boolean\" },"
+      "    \"Integer\": { \"type\": \"integer\" },"
+      "    \"Null\": { \"type\": \"null\" },"
+      "    \"Number\": { \"type\": \"number\" },"
+      "    \"Object\": { \"type\": \"object\" },"
+      "    \"String\": { \"type\": \"string\" }"
+      "  }"
+      "}", &error);
+  ASSERT_TRUE(schema);
+  scoped_refptr<PolicyDomainDescriptor> extensions_descriptor =
+      new PolicyDomainDescriptor(POLICY_DOMAIN_EXTENSIONS);
+  extensions_descriptor->RegisterComponent(kExtension, schema.Pass());
+  EXPECT_CALL(provider0_, RegisterPolicyDomain(
+      scoped_refptr<const PolicyDomainDescriptor>(extensions_descriptor)));
+  policy_service_->RegisterPolicyDomain(extensions_descriptor);
   Mock::VerifyAndClearExpectations(&provider0_);
 
   // Remove those components.
-  EXPECT_CALL(provider0_,
-              RegisterPolicyDomain(POLICY_DOMAIN_EXTENSIONS, empty_set));
-  policy_service_->RegisterPolicyDomain(POLICY_DOMAIN_EXTENSIONS, empty_set);
+  scoped_refptr<PolicyDomainDescriptor> empty_extensions_descriptor =
+      new PolicyDomainDescriptor(POLICY_DOMAIN_EXTENSIONS);
+  EXPECT_CALL(provider0_, RegisterPolicyDomain(
+      scoped_refptr<const PolicyDomainDescriptor>(
+          empty_extensions_descriptor)));
+  policy_service_->RegisterPolicyDomain(empty_extensions_descriptor);
   Mock::VerifyAndClearExpectations(&provider0_);
 }
 

@@ -19,8 +19,7 @@ void PolicyServiceStub::RemoveObserver(PolicyDomain domain,
                                        Observer* observer) {}
 
 void PolicyServiceStub::RegisterPolicyDomain(
-    PolicyDomain domain,
-    const std::set<std::string>& components) {}
+    scoped_refptr<const PolicyDomainDescriptor> descriptor) {}
 
 const PolicyMap& PolicyServiceStub::GetPolicies(
     const PolicyNamespace& ns) const {

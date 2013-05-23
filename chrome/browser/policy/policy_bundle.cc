@@ -104,14 +104,6 @@ bool PolicyBundle::Equals(const PolicyBundle& other) const {
   return it_this == end() && it_other == other.end();
 }
 
-PolicyBundle::const_iterator PolicyBundle::begin() const {
-  return policy_bundle_.begin();
-}
-
-PolicyBundle::const_iterator PolicyBundle::end() const {
-  return policy_bundle_.end();
-}
-
 void PolicyBundle::Clear() {
   STLDeleteValues(&policy_bundle_);
 }

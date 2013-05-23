@@ -72,8 +72,7 @@ class UserCloudPolicyManagerChromeOS
   virtual void Shutdown() OVERRIDE;
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
   virtual void RegisterPolicyDomain(
-      PolicyDomain domain,
-      const std::set<std::string>& component_ids) OVERRIDE;
+      scoped_refptr<const PolicyDomainDescriptor> descriptor) OVERRIDE;
 
   // CloudPolicyManager:
   virtual scoped_ptr<PolicyBundle> CreatePolicyBundle() OVERRIDE;

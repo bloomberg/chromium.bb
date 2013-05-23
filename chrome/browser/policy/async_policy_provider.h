@@ -34,6 +34,8 @@ class AsyncPolicyProvider : public ConfigurationPolicyProvider,
   virtual void Init() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void RefreshPolicies() OVERRIDE;
+  virtual void RegisterPolicyDomain(
+      scoped_refptr<const PolicyDomainDescriptor> descriptor) OVERRIDE;
 
  private:
   // Helper for RefreshPolicies().

@@ -25,6 +25,7 @@
 #include "chrome/browser/policy/cloud/device_management_service.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
+#include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/policy/policy_statistics_collector.h"
 #include "chrome/common/chrome_paths.h"
@@ -290,7 +291,9 @@ scoped_ptr<PolicyService> BrowserPolicyConnector::CreatePolicyService(
               std::back_inserter(providers));
   }
   scoped_ptr<PolicyService> service(new PolicyServiceImpl(providers));
-  service->RegisterPolicyDomain(POLICY_DOMAIN_CHROME, std::set<std::string>());
+  scoped_refptr<PolicyDomainDescriptor> descriptor = new PolicyDomainDescriptor(
+      POLICY_DOMAIN_CHROME);
+  service->RegisterPolicyDomain(descriptor);
   return service.Pass();
 }
 

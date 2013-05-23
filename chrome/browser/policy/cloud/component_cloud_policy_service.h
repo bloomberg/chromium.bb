@@ -29,6 +29,7 @@ class URLRequestContextGetter;
 
 namespace policy {
 
+class PolicyDomainDescriptor;
 class ResourceCache;
 
 // Manages cloud policy for components.
@@ -83,13 +84,12 @@ class ComponentCloudPolicyService : public CloudPolicyClient::Observer,
   // remote policy data.
   void Disconnect();
 
-  // |component_ids| is the complete set of components to track for the given
-  // |domain|. This purges unused components from the cache, and starts
-  // updating the components in |component_ids|.
-  // It's only valid to call this for domains that are supported, i.e.
-  // SupportsDomain(domain) is true.
-  void RegisterPolicyDomain(PolicyDomain domain,
-                            const std::set<std::string>& component_ids);
+  // |descriptor| lists the complete set of components to track for its domain.
+  // This purges unused components from the cache, and starts updating the
+  // components listed in the descriptor. It's only valid to call this for
+  // domains that are supported, i.e. SupportsDomain(domain) is true.
+  void RegisterPolicyDomain(
+      scoped_refptr<const PolicyDomainDescriptor> descriptor);
 
   // CloudPolicyClient::Observer implementation:
   virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
 
-#include <set>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -19,6 +17,8 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/policy/policy_domain_descriptor.h"
+#include "chrome/browser/policy/policy_schema.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -78,21 +78,21 @@ void ManagedValueStoreCache::ExtensionTracker::Observe(
   // the storage API, but that still includes a lot of extensions that don't
   // use the storage.managed namespace. Use the presence of a schema for the
   // managed namespace in the manifest as a better signal, once available.
-
+  scoped_refptr<policy::PolicyDomainDescriptor> descriptor(
+      new policy::PolicyDomainDescriptor(policy::POLICY_DOMAIN_EXTENSIONS));
   const ExtensionSet* set =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
-  std::set<std::string> use_storage_set;
-  for (ExtensionSet::const_iterator it = set->begin();
-       it != set->end(); ++it) {
-    if ((*it)->HasAPIPermission(APIPermission::kStorage))
-      use_storage_set.insert((*it)->id());
+  for (ExtensionSet::const_iterator it = set->begin(); it != set->end(); ++it) {
+    // TODO(joaodasilva): pass the parsed schema here, once available.
+    if ((*it)->HasAPIPermission(APIPermission::kStorage)) {
+      descriptor->RegisterComponent((*it)->id(),
+                                    scoped_ptr<policy::PolicySchema>());
+    }
   }
 
   policy::ProfilePolicyConnector* connector =
       policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
-  connector->policy_service()->RegisterPolicyDomain(
-      policy::POLICY_DOMAIN_EXTENSIONS,
-      use_storage_set);
+  connector->policy_service()->RegisterPolicyDomain(descriptor);
 }
 
 ManagedValueStoreCache::ManagedValueStoreCache(

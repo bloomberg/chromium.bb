@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
+#include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 
@@ -103,7 +104,6 @@ void ConfigurationPolicyProvider::RemoveObserver(Observer* observer) {
 }
 
 void ConfigurationPolicyProvider::RegisterPolicyDomain(
-    PolicyDomain domain,
-    const std::set<std::string>& component_ids) {}
+    scoped_refptr<const PolicyDomainDescriptor> descriptor) {}
 
 }  // namespace policy

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
@@ -75,10 +76,9 @@ void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
 }
 
 void PolicyServiceImpl::RegisterPolicyDomain(
-    PolicyDomain domain,
-    const std::set<std::string>& components) {
+    scoped_refptr<const PolicyDomainDescriptor> descriptor) {
   for (Iterator it = providers_.begin(); it != providers_.end(); ++it)
-    (*it)->RegisterPolicyDomain(domain, components);
+    (*it)->RegisterPolicyDomain(descriptor);
 }
 
 const PolicyMap& PolicyServiceImpl::GetPolicies(

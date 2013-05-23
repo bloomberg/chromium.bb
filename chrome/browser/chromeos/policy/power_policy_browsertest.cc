@@ -59,7 +59,7 @@ void PowerPolicyBrowserTest::SetUpInProcessBrowserTestFixture() {
   chromeos::DBusThreadManager::InitializeForTesting(dbus_thread_manager);
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(provider_, RegisterPolicyDomain(_, _)).Times(AnyNumber());
+  EXPECT_CALL(provider_, RegisterPolicyDomain(_)).Times(AnyNumber());
   BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 }
 

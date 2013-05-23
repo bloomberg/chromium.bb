@@ -1393,6 +1393,8 @@
         'browser/policy/managed_mode_policy_provider.h',
         'browser/policy/policy_bundle.cc',
         'browser/policy/policy_bundle.h',
+        'browser/policy/policy_domain_descriptor.cc',
+        'browser/policy/policy_domain_descriptor.h',
         'browser/policy/policy_error_map.cc',
         'browser/policy/policy_error_map.h',
         'browser/policy/policy_load_status.cc',

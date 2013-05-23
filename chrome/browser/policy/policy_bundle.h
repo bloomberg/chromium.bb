@@ -19,6 +19,7 @@ class PolicyMap;
 class PolicyBundle {
  public:
   typedef std::map<PolicyNamespace, PolicyMap*> MapType;
+  typedef MapType::iterator iterator;
   typedef MapType::const_iterator const_iterator;
 
   PolicyBundle();
@@ -46,10 +47,13 @@ class PolicyBundle {
   bool Equals(const PolicyBundle& other) const;
 
   // Returns iterators to the beginning and end of the underlying container.
+  iterator begin() { return policy_bundle_.begin(); }
+  iterator end() { return policy_bundle_.end(); }
+
   // These can be used to iterate over and read the PolicyMaps, but not to
   // modify them.
-  const_iterator begin() const;
-  const_iterator end() const;
+  const_iterator begin() const { return policy_bundle_.begin(); }
+  const_iterator end() const { return policy_bundle_.end(); }
 
   // Erases all the existing pairs.
   void Clear();

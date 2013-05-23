@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/policy/async_policy_loader.h"
 #include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -79,11 +80,22 @@ void AsyncPolicyProvider::RefreshPolicies() {
   // refresh task has been posted, it is invalidated now.
   refresh_callback_.Reset(
       base::Bind(&AsyncPolicyProvider::ReloadAfterRefreshSync,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr()));
   BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(base::DoNothing),
       refresh_callback_.callback());
+}
+
+void AsyncPolicyProvider::RegisterPolicyDomain(
+    scoped_refptr<const PolicyDomainDescriptor> descriptor) {
+  if (loader_) {
+    BrowserThread::PostTask(BrowserThread::FILE,
+                            FROM_HERE,
+                            base::Bind(&AsyncPolicyLoader::RegisterPolicyDomain,
+                                       base::Unretained(loader_),
+                                       descriptor));
+  }
 }
 
 void AsyncPolicyProvider::ReloadAfterRefreshSync() {

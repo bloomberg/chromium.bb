@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "content/public/browser/browser_thread.h"
 
 using base::Time;
@@ -55,8 +56,22 @@ void AsyncPolicyLoader::Reload(bool force) {
     return;
   }
 
+  // Filter out mismatching policies.
+  for (DescriptorMap::iterator it = descriptor_map_.begin();
+       it != descriptor_map_.end(); ++it) {
+    it->second->FilterBundle(bundle.get());
+  }
+
   update_callback_.Run(bundle.Pass());
   ScheduleNextReload(TimeDelta::FromSeconds(kReloadIntervalSeconds));
+}
+
+void AsyncPolicyLoader::RegisterPolicyDomain(
+    scoped_refptr<const PolicyDomainDescriptor> descriptor) {
+  if (descriptor->domain() != POLICY_DOMAIN_CHROME) {
+    descriptor_map_[descriptor->domain()] = descriptor;
+    Reload(true);
+  }
 }
 
 scoped_ptr<PolicyBundle> AsyncPolicyLoader::InitialLoad() {
