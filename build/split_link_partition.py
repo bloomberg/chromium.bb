@@ -128,6 +128,7 @@
     (r'autofill_common\.lib$', r'autofill_constants\.obj$'),
     (r'\bbase\.lib$', r'scoped_variant\.obj$'),
     (r'\bbase\.lib$', r'string_util_constants\.obj$'),
+    (r'\bbase\.lib$', r'trace_event_impl_constants\.obj$'),
     (r'\bbase_i18n\.lib$', r'i18n_constants\.obj$'),
     (r'base_static\.lib$', r'base_switches\.obj$'),
     (r'\bbase\.lib$', r'file_path_constants\.obj$'),

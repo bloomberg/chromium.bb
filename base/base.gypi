@@ -138,6 +138,7 @@
           'debug/trace_event_android.cc',
           'debug/trace_event_impl.cc',
           'debug/trace_event_impl.h',
+          'debug/trace_event_impl_constants.cc',
           'debug/trace_event_win.cc',
           'deferred_sequenced_task_runner.cc',
           'deferred_sequenced_task_runner.h',

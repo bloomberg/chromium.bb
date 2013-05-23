@@ -1323,9 +1323,6 @@ bool CategoryFilter::DoesCategoryGroupContainCategory(
   return false;
 }
 
-// Enable everything but debug and test categories by default.
-const char* CategoryFilter::kDefaultCategoryFilterString = "-*Debug,-*Test";
-
 CategoryFilter::CategoryFilter(const std::string& filter_string) {
   if (!filter_string.empty())
     Initialize(filter_string);
