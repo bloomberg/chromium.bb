@@ -114,6 +114,11 @@
     <message name="IDS_BOOKMARK_BAR_NEW_FOLDER" desc="Menu title for adding a new folder">
       Add &amp;folder...
     </message>
+    <if expr="not is_android">
+      <message name="IDS_SHOW_BOOKMARK_BAR" desc="The toggle to show the bookmark bar">
+        &amp;Show bookmarks bar
+      </message>
+    </if>
   </if>
   <if expr="pp_ifdef('use_titlecase')">
     <message name="IDS_BOOKMARK_BAR_OPEN_ALL" desc="In Title Case: Menu title for opening all urls in a bookmark folder">
@@ -149,10 +154,20 @@
     <message name="IDS_BOOKMARK_BAR_NEW_FOLDER" desc="In Title Case: Menu title for adding a new folder">
       Add &amp;Folder...
     </message>
+    <if expr="not is_android">
+      <message name="IDS_SHOW_BOOKMARK_BAR" desc="In Title Case: The toggle to show the bookmark bar">
+        &amp;Show Bookmarks Bar
+      </message>
+    </if>
   </if>
   <message name="IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL" desc="Message in the message box shown if user asks to open a lot of bookmarks in a folder">
     Are you sure you want to open <ph name="TAB_COUNT">$1<ex>20</ex></ph> tabs?
   </message>
+  <if expr="is_android">
+    <message name="IDS_SHOW_BOOKMARK_BAR" desc="Mobile: The toggle to show the bookmark bar">
+      &amp;Always show bookmarks bar
+    </message>
+  </if>
   <!-- End of Bookmarks Bar Context Menu strings. -->
 
   <!-- Begin of Bookmarks Bubble strings. -->
@@ -191,7 +206,7 @@
     Name:
   </message>
   <message name="IDS_BOOKMARK_BAR_EDIT_FOLDER_LABEL" desc="Title of label before text field in edit folder dialog">
-   Name:
+    Name:
   </message>
   <message name="IDS_BOOKMARK_EDITOR_URL_LABEL" desc="Label shown before the URL.">
     URL:
@@ -295,7 +310,7 @@
       &amp;Bookmark Manager
     </message>
     <message name="IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER" desc="In Title Case: The label of the menu item in the bookmark manager context menu that changes the selection in the tree to match the folder of the selected item in the table.">
-     Show in Folder
+      Show in Folder
     </message>
     <message name="IDS_BOOKMARK_MANAGER_SORT" desc="In Title Case: The label of the menu item in the bookmark manager organize menu that alphabetizes the bookmarks/folders by title.">
       Reorder by Title
@@ -342,10 +357,13 @@
       Remove
     </message>
   </if>
+  <message name="IDS_EXPORT_BOOKMARKS_DEFAULT_FILENAME" desc="Filename that pre-populates the filename field when user attempts to export his bookmarks from Bookmark Manager.">
+    bookmarks_<ph name="DATESTAMP">$1<ex>02_11_11</ex></ph>.html
+  </message>
   <!-- End of Bookmarks Manager strings. -->
 
-  <!-- Begin of Bookmarks Menu (in the Wrench Menu) strings. -->
-  <message name="IDS_BOOKMARKS_MENU" desc="The title of the bookmarks menu in the wrench menu and in the mac menu bar">
+  <!-- Begin of Bookmarks Menu (in the Main Menu) strings. -->
+  <message name="IDS_BOOKMARKS_MENU" desc="The title of the Bookmarks menu in the Main menu and in the Mac menu bar.">
     &amp;Bookmarks
   </message>
   <if expr="not pp_ifdef('use_titlecase')">
@@ -368,7 +386,7 @@
       Bookmark Open Pages...
     </message>
   </if>
-  <!-- End of Bookmarks Menu (in the Wrench Menu) strings. -->
+  <!-- End of Bookmarks Menu (in the Main Menu) strings. -->
 
   <!-- Being of Bookmark Star button strings. -->
   <message name="IDS_TOOLTIP_STAR" desc="The tooltip shown when you hover the star button in the right side of the location bar.">
