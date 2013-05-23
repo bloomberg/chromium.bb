@@ -1127,5 +1127,3 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 
-#EOF
-#EOF
