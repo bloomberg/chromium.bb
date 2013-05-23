@@ -885,7 +885,7 @@ const Extension* ChromeLauncherControllerPerApp::GetExtensionForAppID(
 }
 
 void ChromeLauncherControllerPerApp::ActivateWindowOrMinimizeIfActive(
-    BaseWindow* window,
+    ui::BaseWindow* window,
     bool allow_minimize) {
   if (window->IsActive() && allow_minimize) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(

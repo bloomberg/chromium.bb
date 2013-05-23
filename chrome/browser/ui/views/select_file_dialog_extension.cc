@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -31,6 +30,7 @@
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/base_window.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
 using content::BrowserThread;
@@ -255,7 +255,7 @@ void SelectFileDialogExtension::SelectFileImpl(
   }
 
   // The base window to associate the dialog with.
-  BaseWindow* base_window = NULL;
+  ui::BaseWindow* base_window = NULL;
 
   // The web contents to associate the dialog with.
   content::WebContents* web_contents = NULL;

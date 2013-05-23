@@ -1265,7 +1265,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest,
                        AltNumberAppsTabbing) {
   // First run app.
   const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
-  BaseWindow* window1 = CreateShellWindow(extension1)->GetBaseWindow();
+  ui::BaseWindow* window1 = CreateShellWindow(extension1)->GetBaseWindow();
   const ash::LauncherItem& item1 = GetLastLauncherItem();
   ash::LauncherID app_id = item1.id;
   int app_index = launcher_model()->ItemIndexByID(app_id);
@@ -1274,7 +1274,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest,
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
 
   const Extension* extension2 = LoadAndLaunchPlatformApp("launch_2");
-  BaseWindow* window2 = CreateShellWindow(extension2)->GetBaseWindow();
+  ui::BaseWindow* window2 = CreateShellWindow(extension2)->GetBaseWindow();
 
   // By now the browser should be active. Issue Alt keystrokes several times to
   // see that we stay on that application.
@@ -1284,7 +1284,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest,
   ActivateLauncherItem(app_index);
   EXPECT_TRUE(window1->IsActive());
 
-  BaseWindow* window1a = CreateShellWindow(extension1)->GetBaseWindow();
+  ui::BaseWindow* window1a = CreateShellWindow(extension1)->GetBaseWindow();
 
   EXPECT_TRUE(window1a->IsActive());
   EXPECT_FALSE(window1->IsActive());

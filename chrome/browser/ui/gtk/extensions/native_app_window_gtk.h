@@ -31,7 +31,7 @@ class NativeAppWindowGtk : public NativeAppWindow,
   NativeAppWindowGtk(ShellWindow* shell_window,
                      const ShellWindow::CreateParams& params);
 
-  // BaseWindow implementation.
+  // ui::BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;

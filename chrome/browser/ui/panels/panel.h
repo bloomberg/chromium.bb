@@ -14,10 +14,10 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/command_updater_delegate.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/base/base_window.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
@@ -39,16 +39,16 @@ class Extension;
 class WindowController;
 }
 
-// A platform independent implementation of BaseWindow for Panels.
-// This class gets the first crack at all the BaseWindow calls for Panels and
-// does one or more of the following:
+// A platform independent implementation of ui::BaseWindow for Panels.
+// This class gets the first crack at all the ui::BaseWindow calls for Panels
+// and does one or more of the following:
 // - Do nothing.  The function is not relevant to Panels.
 // - Do Panel specific platform independent processing and then invoke the
 //   function on the platform specific member. For example, restrict panel
 //   size to certain limits.
 // - Invoke an appropriate PanelManager function to do stuff that might affect
 //   other Panels. For example deleting a panel would rearrange other panels.
-class Panel : public BaseWindow,
+class Panel : public ui::BaseWindow,
               public CommandUpdaterDelegate,
               public content::NotificationObserver {
  public:
@@ -112,7 +112,7 @@ class Panel : public BaseWindow,
   bool CanShowMinimizeButton() const;
   bool CanShowRestoreButton() const;
 
-  // BaseWindow overrides.
+  // ui::BaseWindow overrides.
   virtual bool IsActive() const OVERRIDE;
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;

@@ -9,10 +9,12 @@
 #include <gdk/gdk.h>
 #include "ui/gfx/rect.h"
 
-class BaseWindow;
-
 namespace content {
 class WebContents;
+}
+
+namespace ui{
+class BaseWindow;
 }
 
 namespace gtk_window_util {
@@ -61,7 +63,7 @@ void SetWindowSize(GtkWindow* window, const gfx::Size& size);
 
 // Update the origin of |bounds| and |restored_bounds| with values gotten
 // from GTK.
-void UpdateWindowPosition(BaseWindow* window,
+void UpdateWindowPosition(ui::BaseWindow* window,
                           gfx::Rect* bounds,
                           gfx::Rect* restored_bounds);
 

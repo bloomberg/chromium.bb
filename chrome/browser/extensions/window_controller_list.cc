@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/window_controller_list_observer.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/ui/base_window.h"
+#include "ui/base/base_window.h"
 
 namespace extensions {
 

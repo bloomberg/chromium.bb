@@ -281,7 +281,7 @@ void NativeAppWindowViews::InitializePanelWindow(
 #endif
 }
 
-// BaseWindow implementation.
+// ui::BaseWindow implementation.
 
 bool NativeAppWindowViews::IsActive() const {
   return window_->IsActive();

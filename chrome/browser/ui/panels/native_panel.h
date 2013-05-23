@@ -21,7 +21,7 @@ class Rect;
 }  // namespace gfx
 
 // An interface for a class that implements platform-specific behavior for panel
-// windows to provide additional methods not found in BaseWindow.
+// windows to provide additional methods not found in ui::BaseWindow.
 class NativePanel {
   friend class BasePanelBrowserTest;  // for CreateNativePanelTesting
   friend class Panel;

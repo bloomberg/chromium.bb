@@ -11,7 +11,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class BaseWindow;
 class ExtensionDialogObserver;
 class GURL;
 class Profile;
@@ -22,6 +21,10 @@ class WebContents;
 
 namespace extensions {
 class ExtensionHost;
+}
+
+namespace ui {
+class BaseWindow;
 }
 
 // Modal dialog containing contents provided by an extension.
@@ -37,7 +40,7 @@ class ExtensionDialog : public views::DialogDelegate,
   // |web_contents| is the tab that spawned the dialog.
   // |width| and |height| are the size of the dialog in pixels.
   static ExtensionDialog* Show(const GURL& url,
-                               BaseWindow* base_window,
+                               ui::BaseWindow* base_window,
                                Profile* profile,
                                content::WebContents* web_contents,
                                int width,
@@ -93,7 +96,7 @@ class ExtensionDialog : public views::DialogDelegate,
                   ExtensionDialogObserver* observer);
 
   static ExtensionDialog* ShowInternal(const GURL& url,
-                                       BaseWindow* base_window,
+                                       ui::BaseWindow* base_window,
                                        extensions::ExtensionHost* host,
                                        int width,
                                        int height,
@@ -103,7 +106,7 @@ class ExtensionDialog : public views::DialogDelegate,
   static extensions::ExtensionHost* CreateExtensionHost(const GURL& url,
                                                         Profile* profile);
 
-  void InitWindow(BaseWindow* base_window, int width, int height);
+  void InitWindow(ui::BaseWindow* base_window, int width, int height);
 
   // Window that holds the extension host view.
   views::Widget* window_;

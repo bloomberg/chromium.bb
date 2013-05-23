@@ -5,15 +5,15 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_NATIVE_APP_WINDOW_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_NATIVE_APP_WINDOW_H_
 
-#include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "ui/base/base_window.h"
 #include "ui/gfx/insets.h"
 
 // This is an interface to a native implementation of a shell window, used for
 // new-style packaged apps. Shell windows contain a web contents, but no tabs
 // or URL bar.
-class NativeAppWindow : public BaseWindow,
+class NativeAppWindow : public ui::BaseWindow,
                         public web_modal::WebContentsModalDialogHost {
  public:
   // Used by ShellWindow to instantiate the platform-specific ShellWindow code.

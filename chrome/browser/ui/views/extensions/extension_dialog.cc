@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/base_window.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
@@ -47,7 +47,7 @@ ExtensionDialog::~ExtensionDialog() {
 // static
 ExtensionDialog* ExtensionDialog::Show(
     const GURL& url,
-    BaseWindow* base_window,
+    ui::BaseWindow* base_window,
     Profile* profile,
     WebContents* web_contents,
     int width,
@@ -94,7 +94,7 @@ extensions::ExtensionHost* ExtensionDialog::CreateExtensionHost(
   return manager->CreateDialogHost(url);
 }
 
-void ExtensionDialog::InitWindow(BaseWindow* base_window,
+void ExtensionDialog::InitWindow(ui::BaseWindow* base_window,
                                  int width,
                                  int height) {
   gfx::NativeWindow parent = base_window->GetNativeWindow();

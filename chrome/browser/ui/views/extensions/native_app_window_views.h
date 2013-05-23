@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_NATIVE_APP_WINDOW_VIEWS_H_
 
 #include "base/observer_list.h"
-#include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -62,7 +61,7 @@ class NativeAppWindowViews : public NativeAppWindow,
   HWND GetNativeAppWindowHWND() const;
 #endif
 
-  // BaseWindow implementation.
+  // ui::BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;

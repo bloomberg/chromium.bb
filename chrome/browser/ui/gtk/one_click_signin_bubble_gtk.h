@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 

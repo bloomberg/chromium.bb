@@ -294,7 +294,6 @@
         'browser/ui/auto_login_infobar_delegate.h',
         'browser/ui/auto_login_prompter.cc',
         'browser/ui/auto_login_prompter.h',
-        'browser/ui/base_window.h',
         'browser/ui/blocked_content/blocked_content_container.cc',
         'browser/ui/blocked_content/blocked_content_container.h',
         'browser/ui/blocked_content/blocked_content_tab_helper.cc',

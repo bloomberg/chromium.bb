@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/gtk/gtk_window_util.h"
 
 #include <dlfcn.h>
-#include "chrome/browser/ui/base_window.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/base/base_window.h"
 
 using content::RenderWidgetHost;
 using content::WebContents;
@@ -247,7 +247,7 @@ void SetWindowSize(GtkWindow* window, const gfx::Size& size) {
   gtk_window_resize(window, new_size.width(), new_size.height());
 }
 
-void UpdateWindowPosition(BaseWindow* window,
+void UpdateWindowPosition(ui::BaseWindow* window,
                           gfx::Rect* bounds,
                           gfx::Rect* restored_bounds) {
   gint x, y;

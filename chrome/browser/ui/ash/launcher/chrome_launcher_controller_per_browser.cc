@@ -867,7 +867,7 @@ const Extension* ChromeLauncherControllerPerBrowser::GetExtensionForAppID(
 }
 
 void ChromeLauncherControllerPerBrowser::ActivateWindowOrMinimizeIfActive(
-    BaseWindow* window,
+    ui::BaseWindow* window,
     bool allow_minimize) {
   window->Show();
   window->Activate();

@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
-class BaseWindow;
 class Browser;  // TODO(stevenjb) eliminate this dependency.
 class GURL;
 class Profile;
@@ -22,6 +21,10 @@ class DictionaryValue;
 
 namespace gfx {
 class Rect;
+}
+
+namespace ui {
+class BaseWindow;
 }
 
 namespace extensions {
@@ -38,10 +41,10 @@ class WindowController {
     REASON_NOT_EDITABLE,
   };
 
-  WindowController(BaseWindow* window, Profile* profile);
+  WindowController(ui::BaseWindow* window, Profile* profile);
   virtual ~WindowController();
 
-  BaseWindow* window() const { return window_; }
+  ui::BaseWindow* window() const { return window_; }
 
   Profile* profile() const { return profile_; }
 
@@ -81,7 +84,7 @@ class WindowController {
   virtual bool IsVisibleToExtension(const Extension* extension) const = 0;
 
  private:
-  BaseWindow* window_;
+  ui::BaseWindow* window_;
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowController);

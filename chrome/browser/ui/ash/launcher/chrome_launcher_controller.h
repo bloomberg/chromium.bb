@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 
-class BaseWindow;
 class LauncherItemControllerPerAppTest;
 class LauncherItemController;
 class Profile;
@@ -32,6 +31,10 @@ class RootWindow;
 
 namespace content {
 class WebContents;
+}
+
+namespace ui {
+class BaseWindow;
 }
 
 // A list of the elements which makes up a simple menu description.
@@ -259,7 +262,7 @@ class ChromeLauncherController
 
   // Activates a |window|. If |allow_minimize| is true and the system allows
   // it, the the window will get minimized instead.
-  virtual void ActivateWindowOrMinimizeIfActive(BaseWindow* window,
+  virtual void ActivateWindowOrMinimizeIfActive(ui::BaseWindow* window,
                                                 bool allow_minimize) = 0;
   // ash::LauncherDelegate overrides:
   virtual void ItemSelected(const ash::LauncherItem& item,

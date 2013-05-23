@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -22,6 +21,7 @@
 class GURL;
 class Profile;
 class NativeAppWindow;
+class SkRegion;
 
 namespace content {
 class WebContents;
@@ -33,6 +33,10 @@ class PlatformAppBrowserTest;
 class WindowController;
 
 struct DraggableRegion;
+}
+
+namespace ui {
+class BaseWindow;
 }
 
 // Manages the web contents for Shell Windows. The implementation for this

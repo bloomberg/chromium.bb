@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_BASE_WINDOW_H_
-#define CHROME_BROWSER_UI_BASE_WINDOW_H_
+#ifndef UI_BASE_BASE_WINDOW_H_
+#define UI_BASE_BASE_WINDOW_H_
 
 #include "base/compiler_specific.h"
 #include "ui/base/ui_base_types.h"  // WindowShowState
@@ -15,9 +15,10 @@ class Rect;
 
 class SkRegion;
 
-// This API needs to be implemented by any window that might be accessed
-// through chrome.windows or chrome.tabs (e.g. browser windows and panels).
+namespace ui {
 
+// Provides an interface to perform actions on windows, and query window
+// state.
 class BaseWindow {
  public:
   // Returns true if the window is currently the active/focused window.
@@ -85,4 +86,6 @@ class BaseWindow {
   virtual bool IsAlwaysOnTop() const = 0;
 };
 
-#endif  // CHROME_BROWSER_UI_BASE_WINDOW_H_
+}  // namespace ui
+
+#endif  // UI_BASE_BASE_WINDOW_H_
