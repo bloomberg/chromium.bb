@@ -49,7 +49,8 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD0(ScrollEnd, void());
   MOCK_METHOD0(FlingScrollBegin, cc::InputHandler::ScrollStatus());
 
-  MOCK_METHOD1(DidReceiveLastInputEventForVSync, void(base::TimeTicks time));
+  MOCK_METHOD1(DidReceiveLastInputEventForBeginFrame,
+               void(base::TimeTicks time));
 
   virtual void BindToClient(cc::InputHandlerClient* client) OVERRIDE {}
 
@@ -991,7 +992,7 @@ TEST_F(InputHandlerProxyTest, LastInputEventForVSync) {
       base::TimeTicks() +
       base::TimeDelta::FromSeconds(gesture_.timeStampSeconds);
   gesture_.modifiers |= WebInputEvent::IsLastInputEventForCurrentVSync;
-  EXPECT_CALL(mock_input_handler_, DidReceiveLastInputEventForVSync(time));
+  EXPECT_CALL(mock_input_handler_, DidReceiveLastInputEventForBeginFrame(time));
   input_handler_->HandleInputEvent(gesture_);
 }
 

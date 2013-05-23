@@ -17,7 +17,8 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   virtual void OnVSyncParametersChanged(
       base::TimeTicks,
       base::TimeDelta) OVERRIDE {}
-  virtual void DidVSync(base::TimeTicks frame_time) OVERRIDE {}
+  virtual void BeginFrameOnImplThread(base::TimeTicks frame_time)
+      OVERRIDE {}
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {}
   virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) OVERRIDE {}
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE {}
@@ -37,8 +38,8 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   virtual void RenewTreePriority() OVERRIDE {}
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta)
       OVERRIDE {}
-  virtual void DidReceiveLastInputEventForVSync(base::TimeTicks frame_time)
-      OVERRIDE {}
+  virtual void DidReceiveLastInputEventForBeginFrameOnImplThread(
+      base::TimeTicks frame_time) OVERRIDE {}
   virtual void DidActivatePendingTree() OVERRIDE {}
 };
 

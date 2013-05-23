@@ -64,7 +64,7 @@ void InputHandlerProxy::HandleInputEvent(const WebInputEvent& event) {
       break;
   }
   if (event.modifiers & WebInputEvent::IsLastInputEventForCurrentVSync) {
-    input_handler_->DidReceiveLastInputEventForVSync(
+    input_handler_->DidReceiveLastInputEventForBeginFrame(
         base::TimeTicks::FromInternalValue(event.timeStampSeconds *
                                            base::Time::kMicrosecondsPerSecond));
   }

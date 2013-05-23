@@ -532,7 +532,6 @@ class ImplSidePaintingScrollTest : public LayerTreeHostScrollTest {
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    // Manual vsync tick.
     if (impl->pending_tree())
       impl->SetNeedsRedraw();
   }

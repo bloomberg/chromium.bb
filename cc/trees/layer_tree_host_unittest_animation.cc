@@ -75,9 +75,9 @@ MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestSetNeedsAnimateShouldNotSetCommitRequested);
 
 // Trigger a frame with SetNeedsCommit. Then, inside the resulting animate
-// callback, requet another frame using SetNeedsAnimate. End the test when
+// callback, request another frame using SetNeedsAnimate. End the test when
 // animate gets called yet-again, indicating that the proxy is correctly
-// handling the case where SetNeedsAnimate() is called inside the begin frame
+// handling the case where SetNeedsAnimate() is called inside the BeginFrame
 // flow.
 class LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback
     : public LayerTreeHostAnimationTest {
@@ -761,7 +761,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     switch (layer_tree_host()->commit_number()) {
       case 1:
-        // The animation is longer than 1 vsync.
+        // The animation is longer than 1 BeginFrame interval.
         AddOpacityTransitionToLayer(content_, 0.1, 0.2f, 0.8f, false);
         added_animations_++;
         break;

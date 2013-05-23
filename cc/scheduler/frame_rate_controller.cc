@@ -98,10 +98,10 @@ void FrameRateController::OnTimerTick() {
   // Check if we have too many frames in flight.
   bool throttled =
       max_frames_pending_ && num_frames_pending_ >= max_frames_pending_;
-  TRACE_COUNTER_ID1("cc", "ThrottledVSyncInterval", thread_, throttled);
+  TRACE_COUNTER_ID1("cc", "ThrottledCompositor", thread_, throttled);
 
   if (client_)
-    client_->VSyncTick(throttled);
+    client_->BeginFrame(throttled);
 
   if (swap_buffers_complete_supported_ && !is_time_source_throttling_ &&
       !throttled)
@@ -117,14 +117,14 @@ void FrameRateController::PostManualTick() {
 
 void FrameRateController::ManualTick() { OnTimerTick(); }
 
-void FrameRateController::DidBeginFrame() {
+void FrameRateController::DidSwapBuffers() {
   if (swap_buffers_complete_supported_)
     num_frames_pending_++;
   else if (!is_time_source_throttling_)
     PostManualTick();
 }
 
-void FrameRateController::DidFinishFrame() {
+void FrameRateController::DidSwapBuffersComplete() {
   DCHECK(swap_buffers_complete_supported_);
 
   DCHECK_GT(num_frames_pending_, 0);

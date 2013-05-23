@@ -219,7 +219,7 @@ class CONTENT_EXPORT RenderWidget
   virtual void InstrumentWillComposite() {}
 
   virtual bool AllowPartialSwap() const;
-  bool SynchronouslyDisableVSync() const;
+  bool UsingSynchronousRendererCompositor() const;
 
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class

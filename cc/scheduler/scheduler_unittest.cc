@@ -68,8 +68,8 @@ class FakeSchedulerClient : public SchedulerClient {
   }
 
   // Scheduler Implementation.
-  virtual void ScheduledActionBeginFrame() OVERRIDE {
-    actions_.push_back("ScheduledActionBeginFrame");
+  virtual void ScheduledActionSendBeginFrameToMainThread() OVERRIDE {
+    actions_.push_back("ScheduledActionSendBeginFrameToMainThread");
     states_.push_back(scheduler_->StateAsStringForTesting());
   }
   virtual ScheduledActionDrawAndSwapResult
@@ -153,12 +153,12 @@ TEST(SchedulerTest, RequestCommit) {
 
   // SetNeedsCommit should begin the frame.
   scheduler->SetNeedsCommit();
-  EXPECT_SINGLE_ACTION("ScheduledActionBeginFrame", client);
+  EXPECT_SINGLE_ACTION("ScheduledActionSendBeginFrameToMainThread", client);
   EXPECT_FALSE(time_source->Active());
   client.Reset();
 
-  // BeginFrameComplete should commit
-  scheduler->BeginFrameComplete();
+  // FinishCommit should commit
+  scheduler->FinishCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client);
   EXPECT_TRUE(time_source->Active());
   client.Reset();
@@ -173,7 +173,7 @@ TEST(SchedulerTest, RequestCommit) {
   EXPECT_FALSE(time_source->Active());
 }
 
-TEST(SchedulerTest, RequestCommitAfterBeginFrame) {
+TEST(SchedulerTest, RequestCommitAfterBeginFrameSentToMainThread) {
   FakeSchedulerClient client;
   scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
   SchedulerSettings default_scheduler_settings;
@@ -190,15 +190,15 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrame) {
 
   // SetNedsCommit should begin the frame.
   scheduler->SetNeedsCommit();
-  EXPECT_SINGLE_ACTION("ScheduledActionBeginFrame", client);
+  EXPECT_SINGLE_ACTION("ScheduledActionSendBeginFrameToMainThread", client);
   client.Reset();
 
   // Now SetNeedsCommit again. Calling here means we need a second frame.
   scheduler->SetNeedsCommit();
 
-  // Since, another commit is needed, BeginFrameComplete should commit,
+  // Since another commit is needed, FinishCommit should commit,
   // then begin another frame.
-  scheduler->BeginFrameComplete();
+  scheduler->FinishCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client);
   client.Reset();
 
@@ -206,7 +206,7 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrame) {
   time_source->Tick();
   EXPECT_FALSE(time_source->Active());
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionBeginFrame", client, 1, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 1, 2);
   client.Reset();
 }
 
@@ -227,7 +227,7 @@ TEST(SchedulerTest, TextureAcquisitionCollision) {
 
   scheduler->SetNeedsCommit();
   scheduler->SetMainThreadNeedsLayerTextures();
-  EXPECT_ACTION("ScheduledActionBeginFrame", client, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 0, 2);
   EXPECT_ACTION("ScheduledActionAcquireLayerTexturesForMainThread",
                 client,
                 1,
@@ -238,7 +238,7 @@ TEST(SchedulerTest, TextureAcquisitionCollision) {
   EXPECT_FALSE(time_source->Active());
 
   // Trigger the commit
-  scheduler->BeginFrameComplete();
+  scheduler->FinishCommit();
   EXPECT_TRUE(time_source->Active());
   client.Reset();
 
@@ -255,7 +255,7 @@ TEST(SchedulerTest, TextureAcquisitionCollision) {
                 client,
                 1,
                 3);
-  EXPECT_ACTION("ScheduledActionBeginFrame", client, 2, 3);
+  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 2, 3);
   client.Reset();
 }
 
@@ -275,7 +275,7 @@ TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition) {
   scheduler->DidCreateAndInitializeOutputSurface();
 
   scheduler->SetNeedsCommit();
-  scheduler->BeginFrameComplete();
+  scheduler->FinishCommit();
   scheduler->SetMainThreadNeedsLayerTextures();
   client.Reset();
   // Verify that pending texture acquisition fires when visibility
@@ -289,13 +289,13 @@ TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition) {
   // compositor is waiting for first draw should result in a request
   // for a new frame in order to escape a deadlock.
   scheduler->SetVisible(true);
-  EXPECT_SINGLE_ACTION("ScheduledActionBeginFrame", client);
+  EXPECT_SINGLE_ACTION("ScheduledActionSendBeginFrameToMainThread", client);
   client.Reset();
 }
 
 class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
  public:
-  virtual void ScheduledActionBeginFrame() OVERRIDE {}
+  virtual void ScheduledActionSendBeginFrameToMainThread() OVERRIDE {}
   virtual ScheduledActionDrawAndSwapResult
   ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
     // Only SetNeedsRedraw the first time this is called
@@ -395,7 +395,7 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
 
 class SchedulerClientThatsetNeedsCommitInsideDraw : public FakeSchedulerClient {
  public:
-  virtual void ScheduledActionBeginFrame() OVERRIDE {}
+  virtual void ScheduledActionSendBeginFrameToMainThread() OVERRIDE {}
   virtual ScheduledActionDrawAndSwapResult
   ScheduledActionDrawAndSwapIfPossible() OVERRIDE {
     // Only SetNeedsCommit the first time this is called
@@ -438,7 +438,7 @@ TEST(SchedulerTest, RequestCommitInsideDraw) {
   EXPECT_FALSE(time_source->Active());
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
-  scheduler->BeginFrameComplete();
+  scheduler->FinishCommit();
 
   time_source->Tick();
   EXPECT_EQ(2, client.num_draws());
@@ -492,7 +492,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
   EXPECT_FALSE(time_source->Active());
 }
 
-TEST(SchedulerTest, NoBeginFrameWhenDrawFails) {
+TEST(SchedulerTest, NoSwapWhenDrawFails) {
   scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
   SchedulerClientThatsetNeedsCommitInsideDraw client;
   scoped_ptr<FakeFrameRateController> controller(
@@ -532,7 +532,7 @@ TEST(SchedulerTest, NoBeginFrameWhenDrawFails) {
   EXPECT_EQ(0, controller_ptr->NumFramesPending());
 }
 
-TEST(SchedulerTest, NoBeginFrameWhenSwapFailsDuringForcedCommit) {
+TEST(SchedulerTest, NoSwapWhenSwapFailsDuringForcedCommit) {
   scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
   FakeSchedulerClient client;
   scoped_ptr<FakeFrameRateController> controller(

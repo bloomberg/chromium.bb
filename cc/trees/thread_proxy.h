@@ -65,7 +65,8 @@ class ThreadProxy : public Proxy,
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) OVERRIDE;
-  virtual void DidVSync(base::TimeTicks frame_time) OVERRIDE;
+  virtual void BeginFrameOnImplThread(base::TimeTicks frame_time)
+      OVERRIDE;
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
@@ -85,12 +86,12 @@ class ThreadProxy : public Proxy,
   virtual void RenewTreePriority() OVERRIDE;
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay)
       OVERRIDE;
-  virtual void DidReceiveLastInputEventForVSync(
+  virtual void DidReceiveLastInputEventForBeginFrameOnImplThread(
       base::TimeTicks frame_time) OVERRIDE;
   virtual void DidActivatePendingTree() OVERRIDE;
 
   // SchedulerClient implementation
-  virtual void ScheduledActionBeginFrame() OVERRIDE;
+  virtual void ScheduledActionSendBeginFrameToMainThread() OVERRIDE;
   virtual ScheduledActionDrawAndSwapResult
       ScheduledActionDrawAndSwapIfPossible() OVERRIDE;
   virtual ScheduledActionDrawAndSwapResult ScheduledActionDrawAndSwapForced()
@@ -129,7 +130,8 @@ class ThreadProxy : public Proxy,
   };
 
   // Called on main thread.
-  void BeginFrame(scoped_ptr<BeginFrameAndCommitState> begin_frame_state);
+  void BeginFrameOnMainThread(
+      scoped_ptr<BeginFrameAndCommitState> begin_frame_state);
   void DidCommitAndDrawFrame();
   void DidCompleteSwapBuffers();
   void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue,
@@ -151,12 +153,12 @@ class ThreadProxy : public Proxy,
     CompletionEvent completion;
     bool commit_pending;
   };
-  void ForceBeginFrameOnImplThread(CompletionEvent* completion);
-  void BeginFrameCompleteOnImplThread(
+  void ForceCommitOnImplThread(CompletionEvent* completion);
+  void StartCommitOnImplThread(
       CompletionEvent* completion,
       ResourceUpdateQueue* queue,
       scoped_refptr<cc::ContextProvider> offscreen_context_provider);
-  void BeginFrameAbortedOnImplThread();
+  void BeginFrameAbortedByMainThreadOnImplThread();
   void RequestReadbackOnImplThread(ReadbackRequest* request);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
   void InitializeImplOnImplThread(CompletionEvent* completion);
@@ -179,7 +181,6 @@ class ThreadProxy : public Proxy,
   ScheduledActionDrawAndSwapResult ScheduledActionDrawAndSwapInternal(
       bool forced_draw);
   void ForceSerializeOnSwapBuffersOnImplThread(CompletionEvent* completion);
-  void SetNeedsForcedCommitOnImplThread();
   void CheckOutputSurfaceStatusOnImplThread();
   void CommitPendingOnImplThreadForTesting(CommitPendingRequest* request);
   void CapturePictureOnImplThread(CompletionEvent* completion,
@@ -199,7 +200,7 @@ class ThreadProxy : public Proxy,
   bool commit_requested_;
   // Set by SetNeedsCommit and SetNeedsAnimate.
   bool commit_request_sent_to_impl_thread_;
-  // Set by BeginFrame
+  // Set by BeginFrameOnMainThread
   bool created_offscreen_context_provider_;
   base::CancelableClosure output_surface_creation_callback_;
   LayerTreeHost* layer_tree_host_;
@@ -223,9 +224,10 @@ class ThreadProxy : public Proxy,
 
   scoped_ptr<Scheduler> scheduler_on_impl_thread_;
 
-  // Set when the main thread is waiting on a ScheduledActionBeginFrame to be
-  // issued.
-  CompletionEvent* begin_frame_completion_event_on_impl_thread_;
+  // Set when the main thread is waiting on a
+  // ScheduledActionSendBeginFrameToMainThread to be issued.
+  CompletionEvent*
+      begin_frame_sent_to_main_thread_completion_event_on_impl_thread_;
 
   // Set when the main thread is waiting on a readback.
   ReadbackRequest* readback_request_on_impl_thread_;
@@ -246,9 +248,9 @@ class ThreadProxy : public Proxy,
   // thread.
   bool next_frame_is_newly_committed_frame_on_impl_thread_;
 
-  bool render_vsync_enabled_;
-  bool render_vsync_notification_enabled_;
-  bool synchronously_disable_vsync_;
+  bool throttle_frame_production_;
+  bool render_parent_drives_begin_frame__;
+  bool using_synchronous_renderer_compositor_;
   VSyncClient* vsync_client_;
 
   bool inside_draw_;

@@ -378,9 +378,9 @@ bool LayerTreeHostImpl::HaveTouchEventHandlersAt(gfx::Point viewport_point) {
   return false;
 }
 
-void LayerTreeHostImpl::DidReceiveLastInputEventForVSync(
+void LayerTreeHostImpl::DidReceiveLastInputEventForBeginFrame(
     base::TimeTicks frame_time) {
-  client_->DidReceiveLastInputEventForVSync(frame_time);
+  client_->DidReceiveLastInputEventForBeginFrameOnImplThread(frame_time);
 }
 
 void LayerTreeHostImpl::TrackDamageForAllSurfaces(
@@ -1044,8 +1044,8 @@ void LayerTreeHostImpl::OnVSyncParametersChanged(base::TimeTicks timebase,
   client_->OnVSyncParametersChanged(timebase, interval);
 }
 
-void LayerTreeHostImpl::DidVSync(base::TimeTicks frame_time) {
-  client_->DidVSync(frame_time);
+void LayerTreeHostImpl::BeginFrame(base::TimeTicks frame_time) {
+  client_->BeginFrameOnImplThread(frame_time);
 }
 
 void LayerTreeHostImpl::OnSendFrameToParentCompositorAck(
@@ -1196,9 +1196,9 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   return true;
 }
 
-void LayerTreeHostImpl::EnableVSyncNotification(bool enable) {
+void LayerTreeHostImpl::SetNeedsBeginFrame(bool enable) {
   if (output_surface_)
-    output_surface_->EnableVSyncNotification(enable);
+    output_surface_->SetNeedsBeginFrame(enable);
 }
 
 gfx::Size LayerTreeHostImpl::DeviceViewportSize() const {

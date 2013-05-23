@@ -1279,9 +1279,8 @@ IPC_MESSAGE_ROUTED3(ViewMsg_UpdateTopControlsState,
 
 IPC_MESSAGE_ROUTED0(ViewMsg_ShowImeIfNeeded)
 
-// Sent by the browser when the display vsync signal was triggered and the
-// renderer should generate a new frame.
-IPC_MESSAGE_ROUTED1(ViewMsg_DidVSync,
+// Sent by the browser when the renderer should generate a new frame.
+IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame,
                     base::TimeTicks /* frame_time */)
 
 #elif defined(OS_MACOSX)
@@ -2253,10 +2252,10 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_RunWebAudioMediaCodec,
                      base::FileDescriptor /* pcm_output */,
                      size_t /* data_size*/)
 
-// Sent by renderer to request a ViewMsg_VSync message for upcoming display
-// vsync events. If |enabled| is true, the vsync message will continue to be be
-// delivered until the notification is disabled.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SetVSyncNotificationEnabled,
+// Sent by renderer to request a ViewMsg_BeginFrame message for upcoming
+// display events. If |enabled| is true, the BeginFrame message will continue
+// to be be delivered until the notification is disabled.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrame,
                     bool /* enabled */)
 
 #elif defined(OS_MACOSX)

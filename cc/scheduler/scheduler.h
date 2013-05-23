@@ -33,7 +33,7 @@ struct ScheduledActionDrawAndSwapResult {
 
 class SchedulerClient {
  public:
-  virtual void ScheduledActionBeginFrame() = 0;
+  virtual void ScheduledActionSendBeginFrameToMainThread() = 0;
   virtual ScheduledActionDrawAndSwapResult
   ScheduledActionDrawAndSwapIfPossible() = 0;
   virtual ScheduledActionDrawAndSwapResult
@@ -83,8 +83,8 @@ class CC_EXPORT Scheduler : FrameRateControllerClient {
 
   void DidSwapUseIncompleteTile();
 
-  void BeginFrameComplete();
-  void BeginFrameAborted();
+  void FinishCommit();
+  void BeginFrameAbortedByMainThread();
 
   void SetMaxFramesPending(int max);
   int MaxFramesPending() const;
@@ -109,10 +109,10 @@ class CC_EXPORT Scheduler : FrameRateControllerClient {
 
   base::TimeTicks AnticipatedDrawTime();
 
-  base::TimeTicks LastVSyncTime();
+  base::TimeTicks LastBeginFrameOnImplThreadTime();
 
   // FrameRateControllerClient implementation
-  virtual void VSyncTick(bool throttled) OVERRIDE;
+  virtual void BeginFrame(bool throttled) OVERRIDE;
 
   std::string StateAsStringForTesting() { return state_machine_.ToString(); }
 

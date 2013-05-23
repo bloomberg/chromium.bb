@@ -53,7 +53,7 @@ class CompositorOutputSurface
   virtual void PostSubBuffer(gfx::Rect rect, const cc::LatencyInfo&) OVERRIDE;
   virtual void SwapBuffers(const cc::LatencyInfo&) OVERRIDE;
 #if defined(OS_ANDROID)
-  virtual void EnableVSyncNotification(bool enable) OVERRIDE;
+  virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
 #endif
 
   // TODO(epenner): This seems out of place here and would be a better fit
@@ -88,7 +88,7 @@ class CompositorOutputSurface
   void OnUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval);
 #if defined(OS_ANDROID)
-  void OnDidVSync(base::TimeTicks frame_time);
+  void OnBeginFrame(base::TimeTicks frame_time);
 #endif
   bool Send(IPC::Message* message);
 

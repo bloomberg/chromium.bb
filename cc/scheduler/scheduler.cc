@@ -20,7 +20,7 @@ Scheduler::Scheduler(SchedulerClient* client,
       inside_process_scheduled_actions_(false) {
   DCHECK(client_);
   frame_rate_controller_->SetClient(this);
-  DCHECK(!state_machine_.VSyncCallbackNeeded());
+  DCHECK(!state_machine_.BeginFrameNeededByImplThread());
 }
 
 Scheduler::~Scheduler() { frame_rate_controller_->SetActive(false); }
@@ -76,15 +76,15 @@ void Scheduler::SetMainThreadNeedsLayerTextures() {
   ProcessScheduledActions();
 }
 
-void Scheduler::BeginFrameComplete() {
-  TRACE_EVENT0("cc", "Scheduler::BeginFrameComplete");
-  state_machine_.BeginFrameComplete();
+void Scheduler::FinishCommit() {
+  TRACE_EVENT0("cc", "Scheduler::FinishCommit");
+  state_machine_.FinishCommit();
   ProcessScheduledActions();
 }
 
-void Scheduler::BeginFrameAborted() {
-  TRACE_EVENT0("cc", "Scheduler::BeginFrameAborted");
-  state_machine_.BeginFrameAborted();
+void Scheduler::BeginFrameAbortedByMainThread() {
+  TRACE_EVENT0("cc", "Scheduler::BeginFrameAbortedByMainThread");
+  state_machine_.BeginFrameAbortedByMainThread();
   ProcessScheduledActions();
 }
 
@@ -106,7 +106,7 @@ void Scheduler::SetSwapBuffersCompleteSupported(bool supported) {
 
 void Scheduler::DidSwapBuffersComplete() {
   TRACE_EVENT0("cc", "Scheduler::DidSwapBuffersComplete");
-  frame_rate_controller_->DidFinishFrame();
+  frame_rate_controller_->DidSwapBuffersComplete();
 }
 
 void Scheduler::DidLoseOutputSurface() {
@@ -131,17 +131,17 @@ base::TimeTicks Scheduler::AnticipatedDrawTime() {
   return frame_rate_controller_->NextTickTime();
 }
 
-base::TimeTicks Scheduler::LastVSyncTime() {
+base::TimeTicks Scheduler::LastBeginFrameOnImplThreadTime() {
   return frame_rate_controller_->LastTickTime();
 }
 
-void Scheduler::VSyncTick(bool throttled) {
-  TRACE_EVENT1("cc", "Scheduler::VSyncTick", "throttled", throttled);
+void Scheduler::BeginFrame(bool throttled) {
+  TRACE_EVENT1("cc", "Scheduler::BeginFrame", "throttled", throttled);
   if (!throttled)
-    state_machine_.DidEnterVSync();
+    state_machine_.DidEnterBeginFrame();
   ProcessScheduledActions();
   if (!throttled)
-    state_machine_.DidLeaveVSync();
+    state_machine_.DidLeaveBeginFrame();
 }
 
 void Scheduler::ProcessScheduledActions() {
@@ -161,8 +161,8 @@ void Scheduler::ProcessScheduledActions() {
     switch (action) {
       case SchedulerStateMachine::ACTION_NONE:
         break;
-      case SchedulerStateMachine::ACTION_BEGIN_FRAME:
-        client_->ScheduledActionBeginFrame();
+      case SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD:
+        client_->ScheduledActionSendBeginFrameToMainThread();
         break;
       case SchedulerStateMachine::ACTION_COMMIT:
         client_->ScheduledActionCommit();
@@ -178,14 +178,14 @@ void Scheduler::ProcessScheduledActions() {
             client_->ScheduledActionDrawAndSwapIfPossible();
         state_machine_.DidDrawIfPossibleCompleted(result.did_draw);
         if (result.did_swap)
-          frame_rate_controller_->DidBeginFrame();
+          frame_rate_controller_->DidSwapBuffers();
         break;
       }
       case SchedulerStateMachine::ACTION_DRAW_FORCED: {
         ScheduledActionDrawAndSwapResult result =
             client_->ScheduledActionDrawAndSwapForced();
         if (result.did_swap)
-          frame_rate_controller_->DidBeginFrame();
+          frame_rate_controller_->DidSwapBuffers();
         break;
       }
       case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
@@ -199,7 +199,8 @@ void Scheduler::ProcessScheduledActions() {
   }
 
   // Activate or deactivate the frame rate controller.
-  frame_rate_controller_->SetActive(state_machine_.VSyncCallbackNeeded());
+  frame_rate_controller_->SetActive(
+      state_machine_.BeginFrameNeededByImplThread());
   client_->DidAnticipatedDrawTimeChange(frame_rate_controller_->NextTickTime());
 }
 

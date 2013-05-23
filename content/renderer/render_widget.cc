@@ -302,7 +302,7 @@ bool RenderWidget::AllowPartialSwap() const {
   return true;
 }
 
-bool RenderWidget::SynchronouslyDisableVSync() const {
+bool RenderWidget::UsingSynchronousRendererCompositor() const {
 #if defined(OS_ANDROID)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableSynchronousRendererCompositor)) {

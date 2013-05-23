@@ -2242,11 +2242,11 @@ class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestLCDNotification);
 
-// Verify that the vsync notification is used to initiate rendering.
-class LayerTreeHostTestVSyncNotification : public LayerTreeHostTest {
+// Verify that the BeginFrame notification is used to initiate rendering.
+class LayerTreeHostTestBeginFrameNotification : public LayerTreeHostTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->render_vsync_notification_enabled = true;
+    settings->render_parent_drives_begin_frame_ = true;
   }
 
   virtual void BeginTest() OVERRIDE {
@@ -2257,23 +2257,23 @@ class LayerTreeHostTestVSyncNotification : public LayerTreeHostTest {
     FakeOutputSurface* fake_output_surface =
         reinterpret_cast<FakeOutputSurface*>(host_impl->output_surface());
 
-    // The vsync notification is turned off now but will get enabled once we
-    // return, so post a task to trigger it.
-    ASSERT_FALSE(fake_output_surface->vsync_notification_enabled());
-    PostVSyncOnImplThread(fake_output_surface);
+    // The BeginFrame notification is turned off now but will get
+    // enabled once we return, so post a task to trigger it.
+    ASSERT_FALSE(fake_output_surface->needs_begin_frame());
+    PostBeginFrameOnImplThread(fake_output_surface);
   }
 
-  void PostVSyncOnImplThread(FakeOutputSurface* fake_output_surface) {
+  void PostBeginFrameOnImplThread(FakeOutputSurface* fake_output_surface) {
     DCHECK(ImplThread());
     ImplThread()->PostTask(
-        base::Bind(&LayerTreeHostTestVSyncNotification::DidVSync,
+        base::Bind(&LayerTreeHostTestBeginFrameNotification::BeginFrame,
                    base::Unretained(this),
                    base::Unretained(fake_output_surface)));
   }
 
-  void DidVSync(FakeOutputSurface* fake_output_surface) {
-    ASSERT_TRUE(fake_output_surface->vsync_notification_enabled());
-    fake_output_surface->DidVSync(frame_time_);
+  void BeginFrame(FakeOutputSurface* fake_output_surface) {
+    ASSERT_TRUE(fake_output_surface->needs_begin_frame());
+    fake_output_surface->BeginFrame(frame_time_);
   }
 
   virtual bool PrepareToDrawOnThread(
@@ -2290,34 +2290,36 @@ class LayerTreeHostTestVSyncNotification : public LayerTreeHostTest {
   base::TimeTicks frame_time_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestVSyncNotification);
+MULTI_THREAD_TEST_F(LayerTreeHostTestBeginFrameNotification);
 
-class LayerTreeHostTestVSyncNotificationShutdownWhileEnabled
+class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
     : public LayerTreeHostTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->render_vsync_notification_enabled = true;
-    settings->synchronously_disable_vsync = true;
+    settings->render_parent_drives_begin_frame_ = true;
+    settings->using_synchronous_renderer_compositor = true;
   }
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    // The vsync notification is turned off now but will get enabled once we
-    // return. End test while it's enabled.
+    // The BeginFrame notification is turned off now but will get enabled
+    // once we return. End test while it's enabled.
     ImplThread()->PostTask(base::Bind(
-        &LayerTreeHostTestVSyncNotification::EndTest, base::Unretained(this)));
+        &LayerTreeHostTestBeginFrameNotification::EndTest,
+        base::Unretained(this)));
   }
 
   virtual void AfterTest() OVERRIDE {}
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestVSyncNotificationShutdownWhileEnabled);
+MULTI_THREAD_TEST_F(
+    LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled);
 
 class LayerTreeHostTestInputDrivenRendering : public LayerTreeHostTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->render_vsync_notification_enabled = true;
+    settings->render_parent_drives_begin_frame_ = true;
   }
 
   virtual void BeginTest() OVERRIDE {
@@ -2326,8 +2328,8 @@ class LayerTreeHostTestInputDrivenRendering : public LayerTreeHostTest {
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    // Post a task to send the final input event for the current vsync; it
-    // should trigger rendering.
+    // Post a task to send the final input event for the current BeginFrame;
+    // it should trigger rendering.
     ImplThread()->PostTask(
         base::Bind(&LayerTreeHostTestInputDrivenRendering::SendFinalInputEvent,
                    base::Unretained(this),
@@ -2335,7 +2337,7 @@ class LayerTreeHostTestInputDrivenRendering : public LayerTreeHostTest {
   }
 
   void SendFinalInputEvent(LayerTreeHostImpl* host_impl) {
-    host_impl->DidReceiveLastInputEventForVSync(frame_time_);
+    host_impl->DidReceiveLastInputEventForBeginFrame(frame_time_);
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {

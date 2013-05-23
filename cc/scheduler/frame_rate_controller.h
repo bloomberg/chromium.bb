@@ -19,7 +19,7 @@ class TimeSource;
 class CC_EXPORT FrameRateControllerClient {
  public:
   // Throttled is true when we have a maximum number of frames pending.
-  virtual void VSyncTick(bool throttled) = 0;
+  virtual void BeginFrame(bool throttled) = 0;
 
  protected:
   virtual ~FrameRateControllerClient() {}
@@ -44,12 +44,12 @@ class CC_EXPORT FrameRateController {
 
   // Use the following methods to adjust target frame rate.
   //
-  // Multiple frames can be in-progress, but for every DidBeginFrame, a
+  // Multiple frames can be in-progress, but for every DidSwapBuffers, a
   // DidFinishFrame should be posted.
   //
   // If the rendering pipeline crashes, call DidAbortAllPendingFrames.
-  void DidBeginFrame();
-  void DidFinishFrame();
+  void DidSwapBuffers();
+  void DidSwapBuffersComplete();
   void DidAbortAllPendingFrames();
   void SetMaxFramesPending(int max_frames_pending);  // 0 for unlimited.
   int MaxFramesPending() const { return max_frames_pending_; }

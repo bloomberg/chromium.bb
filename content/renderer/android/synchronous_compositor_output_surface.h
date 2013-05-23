@@ -36,7 +36,7 @@ class SynchronousCompositorOutputSurface
   virtual bool BindToClient(cc::OutputSurfaceClient* surface_client) OVERRIDE;
   virtual void Reshape(gfx::Size size) OVERRIDE;
   virtual void SendFrameToParentCompositor(cc::CompositorFrame* frame) OVERRIDE;
-  virtual void EnableVSyncNotification(bool enable_vsync) OVERRIDE;
+  virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
   virtual void SwapBuffers(const cc::LatencyInfo& info) OVERRIDE;
 
   // SynchronousCompositor.
@@ -60,7 +60,7 @@ class SynchronousCompositorOutputSurface
 
   SynchronousCompositorClient* compositor_client_;
   int routing_id_;
-  bool vsync_enabled_;
+  bool needs_begin_frame_;
   bool did_swap_buffer_;
 
   // Only valid (non-NULL) during a DemandDrawSw() call.

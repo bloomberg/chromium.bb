@@ -58,7 +58,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   enum Action {
     ACTION_NONE,
-    ACTION_BEGIN_FRAME,
+    ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
     ACTION_COMMIT,
     ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS,
     ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED,
@@ -70,14 +70,15 @@ class CC_EXPORT SchedulerStateMachine {
   Action NextAction() const;
   void UpdateState(Action action);
 
-  // Indicates whether the scheduler needs a vsync callback in order to make
-  // progress.
-  bool VSyncCallbackNeeded() const;
+  // Indicates whether the main thread needs a begin frame callback in order to
+  // make progress.
+  bool BeginFrameNeededByImplThread() const;
 
-  // Indicates that the system has entered and left a vsync callback.
-  // The scheduler will not draw more than once in a given vsync callback.
-  void DidEnterVSync();
-  void DidLeaveVSync();
+  // Indicates that the system has entered and left a BeginFrame callback.
+  // The scheduler will not draw more than once in a given BeginFrame
+  // callback.
+  void DidEnterBeginFrame();
+  void DidLeaveBeginFrame();
 
   // Indicates whether the LayerTreeHostImpl is visible.
   void SetVisible(bool visible);
@@ -102,19 +103,21 @@ class CC_EXPORT SchedulerStateMachine {
   // thread to main.
   void SetNeedsCommit();
 
-  // As SetNeedsCommit(), but ensures the BeginFrame will definitely happen even
-  // if we are not visible.  After this call we expect to go through the forced
-  // commit flow and then return to waiting for a non-forced BeginFrame to
-  // finish.
+  // As SetNeedsCommit(), but ensures the begin frame will be sent to the main
+  // thread even if we are not visible.  After this call we expect to go through
+  // the forced commit flow and then return to waiting for a non-forced
+  // begin frame to finish.
   void SetNeedsForcedCommit();
 
-  // Call this only in response to receiving an ACTION_BEGIN_FRAME
-  // from NextAction. Indicates that all painting is complete.
-  void BeginFrameComplete();
+  // Call this only in response to receiving an
+  // ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD from NextAction.
+  // Indicates that all painting is complete.
+  void FinishCommit();
 
-  // Call this only in response to receiving an ACTION_BEGIN_FRAME
-  // from NextAction if the client rejects the BeginFrame message.
-  void BeginFrameAborted();
+  // Call this only in response to receiving an
+  // ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD from NextAction if the client
+  // rejects the begin frame message.
+  void BeginFrameAbortedByMainThread();
 
   // Request exclusive access to the textures that back single buffered
   // layers on behalf of the main thread. Upon acquisition,
@@ -178,9 +181,9 @@ class CC_EXPORT SchedulerStateMachine {
   bool needs_forced_redraw_after_next_commit_;
   bool needs_commit_;
   bool needs_forced_commit_;
-  bool expect_immediate_begin_frame_;
+  bool expect_immediate_begin_frame_for_main_thread_;
   bool main_thread_needs_layer_textures_;
-  bool inside_vsync_;
+  bool inside_begin_frame_;
   bool visible_;
   bool can_start_;
   bool can_draw_;

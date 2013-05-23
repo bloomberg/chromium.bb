@@ -139,8 +139,8 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeBodyBackgroundColor,
                         OnDidChangeBodyBackgroundColor)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetVSyncNotificationEnabled,
-                        OnSetVSyncNotificationEnabled)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrame,
+                        OnSetNeedsBeginFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -404,12 +404,15 @@ void RenderWidgetHostViewAndroid::OnDidChangeBodyBackgroundColor(
     content_view_core_->OnBackgroundColorChanged(color);
 }
 
-void RenderWidgetHostViewAndroid::SendVSync(base::TimeTicks frame_time) {
+void RenderWidgetHostViewAndroid::SendBeginFrame(
+    base::TimeTicks frame_time) {
   if (host_)
-    host_->Send(new ViewMsg_DidVSync(host_->GetRoutingID(), frame_time));
+    host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(),
+                                       frame_time));
 }
 
-void RenderWidgetHostViewAndroid::OnSetVSyncNotificationEnabled(bool enabled) {
+void RenderWidgetHostViewAndroid::OnSetNeedsBeginFrame(
+    bool enabled) {
   if (content_view_core_)
     content_view_core_->SetVSyncNotificationEnabled(enabled);
 }

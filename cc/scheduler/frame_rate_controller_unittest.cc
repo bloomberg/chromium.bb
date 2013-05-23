@@ -14,15 +14,15 @@ class FakeFrameRateControllerClient : public cc::FrameRateControllerClient {
  public:
   FakeFrameRateControllerClient() { Reset(); }
 
-  void Reset() { vsync_ticked_ = false; }
-  bool VSyncTicked() const { return vsync_ticked_; }
+  void Reset() { began_frame_ = false; }
+  bool BeganFrame() const { return began_frame_; }
 
-  virtual void VSyncTick(bool throttled) OVERRIDE {
-    vsync_ticked_ = !throttled;
+  virtual void BeginFrame(bool throttled) OVERRIDE {
+    began_frame_ = !throttled;
   }
 
  protected:
-  bool vsync_ticked_;
+  bool began_frame_;
 };
 
 TEST(FrameRateControllerTest, TestFrameThrottling_ImmediateAck) {
@@ -39,28 +39,28 @@ TEST(FrameRateControllerTest, TestFrameThrottling_ImmediateAck) {
 
   base::TimeTicks elapsed;  // Muck around with time a bit
 
-  // Trigger one frame, make sure the vsync callback is called
+  // Trigger one frame, make sure the BeginFrame callback is called
   elapsed += base::TimeDelta::FromMilliseconds(thread.PendingDelayMs());
   time_source->SetNow(elapsed);
   thread.RunPendingTask();
-  EXPECT_TRUE(client.VSyncTicked());
+  EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
   // Tell the controller we drew
-  controller.DidBeginFrame();
+  controller.DidSwapBuffers();
 
   // Tell the controller the frame ended 5ms later
   time_source->SetNow(time_source->Now() +
                       base::TimeDelta::FromMilliseconds(5));
-  controller.DidFinishFrame();
+  controller.DidSwapBuffersComplete();
 
-  // Trigger another frame, make sure vsync runs again
+  // Trigger another frame, make sure BeginFrame runs again
   elapsed += base::TimeDelta::FromMilliseconds(thread.PendingDelayMs());
   // Sanity check that previous code didn't move time backward.
   EXPECT_GE(elapsed, time_source->Now());
   time_source->SetNow(elapsed);
   thread.RunPendingTask();
-  EXPECT_TRUE(client.VSyncTicked());
+  EXPECT_TRUE(client.BeganFrame());
 }
 
 TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight) {
@@ -78,27 +78,27 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight) {
 
   base::TimeTicks elapsed;  // Muck around with time a bit
 
-  // Trigger one frame, make sure the vsync callback is called
+  // Trigger one frame, make sure the BeginFrame callback is called
   elapsed += base::TimeDelta::FromMilliseconds(thread.PendingDelayMs());
   time_source->SetNow(elapsed);
   thread.RunPendingTask();
-  EXPECT_TRUE(client.VSyncTicked());
+  EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
   // Tell the controller we drew
-  controller.DidBeginFrame();
+  controller.DidSwapBuffers();
 
-  // Trigger another frame, make sure vsync callback runs again
+  // Trigger another frame, make sure BeginFrame callback runs again
   elapsed += base::TimeDelta::FromMilliseconds(thread.PendingDelayMs());
   // Sanity check that previous code didn't move time backward.
   EXPECT_GE(elapsed, time_source->Now());
   time_source->SetNow(elapsed);
   thread.RunPendingTask();
-  EXPECT_TRUE(client.VSyncTicked());
+  EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
   // Tell the controller we drew, again.
-  controller.DidBeginFrame();
+  controller.DidSwapBuffers();
 
   // Trigger another frame. Since two frames are pending, we should not draw.
   elapsed += base::TimeDelta::FromMilliseconds(thread.PendingDelayMs());
@@ -106,24 +106,24 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight) {
   EXPECT_GE(elapsed, time_source->Now());
   time_source->SetNow(elapsed);
   thread.RunPendingTask();
-  EXPECT_FALSE(client.VSyncTicked());
+  EXPECT_FALSE(client.BeganFrame());
 
   // Tell the controller the first frame ended 5ms later
   time_source->SetNow(time_source->Now() +
                       base::TimeDelta::FromMilliseconds(5));
-  controller.DidFinishFrame();
+  controller.DidSwapBuffersComplete();
 
   // Tick should not have been called
-  EXPECT_FALSE(client.VSyncTicked());
+  EXPECT_FALSE(client.BeganFrame());
 
-  // Trigger yet another frame. Since one frames is pending, another vsync
-  // callback should run.
+  // Trigger yet another frame. Since one frames is pending, another
+  // BeginFrame callback should run.
   elapsed += base::TimeDelta::FromMilliseconds(thread.PendingDelayMs());
   // Sanity check that previous code didn't move time backward.
   EXPECT_GE(elapsed, time_source->Now());
   time_source->SetNow(elapsed);
   thread.RunPendingTask();
-  EXPECT_TRUE(client.VSyncTicked());
+  EXPECT_TRUE(client.BeganFrame());
 }
 
 TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled) {
@@ -134,44 +134,47 @@ TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled) {
   controller.SetClient(&client);
   controller.SetMaxFramesPending(2);
 
-  // SetActive triggers 1st frame, make sure the vsync callback is called
+  // SetActive triggers 1st frame, make sure the BeginFrame callback
+  // is called
   controller.SetActive(true);
   thread.RunPendingTask();
-  EXPECT_TRUE(client.VSyncTicked());
+  EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
-  // Even if we don't call DidBeginFrame, FrameRateController should
-  // still attempt to vsync tick multiple times until it does result in
-  // a DidBeginFrame.
+  // Even if we don't call DidSwapBuffers, FrameRateController should
+  // still attempt to tick multiple times until it does result in
+  // a DidSwapBuffers.
   thread.RunPendingTask();
-  EXPECT_TRUE(client.VSyncTicked());
+  EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
   thread.RunPendingTask();
-  EXPECT_TRUE(client.VSyncTicked());
+  EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
-  // DidBeginFrame triggers 2nd frame, make sure the vsync callback is called
-  controller.DidBeginFrame();
+  // DidSwapBuffers triggers 2nd frame, make sure the BeginFrame callback is
+  // called
+  controller.DidSwapBuffers();
   thread.RunPendingTask();
-  EXPECT_TRUE(client.VSyncTicked());
+  EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
-  // DidBeginFrame triggers 3rd frame (> max_frames_pending),
-  // make sure the vsync callback is NOT called
-  controller.DidBeginFrame();
+  // DidSwapBuffers triggers 3rd frame (> max_frames_pending),
+  // make sure the BeginFrame callback is NOT called
+  controller.DidSwapBuffers();
   thread.RunPendingTask();
-  EXPECT_FALSE(client.VSyncTicked());
+  EXPECT_FALSE(client.BeganFrame());
   client.Reset();
 
   // Make sure there is no pending task since we can't do anything until we
-  // receive a DidFinishFrame anyway.
+  // receive a DidSwapBuffersComplete anyway.
   EXPECT_FALSE(thread.HasPendingTask());
 
-  // DidFinishFrame triggers a frame, make sure the vsync callback is called
-  controller.DidFinishFrame();
+  // DidSwapBuffersComplete triggers a frame, make sure the BeginFrame
+  // callback is called
+  controller.DidSwapBuffersComplete();
   thread.RunPendingTask();
-  EXPECT_TRUE(client.VSyncTicked());
+  EXPECT_TRUE(client.BeganFrame());
 }
 
 }  // namespace

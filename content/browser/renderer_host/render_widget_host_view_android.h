@@ -177,12 +177,12 @@ class RenderWidgetHostViewAndroid
   void SendMouseEvent(const WebKit::WebMouseEvent& event);
   void SendMouseWheelEvent(const WebKit::WebMouseWheelEvent& event);
   void SendGestureEvent(const WebKit::WebGestureEvent& event);
-  void SendVSync(base::TimeTicks frame_time);
+  void SendBeginFrame(base::TimeTicks frame_time);
 
   void OnProcessImeBatchStateAck(bool is_begin);
   void OnDidChangeBodyBackgroundColor(SkColor color);
   void OnStartContentIntent(const GURL& content_url);
-  void OnSetVSyncNotificationEnabled(bool enabled);
+  void OnSetNeedsBeginFrame(bool enabled);
 
   int GetNativeImeAdapter();
 

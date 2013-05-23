@@ -94,10 +94,12 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
   settings.accelerate_painting =
       cmd->HasSwitch(switches::kEnableAcceleratedPainting);
-  settings.render_vsync_enabled = !cmd->HasSwitch(switches::kDisableGpuVsync);
-  settings.render_vsync_notification_enabled =
+  settings.throttle_frame_production =
+      !cmd->HasSwitch(switches::kDisableGpuVsync);
+  settings.render_parent_drives_begin_frame_ =
       cmd->HasSwitch(switches::kEnableVsyncNotification);
-  settings.synchronously_disable_vsync = widget->SynchronouslyDisableVSync();
+  settings.using_synchronous_renderer_compositor =
+      widget->UsingSynchronousRendererCompositor();
   settings.per_tile_painting_enabled =
       cmd->HasSwitch(cc::switches::kEnablePerTilePainting);
   settings.accelerated_animation_enabled =

@@ -70,11 +70,11 @@ class FakeOutputSurface : public OutputSurface {
   CompositorFrame& last_sent_frame() { return last_sent_frame_; }
   size_t num_sent_frames() { return num_sent_frames_; }
 
-  virtual void EnableVSyncNotification(bool enable) OVERRIDE;
-  bool vsync_notification_enabled() const {
-    return vsync_notification_enabled_;
+  virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
+  bool needs_begin_frame() const {
+    return needs_begin_frame_;
   }
-  void DidVSync(base::TimeTicks frame_time);
+  void BeginFrame(base::TimeTicks frame_time);
 
   void set_forced_draw_to_software_device(bool forced) {
     forced_draw_to_software_device_ = forced;
@@ -94,7 +94,7 @@ class FakeOutputSurface : public OutputSurface {
 
   CompositorFrame last_sent_frame_;
   size_t num_sent_frames_;
-  bool vsync_notification_enabled_;
+  bool needs_begin_frame_;
   bool forced_draw_to_software_device_;
   base::WeakPtrFactory<FakeOutputSurface> weak_ptr_factory_;
 };

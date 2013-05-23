@@ -1244,7 +1244,8 @@ void ContentViewCoreImpl::OnVSync(JNIEnv* env, jobject /* obj */,
   if (!view)
     return;
 
-  view->SendVSync(base::TimeTicks::FromInternalValue(frame_time_micros));
+  view->SendBeginFrame(
+      base::TimeTicks::FromInternalValue(frame_time_micros));
 }
 
 jboolean ContentViewCoreImpl::OnAnimate(JNIEnv* env, jobject /* obj */,

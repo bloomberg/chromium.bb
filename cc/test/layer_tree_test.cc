@@ -544,7 +544,8 @@ void LayerTreeTest::RunTest(bool threaded,
 
   delegating_renderer_ = delegating_renderer;
 
-  // Spend less time waiting for vsync because the output is mocked out.
+  // Spend less time waiting for BeginFrame because the output is
+  // mocked out.
   settings_.refresh_rate = 200.0;
   if (impl_side_painting) {
     DCHECK(threaded) <<

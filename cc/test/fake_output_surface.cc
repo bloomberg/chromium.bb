@@ -15,7 +15,7 @@ FakeOutputSurface::FakeOutputSurface(
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d, bool has_parent)
     : OutputSurface(context3d.Pass()),
       num_sent_frames_(0),
-      vsync_notification_enabled_(false),
+      needs_begin_frame_(false),
       forced_draw_to_software_device_(false),
       weak_ptr_factory_(this) {
   capabilities_.has_parent_compositor = has_parent;
@@ -41,12 +41,12 @@ void FakeOutputSurface::SendFrameToParentCompositor(
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void FakeOutputSurface::EnableVSyncNotification(bool enable) {
-  vsync_notification_enabled_ = enable;
+void FakeOutputSurface::SetNeedsBeginFrame(bool enable) {
+  needs_begin_frame_ = enable;
 }
 
-void FakeOutputSurface::DidVSync(base::TimeTicks frame_time) {
-  client_->DidVSync(frame_time);
+void FakeOutputSurface::BeginFrame(base::TimeTicks frame_time) {
+  client_->BeginFrame(frame_time);
 }
 
 bool FakeOutputSurface::ForcedDrawToSoftwareDevice() const {

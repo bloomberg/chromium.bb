@@ -93,7 +93,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
                             new SoftwareDevice(this))),
       compositor_client_(NULL),
       routing_id_(routing_id),
-      vsync_enabled_(false),
+      needs_begin_frame_(false),
       did_swap_buffer_(false),
       current_sw_canvas_(NULL) {
   capabilities_.deferred_gl_initialization = true;
@@ -129,10 +129,10 @@ void SynchronousCompositorOutputSurface::SendFrameToParentCompositor(
   // TODO(joth): Route page scale to the client, see http://crbug.com/237006
 }
 
-void SynchronousCompositorOutputSurface::EnableVSyncNotification(
-    bool enable_vsync) {
+void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(
+    bool enable) {
   DCHECK(CalledOnValidThread());
-  vsync_enabled_ = enable_vsync;
+  needs_begin_frame_ = enable;
   UpdateCompositorClientSettings();
 }
 
@@ -197,13 +197,13 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   // TODO(boliu): This assumes |transform| is identity and |damage_area| is the
   // whole view. Tracking bug to implement this: crbug.com/230463.
   client_->SetNeedsRedrawRect(damage_area);
-  if (vsync_enabled_)
-    client_->DidVSync(base::TimeTicks::Now());
+  if (needs_begin_frame_)
+    client_->BeginFrame(base::TimeTicks::Now());
 }
 
 void SynchronousCompositorOutputSurface::UpdateCompositorClientSettings() {
   if (compositor_client_) {
-    compositor_client_->SetContinuousInvalidate(vsync_enabled_);
+    compositor_client_->SetContinuousInvalidate(needs_begin_frame_);
   }
 }
 

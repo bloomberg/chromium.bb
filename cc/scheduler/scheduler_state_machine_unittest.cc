@@ -35,11 +35,10 @@ class StateMachine : public SchedulerStateMachine {
   bool NeedsForcedRedraw() const { return needs_forced_redraw_; }
 
   bool CanDraw() const { return can_draw_; }
-  bool InsideVSync() const { return inside_vsync_; }
   bool Visible() const { return visible_; }
 };
 
-TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded) {
+TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
   SchedulerSettings default_scheduler_settings;
 
   // If no commit needed, do nothing.
@@ -52,39 +51,39 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded) {
     state.SetNeedsRedraw(false);
     state.SetVisible(true);
 
-    EXPECT_FALSE(state.VSyncCallbackNeeded());
+    EXPECT_FALSE(state.BeginFrameNeededByImplThread());
 
-    state.DidLeaveVSync();
+    state.DidLeaveBeginFrame();
     EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
-    EXPECT_FALSE(state.VSyncCallbackNeeded());
-    state.DidEnterVSync();
+    EXPECT_FALSE(state.BeginFrameNeededByImplThread());
+    state.DidEnterBeginFrame();
     EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   }
 
-  // If commit requested but can_begin_frame is still false, do nothing.
+  // If commit requested but can_start is still false, do nothing.
   {
     StateMachine state(default_scheduler_settings);
     state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
     state.SetNeedsRedraw(false);
     state.SetVisible(true);
 
-    EXPECT_FALSE(state.VSyncCallbackNeeded());
+    EXPECT_FALSE(state.BeginFrameNeededByImplThread());
 
-    state.DidLeaveVSync();
+    state.DidLeaveBeginFrame();
     EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
-    EXPECT_FALSE(state.VSyncCallbackNeeded());
-    state.DidEnterVSync();
+    EXPECT_FALSE(state.BeginFrameNeededByImplThread());
+    state.DidEnterBeginFrame();
     EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   }
 
-  // If commit requested, begin a frame.
+  // If commit requested, begin a main frame.
   {
     StateMachine state(default_scheduler_settings);
     state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
     state.SetCanStart();
     state.SetNeedsRedraw(false);
     state.SetVisible(true);
-    EXPECT_FALSE(state.VSyncCallbackNeeded());
+    EXPECT_FALSE(state.BeginFrameNeededByImplThread());
   }
 
   // Begin the frame, make sure needs_commit and commit_state update correctly.
@@ -94,11 +93,12 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded) {
     state.UpdateState(state.NextAction());
     state.DidCreateAndInitializeOutputSurface();
     state.SetVisible(true);
-    state.UpdateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
+    state.UpdateState(
+        SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD);
     EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
               state.CommitState());
     EXPECT_FALSE(state.NeedsCommit());
-    EXPECT_FALSE(state.VSyncCallbackNeeded());
+    EXPECT_FALSE(state.BeginFrameNeededByImplThread());
   }
 }
 
@@ -108,7 +108,7 @@ TEST(SchedulerStateMachineTest, TestSetForcedRedrawDoesNotSetsNormalRedraw) {
   state.SetCanDraw(true);
   state.SetNeedsForcedRedraw();
   EXPECT_FALSE(state.RedrawPending());
-  EXPECT_TRUE(state.VSyncCallbackNeeded());
+  EXPECT_TRUE(state.BeginFrameNeededByImplThread());
 }
 
 TEST(SchedulerStateMachineTest,
@@ -122,8 +122,8 @@ TEST(SchedulerStateMachineTest,
   state.SetCanDraw(true);
   state.SetNeedsRedraw();
   EXPECT_TRUE(state.RedrawPending());
-  EXPECT_TRUE(state.VSyncCallbackNeeded());
-  state.DidEnterVSync();
+  EXPECT_TRUE(state.BeginFrameNeededByImplThread());
+  state.DidEnterBeginFrame();
 
   // We're drawing now.
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
@@ -134,8 +134,10 @@ TEST(SchedulerStateMachineTest,
 
   // Failing the draw makes us require a commit.
   state.DidDrawIfPossibleCompleted(false);
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
-  state.UpdateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+      state.NextAction());
+  state.UpdateState(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD);
   EXPECT_TRUE(state.RedrawPending());
   EXPECT_TRUE(state.CommitPending());
 }
@@ -152,8 +154,8 @@ TEST(SchedulerStateMachineTest,
   state.SetCanDraw(true);
   state.SetNeedsRedraw();
   EXPECT_TRUE(state.RedrawPending());
-  EXPECT_TRUE(state.VSyncCallbackNeeded());
-  state.DidEnterVSync();
+  EXPECT_TRUE(state.BeginFrameNeededByImplThread());
+  state.DidEnterBeginFrame();
 
   // We're drawing now.
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
@@ -162,14 +164,15 @@ TEST(SchedulerStateMachineTest,
   EXPECT_FALSE(state.RedrawPending());
   EXPECT_FALSE(state.CommitPending());
 
-  // While still in the same vsync callback, set needs redraw again.
-  // This should not redraw.
+  // While still in the same begin frame callback on the main thread,
+  // set needs redraw again. This should not redraw.
   state.SetNeedsRedraw();
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   // Failing the draw makes us require a commit.
   state.DidDrawIfPossibleCompleted(false);
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
   EXPECT_TRUE(state.RedrawPending());
 }
 
@@ -185,14 +188,16 @@ TEST(SchedulerStateMachineTest,
 
   // Start a commit.
   state.SetNeedsCommit();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
-  state.UpdateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
+  state.UpdateState(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD);
   EXPECT_TRUE(state.CommitPending());
 
   // Then initiate a draw.
   state.SetNeedsRedraw();
-  EXPECT_TRUE(state.VSyncCallbackNeeded());
-  state.DidEnterVSync();
+  EXPECT_TRUE(state.BeginFrameNeededByImplThread());
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   EXPECT_TRUE(state.RedrawPending());
 
@@ -205,7 +210,7 @@ TEST(SchedulerStateMachineTest,
   EXPECT_TRUE(state.CommitPending());
 
   // Finish the commit.
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
   state.UpdateState(SchedulerStateMachine::ACTION_COMMIT);
   EXPECT_TRUE(state.RedrawPending());
@@ -226,14 +231,16 @@ TEST(SchedulerStateMachineTest,
 
   // Start a commit.
   state.SetNeedsCommit();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
-  state.UpdateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
+  state.UpdateState(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD);
   EXPECT_TRUE(state.CommitPending());
 
   // Then initiate a draw.
   state.SetNeedsRedraw();
-  EXPECT_TRUE(state.VSyncCallbackNeeded());
-  state.DidEnterVSync();
+  EXPECT_TRUE(state.BeginFrameNeededByImplThread());
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   EXPECT_TRUE(state.RedrawPending());
 
@@ -257,7 +264,7 @@ TEST(SchedulerStateMachineTest,
   EXPECT_TRUE(state.CommitPending());
 
   // Finish the commit.
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
   state.UpdateState(SchedulerStateMachine::ACTION_COMMIT);
   EXPECT_TRUE(state.RedrawPending());
@@ -279,14 +286,16 @@ TEST(SchedulerStateMachineTest,
 
   // Start a commit.
   state.SetNeedsCommit();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
-  state.UpdateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
+  state.UpdateState(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD);
   EXPECT_TRUE(state.CommitPending());
 
   // Then initiate a draw.
   state.SetNeedsRedraw();
-  EXPECT_TRUE(state.VSyncCallbackNeeded());
-  state.DidEnterVSync();
+  EXPECT_TRUE(state.BeginFrameNeededByImplThread());
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   EXPECT_TRUE(state.RedrawPending());
 
@@ -300,7 +309,7 @@ TEST(SchedulerStateMachineTest,
 
   // Finish the commit. Note, we should not yet be forcing a draw, but should
   // continue the commit as usual.
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
   state.UpdateState(SchedulerStateMachine::ACTION_COMMIT);
   EXPECT_TRUE(state.RedrawPending());
@@ -309,7 +318,8 @@ TEST(SchedulerStateMachineTest,
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedNextVSync) {
+TEST(SchedulerStateMachineTest,
+    TestFailedDrawIsRetriedInNextBeginFrameForImplThread) {
   SchedulerSettings default_scheduler_settings;
   SchedulerStateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -320,8 +330,8 @@ TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedNextVSync) {
 
   // Start a draw.
   state.SetNeedsRedraw();
-  EXPECT_TRUE(state.VSyncCallbackNeeded());
-  state.DidEnterVSync();
+  EXPECT_TRUE(state.BeginFrameNeededByImplThread());
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   EXPECT_TRUE(state.RedrawPending());
 
@@ -332,13 +342,14 @@ TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedNextVSync) {
   EXPECT_TRUE(state.RedrawPending());
 
   // We should not be trying to draw again now, but we have a commit pending.
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 
-  state.DidLeaveVSync();
-  EXPECT_TRUE(state.VSyncCallbackNeeded());
-  state.DidEnterVSync();
+  state.DidLeaveBeginFrame();
+  EXPECT_TRUE(state.BeginFrameNeededByImplThread());
+  state.DidEnterBeginFrame();
 
-  // We should try draw again in the next vsync.
+  // We should try to draw again in the next begin frame on the impl thread.
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
 }
 
@@ -351,32 +362,33 @@ TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame) {
   state.SetVisible(true);
   state.SetCanDraw(true);
   state.SetNeedsRedraw();
-  EXPECT_TRUE(state.VSyncCallbackNeeded());
-  state.DidEnterVSync();
+  EXPECT_TRUE(state.BeginFrameNeededByImplThread());
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
 
-  // While still in the same vsync callback, set needs redraw again.
-  // This should not redraw.
+  // While still in the same begin frame for the impl thread, set needs redraw
+  // again. This should not redraw.
   state.SetNeedsRedraw();
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   // Move to another frame. This should now draw.
   state.DidDrawIfPossibleCompleted(true);
-  state.DidLeaveVSync();
-  EXPECT_TRUE(state.VSyncCallbackNeeded());
-  state.DidEnterVSync();
+  state.DidLeaveBeginFrame();
+  EXPECT_TRUE(state.BeginFrameNeededByImplThread());
+  state.DidEnterBeginFrame();
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
   state.DidDrawIfPossibleCompleted(true);
-  EXPECT_FALSE(state.VSyncCallbackNeeded());
+  EXPECT_FALSE(state.BeginFrameNeededByImplThread());
 }
 
-TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync) {
+TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginFrame) {
   SchedulerSettings default_scheduler_settings;
 
-  // When not on vsync, or on vsync but not visible, don't draw.
+  // When not in BeginFrame, or in BeginFrame but not visible,
+  // don't draw.
   size_t num_commit_states =
       sizeof(all_commit_states) / sizeof(SchedulerStateMachine::CommitState);
   for (size_t i = 0; i < num_commit_states; ++i) {
@@ -388,7 +400,7 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync) {
       state.SetCommitState(all_commit_states[i]);
       bool visible = j;
       if (!visible) {
-        state.DidEnterVSync();
+        state.DidEnterBeginFrame();
         state.SetVisible(false);
       } else {
         state.SetVisible(true);
@@ -405,8 +417,9 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync) {
     }
   }
 
-  // When on vsync, or not on vsync but needs_forced_dedraw set, should always
-  // draw except if you're ready to commit, in which case commit.
+  // When in BeginFrame, or not in BeginFrame but needs_forced_dedraw
+  // set, should always draw except if you're ready to commit, in which case
+  // commit.
   for (size_t i = 0; i < num_commit_states; ++i) {
     for (size_t j = 0; j < 2; ++j) {
       StateMachine state(default_scheduler_settings);
@@ -417,7 +430,7 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync) {
       state.SetCommitState(all_commit_states[i]);
       bool forced_draw = j;
       if (!forced_draw) {
-        state.DidEnterVSync();
+        state.DidEnterBeginFrame();
         state.SetNeedsRedraw(true);
         state.SetVisible(true);
       } else {
@@ -435,12 +448,12 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync) {
       }
 
       // Case 1: needs_commit=false.
-      EXPECT_TRUE(state.VSyncCallbackNeeded());
+      EXPECT_TRUE(state.BeginFrameNeededByImplThread());
       EXPECT_EQ(expected_action, state.NextAction());
 
       // Case 2: needs_commit=true.
       state.SetNeedsCommit();
-      EXPECT_TRUE(state.VSyncCallbackNeeded());
+      EXPECT_TRUE(state.BeginFrameNeededByImplThread());
       EXPECT_EQ(expected_action, state.NextAction());
     }
   }
@@ -452,7 +465,7 @@ TEST(SchedulerStateMachineTest, TestNoCommitStatesRedrawWhenInvisible) {
   size_t num_commit_states =
       sizeof(all_commit_states) / sizeof(SchedulerStateMachine::CommitState);
   for (size_t i = 0; i < num_commit_states; ++i) {
-    // There shouldn't be any drawing regardless of vsync.
+    // There shouldn't be any drawing regardless of BeginFrame.
     for (size_t j = 0; j < 2; ++j) {
       StateMachine state(default_scheduler_settings);
       state.SetCanStart();
@@ -463,7 +476,7 @@ TEST(SchedulerStateMachineTest, TestNoCommitStatesRedrawWhenInvisible) {
       state.SetNeedsRedraw(true);
       state.SetNeedsForcedRedraw(false);
       if (j == 1)
-        state.DidEnterVSync();
+        state.DidEnterBeginFrame();
 
       // Case 1: needs_commit=false.
       EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE,
@@ -483,7 +496,7 @@ TEST(SchedulerStateMachineTest, TestCanRedraw_StopsDraw) {
   size_t num_commit_states =
       sizeof(all_commit_states) / sizeof(SchedulerStateMachine::CommitState);
   for (size_t i = 0; i < num_commit_states; ++i) {
-    // There shouldn't be any drawing regardless of vsync.
+    // There shouldn't be any drawing regardless of BeginFrame.
     for (size_t j = 0; j < 2; ++j) {
       StateMachine state(default_scheduler_settings);
       state.SetCanStart();
@@ -494,7 +507,7 @@ TEST(SchedulerStateMachineTest, TestCanRedraw_StopsDraw) {
       state.SetNeedsRedraw(true);
       state.SetNeedsForcedRedraw(false);
       if (j == 1)
-        state.DidEnterVSync();
+        state.DidEnterBeginFrame();
 
       state.SetCanDraw(false);
       EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE,
@@ -516,7 +529,8 @@ TEST(SchedulerStateMachineTest,
   state.SetNeedsRedraw(true);
   state.SetVisible(true);
   state.SetCanDraw(false);
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 }
 
 TEST(SchedulerStateMachineTest, TestsetNeedsCommitIsNotLost) {
@@ -530,7 +544,8 @@ TEST(SchedulerStateMachineTest, TestsetNeedsCommitIsNotLost) {
   state.SetCanDraw(true);
 
   // Begin the frame.
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
   state.UpdateState(state.NextAction());
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
             state.CommitState());
@@ -540,17 +555,17 @@ TEST(SchedulerStateMachineTest, TestsetNeedsCommitIsNotLost) {
   EXPECT_TRUE(state.NeedsCommit());
 
   // Let the frame finish.
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
             state.CommitState());
 
-  // Expect to commit regardless of vsync state.
-  state.DidLeaveVSync();
+  // Expect to commit regardless of BeginFrame state.
+  state.DidLeaveBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
-  state.DidEnterVSync();
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
 
-  // Commit and make sure we draw on next vsync
+  // Commit and make sure we draw on next BeginFrame
   state.UpdateState(SchedulerStateMachine::ACTION_COMMIT);
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW,
@@ -559,8 +574,9 @@ TEST(SchedulerStateMachineTest, TestsetNeedsCommitIsNotLost) {
   state.DidDrawIfPossibleCompleted(true);
 
   // Verify that another commit will begin.
-  state.DidLeaveVSync();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  state.DidLeaveBeginFrame();
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 }
 
 TEST(SchedulerStateMachineTest, TestFullCycle) {
@@ -574,17 +590,19 @@ TEST(SchedulerStateMachineTest, TestFullCycle) {
 
   // Start clean and set commit.
   state.SetNeedsCommit();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 
   // Begin the frame.
-  state.UpdateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
+  state.UpdateState(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD);
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
             state.CommitState());
   EXPECT_FALSE(state.NeedsCommit());
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   // Tell the scheduler the frame finished.
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
             state.CommitState());
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
@@ -595,15 +613,15 @@ TEST(SchedulerStateMachineTest, TestFullCycle) {
             state.CommitState());
   EXPECT_TRUE(state.NeedsRedraw());
 
-  // Expect to do nothing until vsync.
+  // Expect to do nothing until BeginFrame.
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
-  // At vsync, draw.
-  state.DidEnterVSync();
+  // At BeginFrame, draw.
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
   state.DidDrawIfPossibleCompleted(true);
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
 
   // Should be synchronized, no draw needed, no action needed.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
@@ -622,10 +640,12 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
 
   // Start clean and set commit.
   state.SetNeedsCommit();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 
   // Begin the frame.
-  state.UpdateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
+  state.UpdateState(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD);
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
             state.CommitState());
   EXPECT_FALSE(state.NeedsCommit());
@@ -636,7 +656,7 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   // Tell the scheduler the frame finished.
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
             state.CommitState());
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
@@ -647,20 +667,21 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
             state.CommitState());
   EXPECT_TRUE(state.NeedsRedraw());
 
-  // Expect to do nothing until vsync.
+  // Expect to do nothing until BeginFrame.
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
-  // At vsync, draw.
-  state.DidEnterVSync();
+  // At BeginFrame, draw.
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
   state.DidDrawIfPossibleCompleted(true);
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
 
   // Should be synchronized, no draw needed, no action needed.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
   EXPECT_FALSE(state.NeedsRedraw());
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 }
 
 TEST(SchedulerStateMachineTest, TestRequestCommitInvisible) {
@@ -673,7 +694,7 @@ TEST(SchedulerStateMachineTest, TestRequestCommitInvisible) {
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeBeginFrameCompletes) {
+TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeFinishCommit) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -684,18 +705,20 @@ TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeBeginFrameCompletes) {
 
   // Start clean and set commit.
   state.SetNeedsCommit();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 
   // Begin the frame while visible.
-  state.UpdateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
+  state.UpdateState(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD);
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
             state.CommitState());
   EXPECT_FALSE(state.NeedsCommit());
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
-  // Become invisible and abort the BeginFrame.
+  // Become invisible and abort the main thread's begin frame.
   state.SetVisible(false);
-  state.BeginFrameAborted();
+  state.BeginFrameAbortedByMainThread();
 
   // We should now be back in the idle state as if we didn't start a frame at
   // all.
@@ -707,7 +730,8 @@ TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeBeginFrameCompletes) {
 
   // We should be beginning a frame now.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 
   // Begin the frame.
   state.UpdateState(state.NextAction());
@@ -760,7 +784,8 @@ TEST(SchedulerStateMachineTest, TestContextLostWhenCompletelyIdle) {
   state.DidCreateAndInitializeOutputSurface();
 
   // When the context is recreated, we should begin a commit.
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
   state.UpdateState(state.NextAction());
 }
 
@@ -793,18 +818,19 @@ TEST(SchedulerStateMachineTest,
   state.DidCreateAndInitializeOutputSurface();
 
   // When the context is recreated, we should begin a commit
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
   state.UpdateState(state.NextAction());
 
   // Once the context is recreated, whether we draw should be based on
   // SetCanDraw.
   state.SetNeedsRedraw(true);
-  state.DidEnterVSync();
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.SetCanDraw(false);
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   state.SetCanDraw(true);
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
 }
 
 TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
@@ -818,17 +844,19 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
 
   // Get a commit in flight.
   state.SetNeedsCommit();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
   state.UpdateState(state.NextAction());
 
   // Set damage and expect a draw.
   state.SetNeedsRedraw(true);
-  state.DidEnterVSync();
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(state.NextAction());
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
 
-  // Cause a lost context while the begin frame is in flight.
+  // Cause a lost context while the begin frame is in flight
+  // for the main thread.
   state.DidLoseOutputSurface();
 
   // Ask for another draw. Expect nothing happens.
@@ -836,7 +864,7 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   // Finish the frame, and commit.
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
   state.UpdateState(state.NextAction());
 
@@ -846,11 +874,12 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(state.NextAction());
 
-  // Expect to be told to begin context recreation, independent of vsync state.
-  state.DidEnterVSync();
+  // Expect to be told to begin context recreation, independent of
+  // BeginFrame state.
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
             state.NextAction());
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
             state.NextAction());
 }
@@ -867,17 +896,19 @@ TEST(SchedulerStateMachineTest,
 
   // Get a commit in flight.
   state.SetNeedsCommit();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
   state.UpdateState(state.NextAction());
 
   // Set damage and expect a draw.
   state.SetNeedsRedraw(true);
-  state.DidEnterVSync();
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(state.NextAction());
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
 
-  // Cause a lost context while the begin frame is in flight.
+  // Cause a lost context while the begin frame is in flight
+  // for the main thread.
   state.DidLoseOutputSurface();
 
   // Ask for another draw and also set needs commit. Expect nothing happens.
@@ -886,7 +917,7 @@ TEST(SchedulerStateMachineTest,
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   // Finish the frame, and commit.
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
   state.UpdateState(state.NextAction());
 
@@ -896,11 +927,12 @@ TEST(SchedulerStateMachineTest,
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(state.NextAction());
 
-  // Expect to be told to begin context recreation, independent of vsync state
-  state.DidEnterVSync();
+  // Expect to be told to begin context recreation, independent of
+  // BeginFrame state
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
             state.NextAction());
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
             state.NextAction());
 }
@@ -919,23 +951,24 @@ TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost) {
 
   // Ask a forced redraw and verify it ocurrs.
   state.SetNeedsForcedRedraw(true);
-  state.DidEnterVSync();
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
 
   // Clear the forced redraw bit.
   state.SetNeedsForcedRedraw(false);
 
-  // Expect to be told to begin context recreation, independent of vsync state
+  // Expect to be told to begin context recreation, independent of
+  // BeginFrame state
   EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
             state.NextAction());
   state.UpdateState(state.NextAction());
 
   // Ask a forced redraw and verify it ocurrs.
   state.SetNeedsForcedRedraw(true);
-  state.DidEnterVSync();
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
 }
 
 TEST(SchedulerStateMachineTest, DontDrawBeforeCommitAfterLostOutputSurface) {
@@ -957,10 +990,12 @@ TEST(SchedulerStateMachineTest, DontDrawBeforeCommitAfterLostOutputSurface) {
   state.DidCreateAndInitializeOutputSurface();
 
   EXPECT_FALSE(state.RedrawPending());
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestBeginFrameWhenInvisibleAndForceCommit) {
+TEST(SchedulerStateMachineTest,
+    TestSendBeginFrameToMainThreadWhenInvisibleAndForceCommit) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -969,24 +1004,23 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenInvisibleAndForceCommit) {
   state.SetVisible(false);
   state.SetNeedsCommit();
   state.SetNeedsForcedCommit();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 }
 
 TEST(SchedulerStateMachineTest,
-     TestBeginFrameWhenCanBeginFrameFalseAndForceCommit) {
+    TestSendBeginFrameToMainThreadWhenCanStartFalseAndForceCommit) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
   state.SetVisible(true);
   state.SetCanDraw(true);
   state.SetNeedsCommit();
   state.SetNeedsForcedCommit();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestBeginFrameWhenCommitInProgress) {
+TEST(SchedulerStateMachineTest, TestFinishCommitWhenCommitInProgress) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -996,7 +1030,7 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenCommitInProgress) {
   state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS);
   state.SetNeedsCommit();
 
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
   state.UpdateState(state.NextAction());
 
@@ -1006,7 +1040,7 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenCommitInProgress) {
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestBeginFrameWhenForcedCommitInProgress) {
+TEST(SchedulerStateMachineTest, TestFinishCommitWhenForcedCommitInProgress) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -1017,19 +1051,19 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenForcedCommitInProgress) {
   state.SetNeedsCommit();
   state.SetNeedsForcedCommit();
 
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
   state.UpdateState(state.NextAction());
 
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW,
             state.CommitState());
 
-  // If we are waiting for forced draw then we know a begin frame is already in
-  // flight.
+  // If we are waiting for forced draw then we know a begin frame is already
+  // in flight for the main thread.
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestBeginFrameWhenContextLost) {
+TEST(SchedulerStateMachineTest, TestSendBeginFrameToMainThreadWhenContextLost) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -1040,10 +1074,11 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenContextLost) {
   state.SetNeedsCommit();
   state.SetNeedsForcedCommit();
   state.DidLoseOutputSurface();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestImmediateBeginFrame) {
+TEST(SchedulerStateMachineTest, TestImmediateFinishCommit) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -1056,7 +1091,7 @@ TEST(SchedulerStateMachineTest, TestImmediateBeginFrame) {
   state.SetNeedsCommit();
   state.SetNeedsForcedCommit();
   state.UpdateState(state.NextAction());
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
             state.CommitState());
@@ -1065,20 +1100,20 @@ TEST(SchedulerStateMachineTest, TestImmediateBeginFrame) {
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW,
             state.CommitState());
 
-  state.DidEnterVSync();
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   state.SetNeedsForcedRedraw(true);
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());
   state.UpdateState(state.NextAction());
   state.DidDrawIfPossibleCompleted(true);
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
 
-  // Should be waiting for the normal begin frame.
+  // Should be waiting for the normal begin frame from the main thread.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
             state.CommitState());
 }
 
-TEST(SchedulerStateMachineTest, TestImmediateBeginFrameDuringCommit) {
+TEST(SchedulerStateMachineTest, TestImmediateFinishCommitDuringCommit) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -1095,7 +1130,7 @@ TEST(SchedulerStateMachineTest, TestImmediateBeginFrameDuringCommit) {
   state.SetNeedsCommit();
   state.SetNeedsForcedCommit();
   state.UpdateState(state.NextAction());
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
             state.CommitState());
@@ -1104,20 +1139,21 @@ TEST(SchedulerStateMachineTest, TestImmediateBeginFrameDuringCommit) {
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW,
             state.CommitState());
 
-  state.DidEnterVSync();
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   state.SetNeedsForcedRedraw(true);
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());
   state.UpdateState(state.NextAction());
   state.DidDrawIfPossibleCompleted(true);
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
 
-  // Should be waiting for the normal begin frame.
+  // Should be waiting for the normal begin frame from the main thread.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
             state.CommitState()) << state.ToString();
 }
 
-TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileInvisible) {
+TEST(SchedulerStateMachineTest,
+    ImmediateBeginFrameAbortedByMainThreadWhileInvisible) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -1132,7 +1168,7 @@ TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileInvisible) {
   state.SetNeedsCommit();
   state.SetNeedsForcedCommit();
   state.UpdateState(state.NextAction());
-  state.BeginFrameComplete();
+  state.FinishCommit();
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
@@ -1142,28 +1178,28 @@ TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileInvisible) {
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW,
             state.CommitState());
 
-  state.DidEnterVSync();
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   state.SetNeedsForcedRedraw(true);
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());
   state.UpdateState(state.NextAction());
   state.DidDrawIfPossibleCompleted(true);
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
 
-  // Should be waiting for the normal begin frame.
+  // Should be waiting for the main thread's begin frame.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
             state.CommitState()) << state.ToString();
 
-  // Become invisible and abort the "normal" begin frame.
+  // Become invisible and abort the main thread's begin frame.
   state.SetVisible(false);
-  state.BeginFrameAborted();
+  state.BeginFrameAbortedByMainThread();
 
   // Should be back in the idle state, but needing a commit.
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
   EXPECT_TRUE(state.NeedsCommit());
 }
 
-TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileCantDraw) {
+TEST(SchedulerStateMachineTest, ImmediateFinishCommitWhileCantDraw) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -1178,7 +1214,7 @@ TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileCantDraw) {
   state.SetNeedsCommit();
   state.SetNeedsForcedCommit();
   state.UpdateState(state.NextAction());
-  state.BeginFrameComplete();
+  state.FinishCommit();
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
@@ -1188,13 +1224,13 @@ TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileCantDraw) {
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW,
             state.CommitState());
 
-  state.DidEnterVSync();
+  state.DidEnterBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   state.SetNeedsForcedRedraw(true);
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());
   state.UpdateState(state.NextAction());
   state.DidDrawIfPossibleCompleted(true);
-  state.DidLeaveVSync();
+  state.DidLeaveBeginFrame();
 }
 
 TEST(SchedulerStateMachineTest, ReportIfNotDrawing) {
@@ -1239,14 +1275,15 @@ TEST(SchedulerStateMachineTest, ReportIfNotDrawingFromAcquiredTextures) {
   state.UpdateState(state.NextAction());
   EXPECT_TRUE(state.DrawSuspendedUntilCommit());
 
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
+  EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
+            state.NextAction());
 
   state.UpdateState(state.NextAction());
   EXPECT_TRUE(state.DrawSuspendedUntilCommit());
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
-  state.BeginFrameComplete();
+  state.FinishCommit();
   EXPECT_TRUE(state.DrawSuspendedUntilCommit());
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());

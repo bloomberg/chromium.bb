@@ -54,7 +54,7 @@ class LayerTreeHostImplClient {
   virtual void OnSwapBuffersCompleteOnImplThread() = 0;
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) = 0;
-  virtual void DidVSync(base::TimeTicks frame_time) = 0;
+  virtual void BeginFrameOnImplThread(base::TimeTicks frame_time) = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) = 0;
   virtual void SetNeedsRedrawOnImplThread() = 0;
@@ -74,7 +74,8 @@ class LayerTreeHostImplClient {
   virtual bool IsInsideDraw() = 0;
   virtual void RenewTreePriority() = 0;
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay) = 0;
-  virtual void DidReceiveLastInputEventForVSync(base::TimeTicks frame_time) = 0;
+  virtual void DidReceiveLastInputEventForBeginFrameOnImplThread(
+      base::TimeTicks frame_time) = 0;
   virtual void DidActivatePendingTree() = 0;
 
  protected:
@@ -124,7 +125,7 @@ class CC_EXPORT LayerTreeHostImpl
                                        base::TimeDelta duration) OVERRIDE;
   virtual void ScheduleAnimation() OVERRIDE;
   virtual bool HaveTouchEventHandlersAt(gfx::Point viewport_port) OVERRIDE;
-  virtual void DidReceiveLastInputEventForVSync(
+  virtual void DidReceiveLastInputEventForBeginFrame(
       base::TimeTicks frame_time) OVERRIDE;
 
   // TopControlsManagerClient implementation.
@@ -205,7 +206,8 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void SetNeedsRedrawRect(gfx::Rect rect) OVERRIDE;
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) OVERRIDE;
-  virtual void DidVSync(base::TimeTicks frame_time) OVERRIDE;
+  virtual void BeginFrame(base::TimeTicks frame_time)
+      OVERRIDE;
   virtual void OnSendFrameToParentCompositorAck(const CompositorFrameAck& ack)
       OVERRIDE;
 
@@ -229,7 +231,7 @@ class CC_EXPORT LayerTreeHostImpl
   const RendererCapabilities& GetRendererCapabilities() const;
 
   virtual bool SwapBuffers(const FrameData& frame);
-  void EnableVSyncNotification(bool enable);
+  void SetNeedsBeginFrame(bool enable);
 
   void Readback(void* pixels, gfx::Rect rect_in_device_viewport);
 

@@ -43,7 +43,7 @@ IPC::ForwardingMessageFilter* CompositorOutputSurface::CreateFilter(
     ViewMsg_UpdateVSyncParameters::ID,
     ViewMsg_SwapCompositorFrameAck::ID,
 #if defined(OS_ANDROID)
-    ViewMsg_DidVSync::ID
+    ViewMsg_BeginFrame::ID
 #endif
   };
 
@@ -136,7 +136,7 @@ void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateVSyncParameters, OnUpdateVSyncParameters);
     IPC_MESSAGE_HANDLER(ViewMsg_SwapCompositorFrameAck, OnSwapAck);
 #if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewMsg_DidVSync, OnDidVSync);
+    IPC_MESSAGE_HANDLER(ViewMsg_BeginFrame, OnBeginFrame);
 #endif
   IPC_END_MESSAGE_MAP()
 }
@@ -148,14 +148,14 @@ void CompositorOutputSurface::OnUpdateVSyncParameters(
 }
 
 #if defined(OS_ANDROID)
-void CompositorOutputSurface::EnableVSyncNotification(bool enable) {
+void CompositorOutputSurface::SetNeedsBeginFrame(bool enable) {
   DCHECK(CalledOnValidThread());
-  Send(new ViewHostMsg_SetVSyncNotificationEnabled(routing_id_, enable));
+  Send(new ViewHostMsg_SetNeedsBeginFrame(routing_id_, enable));
 }
 
-void CompositorOutputSurface::OnDidVSync(base::TimeTicks frame_time) {
+void CompositorOutputSurface::OnBeginFrame(base::TimeTicks frame_time) {
   DCHECK(CalledOnValidThread());
-  client_->DidVSync(frame_time);
+  client_->BeginFrame(frame_time);
 }
 #endif  // defined(OS_ANDROID)
 
