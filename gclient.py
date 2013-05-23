@@ -1700,6 +1700,10 @@ def Parser():
                     help='create a gclient file containing the provided '
                          'string. Due to Cygwin/Python brokenness, it '
                          'probably can\'t contain any newlines.')
+  parser.add_option('--no-nag-max', default=False, action='store_true',
+                    help='If a subprocess runs for too long without generating'
+                    ' terminal output, generate warnings, but do not kill'
+                    ' the process.')
   # Integrate standard options processing.
   old_parser = parser.parse_args
   def Parse(args):
@@ -1730,6 +1734,8 @@ def Parser():
       options.manually_grab_svn_rev = None
     if not hasattr(options, 'force'):
       options.force = None
+    if options.no_nag_max:
+      gclient_scm.SCMWrapper.nag_max = None
     return (options, args)
   parser.parse_args = Parse
   # We don't want wordwrapping in epilog (usually examples)
