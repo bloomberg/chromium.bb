@@ -33,7 +33,6 @@
 
 #include "core/html/HTMLInputElement.h"
 #include "core/html/InputTypeNames.h"
-#include "core/platform/KURL.h"
 #include "core/platform/LocalizedStrings.h"
 #include <wtf/PassOwnPtr.h>
 

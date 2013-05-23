@@ -27,8 +27,6 @@
 
 #include "core/html/canvas/WebGLTexture.h"
 
-#include "core/html/canvas/WebGLContextGroup.h"
-#include "core/html/canvas/WebGLFramebuffer.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 
 namespace WebCore {

@@ -28,8 +28,6 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/InputTypeNames.h"
-#include "core/page/Frame.h"
-#include "core/page/Settings.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/platform/LocalizedStrings.h"
 #include <wtf/PassOwnPtr.h>

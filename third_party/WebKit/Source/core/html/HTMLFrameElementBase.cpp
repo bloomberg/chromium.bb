@@ -36,8 +36,6 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
-#include "core/platform/KURL.h"
 #include "core/rendering/RenderPart.h"
 
 namespace WebCore {

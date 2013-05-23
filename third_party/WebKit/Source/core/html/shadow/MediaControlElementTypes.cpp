@@ -36,8 +36,6 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/MouseEvent.h"
-#include "core/rendering/RenderMedia.h"
-#include "core/rendering/RenderMediaControlElements.h"
 
 namespace WebCore {
 

@@ -28,7 +28,6 @@
 #include "core/html/MediaDocument.h"
 
 #include "HTMLNames.h"
-#include "bindings/v8/ScriptController.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/KeyboardEvent.h"
@@ -40,7 +39,6 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
 
 namespace WebCore {

@@ -25,15 +25,12 @@
 #include "core/html/HTMLAppletElement.h"
 
 #include "HTMLNames.h"
-#include "core/dom/Attribute.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLParamElement.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
 #include "core/platform/Widget.h"
 #include "core/rendering/RenderApplet.h"
-#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

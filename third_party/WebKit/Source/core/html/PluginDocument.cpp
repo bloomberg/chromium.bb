@@ -27,7 +27,6 @@
 
 #include "HTMLNames.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
-#include "core/dom/NodeList.h"
 #include "core/dom/RawDataDocumentParser.h"
 #include "core/html/HTMLEmbedElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -36,8 +35,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
-#include "core/page/Page.h"
-#include "core/page/Settings.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 
 namespace WebCore {

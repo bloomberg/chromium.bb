@@ -30,7 +30,6 @@
 #include "HTMLNames.h"
 #include "MathMLNames.h"
 #include "SVGNames.h"
-#include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
 #include <wtf/PassOwnPtr.h>
 

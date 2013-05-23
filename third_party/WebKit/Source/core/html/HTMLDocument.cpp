@@ -61,7 +61,6 @@
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/platform/KURL.h"
 
 namespace WebCore {
 

@@ -23,10 +23,8 @@
 #include "core/html/HTMLAreaElement.h"
 
 #include "HTMLNames.h"
-#include "core/dom/Attribute.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMapElement.h"
-#include "core/page/Frame.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/HitTestResult.h"

@@ -33,7 +33,6 @@
 #include "core/html/BaseButtonInputType.h"
 
 #include "HTMLNames.h"
-#include "core/dom/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/rendering/RenderButton.h"
 

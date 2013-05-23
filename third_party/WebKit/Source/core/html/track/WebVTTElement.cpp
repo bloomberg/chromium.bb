@@ -27,8 +27,6 @@
 
 #include "core/html/track/WebVTTElement.h"
 
-#include "core/html/track/TextTrack.h"
-
 namespace WebCore {
 
 static const QualifiedName& nodeTypeToTagName(WebVTTNodeType nodeType)

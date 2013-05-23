@@ -31,12 +31,10 @@
 #include <limits>
 #include "HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/dom/BeforeTextInsertedEvent.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/ButtonInputType.h"

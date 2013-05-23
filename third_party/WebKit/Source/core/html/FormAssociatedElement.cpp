@@ -27,13 +27,10 @@
 
 #include "HTMLNames.h"
 #include "core/dom/IdTargetObserver.h"
-#include "core/html/FormController.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/ValidityState.h"
-#include "core/page/EditorClient.h"
-#include "core/page/Frame.h"
 
 namespace WebCore {
 

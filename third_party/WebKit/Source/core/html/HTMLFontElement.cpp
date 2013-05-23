@@ -26,11 +26,9 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/StylePropertySet.h"
-#include "core/dom/Attribute.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include <wtf/text/StringBuilder.h>
 

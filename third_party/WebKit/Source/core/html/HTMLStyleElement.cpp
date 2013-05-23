@@ -25,15 +25,12 @@
 #include "core/html/HTMLStyleElement.h"
 
 #include "HTMLNames.h"
-#include "bindings/v8/ScriptEventListener.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/dom/Attribute.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventSender.h"
-#include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
 namespace WebCore {

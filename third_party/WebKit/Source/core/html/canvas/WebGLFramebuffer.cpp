@@ -27,8 +27,6 @@
 
 #include "core/html/canvas/WebGLFramebuffer.h"
 
-#include "core/html/canvas/EXTDrawBuffers.h"
-#include "core/html/canvas/WebGLContextGroup.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/platform/graphics/Extensions3D.h"
 

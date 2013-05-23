@@ -40,12 +40,8 @@
 #include "core/html/parser/HTMLScriptRunner.h"
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
-#include "core/html/parser/NestingLevelIncrementer.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
-#include "core/page/Settings.h"
 #include <wtf/Functional.h>
 
 namespace WebCore {

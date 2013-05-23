@@ -28,7 +28,6 @@
 #include "HTMLNames.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/StylePropertySet.h"
-#include "core/dom/Attribute.h"
 
 namespace WebCore {
 

@@ -32,7 +32,6 @@
 #include "config.h"
 #include "core/html/HTMLDataListElement.h"
 
-#include "HTMLNames.h"
 #include "core/dom/IdTargetObserverRegistry.h"
 #include "core/page/UseCounter.h"
 

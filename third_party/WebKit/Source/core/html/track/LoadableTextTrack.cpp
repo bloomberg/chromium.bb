@@ -27,12 +27,8 @@
 
 #include "core/html/track/LoadableTextTrack.h"
 
-#include "bindings/v8/ScriptEventListener.h"
-#include "core/dom/Event.h"
-#include "core/dom/ScriptExecutionContext.h"
 #include "core/html/HTMLTrackElement.h"
 #include "core/html/track/TextTrackCueList.h"
-#include "core/html/track/TextTrackRegionList.h"
 
 namespace WebCore {
 

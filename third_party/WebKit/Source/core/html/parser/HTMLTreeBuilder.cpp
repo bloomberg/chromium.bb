@@ -36,7 +36,6 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
-#include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/AtomicHTMLToken.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"

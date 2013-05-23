@@ -33,7 +33,6 @@
 
 #include "HTMLNames.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
-#include "core/html/HTMLFormElement.h"
 
 namespace WebCore {
 

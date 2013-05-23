@@ -42,7 +42,6 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/LocalizedStrings.h"
-#include "core/platform/NotImplemented.h"
 
 using std::min;
 

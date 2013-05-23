@@ -32,8 +32,6 @@
 #include "core/html/BaseDateAndTimeInputType.h"
 
 #include <limits>
-#include "HTMLNames.h"
-#include "core/dom/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/platform/text/PlatformLocale.h"
 #include <wtf/CurrentTime.h>

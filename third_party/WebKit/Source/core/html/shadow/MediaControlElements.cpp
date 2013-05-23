@@ -46,7 +46,6 @@
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
 #include "core/page/Settings.h"
-#include "core/platform/Language.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/RenderLayer.h"

@@ -23,12 +23,9 @@
 #include "core/html/HTMLProgressElement.h"
 
 #include "HTMLNames.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/html/HTMLDivElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ProgressShadowElement.h"
 #include "core/rendering/RenderProgress.h"

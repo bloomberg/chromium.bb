@@ -27,8 +27,6 @@
 
 #include "HTMLNames.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/NodeList.h"
-#include "core/dom/Text.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"

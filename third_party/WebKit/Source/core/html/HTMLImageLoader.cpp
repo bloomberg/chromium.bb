@@ -29,7 +29,6 @@
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedImage.h"
-#include "core/page/Settings.h"
 
 namespace WebCore {
 

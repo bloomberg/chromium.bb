@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/html/ime/InputMethodContext.h"
 
-#include "core/html/HTMLElement.h"
 #include "core/html/ime/Composition.h"
 
 namespace WebCore {

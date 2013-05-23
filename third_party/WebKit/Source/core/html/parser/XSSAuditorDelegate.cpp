@@ -28,14 +28,11 @@
 
 #include <wtf/text/StringBuilder.h>
 #include "core/dom/Document.h"
-#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
-#include "core/page/Console.h"
-#include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/platform/network/FormData.h"
 #include "weborigin/SecurityOrigin.h"

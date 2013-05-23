@@ -26,9 +26,7 @@
 #include "config.h"
 #include "core/html/parser/HTMLScriptRunner.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ScriptSourceCode.h"
-#include "core/dom/Attribute.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/Element.h"
 #include "core/dom/Event.h"
@@ -38,7 +36,6 @@
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLScriptRunnerHost.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
-#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/page/Frame.h"
 #include "core/platform/NotImplemented.h"

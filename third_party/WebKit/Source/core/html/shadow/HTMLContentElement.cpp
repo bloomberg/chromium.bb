@@ -28,11 +28,8 @@
 #include "core/html/shadow/HTMLContentElement.h"
 
 #include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/QualifiedName.h"
-#include "core/dom/shadow/ContentDistributor.h"
-#include "core/dom/shadow/ContentSelectorQuery.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include <wtf/StdLibExtras.h>
 

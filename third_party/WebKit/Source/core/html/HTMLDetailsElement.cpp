@@ -22,7 +22,6 @@
 #include "core/html/HTMLDetailsElement.h"
 
 #include "HTMLNames.h"
-#include "core/dom/MouseEvent.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"

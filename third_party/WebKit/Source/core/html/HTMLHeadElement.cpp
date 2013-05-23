@@ -25,7 +25,6 @@
 #include "core/html/HTMLHeadElement.h"
 
 #include "HTMLNames.h"
-#include "core/dom/Text.h"
 
 namespace WebCore {
 

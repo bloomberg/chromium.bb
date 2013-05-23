@@ -27,7 +27,6 @@
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "core/css/StylePropertySet.h"
-#include "core/dom/Attribute.h"
 
 namespace WebCore {
 

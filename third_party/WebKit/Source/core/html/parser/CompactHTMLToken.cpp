@@ -29,7 +29,6 @@
 #include "core/dom/QualifiedName.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLToken.h"
-#include "core/html/parser/XSSAuditorDelegate.h"
 
 namespace WebCore {
 

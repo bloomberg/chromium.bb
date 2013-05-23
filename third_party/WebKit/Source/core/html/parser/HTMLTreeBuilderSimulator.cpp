@@ -29,7 +29,6 @@
 #include "HTMLNames.h"
 #include "MathMLNames.h"
 #include "SVGNames.h"
-#include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/html/parser/HTMLTreeBuilder.h"

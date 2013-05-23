@@ -42,7 +42,6 @@
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/DateTimeFieldsState.h"
-#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include <wtf/text/WTFString.h>
 #endif

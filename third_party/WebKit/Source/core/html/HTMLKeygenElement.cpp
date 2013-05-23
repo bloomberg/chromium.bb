@@ -26,10 +26,8 @@
 #include "core/html/HTMLKeygenElement.h"
 
 #include "HTMLNames.h"
-#include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
-#include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLOptionElement.h"

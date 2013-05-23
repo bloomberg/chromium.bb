@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/html/canvas/CanvasGradient.h"
 
-#include "core/css/CSSParser.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasStyle.h"

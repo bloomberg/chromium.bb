@@ -33,7 +33,6 @@
 
 #include "HTMLNames.h"
 #include "core/dom/KeyboardEvent.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/InputTypeNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"

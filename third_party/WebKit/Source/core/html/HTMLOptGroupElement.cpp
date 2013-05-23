@@ -29,9 +29,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/html/HTMLSelectElement.h"
-#include "core/rendering/RenderMenuList.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

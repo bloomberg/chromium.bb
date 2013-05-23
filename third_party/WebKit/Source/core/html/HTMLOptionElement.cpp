@@ -29,18 +29,14 @@
 
 #include "HTMLNames.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ScriptElement.h"
 #include "core/dom/Text.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderTheme.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

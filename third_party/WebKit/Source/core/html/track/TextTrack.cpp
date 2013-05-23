@@ -33,12 +33,10 @@
 
 #include "core/html/track/TextTrack.h"
 
-#include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/TextTrackList.h"
-#include "core/html/track/TextTrackRegionList.h"
 #include "core/html/track/TrackBase.h"
 
 namespace WebCore {

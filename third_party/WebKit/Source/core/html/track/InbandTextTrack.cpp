@@ -28,14 +28,10 @@
 #include "core/html/track/InbandTextTrack.h"
 
 #include <math.h>
-#include "core/dom/Document.h"
-#include "core/dom/Event.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/html/track/TextTrackCueGeneric.h"
-#include "core/html/track/TextTrackCueList.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
-#include "core/platform/graphics/MediaPlayer.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

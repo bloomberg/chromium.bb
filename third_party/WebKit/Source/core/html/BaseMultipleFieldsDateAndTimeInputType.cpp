@@ -35,8 +35,6 @@
 #include "CSSValueKeywords.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/KeyboardEvent.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/DateTimeFieldsState.h"
 #include "core/html/FormController.h"

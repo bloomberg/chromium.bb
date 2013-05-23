@@ -23,7 +23,6 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderPart.h"
 #include "core/svg/SVGDocument.h"

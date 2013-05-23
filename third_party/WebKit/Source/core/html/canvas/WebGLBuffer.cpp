@@ -27,8 +27,6 @@
 
 #include "core/html/canvas/WebGLBuffer.h"
 
-#include "core/html/canvas/CheckedInt.h"
-#include "core/html/canvas/WebGLContextGroup.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include <wtf/ArrayBufferView.h>
 

@@ -30,7 +30,6 @@
 
 #include <wtf/MainThread.h>
 #include <wtf/PassOwnPtr.h>
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/BlobURL.h"
@@ -38,12 +37,10 @@
 #include "core/html/PublicURLManager.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/platform/KURL.h"
-#include "core/platform/network/ResourceRequest.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "modules/mediasource/WebKitMediaSource.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
-#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
