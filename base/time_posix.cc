@@ -209,12 +209,14 @@ Time Time::FromExploded(bool is_local, const Exploded& exploded) {
     // 999ms to avoid the time being less than any other possible value that
     // this function can return.
     if (exploded.year < 1969) {
-      milliseconds = std::numeric_limits<SysTime>::min() *
-                     kMillisecondsPerSecond;
+      CHECK(sizeof(SysTime) < sizeof(int64)) << "integer overflow";
+      milliseconds = std::numeric_limits<SysTime>::min();
+      milliseconds *= kMillisecondsPerSecond;
     } else {
-      milliseconds = (std::numeric_limits<SysTime>::max() *
-                      kMillisecondsPerSecond) +
-                     kMillisecondsPerSecond - 1;
+      CHECK(sizeof(SysTime) < sizeof(int64)) << "integer overflow";
+      milliseconds = std::numeric_limits<SysTime>::max();
+      milliseconds *= kMillisecondsPerSecond;
+      milliseconds += (kMillisecondsPerSecond - 1);
     }
   } else {
     milliseconds = seconds * kMillisecondsPerSecond + exploded.millisecond;
