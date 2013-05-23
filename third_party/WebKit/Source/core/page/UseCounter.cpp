@@ -613,8 +613,6 @@ String UseCounter::deprecationMessage(Feature feature)
         return "The 'X-WebKit-CSP' headers are deprecated; please consider using the canonical 'Content-Security-Policy' header instead.";
 
     // HTMLMediaElement
-    case PrefixedMediaAddKey:
-        return "'HTMLMediaElement.webkitAddKey()' is deprecated. Please use 'MediaKeySession.update()' instead.";
     case PrefixedMediaGenerateKeyRequest:
         return "'HTMLMediaElement.webkitGenerateKeyRequest()' is deprecated. Please use 'MediaKeys.createSession()' instead.";
 

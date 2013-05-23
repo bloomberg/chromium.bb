@@ -87,13 +87,9 @@ attribute boolean webkitClosedCaptionsVisible;
 readonly attribute unsigned long webkitAudioDecodedByteCount;
 readonly attribute unsigned long webkitVideoDecodedByteCount;
 
-#if defined(ENABLE_ENCRYPTED_MEDIA_V2) && ENABLE_ENCRYPTED_MEDIA_V2
-[EnabledAtRuntime=legacyEncryptedMedia, RaisesException, DeprecateAs=PrefixedMediaGenerateKeyRequest] void webkitGenerateKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, optional Uint8Array initData);
-[EnabledAtRuntime=legacyEncryptedMedia, RaisesException, DeprecateAs=PrefixedMediaAddKey] void webkitAddKey([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, Uint8Array key, optional Uint8Array initData, [Default=NullString] optional DOMString sessionId);
-#else
+// FIXME: add DeprecateAs=PrefixedMediaGenerateKeyRequest when MediaKeys is ready.
 [EnabledAtRuntime=legacyEncryptedMedia, RaisesException] void webkitGenerateKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, optional Uint8Array initData);
 [EnabledAtRuntime=legacyEncryptedMedia, RaisesException] void webkitAddKey([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, Uint8Array key, optional Uint8Array initData, [Default=NullString] optional DOMString sessionId);
-#endif
 [EnabledAtRuntime=legacyEncryptedMedia, RaisesException] void webkitCancelKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, [Default=NullString] optional DOMString sessionId);
 
 [EnabledAtRuntime=legacyEncryptedMedia] attribute EventListener onwebkitkeyadded;
