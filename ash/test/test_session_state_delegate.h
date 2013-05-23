@@ -18,9 +18,6 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   TestSessionStateDelegate();
   virtual ~TestSessionStateDelegate();
 
-  void set_logged_in_users(int users) { logged_in_users_ = users; }
-  const std::string& get_activated_user() { return activated_user_; }
-
   // SessionStateDelegate:
   virtual int GetMaximumNumberOfLoggedInUsers() const OVERRIDE;
   virtual int NumberOfLoggedInUsers() const OVERRIDE;
@@ -70,12 +67,6 @@ class TestSessionStateDelegate : public SessionStateDelegate {
 
   // Whether the screen is currently locked.
   bool screen_locked_;
-
-  // The number of users logged in.
-  int logged_in_users_;
-
-  // The activated user.
-  std::string activated_user_;
 
   // A test user image.
   gfx::ImageSkia null_image_;

@@ -190,9 +190,6 @@ class UserCard : public views::CustomButton {
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
-  // Check if the item is hovered.
-  bool is_hovered_for_test() {return button_hovered_; }
-
  private:
   // Change the hover/active state of the "button" when the status changes.
   void ShowActive();
@@ -240,9 +237,6 @@ class UserView : public views::View,
   // Overridden from MouseWatcherListener:
   virtual void MouseMovedOutOfHost() OVERRIDE;
 
-  TrayUser::TestState GetStateForTest() const;
-  gfx::Rect GetBoundsInScreenOfUserButtonForTest();
-
  private:
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -270,18 +264,10 @@ class UserView : public views::View,
   void ToggleAddUserMenuOption();
 
   MultiProfileIndex multiprofile_index_;
-  // The view of the user card.
-  views::View* user_card_view_;
-
-  // True if |user_card_view_| is a |UserView| - otherwise it is only a
-  // |views::View|.
-  bool is_user_card_;
+  views::View* user_card_;
   views::View* logout_button_;
   scoped_ptr<ash::PopupMessage> popup_message_;
   scoped_ptr<views::Widget> add_menu_option_;
-
-  // True when the add user panel is visible but not activatable.
-  bool add_user_visible_but_disabled_;
 
   // The mouse watcher which takes care of out of window hover events.
   scoped_ptr<views::MouseWatcher> mouse_watcher_;
@@ -594,10 +580,8 @@ UserView::UserView(SystemTrayItem* owner,
                    ash::user::LoginStatus login,
                    MultiProfileIndex index)
     : multiprofile_index_(index),
-      user_card_view_(NULL),
-      is_user_card_(false),
-      logout_button_(NULL),
-      add_user_visible_but_disabled_(false) {
+      user_card_(NULL),
+      logout_button_(NULL) {
   CHECK_NE(ash::user::LOGGED_IN_NONE, login);
   if (!index) {
     // Only the logged in user will have a background. All other users will have
@@ -623,24 +607,6 @@ void UserView::MouseMovedOutOfHost() {
   add_menu_option_.reset();
 }
 
-TrayUser::TestState UserView::GetStateForTest() const {
-  if (add_menu_option_.get()) {
-    return add_user_visible_but_disabled_ ? TrayUser::ACTIVE_BUT_DISABLED :
-                                            TrayUser::ACTIVE;
-  }
-
-  if (!is_user_card_)
-    return TrayUser::SHOWN;
-
-  return static_cast<UserCard*>(user_card_view_)->is_hovered_for_test() ?
-      TrayUser::HOVERED : TrayUser::SHOWN;
-}
-
-gfx::Rect UserView::GetBoundsInScreenOfUserButtonForTest() {
-  DCHECK(user_card_view_);
-  return user_card_view_->GetBoundsInScreen();
-}
-
 gfx::Size UserView::GetPreferredSize() {
   gfx::Size size = views::View::GetPreferredSize();
   // Only the active user panel will be forced to a certain height.
@@ -657,7 +623,7 @@ int UserView::GetHeightForWidth(int width) {
 
 void UserView::Layout() {
   gfx::Rect contents_area(GetContentsBounds());
-  if (user_card_view_ && logout_button_) {
+  if (user_card_ && logout_button_) {
     // Give the logout button the space it requests.
     gfx::Rect logout_area = contents_area;
     logout_area.ClampToCenteredSize(logout_button_->GetPreferredSize());
@@ -667,8 +633,8 @@ void UserView::Layout() {
     gfx::Rect user_card_area = contents_area;
     int remaining_width = contents_area.width() - logout_area.width();
     if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
-      // In multiprofile case |user_card_view_| and |logout_button_| have to
-      // have the same height.
+      // In multiprofile case |user_card_| and |logout_button_| have to have the
+      // same height.
       int y = std::min(user_card_area.y(), logout_area.y());
       int height = std::max(user_card_area.height(), logout_area.height());
       logout_area.set_y(y);
@@ -690,10 +656,10 @@ void UserView::Layout() {
       // between the two.
       remaining_width -= kTrayPopupPaddingBetweenItems;
     }
-    user_card_view_->SetBoundsRect(user_card_area);
+    user_card_->SetBoundsRect(user_card_area);
     logout_button_->SetBoundsRect(logout_area);
-  } else if (user_card_view_) {
-    user_card_view_->SetBoundsRect(contents_area);
+  } else if (user_card_) {
+    user_card_->SetBoundsRect(contents_area);
   } else if (logout_button_) {
     logout_button_->SetBoundsRect(contents_area);
   }
@@ -702,7 +668,7 @@ void UserView::Layout() {
 void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == logout_button_) {
     ash::Shell::GetInstance()->system_tray_delegate()->SignOut();
-  } else if (sender == user_card_view_ &&
+  } else if (sender == user_card_ &&
              ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
     if (!multiprofile_index_) {
       ToggleAddUserMenuOption();
@@ -757,16 +723,14 @@ void UserView::AddUserCard(SystemTrayItem* owner,
 
   if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
       login != ash::user::LOGGED_IN_RETAIL_MODE) {
-    user_card_view_ = new UserCard(this, multiprofile_index_ == 0);
-    is_user_card_ = true;
+    user_card_ = new UserCard(this, multiprofile_index_ == 0);
   } else {
-    user_card_view_ = new views::View();
-    is_user_card_ = false;
+    user_card_ = new views::View();
   }
 
-  user_card_view_->SetLayoutManager(new views::BoxLayout(
+  user_card_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0 , kTrayPopupPaddingBetweenItems));
-  AddChildViewAt(user_card_view_, 0);
+  AddChildViewAt(user_card_, 0);
 
   if (login == ash::user::LOGGED_IN_RETAIL_MODE) {
     AddLoggedInRetailModeUserCardContent();
@@ -774,8 +738,8 @@ void UserView::AddUserCard(SystemTrayItem* owner,
   }
 
   // The entire user card should trigger hover (the inner items get disabled).
-  user_card_view_->SetEnabled(true);
-  user_card_view_->set_notify_enter_exit_on_child(true);
+  user_card_->SetEnabled(true);
+  user_card_->set_notify_enter_exit_on_child(true);
 
   if (login == ash::user::LOGGED_IN_PUBLIC) {
     AddLoggedInPublicModeUserCardContent(owner);
@@ -783,7 +747,7 @@ void UserView::AddUserCard(SystemTrayItem* owner,
   }
 
   views::View* icon = CreateIconForUserCard(login);
-  user_card_view_->AddChildView(icon);
+  user_card_->AddChildView(icon);
 
   // To allow the border to start before the icon, reduce the size before and
   // add an inset to the icon to get the spacing.
@@ -840,7 +804,7 @@ void UserView::AddUserCard(SystemTrayItem* owner,
   if (username)
     additional->SetFont(bundle.GetFont(ui::ResourceBundle::SmallFont));
 
-  user_card_view_->AddChildView(details);
+  user_card_->AddChildView(details);
 }
 
 views::View* UserView::CreateIconForUserCard(ash::user::LoginStatus login) {
@@ -867,13 +831,12 @@ void UserView::AddLoggedInRetailModeUserCardContent() {
       bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_KIOSK_LABEL));
   details->set_border(views::Border::CreateEmptyBorder(0, 4, 0, 1));
   details->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  user_card_view_->AddChildView(details);
+  user_card_->AddChildView(details);
 }
 
 void UserView::AddLoggedInPublicModeUserCardContent(SystemTrayItem* owner) {
-  user_card_view_->AddChildView(
-      CreateIconForUserCard(ash::user::LOGGED_IN_PUBLIC));
-  user_card_view_->AddChildView(new PublicAccountUserDetails(
+  user_card_->AddChildView(CreateIconForUserCard(ash::user::LOGGED_IN_PUBLIC));
+  user_card_->AddChildView(new PublicAccountUserDetails(
       owner, GetPreferredSize().width() + kTrayPopupPaddingBetweenItems));
 }
 
@@ -890,7 +853,7 @@ void UserView::ToggleAddUserMenuOption() {
   // gets destroyed..
   const SessionStateDelegate* session_state_delegate =
       ash::Shell::GetInstance()->session_state_delegate();
-  add_user_visible_but_disabled_ =
+  bool cannot_add_more_users =
       session_state_delegate->NumberOfLoggedInUsers() >=
           session_state_delegate->GetMaximumNumberOfLoggedInUsers();
   add_menu_option_.reset(new views::Widget);
@@ -908,17 +871,17 @@ void UserView::ToggleAddUserMenuOption() {
                 views::corewm::SHADOW_TYPE_NONE);
 
   // Position it below our user card.
-  gfx::Rect bounds = user_card_view_->GetBoundsInScreen();
+  gfx::Rect bounds = user_card_->GetBoundsInScreen();
   bounds.set_y(bounds.y() + bounds.height());
   add_menu_option_->SetBounds(bounds);
 
   // Show the content.
   AddUserView* add_user_view = new AddUserView(
-      static_cast<UserCard*>(user_card_view_), this);
+      static_cast<UserCard*>(user_card_), this);
   add_menu_option_->SetContentsView(add_user_view);
   add_menu_option_->SetAlwaysOnTop(true);
   add_menu_option_->Show();
-  if (add_user_visible_but_disabled_) {
+  if (cannot_add_more_users) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     popup_message_.reset(new PopupMessage(
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAPTION_CANNOT_ADD_USER),
@@ -931,7 +894,7 @@ void UserView::ToggleAddUserMenuOption() {
   }
   // Find the screen area which encloses both elements and sets then a mouse
   // watcher which will close the "menu".
-  gfx::Rect area = user_card_view_->GetBoundsInScreen();
+  gfx::Rect area = user_card_->GetBoundsInScreen();
   area.set_height(2 * area.height());
   mouse_watcher_.reset(new views::MouseWatcher(
       new UserViewMouseWatcherHost(area),
@@ -1023,26 +986,12 @@ TrayUser::TrayUser(SystemTray* system_tray, MultiProfileIndex index)
       user_(NULL),
       layout_view_(NULL),
       avatar_(NULL),
-      label_(NULL),
-      separator_shown_(false) {
+      label_(NULL) {
   Shell::GetInstance()->system_tray_notifier()->AddUserObserver(this);
 }
 
 TrayUser::~TrayUser() {
   Shell::GetInstance()->system_tray_notifier()->RemoveUserObserver(this);
-}
-
-TrayUser::TestState TrayUser::GetStateForTest() const {
-  if (separator_shown_)
-    return SEPARATOR;
-  if (!user_)
-    return HIDDEN;
-  return user_->GetStateForTest();
-}
-
-gfx::Rect TrayUser::GetUserPanelBoundsInScreenForTest() const {
-  DCHECK(user_);
-  return user_->GetBoundsInScreenOfUserButtonForTest();
 }
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
@@ -1075,7 +1024,6 @@ views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
   if (multiprofile_index_ ==
           session_state_delegate->GetMaximumNumberOfLoggedInUsers() &&
       logged_in_users > 1) {
-    separator_shown_ = true;
     return new views::View();
   }
 
@@ -1095,7 +1043,6 @@ void TrayUser::DestroyTrayView() {
   layout_view_ = NULL;
   avatar_ = NULL;
   label_ = NULL;
-  separator_shown_ = false;
 }
 
 void TrayUser::DestroyDefaultView() {
