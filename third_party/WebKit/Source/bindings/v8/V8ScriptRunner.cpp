@@ -60,14 +60,13 @@ PassOwnPtr<v8::ScriptData> V8ScriptRunner::precompileScript(v8::Handle<v8::Strin
     return scriptData.release();
 }
 
-v8::Handle<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, v8::ScriptData* scriptData, v8::Isolate* isolate)
+v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, v8::ScriptData* scriptData, v8::Isolate* isolate)
 {
     v8::Handle<v8::String> name = v8String(fileName, isolate);
     v8::Handle<v8::Integer> line = v8Integer(scriptStartPosition.m_line.zeroBasedInt(), isolate);
     v8::Handle<v8::Integer> column = v8Integer(scriptStartPosition.m_column.zeroBasedInt(), isolate);
     v8::ScriptOrigin origin(name, line, column);
-    v8::Handle<v8::Script> script = v8::Script::Compile(code, &origin, scriptData);
-    return script;
+    return v8::Script::Compile(code, &origin, scriptData);
 }
 
 v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> script, ScriptExecutionContext* context)

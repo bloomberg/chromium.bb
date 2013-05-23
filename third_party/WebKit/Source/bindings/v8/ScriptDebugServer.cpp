@@ -566,14 +566,12 @@ void ScriptDebugServer::compileScript(ScriptState* state, const String& expressi
     v8::Handle<v8::Context> context = state->context();
     if (context.IsEmpty())
         return;
+    v8::Isolate* isolate = context->GetIsolate();
     v8::Context::Scope contextScope(context);
 
-    v8::Handle<v8::String> code = v8String(expression, context->GetIsolate());
+    v8::Handle<v8::String> source = v8String(expression, isolate);
     v8::TryCatch tryCatch;
-
-    v8::ScriptOrigin origin(v8String(sourceURL, context->GetIsolate()), v8Integer(0, context->GetIsolate()), v8Integer(0, context->GetIsolate()));
-    v8::Handle<v8::Script> script = v8::Script::Compile(code, &origin);
-
+    v8::Local<v8::Script> script = V8ScriptRunner::compileScript(source, sourceURL, TextPosition(), 0, isolate);
     if (tryCatch.HasCaught()) {
         v8::Local<v8::Message> message = tryCatch.Message();
         if (!message.IsEmpty())
@@ -607,14 +605,8 @@ void ScriptDebugServer::runScript(ScriptState* state, const String& scriptId, Sc
     if (context.IsEmpty())
         return;
     v8::Context::Scope contextScope(context);
-
-    v8::Local<v8::Value> value;
     v8::TryCatch tryCatch;
-    {
-        V8RecursionScope recursionScope(state->scriptExecutionContext());
-        value = script->Run();
-    }
-
+    v8::Local<v8::Value> value = V8ScriptRunner::runCompiledScript(script, state->scriptExecutionContext());
     *wasThrown = false;
     if (tryCatch.HasCaught()) {
         *wasThrown = true;
