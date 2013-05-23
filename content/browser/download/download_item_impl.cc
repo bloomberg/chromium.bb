@@ -369,6 +369,15 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
     request_handle_->CancelRequest();
   }
 
+  // Remove the intermediate file if we are cancelling an interrupted download.
+  // Continuable interruptions leave the intermediate file around.
+  if ((state_ == INTERRUPTED_INTERNAL || state_ == RESUMING_INTERNAL) &&
+      !current_path_.empty()) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&DeleteDownloadedFile, current_path_));
+    current_path_.clear();
+  }
+
   TransitionTo(CANCELLED_INTERNAL);
 }
 
@@ -405,15 +414,6 @@ void DownloadItemImpl::Delete(DeleteReason reason) {
 void DownloadItemImpl::Remove() {
   VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Remove the intermediate file if we are removing an interrupted download.
-  // Continuable interruptions leave the intermediate file around. However, the
-  // intermediate file will be unusable if the download item is removed.
-  if (!current_path_.empty() && IsInterrupted() && !download_file_.get()) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&DeleteDownloadedFile, current_path_));
-    current_path_.clear();
-  }
 
   delegate_->AssertStateConsistent(this);
   Cancel(true);

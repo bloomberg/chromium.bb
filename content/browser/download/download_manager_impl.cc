@@ -389,9 +389,11 @@ DownloadItem* DownloadManagerImpl::StartDownload(
   } else {
     DownloadMap::iterator item_iterator = downloads_.find(id.local());
     // Trying to resume an interrupted download.
-    if (item_iterator == downloads_.end()) {
+    if (item_iterator == downloads_.end() ||
+        item_iterator->second->IsCancelled()) {
       // If the download is no longer known to the DownloadManager, then it was
-      // removed after it was resumed. Ignore.
+      // removed after it was resumed. Ignore. If the download is cancelled
+      // while resuming, then also ignore the request.
       info->request_handle.CancelRequest();
       return NULL;
     }

@@ -1378,6 +1378,92 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileFinalRenameError) {
   EXPECT_EQ(download->GetState(), DownloadItem::COMPLETE);
 }
 
+// An interrupted download should remove the intermediate file when it is
+// cancelled.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelInterruptedDownload) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url1 = test_server()->GetURL(
+      base::StringPrintf("rangereset?size=%d&rst_boundary=%d",
+                         GetSafeBufferChunk() * 3, GetSafeBufferChunk()));
+
+  DownloadItem* download(StartDownloadAndReturnItem(url1));
+  WaitForData(download, GetSafeBufferChunk());
+
+  ReleaseRSTAndConfirmInterruptForResume(download);
+  ConfirmFileStatusForResume(
+      download, true, GetSafeBufferChunk(), GetSafeBufferChunk() * 3,
+      base::FilePath(FILE_PATH_LITERAL("rangereset.crdownload")));
+
+  base::FilePath intermediate_path(download->GetFullPath());
+  ASSERT_FALSE(intermediate_path.empty());
+  EXPECT_TRUE(file_util::PathExists(intermediate_path));
+
+  download->Cancel(true /* user_cancel */);
+  RunAllPendingInMessageLoop(BrowserThread::FILE);
+  RunAllPendingInMessageLoop();
+
+  // The intermediate file should now be gone.
+  EXPECT_FALSE(file_util::PathExists(intermediate_path));
+  EXPECT_TRUE(download->GetFullPath().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveDownload) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+  ASSERT_TRUE(test_server()->Start());
+
+  // An interrupted download should remove the intermediate file when it is
+  // removed.
+  {
+    GURL url1 = test_server()->GetURL(
+        base::StringPrintf("rangereset?size=%d&rst_boundary=%d",
+                           GetSafeBufferChunk() * 3, GetSafeBufferChunk()));
+
+    DownloadItem* download(StartDownloadAndReturnItem(url1));
+    WaitForData(download, GetSafeBufferChunk());
+    ReleaseRSTAndConfirmInterruptForResume(download);
+    ConfirmFileStatusForResume(
+        download, true, GetSafeBufferChunk(), GetSafeBufferChunk() * 3,
+        base::FilePath(FILE_PATH_LITERAL("rangereset.crdownload")));
+
+    base::FilePath intermediate_path(download->GetFullPath());
+    ASSERT_FALSE(intermediate_path.empty());
+    EXPECT_TRUE(file_util::PathExists(intermediate_path));
+
+    download->Remove();
+    RunAllPendingInMessageLoop(BrowserThread::FILE);
+    RunAllPendingInMessageLoop();
+
+    // The intermediate file should now be gone.
+    EXPECT_FALSE(file_util::PathExists(intermediate_path));
+  }
+
+  // A completed download shouldn't delete the downloaded file when it is
+  // removed.
+  {
+    // Start the second download and wait until it's done.
+    base::FilePath file2(FILE_PATH_LITERAL("download-test.lib"));
+    GURL url2(URLRequestMockHTTPJob::GetMockUrl(file2));
+    scoped_ptr<DownloadTestObserver> completion_observer(
+        CreateWaiter(shell(), 1));
+    DownloadItem* download(StartDownloadAndReturnItem(url2));
+    completion_observer->WaitForFinished();
+
+    // The target path should exist.
+    base::FilePath target_path(download->GetTargetFilePath());
+    EXPECT_TRUE(file_util::PathExists(target_path));
+    download->Remove();
+    RunAllPendingInMessageLoop(BrowserThread::FILE);
+    RunAllPendingInMessageLoop();
+
+    // The file should still exist.
+    EXPECT_TRUE(file_util::PathExists(target_path));
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
   SetupEnsureNoPendingDownloads();
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -1386,7 +1472,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
 
   GURL url = test_server()->GetURL(
       base::StringPrintf("rangereset?size=%d&rst_boundary=%d",
-                   GetSafeBufferChunk() * 3, GetSafeBufferChunk()));
+                         GetSafeBufferChunk() * 3, GetSafeBufferChunk()));
 
   MockDownloadManagerObserver dm_observer(DownloadManagerForShell(shell()));
   EXPECT_CALL(dm_observer, OnDownloadCreated(_,_)).Times(1);
@@ -1401,16 +1487,73 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
       download, true, GetSafeBufferChunk(), GetSafeBufferChunk() * 3,
       base::FilePath(FILE_PATH_LITERAL("rangereset.crdownload")));
 
+  base::FilePath intermediate_path(download->GetFullPath());
+  ASSERT_FALSE(intermediate_path.empty());
+  EXPECT_TRUE(file_util::PathExists(intermediate_path));
+
   // Resume and remove download. We expect only a single OnDownloadCreated()
   // call, and that's for the second download created below.
   EXPECT_CALL(dm_observer, OnDownloadCreated(_,_)).Times(1);
   download->Resume();
   download->Remove();
 
-  // Start the second download and wait until it's done.
-  base::FilePath file(FILE_PATH_LITERAL("download-test.lib"));
-  GURL url2(URLRequestMockHTTPJob::GetMockUrl(file));
-  // Download the file and wait.
+  // The intermediate file should now be gone.
+  RunAllPendingInMessageLoop(BrowserThread::FILE);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(file_util::PathExists(intermediate_path));
+
+  // Start the second download and wait until it's done. The test server is
+  // single threaded. The response to this download request should follow the
+  // response to the previous resumption request.
+  GURL url2(test_server()->GetURL("rangereset?size=100&rst_limit=0&token=x"));
+  DownloadAndWait(shell(), url2, DownloadItem::COMPLETE);
+
+  EXPECT_TRUE(EnsureNoPendingDownloads());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
+  SetupEnsureNoPendingDownloads();
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url = test_server()->GetURL(
+      base::StringPrintf("rangereset?size=%d&rst_boundary=%d",
+                         GetSafeBufferChunk() * 3, GetSafeBufferChunk()));
+
+  MockDownloadManagerObserver dm_observer(DownloadManagerForShell(shell()));
+  EXPECT_CALL(dm_observer, OnDownloadCreated(_,_)).Times(1);
+
+  DownloadItem* download(StartDownloadAndReturnItem(url));
+  WaitForData(download, GetSafeBufferChunk());
+  ::testing::Mock::VerifyAndClearExpectations(&dm_observer);
+
+  // Tell the server to send the RST and confirm the interrupt happens.
+  ReleaseRSTAndConfirmInterruptForResume(download);
+  ConfirmFileStatusForResume(
+      download, true, GetSafeBufferChunk(), GetSafeBufferChunk() * 3,
+      base::FilePath(FILE_PATH_LITERAL("rangereset.crdownload")));
+
+  base::FilePath intermediate_path(download->GetFullPath());
+  ASSERT_FALSE(intermediate_path.empty());
+  EXPECT_TRUE(file_util::PathExists(intermediate_path));
+
+  // Resume and cancel download. We expect only a single OnDownloadCreated()
+  // call, and that's for the second download created below.
+  EXPECT_CALL(dm_observer, OnDownloadCreated(_,_)).Times(1);
+  download->Resume();
+  download->Cancel(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+
+  // The intermediate file should now be gone.
+  RunAllPendingInMessageLoop(BrowserThread::FILE);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(file_util::PathExists(intermediate_path));
+  EXPECT_TRUE(download->GetFullPath().empty());
+
+  // Start the second download and wait until it's done. The test server is
+  // single threaded. The response to this download request should follow the
+  // response to the previous resumption request.
+  GURL url2(test_server()->GetURL("rangereset?size=100&rst_limit=0&token=x"));
   DownloadAndWait(shell(), url2, DownloadItem::COMPLETE);
 
   EXPECT_TRUE(EnsureNoPendingDownloads());
