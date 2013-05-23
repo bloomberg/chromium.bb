@@ -78,6 +78,14 @@ class TestPackageApk(TestPackage):
     """Clear the application state."""
     self.adb.ClearApplicationState(self._apk_package_name)
 
+  def _StartActivity(self):
+    self.adb.StartActivity(
+        self._apk_package_name,
+        self._test_activity_name,
+        wait_for_completion=True,
+        action='android.intent.action.MAIN',
+        force_stop=True)
+
   def GetAllTests(self):
     """Returns a list of all tests available in the test suite."""
     self._CreateTestRunnerScript('--gtest_list_tests')
@@ -85,9 +93,7 @@ class TestPackageApk(TestPackage):
       self.tool.SetupEnvironment()
       # Clear and start monitoring logcat.
       self._ClearFifo()
-      self.adb.RunShellCommand(
-          'am start -n ' + self._apk_package_name + '/' +
-          self._test_activity_name)
+      self._StartActivity()
       # Wait for native test to complete.
       p = self._WatchFifo(timeout=30 * self.tool.GetTimeoutScale())
       p.expect("<<ScopedMainEntryLogger")
@@ -107,23 +113,19 @@ class TestPackageApk(TestPackage):
     try:
       self.tool.SetupEnvironment()
       self._ClearFifo()
-      self.adb.RunShellCommand(
-        'am start -n ' + self._apk_package_name + '/' +
-        self._test_activity_name)
+      self._StartActivity()
     finally:
       self.tool.CleanUpEnvironment()
     logfile = android_commands.NewLineNormalizer(sys.stdout)
     return self._WatchTestOutput(self._WatchFifo(timeout=10, logfile=logfile))
 
   def _NeedsInstall(self):
-    pm_path_output = self.adb.RunShellCommand(
-        'pm path ' + self._apk_package_name)
-    if not pm_path_output:
+    installed_apk_path = self.adb.GetApplicationPath(self._apk_package_name)
+    if installed_apk_path:
+      return not self.adb.CheckMd5Sum(
+          self.test_suite_full, installed_apk_path, ignore_paths=True)
+    else:
       return True
-    # pm_path_output is of the form: "package:/path/to/foo.apk"
-    installed_apk_path = pm_path_output[0].split(':')[1]
-    return not self.adb.CheckMd5Sum(
-        self.test_suite_full, installed_apk_path, ignore_paths=True)
 
   def StripAndCopyExecutable(self):
     self.tool.CopyFiles()

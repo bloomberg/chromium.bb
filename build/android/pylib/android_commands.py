@@ -654,6 +654,24 @@ class AndroidCommands(object):
     """
     self.RunShellCommand('am force-stop ' + package)
 
+  def GetApplicationPath(self, package):
+    """Get the installed apk path on the device for the given package.
+
+    Args:
+      package: Name of the package.
+
+    Returns:
+      Path to the apk on the device if it exists, None otherwise.
+    """
+    pm_path_output  = self.RunShellCommand('pm path ' + package)
+    # The path output contains anything if and only if the package
+    # exists.
+    if pm_path_output:
+      # pm_path_output is of the form: "package:/path/to/foo.apk"
+      return pm_path_output[0].split(':')[1]
+    else:
+      return None
+
   def ClearApplicationState(self, package):
     """Closes and clears all state for the given |package|."""
     # Check that the package exists before clearing it. Necessary because
@@ -661,7 +679,6 @@ class AndroidCommands(object):
     pm_path_output  = self.RunShellCommand('pm path ' + package)
     # The path output only contains anything if and only if the package exists.
     if pm_path_output:
-      self.CloseApplication(package)
       self.RunShellCommand('pm clear ' + package)
 
   def SendKeyEvent(self, keycode):
