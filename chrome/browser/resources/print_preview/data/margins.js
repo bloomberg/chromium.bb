@@ -38,10 +38,10 @@ cr.define('print_preview', function() {
    */
   Margins.parse = function(state) {
     return new print_preview.Margins(
-        state[print_preview.ticket_items.CustomMargins.Orientation.TOP],
-        state[print_preview.ticket_items.CustomMargins.Orientation.RIGHT],
-        state[print_preview.ticket_items.CustomMargins.Orientation.BOTTOM],
-        state[print_preview.ticket_items.CustomMargins.Orientation.LEFT]);
+        state[print_preview.ticket_items.CustomMargins.Orientation.TOP] || 0,
+        state[print_preview.ticket_items.CustomMargins.Orientation.RIGHT] || 0,
+        state[print_preview.ticket_items.CustomMargins.Orientation.BOTTOM] || 0,
+        state[print_preview.ticket_items.CustomMargins.Orientation.LEFT] || 0);
   };
 
   Margins.prototype = {

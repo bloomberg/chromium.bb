@@ -70,7 +70,9 @@ cr.define('print_preview', function() {
      * @private
      */
     this.marginControlContainer_ = new print_preview.MarginControlContainer(
-        this.printTicketStore_, this.documentInfo_);
+        this.printTicketStore_,
+        this.documentInfo_,
+        this.printTicketStore_.customMargins);
     this.addChild(this.marginControlContainer_);
 
     /**
@@ -287,6 +289,10 @@ cr.define('print_preview', function() {
           this.onTicketChange_.bind(this));
       this.tracker.add(
           this.printTicketStore_.cssBackground,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onTicketChange_.bind(this));
+      this.tracker.add(
+        this.printTicketStore_.customMargins,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onTicketChange_.bind(this));
       this.tracker.add(

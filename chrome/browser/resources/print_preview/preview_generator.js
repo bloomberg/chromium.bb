@@ -278,7 +278,7 @@ cr.define('print_preview', function() {
                   print_preview.ticket_items.MarginsType.Value.CUSTOM) ||
           (ticketStore.getMarginsType() ==
               print_preview.ticket_items.MarginsType.Value.CUSTOM &&
-              !ticketStore.getCustomMargins().equals(
+              !ticketStore.customMargins.isValueEqual(
                   this.documentInfo_.margins)) ||
           !ticketStore.cssBackground.isValueEqual(
               this.isCssBackgroundEnabled_) ||

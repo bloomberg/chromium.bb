@@ -8,29 +8,20 @@ cr.define('print_preview.ticket_items', function() {
   /**
    * Custom page margins ticket item whose value is a
    * {@code print_preview.Margins}.
+   * @param {!print_preview.AppState} appState App state used to persist custom
+   *     margins.
    * @param {!print_preview.DocumentInfo} documentInfo Information about the
    *     document to print.
-   * @param {!print_preview.MeasurementSystem} measurementSystem Used to convert
-   *     from string input into measurements in points.
    * @constructor
    * @extends {print_preview.ticket_items.TicketItem}
    */
-  function CustomMargins(documentInfo, measurementSystem) {
-    print_preview.ticket_items.TicketItem.call(this);
-
-    /**
-     * Information about the document to print.
-     * @type {!print_preview.DocumentInfo}
-     * @private
-     */
-    this.documentInfo_ = documentInfo;
-
-    /**
-     * Used to convert from string input to measurements in points.
-     * @type {!print_preview.MeasurementSystem}
-     * @private
-     */
-    this.measurementSystem_ = measurementSystem;
+  function CustomMargins(appState, documentInfo) {
+    print_preview.ticket_items.TicketItem.call(
+        this,
+        appState,
+        print_preview.AppState.Field.CUSTOM_MARGINS,
+        null /*destinationStore*/,
+        documentInfo);
   };
 
   /**
@@ -86,7 +77,12 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      return this.documentInfo_.isModifiable;
+      return this.getDocumentInfoInternal().isModifiable;
+    },
+
+    /** @override */
+    isValueEqual: function(value) {
+      return this.getValue().equals(value);
     },
 
     /**
@@ -132,13 +128,13 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getDefaultValueInternal: function() {
-      return this.documentInfo_.margins ||
+      return this.getDocumentInfoInternal().margins ||
              new print_preview.Margins(72, 72, 72, 72);
     },
 
     /** @override */
     getCapabilityNotAvailableValueInternal: function() {
-      return this.documentInfo_.margins ||
+      return this.getDocumentInfoInternal().margins ||
              new print_preview.Margins(72, 72, 72, 72);
     },
 
@@ -154,10 +150,10 @@ cr.define('print_preview.ticket_items', function() {
       var max;
       if (orientation == CustomMargins.Orientation.TOP ||
           orientation == CustomMargins.Orientation.BOTTOM) {
-        max = this.documentInfo_.pageSize.height - oppositeMargin -
+        max = this.getDocumentInfoInternal().pageSize.height - oppositeMargin -
             CustomMargins.MINIMUM_MARGINS_DISTANCE_;
       } else {
-        max = this.documentInfo_.pageSize.width - oppositeMargin -
+        max = this.getDocumentInfoInternal().pageSize.width - oppositeMargin -
             CustomMargins.MINIMUM_MARGINS_DISTANCE_;
       }
       return Math.round(max);

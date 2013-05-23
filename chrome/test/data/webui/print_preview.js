@@ -428,7 +428,7 @@ TEST_F('PrintPreviewWebUITest',
 
   printPreview.printTicketStore_.updateMarginsType(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
-  printPreview.printTicketStore_.updateCustomMargins(
+  printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(0, 0, 0, 0));
 
   checkElementDisplayed(
@@ -468,7 +468,7 @@ TEST_F('PrintPreviewWebUITest',
 
   printPreview.printTicketStore_.updateMarginsType(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
-  printPreview.printTicketStore_.updateCustomMargins(
+  printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(36, 36, 36, 36));
 
   checkElementDisplayed(
@@ -508,7 +508,7 @@ TEST_F('PrintPreviewWebUITest',
 
   printPreview.printTicketStore_.updateMarginsType(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
-  printPreview.printTicketStore_.updateCustomMargins(
+  printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(0, 36, 0, 36));
 
   checkElementDisplayed(
@@ -549,7 +549,7 @@ TEST_F('PrintPreviewWebUITest',
 
   printPreview.printTicketStore_.updateMarginsType(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
-  printPreview.printTicketStore_.updateCustomMargins(
+  printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(0, 36, 36, 36));
 
   checkElementDisplayed(
@@ -720,7 +720,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
 
   var previewGenerator = mock(print_preview.PreviewGenerator);
   printPreview.previewArea_.previewGenerator_ = previewGenerator.proxy();
-  previewGenerator.expects(exactly(3)).requestPreview();
+  previewGenerator.expects(exactly(5)).requestPreview();
 
   var barDestination;
   var destinations = printPreview.destinationStore_.destinations;

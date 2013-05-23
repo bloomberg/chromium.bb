@@ -189,7 +189,7 @@ cr.define('print_preview', function() {
       if (printTicketStore.hasMarginsCapability() &&
           printTicketStore.getMarginsType() ==
               print_preview.ticket_items.MarginsType.Value.CUSTOM) {
-        var customMargins = printTicketStore.getCustomMargins();
+        var customMargins = printTicketStore.customMargins.getValue();
         var orientationEnum =
             print_preview.ticket_items.CustomMargins.Orientation;
         ticket['marginsCustom'] = {
@@ -258,7 +258,7 @@ cr.define('print_preview', function() {
       if (printTicketStore.hasMarginsCapability() &&
           printTicketStore.getMarginsType() ==
               print_preview.ticket_items.MarginsType.Value.CUSTOM) {
-        var customMargins = printTicketStore.getCustomMargins();
+        var customMargins = printTicketStore.customMargins.getValue();
         var orientationEnum =
             print_preview.ticket_items.CustomMargins.Orientation;
         ticket['marginsCustom'] = {

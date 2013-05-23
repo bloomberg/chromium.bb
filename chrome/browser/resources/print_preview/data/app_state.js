@@ -86,14 +86,6 @@ cr.define('print_preview', function() {
       return this.state_[AppState.Field.MARGINS_TYPE];
     },
 
-    /** @return {print_preview.Margins} Custom margins. */
-    get customMargins() {
-      return this.state_[AppState.Field.CUSTOM_MARGINS] ?
-          print_preview.Margins.parse(
-              this.state_[AppState.Field.CUSTOM_MARGINS]) :
-          null;
-    },
-
     /** @return {?boolean} Whether the header-footer option is enabled. */
     get isHeaderFooterEnabled() {
       return this.state_[AppState.Field.IS_HEADER_FOOTER_ENABLED];
@@ -118,7 +110,12 @@ cr.define('print_preview', function() {
      * @return {Object} Value of the app state field.
      */
     getField: function(field) {
-      return this.state_[field];
+      if (field == AppState.Field.CUSTOM_MARGINS) {
+        return this.state_[field] ?
+            print_preview.Margins.parse(this.state_[field]) : null;
+      } else {
+        return this.state_[field];
+      }
     },
 
     /**
@@ -154,7 +151,11 @@ cr.define('print_preview', function() {
      * @param {Object} value Value of field to persist.
      */
     persistField: function(field, value) {
-      this.state_[field] = value;
+      if (field == AppState.Field.CUSTOM_MARGINS) {
+        this.state_[field] = value ? value.serialize() : null;
+      } else {
+        this.state_[field] = value;
+      }
       this.persist_();
     },
 
@@ -185,16 +186,6 @@ cr.define('print_preview', function() {
      */
     persistMarginsType: function(marginsType) {
       this.state_[AppState.Field.MARGINS_TYPE] = marginsType;
-      this.persist_();
-    },
-
-    /**
-     * Persists custom margins.
-     * @param {print_preview.Margins} customMargins Custom margins.
-     */
-    persistCustomMargins: function(customMargins) {
-      this.state_[AppState.Field.CUSTOM_MARGINS] =
-          customMargins ? customMargins.serialize() : null;
       this.persist_();
     },
 
