@@ -1008,6 +1008,7 @@
         'browser/policy/policy_loader_win_unittest.cc',
         'browser/policy/policy_map_unittest.cc',
         'browser/policy/policy_path_parser_unittest.cc',
+        'browser/policy/policy_schema_unittest.cc',
         'browser/policy/policy_service_impl_unittest.cc',
         'browser/policy/policy_statistics_collector_unittest.cc',
         'browser/policy/preferences_mock_mac.cc',

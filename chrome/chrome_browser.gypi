@@ -1407,6 +1407,8 @@
         'browser/policy/policy_path_parser_linux.cc',
         'browser/policy/policy_path_parser_mac.mm',
         'browser/policy/policy_path_parser_win.cc',
+        'browser/policy/policy_schema.cc',
+        'browser/policy/policy_schema.h',
         'browser/policy/policy_service.cc',
         'browser/policy/policy_service.h',
         'browser/policy/policy_service_impl.cc',
