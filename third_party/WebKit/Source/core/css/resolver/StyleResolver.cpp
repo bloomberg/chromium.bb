@@ -189,7 +189,7 @@ RenderStyle* StyleResolver::s_styleNotYetAvailable;
 
 static StylePropertySet* leftToRightDeclaration()
 {
-    DEFINE_STATIC_LOCAL(RefPtr<StylePropertySet>, leftToRightDecl, (StylePropertySet::create()));
+    DEFINE_STATIC_LOCAL(RefPtr<MutableStylePropertySet>, leftToRightDecl, (MutableStylePropertySet::create()));
     if (leftToRightDecl->isEmpty())
         leftToRightDecl->setProperty(CSSPropertyDirection, CSSValueLtr);
     return leftToRightDecl.get();
@@ -197,7 +197,7 @@ static StylePropertySet* leftToRightDeclaration()
 
 static StylePropertySet* rightToLeftDeclaration()
 {
-    DEFINE_STATIC_LOCAL(RefPtr<StylePropertySet>, rightToLeftDecl, (StylePropertySet::create()));
+    DEFINE_STATIC_LOCAL(RefPtr<MutableStylePropertySet>, rightToLeftDecl, (MutableStylePropertySet::create()));
     if (rightToLeftDecl->isEmpty())
         rightToLeftDecl->setProperty(CSSPropertyDirection, CSSValueRtl);
     return rightToLeftDecl.get();
@@ -2393,7 +2393,7 @@ void StyleResolver::resolveVariables(CSSPropertyID id, CSSValue* value, Vector<s
     knownExpressions.append(expression);
 
     // FIXME: It would be faster not to re-parse from strings, but for now CSS property validation lives inside the parser so we do it there.
-    RefPtr<StylePropertySet> resultSet = StylePropertySet::create();
+    RefPtr<MutableStylePropertySet> resultSet = MutableStylePropertySet::create();
     if (!CSSParser::parseValue(resultSet.get(), id, expression.second, false, document()))
         return; // expression failed to parse.
 

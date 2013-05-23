@@ -30,7 +30,6 @@
 #include <wtf/CurrentTime.h>
 #include <wtf/RefPtr.h>
 #include "HTMLNames.h"
-#include "core/css/StylePropertySet.h"
 #include "core/dom/Clipboard.h"
 #include "core/dom/ClipboardAccessPolicy.h"
 #include "core/dom/Document.h"

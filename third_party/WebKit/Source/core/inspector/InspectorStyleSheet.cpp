@@ -418,7 +418,7 @@ void StyleSheetHandler::endComment(unsigned offset)
     // FIXME: Use another subclass of CSSParser::SourceDataHandler and assert that
     // no comments are encountered (will not need m_document and m_styleSheetContents).
     StyleSheetHandler handler(commentText, m_document, m_styleSheetContents, &sourceData);
-    RefPtr<StylePropertySet> tempMutableStyle = StylePropertySet::create();
+    RefPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
     m_commentParser->parseDeclaration(tempMutableStyle.get(), commentText, &handler, m_styleSheetContents);
     Vector<CSSPropertySourceData>& commentPropertyData = sourceData.first()->styleSourceData->propertyData;
     if (commentPropertyData.size() != 1)
@@ -648,7 +648,7 @@ bool InspectorStyle::setPropertyText(unsigned index, const String& propertyText,
     populateAllProperties(allProperties);
 
     if (!propertyText.stripWhiteSpace().isEmpty()) {
-        RefPtr<StylePropertySet> tempMutableStyle = StylePropertySet::create();
+        RefPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
         String declarationText = propertyText + " " + bogusPropertyName + ": none";
         RuleSourceDataList sourceData;
         StyleSheetHandler handler(declarationText, ownerDocument(), m_style->parentStyleSheet()->contents(), &sourceData);
@@ -1894,7 +1894,7 @@ PassRefPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::getStyleAttribu
         return result.release();
     }
 
-    RefPtr<StylePropertySet> tempDeclaration = StylePropertySet::create();
+    RefPtr<MutableStylePropertySet> tempDeclaration = MutableStylePropertySet::create();
     RuleSourceDataList ruleSourceDataResult;
     StyleSheetHandler handler(m_styleText, m_element->document(), m_element->document()->elementSheet()->contents(), &ruleSourceDataResult);
     createCSSParser(m_element->document())->parseDeclaration(tempDeclaration.get(), m_styleText, &handler, m_element->document()->elementSheet()->contents());

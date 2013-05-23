@@ -416,7 +416,7 @@ void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
 static StylePropertySet* leakBorderStyle(int value)
 {
-    RefPtr<StylePropertySet> style = StylePropertySet::create();
+    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     style->setProperty(CSSPropertyBorderTopStyle, value);
     style->setProperty(CSSPropertyBorderBottomStyle, value);
     style->setProperty(CSSPropertyBorderLeftStyle, value);
@@ -472,7 +472,7 @@ HTMLTableElement::CellBorders HTMLTableElement::cellBorders() const
 
 PassRefPtr<StylePropertySet> HTMLTableElement::createSharedCellStyle()
 {
-    RefPtr<StylePropertySet> style = StylePropertySet::create();
+    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
 
     switch (cellBorders()) {
     case SolidBordersColsOnly:
@@ -519,7 +519,7 @@ const StylePropertySet* HTMLTableElement::additionalCellStyle()
 
 static StylePropertySet* leakGroupBorderStyle(int rows)
 {
-    RefPtr<StylePropertySet> style = StylePropertySet::create();
+    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     if (rows) {
         style->setProperty(CSSPropertyBorderTopWidth, CSSValueThin);
         style->setProperty(CSSPropertyBorderBottomWidth, CSSValueThin);

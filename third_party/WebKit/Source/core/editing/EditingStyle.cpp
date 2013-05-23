@@ -123,7 +123,7 @@ static inline bool isEditingProperty(int id)
 static PassRefPtr<MutableStylePropertySet> editingStyleFromComputedStyle(PassRefPtr<CSSComputedStyleDeclaration> style, EditingPropertiesType type = OnlyInheritableEditingProperties)
 {
     if (!style)
-        return static_pointer_cast<MutableStylePropertySet>(StylePropertySet::create());
+        return MutableStylePropertySet::create();
     return copyEditingProperties(style.get(), type);
 }
 
@@ -278,8 +278,8 @@ PassRefPtr<CSSValue> HTMLAttributeEquivalent::attributeValueAsCSSValue(Element* 
     if (!element->hasAttribute(m_attrName))
         return 0;
     
-    RefPtr<StylePropertySet> dummyStyle;
-    dummyStyle = StylePropertySet::create();
+    RefPtr<MutableStylePropertySet> dummyStyle;
+    dummyStyle = MutableStylePropertySet::create();
     dummyStyle->setProperty(m_propertyID, element->getAttribute(m_attrName));
     return dummyStyle->getPropertyCSSValue(m_propertyID);
 }
@@ -470,7 +470,7 @@ void EditingStyle::removeTextFillAndStrokeColorsIfNeeded(RenderStyle* renderStyl
 void EditingStyle::setProperty(CSSPropertyID propertyID, const String& value, bool important)
 {
     if (!m_mutableStyle)
-        m_mutableStyle = StylePropertySet::create();
+        m_mutableStyle = MutableStylePropertySet::create();
 
     m_mutableStyle->setProperty(propertyID, value, important);
 }
@@ -556,7 +556,7 @@ void EditingStyle::overrideWithStyle(const StylePropertySet* style)
     if (!style || style->isEmpty())
         return;
     if (!m_mutableStyle)
-        m_mutableStyle = StylePropertySet::create();
+        m_mutableStyle = MutableStylePropertySet::create();
     m_mutableStyle->mergeAndOverrideOnConflict(style);
     extractFontSizeDelta();
 }
@@ -593,7 +593,7 @@ PassRefPtr<EditingStyle> EditingStyle::extractAndRemoveBlockProperties()
 PassRefPtr<EditingStyle> EditingStyle::extractAndRemoveTextDirection()
 {
     RefPtr<EditingStyle> textDirection = EditingStyle::create();
-    textDirection->m_mutableStyle = StylePropertySet::create();
+    textDirection->m_mutableStyle = MutableStylePropertySet::create();
     textDirection->m_mutableStyle->setProperty(CSSPropertyUnicodeBidi, CSSValueEmbed, m_mutableStyle->propertyIsImportant(CSSPropertyUnicodeBidi));
     textDirection->m_mutableStyle->setProperty(CSSPropertyDirection, m_mutableStyle->getPropertyValue(CSSPropertyDirection),
         m_mutableStyle->propertyIsImportant(CSSPropertyDirection));
@@ -1094,7 +1094,7 @@ void EditingStyle::mergeStyle(const StylePropertySet* style, CSSPropertyOverride
 
 static PassRefPtr<StylePropertySet> styleFromMatchedRulesForElement(Element* element, unsigned rulesToInclude)
 {
-    RefPtr<StylePropertySet> style = StylePropertySet::create();
+    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     RefPtr<CSSRuleList> matchedRules = element->document()->styleResolver()->styleRulesForElement(element, rulesToInclude);
     if (matchedRules) {
         for (unsigned i = 0; i < matchedRules->length(); i++) {
@@ -1127,7 +1127,7 @@ void EditingStyle::mergeStyleFromRulesForSerialization(StyledElement* element)
     // For example: style="height: 1%; overflow: visible;" in quirksmode
     // FIXME: There are others like this, see <rdar://problem/5195123> Slashdot copy/paste fidelity problem
     RefPtr<CSSComputedStyleDeclaration> computedStyleForElement = CSSComputedStyleDeclaration::create(element);
-    RefPtr<StylePropertySet> fromComputedStyle = StylePropertySet::create();
+    RefPtr<MutableStylePropertySet> fromComputedStyle = MutableStylePropertySet::create();
     {
         unsigned propertyCount = m_mutableStyle->propertyCount();
         for (unsigned i = 0; i < propertyCount; ++i) {
@@ -1198,7 +1198,7 @@ void EditingStyle::removePropertiesInElementDefaultStyle(Element* element)
 void EditingStyle::forceInline()
 {
     if (!m_mutableStyle)
-        m_mutableStyle = StylePropertySet::create();
+        m_mutableStyle = MutableStylePropertySet::create();
     const bool propertyIsImportant = true;
     m_mutableStyle->setProperty(CSSPropertyDisplay, CSSValueInline, propertyIsImportant);
 }

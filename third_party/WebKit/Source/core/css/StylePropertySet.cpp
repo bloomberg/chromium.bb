@@ -510,7 +510,7 @@ PassRefPtr<MutableStylePropertySet> StylePropertySet::copyPropertiesInSet(const 
         if (value)
             list.append(CSSProperty(properties[i], value.release(), false));
     }
-    return static_pointer_cast<MutableStylePropertySet>(StylePropertySet::create(list.data(), list.size()));
+    return MutableStylePropertySet::create(list.data(), list.size());
 }
 
 PropertySetCSSStyleDeclaration* StylePropertySet::cssStyleDeclaration()
@@ -581,12 +581,12 @@ void StylePropertySet::showStyle()
 }
 #endif
 
-PassRefPtr<StylePropertySet> StylePropertySet::create(CSSParserMode cssParserMode)
+PassRefPtr<MutableStylePropertySet> MutableStylePropertySet::create(CSSParserMode cssParserMode)
 {
     return adoptRef(new MutableStylePropertySet(cssParserMode));
 }
 
-PassRefPtr<StylePropertySet> StylePropertySet::create(const CSSProperty* properties, unsigned count)
+PassRefPtr<MutableStylePropertySet> MutableStylePropertySet::create(const CSSProperty* properties, unsigned count)
 {
     return adoptRef(new MutableStylePropertySet(properties, count));
 }
