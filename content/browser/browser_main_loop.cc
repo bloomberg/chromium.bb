@@ -69,6 +69,7 @@
 #include <commctrl.h>
 #include <shellapi.h>
 
+#include "base/win/text_services_message_filter.h"
 #include "content/browser/system_message_window_win.h"
 #include "content/common/sandbox_win.h"
 #include "net/base/winsock_init.h"
@@ -402,6 +403,17 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
 #if defined(OS_WIN)
   system_message_window_.reset(new SystemMessageWindowWin);
+
+  if (base::win::IsTSFAwareRequired()) {
+    // Create a TSF message filter for the message loop. MessageLoop takes
+    // ownership of the filter.
+    scoped_ptr<base::win::TextServicesMessageFilter> tsf_message_filter(
+      new base::win::TextServicesMessageFilter);
+    if (tsf_message_filter->Init()) {
+      MessageLoopForUI::current()->SetMessageFilter(
+        tsf_message_filter.PassAs<MessageLoopForUI::MessageFilter>());
+    }
+  }
 #endif
 
   if (parts_)

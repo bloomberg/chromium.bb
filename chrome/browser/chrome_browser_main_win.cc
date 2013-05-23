@@ -19,7 +19,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
-#include "base/win/text_services_message_filter.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_util_win.h"
@@ -197,21 +196,6 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
   if (!parameters().ui_task) {
     // Make sure that we know how to handle exceptions from the message loop.
     InitializeWindowProcExceptions();
-  }
-}
-
-void ChromeBrowserMainPartsWin::PostMainMessageLoopStart() {
-  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
-
-  if (base::win::IsTSFAwareRequired()) {
-    // Create a TSF message filter for the message loop. MessageLoop takes
-    // ownership of the filter.
-    scoped_ptr<base::win::TextServicesMessageFilter> tsf_message_filter(
-      new base::win::TextServicesMessageFilter);
-    if (tsf_message_filter->Init()) {
-      MessageLoopForUI::current()->SetMessageFilter(
-        tsf_message_filter.PassAs<MessageLoopForUI::MessageFilter>());
-    }
   }
 }
 
