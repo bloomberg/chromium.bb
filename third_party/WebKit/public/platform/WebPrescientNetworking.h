@@ -32,6 +32,7 @@
 #define WebPrescientNetworking_h
 
 #include "WebCommon.h"
+#include "WebString.h"
 
 namespace WebKit {
 
@@ -51,6 +52,10 @@ enum WebPreconnectMotivation {
 class WebPrescientNetworking {
 public:
     virtual ~WebPrescientNetworking() { }
+
+    // When a page navigation is speculated, DNS prefetch is triggered to hide
+    // the host resolution latency.
+    virtual void prefetchDNS(const WebString& hostname) { }
 
     // When a page navigation is speculated, preconnect is triggered to hide
     // session initialization latency to the server providing the page resource.
