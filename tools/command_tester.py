@@ -232,7 +232,7 @@ status_map = {
         'mac32': [-13], # SIGPIPE
         'mac64': [-13], # SIGPIPE
         },
-    'untrusted_sigsegv': {
+    'untrusted_sigill' : {
         'linux2': [-11], # SIGSEGV
         'mac32': [-11], # SIGSEGV
         'mac64': [-11], # SIGSEGV

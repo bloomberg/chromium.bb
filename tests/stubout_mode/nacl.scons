@@ -91,7 +91,7 @@ env.AddNodeToTestSuite(node, test_suites, 'run_without_stubout_2_test')
 if env.Bit('target_mips32'):
   partly_invalid_exit_status = 'sigtrap'
 else:
-  partly_invalid_exit_status = 'untrusted_sigsegv'
+  partly_invalid_exit_status = 'untrusted_sigill'
 
 node = env.CommandSelLdrTestNacl(
     'partly_invalid_3.out', partly_invalid_nexe,
@@ -107,6 +107,6 @@ node = env.CommandSelLdrTestNacl(
     'partly_invalid_stubout.out',
     partly_invalid_stubout_nexe,
     stdout_golden=env.File('with_stubout.stdout'),
-    exit_status='untrusted_sigsegv')
+    exit_status='untrusted_sigill')
 env.AddNodeToTestSuite(node, test_suites, 'run_offline_stubout_test',
                        is_broken=env.Bit('target_mips32'))
