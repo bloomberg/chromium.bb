@@ -58,11 +58,6 @@
 #endif
 
 static int option_current_mode = 0;
-static char *output_name;
-static char *output_mode;
-static char *output_transform;
-static char *output_scale;
-static struct wl_list configured_output_list;
 
 enum output_config {
 	OUTPUT_CONFIG_INVALID = 0,
@@ -71,17 +66,6 @@ enum output_config {
 	OUTPUT_CONFIG_CURRENT,
 	OUTPUT_CONFIG_MODE,
 	OUTPUT_CONFIG_MODELINE
-};
-
-struct drm_configured_output {
-	char *name;
-	char *mode;
-	uint32_t transform;
-	int32_t scale;
-	int32_t width, height;
-	drmModeModeInfo crtc_mode;
-	enum output_config config;
-	struct wl_list link;
 };
 
 struct drm_compositor {
@@ -1265,19 +1249,14 @@ init_pixman(struct drm_compositor *ec)
 }
 
 static struct drm_mode *
-drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info, struct drm_configured_output *config)
+drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info, int scale)
 {
 	struct drm_mode *mode;
 	uint64_t refresh;
-        int scale;
 
 	mode = malloc(sizeof *mode);
 	if (mode == NULL)
 		return NULL;
-
-        scale = 1;
-        if (config)
-          scale = config->scale;
 
 	if (info->hdisplay % scale != 0 ||
 	    info->vdisplay % scale) {
@@ -1699,6 +1678,76 @@ find_and_parse_output_edid(struct drm_compositor *ec,
 	drmModeFreePropertyBlob(edid_blob);
 }
 
+
+
+static int
+parse_modeline(const char *s, drmModeModeInfo *mode)
+{
+	char hsync[16];
+	char vsync[16];
+	float fclock;
+
+	mode->type = DRM_MODE_TYPE_USERDEF;
+	mode->hskew = 0;
+	mode->vscan = 0;
+	mode->vrefresh = 0;
+	mode->flags = 0;
+
+	if (sscanf(s, "%f %hd %hd %hd %hd %hd %hd %hd %hd %s %s",
+		   &fclock,
+		   &mode->hdisplay,
+		   &mode->hsync_start,
+		   &mode->hsync_end,
+		   &mode->htotal,
+		   &mode->vdisplay,
+		   &mode->vsync_start,
+		   &mode->vsync_end,
+		   &mode->vtotal, hsync, vsync) != 11)
+		return -1;
+
+	mode->clock = fclock * 1000;
+	if (strcmp(hsync, "+hsync") == 0)
+		mode->flags |= DRM_MODE_FLAG_PHSYNC;
+	else if (strcmp(hsync, "-hsync") == 0)
+		mode->flags |= DRM_MODE_FLAG_NHSYNC;
+	else
+		return -1;
+
+	if (strcmp(vsync, "+vsync") == 0)
+		mode->flags |= DRM_MODE_FLAG_PVSYNC;
+	else if (strcmp(vsync, "-vsync") == 0)
+		mode->flags |= DRM_MODE_FLAG_NVSYNC;
+	else
+		return -1;
+
+	return 0;
+}
+
+static uint32_t
+parse_transform(const char *transform, const char *output_name)
+{
+	static const struct { const char *name; uint32_t token; } names[] = {
+		{ "normal",	WL_OUTPUT_TRANSFORM_NORMAL },
+		{ "90",		WL_OUTPUT_TRANSFORM_90 },
+		{ "180",	WL_OUTPUT_TRANSFORM_180 },
+		{ "270",	WL_OUTPUT_TRANSFORM_270 },
+		{ "flipped",	WL_OUTPUT_TRANSFORM_FLIPPED },
+		{ "flipped-90",	WL_OUTPUT_TRANSFORM_FLIPPED_90 },
+		{ "flipped-180", WL_OUTPUT_TRANSFORM_FLIPPED_180 },
+		{ "flipped-270", WL_OUTPUT_TRANSFORM_FLIPPED_270 },
+	};
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_LENGTH(names); i++)
+		if (strcmp(names[i].name, transform) == 0)
+			return names[i].token;
+
+	weston_log("Invalid transform \"%s\" for output %s\n",
+		   transform, output_name);
+
+	return WL_OUTPUT_TRANSFORM_NORMAL;
+}
+
 static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
@@ -1708,13 +1757,15 @@ create_output_for_connector(struct drm_compositor *ec,
 	struct drm_output *output;
 	struct drm_mode *drm_mode, *next, *preferred, *current, *configured;
 	struct weston_mode *m;
-	struct drm_configured_output *o = NULL, *temp;
+	struct weston_config_section *section;
 	drmModeEncoder *encoder;
-	drmModeModeInfo crtc_mode;
+	drmModeModeInfo crtc_mode, modeline;
 	drmModeCrtc *crtc;
-	int i;
-	char name[32];
+	int i, width, height, scale;
+	char name[32], *s;
 	const char *type_name;
+	enum output_config config;
+	uint32_t transform;
 
 	i = find_crtc_for_connector(ec, resources, connector);
 	if (i < 0) {
@@ -1740,15 +1791,30 @@ create_output_for_connector(struct drm_compositor *ec,
 	snprintf(name, 32, "%s%d", type_name, connector->connector_type_id);
 	output->base.name = strdup(name);
 
-	wl_list_for_each(temp, &configured_output_list, link) {
-		if (strcmp(temp->name, output->base.name) == 0) {
-			if (temp->mode)
-				weston_log("%s mode \"%s\" in config\n",
-							temp->name, temp->mode);
-			o = temp;
-			break;
-		}
+	section = weston_config_get_section(ec->base.config, "output", "name",
+					    output->base.name);
+	weston_config_section_get_string(section, "mode", &s, "preferred");
+	if (strcmp(s, "off") == 0)
+		config = OUTPUT_CONFIG_OFF;
+	else if (strcmp(s, "preferred") == 0)
+		config = OUTPUT_CONFIG_PREFERRED;
+	else if (strcmp(s, "current") == 0)
+		config = OUTPUT_CONFIG_CURRENT;
+	else if (sscanf(s, "%dx%d", &width, &height) == 2)
+		config = OUTPUT_CONFIG_MODE;
+	else if (parse_modeline(s, &modeline) == 0)
+		config = OUTPUT_CONFIG_MODELINE;
+	else {
+		weston_log("Invalid mode \"%s\" for output %s\n",
+			   s, output->base.name);
+		config = OUTPUT_CONFIG_PREFERRED;
 	}
+	free(s);
+
+	weston_config_section_get_int(section, "scale", &scale, 1);
+	weston_config_section_get_string(section, "transform", &s, "normal");
+	transform = parse_transform(s, output->base.name);
+	free(s);
 
 	output->crtc_id = resources->crtcs[i];
 	output->pipe = i;
@@ -1773,27 +1839,27 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	for (i = 0; i < connector->count_modes; i++) {
-		drm_mode = drm_output_add_mode(output, &connector->modes[i], o);
+		drm_mode = drm_output_add_mode(output, 
+					       &connector->modes[i], scale);
 		if (!drm_mode)
 			goto err_free;
+	}
+
+	if (config == OUTPUT_CONFIG_OFF) {
+		weston_log("Disabling output %s\n", output->base.name);
+		drmModeSetCrtc(ec->drm.fd, output->crtc_id,
+			       0, 0, 0, 0, 0, NULL);
+		goto err_free;
 	}
 
 	preferred = NULL;
 	current = NULL;
 	configured = NULL;
 
-	if (o && o->config == OUTPUT_CONFIG_OFF) {
-		weston_log("Disabling output %s\n", o->name);
-
-		drmModeSetCrtc(ec->drm.fd, output->crtc_id,
-							0, 0, 0, 0, 0, NULL);
-		goto err_free;
-	}
-
 	wl_list_for_each(drm_mode, &output->base.mode_list, base.link) {
-		if (o && o->config == OUTPUT_CONFIG_MODE &&
-			o->width == drm_mode->base.width * o->scale &&
-			o->height == drm_mode->base.height * o->scale)
+		if (config == OUTPUT_CONFIG_MODE &&
+		    width == drm_mode->base.width * scale &&
+		    height == drm_mode->base.height * scale)
 			configured = drm_mode;
 		if (!memcmp(&crtc_mode, &drm_mode->mode_info, sizeof crtc_mode))
 			current = drm_mode;
@@ -1801,20 +1867,19 @@ create_output_for_connector(struct drm_compositor *ec,
 			preferred = drm_mode;
 	}
 
-	if (o && o->config == OUTPUT_CONFIG_MODELINE) {
-		configured = drm_output_add_mode(output, &o->crtc_mode, 0);
+	if (config == OUTPUT_CONFIG_MODELINE) {
+		configured = drm_output_add_mode(output, &modeline, scale);
 		if (!configured)
 			goto err_free;
-		current = configured;
 	}
 
 	if (current == NULL && crtc_mode.clock != 0) {
-		current = drm_output_add_mode(output, &crtc_mode, 0);
+		current = drm_output_add_mode(output, &crtc_mode, scale);
 		if (!current)
 			goto err_free;
 	}
 
-	if (o && o->config == OUTPUT_CONFIG_CURRENT)
+	if (config == OUTPUT_CONFIG_CURRENT)
 		configured = current;
 
 	if (option_current_mode && current)
@@ -1835,8 +1900,7 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	weston_output_init(&output->base, &ec->base, x, y,
 			   connector->mmWidth, connector->mmHeight,
-			   o ? o->transform : WL_OUTPUT_TRANSFORM_NORMAL,
-                           o ? o->scale : 1);
+			   transform, scale);
 
 	if (ec->use_pixman) {
 		if (drm_output_init_pixman(output, ec) < 0) {
@@ -2172,24 +2236,13 @@ drm_restore(struct weston_compositor *ec)
 }
 
 static void
-drm_free_configured_output(struct drm_configured_output *output)
-{
-	free(output->name);
-	free(output->mode);
-	free(output);
-}
-
-static void
 drm_destroy(struct weston_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
 	struct udev_seat *seat, *next;
-	struct drm_configured_output *o, *n;
 
 	wl_list_for_each_safe(seat, next, &ec->seat_list, base.link)
 		udev_seat_destroy(seat);
-	wl_list_for_each_safe(o, n, &configured_output_list, link)
-		drm_free_configured_output(o);
 
 	wl_event_source_remove(d->udev_drm_source);
 	wl_event_source_remove(d->drm_source);
@@ -2547,158 +2600,6 @@ err_base:
 	return NULL;
 }
 
-static int
-set_sync_flags(drmModeModeInfo *mode, char *hsync, char *vsync)
-{
-	mode->flags = 0;
-
-	if (strcmp(hsync, "+hsync") == 0)
-		mode->flags |= DRM_MODE_FLAG_PHSYNC;
-	else if (strcmp(hsync, "-hsync") == 0)
-		mode->flags |= DRM_MODE_FLAG_NHSYNC;
-	else
-		return -1;
-
-	if (strcmp(vsync, "+vsync") == 0)
-		mode->flags |= DRM_MODE_FLAG_PVSYNC;
-	else if (strcmp(vsync, "-vsync") == 0)
-		mode->flags |= DRM_MODE_FLAG_NVSYNC;
-	else
-		return -1;
-
-	return 0;
-}
-
-static int
-check_for_modeline(struct drm_configured_output *output)
-{
-	drmModeModeInfo mode;
-	char hsync[16];
-	char vsync[16];
-	char mode_name[16];
-	float fclock;
-
-	mode.type = DRM_MODE_TYPE_USERDEF;
-	mode.hskew = 0;
-	mode.vscan = 0;
-	mode.vrefresh = 0;
-
-	if (sscanf(output_mode, "%f %hd %hd %hd %hd %hd %hd %hd %hd %s %s",
-						&fclock, &mode.hdisplay,
-						&mode.hsync_start,
-						&mode.hsync_end, &mode.htotal,
-						&mode.vdisplay,
-						&mode.vsync_start,
-						&mode.vsync_end, &mode.vtotal,
-						hsync, vsync) == 11) {
-		if (set_sync_flags(&mode, hsync, vsync))
-			return -1;
-
-		sprintf(mode_name, "%dx%d", mode.hdisplay, mode.vdisplay);
-		strcpy(mode.name, mode_name);
-
-		mode.clock = fclock * 1000;
-	} else
-		return -1;
-
-	output->crtc_mode = mode;
-
-	return 0;
-}
-
-static void
-drm_output_set_transform(struct drm_configured_output *output)
-{
-	if (!output_transform) {
-		output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
-		return;
-	}
-
-	if (!strcmp(output_transform, "normal"))
-		output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
-	else if (!strcmp(output_transform, "90"))
-		output->transform = WL_OUTPUT_TRANSFORM_90;
-	else if (!strcmp(output_transform, "180"))
-		output->transform = WL_OUTPUT_TRANSFORM_180;
-	else if (!strcmp(output_transform, "270"))
-		output->transform = WL_OUTPUT_TRANSFORM_270;
-	else if (!strcmp(output_transform, "flipped"))
-		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED;
-	else if (!strcmp(output_transform, "flipped-90"))
-		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED_90;
-	else if (!strcmp(output_transform, "flipped-180"))
-		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED_180;
-	else if (!strcmp(output_transform, "flipped-270"))
-		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED_270;
-	else {
-		weston_log("Invalid transform \"%s\" for output %s\n",
-						output_transform, output_name);
-		output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
-	}
-
-	free(output_transform);
-	output_transform = NULL;
-}
-
-static void
-output_section_done(void *data)
-{
-	struct drm_configured_output *output;
-
-	output = malloc(sizeof *output);
-
-	if (!output || !output_name || (output_name[0] == 'X') ||
-					(!output_mode && !output_transform && !output_scale)) {
-		free(output_name);
-		free(output_mode);
-		free(output_transform);
-		free(output_scale);
-		free(output);
-		output_name = NULL;
-		output_mode = NULL;
-		output_transform = NULL;
-		output_scale = NULL;
-		return;
-	}
-
-	output->config = OUTPUT_CONFIG_INVALID;
-	output->name = output_name;
-	output->mode = output_mode;
-
-	if (output_mode) {
-		if (strcmp(output_mode, "off") == 0)
-			output->config = OUTPUT_CONFIG_OFF;
-		else if (strcmp(output_mode, "preferred") == 0)
-			output->config = OUTPUT_CONFIG_PREFERRED;
-		else if (strcmp(output_mode, "current") == 0)
-			output->config = OUTPUT_CONFIG_CURRENT;
-		else if (sscanf(output_mode, "%dx%d",
-					&output->width, &output->height) == 2)
-			output->config = OUTPUT_CONFIG_MODE;
-		else if (check_for_modeline(output) == 0)
-			output->config = OUTPUT_CONFIG_MODELINE;
-
-		if (output->config == OUTPUT_CONFIG_INVALID)
-			weston_log("Invalid mode \"%s\" for output %s\n",
-							output_mode, output_name);
-		output_mode = NULL;
-	}
-
-	drm_output_set_transform(output);
-
-	if (!output_scale || sscanf(output_scale, "%d", &output->scale) != 1)
-		output->scale = 1;
-
-	wl_list_insert(&configured_output_list, &output->link);
-
-	if (output_transform)
-		free(output_transform);
-	output_transform = NULL;
-	if (output_scale)
-		free(output_scale);
-	output_scale = NULL;
-}
-
 WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
 	     int config_fd)
@@ -2715,23 +2616,6 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	};
 
 	parse_options(drm_options, ARRAY_LENGTH(drm_options), argc, argv);
-
-	wl_list_init(&configured_output_list);
-
-	const struct config_key drm_config_keys[] = {
-		{ "name", CONFIG_KEY_STRING, &output_name },
-		{ "mode", CONFIG_KEY_STRING, &output_mode },
-		{ "transform", CONFIG_KEY_STRING, &output_transform },
-		{ "scale", CONFIG_KEY_STRING, &output_scale },
-	};
-
-	const struct config_section config_section[] = {
-		{ "output", drm_config_keys,
-		ARRAY_LENGTH(drm_config_keys), output_section_done },
-	};
-
-	parse_config_file(config_fd, config_section,
-				ARRAY_LENGTH(config_section), NULL);
 
 	return drm_compositor_create(display, connector, seat, tty, use_pixman,
 				     argc, argv, config_fd);
