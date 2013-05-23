@@ -2687,8 +2687,6 @@
             'platform/graphics/GraphicsContext3D.cpp',
             'platform/graphics/GraphicsContext3DImagePacking.cpp',
             'platform/graphics/GraphicsLayer.cpp',
-            'platform/graphics/GraphicsLayerAnimation.cpp',
-            'platform/graphics/GraphicsLayerAnimation.h',
             'platform/graphics/GraphicsLayerTransform.cpp',
             'platform/graphics/GraphicsLayerTransform.h',
             'platform/graphics/GraphicsTypes.cpp',

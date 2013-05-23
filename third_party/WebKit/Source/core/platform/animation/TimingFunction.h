@@ -134,13 +134,7 @@ public:
     double y2() const { return m_y2; }
     
     TimingFunctionPreset timingFunctionPreset() const { return m_timingFunctionPreset; }
-    
-    static const CubicBezierTimingFunction* defaultTimingFunction()
-    {
-        static const CubicBezierTimingFunction* dtf = create().leakRef();
-        return dtf;
-    }
-    
+
 private:
     explicit CubicBezierTimingFunction(TimingFunctionPreset preset = Ease, double x1 = 0.25, double y1 = 0.1, double x2 = 0.25, double y2 = 1.0)
         : TimingFunction(CubicBezierFunction)
