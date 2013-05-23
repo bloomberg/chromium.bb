@@ -53,15 +53,9 @@ function buildServerRequest(handlerName) {
  */
 function buildTaskManager(areConflicting) {
   /**
-   * Name of the alarm that triggers the error saying that the event page cannot
-   * unload.
-   */
-  var CANNOT_UNLOAD_ALARM_NAME = 'CANNOT-UNLOAD';
-
-  /**
    * Maximal time we expect the event page to stay loaded after starting a task.
    */
-  var MAXIMUM_LOADED_TIME_MINUTES = 5;
+  var MAXIMUM_LOADED_TIME_MS = 5 * 60 * 1000;
 
   /**
    * Queue of scheduled tasks. The first element, if present, corresponds to the
@@ -78,14 +72,34 @@ function buildTaskManager(areConflicting) {
   var stepName = null;
 
   /**
+   * Id of the timeout for checking that the event page unloads in a reasonable
+   * time.
+   */
+  var eventPageUnloadTimeoutId = null;
+
+  /**
+   * Resets the timer checking that the event page unloads in a reasonable time.
+   */
+  function resetPageUnloadTimer() {
+    if (eventPageUnloadTimeoutId !== null)
+      clearTimeout(eventPageUnloadTimeoutId);
+
+    eventPageUnloadTimeoutId = setTimeout(wrapCallback(function() {
+      // Error if the event page wasn't unloaded after a reasonable timeout
+      // since starting the last task.
+      verify(false, 'Event page didn\'t unload, queue=' +
+          JSON.stringify(queue) + ', step=' + stepName +
+          ' (ignore this assert if devtools is open).');
+    }), MAXIMUM_LOADED_TIME_MS);
+  }
+
+  /**
    * Starts the first queued task.
    */
   function startFirst() {
     verify(queue.length >= 1, 'startFirst: queue is empty');
 
-    // Set alarm to verify that the event page will unload in a reasonable time.
-    chrome.alarms.create(CANNOT_UNLOAD_ALARM_NAME,
-                         {delayInMinutes: MAXIMUM_LOADED_TIME_MINUTES});
+    resetPageUnloadTimer();
 
     // Start the oldest queued task, but don't remove it from the queue.
     verify(
@@ -230,19 +244,7 @@ function buildTaskManager(areConflicting) {
   instrumentApiFunction(chrome.alarms.onAlarm, 'addListener', 0);
   instrumentApiFunction(chrome.runtime.onSuspend, 'addListener', 0);
 
-  chrome.alarms.onAlarm.addListener(function(alarm) {
-    if (alarm.name == CANNOT_UNLOAD_ALARM_NAME) {
-      // Error if the event page wasn't unloaded after a reasonable timeout
-      // since starting the last task.
-      verify(false, 'Event page didn\'t unload, queue=' +
-          JSON.stringify(queue) + ', step=' + stepName +
-          ' (ignore this assert if devtools is open).');
-    }
-  });
-
   chrome.runtime.onSuspend.addListener(function() {
-    chrome.alarms.clear(CANNOT_UNLOAD_ALARM_NAME);
-
     verify(
         queue.length == 0,
         'Incomplete task when unloading event page, queue = ' +
