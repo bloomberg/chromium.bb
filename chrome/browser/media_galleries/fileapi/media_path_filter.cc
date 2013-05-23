@@ -15,6 +15,18 @@ namespace chrome {
 namespace {
 
 const base::FilePath::CharType* const kExtraSupportedExtensions[] = {
+  // RAW Picture file types.
+  // Some of which are just image/tiff.
+  FILE_PATH_LITERAL("3fr"),  // (Hasselblad)
+  FILE_PATH_LITERAL("arw"),  // (Sony)
+  FILE_PATH_LITERAL("dng"),  // (Adobe, Leica, Ricoh, Samsung)
+  FILE_PATH_LITERAL("mef"),  // (Mamiya)
+  FILE_PATH_LITERAL("nef"),  // (Nikon)
+  FILE_PATH_LITERAL("pef"),  // (Pentax)
+  FILE_PATH_LITERAL("sr2"),  // (Sony)
+  FILE_PATH_LITERAL("srf"),  // (Sony)
+
+  // Video files types.
   FILE_PATH_LITERAL("3gp"),
   FILE_PATH_LITERAL("3gpp"),
   FILE_PATH_LITERAL("avi"),
