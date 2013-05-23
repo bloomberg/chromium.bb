@@ -59,7 +59,9 @@ void TestLoadTimingNotReused(const HttpStream& stream) {
 
 class SpdyHttpStreamSpdy2Test : public testing::Test {
  public:
-  SpdyHttpStreamSpdy2Test() : session_deps_(kProtoSPDY2) {
+  SpdyHttpStreamSpdy2Test()
+      : spdy_util_(kProtoSPDY2),
+        session_deps_(kProtoSPDY2) {
     session_deps_.net_log = &net_log_;
   }
 
@@ -135,6 +137,7 @@ class SpdyHttpStreamSpdy2Test : public testing::Test {
     return session_->InitializeWithSocket(connection.release(), false, OK);
   }
 
+  SpdyTestUtil spdy_util_;
   CapturingNetLog net_log_;
   SpdySessionDependencies session_deps_;
   scoped_ptr<OrderedSocketData> data_;
@@ -145,7 +148,8 @@ class SpdyHttpStreamSpdy2Test : public testing::Test {
 };
 
 TEST_F(SpdyHttpStreamSpdy2Test, SendRequest) {
-  scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 1),
   };
@@ -208,8 +212,10 @@ TEST_F(SpdyHttpStreamSpdy2Test, SendRequest) {
 }
 
 TEST_F(SpdyHttpStreamSpdy2Test, LoadTimingTwoRequests) {
-  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
-  scoped_ptr<SpdyFrame> req2(ConstructSpdyGet(NULL, 0, false, 3, LOWEST));
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> req2(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 3, LOWEST, true));
   MockWrite writes[] = {
     CreateMockWrite(*req1, 0),
     CreateMockWrite(*req2, 1),
@@ -473,7 +479,8 @@ TEST_F(SpdyHttpStreamSpdy2Test, DelayedSendChunkedPost) {
 TEST_F(SpdyHttpStreamSpdy2Test, SpdyURLTest) {
   const char * const full_url = "http://www.google.com/foo?query=what#anchor";
   const char * const base_url = "http://www.google.com/foo?query=what";
-  scoped_ptr<SpdyFrame> req(ConstructSpdyGet(base_url, false, 1, LOWEST));
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(base_url, false, 1, LOWEST));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 1),
   };

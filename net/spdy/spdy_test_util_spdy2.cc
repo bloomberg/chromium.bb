@@ -67,61 +67,6 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
 
 }  // namespace
 
-SpdyFrame* ConstructSpdyGet(const char* const url,
-                            bool compressed,
-                            SpdyStreamId stream_id,
-                            RequestPriority request_priority) {
-  const SpdyHeaderInfo kSynStartHeader = {
-    SYN_STREAM,             // Kind = Syn
-    stream_id,              // Stream ID
-    0,                      // Associated stream ID
-    ConvertRequestPriorityToSpdyPriority(request_priority, 2),
-                            // Priority
-    kSpdyCredentialSlotUnused,
-    CONTROL_FLAG_FIN,       // Control Flags
-    compressed,             // Compressed
-    RST_STREAM_INVALID,     // Status
-    NULL,                   // Data
-    0,                      // Length
-    DATA_FLAG_NONE          // Data Flags
-  };
-  return ConstructSpdyFrame(kSynStartHeader, ConstructGetHeaderBlock(url));
-}
-
-SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
-                            int extra_header_count,
-                            bool compressed,
-                            int stream_id,
-                            RequestPriority request_priority) {
-  return ConstructSpdyGet(extra_headers, extra_header_count, compressed,
-                          stream_id, request_priority, true);
-}
-
-SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
-                            int extra_header_count,
-                            bool compressed,
-                            int stream_id,
-                            RequestPriority request_priority,
-                            bool direct) {
-  const char* const kStandardGetHeaders[] = {
-    "method", "GET",
-    "url", (direct ? "/" : "http://www.google.com/"),
-    "host", "www.google.com",
-    "scheme", "http",
-    "version", "HTTP/1.1"
-  };
-  return ConstructSpdyControlFrame(extra_headers,
-                                   extra_header_count,
-                                   compressed,
-                                   stream_id,
-                                   request_priority,
-                                   SYN_STREAM,
-                                   CONTROL_FLAG_FIN,
-                                   kStandardGetHeaders,
-                                   arraysize(kStandardGetHeaders),
-                                   0);
-}
-
 SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
                                 int extra_header_count,
                                 int stream_id) {

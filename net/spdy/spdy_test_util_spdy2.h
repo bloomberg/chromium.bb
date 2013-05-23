@@ -24,38 +24,6 @@ namespace test_spdy2 {
 // Can't find a function you're looking for?  ttuttle is migrating functions
 // from here into methods in the SpdyTestUtil class in spdy_test_common.h.
 
-// Constructs a standard SPDY GET SYN frame, optionally compressed
-// for the url |url|.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
-SpdyFrame* ConstructSpdyGet(const char* const url,
-                            bool compressed,
-                            SpdyStreamId stream_id,
-                            RequestPriority request_priority);
-
-// Constructs a standard SPDY GET SYN frame, optionally compressed.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
-SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
-                            int extra_header_count,
-                            bool compressed,
-                            int stream_id,
-                            RequestPriority request_priority);
-
-// Constructs a standard SPDY GET SYN frame, optionally compressed.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.  If |direct| is false, the
-// the full url will be used instead of simply the path.
-// Returns a SpdyFrame.
-SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
-                            int extra_header_count,
-                            bool compressed,
-                            int stream_id,
-                            RequestPriority request_priority,
-                            bool direct);
-
 // Constructs a standard SPDY SYN_STREAM frame for a CONNECT request.
 SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
                                 int extra_header_count,

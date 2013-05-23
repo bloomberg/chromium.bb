@@ -362,6 +362,28 @@ class SpdyTestUtil {
   SpdyFrame* ConstructSpdyRstStream(SpdyStreamId stream_id,
                                     SpdyRstStreamStatus status) const;
 
+  // Constructs a standard SPDY GET SYN frame, optionally compressed
+  // for the url |url|.
+  // |extra_headers| are the extra header-value pairs, which typically
+  // will vary the most between calls.
+  // Returns a SpdyFrame.
+  SpdyFrame* ConstructSpdyGet(const char* const url,
+                              bool compressed,
+                              SpdyStreamId stream_id,
+                              RequestPriority request_priority) const;
+
+  // Constructs a standard SPDY GET SYN frame, optionally compressed.
+  // |extra_headers| are the extra header-value pairs, which typically
+  // will vary the most between calls.  If |direct| is false, the
+  // the full url will be used instead of simply the path.
+  // Returns a SpdyFrame.
+  SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
+                              int extra_header_count,
+                              bool compressed,
+                              int stream_id,
+                              RequestPriority request_priority,
+                              bool direct) const;
+
   NextProto protocol() const { return protocol_; }
   SpdyMajorVersion spdy_version() const { return spdy_version_; }
   bool is_spdy2() const { return protocol_ < kProtoSPDY3; }

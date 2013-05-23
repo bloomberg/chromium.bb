@@ -224,8 +224,10 @@ TEST_F(SpdySessionSpdy3Test, GoAway) {
     CreateMockRead(*goaway, 2),
     MockRead(ASYNC, 0, 3)  // EOF
   };
-  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
-  scoped_ptr<SpdyFrame> req2(ConstructSpdyGet(NULL, 0, false, 3, MEDIUM));
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, MEDIUM, true));
+  scoped_ptr<SpdyFrame> req2(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 3, MEDIUM, true));
   MockWrite writes[] = {
     CreateMockWrite(*req1, 0),
     CreateMockWrite(*req2, 1),
@@ -1264,8 +1266,10 @@ TEST_F(SpdySessionSpdy3Test, CloseSessionOnError) {
 TEST_F(SpdySessionSpdy3Test, OutOfOrderSynStreams) {
   // Construct the request.
   MockConnect connect_data(SYNCHRONOUS, OK);
-  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, HIGHEST));
-  scoped_ptr<SpdyFrame> req2(ConstructSpdyGet(NULL, 0, false, 3, LOWEST));
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, HIGHEST, true));
+  scoped_ptr<SpdyFrame> req2(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 3, LOWEST, true));
   MockWrite writes[] = {
     CreateMockWrite(*req1, 2),
     CreateMockWrite(*req2, 1),
@@ -1335,7 +1339,8 @@ TEST_F(SpdySessionSpdy3Test, CancelStream) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   // Request 1, at HIGHEST priority, will be cancelled before it writes data.
   // Request 2, at LOWEST priority, will be a full request and will be id 1.
-  scoped_ptr<SpdyFrame> req2(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
+  scoped_ptr<SpdyFrame> req2(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   MockWrite writes[] = {
     CreateMockWrite(*req2, 0),
   };
@@ -1623,9 +1628,12 @@ TEST_F(SpdySessionSpdy3Test, CloseTwoStalledCreateStream) {
   new_settings[kSpdySettingsIds1] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
 
-  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
-  scoped_ptr<SpdyFrame> req2(ConstructSpdyGet(NULL, 0, false, 3, LOWEST));
-  scoped_ptr<SpdyFrame> req3(ConstructSpdyGet(NULL, 0, false, 5, LOWEST));
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> req2(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 3, LOWEST, true));
+  scoped_ptr<SpdyFrame> req3(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 5, LOWEST, true));
   MockWrite writes[] = {
     CreateMockWrite(*req1, 1),
     CreateMockWrite(*req2, 4),
@@ -2006,7 +2014,8 @@ TEST_F(SpdySessionSpdy3Test, ReadDataWithoutYielding) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   BufferedSpdyFramer framer(SPDY3, false);
 
-  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, MEDIUM, true));
   MockWrite writes[] = {
     CreateMockWrite(*req1, 0),
   };
@@ -2093,7 +2102,8 @@ TEST_F(SpdySessionSpdy3Test, TestYieldingDuringReadData) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   BufferedSpdyFramer framer(SPDY3, false);
 
-  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, MEDIUM, true));
   MockWrite writes[] = {
     CreateMockWrite(*req1, 0),
   };
@@ -2189,7 +2199,8 @@ TEST_F(SpdySessionSpdy3Test, TestYieldingDuringAsyncReadData) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   BufferedSpdyFramer framer(SPDY3, false);
 
-  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, MEDIUM, true));
   MockWrite writes[] = {
     CreateMockWrite(*req1, 0),
   };
@@ -2292,7 +2303,8 @@ TEST_F(SpdySessionSpdy3Test, GoAwayWhileInDoLoop) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   BufferedSpdyFramer framer(SPDY3, false);
 
-  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, MEDIUM));
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, MEDIUM, true));
   MockWrite writes[] = {
     CreateMockWrite(*req1, 0),
   };
@@ -2572,7 +2584,7 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlInactiveStream31) {
           kSessionFlowControlStreamId,
           kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   MockWrite writes[] = {
-    CreateMockWrite(*initial_window_update, 0)
+    CreateMockWrite(*initial_window_update, 0),
   };
   DeterministicSocketData data(reads, arraysize(reads),
                                writes, arraysize(writes));
@@ -3609,7 +3621,8 @@ TEST_F(SpdySessionSpdy3Test, CloseOneIdleConnectionFailsWhenSessionInUse) {
   MockRead reads[] = {
     MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
-  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> cancel1(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {

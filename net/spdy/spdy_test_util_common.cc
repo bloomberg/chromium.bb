@@ -774,6 +774,54 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyRstStream(
   return CreateFramer()->CreateRstStream(stream_id, status);
 }
 
+SpdyFrame* SpdyTestUtil::ConstructSpdyGet(
+    const char* const url,
+    bool compressed,
+    SpdyStreamId stream_id,
+    RequestPriority request_priority) const {
+  const SpdyHeaderInfo header_info = {
+    SYN_STREAM,
+    stream_id,
+    0,                   // associated stream ID
+    ConvertRequestPriorityToSpdyPriority(request_priority, spdy_version_),
+    0,                   // credential slot
+    CONTROL_FLAG_FIN,
+    compressed,
+    RST_STREAM_INVALID,  // status
+    NULL,                // data
+    0,                   // length
+    DATA_FLAG_NONE
+  };
+  return ConstructSpdyFrame(header_info, ConstructGetHeaderBlock(url));
+}
+
+SpdyFrame* SpdyTestUtil::ConstructSpdyGet(const char* const extra_headers[],
+                                          int extra_header_count,
+                                          bool compressed,
+                                          int stream_id,
+                                          RequestPriority request_priority,
+                                          bool direct) const {
+  const bool spdy2 = is_spdy2();
+  const char* url = (spdy2 && !direct) ? "http://www.google.com/" : "/";
+  const char* const kStandardGetHeaders[] = {
+    spdy2 ? "method"  : ":method",  "GET",
+    spdy2 ? "host"    : ":host",    "www.google.com",
+    spdy2 ? "scheme"  : ":scheme",  "http",
+    spdy2 ? "version" : ":version", "HTTP/1.1",
+    spdy2 ? "url"     : ":path",    url
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   compressed,
+                                   stream_id,
+                                   request_priority,
+                                   SYN_STREAM,
+                                   CONTROL_FLAG_FIN,
+                                   kStandardGetHeaders,
+                                   arraysize(kStandardGetHeaders),
+                                   0);
+}
+
 scoped_ptr<SpdyFramer> SpdyTestUtil::CreateFramer() const {
   return scoped_ptr<SpdyFramer>(new SpdyFramer(spdy_version_));
 }

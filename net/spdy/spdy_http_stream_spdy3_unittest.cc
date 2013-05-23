@@ -168,7 +168,8 @@ class SpdyHttpStreamSpdy3Test : public testing::Test {
 };
 
 TEST_F(SpdyHttpStreamSpdy3Test, SendRequest) {
-  scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 1),
   };
@@ -231,8 +232,10 @@ TEST_F(SpdyHttpStreamSpdy3Test, SendRequest) {
 }
 
 TEST_F(SpdyHttpStreamSpdy3Test, LoadTimingTwoRequests) {
-  scoped_ptr<SpdyFrame> req1(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
-  scoped_ptr<SpdyFrame> req2(ConstructSpdyGet(NULL, 0, false, 3, LOWEST));
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> req2(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 3, LOWEST, true));
   MockWrite writes[] = {
     CreateMockWrite(*req1, 0),
     CreateMockWrite(*req2, 1),
@@ -636,7 +639,8 @@ TEST_F(SpdyHttpStreamSpdy3Test, DelayedSendChunkedPostWithWindowUpdate) {
 TEST_F(SpdyHttpStreamSpdy3Test, SpdyURLTest) {
   const char * const full_url = "http://www.google.com/foo?query=what#anchor";
   const char * const base_url = "http://www.google.com/foo?query=what";
-  scoped_ptr<SpdyFrame> req(ConstructSpdyGet(base_url, false, 1, LOWEST));
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(base_url, false, 1, LOWEST));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 1),
   };
