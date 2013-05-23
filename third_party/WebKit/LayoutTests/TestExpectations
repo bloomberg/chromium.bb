@@ -1801,3 +1801,5 @@ crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-saturation.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/effect-custom-combined-missing.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/effect-custom-transform-parameters.html [ Crash ]
+crbug.com/243298 [ Debug ] fast/forms/number/number-validation-message.html [ Crash ]
+crbug.com/243298 [ Debug ] fast/forms/date/input-date-validation-message.html [ Crash ]
