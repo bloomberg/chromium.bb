@@ -512,9 +512,6 @@
       'webrtc_video_quality',
       'webrtc_audio_quality',
     ],
-    'win': [
-      '-webrtc_audio_quality',  # crbug.com/226016
-    ],
     'mac': [
       '-webrtc_audio_quality',  # Not implemented.
     ],

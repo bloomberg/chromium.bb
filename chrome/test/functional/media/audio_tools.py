@@ -35,6 +35,8 @@ if WINDOWS:
   _PESQ_PATH = os.path.join(_TOOLS_PATH, 'pesq.exe')
   _SOX_PATH = os.path.join(_TOOLS_PATH, 'sox.exe')
   _AUDIO_RECORDER = r'SoundRecorder.exe'
+  _FORCE_MIC_VOLUME_MAX_UTIL = os.path.join(_TOOLS_PATH,
+                                            r'force_mic_volume_max.exe')
 else:
   _PESQ_PATH = os.path.join(_TOOLS_PATH, 'pesq')
   _SOX_PATH = commands.getoutput('which sox')
@@ -56,7 +58,7 @@ class AudioRecorderThread(threading.Thread):
     """Starts audio recording."""
     if WINDOWS:
       if self._record_mono:
-        raise Exception("Mono recording not supported on Windows yet!")
+        logging.error("Mono recording not supported on Windows yet!")
 
       duration = time.strftime('%H:%M:%S', time.gmtime(self._duration))
       cmd = [_AUDIO_RECORDER, '/FILE', self._output_file, '/DURATION',
@@ -144,7 +146,12 @@ def RemoveSilence(input_audio_file, output_audio_file):
 
 def ForceMicrophoneVolumeTo100Percent():
   if WINDOWS:
-    logging.error('Volume forcing not implemented on Windows yet.')
+    # The volume max util is implemented in WebRTC in
+    # webrtc/tools/force_mic_volume_max/force_mic_volume_max.cc.
+    if not os.path.exists(_FORCE_MIC_VOLUME_MAX_UTIL):
+      raise Exception('Missing required binary %s.' %
+                      _FORCE_MIC_VOLUME_MAX_UTIL)
+    cmd = [_FORCE_MIC_VOLUME_MAX_UTIL]
   else:
     # The recording device id is machine-specific. We assume here it is called
     # Monitor of render (which corresponds to the id render.monitor). You can
@@ -153,8 +160,9 @@ def ForceMicrophoneVolumeTo100Percent():
     HUNDRED_PERCENT_VOLUME = '65536'
     cmd = [_PACMD_PATH, 'set-source-volume', RECORDING_DEVICE_ID,
            HUNDRED_PERCENT_VOLUME]
-    logging.debug('Running command: %s', ' '.join(cmd))
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, error = p.communicate()
-    if p.returncode != 0:
-      logging.error('Error forcing mic volume to 100%%: %s\n%s', output, error)
+
+  logging.debug('Running command: %s', ' '.join(cmd))
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  output, error = p.communicate()
+  if p.returncode != 0:
+    logging.error('Error forcing mic volume to 100%%: %s\n%s', output, error)
