@@ -1497,6 +1497,7 @@ crbug.com/130259 [ Linux ] fast/forms/range/range-appearance-basic.html [ ImageO
 
 crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
 webkit.org/b/81697 [ Debug ] fast/notifications/notifications-request-permission.html [ Failure Pass ]
+webkit.org/b/81697 [ Mac Release ] fast/notifications/notifications-request-permission.html [ Failure Pass ]
 crbug.com/225883 [ Win ] inspector/profiler/memory-instrumentation-external-array.html [ Failure Pass ]
 crbug.com/225184 [ Win Mac Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure ]
 crbug.com/237270 fast/js/stack-overflow-arrity-catch.html [ Failure Pass ]
@@ -1795,7 +1796,7 @@ crbug.com/243314 [ Mac Debug ] virtual/gpu/fast/canvas/access-zero-sized-canvas.
 crbug.com/242851 editing/pasteboard/drop-file-svg.html [ Crash ]
 crbug.com/242851 editing/pasteboard/file-drag-to-editable.html [ Crash ]
 
-# Content failures
+# Switching to content shell failures
 crbug.com/243353 [ Mac ] animations/dynamic-stylesheet-loading.html [ Timeout ]
 crbug.com/243353 [ Mac ] animations/transition-and-animation-1.html [ Timeout ]
 crbug.com/243353 [ Mac ] animations/transition-and-animation-2.html [ Pass Timeout ]
@@ -1830,3 +1831,7 @@ crbug.com/243515 [ Win Mac ] fast/autoresize/basic.html [ Pass Timeout ]
 crbug.com/243516 [ Mac ] transitions/transition-hit-test-transform.html [ Timeout ]
 crbug.com/243520 [ Mac ] fast/css/font-weight-1.html [ Failure Pass ]
 crbug.com/243523 http/tests/history/back-with-fragment-change.php [ Pass Timeout Failure ]
+crbug.com/243538 [ Win ] fast/text/international/complex-character-based-fallback.html [ Failure ]
+crbug.com/243538 [ Win ] transforms/2d/hindi-rotated.html [ Failure ]
+crbug.com/243543 [ Win7 ] virtual/gpu/fast/hidpi/video-controls-in-hidpi.html [ Failure ]
+
