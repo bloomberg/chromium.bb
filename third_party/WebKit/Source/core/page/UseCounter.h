@@ -130,6 +130,7 @@ public:
         PrefixedUserTiming,
         WindowEvent,
         ContentSecurityPolicyWithBaseElement,
+        PrefixedMediaAddKey,
         PrefixedMediaGenerateKeyRequest,
         WebAudioLooping,
         DocumentClear,
