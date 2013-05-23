@@ -27,7 +27,8 @@ LocallyManagedUserCreationFlow::LocallyManagedUserCreationFlow(
     const std::string& manager_id)
         : ExtendedUserFlow(manager_id),
         token_validated_(false),
-        logged_in_(false) {}
+        logged_in_(false),
+        manager_profile_(NULL) {}
 
 LocallyManagedUserCreationFlow::~LocallyManagedUserCreationFlow() {}
 
@@ -53,7 +54,7 @@ void LocallyManagedUserCreationFlow::HandleOAuthTokenStatusChange(
   token_validated_ = true;
 
   if (token_validated_ && logged_in_)
-    GetScreen(host())->OnManagerFullyAuthenticated();
+    GetScreen(host())->OnManagerFullyAuthenticated(manager_profile_);
 }
 
 
@@ -74,8 +75,9 @@ bool LocallyManagedUserCreationFlow::HandlePasswordChangeDetected() {
 void LocallyManagedUserCreationFlow::LaunchExtraSteps(
     Profile* profile) {
   logged_in_ = true;
+  manager_profile_ = profile;
   if (token_validated_ && logged_in_)
-    GetScreen(host())->OnManagerFullyAuthenticated();
+    GetScreen(host())->OnManagerFullyAuthenticated(manager_profile_);
   else
     GetScreen(host())->OnManagerCryptohomeAuthenticated();
 }

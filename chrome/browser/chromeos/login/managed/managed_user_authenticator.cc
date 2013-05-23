@@ -103,7 +103,7 @@ std::string HashPassword(const std::string& password) {
 
 }  // namespace
 
-ManagedUserAuthenticator::ManagedUserAuthenticator(StatusConsumer* consumer)
+ManagedUserAuthenticator::ManagedUserAuthenticator(AuthStatusConsumer* consumer)
     : consumer_(consumer) {}
 
 void ManagedUserAuthenticator::AuthenticateToMount(const std::string& username,

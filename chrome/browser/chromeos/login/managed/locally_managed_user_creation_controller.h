@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CONTROLLER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CONTROLLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CREATION_CONTROLLER_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CREATION_CONTROLLER_H_
 
 #include <string>
 
@@ -11,50 +11,59 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/chromeos/login/managed/cloud_connector.h"
 #include "chrome/browser/chromeos/login/managed/managed_user_authenticator.h"
+#include "chrome/browser/managed_mode/managed_user_registration_service.h"
+
+class Profile;
 
 namespace chromeos {
 
-// LocallyManagedUserController is used to locally managed user creation.
-// LocallyManagedUserController maintains it's own life cycle and deletes itself
-// when user creation is finished or aborted.
-class LocallyManagedUserController
-    : public ManagedUserAuthenticator::StatusConsumer,
-      public CloudConnector::Delegate {
+// LocallyManagedUserCreationController is used to locally managed user
+// creation.
+// LMU Creation process:
+// 0. Manager is logged in
+// 1. Generate ID for new LMU
+// 2. Start "transaction" in Local State.
+// 3. Create local cryptohome (errors could arise)
+// 4. Create user in cloud (errors could arise)
+// 5. Store cloud token in cryptohome (actually, error could arise).
+// 6. Mark "transaction" as completed.
+// 7. End manager session.
+
+class LocallyManagedUserCreationController
+    : public ManagedUserAuthenticator::AuthStatusConsumer {
  public:
   enum ErrorCode {
     NO_ERROR,
     CRYPTOHOME_NO_MOUNT,
     CRYPTOHOME_FAILED_MOUNT,
     CRYPTOHOME_FAILED_TPM,
-    CLOUD_NOT_CONNECTED,
-    CLOUD_TIMED_OUT,
     CLOUD_SERVER_ERROR,
+    TOKEN_WRITE_FAILED,
   };
 
   class StatusConsumer {
    public:
     virtual ~StatusConsumer();
 
-    virtual void OnCreationError(ErrorCode code, bool recoverable) = 0;
+    virtual void OnCreationError(ErrorCode code) = 0;
     virtual void OnCreationSuccess() = 0;
   };
 
   // All UI initialization is deferred till Init() call.
   // |Consumer| is not owned by controller, and it is expected that it wouldn't
-  // be deleted before LocallyManagedUserController.
-  explicit LocallyManagedUserController(StatusConsumer* consumer);
-  virtual ~LocallyManagedUserController();
+  // be deleted before LocallyManagedUserCreationController.
+  explicit LocallyManagedUserCreationController(StatusConsumer* consumer);
+  virtual ~LocallyManagedUserCreationController();
 
   // Returns the current locally managed user controller if it has been created.
-  static LocallyManagedUserController* current_controller() {
+  static LocallyManagedUserCreationController* current_controller() {
     return current_controller_;
   }
 
   void SetUpCreation(string16 display_name, std::string password);
+  void SetManagerProfile(Profile* manager_profile);
   void StartCreation();
-  void RetryLastStep();
   void FinishCreation();
   std::string GetManagedUserId();
 
@@ -65,53 +74,46 @@ class LocallyManagedUserController
     ~UserCreationContext();
 
     string16 display_name;
-    bool id_acquired;
     std::string user_id;
     std::string password;
     std::string mount_hash;
     bool token_acquired;
     std::string token;
+    bool token_succesfully_written;
+    Profile* manager_profile;
   };
-
-  // CloudConnector::Delegate overrides.
-  virtual void NewUserIdGenerated(std::string& new_id) OVERRIDE;
-  virtual void DMTokenFetched(std::string& user_id, std::string& token)
-      OVERRIDE;
-  virtual void OnCloudError(CloudConnector::CloudError error) OVERRIDE;
 
   // ManagedUserAuthenticator::StatusConsumer overrides.
   virtual void OnAuthenticationFailure(
       ManagedUserAuthenticator::AuthState error) OVERRIDE;
   virtual void OnMountSuccess(const std::string& mount_hash) OVERRIDE;
-  virtual void OnCreationSuccess() OVERRIDE;
 
-  // Stores data files in locally managed user home directory.
-  // It is called on one of BlockingPool threads.
-  virtual void StoreManagedUserFiles(const base::FilePath& base_path);
+  void RegistrationCallback(const GoogleServiceAuthError& error,
+                            const std::string& token);
+
+  void TokenFetched(const std::string& token);
 
   // Completion callback for StoreManagedUserFiles method.
   // Called on the UI thread.
-  virtual void OnManagedUserFilesStored();
+  void OnManagedUserFilesStored(bool success);
 
   // Pointer to the current instance of the controller to be used by
   // automation tests.
-  static LocallyManagedUserController* current_controller_;
+  static LocallyManagedUserCreationController* current_controller_;
 
   StatusConsumer* consumer_;
 
-  // Cloud connector for this controller.
-  scoped_ptr<CloudConnector> connector_;
   scoped_refptr<ManagedUserAuthenticator> authenticator_;
 
   // Creation context. Not null while creating new LMU.
   scoped_ptr<UserCreationContext> creation_context_;
 
   // Factory of callbacks.
-  base::WeakPtrFactory<LocallyManagedUserController> weak_factory_;
+  base::WeakPtrFactory<LocallyManagedUserCreationController> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserController);
+  DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationController);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CONTROLLER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CREATION_CONTROLLER_H_

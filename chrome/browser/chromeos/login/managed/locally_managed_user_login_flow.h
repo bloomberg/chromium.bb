@@ -29,7 +29,6 @@ class LocallyManagedUserLoginFlow : public ExtendedUserFlow {
       OVERRIDE;
   virtual void LaunchExtraSteps(Profile* profile) OVERRIDE;
 
-  virtual void LoadSyncSetupData();
   virtual void OnSyncSetupDataLoaded(const std::string& token);
   virtual void ConfigureSync(const std::string& token);
 

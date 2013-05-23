@@ -10,6 +10,8 @@
 #include "base/string16.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 
+class Profile;
+
 namespace chromeos {
 
 // UserFlow implementation for creating new locally managed user.
@@ -37,6 +39,8 @@ class LocallyManagedUserCreationFlow : public ExtendedUserFlow {
   // Indicates if manager was successfully authenticated against
   // local cryptohome.
   bool logged_in_;
+
+  Profile* manager_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationFlow);
 };

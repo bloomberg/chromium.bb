@@ -729,7 +729,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.setVisibleButtons_(['finish']);
     },
 
-    showErrorPage: function(errorText, recoverable) {
+    showErrorPage: function(errorText) {
       this.disabled = false;
       $('managed-user-creation-flow-error-value').innerHTML = errorText;
       this.setVisiblePage_('error');

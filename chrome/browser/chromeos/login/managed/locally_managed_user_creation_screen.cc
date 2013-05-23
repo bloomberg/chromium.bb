@@ -6,7 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_controller.h"
+#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -106,8 +106,7 @@ void LocallyManagedUserCreationScreen::
     return;
   actor_->ShowErrorPage(
       l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE),
-      false);
+          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE));
 }
 
 void LocallyManagedUserCreationScreen::ShowInitialScreen() {
@@ -140,7 +139,7 @@ void LocallyManagedUserCreationScreen::AuthenticateManager(
     const std::string& manager_password) {
   // Make sure no two controllers exist at the same time.
   controller_.reset();
-  controller_.reset(new LocallyManagedUserController(this));
+  controller_.reset(new LocallyManagedUserCreationController(this));
 
   ExistingUserController::current_controller()->
       Login(UserContext(manager_id,
@@ -161,7 +160,10 @@ void LocallyManagedUserCreationScreen::OnManagerLoginFailure() {
     actor_->ShowManagerPasswordError();
 }
 
-void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated() {
+void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
+    Profile* manager_profile) {
+  DCHECK(controller_.get());
+  controller_->SetManagerProfile(manager_profile);
   if (actor_)
     actor_->ShowUsernamePage();
 }
@@ -180,35 +182,30 @@ void LocallyManagedUserCreationScreen::OnActorDestroyed(
 }
 
 void LocallyManagedUserCreationScreen::OnCreationError(
-    LocallyManagedUserController::ErrorCode code,
-    bool recoverable) {
+    LocallyManagedUserCreationController::ErrorCode code) {
   string16 message;
   // TODO(antrim) : find out which errors do we really have.
   // We might reuse some error messages from ordinary user flow.
   switch (code) {
-    case LocallyManagedUserController::CRYPTOHOME_NO_MOUNT:
-    case LocallyManagedUserController::CRYPTOHOME_FAILED_MOUNT:
-    case LocallyManagedUserController::CRYPTOHOME_FAILED_TPM:
+    case LocallyManagedUserCreationController::CRYPTOHOME_NO_MOUNT:
+    case LocallyManagedUserCreationController::CRYPTOHOME_FAILED_MOUNT:
+    case LocallyManagedUserCreationController::CRYPTOHOME_FAILED_TPM:
       message = l10n_util::GetStringUTF16(
           IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TPM_ERROR);
       break;
-    case LocallyManagedUserController::CLOUD_NOT_CONNECTED:
-      message = l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_NOT_CONNECTED);
-      break;
-    case LocallyManagedUserController::CLOUD_TIMED_OUT:
-      message = l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TIMED_OUT);
-      break;
-    case LocallyManagedUserController::CLOUD_SERVER_ERROR:
+    case LocallyManagedUserCreationController::CLOUD_SERVER_ERROR:
       message = l10n_util::GetStringUTF16(
           IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_SERVER_ERROR);
       break;
-    default:
+    case LocallyManagedUserCreationController::TOKEN_WRITE_FAILED:
+      message = l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TOKEN_WRITE_ERROR);
+      break;
+    case LocallyManagedUserCreationController::NO_ERROR:
       NOTREACHED();
   }
   if (actor_)
-    actor_->ShowErrorPage(message, recoverable);
+    actor_->ShowErrorPage(message);
 }
 
 void LocallyManagedUserCreationScreen::SelectPicture() {

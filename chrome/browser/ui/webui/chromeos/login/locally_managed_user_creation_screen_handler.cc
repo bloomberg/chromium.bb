@@ -124,8 +124,7 @@ void LocallyManagedUserCreationScreenHandler::
     ShowManagerInconsistentStateErrorPage() {
   ShowErrorPage(
       l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE),
-      false);
+          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE));
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowIntroPage() {
@@ -149,10 +148,8 @@ void LocallyManagedUserCreationScreenHandler::ShowTutorialPage() {
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowErrorPage(
-    const string16& message,
-    bool recoverable) {
-  CallJS("login.LocallyManagedUserCreationScreen.showErrorPage", message,
-         recoverable);
+    const string16& message) {
+  CallJS("login.LocallyManagedUserCreationScreen.showErrorPage", message);
 }
 
 void LocallyManagedUserCreationScreenHandler::SetDelegate(Delegate* delegate) {

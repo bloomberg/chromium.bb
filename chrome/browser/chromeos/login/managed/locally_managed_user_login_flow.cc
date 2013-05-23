@@ -13,28 +13,30 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/managed/locally_managed_user_constants.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 
 namespace chromeos {
 
-// namespace {
-//
-//  A pref for the sync token.
-// const char kSyncServiceAuthorizationToken[] =
-//    "ManagedUserSyncServiceAuthorizationToken";
-//
-// } // namespace
-//
-// // static
-// void LocallyManagedUserLoginFlow::RegisterPrefs(
-//    PrefRegistrySimple* registry) {
-//   registry->RegisterStringPref(
-//       kSyncServiceAuthorizationToken, "");
-// }
+namespace {
+
+std::string LoadSyncToken() {
+  std::string token;
+  base::FilePath token_file =
+      file_util::GetHomeDir().Append(kManagedUserTokenFilename);
+  if (!file_util::ReadFileToString(token_file, &token)) {
+    return std::string();
+  }
+  return token;
+}
+
+} // namespace
 
 LocallyManagedUserLoginFlow::LocallyManagedUserLoginFlow(
     const std::string& user_id)
@@ -66,32 +68,16 @@ void LocallyManagedUserLoginFlow::HandleOAuthTokenStatusChange(
     User::OAuthTokenStatus status) {
 }
 
-void LocallyManagedUserLoginFlow::LoadSyncSetupData() {
-  std::string token;
-  base::FilePath token_file = file_util::GetHomeDir().Append("token");
-  file_util::ReadFileToString(token_file, &token);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&LocallyManagedUserLoginFlow::OnSyncSetupDataLoaded,
-           weak_factory_.GetWeakPtr(),
-           token));
-}
-
 void LocallyManagedUserLoginFlow::OnSyncSetupDataLoaded(
     const std::string& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-//  PrefService* prefs = profile_->GetPrefs();
-//  prefs->SetString(kSyncServiceAuthorizationToken,
-//      token);
+  // TODO(antrim): add error handling (no token loaded).
   ConfigureSync(token);
 }
 
 void LocallyManagedUserLoginFlow::ConfigureSync(const std::string& token) {
   data_loaded_ = true;
-  // TODO(antrim): Propagate token when we know API.
-
+  ManagedUserServiceFactory::GetForProfile(profile_)->InitSync(token);
   LoginUtils::Get()->DoBrowserLaunch(profile_, host());
   profile_ = NULL;
   UnregisterFlowSoon();
@@ -100,13 +86,14 @@ void LocallyManagedUserLoginFlow::ConfigureSync(const std::string& token) {
 void LocallyManagedUserLoginFlow::LaunchExtraSteps(
     Profile* profile) {
   profile_ = profile;
-//  PrefService* prefs = profile->GetPrefs();
   const std::string token;
-//     =  prefs->GetString(kSyncServiceAuthorizationToken);
   if (token.empty()) {
-    BrowserThread::GetBlockingPool()->PostTask(
+    PostTaskAndReplyWithResult(
+        content::BrowserThread::GetBlockingPool(),
         FROM_HERE,
-        base::Bind(&LocallyManagedUserLoginFlow::LoadSyncSetupData,
+        base::Bind(&LoadSyncToken),
+        base::Bind(
+             &LocallyManagedUserLoginFlow::OnSyncSetupDataLoaded,
              weak_factory_.GetWeakPtr()));
   } else {
     ConfigureSync(token);

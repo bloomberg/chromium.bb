@@ -69,18 +69,16 @@ class ManagedUserAuthenticator
     DISALLOW_COPY_AND_ASSIGN(AuthAttempt);
   };
 
-  class StatusConsumer {
+  class AuthStatusConsumer {
    public:
-    virtual ~StatusConsumer() {}
+    virtual ~AuthStatusConsumer() {}
     // The current login attempt has ended in failure, with error.
     virtual void OnAuthenticationFailure(AuthState state) = 0;
     // The current login attempt has ended succesfully.
     virtual void OnMountSuccess(const std::string& mount_hash) = 0;
-    // The current cryptohome creation attempt has ended succesfully.
-    virtual void OnCreationSuccess() = 0;
   };
 
-  explicit ManagedUserAuthenticator(StatusConsumer* consumer);
+  explicit ManagedUserAuthenticator(AuthStatusConsumer* consumer);
 
   void AuthenticateToMount(const std::string& username,
                            const std::string& password);
@@ -101,7 +99,7 @@ class ManagedUserAuthenticator
   void OnAuthenticationFailure(AuthState state);
 
   scoped_ptr<AuthAttempt> current_state_;
-  StatusConsumer* consumer_;
+  AuthStatusConsumer* consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedUserAuthenticator);
 };
