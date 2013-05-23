@@ -25,7 +25,18 @@ class Notification;
 MESSAGE_CENTER_EXPORT
 @interface MCPopupController : NSWindowController {
  @private
+  // Global message center. Weak.
+  message_center::MessageCenter* messageCenter_;
+
+  // The view controller that provide's the popup content view.
   scoped_nsobject<MCNotificationController> notificationController_;
+
+  // If the swipe-away gesture received NSEventPhaseEnded.
+  BOOL swipeGestureEnded_;
+
+  // The frame of the popup before any swipe animation started. Used to
+  // calculate the animating position of the window when swiping away.
+  NSRect originalFrame_;
 }
 
 // Designated initializer.
