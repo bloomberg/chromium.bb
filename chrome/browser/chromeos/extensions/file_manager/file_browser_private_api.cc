@@ -131,6 +131,8 @@ const char kDriveConnectionReasonNotReady[] = "not_ready";
 const char kDriveConnectionReasonNoNetwork[] = "no_network";
 const char kDriveConnectionReasonNoService[] = "no_service";
 
+const int kSlowOperationThresholdMs = 500;  // In ms.
+
 // Unescape rules used for parsing query parameters.
 const net::UnescapeRule::Type kUnescapeRuleForQueryParameters =
     net::UnescapeRule::SPACES |
@@ -1372,6 +1374,12 @@ void FileBrowserFunction::SendResponse(bool success) {
                      request_id(),
                      success ? "succeeded" : "failed",
                      base::Int64ToString(elapsed).c_str());
+  } else if (elapsed >= kSlowOperationThresholdMs) {
+    drive::util::Log(
+        "PEFORMANCE WARNING: %s[%d] was slow. (elapsed time: %sms)",
+        name().c_str(),
+        request_id(),
+        base::Int64ToString(elapsed).c_str());
   }
 
   AsyncExtensionFunction::SendResponse(success);
