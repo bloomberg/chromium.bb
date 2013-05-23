@@ -13,49 +13,49 @@
       background-repeat: no-repeat;
       -webkit-transition-duration: 1s;
       -webkit-transition-timing-function: linear;
-      -webkit-transition-property: -webkit-box-shadow, text-shadow;
+      -webkit-transition-property: box-shadow, text-shadow;
     }
     
     #box {
-      -webkit-box-shadow: 0 -20px 10px red, 0 20px 10px blue;
+      box-shadow: 0 -20px 10px red, 0 20px 10px blue;
       text-shadow: 0 -20px 10px red, 0 20px 10px blue;
     }
     
     #box.final {
-      -webkit-box-shadow: 0 20px 10px red, 0 -20px 10px blue;
+      box-shadow: 0 20px 10px red, 0 -20px 10px blue;
       text-shadow: 0 20px 10px red, 0 -20px 10px blue;
     }
 
     /* Mismatched layers */
     #box2 {
-      -webkit-box-shadow: 0 -20px 10px red, 0 20px 10px blue;
+      box-shadow: 0 -20px 10px red, 0 20px 10px blue;
       text-shadow: 0 -20px 10px red, 0 20px 10px blue;
     }
     
     #box2.final {
-      -webkit-box-shadow: 0 -20px 10px red;
+      box-shadow: 0 -20px 10px red;
       text-shadow: 0 -20px 10px red;
     }
 
     #box3 {
-      -webkit-box-shadow: 0 20px 10px blue;
+      box-shadow: 0 20px 10px blue;
       text-shadow: 0 20px 10px blue;
     }
     
     #box3.final {
-      -webkit-box-shadow: 0 -20px 10px red, 0 20px 10px blue;
+      box-shadow: 0 -20px 10px red, 0 20px 10px blue;
       text-shadow: 0 -20px 10px red, 0 20px 10px blue;
     }
 
   </style>
-  <script src="resources/transition-test-helpers.js"></script>
+  <script src="../animations/resources/animation-test-helpers.js"></script>
   <script type="text/javascript">
 
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.5, 'box', '-webkit-box-shadow', [0, 0, 0, 0], 4],
-      [0.5, 'box2', '-webkit-box-shadow', [0, -20, 0, 10], 4],
-      [0.5, 'box3', '-webkit-box-shadow', [0, 0, 0, 10], 4],
+      [0.5, 'box', 'box-shadow', [0, 0, 0, 0], 4],
+      [0.5, 'box2', 'box-shadow', [0, -20, 0, 10], 4],
+      [0.5, 'box3', 'box-shadow', [0, 0, 0, 10], 4],
     ];
   
     function setupTest()

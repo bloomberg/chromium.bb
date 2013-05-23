@@ -39,7 +39,7 @@
     }
     
   </style>
-  <script src="resources/transition-test-helpers.js"></script>
+  <script src="../animations/resources/animation-test-helpers.js"></script>
   <script>
 
     const expectedValues = [
@@ -54,8 +54,7 @@
       document.getElementById('box2').className = 'box final';
     }
   
-    var doPixelTest = true;
-    runTransitionTest(expectedValues, setupTest, usePauseAPI, doPixelTest);
+    runTransitionTest(expectedValues, setupTest, usePauseAPI);
   </script>
 </head>
 <body>

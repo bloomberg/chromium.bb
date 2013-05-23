@@ -40,6 +40,11 @@ function isCloseEnough(actual, desired, tolerance)
     return diff <= tolerance;
 }
 
+function roundNumber(num, decimalPlaces)
+{
+  return Math.round(num * Math.pow(10, decimalPlaces)) / Math.pow(10, decimalPlaces);
+}
+
 function matrixStringToArray(s)
 {
     if (s == "none")
@@ -270,6 +275,165 @@ function checkExpectedValue(expected, index)
     }
 }
 
+function compareRGB(rgb, expected, tolerance)
+{
+    return (isCloseEnough(parseInt(rgb[0]), expected[0], tolerance) &&
+            isCloseEnough(parseInt(rgb[1]), expected[1], tolerance) &&
+            isCloseEnough(parseInt(rgb[2]), expected[2], tolerance));
+}
+
+function parseCrossFade(s)
+{
+    var matches = s.match("-webkit-cross-fade\\((.*)\\s*,\\s*(.*)\\s*,\\s*(.*)\\)");
+
+    if (!matches)
+        return null;
+
+    return {"from": matches[1], "to": matches[2], "percent": parseFloat(matches[3])}
+}
+
+function checkExpectedTransitionValue(expected, index)
+{
+    expected[index].shift();
+    var time = expected[index][0];
+    var elementId = expected[index][1];
+    var property = expected[index][2];
+    var expectedValue = expected[index][3];
+    var tolerance = expected[index][4];
+    var postCompletionCallback = expected[index][5];
+
+    var computedValue;
+    var pass = false;
+    var transformRegExp = /^-webkit-transform(\.\d+)?$/;
+    if (transformRegExp.test(property)) {
+        computedValue = window.getComputedStyle(document.getElementById(elementId)).webkitTransform;
+        if (typeof expectedValue == "string")
+            pass = (computedValue == expectedValue);
+        else if (typeof expectedValue == "number") {
+            var m = computedValue.split("(");
+            var m = m[1].split(",");
+            pass = isCloseEnough(parseFloat(m[parseInt(property.substring(18))]), expectedValue, tolerance);
+        } else {
+            var m = computedValue.split("(");
+            var m = m[1].split(",");
+            for (i = 0; i < expectedValue.length; ++i) {
+                pass = isCloseEnough(parseFloat(m[i]), expectedValue[i], tolerance);
+                if (!pass)
+                    break;
+            }
+        }
+    } else if (property == "fill" || property == "stroke") {
+        computedValue = window.getComputedStyle(document.getElementById(elementId)).getPropertyCSSValue(property).rgbColor;
+        if (compareRGB([computedValue.red.cssText, computedValue.green.cssText, computedValue.blue.cssText], expectedValue, tolerance))
+            pass = true;
+        else {
+            // We failed. Make sure computed value is something we can read in the error message
+            computedValue = window.getComputedStyle(document.getElementById(elementId)).getPropertyCSSValue(property).cssText;
+        }
+    } else if (property == "stop-color" || property == "flood-color" || property == "lighting-color") {
+        computedValue = window.getComputedStyle(document.getElementById(elementId)).getPropertyCSSValue(property);
+        // The computedValue cssText is rgb(num, num, num)
+        var components = computedValue.cssText.split("(")[1].split(")")[0].split(",");
+        if (compareRGB(components, expectedValue, tolerance))
+            pass = true;
+        else {
+            // We failed. Make sure computed value is something we can read in the error message
+            computedValue = computedValue.cssText;
+        }
+    } else if (property == "lineHeight") {
+        computedValue = parseInt(window.getComputedStyle(document.getElementById(elementId)).lineHeight);
+        pass = isCloseEnough(computedValue, expectedValue, tolerance);
+    } else if (property == "background-image"
+               || property == "border-image-source"
+               || property == "border-image"
+               || property == "list-style-image"
+               || property == "-webkit-mask-image"
+               || property == "-webkit-mask-box-image") {
+        if (property == "border-image" || property == "-webkit-mask-image" || property == "-webkit-mask-box-image")
+            property += "-source";
+
+        computedValue = window.getComputedStyle(document.getElementById(elementId)).getPropertyCSSValue(property).cssText;
+        computedCrossFade = parseCrossFade(computedValue);
+
+        if (!computedCrossFade) {
+            pass = false;
+        } else {
+            pass = isCloseEnough(computedCrossFade.percent, expectedValue, tolerance);
+        }
+    } else {
+        var computedStyle = window.getComputedStyle(document.getElementById(elementId)).getPropertyCSSValue(property);
+        if (computedStyle.cssValueType == CSSValue.CSS_VALUE_LIST) {
+            var values = [];
+            for (var i = 0; i < computedStyle.length; ++i) {
+                switch (computedStyle[i].cssValueType) {
+                  case CSSValue.CSS_PRIMITIVE_VALUE:
+                    values.push(computedStyle[i].getFloatValue(CSSPrimitiveValue.CSS_NUMBER));
+                    break;
+                  case CSSValue.CSS_CUSTOM:
+                    // arbitrarily pick shadow-x and shadow-y
+                    if (property == 'box-shadow' || property == 'text-shadow') {
+                      var text = computedStyle[i].cssText;
+                      // Shadow cssText looks like "rgb(0, 0, 255) 0px -3px 10px 0px"
+                      var shadowPositionRegExp = /\)\s*(-?\d+)px\s*(-?\d+)px/;
+                      var match = shadowPositionRegExp.exec(text);
+                      var shadowXY = [parseInt(match[1]), parseInt(match[2])];
+                      values.push(shadowXY[0]);
+                      values.push(shadowXY[1]);
+                    } else
+                      values.push(computedStyle[i].cssText);
+                    break;
+                }
+            }
+            computedValue = values.join(',');
+            pass = true;
+            for (var i = 0; i < values.length; ++i)
+                pass &= isCloseEnough(values[i], expectedValue[i], tolerance);
+        } else if (computedStyle.cssValueType == CSSValue.CSS_PRIMITIVE_VALUE) {
+            switch (computedStyle.primitiveType) {
+                case CSSPrimitiveValue.CSS_STRING:
+                case CSSPrimitiveValue.CSS_IDENT:
+                    computedValue = computedStyle.getStringValue();
+                    pass = computedValue == expectedValue;
+                    break;
+                case CSSPrimitiveValue.CSS_RGBCOLOR:
+                    var rgbColor = computedStyle.getRGBColorValue();
+                    computedValue = [rgbColor.red.getFloatValue(CSSPrimitiveValue.CSS_NUMBER),
+                                     rgbColor.green.getFloatValue(CSSPrimitiveValue.CSS_NUMBER),
+                                     rgbColor.blue.getFloatValue(CSSPrimitiveValue.CSS_NUMBER)]; // alpha is not exposed to JS
+                    pass = true;
+                    for (var i = 0; i < 3; ++i)
+                        pass &= isCloseEnough(computedValue[i], expectedValue[i], tolerance);
+                    break;
+                case CSSPrimitiveValue.CSS_RECT:
+                    computedValue = computedStyle.getRectValue();
+                    computedValue = [computedValue.top.getFloatValue(CSSPrimitiveValue.CSS_NUMBER),
+                                     computedValue.right.getFloatValue(CSSPrimitiveValue.CSS_NUMBER),
+                                     computedValue.bottom.getFloatValue(CSSPrimitiveValue.CSS_NUMBER),
+                                     computedValue.left.getFloatValue(CSSPrimitiveValue.CSS_NUMBER)];
+                     pass = true;
+                     for (var i = 0; i < 4; ++i)
+                         pass &= isCloseEnough(computedValue[i], expectedValue[i], tolerance);
+                    break;
+                case CSSPrimitiveValue.CSS_PERCENTAGE:
+                    computedValue = parseFloat(computedStyle.cssText);
+                    pass = isCloseEnough(computedValue, expectedValue, tolerance);
+                    break;
+                default:
+                    computedValue = computedStyle.getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
+                    pass = isCloseEnough(computedValue, expectedValue, tolerance);
+            }
+        }
+    }
+
+    if (pass)
+        result += "PASS - \"" + property + "\" property for \"" + elementId + "\" element at " + time + "s saw something close to: " + expectedValue + "<br>";
+    else
+        result += "FAIL - \"" + property + "\" property for \"" + elementId + "\" element at " + time + "s expected: " + expectedValue + " but saw: " + computedValue + "<br>";
+
+    if (postCompletionCallback)
+      result += postCompletionCallback();
+}
+
 
 function getPropertyValue(property, elementId, iframeId)
 {
@@ -402,6 +566,12 @@ var useResultElement = false;
 var result = "";
 var hasPauseAnimationAPI;
 var animStartTime;
+var isTransitionsTest = false;
+
+var usePauseAPI = true;
+var dontUsePauseAPI = false;
+var shouldBeTransitioning = 'should-be-transitioning';
+var shouldNotBeTransitioning = 'should-not-be-transitioning';
 
 // FIXME: remove deprecatedEvent, disablePauseAnimationAPI and doPixelTest
 function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnimationAPI, doPixelTest)
@@ -418,10 +588,22 @@ function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnim
         hasPauseAnimationAPI = false;
 
     var checks = {};
+    var trigger = function() {};
 
-    if (typeof callbacks == 'function')
+    if (isTransitionsTest) {
+        var transitionTrigger = callbacks;
+        callbacks = null;
+        trigger = function() {
+            transitionTrigger();
+            document.body.offsetTop
+            if (window.testRunner)
+                testRunner.display();
+        };
+    }
+
+    if (typeof callbacks == 'function') {
         checks[0] = [callbacks];
-    else for (var time in callbacks) {
+    } else for (var time in callbacks) {
         timeMs = Math.round(time * 1000);
         checks[timeMs] = [callbacks[time]];
     }
@@ -431,7 +613,10 @@ function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnim
         var timeMs = Math.round(expectation[1] * 1000);
         if (!checks[timeMs])
             checks[timeMs] = [];
-        checks[timeMs].push(checkExpectedValue.bind(null, expected, i));
+        if (isTransitionsTest)
+            checks[timeMs].push(checkExpectedTransitionValue.bind(null, expected, i));
+        else
+            checks[timeMs].push(checkExpectedValue.bind(null, expected, i));
     }
 
     var doPixelTest = Boolean(doPixelTest);
@@ -443,9 +628,12 @@ function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnim
     }
 
     var started = false;
-    document.addEventListener('webkitAnimationStart', function() {
+    var target = isTransitionsTest ? window : document;
+    var event = isTransitionsTest ? 'load' : 'webkitAnimationStart';
+    target.addEventListener(event, function() {
         if (!started) {
             started = true;
+            trigger();
             animStartTime = performance.now();
             // delay to give hardware animations a chance to start
             setTimeout(function() {
@@ -453,4 +641,32 @@ function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnim
             }, 0);
         }
     }, false);
+}
+
+/* This is the helper function to run transition tests:
+
+Test page requirements:
+- The body must contain an empty div with id "result"
+- Call this function directly from the <script> inside the test page
+
+Function parameters:
+    expected [required]: an array of arrays defining a set of CSS properties that must have given values at specific times (see below)
+    callback [optional]: a function to be executed just before the test starts (none by default)
+
+    Each sub-array must contain these items in this order:
+    - the time in seconds at which to snapshot the CSS property
+    - the id of the element on which to get the CSS property value
+    - the name of the CSS property to get [1]
+    - the expected value for the CSS property
+    - the tolerance to use when comparing the effective CSS property value with its expected value
+
+    [1] If the CSS property name is "-webkit-transform", expected value must be an array of 1 or more numbers corresponding to the matrix elements,
+    or a string which will be compared directly (useful if the expected value is "none")
+    If the CSS property name is "-webkit-transform.N", expected value must be a number corresponding to the Nth element of the matrix
+
+*/
+function runTransitionTest(expected, callback, usePauseAPI, doPixelTest) {
+    expected = expected.map(function(expectation) { expectation.unshift(null); return expectation; });
+    isTransitionsTest = true;
+    runAnimationTest(expected, callback, undefined, !usePauseAPI, doPixelTest);
 }

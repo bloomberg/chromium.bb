@@ -42,7 +42,7 @@ This tests that calc() expressions depending on transitioning elements behave co
 </div>
 <div id="result"></div>
 
-<script src="../../transitions/resources/transition-test-helpers.js"></script>
+<script src="../../animations/resources/animation-test-helpers.js"></script>
 <script>
 
 if (window.testRunner)
@@ -51,53 +51,29 @@ if (window.testRunner)
 const transitioningElements = ["outer", "innerTransition"];
 
 expectedValues = [
-    // time, element, property, expected-value, depends-on
-    [0.00, "inner", 'width', 60, "outer"],
-    [0.25, "inner", 'width', 110, "outer"],
-    [0.50, "inner", 'width', 160, "outer"],
-    [0.75, "inner", 'width', 210, "outer"],
-    [1.00, "inner", 'width', 260, "outer"],
+    // time, element, property, expected-value, tolerance
+    [0.00, "inner", 'width', 60, 10],
+    [0.25, "inner", 'width', 110, 10],
+    [0.50, "inner", 'width', 160, 10],
+    [0.75, "inner", 'width', 210, 10],
+    [1.00, "inner", 'width', 260, 10],
 
-    [0.00, "innerTransition", 'width', 20, "outer"],
-    [0.25, "innerTransition", 'width', 70, "outer"],
-    [0.50, "innerTransition", 'width', 165, "outer"],
-    [0.75, "innerTransition", 'width', 305, "outer"],
-    [1.00, "innerTransition", 'width', 490, "outer"],
+    [0.00, "innerTransition", 'width', 20, 10],
+    [0.25, "innerTransition", 'width', 70, 10],
+    [0.50, "innerTransition", 'width', 165, 10],
+    [0.75, "innerTransition", 'width', 305, 10],
+    [1.00, "innerTransition", 'width', 490, 10],
 ];
 
-function runTest(expected) 
-{
-    for (var i = 0; i < expected.length; ++i) {
-        var time = expected[i][0];
-        var elementId = expected[i][1];
-        var property = expected[i][2];
-        var expectedValue = expected[i][3];
-        var dependsOn = expected[i][4];
-        if (window.internals) {
-            internals.pauseAnimations(time);
-            var actual = window.getComputedStyle(document.getElementById(elementId)).getPropertyCSSValue(property).getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
-            var result = document.getElementById("result");
-            if (actual == expectedValue)
-                result.innerHTML += 'PASS - "' + property + '" property for "' + elementId +'" element at ' + time + 's was: ' + actual + '<br/>';
-            else
-                result.innerHTML += 'FAIL - "' + property + '" property for "' + elementId +'" element at ' + time + 's expected: ' + expectedValue + ' but saw: ' + actual + '<br/>';
-        }
+runTransitionTest(expectedValues, setupTest, usePauseAPI);
+
+
+function setupTest() {
+    for (var i = 0; i < transitioningElements.length; i++) {
+        var element = document.getElementById(transitioningElements[i]);
+        element.className += " go";
     }
-    if (window.testRunner)
-        testRunner.notifyDone();
 }
 
-function loadListener()
-{
-    waitForAnimationStart(function(){runTest(expectedValues);});
-}
-
-for (var i = 0; i < transitioningElements.length; i++) {
-    var element = document.getElementById(transitioningElements[i]);
-    element.className += " go";
-}
-
-window.addEventListener("load", loadListener, false);
-window.testRunner.waitUntilDone();
 
 </script>

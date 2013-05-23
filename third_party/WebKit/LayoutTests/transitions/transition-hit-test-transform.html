@@ -23,7 +23,7 @@
         position:absolute;
     }
      </style>
-   <script src="resources/transition-test-helpers.js"></script>
+   <script src="../animations/resources/animation-test-helpers.js"></script>
    <script type="text/javascript">
         function checkResult(pos, isIn)
         {
@@ -67,7 +67,7 @@
             }
       
             document.getElementById("target").style.webkitTransform = "translateX(300px)";
-            waitForAnimationStart(doTest);
+            requestAnimationFrame(doTest);
         }
    </script>
 </head>

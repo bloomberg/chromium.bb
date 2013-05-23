@@ -5,20 +5,20 @@
   <style>
     #test {
       color: #00F;
-      -webkit-transition: color 1s linear;
+      -webkit-transition: color 10s linear;
     }
     
     #test.changed {
       color: #F00;
     }
   </style>
-  <script src="resources/transition-test-helpers.js"></script>
+  <script src="../animations/resources/animation-test-helpers.js"></script>
   <script type="text/javascript">
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance, post-completion callback, should-be-transitioning]
-      [0.4998, 'test', 'color', [127, 0, 128], 0],
-      [0.5000, 'test', 'color', [128, 0, 128], 0],
-      [0.5002, 'test', 'color', [128, 0, 127], 0],
+      [4.998, 'test', 'color', [127, 0, 128], 0],
+      [5.000, 'test', 'color', [128, 0, 128], 0],
+      [5.002, 'test', 'color', [128, 0, 127], 0],
     ];
 
     function setupTest()
