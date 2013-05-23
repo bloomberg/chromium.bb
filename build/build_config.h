@@ -34,6 +34,10 @@
 #if !defined(TOOLKIT_VIEWS) && defined(USE_X11)
 #define TOOLKIT_GTK
 #endif
+#if defined(__GLIBC__) && !defined(__UCLIBC__)
+// we really are using glibc, not uClibc pretending to be glibc
+#define LIBC_GLIBC
+#endif
 #elif defined(_WIN32)
 #define OS_WIN 1
 #define TOOLKIT_VIEWS 1

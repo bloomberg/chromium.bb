@@ -745,9 +745,10 @@ void OnNoMemory() {
 
 }  // namespace
 
-#if !defined(OS_ANDROID) && !defined(USE_TCMALLOC) && \
-    !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
+#if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
     !defined(THREAD_SANITIZER)
+
+#if defined(LIBC_GLIBC) && !defined(USE_TCMALLOC)
 
 extern "C" {
 void* __libc_malloc(size_t size);
@@ -826,7 +827,14 @@ int posix_memalign(void** ptr, size_t alignment, size_t size) {
 }
 
 }  // extern C
-#endif  // ANDROID, TCMALLOC, *_SANITIZER
+
+#else
+
+// TODO(mostynb@opera.com): dlsym dance
+
+#endif  // LIBC_GLIBC && !USE_TCMALLOC
+
+#endif  // !*_SANITIZER
 
 void EnableTerminationOnHeapCorruption() {
   // On Linux, there nothing to do AFAIK.
