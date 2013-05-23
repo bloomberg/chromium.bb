@@ -1038,41 +1038,6 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
 
   // Preserve appropriate modification dates by not updating unchanged profiles.
   scoped_ptr<AutofillProfile> old_profile(tmp_profile);
-  if (old_profile->Compare(profile) == 0)
-    return true;
-
-  AutofillProfile new_profile(profile);
-  std::vector<base::string16> values;
-
-  old_profile->GetRawMultiInfo(NAME_FULL, &values);
-  values[0] = new_profile.GetRawInfo(NAME_FULL);
-  new_profile.SetRawMultiInfo(NAME_FULL, values);
-
-  old_profile->GetRawMultiInfo(EMAIL_ADDRESS, &values);
-  values[0] = new_profile.GetRawInfo(EMAIL_ADDRESS);
-  new_profile.SetRawMultiInfo(EMAIL_ADDRESS, values);
-
-  old_profile->GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
-  values[0] = new_profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER);
-  new_profile.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
-
-  return UpdateAutofillProfileMulti(new_profile);
-}
-
-bool AutofillTable::UpdateAutofillProfileMulti(const AutofillProfile& profile) {
-  DCHECK(base::IsValidGUID(profile.guid()));
-
-  // Don't update anything until the trash has been emptied.  There may be
-  // pending modifications to process.
-  if (!IsAutofillProfilesTrashEmpty())
-    return true;
-
-  AutofillProfile* tmp_profile = NULL;
-  if (!GetAutofillProfile(profile.guid(), &tmp_profile))
-    return false;
-
-  // Preserve appropriate modification dates by not updating unchanged profiles.
-  scoped_ptr<AutofillProfile> old_profile(tmp_profile);
   if (old_profile->Compare(profile) == 0 &&
       old_profile->origin() == profile.origin())
     return true;

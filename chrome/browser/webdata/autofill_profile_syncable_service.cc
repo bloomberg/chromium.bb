@@ -304,8 +304,7 @@ bool AutofillProfileSyncableService::SaveChangesToWebData(
   }
 
   for (size_t i = 0; i < bundle.profiles_to_update.size(); i++) {
-    if (!autofill_table->UpdateAutofillProfileMulti(
-        *bundle.profiles_to_update[i]))
+    if (!autofill_table->UpdateAutofillProfile(*bundle.profiles_to_update[i]))
       success = false;
   }
   return success;

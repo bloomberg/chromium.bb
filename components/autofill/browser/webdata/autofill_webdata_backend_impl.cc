@@ -194,8 +194,7 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateAutofillProfile(
   }
   scoped_ptr<AutofillProfile> scoped_profile(original_profile);
 
-  if (!AutofillTable::FromWebDatabase(db)->UpdateAutofillProfileMulti(
-        profile)) {
+  if (!AutofillTable::FromWebDatabase(db)->UpdateAutofillProfile(profile)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NEEDED;
   }

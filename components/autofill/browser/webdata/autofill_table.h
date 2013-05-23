@@ -236,12 +236,8 @@ class AutofillTable : public WebDatabaseTable {
   // Records a single Autofill profile in the autofill_profiles table.
   virtual bool AddAutofillProfile(const AutofillProfile& profile);
 
-  // Updates the database values for the specified profile.
-  // DEPRECATED: Use |UpdateAutofillProfileMulti| instead.
-  virtual bool UpdateAutofillProfile(const AutofillProfile& profile);
-
   // Updates the database values for the specified profile.  Mulit-value aware.
-  virtual bool UpdateAutofillProfileMulti(const AutofillProfile& profile);
+  virtual bool UpdateAutofillProfile(const AutofillProfile& profile);
 
   // Removes a row from the autofill_profiles table.  |guid| is the identifier
   // of the profile to remove.

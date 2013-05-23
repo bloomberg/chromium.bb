@@ -125,7 +125,7 @@ class AutofillTableMock : public AutofillTable {
                bool(const std::vector<AutofillEntry>&));  // NOLINT
   MOCK_METHOD1(GetAutofillProfiles,
                bool(std::vector<AutofillProfile*>*));  // NOLINT
-  MOCK_METHOD1(UpdateAutofillProfileMulti,
+  MOCK_METHOD1(UpdateAutofillProfile,
                bool(const AutofillProfile&));  // NOLINT
   MOCK_METHOD1(AddAutofillProfile,
                bool(const AutofillProfile&));  // NOLINT
@@ -1074,7 +1074,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   AddAutofillHelper<AutofillProfile> add_autofill(this, sync_profiles);
 
   EXPECT_CALL(autofill_table_,
-              UpdateAutofillProfileMulti(MatchProfiles(sync_profile))).
+              UpdateAutofillProfile(MatchProfiles(sync_profile))).
       WillOnce(Return(true));
   EXPECT_CALL(*personal_data_manager_, Refresh());
   StartSyncService(add_autofill.callback(), false, syncer::AUTOFILL_PROFILE);
