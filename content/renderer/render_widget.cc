@@ -29,6 +29,7 @@
 #include "content/renderer/gpu/input_handler_manager.h"
 #include "content/renderer/gpu/mailbox_output_surface.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/renderer/ime_event_guard.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
@@ -1741,8 +1742,7 @@ void RenderWidget::OnImeSetComposition(
     int selection_start, int selection_end) {
   if (!webwidget_)
     return;
-  DCHECK(!handling_ime_event_);
-  handling_ime_event_ = true;
+  ImeEventGuard guard(this);
   if (webwidget_->setComposition(
       text, WebVector<WebCompositionUnderline>(underlines),
       selection_start, selection_end)) {
@@ -1777,16 +1777,13 @@ void RenderWidget::OnImeSetComposition(
     }
     UpdateCompositionInfo(range, std::vector<gfx::Rect>());
   }
-  handling_ime_event_ = false;
-  UpdateTextInputState(DO_NOT_SHOW_IME);
 }
 
 void RenderWidget::OnImeConfirmComposition(
     const string16& text, const ui::Range& replacement_range) {
   if (!webwidget_)
     return;
-  DCHECK(!handling_ime_event_);
-  handling_ime_event_ = true;
+  ImeEventGuard guard(this);
   handling_input_event_ = true;
   webwidget_->confirmComposition(text);
   handling_input_event_ = false;
@@ -1799,8 +1796,6 @@ void RenderWidget::OnImeConfirmComposition(
     range.set_end(location + length);
   }
   UpdateCompositionInfo(range, std::vector<gfx::Rect>());
-  handling_ime_event_ = false;
-  UpdateTextInputState(DO_NOT_SHOW_IME);
 }
 
 // This message causes the renderer to render an image of the
@@ -2078,6 +2073,22 @@ static bool IsDateTimeInput(ui::TextInputType type) {
       type == ui::TEXT_INPUT_TYPE_WEEK;
 }
 
+
+void RenderWidget::StartHandlingImeEvent() {
+  DCHECK(!handling_ime_event_);
+  handling_ime_event_ = true;
+}
+
+void RenderWidget::FinishHandlingImeEvent() {
+  DCHECK(handling_ime_event_);
+  handling_ime_event_ = false;
+  // While handling an ime event, text input state and selection bounds updates
+  // are ignored. These must explicitly be updated once finished handling the
+  // ime event.
+  UpdateSelectionBounds();
+  UpdateTextInputState(DO_NOT_SHOW_IME);
+}
+
 void RenderWidget::UpdateTextInputState(ShowIme show_ime) {
   if (handling_ime_event_)
     return;
@@ -2126,6 +2137,8 @@ void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
 
 void RenderWidget::UpdateSelectionBounds() {
   if (!webwidget_)
+    return;
+  if (handling_ime_event_)
     return;
 
   ViewHostMsg_SelectionBounds_Params params;

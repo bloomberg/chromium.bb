@@ -262,6 +262,8 @@
     'renderer/fetchers/multi_resolution_image_resource_fetcher.h',
     'renderer/fetchers/resource_fetcher.cc',
     'renderer/fetchers/resource_fetcher.h',
+    'renderer/ime_event_guard.cc',
+    'renderer/ime_event_guard.h',
     'renderer/render_process.h',
     'renderer/render_process_impl.cc',
     'renderer/render_process_impl.h',

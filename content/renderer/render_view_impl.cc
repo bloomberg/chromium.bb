@@ -82,6 +82,7 @@
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/idle_user_detector.h"
 #include "content/renderer/image_loading_helper.h"
+#include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input_tag_speech_dispatcher.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
@@ -1561,11 +1562,8 @@ void RenderViewImpl::OnSetName(const std::string& name) {
 
 void RenderViewImpl::OnSetEditableSelectionOffsets(int start, int end) {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  DCHECK(!handling_ime_event_);
-  handling_ime_event_ = true;
+  ImeEventGuard guard(this);
   webview()->setEditableSelectionOffsets(start, end);
-  handling_ime_event_ = false;
-  UpdateTextInputState(DO_NOT_SHOW_IME);
 }
 
 void RenderViewImpl::OnSetCompositionFromExistingText(
@@ -1573,21 +1571,15 @@ void RenderViewImpl::OnSetCompositionFromExistingText(
     const std::vector<WebKit::WebCompositionUnderline>& underlines) {
   if (!webview())
     return;
-  DCHECK(!handling_ime_event_);
-  handling_ime_event_ = true;
+  ImeEventGuard guard(this);
   webview()->setCompositionFromExistingText(start, end, underlines);
-  handling_ime_event_ = false;
-  UpdateTextInputState(DO_NOT_SHOW_IME);
 }
 
 void RenderViewImpl::OnExtendSelectionAndDelete(int before, int after) {
   if (!webview())
     return;
-  DCHECK(!handling_ime_event_);
-  handling_ime_event_ = true;
+  ImeEventGuard guard(this);
   webview()->extendSelectionAndDelete(before, after);
-  handling_ime_event_ = false;
-  UpdateTextInputState(DO_NOT_SHOW_IME);
 }
 
 void RenderViewImpl::OnSetHistoryLengthAndPrune(int history_length,

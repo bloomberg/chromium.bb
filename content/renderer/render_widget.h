@@ -209,6 +209,10 @@ class CONTENT_EXPORT RenderWidget
     SHOW_IME_IF_NEEDED
   };
 
+  // Handle common setup/teardown for handling IME events.
+  void StartHandlingImeEvent();
+  void FinishHandlingImeEvent();
+
   virtual void InstrumentWillBeginFrame() {}
   virtual void InstrumentDidBeginFrame() {}
   virtual void InstrumentDidCancelFrame() {}
