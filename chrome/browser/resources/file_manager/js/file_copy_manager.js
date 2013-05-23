@@ -89,7 +89,9 @@ FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   var self = this;
 
   var onEntriesRecursed = function(result) {
-    self.pendingDirectories = result.dirEntries;
+    // Deeper directory is moved earier.
+    self.pendingDirectories = result.dirEntries.sort(
+        function(a, b) { return a.fullPath < b.fullPath; });
     self.pendingFiles = result.fileEntries;
     self.pendingBytes = result.fileBytes;
     callback();
@@ -109,16 +111,14 @@ FileCopyManager.Task.prototype.getNextEntry = function() {
   // We should keep the file in pending list and remove it after complete.
   // Otherwise, if we try to get status in the middle of copying. The returned
   // status is wrong (miss count the pasting item in totalItems).
-  if (this.pendingDirectories.length) {
-    this.pendingDirectories[0].inProgress = true;
-    return this.pendingDirectories[0];
-  }
-
   if (this.pendingFiles.length) {
     this.pendingFiles[0].inProgress = true;
     return this.pendingFiles[0];
   }
-
+  if (this.pendingDirectories.length) {
+    this.pendingDirectories[0].inProgress = true;
+    return this.pendingDirectories[0];
+  }
   return null;
 };
 
