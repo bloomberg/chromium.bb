@@ -285,19 +285,12 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertEquals(mContext.getPackageName(), mController.getContractAuthority());
     }
 
-    @SmallTest
-    @Feature({"Sync"})
-    public void testGetIntentDestination() {
-        assertEquals("org.chromium.sync.notifier.TEST_VALUE",
-                InvalidationController.getDestinationClassName(mContext));
-    }
-
     /**
      * Asserts that {@code intent} is destined for the correct component.
      */
     private static void validateIntentComponent(Intent intent) {
         assertNotNull(intent.getComponent());
-        assertEquals("org.chromium.sync.notifier.TEST_VALUE",
+        assertEquals(InvalidationService.class.getName(),
                 intent.getComponent().getClassName());
     }
 

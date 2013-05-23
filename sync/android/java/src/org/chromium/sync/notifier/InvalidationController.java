@@ -7,10 +7,6 @@ package org.chromium.sync.notifier;
 import android.accounts.Account;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.util.Log;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -19,10 +15,7 @@ import com.google.common.collect.Lists;
 import org.chromium.base.ActivityStatus;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 
-import java.util.HashSet;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * Controller used to send start, stop, and registration-change commands to the invalidation
@@ -93,18 +86,6 @@ public class InvalidationController implements ActivityStatus.StateListener {
         }
     }
 
-    /**
-     * Name of the manifest application metadata property specifying the name of the class
-     * implementing the invalidation client.
-     */
-    private static final String IMPLEMENTING_CLASS_MANIFEST_PROPERTY =
-            "org.chromium.sync.notifier.IMPLEMENTING_CLASS_NAME";
-
-    /**
-     * Logging tag.
-     */
-    private static final String TAG = InvalidationController.class.getSimpleName();
-
     private static final Object LOCK = new Object();
 
     private static InvalidationController sInstance;
@@ -124,26 +105,8 @@ public class InvalidationController implements ActivityStatus.StateListener {
         typesToRegister.remove(ModelType.PROXY_TABS);
         Intent registerIntent = IntentProtocol.createRegisterIntent(account, allTypes,
                 typesToRegister);
-        setDestinationClassName(registerIntent);
+        registerIntent.setClass(mContext, InvalidationService.class);
         mContext.startService(registerIntent);
-    }
-
-    /**
-     * Reads all stored preferences and calls
-     * {@link #setRegisteredTypes(android.accounts.Account, boolean, java.util.Set)} with the stored
-     * values. It can be used on startup of Chrome to ensure we always have a consistent set of
-     * registrations.
-     */
-    @Deprecated
-    public void refreshRegisteredTypes() {
-        InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
-        Set<String> savedSyncedTypes = invalidationPreferences.getSavedSyncedTypes();
-        Account account = invalidationPreferences.getSavedSyncedAccount();
-        boolean allTypes = savedSyncedTypes != null &&
-                savedSyncedTypes.contains(ModelType.ALL_TYPES_TYPE);
-        Set<ModelType> modelTypes = savedSyncedTypes == null ?
-                new HashSet<ModelType>() : ModelType.syncTypesToModelTypes(savedSyncedTypes);
-        setRegisteredTypes(account, allTypes, modelTypes);
     }
 
     /**
@@ -166,7 +129,7 @@ public class InvalidationController implements ActivityStatus.StateListener {
      * Starts the invalidation client.
      */
     public void start() {
-        Intent intent = setDestinationClassName(new Intent());
+        Intent intent = new Intent(mContext, InvalidationService.class);
         mContext.startService(intent);
     }
 
@@ -174,7 +137,7 @@ public class InvalidationController implements ActivityStatus.StateListener {
      * Stops the invalidation client.
      */
     public void stop() {
-        Intent intent = setDestinationClassName(new Intent());
+        Intent intent = new Intent(mContext, InvalidationService.class);
         intent.putExtra(IntentProtocol.EXTRA_STOP, true);
         mContext.startService(intent);
     }
@@ -201,62 +164,12 @@ public class InvalidationController implements ActivityStatus.StateListener {
     }
 
     /**
-     * Returns the singleton instance that will use {@code context} to issue intents.
-     *
-     * This method is only kept until the downstream callers of this method have been changed to use
-     * {@link InvalidationController#get(android.content.Context)}.
-     *
-     * TODO(nyquist) Remove this method.
-     */
-    @Deprecated
-    public static InvalidationController newInstance(Context context) {
-        return get(context);
-    }
-
-    /**
      * Creates an instance using {@code context} to send intents.
      */
     @VisibleForTesting
     InvalidationController(Context context) {
         mContext = Preconditions.checkNotNull(context.getApplicationContext());
         ActivityStatus.registerStateListener(this);
-    }
-
-    /**
-     * Sets the destination class name of {@code intent} to the value given by the manifest
-     * property named {@link #IMPLEMENTING_CLASS_MANIFEST_PROPERTY}. If no such property exists or
-     * its value is null, takes no action.
-     *
-     * @return {@code intent}
-     */
-    private Intent setDestinationClassName(Intent intent) {
-        String className = getDestinationClassName(mContext);
-        if (className != null) {
-            intent.setClassName(mContext, className);
-        }
-        return intent;
-    }
-
-    @VisibleForTesting
-    @Nullable static String getDestinationClassName(Context context) {
-        ApplicationInfo appInfo;
-        try {
-            // Fetch application info and read the appropriate metadata element.
-            appInfo = context.getPackageManager().getApplicationInfo(context.getPackageName(),
-                    PackageManager.GET_META_DATA);
-            String className = null;
-            if (appInfo.metaData != null) {
-                className = appInfo.metaData.getString(IMPLEMENTING_CLASS_MANIFEST_PROPERTY);
-            }
-            if (className == null) {
-                Log.wtf(TAG, "No value for " + IMPLEMENTING_CLASS_MANIFEST_PROPERTY
-                        + " in manifest; sync notifications will not work");
-            }
-            return className;
-        } catch (NameNotFoundException exception) {
-            Log.wtf(TAG, "Cannot read own application info", exception);
-        }
-        return null;
     }
 
     @Override
