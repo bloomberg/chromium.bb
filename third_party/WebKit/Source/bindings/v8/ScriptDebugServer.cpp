@@ -73,27 +73,18 @@ public:
     {
         v8::HandleScope scope(isolate);
 
-        m_utilityContext.set(v8::Context::New(isolate));
-        if (m_utilityContext.isEmpty())
+        v8::Local<v8::Context> context = v8::Context::New(isolate);
+        if (context.IsEmpty())
             return;
-
-        v8::Context::Scope contextScope(m_utilityContext.get());
-
-        v8::TryCatch tryCatch;
 
         String wrappedScript = "(" + preprocessorScript + ")";
         v8::Handle<v8::String> preprocessor = v8::String::New(wrappedScript.utf8().data(), wrappedScript.utf8().length());
 
-        v8::Handle<v8::Script> script = v8::Script::Compile(preprocessor);
-
-        if (tryCatch.HasCaught())
-            return;
-        V8RecursionScope::MicrotaskSuppression recursionScope;
-        v8::Handle<v8::Value> preprocessorFunction = script->Run();
-
-        if (tryCatch.HasCaught() || !preprocessorFunction->IsFunction())
+        v8::Local<v8::Value> preprocessorFunction = V8ScriptRunner::compileAndRunInternalScript(preprocessor, isolate, context);
+        if (preprocessorFunction.IsEmpty() || !preprocessorFunction->IsFunction())
             return;
 
+        m_utilityContext.set(context);
         m_preprocessorFunction.set(v8::Handle<v8::Function>::Cast(preprocessorFunction));
     }
 
