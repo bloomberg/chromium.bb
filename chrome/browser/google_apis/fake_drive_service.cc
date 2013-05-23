@@ -127,6 +127,20 @@ bool FakeDriveService::LoadResourceListForWapi(
       as_dict->Remove("feed", &feed) &&
       feed->GetAsDictionary(&feed_as_dict)) {
     resource_list_value_.reset(feed_as_dict);
+
+    // Go through entries and convert test$data from a string to a binary blob.
+    base::ListValue* entries = NULL;
+    if (feed_as_dict->GetList("entry", &entries)) {
+      for (size_t i = 0; i < entries->GetSize(); ++i) {
+        base::DictionaryValue* entry = NULL;
+        std::string content_data;
+        if (entries->GetDictionary(i, &entry) &&
+            entry->GetString("test$data", &content_data)) {
+          entry->Set("test$data", base::BinaryValue::CreateWithCopiedBuffer(
+                  content_data.c_str(), content_data.size()));
+        }
+      }
+    }
   }
 
   return resource_list_value_;
@@ -497,8 +511,12 @@ void FakeDriveService::DownloadFile(
   // TODO(satorux): To be correct, we should update docs$md5Checksum.$t here.
   int64 file_size = 0;
   if (base::StringToInt64(file_size_string, &file_size)) {
+    base::BinaryValue* content_binary_data;
     std::string content_data;
-    entry->GetString("test$data", &content_data);
+    if (entry->GetBinary("test$data", &content_binary_data)) {
+      content_data = std::string(content_binary_data->GetBuffer(),
+          content_binary_data->GetSize());
+    }
     DCHECK_EQ(static_cast<size_t>(file_size), content_data.size());
 
     if (!get_content_callback.is_null()) {
@@ -1199,7 +1217,9 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
   new_entry->SetString("docs$filename", title);
   // Set the contents, size and MD5 for a file.
   if (entry_kind == "file") {
-    new_entry->SetString("test$data", content_data);
+    new_entry->Set("test$data",
+        base::BinaryValue::CreateWithCopiedBuffer(
+            content_data.c_str(), content_data.size()));
     new_entry->SetString("docs$size.$t",
                          base::Int64ToString(content_data.size()));
     // TODO(satorux): Set the correct MD5 here.

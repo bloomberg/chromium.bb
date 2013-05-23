@@ -8,9 +8,10 @@
  * @const
  */
 var EXPECTED_FILES_BEFORE_LOCAL = [
-  ['hello.txt', '123 bytes', 'Plain text', 'Sep 4, 1998 12:34 PM'],
-  ['world.mpeg', '1,000 bytes', 'MPEG video', 'Jul 4, 2012 10:35 AM'],
-  ['My Desktop Background.png', '1 KB', 'PNG image', 'Jan 18, 2038 1:02 AM'],
+  ['hello.txt', '51 bytes', 'Plain text', 'Sep 4, 1998 12:34 PM'],
+  ['world.ogv', '59 KB', 'OGG video', 'Jul 4, 2012 10:35 AM'],
+  ['My Desktop Background.png', '272 bytes', 'PNG image',
+      'Jan 18, 2038 1:02 AM'],
   ['photos', '--', 'Folder', 'Jan 1, 1980 11:59 PM']
   // ['.warez', '--', 'Folder', 'Oct 26, 1985 1:39 PM']  # should be hidden
 ].sort();
@@ -21,9 +22,10 @@ var EXPECTED_FILES_BEFORE_LOCAL = [
  * @const
  */
 var EXPECTED_FILES_BEFORE_DRIVE = [
-  ['hello.txt', '123 bytes', 'Plain text', 'Sep 4, 1998 12:34 PM'],
-  ['world.mpeg', '1,000 bytes', 'MPEG video', 'Jul 4, 2012 10:35 AM'],
-  ['My Desktop Background.png', '1 KB', 'PNG image', 'Jan 18, 2038 1:02 AM'],
+  ['hello.txt', '51 bytes', 'Plain text', 'Sep 4, 1998 12:34 PM'],
+  ['world.ogv', '59 KB', 'OGG video', 'Jul 4, 2012 10:35 AM'],
+  ['My Desktop Background.png', '272 bytes', 'PNG image',
+      'Jan 18, 2038 1:02 AM'],
   ['photos', '--', 'Folder', 'Jan 1, 1980 11:59 PM'],
   ['Test Document.gdoc','--','Google document','Apr 10, 2013 4:20 PM'],
   ['Test Shared Document.gdoc','--','Google document','Mar 20, 2013 10:40 PM']
@@ -35,7 +37,7 @@ var EXPECTED_FILES_BEFORE_DRIVE = [
  * @const
  */
 var EXPECTED_NEWLY_ADDED_FILE = [
-  ['newly added file.mp3', '2 KB', 'MP3 audio', 'Sep 4, 1998 12:00 AM']
+  ['newly added file.ogg', '14 KB', 'OGG audio', 'Sep 4, 1998 12:00 AM']
 ];
 
 /**
@@ -83,9 +85,10 @@ function checkIfNoErrorsOccured(callback) {
  * @const
  */
 var EXPECTED_FILES_IN_RECENT = [
-  ['hello.txt', '123 bytes', 'Plain text', 'Sep 4, 1998 12:34 PM'],
-  ['world.mpeg', '1,000 bytes', 'MPEG video', 'Jul 4, 2012 10:35 AM'],
-  ['My Desktop Background.png', '1 KB', 'PNG image', 'Jan 18, 2038 1:02 AM'],
+  ['hello.txt', '51 bytes', 'Plain text', 'Sep 4, 1998 12:34 PM'],
+  ['world.ogv', '59 KB', 'OGG video', 'Jul 4, 2012 10:35 AM'],
+  ['My Desktop Background.png', '272 bytes', 'PNG image',
+      'Jan 18, 2038 1:02 AM'],
   ['Test Document.gdoc','--','Google document','Apr 10, 2013 4:20 PM'],
   ['Test Shared Document.gdoc','--','Google document','Mar 20, 2013 10:40 PM']
 ].sort();
@@ -156,7 +159,7 @@ testcase.intermediate.fileDisplay = function(path) {
  */
 testcase.intermediate.keyboardCopy = function(path, callback) {
   setupAndWaitUntilReady(path, function(appId) {
-    callRemoteTestUtil('copyFile', appId, ['world.mpeg'], function(result) {
+    callRemoteTestUtil('copyFile', appId, ['world.ogv'], function(result) {
       chrome.test.assertFalse(!result);
       callRemoteTestUtil('waitForFileListChange',
                          appId,
@@ -173,7 +176,7 @@ testcase.intermediate.keyboardCopy = function(path, callback) {
  */
 testcase.intermediate.keyboardDelete = function(path) {
   setupAndWaitUntilReady(path, function(appId) {
-    callRemoteTestUtil('deleteFile', appId, ['world.mpeg'], function(result) {
+    callRemoteTestUtil('deleteFile', appId, ['world.ogv'], function(result) {
       chrome.test.assertFalse(!result);
       callRemoteTestUtil('waitAndAcceptDialog', appId, [], function() {
         callRemoteTestUtil(

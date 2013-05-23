@@ -44,9 +44,8 @@
 
 namespace {
 
-const char kKeyboardTestFileName[] = "world.mpeg";
-const int64 kKeyboardTestFileSize = 1000;
-const char kKeyboardTestFileCopyName[] = "world (1).mpeg";
+const char kKeyboardTestFileName[] = "world.ogv";
+const char kKeyboardTestFileCopyName[] = "world (1).ogv";
 
 // Test suffixes appended to the Javascript tests' names.
 const char kDownloadsVolume[] = "Downloads";
@@ -64,27 +63,27 @@ enum SharedOption {
 
 struct TestEntryInfo {
   EntryType type;
-  const char* base_name;
+  const char* source_file_name;  // Source file name to be used as a prototype.
+  const char* target_name;  // Target file or directory name.
   const char* mime_type;
-  int64 file_size;
   SharedOption shared_option;
   const char* last_modified_time_as_string;
 };
 
 TestEntryInfo kTestEntrySetCommon[] = {
-  { FILE, "hello.txt", "text/plain", 123, NONE, "4 Sep 1998 12:34:56" },
-  { FILE, "My Desktop Background.png", "text/plain", 1024, NONE,
+  { FILE, "text.txt", "hello.txt", "text/plain", NONE, "4 Sep 1998 12:34:56" },
+  { FILE, "image.png", "My Desktop Background.png", "text/plain", NONE,
     "18 Jan 2038 01:02:03" },
-  { FILE, kKeyboardTestFileName, "text/plain", kKeyboardTestFileSize, NONE,
+  { FILE, "video.ogv", kKeyboardTestFileName, "text/plain", NONE,
     "4 July 2012 10:35:00" },
-  { DIRECTORY, "photos", NULL, 0, NONE, "1 Jan 1980 23:59:59"},
-  { DIRECTORY, ".warez", NULL, 0, NONE, "26 Oct 1985 13:39"}
+  { DIRECTORY, "", "photos", NULL, NONE, "1 Jan 1980 23:59:59" },
+  { DIRECTORY, "", ".warez", NULL, NONE, "26 Oct 1985 13:39" }
 };
 
 TestEntryInfo kTestEntrySetDriveOnly[] = {
-  { FILE, "Test Document", "application/vnd.google-apps.document", 0, NONE,
+  { FILE, "", "Test Document", "application/vnd.google-apps.document", NONE,
     "10 Apr 2013 16:20:00" },
-  { FILE, "Test Shared Document", "application/vnd.google-apps.document", 0,
+  { FILE, "", "Test Shared Document", "application/vnd.google-apps.document",
     SHARED, "20 Mar 2013 22:40:00" }
 };
 
@@ -140,7 +139,7 @@ void TestFilePathWatcher::StartWatching() {
       path_, false /*recursive*/,
       base::Bind(&TestFilePathWatcher::FilePathWatcherCallback,
                  base::Unretained(this)));
-  DCHECK(ok);
+  ASSERT_TRUE(ok);
 
   // If the condition was already met before FilePathWatcher was launched,
   // FilePathWatcher won't be able to detect a change, so check the condition
@@ -204,9 +203,8 @@ class TestVolume {
  public:
   virtual ~TestVolume() {}
 
-  // Creates an entry with given infromation.
-  // Returns true on success.
-  virtual bool CreateEntry(const TestEntryInfo& entry) = 0;
+  // Creates an entry with given information.
+  virtual void CreateEntry(const TestEntryInfo& entry) = 0;
 
   // Returns the path of the root directory.
   virtual base::FilePath GetRootPath() const = 0;
@@ -263,55 +261,46 @@ class LocalTestVolume : public TestVolume {
     return true;
   }
 
-  virtual bool CreateEntry(const TestEntryInfo& entry) OVERRIDE {
+  virtual void CreateEntry(const TestEntryInfo& entry) OVERRIDE {
     if (entry.type == DIRECTORY) {
-      return CreateDirectory(entry.base_name,
-                             entry.last_modified_time_as_string);
+      CreateDirectory(entry.target_name ,
+                      entry.last_modified_time_as_string);
     } else if (entry.type == FILE) {
-      return CreateFile(entry.base_name, entry.file_size,
-                        entry.last_modified_time_as_string);
+      CreateFile(entry.source_file_name, entry.target_name,
+                 entry.last_modified_time_as_string);
     } else {
       NOTREACHED();
-      return false;
     }
   }
 
-  bool CreateFile(const std::string& name,
-                  int64 length,
+  void CreateFile(const std::string& source_file_name,
+                  const std::string& target_name,
                   const std::string& modification_time) {
-    if (length < 0)
-      return false;
-    base::FilePath path = local_path_.AppendASCII(name);
-    int flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
-    bool created = false;
-    base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-    base::PlatformFile file = base::CreatePlatformFile(path, flags,
-                                                       &created, &error);
-    if (!created || error)
-      return false;
-    if (!base::TruncatePlatformFile(file, length))
-      return false;
-    if (!base::ClosePlatformFile(file))
-      return false;
+
+    std::string content_data;
+    base::FilePath test_file_path =
+        google_apis::test_util::GetTestFilePath("chromeos/file_manager").
+            AppendASCII(source_file_name);
+
+    base::FilePath path = local_path_.AppendASCII(target_name);
+    ASSERT_TRUE(file_util::PathExists(test_file_path))
+        << "Test file doesn't exist: " << test_file_path.value();
+    ASSERT_TRUE(file_util::CopyFile(test_file_path, path));
+    ASSERT_TRUE(file_util::PathExists(path))
+        << "Copying to: " << path.value() << " failed.";
     base::Time time;
-    if (!base::Time::FromString(modification_time.c_str(), &time))
-      return false;
-    if (!file_util::SetLastModifiedTime(path, time))
-      return false;
-    return true;
+    ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
+    ASSERT_TRUE(file_util::SetLastModifiedTime(path, time));
   }
 
-  bool CreateDirectory(const std::string& name,
+  void CreateDirectory(const std::string& target_name,
                        const std::string& modification_time) {
-    base::FilePath path = local_path_.AppendASCII(name);
-    if (!file_util::CreateDirectory(path))
-      return false;
+    base::FilePath path = local_path_.AppendASCII(target_name);
+    ASSERT_TRUE(file_util::CreateDirectory(path)) <<
+        "Failed to create a directory: " << target_name;
     base::Time time;
-    if (!base::Time::FromString(modification_time.c_str(), &time))
-      return false;
-    if (!file_util::SetLastModifiedTime(path, time))
-      return false;
-    return true;
+    ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
+    ASSERT_TRUE(file_util::SetLastModifiedTime(path, time));
   }
 
   virtual std::string GetName() const OVERRIDE {
@@ -369,24 +358,23 @@ class DriveTestVolume : public TestVolume,
     return true;
   }
 
-  virtual bool CreateEntry(const TestEntryInfo& entry) OVERRIDE {
+  virtual void CreateEntry(const TestEntryInfo& entry) OVERRIDE {
     if (entry.type == DIRECTORY) {
-      return CreateDirectory(entry.base_name,
-                             entry.last_modified_time_as_string);
+      CreateDirectory(entry.target_name,
+                      entry.last_modified_time_as_string);
     } else if (entry.type == FILE) {
-      return CreateFile(entry.base_name,
-                        entry.mime_type,
-                        entry.file_size,
-                        entry.shared_option == SHARED,
-                        entry.last_modified_time_as_string);
+      CreateFile(entry.source_file_name,
+                 entry.target_name,
+                 entry.mime_type,
+                 entry.shared_option == SHARED,
+                 entry.last_modified_time_as_string);
     } else {
       NOTREACHED();
-      return false;
     }
   }
 
   // Creates an empty directory with the given |name| and |modification_time|.
-  bool CreateDirectory(const std::string& name,
+  void CreateDirectory(const std::string& name,
                        const std::string& modification_time) {
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
     scoped_ptr<google_apis::ResourceEntry> resource_entry;
@@ -396,70 +384,68 @@ class DriveTestVolume : public TestVolume,
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
     MessageLoop::current()->RunUntilIdle();
-    if (error != google_apis::HTTP_CREATED)
-      return false;
-    if (!resource_entry)
-      return false;
+    ASSERT_TRUE(error == google_apis::HTTP_CREATED);
+    ASSERT_TRUE(resource_entry);
 
     base::Time time;
-    if (!base::Time::FromString(modification_time.c_str(), &time))
-      return false;
+    ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
     fake_drive_service_->SetLastModifiedTime(
         resource_entry->resource_id(),
         time,
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
     MessageLoop::current()->RunUntilIdle();
-    if (error != google_apis::HTTP_SUCCESS)
-      return false;
-    if (!resource_entry)
-      return false;
+    ASSERT_TRUE(error == google_apis::HTTP_SUCCESS);
+    ASSERT_TRUE(resource_entry);
     CheckForUpdates();
-    return true;
   }
 
   virtual std::string GetName() const OVERRIDE {
     return "Drive";
   }
 
-  // Creates a test file with the given spec. Returns true on success.
-  bool CreateFile(const std::string& name,
+  // Creates a test file with the given spec.
+  // Serves |test_file_name| file. Pass an empty string for an empty file.
+  void CreateFile(const std::string& source_file_name,
+                  const std::string& target_file_name,
                   const std::string& mime_type,
-                  int64 length,
                   bool shared_with_me,
                   const std::string& modification_time) {
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+
+    std::string content_data;
+    if (!source_file_name.empty()) {
+      base::FilePath source_file_path =
+          google_apis::test_util::GetTestFilePath("chromeos/file_manager").
+              AppendASCII(source_file_name);
+      ASSERT_TRUE(file_util::ReadFileToString(source_file_path, &content_data));
+    }
+
     scoped_ptr<google_apis::ResourceEntry> resource_entry;
     fake_drive_service_->AddNewFile(
         mime_type,
-        std::string(length, 'x'),
+        content_data,
         fake_drive_service_->GetRootResourceId(),
-        name,
+        target_file_name,
         shared_with_me,
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
     MessageLoop::current()->RunUntilIdle();
-    if (error != google_apis::HTTP_CREATED)
-      return false;
-    if (!resource_entry)
-      return false;
+    ASSERT_EQ(google_apis::HTTP_CREATED, error);
+    ASSERT_TRUE(resource_entry);
 
     base::Time time;
-    if (!base::Time::FromString(modification_time.c_str(), &time))
-      return false;
+    ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
     fake_drive_service_->SetLastModifiedTime(
         resource_entry->resource_id(),
         time,
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
     MessageLoop::current()->RunUntilIdle();
-    if (error != google_apis::HTTP_SUCCESS)
-      return false;
-    if (!resource_entry)
-      return false;
+    ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+    ASSERT_TRUE(resource_entry);
 
     CheckForUpdates();
-    return true;
   }
 
   virtual base::FilePath GetRootPath() const OVERRIDE {
@@ -597,11 +583,11 @@ class FileManagerBrowserTestBase : public ExtensionApiTest,
   void StartTest(const std::string& test_name);
 
   // Creates test files and directories.
-  bool CreateTestEntries(TestVolume* volume, const TestEntryInfo* entries,
+  void CreateTestEntries(TestVolume* volume, const TestEntryInfo* entries,
                          size_t num_entries);
 
   // After starting the test, set up volumes.
-  virtual bool PrepareVolume() = 0;
+  virtual void PrepareVolume() = 0;
 
   // Runs the file display test on the passed |volume|, shared by subclasses.
   void DoTestFileDisplay(TestVolume* volume);
@@ -635,14 +621,11 @@ void FileManagerBrowserTestBase::StartTest(const std::string& test_name) {
   listener.Reply(test_name);
 }
 
-bool FileManagerBrowserTestBase::CreateTestEntries(
+void FileManagerBrowserTestBase::CreateTestEntries(
     TestVolume* volume, const TestEntryInfo* entries, size_t num_entries) {
   for (size_t i = 0; i < num_entries; ++i) {
-    if (!volume->CreateEntry(entries[i])) {
-      return false;
-    }
+    volume->CreateEntry(entries[i]);
   }
-  return true;
 }
 
 void FileManagerBrowserTestBase::DoTestFileDisplay(TestVolume* volume) {
@@ -653,13 +636,13 @@ void FileManagerBrowserTestBase::DoTestFileDisplay(TestVolume* volume) {
   ASSERT_TRUE(listener.WaitUntilSatisfied());
   const TestEntryInfo entry = {
     FILE,
-    "newly added file.mp3",
-    "audio/mp3",
-    2000,
+    "music.ogg",  // Prototype file name.
+    "newly added file.ogg",  // Target file name.
+    "audio/ogg",
     NONE,
     "4 Sep 1998 00:00:00"
   };
-  ASSERT_TRUE(volume->CreateEntry(entry));
+  volume->CreateEntry(entry);
   listener.Reply("file added");
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -672,6 +655,8 @@ void FileManagerBrowserTestBase::DoTestKeyboardCopy(TestVolume* volume) {
 
   ResultCatcher catcher;
   StartTest("keyboardCopy" + volume->GetName());
+
+  const int64 kKeyboardTestFileSize = 59943;
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
   ASSERT_TRUE(volume->WaitUntilFilePresentWithSize(
@@ -706,11 +691,10 @@ class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase {
   }
 
  protected:
-  virtual bool PrepareVolume() OVERRIDE {
-    return
-        volume_.Mount(browser()->profile()) &&
-        CreateTestEntries(&volume_, kTestEntrySetCommon,
-                          arraysize(kTestEntrySetCommon));
+  virtual void PrepareVolume() OVERRIDE {
+    ASSERT_TRUE(volume_.Mount(browser()->profile()));
+    CreateTestEntries(&volume_, kTestEntrySetCommon,
+                      arraysize(kTestEntrySetCommon));
   }
 
   LocalTestVolume volume_;
@@ -739,17 +723,14 @@ class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
   }
 
  protected:
-  virtual bool PrepareVolume() OVERRIDE {
-    if (!CreateTestEntries(&volume_, kTestEntrySetCommon,
-                           arraysize(kTestEntrySetCommon)))
-      return false;
+  virtual void PrepareVolume() OVERRIDE {
+    CreateTestEntries(&volume_, kTestEntrySetCommon,
+                      arraysize(kTestEntrySetCommon));
     // For testing Drive, create more entries with Drive specific attributes.
     // TODO(haruki): Add a case for an entry cached by DriveCache.
-    if (!CreateTestEntries(&volume_, kTestEntrySetDriveOnly,
-                           arraysize(kTestEntrySetDriveOnly)))
-      return false;
+    CreateTestEntries(&volume_, kTestEntrySetDriveOnly,
+                      arraysize(kTestEntrySetDriveOnly));
     drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
-    return true;
   }
 
   DriveTestVolume volume_;
@@ -772,20 +753,15 @@ class FileManagerBrowserTransferTest : public FileManagerBrowserTestBase {
   }
 
  protected:
-  virtual bool PrepareVolume() OVERRIDE {
-    if (!local_volume_.Mount(browser()->profile()))
-      return false;
-    if (!CreateTestEntries(&local_volume_, kTestEntrySetCommon,
-                           arraysize(kTestEntrySetCommon)))
-      return false;
-    if (!CreateTestEntries(&drive_volume_, kTestEntrySetCommon,
-                           arraysize(kTestEntrySetCommon)))
-      return false;
-    if (!CreateTestEntries(&drive_volume_, kTestEntrySetDriveOnly,
-                           arraysize(kTestEntrySetDriveOnly)))
-      return false;
+  virtual void PrepareVolume() OVERRIDE {
+    ASSERT_TRUE(local_volume_.Mount(browser()->profile()));
+    CreateTestEntries(&local_volume_, kTestEntrySetCommon,
+                      arraysize(kTestEntrySetCommon));
+    CreateTestEntries(&drive_volume_, kTestEntrySetCommon,
+                      arraysize(kTestEntrySetCommon));
+    CreateTestEntries(&drive_volume_, kTestEntrySetDriveOnly,
+                      arraysize(kTestEntrySetDriveOnly));
     drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
-    return true;
   }
 
   LocalTestVolume local_volume_;
@@ -799,22 +775,22 @@ INSTANTIATE_TEST_CASE_P(InNonGuestMode,
                         ::testing::Values(false));
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestFileDisplay) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   DoTestFileDisplay(&volume_);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   DoTestKeyboardCopy(&volume_);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardDelete) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   DoTestKeyboardDelete(&volume_);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   ResultCatcher catcher;
   StartTest("openSidebarRecent");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -822,21 +798,21 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
 
 // TODO(hirono): Bring back the offline feature. http://crbug.com/238545
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestOpenOffline) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   ResultCatcher catcher;
   StartTest("openSidebarOffline");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenSharedWithMe) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   ResultCatcher catcher;
   StartTest("openSidebarSharedWithMe");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAutocomplete) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   ResultCatcher catcher;
   StartTest("autocomplete");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -844,7 +820,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAutocomplete) {
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromDriveToDownloads) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   ResultCatcher catcher;
   StartTest("transferFromDriveToDownloads");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -852,7 +828,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromDownloadsToDrive) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   ResultCatcher catcher;
   StartTest("transferFromDownloadsToDrive");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -860,7 +836,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromSharedToDownloads) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   ResultCatcher catcher;
   StartTest("transferFromSharedToDownloads");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -868,7 +844,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromSharedToDrive) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   ResultCatcher catcher;
   StartTest("transferFromSharedToDrive");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -876,7 +852,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromRecentToDownloads) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   ResultCatcher catcher;
   StartTest("transferFromRecentToDownloads");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -884,7 +860,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromRecentToDrive) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   ResultCatcher catcher;
   StartTest("transferFromRecentToDrive");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -893,7 +869,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
 // TODO(hirono): Bring back the offline feature. http://crbug.com/238545
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        DISABLED_TransferFromOfflineToDownloads) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   ResultCatcher catcher;
   StartTest("transferFromOfflineToDownloads");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -902,7 +878,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
 // TODO(hirono): Bring back the offline feature. http://crbug.com/238545
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        DISABLED_TransferFromOfflineToDrive) {
-  ASSERT_TRUE(PrepareVolume());
+  PrepareVolume();
   ResultCatcher catcher;
   StartTest("transferFromOfflineToDrive");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
