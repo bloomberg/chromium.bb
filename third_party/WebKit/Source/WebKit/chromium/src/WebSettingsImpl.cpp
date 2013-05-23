@@ -307,11 +307,6 @@ void WebSettingsImpl::setEditableLinkBehaviorNeverLive()
     m_settings->setEditableLinkBehavior(WebCore::EditableLinkNeverLive);
 }
 
-void WebSettingsImpl::setFrameFlatteningEnabled(bool enabled)
-{
-    // FIXME: Remove this once Chromium no longer tries to call it. http://crbug.com/231898
-}
-
 void WebSettingsImpl::setFontRenderingModeNormal()
 {
     // FIXME: If you ever need more behaviors than this, then we should probably
