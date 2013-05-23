@@ -32,7 +32,7 @@ interface HTMLFormElement : HTMLElement {
     readonly attribute HTMLCollection elements;
     readonly attribute long length;
     [ImplementedAs=item] getter Node(unsigned long index);
-    [ImplementedAs=anonymousNamedGetter, DoNotCheckJSProperty] getter (NodeList or Node)(DOMString name);
+    [ImplementedAs=anonymousNamedGetter, OverrideBuiltins] getter (NodeList or Node)(DOMString name);
 
     [ImplementedAs=submitFromJavaScript] void submit();
     void reset();

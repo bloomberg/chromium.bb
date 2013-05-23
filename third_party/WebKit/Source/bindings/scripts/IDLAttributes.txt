@@ -47,7 +47,6 @@ DeliverCustomElementCallbacks
 DependentLifetime
 DeprecateAs=*
 DoNotCheckConstants
-DoNotCheckJSProperty
 DoNotCheckSecurity
 DoNotCheckSecurityOnGetter
 DoNotCheckSecurityOnSetter
@@ -70,6 +69,7 @@ MeasureAs=*
 NamedConstructor=*
 NoInterfaceObject
 NotEnumerable
+OverrideBuiltins
 PerWorldBindings
 RaisesException
 ReadOnly

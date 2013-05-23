@@ -3237,7 +3237,7 @@ sub GenerateImplementationNamedPropertyGetter
 
     my $code = "v8::Handle<v8::Value> ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)\n";
     $code .= "{\n";
-    if (!$namedGetterFunction->signature->extendedAttributes->{"DoNotCheckJSProperty"}) {
+    if (!$namedGetterFunction->signature->extendedAttributes->{"OverrideBuiltins"}) {
         $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
         $code .= "        return v8Undefined();\n";
         $code .= "    if (info.Holder()->HasRealNamedCallbackProperty(name))\n";
