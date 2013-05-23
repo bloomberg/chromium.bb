@@ -51,6 +51,8 @@ body[new-ui] *[file-type-icon='folder'] {
 
 body[new-ui] tree:focus .tree-item[selected] > .tree-row >
     *[file-type-icon='folder'],
+body[new-ui] list.autocomplete-suggestions li[selected]
+    *[file-type-icon='folder'],
 body[new-ui] list:focus li[selected] *[file-type-icon='folder'] {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/white_folder.png') 1x,

@@ -324,7 +324,7 @@ body[new-ui] #volume-list:focus > [lead][selected],
 body[new-ui] #volume-list:focus > [lead],
 body[new-ui] #volume-list:focus > [selected],
 body[new-ui] #volume-list:focus > [anchor] {
-  background-color: rgb(77, 144, 254);
+  background-color: rgb(66, 129, 244);
   color: white;
 }
 
@@ -450,7 +450,7 @@ body[new-ui] #directory-tree:focus .tree-row[lead][selected],
 body[new-ui] #directory-tree:focus .tree-row[lead],
 body[new-ui] #directory-tree:focus .tree-row[selected],
 body[new-ui] #directory-tree:focus .tree-row[anchor] {
-  background-color: rgb(77, 144, 254);
+  background-color: rgb(66, 129, 244);
   color: white;
 }
 
@@ -1308,7 +1308,7 @@ body[new-ui] #default-actions-list > li[selected] {
 body[new-ui] #list-container list:focus > li[selected],
 body[new-ui] #list-container grid:focus > li[selected],
 body[new-ui] #default-actions-list:focus > li[selected] {
-  background-color: rgb(77, 144, 254);
+  background-color: rgb(66, 129, 244);
   color: white;
 }
 
@@ -2274,9 +2274,9 @@ body:not([new-ui]) list.autocomplete-suggestions > li:hover {
   border: 1px solid white;
 }
 
-body[new-ui] list.autocomplete-suggestions > li,
-body[new-ui] list.autocomplete-suggestions > li:hover {
+body[new-ui] list.autocomplete-suggestions > li {
   background-color: transparent;
+  background-image: none;
   border: none;
 }
 
@@ -2326,13 +2326,15 @@ body:not([new-ui]) list.autocomplete-suggestions:not([hasElementFocus]) >
   border: 1px solid white;
 }
 
-body[new-ui] list.autocomplete-suggestions[hasElementFocus] > [selected],
-body[new-ui] list.autocomplete-suggestions[hasElementFocus] > [lead],
-body[new-ui] list.autocomplete-suggestions:not([hasElementFocus]) > [selected],
-body[new-ui] list.autocomplete-suggestions:not([hasElementFocus]) > [lead] {
-  background-color: rgb(235, 235, 235);
-  background-image: none;
-  border: none;
+body[new-ui] list.autocomplete-suggestions > [selected],
+body[new-ui] list.autocomplete-suggestions > [lead] {
+  background-color: rgb(66, 129, 244);
+  color: white;
+}
+
+body[new-ui] list.autocomplete-suggestions > [selected] > div.detail-text em,
+body[new-ui] list.autocomplete-suggestions > [lead] > div.detail-text em {
+  color: white;
 }
 
 body[new-ui] #gear-menu > menuitem:not(.menuitem-button) {

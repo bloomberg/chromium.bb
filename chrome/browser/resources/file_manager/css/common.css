@@ -363,8 +363,8 @@ menu.chrome-menu > menuitem:not([disabled])[selected]:active {
 
 body[new-ui] menu.chrome-menu > menuitem:not([disabled])[selected],
 body[new-ui] menu.chrome-menu > menuitem:not([disabled])[selected]:active {
-  background-color: rgb(235, 235, 235);
-  color: rgb(34, 34, 34);
+  background-color: rgb(66, 129, 244);
+  color: white;
 }
 
 body:not([new-ui]) menu.chrome-menu > hr {
