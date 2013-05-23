@@ -1023,6 +1023,42 @@ TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
         full_profile2.GetInfo(input.type, "en-US");
     EXPECT_EQ(expected, added_profile.GetInfo(input.type, "en-US"));
   }
+
+  // Also, the currently selected email address should get added to the new
+  // profile.
+  string16 original_email = full_profile.GetInfo(EMAIL_ADDRESS, "en-US");
+  EXPECT_FALSE(original_email.empty());
+  EXPECT_EQ(original_email,
+            added_profile.GetInfo(EMAIL_ADDRESS, "en-US"));
+}
+
+// Makes sure that a newly added email address gets added to an existing profile
+// (as opposed to creating its own profile). http://crbug.com/240926
+TEST_F(AutofillDialogControllerTest, AddEmail) {
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+
+  AutofillProfile full_profile(test::GetFullProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+
+  ui::MenuModel* model = controller()->MenuModelForSection(SECTION_EMAIL);
+  // Activate the "Add email address" menu item.
+  model->ActivatedAt(model->GetItemCount() - 2);
+
+  // Fill in the inputs from the profile.
+  DetailOutputMap outputs;
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_EMAIL);
+  const DetailInput& input = inputs[0];
+  string16 new_email = ASCIIToUTF16("addemailtest@example.com");
+  outputs[&input] = new_email;
+  controller()->GetView()->SetUserInput(SECTION_EMAIL, outputs);
+
+  FillCreditCardInputs();
+  controller()->OnAccept();
+  std::vector<base::string16> email_values;
+  full_profile.GetMultiInfo(EMAIL_ADDRESS, "en-US", &email_values);
+  ASSERT_EQ(2U, email_values.size());
+  EXPECT_EQ(new_email, email_values[1]);
 }
 
 TEST_F(AutofillDialogControllerTest, VerifyCvv) {
