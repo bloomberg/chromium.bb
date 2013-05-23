@@ -216,6 +216,7 @@
             'v8/custom/V8SVGPathSegCustom.cpp',
             'v8/custom/V8StorageCustom.cpp',
             'v8/custom/V8StyleSheetCustom.cpp',
+            'v8/custom/V8StyleSheetListCustom.cpp',
             'v8/custom/V8TextCustom.cpp',
             'v8/custom/V8TrackEventCustom.cpp',
             'v8/custom/V8WebGLRenderingContextCustom.cpp',
