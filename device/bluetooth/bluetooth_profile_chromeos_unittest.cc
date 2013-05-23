@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/message_loop.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_service_provider.h"
@@ -40,11 +38,6 @@ class BluetoothProfileChromeOSTest : public testing::Test {
         last_device_(NULL) {}
 
   virtual void SetUp() {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableExperimentalBluetooth))
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          chromeos::switches::kEnableExperimentalBluetooth);
-
     mock_dbus_thread_manager_ =
         new MockDBusThreadManagerWithoutGMock();
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);

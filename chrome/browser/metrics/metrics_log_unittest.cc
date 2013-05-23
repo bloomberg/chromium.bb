@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/port.h"
 #include "base/prefs/pref_service.h"
@@ -32,7 +31,6 @@
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #endif  // OS_CHROMEOS
 
@@ -159,11 +157,6 @@ class MetricsLogTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
 #if defined(OS_CHROMEOS)
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableExperimentalBluetooth))
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          chromeos::switches::kEnableExperimentalBluetooth);
-
     mock_dbus_thread_manager_ =
         new chromeos::MockDBusThreadManagerWithoutGMock();
     chromeos::DBusThreadManager::InitializeForTesting(

@@ -5,6 +5,11 @@
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
+#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
+#include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
+#include "chromeos/dbus/fake_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_bluetooth_input_client.h"
+#include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_config_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
@@ -51,7 +56,14 @@ std::vector<uint8>* GetMockSystemSalt() {
 }  // namespace
 
 MockDBusThreadManager::MockDBusThreadManager()
-    : mock_bluetooth_adapter_client_(new MockBluetoothAdapterClient),
+    : fake_bluetooth_adapter_client_(new FakeBluetoothAdapterClient()),
+      fake_bluetooth_agent_manager_client_(
+          new FakeBluetoothAgentManagerClient()),
+      fake_bluetooth_device_client_(new FakeBluetoothDeviceClient()),
+      fake_bluetooth_input_client_(new FakeBluetoothInputClient()),
+      fake_bluetooth_profile_manager_client_(
+          new FakeBluetoothProfileManagerClient()),
+      mock_bluetooth_adapter_client_(new MockBluetoothAdapterClient),
       mock_bluetooth_device_client_(new MockBluetoothDeviceClient),
       mock_bluetooth_input_client_(new MockBluetoothInputClient),
       mock_bluetooth_manager_client_(new MockBluetoothManagerClient),
@@ -79,6 +91,16 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_bluetooth_out_of_band_client_.get()));
   EXPECT_CALL(*this, GetCryptohomeClient())
       .WillRepeatedly(Return(mock_cryptohome_client()));
+  EXPECT_CALL(*this, GetExperimentalBluetoothAdapterClient())
+      .WillRepeatedly(Return(fake_bluetooth_adapter_client_.get()));
+  EXPECT_CALL(*this, GetExperimentalBluetoothAgentManagerClient())
+      .WillRepeatedly(Return(fake_bluetooth_agent_manager_client()));
+  EXPECT_CALL(*this, GetExperimentalBluetoothDeviceClient())
+      .WillRepeatedly(Return(fake_bluetooth_device_client_.get()));
+  EXPECT_CALL(*this, GetExperimentalBluetoothInputClient())
+      .WillRepeatedly(Return(fake_bluetooth_input_client_.get()));
+  EXPECT_CALL(*this, GetExperimentalBluetoothProfileManagerClient())
+      .WillRepeatedly(Return(fake_bluetooth_profile_manager_client()));
   EXPECT_CALL(*this, GetShillDeviceClient())
       .WillRepeatedly(Return(mock_shill_device_client()));
   EXPECT_CALL(*this, GetShillIPConfigClient())

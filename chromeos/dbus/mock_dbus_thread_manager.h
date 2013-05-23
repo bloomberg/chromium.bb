@@ -20,6 +20,11 @@ class Bus;
 namespace chromeos {
 
 class DBusThreadManagerObserver;
+class FakeBluetoothAdapterClient;
+class FakeBluetoothAgentManagerClient;
+class FakeBluetoothDeviceClient;
+class FakeBluetoothInputClient;
+class FakeBluetoothProfileManagerClient;
 class MockBluetoothAdapterClient;
 class MockBluetoothDeviceClient;
 class MockBluetoothInputClient;
@@ -98,6 +103,21 @@ class MockDBusThreadManager : public DBusThreadManager {
                void(const dbus::ObjectPath& object_path));
   MOCK_METHOD0(GetIBusPanelService, IBusPanelService*(void));
 
+  FakeBluetoothAdapterClient* fake_bluetooth_adapter_client() {
+    return fake_bluetooth_adapter_client_.get();
+  }
+  FakeBluetoothAgentManagerClient* fake_bluetooth_agent_manager_client() {
+    return fake_bluetooth_agent_manager_client_.get();
+  }
+  FakeBluetoothDeviceClient* fake_bluetooth_device_client() {
+    return fake_bluetooth_device_client_.get();
+  }
+  FakeBluetoothInputClient* fake_bluetooth_input_client() {
+    return fake_bluetooth_input_client_.get();
+  }
+  FakeBluetoothProfileManagerClient* fake_bluetooth_profile_manager_client() {
+    return fake_bluetooth_profile_manager_client_.get();
+  }
   MockBluetoothAdapterClient* mock_bluetooth_adapter_client() {
     return mock_bluetooth_adapter_client_.get();
   }
@@ -146,6 +166,13 @@ class MockDBusThreadManager : public DBusThreadManager {
   // their c'tors.
   ObserverList<DBusThreadManagerObserver> observers_;
 
+  scoped_ptr<FakeBluetoothAdapterClient> fake_bluetooth_adapter_client_;
+  scoped_ptr<FakeBluetoothAgentManagerClient>
+      fake_bluetooth_agent_manager_client_;
+  scoped_ptr<FakeBluetoothDeviceClient> fake_bluetooth_device_client_;
+  scoped_ptr<FakeBluetoothInputClient> fake_bluetooth_input_client_;
+  scoped_ptr<FakeBluetoothProfileManagerClient>
+      fake_bluetooth_profile_manager_client_;
   scoped_ptr<MockBluetoothAdapterClient> mock_bluetooth_adapter_client_;
   scoped_ptr<MockBluetoothDeviceClient> mock_bluetooth_device_client_;
   scoped_ptr<MockBluetoothInputClient> mock_bluetooth_input_client_;
