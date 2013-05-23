@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/resources/tile.h"
+#include "cc/resources/tile_priority.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,6 +24,14 @@ class FakePicturePileImpl : public PicturePileImpl {
   virtual ~FakePicturePileImpl() {}
 };
 
+class TilePriorityForSoonBin : public TilePriority {
+ public:
+  TilePriorityForSoonBin() : TilePriority(
+            HIGH_RESOLUTION,
+            0.5,
+            300.0) {}
+};
+
 class TilePriorityForEventualBin : public TilePriority {
  public:
     TilePriorityForEventualBin() : TilePriority(
@@ -39,66 +48,265 @@ class TilePriorityForNowBin : public TilePriority {
             0) {}
 };
 
-TEST(TileManagerTest, OOM) {
-    // Init TileManager
-    FakeTileManagerClient client;
-    LayerTreeSettings setting;
-    FakeTileManager manager(&client);
+class TileManagerTest : public testing::Test {
+ public:
+  typedef std::vector<scoped_refptr<Tile> > TileVector;
 
-    // Memory limit to supply 8 tiles of RGBA
+  void Initialize(int max_memory_tiles,
+                  TileMemoryLimitPolicy memory_limit_policy,
+                  TreePriority tree_priority) {
+    tile_manager_ = make_scoped_ptr(new FakeTileManager(&tile_manager_client_));
+
     GlobalStateThatImpactsTilePriority state;
-    gfx::Size tile_size = setting.default_tile_size;
+    gfx::Size tile_size = settings_.default_tile_size;
     state.memory_limit_in_bytes =
-        8 * 4 * tile_size.width() * tile_size.height();
-    state.memory_limit_policy = ALLOW_ANYTHING;
-    state.tree_priority = SMOOTHNESS_TAKES_PRIORITY;
-    manager.SetGlobalState(state);
+        max_memory_tiles * 4 * tile_size.width() * tile_size.height();
+    state.memory_limit_policy = memory_limit_policy;
+    state.tree_priority = tree_priority;
 
-    // Create tiles
-    TilePriorityForEventualBin eventual_prio;
-    TilePriorityForNowBin now_prio;
-    typedef std::vector<scoped_refptr<Tile> > TileVector;
-    TileVector tiles_on_active_tree;
-    TileVector tiles_on_pending_tree;
-    scoped_refptr<FakePicturePileImpl> pile = new FakePicturePileImpl();
-    // Register 5 tiles for active tree requiring eventual bin
-    for (int i = 0; i < 5; ++i) {
-        scoped_refptr<Tile> tile = make_scoped_refptr(
-                    new Tile(&manager,
-                        pile.get(),
-                        tile_size,
-                        gfx::Rect(),
-                        gfx::Rect(),
-                        1.0,
-                        0,
-                        0));
-        tile->SetPriority(PENDING_TREE, TilePriority());
-        tile->SetPriority(ACTIVE_TREE, eventual_prio);
-        tiles_on_active_tree.push_back(tile);
-    }
-    // Register 5 tiles for pending tree requiring now bin
-    for (int i = 0; i < 5; ++i) {
-        scoped_refptr<Tile> tile = make_scoped_refptr(
-                    new Tile(&manager,
-                        pile.get(),
-                        setting.default_tile_size,
-                        gfx::Rect(),
-                        gfx::Rect(),
-                        1.0,
-                        0,
-                        0));
-        tile->SetPriority(PENDING_TREE, now_prio);
-        tile->SetPriority(ACTIVE_TREE, TilePriority());
-        tiles_on_pending_tree.push_back(tile);
-    }
-    // Try to allocate memory to tiles in OOM situation
-    manager.ManageTiles();
+    tile_manager_->SetGlobalState(state);
+    picture_pile_ = make_scoped_refptr(new FakePicturePileImpl());
+  }
 
-    // Check if pending tiles get memory
-    for (TileVector::const_iterator it = tiles_on_pending_tree.begin();
-         it != tiles_on_pending_tree.end() ; ++it) {
-         EXPECT_TRUE((*it)->IsAssignedGpuMemory());
+  virtual void TearDown() OVERRIDE {
+    tile_manager_.reset(NULL);
+    picture_pile_ = NULL;
+
+    testing::Test::TearDown();
+  }
+
+  TileVector CreateTiles(int count,
+                         TilePriority active_priority,
+                         TilePriority pending_priority) {
+    TileVector tiles;
+    for (int i = 0; i < count; ++i) {
+      scoped_refptr<Tile> tile =
+          make_scoped_refptr(new Tile(tile_manager_.get(),
+                                      picture_pile_.get(),
+                                      settings_.default_tile_size,
+                                      gfx::Rect(),
+                                      gfx::Rect(),
+                                      1.0,
+                                      0,
+                                      0));
+      tile->SetPriority(ACTIVE_TREE, active_priority);
+      tile->SetPriority(PENDING_TREE, pending_priority);
+      tiles.push_back(tile);
     }
+    return tiles;
+  }
+
+  FakeTileManager* tile_manager() {
+    return tile_manager_.get();
+  }
+
+  int AssignedMemoryCounts(const TileVector& tiles) {
+    int has_memory_count = 0;
+    for (TileVector::const_iterator it = tiles.begin();
+         it != tiles.end();
+         ++it) {
+      if ((*it)->IsAssignedGpuMemory())
+        ++has_memory_count;
+    }
+    return has_memory_count;
+  }
+
+ private:
+  FakeTileManagerClient tile_manager_client_;
+  LayerTreeSettings settings_;
+  scoped_ptr<FakeTileManager> tile_manager_;
+  scoped_refptr<FakePicturePileImpl> picture_pile_;
+};
+
+TEST_F(TileManagerTest, EnoughMemoryAllowAnything) {
+  // A few tiles of each type of priority, with enough memory for all tiles.
+
+  Initialize(10, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
+  TileVector active_now =
+      CreateTiles(3, TilePriorityForNowBin(), TilePriority());
+  TileVector pending_now =
+      CreateTiles(3, TilePriority(), TilePriorityForNowBin());
+  TileVector active_pending_soon = CreateTiles(
+      3, TilePriorityForSoonBin(), TilePriorityForSoonBin());
+  TileVector never_bin = CreateTiles(1, TilePriority(), TilePriority());
+
+  tile_manager()->ManageTiles();
+
+  EXPECT_EQ(3, AssignedMemoryCounts(active_now));
+  EXPECT_EQ(3, AssignedMemoryCounts(pending_now));
+  EXPECT_EQ(3, AssignedMemoryCounts(active_pending_soon));
+  EXPECT_EQ(1, AssignedMemoryCounts(never_bin));
+
+  active_now.clear();
+  pending_now.clear();
+  active_pending_soon.clear();
+  never_bin.clear();
+  TearDown();
+}
+
+TEST_F(TileManagerTest, EnoughMemoryAllowPrepaintOnly) {
+  // A few tiles of each type of priority, with enough memory for all tiles,
+  // with the exception of never bin.
+
+  Initialize(10, ALLOW_PREPAINT_ONLY, SMOOTHNESS_TAKES_PRIORITY);
+  TileVector active_now =
+      CreateTiles(3, TilePriorityForNowBin(), TilePriority());
+  TileVector pending_now =
+      CreateTiles(3, TilePriority(), TilePriorityForNowBin());
+  TileVector active_pending_soon = CreateTiles(
+      3, TilePriorityForSoonBin(), TilePriorityForSoonBin());
+  TileVector never_bin = CreateTiles(1, TilePriority(), TilePriority());
+
+  tile_manager()->ManageTiles();
+
+  EXPECT_EQ(3, AssignedMemoryCounts(active_now));
+  EXPECT_EQ(3, AssignedMemoryCounts(pending_now));
+  EXPECT_EQ(3, AssignedMemoryCounts(active_pending_soon));
+  EXPECT_EQ(0, AssignedMemoryCounts(never_bin));
+
+  active_now.clear();
+  pending_now.clear();
+  active_pending_soon.clear();
+  never_bin.clear();
+  TearDown();
+}
+
+TEST_F(TileManagerTest, EnoughMemoryAllowAbsoluteMinimum) {
+  // A few tiles of each type of priority, with enough memory for all tiles,
+  // with the exception of never and soon bins.
+
+  Initialize(10, ALLOW_ABSOLUTE_MINIMUM, SMOOTHNESS_TAKES_PRIORITY);
+  TileVector active_now =
+      CreateTiles(3, TilePriorityForNowBin(), TilePriority());
+  TileVector pending_now =
+      CreateTiles(3, TilePriority(), TilePriorityForNowBin());
+  TileVector active_pending_soon = CreateTiles(
+      3, TilePriorityForSoonBin(), TilePriorityForSoonBin());
+  TileVector never_bin = CreateTiles(1, TilePriority(), TilePriority());
+
+  tile_manager()->ManageTiles();
+
+  EXPECT_EQ(3, AssignedMemoryCounts(active_now));
+  EXPECT_EQ(3, AssignedMemoryCounts(pending_now));
+  EXPECT_EQ(0, AssignedMemoryCounts(active_pending_soon));
+  EXPECT_EQ(0, AssignedMemoryCounts(never_bin));
+
+  active_now.clear();
+  pending_now.clear();
+  active_pending_soon.clear();
+  never_bin.clear();
+  TearDown();
+}
+
+TEST_F(TileManagerTest, EnoughMemoryAllowNothing) {
+  // A few tiles of each type of priority, with enough memory for all tiles,
+  // but allow nothing should not assign any memory.
+
+  Initialize(10, ALLOW_NOTHING, SMOOTHNESS_TAKES_PRIORITY);
+  TileVector active_now =
+      CreateTiles(3, TilePriorityForNowBin(), TilePriority());
+  TileVector pending_now =
+      CreateTiles(3, TilePriority(), TilePriorityForNowBin());
+  TileVector active_pending_soon = CreateTiles(
+      3, TilePriorityForSoonBin(), TilePriorityForSoonBin());
+  TileVector never_bin = CreateTiles(1, TilePriority(), TilePriority());
+
+  tile_manager()->ManageTiles();
+
+  EXPECT_EQ(0, AssignedMemoryCounts(active_now));
+  EXPECT_EQ(0, AssignedMemoryCounts(pending_now));
+  EXPECT_EQ(0, AssignedMemoryCounts(active_pending_soon));
+  EXPECT_EQ(0, AssignedMemoryCounts(never_bin));
+
+  active_now.clear();
+  pending_now.clear();
+  active_pending_soon.clear();
+  never_bin.clear();
+  TearDown();
+}
+
+TEST_F(TileManagerTest, PartialOOMMemoryToPending) {
+  // 5 tiles on active tree eventually bin, 5 tiles on pending tree now bin,
+  // but only enough memory for 8 tiles. The result is all pending tree tiles
+  // get memory, and 3 of the active tree tiles get memory.
+
+  Initialize(8, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
+  TileVector active_tree_tiles =
+      CreateTiles(5, TilePriorityForEventualBin(), TilePriority());
+  TileVector pending_tree_tiles =
+      CreateTiles(5, TilePriority(), TilePriorityForNowBin());
+
+  tile_manager()->ManageTiles();
+
+  EXPECT_EQ(3, AssignedMemoryCounts(active_tree_tiles));
+  EXPECT_EQ(5, AssignedMemoryCounts(pending_tree_tiles));
+
+  pending_tree_tiles.clear();
+  active_tree_tiles.clear();
+  TearDown();
+}
+
+TEST_F(TileManagerTest, PartialOOMMemoryToActive) {
+  // 5 tiles on active tree eventually bin, 5 tiles on pending tree now bin,
+  // but only enough memory for 8 tiles. The result is all active tree tiles
+  // get memory, and 3 of the pending tree tiles get memory.
+
+  Initialize(8, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
+  TileVector active_tree_tiles =
+      CreateTiles(5, TilePriorityForNowBin(), TilePriority());
+  TileVector pending_tree_tiles =
+      CreateTiles(5, TilePriority(), TilePriorityForNowBin());
+
+  tile_manager()->ManageTiles();
+
+  EXPECT_EQ(5, AssignedMemoryCounts(active_tree_tiles));
+  EXPECT_EQ(3, AssignedMemoryCounts(pending_tree_tiles));
+
+  pending_tree_tiles.clear();
+  active_tree_tiles.clear();
+  TearDown();
+}
+
+TEST_F(TileManagerTest, TotalOOMMemoryToPending) {
+  // 5 tiles on active tree eventually bin, 5 tiles on pending tree now bin,
+  // but only enough memory for 4 tiles. The result is 4 pending tree tiles
+  // get memory, and none of the active tree tiles get memory.
+
+  Initialize(4, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
+  TileVector active_tree_tiles =
+      CreateTiles(5, TilePriorityForEventualBin(), TilePriority());
+  TileVector pending_tree_tiles =
+      CreateTiles(5, TilePriority(), TilePriorityForNowBin());
+
+  tile_manager()->ManageTiles();
+
+  EXPECT_EQ(0, AssignedMemoryCounts(active_tree_tiles));
+  EXPECT_EQ(4, AssignedMemoryCounts(pending_tree_tiles));
+
+  pending_tree_tiles.clear();
+  active_tree_tiles.clear();
+  TearDown();
+}
+
+TEST_F(TileManagerTest, TotalOOMMemoryToActive) {
+  // 5 tiles on active tree eventually bin, 5 tiles on pending tree now bin,
+  // but only enough memory for 4 tiles. The result is 5 active tree tiles
+  // get memory, and none of the pending tree tiles get memory.
+
+  Initialize(4, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
+  TileVector active_tree_tiles =
+      CreateTiles(5, TilePriorityForNowBin(), TilePriority());
+  TileVector pending_tree_tiles =
+      CreateTiles(5, TilePriority(), TilePriorityForNowBin());
+
+  tile_manager()->ManageTiles();
+
+  EXPECT_EQ(4, AssignedMemoryCounts(active_tree_tiles));
+  EXPECT_EQ(0, AssignedMemoryCounts(pending_tree_tiles));
+
+  pending_tree_tiles.clear();
+  active_tree_tiles.clear();
+  TearDown();
 }
 
 }  // namespace
