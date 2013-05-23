@@ -36,7 +36,7 @@
              [Reflect] attribute DOMString accessKey;
 
     // Extensions
-             [TreatNullAs=NullString, DeliverCustomElementCallbacks, SetterRaisesException] attribute DOMString innerHTML;
+             [TreatNullAs=NullString, DeliverCustomElementCallbacks, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
              [TreatNullAs=NullString, SetterRaisesException] attribute DOMString innerText;
              [TreatNullAs=NullString, DeliverCustomElementCallbacks, SetterRaisesException] attribute DOMString outerHTML;
              [TreatNullAs=NullString, SetterRaisesException] attribute DOMString outerText;
