@@ -84,7 +84,9 @@ void AfterTranslateInfoBar::ViewHierarchyChanged(
 
   std::vector<string16> strings;
   TranslateInfoBarDelegate* delegate = GetDelegate();
-  delegate->GetAfterTranslateStrings(&strings, &swapped_language_buttons_);
+  delegate->GetAfterTranslateStrings(&strings,
+                                     &swapped_language_buttons_,
+                                     false);
   DCHECK_EQ(3U, strings.size());
 
   label_1_ = CreateLabel(strings[0]);

@@ -168,23 +168,20 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   static string16 GetLanguageDisplayableName(const std::string& language_code);
 
   // Adds the strings that should be displayed in the after translate infobar to
-  // |strings|. The text in that infobar is:
+  // |strings|. If |autodetermined_source_language| is false, the text in that
+  // infobar is:
   // "The page has been translated from <lang1> to <lang2>."
-  // Because <lang1> and <lang2> are displayed in menu buttons, the text is
-  // split in 3 chunks.  |swap_languages| is set to true if <lang1> and <lang2>
-  // should be inverted (some languages express the sentense as "The page has
-  // been translate to <lang2> from <lang1>.").
-  static void GetAfterTranslateStrings(std::vector<string16>* strings,
-                                       bool* swap_languages);
-
-  // Adds the strings that should be displayed in the after translate infobar to
-  // |strings|. When a source language is not determined by Chrome, Languages
-  // are detected by a server automatically. And infobar doesn't show source
-  // languages. The text in the infobar is:
+  // Otherwise:
   // "The page has been translated to <lang1>."
-  // Because <lang1> is displayed in a menu button, the text is split in 2
-  // chunks.
-  static void GetAfterTranslateWithAutoStrings(std::vector<string16>* strings);
+  // Because <lang1>, or <lang1> and <lang2> are displayed in menu buttons, the
+  // text is split in 2 or 3 chunks. |swap_languages| is set to true if
+  // |autodetermined_source_language| is false, and <lang1> and <lang2>
+  // should be inverted (some languages express the sentense as "The page has
+  // been translate to <lang2> from <lang1>."). It is ignored if
+  // |autodetermined_source_language| is true.
+  static void GetAfterTranslateStrings(std::vector<string16>* strings,
+                                       bool* swap_languages,
+                                       bool autodetermined_source_language);
 
  protected:
   // For testing.

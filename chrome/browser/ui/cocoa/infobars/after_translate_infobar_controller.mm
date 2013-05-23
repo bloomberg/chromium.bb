@@ -15,7 +15,7 @@ using InfoBarUtilities::VerifyControlOrderAndSpacing;
 - (void)loadLabelText {
   std::vector<string16> strings;
   TranslateInfoBarDelegate::GetAfterTranslateStrings(
-      &strings, &swappedLanugageButtons_);
+      &strings, &swappedLanugageButtons_, false);
   DCHECK(strings.size() == 3U);
   NSString* string1 = base::SysUTF16ToNSString(strings[0]);
   NSString* string2 = base::SysUTF16ToNSString(strings[1]);

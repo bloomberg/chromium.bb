@@ -13793,7 +13793,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE" desc="Message that page has been translated from one language to another">
         This page has been translated from<ph name="original_language">$1<ex>French</ex></ph>to<ph name="language_language">$2<ex>German</ex></ph>
       </message>
-      <message name="IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE_WITH_AUTO" desc="Message that page has been translated to another with server side auto language detection">
+      <message name="IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE_AUTODETERMINED_SOURCE_LANGUAGE" desc="Message that page has been translated to another with server side auto language detection">
         This page has been translated to <ph name="target_language">$1<ex>German</ex></ph>
       </message>
       <if expr="is_android">

@@ -28,10 +28,17 @@ void AfterTranslateInfoBar::InitWidgets() {
   TranslateInfoBarBase::InitWidgets();
 
   bool swapped_language_combos = false;
+  bool autodetermined_source_language =
+      GetDelegate()->original_language_index() ==
+      TranslateInfoBarDelegate::kNoIndex;
+
   std::vector<string16> strings;
   TranslateInfoBarDelegate::GetAfterTranslateStrings(
-      &strings, &swapped_language_combos);
-  DCHECK(strings.size() == 3U);
+        &strings, &swapped_language_combos, autodetermined_source_language);
+  if (autodetermined_source_language)
+    DCHECK(strings.size() == 2U);
+  else
+    DCHECK(strings.size() == 3U);
 
   GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_util::CenterWidgetInHBox(hbox_, hbox, false, 0);
@@ -40,12 +47,15 @@ void AfterTranslateInfoBar::InitWidgets() {
   size_t target_language_index = GetDelegate()->target_language_index();
   bool exclude_the_other = original_language_index != target_language_index;
 
-  GtkWidget* original_lang_combo = CreateLanguageCombobox(
-      original_language_index,
-      exclude_the_other ? target_language_index :
-                          TranslateInfoBarDelegate::kNoIndex);
-  Signals()->Connect(original_lang_combo, "changed",
-                     G_CALLBACK(&OnOriginalLanguageModifiedThunk), this);
+  GtkWidget* original_lang_combo = NULL;
+  if (!autodetermined_source_language) {
+    original_lang_combo = CreateLanguageCombobox(
+        original_language_index,
+        exclude_the_other ? target_language_index :
+                            TranslateInfoBarDelegate::kNoIndex);
+    Signals()->Connect(original_lang_combo, "changed",
+                       G_CALLBACK(&OnOriginalLanguageModifiedThunk), this);
+  }
   GtkWidget* target_lang_combo = CreateLanguageCombobox(
       target_language_index,
       exclude_the_other ? original_language_index :
@@ -56,17 +66,20 @@ void AfterTranslateInfoBar::InitWidgets() {
   gtk_box_pack_start(GTK_BOX(hbox), CreateLabel(UTF16ToUTF8(strings[0])),
                      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox),
-                     swapped_language_combos ? target_lang_combo :
-                                               original_lang_combo,
+                     (swapped_language_combos ||
+                      autodetermined_source_language) ? target_lang_combo :
+                                                        original_lang_combo,
                      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), CreateLabel(UTF16ToUTF8(strings[1])),
                      FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox),
-                     swapped_language_combos ? original_lang_combo :
-                                               target_lang_combo,
-                     FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), CreateLabel(UTF16ToUTF8(strings[2])),
-                     FALSE, FALSE, 0);
+  if (!autodetermined_source_language) {
+    gtk_box_pack_start(GTK_BOX(hbox),
+                       swapped_language_combos ? original_lang_combo :
+                                                 target_lang_combo,
+                       FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), CreateLabel(UTF16ToUTF8(strings[2])),
+                       FALSE, FALSE, 0);
+  }
 
   GtkWidget* button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_TRANSLATE_INFOBAR_REVERT).c_str());
