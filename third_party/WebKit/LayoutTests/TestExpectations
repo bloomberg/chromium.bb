@@ -1815,3 +1815,5 @@ crbug.com/243314 [ Mac Debug ] compositing/reflections/remove-add-reflection.htm
 crbug.com/243314 [ Mac Debug ] inspector/styles/styles-source-lines-inline.html [ Crash ]
 crbug.com/243314 [ Mac Debug ] virtual/gpu/compositedscrolling/overflow/content-loses-scrollbars.html [ Crash ]
 crbug.com/243314 [ Mac Debug ] virtual/gpu/fast/canvas/access-zero-sized-canvas.html [ Crash ]
+crbug.com/242851 editing/pasteboard/drop-file-svg.html [ Crash ]
+crbug.com/242851 editing/pasteboard/file-drag-to-editable.html [ Crash ]
