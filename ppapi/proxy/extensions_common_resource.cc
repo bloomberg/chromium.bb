@@ -109,21 +109,26 @@ void ExtensionsCommonResource::OnPluginMsgCallReply(
     return;
 
   int32_t result = params.result();
-  if (result == PP_OK) {
-    // If the size doesn't match, something must be really wrong.
-    CHECK_EQ(output_args.size(), output.GetSize());
 
-    std::vector<PP_Var> output_vars;
-    if (CreateVarVectorFromListValue(output, &output_vars)) {
-      DCHECK_EQ(output_args.size(), output_vars.size());
-      std::vector<PP_Var>::const_iterator src_iter = output_vars.begin();
-      std::vector<PP_Var*>::const_iterator dest_iter = output_args.begin();
-      for (; src_iter != output_vars.end() && dest_iter != output_args.end();
-           ++src_iter, ++dest_iter) {
-        **dest_iter = *src_iter;
-      }
-    } else {
-      result = PP_ERROR_FAILED;
+  // If the size doesn't match, something must be really wrong.
+  CHECK_EQ(output_args.size(), output.GetSize());
+
+  std::vector<PP_Var> output_vars;
+  if (CreateVarVectorFromListValue(output, &output_vars)) {
+    DCHECK_EQ(output_args.size(), output_vars.size());
+    std::vector<PP_Var>::const_iterator src_iter = output_vars.begin();
+    std::vector<PP_Var*>::const_iterator dest_iter = output_args.begin();
+    for (; src_iter != output_vars.end() && dest_iter != output_args.end();
+         ++src_iter, ++dest_iter) {
+      **dest_iter = *src_iter;
+    }
+  } else {
+    NOTREACHED();
+    result = PP_ERROR_FAILED;
+    for (std::vector<PP_Var*>::const_iterator dest_iter = output_args.begin();
+         dest_iter != output_args.end();
+         ++dest_iter) {
+      **dest_iter = PP_MakeUndefined();
     }
   }
 

@@ -14,8 +14,8 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_Ext_Socket_Dev_0_1>() {
-  return PPB_EXT_SOCKET_DEV_INTERFACE_0_1;
+template <> const char* interface_name<PPB_Ext_Socket_Dev_0_2>() {
+  return PPB_EXT_SOCKET_DEV_INTERFACE_0_2;
 }
 
 }  // namespace
@@ -317,13 +317,13 @@ Socket_Dev::~Socket_Dev() {
 int32_t Socket_Dev::Create(const SocketType_Dev& type,
                            const Optional<CreateOptions_Dev>& options,
                            const CreateCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
   internal::ToVarConverter<SocketType_Dev> type_var(type);
   internal::ToVarConverter<Optional<CreateOptions_Dev> > options_var(options);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->Create(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->Create(
       instance_.pp_instance(),
       type_var.pp_var(),
       options_var.pp_var(),
@@ -332,12 +332,12 @@ int32_t Socket_Dev::Create(const SocketType_Dev& type,
 }
 
 void Socket_Dev::Destroy(int32_t socket_id) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return;
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->Destroy(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->Destroy(
       instance_.pp_instance(),
       socket_id_var.pp_var());
 }
@@ -346,14 +346,14 @@ int32_t Socket_Dev::Connect(int32_t socket_id,
                             const std::string& hostname,
                             int32_t port,
                             const ConnectCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
   internal::ToVarConverter<std::string> hostname_var(hostname);
   internal::ToVarConverter<int32_t> port_var(port);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->Connect(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->Connect(
       instance_.pp_instance(),
       socket_id_var.pp_var(),
       hostname_var.pp_var(),
@@ -366,14 +366,14 @@ int32_t Socket_Dev::Bind(int32_t socket_id,
                          const std::string& address,
                          int32_t port,
                          const BindCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
   internal::ToVarConverter<std::string> address_var(address);
   internal::ToVarConverter<int32_t> port_var(port);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->Bind(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->Bind(
       instance_.pp_instance(),
       socket_id_var.pp_var(),
       address_var.pp_var(),
@@ -383,12 +383,12 @@ int32_t Socket_Dev::Bind(int32_t socket_id,
 }
 
 void Socket_Dev::Disconnect(int32_t socket_id) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return;
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->Disconnect(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->Disconnect(
       instance_.pp_instance(),
       socket_id_var.pp_var());
 }
@@ -396,13 +396,13 @@ void Socket_Dev::Disconnect(int32_t socket_id) {
 int32_t Socket_Dev::Read(int32_t socket_id,
                          const Optional<int32_t>& buffer_size,
                          const ReadCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
   internal::ToVarConverter<Optional<int32_t> > buffer_size_var(buffer_size);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->Read(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->Read(
       instance_.pp_instance(),
       socket_id_var.pp_var(),
       buffer_size_var.pp_var(),
@@ -413,13 +413,13 @@ int32_t Socket_Dev::Read(int32_t socket_id,
 int32_t Socket_Dev::Write(int32_t socket_id,
                           const VarArrayBuffer& data,
                           const WriteCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
   internal::ToVarConverter<Var> data_var(data);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->Write(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->Write(
       instance_.pp_instance(),
       socket_id_var.pp_var(),
       data_var.pp_var(),
@@ -430,13 +430,13 @@ int32_t Socket_Dev::Write(int32_t socket_id,
 int32_t Socket_Dev::RecvFrom(int32_t socket_id,
                              const Optional<int32_t>& buffer_size,
                              const RecvFromCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
   internal::ToVarConverter<Optional<int32_t> > buffer_size_var(buffer_size);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->RecvFrom(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->RecvFrom(
       instance_.pp_instance(),
       socket_id_var.pp_var(),
       buffer_size_var.pp_var(),
@@ -449,7 +449,7 @@ int32_t Socket_Dev::SendTo(int32_t socket_id,
                            const std::string& address,
                            int32_t port,
                            const SendToCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
@@ -457,7 +457,7 @@ int32_t Socket_Dev::SendTo(int32_t socket_id,
   internal::ToVarConverter<std::string> address_var(address);
   internal::ToVarConverter<int32_t> port_var(port);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->SendTo(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->SendTo(
       instance_.pp_instance(),
       socket_id_var.pp_var(),
       data_var.pp_var(),
@@ -472,7 +472,7 @@ int32_t Socket_Dev::Listen(int32_t socket_id,
                            int32_t port,
                            const Optional<int32_t>& backlog,
                            const ListenCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
@@ -480,7 +480,7 @@ int32_t Socket_Dev::Listen(int32_t socket_id,
   internal::ToVarConverter<int32_t> port_var(port);
   internal::ToVarConverter<Optional<int32_t> > backlog_var(backlog);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->Listen(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->Listen(
       instance_.pp_instance(),
       socket_id_var.pp_var(),
       address_var.pp_var(),
@@ -492,12 +492,12 @@ int32_t Socket_Dev::Listen(int32_t socket_id,
 
 int32_t Socket_Dev::Accept(int32_t socket_id,
                            const AcceptCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->Accept(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->Accept(
       instance_.pp_instance(),
       socket_id_var.pp_var(),
       callback.output(),
@@ -508,14 +508,14 @@ int32_t Socket_Dev::SetKeepAlive(int32_t socket_id,
                                  bool enable,
                                  const Optional<int32_t>& delay,
                                  const SetKeepAliveCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
   internal::ToVarConverter<bool> enable_var(enable);
   internal::ToVarConverter<Optional<int32_t> > delay_var(delay);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->SetKeepAlive(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->SetKeepAlive(
       instance_.pp_instance(),
       socket_id_var.pp_var(),
       enable_var.pp_var(),
@@ -527,13 +527,13 @@ int32_t Socket_Dev::SetKeepAlive(int32_t socket_id,
 int32_t Socket_Dev::SetNoDelay(int32_t socket_id,
                                bool no_delay,
                                const SetNoDelayCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
   internal::ToVarConverter<bool> no_delay_var(no_delay);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->SetNoDelay(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->SetNoDelay(
       instance_.pp_instance(),
       socket_id_var.pp_var(),
       no_delay_var.pp_var(),
@@ -543,12 +543,12 @@ int32_t Socket_Dev::SetNoDelay(int32_t socket_id,
 
 int32_t Socket_Dev::GetInfo(int32_t socket_id,
                             const GetInfoCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
   internal::ToVarConverter<int32_t> socket_id_var(socket_id);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->GetInfo(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->GetInfo(
       instance_.pp_instance(),
       socket_id_var.pp_var(),
       callback.output(),
@@ -556,11 +556,95 @@ int32_t Socket_Dev::GetInfo(int32_t socket_id,
 }
 
 int32_t Socket_Dev::GetNetworkList(const GetNetworkListCallback& callback) {
-  if (!has_interface<PPB_Ext_Socket_Dev_0_1>())
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
     return callback.MayForce(PP_ERROR_NOINTERFACE);
 
-  return get_interface<PPB_Ext_Socket_Dev_0_1>()->GetNetworkList(
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->GetNetworkList(
       instance_.pp_instance(),
+      callback.output(),
+      callback.pp_completion_callback());
+}
+
+int32_t Socket_Dev::JoinGroup(int32_t socket_id,
+                              const std::string& address,
+                              const JoinGroupCallback& callback) {
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
+
+  internal::ToVarConverter<int32_t> socket_id_var(socket_id);
+  internal::ToVarConverter<std::string> address_var(address);
+
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->JoinGroup(
+      instance_.pp_instance(),
+      socket_id_var.pp_var(),
+      address_var.pp_var(),
+      callback.output(),
+      callback.pp_completion_callback());
+}
+
+int32_t Socket_Dev::LeaveGroup(int32_t socket_id,
+                               const std::string& address,
+                               const LeaveGroupCallback& callback) {
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
+
+  internal::ToVarConverter<int32_t> socket_id_var(socket_id);
+  internal::ToVarConverter<std::string> address_var(address);
+
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->LeaveGroup(
+      instance_.pp_instance(),
+      socket_id_var.pp_var(),
+      address_var.pp_var(),
+      callback.output(),
+      callback.pp_completion_callback());
+}
+
+int32_t Socket_Dev::SetMulticastTimeToLive(
+    int32_t socket_id,
+    int32_t ttl,
+    const SetMulticastTimeToLiveCallback& callback) {
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
+
+  internal::ToVarConverter<int32_t> socket_id_var(socket_id);
+  internal::ToVarConverter<int32_t> ttl_var(ttl);
+
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->SetMulticastTimeToLive(
+      instance_.pp_instance(),
+      socket_id_var.pp_var(),
+      ttl_var.pp_var(),
+      callback.output(),
+      callback.pp_completion_callback());
+}
+
+int32_t Socket_Dev::SetMulticastLoopbackMode(
+    int32_t socket_id,
+    bool enabled,
+    const SetMulticastLoopbackModeCallback& callback) {
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
+
+  internal::ToVarConverter<int32_t> socket_id_var(socket_id);
+  internal::ToVarConverter<bool> enabled_var(enabled);
+
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->SetMulticastLoopbackMode(
+      instance_.pp_instance(),
+      socket_id_var.pp_var(),
+      enabled_var.pp_var(),
+      callback.output(),
+      callback.pp_completion_callback());
+}
+
+int32_t Socket_Dev::GetJoinedGroups(int32_t socket_id,
+                                    const GetJoinedGroupsCallback& callback) {
+  if (!has_interface<PPB_Ext_Socket_Dev_0_2>())
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
+
+  internal::ToVarConverter<int32_t> socket_id_var(socket_id);
+
+  return get_interface<PPB_Ext_Socket_Dev_0_2>()->GetJoinedGroups(
+      instance_.pp_instance(),
+      socket_id_var.pp_var(),
       callback.output(),
       callback.pp_completion_callback());
 }

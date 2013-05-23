@@ -250,6 +250,35 @@ class Socket_Dev {
       GetNetworkListCallback;
   int32_t GetNetworkList(const GetNetworkListCallback& callback);
 
+  typedef ExtCompletionCallbackWithOutput<int32_t> JoinGroupCallback;
+  int32_t JoinGroup(int32_t socket_id,
+                    const std::string& address,
+                    const JoinGroupCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<int32_t> LeaveGroupCallback;
+  int32_t LeaveGroup(int32_t socket_id,
+                     const std::string& address,
+                     const LeaveGroupCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<int32_t>
+      SetMulticastTimeToLiveCallback;
+  int32_t SetMulticastTimeToLive(
+      int32_t socket_id,
+      int32_t ttl,
+      const SetMulticastTimeToLiveCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<int32_t>
+      SetMulticastLoopbackModeCallback;
+  int32_t SetMulticastLoopbackMode(
+      int32_t socket_id,
+      bool enabled,
+      const SetMulticastLoopbackModeCallback& callback);
+
+  typedef ExtCompletionCallbackWithOutput<std::vector<std::string> >
+      GetJoinedGroupsCallback;
+  int32_t GetJoinedGroups(int32_t socket_id,
+                          const GetJoinedGroupsCallback& callback);
+
  private:
   InstanceHandle instance_;
 };

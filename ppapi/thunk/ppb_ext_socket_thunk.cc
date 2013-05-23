@@ -275,6 +275,96 @@ int32_t GetNetworkList(PP_Instance instance,
       "socket.getNetworkList", input_args, output_args, enter.callback()));
 }
 
+int32_t JoinGroup(PP_Instance instance,
+                  PP_Var socket_id,
+                  PP_Var address,
+                  PP_Var* result,
+                  PP_CompletionCallback callback) {
+  EnterInstanceAPI<ExtensionsCommon_API> enter(instance, callback);
+  if (enter.failed())
+    return enter.retval();
+
+  std::vector<PP_Var> input_args;
+  std::vector<PP_Var*> output_args;
+  input_args.push_back(socket_id);
+  input_args.push_back(address);
+  output_args.push_back(result);
+  return enter.SetResult(enter.functions()->CallBrowser(
+      "socket.joinGroup", input_args, output_args, enter.callback()));
+}
+
+int32_t LeaveGroup(PP_Instance instance,
+                   PP_Var socket_id,
+                   PP_Var address,
+                   PP_Var* result,
+                   PP_CompletionCallback callback) {
+  EnterInstanceAPI<ExtensionsCommon_API> enter(instance, callback);
+  if (enter.failed())
+    return enter.retval();
+
+  std::vector<PP_Var> input_args;
+  std::vector<PP_Var*> output_args;
+  input_args.push_back(socket_id);
+  input_args.push_back(address);
+  output_args.push_back(result);
+  return enter.SetResult(enter.functions()->CallBrowser(
+      "socket.leaveGroup", input_args, output_args, enter.callback()));
+}
+
+int32_t SetMulticastTimeToLive(PP_Instance instance,
+                               PP_Var socket_id,
+                               PP_Var ttl,
+                               PP_Var* result,
+                               PP_CompletionCallback callback) {
+  EnterInstanceAPI<ExtensionsCommon_API> enter(instance, callback);
+  if (enter.failed())
+    return enter.retval();
+
+  std::vector<PP_Var> input_args;
+  std::vector<PP_Var*> output_args;
+  input_args.push_back(socket_id);
+  input_args.push_back(ttl);
+  output_args.push_back(result);
+  return enter.SetResult(enter.functions()->CallBrowser(
+      "socket.setMulticastTimeToLive", input_args, output_args,
+      enter.callback()));
+}
+
+int32_t SetMulticastLoopbackMode(PP_Instance instance,
+                                 PP_Var socket_id,
+                                 PP_Var enabled,
+                                 PP_Var* result,
+                                 PP_CompletionCallback callback) {
+  EnterInstanceAPI<ExtensionsCommon_API> enter(instance, callback);
+  if (enter.failed())
+    return enter.retval();
+
+  std::vector<PP_Var> input_args;
+  std::vector<PP_Var*> output_args;
+  input_args.push_back(socket_id);
+  input_args.push_back(enabled);
+  output_args.push_back(result);
+  return enter.SetResult(enter.functions()->CallBrowser(
+      "socket.setMulticastLoopbackMode", input_args, output_args,
+      enter.callback()));
+}
+
+int32_t GetJoinedGroups(PP_Instance instance,
+                        PP_Var socket_id,
+                        PP_Var* groups,
+                        PP_CompletionCallback callback) {
+  EnterInstanceAPI<ExtensionsCommon_API> enter(instance, callback);
+  if (enter.failed())
+    return enter.retval();
+
+  std::vector<PP_Var> input_args;
+  std::vector<PP_Var*> output_args;
+  input_args.push_back(socket_id);
+  output_args.push_back(groups);
+  return enter.SetResult(enter.functions()->CallBrowser(
+      "socket.getJoinedGroups", input_args, output_args, enter.callback()));
+}
+
 const PPB_Ext_Socket_Dev_0_1 g_ppb_ext_socket_dev_0_1_thunk = {
   &Create,
   &Destroy,
@@ -293,10 +383,36 @@ const PPB_Ext_Socket_Dev_0_1 g_ppb_ext_socket_dev_0_1_thunk = {
   &GetNetworkList
 };
 
+const PPB_Ext_Socket_Dev_0_2 g_ppb_ext_socket_dev_0_2_thunk = {
+  &Create,
+  &Destroy,
+  &Connect,
+  &Bind,
+  &Disconnect,
+  &Read,
+  &Write,
+  &RecvFrom,
+  &SendTo,
+  &Listen,
+  &Accept,
+  &SetKeepAlive,
+  &SetNoDelay,
+  &GetInfo,
+  &GetNetworkList,
+  &JoinGroup,
+  &LeaveGroup,
+  &SetMulticastTimeToLive,
+  &SetMulticastLoopbackMode,
+  &GetJoinedGroups
+};
 }  // namespace
 
 const PPB_Ext_Socket_Dev_0_1* GetPPB_Ext_Socket_Dev_0_1_Thunk() {
   return &g_ppb_ext_socket_dev_0_1_thunk;
+}
+
+const PPB_Ext_Socket_Dev_0_2* GetPPB_Ext_Socket_Dev_0_2_Thunk() {
+  return &g_ppb_ext_socket_dev_0_2_thunk;
 }
 
 }  // namespace thunk

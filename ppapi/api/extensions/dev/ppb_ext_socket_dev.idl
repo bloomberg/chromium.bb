@@ -9,7 +9,8 @@
  */
 
 label Chrome {
-  M28 = 0.1
+  M28 = 0.1,
+  M29 = 0.2
 };
 
 /**
@@ -413,5 +414,129 @@ interface PPB_Ext_Socket_Dev {
   int32_t GetNetworkList(
       [in] PP_Instance instance,
       [out] PP_Ext_Socket_NetworkInterface_Dev_Array result,
+      [in] PP_CompletionCallback callback);
+
+  /**
+   * Joins the multicast group and starts to receive packets from that group.
+   * The socket must be of UDP type and must be bound to a local port before
+   * calling this method.
+   *
+   * @param[in] instance A <code>PP_Instance</code>.
+   * @param[in] socket_id An integer <code>PP_Var</code>. The socket ID.
+   * @param[in] address A string <code>PP_Var</code>. The group address to join.
+   * Domain names are not supported.
+   * @param[out] result An integer <code>PP_Var</code>.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called
+   * upon completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  [version=0.2]
+  int32_t JoinGroup(
+      [in] PP_Instance instance,
+      [in] PP_Var socket_id,
+      [in] PP_Var address,
+      [out] PP_Var result,
+      [in] PP_CompletionCallback callback);
+
+  /**
+   * Leaves the multicast group previously joined using <code>JoinGroup</code>.
+   * It's not necessary to leave the multicast group before destroying the
+   * socket or exiting. This is automatically called by the OS.
+   *
+   * Leaving the group will prevent the router from sending multicast datagrams
+   * to the local host, presuming no other process on the host is still joined
+   * to the group.
+   *
+   * @param[in] instance A <code>PP_Instance</code>.
+   * @param[in] socket_id An integer <code>PP_Var</code>. The socket ID.
+   * @param[in] address A string <code>PP_Var</code>. The group address to
+   * leave. Domain names are not supported.
+   * @param[out] result An integer <code>PP_Var</code>.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called
+   * upon completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  [version=0.2]
+  int32_t LeaveGroup(
+      [in] PP_Instance instance,
+      [in] PP_Var socket_id,
+      [in] PP_Var address,
+      [out] PP_Var result,
+      [in] PP_CompletionCallback callback);
+
+  /**
+   * Sets the time-to-live of multicast packets sent to the multicast group.
+   *
+   * Calling this method does not require multicast permissions.
+   *
+   * @param[in] instance A <code>PP_Instance</code>.
+   * @param[in] socket_id An integer <code>PP_Var</code>. The socket ID.
+   * @param[in] ttl An integer <code>PP_Var</code>. The time-to-live value.
+   * @param[out] result An integer <code>PP_Var</code>.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called
+   * upon completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  [version=0.2]
+  int32_t SetMulticastTimeToLive(
+      [in] PP_Instance instance,
+      [in] PP_Var socket_id,
+      [in] PP_Var ttl,
+      [out] PP_Var result,
+      [in] PP_CompletionCallback callback);
+
+  /**
+   * Sets whether multicast packets sent from the host to the multicast group
+   * will be looped back to the host.
+   *
+   * Note: the behavior of <code>SetMulticastLoopbackMode</code> is slightly
+   * different between Windows and Unix-like systems. The inconsistency
+   * happens only when there is more than one application on the same host
+   * joined to the same multicast group while having different settings on
+   * multicast loopback mode. On Windows, the applications with loopback off
+   * will not RECEIVE the loopback packets; while on Unix-like systems, the
+   * applications with loopback off will not SEND the loopback packets to
+   * other applications on the same host. See MSDN: http://goo.gl/6vqbj
+   *
+   * Calling this method does not require multicast permissions.
+   *
+   * @param[in] instance A <code>PP_Instance</code>.
+   * @param[in] socket_id An integer <code>PP_Var</code>. The socket ID.
+   * @param[in] enabled A boolean <code>PP_Var</code>. Indicates whether to
+   * enable loopback mode.
+   * @param[out] result An integer <code>PP_Var</code>.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called
+   * upon completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  [version=0.2]
+  int32_t SetMulticastLoopbackMode(
+      [in] PP_Instance instance,
+      [in] PP_Var socket_id,
+      [in] PP_Var enabled,
+      [out] PP_Var result,
+      [in] PP_CompletionCallback callback);
+
+  /**
+   * Gets the multicast group addresses the socket is currently joined to.
+   *
+   * @param[in] instance A <code>PP_Instance</code>.
+   * @param[in] socket_id An integer <code>PP_Var</code>. The socket ID.
+   * @param[out] groups An array <code>PP_Var</code> of string
+   * <code>PP_Var</code>s.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called
+   * upon completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  [version=0.2]
+  int32_t GetJoinedGroups(
+      [in] PP_Instance instance,
+      [in] PP_Var socket_id,
+      [out] PP_Var groups,
       [in] PP_CompletionCallback callback);
 };

@@ -4,7 +4,7 @@
  */
 
 /* From extensions/dev/ppb_ext_socket_dev.idl,
- *   modified Tue Apr 02 16:04:00 2013.
+ *   modified Tue May 21 16:00:11 2013.
  */
 
 #ifndef PPAPI_C_EXTENSIONS_DEV_PPB_EXT_SOCKET_DEV_H_
@@ -18,7 +18,8 @@
 #include "ppapi/c/pp_var.h"
 
 #define PPB_EXT_SOCKET_DEV_INTERFACE_0_1 "PPB_Ext_Socket(Dev);0.1"
-#define PPB_EXT_SOCKET_DEV_INTERFACE PPB_EXT_SOCKET_DEV_INTERFACE_0_1
+#define PPB_EXT_SOCKET_DEV_INTERFACE_0_2 "PPB_Ext_Socket(Dev);0.2"
+#define PPB_EXT_SOCKET_DEV_INTERFACE PPB_EXT_SOCKET_DEV_INTERFACE_0_2
 
 /**
  * @file
@@ -137,7 +138,7 @@ typedef struct PP_Var PP_Ext_Socket_NetworkInterface_Dev_Array;
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_Ext_Socket_Dev_0_1 {
+struct PPB_Ext_Socket_Dev_0_2 {
   /**
    * Creates a socket of the specified type that will connect to the specified
    * remote machine.
@@ -409,9 +410,191 @@ struct PPB_Ext_Socket_Dev_0_1 {
   int32_t (*GetNetworkList)(PP_Instance instance,
                             PP_Ext_Socket_NetworkInterface_Dev_Array* result,
                             struct PP_CompletionCallback callback);
+  /**
+   * Joins the multicast group and starts to receive packets from that group.
+   * The socket must be of UDP type and must be bound to a local port before
+   * calling this method.
+   *
+   * @param[in] instance A <code>PP_Instance</code>.
+   * @param[in] socket_id An integer <code>PP_Var</code>. The socket ID.
+   * @param[in] address A string <code>PP_Var</code>. The group address to join.
+   * Domain names are not supported.
+   * @param[out] result An integer <code>PP_Var</code>.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called
+   * upon completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*JoinGroup)(PP_Instance instance,
+                       struct PP_Var socket_id,
+                       struct PP_Var address,
+                       struct PP_Var* result,
+                       struct PP_CompletionCallback callback);
+  /**
+   * Leaves the multicast group previously joined using <code>JoinGroup</code>.
+   * It's not necessary to leave the multicast group before destroying the
+   * socket or exiting. This is automatically called by the OS.
+   *
+   * Leaving the group will prevent the router from sending multicast datagrams
+   * to the local host, presuming no other process on the host is still joined
+   * to the group.
+   *
+   * @param[in] instance A <code>PP_Instance</code>.
+   * @param[in] socket_id An integer <code>PP_Var</code>. The socket ID.
+   * @param[in] address A string <code>PP_Var</code>. The group address to
+   * leave. Domain names are not supported.
+   * @param[out] result An integer <code>PP_Var</code>.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called
+   * upon completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*LeaveGroup)(PP_Instance instance,
+                        struct PP_Var socket_id,
+                        struct PP_Var address,
+                        struct PP_Var* result,
+                        struct PP_CompletionCallback callback);
+  /**
+   * Sets the time-to-live of multicast packets sent to the multicast group.
+   *
+   * Calling this method does not require multicast permissions.
+   *
+   * @param[in] instance A <code>PP_Instance</code>.
+   * @param[in] socket_id An integer <code>PP_Var</code>. The socket ID.
+   * @param[in] ttl An integer <code>PP_Var</code>. The time-to-live value.
+   * @param[out] result An integer <code>PP_Var</code>.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called
+   * upon completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*SetMulticastTimeToLive)(PP_Instance instance,
+                                    struct PP_Var socket_id,
+                                    struct PP_Var ttl,
+                                    struct PP_Var* result,
+                                    struct PP_CompletionCallback callback);
+  /**
+   * Sets whether multicast packets sent from the host to the multicast group
+   * will be looped back to the host.
+   *
+   * Note: the behavior of <code>SetMulticastLoopbackMode</code> is slightly
+   * different between Windows and Unix-like systems. The inconsistency
+   * happens only when there is more than one application on the same host
+   * joined to the same multicast group while having different settings on
+   * multicast loopback mode. On Windows, the applications with loopback off
+   * will not RECEIVE the loopback packets; while on Unix-like systems, the
+   * applications with loopback off will not SEND the loopback packets to
+   * other applications on the same host. See MSDN: http://goo.gl/6vqbj
+   *
+   * Calling this method does not require multicast permissions.
+   *
+   * @param[in] instance A <code>PP_Instance</code>.
+   * @param[in] socket_id An integer <code>PP_Var</code>. The socket ID.
+   * @param[in] enabled A boolean <code>PP_Var</code>. Indicates whether to
+   * enable loopback mode.
+   * @param[out] result An integer <code>PP_Var</code>.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called
+   * upon completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*SetMulticastLoopbackMode)(PP_Instance instance,
+                                      struct PP_Var socket_id,
+                                      struct PP_Var enabled,
+                                      struct PP_Var* result,
+                                      struct PP_CompletionCallback callback);
+  /**
+   * Gets the multicast group addresses the socket is currently joined to.
+   *
+   * @param[in] instance A <code>PP_Instance</code>.
+   * @param[in] socket_id An integer <code>PP_Var</code>. The socket ID.
+   * @param[out] groups An array <code>PP_Var</code> of string
+   * <code>PP_Var</code>s.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called
+   * upon completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*GetJoinedGroups)(PP_Instance instance,
+                             struct PP_Var socket_id,
+                             struct PP_Var* groups,
+                             struct PP_CompletionCallback callback);
 };
 
-typedef struct PPB_Ext_Socket_Dev_0_1 PPB_Ext_Socket_Dev;
+typedef struct PPB_Ext_Socket_Dev_0_2 PPB_Ext_Socket_Dev;
+
+struct PPB_Ext_Socket_Dev_0_1 {
+  int32_t (*Create)(PP_Instance instance,
+                    PP_Ext_Socket_SocketType_Dev type,
+                    PP_Ext_Socket_CreateOptions_Dev options,
+                    PP_Ext_Socket_CreateInfo_Dev* create_info,
+                    struct PP_CompletionCallback callback);
+  void (*Destroy)(PP_Instance instance, struct PP_Var socket_id);
+  int32_t (*Connect)(PP_Instance instance,
+                     struct PP_Var socket_id,
+                     struct PP_Var hostname,
+                     struct PP_Var port,
+                     struct PP_Var* result,
+                     struct PP_CompletionCallback callback);
+  int32_t (*Bind)(PP_Instance instance,
+                  struct PP_Var socket_id,
+                  struct PP_Var address,
+                  struct PP_Var port,
+                  struct PP_Var* result,
+                  struct PP_CompletionCallback callback);
+  void (*Disconnect)(PP_Instance instance, struct PP_Var socket_id);
+  int32_t (*Read)(PP_Instance instance,
+                  struct PP_Var socket_id,
+                  struct PP_Var buffer_size,
+                  PP_Ext_Socket_ReadInfo_Dev* read_info,
+                  struct PP_CompletionCallback callback);
+  int32_t (*Write)(PP_Instance instance,
+                   struct PP_Var socket_id,
+                   struct PP_Var data,
+                   PP_Ext_Socket_WriteInfo_Dev* write_info,
+                   struct PP_CompletionCallback callback);
+  int32_t (*RecvFrom)(PP_Instance instance,
+                      struct PP_Var socket_id,
+                      struct PP_Var buffer_size,
+                      PP_Ext_Socket_RecvFromInfo_Dev* recv_from_info,
+                      struct PP_CompletionCallback callback);
+  int32_t (*SendTo)(PP_Instance instance,
+                    struct PP_Var socket_id,
+                    struct PP_Var data,
+                    struct PP_Var address,
+                    struct PP_Var port,
+                    PP_Ext_Socket_WriteInfo_Dev* write_info,
+                    struct PP_CompletionCallback callback);
+  int32_t (*Listen)(PP_Instance instance,
+                    struct PP_Var socket_id,
+                    struct PP_Var address,
+                    struct PP_Var port,
+                    struct PP_Var backlog,
+                    struct PP_Var* result,
+                    struct PP_CompletionCallback callback);
+  int32_t (*Accept)(PP_Instance instance,
+                    struct PP_Var socket_id,
+                    PP_Ext_Socket_AcceptInfo_Dev* accept_info,
+                    struct PP_CompletionCallback callback);
+  int32_t (*SetKeepAlive)(PP_Instance instance,
+                          struct PP_Var socket_id,
+                          struct PP_Var enable,
+                          struct PP_Var delay,
+                          struct PP_Var* result,
+                          struct PP_CompletionCallback callback);
+  int32_t (*SetNoDelay)(PP_Instance instance,
+                        struct PP_Var socket_id,
+                        struct PP_Var no_delay,
+                        struct PP_Var* result,
+                        struct PP_CompletionCallback callback);
+  int32_t (*GetInfo)(PP_Instance instance,
+                     struct PP_Var socket_id,
+                     PP_Ext_Socket_SocketInfo_Dev* result,
+                     struct PP_CompletionCallback callback);
+  int32_t (*GetNetworkList)(PP_Instance instance,
+                            PP_Ext_Socket_NetworkInterface_Dev_Array* result,
+                            struct PP_CompletionCallback callback);
+};
 /**
  * @}
  */
