@@ -801,7 +801,6 @@ webkit.org/b/49629 compositing/lots-of-img-layers.html [ Failure Timeout ]
 webkit.org/b/49629 [ Win Debug ] virtual/softwarecompositing/lots-of-img-layers.html [ Slow ]
 webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ Failure Timeout ]
 
-webkit.org/b/54051 [ Mac ] plugins/windowless_plugin_paint_test.html [ Timeout ]
 
 crbug.com/76550 [ Win Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Slow ]
 crbug.com/76550 [ Lion SnowLeopard Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Timeout ]
@@ -846,7 +845,7 @@ crbug.com/86340 [ Win Debug ] fast/filesystem/workers/file-writer-write-overlapp
 crbug.com/82281 fast/xpath/xpath-iterator-result-should-mark-its-nodeset.html [ Failure Timeout ]
 
 # New test added at r86467, doesn't pass.
-webkit.org/b/60822 plugins/get-url-with-javascript-url.html [ Timeout ]
+webkit.org/b/60822 [ Linux Win ] plugins/get-url-with-javascript-url.html [ Timeout ]
 
 # New test added at r86476, crashes.
 webkit.org/b/60822 plugins/get-url-notify-with-url-that-fails-to-load.html [ Crash ]
@@ -865,7 +864,7 @@ webkit.org/b/49142 fast/regions/style-scoped-in-flow-override-region-styling-mul
 webkit.org/b/92131 inspector/styles/region-style-crash.html [ Failure Pass Timeout ]
 
 webkit.org/b/62754 [ Mac Debug ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Failure ]
-webkit.org/b/62754 [ Mac Linux Release ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Timeout ]
+webkit.org/b/62754 [ Linux Release ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Timeout ]
 webkit.org/b/62754 [ Linux Debug ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Slow ]
 
 crbug.com/88894 http/tests/cache/subresource-expiration-1.html [ Slow ]
@@ -1830,3 +1829,5 @@ crbug.com/243366 [ Mac ] editing/input/reveal-contenteditable-on-input-verticall
 crbug.com/243366 [ Mac ] editing/input/reveal-edit-on-input-vertically.html [ Timeout ]
 crbug.com/243369 [ Mac ] fast/events/scroll-after-click-on-tab-index.html [ Failure ]
 crbug.com/243370 [ Mac ] fast/forms/select/popup-closes-on-blur.html [ Failure ]
+crbug.com/243376 [ Mac ] transitions/blendmode-transitions.html [ Timeout ]
+crbug.com/243378 [ Linux ] fast/text/chromium-linux-text-subpixel-positioning.html [ Failure ]
