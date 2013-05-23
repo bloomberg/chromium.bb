@@ -48,7 +48,7 @@ namespace WebCore {
 //
 // Calls of type (1) should generally go through ScriptController, as inspector
 // instrumentation is needed. ScriptController allocates V8RecursionScope for you.
-//  Calls of type (2) should always stack-allocate a V8RecursionScope in the same
+// Calls of type (2) should always stack-allocate a V8RecursionScope in the same
 // block as the call into script. Calls of type (3) should stack allocate a
 // V8RecursionScope::MicrotaskSuppression -- this skips work that is spec'd to
 // happen at the end of the outer-most script stack frame of calls into page script:

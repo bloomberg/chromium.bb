@@ -107,15 +107,12 @@ v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::
         return result;
     {
         v8::Context::Scope scope(context);
-        v8::TryCatch tryCatch;
         v8::Handle<v8::Script> script = v8::Script::Compile(source);
-        if (script.IsEmpty() || tryCatch.HasCaught())
+        if (script.IsEmpty())
             return result;
 
         V8RecursionScope::MicrotaskSuppression recursionScope;
         result = script->Run();
-        if (tryCatch.HasCaught())
-            return result;
     }
     return result;
 }

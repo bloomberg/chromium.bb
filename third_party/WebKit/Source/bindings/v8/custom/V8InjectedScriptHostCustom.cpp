@@ -52,6 +52,7 @@
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorDOMAgent.h"
@@ -308,10 +309,12 @@ v8::Handle<v8::Value> V8InjectedScriptHost::evaluateMethodCustom(const v8::Argum
     if (expression.IsEmpty())
         return v8::ThrowException(v8::Exception::Error(v8::String::New("The argument must be a string.")));
 
-    v8::Handle<v8::Script> script = v8::Script::Compile(expression);
-    if (script.IsEmpty()) // Return immediately in case of exception to let the caller handle it.
-        return v8::Handle<v8::Value>();
-    return script->Run();
+    ASSERT(!v8::Context::GetCurrent().IsEmpty());
+    v8::TryCatch tryCatch;
+    v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(expression, args.GetIsolate(), v8::Context::GetCurrent());
+    if (tryCatch.HasCaught())
+        return tryCatch.ReThrow();
+    return result;
 }
 
 v8::Handle<v8::Value> V8InjectedScriptHost::setFunctionVariableValueMethodCustom(const v8::Arguments& args)
