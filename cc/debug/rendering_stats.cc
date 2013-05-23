@@ -62,6 +62,8 @@ void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
                         total_deferred_image_decode_time.InSecondsF());
   enumerator->AddDouble("totalImageGatheringTimeInSeconds",
                         total_image_gathering_time.InSecondsF());
+  enumerator->AddDouble("totalTileAnalysisTimeInSeconds",
+                        total_tile_analysis_time.InSecondsF());
 }
 
 void RenderingStats::Add(const RenderingStats& other) {
@@ -91,6 +93,7 @@ void RenderingStats::Add(const RenderingStats& other) {
   total_image_gathering_time += other.total_image_gathering_time;
   total_tiles_analyzed += other.total_tiles_analyzed;
   solid_color_tiles_analyzed += other.solid_color_tiles_analyzed;
+  total_tile_analysis_time += other.total_tile_analysis_time;
 }
 
 }  // namespace cc

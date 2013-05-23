@@ -36,6 +36,7 @@ struct CC_EXPORT RenderingStats {
   int64 solid_color_tiles_analyzed;
   base::TimeDelta total_deferred_image_decode_time;
   base::TimeDelta total_image_gathering_time;
+  base::TimeDelta total_tile_analysis_time;
   // Note: when adding new members, please remember to update EnumerateFields
   // and Add in rendering_stats.cc.
 

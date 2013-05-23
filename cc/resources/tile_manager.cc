@@ -903,12 +903,15 @@ void TileManager::RunAnalyzeTask(
   DCHECK(analysis);
   DCHECK(stats_instrumentation);
 
+  base::TimeTicks start_time = stats_instrumentation->StartRecording();
   picture_pile->AnalyzeInRect(rect, contents_scale, analysis);
+  base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
 
   // Record the solid color prediction.
   UMA_HISTOGRAM_BOOLEAN("Renderer4.SolidColorTilesAnalyzed",
                         analysis->is_solid_color);
-  stats_instrumentation->AddTileAnalysisResult(analysis->is_solid_color);
+  stats_instrumentation->AddTileAnalysisResult(duration,
+                                               analysis->is_solid_color);
 
   // Clear the flag if we're not using the estimator.
   analysis->is_solid_color &= use_color_estimator;

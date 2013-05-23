@@ -120,12 +120,21 @@ def CalcAnalysisResults(rendering_stats_deltas, results):
       'totalTilesAnalyzed', 0)
   solidColorTilesAnalyzed = rendering_stats_deltas.get(
       'solidColorTilesAnalyzed', 0)
+  totalTileAnalysisTimeInSeconds = rendering_stats_deltas.get(
+      'totalTileAnalysisTimeInSeconds', 0)
+
+  averageAnalysisTimeMS = \
+      1000 * DivideIfPossibleOrZero(totalTileAnalysisTimeInSeconds,
+                                    totalTilesAnalyzed)
 
   results.Add('total_tiles_analyzed', 'count',
               totalTilesAnalyzed,
               data_type='unimportant')
   results.Add('solid_color_tiles_analyzed', 'count',
               solidColorTilesAnalyzed,
+              data_type='unimportant')
+  results.Add('average_tile_analysis_time', 'ms',
+              averageAnalysisTimeMS,
               data_type='unimportant')
 
 class SmoothnessMeasurement(page_measurement.PageMeasurement):
