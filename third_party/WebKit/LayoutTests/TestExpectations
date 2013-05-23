@@ -784,6 +784,7 @@ webkit.org/b/52063 [ Win ] http/tests/navigation/ping-cross-origin.html [ Pass T
 # These were flaky, now failing more consistently after r75169.
 webkit.org/b/52061 [ Debug ] transitions/suspend-transform-transition.html [ ImageOnlyFailure Pass ]
 webkit.org/b/52061 [ Debug ] transitions/change-values-during-transition.html [ Failure Pass ]
+webkit.org/b/52061 [ Linux Release ] transitions/change-values-during-transition.html [ Failure Pass ]
 
 # New test added in r75720
 crbug.com/69571 plugins/destroy-on-setwindow.html [ Crash ]
@@ -1832,3 +1833,6 @@ crbug.com/243420 http/tests/misc/image-checks-for-accept.html [ Failure ]
 crbug.com/243420 http/tests/misc/webtiming-ssl.php [ Failure ]
 crbug.com/243420 http/tests/plugins/local-geturl-from-remote.html [ Failure ]
 crbug.com/243420 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_exceptions.htm [ Failure ]
+crbug.com/243477 plugins/plugin-initiate-popup-window.html [ Failure ]
+crbug.com/243479 fast/loader/recursive-before-unload-crash.html [ Crash Pass ]
+crbug.com/243481 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass ]
