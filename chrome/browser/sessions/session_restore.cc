@@ -578,11 +578,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
           0,
           std::min((*i)->selected_tab_index,
                    static_cast<int>((*i)->tabs.size()) - 1));
-      selected_tab_index =
-          RestoreTabsToBrowser(*(*i), browser, selected_tab_index);
-      ShowBrowser(browser, selected_tab_index);
-      tab_loader_->TabIsLoading(
-          &browser->tab_strip_model()->GetActiveWebContents()->GetController());
+      RestoreTabsToBrowser(*(*i), browser, initial_tab_count,
+                           selected_tab_index);
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
     }
 
@@ -794,7 +791,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // After the for loop, this contains the browser to activate, if one of the
     // windows has the same id as specified in active_window_id.
     Browser* browser_to_activate = NULL;
+#if defined(OS_WIN)
     int selected_tab_to_activate = -1;
+#endif
 
     // Determine if there is a visible window.
     bool has_visible_browser = false;
@@ -862,27 +861,34 @@ class SessionRestoreImpl : public content::NotificationObserver {
       WebContents* active_tab =
           browser->tab_strip_model()->GetActiveWebContents();
       int initial_tab_count = browser->tab_strip_model()->count();
-      int selected_tab_index = std::max(
-          0,
-          std::min((*i)->selected_tab_index,
-                   static_cast<int>((*i)->tabs.size()) - 1));
-      selected_tab_index =
-          RestoreTabsToBrowser(*(*i), browser, selected_tab_index);
-      ShowBrowser(browser, selected_tab_index);
+      bool close_active_tab = clobber_existing_tab_ &&
+                              i == windows->begin() &&
+                              (*i)->type == Browser::TYPE_TABBED &&
+                              active_tab && browser == browser_ &&
+                              (*i)->tabs.size() > 0;
+      if (close_active_tab)
+        --initial_tab_count;
+      int selected_tab_index =
+          initial_tab_count > 0 ? browser->tab_strip_model()->active_index()
+                                : std::max(0,
+                                    std::min((*i)->selected_tab_index,
+                                    static_cast<int>((*i)->tabs.size()) - 1));
       if ((*i)->window_id.id() == active_window_id) {
         browser_to_activate = browser;
+#if defined(OS_WIN)
         selected_tab_to_activate = selected_tab_index;
+#endif
       }
-      if (clobber_existing_tab_ && i == windows->begin() &&
-          (*i)->type == Browser::TYPE_TABBED && active_tab &&
-          browser == browser_ &&
-          browser->tab_strip_model()->count() > initial_tab_count) {
-        chrome::CloseWebContents(browser, active_tab, true);
-        selected_tab_to_activate = -1;
-      }
-      tab_loader_->TabIsLoading(
-          &browser->tab_strip_model()->GetActiveWebContents()->GetController());
+      RestoreTabsToBrowser(*(*i), browser, initial_tab_count,
+                           selected_tab_index);
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
+      // This needs to be done after restore because closing the last tab will
+      // close the whole window.
+      if (close_active_tab)
+        chrome::CloseWebContents(browser, active_tab, true);
+#if defined(OS_WIN)
+        selected_tab_to_activate = -1;
+#endif
     }
 
     if (browser_to_activate && browser_to_activate->is_type_tabbed())
@@ -896,15 +902,16 @@ class SessionRestoreImpl : public content::NotificationObserver {
 #endif
     if (browser_to_activate) {
       browser_to_activate->window()->Activate();
+#if defined(OS_WIN)
       // On Win8 Metro, we merge all browsers together, so if we need to
       // activate one of the previously separated window, we need to activate
-      // the tab. But we don't keep this within IsMetro, so that other platforms
-      // don't complain about an unused variable. Also, selected_tab_to_activate
-      // can be -1 if we clobbered the tab that would have been activated.
+      // the tab. Also, selected_tab_to_activate can be -1 if we clobbered the
+      // tab that would have been activated.
       // In that case we'll leave activation to last tab.
       // The only current usage of clobber is for crash recovery, so it's fine.
-      if (selected_tab_to_activate != -1)
+      if (win8::IsSingleWindowMetroMode() && selected_tab_to_activate != -1)
         ShowBrowser(browser_to_activate, selected_tab_to_activate);
+#endif
     }
 
     // If last_browser is NULL and urls_to_open_ is non-empty,
@@ -942,35 +949,49 @@ class SessionRestoreImpl : public content::NotificationObserver {
     }
   }
 
-  // Adds the tabs from |window| to |browser|. Returns the final index of the
-  // selected tab.
-  int RestoreTabsToBrowser(const SessionWindow& window,
+  // Adds the tabs from |window| to |browser|. Normal tabs go after the existing
+  // tabs but pinned tabs will be pushed in front.
+  // If there are no existing tabs, the tab at |selected_tab_index| will be
+  // selected. Otherwise, the tab selection will remain untouched.
+  void RestoreTabsToBrowser(const SessionWindow& window,
                            Browser* browser,
+                           int initial_tab_count,
                            int selected_tab_index) {
     VLOG(1) << "RestoreTabsToBrowser " << window.tabs.size();
     DCHECK(!window.tabs.empty());
-    WebContents* selected_web_contents = NULL;
-    // If browser already has tabs, we want to restore the new ones after the
-    // existing ones. E.g., this happens in Win8 Metro where we merge windows.
-    int tab_index_offset = browser->tab_strip_model()->count();
-    for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
-      const SessionTab& tab = *(window.tabs[i]);
-      // Don't schedule a load for the selected tab, as ShowBrowser() will do
-      // that.
-      if (i == selected_tab_index) {
-        selected_web_contents = RestoreTab(
-            tab, tab_index_offset + i, browser, false);
-      } else {
+    if (initial_tab_count == 0) {
+      for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
+        const SessionTab& tab = *(window.tabs[i]);
+        // Loads are scheduled for each restored tab unless the tab is going to
+        // be selected as ShowBrowser() will load the selected tab.
+        if (i == selected_tab_index) {
+          ShowBrowser(browser,
+                      browser->tab_strip_model()->GetIndexOfWebContents(
+                          RestoreTab(tab, i, browser, false)));
+          tab_loader_->TabIsLoading(
+              &browser->tab_strip_model()->GetActiveWebContents()->
+                  GetController());
+        } else {
+          RestoreTab(tab, i, browser, true);
+        }
+      }
+    } else {
+      // If the browser already has tabs, we want to restore the new ones after
+      // the existing ones. E.g. this happens in Win8 Metro where we merge
+      // windows or when launching a hosted app from the app launcher.
+      int tab_index_offset = initial_tab_count;
+      for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
+        const SessionTab& tab = *(window.tabs[i]);
+        // Always schedule loads as we will not be calling ShowBrowser().
         RestoreTab(tab, tab_index_offset + i, browser, true);
       }
     }
-    if (selected_web_contents) {
-      return browser->tab_strip_model()->
-          GetIndexOfWebContents(selected_web_contents);
-    }
-    return 0;
   }
 
+  // |tab_index| is ignored for pinned tabs which will always be pushed behind
+  // the last existing pinned tab.
+  // |schedule_load| will let |tab_loader_| know that it should schedule this
+  // tab for loading.
   WebContents* RestoreTab(const SessionTab& tab,
                           const int tab_index,
                           Browser* browser,

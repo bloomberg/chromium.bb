@@ -118,6 +118,12 @@ class SessionRestoreTest : public InProcessBrowserTest {
   }
 
   Browser* QuitBrowserAndRestore(Browser* browser, int expected_tab_count) {
+    return QuitBrowserAndRestoreWithURL(browser, expected_tab_count, GURL());
+  }
+
+  Browser* QuitBrowserAndRestoreWithURL(Browser* browser,
+                                        int expected_tab_count,
+                                        const GURL& url) {
     Profile* profile = browser->profile();
 
     // Close the browser.
@@ -128,7 +134,14 @@ class SessionRestoreTest : public InProcessBrowserTest {
     ui_test_utils::BrowserAddedObserver window_observer;
     content::TestNavigationObserver navigation_observer(
         content::NotificationService::AllSources(), expected_tab_count);
-    chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+    if (url.is_empty()) {
+      chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+    } else {
+      chrome::NavigateParams params(profile,
+                                    url,
+                                    content::PAGE_TRANSITION_LINK);
+      chrome::Navigate(&params);
+    }
     Browser* new_browser = window_observer.WaitForSingleNewBrowser();
     navigation_observer.Wait();
     g_browser_process->ReleaseModule();
@@ -996,6 +1009,65 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
   EXPECT_EQ(url2_,
             new_browser->tab_strip_model()->GetWebContentsAt(1)->GetURL());
+}
+
+// Regression test for crbug.com/240156. When restoring tabs with a navigation,
+// the navigation should take active tab focus.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWithNavigateSelectedTab) {
+  // Create 2 tabs.
+  ui_test_utils::NavigateToURL(browser(), url1_);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Restore the session by calling chrome::Navigate().
+  Browser* new_browser = QuitBrowserAndRestoreWithURL(browser(), 3, url3_);
+  ASSERT_EQ(1u, native_browser_list->size());
+  ASSERT_EQ(3, new_browser->tab_strip_model()->count());
+  // Navigated url should be the active tab.
+  ASSERT_EQ(url3_,
+            new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+// Do a clobber restore from the new tab page. This test follows the code path
+// of a crash followed by the user clicking restore from the new tab page.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClobberRestoreTest) {
+  // Create 2 tabs.
+  ui_test_utils::NavigateToURL(browser(), url1_);
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+  Profile* profile = browser()->profile();
+
+  // This will also initiate a session restore, but we're not interested in it.
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(1u, native_browser_list->size());
+  ASSERT_EQ(2, new_browser->tab_strip_model()->count());
+  ASSERT_EQ(1, new_browser->tab_strip_model()->active_index());
+  // Close the first tab.
+  chrome::CloseTab(new_browser);
+  ASSERT_EQ(1, new_browser->tab_strip_model()->count());
+  ASSERT_EQ(0, new_browser->tab_strip_model()->active_index());
+  // Use the existing tab to navigate to the NTP.
+  ui_test_utils::NavigateToURL(new_browser, GURL(chrome::kChromeUINewTabURL));
+
+  // Restore the session again, clobbering the existing tab.
+  SessionRestore::RestoreSession(
+      profile, new_browser,
+      new_browser->host_desktop_type(),
+      SessionRestore::CLOBBER_CURRENT_TAB | SessionRestore::SYNCHRONOUS,
+      std::vector<GURL>());
+
+  // 2 tabs should have been restored, with the existing tab clobbered, giving
+  // us a total of 2 tabs.
+  ASSERT_EQ(2, new_browser->tab_strip_model()->count());
+  EXPECT_EQ(1, new_browser->tab_strip_model()->active_index());
+  EXPECT_EQ(url1_,
+            new_browser->tab_strip_model()->GetWebContentsAt(0)->GetURL());
+  EXPECT_EQ(url2_,
+            new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorage) {
