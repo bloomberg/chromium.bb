@@ -458,7 +458,7 @@ LRESULT InputMethodWin::OnDocumentFeed(RECONVERTSTRING* reconv) {
   memcpy((char*)reconv + sizeof(RECONVERTSTRING),
          text.c_str(), len * sizeof(WCHAR));
 
-  // According to Microsft API document, IMR_RECONVERTSTRING and
+  // According to Microsoft API document, IMR_RECONVERTSTRING and
   // IMR_DOCUMENTFEED should return reconv, but some applications return
   // need_size.
   return reinterpret_cast<LRESULT>(reconv);
@@ -512,7 +512,7 @@ LRESULT InputMethodWin::OnReconvertString(RECONVERTSTRING* reconv) {
   memcpy(reinterpret_cast<char*>(reconv) + sizeof(RECONVERTSTRING),
          text.c_str(), len * sizeof(WCHAR));
 
-  // According to Microsft API document, IMR_RECONVERTSTRING and
+  // According to Microsoft API document, IMR_RECONVERTSTRING and
   // IMR_DOCUMENTFEED should return reconv, but some applications return
   // need_size.
   return reinterpret_cast<LRESULT>(reconv);
@@ -530,8 +530,18 @@ LRESULT InputMethodWin::OnQueryCharPosition(IMECHARPOSITION* char_positon) {
     return 0;
 
   gfx::Rect rect;
-  if (!client->GetCompositionCharacterBounds(char_positon->dwCharPos, &rect))
-    return 0;
+  if (client->HasCompositionText()) {
+    if (!client->GetCompositionCharacterBounds(char_positon->dwCharPos,
+                                               &rect)) {
+      return 0;
+    }
+  } else {
+    // If there is no composition and the first character is queried, returns
+    // the caret bounds. This behavior is the same to that of RichEdit control.
+    if (char_positon->dwCharPos != 0)
+      return 0;
+    rect = client->GetCaretBounds();
+  }
 
   char_positon->pt.x = rect.x();
   char_positon->pt.y = rect.y();
