@@ -1213,6 +1213,15 @@ static inline BidiStatus statusWithDirection(TextDirection textDirection, bool i
     return BidiStatus(direction, direction, direction, context.release());
 }
 
+static inline void setupResolverToResumeInIsolate(InlineBidiResolver& resolver, RenderObject* root, RenderObject* startObject)
+{
+    if (root != startObject) {
+        RenderObject* parent = startObject->parent();
+        setupResolverToResumeInIsolate(resolver, root, parent);
+        notifyObserverEnteredObject(&resolver, startObject);
+    }
+}
+
 // FIXME: BidiResolver should have this logic.
 static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, BidiRunList<BidiRun>& bidiRuns, const InlineIterator& endOfRuns, VisualDirectionOverride override, bool previousLineBrokeCleanly)
 {
@@ -1235,6 +1244,7 @@ static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, 
         // to take a RenderObject and do this logic there, but that would be a layering
         // violation for BidiResolver (which knows nothing about RenderObject).
         RenderInline* isolatedInline = toRenderInline(containingIsolate(startObj, currentRoot));
+
         InlineBidiResolver isolatedResolver;
         EUnicodeBidi unicodeBidi = isolatedInline->style()->unicodeBidi();
         TextDirection direction;
@@ -1246,10 +1256,7 @@ static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, 
         }
         isolatedResolver.setStatus(statusWithDirection(direction, isOverride(unicodeBidi)));
 
-        // FIXME: The fact that we have to construct an Iterator here
-        // currently prevents this code from moving into BidiResolver.
-        if (!bidiFirstSkippingEmptyInlines(isolatedInline, &isolatedResolver))
-            continue;
+        setupResolverToResumeInIsolate(isolatedResolver, isolatedInline, startObj);
 
         // The starting position is the beginning of the first run within the isolate that was identified
         // during the earlier call to createBidiRunsForLine. This can be but is not necessarily the
