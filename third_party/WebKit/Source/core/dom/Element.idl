@@ -19,7 +19,7 @@
  */
 
 [
-    CustomToV8,
+    CustomToV8
 ] interface Element : Node {
 
     // DOM Level 1 Core

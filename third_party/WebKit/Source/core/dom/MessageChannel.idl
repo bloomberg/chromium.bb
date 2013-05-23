@@ -27,7 +27,7 @@
 [
     Constructor,
     CallWith=ScriptExecutionContext,
-    CustomConstructor,
+    CustomConstructor
 ] interface MessageChannel {
 
     readonly attribute MessagePort port1;

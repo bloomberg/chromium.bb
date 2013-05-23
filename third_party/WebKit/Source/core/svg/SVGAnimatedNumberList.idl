@@ -24,7 +24,7 @@
  */
 
 [
-    Conditional=SVG,
+    Conditional=SVG
 ] interface SVGAnimatedNumberList {
     readonly attribute SVGNumberList baseVal;
     readonly attribute SVGNumberList animVal;

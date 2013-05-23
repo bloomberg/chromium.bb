@@ -31,7 +31,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface InjectedScriptHost {
     void clearConsoleMessages();
 

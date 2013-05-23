@@ -27,7 +27,7 @@
  */
 
 [
-        DoNotCheckConstants,
+        DoNotCheckConstants
 ] interface WebKitCSSTransformValue : CSSValueList {
 
     // OperationTypes

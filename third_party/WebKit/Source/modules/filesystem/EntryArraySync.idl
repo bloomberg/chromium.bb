@@ -29,7 +29,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface EntryArraySync {
     readonly attribute unsigned long length;
     getter EntrySync item([IsIndex] unsigned long index);

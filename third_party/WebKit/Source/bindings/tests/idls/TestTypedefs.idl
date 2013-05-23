@@ -32,7 +32,7 @@
 // changes in its ouput.
 
 [
-    Constructor(STRING hello, TEST_CALLBACK testCallback),
+    Constructor(STRING hello, TEST_CALLBACK testCallback)
 ] interface TestTypedefs {
     attribute ULONGLONG unsignedLongLongAttr;
 

@@ -30,7 +30,7 @@
 
 // http://www.w3.org/TR/ime-api/
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface Composition {
     readonly attribute Node text;
     readonly attribute Range caret;

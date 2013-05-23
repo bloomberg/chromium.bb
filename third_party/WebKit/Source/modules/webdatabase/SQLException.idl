@@ -29,7 +29,7 @@
  */
 
 [
-    DoNotCheckConstants,
+    DoNotCheckConstants
 ] exception SQLException {
     readonly attribute unsigned long code;
     readonly attribute DOMString message;

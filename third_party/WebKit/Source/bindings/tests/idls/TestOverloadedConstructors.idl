@@ -29,6 +29,6 @@
     Constructor(ArrayBuffer arrayBuffer),
     Constructor(ArrayBufferView arrayBufferView),
     Constructor(Blob blob),
-    Constructor(DOMString string),
+    Constructor(DOMString string)
 ] interface TestOverloadedConstructors {
 };

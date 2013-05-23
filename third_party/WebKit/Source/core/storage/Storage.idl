@@ -27,7 +27,7 @@
     CustomDeleteProperty,
     CustomEnumerateProperty,
     CustomIndexedSetter,
-    CustomNamedSetter,
+    CustomNamedSetter
 ] interface Storage {
     [RaisesException, ImplementedAs=anonymousIndexedGetter] getter DOMString(unsigned long index);
     [RaisesException, ImplementedAs=anonymousNamedGetter] getter DOMString(DOMString name);

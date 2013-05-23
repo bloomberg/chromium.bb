@@ -25,7 +25,7 @@
  */
 
 [
-    Conditional=SVG,
+    Conditional=SVG
     
 ] interface SVGTransformable : SVGLocatable {
     readonly attribute SVGAnimatedTransformList transform;

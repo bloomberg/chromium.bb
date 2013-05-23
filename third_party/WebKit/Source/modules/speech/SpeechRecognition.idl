@@ -28,7 +28,7 @@
     ActiveDOMObject,
     Constructor,
     CallWith=ScriptExecutionContext,
-    EventTarget,
+    EventTarget
 ] interface SpeechRecognition {
     attribute SpeechGrammarList grammars;
     attribute DOMString lang;

@@ -21,7 +21,7 @@
 // Introduced in DOM Level 2:
 [
     CustomToV8,
-    ConstructorTemplate=Event,
+    ConstructorTemplate=Event
     
 ] interface Event {
 

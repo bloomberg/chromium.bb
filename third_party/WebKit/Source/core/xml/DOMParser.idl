@@ -18,7 +18,7 @@
  */
 
 [
-    Constructor,
+    Constructor
 ] interface DOMParser {
     Document parseFromString([Default=Undefined] optional DOMString str, 
                              [Default=Undefined] optional DOMString contentType);

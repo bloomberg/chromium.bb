@@ -28,7 +28,7 @@
 
 // Introduced in DOM Level 2:
 [
-    DoNotCheckConstants,
+    DoNotCheckConstants
 ] exception EventException {
 
     readonly attribute unsigned short   code;

@@ -21,7 +21,7 @@
 [
     CustomIsReachable,
     CustomNamedGetter,
-    DependentLifetime,
+    DependentLifetime
 ] interface NodeList {
 
     getter Node item([IsIndex,Default=Undefined] optional unsigned long index);

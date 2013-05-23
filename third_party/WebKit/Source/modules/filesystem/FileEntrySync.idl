@@ -29,7 +29,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface FileEntrySync : EntrySync {
     [RaisesException] File file();
     [RaisesException] FileWriterSync createWriter();

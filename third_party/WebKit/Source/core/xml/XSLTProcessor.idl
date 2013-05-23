@@ -32,7 +32,7 @@
 
 [
     Constructor,
-    MeasureAs=XSLTProcessor,
+    MeasureAs=XSLTProcessor
 ] interface XSLTProcessor {
 
     void importStylesheet([Default=Undefined] optional Node stylesheet);

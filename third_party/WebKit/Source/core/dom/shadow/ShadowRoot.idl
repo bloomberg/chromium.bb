@@ -25,7 +25,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface ShadowRoot : DocumentFragment {
     readonly attribute Element activeElement;
     attribute boolean applyAuthorStyles;

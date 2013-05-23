@@ -24,7 +24,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface RadioNodeList : NodeList {
     attribute DOMString value;
 };

@@ -30,7 +30,7 @@
 
 // See: https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/PerformanceTimeline/Overview.html
 [
-    CustomToV8,
+    CustomToV8
 ] interface PerformanceEntry {
     readonly attribute DOMString name;
     readonly attribute DOMString entryType;

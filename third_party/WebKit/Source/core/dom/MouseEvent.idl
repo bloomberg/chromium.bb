@@ -18,7 +18,7 @@
  */
 
 [
-    ConstructorTemplate=Event,
+    ConstructorTemplate=Event
 ] interface MouseEvent : UIEvent {
     [InitializedByEventConstructor] readonly attribute long             screenX;
     [InitializedByEventConstructor] readonly attribute long             screenY;

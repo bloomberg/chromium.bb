@@ -29,7 +29,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface DirectoryEntry : Entry {
     DirectoryReader createReader();
     void getFile([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, optional Dictionary options, optional EntryCallback successCallback, optional ErrorCallback errorCallback);

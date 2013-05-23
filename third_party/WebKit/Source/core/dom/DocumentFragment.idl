@@ -19,7 +19,7 @@
 
 [
     Constructor,
-    CallWith=ScriptExecutionContext,
+    CallWith=ScriptExecutionContext
 ] interface DocumentFragment : Node {
     // NodeSelector - Selector API
     [RaisesException] Element querySelector(DOMString selectors);

@@ -28,7 +28,7 @@
 
 [
     DoNotCheckConstants,
-    InterfaceName=DOMException,
+    InterfaceName=DOMException
 ] exception DOMCoreException {
 
     readonly attribute unsigned short   code;

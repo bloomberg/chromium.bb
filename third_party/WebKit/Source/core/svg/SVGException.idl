@@ -20,7 +20,7 @@
 
 [
     Conditional=SVG,
-    DoNotCheckConstants,
+    DoNotCheckConstants
 ] exception SVGException {
 
     readonly attribute unsigned short   code;

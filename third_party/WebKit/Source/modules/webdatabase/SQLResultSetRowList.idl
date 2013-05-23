@@ -27,7 +27,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface SQLResultSetRowList {
     readonly attribute unsigned long length;
     [Custom] any item(unsigned long index);

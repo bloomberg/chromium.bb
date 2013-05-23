@@ -21,7 +21,7 @@
 // Introduced in DOM Level 2:
 [
     GenerateIsReachable=document,
-    CustomNamedGetter,
+    CustomNamedGetter
 ] interface StyleSheetList {
     readonly attribute unsigned long    length;
     getter StyleSheet         item([Default=Undefined] optional unsigned long index);

@@ -19,7 +19,7 @@
  */
 
 [
-    GenerateIsReachable=document,
+    GenerateIsReachable=document
 ] interface DOMImplementation {
 
     // DOM Level 1

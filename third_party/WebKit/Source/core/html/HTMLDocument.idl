@@ -19,7 +19,7 @@
  */
 
 [
-    CustomToV8,
+    CustomToV8
 ] interface HTMLDocument : Document {
     [Custom] void open();
     void close();

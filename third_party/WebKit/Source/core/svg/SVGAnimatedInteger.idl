@@ -24,7 +24,7 @@
  */
 
 [
-    Conditional=SVG,
+    Conditional=SVG
 ] interface SVGAnimatedInteger {
     [StrictTypeChecking, SetterRaisesException] attribute long baseVal;
     readonly attribute long animVal;

@@ -23,7 +23,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface RTCDataChannelEvent : Event {
     readonly attribute RTCDataChannel channel;
 };

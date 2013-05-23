@@ -30,7 +30,7 @@
 
 [
     NoInterfaceObject,
-    DoNotCheckConstants,
+    DoNotCheckConstants
 ] exception FileException {
 
     readonly attribute unsigned short   code;

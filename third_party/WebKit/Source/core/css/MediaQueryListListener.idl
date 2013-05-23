@@ -19,7 +19,7 @@
 
 [
     
-    CPPPureInterface,
+    CPPPureInterface
 ] interface MediaQueryListListener {
     void queryChanged([Default=Undefined] optional MediaQueryList list);
 };

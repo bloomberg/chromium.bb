@@ -29,7 +29,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface DataTransferItemList {
     readonly attribute long length;
     getter DataTransferItem item([Default=Undefined] optional unsigned long index);

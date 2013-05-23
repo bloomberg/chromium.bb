@@ -29,7 +29,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface MemoryInfo {
 
     readonly attribute unsigned long totalJSHeapSize;

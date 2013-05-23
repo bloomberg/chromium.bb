@@ -29,7 +29,7 @@
  */
 
 [
-    EnabledAtRuntime=pagePopup,
+    EnabledAtRuntime=pagePopup
 ] partial interface DOMWindow {
     [EnabledPerContext=pagePopup] readonly attribute PagePopupController pagePopupController;
 };

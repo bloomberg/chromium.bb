@@ -24,7 +24,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface PositionError {
     readonly attribute unsigned short code;
     readonly attribute DOMString message;

@@ -29,7 +29,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface DirectoryEntrySync : EntrySync {
     DirectoryReaderSync createReader();
     [RaisesException] FileEntrySync getFile([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString path, Dictionary flags);

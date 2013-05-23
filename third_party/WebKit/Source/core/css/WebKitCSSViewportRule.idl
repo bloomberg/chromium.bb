@@ -28,7 +28,7 @@
  */
 
 [
-    Conditional=CSS_DEVICE_ADAPTATION,
+    Conditional=CSS_DEVICE_ADAPTATION
 ] interface WebKitCSSViewportRule : CSSRule {
     readonly attribute CSSStyleDeclaration style;
 };

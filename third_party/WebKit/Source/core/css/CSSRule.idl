@@ -22,7 +22,7 @@
 [
     CustomToV8,
 
-    DependentLifetime,
+    DependentLifetime
 ] interface CSSRule {
 
     // RuleType

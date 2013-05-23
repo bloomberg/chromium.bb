@@ -25,7 +25,7 @@
 
 [
     NoInterfaceObject,
-    Conditional=SVG,
+    Conditional=SVG
 ] interface SVGAnimationElement : SVGElement,
                                                   SVGTests,
                                                   SVGExternalResourcesRequired,

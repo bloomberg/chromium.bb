@@ -24,7 +24,7 @@
  */
 
 [
-    Conditional=SVG,
+    Conditional=SVG
 ] interface SVGAnimatedLengthList {
     readonly attribute SVGLengthList baseVal;
     readonly attribute SVGLengthList animVal;

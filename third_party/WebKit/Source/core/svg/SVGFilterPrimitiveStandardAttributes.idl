@@ -25,7 +25,7 @@
  */
 
 [
-    Conditional=SVG,
+    Conditional=SVG
 ] interface SVGFilterPrimitiveStandardAttributes {
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;

@@ -21,7 +21,7 @@
 // Introduced in DOM Level 2:
 [
     Constructor,
-    CallWith=ScriptExecutionContext,
+    CallWith=ScriptExecutionContext
 ] interface Range {
 
     [GetterRaisesException] readonly attribute Node startContainer;

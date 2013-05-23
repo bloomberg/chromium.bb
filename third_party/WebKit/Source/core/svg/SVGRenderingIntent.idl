@@ -25,7 +25,7 @@
 
 [
     Conditional=SVG,
-    DoNotGenerateToV8,
+    DoNotGenerateToV8
 ] interface SVGRenderingIntent {
     // Rendering Intent Types
     const unsigned short RENDERING_INTENT_UNKNOWN               = 0;

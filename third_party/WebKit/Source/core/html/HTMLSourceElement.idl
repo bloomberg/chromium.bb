@@ -24,7 +24,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface HTMLSourceElement : HTMLElement {
 [Reflect, URL] attribute DOMString src;
     attribute DOMString type;

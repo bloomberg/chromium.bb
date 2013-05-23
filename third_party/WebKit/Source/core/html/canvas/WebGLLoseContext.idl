@@ -25,7 +25,7 @@
 
 [
     NoInterfaceObject,
-    Conditional=WEBGL,
+    Conditional=WEBGL
 ] interface WebGLLoseContext {
     [StrictTypeChecking] void loseContext();
     [StrictTypeChecking] void restoreContext();

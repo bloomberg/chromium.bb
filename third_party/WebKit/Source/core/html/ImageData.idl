@@ -27,7 +27,7 @@
  */
 
 [
-    CustomToV8,
+    CustomToV8
 ] interface ImageData {
     readonly attribute long width;
     readonly attribute long height;

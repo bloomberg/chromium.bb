@@ -23,7 +23,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface RTCIceCandidateEvent : Event {
     readonly attribute RTCIceCandidate candidate;
 };

@@ -23,7 +23,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface RTCStatsResponse {
     sequence<RTCStatsReport> result();
     getter RTCStatsReport namedItem([Default=Undefined] optional DOMString name);

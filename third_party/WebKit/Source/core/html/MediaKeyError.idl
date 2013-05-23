@@ -24,7 +24,7 @@
  */
 
 [
-    EnabledAtRuntime=encryptedMediaAnyVersion, 
+    EnabledAtRuntime=encryptedMediaAnyVersion
 ] interface MediaKeyError {
     const unsigned short MEDIA_KEYERR_UNKNOWN = 1;
     const unsigned short MEDIA_KEYERR_CLIENT = 2;

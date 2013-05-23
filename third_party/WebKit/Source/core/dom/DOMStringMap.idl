@@ -27,7 +27,7 @@
     GenerateIsReachable=element,
     CustomDeleteProperty,
     CustomEnumerateProperty,
-    CustomNamedSetter,
+    CustomNamedSetter
 ] interface DOMStringMap {
     [ImplementedAs=item, DoNotCheckJSProperty] getter DOMString (DOMString name);
 };

@@ -24,7 +24,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface Geoposition {
     readonly attribute Coordinates coords;
     readonly attribute DOMTimeStamp timestamp;

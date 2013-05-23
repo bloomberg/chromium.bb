@@ -26,7 +26,7 @@
 [
     CustomConstructor,
     CustomConstructor(float x, float y),
-    InterfaceName=WebKitPoint,
+    InterfaceName=WebKitPoint
 ] interface DOMPoint {
     attribute float x;
     attribute float y;

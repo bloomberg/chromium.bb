@@ -24,7 +24,7 @@
  */
 
 [
-    Conditional=SVG,
+    Conditional=SVG
 ] interface SVGAnimatedAngle {
     readonly attribute SVGAngle baseVal;
     readonly attribute SVGAngle animVal;

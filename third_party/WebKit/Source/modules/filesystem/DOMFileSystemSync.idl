@@ -29,7 +29,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface DOMFileSystemSync {
     readonly attribute DOMString name;
     readonly attribute DirectoryEntrySync root;

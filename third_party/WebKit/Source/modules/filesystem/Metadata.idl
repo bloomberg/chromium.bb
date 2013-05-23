@@ -29,7 +29,7 @@
  */
 
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface Metadata {
     readonly attribute Date modificationTime;
     readonly attribute unsigned long long size;

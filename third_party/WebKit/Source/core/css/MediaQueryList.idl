@@ -17,7 +17,7 @@
  *  Boston, MA 02110-1301, USA.
  */
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface MediaQueryList {
     readonly attribute DOMString media;
     readonly attribute boolean matches;

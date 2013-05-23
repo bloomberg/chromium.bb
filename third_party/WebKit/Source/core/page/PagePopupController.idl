@@ -30,7 +30,7 @@
 
 [
     NoInterfaceObject,
-    EnabledAtRuntime=pagePopup,
+    EnabledAtRuntime=pagePopup
 ] interface PagePopupController {
     void setValueAndClosePopup(long numberValue, DOMString stringValue);
     void setValue(DOMString value);

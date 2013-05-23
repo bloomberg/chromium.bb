@@ -29,7 +29,7 @@
 
 [
     NoInterfaceObject,
-    ImplementedAs=DOMWindowCSS,
+    ImplementedAs=DOMWindowCSS
 ] interface CSS {
     boolean supports(DOMString property, DOMString value);
     boolean supports(DOMString conditionText);

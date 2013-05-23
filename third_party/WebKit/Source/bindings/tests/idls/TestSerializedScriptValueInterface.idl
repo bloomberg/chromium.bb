@@ -26,7 +26,7 @@
 // This IDL file is for testing the bindings code generator and for tracking
 // changes in its ouput.
 [
-    Conditional=Condition1|Condition2,
+    Conditional=Condition1|Condition2
 ] interface TestSerializedScriptValueInterface {
     attribute SerializedScriptValue value;
     readonly attribute SerializedScriptValue readonlyValue;

@@ -27,7 +27,7 @@
  */
 
 [
-    CheckSecurity,
+    CheckSecurity
 ] interface Location {
     [SetterCallWith=ActiveWindow|FirstWindow, DoNotCheckSecurityOnSetter, Unforgeable] attribute DOMString href;
 

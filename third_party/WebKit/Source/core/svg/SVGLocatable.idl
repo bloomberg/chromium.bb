@@ -27,7 +27,7 @@
 [
     Conditional=SVG,
     
-    DoNotGenerateToV8,
+    DoNotGenerateToV8
 ] interface SVGLocatable {
     readonly attribute SVGElement nearestViewportElement;
     readonly attribute SVGElement farthestViewportElement;
