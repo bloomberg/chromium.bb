@@ -35,6 +35,7 @@
 #include "HTMLNames.h"
 #include "core/dom/BeforeTextInsertedEvent.h"
 #include "core/dom/KeyboardEvent.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/TextEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
