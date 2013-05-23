@@ -41,8 +41,19 @@ var ImageLoader = function() {
   chrome.extension.onMessageExternal.addListener(function(request,
                                                           sender,
                                                           sendResponse) {
-    if (ImageLoader.ALLOWED_CLIENTS.indexOf(sender.id) !== -1)
-      return this.onMessage_(sender.id, request, sendResponse);
+    if (ImageLoader.ALLOWED_CLIENTS.indexOf(sender.id) !== -1) {
+      // Sending a response may fail if the receiver already went offline.
+      // This is not an error, but a normal and quite common situation.
+      var failSafeSendResponse = function(response) {
+        try {
+          sendResponse(response);
+        }
+        catch (e) {
+          // Ignore the error.
+        }
+      };
+      return this.onMessage_(sender.id, request, failSafeSendResponse);
+    }
   }.bind(this));
 };
 
@@ -569,7 +580,7 @@ ImageLoader.Worker.prototype.start = function() {
   for (var index = 0; index < this.newRequests_.length; index++) {
     this.serveCachedOrEnqueue_(this.newRequests_[index]);
   }
-  this.newRequest_ = [];
+  this.newRequests_ = [];
 
   // Start serving enqueued requests.
   this.continue_();
