@@ -247,6 +247,7 @@
           'mac/scoped_block.h',
           'mac/scoped_cftyperef.h',
           'mac/scoped_ioobject.h',
+          'mac/scoped_ioplugininterface.h',
           'mac/scoped_launch_data.h',
           'mac/scoped_mach_port.cc',
           'mac/scoped_mach_port.h',

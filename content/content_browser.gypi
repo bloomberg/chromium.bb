@@ -452,6 +452,8 @@
     'browser/gamepad/gamepad_standard_mappings_linux.cc',
     'browser/gamepad/gamepad_standard_mappings_mac.mm',
     'browser/gamepad/gamepad_standard_mappings_win.cc',
+    'browser/gamepad/xbox_data_fetcher_mac.cc',
+    'browser/gamepad/xbox_data_fetcher_mac.h',
     'browser/geolocation/core_location_data_provider_mac.h',
     'browser/geolocation/core_location_data_provider_mac.mm',
     'browser/geolocation/core_location_provider_mac.h',

@@ -113,8 +113,17 @@ void GamepadProvider::Initialize(scoped_ptr<GamepadDataFetcher> fetcher) {
   memset(hwbuf, 0, sizeof(GamepadHardwareBuffer));
 
   polling_thread_.reset(new base::Thread("Gamepad polling thread"));
-  polling_thread_->StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+#if defined(OS_MACOSX)
+  // On Mac, the data fetcher uses IOKit which depends on CFRunLoop, so the
+  // message loop needs to be a UI-type loop.
+  const base::MessageLoop::Type kMessageLoopType = base::MessageLoop::TYPE_UI;
+#else
+  // On Linux, the data fetcher needs to watch file descriptors, so the message
+  // loop needs to be a libevent loop. On Windows it doesn't matter what the
+  // loop is.
+  const base::MessageLoop::Type kMessageLoopType = base::MessageLoop::TYPE_IO;
+#endif
+  polling_thread_->StartWithOptions(base::Thread::Options(kMessageLoopType, 0));
 
   polling_thread_->message_loop()->PostTask(
       FROM_HERE,
