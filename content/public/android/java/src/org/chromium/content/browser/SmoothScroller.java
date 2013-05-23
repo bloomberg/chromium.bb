@@ -44,7 +44,7 @@ public class SmoothScroller {
             int mouseEventX, int mouseEventY) {
         mContentViewCore = contentViewCore;
         mScrollDown = scrollDown;
-        float scale = mContentViewCore.getScale();
+        float scale = mContentViewCore.getRenderCoordinates().getDeviceScaleFactor();
         mMouseEventX = mouseEventX * scale;
         mMouseEventY = mouseEventY * scale;
         mCurrentY = mMouseEventY;
