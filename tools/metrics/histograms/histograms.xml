@@ -927,6 +927,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="DNS.EmptyAddressListAndNoError"
+    enum="DNSEmptyAddressListAndNoError">
+  <summary>
+    Error status when an empty address list was found in OnLookupComplete().
+  </summary>
+</histogram>
+
 <histogram name="DNS.IndependentFailedNavigation" units="milliseconds">
   <summary>
     When either a pre-resolution was not done recently enough to provide
@@ -1250,6 +1257,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="DNS.ResolveUnspecWaste" enum="ResolutionUnspecWasteCategory">
+  <obsolete>
+    Deprecated as of 5/2013.
+  </obsolete>
   <summary>
     Counts of hits and misses in the DNS cache and DNS jobs pool of wasted
     HostResolverImpl::Jobs that could be avoided by always resolving using
@@ -9561,6 +9571,11 @@ other types of suffix sets.
   <int value="6" label="Sheets"/>
   <int value="7" label="Slides"/>
   <int value="8" label="PlayMusic"/>
+</enum>
+
+<enum name="DNSEmptyAddressListAndNoError" type="int">
+  <int value="0" label="Error reported or Address List is not empty"/>
+  <int value="1" label="Success reported but Address List is empty"/>
 </enum>
 
 <enum name="DnsProbe.Job.Result" type="int">
