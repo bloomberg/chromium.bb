@@ -89,12 +89,14 @@ class OmniboxEditModel {
   }
 
   void set_popup_model(OmniboxPopupModel* popup_model) {
-    popup_ = popup_model;
-  }
+    omnibox_controller_->set_popup_model(popup_model);
+   }
 
   // TODO: The edit and popup should be siblings owned by the LocationBarView,
   // making this accessor unnecessary.
-  OmniboxPopupModel* popup_model() const { return popup_; }
+  OmniboxPopupModel* popup_model() const {
+    return omnibox_controller_->popup_model();
+  }
 
   OmniboxEditController* controller() const { return controller_; }
 
@@ -229,6 +231,9 @@ class OmniboxEditModel {
   // used to change user-visible behavior.
   bool AcceptKeyword(EnteredKeywordModeMethod entered_method);
 
+  // Accepts the current temporary text as the user text.
+  void AcceptTemporaryTextAsUserText();
+
   // Clears the current keyword.  |visible_text| is the (non-keyword) text
   // currently visible in the edit.
   void ClearKeyword(const string16& visible_text);
@@ -236,7 +241,9 @@ class OmniboxEditModel {
   // Returns the current autocomplete result.  This logic should in the future
   // live in AutocompleteController but resides here for now.  This method is
   // used by AutomationProvider::AutocompleteEditGetMatches.
-  const AutocompleteResult& result() const;
+  const AutocompleteResult& result() const {
+    return omnibox_controller_->result();
+  }
 
   // Called when the view is gaining focus.  |control_down| is whether the
   // control key is down (at the time we're gaining focus).
@@ -273,6 +280,9 @@ class OmniboxEditModel {
 
   // Returns true if pasting is in progress.
   bool is_pasting() const { return paste_state_ == PASTING; }
+
+  // TODO(beaudoin): Try not to expose this.
+  bool in_revert() const { return in_revert_; }
 
   // Called when the user presses up or down.  |count| is a repeat count,
   // negative for moving up, positive for moving down.
@@ -314,15 +324,20 @@ class OmniboxEditModel {
                              bool just_deleted_text,
                              bool allow_keyword_ui_change);
 
+  // TODO(beaudoin): Mac code still calls this here. We should try to untangle
+  // this.
   // Invoked when the popup has changed its bounds to |bounds|. |bounds| here
   // is in screen coordinates.
-  void OnPopupBoundsChanged(const gfx::Rect& bounds);
+  void OnPopupBoundsChanged(const gfx::Rect& bounds) {
+    omnibox_controller_->OnPopupBoundsChanged(bounds);
+  }
 
   // Called when the results have changed in the OmniboxController.
   void OnResultChanged(bool default_match_changed);
 
  private:
   friend class InstantTestBase;
+  friend class OmniboxControllerTest;
 
   enum PasteState {
     NONE,           // Most recent edit was not a paste.
@@ -360,9 +375,6 @@ class OmniboxEditModel {
 
   // Returns true if a keyword is selected.
   bool KeywordIsSelected() const;
-
-  // Turns off keyword mode for the current match.
-  void ClearPopupKeywordMode() const;
 
   // Conversion between user text and display text. User text is the text the
   // user has input. Display text is the text being shown in the edit. The
@@ -428,8 +440,6 @@ class OmniboxEditModel {
   scoped_ptr<OmniboxController> omnibox_controller_;
 
   OmniboxView* view_;
-
-  OmniboxPopupModel* popup_;
 
   OmniboxEditController* controller_;
 

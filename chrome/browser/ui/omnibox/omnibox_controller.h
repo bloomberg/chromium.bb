@@ -5,13 +5,22 @@
 #ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CONTROLLER_H_
 #define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CONTROLLER_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 
-class AutocompleteController;
+struct AutocompleteMatch;
+class AutocompleteResult;
+class GURL;
 class OmniboxEditModel;
+class OmniboxPopupModel;
 class Profile;
+
+namespace gfx {
+class Rect;
+}
 
 // This class controls the various services that can modify the content
 // for the omnibox, including AutocompleteController and InstantController. It
@@ -34,10 +43,37 @@ class OmniboxController : public AutocompleteControllerDelegate {
     return autocomplete_controller_.get();
   }
 
+  void set_popup_model(OmniboxPopupModel* popup_model) {
+    popup_ = popup_model;
+  }
+
+  // TODO(beaudoin): The edit and popup model should be siblings owned by the
+  // LocationBarView, making this accessor unnecessary.
+  OmniboxPopupModel* popup_model() const { return popup_; }
+
+  // Turns off keyword mode for the current match.
+  void ClearPopupKeywordMode() const;
+
+  const AutocompleteResult& result() const {
+    return autocomplete_controller_->result();
+  }
+
+  // TODO(beaudoin): Make private once OmniboxEditModel no longer refers to it.
+  void DoPreconnect(const AutocompleteMatch& match);
+
+  // TODO(beaudoin): Make private once OmniboxEditModel no longer refers to it.
+  // Invoked when the popup has changed its bounds to |bounds|. |bounds| here
+  // is in screen coordinates.
+  void OnPopupBoundsChanged(const gfx::Rect& bounds);
+
  private:
   // Weak, it owns us.
   // TODO(beaudoin): Consider defining a delegate to ease unit testing.
   OmniboxEditModel* omnibox_edit_model_;
+
+  Profile* profile_;
+
+  OmniboxPopupModel* popup_;
 
   scoped_ptr<AutocompleteController> autocomplete_controller_;
 
