@@ -44,7 +44,6 @@ void QuicCryptoServerStream::OnHandshakeMessage(
       session()->connection()->clock(),
       session()->connection()->random_generator(),
       &crypto_negotiated_params_, &reply, &error_details);
-
   if (error != QUIC_NO_ERROR) {
     CloseConnectionWithDetails(error, error_details);
     return;

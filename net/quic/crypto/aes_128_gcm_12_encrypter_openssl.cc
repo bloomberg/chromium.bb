@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/crypto/aes_128_gcm_encrypter.h"
+#include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 
 #include <openssl/evp.h>
 #include <string.h>
@@ -18,17 +18,16 @@ namespace {
 
 const size_t kKeySize = 16;
 const size_t kNoncePrefixSize = 4;
-const size_t kAuthTagSize = 16;
 
 }  // namespace
 
-Aes128GcmEncrypter::Aes128GcmEncrypter() {
+Aes128Gcm12Encrypter::Aes128Gcm12Encrypter() {
 }
 
 // static
-bool Aes128GcmEncrypter::IsSupported() { return true; }
+bool Aes128Gcm12Encrypter::IsSupported() { return true; }
 
-bool Aes128GcmEncrypter::SetKey(StringPiece key) {
+bool Aes128Gcm12Encrypter::SetKey(StringPiece key) {
   DCHECK_EQ(key.size(), sizeof(key_));
   if (key.size() != sizeof(key_)) {
     return false;
@@ -37,7 +36,7 @@ bool Aes128GcmEncrypter::SetKey(StringPiece key) {
   return true;
 }
 
-bool Aes128GcmEncrypter::SetNoncePrefix(StringPiece nonce_prefix) {
+bool Aes128Gcm12Encrypter::SetNoncePrefix(StringPiece nonce_prefix) {
   DCHECK_EQ(nonce_prefix.size(), kNoncePrefixSize);
   if (nonce_prefix.size() != kNoncePrefixSize) {
     return false;
@@ -46,10 +45,10 @@ bool Aes128GcmEncrypter::SetNoncePrefix(StringPiece nonce_prefix) {
   return true;
 }
 
-bool Aes128GcmEncrypter::Encrypt(StringPiece nonce,
-                                 StringPiece associated_data,
-                                 StringPiece plaintext,
-                                 unsigned char* output) {
+bool Aes128Gcm12Encrypter::Encrypt(StringPiece nonce,
+                                   StringPiece associated_data,
+                                   StringPiece plaintext,
+                                   unsigned char* output) {
   // |output_len| is passed to an OpenSSL function to receive the output
   // length.
   int output_len;
@@ -111,7 +110,7 @@ bool Aes128GcmEncrypter::Encrypt(StringPiece nonce,
   return true;
 }
 
-QuicData* Aes128GcmEncrypter::EncryptPacket(
+QuicData* Aes128Gcm12Encrypter::EncryptPacket(
     QuicPacketSequenceNumber sequence_number,
     StringPiece associated_data,
     StringPiece plaintext) {
@@ -131,27 +130,27 @@ QuicData* Aes128GcmEncrypter::EncryptPacket(
   return new QuicData(ciphertext.release(), ciphertext_size, true);
 }
 
-size_t Aes128GcmEncrypter::GetKeySize() const { return kKeySize; }
+size_t Aes128Gcm12Encrypter::GetKeySize() const { return kKeySize; }
 
-size_t Aes128GcmEncrypter::GetNoncePrefixSize() const {
+size_t Aes128Gcm12Encrypter::GetNoncePrefixSize() const {
   return kNoncePrefixSize;
 }
 
-size_t Aes128GcmEncrypter::GetMaxPlaintextSize(size_t ciphertext_size) const {
+size_t Aes128Gcm12Encrypter::GetMaxPlaintextSize(size_t ciphertext_size) const {
   return ciphertext_size - kAuthTagSize;
 }
 
-// An AEAD_AES_128_GCM ciphertext is exactly 16 bytes longer than its
+// An AEAD_AES_128_GCM_12 ciphertext is exactly 12 bytes longer than its
 // corresponding plaintext.
-size_t Aes128GcmEncrypter::GetCiphertextSize(size_t plaintext_size) const {
+size_t Aes128Gcm12Encrypter::GetCiphertextSize(size_t plaintext_size) const {
   return plaintext_size + kAuthTagSize;
 }
 
-StringPiece Aes128GcmEncrypter::GetKey() const {
+StringPiece Aes128Gcm12Encrypter::GetKey() const {
   return StringPiece(reinterpret_cast<const char*>(key_), sizeof(key_));
 }
 
-StringPiece Aes128GcmEncrypter::GetNoncePrefix() const {
+StringPiece Aes128Gcm12Encrypter::GetNoncePrefix() const {
   return StringPiece(reinterpret_cast<const char*>(nonce_), kNoncePrefixSize);
 }
 

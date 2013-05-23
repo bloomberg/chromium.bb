@@ -48,10 +48,10 @@ const QuicByteCount kMaxPacketSize = 1200;
 // Maximum number of open streams per connection.
 const size_t kDefaultMaxStreamsPerConnection = 100;
 
-// Number of bytes reserved for guid in the packet header.
-const size_t kQuicGuidSize = 8;
 // Number of bytes reserved for public flags in the packet header.
 const size_t kPublicFlagsSize = 1;
+// Number of bytes reserved for guid in the packet header.
+const size_t kQuicGuidSize = 8;
 // Number of bytes reserved for version number in the packet header.
 const size_t kQuicVersionSize = 4;
 // Number of bytes reserved for sequence number in the packet header.
@@ -271,7 +271,7 @@ const QuicTag kUnsupportedVersion = -1;
 // Each time the wire format changes, this need needs to be incremented.
 // At some point, we will actually freeze the wire format and make an official
 // version number, but this works for now.
-const QuicTag kQuicVersion1 = TAG('Q', '0', '0', '2');
+const QuicTag kQuicVersion1 = TAG('Q', '0', '0', '3');
 #undef TAG
 
 // MakeQuicTag returns a value given the four bytes. For example:

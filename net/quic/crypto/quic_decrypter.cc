@@ -4,7 +4,7 @@
 
 #include "net/quic/crypto/quic_decrypter.h"
 
-#include "net/quic/crypto/aes_128_gcm_decrypter.h"
+#include "net/quic/crypto/aes_128_gcm_12_decrypter.h"
 #include "net/quic/crypto/null_decrypter.h"
 
 namespace net {
@@ -13,7 +13,7 @@ namespace net {
 QuicDecrypter* QuicDecrypter::Create(QuicTag algorithm) {
   switch (algorithm) {
     case kAESG:
-      return new Aes128GcmDecrypter();
+      return new Aes128Gcm12Decrypter();
     case kNULL:
       return new NullDecrypter();
     default:

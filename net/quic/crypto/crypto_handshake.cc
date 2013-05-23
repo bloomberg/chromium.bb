@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "crypto/secure_hash.h"
@@ -27,18 +28,22 @@
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
+using base::StringPrintf;
 using std::map;
 using std::string;
 using std::vector;
 
 namespace net {
 
-CryptoHandshakeMessage::CryptoHandshakeMessage() : tag_(0) {}
+CryptoHandshakeMessage::CryptoHandshakeMessage()
+    : tag_(0),
+      minimum_size_(0) {}
 
 CryptoHandshakeMessage::CryptoHandshakeMessage(
     const CryptoHandshakeMessage& other)
     : tag_(other.tag_),
-      tag_value_map_(other.tag_value_map_) {
+      tag_value_map_(other.tag_value_map_),
+      minimum_size_(other.minimum_size_) {
   // Don't copy serialized_. scoped_ptr doesn't have a copy constructor.
   // The new object can reconstruct serialized_ lazily.
 }
@@ -52,12 +57,14 @@ CryptoHandshakeMessage& CryptoHandshakeMessage::operator=(
   // Don't copy serialized_. scoped_ptr doesn't have an assignment operator.
   // However, invalidate serialized_.
   serialized_.reset();
+  minimum_size_ = other.minimum_size_;
   return *this;
 }
 
 void CryptoHandshakeMessage::Clear() {
   tag_ = 0;
   tag_value_map_.clear();
+  minimum_size_ = 0;
   serialized_.reset();
 }
 
@@ -196,6 +203,29 @@ QuicErrorCode CryptoHandshakeMessage::GetUint64(QuicTag tag,
   return GetPOD(tag, out, sizeof(uint64));
 }
 
+size_t CryptoHandshakeMessage::size() const {
+  size_t ret = sizeof(QuicTag) +
+               sizeof(uint16) /* number of entries */ +
+               sizeof(uint16) /* padding */;
+  ret += (sizeof(QuicTag) + sizeof(uint32) /* end offset */) *
+         tag_value_map_.size();
+  for (QuicTagValueMap::const_iterator i = tag_value_map_.begin();
+       i != tag_value_map_.end(); ++i) {
+    ret += i->second.size();
+  }
+
+  return ret;
+}
+
+void CryptoHandshakeMessage::set_minimum_size(size_t min_bytes) {
+  serialized_.reset();
+  minimum_size_ = min_bytes;
+}
+
+size_t CryptoHandshakeMessage::minimum_size() const {
+  return minimum_size_;
+}
+
 string CryptoHandshakeMessage::DebugString() const {
   return DebugStringInternal(0);
 }
@@ -268,6 +298,11 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
             done = true;
           }
         }
+        break;
+      case kPAD:
+        ret += StringPrintf("(%d bytes of padding)",
+                            static_cast<int>(it->second.size()));
+        done = true;
         break;
     }
 
@@ -433,12 +468,11 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     QuicCryptoNegotiatedParameters* out_params,
     CryptoHandshakeMessage* out) const {
   out->set_tag(kCHLO);
+  out->set_minimum_size(kClientHelloMinimumSize);
 
-  // Server name indication.
-  // If server_hostname is not an IP address literal, it is a DNS hostname.
-  IPAddressNumber ip;
-  if (!server_hostname.empty() &&
-      !ParseIPLiteralToNumber(server_hostname, &ip)) {
+  // Server name indication. We only send SNI if it's a valid domain name, as
+  // per the spec.
+  if (CryptoUtils::IsValidSNI(server_hostname)) {
     out->SetStringPiece(kSNI, server_hostname);
   }
   out->SetValue(kVERS, version);

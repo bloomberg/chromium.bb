@@ -105,6 +105,8 @@ size_t QuicFramer::GetMinGoAwayFrameSize() {
 // static
 // TODO(satyamshekhar): 16 - Crypto hash for integrity. Not a static value. Use
 // QuicEncrypter::GetMaxPlaintextSize.
+// 16 is a conservative estimate in the case of AEAD_AES_128_GCM_12, which uses
+// 12-byte tags.
 size_t QuicFramer::GetMaxUnackedPackets(bool include_version) {
   return (kMaxPacketSize - GetPacketHeaderSize(include_version) -
           GetMinAckFrameSize() - 16) / kSequenceNumberSize;
@@ -115,7 +117,7 @@ bool QuicFramer::IsSupportedVersion(QuicTag version) {
 }
 
 size_t QuicFramer::GetVersionNegotiationPacketSize(size_t number_versions) {
-  return kQuicGuidSize + kPublicFlagsSize +
+  return kPublicFlagsSize + kQuicGuidSize +
       number_versions * kQuicVersionSize;
 }
 
@@ -274,12 +276,12 @@ QuicEncryptedPacket* QuicFramer::ConstructPublicResetPacket(
   size_t len = GetPublicResetPacketSize();
   QuicDataWriter writer(len);
 
-  if (!writer.WriteUInt64(packet.public_header.guid)) {
+  uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_RST);
+  if (!writer.WriteUInt8(flags)) {
     return NULL;
   }
 
-  uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_RST);
-  if (!writer.WriteUInt8(flags)) {
+  if (!writer.WriteUInt64(packet.public_header.guid)) {
     return NULL;
   }
 
@@ -302,12 +304,12 @@ QuicEncryptedPacket* QuicFramer::ConstructVersionNegotiationPacket(
   size_t len = GetVersionNegotiationPacketSize(supported_versions.size());
   QuicDataWriter writer(len);
 
-  if (!writer.WriteUInt64(header.guid)) {
+  uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_VERSION);
+  if (!writer.WriteUInt8(flags)) {
     return NULL;
   }
 
-  uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_VERSION);
-  if (!writer.WriteUInt8(flags)) {
+  if (!writer.WriteUInt64(header.guid)) {
     return NULL;
   }
 
@@ -463,10 +465,6 @@ bool QuicFramer::ProcessRevivedPacket(QuicPacketHeader* header,
 
 bool QuicFramer::WritePacketHeader(const QuicPacketHeader& header,
                                    QuicDataWriter* writer) {
-  if (!writer->WriteUInt64(header.public_header.guid)) {
-    return false;
-  }
-
   uint8 flags = 0;
   if (header.public_header.reset_flag) {
     flags |= PACKET_PUBLIC_FLAGS_RST;
@@ -475,6 +473,10 @@ bool QuicFramer::WritePacketHeader(const QuicPacketHeader& header,
     flags |= PACKET_PUBLIC_FLAGS_VERSION;
   }
   if (!writer->WriteUInt8(flags)) {
+    return false;
+  }
+
+  if (!writer->WriteUInt64(header.public_header.guid)) {
     return false;
   }
 
@@ -538,11 +540,6 @@ QuicPacketSequenceNumber QuicFramer::CalculatePacketSequenceNumberFromWire(
 }
 
 bool QuicFramer::ProcessPublicHeader(QuicPacketPublicHeader* public_header) {
-  if (!reader_->ReadUInt64(&public_header->guid)) {
-    set_detailed_error("Unable to read GUID.");
-    return false;
-  }
-
   uint8 public_flags;
   if (!reader_->ReadBytes(&public_flags, 1)) {
     set_detailed_error("Unable to read public flags.");
@@ -563,6 +560,11 @@ bool QuicFramer::ProcessPublicHeader(QuicPacketPublicHeader* public_header) {
     return false;
   }
 
+  if (!reader_->ReadUInt64(&public_header->guid)) {
+    set_detailed_error("Unable to read GUID.");
+    return false;
+  }
+
   if (public_header->version_flag && is_server_) {
     QuicTag version;
     if (!reader_->ReadUInt32(&version)) {
@@ -579,7 +581,13 @@ bool QuicFramer::ProcessPublicHeader(QuicPacketPublicHeader* public_header) {
 // static
 bool QuicFramer::ReadGuidFromPacket(const QuicEncryptedPacket& packet,
                                     QuicGuid* guid) {
+  // TODO(ianswett): In the next CL, the flags will be used for guid length.
   QuicDataReader reader(packet.data(), packet.length());
+  uint8 public_flags;
+  if (!reader.ReadBytes(&public_flags, 1)) {
+    return false;
+  }
+
   return reader.ReadUInt64(guid);
 }
 
@@ -1115,9 +1123,9 @@ QuicEncryptedPacket* QuicFramer::EncryptPacket(
 
 size_t QuicFramer::GetMaxPlaintextSize(size_t ciphertext_size) {
   // In order to keep the code simple, we don't have the current encryption
-  // level to hand. At the moment, all AEADs have a tag-length of 16 bytes so
-  // that doesn't matter but we take the minimum plaintext length just to be
-  // safe.
+  // level to hand. At the moment, the NullEncrypter has a tag length of 16
+  // bytes and AES-GCM has a tag length of 12. We take the minimum plaintext
+  // length just to be safe.
   size_t min_plaintext_size = ciphertext_size;
 
   for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; i++) {

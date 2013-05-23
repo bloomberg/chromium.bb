@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/crypto/aes_128_gcm_decrypter.h"
+#include "net/quic/crypto/aes_128_gcm_12_decrypter.h"
 
 #include "net/quic/test_tools/quic_test_utils.h"
 
@@ -293,7 +293,7 @@ namespace test {
 
 // DecryptWithNonce wraps the |Decrypt| method of |decrypter| to allow passing
 // in an nonce and also to allocate the buffer needed for the plaintext.
-QuicData* DecryptWithNonce(Aes128GcmDecrypter* decrypter,
+QuicData* DecryptWithNonce(Aes128Gcm12Decrypter* decrypter,
                            StringPiece nonce,
                            StringPiece associated_data,
                            StringPiece ciphertext) {
@@ -308,8 +308,8 @@ QuicData* DecryptWithNonce(Aes128GcmDecrypter* decrypter,
   return new QuicData(plaintext.release(), plaintext_size, true);
 }
 
-TEST(Aes128GcmDecrypterTest, Decrypt) {
-  if (!Aes128GcmDecrypter::IsSupported()) {
+TEST(Aes128Gcm12DecrypterTest, Decrypt) {
+  if (!Aes128Gcm12Decrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;
   }
@@ -354,7 +354,13 @@ TEST(Aes128GcmDecrypterTest, Decrypt) {
         EXPECT_EQ(test_info.pt_len, pt_len * 8);
       }
 
-      Aes128GcmDecrypter decrypter;
+      // The test vectors have 16 byte authenticators but this code only uses
+      // the first 12.
+      ASSERT_LE(static_cast<size_t>(Aes128Gcm12Decrypter::kAuthTagSize),
+                tag_len);
+      tag_len = Aes128Gcm12Decrypter::kAuthTagSize;
+
+      Aes128Gcm12Decrypter decrypter;
       ASSERT_TRUE(decrypter.SetKey(StringPiece(key, key_len)));
       string ciphertext(ct, ct_len);
       ciphertext.append(tag, tag_len);

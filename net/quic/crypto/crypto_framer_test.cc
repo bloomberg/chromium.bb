@@ -171,6 +171,84 @@ TEST(CryptoFramerTest, ConstructHandshakeMessageTooManyEntries) {
   EXPECT_TRUE(data.get() == NULL);
 }
 
+TEST(CryptoFramerTest, ConstructHandshakeMessageMinimumSize) {
+  CryptoHandshakeMessage message;
+  message.set_tag(0xFFAA7733);
+  message.SetStringPiece(0x01020304, "test");
+  message.set_minimum_size(64);
+
+  unsigned char packet[] = {
+    // tag
+    0x33, 0x77, 0xAA, 0xFF,
+    // num entries
+    0x02, 0x00,
+    // padding
+    0x00, 0x00,
+    // tag 1
+    'P', 'A', 'D', 0,
+    // end offset 1
+    0x24, 0x00, 0x00, 0x00,
+    // tag 2
+    0x04, 0x03, 0x02, 0x01,
+    // end offset 2
+    0x28, 0x00, 0x00, 0x00,
+    // 36 bytes of padding.
+    '-', '-', '-', '-', '-', '-', '-', '-',
+    '-', '-', '-', '-', '-', '-', '-', '-',
+    '-', '-', '-', '-', '-', '-', '-', '-',
+    '-', '-', '-', '-', '-', '-', '-', '-',
+    '-', '-', '-', '-',
+    // value 2
+    't', 'e', 's', 't',
+  };
+
+  CryptoFramer framer;
+  scoped_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
+  ASSERT_TRUE(data.get() != NULL);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
+}
+
+TEST(CryptoFramerTest, ConstructHandshakeMessageMinimumSizePadLast) {
+  CryptoHandshakeMessage message;
+  message.set_tag(0xFFAA7733);
+  message.SetStringPiece(1, "");
+  message.set_minimum_size(64);
+
+  unsigned char packet[] = {
+    // tag
+    0x33, 0x77, 0xAA, 0xFF,
+    // num entries
+    0x02, 0x00,
+    // padding
+    0x00, 0x00,
+    // tag 1
+    0x01, 0x00, 0x00, 0x00,
+    // end offset 1
+    0x00, 0x00, 0x00, 0x00,
+    // tag 2
+    'P', 'A', 'D', 0,
+    // end offset 2
+    0x28, 0x00, 0x00, 0x00,
+    // 40 bytes of padding.
+    '-', '-', '-', '-', '-', '-', '-', '-',
+    '-', '-', '-', '-', '-', '-', '-', '-',
+    '-', '-', '-', '-', '-', '-', '-', '-',
+    '-', '-', '-', '-', '-', '-', '-', '-',
+    '-', '-', '-', '-', '-', '-', '-', '-',
+  };
+
+  CryptoFramer framer;
+  scoped_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
+  ASSERT_TRUE(data.get() != NULL);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
+}
+
 TEST(CryptoFramerTest, ProcessInput) {
   test::TestCryptoVisitor visitor;
   CryptoFramer framer;

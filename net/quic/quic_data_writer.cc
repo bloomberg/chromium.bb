@@ -98,6 +98,18 @@ bool QuicDataWriter::WriteBytes(const void* data, size_t data_len) {
   return true;
 }
 
+bool QuicDataWriter::WriteRepeatedByte(uint8 byte, size_t count) {
+  char* dest = BeginWrite(count);
+  if (!dest) {
+    return false;
+  }
+
+  memset(dest, byte, count);
+
+  length_ += count;
+  return true;
+}
+
 void QuicDataWriter::WritePadding() {
   DCHECK_LE(length_, capacity_);
   if (length_ > capacity_) {

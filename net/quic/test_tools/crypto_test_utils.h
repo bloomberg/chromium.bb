@@ -5,6 +5,8 @@
 #ifndef NET_QUIC_TEST_TOOLS_CRYPTO_TEST_UTILS_H_
 #define NET_QUIC_TEST_TOOLS_CRYPTO_TEST_UTILS_H_
 
+#include <stdarg.h>
+
 #include <vector>
 
 #include "base/logging.h"
@@ -81,6 +83,32 @@ class CryptoTestUtils {
   static CommonCertSets* MockCommonCertSets(base::StringPiece cert,
                                             uint64 hash,
                                             uint32 index);
+
+  // ParseTag returns a QuicTag from parsing |tagstr|. |tagstr| may either be
+  // in the format "EXMP" (i.e. ASCII format), or "#11223344" (an explicit hex
+  // format). It CHECK fails if there's a parse error.
+  static QuicTag ParseTag(const char* tagstr);
+
+  // Message constructs a handshake message from a variable number of
+  // arguments. |message_tag| is passed to |ParseTag| and used as the tag of
+  // the resulting message. The arguments are taken in pairs and NULL
+  // terminated. The first of each pair is the tag of a tag/value and is given
+  // as an argument to |ParseTag|. The second is the value of the tag/value
+  // pair and is either a hex dump, preceeded by a '#', or a raw value.
+  //
+  //   Message(
+  //       "CHLO",
+  //       "NOCE", "#11223344",
+  //       "SNI", "www.example.com",
+  //       NULL);
+  static CryptoHandshakeMessage Message(const char* message_tag, ...);
+
+  // BuildMessage is the same as |Message|, but takes the variable arguments
+  // explicitly. TODO(rtenneti): Investigate whether it'd be better for
+  // Message() and BuildMessage() to return a CryptoHandshakeMessage* pointer
+  // instead, to avoid copying the return value.
+  static CryptoHandshakeMessage BuildMessage(const char* message_tag,
+                                             va_list ap);
 
  private:
   static void CompareClientAndServerKeys(QuicCryptoClientStream* client,

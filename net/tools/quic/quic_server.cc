@@ -40,12 +40,29 @@ QuicServer::QuicServer()
       overflow_supported_(false),
       use_recvmmsg_(false),
       crypto_config_(kSourceAddressTokenSecret) {
+  // Use hardcoded crypto parameters for now.
+  config_.SetDefaults();
+  Initialize();
+}
+
+QuicServer::QuicServer(const QuicConfig& config)
+    : port_(0),
+      packets_dropped_(0),
+      overflow_supported_(false),
+      use_recvmmsg_(false),
+      config_(config),
+      crypto_config_(kSourceAddressTokenSecret) {
+  Initialize();
+}
+
+void QuicServer::Initialize() {
+#if MMSG_MORE
+  use_recvmmsg_ = true;
+#endif
   epoll_server_.set_timeout_in_us(50 * 1000);
   // Initialize the in memory cache now.
   QuicInMemoryCache::GetInstance();
 
-  // Use hardcoded crypto parameters for now.
-  config_.SetDefaults();
   QuicEpollClock clock(&epoll_server_);
 
   scoped_ptr<CryptoHandshakeMessage> scfg(
@@ -123,7 +140,6 @@ bool QuicServer::Listen(const IPEndPoint& address) {
   }
 
   epoll_server_.RegisterFD(fd_, this, kEpollFlags);
-
   dispatcher_.reset(new QuicDispatcher(config_, crypto_config_, fd_,
                                        &epoll_server_));
 
@@ -187,6 +203,11 @@ bool QuicServer::ReadAndDispatchSinglePacket(int fd,
   QuicEncryptedPacket packet(buf, bytes_read, false);
   QuicGuid guid;
   QuicDataReader reader(packet.data(), packet.length());
+  uint8 public_flags;
+  if (!reader.ReadBytes(&public_flags, 1)) {
+    LOG(DFATAL) << "Unable to read public flags.";
+    return false;
+  }
   if (!reader.ReadUInt64(&guid)) {
     return true;  // We read, we just didn't like the results.
   }
