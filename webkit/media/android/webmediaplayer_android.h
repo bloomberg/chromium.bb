@@ -19,7 +19,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "ui/gfx/rect_f.h"
-#include "webkit/media/android/media_source_delegate.h"
 #include "webkit/media/android/stream_texture_factory_android.h"
 
 namespace media {
@@ -35,6 +34,8 @@ class WebLayerImpl;
 }
 
 namespace webkit_media {
+
+class MediaSourceDelegate;
 class WebMediaPlayerManagerAndroid;
 class WebMediaPlayerProxyAndroid;
 
@@ -303,8 +304,7 @@ class WebMediaPlayerAndroid
   gfx::RectF last_computed_rect_;
 #endif
 
-  scoped_ptr<MediaSourceDelegate,
-             MediaSourceDelegate::Destroyer> media_source_delegate_;
+  scoped_ptr<MediaSourceDelegate> media_source_delegate_;
 
   // Proxy object that delegates method calls on Render Thread.
   // This object is created on the Render Thread and is only called in the

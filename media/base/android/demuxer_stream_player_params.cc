@@ -8,11 +8,9 @@ namespace media {
 
 MediaPlayerHostMsg_DemuxerReady_Params::
     MediaPlayerHostMsg_DemuxerReady_Params()
-    : audio_codec(kUnknownAudioCodec),
-      audio_channels(0),
+    : audio_channels(0),
       audio_sampling_rate(0),
       is_audio_encrypted(false),
-      video_codec(kUnknownVideoCodec),
       is_video_encrypted(false),
       duration_ms(0) {}
 

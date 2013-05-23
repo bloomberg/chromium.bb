@@ -21,6 +21,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/media/android/media_source_delegate.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #include "webkit/media/android/webmediaplayer_proxy_android.h"
 #include "webkit/media/webmediaplayer_util.h"
@@ -551,7 +552,6 @@ void WebMediaPlayerAndroid::Detach() {
     stream_id_ = 0;
   }
 
-  media_source_delegate_.reset();
   current_frame_ = NULL;
   manager_ = NULL;
   proxy_ = NULL;
