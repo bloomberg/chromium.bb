@@ -334,7 +334,8 @@ TextResourceDecoder::TextResourceDecoder(const String& mimeType, const WTF::Text
     , m_hintEncoding(0)
     , m_checkedForBOM(false)
     , m_checkedForCSSCharset(false)
-    , m_checkedForHeadCharset(false)
+    , m_checkedForXMLCharset(false)
+    , m_checkedForMetaCharset(false)
     , m_useLenientXMLDecoding(false)
     , m_sawError(false)
     , m_usesEncodingDetector(usesEncodingDetector)
@@ -497,10 +498,10 @@ bool TextResourceDecoder::checkForCSSCharset(const char* data, size_t len, bool&
     return true;
 }
 
-bool TextResourceDecoder::checkForHeadCharset(const char* data, size_t len, bool& movedDataToBuffer)
+bool TextResourceDecoder::checkForXMLCharset(const char* data, size_t len, bool& movedDataToBuffer)
 {
     if (m_source != DefaultEncoding && m_source != EncodingFromParentFrame) {
-        m_checkedForHeadCharset = true;
+        m_checkedForXMLCharset = true;
         return true;
     }
 
@@ -512,10 +513,6 @@ bool TextResourceDecoder::checkForHeadCharset(const char* data, size_t len, bool
     memcpy(m_buffer.data() + oldSize, data, len);
 
     movedDataToBuffer = true;
-
-    // Continue with checking for an HTML meta tag if we were already doing so.
-    if (m_charsetParser)
-        return checkForMetaCharset(data, len);
 
     const char* ptr = m_buffer.data();
     const char* pEnd = ptr + m_buffer.size();
@@ -538,37 +535,36 @@ bool TextResourceDecoder::checkForHeadCharset(const char* data, size_t len, bool
         if (pos != -1)
             setEncoding(findTextEncoding(ptr + pos, len), EncodingFromXMLHeader);
         // continue looking for a charset - it may be specified in an HTTP-Equiv meta
-    } else if (bytesEqual(ptr, '<', 0, '?', 0, 'x', 0)) {
+    } else if (bytesEqual(ptr, '<', 0, '?', 0, 'x', 0))
         setEncoding(UTF16LittleEndianEncoding(), AutoDetectedEncoding);
-        return true;
-    } else if (bytesEqual(ptr, 0, '<', 0, '?', 0, 'x')) {
+    else if (bytesEqual(ptr, 0, '<', 0, '?', 0, 'x'))
         setEncoding(UTF16BigEndianEncoding(), AutoDetectedEncoding);
-        return true;
-    } else if (bytesEqual(ptr, '<', 0, 0, 0, '?', 0, 0, 0)) {
+    else if (bytesEqual(ptr, '<', 0, 0, 0, '?', 0, 0, 0))
         setEncoding(UTF32LittleEndianEncoding(), AutoDetectedEncoding);
-        return true;
-    } else if (bytesEqual(ptr, 0, 0, 0, '<', 0, 0, 0, '?')) {
+    else if (bytesEqual(ptr, 0, 0, 0, '<', 0, 0, 0, '?'))
         setEncoding(UTF32BigEndianEncoding(), AutoDetectedEncoding);
-        return true;
-    }
 
-    // The HTTP-EQUIV meta has no effect on XHTML.
-    if (m_contentType == XML)
-        return true;
-
-    m_charsetParser = HTMLMetaCharsetParser::create();
-    return checkForMetaCharset(data, len);
+    m_checkedForXMLCharset = true;
+    return true;
 }
 
-bool TextResourceDecoder::checkForMetaCharset(const char* data, size_t length)
+void TextResourceDecoder::checkForMetaCharset(const char* data, size_t length)
 {
+    if (m_source != DefaultEncoding && m_source != EncodingFromParentFrame && m_source != EncodingFromXMLHeader) {
+        m_checkedForMetaCharset = true;
+        return;
+    }
+
+    if (!m_charsetParser)
+        m_charsetParser = HTMLMetaCharsetParser::create();
+
     if (!m_charsetParser->checkForMetaCharset(data, length))
-        return false;
+        return;
 
     setEncoding(m_charsetParser->encoding(), EncodingFromMetaTag);
     m_charsetParser.clear();
-    m_checkedForHeadCharset = true;
-    return true;
+    m_checkedForMetaCharset = true;
+    return;
 }
 
 void TextResourceDecoder::detectJapaneseEncoding(const char* data, size_t len)
@@ -619,8 +615,8 @@ String TextResourceDecoder::decode(const char* data, size_t len)
         if (!checkForCSSCharset(data, len, movedDataToBuffer))
             return emptyString();
 
-    if ((m_contentType == HTML || m_contentType == XML) && !m_checkedForHeadCharset) // HTML and XML
-        if (!checkForHeadCharset(data, len, movedDataToBuffer))
+    if ((m_contentType == HTML || m_contentType == XML) && !m_checkedForXMLCharset) // HTML and XML
+        if (!checkForXMLCharset(data, len, movedDataToBuffer))
             return emptyString();
 
     // FIXME: It is wrong to change the encoding downstream after we have already done some decoding.
@@ -636,19 +632,28 @@ String TextResourceDecoder::decode(const char* data, size_t len)
 
     ASSERT(m_encoding.isValid());
 
+    const char* dataForDecode = data + lengthOfBOM;
+    size_t lengthForDecode = len - lengthOfBOM;
+
+    if (!m_buffer.isEmpty()) {
+        if (!movedDataToBuffer) {
+            size_t oldSize = m_buffer.size();
+            m_buffer.grow(oldSize + len);
+            memcpy(m_buffer.data() + oldSize, data, len);
+        }
+
+        dataForDecode = m_buffer.data() + lengthOfBOM;
+        lengthForDecode = m_buffer.size() - lengthOfBOM;
+    }
+
+    if (m_contentType == HTML && !m_checkedForMetaCharset)
+        checkForMetaCharset(dataForDecode, lengthForDecode);
+
     if (!m_codec)
         m_codec = newTextCodec(m_encoding);
 
-    if (m_buffer.isEmpty())
-        return m_codec->decode(data + lengthOfBOM, len - lengthOfBOM, false, m_contentType == XML, m_sawError);
+    String result = m_codec->decode(dataForDecode, lengthForDecode, false, m_contentType == XML && !m_useLenientXMLDecoding, m_sawError);
 
-    if (!movedDataToBuffer) {
-        size_t oldSize = m_buffer.size();
-        m_buffer.grow(oldSize + len);
-        memcpy(m_buffer.data() + oldSize, data, len);
-    }
-
-    String result = m_codec->decode(m_buffer.data() + lengthOfBOM, m_buffer.size() - lengthOfBOM, false, m_contentType == XML && !m_useLenientXMLDecoding, m_sawError);
     m_buffer.clear();
     return result;
 }
@@ -659,7 +664,7 @@ String TextResourceDecoder::flush()
    // loaded, we need to detect the encoding if other conditions for
    // autodetection is satisfied.
     if (m_buffer.size() && shouldAutoDetect()
-        && ((!m_checkedForHeadCharset && (m_contentType == HTML || m_contentType == XML)) || (!m_checkedForCSSCharset && (m_contentType == CSS)))) {
+        && ((!m_checkedForXMLCharset && (m_contentType == HTML || m_contentType == XML)) || (!m_checkedForCSSCharset && (m_contentType == CSS)))) {
          WTF::TextEncoding detectedEncoding;
          if (detectTextEncoding(m_buffer.data(), m_buffer.size(),
                                 m_hintEncoding, &detectedEncoding))

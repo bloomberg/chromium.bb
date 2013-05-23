@@ -67,8 +67,7 @@ public:
     bool sawError() const { return m_sawError; }
 
 private:
-    TextResourceDecoder(const String& mimeType, const WTF::TextEncoding& defaultEncoding,
-                        bool usesEncodingDetector);
+    TextResourceDecoder(const String& mimeType, const WTF::TextEncoding& defaultEncoding, bool usesEncodingDetector);
 
     enum ContentType { PlainText, HTML, XML, CSS }; // PlainText only checks for BOM.
     static ContentType determineContentType(const String& mimeType);
@@ -76,8 +75,8 @@ private:
 
     size_t checkForBOM(const char*, size_t);
     bool checkForCSSCharset(const char*, size_t, bool& movedDataToBuffer);
-    bool checkForHeadCharset(const char*, size_t, bool& movedDataToBuffer);
-    bool checkForMetaCharset(const char*, size_t);
+    bool checkForXMLCharset(const char*, size_t, bool& movedDataToBuffer);
+    void checkForMetaCharset(const char*, size_t);
     void detectJapaneseEncoding(const char*, size_t);
     bool shouldAutoDetect() const;
 
@@ -89,7 +88,8 @@ private:
     Vector<char> m_buffer;
     bool m_checkedForBOM;
     bool m_checkedForCSSCharset;
-    bool m_checkedForHeadCharset;
+    bool m_checkedForXMLCharset;
+    bool m_checkedForMetaCharset;
     bool m_useLenientXMLDecoding; // Don't stop on XML decoding errors.
     bool m_sawError;
     bool m_usesEncodingDetector;
