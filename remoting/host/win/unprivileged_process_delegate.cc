@@ -349,6 +349,7 @@ void UnprivilegedProcessDelegate::KillProcess() {
   DCHECK(CalledOnValidThread());
 
   channel_.reset();
+  event_handler_ = NULL;
 
   if (worker_process_.IsValid()) {
     TerminateProcess(worker_process_, CONTROL_C_EXIT);
