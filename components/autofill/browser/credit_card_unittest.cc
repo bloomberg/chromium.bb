@@ -47,14 +47,14 @@ const char* const kInvalidNumbers[] = {
 // existence of credit card number, month, and year fields.
 TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   // Case 0: empty credit card.
-  CreditCard credit_card0;
+  CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com/");
   base::string16 summary0 = credit_card0.Label();
   EXPECT_EQ(base::string16(), summary0);
   base::string16 obfuscated0 = credit_card0.ObfuscatedNumber();
   EXPECT_EQ(base::string16(), obfuscated0);
 
   // Case 00: Empty credit card with empty strings.
-  CreditCard credit_card00;
+  CreditCard credit_card00(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(&credit_card00,"John Dillinger", "", "", "");
   base::string16 summary00 = credit_card00.Label();
   EXPECT_EQ(base::string16(ASCIIToUTF16("John Dillinger")), summary00);
@@ -62,7 +62,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   EXPECT_EQ(base::string16(), obfuscated00);
 
   // Case 1: No credit card number.
-  CreditCard credit_card1;
+  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(&credit_card1,"John Dillinger", "", "01", "2010");
   base::string16 summary1 = credit_card1.Label();
   EXPECT_EQ(base::string16(ASCIIToUTF16("John Dillinger")), summary1);
@@ -70,7 +70,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   EXPECT_EQ(base::string16(), obfuscated1);
 
   // Case 2: No month.
-  CreditCard credit_card2;
+  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(
       &credit_card2, "John Dillinger", "5105 1051 0510 5100", "", "2010");
   base::string16 summary2 = credit_card2.Label();
@@ -79,7 +79,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   EXPECT_EQ(ASCIIToUTF16("************5100"), obfuscated2);
 
   // Case 3: No year.
-  CreditCard credit_card3;
+  CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(
       &credit_card3, "John Dillinger", "5105 1051 0510 5100", "01", "");
   base::string16 summary3 = credit_card3.Label();
@@ -88,7 +88,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   EXPECT_EQ(ASCIIToUTF16("************5100"), obfuscated3);
 
   // Case 4: Have everything.
-  CreditCard credit_card4;
+  CreditCard credit_card4(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(
       &credit_card4, "John Dillinger", "5105 1051 0510 5100", "01", "2010");
   base::string16 summary4 = credit_card4.Label();
@@ -97,7 +97,7 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
   EXPECT_EQ(ASCIIToUTF16("************5100"), obfuscated4);
 
   // Case 5: Very long credit card
-  CreditCard credit_card5;
+  CreditCard credit_card5(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(
       &credit_card5,
       "John Dillinger",
@@ -109,12 +109,11 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 }
 
 TEST(CreditCardTest, AssignmentOperator) {
-  CreditCard a, b;
+  CreditCard a(base::GenerateGUID(), "some origin");
+  test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010");
 
   // Result of assignment should be logically equal to the original profile.
-  test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010");
-  a.set_guid(base::GenerateGUID());
-  a.set_origin("origin");
+  CreditCard b(base::GenerateGUID(), "some other origin");
   b = a;
   EXPECT_TRUE(a == b);
 
@@ -124,18 +123,17 @@ TEST(CreditCardTest, AssignmentOperator) {
 }
 
 TEST(CreditCardTest, Copy) {
-  CreditCard a;
+  CreditCard a(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010");
 
   // Clone should be logically equal to the original.
-  test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010");
-  a.set_guid(base::GenerateGUID());
-  a.set_origin("origin");
   CreditCard b(a);
   EXPECT_TRUE(a == b);
 }
 
 TEST(CreditCardTest, Compare) {
-  CreditCard a, b;
+  CreditCard a(base::GenerateGUID(), std::string());
+  CreditCard b(base::GenerateGUID(), std::string());
 
   // Empty cards are the same.
   EXPECT_EQ(0, a.Compare(b));
@@ -158,7 +156,7 @@ TEST(CreditCardTest, Compare) {
 }
 
 TEST(CreditCardTest, IsComplete) {
-  CreditCard card;
+  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
   EXPECT_FALSE(card.IsComplete());
   card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Wally T. Walrus"));
   EXPECT_FALSE(card.IsComplete());
@@ -179,7 +177,7 @@ TEST(CreditCardTest, IsComplete) {
 }
 
 TEST(CreditCardTest, InvalidMastercardNumber) {
-  CreditCard card;
+  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
 
   test::SetCreditCardInfo(&card, "Baby Face Nelson",
                           "5200000000000004", "01", "2010");
@@ -188,7 +186,7 @@ TEST(CreditCardTest, InvalidMastercardNumber) {
 
 // Verify that we preserve exactly what the user typed for credit card numbers.
 TEST(CreditCardTest, SetRawInfoCreditCardNumber) {
-  CreditCard card;
+  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
 
   test::SetCreditCardInfo(&card, "Bob Dylan",
                           "4321-5432-6543-xxxx", "07", "2013");
@@ -198,7 +196,7 @@ TEST(CreditCardTest, SetRawInfoCreditCardNumber) {
 
 // Verify that we can handle both numeric and named months.
 TEST(CreditCardTest, SetExpirationMonth) {
-  CreditCard card;
+  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
 
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("05"));
   EXPECT_EQ(ASCIIToUTF16("05"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
@@ -223,7 +221,7 @@ TEST(CreditCardTest, SetExpirationMonth) {
 }
 
 TEST(CreditCardTest, CreditCardType) {
-  CreditCard card;
+  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
 
   // The card type cannot be set directly.
   card.SetRawInfo(CREDIT_CARD_TYPE, ASCIIToUTF16("Visa"));
@@ -235,7 +233,7 @@ TEST(CreditCardTest, CreditCardType) {
 }
 
 TEST(CreditCardTest, CreditCardVerificationCode) {
-  CreditCard card;
+  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
 
   // The verification code cannot be set, as Chrome does not store this data.
   card.SetRawInfo(CREDIT_CARD_VERIFICATION_CODE, ASCIIToUTF16("999"));
@@ -257,7 +255,7 @@ TEST(CreditCardTest, CreditCardMonthExact) {
   field.option_values = options;
   field.option_contents = options;
 
-  CreditCard credit_card;
+  CreditCard credit_card(base::GenerateGUID(), "https://www.example.com/");
   credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
   credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("01"), field.value);
@@ -278,7 +276,7 @@ TEST(CreditCardTest, CreditCardMonthAbbreviated) {
   field.option_values = options;
   field.option_contents = options;
 
-  CreditCard credit_card;
+  CreditCard credit_card(base::GenerateGUID(), "https://www.example.com/");
   credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
   credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("Jan"), field.value);
@@ -299,7 +297,7 @@ TEST(CreditCardTest, CreditCardMonthFull) {
   field.option_values = options;
   field.option_contents = options;
 
-  CreditCard credit_card;
+  CreditCard credit_card(base::GenerateGUID(), "https://www.example.com/");
   credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
   credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("January"), field.value);
@@ -319,7 +317,7 @@ TEST(CreditCardTest, CreditCardMonthNumeric) {
   field.option_values = options;
   field.option_contents = options;
 
-  CreditCard credit_card;
+  CreditCard credit_card(base::GenerateGUID(), "https://www.example.com/");
   credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
   credit_card.FillSelectControl(CREDIT_CARD_EXP_MONTH, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("1"), field.value);
@@ -339,7 +337,7 @@ TEST(CreditCardTest, CreditCardTwoDigitYear) {
   field.option_values = options;
   field.option_contents = options;
 
-  CreditCard credit_card;
+  CreditCard credit_card(base::GenerateGUID(), "https://www.example.com/");
   credit_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2017"));
   credit_card.FillSelectControl(CREDIT_CARD_EXP_4_DIGIT_YEAR, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("17"), field.value);
@@ -366,7 +364,7 @@ TEST(CreditCardTest, CreditCardTypeSelectControl) {
 
   {
     // Normal case:
-    CreditCard credit_card;
+    CreditCard credit_card(base::GenerateGUID(), "https://www.example.com/");
     credit_card.SetRawInfo(CREDIT_CARD_NUMBER,
                            ASCIIToUTF16("4111111111111111"));
     credit_card.FillSelectControl(CREDIT_CARD_TYPE, "en-US", &field);
@@ -375,7 +373,7 @@ TEST(CreditCardTest, CreditCardTypeSelectControl) {
 
   {
     // Filling should be able to handle intervening whitespace:
-    CreditCard credit_card;
+    CreditCard credit_card(base::GenerateGUID(), "https://www.example.com/");
     credit_card.SetRawInfo(CREDIT_CARD_NUMBER,
                            ASCIIToUTF16("5105105105105100"));
     credit_card.FillSelectControl(CREDIT_CARD_TYPE, "en-US", &field);
@@ -384,7 +382,7 @@ TEST(CreditCardTest, CreditCardTypeSelectControl) {
 
   {
     // American Express is sometimes abbreviated as AmEx:
-    CreditCard credit_card;
+    CreditCard credit_card(base::GenerateGUID(), "https://www.example.com/");
     credit_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("371449635398431"));
     credit_card.FillSelectControl(CREDIT_CARD_TYPE, "en-US", &field);
     EXPECT_EQ(ASCIIToUTF16("AmEx"), field.value);
@@ -392,7 +390,7 @@ TEST(CreditCardTest, CreditCardTypeSelectControl) {
 
   {
     // Case insensitivity:
-    CreditCard credit_card;
+    CreditCard credit_card(base::GenerateGUID(), "https://www.example.com/");
     credit_card.SetRawInfo(CREDIT_CARD_NUMBER,
                            ASCIIToUTF16("6011111111111117"));
     credit_card.FillSelectControl(CREDIT_CARD_TYPE, "en-US", &field);

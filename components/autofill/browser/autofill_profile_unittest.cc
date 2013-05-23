@@ -32,7 +32,7 @@ bool UpdateProfileLabel(AutofillProfile *profile) {
 // Based on existence of first name, last name, and address line 1.
 TEST(AutofillProfileTest, PreviewSummaryString) {
   // Case 0/null: ""
-  AutofillProfile profile0;
+  AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com/");
   // Empty profile - nothing to update.
   EXPECT_FALSE(UpdateProfileLabel(&profile0));
   base::string16 summary0 = profile0.Label();
@@ -40,7 +40,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
 
   // Case 0a/empty name and address, so the first two fields of the rest of the
   // data is used: "Hollywood, CA"
-  AutofillProfile profile00;
+  AutofillProfile profile00(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&profile00, "", "", "",
       "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA", "91601", "US",
       "16505678910");
@@ -49,7 +49,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   EXPECT_EQ(ASCIIToUTF16("Hollywood, CA"), summary00);
 
   // Case 1: "<address>" without line 2.
-  AutofillProfile profile1;
+  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&profile1, "", "", "",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "", "Hollywood", "CA",
       "91601", "US", "16505678910");
@@ -58,7 +58,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   EXPECT_EQ(ASCIIToUTF16("123 Zoo St., Hollywood"), summary1);
 
   // Case 1a: "<address>" with line 2.
-  AutofillProfile profile1a;
+  AutofillProfile profile1a(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&profile1a, "", "", "",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "16505678910");
@@ -67,7 +67,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   EXPECT_EQ(ASCIIToUTF16("123 Zoo St., unit 5"), summary1a);
 
   // Case 2: "<lastname>"
-  AutofillProfile profile2;
+  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&profile2, "", "Mitchell",
       "Morrison", "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA",
       "91601", "US", "16505678910");
@@ -77,7 +77,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   EXPECT_EQ(ASCIIToUTF16("Mitchell Morrison, Hollywood"), summary2);
 
   // Case 3: "<lastname>, <address>"
-  AutofillProfile profile3;
+  AutofillProfile profile3(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&profile3, "", "Mitchell",
       "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "",
       "Hollywood", "CA", "91601", "US", "16505678910");
@@ -86,7 +86,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   EXPECT_EQ(ASCIIToUTF16("Mitchell Morrison, 123 Zoo St."), summary3);
 
   // Case 4: "<firstname>"
-  AutofillProfile profile4;
+  AutofillProfile profile4(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&profile4, "Marion", "Mitchell", "",
       "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA", "91601", "US",
       "16505678910");
@@ -95,7 +95,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   EXPECT_EQ(ASCIIToUTF16("Marion Mitchell, Hollywood"), summary4);
 
   // Case 5: "<firstname>, <address>"
-  AutofillProfile profile5;
+  AutofillProfile profile5(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&profile5, "Marion", "Mitchell", "",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "16505678910");
@@ -104,7 +104,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
   EXPECT_EQ(ASCIIToUTF16("Marion Mitchell, 123 Zoo St."), summary5);
 
   // Case 6: "<firstname> <lastname>"
-  AutofillProfile profile6;
+  AutofillProfile profile6(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&profile6, "Marion", "Mitchell",
       "Morrison", "johnwayne@me.xyz", "Fox", "", "", "Hollywood", "CA",
       "91601", "US", "16505678910");
@@ -114,7 +114,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
             summary6);
 
   // Case 7: "<firstname> <lastname>, <address>"
-  AutofillProfile profile7;
+  AutofillProfile profile7(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&profile7, "Marion", "Mitchell",
       "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
       "Hollywood", "CA", "91601", "US", "16505678910");
@@ -124,7 +124,7 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
 
   // Case 7a: "<firstname> <lastname>, <address>" - same as #7, except for
   // e-mail.
-  AutofillProfile profile7a;
+  AutofillProfile profile7a(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&profile7a, "Marion", "Mitchell",
     "Morrison", "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
     "Hollywood", "CA", "91601", "US", "16505678910");
@@ -142,7 +142,8 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
 
 TEST(AutofillProfileTest, AdjustInferredLabels) {
   ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(
       profiles[0],
       "John",
@@ -156,7 +157,8 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
       "91111",
       "US",
       "16502111111");
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "http://www.example.com/"));
   test::SetProfileInfo(
       profiles[1],
       "Jane",
@@ -179,7 +181,8 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."),
             profiles[1]->Label());
 
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "Chrome settings"));
   test::SetProfileInfo(
       profiles[2],
       "John",
@@ -205,7 +208,8 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
 
   profiles.resize(2);
 
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), std::string()));
   test::SetProfileInfo(
       profiles[2],
       "John",
@@ -230,7 +234,8 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CO"),
             profiles[2]->Label());
 
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(
       profiles[3],
       "John",
@@ -258,7 +263,8 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CO, 16504444444"),
             profiles[3]->Label());
 
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(
       profiles[4],
       "John",
@@ -295,7 +301,8 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
 
 TEST(AutofillProfileTest, CreateInferredLabels) {
   ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[0],
                        "John",
                        "",
@@ -308,7 +315,8 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
                        "91111",
                        "US",
                        "16502111111");
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[1],
                        "Jane",
                        "",
@@ -401,11 +409,13 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
 // distinguishing fields, but only if it makes sense given the suggested fields.
 TEST(AutofillProfileTest, CreateInferredLabelsFallsBackToFullName) {
   ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[0],
                        "John", "", "Doe", "doe@example.com", "",
                        "88 Nowhere Ave.", "", "", "", "", "", "");
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[1],
                        "Johnny", "K", "Doe", "doe@example.com", "",
                        "88 Nowhere Ave.", "", "", "", "", "", "");
@@ -435,11 +445,13 @@ TEST(AutofillProfileTest, CreateInferredLabelsFallsBackToFullName) {
 // Test that we do not show duplicate fields in the labels.
 TEST(AutofillProfileTest, CreateInferredLabelsNoDuplicatedFields) {
   ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[0],
                        "John", "", "Doe", "doe@example.com", "",
                        "88 Nowhere Ave.", "", "", "", "", "", "");
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[1],
                        "John", "", "Doe", "dojo@example.com", "",
                        "88 Nowhere Ave.", "", "", "", "", "", "");
@@ -461,15 +473,18 @@ TEST(AutofillProfileTest, CreateInferredLabelsNoDuplicatedFields) {
 // Make sure that empty fields are not treated as distinguishing fields.
 TEST(AutofillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
   ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[0],
                        "John", "", "Doe", "doe@example.com",
                        "Gogole", "", "", "", "", "", "", "");
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[1],
                        "John", "", "Doe", "doe@example.com",
                        "Ggoole", "", "", "", "", "", "", "");
-  profiles.push_back(new AutofillProfile);
+  profiles.push_back(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[2],
                        "John", "", "Doe", "john.doe@example.com",
                        "Goolge", "", "", "", "", "", "", "");
@@ -498,8 +513,10 @@ TEST(AutofillProfileTest, IsSubsetOf) {
   scoped_ptr<AutofillProfile> a, b;
 
   // |a| is a subset of |b|.
-  a.reset(new AutofillProfile);
-  b.reset(new AutofillProfile);
+  a.reset(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
+  b.reset(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(a.get(), "Thomas", NULL, "Jefferson",
       "declaration_guy@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
       NULL);
@@ -515,8 +532,10 @@ TEST(AutofillProfileTest, IsSubsetOf) {
   EXPECT_TRUE(a->IsSubsetOf(*a, "en-US"));
 
   // One field in |b| is different.
-  a.reset(new AutofillProfile);
-  b.reset(new AutofillProfile);
+  a.reset(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
+  b.reset(
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(a.get(), "Thomas", NULL, "Jefferson",
       "declaration_guy@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
       NULL);
@@ -527,15 +546,14 @@ TEST(AutofillProfileTest, IsSubsetOf) {
 }
 
 TEST(AutofillProfileTest, AssignmentOperator) {
-  AutofillProfile a, b;
-
-  // Result of assignment should be logically equal to the original profile.
+  AutofillProfile a(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&a, "Marion", "Mitchell", "Morrison",
                        "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US",
                        "12345678910");
-  a.set_guid(base::GenerateGUID());
-  a.set_origin("origin");
+
+  // Result of assignment should be logically equal to the original profile.
+  AutofillProfile b(base::GenerateGUID(), "http://www.example.com/");
   b = a;
   EXPECT_TRUE(a == b);
 
@@ -545,21 +563,20 @@ TEST(AutofillProfileTest, AssignmentOperator) {
 }
 
 TEST(AutofillProfileTest, Copy) {
-  AutofillProfile a;
-
-  // Clone should be logically equal to the original.
+  AutofillProfile a(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&a, "Marion", "Mitchell", "Morrison",
                        "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US",
                        "12345678910");
-  a.set_guid(base::GenerateGUID());
-  a.set_origin("origin");
+
+  // Clone should be logically equal to the original.
   AutofillProfile b(a);
   EXPECT_TRUE(a == b);
 }
 
 TEST(AutofillProfileTest, Compare) {
-  AutofillProfile a, b;
+  AutofillProfile a(base::GenerateGUID(), std::string());
+  AutofillProfile b(base::GenerateGUID(), std::string());
 
   // Empty profiles are the same.
   EXPECT_EQ(0, a.Compare(b));
@@ -593,7 +610,7 @@ TEST(AutofillProfileTest, Compare) {
 }
 
 TEST(AutofillProfileTest, MultiValueNames) {
-  AutofillProfile p;
+  AutofillProfile p(base::GenerateGUID(), "https://www.example.com/");
   const base::string16 kJohnDoe(ASCIIToUTF16("John Doe"));
   const base::string16 kJohnPDoe(ASCIIToUTF16("John P. Doe"));
   std::vector<base::string16> set_values;
@@ -635,7 +652,7 @@ TEST(AutofillProfileTest, MultiValueNames) {
 }
 
 TEST(AutofillProfileTest, MultiValueEmails) {
-  AutofillProfile p;
+  AutofillProfile p(base::GenerateGUID(), "https://www.example.com/");
   const base::string16 kJohnDoe(ASCIIToUTF16("john@doe.com"));
   const base::string16 kJohnPDoe(ASCIIToUTF16("john_p@doe.com"));
   std::vector<base::string16> set_values;
@@ -677,7 +694,7 @@ TEST(AutofillProfileTest, MultiValueEmails) {
 }
 
 TEST(AutofillProfileTest, MultiValuePhone) {
-  AutofillProfile p;
+  AutofillProfile p(base::GenerateGUID(), "https://www.example.com/");
   const base::string16 kJohnDoe(ASCIIToUTF16("4151112222"));
   const base::string16 kJohnPDoe(ASCIIToUTF16("4151113333"));
   std::vector<base::string16> set_values;
@@ -732,7 +749,7 @@ TEST(AutofillProfileTest, AddressCountryFull) {
   field.option_values = options;
   field.option_contents = options;
 
-  AutofillProfile profile;
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"));
   profile.FillSelectControl(ADDRESS_HOME_COUNTRY, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("Canada"), field.value);
@@ -752,7 +769,7 @@ TEST(AutofillProfileTest, AddressCountryAbbrev) {
   field.option_values = options;
   field.option_contents = options;
 
-  AutofillProfile profile;
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"));
   profile.FillSelectControl(ADDRESS_HOME_COUNTRY, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
@@ -772,7 +789,7 @@ TEST(AutofillProfileTest, AddressStateFull) {
   field.option_values = options;
   field.option_contents = options;
 
-  AutofillProfile profile;
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
   profile.FillSelectControl(ADDRESS_HOME_STATE, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("California"), field.value);
@@ -792,7 +809,7 @@ TEST(AutofillProfileTest, AddressStateAbbrev) {
   field.option_values = options;
   field.option_contents = options;
 
-  AutofillProfile profile;
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
   profile.FillSelectControl(ADDRESS_HOME_STATE, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
@@ -814,7 +831,7 @@ TEST(AutofillProfileTest, FillByValue) {
   field.option_values = values;
   field.option_contents = contents;
 
-  AutofillProfile profile;
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
   profile.FillSelectControl(ADDRESS_HOME_STATE, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("California"), field.value);
@@ -836,7 +853,7 @@ TEST(AutofillProfileTest, FillByContents) {
   field.option_values = values;
   field.option_contents = contents;
 
-  AutofillProfile profile;
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
   profile.FillSelectControl(ADDRESS_HOME_STATE, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("2"), field.value);
