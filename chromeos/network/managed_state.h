@@ -40,9 +40,14 @@ class ManagedState {
   NetworkState* AsNetworkState();
   DeviceState* AsDeviceState();
 
-  // Called by NetworkStateHandler when a property changes. Returns false if
-  // the property was not recognized, was not parsed successfully, or is
-  // unchanged (complex properties may be assumed to have changed).
+  // Called by NetworkStateHandler when a property was received. The return
+  // value indicates if the state changed and is used to reduce the number of
+  // notifications. The only guarantee however is: If the return value is false
+  // then the state wasn't modified. This might happen because of
+  // * |key| was not recognized.
+  // * |value| was not parsed successfully.
+  // * |value| is equal to the cached property value.
+  // If the return value is true, the state might or might not be modified.
   virtual bool PropertyChanged(const std::string& key,
                                const base::Value& value) = 0;
 

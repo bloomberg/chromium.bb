@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
+#include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -212,19 +213,9 @@ NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
 bool NetworkStateInformer::IsProxyConfigured(const NetworkState* network) {
   DCHECK(network);
 
-  ProxyStateMap::iterator it = proxy_state_map_.find(network->guid());
-  if (it != proxy_state_map_.end() &&
-      it->second.proxy_config == network->proxy_config()) {
-    return it->second.configured;
-  }
-  net::ProxyConfig proxy_config;
-  if (!ProxyConfigServiceImpl::ParseProxyConfig(network->proxy_config(),
-                                                &proxy_config))
-    return false;
-  bool configured = !proxy_config.proxy_rules().empty();
-  proxy_state_map_[network->guid()] =
-      ProxyState(network->proxy_config(), configured);
-  return configured;
+  ProxyConfigDictionary proxy_dict(&network->proxy_config());
+  ProxyPrefs::ProxyMode mode;
+  return !proxy_dict.GetMode(&mode) || mode == ProxyPrefs::MODE_FIXED_SERVERS;
 }
 
 }  // namespace chromeos
