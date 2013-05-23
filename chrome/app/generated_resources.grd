@@ -14839,14 +14839,36 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_PROFILES_CREATE_CONFIRM" desc="Create button confirmation">
       Create
     </message>
-    <message name="IDS_PROFILES_CREATE_MANAGED_CHECKBOX" desc="Label for the 'Managed user' checkbox in the create profile dialog">
-      Managed user
+    <message name="IDS_PROFILES_CREATE_LIMITED_SIGNED_IN_LABEL" desc="Label for the 'Limited user' checkbox in the create-profile dialog when the current user is signed in. This will be followed by a 'Learn more' link.">
+      This is a limited user managed by <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex>.</ph>
+    </message>
+    <message name="IDS_PROFILES_CREATE_LIMITED_NOT_SIGNED_IN_LABEL" desc="Label for the (disabled) 'Limited user' checkbox in the create-profile dialog when the current user is not signed in. This will be followed by a 'Sign in now' link.">
+      This is a limited user who will be managed by another user.
+You need to be signed in to use this feature.
+    </message>
+    <message name="IDS_PROFILES_CREATE_LIMITED_NOT_SIGNED_IN_LINK" desc="Text for the sign-in promo link, shown after the (disabled) 'Limited user' checkbox in the create-profile dialog when the current user is not signed in.">
+      Sign in now
     </message>
     <message name="IDS_PROFILES_CREATE_SHORTCUT" desc="Create Shortcut checkbox/button">
-      Add desktop shortcut
+      Create a desktop shortcut for this user
     </message>
     <message name="IDS_PROFILES_REMOVE_SHORTCUT" desc="Remove Shortcut button">
-      Remove desktop shortcut
+      Remove the desktop shortcut for this user
+    </message>
+      
+    <!-- Limited-user creation wizard dialogs -->
+    <message name="IDS_NEW_LIMITED_USER_LEARN_MORE_TITLE" desc="Title for the 'Learn more' dialog for the limited user feature.">
+      What is a limited user?
+    </message>
+    <message name="IDS_NEW_LIMITED_USER_LEARN_MORE_TEXT" desc="Informative text describing the 'limited user' feature in detail, shown when the 'Learn more' link is clicked in the 'Create User' dialog.">
+      By creating a limited user, you can provide a managed environment for another user to explore the web.
+
+As the manager of a limited user in Chrome on this device, you can determine the sites you wish to allow or restrict, review past visits, and manage other settings. A limited user is not a Google account &#8212; it applies only to this device.
+
+First, create a limited user in Chrome on this device. You can then configure the limited user's settings online anytime, from any device.
+    </message>
+    <message name="IDS_NEW_LIMITED_USER_LEARN_MORE_DONE_BUTTON" desc="The text of the 'OK' button on the 'Learn more' dialog for the limited user feature.">
+      OK, got it!
     </message>
 
     <!-- Aura strings -->

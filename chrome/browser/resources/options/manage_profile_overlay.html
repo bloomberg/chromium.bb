@@ -65,16 +65,29 @@
     </div>
     <div class="action-area">
       <div class="action-area-checkbox-container">
-        <div id="create-profile-managed-container" class="checkbox" hidden>
-          <label>
-            <input id="create-profile-managed" type="checkbox">
-            <span i18n-content="manageProfilesManagedLabel"></span>
-          </label>
-        </div>
         <div id="create-shortcut-container" class="checkbox" hidden>
           <label>
             <input id="create-shortcut" type="checkbox">
             <span for="create-shortcut" i18n-content="createProfileShortcut">
+            </span>
+          </label>
+        </div>
+        <div id="create-profile-limited-container" class="checkbox" hidden>
+          <label>
+            <input id="create-profile-limited" type="checkbox">
+            <span id="create-profile-limited-signed-in">
+              <span id="create-profile-limited-signed-in-label"></span>
+              <a href="#" id="create-profile-limited-signed-in-link"
+                  i18n-content="learnMore">
+              </a>
+            </span>
+            <span id="create-profile-limited-not-signed-in" hidden>
+              <span id="create-profile-limited-not-signed-in-label"
+                  i18n-content="manageProfilesLimitedNotSignedInLabel">
+              </span>
+              <a href="#" id="create-profile-limited-not-signed-in-link"
+                  i18n-content="manageProfilesLimitedNotSignedInLink">
+              </a>
             </span>
           </label>
         </div>

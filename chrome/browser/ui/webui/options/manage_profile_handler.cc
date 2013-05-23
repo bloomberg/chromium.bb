@@ -20,6 +20,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -28,6 +30,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -75,7 +78,10 @@ void ManageProfileHandler::GetLocalizedValues(
     { "manageProfilesDuplicateNameError",
         IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR },
     { "manageProfilesIconLabel", IDS_PROFILES_MANAGE_ICON_LABEL },
-    { "manageProfilesManagedLabel", IDS_PROFILES_CREATE_MANAGED_CHECKBOX },
+    { "manageProfilesLimitedNotSignedInLabel",
+        IDS_PROFILES_CREATE_LIMITED_NOT_SIGNED_IN_LABEL },
+    { "manageProfilesLimitedNotSignedInLink",
+        IDS_PROFILES_CREATE_LIMITED_NOT_SIGNED_IN_LINK },
     { "deleteProfileTitle", IDS_PROFILES_DELETE_TITLE },
     { "deleteProfileOK", IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
     { "deleteProfileMessage", IDS_PROFILES_DELETE_MESSAGE },
@@ -123,6 +129,9 @@ void ManageProfileHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("requestHasProfileShortcuts",
       base::Bind(&ManageProfileHandler::RequestHasProfileShortcuts,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("requestSignedInText",
+      base::Bind(&ManageProfileHandler::RequestSignedInText,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("profileIconSelectionChanged",
       base::Bind(&ManageProfileHandler::ProfileIconSelectionChanged,
@@ -395,6 +404,20 @@ void ManageProfileHandler::RequestHasProfileShortcuts(const ListValue* args) {
   shortcut_manager->HasProfileShortcuts(
       profile_path, base::Bind(&ManageProfileHandler::OnHasProfileShortcuts,
                                weak_factory_.GetWeakPtr()));
+}
+
+void ManageProfileHandler::RequestSignedInText(const base::ListValue* args) {
+  SigninManagerBase* manager =
+      SigninManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  string16 username = UTF8ToUTF16(manager->GetAuthenticatedUsername());
+  string16 text = string16();
+  if (!username.empty()) {
+     text = l10n_util::GetStringFUTF16(
+         IDS_PROFILES_CREATE_LIMITED_SIGNED_IN_LABEL, username);
+  }
+  StringValue text_value(text);
+  web_ui()->CallJavascriptFunction("CreateProfileOverlay.updateSignedInStatus",
+                                   text_value);
 }
 
 void ManageProfileHandler::OnHasProfileShortcuts(bool has_shortcuts) {

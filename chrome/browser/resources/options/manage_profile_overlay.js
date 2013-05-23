@@ -49,7 +49,7 @@ cr.define('options', function() {
                                         self.submitManageChanges_.bind(self));
 
       if (loadTimeData.getBoolean('managedUsersEnabled')) {
-        $('create-profile-managed-container').hidden = false;
+        $('create-profile-limited-container').hidden = false;
       }
       $('manage-profile-cancel').onclick =
           $('delete-profile-cancel').onclick =
@@ -65,6 +65,20 @@ cr.define('options', function() {
       };
       $('remove-shortcut-button').onclick = function(event) {
         chrome.send('removeProfileShortcut', [self.profileInfo_.filePath]);
+      };
+
+      $('create-profile-limited-signed-in-link').onclick = function() {
+        OptionsPage.navigateToPage('managedUserLearnMore');
+      };
+
+      $('create-profile-limited-not-signed-in-link').onclick = function() {
+        // The signin process will open an overlay to configure sync, which
+        // would replace this overlay. It's smoother to close this one now.
+        // TODO(pamg): Move the sync-setup overlay to a higher layer so this one
+        // can stay open under it, after making sure that doesn't break anything
+        // else.
+        OptionsPage.closeOverlay();
+        SyncSetupOverlay.startSignIn();
       };
     },
 
@@ -285,7 +299,7 @@ cr.define('options', function() {
       var name = $('create-profile-name').value;
       var iconUrl = $('create-profile-icon-grid').selectedItem;
       var createShortcut = $('create-shortcut').checked;
-      var isManaged = $('create-profile-managed').checked;
+      var isManaged = $('create-profile-limited').checked;
       chrome.send('createProfile',
                   [name, iconUrl, createShortcut, isManaged]);
     },
@@ -395,6 +409,7 @@ cr.define('options', function() {
      * @override
      */
     didShowPage: function() {
+      chrome.send('requestSignedInText');
       chrome.send('requestDefaultProfileIcons');
       chrome.send('requestNewProfileDefaults');
 
@@ -413,7 +428,33 @@ cr.define('options', function() {
       $('create-profile-name').hidden = true;
       $('create-profile-ok').disabled = true;
     },
+
+    /**
+     * Updates the signed-in or not-signed-in UI when in create mode. Called by
+     * the handler in response to the 'requestSignedInText' message.
+     * @param {string} text The text to show for a signed-in user. An empty
+     *     string indicates that the user is not signed in.
+     * @private
+     */
+    updateSignedInStatus_: function(text) {
+      var isSignedIn = text !== '';
+      $('create-profile-limited-signed-in').hidden = !isSignedIn;
+      $('create-profile-limited-not-signed-in').hidden = isSignedIn;
+      $('create-profile-limited').disabled = !isSignedIn;
+
+      $('create-profile-limited-signed-in-label').textContent = text;
+    },
   };
+
+  // Forward public APIs to private implementations.
+  [
+    'updateSignedInStatus',
+  ].forEach(function(name) {
+    CreateProfileOverlay[name] = function() {
+      var instance = CreateProfileOverlay.getInstance();
+      return instance[name + '_'].apply(instance, arguments);
+    };
+  });
 
   // Export
   return {

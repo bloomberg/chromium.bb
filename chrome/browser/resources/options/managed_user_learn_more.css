@@ -1,0 +1,18 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#managed-user-learn-more {
+  width: 612px;
+}
+
+#managed-user-learn-more-text {
+  margin-top: 10px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+#managed-user-learn-more-image {
+  background-image: url('managed_user_learn_more.png');
+  height: 177px;  /* Placeholder value */
+}

@@ -17,6 +17,7 @@ var CookiesView = options.CookiesView;
 var CreateProfileOverlay = options.CreateProfileOverlay;
 var EditDictionaryOverlay = cr.IsMac ? null : options.EditDictionaryOverlay;
 var FactoryResetOverlay = options.FactoryResetOverlay;
+var ManagedUserLearnMoreOverlay = options.ManagedUserLearnMoreOverlay;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var HomePageOverlay = options.HomePageOverlay;
@@ -131,6 +132,11 @@ function load() {
                               [$('language-button')]);
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
+  if (loadTimeData.getBoolean('managedUsersEnabled') &&
+      !cr.isChromeOS) {
+    OptionsPage.registerOverlay(ManagedUserLearnMoreOverlay.getInstance(),
+                                CreateProfileOverlay.getInstance());
+  }
   OptionsPage.registerOverlay(MediaGalleriesManager.getInstance(),
                               ContentSettings.getInstance(),
                               [$('manage-galleries-button')]);

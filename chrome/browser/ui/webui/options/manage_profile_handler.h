@@ -91,6 +91,11 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   // |args| is of the form: [ {string} profileFilePath ]
   void RequestHasProfileShortcuts(const base::ListValue* args);
 
+  // Callback for the "requestSignedInText" message.
+  // Sends the text to be shown if the user is signed in, or an empty string
+  // if not. |args| is not used.
+  void RequestSignedInText(const base::ListValue* args);
+
   // Callback invoked from the profile manager indicating whether the profile
   // being edited has any desktop shortcuts.
   void OnHasProfileShortcuts(bool has_shortcuts);

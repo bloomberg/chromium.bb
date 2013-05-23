@@ -118,4 +118,13 @@
 
 html[dir='rtl'] #delete-profile-message {
   background-position: right;
+}
 
+#create-profile-limited-not-signed-in {
+  color: #999;
+}
+
+#create-profile-limited-not-signed-in-label {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
