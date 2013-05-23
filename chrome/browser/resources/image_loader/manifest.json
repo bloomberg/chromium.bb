@@ -4,7 +4,7 @@
   "name": "Image loader",
   "version": "0.1",
   "description": "Image loader",
-  "incognito" : "spanning",
+  "incognito" : "split",
   "manifest_version": 2,
   "permissions": [
     "fileBrowserHandler",
