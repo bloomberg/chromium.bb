@@ -104,6 +104,21 @@ class NetworkStateInformer
   std::string last_network_type() const { return last_network_type_; }
 
  private:
+  struct ProxyState {
+    ProxyState() : configured(false) {
+    }
+
+    ProxyState(const std::string& proxy_config, bool configured)
+        : proxy_config(proxy_config),
+          configured(configured) {
+    }
+
+    std::string proxy_config;
+    bool configured;
+  };
+
+  typedef std::map<std::string, ProxyState> ProxyStateMap;
+
   friend class base::RefCounted<NetworkStateInformer>;
 
   virtual ~NetworkStateInformer();
@@ -126,6 +141,9 @@ class NetworkStateInformer
   std::string last_network_service_path_;
   std::string last_network_type_;
   base::CancelableClosure check_state_;
+
+  // Caches proxy state for active networks.
+  ProxyStateMap proxy_state_map_;
 };
 
 }  // namespace chromeos
