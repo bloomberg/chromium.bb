@@ -197,7 +197,7 @@ FileTransferController.prototype = {
    */
   paste: function(dataTransfer, opt_destinationPath, opt_effect) {
     var destinationPath = opt_destinationPath ||
-                          this.directoryModel_.getCurrentDirPath();
+                          this.currentDirectoryContentPath;
     // effectAllowed set in copy/pase handlers stay uninitialized. DnD handlers
     // work fine.
     var files = (dataTransfer.getData('fs/files') || '').split('\n');
@@ -344,7 +344,7 @@ FileTransferController.prototype = {
   onDragOver_: function(onlyIntoDirectories, list, event) {
     event.preventDefault();
     var path = this.destinationPath_ ||
-        (!onlyIntoDirectories && this.directoryModel_.getCurrentDirPath());
+        (!onlyIntoDirectories && this.currentDirectoryContentPath);
     event.dataTransfer.dropEffect = this.selectDropEffect_(event, path);
     event.preventDefault();
   },
@@ -440,7 +440,7 @@ FileTransferController.prototype = {
     if (onlyIntoDirectories && !this.dropTarget_)
       return;
     var destinationPath = this.destinationPath_ ||
-                          this.directoryModel_.getCurrentDirPath();
+                          this.currentDirectoryContentPath;
     if (!this.canPasteOrDrop_(event.dataTransfer, destinationPath))
       return;
     event.preventDefault();
@@ -465,27 +465,26 @@ FileTransferController.prototype = {
     // Remove the old drop target.
     this.clearDropTarget_();
 
-    // Add accept class if the domElement can accept the drag.
-    if (isDirectory &&
-        this.canPasteOrDrop_(dataTransfer, destinationPath)) {
-      domElement.classList.add('accepts');
-      this.destinationPath_ = destinationPath;
-    }
-
     // Set the new drop target.
     this.dropTarget_ = domElement;
 
-    // Start timer changing the directory.
-    if (domElement && isDirectory && destinationPath &&
-        this.canPasteOrDrop_(dataTransfer, destinationPath)) {
-      this.navigateTimer_ = setTimeout(function() {
-        if (domElement instanceof DirectoryItem)
-          // Do custom action.
-          (/** @type {DirectoryItem} */ domElement).doDropTargetAction();
-
-        this.directoryModel_.changeDirectory(destinationPath);
-      }.bind(this), 2000);
+    if (!domElement ||
+        !isDirectory ||
+        !this.canPasteOrDrop_(dataTransfer, destinationPath)) {
+      return;
     }
+
+    // Add accept class if the domElement can accept the drag.
+    domElement.classList.add('accepts');
+    this.destinationPath_ = destinationPath;
+
+    // Start timer changing the directory.
+    this.navigateTimer_ = setTimeout(function() {
+      if (domElement instanceof DirectoryItem)
+        // Do custom action.
+        (/** @type {DirectoryItem} */ domElement).doDropTargetAction();
+      this.directoryModel_.changeDirectory(destinationPath);
+    }.bind(this), 2000);
   },
 
   /**
@@ -588,7 +587,8 @@ FileTransferController.prototype = {
   onPaste_: function(event) {
     // Need to update here since 'beforepaste' doesn't fire.
     if (!this.isDocumentWideEvent_() ||
-        !this.canPasteOrDrop_(event.clipboardData)) {
+        !this.canPasteOrDrop_(event.clipboardData,
+                              this.currentDirectoryContentPath)) {
       return;
     }
     event.preventDefault();
@@ -611,30 +611,27 @@ FileTransferController.prototype = {
     if (!this.isDocumentWideEvent_())
       return;
     // queryCommandEnabled returns true if event.returnValue is false.
-    event.returnValue = !this.canPasteOrDrop_(event.clipboardData);
+    event.returnValue = !this.canPasteOrDrop_(
+        event.clipboardData, this.currentDirectoryContentPath);
   },
 
   /**
    * @this {FileTransferController}
    * @param {DataTransfer} dataTransfer Data transfer object.
-   * @param {string=} opt_destinationPath Destination path.
-   * @return {boolean}  Returns true if items stored in {@code dataTransfer} can
-   *     be pasted to {@code opt_destinationPath}. Otherwise, returns false.
+   * @param {string?} destinationPath Destination path.
+   * @return {boolean} Returns true if items stored in {@code dataTransfer} can
+   *     be pasted to {@code destinationPath}. Otherwise, returns false.
    */
-  canPasteOrDrop_: function(dataTransfer, opt_destinationPath) {
-    var destinationPath = opt_destinationPath ||
-                          this.directoryModel_.getCurrentDirPath();
+  canPasteOrDrop_: function(dataTransfer, destinationPath) {
+    if (!destinationPath) {
+      return false;
+    }
     if (this.directoryModel_.isPathReadOnly(destinationPath)) {
       return false;
     }
-    // TODO(hirono): Following two lines disable copying files from search
-    // results and should be removed after fixing blocker
-    // bugs. http://crbug.com/168271
-    if (this.directoryModel_.isSearching())
-      return false;
-
-    if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') == -1)
+    if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') == -1) {
       return false;  // Unsupported type of content.
+    }
     if (dataTransfer.getData('fs/tag') == '') {
       // Data protected. Other checks are not possible but it makes sense to
       // let the user try.
@@ -668,7 +665,8 @@ FileTransferController.prototype = {
     // should be used.
     var result;
     this.simulateCommand_('paste', function(event) {
-      result = this.canPasteOrDrop_(event.clipboardData);
+      result = this.canPasteOrDrop_(event.clipboardData,
+                                    this.currentDirectoryContentPath);
     }.bind(this));
     return result;
   },
@@ -739,6 +737,17 @@ FileTransferController.prototype = {
     } else {
       prepareFileObjects();
     }
+  },
+
+  /**
+   * Path of directory that is displaying now.
+   * If search result is displaying now, this is null.
+   * @this {FileTransferController}
+   * @return {string} Path of directry that is displaying now.
+   */
+  get currentDirectoryContentPath() {
+    return this.directoryModel_.isSearching() ?
+        null : this.directoryModel_.getCurrentDirPath();
   },
 
   /**
