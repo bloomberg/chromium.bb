@@ -16,6 +16,7 @@
 
 namespace media {
 class AudioBus;
+class AudioFifo;
 class AudioOutputDevice;
 class AudioParameters;
 }

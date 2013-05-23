@@ -12,6 +12,7 @@
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_fifo.h"
 
 namespace content {
 

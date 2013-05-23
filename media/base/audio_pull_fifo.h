@@ -6,10 +6,10 @@
 #define MEDIA_BASE_AUDIO_PULL_FIFO_H_
 
 #include "base/callback.h"
-#include "media/base/audio_fifo.h"
 #include "media/base/media_export.h"
 
 namespace media {
+class AudioBus;
 
 // A FIFO (First In First Out) buffer to handle mismatches in buffer sizes
 // between a producer and consumer. The consumer will pull data from this FIFO.
@@ -43,17 +43,14 @@ class MEDIA_EXPORT AudioPullFifo {
  private:
   // Attempt to fulfill the request using what is available in the FIFO.
   // Append new data to the |destination| starting at |write_pos|.
-  void ReadFromFifo(
-      AudioBus* destination, int* frames_to_provide, int* write_pos);
+  int ReadFromFifo(AudioBus* destination, int frames_to_provide, int write_pos);
 
   // Source of data to the FIFO.
-  ReadCB read_cb_;
-
-  // The actual FIFO.
-  scoped_ptr<AudioFifo> fifo_;
+  const ReadCB read_cb_;
 
   // Temporary audio bus to hold the data from the producer.
-  scoped_ptr<AudioBus> bus_;
+  scoped_ptr<AudioBus> fifo_;
+  int fifo_index_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioPullFifo);
 };

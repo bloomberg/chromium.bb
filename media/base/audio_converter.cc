@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "media/base/audio_bus.h"
 #include "media/base/audio_pull_fifo.h"
 #include "media/base/channel_mixer.h"
 #include "media/base/multi_channel_resampler.h"
