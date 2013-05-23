@@ -61,7 +61,6 @@ EventTarget
 GenerateIsReachable=*
 GetterRaisesException
 Immutable
-ImplementationNamespace=*
 ImplementedAs=*
 InitializedByEventConstructor
 InterfaceName=*

@@ -4234,7 +4234,8 @@ sub GetNativeTypeForConversions
 sub GetNamespaceForInterface
 {
     my $interface = shift;
-    return $interface->extendedAttributes->{"ImplementationNamespace"} || "WebCore";
+    return "WTF" if IsTypedArrayType($interface->name);
+    return "WebCore";
 }
 
 sub GenerateFunctionCallString

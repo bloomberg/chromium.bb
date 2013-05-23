@@ -28,8 +28,7 @@
     ConstructorTemplate=TypedArray,
     CustomToV8,
     DoNotCheckConstants,
-    TypedArray=double,
-    ImplementationNamespace=WTF
+    TypedArray=double
 ] interface Float64Array : ArrayBufferView {
     const unsigned long BYTES_PER_ELEMENT = 8;
 

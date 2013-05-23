@@ -28,8 +28,7 @@
     ConstructorTemplate=TypedArray,
     CustomToV8,
     DoNotCheckConstants,
-    TypedArray=signed char,
-    ImplementationNamespace=WTF
+    TypedArray=signed char
 ] interface Int8Array : ArrayBufferView {
     const unsigned long BYTES_PER_ELEMENT = 1;
 

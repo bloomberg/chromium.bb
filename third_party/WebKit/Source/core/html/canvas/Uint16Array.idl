@@ -28,8 +28,7 @@
     ConstructorTemplate=TypedArray,
     CustomToV8,
     DoNotCheckConstants,
-    TypedArray=unsigned short,
-    ImplementationNamespace=WTF
+    TypedArray=unsigned short
 ] interface Uint16Array : ArrayBufferView {
     const unsigned long BYTES_PER_ELEMENT = 2;
 

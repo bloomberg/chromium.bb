@@ -24,8 +24,7 @@
  */
 
 [
-    CustomConstructor(unsigned long length),
-    ImplementationNamespace=WTF,
+    CustomConstructor(unsigned long length)
 ] interface ArrayBuffer {
     readonly attribute unsigned long byteLength;
     ArrayBuffer slice(long begin, optional long end);

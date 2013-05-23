@@ -28,8 +28,7 @@
     ConstructorTemplate=TypedArray,
     CustomToV8,
     DoNotCheckConstants,
-    TypedArray=unsigned char,
-    ImplementationNamespace=WTF
+    TypedArray=unsigned char
 ] interface Uint8ClampedArray : Uint8Array {
     const unsigned long BYTES_PER_ELEMENT = 1;
 

@@ -24,8 +24,7 @@
  */
 
 [
-    CustomToV8,
-    ImplementationNamespace=WTF
+    CustomToV8
 ] interface ArrayBufferView {
     readonly attribute ArrayBuffer buffer;
     readonly attribute unsigned long byteOffset;
