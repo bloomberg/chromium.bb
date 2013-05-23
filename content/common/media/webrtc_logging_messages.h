@@ -13,7 +13,8 @@
 // Messages sent from the renderer to the browser.
 
 // Request to open a log.
-IPC_MESSAGE_CONTROL0(WebRtcLoggingMsg_OpenLog)
+IPC_MESSAGE_CONTROL1(WebRtcLoggingMsg_OpenLog,
+                     std::string /* app_session_id */)
 
 // Messages sent from the browser to the renderer.
 

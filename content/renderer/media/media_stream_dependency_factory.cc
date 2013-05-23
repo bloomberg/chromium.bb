@@ -792,9 +792,7 @@ void MediaStreamDependencyFactory::CreateWebRtcLoggingHandler(
     const std::string& app_session_id) {
   WebRtcLoggingHandlerImpl* handler =
       new WebRtcLoggingHandlerImpl(filter->io_message_loop());
-
-  // TODO(grunell): Give app session id as parameter.
-  filter->InitLogging(handler);
+  filter->InitLogging(handler, app_session_id);
 }
 
 }  // namespace content
