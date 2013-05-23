@@ -234,8 +234,15 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest, ReloadIndependently) {
   ASSERT_EQ(0U, CountBalloons());
 }
 
+// Test is timing out on Windows http://crbug.com/174705.
+#if defined(OS_WIN)
+#define MAYBE_ReloadIndependentlyChangeTabs DISABLED_ReloadIndependentlyChangeTabs
+#else
+#define MAYBE_ReloadIndependentlyChangeTabs ReloadIndependentlyChangeTabs
+#endif  // defined(OS_WIN)
+
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
-                       ReloadIndependentlyChangeTabs) {
+                       MAYBE_ReloadIndependentlyChangeTabs) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
