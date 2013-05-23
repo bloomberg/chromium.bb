@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/permissions/permission_set.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -230,16 +231,25 @@ string16 ExtensionDisabledGlobalError::GetBubbleViewTitle() {
 }
 
 std::vector<string16> ExtensionDisabledGlobalError::GetBubbleViewMessages() {
-  string16 message = l10n_util::GetStringFUTF16(
+  std::vector<string16> messages;
+  messages.push_back(l10n_util::GetStringFUTF16(
       extension_->is_app() ?
       IDS_APP_DISABLED_ERROR_LABEL : IDS_EXTENSION_DISABLED_ERROR_LABEL,
-      UTF8ToUTF16(extension_->name()));
-  return std::vector<string16>(1, message);
+      UTF8ToUTF16(extension_->name())));
+  messages.push_back(l10n_util::GetStringUTF16(
+      IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO));
+  std::vector<string16> permission_warnings =
+      extension_->GetActivePermissions()->GetWarningMessages(
+          extension_->GetType());
+  for (size_t i = 0; i < permission_warnings.size(); ++i) {
+    messages.push_back(l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_PERMISSION_LINE, permission_warnings[i]));
+  }
+  return messages;
 }
 
 string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
-  return l10n_util::GetStringUTF16(
-      IDS_EXTENSION_DISABLED_ERROR_ENABLE_BUTTON);
+  return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON);
 }
 
 string16 ExtensionDisabledGlobalError::GetBubbleViewCancelButtonLabel() {
@@ -251,9 +261,10 @@ void ExtensionDisabledGlobalError::OnBubbleViewDidClose(Browser* browser) {
 
 void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
     Browser* browser) {
-  scoped_ptr<ExtensionInstallPrompt> install_ui(
-      ExtensionInstallUI::CreateInstallPromptWithBrowser(browser));
-  new ExtensionDisabledDialogDelegate(service_, install_ui.Pass(), extension_);
+  // Delay extension reenabling so this bubble closes properly.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&ExtensionService::GrantPermissionsAndEnableExtension,
+                 service_->AsWeakPtr(), extension_));
 }
 
 void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
