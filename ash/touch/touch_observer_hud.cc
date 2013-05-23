@@ -89,7 +89,7 @@ int GetTrackingId(const ui::TouchEvent& event) {
     return 0;
 #if defined(USE_XI2_MT)
   ui::ValuatorTracker* valuators = ui::ValuatorTracker::GetInstance();
-  float tracking_id;
+  double tracking_id;
   if (valuators->ExtractValuator(*event.native_event(),
                                  ui::ValuatorTracker::VAL_TRACKING_ID,
                                  &tracking_id)) {

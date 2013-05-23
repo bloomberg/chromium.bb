@@ -67,20 +67,20 @@ class UI_EXPORT ValuatorTracker {
   // Extract the Valuator from the XEvent. Return true and the value is set
   // if the Valuator is found, false and value unchanged if the Valuator
   // is not found.
-  bool ExtractValuator(const XEvent& xev, Valuator val, float* value);
+  bool ExtractValuator(const XEvent& xev, Valuator val, double* value);
 
   // Normalize the Valuator with value on deviceid to fall into [0, 1].
   // *value = (*value - min_value_of_tp) / (max_value_of_tp - min_value_of_tp)
   // Returns true and sets the normalized value in|value| if normalization is
   // successful. Returns false and |value| is unchanged otherwise.
-  bool NormalizeValuator(unsigned int deviceid, Valuator val, float* value);
+  bool NormalizeValuator(unsigned int deviceid, Valuator val, double* value);
 
   // Extract the range of the Valuator. Return true if the range is available
   // and written into min & max, false if the range is not available.
   bool GetValuatorRange(unsigned int deviceid,
                         Valuator val,
-                        float* min,
-                        float* max);
+                        double* min,
+                        double* max);
 
   // Sets up the internal bookkeeping of the valuator information. It currently
   // does this for touch devices only.
@@ -101,13 +101,13 @@ class UI_EXPORT ValuatorTracker {
 
   // Index table to find the min & max value of the Valuator on a specific
   // device.
-  int valuator_min_[kMaxDeviceNum][VAL_LAST_ENTRY];
-  int valuator_max_[kMaxDeviceNum][VAL_LAST_ENTRY];
+  double valuator_min_[kMaxDeviceNum][VAL_LAST_ENTRY];
+  double valuator_max_[kMaxDeviceNum][VAL_LAST_ENTRY];
 
   // Table to keep track of the last seen value for the specified valuator for
   // a device. Defaults to 0 if the valuator was not specified in an earlier
   // event.
-  float last_seen_valuator_[kMaxDeviceNum][VAL_LAST_ENTRY];
+  double last_seen_valuator_[kMaxDeviceNum][VAL_LAST_ENTRY];
 
   DISALLOW_COPY_AND_ASSIGN(ValuatorTracker);
 };

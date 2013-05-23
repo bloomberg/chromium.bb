@@ -537,7 +537,7 @@ bool TouchEventIsGeneratedHack(const base::NativeEvent& native_event) {
     return false;
 
   // Radius is in pixels, and the valuator is the diameter in pixels.
-  float radius = ui::GetTouchRadiusX(native_event), min, max;
+  double radius = ui::GetTouchRadiusX(native_event), min, max;
   unsigned int deviceid =
       static_cast<XIDeviceEvent*>(native_event->xcookie.data)->sourceid;
   if (!ui::ValuatorTracker::GetInstance()->GetValuatorRange(
@@ -647,7 +647,7 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
 
   ui::ValuatorTracker* valuators = ui::ValuatorTracker::GetInstance();
 
-  float slot;
+  double slot;
   if (!valuators->ExtractValuator(
       *native_event, ui::ValuatorTracker::VAL_SLOT_ID, &slot))
     return ui::ET_UNKNOWN;
@@ -657,7 +657,7 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
     return ui::ET_TOUCH_PRESSED;
   }
 
-  float tracking;
+  double tracking;
   if (!valuators->ExtractValuator(
       *native_event, ui::ValuatorTracker::VAL_TRACKING_ID, &tracking))
     return ui::ET_UNKNOWN;
@@ -671,9 +671,9 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
 #endif  // defined(USE_XI2_MT)
 }
 
-float GetTouchParamFromXEvent(XEvent* xev,
+double GetTouchParamFromXEvent(XEvent* xev,
                               ui::ValuatorTracker::Valuator val,
-                              float default_value) {
+                              double default_value) {
   ui::ValuatorTracker::GetInstance()->ExtractValuator(
       *xev, val, &default_value);
   return default_value;
@@ -845,7 +845,7 @@ base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
       break;
     case GenericEvent: {
       double start, end;
-      float touch_timestamp;
+      double touch_timestamp;
       if (GetGestureTimes(native_event, &start, &end)) {
         // If the driver supports gesture times, use them.
         return base::TimeDelta::FromMicroseconds(end * 1000000);
@@ -1021,7 +1021,7 @@ gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
 }
 
 int GetTouchId(const base::NativeEvent& xev) {
-  float slot = 0;
+  double slot = 0;
   ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
   if (!factory->IsMultiTouchDevice(xievent->sourceid)) {
@@ -1033,7 +1033,7 @@ int GetTouchId(const base::NativeEvent& xev) {
   ui::ValuatorTracker* valuators = ui::ValuatorTracker::GetInstance();
 
 #if defined(USE_XI2_MT)
-  float tracking_id;
+  double tracking_id;
   if (!valuators->ExtractValuator(
       *xev, ui::ValuatorTracker::VAL_TRACKING_ID, &tracking_id)) {
     LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
@@ -1069,7 +1069,7 @@ float GetTouchAngle(const base::NativeEvent& native_event) {
 }
 
 float GetTouchForce(const base::NativeEvent& native_event) {
-  float force = 0.0;
+  double force = 0.0;
   force = GetTouchParamFromXEvent(native_event,
       ui::ValuatorTracker::VAL_PRESSURE, 0.0);
   unsigned int deviceid =

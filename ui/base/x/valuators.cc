@@ -96,7 +96,7 @@ ValuatorTracker* ValuatorTracker::GetInstance() {
 
 bool ValuatorTracker::ExtractValuator(const XEvent& xev,
                                       Valuator val,
-                                      float* value) {
+                                      double* value) {
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
   if (xiev->sourceid >= kMaxDeviceNum || xiev->deviceid >= kMaxDeviceNum)
     return false;
@@ -129,9 +129,9 @@ bool ValuatorTracker::ExtractValuator(const XEvent& xev,
 
 bool ValuatorTracker::NormalizeValuator(unsigned int deviceid,
                                         Valuator val,
-                                        float* value) {
-  float max_value;
-  float min_value;
+                                        double* value) {
+  double max_value;
+  double min_value;
   if (GetValuatorRange(deviceid, val, &min_value, &max_value)) {
     *value = (*value - min_value) / (max_value - min_value);
     DCHECK(*value >= 0.0 && *value <= 1.0);
@@ -142,8 +142,8 @@ bool ValuatorTracker::NormalizeValuator(unsigned int deviceid,
 
 bool ValuatorTracker::GetValuatorRange(unsigned int deviceid,
                                        Valuator val,
-                                       float* min,
-                                       float* max) {
+                                       double* min,
+                                       double* max) {
   if (valuator_lookup_[deviceid][val] >= 0) {
     *min = valuator_min_[deviceid][val];
     *max = valuator_max_[deviceid][val];
