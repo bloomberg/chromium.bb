@@ -63,7 +63,7 @@ class BrowserGpuChannelHostFactory : public GpuChannelHostFactory {
     int gpu_host_id;
     bool reused_gpu_process;
     IPC::ChannelHandle channel_handle;
-    GPUInfo gpu_info;
+    gpu::GPUInfo gpu_info;
   };
 
   BrowserGpuChannelHostFactory();
@@ -87,7 +87,7 @@ class BrowserGpuChannelHostFactory : public GpuChannelHostFactory {
   void GpuChannelEstablishedOnIO(
       EstablishRequest* request,
       const IPC::ChannelHandle& channel_handle,
-      const GPUInfo& gpu_info);
+      const gpu::GPUInfo& gpu_info);
   static void AddFilterOnIO(
       int gpu_host_id,
       scoped_refptr<IPC::ChannelProxy::MessageFilter> filter);

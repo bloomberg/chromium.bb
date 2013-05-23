@@ -2,6 +2,7 @@ include_rules = [
   "+cc/debug",
   "+chromeos",
   "+content/public",
+  "+gpu/config",
   "+grit/ash_resources.h",
   "+grit/ash_strings.h",
   "+grit/ash_wallpaper_resources.h",

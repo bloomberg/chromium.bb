@@ -118,7 +118,7 @@
 #include "chromeos/display/output_configurator.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/gpu_feature_type.h"
+#include "gpu/config/gpu_feature_type.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -222,7 +222,7 @@ Shell::Shell(ShellDelegate* delegate)
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   bool is_panel_fitting_disabled =
       content::GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-          content::GPU_FEATURE_TYPE_PANEL_FITTING) ||
+          gpu::GPU_FEATURE_TYPE_PANEL_FITTING) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kDisablePanelFitting);
 

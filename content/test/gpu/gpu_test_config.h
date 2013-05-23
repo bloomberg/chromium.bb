@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
-namespace content {
+namespace gpu {
 struct GPUInfo;
 }  // namespace content
 
@@ -96,7 +96,7 @@ class GPUTestBotConfig : public GPUTestConfig {
   virtual void AddGPUVendor(uint32 gpu_vendor) OVERRIDE;
 
   // Return false if gpu_info does not have valid vendor_id and device_id.
-  bool SetGPUInfo(const content::GPUInfo& gpu_info);
+  bool SetGPUInfo(const gpu::GPUInfo& gpu_info);
 
   // Check if the bot config is valid, i.e., if it is one valid test-bot
   // environment. For example, if a field is unknown, or if OS is not one
@@ -110,7 +110,7 @@ class GPUTestBotConfig : public GPUTestConfig {
 
   // Setup the config with the current gpu testing environment.
   // If gpu_info is NULL, collect GPUInfo first.
-  bool LoadCurrentConfig(const content::GPUInfo* gpu_info);
+  bool LoadCurrentConfig(const gpu::GPUInfo* gpu_info);
 
   // Check if this bot's config matches |config_data| or any of the |configs|.
   static bool CurrentConfigMatches(const std::string& config_data);

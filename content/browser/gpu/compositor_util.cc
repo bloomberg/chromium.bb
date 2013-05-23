@@ -9,7 +9,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/gpu_feature_type.h"
+#include "gpu/config/gpu_feature_type.h"
 
 namespace content {
 
@@ -21,7 +21,8 @@ bool CanDoAcceleratedCompositing() {
   // Don't run the field trial if gpu access has been blocked or
   // accelerated compositing is blacklisted.
   if (!manager->GpuAccessAllowed(NULL) ||
-      manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING))
+      manager->IsFeatureBlacklisted(
+          gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING))
     return false;
 
   // Check for SwiftShader.
@@ -37,7 +38,7 @@ bool CanDoAcceleratedCompositing() {
 
 bool IsForceCompositingModeBlacklisted() {
   return GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-      GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE);
+      gpu::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE);
 }
 
 }  // namespace

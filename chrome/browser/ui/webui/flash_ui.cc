@@ -33,7 +33,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "content/public/common/gpu_info.h"
+#include "gpu/config/gpu_info.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -314,7 +314,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
 
   // GPU information.
   AddPair(list, string16(), "--- GPU information ---");
-  content::GPUInfo gpu_info = GpuDataManager::GetInstance()->GetGPUInfo();
+  gpu::GPUInfo gpu_info = GpuDataManager::GetInstance()->GetGPUInfo();
 
   std::string reason;
   if (!GpuDataManager::GetInstance()->GpuAccessAllowed(&reason)) {
@@ -322,8 +322,8 @@ void FlashDOMHandler::MaybeRespondToPage() {
             "GPU access is not allowed: " + reason);
   }
 #if defined(OS_WIN)
-  const content::DxDiagNode& node = gpu_info.dx_diagnostics;
-  for (std::map<std::string, content::DxDiagNode>::const_iterator it =
+  const gpu::DxDiagNode& node = gpu_info.dx_diagnostics;
+  for (std::map<std::string, gpu::DxDiagNode>::const_iterator it =
            node.children.begin();
        it != node.children.end();
        ++it) {

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_GPU_GPU_FEATURE_CHECKER_H_
 
 #include "base/callback.h"
-#include "content/public/browser/gpu_data_manager_observer.h"
-#include "content/public/common/gpu_feature_type.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
+#include "gpu/config/gpu_feature_type.h"
 
 namespace content {
 class GpuDataManager;
@@ -19,7 +19,7 @@ class GPUFeatureChecker : public base::RefCountedThreadSafe<GPUFeatureChecker>,
  public:
   typedef base::Callback<void(bool feature_available)> FeatureAvailableCallback;
 
-  GPUFeatureChecker(content::GpuFeatureType feature,
+  GPUFeatureChecker(gpu::GpuFeatureType feature,
                     FeatureAvailableCallback callback);
 
   // Check to see if |feature_| is available on the current GPU. |callback_|
@@ -34,7 +34,7 @@ class GPUFeatureChecker : public base::RefCountedThreadSafe<GPUFeatureChecker>,
 
   virtual ~GPUFeatureChecker();
 
-  content::GpuFeatureType feature_;
+  gpu::GpuFeatureType feature_;
   FeatureAvailableCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GPUFeatureChecker);

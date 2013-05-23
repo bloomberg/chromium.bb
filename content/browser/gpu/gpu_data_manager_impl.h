@@ -18,10 +18,10 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "content/public/common/gpu_info.h"
 #include "content/public/common/gpu_memory_stats.h"
-#include "content/public/common/gpu_switching_option.h"
 #include "content/public/common/three_d_api_types.h"
+#include "gpu/config/gpu_info.h"
+#include "gpu/config/gpu_switching_option.h"
 
 class CommandLine;
 class GURL;
@@ -58,9 +58,9 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // GpuDataManager implementation.
   virtual void InitializeForTesting(
       const std::string& gpu_blacklist_json,
-      const GPUInfo& gpu_info) OVERRIDE;
+      const gpu::GPUInfo& gpu_info) OVERRIDE;
   virtual bool IsFeatureBlacklisted(int feature) const OVERRIDE;
-  virtual GPUInfo GetGPUInfo() const OVERRIDE;
+  virtual gpu::GPUInfo GetGPUInfo() const OVERRIDE;
   virtual void GetGpuProcessHandles(
       const GetGpuProcessHandlesCallback& callback) const OVERRIDE;
   virtual bool GpuAccessAllowed(std::string* reason) const OVERRIDE;
@@ -88,7 +88,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   // Only update if the current GPUInfo is not finalized.  If blacklist is
   // loaded, run through blacklist and update blacklisted features.
-  void UpdateGpuInfo(const GPUInfo& gpu_info);
+  void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
 
   void UpdateVideoMemoryUsageStats(
       const GPUVideoMemoryUsageStats& video_memory_usage_stats);
@@ -108,7 +108,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Update WebPreferences for renderer based on blacklisting decisions.
   void UpdateRendererWebPrefs(WebPreferences* prefs) const;
 
-  GpuSwitchingOption GetGpuSwitchingOption() const;
+  gpu::GpuSwitchingOption GetGpuSwitchingOption() const;
 
   std::string GetBlacklistVersion() const;
 

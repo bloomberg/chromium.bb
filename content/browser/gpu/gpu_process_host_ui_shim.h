@@ -19,8 +19,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
-#include "content/public/common/gpu_info.h"
 #include "content/public/common/gpu_memory_stats.h"
+#include "gpu/config/gpu_info.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
@@ -93,7 +93,7 @@ class GpuProcessHostUIShim : public IPC::Listener,
                     gfx::Size size);
 #endif
 
-  void OnGraphicsInfoCollected(const GPUInfo& gpu_info);
+  void OnGraphicsInfoCollected(const gpu::GPUInfo& gpu_info);
 
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);

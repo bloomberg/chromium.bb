@@ -6,17 +6,9 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../skia/skia.gyp:skia',
-    '../third_party/re2/re2.gyp:re2',
     '../ui/gl/gl.gyp:gl',
   ],
   'sources': [
-    'gpu/gpu_dx_diagnostics_win.cc',
-    'gpu/gpu_info_collector_android.cc',
-    'gpu/gpu_info_collector_mac.mm',
-    'gpu/gpu_info_collector_win.cc',
-    'gpu/gpu_info_collector_x11.cc',
-    'gpu/gpu_info_collector.cc',
-    'gpu/gpu_info_collector.h',
     'gpu/gpu_main.cc',
     'gpu/gpu_process.cc',
     'gpu/gpu_process.h',
@@ -38,7 +30,6 @@
       'dependencies': [
         '../third_party/angle/src/build_angle.gyp:libEGL',
         '../third_party/angle/src/build_angle.gyp:libGLESv2',
-        '../third_party/libxml/libxml.gyp:libxml',
       ],
       'link_settings': {
         'libraries': [
@@ -77,18 +68,6 @@
           ],
           'msvs_cygwin_shell': 1,
         },
-      ],
-    }],
-    ['OS=="win" and branding=="Chrome"', {
-      'sources': [
-        '../third_party/amd/AmdCfxPxExt.h',
-        '../third_party/amd/amd_videocard_info_win.cc',
-      ],
-    }],
-    ['OS=="linux" and use_x11==1', {
-      'dependencies': [
-        '../build/linux/system.gyp:libpci',
-        '../third_party/libXNVCtrl/libXNVCtrl.gyp:libXNVCtrl',
       ],
     }],
     ['target_arch=="arm" and chromeos == 1', {

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/test/gpu/gpu_test_config.h"
-#include "content/public/common/gpu_info.h"
+#include "gpu/config/gpu_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class GPUTestConfigTest : public testing::Test {
@@ -27,7 +27,7 @@ TEST_F(GPUTestConfigTest, EmptyValues) {
 }
 
 TEST_F(GPUTestConfigTest, SetGPUInfo) {
-  content::GPUInfo gpu_info;
+  gpu::GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x10de;
   gpu_info.gpu.device_id = 0x0640;
   GPUTestBotConfig config;
@@ -242,7 +242,7 @@ TEST_F(GPUTestConfigTest, OverlapsWith) {
 
 TEST_F(GPUTestConfigTest, LoadCurrentConfig) {
   GPUTestBotConfig config;
-  content::GPUInfo gpu_info;
+  gpu::GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x10de;
   gpu_info.gpu.device_id = 0x0640;
   EXPECT_TRUE(config.LoadCurrentConfig(&gpu_info));
