@@ -69,6 +69,15 @@ void FakeSessionManagerClient::NotifyLockScreenDismissed() {
   notify_lock_screen_dismissed_call_count_++;
 }
 
+void FakeSessionManagerClient::RetrieveActiveSessions(
+      const ActiveSessionsCallback& callback) {
+  ActiveSessionsMap sessions;
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   base::Bind(callback,
+                                              sessions,
+                                              true));
+}
+
 void FakeSessionManagerClient::RetrieveDevicePolicy(
     const RetrievePolicyCallback& callback) {
   MessageLoop::current()->PostTask(FROM_HERE,

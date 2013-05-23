@@ -5,12 +5,13 @@
 #ifndef CHROMEOS_DBUS_SESSION_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_SESSION_MANAGER_CLIENT_H_
 
+#include <map>
+#include <string>
+
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
-
-#include <string>
 
 namespace dbus {
 class Bus;
@@ -88,6 +89,25 @@ class CHROMEOS_EXPORT SessionManagerClient {
 
   // Notifies that the lock screen is dismissed.
   virtual void NotifyLockScreenDismissed() = 0;
+
+  // Map that is used to describe the set of active user sessions where |key|
+  // is user_id and |value| is user_id_hash.
+  typedef std::map<std::string, std::string> ActiveSessionsMap;
+
+  // The ActiveSessionsCallback is used for the RetrieveActiveSessions()
+  // method. It receives |sessions| argument where the keys are user_ids for
+  // all users that are currently active and |success| argument which indicates
+  // whether or not the request succeded.
+  typedef base::Callback<void(const ActiveSessionsMap& sessions,
+                              bool success)> ActiveSessionsCallback;
+
+  // Enumerates active user sessions. Usually Chrome naturally keeps track of
+  // active users when they are added into current session. When Chrome is
+  // restarted after crash by session_manager it only receives user_id and
+  // user_id_hash for one user. This method is used to retrieve list of all
+  // active users.
+  virtual void RetrieveActiveSessions(
+      const ActiveSessionsCallback& callback) = 0;
 
   // Used for RetrieveDevicePolicy, RetrievePolicyForUser and
   // RetrieveDeviceLocalAccountPolicy. Takes a serialized protocol buffer as

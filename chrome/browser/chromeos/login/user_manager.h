@@ -134,6 +134,13 @@ class UserManager {
   // Fires NOTIFICATION_SESSION_STARTED.
   virtual void SessionStarted() = 0;
 
+  // Usually is called when Chrome is restarted after a crash and there's an
+  // active session. First user (one that is passed with --login-user) Chrome
+  // session has been already restored at this point. This method asks session
+  // manager for all active user sessions, marks them as logged in
+  // and notifies observers.
+  virtual void RestoreActiveSessions() = 0;
+
   // Creates locally managed user with given display name, and id (e-mail), and
   // sets |display_name| for created user and stores it to
   // persistent list. Returns created user, or existing user if there already

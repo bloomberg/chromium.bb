@@ -125,6 +125,9 @@ void DeviceSettingsTestHelper::RequestUnlockScreen() {}
 
 void DeviceSettingsTestHelper::NotifyLockScreenDismissed() {}
 
+void DeviceSettingsTestHelper::RetrieveActiveSessions(
+      const ActiveSessionsCallback& callback) {}
+
 void DeviceSettingsTestHelper::RetrieveDevicePolicy(
     const RetrievePolicyCallback& callback) {
   device_policy_.retrieve_callbacks_.push_back(callback);

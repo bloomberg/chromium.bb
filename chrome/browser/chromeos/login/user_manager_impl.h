@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -55,6 +56,7 @@ class UserManagerImpl
                             const std::string& username_hash,
                             bool browser_restart) OVERRIDE;
   virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
+  virtual void RestoreActiveSessions() OVERRIDE;
   virtual void SessionStarted() OVERRIDE;
   virtual void RemoveUser(const std::string& email,
                           RemoveUserDelegate* delegate) OVERRIDE;
@@ -266,6 +268,11 @@ class UserManagerImpl
 
   // Insert |user| at the front of the LRU user list..
   void SetLRUUser(User* user);
+
+  // Callback to process RetrieveActiveSessions() request results.
+  void OnRestoreActiveSessions(
+      const SessionManagerClient::ActiveSessionsMap& sessions,
+      bool success);
 
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;

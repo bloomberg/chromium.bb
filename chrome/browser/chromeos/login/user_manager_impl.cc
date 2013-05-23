@@ -9,6 +9,7 @@
 
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -43,6 +44,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
@@ -351,6 +353,12 @@ void UserManagerImpl::SwitchActiveUser(const std::string& email) {
       chrome::NOTIFICATION_ACTIVE_USER_CHANGED,
       content::Source<UserManager>(this),
       content::Details<const User>(active_user_));
+}
+
+void UserManagerImpl::RestoreActiveSessions() {
+  DBusThreadManager::Get()->GetSessionManagerClient()->RetrieveActiveSessions(
+      base::Bind(&UserManagerImpl::OnRestoreActiveSessions,
+                 base::Unretained(this)));
 }
 
 void UserManagerImpl::SessionStarted() {
@@ -1532,6 +1540,18 @@ void UserManagerImpl::SetLRUUser(User* user) {
   if (it != lru_logged_in_users_.end())
     lru_logged_in_users_.erase(it);
   lru_logged_in_users_.insert(lru_logged_in_users_.begin(), user);
+}
+
+void UserManagerImpl::OnRestoreActiveSessions(
+    const SessionManagerClient::ActiveSessionsMap& sessions,
+    bool success) {
+  // TODO(nkostylev): Restore all user sessions (in the background).
+  // This requires first refactoring this flow out of LoginUtils.
+  // 1. UserManager::UserLoggedIn()
+  // 2. InitSessionRestoreStrategy() (OAuth)
+  // 2. ProfileManager::CreateDefaultProfileAsync()
+  // 3. InitProfilePreferences
+  // 4. chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED
 }
 
 }  // namespace chromeos

@@ -640,6 +640,11 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
+  // Restarting Chrome inside existing user session. Possible cases:
+  // 1. Chrome is restarted after crash.
+  // 2. Chrome is started in browser_tests skipping the login flow
+  // 3. Chrome is started on dev machine
+  //    i.e. not on Chrome OS device w/o login flow.
   if (parsed_command_line().HasSwitch(switches::kLoginUser) &&
       !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
     // Make sure we flip every profile to not share proxies if the user hasn't
@@ -651,6 +656,12 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
     // This is done in LoginUtils::OnProfileCreated during normal login.
     LoginUtils::Get()->InitRlzDelayed(profile());
+
+    // Now is the good time to retrieve other logged in users for this session.
+    // First user has been already marked as logged in and active in
+    // PreProfileInit(). Chrome should tread other user in a session as active
+    // in the background.
+    UserManager::Get()->RestoreActiveSessions();
   }
 
   // Make sure the NetworkConfigurationUpdater is ready so that it pushes ONC

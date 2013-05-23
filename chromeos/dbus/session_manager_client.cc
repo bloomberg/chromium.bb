@@ -186,6 +186,21 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerHandleLockScreenDismissed);
   }
 
+  virtual void RetrieveActiveSessions(
+      const ActiveSessionsCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerRetrieveActiveSessions);
+
+    session_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnRetrieveActiveSessions,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   login_manager::kSessionManagerRetrieveActiveSessions,
+                   callback));
+  }
+
   virtual void RetrieveDevicePolicy(
       const RetrievePolicyCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
@@ -333,6 +348,43 @@ class SessionManagerClientImpl : public SessionManagerClient {
     LOG_IF(ERROR, !response)
         << "Failed to call "
         << login_manager::kSessionManagerStartDeviceWipe;
+  }
+
+  // Called when kSessionManagerRetrieveActiveSessions method is complete.
+  void OnRetrieveActiveSessions(const std::string& method_name,
+                                const ActiveSessionsCallback& callback,
+                                dbus::Response* response) {
+    ActiveSessionsMap sessions;
+    bool success = false;
+    if (!response) {
+      LOG(ERROR) << "Failed to call " << method_name;
+      callback.Run(sessions, success);
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    dbus::MessageReader array_reader(NULL);
+
+    if (!reader.PopArray(&array_reader)) {
+      LOG(ERROR) << method_name << " response is incorrect: "
+                 << response->ToString();
+    } else {
+      while (array_reader.HasMoreData()) {
+        dbus::MessageReader dict_entry_reader(NULL);
+        std::string key;
+        std::string value;
+        if (!array_reader.PopDictEntry(&dict_entry_reader) ||
+            !dict_entry_reader.PopString(&key) ||
+            !dict_entry_reader.PopString(&value)) {
+          LOG(ERROR) << method_name << " response is incorrect: "
+                     << response->ToString();
+        } else {
+          sessions[key] = value;
+        }
+      }
+      success = true;
+    }
+    callback.Run(sessions, success);
   }
 
   // Called when kSessionManagerRetrievePolicy or
@@ -483,6 +535,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   virtual void NotifyLockScreenDismissed() OVERRIDE {
     FOR_EACH_OBSERVER(Observer, observers_, ScreenIsUnlocked());
   }
+  virtual void RetrieveActiveSessions(
+      const ActiveSessionsCallback& callback) OVERRIDE {}
   virtual void RetrieveDevicePolicy(
       const RetrievePolicyCallback& callback) OVERRIDE {
     callback.Run(device_policy_);
