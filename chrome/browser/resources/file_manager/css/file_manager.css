@@ -364,6 +364,7 @@ body[new-ui] #volume-list .volume-icon {
 
 body[new-ui] #directory-tree {
   border-right: 1px solid rgb(212, 212, 212);
+  padding-bottom: 52px;  /* height of the preview panel */
 }
 
 #directory-tree .tree-row {
@@ -554,7 +555,7 @@ body[maximized][type='full-page'] .dialog-header {
 }
 
 /* Container for the detail and thumbnail list views. */
-.dialog-body {
+body:not([new-ui]) .dialog-body {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   border-top: 1px solid #d4d4d4;
@@ -565,12 +566,24 @@ body[maximized][type='full-page'] .dialog-header {
 }
 
 body[new-ui] .dialog-body {
+  -webkit-box-flex: 1;
+  -webkit-transition: all 180ms ease;
   border-top: 1px solid rgb(225, 225, 225);
+  position: relative;
 }
 
-.main-panel {
+body:not([new-ui]) .main-panel {
   -webkit-box-flex: 1;
   display: -webkit-box;
+}
+
+body[new-ui] .main-panel {
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 body[new-ui] .dialog-middlebar-contents {
@@ -981,6 +994,10 @@ body:not([new-ui]) button#detail-view:not([disabled]) {
   -webkit-box-flex: 1;
 }
 
+body[new-ui] .main-panel #detail-table > list {
+  padding-bottom: 52px;  /* height of the preview panel */
+}
+
 .spinner {
   background-image: url('../images/common/spinner.svg');
   background-size: 100%;
@@ -1095,6 +1112,10 @@ body:not([new-ui]) button#detail-view:not([disabled]) {
 .thumbnail-grid {
   overflow-y: auto;
   width: 100%;
+}
+
+body[new-ui] .thumbnail-grid {
+  padding-bottom: 52px;  /* height of the preview panel */
 }
 
 body[type='full-page'] .thumbnail-frame > .img-container {
@@ -1394,7 +1415,7 @@ input.rename {
 }
 
 /* Bottom pane describing current selection. */
-.preview-panel {
+body:not([new-ui]) .preview-panel {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-transform: translate(0, 0);
@@ -1408,20 +1429,32 @@ input.rename {
 }
 
 body[new-ui] .preview-panel {
-  background-color: white;
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-transition: background-color 150ms ease;
+  background: rgba(255, 255, 255, 0.9);
   border-top: 1px solid rgb(225, 225, 225);
+  bottom: 0;
+  display: -webkit-box;
   height: 51px;
+  left: 0;
+  opacity: 1;
   padding: 0 12px 0 7px;
+  position: absolute;
+  right: 0;
+  z-index: 3;
 }
 
-.preview-panel[visibility=hiding] {
+body:not([new-ui]) .preview-panel[visibility=hiding],
+body[new-ui] .preview-panel[visibility=hiding] {
   /* Using all seems to cause preview panel and checkbox flicking issue. */
   -webkit-transform: translate(0, 5px);
   opacity: 0;
   transition: opacity 220ms ease;
 }
 
-.preview-panel[visibility=hidden] {
+body:not([new-ui]) .preview-panel[visibility=hidden],
+body[new-ui] .preview-panel[visibility=hidden] {
   display: none;
   opacity: 0;
 }

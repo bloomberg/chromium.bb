@@ -391,6 +391,56 @@ DialogType.isModal = function(type) {
         this.viewOptions_.sortField || 'modificationTime',
         this.viewOptions_.sortDirection || 'desc');
 
+    if (util.platform.newUI()) {
+      /**
+       * If |item| in |parentView| is behind the preview panel, scrolls up the
+       * parent view and make the item visible.
+       *
+       * @param {HTMLElement} item Item to be visible in the parent.
+       * @param {HTMLElement} parentView View contains |selectedItem|.
+       */
+      var ensureItemNotBehindPreviewPanel = function(item, parentView) {
+        var itemRect = item.getBoundingClientRect();
+        if (!itemRect)
+          return;
+        var itemBottom = itemRect.bottom;
+
+        var previewPanel = this.dialogDom_.querySelector('.preview-panel');
+        var previewPanelRects = previewPanel.getBoundingClientRect();
+        var panelHeight = previewPanelRects ? previewPanelRects.height : 0;
+
+        var listRect = parentView.getBoundingClientRect();
+        if (!listRect)
+          return;
+        var listBottom = listRect.bottom - panelHeight;
+
+        if (itemBottom > listBottom) {
+          var scrollOffset = itemBottom - listBottom;
+          parentView.scrollTop += scrollOffset;
+        }
+      }.bind(this);
+
+      var sm = this.directoryModel_.getFileListSelection();
+      sm.addEventListener('change', function() {
+        if (sm.selectedIndexes.length != 1)
+          return;
+        var view = (this.listType_ == FileManager.ListType.DETAIL) ?
+            this.table_.list : this.grid_;
+        var selectedItem = view.getListItemByIndex(sm.selectedIndex);
+        if (!selectedItem)
+          return;
+        ensureItemNotBehindPreviewPanel(selectedItem, view);
+      }.bind(this));
+
+      this.directoryTree_.addEventListener('change', function() {
+        var selectedSubTree = this.directoryTree_.selectedItem;
+        if (!selectedSubTree)
+          return;
+        var selectedItem = selectedSubTree.rowElement;
+        ensureItemNotBehindPreviewPanel(selectedItem, this.directoryTree_);
+      }.bind(this));
+    }
+
     var stateChangeHandler =
         this.onPreferencesChanged_.bind(this);
     chrome.fileBrowserPrivate.onPreferencesChanged.addListener(
