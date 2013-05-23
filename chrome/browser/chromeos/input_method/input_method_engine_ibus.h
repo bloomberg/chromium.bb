@@ -145,9 +145,8 @@ class InputMethodEngineIBus : public InputMethodEngine,
   // This IME ID in ibus.
   std::string ibus_id_;
 
-  // The current object path and it's numerical id.
+  // The current object path.
   dbus::ObjectPath object_path_;
-  int current_object_path_;
 
   // The current auxialy text and it's visiblity.
   scoped_ptr<IBusText> aux_text_;

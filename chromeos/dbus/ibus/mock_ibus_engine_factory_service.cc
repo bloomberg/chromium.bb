@@ -30,6 +30,10 @@ void MockIBusEngineFactoryService::UnsetCreateEngineHandler(
   handler_map_[engine_id].Reset();
 }
 
+dbus::ObjectPath MockIBusEngineFactoryService::GenerateUniqueObjectPath() {
+  return dbus::ObjectPath("/org/freedesktop/IBus/Engine/1");
+}
+
 bool MockIBusEngineFactoryService::CallCreateEngine(
     const std::string& engine_id) {
   if (handler_map_.find(engine_id) != handler_map_.end() &&

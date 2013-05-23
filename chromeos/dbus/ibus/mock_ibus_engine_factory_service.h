@@ -23,6 +23,7 @@ class MockIBusEngineFactoryService : public IBusEngineFactoryService {
       const CreateEngineHandler& create_engine_handler) OVERRIDE;
   virtual void UnsetCreateEngineHandler(
       const std::string& engine_id) OVERRIDE;
+  virtual dbus::ObjectPath GenerateUniqueObjectPath() OVERRIDE;
 
   bool CallCreateEngine(const std::string& engine_id);
 

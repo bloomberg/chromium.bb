@@ -40,6 +40,9 @@ class CHROMEOS_EXPORT IBusEngineFactoryService {
   // Unsets CreateEngine method call handler for |engine_id|.
   virtual void UnsetCreateEngineHandler(const std::string& engine_id) = 0;
 
+  // Generates object path which is unique among all EngineServices.
+  virtual dbus::ObjectPath GenerateUniqueObjectPath() = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, accesses the singleton via DBusThreadManager::Get().
   static CHROMEOS_EXPORT IBusEngineFactoryService* Create(

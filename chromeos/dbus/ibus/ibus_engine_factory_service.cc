@@ -16,10 +16,15 @@
 
 namespace chromeos {
 
+namespace {
+const char* kObjectPathPrefix = "/org/freedesktop/IBus/Engine/";
+}  // namespace
+
 class IBusEngineFactoryServiceImpl : public IBusEngineFactoryService {
  public:
   explicit IBusEngineFactoryServiceImpl(dbus::Bus* bus)
       : bus_(bus),
+        object_path_id_(0),
         weak_ptr_factory_(this) {
     exported_object_ = bus_->GetExportedObject(
         dbus::ObjectPath(ibus::engine_factory::kServicePath));
@@ -50,6 +55,12 @@ class IBusEngineFactoryServiceImpl : public IBusEngineFactoryService {
   virtual void UnsetCreateEngineHandler(
       const std::string& engine_id) OVERRIDE {
     create_engine_callback_map_[engine_id].Reset();
+  }
+
+  // IBusEngineFactoryService override.
+  virtual dbus::ObjectPath GenerateUniqueObjectPath() OVERRIDE {
+    return dbus::ObjectPath(kObjectPathPrefix +
+                            base::IntToString(object_path_id_++));
   }
 
  private:
@@ -102,6 +113,7 @@ class IBusEngineFactoryServiceImpl : public IBusEngineFactoryService {
 
   dbus::Bus* bus_;
   scoped_refptr<dbus::ExportedObject> exported_object_;
+  uint32 object_path_id_;
   base::WeakPtrFactory<IBusEngineFactoryServiceImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IBusEngineFactoryServiceImpl);
@@ -112,7 +124,8 @@ class IBusEngineFactoryServiceImpl : public IBusEngineFactoryService {
 // TODO(nona): Use this on ChromeOS device once crbug.com/171351 is fixed.
 class IBusEngineFactoryServiceDaemonlessImpl : public IBusEngineFactoryService {
  public:
-  IBusEngineFactoryServiceDaemonlessImpl() {}
+  IBusEngineFactoryServiceDaemonlessImpl()
+      : object_path_id_(0) {}
   virtual ~IBusEngineFactoryServiceDaemonlessImpl() {}
 
   // IBusEngineFactoryService override.
@@ -128,7 +141,16 @@ class IBusEngineFactoryServiceDaemonlessImpl : public IBusEngineFactoryService {
     IBusBridge::Get()->UnsetCreateEngineHandler(engine_id);
   }
 
+  // IBusEngineFactoryService override.
+  virtual dbus::ObjectPath GenerateUniqueObjectPath() OVERRIDE {
+    // ObjectPath is not used in non-ibus-daemon implementation. Passing dummy
+    // valid and unique dummy object path.
+    return dbus::ObjectPath("/dummy/object/path" +
+                            base::IntToString(object_path_id_++));
+  }
+
  private:
+  uint32 object_path_id_;
   DISALLOW_COPY_AND_ASSIGN(IBusEngineFactoryServiceDaemonlessImpl);
 };
 
