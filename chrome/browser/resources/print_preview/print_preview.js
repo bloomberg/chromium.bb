@@ -138,8 +138,8 @@ cr.define('print_preview', function() {
      * @type {!print_preview.MarginSettings}
      * @private
      */
-    this.marginSettings_ = new print_preview.MarginSettings(
-        this.printTicketStore_);
+    this.marginSettings_ =
+        new print_preview.MarginSettings(this.printTicketStore_.marginsType);
     this.addChild(this.marginSettings_);
 
     /**

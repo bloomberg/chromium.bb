@@ -160,7 +160,7 @@ cr.define('print_preview', function() {
       if (!this.hasPreviewChanged_()) {
         // Changes to these ticket items might not trigger a new preview, but
         // they still need to be recorded.
-        this.marginsType_ = this.printTicketStore_.getMarginsType();
+        this.marginsType_ = this.printTicketStore_.marginsType.getValue();
         return false;
       }
       this.isLandscapeEnabled_ = this.printTicketStore_.isLandscapeEnabled();
@@ -169,7 +169,7 @@ cr.define('print_preview', function() {
       this.colorValue_ = this.printTicketStore_.color.getValue();
       this.isFitToPageEnabled_ = this.printTicketStore_.fitToPage.getValue();
       this.pageRanges_ = this.printTicketStore_.pageRange.getPageRanges();
-      this.marginsType_ = this.printTicketStore_.getMarginsType();
+      this.marginsType_ = this.printTicketStore_.marginsType.getValue();
       this.isCssBackgroundEnabled_ =
           this.printTicketStore_.cssBackground.getValue();
       this.isSelectionOnlyEnabled_ =
@@ -273,11 +273,11 @@ cr.define('print_preview', function() {
           this.pageRanges_ == null ||
           !areRangesEqual(ticketStore.pageRange.getPageRanges(),
                           this.pageRanges_) ||
-          (ticketStore.getMarginsType() != this.marginsType_ &&
-              ticketStore.getMarginsType() !=
-                  print_preview.ticket_items.MarginsType.Value.CUSTOM) ||
-          (ticketStore.getMarginsType() ==
-              print_preview.ticket_items.MarginsType.Value.CUSTOM &&
+          (!ticketStore.marginsType.isValueEqual(this.marginsType_) &&
+              !ticketStore.marginsType.isValueEqual(
+                  print_preview.ticket_items.MarginsType.Value.CUSTOM)) ||
+          (ticketStore.marginsType.isValueEqual(
+              print_preview.ticket_items.MarginsType.Value.CUSTOM) &&
               !ticketStore.customMargins.isValueEqual(
                   this.documentInfo_.margins)) ||
           !ticketStore.cssBackground.isValueEqual(

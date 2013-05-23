@@ -158,7 +158,7 @@ cr.define('print_preview', function() {
         'color': printTicketStore.color.getValue() ?
             NativeLayer.ColorMode_.COLOR : NativeLayer.ColorMode_.GRAY,
         'headerFooterEnabled': printTicketStore.isHeaderFooterEnabled(),
-        'marginsType': printTicketStore.getMarginsType(),
+        'marginsType': printTicketStore.marginsType.getValue(),
         'isFirstRequest': requestId == 0,
         'requestID': requestId,
         'previewModifiable': documentInfo.isModifiable,
@@ -186,8 +186,8 @@ cr.define('print_preview', function() {
         ticket['cloudPrintID'] = destination.id;
       }
 
-      if (printTicketStore.hasMarginsCapability() &&
-          printTicketStore.getMarginsType() ==
+      if (printTicketStore.marginsType.isCapabilityAvailable() &&
+          printTicketStore.marginsType.getValue() ==
               print_preview.ticket_items.MarginsType.Value.CUSTOM) {
         var customMargins = printTicketStore.customMargins.getValue();
         var orientationEnum =
@@ -230,7 +230,7 @@ cr.define('print_preview', function() {
         'color': printTicketStore.color.getValue() ?
             NativeLayer.ColorMode_.COLOR : NativeLayer.ColorMode_.GRAY,
         'headerFooterEnabled': printTicketStore.isHeaderFooterEnabled(),
-        'marginsType': printTicketStore.getMarginsType(),
+        'marginsType': printTicketStore.marginsType.getValue(),
         'generateDraftData': true, // TODO(rltoscano): What should this be?
         'duplex': printTicketStore.duplex.getValue() ?
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
@@ -255,9 +255,9 @@ cr.define('print_preview', function() {
         ticket['cloudPrintID'] = destination.id;
       }
 
-      if (printTicketStore.hasMarginsCapability() &&
-          printTicketStore.getMarginsType() ==
-              print_preview.ticket_items.MarginsType.Value.CUSTOM) {
+      if (printTicketStore.marginsType.isCapabilityAvailable() &&
+          printTicketStore.marginsType.isValueEqual(
+              print_preview.ticket_items.MarginsType.Value.CUSTOM)) {
         var customMargins = printTicketStore.customMargins.getValue();
         var orientationEnum =
             print_preview.ticket_items.CustomMargins.Orientation;

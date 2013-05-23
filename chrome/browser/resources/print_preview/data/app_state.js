@@ -81,11 +81,6 @@ cr.define('print_preview', function() {
       return this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED];
     },
 
-    /** @return {print_preview.ticket_items.MarginsType.Value} Margins type. */
-    get marginsType() {
-      return this.state_[AppState.Field.MARGINS_TYPE];
-    },
-
     /** @return {?boolean} Whether the header-footer option is enabled. */
     get isHeaderFooterEnabled() {
       return this.state_[AppState.Field.IS_HEADER_FOOTER_ENABLED];
@@ -178,16 +173,6 @@ cr.define('print_preview', function() {
      this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED] = isGcpPromoDismissed;
      this.persist_();
    },
-
-    /**
-     * Persists the margins type.
-     * @param {print_preview.ticket_items.MarginsType.Value} marginsType Margins
-     *     type.
-     */
-    persistMarginsType: function(marginsType) {
-      this.state_[AppState.Field.MARGINS_TYPE] = marginsType;
-      this.persist_();
-    },
 
     /**
      * Persists whether header-footer is enabled.

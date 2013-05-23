@@ -426,7 +426,7 @@ TEST_F('PrintPreviewWebUITest',
       $('other-options-settings').querySelector('.header-footer-container'),
       true);
 
-  printPreview.printTicketStore_.updateMarginsType(
+  printPreview.printTicketStore_.marginsType.updateValue(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
   printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(0, 0, 0, 0));
@@ -466,7 +466,7 @@ TEST_F('PrintPreviewWebUITest',
       $('other-options-settings').querySelector('.header-footer-container'),
       true);
 
-  printPreview.printTicketStore_.updateMarginsType(
+  printPreview.printTicketStore_.marginsType.updateValue(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
   printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(36, 36, 36, 36));
@@ -506,7 +506,7 @@ TEST_F('PrintPreviewWebUITest',
       $('other-options-settings').querySelector('.header-footer-container'),
       true);
 
-  printPreview.printTicketStore_.updateMarginsType(
+  printPreview.printTicketStore_.marginsType.updateValue(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
   printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(0, 36, 0, 36));
@@ -547,7 +547,7 @@ TEST_F('PrintPreviewWebUITest',
       $('other-options-settings').querySelector('.header-footer-container'),
       true);
 
-  printPreview.printTicketStore_.updateMarginsType(
+  printPreview.printTicketStore_.marginsType.updateValue(
       print_preview.ticket_items.MarginsType.Value.CUSTOM);
   printPreview.printTicketStore_.customMargins.updateValue(
       new print_preview.Margins(0, 36, 36, 36));

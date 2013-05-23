@@ -110,20 +110,20 @@ cr.define('print_preview', function() {
         new print_preview.ticket_items.PageRange(this.documentInfo_);
 
     /**
-     * Margins type ticket item.
-     * @type {!print_preview.ticket_items.MarginsType}
-     * @private
-     */
-    this.marginsType_ =
-        new print_preview.ticket_items.MarginsType(this.documentInfo_);
-
-    /**
      * Custom margins ticket item.
      * @type {!print_preview.ticket_items.CustomMargins}
      * @private
      */
     this.customMargins_ = new print_preview.ticket_items.CustomMargins(
         this.appState_, this.documentInfo_);
+
+    /**
+     * Margins type ticket item.
+     * @type {!print_preview.ticket_items.MarginsType}
+     * @private
+     */
+    this.marginsType_ = new print_preview.ticket_items.MarginsType(
+        this.appState_, this.documentInfo_, this.customMargins_);
 
     /**
      * Header-footer ticket item.
@@ -224,6 +224,10 @@ cr.define('print_preview', function() {
       return this.fitToPage_;
     },
 
+    get marginsType() {
+      return this.marginsType_;
+    },
+
     get pageRange() {
       return this.pageRange_;
     },
@@ -256,7 +260,10 @@ cr.define('print_preview', function() {
       this.selectionOnly_.updateValue(selectionOnly);
 
       // Initialize ticket with user's previous values.
-      this.marginsType_.updateValue(this.appState_.marginsType);
+      if (this.appState_.hasField(print_preview.AppState.Field.MARGINS_TYPE)) {
+        this.marginsType_.updateValue(
+            this.appState_.getField(print_preview.AppState.Field.MARGINS_TYPE));
+      }
       if (this.appState_.hasField(
           print_preview.AppState.Field.CUSTOM_MARGINS)) {
         this.customMargins_.updateValue(this.appState_.getField(
@@ -337,42 +344,7 @@ cr.define('print_preview', function() {
         this.marginsType_.updateValue(
             print_preview.ticket_items.MarginsType.Value.DEFAULT);
         this.customMargins_.updateValue(null);
-        this.appState_.persistMarginsType(
-            print_preview.ticket_items.MarginsType.Value.DEFAULT);
         this.appState_.persistIsLandscapeEnabled(isLandscapeEnabled);
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
-      }
-    },
-
-    /** @return {boolean} Whether the margins capability is available. */
-    hasMarginsCapability: function() {
-      return this.marginsType_.isCapabilityAvailable();
-    },
-
-    /**
-     * @return {!print_preview.ticket_items.MarginsType.Value} Type of
-     *     predefined margins.
-     */
-    getMarginsType: function() {
-      return this.marginsType_.getValue();
-    },
-
-    /**
-     * Updates the type of predefined margins. Dispatches a TICKET_CHANGE event
-     * if the margins type changes.
-     * @param {print_preview.ticket_items.MarginsType.Value} marginsType Type of
-     *     predefined margins.
-     */
-    updateMarginsType: function(marginsType) {
-      if (this.marginsType_.getValue() != marginsType) {
-        this.marginsType_.updateValue(marginsType);
-        this.appState_.persistMarginsType(marginsType);
-        if (marginsType ==
-            print_preview.ticket_items.MarginsType.Value.CUSTOM) {
-          // If CUSTOM, set the value of the custom margins so that it won't be
-          // overridden by the default value.
-          this.customMargins_.updateValue(this.customMargins_.getValue());
-        }
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },
@@ -390,9 +362,9 @@ cr.define('print_preview', function() {
     /** @return {boolean} Whether the ticket is valid for preview generation. */
     isTicketValidForPreview: function() {
       return (!this.copies.isCapabilityAvailable() || this.copies.isValid()) &&
-          (!this.hasMarginsCapability() ||
-              this.getMarginsType() !=
-                  print_preview.ticket_items.MarginsType.Value.CUSTOM ||
+          (!this.marginsType_.isCapabilityAvailable() ||
+              !this.marginsType_.isValueEqual(
+                  print_preview.ticket_items.MarginsType.Value.CUSTOM) ||
               this.customMargins_.isValid());
     },
 
@@ -438,8 +410,6 @@ cr.define('print_preview', function() {
         if (this.marginsType_.getValue() ==
             print_preview.ticket_items.MarginsType.Value.CUSTOM) {
           this.marginsType_.updateValue(
-              print_preview.ticket_items.MarginsType.Value.DEFAULT);
-          this.appState_.persistMarginsType(
               print_preview.ticket_items.MarginsType.Value.DEFAULT);
         }
         cr.dispatchSimpleEvent(

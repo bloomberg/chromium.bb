@@ -9,20 +9,29 @@ cr.define('print_preview.ticket_items', function() {
    * Margins type ticket item whose value is a
    * {@link print_preview.ticket_items.MarginsType.Value} that indicates what
    * predefined margins type to use.
+   * @param {!print_preview.AppState} appState App state persistence object to
+   *     save the state of the margins type selection.
    * @param {!print_preview.DocumentInfo} documentInfo Information about the
    *     document to print.
+   * @param {!print_preview.CustomMargins} customMargins Custom margins ticket
+   *     item, used to write when margins type changes.
    * @constructor
    * @extends {print_preview.ticket_items.TicketItem}
    */
-  function MarginsType(documentInfo) {
-    print_preview.ticket_items.TicketItem.call(this);
+  function MarginsType(appState, documentInfo, customMargins) {
+    print_preview.ticket_items.TicketItem.call(
+        this,
+        appState,
+        print_preview.AppState.Field.MARGINS_TYPE,
+        null /*destinationStore*/,
+        documentInfo);
 
     /**
-     * Information about the document to print.
-     * @type {!print_preview.DocumentInfo}
+     * Custom margins ticket item, used to write when margins type changes.
+     * @type {!print_preview.ticket_items.CustomMargins}
      * @private
      */
-    this.documentInfo_ = documentInfo;
+    this.customMargins_ = customMargins;
   };
 
   /**
@@ -47,7 +56,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      return this.documentInfo_.isModifiable;
+      return this.getDocumentInfoInternal().isModifiable;
     },
 
     /** @override */
@@ -58,6 +67,18 @@ cr.define('print_preview.ticket_items', function() {
     /** @override */
     getCapabilityNotAvailableValueInternal: function() {
       return MarginsType.Value.DEFAULT;
+    },
+
+    /** @override */
+    updateValueInternal: function(value) {
+      print_preview.ticket_items.TicketItem.prototype.updateValueInternal.call(
+          this, value);
+      if (this.isValueEqual(
+          print_preview.ticket_items.MarginsType.Value.CUSTOM)) {
+        // If CUSTOM, set the value of the custom margins so that it won't be
+        // overridden by the default value.
+        this.customMargins_.updateValue(this.customMargins_.getValue());
+      }
     }
   };
 

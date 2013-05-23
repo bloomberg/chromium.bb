@@ -7,23 +7,19 @@ cr.define('print_preview', function() {
 
   /**
    * UI component used for setting custom print margins.
-   * @param {!print_preview.PrintTicketStore} printTicketStore Used to read and
-   *     write custom margin values.
    * @param {!print_preview.DocumentInfo} documentInfo Document data model.
+   * @param {!print_preview.ticket_items.MarginsType} marginsTypeTicketItem
+   *     Used to read margins type.
+   * @param {!print_preview.ticket_items.CustomMargins} customMarginsTicketItem
+   *     Used to read and write custom margin values.
+   * @param {!print_preview.MeasurementSystem} measurementSystem Used to convert
+   *     between the system's local units and points.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function MarginControlContainer(printTicketStore, documentInfo,
-                                  customMarginsTicketItem) {
+  function MarginControlContainer(documentInfo, marginsTypeTicketItem,
+                                  customMarginsTicketItem, measurementSystem) {
     print_preview.Component.call(this);
-
-    /**
-     * Used to read and write custom margin values.
-     * @type {!print_preview.PrintTicketStore}
-     * @private
-     */
-    // TODO(rltoscano): Replace with marginsTypeTicketItem.
-    this.printTicketStore_ = printTicketStore;
 
     /**
      * Document data model.
@@ -31,6 +27,11 @@ cr.define('print_preview', function() {
      * @private
      */
     this.documentInfo_ = documentInfo;
+
+    /**
+     * Margins type ticket item used to read predefined margins type.
+     */
+    this.marginsTypeTicketItem_ = marginsTypeTicketItem;
 
     /**
      * Custom margins ticket item used to read/write custom margin values.
@@ -44,7 +45,7 @@ cr.define('print_preview', function() {
      * @type {!print_preview.MeasurementSystem}
      * @private
      */
-    this.measurementSystem_ = printTicketStore.measurementSystem;
+    this.measurementSystem_ = measurementSystem;
 
     /**
      * Convenience array that contains all of the margin controls.
@@ -171,7 +172,7 @@ cr.define('print_preview', function() {
 
     /** Shows the margin controls if the need to be shown. */
     showMarginControlsIfNeeded: function() {
-      if (this.printTicketStore_.getMarginsType() ==
+      if (this.marginsTypeTicketItem_.getValue() ==
           print_preview.ticket_items.MarginsType.Value.CUSTOM) {
         this.setIsMarginControlsVisible_(true);
       }
@@ -191,24 +192,16 @@ cr.define('print_preview', function() {
           this.getElement(), 'mouseout', this.onMouseOut_.bind(this));
 
       this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.INITIALIZE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.TICKET_CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
           this.documentInfo_,
           print_preview.DocumentInfo.EventType.CHANGE,
           this.onTicketChange_.bind(this));
       this.tracker.add(
-          this.customMarginsTicketItem_,
+          this.marginsTypeTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onTicketChange_.bind(this));
       this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.CAPABILITIES_CHANGE,
+          this.customMarginsTicketItem_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onTicketChange_.bind(this));
 
       for (var orientation in this.controls_) {
@@ -371,8 +364,8 @@ cr.define('print_preview', function() {
         }
         fromElement = fromElement.parentElement;
       }
-      if (this.printTicketStore_.hasMarginsCapability() &&
-          this.printTicketStore_.getMarginsType() ==
+      if (this.marginsTypeTicketItem_.isCapabilityAvailable() &&
+          this.marginsTypeTicketItem_.getValue() ==
               print_preview.ticket_items.MarginsType.Value.CUSTOM) {
         this.setIsMarginControlsVisible_(true);
       }
@@ -420,7 +413,7 @@ cr.define('print_preview', function() {
         control.setIsEnabled(true);
       }
       this.updateClippingMask(this.clippingSize_);
-      if (this.printTicketStore_.getMarginsType() !=
+      if (this.marginsTypeTicketItem_.getValue() !=
           print_preview.ticket_items.MarginsType.Value.CUSTOM) {
         this.setIsMarginControlsVisible_(false);
       }

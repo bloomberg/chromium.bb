@@ -8,20 +8,20 @@ cr.define('print_preview', function() {
   /**
    * Creates a MarginSettings object. This object encapsulates all settings and
    * logic related to the margins mode.
-   * @param {!print_preview.PrintTicketStore} printTicketStore Used to get
-   *     ticket margins value.
+   * @param {!print_preview.ticket_items.MarginsType} marginsTypeTicketItem Used
+   *     to read and write the margins type ticket item.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function MarginSettings(printTicketStore) {
+  function MarginSettings(marginsTypeTicketItem) {
     print_preview.Component.call(this);
 
     /**
-     * Used to get ticket margins value.
-     * @type {!print_preview.PrintTicketStore}
+     * Used to read and write the margins type ticket item.
+     * @type {!print_preview.ticket_items.MarginsType}
      * @private
      */
-    this.printTicketStore_ = printTicketStore;
+    this.marginsTypeTicketItem_ = marginsTypeTicketItem;
   };
 
   /**
@@ -47,17 +47,9 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this.select_, 'change', this.onSelectChange_.bind(this));
       this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.DOCUMENT_CHANGE,
-          this.onPrintTicketStoreChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.TICKET_CHANGE,
-          this.onPrintTicketStoreChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.CAPABILITIES_CHANGE,
-          this.onPrintTicketStoreChange_.bind(this));
+          this.marginsTypeTicketItem_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onMarginsTypeTicketItemChange_.bind(this));
     },
 
     /**
@@ -79,7 +71,7 @@ cr.define('print_preview', function() {
       var marginsType =
           /** @type {!print_preview.ticket_items.MarginsType.Value} */ (
               select.selectedIndex);
-      this.printTicketStore_.updateMarginsType(marginsType);
+      this.marginsTypeTicketItem_.updateValue(marginsType);
     },
 
     /**
@@ -87,10 +79,10 @@ cr.define('print_preview', function() {
      * select option.
      * @private
      */
-    onPrintTicketStoreChange_: function() {
-      if (this.printTicketStore_.hasMarginsCapability()) {
+    onMarginsTypeTicketItemChange_: function() {
+      if (this.marginsTypeTicketItem_.isCapabilityAvailable()) {
         var select = this.select_;
-        var marginsType = this.printTicketStore_.getMarginsType();
+        var marginsType = this.marginsTypeTicketItem_.getValue();
         var selectedMarginsType =
             /** @type {!print_preview.ticket_items.MarginsType.Value} */ (
                 select.selectedIndex);

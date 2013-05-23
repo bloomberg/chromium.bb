@@ -137,7 +137,7 @@ cr.define('print_preview.ticket_items', function() {
     /** @param {!Object} Value to set as the value of the ticket item. */
     updateValue: function(value) {
       if (!this.isValueEqual(value)) {
-        this.value_ = value;
+        this.updateValueInternal(value);
         if (this.appState_) {
           this.appState_.persistField(this.field_, value);
         }
@@ -197,6 +197,15 @@ cr.define('print_preview.ticket_items', function() {
     dispatchChangeEventInternal: function() {
       cr.dispatchSimpleEvent(
           this, print_preview.ticket_items.TicketItem.EventType.CHANGE);
+    },
+
+    /**
+     * Updates the value of the ticket item without dispatching any events or
+     * persisting the value.
+     * @protected
+     */
+    updateValueInternal: function(value) {
+      this.value_ = value;
     },
 
     /**
