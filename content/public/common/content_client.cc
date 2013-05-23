@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "ui/gfx/image/image.h"
-#include "webkit/user_agent/user_agent.h"
+#include "webkit/common/user_agent/user_agent.h"
 
 #if defined(ENABLE_PLUGINS)
 #include "webkit/plugins/ppapi/host_globals.h"

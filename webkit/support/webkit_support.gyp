@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    '../user_agent/webkit_user_agent.gypi',
+    '../common/user_agent/webkit_user_agent.gypi',
   ],
   'conditions': [
     # TODO(stuartmorgan): All dependencies from code built on iOS to

@@ -72,8 +72,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/escape.h"
+#include "webkit/common/user_agent/user_agent_util.h"
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/user_agent/user_agent_util.h"
 
 #if defined(OS_MACOSX)
 #include "ui/base/cocoa/find_pasteboard.h"

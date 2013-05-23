@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/user_agent/user_agent.h"
+#include "webkit/common/user_agent/user_agent.h"
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
-#include "webkit/user_agent/user_agent_util.h"
+#include "webkit/common/user_agent/user_agent_util.h"
 
 namespace webkit_glue {
 

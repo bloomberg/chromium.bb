@@ -32,10 +32,10 @@
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/blob_url_request_job_factory.h"
 #include "webkit/browser/fileapi/file_system_url_request_job_factory.h"
+#include "webkit/common/user_agent/user_agent.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
-#include "webkit/user_agent/user_agent.h"
 
 class TestShellHttpUserAgentSettings : public net::HttpUserAgentSettings {
  public:

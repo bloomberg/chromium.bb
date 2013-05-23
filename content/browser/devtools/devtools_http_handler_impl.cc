@@ -47,8 +47,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "ui/base/layout.h"
-#include "webkit/user_agent/user_agent.h"
-#include "webkit/user_agent/user_agent_util.h"
+#include "webkit/common/user_agent/user_agent.h"
+#include "webkit/common/user_agent/user_agent_util.h"
 
 namespace content {
 

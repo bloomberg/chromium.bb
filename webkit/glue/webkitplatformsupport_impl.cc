@@ -42,6 +42,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "ui/base/layout.h"
 #include "webkit/base/file_path_string_conversions.h"
+#include "webkit/common/user_agent/user_agent.h"
 #include "webkit/glue/fling_curve_configuration.h"
 #include "webkit/glue/touch_fling_gesture_curve.h"
 #include "webkit/glue/web_discardable_memory_impl.h"
@@ -53,7 +54,6 @@
 #include "webkit/media/audio_decoder.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/webplugininfo.h"
-#include "webkit/user_agent/user_agent.h"
 
 #if defined(OS_ANDROID)
 #include "webkit/glue/fling_animator_impl_android.h"

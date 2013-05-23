@@ -11,7 +11,7 @@
 #include "googleurl/src/gurl.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/user_agent/user_agent_util.h"
+#include "webkit/common/user_agent/user_agent_util.h"
 
 // TODO(ios): Investigate merging with chrome_content_client.cc; this would
 // requiring either a lot of ifdefing, or spliting the file into parts.

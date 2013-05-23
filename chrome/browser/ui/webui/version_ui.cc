@@ -19,7 +19,7 @@
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "v8/include/v8.h"
-#include "webkit/user_agent/user_agent_util.h"
+#include "webkit/common/user_agent/user_agent_util.h"
 
 #if defined(ENABLE_THEMES)
 #include "chrome/browser/ui/webui/theme_source.h"

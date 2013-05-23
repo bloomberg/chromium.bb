@@ -16,9 +16,9 @@ include_rules = [
   "+remoting/client/plugin",
   "+sandbox/win/src",
   "+skia",
+  "+webkit/common/user_agent",
   "+webkit/glue",
   "+webkit/plugins",
-  "+webkit/user_agent",
 
   # TODO(jam): remove me once chrome_notifcation_types.h moves to browser
   "+content/public/browser/notification_types.h",
