@@ -26,6 +26,8 @@
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/find_bar/find_bar_controller.h"
+#include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -301,8 +303,8 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ZOrderNormalInstant) {
   view_list.push_back(VIEW_ID_BOOKMARK_BAR);
   view_list.push_back(VIEW_ID_TOOLBAR);
   view_list.push_back(VIEW_ID_INFO_BAR);
-  view_list.push_back(VIEW_ID_FIND_BAR);
   view_list.push_back(VIEW_ID_TAB_CONTENT_AREA);
+  view_list.push_back(VIEW_ID_FIND_BAR);
   view_list.push_back(VIEW_ID_DOWNLOAD_SHELF);
   VerifyZOrder(view_list);
 }
@@ -484,6 +486,26 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffsetInstantNTP) {
   browser()->window()->ToggleBookmarkBar();
   EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR) + bookmarks::kBookmarkBarOverlap,
             [overlay activeContainerOffset]);
+}
+
+// Verify that the find bar is positioned corerctly when a full page instant
+// search result is displayed.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, FindBarOffsetInstant) {
+  // Add bookmark bar and find bar.
+  browser()->window()->ToggleBookmarkBar();
+  browser()->GetFindBarController();
+
+  NSRect bookmark_bar_frame = [GetViewWithID(VIEW_ID_BOOKMARK_BAR) frame];
+  NSRect find_bar_frame = [GetViewWithID(VIEW_ID_FIND_BAR) frame];
+  EXPECT_EQ(NSMinY(bookmark_bar_frame), NSMaxY(find_bar_frame) - 1);
+
+  // Show instant and add a find bar to it.
+  ShowInstantResults();
+  browser()->GetFindBarController()->find_bar()->Show(false);;
+
+  NSRect toolbar_bar_frame = [GetViewWithID(VIEW_ID_TOOLBAR) frame];
+  find_bar_frame = [GetViewWithID(VIEW_ID_FIND_BAR) frame];
+  EXPECT_EQ(NSMinY(toolbar_bar_frame) - 1, NSMaxY(find_bar_frame));
 }
 
 // Verify that if bookmark bar is underneath Instant search results then

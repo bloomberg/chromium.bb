@@ -221,6 +221,7 @@ willPositionSheet:(NSWindow*)sheet
   BOOL placeBookmarkBarBelowInfoBar = [self placeBookmarkBarBelowInfoBar];
   if (!placeBookmarkBarBelowInfoBar)
     maxY = [self layoutBookmarkBarAtMinX:minX maxY:maxY width:width];
+  CGFloat toolbarBottomY = maxY;
 
   // The floating bar backing view doesn't actually add any height.
   NSRect floatingBarBackingRect =
@@ -228,11 +229,8 @@ willPositionSheet:(NSWindow*)sheet
   [self layoutFloatingBarBackingView:floatingBarBackingRect
                     presentationMode:inPresentationMode];
 
-  // Place the find bar immediately below the toolbar/attached bookmark bar. In
-  // presentation mode, it hangs off the top of the screen when the bar is
-  // hidden.  The find bar is unaffected by the side tab positioning.
-  [findBarCocoaController_ positionFindBarViewAtMaxY:maxY maxWidth:width];
-  [fullscreenExitBubbleController_ positionInWindowAtTop:maxY width:width];
+  [fullscreenExitBubbleController_ positionInWindowAtTop:toolbarBottomY
+                                                   width:width];
 
   // If in presentation mode, reset |maxY| to top of screen, so that the
   // floating bar slides over the things which appear to be in the content area.
@@ -278,6 +276,18 @@ willPositionSheet:(NSWindow*)sheet
     toolbarToWebContentsOffset_ = contentAreaTop - maxY;
   }
   [self updateContentOffsets];
+
+  // Place the find bar immediately below the toolbar/attached bookmark bar. In
+  // presentation mode, it hangs off the top of the screen when the bar is
+  // hidden.
+  if ([self currentInstantUIState] ==
+      browser_window_controller::kInstantUIFullPageResults) {
+    [findBarCocoaController_ positionFindBarViewAtMaxY:contentAreaTop - 1
+                                              maxWidth:width];
+  } else {
+    [findBarCocoaController_ positionFindBarViewAtMaxY:toolbarBottomY
+                                              maxWidth:width];
+  }
 
   NSRect contentAreaRect = NSMakeRect(minX, minY, width, contentAreaTop - minY);
   [self layoutTabContentArea:contentAreaRect];
@@ -977,8 +987,8 @@ willPositionSheet:(NSWindow*)sheet
     NSView* relativeView = nil;
     if (inPresentationMode) {
       relativeView = toolbarView;
-    } else if ([self currentInstantUIState] !=
-               browser_window_controller::kInstantUINone) {
+    } else if ([self currentInstantUIState] ==
+               browser_window_controller::kInstantUIOverlay) {
       relativeView = [infoBarContainerController_ view];
     } else {
       relativeView = [self tabContentArea];

@@ -1523,16 +1523,8 @@ enum {
 
   // Create a controller for the findbar.
   findBarCocoaController_.reset([findBarCocoaController retain]);
+  [self layoutSubviews];
   [self updateSubviewZOrder:[self inPresentationMode]];
-
-  // Place the find bar immediately below the toolbar/attached bookmark bar. In
-  // presentation mode, it hangs off the top of the screen when the bar is
-  // hidden.
-  CGFloat maxY = [self placeBookmarkBarBelowInfoBar] ?
-      NSMinY([[toolbarController_ view] frame]) :
-      NSMinY([[bookmarkBarController_ view] frame]);
-  CGFloat maxWidth = NSWidth([[[self window] contentView] frame]);
-  [findBarCocoaController_ positionFindBarViewAtMaxY:maxY maxWidth:maxWidth];
 }
 
 - (NSWindow*)createFullscreenWindow {
