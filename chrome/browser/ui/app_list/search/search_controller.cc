@@ -17,7 +17,11 @@
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore_provider.h"
 #include "content/public/browser/user_metrics.h"
+#include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/app_list/search_box_model.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace app_list {
 
@@ -36,6 +40,11 @@ SearchController::SearchController(Profile* profile,
 SearchController::~SearchController() {}
 
 void SearchController::Init() {
+  search_box_->SetHintText(
+      l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
+  search_box_->SetIcon(*ui::ResourceBundle::GetSharedInstance().
+      GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
+
   mixer_->Init();
 
   AddProvider(Mixer::MAIN_GROUP, scoped_ptr<SearchProvider>(
