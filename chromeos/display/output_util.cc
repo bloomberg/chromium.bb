@@ -8,6 +8,7 @@
 #include <X11/extensions/Xrandr.h>
 #include <X11/Xatom.h>
 
+#include "base/hash.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/sys_byteorder.h"
@@ -20,17 +21,17 @@ const char kInternal_LVDS[] = "LVDS";
 const char kInternal_eDP[] = "eDP";
 
 // Returns 64-bit persistent ID for the specified manufacturer's ID and
-// product_code, and the index of the output it is connected to.
+// product_code_hash, and the index of the output it is connected to.
 // |output_index| is used to distinguish the displays of the same type. For
 // example, swapping two identical display between two outputs will not be
 // treated as swap. The 'serial number' field in EDID isn't used here because
 // it is not guaranteed to have unique number and it may have the same fixed
 // value (like 0).
 int64 GetID(uint16 manufacturer_id,
-            uint16 product_code,
+            uint32 product_code_hash,
             uint8 output_index) {
-  return ((static_cast<int64>(manufacturer_id) << 24) |
-          (static_cast<int64>(product_code) << 8) | output_index);
+  return ((static_cast<int64>(manufacturer_id) << 40) |
+          (static_cast<int64>(product_code_hash) << 8) | output_index);
 }
 
 bool IsRandRAvailable() {
@@ -97,7 +98,6 @@ bool GetEDIDProperty(XID output, unsigned long* nitems, unsigned char** prop) {
 // NULL can be passed for unwanted output parameters.
 bool GetOutputDeviceData(XID output,
                          uint16* manufacturer_id,
-                         uint16* product_code,
                          std::string* human_readable_name) {
   unsigned long nitems = 0;
   unsigned char *prop = NULL;
@@ -105,7 +105,7 @@ bool GetOutputDeviceData(XID output,
     return false;
 
   bool result = ParseOutputDeviceData(
-      prop, nitems, manufacturer_id, product_code, human_readable_name);
+      prop, nitems, manufacturer_id, human_readable_name);
   XFree(prop);
   return result;
 }
@@ -114,19 +114,41 @@ bool GetOutputDeviceData(XID output,
 
 std::string GetDisplayName(XID output_id) {
   std::string display_name;
-  GetOutputDeviceData(output_id, NULL, NULL, &display_name);
+  GetOutputDeviceData(output_id, NULL, &display_name);
   return display_name;
 }
 
 bool GetDisplayId(XID output_id, size_t output_index, int64* display_id_out) {
+  unsigned long nitems = 0;
+  unsigned char* prop = NULL;
+  if (!GetEDIDProperty(output_id, &nitems, &prop))
+    return false;
+
+  bool result =
+      GetDisplayIdFromEDID(prop, nitems, output_index, display_id_out);
+  XFree(prop);
+  return result;
+}
+
+bool GetDisplayIdFromEDID(const unsigned char* prop,
+                          unsigned long nitems,
+                          size_t output_index,
+                          int64* display_id_out) {
   uint16 manufacturer_id = 0;
-  uint16 product_code = 0;
-  if (GetOutputDeviceData(
-          output_id, &manufacturer_id, &product_code, NULL) &&
-      manufacturer_id != 0) {
+  std::string product_name;
+
+  // ParseOutputDeviceData fails if it doesn't have product_name.
+  ParseOutputDeviceData(prop, nitems, &manufacturer_id, &product_name);
+
+  // Generates product specific value from product_name instead of product code.
+  // See crbug.com/240341
+  uint32 product_code_hash = product_name.empty() ?
+      0 : base::Hash(product_name);
+  if (manufacturer_id != 0) {
     // An ID based on display's index will be assigned later if this call
     // fails.
-    *display_id_out = GetID(manufacturer_id, product_code, output_index);
+    *display_id_out = GetID(
+        manufacturer_id, product_code_hash, output_index);
     return true;
   }
   return false;
@@ -135,18 +157,14 @@ bool GetDisplayId(XID output_id, size_t output_index, int64* display_id_out) {
 bool ParseOutputDeviceData(const unsigned char* prop,
                            unsigned long nitems,
                            uint16* manufacturer_id,
-                           uint16* product_code,
                            std::string* human_readable_name) {
   // See http://en.wikipedia.org/wiki/Extended_display_identification_data
   // for the details of EDID data format.  We use the following data:
   //   bytes 8-9: manufacturer EISA ID, in big-endian
-  //   bytes 10-11: represents product code, in little-endian
   //   bytes 54-125: four descriptors (18-bytes each) which may contain
   //     the display name.
   const unsigned int kManufacturerOffset = 8;
   const unsigned int kManufacturerLength = 2;
-  const unsigned int kProductCodeOffset = 10;
-  const unsigned int kProductCodeLength = 2;
   const unsigned int kDescriptorOffset = 54;
   const unsigned int kNumDescriptors = 4;
   const unsigned int kDescriptorLength = 18;
@@ -164,16 +182,6 @@ bool ParseOutputDeviceData(const unsigned char* prop,
 #if defined(ARCH_CPU_LITTLE_ENDIAN)
     *manufacturer_id = base::ByteSwap(*manufacturer_id);
 #endif
-  }
-
-  if (product_code) {
-    if (nitems < kProductCodeOffset + kProductCodeLength) {
-      LOG(ERROR) << "too short EDID data: product code";
-      return false;
-    }
-
-    *product_code = base::ByteSwapToLE16(
-        *reinterpret_cast<const uint16*>(prop + kProductCodeOffset));
   }
 
   if (!human_readable_name)
