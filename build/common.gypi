@@ -2585,6 +2585,11 @@
               }],
             ],
           }],
+          ['OS=="ios"', {
+            'defines': [
+              'NS_BLOCK_ASSERTIONS=1',
+            ],
+          }],
         ],
       },
       #
