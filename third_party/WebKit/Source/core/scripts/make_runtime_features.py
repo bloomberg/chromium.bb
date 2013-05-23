@@ -48,8 +48,8 @@ class RuntimeFeatureWriter(in_generator.Writer):
         'status': None,
     }
 
-    def __init__(self, in_file_path, enabled_features):
-        super(RuntimeFeatureWriter, self).__init__(in_file_path, enabled_features)
+    def __init__(self, in_file_path):
+        super(RuntimeFeatureWriter, self).__init__(in_file_path)
         self._features = self.in_file.name_dictionaries
         # Make sure the resulting dictionaries have all the keys we expect.
         for feature in self._features:

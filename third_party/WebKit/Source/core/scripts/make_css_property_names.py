@@ -2,8 +2,10 @@
 
 import os.path
 import re
+import shlex
 import subprocess
 import sys
+import optparse
 
 from in_file import InFile
 import in_generator
@@ -170,10 +172,18 @@ class CSSPropertiesWriter(in_generator.Writer):
     }
 
     def __init__(self, file_paths, enabled_conditions):
-        in_generator.Writer.__init__(self, file_paths, enabled_conditions)
+        # FIXME: This is a hack.  Writer does not know how to handle
+        # multiple files, so we just pass the first and then ignore
+        # self.in_file in this class.
+        in_generator.Writer.__init__(self, file_paths[0])
         self._enabled_conditions = enabled_conditions
 
-        all_properties = self.in_file.name_dictionaries
+        lines = []
+        for file_path in file_paths:
+            with open(os.path.abspath(file_path)) as in_file:
+                lines += in_file.readlines()
+
+        all_properties = InFile(lines, self.defaults).name_dictionaries
         self._aliases = filter(lambda property: property['alias_for'], all_properties)
         for offset, property in enumerate(self._aliases):
             # Aliases use the enum_name that they are an alias for.
@@ -217,5 +227,48 @@ class CSSPropertiesWriter(in_generator.Writer):
         return gperf.communicate(gperf_input)[0]
 
 
+# FIXME: Some of this logic should be pushed down into in_generator.Maker
+class MakeCSSProperties(object):
+    def _enabled_features_from_defines(self, defines_arg_string):
+        if not defines_arg_string:
+            return []
+
+        defines_strings = shlex.split(defines_arg_string)
+
+        # We only care about feature defines.
+        enable_prefix = 'ENABLE_'
+
+        enabled_features = []
+        for define_string in defines_strings:
+            split_define = define_string.split('=')
+            if split_define[1] != '1':
+                continue
+            define = split_define[0]
+            if not define.startswith(enable_prefix):
+                continue
+            enabled_features.append(define[len(enable_prefix):])
+        return enabled_features
+
+    def main(self, argv):
+        script_name = os.path.basename(argv[0])
+        args = argv[1:]
+        if len(args) < 1:
+            print "USAGE: %i INPUT_FILES" % script_name
+            exit(1)
+
+        # FIXME: This option parsing should be pushed down into in_generator.Maker
+        # but that will require updating all other in_generator scripts.
+        parser = optparse.OptionParser()
+        parser.add_option("--defines")
+        parser.add_option("--output_dir", default=os.getcwd())
+        (options, args) = parser.parse_args()
+
+        enabled_features = self._enabled_features_from_defines(options.defines)
+
+        writer = CSSPropertiesWriter(args, enabled_features)
+        writer.write_header(options.output_dir)
+        writer.write_implmentation(options.output_dir)
+
+
 if __name__ == "__main__":
-    in_generator.Maker(CSSPropertiesWriter).main(sys.argv)
+    MakeCSSProperties().main(sys.argv)

@@ -57,8 +57,8 @@ class StyleBuilderWriter(in_generator.Writer):
         'useauto': False,
     }
 
-    def __init__(self, in_files, enabled_features):
-        super(StyleBuilderWriter, self).__init__(in_files, enabled_features)
+    def __init__(self, in_file_path):
+        super(StyleBuilderWriter, self).__init__(in_file_path)
         self._properties = self.in_file.name_dictionaries
 
         def set_if_none(property, key, value):
