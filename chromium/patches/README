@@ -1,4 +1,5 @@
-Current Status as of May 10, 2013 (M29 roll)
+Current Status as of May 23, 2013
+
 
 Upstream cherry-picks:
 d18341fb1121332056aecc00096159df16d01107:
@@ -22,6 +23,10 @@ e3869dd17ee15a1732dacba24e4cff36dd3d4cc5 and
 5747d835c775597dcfd8ee1c49dfa5c6fe391c7c:
   lavc/x86 constants.c and dsp_util_mmx.[ch] refactoring.  This unblocked
   linking in build_ffmpeg.sh with MSVC.
+
+c54a1565f512858ccfa70392f40f11c098bc1b63
+  fixes read_frame_internal() issues when skipping to keyframes.
+
 
 Current patches:
 
