@@ -37,6 +37,24 @@ namespace printing {
 struct PageSizeMargins;
 class PrepareFrameAndViewForPrint;
 
+// Stores reference to frame using WebVew and unique name.
+// Workaround to modal dialog issue on Linux. crbug.com/236147.
+class FrameReference {
+ public:
+  explicit FrameReference(const WebKit::WebFrame* frame);
+  FrameReference();
+  ~FrameReference();
+
+  void Reset(const WebKit::WebFrame* frame);
+
+  WebKit::WebFrame* GetFrame();
+  WebKit::WebView* view();
+
+ private:
+  WebKit::WebView* view_;
+  WebKit::WebString frame_name_;
+};
+
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
 // We plan on making print asynchronous and that will require copying the DOM
 // of the document and creating a new WebView with the contents.
@@ -389,8 +407,8 @@ class PrintWebViewHelper
     // Helper functions
     int GetNextPageNumber();
     bool IsRendering() const;
-    bool IsModifiable() const;
-    bool HasSelection() const;
+    bool IsModifiable();
+    bool HasSelection();
     bool IsLastPageOfPrintReadyMetafile() const;
     bool IsFinalPageRendered() const;
 
@@ -429,7 +447,7 @@ class PrintWebViewHelper
     void ClearContext();
 
     // Specifies what to render for print preview.
-    WebKit::WebFrame* source_frame_;
+    FrameReference source_frame_;
     WebKit::WebNode source_node_;
 
     scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;

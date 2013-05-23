@@ -399,6 +399,35 @@ bool IsPrintThrottlingDisabled() {
 
 }  // namespace
 
+FrameReference::FrameReference(const WebKit::WebFrame* frame) {
+  Reset(frame);
+}
+
+FrameReference::FrameReference() {
+  Reset(NULL);
+}
+
+FrameReference::~FrameReference() {
+}
+
+void FrameReference::Reset(const WebKit::WebFrame* frame) {
+  if (frame) {
+    view_ = frame->view();
+    frame_name_ = frame->uniqueName();
+  } else {
+    view_ = NULL;
+    frame_name_.reset();
+  }
+}
+
+WebKit::WebFrame* FrameReference::GetFrame() {
+  return view_ ? view_->findFrameByName(frame_name_) : NULL;
+}
+
+WebKit::WebView* FrameReference::view() {
+  return view_;
+}
+
 // static - Not anonymous so that platform implementations can use it.
 void PrintWebViewHelper::PrintHeaderAndFooter(
     WebKit::WebCanvas* canvas,
@@ -497,8 +526,8 @@ class PrepareFrameAndViewForPrint : public WebKit::WebViewClient,
   // Prepares frame for printing.
   void StartPrinting();
 
-  WebKit::WebFrame* frame() const {
-    return frame_;
+  WebKit::WebFrame* frame() {
+    return frame_.GetFrame();
   }
 
   const WebKit::WebNode& node() const {
@@ -513,9 +542,9 @@ class PrepareFrameAndViewForPrint : public WebKit::WebViewClient,
 
   void FinishPrinting();
 
-  bool IsLoadingSelection() const {
+  bool IsLoadingSelection() {
     // It's not selection if not |owns_web_view_|.
-    return owns_web_view_ && frame_ && frame_->isLoading();
+    return owns_web_view_ && frame() && frame()->isLoading();
   }
 
  protected:
@@ -531,7 +560,7 @@ class PrepareFrameAndViewForPrint : public WebKit::WebViewClient,
 
   base::WeakPtrFactory<PrepareFrameAndViewForPrint> weak_ptr_factory_;
 
-  WebKit::WebFrame* frame_;
+  FrameReference frame_;
   WebKit::WebNode node_to_print_;
   bool owns_web_view_;
   WebKit::WebPrintParams web_print_params_;
@@ -561,16 +590,16 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
       is_printing_started_(false) {
   PrintMsg_Print_Params print_params = params;
   if (!should_print_selection_only_ ||
-      !PrintingNodeOrPdfFrame(frame_, node_to_print_)) {
+      !PrintingNodeOrPdfFrame(frame, node_to_print_)) {
     bool fit_to_page = ignore_css_margins &&
                        print_params.print_scaling_option ==
                             WebKit::WebPrintScalingOptionFitToPrintableArea;
     ComputeWebKitPrintParamsInDesiredDpi(params, &web_print_params_);
-    frame_->printBegin(web_print_params_, node_to_print_, NULL);
-    print_params = CalculatePrintParamsForCss(frame_, 0, print_params,
+    frame->printBegin(web_print_params_, node_to_print_, NULL);
+    print_params = CalculatePrintParamsForCss(frame, 0, print_params,
                                               ignore_css_margins, fit_to_page,
                                               NULL);
-    frame_->printEnd();
+    frame->printEnd();
   }
   ComputeWebKitPrintParamsInDesiredDpi(print_params, &web_print_params_);
 }
@@ -590,11 +619,9 @@ void PrepareFrameAndViewForPrint::ResizeForPrinting() {
   print_layout_size.set_height(
       static_cast<int>(static_cast<double>(print_layout_size.height()) * 1.25));
 
-  if (!frame_)
+  if (!frame())
     return;
-
-  WebKit::WebView* web_view = frame_->view();
-
+  WebKit::WebView* web_view = frame_.view();
   // Backup size and offset.
   if (WebKit::WebFrame* web_frame = web_view->mainFrame())
     prev_scroll_offset_ = web_frame->scrollOffset();
@@ -606,12 +633,12 @@ void PrepareFrameAndViewForPrint::ResizeForPrinting() {
 
 void PrepareFrameAndViewForPrint::StartPrinting() {
   ResizeForPrinting();
-  WebKit::WebView* web_view = frame_->view();
+  WebKit::WebView* web_view = frame_.view();
   web_view->settings()->setShouldPrintBackgrounds(should_print_backgrounds_);
   // TODO(vitalybuka): Update call after
   // https://bugs.webkit.org/show_bug.cgi?id=107718 is fixed.
-  expected_pages_count_ = frame_->printBegin(web_print_params_, node_to_print_,
-                                             NULL);
+  expected_pages_count_ =
+      frame()->printBegin(web_print_params_, node_to_print_, NULL);
   is_printing_started_ = true;
 }
 
@@ -629,7 +656,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
     const WebPreferences& preferences) {
   ResizeForPrinting();
   std::string url_str = "data:text/html;charset=utf-8,";
-  url_str.append(frame_->selectionAsMarkup().utf8());
+  url_str.append(frame()->selectionAsMarkup().utf8());
   RestoreSize();
   // Create a new WebView with the same settings as the current display one.
   // Except that we disable javascript (don't want any active content running
@@ -642,12 +669,12 @@ void PrepareFrameAndViewForPrint::CopySelection(
   owns_web_view_ = true;
   webkit_glue::ApplyWebPreferences(prefs, web_view);
   web_view->initializeMainFrame(this);
-  frame_ = web_view->mainFrame();
+  frame_.Reset(web_view->mainFrame());
   node_to_print_.reset();
 
   // When loading is done this will call didStopLoading() and that will do the
   // actual printing.
-  frame_->loadRequest(WebKit::WebURLRequest(GURL(url_str)));
+  frame()->loadRequest(WebKit::WebURLRequest(GURL(url_str)));
 }
 
 void PrepareFrameAndViewForPrint::didStopLoading() {
@@ -671,8 +698,8 @@ gfx::Size PrepareFrameAndViewForPrint::GetPrintCanvasSize() const {
 }
 
 void PrepareFrameAndViewForPrint::RestoreSize() {
-  if (frame_) {
-    WebKit::WebView* web_view = frame_->view();
+  if (frame()) {
+    WebKit::WebView* web_view = frame_.GetFrame()->view();
     web_view->resize(prev_view_size_);
     if (WebKit::WebFrame* web_frame = web_view->mainFrame())
       web_frame->setScrollOffset(prev_scroll_offset_);
@@ -680,23 +707,24 @@ void PrepareFrameAndViewForPrint::RestoreSize() {
 }
 
 void PrepareFrameAndViewForPrint::FinishPrinting() {
-  if (frame_) {
-    WebKit::WebView* web_view = frame_->view();
+  WebKit::WebFrame* frame = frame_.GetFrame();
+  if (frame) {
+    WebKit::WebView* web_view = frame->view();
     if (is_printing_started_) {
       is_printing_started_ = false;
-      frame_->printEnd();
+      frame->printEnd();
       if (!owns_web_view_) {
         web_view->settings()->setShouldPrintBackgrounds(false);
         RestoreSize();
       }
     }
     if (owns_web_view_) {
-      DCHECK(!frame_->isLoading());
+      DCHECK(!frame->isLoading());
       owns_web_view_ = false;
       web_view->close();
     }
   }
-  frame_ = NULL;
+  frame_.Reset(NULL);
   on_ready_.Reset();
 }
 
@@ -1190,6 +1218,8 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
   if (prep_frame_view_)
     return;
 
+  FrameReference frame_ref(frame);
+
   int expected_page_count = 0;
   if (!CalculateNumberOfPages(frame, node, &expected_page_count)) {
     DidFinishPrinting(FAIL_PRINT_INIT);
@@ -1203,13 +1233,14 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
   }
 
   // Ask the browser to show UI to retrieve the final print settings.
-  if (!GetPrintSettingsFromUser(frame, node, expected_page_count)) {
+  if (!GetPrintSettingsFromUser(frame_ref.GetFrame(), node,
+                                expected_page_count)) {
     DidFinishPrinting(OK);  // Release resources and fail silently.
     return;
   }
 
   // Render Pages for printing.
-  if (!RenderPagesForPrint(frame, node)) {
+  if (!RenderPagesForPrint(frame_ref.GetFrame(), node)) {
     LOG(ERROR) << "RenderPagesForPrint failed";
     DidFinishPrinting(FAIL_PRINT);
   }
@@ -1540,7 +1571,7 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
 
 bool PrintWebViewHelper::RenderPagesForPrint(WebKit::WebFrame* frame,
                                              const WebKit::WebNode& node) {
-  if (prep_frame_view_)
+  if (!frame || prep_frame_view_)
     return false;
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   const PrintMsg_Print_Params& print_params = params.params;
@@ -1712,8 +1743,7 @@ bool PrintWebViewHelper::PreviewPageRendered(int page_number,
 }
 
 PrintWebViewHelper::PrintPreviewContext::PrintPreviewContext()
-    : source_frame_(NULL),
-      total_page_count_(0),
+    : total_page_count_(0),
       current_page_index_(0),
       generate_draft_pages_(true),
       print_ready_metafile_page_count_(0),
@@ -1729,7 +1759,7 @@ void PrintWebViewHelper::PrintPreviewContext::InitWithFrame(
   DCHECK(web_frame);
   DCHECK(!IsRendering());
   state_ = INITIALIZED;
-  source_frame_ = web_frame;
+  source_frame_.Reset(web_frame);
   source_node_.reset();
 }
 
@@ -1739,7 +1769,7 @@ void PrintWebViewHelper::PrintPreviewContext::InitWithNode(
   DCHECK(web_node.document().frame());
   DCHECK(!IsRendering());
   state_ = INITIALIZED;
-  source_frame_ = web_node.document().frame();
+  source_frame_.Reset(web_node.document().frame());
   source_node_ = web_node;
 }
 
@@ -1870,13 +1900,13 @@ bool PrintWebViewHelper::PrintPreviewContext::IsRendering() const {
   return state_ == RENDERING || state_ == DONE;
 }
 
-bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
+bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() {
   // The only kind of node we can print right now is a PDF node.
-  return !PrintingNodeOrPdfFrame(source_frame_, source_node_);
+  return !PrintingNodeOrPdfFrame(source_frame(), source_node_);
 }
 
-bool PrintWebViewHelper::PrintPreviewContext::HasSelection() const {
-  return IsModifiable() && source_frame_->hasSelection();
+bool PrintWebViewHelper::PrintPreviewContext::HasSelection() {
+  return IsModifiable() && source_frame()->hasSelection();
 }
 
 bool PrintWebViewHelper::PrintPreviewContext::IsLastPageOfPrintReadyMetafile()
@@ -1903,7 +1933,7 @@ void PrintWebViewHelper::PrintPreviewContext::set_error(
 
 WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::source_frame() {
   DCHECK(state_ != UNINITIALIZED);
-  return source_frame_;
+  return source_frame_.GetFrame();
 }
 
 const WebKit::WebNode&
