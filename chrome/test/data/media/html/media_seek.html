@@ -18,8 +18,7 @@
 
     var SeekTestCase = {
       SHORT_SEEK: 0,
-      LONG_SEEK: 1,
-      BUFFERED_SEEK: 2
+      LONG_SEEK: 1
     }
 
     var CachedState = {
@@ -108,13 +107,6 @@
         case SeekTestCase.LONG_SEEK:
           seekRecords[cacheState][SeekTestCase.LONG_SEEK].push(delta);
           log("long seek in " + delta + "ms.")
-          seekState = SeekTestCase.BUFFERED_SEEK;
-          timer.start();
-          video.currentTime = 1;
-          break;
-        case SeekTestCase.BUFFERED_SEEK:
-          seekRecords[cacheState][SeekTestCase.BUFFERED_SEEK].push(delta);
-          log("buffered seek in " + delta + "ms.")
           IterationTest();
           break;
         default:
