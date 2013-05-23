@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
@@ -40,10 +39,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-
-#if defined(USE_AURA)
-#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#endif
 
 namespace views {
 namespace examples {
