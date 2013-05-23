@@ -938,8 +938,6 @@ webkit.org/b/103926 media/track/opera/track/webvtt/rendering/adhoc/voice_with_ev
 
 # Animations tests use an inherently-flaky timer-based design.
 webkit.org/b/66953 [ Mac Win Debug ] animations/change-one-anim.html [ Failure Pass ]
-webkit.org/b/66953 [ Debug ] animations/play-state-suspend.html [ Failure Pass ]
-webkit.org/b/66953 [ Mac Win Debug ] animations/animation-direction-reverse.html [ Failure Pass ]
 
 webkit.org/b/111612 animations/animation-delay-changed.html [ Failure Pass ]
 
@@ -1817,6 +1815,10 @@ crbug.com/243353 [ Mac ] animations/dynamic-stylesheet-loading.html [ Timeout ]
 crbug.com/243353 [ Mac ] animations/transition-and-animation-1.html [ Timeout ]
 crbug.com/243353 [ Mac ] animations/transition-and-animation-2.html [ Pass Timeout ]
 crbug.com/243353 [ Mac ] animations/suspend-resume-animation.html [ Timeout ]
+crbug.com/243353 [ Mac ] animations/animation-direction-normal.html [ Timeout ]
+crbug.com/243353 [ Mac ] animations/animation-direction-reverse.html [ Timeout ]
+crbug.com/243353 [ Mac ] animations/play-state-suspend.html [ Timeout ]
+crbug.com/243353 [ Mac ] animations/play-state.html [ Timeout ]
 crbug.com/243353 [ Win Linux ] animations/suspend-resume-animation.html [ Failure Pass ]
 crbug.com/243353 [ Win ] animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/243353 [ Mac ] animations/play-state-paused.html [ Timeout ]
@@ -1839,3 +1841,7 @@ crbug.com/243477 plugins/plugin-initiate-popup-window.html [ Failure ]
 crbug.com/243479 fast/loader/recursive-before-unload-crash.html [ Crash Pass ]
 crbug.com/243481 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass ]
 crbug.com/243492 [ Win Mac ] http/tests/inspector-enabled/injected-script-discard.html [ Pass Timeout ]
+crbug.com/243515 [ Win Mac ] fast/autoresize/basic.html [ Pass Timeout ]
+crbug.com/243516 [ Mac ] transitions/transition-hit-test-transform.html [ Timeout ]
+crbug.com/243520 [ Mac ] fast/css/font-weight-1.html [ Failure Pass ]
+crbug.com/243523 http/tests/history/back-with-fragment-change.php [ Pass Timeout Failure ]
