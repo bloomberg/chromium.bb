@@ -145,3 +145,9 @@ IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_SetCursorPos,
 // Ack sent by the viewer process indicating that the SetCursorPos operation
 // was completed.
 IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_SetCursorPosAck)
+
+// Sent from the metro viewer process to the browser process to indicate that
+// the viewer window size has changed.
+IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_WindowSizeChanged,
+                     uint32,   /* width */
+                     uint32)   /* height */
