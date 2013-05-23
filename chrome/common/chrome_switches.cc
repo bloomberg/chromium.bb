@@ -819,14 +819,6 @@ const char kHstsHosts[]                     = "hsts-hosts";
 const char kIgnoreUrlFetcherCertRequests[]  =
     "ignore-urlfetcher-cert-requests";
 
-// Performs importing from another browser. The value associated with this
-// setting encodes the target browser and what items to import.
-const char kImport[]                        = "import";
-
-// Performs bookmark importing from an HTML file. The value associated with
-// this setting encodes the file path. It may be used jointly with kImport.
-const char kImportFromFile[]                = "import-from-file";
-
 // Causes the browser to launch directly in incognito mode.
 const char kIncognito[]                     = "incognito";
 

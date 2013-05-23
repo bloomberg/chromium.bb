@@ -783,9 +783,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       (!force_first_run &&
        parsed_command_line().HasSwitch(switches::kNoFirstRun));
 
-  is_first_run =
-      (force_first_run || first_run::IsChromeFirstRun()) &&
-      !ProfileManager::IsImportProcess(parsed_command_line());
+  is_first_run = force_first_run || first_run::IsChromeFirstRun();
 #endif
 
   scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
@@ -1158,19 +1156,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     return chrome::RESULT_CODE_PACK_EXTENSION_ERROR;
   }
 
-  bool pass_command_line = true;
-
-#if !defined(OS_MACOSX)
-  // In environments other than Mac OS X we support import of settings
-  // from other browsers. In case this process is a short-lived "import"
-  // process that another browser runs just to import the settings, we
-  // don't want to be checking for another browser process, by design.
-  pass_command_line = !ProfileManager::IsImportProcess(parsed_command_line());
-#endif
-
   // If we're being launched just to check the connector policy, we are
   // short-lived and don't want to be passing that switch off.
-  pass_command_line = pass_command_line && !parsed_command_line().HasSwitch(
+  bool pass_command_line = !parsed_command_line().HasSwitch(
       switches::kCheckCloudPrintConnectorPolicy);
 
   if (pass_command_line) {
@@ -1274,16 +1262,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
   // Post-profile init ---------------------------------------------------------
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  // Importing other browser settings is done in a browser-like process
-  // that exits when this task has finished.
-  // TODO(port): Port the Mac's IPC-based implementation to other platforms to
-  //             replace this implementation. http://crbug.com/22142
-  if (ProfileManager::IsImportProcess(parsed_command_line())) {
-    return first_run::ImportNow(profile_, parsed_command_line());
-  }
-#endif
-
 #if defined(OS_WIN)
   // Do the tasks if chrome has been upgraded while it was last running.
   if (!already_running && upgrade_util::DoUpgradeTasks(parsed_command_line()))
@@ -1339,7 +1317,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     first_run::AutoImport(profile_,
                           master_prefs_->homepage_defined,
                           master_prefs_->do_import_items,
-                          master_prefs_->dont_import_items);
+                          master_prefs_->dont_import_items,
+                          master_prefs_->import_bookmarks_path);
+
     // Note: this can pop the first run consent dialog on linux.
     first_run::DoPostImportTasks(profile_, master_prefs_->make_chrome_default);
 

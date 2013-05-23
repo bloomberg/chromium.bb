@@ -15,11 +15,6 @@
 namespace first_run {
 namespace internal {
 
-bool ImportBookmarks(const base::FilePath& import_bookmarks_path) {
-  // http://crbug.com/48880
-  return false;
-}
-
 base::FilePath MasterPrefsPath() {
   return master_prefs::MasterPrefsPath();
 }

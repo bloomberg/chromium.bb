@@ -163,7 +163,6 @@ class Firefox3Observer : public ProfileWriter,
 
   virtual void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
                             const string16& top_level_folder_name) OVERRIDE {
-
     ASSERT_LE(bookmark_count_ + bookmarks.size(),
               arraysize(kFirefox3Bookmarks));
     // Importer should import the FF favorites the same as the list, in the same
@@ -269,9 +268,9 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
       items = items | importer::SEARCH_ENGINES;
 
     // Deletes itself.
-    // TODO(gab): Use ExternalProcessImporterHost on both Windows and Linux.
+    // TODO(gab): Use ExternalProcessImporterHost on Linux as well.
     ImporterHost* host;
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
     host = new ExternalProcessImporterHost;
 #else
     host = new ImporterHost;

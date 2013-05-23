@@ -49,9 +49,10 @@ void ProfileImportHandler::OnImportStart(
 
   // Create worker thread in which importer runs.
   import_thread_.reset(new base::Thread("import_thread"));
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-  if (!import_thread_->StartWithOptions(options)) {
+#if defined(OS_WIN)
+  import_thread_->init_com_with_mta(false);
+#endif
+  if (!import_thread_->Start()) {
     NOTREACHED();
     ImporterCleanup();
   }

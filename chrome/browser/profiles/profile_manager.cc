@@ -713,12 +713,6 @@ void ProfileManager::Observe(
   }
 }
 
-// static
-bool ProfileManager::IsImportProcess(const CommandLine& command_line) {
-  return (command_line.HasSwitch(switches::kImport) ||
-          command_line.HasSwitch(switches::kImportFromFile));
-}
-
 void ProfileManager::SetWillImport() {
   will_import_ = true;
 }
@@ -794,16 +788,13 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
 void ProfileManager::DoFinalInitForServices(Profile* profile,
                                             bool go_off_the_record) {
 #if defined(ENABLE_EXTENSIONS)
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!IsImportProcess(command_line)) {
-    extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
-        !go_off_the_record);
-    // During tests, when |profile| is an instance of TestingProfile,
-    // ExtensionSystem might not create an ExtensionService.
-    if (extensions::ExtensionSystem::Get(profile)->extension_service()) {
-      profile->GetHostContentSettingsMap()->RegisterExtensionService(
-          extensions::ExtensionSystem::Get(profile)->extension_service());
-    }
+  extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
+      !go_off_the_record);
+  // During tests, when |profile| is an instance of TestingProfile,
+  // ExtensionSystem might not create an ExtensionService.
+  if (extensions::ExtensionSystem::Get(profile)->extension_service()) {
+    profile->GetHostContentSettingsMap()->RegisterExtensionService(
+        extensions::ExtensionSystem::Get(profile)->extension_service());
   }
 #endif
 #if defined(ENABLE_MANAGED_USERS)
