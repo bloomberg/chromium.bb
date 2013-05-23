@@ -95,8 +95,6 @@ public:
     virtual void setClosedCaptionsVisible(bool);
     virtual bool closedCaptionsVisible() const { return m_closedCaptionsVisible; }
 
-    virtual bool supportsScanning() const;
-
     virtual void beginScrubbing();
     virtual void endScrubbing();
 

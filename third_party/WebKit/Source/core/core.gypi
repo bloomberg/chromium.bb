@@ -2718,8 +2718,6 @@
             'platform/graphics/SurrogatePairAwareTextIterator.cpp',
             'platform/graphics/SurrogatePairAwareTextIterator.h',
             'platform/graphics/TextRun.cpp',
-            'platform/graphics/TextTrackRepresentation.cpp',
-            'platform/graphics/TextTrackRepresentation.h',
             'platform/graphics/UnitBezier.h',
             'platform/graphics/WidthIterator.cpp',
             'platform/graphics/WidthIterator.h',

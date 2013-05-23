@@ -31,7 +31,6 @@
 #define MediaControlElements_h
 
 #include "core/html/shadow/MediaControlElementTypes.h"
-#include "core/platform/graphics/TextTrackRepresentation.h"
 
 namespace WebCore {
 
@@ -178,46 +177,6 @@ private:
 
 // ----------------------------
 
-class MediaControlClosedCaptionsContainerElement FINAL : public MediaControlDivElement {
-public:
-    static PassRefPtr<MediaControlClosedCaptionsContainerElement> create(Document*);
-
-    virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
-
-private:
-    MediaControlClosedCaptionsContainerElement(Document*);
-    virtual const AtomicString& shadowPseudoId() const OVERRIDE;
-};
-
-// ----------------------------
-
-class MediaControlClosedCaptionsTrackListElement FINAL : public MediaControlDivElement {
-public:
-    static PassRefPtr<MediaControlClosedCaptionsTrackListElement> create(Document*, MediaControls*);
-
-    virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
-
-    void updateDisplay();
-    void resetTrackListMenu() { m_trackListHasChanged = true; }
-
-private:
-    MediaControlClosedCaptionsTrackListElement(Document*, MediaControls*);
-
-    void rebuildTrackListMenu();
-
-    virtual const AtomicString& shadowPseudoId() const OVERRIDE;
-    virtual void defaultEventHandler(Event*) OVERRIDE;
-
-    typedef Vector<RefPtr<Element> > TrackMenuItems;
-    TrackMenuItems m_menuItems;
-    typedef HashMap<RefPtr<Element>, RefPtr<TextTrack> > MenuItemToTrackMap;
-    MenuItemToTrackMap m_menuToTrackMap;
-    MediaControls* m_controls;
-    bool m_trackListHasChanged;
-};
-
-// ----------------------------
-
 class MediaControlTimelineElement FINAL : public MediaControlInputElement {
 public:
     static PassRefPtr<MediaControlTimelineElement> create(Document*, MediaControls*);
@@ -288,7 +247,7 @@ private:
 
 // ----------------------------
 
-class MediaControlTextTrackContainerElement FINAL : public MediaControlDivElement, public TextTrackRepresentationClient {
+class MediaControlTextTrackContainerElement FINAL : public MediaControlDivElement {
 public:
     static PassRefPtr<MediaControlTextTrackContainerElement> create(Document*);
 
@@ -301,10 +260,6 @@ private:
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
 
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
-
-    virtual void paintTextTrackRepresentation(GraphicsContext*, const IntRect&) OVERRIDE;
-    virtual void textTrackRepresentationBoundsChanged(const IntRect&) OVERRIDE;
-    OwnPtr<TextTrackRepresentation> m_textTrackRepresentation;
 
     IntRect m_videoDisplaySize;
     float m_fontSize;

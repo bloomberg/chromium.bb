@@ -278,13 +278,6 @@ bool RenderVideo::supportsAcceleratedRendering() const
     return false;
 }
 
-void RenderVideo::acceleratedRenderingStateChanged()
-{
-    MediaPlayer* p = mediaElement()->player();
-    if (p)
-        p->acceleratedRenderingStateChanged();
-}
-
 static const RenderBlock* rendererPlaceholder(const RenderObject* renderer)
 {
     RenderObject* parent = renderer->parent();

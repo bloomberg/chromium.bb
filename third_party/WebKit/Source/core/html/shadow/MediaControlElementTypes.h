@@ -159,33 +159,6 @@ private:
 
 // ----------------------------
 
-class MediaControlSeekButtonElement : public MediaControlInputElement {
-public:
-    virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
-
-protected:
-    explicit MediaControlSeekButtonElement(Document*, MediaControlElementType);
-
-    virtual void defaultEventHandler(Event*) OVERRIDE;
-    virtual bool isForwardButton() const = 0;
-
-private:
-    void setActive(bool /*flag*/ = true, bool /*pause*/ = false);
-
-    void startTimer();
-    void stopTimer();
-    double nextRate() const;
-    void seekTimerFired(Timer<MediaControlSeekButtonElement>*);
-
-    enum ActionType { Nothing, Play, Pause };
-    ActionType m_actionOnStop;
-    enum SeekType { Skip, Scan };
-    SeekType m_seekType;
-    Timer<MediaControlSeekButtonElement> m_seekTimer;
-};
-
-// ----------------------------
-
 class MediaControlVolumeSliderElement : public MediaControlInputElement {
 public:
     virtual bool willRespondToMouseMoveEvents() OVERRIDE;

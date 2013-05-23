@@ -77,8 +77,6 @@ public:
     virtual void setClosedCaptionsVisible(bool) = 0;
     virtual bool closedCaptionsVisible() const = 0;
 
-    virtual bool supportsScanning() const = 0;
-
     virtual void beginScrubbing() = 0;
     virtual void endScrubbing() = 0;
 

@@ -43,7 +43,6 @@ public:
     static IntSize defaultSize();
 
     bool supportsAcceleratedRendering() const;
-    void acceleratedRenderingStateChanged();
 
     virtual bool shouldDisplayVideo() const;
 

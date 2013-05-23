@@ -51,7 +51,6 @@ class IntRect;
 class IntSize;
 class MediaPlayer;
 class MediaPlayerPrivateInterface;
-class TextTrackRepresentation;
 class TimeRanges;
 class WebKitMediaSource;
 struct MediaPlayerFactory;
@@ -136,7 +135,6 @@ public:
 
     bool supportsFullscreen() const;
     bool supportsSave() const;
-    bool supportsScanning() const;
     PlatformLayer* platformLayer() const;
 
     IntSize naturalSize();
@@ -177,15 +175,8 @@ public:
     double currentTime() const;
     void seek(double time);
 
-    double startTime() const;
-
-    double initialTime() const;
-
     double rate() const;
     void setRate(double);
-
-    bool preservesPitch() const;
-    void setPreservesPitch(bool);
 
     PassRefPtr<TimeRanges> buffered();
     PassRefPtr<TimeRanges> seekable();
@@ -198,12 +189,6 @@ public:
 
     bool muted() const;
     void setMuted(bool);
-
-    bool hasClosedCaptions() const;
-    void setClosedCaptionsVisible(bool closedCaptionsVisible);
-
-    bool autoplay() const;
-    void setAutoplay(bool);
 
     void paint(GraphicsContext*, const IntRect&);
     void paintCurrentFrameInContext(GraphicsContext*, const IntRect&);
@@ -227,7 +212,7 @@ public:
     NetworkState networkState();
 
     enum ReadyState  { HaveNothing, HaveMetadata, HaveCurrentData, HaveFutureData, HaveEnoughData };
-    ReadyState readyState();
+    ReadyState readyState() const;
 
     enum MovieLoadType { Unknown, Download, StoredStream, LiveStream };
     MovieLoadType movieLoadType() const;
@@ -252,12 +237,6 @@ public:
 
     MediaPlayerClient* mediaPlayerClient() const { return m_mediaPlayerClient; }
 
-    bool hasAvailableVideoFrame() const;
-    void prepareForRendering();
-
-    bool canLoadPoster() const;
-    void setPoster(const String&);
-
 #if USE(NATIVE_FULLSCREEN_VIDEO)
     void enterFullscreen();
     void exitFullscreen();
@@ -269,16 +248,12 @@ public:
 
     // whether accelerated rendering is supported by the media engine for the current media.
     bool supportsAcceleratedRendering() const;
-    // called when the rendering system flips the into or out of accelerated rendering mode.
-    void acceleratedRenderingStateChanged();
 
     bool hasSingleSecurityOrigin() const;
 
     bool didPassCORSAccessCheck() const;
 
     double mediaTimeForTimeValue(double) const;
-
-    double maximumDurationToCacheMediaTime() const;
 
     unsigned decodedFrameCount() const;
     unsigned droppedFrameCount() const;
@@ -301,9 +276,6 @@ public:
     void addTextTrack(PassRefPtr<InbandTextTrackPrivate>);
     void removeTextTrack(PassRefPtr<InbandTextTrackPrivate>);
 
-    bool requiresTextTrackRepresentation() const;
-    void setTextTrackRepresentation(TextTrackRepresentation*);
-
 private:
     MediaPlayer(MediaPlayerClient*);
     void loadWithMediaEngine();
@@ -322,8 +294,6 @@ private:
     double m_rate;
     double m_volume;
     bool m_muted;
-    bool m_preservesPitch;
-    bool m_shouldPrepareToRender;
     bool m_contentMIMETypeWasInferredFromExtension;
 
     RefPtr<WebKitMediaSource> m_mediaSource;

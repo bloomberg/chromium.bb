@@ -552,12 +552,6 @@ bool RenderLayerCompositor::updateBacking(RenderLayer* layer, CompositingChangeR
         }
     }
 
-    if (layerChanged && layer->renderer()->isVideo()) {
-        // If it's a video, give the media player a chance to hook up to the layer.
-        RenderVideo* video = toRenderVideo(layer->renderer());
-        video->acceleratedRenderingStateChanged();
-    }
-
     if (layerChanged && layer->renderer()->isRenderPart()) {
         RenderLayerCompositor* innerCompositor = frameContentsCompositor(toRenderPart(layer->renderer()));
         if (innerCompositor && innerCompositor->inCompositingMode())

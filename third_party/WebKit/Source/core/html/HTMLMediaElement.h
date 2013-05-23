@@ -82,7 +82,6 @@ public:
     virtual bool supportsFullscreen() const { return false; };
 
     virtual bool supportsSave() const;
-    virtual bool supportsScanning() const;
     
     PlatformLayer* platformLayer() const;
 
@@ -245,9 +244,6 @@ public:
     virtual void textTrackRemoveCues(TextTrack*, const TextTrackCueList*);
     virtual void textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue>);
     virtual void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>);
-
-    bool requiresTextTrackRepresentation() const;
-    void setTextTrackRepresentation(TextTrackRepresentation*);
 
     // EventTarget function.
     // Both Node (via HTMLElement) and ActiveDOMObject define this method, which

@@ -45,16 +45,14 @@ public:
     virtual void load(const String& url, PassRefPtr<WebKitMediaSource>) = 0;
     virtual void cancelLoad() = 0;
 
-    virtual void prepareToPlay() { }
-    virtual PlatformLayer* platformLayer() const { return 0; }
+    virtual void prepareToPlay() = 0;
+    virtual PlatformLayer* platformLayer() const = 0;
 
     virtual void play() = 0;
     virtual void pause() = 0;
 
-    virtual bool supportsFullscreen() const { return false; }
-    virtual bool supportsSave() const { return false; }
-    virtual bool supportsScanning() const { return false; }
-
+    virtual bool supportsFullscreen() const = 0;
+    virtual bool supportsSave() const = 0;
     virtual IntSize naturalSize() const = 0;
 
     virtual bool hasVideo() const = 0;
@@ -62,36 +60,24 @@ public:
 
     virtual void setVisible(bool) = 0;
 
-    virtual double duration() const { return 0; }
+    virtual double duration() const = 0;
 
-    virtual double currentTime() const { return 0; }
+    virtual double currentTime() const = 0;
 
-    virtual void seek(double) { }
+    virtual void seek(double) = 0;
 
     virtual bool seeking() const = 0;
 
-    virtual double startTime() const { return 0; }
-    virtual double initialTime() const { return 0; }
-
-    virtual void setRate(double) { }
-
-    virtual void setPreservesPitch(bool) { }
+    virtual void setRate(double) = 0;
 
     virtual bool paused() const = 0;
 
-    virtual void setVolume(double) { }
-
-    virtual bool supportsMuting() const { return false; }
-    virtual void setMuted(bool) { }
-
-    virtual bool hasClosedCaptions() const { return false; }    
-    virtual void setClosedCaptionsVisible(bool) { }
+    virtual void setVolume(double) = 0;
 
     virtual MediaPlayer::NetworkState networkState() const = 0;
     virtual MediaPlayer::ReadyState readyState() const = 0;
 
-    virtual PassRefPtr<TimeRanges> seekable() const { return maxTimeSeekable() ? TimeRanges::create(0, maxTimeSeekable()) : TimeRanges::create(); }
-    virtual double maxTimeSeekable() const { return 0; }
+    virtual double maxTimeSeekable() const = 0;
     virtual PassRefPtr<TimeRanges> buffered() const = 0;
 
     virtual bool didLoadingProgress() const = 0;
@@ -100,62 +86,42 @@ public:
 
     virtual void paint(GraphicsContext*, const IntRect&) = 0;
 
-    virtual void paintCurrentFrameInContext(GraphicsContext* c, const IntRect& r) { paint(c, r); }
-    virtual bool copyVideoTextureToPlatformTexture(GraphicsContext3D*, Platform3DObject, GC3Dint, GC3Denum, GC3Denum, bool, bool) { return false; }
+    virtual void paintCurrentFrameInContext(GraphicsContext*, const IntRect&) = 0;
+    virtual bool copyVideoTextureToPlatformTexture(GraphicsContext3D*, Platform3DObject, GC3Dint, GC3Denum, GC3Denum, bool, bool) = 0;
 
-    virtual void setPreload(MediaPlayer::Preload) { }
-
-    virtual bool hasAvailableVideoFrame() const { return readyState() >= MediaPlayer::HaveCurrentData; }
-
-    virtual bool canLoadPoster() const { return false; }
-    virtual void setPoster(const String&) { }
+    virtual void setPreload(MediaPlayer::Preload) = 0;
 
 #if USE(NATIVE_FULLSCREEN_VIDEO)
-    virtual void enterFullscreen() { }
-    virtual void exitFullscreen() { }
-#endif
-
-#if USE(NATIVE_FULLSCREEN_VIDEO)
-    virtual bool canEnterFullscreen() const { return false; }
+    virtual void enterFullscreen() = 0;
+    virtual void exitFullscreen() = 0;
+    virtual bool canEnterFullscreen() const = 0;
 #endif
 
     // whether accelerated rendering is supported by the media engine for the current media.
-    virtual bool supportsAcceleratedRendering() const { return false; }
-    // called when the rendering system flips the into or out of accelerated rendering mode.
-    virtual void acceleratedRenderingStateChanged() { }
+    virtual bool supportsAcceleratedRendering() const = 0;
 
-    virtual bool hasSingleSecurityOrigin() const { return false; }
+    virtual bool hasSingleSecurityOrigin() const = 0;
 
-    virtual bool didPassCORSAccessCheck() const { return false; }
+    virtual bool didPassCORSAccessCheck() const = 0;
 
-    virtual MediaPlayer::MovieLoadType movieLoadType() const { return MediaPlayer::Unknown; }
-
-    virtual void prepareForRendering() { }
+    virtual MediaPlayer::MovieLoadType movieLoadType() const = 0;
 
     // Time value in the movie's time scale. It is only necessary to override this if the media
     // engine uses rational numbers to represent media time.
-    virtual double mediaTimeForTimeValue(double timeValue) const { return timeValue; }
+    virtual double mediaTimeForTimeValue(double timeValue) const = 0;
 
-    // Overide this if it is safe for HTMLMediaElement to cache movie time and report
-    // 'currentTime' as [cached time + elapsed wall time]. Returns the maximum wall time
-    // it is OK to calculate movie time before refreshing the cached time.
-    virtual double maximumDurationToCacheMediaTime() const { return 0; }
-
-    virtual unsigned decodedFrameCount() const { return 0; }
-    virtual unsigned droppedFrameCount() const { return 0; }
-    virtual unsigned audioDecodedByteCount() const { return 0; }
-    virtual unsigned videoDecodedByteCount() const { return 0; }
+    virtual unsigned decodedFrameCount() const = 0;
+    virtual unsigned droppedFrameCount() const = 0;
+    virtual unsigned audioDecodedByteCount() const = 0;
+    virtual unsigned videoDecodedByteCount() const = 0;
 
 #if ENABLE(WEB_AUDIO)
-    virtual AudioSourceProvider* audioSourceProvider() { return 0; }
+    virtual AudioSourceProvider* audioSourceProvider() = 0;
 #endif
 
-    virtual MediaPlayer::MediaKeyException addKey(const String&, const unsigned char*, unsigned, const unsigned char*, unsigned, const String&) { return MediaPlayer::KeySystemNotSupported; }
-    virtual MediaPlayer::MediaKeyException generateKeyRequest(const String&, const unsigned char*, unsigned) { return MediaPlayer::KeySystemNotSupported; }
-    virtual MediaPlayer::MediaKeyException cancelKeyRequest(const String&, const String&) { return MediaPlayer::KeySystemNotSupported; }
-
-    virtual bool requiresTextTrackRepresentation() const { return false; }
-    virtual void setTextTrackRepresentation(TextTrackRepresentation*) { }
+    virtual MediaPlayer::MediaKeyException addKey(const String&, const unsigned char*, unsigned, const unsigned char*, unsigned, const String&) = 0;
+    virtual MediaPlayer::MediaKeyException generateKeyRequest(const String&, const unsigned char*, unsigned) = 0;
+    virtual MediaPlayer::MediaKeyException cancelKeyRequest(const String&, const String&) = 0;
 };
 
 }

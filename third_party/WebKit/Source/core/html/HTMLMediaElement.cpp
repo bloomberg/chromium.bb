@@ -81,6 +81,7 @@
 #include "core/platform/Logging.h"
 #include "core/platform/MIMETypeFromURL.h"
 #include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
@@ -845,7 +846,6 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
 
     if (!autoplay())
         m_player->setPreload(m_preload);
-    m_player->setPreservesPitch(m_webkitPreservesPitch);
 
     if (fastHasAttribute(mutedAttr))
         m_muted = true;
@@ -1794,11 +1794,6 @@ bool HTMLMediaElement::supportsSave() const
     return m_player ? m_player->supportsSave() : false;
 }
 
-bool HTMLMediaElement::supportsScanning() const
-{
-    return m_player ? m_player->supportsScanning() : false;
-}
-
 void HTMLMediaElement::prepareToPlay()
 {
     LOG(Media, "HTMLMediaElement::prepareToPlay(%p)", this);
@@ -1842,8 +1837,7 @@ void HTMLMediaElement::seek(double time, ExceptionCode& ec)
     time = min(time, duration());
 
     // 6 - If the new playback position is less than the earliest possible position, let it be that position instead.
-    double earliestTime = m_player->startTime();
-    time = max(time, earliestTime);
+    time = max(time, 0.0);
 
     // Ask the media engine for the time value in the movie's time scale before comparing with current time. This
     // is necessary because if the seek time is not equal to currentTime but the delta is less than the movie's
@@ -1979,34 +1973,6 @@ double HTMLMediaElement::currentTime() const
         return m_cachedTime;
     }
 
-    // Is it too soon use a cached time?
-    double now = WTF::currentTime();
-    double maximumDurationToCacheMediaTime = m_player->maximumDurationToCacheMediaTime();
-
-    if (maximumDurationToCacheMediaTime && m_cachedTime != MediaPlayer::invalidTime() && !m_paused && now > m_minimumWallClockTimeToCacheMediaTime) {
-        double wallClockDelta = now - m_cachedTimeWallClockUpdateTime;
-
-        // Not too soon, use the cached time only if it hasn't expired.
-        if (wallClockDelta < maximumDurationToCacheMediaTime) {
-            double adjustedCacheTime = m_cachedTime + (m_playbackRate * wallClockDelta);
-
-#if LOG_CACHED_TIME_WARNINGS
-            double delta = adjustedCacheTime - m_player->currentTime();
-            if (delta > minCachedDeltaForWarning)
-                LOG(Media, "HTMLMediaElement::currentTime - WARNING, cached time is %f seconds off of media time when playing", delta);
-#endif
-            return adjustedCacheTime;
-        }
-    }
-
-#if LOG_CACHED_TIME_WARNINGS
-    if (maximumDurationToCacheMediaTime && now > m_minimumWallClockTimeToCacheMediaTime && m_cachedTime != MediaPlayer::invalidTime()) {
-        double wallClockDelta = now - m_cachedTimeWallClockUpdateTime;
-        double delta = m_cachedTime + (m_playbackRate * wallClockDelta) - m_player->currentTime();
-        LOG(Media, "HTMLMediaElement::currentTime - cached time was %f seconds off of media time when it expired", delta);
-    }
-#endif
-
     refreshCachedTime();
 
     return m_cachedTime;
@@ -2023,9 +1989,7 @@ void HTMLMediaElement::setCurrentTime(double time, ExceptionCode& ec)
 
 double HTMLMediaElement::startTime() const
 {
-    if (!m_player)
-        return 0;
-    return m_player->startTime();
+    return 0;
 }
 
 double HTMLMediaElement::initialTime() const
@@ -2033,10 +1997,7 @@ double HTMLMediaElement::initialTime() const
     if (m_fragmentStartTime != MediaPlayer::invalidTime())
         return m_fragmentStartTime;
 
-    if (!m_player)
-        return 0;
-
-    return m_player->initialTime();
+    return 0;
 }
 
 double HTMLMediaElement::duration() const
@@ -2101,11 +2062,7 @@ void HTMLMediaElement::setWebkitPreservesPitch(bool preservesPitch)
     LOG(Media, "HTMLMediaElement::setWebkitPreservesPitch(%s)", boolString(preservesPitch));
 
     m_webkitPreservesPitch = preservesPitch;
-
-    if (!m_player)
-        return;
-
-    m_player->setPreservesPitch(preservesPitch);
+    notImplemented();
 }
 
 bool HTMLMediaElement::ended() const
@@ -3601,17 +3558,6 @@ bool HTMLMediaElement::hasPendingActivity() const
     return (hasAudio() && isPlaying()) || m_asyncEventQueue->hasPendingEvents();
 }
 
-bool HTMLMediaElement::requiresTextTrackRepresentation() const
-{
-    return m_player ? m_player->requiresTextTrackRepresentation() : 0;
-}
-
-void HTMLMediaElement::setTextTrackRepresentation(TextTrackRepresentation* representation)
-{
-    if (m_player)
-        m_player->setTextTrackRepresentation(representation);
-}
-
 bool HTMLMediaElement::isFullscreen() const
 {
     return document()->webkitIsFullScreen() && document()->webkitCurrentFullScreenElement() == this;
@@ -3652,17 +3598,15 @@ PlatformLayer* HTMLMediaElement::platformLayer() const
 
 bool HTMLMediaElement::hasClosedCaptions() const
 {
-    if (m_player && m_player->hasClosedCaptions())
-        return true;
+    if (RuntimeEnabledFeatures::videoTrackEnabled() && m_textTracks) {
+        for (unsigned i = 0; i < m_textTracks->length(); ++i) {
+            if (m_textTracks->item(i)->readinessState() == TextTrack::FailedToLoad)
+                continue;
 
-    if (RuntimeEnabledFeatures::videoTrackEnabled() && m_textTracks)
-    for (unsigned i = 0; i < m_textTracks->length(); ++i) {
-        if (m_textTracks->item(i)->readinessState() == TextTrack::FailedToLoad)
-            continue;
-
-        if (m_textTracks->item(i)->kind() == TextTrack::captionsKeyword()
-            || m_textTracks->item(i)->kind() == TextTrack::subtitlesKeyword())
-            return true;
+            if (m_textTracks->item(i)->kind() == TextTrack::captionsKeyword()
+                || m_textTracks->item(i)->kind() == TextTrack::subtitlesKeyword())
+                return true;
+        }
     }
     return false;
 }
@@ -3690,7 +3634,6 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
         return;
 
     m_closedCaptionsVisible = closedCaptionVisible;
-    m_player->setClosedCaptionsVisible(closedCaptionVisible);
 
     if (RuntimeEnabledFeatures::videoTrackEnabled()) {
         m_processingPreferenceChange = true;
