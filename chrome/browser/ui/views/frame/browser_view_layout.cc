@@ -476,10 +476,13 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
   int bookmark_bar_height = bookmark_bar_->GetPreferredSize().height();
   y -= views::NonClientFrameView::kClientEdgeThickness +
       bookmark_bar_->GetToolbarOverlap(false);
+  bookmark_bar_->SetBounds(vertical_layout_rect_.x(),
+                           y,
+                           vertical_layout_rect_.width(),
+                           bookmark_bar_height);
+  // Set visibility after setting bounds, as the visibility update uses the
+  // bounds to determine if the mouse is hovering over a button.
   bookmark_bar_->SetVisible(true);
-  bookmark_bar_->SetBounds(vertical_layout_rect_.x(), y,
-                                 vertical_layout_rect_.width(),
-                                 bookmark_bar_height);
   return y + bookmark_bar_height;
 }
 
