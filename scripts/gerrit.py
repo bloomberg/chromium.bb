@@ -13,7 +13,7 @@ with the prefix "UserAct".
 
 import inspect
 import os
-import sys
+import re
 
 from chromite.buildbot import constants
 from chromite.lib import commandline
@@ -238,6 +238,29 @@ def UserActRestore(opts, idx):
   ReviewCommand(opts, idx, ['--submit'])
 
 
+def UserActReviewers(opts, idx, *emails):
+  """Add/remove reviewers' emails for CL <n> (prepend with '~' to remove)"""
+
+  # Allow for optional leading '~'.
+  email_validator = re.compile(r'^[~]?%s$' % constants.EMAIL_REGEX)
+  add_list, remove_list, invalid_list = [], [], []
+
+  for x in emails:
+    if not email_validator.match(x):
+      invalid_list.append(x)
+    elif x[0] == '~':
+      remove_list.append(x[1:])
+    else:
+      add_list.append(x)
+
+  if invalid_list:
+    cros_build_lib.Die(
+        'Invalid email address(es): %s' % ', '.join(invalid_list))
+
+  if add_list or remove_list:
+    opts.gerrit.SetReviewers(idx, add=add_list, remove=remove_list)
+
+
 def main(argv):
   # Locate actions that are exposed to the user.  All functions that start
   # with "UserAct" are fair game.
@@ -300,13 +323,16 @@ Actions:"""
   functor = globals().get(act_pfx + cmd.capitalize())
   if functor:
     argspec = inspect.getargspec(functor)
-    if len(argspec.args) - 1 != len(args):
+    if argspec.varargs:
+      if len(args) < len(argspec.args):
+        parser.error('incorrect number of args: %s expects at least %s' %
+                     (cmd, len(argspec.args)))
+    elif len(argspec.args) - 1 != len(args):
       parser.error('incorrect number of args: %s expects %s' %
                    (cmd, len(argspec.args) - 1))
     try:
       functor(opts, *args)
-    except cros_build_lib.RunCommandError:
-      # An error message has been issued on stderr by now.
-      sys.exit(1)
+    except (cros_build_lib.RunCommandError, gerrit.GerritException) as e:
+      cros_build_lib.Die(e.message)
   else:
     parser.error('unknown action: %s' % (cmd,))
