@@ -81,7 +81,6 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
 
   void OnDocumentHasImagesResponse(int msg_id, bool has_images);
   void OnUpdateHitTestData(const AwHitTestData& hit_test_data);
-  void OnDidActivateAcceleratedCompositing(int input_handler_id);
   void OnPageScaleFactorChanged(float page_scale_factor);
 
   bool IsRenderViewReady() const;

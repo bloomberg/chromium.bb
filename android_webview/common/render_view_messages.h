@@ -95,9 +95,3 @@ IPC_MESSAGE_ROUTED1(AwViewHostMsg_PageScaleFactorChanged,
 // AwViewMsg_EnableCapturePictureCallback was previously enabled.
 IPC_MESSAGE_ROUTED0(AwViewHostMsg_PictureUpdated)
 
-// Sent by the renderer when accelerated compositing is enabled, allowing the
-// browser to perform synchronous input event filtering.
-IPC_MESSAGE_ROUTED1(AwViewHostMsg_DidActivateAcceleratedCompositing,
-                    int /* input_handler_id */)
-
-

@@ -863,14 +863,6 @@ float ContentViewCoreImpl::GetDpiScale() const {
   return dpi_scale_;
 }
 
-void ContentViewCoreImpl::SetInputHandler(
-    WebKit::WebCompositorInputHandler* input_handler) {
-  if (!input_event_filter_)
-    input_event_filter_.reset(new SyncInputEventFilter);
-
-  input_event_filter_->SetInputHandler(input_handler);
-}
-
 void ContentViewCoreImpl::RequestContentClipping(
     const gfx::Rect& clipping,
     const gfx::Size& content_size) {

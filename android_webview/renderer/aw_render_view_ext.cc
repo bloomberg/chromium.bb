@@ -192,11 +192,6 @@ void AwRenderViewExt::DidCommitProvisionalLoad(WebKit::WebFrame* frame,
   }
 }
 
-void AwRenderViewExt::DidActivateCompositor(int input_handler_identifier) {
-  Send(new AwViewHostMsg_DidActivateAcceleratedCompositing(
-           routing_id(), input_handler_identifier));
-}
-
 void AwRenderViewExt::DidCommitCompositorFrame() {
   UpdatePageScaleFactor();
 }

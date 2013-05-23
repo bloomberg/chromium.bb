@@ -60,8 +60,6 @@ class ContentViewCoreImpl : public ContentViewCore,
       float scale,
       gfx::Size* out_size) OVERRIDE;
   virtual float GetDpiScale() const OVERRIDE;
-  virtual void SetInputHandler(
-      WebKit::WebCompositorInputHandler* input_handler) OVERRIDE;
   virtual void RequestContentClipping(const gfx::Rect& clipping,
                                       const gfx::Size& content_size) OVERRIDE;
   virtual void AddFrameInfoCallback(

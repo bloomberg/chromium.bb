@@ -36,7 +36,6 @@ class AwRenderViewExt : public content::RenderViewObserver,
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
   virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
-  virtual void DidActivateCompositor(int input_handler_identifier) OVERRIDE;
   virtual void DidCommitCompositorFrame() OVERRIDE;
 
   void OnDocumentHasImagesRequest(int id);

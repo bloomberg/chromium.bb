@@ -10,7 +10,6 @@
 #include "content/port/common/input_event_ack_state.h"
 
 namespace WebKit {
-class WebCompositorInputHandler;
 class WebInputEvent;
 }
 
@@ -26,15 +25,11 @@ class SyncInputEventFilter {
   ~SyncInputEventFilter();
 
   InputEventAckState HandleInputEvent(const WebKit::WebInputEvent& input_event);
-  void SetInputHandler(WebKit::WebCompositorInputHandler* input_handler);
   void ClearInputHandler();
 
  private:
   // Used to DCHECK that input_handler_ changes are made on the correct thread.
   base::ThreadChecker thread_checker_;
-
-  class InputHandlerWrapper;
-  scoped_ptr<InputHandlerWrapper> input_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncInputEventFilter);
 };
