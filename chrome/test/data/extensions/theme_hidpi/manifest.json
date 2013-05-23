@@ -1,0 +1,26 @@
+{
+   "name" : "HighDPI",
+   "version" : "1.0",
+   "manifest_version" : 2,
+   "theme": {
+      "images": {
+         "theme_frame" : {
+           "100" : "images/100_percent/theme_frame.png",
+           "200" : "images/200_percent/theme_frame.png"
+         },
+         "theme_frame_inactive" : {
+           "100" : "images/100_percent/theme_frame_inactive.png",
+           "200" : "images/200_percent/theme_frame_inactive.png"
+         },
+         "theme_frame_incognito" : {
+           "100" : "images/100_percent/theme_frame_incognito.png"
+         },
+         "theme_frame_incognito_inactive" :
+           "images/100_percent/theme_frame_incognito_inactive.png",
+         "theme_toolbar": {
+           "100" : "images/100_percent/theme_toolbar.png",
+           "200" : "images/200_percent/theme_toolbar.png"
+         }
+      }
+   }
+}
