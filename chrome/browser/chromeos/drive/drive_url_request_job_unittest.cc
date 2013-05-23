@@ -150,8 +150,6 @@ class DriveURLRequestJobTest : public testing::Test {
         "chromeos/gdata/root_feed.json"));
     ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
         "chromeos/gdata/account_metadata.json"));
-    ASSERT_TRUE(fake_drive_service_->LoadAppListForDriveApi(
-        "chromeos/drive/applist.json"));
 
     // Initialize FakeFileSystem.
     fake_file_system_.reset(

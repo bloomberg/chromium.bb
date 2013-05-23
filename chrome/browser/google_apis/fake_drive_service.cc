@@ -422,6 +422,7 @@ void FakeDriveService::GetAboutResource(
 void FakeDriveService::GetAppList(const GetAppListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+  DCHECK(app_info_value_);
 
   if (offline_) {
     scoped_ptr<AppList> null;

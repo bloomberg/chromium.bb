@@ -130,7 +130,6 @@ class DriveFileSystemTest : public testing::Test {
         "chromeos/gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
         "chromeos/gdata/account_metadata.json");
-    fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
