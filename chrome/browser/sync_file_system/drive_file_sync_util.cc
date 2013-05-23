@@ -61,6 +61,7 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
     case google_apis::HTTP_FORBIDDEN:
     case google_apis::HTTP_LENGTH_REQUIRED:
     case google_apis::HTTP_PRECONDITION:
+    case google_apis::HTTP_NOT_IMPLEMENTED:
     case google_apis::GDATA_PARSE_ERROR:
     case google_apis::GDATA_OTHER_ERROR:
       return SYNC_STATUS_FAILED;

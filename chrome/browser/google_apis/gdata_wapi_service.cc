@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/auth_service.h"
@@ -423,8 +423,10 @@ void GDataWapiService::TouchResource(
 
   // Unfortunately, there is no way to support this method on GData WAPI.
   // So, this should always return an error.
-  // TODO(hidehiko): Implement this method.
-  NOTIMPLEMENTED();
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_NOT_IMPLEMENTED,
+                 base::Passed(scoped_ptr<ResourceEntry>())));
 }
 
 void GDataWapiService::AddResourceToDirectory(

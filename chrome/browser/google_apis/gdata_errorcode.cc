@@ -53,6 +53,9 @@ std::string GDataErrorCodeToString(GDataErrorCode error) {
     case HTTP_INTERNAL_SERVER_ERROR:
       return"HTTP_INTERNAL_SERVER_ERROR";
 
+    case HTTP_NOT_IMPLEMENTED:
+      return "HTTP_NOT_IMPLEMENTED";
+
     case HTTP_BAD_GATEWAY:
       return"HTTP_BAD_GATEWAY";
 
