@@ -51,6 +51,12 @@ class Range;
 struct SelectedFileInfo;
 }
 
+#if defined(OS_ANDROID)
+namespace media {
+class MediaPlayerManager;
+}
+#endif
+
 namespace content {
 
 class ChildProcessSecurityPolicyImpl;
@@ -64,10 +70,6 @@ struct ContextMenuParams;
 struct FileChooserParams;
 struct Referrer;
 struct ShowDesktopNotificationHostMsgParams;
-
-#if defined(OS_ANDROID)
-class MediaPlayerManagerImpl;
-#endif
 
 #if defined(COMPILER_MSVC)
 // RenderViewHostImpl is the bottom of a diamond-shaped hierarchy,
@@ -378,7 +380,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 #endif
 
 #if defined(OS_ANDROID)
-  MediaPlayerManagerImpl* media_player_manager() {
+  media::MediaPlayerManager* media_player_manager() {
     return media_player_manager_;
   }
 
@@ -688,7 +690,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 #if defined(OS_ANDROID)
   // Manages all the android mediaplayer objects and handling IPCs for video.
   // This class inherits from RenderViewHostObserver.
-  MediaPlayerManagerImpl* media_player_manager_;
+  media::MediaPlayerManager* media_player_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImpl);

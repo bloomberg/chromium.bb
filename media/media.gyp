@@ -200,7 +200,6 @@
         'audio/win/waveout_output_win.h',
         'base/android/demuxer_stream_player_params.cc',
         'base/android/demuxer_stream_player_params.h',
-        'base/android/media_player_manager.cc',
         'base/android/media_player_manager.h',
         'base/android/media_resource_getter.cc',
         'base/android/media_resource_getter.h',

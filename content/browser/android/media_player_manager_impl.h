@@ -32,8 +32,6 @@ class MediaPlayerManagerImpl
     : public RenderViewHostObserver,
       public media::MediaPlayerManager {
  public:
-  // Create a MediaPlayerManagerImpl object for the |render_view_host|.
-  explicit MediaPlayerManagerImpl(RenderViewHost* render_view_host);
   virtual ~MediaPlayerManagerImpl();
 
   // RenderViewHostObserver overrides.
@@ -72,17 +70,22 @@ class MediaPlayerManagerImpl
   virtual void ReleaseMediaResources(
       media::MediaPlayerAndroid* player) OVERRIDE;
   virtual media::MediaResourceGetter* GetMediaResourceGetter() OVERRIDE;
-
-  // Release all the players managed by this object.
-  void DestroyAllMediaPlayers();
+  virtual media::MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE;
+  virtual media::MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE;
+  virtual void DestroyAllMediaPlayers() OVERRIDE;
 
 #if defined(GOOGLE_TV)
   void AttachExternalVideoSurface(int player_id, jobject surface);
   void DetachExternalVideoSurface(int player_id);
 #endif
 
-  media::MediaPlayerAndroid* GetFullscreenPlayer();
-  media::MediaPlayerAndroid* GetPlayer(int player_id);
+ protected:
+  friend MediaPlayerManager* MediaPlayerManager::Create(
+      content::RenderViewHost*);
+
+  // The instance of this class is supposed to be created by either Create()
+  // method of MediaPlayerManager or the derived classes constructors.
+  explicit MediaPlayerManagerImpl(RenderViewHost* render_view_host);
 
  private:
   // Message handlers.

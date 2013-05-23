@@ -18,6 +18,26 @@ using media::MediaPlayerAndroid;
 // attempting to release inactive media players.
 static const int kMediaPlayerThreshold = 1;
 
+namespace media {
+
+static MediaPlayerManager::FactoryFunction g_factory_function = NULL;
+
+// static
+void MediaPlayerManager::RegisterFactoryFunction(
+    FactoryFunction factory_function) {
+  g_factory_function = factory_function;
+}
+
+// static
+media::MediaPlayerManager* MediaPlayerManager::Create(
+    content::RenderViewHost* render_view_host) {
+  if (g_factory_function)
+    return g_factory_function(render_view_host);
+  return new content::MediaPlayerManagerImpl(render_view_host);
+}
+
+}  // namespace media
+
 namespace content {
 
 MediaPlayerManagerImpl::MediaPlayerManagerImpl(
