@@ -43,43 +43,66 @@ JSON_RESULTS_FILE = "results.json"
 JSON_RESULTS_FILE_SMALL = "results-small.json"
 JSON_RESULTS_PREFIX = "ADD_RESULTS("
 JSON_RESULTS_SUFFIX = ");"
-JSON_RESULTS_VERSION_KEY = "version"
-JSON_RESULTS_BUILD_NUMBERS = "buildNumbers"
-JSON_RESULTS_TESTS = "tests"
-JSON_RESULTS_RESULTS = "results"
-JSON_RESULTS_TIMES = "times"
-JSON_RESULTS_PASS = "P"
-JSON_RESULTS_SKIP = "X"
-JSON_RESULTS_NOTRUN = "Y"
-JSON_RESULTS_NO_DATA = "N"
+
 JSON_RESULTS_MIN_TIME = 3
 JSON_RESULTS_HIERARCHICAL_VERSION = 4
 JSON_RESULTS_MAX_BUILDS = 500
 JSON_RESULTS_MAX_BUILDS_SMALL = 100
-FAILURES_BY_TYPE_KEY = "num_failures_by_type"
-FAILURE_MAP_KEY = "failure_map"
-EXPECTED_KEY = "expected"
+
 BUG_KEY = "bugs"
+BUILD_NUMBERS_KEY = "buildNumbers"
+EXPECTED_KEY = "expected"
+FAILURE_MAP_KEY = "failure_map"
+FAILURES_BY_TYPE_KEY = "num_failures_by_type"
+RESULTS_KEY = "results"
+TESTS_KEY = "tests"
+TIME_KEY = "time"
+TIMES_KEY = "times"
+VERSIONS_KEY = "version"
+
+AUDIO = "A"
+CRASH = "C"
+IMAGE = "I"
+IMAGE_PLUS_TEXT = "Z"
+MISSING = "O"
+NO_DATA = "N"
+NOTRUN = "Y"
+PASS = "P"
+SKIP = "X"
+TEXT = "F"
+TIMEOUT = "T"
+
+AUDIO_STRING = "AUDIO"
+CRASH_STRING = "CRASH"
+IMAGE_PLUS_TEXT_STRING = "IMAGE+TEXT"
+IMAGE_STRING = "IMAGE"
+MISSING_STRING = "MISSING"
+NO_DATA_STRING = "NO DATA"
+NOTRUN_STRING = "NOTRUN"
+PASS_STRING = "PASS"
+SKIP_STRING = "SKIP"
+TEXT_STRING = "TEXT"
+TIMEOUT_STRING = "TIMEOUT"
 
 FAILURE_TO_CHAR = {
-    "PASS": JSON_RESULTS_PASS,
-    "SKIP": JSON_RESULTS_SKIP,
-    "CRASH": "C",
-    "TIMEOUT": "T",
-    "IMAGE": "I",
-    "TEXT": "F",
-    "AUDIO": "A",
-    "MISSING": "O",
-    "IMAGE+TEXT": "Z",
-    "NO DATA": JSON_RESULTS_NO_DATA,
-    "NOTRUN": JSON_RESULTS_NOTRUN,
+    AUDIO_STRING: AUDIO,
+    CRASH_STRING: CRASH,
+    IMAGE_PLUS_TEXT_STRING: IMAGE_PLUS_TEXT,
+    IMAGE_STRING: IMAGE,
+    MISSING_STRING: MISSING,
+    NO_DATA_STRING: NO_DATA,
+    NOTRUN_STRING: NOTRUN,
+    PASS_STRING: PASS,
+    SKIP_STRING: SKIP,
+    TEXT_STRING: TEXT,
+    TIMEOUT_STRING: TIMEOUT,
 }
 
 # FIXME: Use dict comprehensions once we update the server to python 2.7.
 CHAR_TO_FAILURE = dict((value, key) for key, value in FAILURE_TO_CHAR.items())
 
 def _is_directory(subtree):
-    return JSON_RESULTS_RESULTS not in subtree
+    return RESULTS_KEY not in subtree
 
 
 class JsonResults(object):
@@ -112,11 +135,11 @@ class JsonResults(object):
         # We have to delete expected entries because the incremental json may not have any
         # entry for every test in the aggregated json. But, the incremental json will have
         # all the correct expected entries for that run.
-        cls._delete_expected_entries(aggregated_json[JSON_RESULTS_TESTS])
+        cls._delete_expected_entries(aggregated_json[TESTS_KEY])
         cls._merge_non_test_data(aggregated_json, incremental_json, num_runs)
-        incremental_tests = incremental_json[JSON_RESULTS_TESTS]
+        incremental_tests = incremental_json[TESTS_KEY]
         if incremental_tests:
-            aggregated_tests = aggregated_json[JSON_RESULTS_TESTS]
+            aggregated_tests = aggregated_json[TESTS_KEY]
             cls._merge_tests(aggregated_tests, incremental_tests, num_runs)
 
     @classmethod
@@ -133,8 +156,8 @@ class JsonResults(object):
 
     @classmethod
     def _merge_non_test_data(cls, aggregated_json, incremental_json, num_runs):
-        incremental_builds = incremental_json[JSON_RESULTS_BUILD_NUMBERS]
-        aggregated_builds = aggregated_json[JSON_RESULTS_BUILD_NUMBERS]
+        incremental_builds = incremental_json[BUILD_NUMBERS_KEY]
+        aggregated_builds = aggregated_json[BUILD_NUMBERS_KEY]
         aggregated_build_number = int(aggregated_builds[0])
 
         # FIXME: It's no longer possible to have multiple runs worth of data in the incremental_json,
@@ -151,7 +174,7 @@ class JsonResults(object):
         for key in incremental_json.keys():
             # Merge json results except "tests" properties (results, times etc).
             # "tests" properties will be handled separately.
-            if key == JSON_RESULTS_TESTS:
+            if key == TESTS_KEY:
                 continue
 
             if key in aggregated_json:
@@ -167,11 +190,11 @@ class JsonResults(object):
     def _merge_tests(cls, aggregated_json, incremental_json, num_runs):
         # FIXME: Some data got corrupted and has results/times at the directory level.
         # Once the data is fixe, this should assert that the directory level does not have
-        # results or times and just return "JSON_RESULTS_RESULTS not in subtree".
-        if JSON_RESULTS_RESULTS in aggregated_json:
-            del aggregated_json[JSON_RESULTS_RESULTS]
-        if JSON_RESULTS_TIMES in aggregated_json:
-            del aggregated_json[JSON_RESULTS_TIMES]
+        # results or times and just return "RESULTS_KEY not in subtree".
+        if RESULTS_KEY in aggregated_json:
+            del aggregated_json[RESULTS_KEY]
+        if TIMES_KEY in aggregated_json:
+            del aggregated_json[TIMES_KEY]
 
         all_tests = set(aggregated_json.iterkeys())
         if incremental_json:
@@ -190,18 +213,18 @@ class JsonResults(object):
             aggregated_test = aggregated_json[test_name]
 
             if incremental_sub_result:
-                results = incremental_sub_result[JSON_RESULTS_RESULTS]
-                times = incremental_sub_result[JSON_RESULTS_TIMES]
-                if EXPECTED_KEY in incremental_sub_result and incremental_sub_result[EXPECTED_KEY] != "PASS":
+                results = incremental_sub_result[RESULTS_KEY]
+                times = incremental_sub_result[TIMES_KEY]
+                if EXPECTED_KEY in incremental_sub_result and incremental_sub_result[EXPECTED_KEY] != PASS_STRING:
                     aggregated_test[EXPECTED_KEY] = incremental_sub_result[EXPECTED_KEY]
                 if BUG_KEY in incremental_sub_result:
                     aggregated_test[BUG_KEY] = incremental_sub_result[BUG_KEY]
             else:
-                results = [[1, JSON_RESULTS_NO_DATA]]
+                results = [[1, NO_DATA]]
                 times = [[1, 0]]
 
-            cls._insert_item_run_length_encoded(results, aggregated_test[JSON_RESULTS_RESULTS], num_runs)
-            cls._insert_item_run_length_encoded(times, aggregated_test[JSON_RESULTS_TIMES], num_runs)
+            cls._insert_item_run_length_encoded(results, aggregated_test[RESULTS_KEY], num_runs)
+            cls._insert_item_run_length_encoded(times, aggregated_test[TIMES_KEY], num_runs)
 
     @classmethod
     def _insert_item_run_length_encoded(cls, incremental_item, aggregated_item, num_runs):
@@ -222,8 +245,8 @@ class JsonResults(object):
                     names_to_delete.append(test_name)
             else:
                 leaf = aggregated_json[test_name]
-                leaf[JSON_RESULTS_RESULTS] = cls._remove_items_over_max_number_of_builds(leaf[JSON_RESULTS_RESULTS], num_runs)
-                leaf[JSON_RESULTS_TIMES] = cls._remove_items_over_max_number_of_builds(leaf[JSON_RESULTS_TIMES], num_runs)
+                leaf[RESULTS_KEY] = cls._remove_items_over_max_number_of_builds(leaf[RESULTS_KEY], num_runs)
+                leaf[TIMES_KEY] = cls._remove_items_over_max_number_of_builds(leaf[TIMES_KEY], num_runs)
                 if cls._should_delete_leaf(leaf):
                     names_to_delete.append(test_name)
 
@@ -232,18 +255,18 @@ class JsonResults(object):
 
     @classmethod
     def _should_delete_leaf(cls, leaf):
-        if leaf.get(EXPECTED_KEY, 'PASS') != 'PASS':
+        if leaf.get(EXPECTED_KEY, PASS_STRING) != PASS_STRING:
             return False
 
         if BUG_KEY in leaf:
             return False
 
-        deletable_types = set((JSON_RESULTS_PASS, JSON_RESULTS_NO_DATA, JSON_RESULTS_NOTRUN))
-        for result in leaf[JSON_RESULTS_RESULTS]:
+        deletable_types = set((PASS, NO_DATA, NOTRUN))
+        for result in leaf[RESULTS_KEY]:
             if result[1] not in deletable_types:
                 return False
 
-        for time in leaf[JSON_RESULTS_TIMES]:
+        for time in leaf[TIMES_KEY]:
             if time[1] >= JSON_RESULTS_MIN_TIME:
                 return False
 
@@ -263,7 +286,7 @@ class JsonResults(object):
 
     @classmethod
     def _check_json(cls, builder, json):
-        version = json[JSON_RESULTS_VERSION_KEY]
+        version = json[VERSIONS_KEY]
         if version > JSON_RESULTS_HIERARCHICAL_VERSION:
             logging.error("Results JSON version '%s' is not supported.", version)
             return False
@@ -273,7 +296,7 @@ class JsonResults(object):
             return False
 
         results_for_builder = json[builder]
-        if not JSON_RESULTS_BUILD_NUMBERS in results_for_builder:
+        if not BUILD_NUMBERS_KEY in results_for_builder:
             logging.error("Missing build number in json results.")
             return False
 
@@ -290,22 +313,22 @@ class JsonResults(object):
     def _populate_tests_from_full_results(cls, full_results, new_results):
         if EXPECTED_KEY in full_results:
             expected = full_results[EXPECTED_KEY]
-            if expected != 'PASS' and expected != 'NOTRUN':
+            if expected != PASS_STRING and expected != NOTRUN_STRING:
                 new_results[EXPECTED_KEY] = expected
-            time = int(round(full_results['time'])) if 'time' in full_results else 0
-            new_results['times'] = [[1, time]]
+            time = int(round(full_results[TIME_KEY])) if TIME_KEY in full_results else 0
+            new_results[TIMES_KEY] = [[1, time]]
 
             actual_failures = full_results['actual']
             # Treat unexpected skips like NOTRUNs to avoid exploding the results JSON files
             # when a bot exits early (e.g. due to too many crashes/timeouts).
-            if expected != 'SKIP' and actual_failures == 'SKIP':
-                expected = first_actual_failure = 'NOTRUN'
-            elif expected == 'NOTRUN':
+            if expected != SKIP_STRING and actual_failures == SKIP_STRING:
+                expected = first_actual_failure = NOTRUN_STRING
+            elif expected == NOTRUN_STRING:
                 first_actual_failure = expected
             else:
                 # FIXME: Include the retry result as well and find a nice way to display it in the flakiness dashboard.
                 first_actual_failure = actual_failures.split(' ')[0]
-            new_results['results'] = [[1, FAILURE_TO_CHAR[first_actual_failure]]]
+            new_results[RESULTS_KEY] = [[1, FAILURE_TO_CHAR[first_actual_failure]]]
 
             if BUG_KEY in full_results:
                 new_results[BUG_KEY] = full_results[BUG_KEY]
@@ -320,7 +343,7 @@ class JsonResults(object):
         num_total_tests = 0
         num_failing_tests = 0
         fixableCounts = {}
-        failures_by_type = full_results_format['num_failures_by_type']
+        failures_by_type = full_results_format[FAILURES_BY_TYPE_KEY]
 
         # FIXME: full_results format has "FAIL" entries, but that is no longer a possible result type.
         if 'FAIL' in failures_by_type:
@@ -329,26 +352,26 @@ class JsonResults(object):
         for failure_type in failures_by_type:
             count = failures_by_type[failure_type]
             num_total_tests += count
-            if failure_type != 'PASS':
+            if failure_type != PASS_STRING:
                 num_failing_tests += count
             fixableCounts[FAILURE_TO_CHAR[failure_type]] = count
 
         tests = {}
-        cls._populate_tests_from_full_results(full_results_format['tests'], tests)
+        cls._populate_tests_from_full_results(full_results_format[TESTS_KEY], tests)
 
         aggregate_results_format = {
-            JSON_RESULTS_VERSION_KEY: JSON_RESULTS_HIERARCHICAL_VERSION,
+            VERSIONS_KEY: JSON_RESULTS_HIERARCHICAL_VERSION,
             full_results_format['builder_name']: {
                 # FIXME: Use dict comprehensions once we update the server to python 2.7.
-                'num_failures_by_type': dict((key, [value]) for key, value in failures_by_type.items()),
-                'tests': tests,
+                FAILURES_BY_TYPE_KEY: dict((key, [value]) for key, value in failures_by_type.items()),
+                TESTS_KEY: tests,
                 # FIXME: Have the consumers of these use num_failures_by_type directly and stop include these counts.
                 'allFixableCount': [num_total_tests],
                 'fixableCount': [num_failing_tests],
                 'fixableCounts': [fixableCounts],
                 # FIXME: Have all the consumers of this switch over to the full_results_format keys
                 # so we don't have to do this silly conversion.
-                JSON_RESULTS_BUILD_NUMBERS: [full_results_format['build_number']],
+                BUILD_NUMBERS_KEY: [full_results_format['build_number']],
                 'chromeRevision': [full_results_format['chromium_revision']],
                 'blinkRevision': [full_results_format['blink_revision']],
                 'secondsSinceEpoch': [full_results_format['seconds_since_epoch']],
@@ -383,8 +406,8 @@ class JsonResults(object):
         if not cls._check_json(builder, aggregated_json):
             return incremental_json
 
-        if aggregated_json[builder][JSON_RESULTS_BUILD_NUMBERS][0] == incremental_json[builder][JSON_RESULTS_BUILD_NUMBERS][0]:
-            logging.error("Incremental JSON's build number is the latest build number in the aggregated JSON: %d." % aggregated_json[builder][JSON_RESULTS_BUILD_NUMBERS][0])
+        if aggregated_json[builder][BUILD_NUMBERS_KEY][0] == incremental_json[builder][BUILD_NUMBERS_KEY][0]:
+            logging.error("Incremental JSON's build number is the latest build number in the aggregated JSON: %d." % aggregated_json[builder][BUILD_NUMBERS_KEY][0])
             return aggregated_json
 
         logging.info("Merging json results...")
@@ -402,9 +425,9 @@ class JsonResults(object):
         if not aggregated_json:
             return None
 
-        aggregated_json[JSON_RESULTS_VERSION_KEY] = JSON_RESULTS_HIERARCHICAL_VERSION
+        aggregated_json[VERSIONS_KEY] = JSON_RESULTS_HIERARCHICAL_VERSION
         aggregated_json[FAILURE_MAP_KEY] = CHAR_TO_FAILURE
-        cls._normalize_results(aggregated_json[builder][JSON_RESULTS_TESTS], num_runs)
+        cls._normalize_results(aggregated_json[builder][TESTS_KEY], num_runs)
         return cls._generate_file_data(aggregated_json, sort_keys)
 
     @classmethod
@@ -437,7 +460,7 @@ class JsonResults(object):
     @classmethod
     def _delete_results_and_times(cls, tests):
         for key in tests.keys():
-            if key in (JSON_RESULTS_RESULTS, JSON_RESULTS_TIMES):
+            if key in (RESULTS_KEY, TIMES_KEY):
                 del tests[key]
             else:
                 cls._delete_results_and_times(tests[key])
@@ -454,7 +477,7 @@ class JsonResults(object):
             return None
 
         test_list_json = {}
-        tests = json[builder][JSON_RESULTS_TESTS]
+        tests = json[builder][TESTS_KEY]
         cls._delete_results_and_times(tests)
-        test_list_json[builder] = {"tests": tests}
+        test_list_json[builder] = {TESTS_KEY: tests}
         return cls._generate_file_data(test_list_json)

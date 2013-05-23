@@ -28,7 +28,7 @@
 
 try:
     import jsonresults
-    from jsonresults import JsonResults
+    from jsonresults import *
 except ImportError:
     print "ERROR: Add the TestResultServer, google_appengine and yaml/lib directories to your PYTHONPATH"
     raise
@@ -145,9 +145,9 @@ JSON_RESULTS_OLD_TEMPLATE = (
     '"tests":{[TESTDATA_TESTS]},'
     '"wontfixCounts":[[TESTDATA_COUNTS]]'
     '},'
-    '"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT","I":"IMAGE","N":"NO DATA","O":"MISSING","P":"PASS","T":"TIMEOUT","X":"SKIP","Y":"NOTRUN","Z":"IMAGE+TEXT"},'
+    '"failure_map": %s,'
     '"version":[VERSION]'
-    '}')
+    '}') % simplejson.dumps(CHAR_TO_FAILURE)
 
 JSON_RESULTS_TEMPLATE = (
     '{"Webkit":{'
@@ -161,27 +161,20 @@ JSON_RESULTS_TEMPLATE = (
     '"secondsSinceEpoch":[[TESTDATA_TIMES]],'
     '"tests":{[TESTDATA_TESTS]}'
     '},'
-    '"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT","I":"IMAGE","N":"NO DATA","O":"MISSING","P":"PASS","T":"TIMEOUT","X":"SKIP","Y":"NOTRUN","Z":"IMAGE+TEXT"},'
+    '"failure_map": %s,'
     '"version":[VERSION]'
-    '}')
+    '}') % simplejson.dumps(CHAR_TO_FAILURE)
 
 JSON_RESULTS_COUNTS_TEMPLATE = (
     '{'
-    '"C":[TESTDATA],'
-    '"F":[TESTDATA],'
-    '"I":[TESTDATA],'
-    '"O":[TESTDATA],'
-    '"P":[TESTDATA],'
-    '"T":[TESTDATA],'
-    '"X":[TESTDATA],'
-    '"Z":[TESTDATA]}')
-
-JSON_RESULTS_DIRECTORY_TEMPLATE = '[[TESTDATA_DIRECTORY]]:{[TESTDATA_DATA]}'
-
-JSON_RESULTS_TESTS_TEMPLATE = (
-    '[[TESTDATA_TEST_NAME]]:{'
-    '"results":[[TESTDATA_TEST_RESULTS]],'
-    '"times":[[TESTDATA_TEST_TIMES]]}')
+    '"%s":[TESTDATA],'
+    '"%s":[TESTDATA],'
+    '"%s":[TESTDATA],'
+    '"%s":[TESTDATA],'
+    '"%s":[TESTDATA],'
+    '"%s":[TESTDATA],'
+    '"%s":[TESTDATA],'
+    '"%s":[TESTDATA]}') % (CRASH, TEXT, IMAGE, MISSING, PASS, TIMEOUT, SKIP, IMAGE_PLUS_TEXT)
 
 JSON_RESULTS_TEST_LIST_TEMPLATE = (
     '{"Webkit":{"tests":{[TESTDATA_TESTS]}}}')
@@ -190,6 +183,13 @@ JSON_RESULTS_TEST_LIST_TEMPLATE = (
 class JsonResultsTest(unittest.TestCase):
     def setUp(self):
         self._builder = "Webkit"
+
+    # Use this to get better error messages than just string compare gives.
+    def assert_json_equal(self, a, b):
+        self.maxDiff = None
+        a = simplejson.loads(a) if isinstance(a, str) else a
+        b = simplejson.loads(b) if isinstance(b, str) else b
+        self.assertEqual(a, b)
 
     def test_strip_prefix_suffix(self):
         json = "['contents']"
@@ -236,7 +236,7 @@ class JsonResultsTest(unittest.TestCase):
 
         if expected_data:
             expected_results = self._make_test_json(expected_data)
-            self.assertEqual(merged_results, expected_results)
+            self.assert_json_equal(merged_results, expected_results)
         else:
             self.assertFalse(merged_results)
 
@@ -244,14 +244,14 @@ class JsonResultsTest(unittest.TestCase):
         input_results = self._make_test_json(input_data)
         expected_results = JSON_RESULTS_TEST_LIST_TEMPLATE.replace("{[TESTDATA_TESTS]}", simplejson.dumps(expected_data, separators=(',', ':')))
         actual_results = JsonResults.get_test_list(self._builder, input_results)
-        self.assertEqual(actual_results, expected_results)
+        self.assert_json_equal(actual_results, expected_results)
 
     def test_merge_with_empty_aggregated_results(self):
         incremental_data = {
             "builds": ["2", "1"],
             "tests": {
                 "001.html": {
-                    "results": [[200, "F"]],
+                    "results": [[200, TEXT]],
                     "times": [[200, 0]],
                 }
             }
@@ -259,14 +259,14 @@ class JsonResultsTest(unittest.TestCase):
         incremental_results = self._make_test_json(incremental_data)
         aggregated_results = ""
         merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, is_full_results_format=False, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
-        self.assertEqual(merged_results, incremental_results)
+        self.assert_json_equal(merged_results, incremental_results)
 
     def test_old_keys_deleted(self):
         aggregated_results = self._make_test_json({
             "builds": ["2", "1"],
             "tests": {
                 "001.html": {
-                    "results": [[100, "F"]],
+                    "results": [[100, TEXT]],
                     "times": [[100, 0]],
                 }
             }
@@ -275,76 +275,78 @@ class JsonResultsTest(unittest.TestCase):
             "builds": ["3"],
             "tests": {
                 "001.html": {
-                    "results": [[1, "F"]],
+                    "results": [[1, TEXT]],
                     "times": [[1, 0]],
                 }
             }
         })
         merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, is_full_results_format=False, num_runs=200, sort_keys=True)
-        self.assertEqual(merged_results, self._make_test_json({
+        self.assert_json_equal(merged_results, self._make_test_json({
             "builds": ["3", "2", "1"],
             "tests": {
                 "001.html": {
-                    "results": [[101, "F"]],
+                    "results": [[101, TEXT]],
                     "times": [[101, 0]],
                 }
             }
         }))
 
     def test_merge_full_results_format(self):
-        expected_incremental_results = ('{"Webkit":{'
-            '"allFixableCount":[35],'
-            '"blinkRevision":["1234"],'
-            '"buildNumbers":["3"],'
-            '"chromeRevision":["5678"],'
-            '"fixableCount":[25],'
-            '"fixableCounts":[{"A":0,"C":3,"F":3,"I":1,"O":0,"P":10,"T":16,"X":2,"Z":0}],'
-            '"num_failures_by_type":{"AUDIO":[0],"CRASH":[3],"IMAGE":[1],"IMAGE+TEXT":[0],"MISSING":[0],"PASS":[10],"SKIP":[2],"TEXT":[3],"TIMEOUT":[16]},'
-            '"secondsSinceEpoch":[1368146629],'
-            '"tests":{'
-                '"media":{'
-                    '"W3C":{'
-                        '"audio":{'
-                            '"src":{'
-                                '"src_removal_does_not_trigger_loadstart.html":{'
-                                    '"results":[[1,"P"]],'
-                                    '"times":[[1,4]]'
-                                '}'
-                            '}'
-                        '}'
-                    '},'
-                    '"encrypted-media":{'
-                        '"encrypted-media-v2-events.html":{'
-                            '"bugs":["crbug.com/1234"],'
-                            '"expected":"TIMEOUT",'
-                            '"results":[[1,"T"]],'
-                            '"times":[[1,6]]'
-                        '},'
-                        '"encrypted-media-v2-syntax.html":{'
-                            '"expected":"TIMEOUT",'
-                            '"results":[[1,"T"]],'
-                            '"times":[[1,0]]'
-                        '}'
-                    '},'
-                    '"media-document-audio-repaint.html":{'
-                        '"expected":"IMAGE",'
-                        '"results":[[1,"I"]],'
-                        '"times":[[1,0]]'
-                    '},'
-                    '"progress-events-generated-correctly.html":{'
-                        '"expected":"PASS FAIL IMAGE TIMEOUT CRASH MISSING",'
-                        '"results":[[1,"T"]],'
-                        '"times":[[1,6]]'
-                    '}'
-                '}'
-            '}'
-        '},'
-        '"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT","I":"IMAGE","N":"NO DATA","O":"MISSING","P":"PASS","T":"TIMEOUT","X":"SKIP","Y":"NOTRUN","Z":"IMAGE+TEXT"},'
-        '"version":4}')
+        expected_incremental_results = {
+            "Webkit": {
+                "allFixableCount": [35],
+                "blinkRevision": ["1234"],
+                "buildNumbers": ["3"],
+                "chromeRevision": ["5678"],
+                "fixableCount": [25],
+                "fixableCounts": [{AUDIO: 0, CRASH: 3, TEXT: 3, IMAGE: 1, MISSING: 0, PASS: 10, TIMEOUT: 16, SKIP: 2, IMAGE_PLUS_TEXT: 0}],
+                "num_failures_by_type": {"AUDIO": [0], "CRASH": [3], "IMAGE": [1], "IMAGE+TEXT": [0], "MISSING": [0], "PASS": [10], "SKIP": [2], "TEXT": [3], "TIMEOUT": [16]},
+                "secondsSinceEpoch": [1368146629],
+                "tests": {
+                    "media": {
+                        "W3C": {
+                            "audio": {
+                                "src": {
+                                    "src_removal_does_not_trigger_loadstart.html": {
+                                        "results": [[1, PASS]],
+                                        "times": [[1, 4]],
+                                    }
+                                }
+                            }
+                        },
+                        "encrypted-media": {
+                            "encrypted-media-v2-events.html": {
+                                "bugs": ["crbug.com/1234"],
+                                "expected": "TIMEOUT",
+                                "results": [[1, TIMEOUT]],
+                                "times": [[1, 6]],
+                            },
+                            "encrypted-media-v2-syntax.html": {
+                                "expected": "TIMEOUT",
+                                "results": [[1, TIMEOUT]],
+                                "times": [[1, 0]],
+                            }
+                        },
+                        "media-document-audio-repaint.html": {
+                            "expected": "IMAGE",
+                            "results": [[1, IMAGE]],
+                            "times": [[1, 0]],
+                        },
+                        "progress-events-generated-correctly.html": {
+                            "expected": "PASS FAIL IMAGE TIMEOUT CRASH MISSING",
+                            "results": [[1, TIMEOUT]],
+                            "times": [[1, 6]],
+                        }
+                    }
+                }
+            },
+            "failure_map": CHAR_TO_FAILURE,
+            "version": 4
+        }
 
         aggregated_results = ""
         merged_results = JsonResults.merge("Webkit", aggregated_results, FULL_RESULT_EXAMPLE, is_full_results_format=True, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
-        self.assertEqual(merged_results, expected_incremental_results)
+        self.assert_json_equal(merged_results, expected_incremental_results)
 
     def test_merge_null_incremental_results(self):
         # Empty incremental results json.
@@ -353,8 +355,8 @@ class JsonResultsTest(unittest.TestCase):
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[200,"F"]],
-                           "times": [[200,0]]}}},
+                           "results": [[200, TEXT]],
+                           "times": [[200, 0]]}}},
             # Incremental results
             None,
             # Expect no merge happens.
@@ -367,8 +369,8 @@ class JsonResultsTest(unittest.TestCase):
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[200,"F"]],
-                           "times": [[200,0]]}}},
+                           "results": [[200, TEXT]],
+                           "times": [[200, 0]]}}},
             # Incremental results
             {"builds": [],
              "tests": {}},
@@ -385,53 +387,53 @@ class JsonResultsTest(unittest.TestCase):
 
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[200,"F"]],
-                           "times": [[200,0]]}}},
+                           "results": [[200, TEXT]],
+                           "times": [[200, 0]]}}},
             # Expected result
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[200,"F"]],
-                           "times": [[200,0]]}}})
+                           "results": [[200, TEXT]],
+                           "times": [[200, 0]]}}})
 
     def test_merge_duplicate_build_number(self):
         self._test_merge(
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[100, "F"]],
+                           "results": [[100, TEXT]],
                            "times": [[100, 0]]}}},
             # Incremental results
             {"builds": ["2"],
              "tests": {"001.html": {
-                           "results": [[1, "F"]],
+                           "results": [[1, TEXT]],
                            "times": [[1, 0]]}}},
             # Expected results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[100, "F"]],
+                           "results": [[100, TEXT]],
                            "times": [[100, 0]]}}})
 
     def test_merge_incremental_single_test_single_run_same_result(self):
         # Incremental results has the latest build and same test results for
         # that run.
         # Insert the incremental results at the first place and sum number
-        # of runs for "F" (200 + 1) to get merged results.
+        # of runs for TEXT (200 + 1) to get merged results.
         self._test_merge(
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[200,"F"]],
-                           "times": [[200,0]]}}},
+                           "results": [[200, TEXT]],
+                           "times": [[200, 0]]}}},
             # Incremental results
             {"builds": ["3"],
              "tests": {"001.html": {
-                           "results": [[1,"F"]],
-                           "times": [[1,0]]}}},
+                           "results": [[1, TEXT]],
+                           "times": [[1, 0]]}}},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[201,"F"]],
-                           "times": [[201,0]]}}})
+                           "results": [[201, TEXT]],
+                           "times": [[201, 0]]}}})
 
     def test_merge_single_test_single_run_different_result(self):
         # Incremental results has the latest build but different test results
@@ -441,18 +443,18 @@ class JsonResultsTest(unittest.TestCase):
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[200,"F"]],
-                           "times": [[200,0]]}}},
+                           "results": [[200, TEXT]],
+                           "times": [[200, 0]]}}},
             # Incremental results
             {"builds": ["3"],
              "tests": {"001.html": {
-                           "results": [[1, "I"]],
-                           "times": [[1,1]]}}},
+                           "results": [[1, IMAGE]],
+                           "times": [[1, 1]]}}},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[1,"I"],[200,"F"]],
-                           "times": [[1,1],[200,0]]}}})
+                           "results": [[1, IMAGE], [200, TEXT]],
+                           "times": [[1, 1], [200, 0]]}}})
 
     def test_merge_single_test_single_run_result_changed(self):
         # Incremental results has the latest build but results which differ from
@@ -461,18 +463,18 @@ class JsonResultsTest(unittest.TestCase):
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[200,"F"],[10,"I"]],
-                           "times": [[200,0],[10,1]]}}},
+                           "results": [[200, TEXT], [10, IMAGE]],
+                           "times": [[200, 0], [10, 1]]}}},
             # Incremental results
             {"builds": ["3"],
              "tests": {"001.html": {
-                           "results": [[1,"I"]],
-                           "times": [[1,1]]}}},
+                           "results": [[1, IMAGE]],
+                           "times": [[1, 1]]}}},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[1,"I"],[200,"F"],[10,"I"]],
-                           "times": [[1,1],[200,0],[10,1]]}}})
+                           "results": [[1, IMAGE], [200, TEXT], [10, IMAGE]],
+                           "times": [[1, 1], [200, 0], [10, 1]]}}})
 
     def test_merge_multiple_tests_single_run(self):
         # All tests have incremental updates.
@@ -480,96 +482,96 @@ class JsonResultsTest(unittest.TestCase):
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[200,"F"]],
-                           "times": [[200,0]]},
+                           "results": [[200, TEXT]],
+                           "times": [[200, 0]]},
                        "002.html": {
-                           "results": [[100,"I"]],
-                           "times": [[100,1]]}}},
+                           "results": [[100, IMAGE]],
+                           "times": [[100, 1]]}}},
             # Incremental results
             {"builds": ["3"],
              "tests": {"001.html": {
-                           "results": [[1,"F"]],
-                           "times": [[1,0]]},
+                           "results": [[1, TEXT]],
+                           "times": [[1, 0]]},
                        "002.html": {
-                           "results": [[1,"I"]],
-                           "times": [[1,1]]}}},
+                           "results": [[1, IMAGE]],
+                           "times": [[1, 1]]}}},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[201,"F"]],
-                           "times": [[201,0]]},
+                           "results": [[201, TEXT]],
+                           "times": [[201, 0]]},
                        "002.html": {
-                           "results": [[101,"I"]],
-                           "times": [[101,1]]}}})
+                           "results": [[101, IMAGE]],
+                           "times": [[101, 1]]}}})
 
     def test_merge_multiple_tests_single_run_one_no_result(self):
         self._test_merge(
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[200,"F"]],
-                           "times": [[200,0]]},
+                           "results": [[200, TEXT]],
+                           "times": [[200, 0]]},
                        "002.html": {
-                           "results": [[100,"I"]],
-                           "times": [[100,1]]}}},
+                           "results": [[100, IMAGE]],
+                           "times": [[100, 1]]}}},
             # Incremental results
             {"builds": ["3"],
              "tests": {"002.html": {
-                           "results": [[1,"I"]],
-                           "times": [[1,1]]}}},
+                           "results": [[1, IMAGE]],
+                           "times": [[1, 1]]}}},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[1,"N"],[200,"F"]],
-                           "times": [[201,0]]},
+                           "results": [[1, NO_DATA], [200, TEXT]],
+                           "times": [[201, 0]]},
                        "002.html": {
-                           "results": [[101,"I"]],
-                           "times": [[101,1]]}}})
+                           "results": [[101, IMAGE]],
+                           "times": [[101, 1]]}}})
 
     def test_merge_single_test_multiple_runs(self):
         self._test_merge(
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[200,"F"]],
-                           "times": [[200,0]]}}},
+                           "results": [[200, TEXT]],
+                           "times": [[200, 0]]}}},
             # Incremental results
             {"builds": ["4", "3"],
              "tests": {"001.html": {
-                           "results": [[2, "I"]],
-                           "times": [[2,2]]}}},
+                           "results": [[2, IMAGE]],
+                           "times": [[2, 2]]}}},
             # Expected results
             {"builds": ["4", "3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[2,"I"],[200,"F"]],
-                           "times": [[2,2],[200,0]]}}})
+                           "results": [[2, IMAGE], [200, TEXT]],
+                           "times": [[2, 2], [200, 0]]}}})
 
     def test_merge_multiple_tests_multiple_runs(self):
         self._test_merge(
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[200,"F"]],
-                           "times": [[200,0]]},
+                           "results": [[200, TEXT]],
+                           "times": [[200, 0]]},
                        "002.html": {
-                           "results": [[10,"Z"]],
-                           "times": [[10,0]]}}},
+                           "results": [[10, IMAGE_PLUS_TEXT]],
+                           "times": [[10, 0]]}}},
             # Incremental results
             {"builds": ["4", "3"],
              "tests": {"001.html": {
-                           "results": [[2, "I"]],
-                           "times": [[2,2]]},
+                           "results": [[2, IMAGE]],
+                           "times": [[2, 2]]},
                        "002.html": {
-                           "results": [[1,"C"]],
-                           "times": [[1,1]]}}},
+                           "results": [[1, CRASH]],
+                           "times": [[1, 1]]}}},
             # Expected results
             {"builds": ["4", "3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[2,"I"],[200,"F"]],
-                           "times": [[2,2],[200,0]]},
+                           "results": [[2, IMAGE], [200, TEXT]],
+                           "times": [[2, 2], [200, 0]]},
                        "002.html": {
-                           "results": [[1,"C"],[10,"Z"]],
-                           "times": [[1,1],[10,0]]}}})
+                           "results": [[1, CRASH], [10, IMAGE_PLUS_TEXT]],
+                           "times": [[1, 1], [10, 0]]}}})
 
     def test_merge_incremental_result_older_build(self):
         # Test the build in incremental results is older than the most recent
@@ -578,18 +580,18 @@ class JsonResultsTest(unittest.TestCase):
             # Aggregated results
             {"builds": ["3", "1"],
              "tests": {"001.html": {
-                           "results": [[5,"F"]],
-                           "times": [[5,0]]}}},
+                           "results": [[5, TEXT]],
+                           "times": [[5, 0]]}}},
             # Incremental results
             {"builds": ["2"],
              "tests": {"001.html": {
-                           "results": [[1, "F"]],
-                           "times": [[1,0]]}}},
+                           "results": [[1, TEXT]],
+                           "times": [[1, 0]]}}},
             # Expected no merge happens.
             {"builds": ["2", "3", "1"],
              "tests": {"001.html": {
-                           "results": [[6,"F"]],
-                           "times": [[6,0]]}}})
+                           "results": [[6, TEXT]],
+                           "times": [[6, 0]]}}})
 
     def test_merge_incremental_result_same_build(self):
         # Test the build in incremental results is same as the build in
@@ -598,46 +600,46 @@ class JsonResultsTest(unittest.TestCase):
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[5,"F"]],
-                           "times": [[5,0]]}}},
+                           "results": [[5, TEXT]],
+                           "times": [[5, 0]]}}},
             # Incremental results
             {"builds": ["3", "2"],
              "tests": {"001.html": {
-                           "results": [[2, "F"]],
-                           "times": [[2,0]]}}},
+                           "results": [[2, TEXT]],
+                           "times": [[2, 0]]}}},
             # Expected no merge happens.
             {"builds": ["3", "2", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[7,"F"]],
-                           "times": [[7,0]]}}})
+                           "results": [[7, TEXT]],
+                           "times": [[7, 0]]}}})
 
     def test_merge_remove_new_test(self):
         self._test_merge(
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[199, "F"]],
+                           "results": [[199, TEXT]],
                            "times": [[199, 0]]},
                        }},
             # Incremental results
             {"builds": ["3"],
              "tests": {"001.html": {
-                           "results": [[1, "F"]],
+                           "results": [[1, TEXT]],
                            "times": [[1, 0]]},
                        "002.html": {
-                           "results": [[1, "P"]],
+                           "results": [[1, PASS]],
                            "times": [[1, 0]]},
                        "notrun.html": {
-                           "results": [[1, "Y"]],
+                           "results": [[1, NOTRUN]],
                            "times": [[1, 0]]},
                        "003.html": {
-                           "results": [[1, "N"]],
+                           "results": [[1, NO_DATA]],
                            "times": [[1, 0]]},
                         }},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[200, "F"]],
+                           "results": [[200, TEXT]],
                            "times": [[200, 0]]},
                        }},
             max_builds=200)
@@ -651,17 +653,17 @@ class JsonResultsTest(unittest.TestCase):
                     "directory": {
                         "directory": {
                             "001.html": {
-                                "results": [[200, "P"]],
+                                "results": [[200, PASS]],
                                 "times": [[200, 0]]
                             }
                         }
                     },
                     "002.html": {
-                        "results": [[10, "F"]],
+                        "results": [[10, TEXT]],
                         "times": [[10, 0]]
                     },
                     "003.html": {
-                        "results": [[190, 'P'], [9, 'N'], [1,"F"]],
+                        "results": [[190, PASS], [9, NO_DATA], [1, TEXT]],
                         "times": [[200, 0]]
                     },
                 }
@@ -673,17 +675,17 @@ class JsonResultsTest(unittest.TestCase):
                     "directory": {
                         "directory": {
                             "001.html": {
-                                "results": [[1, "P"]],
+                                "results": [[1, PASS]],
                                 "times": [[1, 0]]
                             }
                         }
                     },
                     "002.html": {
-                        "results": [[1, "P"]],
+                        "results": [[1, PASS]],
                         "times": [[1, 0]]
                     },
                     "003.html": {
-                        "results": [[1, "P"]],
+                        "results": [[1, PASS]],
                         "times": [[1, 0]]
                     },
                 }
@@ -693,7 +695,7 @@ class JsonResultsTest(unittest.TestCase):
                 "builds": ["3", "2", "1"],
                 "tests": {
                     "002.html": {
-                        "results": [[1, "P"],[10, "F"]],
+                        "results": [[1, PASS], [10, TEXT]],
                         "times": [[11, 0]]
                     }
                 }
@@ -710,7 +712,7 @@ class JsonResultsTest(unittest.TestCase):
                         "directory": {
                             "001.html": {
                                 "expected": "FAIL",
-                                "results": [[200, "P"]],
+                                "results": [[200, PASS]],
                                 "times": [[200, 0]]
                             }
                         }
@@ -718,16 +720,16 @@ class JsonResultsTest(unittest.TestCase):
                     "002.html": {
                         "bugs": ["crbug.com/1234"],
                         "expected": "FAIL",
-                        "results": [[10, "F"]],
+                        "results": [[10, TEXT]],
                         "times": [[10, 0]]
                     },
                     "003.html": {
                         "expected": "FAIL",
-                        "results": [[190, 'P'], [9, 'N'], [1,"F"]],
+                        "results": [[190, PASS], [9, NO_DATA], [1, TEXT]],
                         "times": [[200, 0]]
                     },
                     "004.html": {
-                        "results": [[199, 'P'], [1,"F"]],
+                        "results": [[199, PASS], [1, TEXT]],
                         "times": [[200, 0]]
                     },
                 }
@@ -738,17 +740,17 @@ class JsonResultsTest(unittest.TestCase):
                 "tests": {
                     "002.html": {
                         "expected": "PASS",
-                        "results": [[1, "P"]],
+                        "results": [[1, PASS]],
                         "times": [[1, 0]]
                     },
                     "003.html": {
                         "expected": "TIMEOUT",
-                        "results": [[1, "P"]],
+                        "results": [[1, PASS]],
                         "times": [[1, 0]]
                     },
                     "004.html": {
                         "bugs": ["crbug.com/1234"],
-                        "results": [[1, "P"]],
+                        "results": [[1, PASS]],
                         "times": [[1, 0]]
                     },
                 }
@@ -758,17 +760,17 @@ class JsonResultsTest(unittest.TestCase):
                 "builds": ["3", "2", "1"],
                 "tests": {
                     "002.html": {
-                        "results": [[1, "P"],[10, "F"]],
+                        "results": [[1, PASS], [10, TEXT]],
                         "times": [[11, 0]]
                     },
                     "003.html": {
                         "expected": "TIMEOUT",
-                        "results": [[191, 'P'], [9, 'N']],
+                        "results": [[191, PASS], [9, NO_DATA]],
                         "times": [[200, 0]]
                     },
                     "004.html": {
                         "bugs": ["crbug.com/1234"],
-                        "results": [[200, 'P']],
+                        "results": [[200, PASS]],
                         "times": [[200, 0]]
                     },
                 }
@@ -782,27 +784,27 @@ class JsonResultsTest(unittest.TestCase):
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[200,"P"]],
-                           "times": [[200,jsonresults.JSON_RESULTS_MIN_TIME]]},
+                           "results": [[200, PASS]],
+                           "times": [[200, jsonresults.JSON_RESULTS_MIN_TIME]]},
                        "002.html": {
-                           "results": [[10,"F"]],
-                           "times": [[10,0]]}}},
+                           "results": [[10, TEXT]],
+                           "times": [[10, 0]]}}},
             # Incremental results
             {"builds": ["3"],
              "tests": {"001.html": {
-                           "results": [[1,"P"]],
-                           "times": [[1,1]]},
+                           "results": [[1, PASS]],
+                           "times": [[1, 1]]},
                        "002.html": {
-                           "results": [[1,"P"]],
-                           "times": [[1,0]]}}},
+                           "results": [[1, PASS]],
+                           "times": [[1, 0]]}}},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[201,"P"]],
-                           "times": [[1,1],[200,jsonresults.JSON_RESULTS_MIN_TIME]]},
+                           "results": [[201, PASS]],
+                           "times": [[1, 1], [200, jsonresults.JSON_RESULTS_MIN_TIME]]},
                        "002.html": {
-                           "results": [[1,"P"],[10,"F"]],
-                           "times": [[11,0]]}}})
+                           "results": [[1, PASS], [10, TEXT]],
+                           "times": [[11, 0]]}}})
 
     def test_merge_prune_extra_results(self):
         # Remove items from test results and times that exceed the max number
@@ -812,18 +814,18 @@ class JsonResultsTest(unittest.TestCase):
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[max_builds,"F"],[1,"I"]],
-                           "times": [[max_builds,0],[1,1]]}}},
+                           "results": [[max_builds, TEXT], [1, IMAGE]],
+                           "times": [[max_builds, 0], [1, 1]]}}},
             # Incremental results
             {"builds": ["3"],
              "tests": {"001.html": {
-                           "results": [[1,"T"]],
-                           "times": [[1,1]]}}},
+                           "results": [[1, TIMEOUT]],
+                           "times": [[1, 1]]}}},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[1,"T"],[max_builds,"F"]],
-                           "times": [[1,1],[max_builds,0]]}}})
+                           "results": [[1, TIMEOUT], [max_builds, TEXT]],
+                           "times": [[1, 1], [max_builds, 0]]}}})
 
     def test_merge_prune_extra_results_small(self):
         # Remove items from test results and times that exceed the max number
@@ -833,18 +835,18 @@ class JsonResultsTest(unittest.TestCase):
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[max_builds,"F"],[1,"I"]],
-                           "times": [[max_builds,0],[1,1]]}}},
+                           "results": [[max_builds, TEXT], [1, IMAGE]],
+                           "times": [[max_builds, 0], [1, 1]]}}},
             # Incremental results
             {"builds": ["3"],
              "tests": {"001.html": {
-                           "results": [[1,"T"]],
-                           "times": [[1,1]]}}},
+                           "results": [[1, TIMEOUT]],
+                           "times": [[1, 1]]}}},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[1,"T"],[max_builds,"F"]],
-                           "times": [[1,1],[max_builds,0]]}}},
+                           "results": [[1, TIMEOUT], [max_builds, TEXT]],
+                           "times": [[1, 1], [max_builds, 0]]}}},
             int(max_builds))
 
     def test_merge_prune_extra_results_with_new_result_of_same_type(self):
@@ -855,18 +857,18 @@ class JsonResultsTest(unittest.TestCase):
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"001.html": {
-                           "results": [[max_builds,"F"],[1,"N"]],
-                           "times": [[max_builds,0],[1,1]]}}},
+                           "results": [[max_builds, TEXT], [1, NO_DATA]],
+                           "times": [[max_builds, 0], [1, 1]]}}},
             # Incremental results
             {"builds": ["3"],
              "tests": {"001.html": {
-                           "results": [[1,"F"]],
-                           "times": [[1,0]]}}},
+                           "results": [[1, TEXT]],
+                           "times": [[1, 0]]}}},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"001.html": {
-                           "results": [[max_builds,"F"]],
-                           "times": [[max_builds,0]]}}},
+                           "results": [[max_builds, TEXT]],
+                           "times": [[max_builds, 0]]}}},
             int(max_builds))
 
     def test_merge_build_directory_hierarchy(self):
@@ -875,47 +877,47 @@ class JsonResultsTest(unittest.TestCase):
             {"builds": ["2", "1"],
              "tests": {"bar": {"baz": {
                            "003.html": {
-                                "results": [[25,"F"]],
-                                "times": [[25,0]]}}},
+                                "results": [[25, TEXT]],
+                                "times": [[25, 0]]}}},
                        "foo": {
                            "001.html": {
-                                "results": [[50,"F"]],
-                                "times": [[50,0]]},
+                                "results": [[50, TEXT]],
+                                "times": [[50, 0]]},
                            "002.html": {
-                                "results": [[100,"I"]],
-                                "times": [[100,0]]}}},
+                                "results": [[100, IMAGE]],
+                                "times": [[100, 0]]}}},
               "version": 4},
             # Incremental results
             {"builds": ["3"],
              "tests": {"baz": {
                            "004.html": {
-                               "results": [[1,"I"]],
-                               "times": [[1,0]]}},
+                               "results": [[1, IMAGE]],
+                               "times": [[1, 0]]}},
                        "foo": {
                            "001.html": {
-                               "results": [[1,"F"]],
-                               "times": [[1,0]]},
+                               "results": [[1, TEXT]],
+                               "times": [[1, 0]]},
                            "002.html": {
-                               "results": [[1,"I"]],
-                               "times": [[1,0]]}}},
+                               "results": [[1, IMAGE]],
+                               "times": [[1, 0]]}}},
              "version": 4},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"bar": {"baz": {
                            "003.html": {
-                               "results": [[1,"N"],[25,"F"]],
-                               "times": [[26,0]]}}},
+                               "results": [[1, NO_DATA], [25, TEXT]],
+                               "times": [[26, 0]]}}},
                        "baz": {
                            "004.html": {
-                               "results": [[1,"I"]],
-                               "times": [[1,0]]}},
+                               "results": [[1, IMAGE]],
+                               "times": [[1, 0]]}},
                        "foo": {
                            "001.html": {
-                               "results": [[51,"F"]],
-                               "times": [[51,0]]},
+                               "results": [[51, TEXT]],
+                               "times": [[51, 0]]},
                            "002.html": {
-                               "results": [[101,"I"]],
-                               "times": [[101,0]]}}},
+                               "results": [[101, IMAGE]],
+                               "times": [[101, 0]]}}},
              "version": 4})
 
     # FIXME(aboxhall): Add some tests for xhtml/svg test results.
@@ -931,49 +933,49 @@ class JsonResultsTest(unittest.TestCase):
             {"builds": ["3", "2", "1"],
              "tests": {"foo": {
                            "001.html": {
-                               "results": [[200,"P"]],
-                               "times": [[200,0]]},
-                           "results": [[1,"N"]],
-                           "times": [[1,0]]},
+                               "results": [[200, PASS]],
+                               "times": [[200, 0]]},
+                           "results": [[1, NO_DATA]],
+                           "times": [[1, 0]]},
                        "002.html": {
-                           "results": [[10,"F"]],
-                           "times": [[10,0]]}}},
+                           "results": [[10, TEXT]],
+                           "times": [[10, 0]]}}},
             # Expected results
-            {"foo": {"001.html":{}}, "002.html":{}})
+            {"foo": {"001.html": {}}, "002.html": {}})
 
     def test_gtest(self):
         self._test_merge(
             # Aggregated results
             {"builds": ["2", "1"],
              "tests": {"foo.bar": {
-                           "results": [[50,"F"]],
-                           "times": [[50,0]]},
+                           "results": [[50, TEXT]],
+                           "times": [[50, 0]]},
                        "foo.bar2": {
-                           "results": [[100,"I"]],
-                           "times": [[100,0]]},
+                           "results": [[100, IMAGE]],
+                           "times": [[100, 0]]},
                        },
              "version": 3},
             # Incremental results
             {"builds": ["3"],
              "tests": {"foo.bar2": {
-                           "results": [[1,"I"]],
-                           "times": [[1,0]]},
+                           "results": [[1, IMAGE]],
+                           "times": [[1, 0]]},
                        "foo.bar3": {
-                           "results": [[1,"F"]],
-                           "times": [[1,0]]},
+                           "results": [[1, TEXT]],
+                           "times": [[1, 0]]},
                        },
              "version": 4},
             # Expected results
             {"builds": ["3", "2", "1"],
              "tests": {"foo.bar": {
-                           "results": [[1, "N"], [50,"F"]],
-                           "times": [[51,0]]},
+                           "results": [[1, NO_DATA], [50, TEXT]],
+                           "times": [[51, 0]]},
                        "foo.bar2": {
-                           "results": [[101,"I"]],
-                           "times": [[101,0]]},
+                           "results": [[101, IMAGE]],
+                           "times": [[101, 0]]},
                        "foo.bar3": {
-                           "results": [[1,"F"]],
-                           "times": [[1,0]]},
+                           "results": [[1, TEXT]],
+                           "times": [[1, 0]]},
                        },
              "version": 4})
 
