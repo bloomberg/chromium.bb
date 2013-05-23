@@ -443,8 +443,6 @@ class PatchSeries(object):
     Returns:
       A tuple of the change's GerritDependencies(), and PaladinDependencies()
     """
-    # TODO(sosa, ferringb): Modify helper logic to allows deps to be specified
-    # across different gerrit instances.
     val = self._change_deps_cache.get(change)
     if val is None:
       git_repo = self.GetGitRepoForChange(change)
@@ -962,7 +960,6 @@ class ValidationPool(object):
   @staticmethod
   def GetGerritHelpersForOverlays(overlays):
     """Discern the allowed GerritHelpers to use based on the given overlay."""
-    # TODO(sosa): Remove False case once overlays logic has stabilized on TOT.
     cros_internal = cros = False
     if overlays in [constants.PUBLIC_OVERLAYS, constants.BOTH_OVERLAYS, False]:
       cros = True
