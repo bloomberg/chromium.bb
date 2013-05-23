@@ -583,8 +583,6 @@
             ['include', '(^|/)ios/'],
             ['include', '^gfx/'],
             ['exclude', '^gfx/codec/jpeg_codec\\.cc$'],
-            ['exclude', '^gfx/pango_util\\.'],
-            ['exclude', '^gfx/platform_font_pango\\.'],
             ['include', '^base/animation/'],
             ['include', '^base/l10n/'],
             ['include', '^base/layout'],
@@ -642,7 +640,12 @@
             'base/x/selection_utils.h',
           ]
         }],
-        
+        ['use_pango==0', {
+          'sources/': [
+            ['exclude', '^gfx/pango_util\\.'],
+            ['exclude', '^gfx/platform_font_pango\\.'],
+          ],
+        }],
         ['use_aura==0 or OS!="linux"', {
           'sources!': [
             'base/resource/resource_bundle_auralinux.cc',
@@ -663,7 +666,6 @@
             # font_gtk.cc uses fontconfig.
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:glib',
-            '../build/linux/system.gyp:pangocairo',
           ],
           'conditions': [
             ['toolkit_views==0', {
@@ -680,6 +682,11 @@
               # 'sources/' rather than 'sources!'.
               'sources/': [
                 ['include', '^base/dragdrop/os_exchange_data.cc'],
+              ],
+            }],
+            ['use_pango==1', {
+              'dependencies': [
+                '../build/linux/system.gyp:pangocairo',
               ],
             }],
           ],
@@ -722,10 +729,6 @@
           ],
           'sources!': [
             'base/touch/touch_device.cc',
-            'gfx/pango_util.h',
-            'gfx/pango_util.cc',
-            'gfx/platform_font_pango.cc',
-            'gfx/platform_font_pango.h',
           ],
           'include_dirs': [
             '../',
@@ -778,10 +781,6 @@
           'sources!': [
             'base/dragdrop/drag_utils.cc',
             'base/dragdrop/drag_utils.h',
-            'gfx/pango_util.h',
-            'gfx/pango_util.cc',
-            'gfx/platform_font_pango.h',
-            'gfx/platform_font_pango.cc',
           ],
           'link_settings': {
             'libraries': [
@@ -851,10 +850,6 @@
             'base/dragdrop/drag_utils.cc',
             'base/dragdrop/drag_utils.h',
             'base/touch/touch_device.cc',
-            'gfx/pango_util.cc',
-            'gfx/pango_util.h',
-            'gfx/platform_font_pango.cc',
-            'gfx/platform_font_pango.h',
           ],
           'dependencies': [
             'ui_jni_headers',

@@ -209,11 +209,6 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         }],
-        ['OS == "linux"', {
-          'sources': [
-            'gfx/platform_font_pango_unittest.cc',
-          ],
-        }],
         ['OS == "linux" and toolkit_views==1', {
           'sources': [
             'base/x/events_x_unittest.cc',
@@ -235,9 +230,12 @@
             'base/strings/ui_strings.gyp:ui_unittest_strings',
           ],
         }],
-        ['use_glib == 1', {
+        ['use_pango == 1', {
           'dependencies': [
             '../build/linux/system.gyp:pangocairo',
+          ],
+          'sources': [
+            'gfx/platform_font_pango_unittest.cc',
           ],
           'conditions': [
             ['linux_use_tcmalloc==1', {

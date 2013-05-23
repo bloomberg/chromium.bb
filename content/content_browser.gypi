@@ -1198,7 +1198,7 @@
         '../build/linux/system.gyp:x11',
       ],
     }],
-    ['OS=="linux"', {
+    ['use_pango==1', {
       'dependencies': [
         '../build/linux/system.gyp:pangocairo',
       ],

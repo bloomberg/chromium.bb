@@ -445,11 +445,13 @@
           'use_x11%': 1,
         }],
 
-        # Flags to use glib on non-Mac POSIX platforms.
+        # Flags to use pango and glib on non-Mac POSIX platforms.
         ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android"', {
           'use_glib%': 0,
+          'use_pango%': 0,
         }, {
           'use_glib%': 1,
+          'use_pango%': 1,
         }],
 
         # We always use skia text rendering in Aura on Windows, since GDI
@@ -735,6 +737,7 @@
     'os_bsd%': '<(os_bsd)',
     'os_posix%': '<(os_posix)',
     'use_glib%': '<(use_glib)',
+    'use_pango%': '<(use_pango)',
     'use_ozone%': '<(use_ozone)',
     'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
     'use_x11%': '<(use_x11)',

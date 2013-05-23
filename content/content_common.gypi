@@ -186,8 +186,8 @@
     'common/font_list.cc',
     'common/font_list.h',
     'common/font_list_android.cc',
-    'common/font_list_linux.cc',
     'common/font_list_mac.mm',
+    'common/font_list_pango.cc',
     'common/font_list_win.cc',
     'common/gamepad_hardware_buffer.h',
     'common/gamepad_messages.h',
@@ -418,9 +418,13 @@
         '../build/linux/system.gyp:gtk',
       ],
     }],
-    ['OS=="linux"', {
+    ['use_pango == 1', {
       'dependencies': [
         '../build/linux/system.gyp:pangocairo',
+      ],
+    }, {  # use_pango == 0
+      'sources!': [
+        'common/font_list_pango.cc',
       ],
     }],
     ['use_x11 == 1', {
