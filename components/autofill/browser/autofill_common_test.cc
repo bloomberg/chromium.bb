@@ -18,6 +18,12 @@
 namespace autofill {
 namespace test {
 
+namespace {
+
+const char kSettingsOrigin[] = "Chrome settings";
+
+}  // namespace
+
 void CreateTestFormField(const char* label,
                          const char* name,
                          const char* value,
@@ -67,6 +73,31 @@ AutofillProfile GetFullProfile2() {
                  "US",
                  "13105557889");
   return profile;
+}
+
+AutofillProfile GetVerifiedProfile() {
+  AutofillProfile profile(GetFullProfile());
+  profile.set_origin(kSettingsOrigin);
+  return profile;
+}
+
+AutofillProfile GetVerifiedProfile2() {
+  AutofillProfile profile(GetFullProfile2());
+  profile.set_origin(kSettingsOrigin);
+  return profile;
+}
+
+CreditCard GetCreditCard() {
+  CreditCard credit_card(base::GenerateGUID(), "http://www.example.com");
+  SetCreditCardInfo(
+      &credit_card, "Test User", "4111111111111111" /* Visa */, "11", "2017");
+  return credit_card;
+}
+
+CreditCard GetVerifiedCreditCard() {
+  CreditCard credit_card(GetCreditCard());
+  credit_card.set_origin(kSettingsOrigin);
+  return credit_card;
 }
 
 void SetProfileInfo(AutofillProfile* profile,

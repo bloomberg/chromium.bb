@@ -256,6 +256,27 @@ void UserDidOptIntoLocationServices() {
   content::GeolocationProvider::GetInstance()->UserDidOptIntoLocationServices();
 }
 
+// Returns whether |data_model| is complete, i.e. can fill out all the
+// |requested_fields|, and verified, i.e. not just automatically aggregated.
+// Incomplete or unverifed data will not be displayed in the dropdown menu.
+bool HasCompleteAndVerifiedData(const AutofillDataModel& data_model,
+                                const DetailInputs& requested_fields) {
+  if (!data_model.IsVerified())
+    return false;
+
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+  for (size_t i = 0; i < requested_fields.size(); ++i) {
+    AutofillFieldType type = requested_fields[i].type;
+    if (type != ADDRESS_HOME_LINE2 &&
+        type != CREDIT_CARD_VERIFICATION_CODE &&
+        data_model.GetInfo(type, app_locale).empty()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 }  // namespace
 
 AutofillDialogController::~AutofillDialogController() {}
@@ -1882,6 +1903,9 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     const std::vector<CreditCard*>& cards = manager->GetCreditCards();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     for (size_t i = 0; i < cards.size(); ++i) {
+      if (!HasCompleteAndVerifiedData(*cards[i], requested_cc_fields_))
+        continue;
+
       suggested_cc_.AddKeyedItemWithIcon(
           cards[i]->guid(),
           cards[i]->Label(),
@@ -1891,7 +1915,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
     const std::string app_locale = g_browser_process->GetApplicationLocale();
     for (size_t i = 0; i < profiles.size(); ++i) {
-      if (!IsCompleteProfile(*profiles[i]))
+      if (!HasCompleteAndVerifiedData(*profiles[i], requested_shipping_fields_))
         continue;
 
       // Add all email addresses.
@@ -1956,20 +1980,6 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
   for (size_t section = SECTION_MIN; section <= SECTION_MAX; ++section) {
     PrepareDetailInputsForSection(static_cast<DialogSection>(section));
   }
-}
-
-bool AutofillDialogControllerImpl::IsCompleteProfile(
-    const AutofillProfile& profile) {
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  for (size_t i = 0; i < requested_shipping_fields_.size(); ++i) {
-    AutofillFieldType type = requested_shipping_fields_[i].type;
-    if (type != ADDRESS_HOME_LINE2 &&
-        profile.GetInfo(type, app_locale).empty()) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(

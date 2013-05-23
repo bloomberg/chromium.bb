@@ -279,11 +279,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Initializes |suggested_email_| et al.
   void SuggestionsUpdated();
 
-  // Returns whether |profile| is complete, i.e. can fill out all the relevant
-  // address info. Incomplete profiles will not be displayed in the dropdown
-  // menu.
-  bool IsCompleteProfile(const AutofillProfile& profile);
-
   // Whether the user's wallet items have at least one address and instrument.
   bool HasCompleteWallet() const;
 

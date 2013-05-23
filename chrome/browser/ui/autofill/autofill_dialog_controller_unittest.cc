@@ -414,7 +414,7 @@ TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
 
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
-  AutofillProfile full_profile(test::GetFullProfile());
+  AutofillProfile full_profile(test::GetVerifiedProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   controller()->EditClickedForSection(SECTION_SHIPPING);
 
@@ -486,6 +486,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
       controller()->MenuModelForSection(SECTION_SHIPPING);
   // Since the PersonalDataManager is empty, this should only have the
   // "use billing", "add new" and "manage" menu items.
+  ASSERT_TRUE(shipping_model);
   EXPECT_EQ(3, shipping_model->GetItemCount());
   // On the other hand, the other models should be NULL when there's no
   // suggestion.
@@ -493,22 +494,34 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   EXPECT_FALSE(controller()->MenuModelForSection(SECTION_BILLING));
   EXPECT_FALSE(controller()->MenuModelForSection(SECTION_EMAIL));
 
-  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(3);
 
   // Empty profiles are ignored.
   AutofillProfile empty_profile(base::GenerateGUID(), kSettingsOrigin);
   empty_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
   controller()->GetTestingManager()->AddTestingProfile(&empty_profile);
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
+  ASSERT_TRUE(shipping_model);
   EXPECT_EQ(3, shipping_model->GetItemCount());
   EXPECT_FALSE(controller()->MenuModelForSection(SECTION_EMAIL));
 
-  // A full profile should be picked up.
+  // An otherwise full but unverified profile should be ignored.
   AutofillProfile full_profile(test::GetFullProfile());
-  full_profile.set_origin(kSettingsOrigin);
+  full_profile.set_origin("https://www.example.com");
   full_profile.SetRawInfo(ADDRESS_HOME_LINE2, string16());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
+  ASSERT_TRUE(shipping_model);
+  EXPECT_EQ(3, shipping_model->GetItemCount());
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_EMAIL));
+
+  // A full, verified profile should be picked up.
+  AutofillProfile verified_profile(test::GetFullProfile());
+  verified_profile.set_origin(kSettingsOrigin);
+  verified_profile.SetRawInfo(ADDRESS_HOME_LINE2, string16());
+  controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
+  shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
+  ASSERT_TRUE(shipping_model);
   EXPECT_EQ(4, shipping_model->GetItemCount());
   EXPECT_TRUE(!!controller()->MenuModelForSection(SECTION_EMAIL));
 }
@@ -520,7 +533,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   EXPECT_FALSE(email_model);
 
   // Set up some variant data.
-  AutofillProfile full_profile(test::GetFullProfile());
+  AutofillProfile full_profile(test::GetVerifiedProfile());
   std::vector<string16> names;
   names.push_back(ASCIIToUTF16("John Doe"));
   names.push_back(ASCIIToUTF16("Jane Doe"));
@@ -554,14 +567,40 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   EXPECT_EQ(kEmail2, inputs[0].initial_value);
 }
 
+TEST_F(AutofillDialogControllerTest, AutofillCreditCards) {
+  // Since the PersonalDataManager is empty, this should only have the
+  // default menu items.
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC));
+
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(3);
+
+  // Empty cards are ignored.
+  CreditCard empty_card(base::GenerateGUID(), kSettingsOrigin);
+  empty_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("John Doe"));
+  controller()->GetTestingManager()->AddTestingCreditCard(&empty_card);
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC));
+
+  // An otherwise full but unverified card should be ignored.
+  CreditCard full_card(test::GetCreditCard());
+  full_card.set_origin("https://www.example.com");
+  controller()->GetTestingManager()->AddTestingCreditCard(&full_card);
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC));
+
+  // A full, verified card should be picked up.
+  CreditCard verified_card(test::GetCreditCard());
+  verified_card.set_origin(kSettingsOrigin);
+  controller()->GetTestingManager()->AddTestingCreditCard(&verified_card);
+  ui::MenuModel* credit_card_model =
+      controller()->MenuModelForSection(SECTION_CC);
+  ASSERT_TRUE(credit_card_model);
+  EXPECT_EQ(3, credit_card_model->GetItemCount());
+}
+
 // Test selecting a shipping address different from billing as address.
 TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
-  AutofillProfile full_profile(test::GetFullProfile());
-  AutofillProfile full_profile2(test::GetFullProfile2());
-  CreditCard credit_card;
-  test::SetCreditCardInfo(&credit_card, "Test User",
-                          "4234567890654321", // Visa
-                          "11", "2100");
+  AutofillProfile full_profile(test::GetVerifiedProfile());
+  AutofillProfile full_profile2(test::GetVerifiedProfile2());
+  CreditCard credit_card(test::GetVerifiedCreditCard());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   controller()->GetTestingManager()->AddTestingProfile(&full_profile2);
   controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
@@ -579,12 +618,9 @@ TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
 
 // Test selecting UseBillingForShipping.
 TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
-  AutofillProfile full_profile(test::GetFullProfile());
-  AutofillProfile full_profile2(test::GetFullProfile2());
-  CreditCard credit_card;
-  test::SetCreditCardInfo(&credit_card, "Test User",
-                          "4234567890654321", // Visa
-                          "11", "2100");
+  AutofillProfile full_profile(test::GetVerifiedProfile());
+  AutofillProfile full_profile2(test::GetVerifiedProfile2());
+  CreditCard credit_card(test::GetVerifiedCreditCard());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   controller()->GetTestingManager()->AddTestingProfile(&full_profile2);
   controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
@@ -838,7 +874,7 @@ TEST_F(AutofillDialogControllerTest, CancelNoSave) {
 // Checks that clicking the Manage menu item opens a new tab with a different
 // URL for Wallet and Autofill.
 TEST_F(AutofillDialogControllerTest, ManageItem) {
-  AutofillProfile full_profile(test::GetFullProfile());
+  AutofillProfile full_profile(test::GetVerifiedProfile());
   full_profile.set_origin(kSettingsOrigin);
   full_profile.SetRawInfo(ADDRESS_HOME_LINE2, string16());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
@@ -872,7 +908,7 @@ TEST_F(AutofillDialogControllerTest, ManageItem) {
 TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
-  AutofillProfile full_profile(test::GetFullProfile());
+  AutofillProfile full_profile(test::GetVerifiedProfile());
   const string16 kEmail = ASCIIToUTF16("first@johndoe.com");
   full_profile.SetRawInfo(EMAIL_ADDRESS, kEmail);
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
@@ -912,7 +948,7 @@ TEST_F(AutofillDialogControllerTest, EditAutofillProfile) {
 
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
-  AutofillProfile full_profile(test::GetFullProfile());
+  AutofillProfile full_profile(test::GetVerifiedProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   controller()->EditClickedForSection(SECTION_SHIPPING);
 
@@ -945,7 +981,7 @@ TEST_F(AutofillDialogControllerTest, EditAutofillProfile) {
 TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
-  AutofillProfile full_profile(test::GetFullProfile());
+  AutofillProfile full_profile(test::GetVerifiedProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
 
   ui::MenuModel* model = controller()->MenuModelForSection(SECTION_BILLING);
@@ -956,7 +992,7 @@ TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
   DetailOutputMap outputs;
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_BILLING);
-  AutofillProfile full_profile2(test::GetFullProfile2());
+  AutofillProfile full_profile2(test::GetVerifiedProfile2());
   for (size_t i = 0; i < inputs.size(); ++i) {
     const DetailInput& input = inputs[i];
     outputs[&input] = full_profile2.GetInfo(input.type, "en-US");
@@ -1348,12 +1384,10 @@ TEST_F(AutofillDialogControllerTest, AutofillTypes) {
 TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
 
-  AutofillProfile full_profile(test::GetFullProfile());
+  AutofillProfile full_profile(test::GetVerifiedProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
 
-  CreditCard card;
-  test::SetCreditCardInfo(
-      &card, "Donald Trump", "4111-1111-1111-1111", "10", "2025");
+  CreditCard card(test::GetVerifiedCreditCard());
   controller()->GetTestingManager()->AddTestingCreditCard(&card);
   EXPECT_FALSE(controller()->ShouldOfferToSaveInChrome());
 
