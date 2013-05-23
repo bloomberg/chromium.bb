@@ -48,7 +48,7 @@ void TranslateInfoBarDelegate::Create(
       // The original language can only be "unknown" for the "translating"
       // infobar, which is the case when the user started a translation from the
       // context menu.
-      DCHECK_EQ(TRANSLATING, infobar_type);
+      DCHECK(infobar_type == TRANSLATING || infobar_type == AFTER_TRANSLATE);
       DCHECK_EQ(chrome::kUnknownLanguageCode, original_language);
     }
   }
@@ -297,6 +297,20 @@ void TranslateInfoBarDelegate::GetAfterTranslateStrings(
   strings->push_back(text.substr(0, offsets[0]));
   strings->push_back(text.substr(offsets[0], offsets[1] - offsets[0]));
   strings->push_back(text.substr(offsets[1]));
+}
+
+// static
+void TranslateInfoBarDelegate::GetAfterTranslateWithAutoStrings(
+    std::vector<string16>* strings) {
+  DCHECK(strings);
+
+  size_t offset;
+  string16 text =
+      l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE_WITH_AUTO,
+                                 string16(), &offset);
+
+  strings->push_back(text.substr(0, offset));
+  strings->push_back(text.substr(offset));
 }
 
 TranslateInfoBarDelegate::TranslateInfoBarDelegate(

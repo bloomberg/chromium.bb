@@ -130,11 +130,15 @@ cr.googleTranslate = (function(key) {
      * The language the page translated was in. Is valid only after the page
      * has been successfully translated and the original language specified to
      * the translate function was 'auto'. Is empty otherwise.
+     * Some versions of Element library don't provide |getDetectedLanguage|
+     * function. In that case, this function returns 'und'.
      * @type {boolean}
      */
     get sourceLang() {
       if (!libReady || !finished || error)
         return '';
+      if (!lib.getDetectedLanguage)
+        return 'und'; // defined as chrome::kUnknownLanguageCode in C++ world.
       return lib.getDetectedLanguage();
     },
 

@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/language_detection_details.h"
@@ -678,7 +679,7 @@ void TranslateManager::InitiateTranslationPosted(
 }
 
 void TranslateManager::TranslatePage(WebContents* web_contents,
-                                     const std::string& source_lang,
+                                     const std::string& original_source_lang,
                                      const std::string& target_lang) {
   NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
   if (!entry) {
@@ -688,6 +689,15 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  std::string source_lang(original_source_lang);
+
+  // Translation can be kicked by context menu against unsupported languages.
+  // Unsupported language strings should be replaced with
+  // kUnknownLanguageCode in order to send a translation request with enabling
+  // server side auto language detection.
+  if (!IsSupportedLanguage(source_lang))
+    source_lang = std::string(chrome::kUnknownLanguageCode);
 
   TranslateInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents), true,
@@ -782,10 +792,11 @@ void TranslateManager::DoTranslatePage(WebContents* web_contents,
 void TranslateManager::PageTranslated(WebContents* web_contents,
                                       PageTranslatedDetails* details) {
   if ((details->error_type == TranslateErrors::NONE) &&
+      details->source_language != chrome::kUnknownLanguageCode &&
       !IsSupportedLanguage(details->source_language)) {
-    // TODO(jcivelli): http://crbug.com/9390 We should change the "after
-    //                 translate" infobar to support unknown as the original
-    //                 language.
+    // TODO(toyoshim): http://crbug.com/242142 We should check if
+    // l10n_util::GetDisplayNameForLocale() support |source_language| here.
+    // Also, following metrics should be modified to have language code.
     TranslateManagerMetrics::ReportUnsupportedLanguage();
     details->error_type = TranslateErrors::UNSUPPORTED_LANGUAGE;
   }

@@ -1329,13 +1329,13 @@ TEST_F(TranslateManagerBrowserTest, ContextMenu) {
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 
-  // Test that the translate context menu is disabled when the page is in an
+  // Test that the translate context menu is enabled even if the page is in an
   // unsupported language.
   SimulateNavigation(url, "qbz", true);
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
-  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 }
 
 // Tests that an extra always/never translate button is shown on the "before

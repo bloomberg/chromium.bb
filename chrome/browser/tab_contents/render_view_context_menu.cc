@@ -1198,13 +1198,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // target languages are identical.  This is to give a way to user to
       // translate a page that might contains text fragments in a different
       // language.
-      return !!(params_.edit_flags & WebContextMenuData::CanTranslate) &&
+      return ((params_.edit_flags & WebContextMenuData::CanTranslate) != 0) &&
              !original_lang.empty() &&  // Did we receive the page language yet?
-             // Only allow translating languages we explitly support and the
-             // unknown language (in which case the page language is detected on
-             // the server side).
-             (original_lang == chrome::kUnknownLanguageCode ||
-                 TranslateManager::IsSupportedLanguage(original_lang)) &&
              !translate_tab_helper->language_state().IsPageTranslated() &&
              !source_web_contents_->GetInterstitialPage() &&
              // There are some application locales which can't be used as a

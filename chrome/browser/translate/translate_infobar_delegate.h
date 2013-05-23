@@ -79,6 +79,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   // Returns the displayable name for the language at |index|.
   string16 language_name_at(size_t index) const {
+    if (index == kNoIndex)
+      return string16();
     DCHECK_LT(index, num_languages());
     return languages_[index].second;
   }
@@ -174,6 +176,15 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // been translate to <lang2> from <lang1>.").
   static void GetAfterTranslateStrings(std::vector<string16>* strings,
                                        bool* swap_languages);
+
+  // Adds the strings that should be displayed in the after translate infobar to
+  // |strings|. When a source language is not determined by Chrome, Languages
+  // are detected by a server automatically. And infobar doesn't show source
+  // languages. The text in the infobar is:
+  // "The page has been translated to <lang1>."
+  // Because <lang1> is displayed in a menu button, the text is split in 2
+  // chunks.
+  static void GetAfterTranslateWithAutoStrings(std::vector<string16>* strings);
 
  protected:
   // For testing.

@@ -13787,6 +13787,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE" desc="Message that page has been translated from one language to another">
         This page has been translated from<ph name="original_language">$1<ex>French</ex></ph>to<ph name="language_language">$2<ex>German</ex></ph>
       </message>
+      <message name="IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE_WITH_AUTO" desc="Message that page has been translated to another with server side auto language detection">
+        This page has been translated to <ph name="target_language">$1<ex>German</ex></ph>
+      </message>
       <if expr="is_android">
       <message name="IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE_MOBILE" desc="Mobile: Message that page has been translated from one language to another">
         This page has been translated to <ph name="target_language">$1<ex>German</ex></ph>
@@ -13813,7 +13816,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_TRANSLATE_INFOBAR_UNSUPPORTED_PAGE_LANGUAGE" desc="Error message shown when the translate server translated the page and returned the page was in a language the browser does not know.">
         This page has been translated from an unknown language to <ph name="language_language">$1<ex>English</ex></ph>
       </message>
-       <if expr="is_android">
+      <if expr="is_android">
       <message name="IDS_TRANSLATE_INFOBAR_ERROR_MOBILE" desc="Mobile: Translate Error message">
         The translation to <ph name="target_language">$1<ex>German</ex></ph> failed.
       </message>
