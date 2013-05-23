@@ -31,7 +31,7 @@ class ConnectInterceptor {
   virtual ~ConnectInterceptor();
 
   // Learn about referrers, and optionally preconnect based on history.
-  void WitnessURLRequest(net::URLRequest* request) const;
+  void WitnessURLRequest(net::URLRequest* request);
 
  private:
   // Provide access to local class TimedCache for testing.
@@ -50,20 +50,17 @@ class ConnectInterceptor {
 
     // Evicts any entries that have been in the FIFO "too long," and then checks
     // to see if the given url is (still) in the FIFO cache.
-    bool WasRecentlySeen(const GURL& url) const;
+    bool WasRecentlySeen(const GURL& url);
 
     // Adds the given url to the cache, where it will remain for max_duration_.
-    void SetRecentlySeen(const GURL& url) const;
+    void SetRecentlySeen(const GURL& url);
 
    private:
     // Our cache will be keyed on a URL (actually, just a scheme/host/port).
     // We will always track the time it was last added to the FIFO cache by
     // remembering a TimeTicks value.
     typedef base::MRUCache<GURL, base::TimeTicks> UrlMruTimedCache;
-    // mru_cache_ has to be mutable in order to be accessed from the overriden
-    // URLRequestJob functions. It is mutable because it tracks the urls and
-    // caches them.
-    mutable UrlMruTimedCache mru_cache_;
+    UrlMruTimedCache mru_cache_;
 
     // The longest time an entry can persist in the cache, and still be found.
     const base::TimeDelta max_duration_;

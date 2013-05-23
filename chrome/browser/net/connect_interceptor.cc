@@ -27,7 +27,7 @@ ConnectInterceptor::ConnectInterceptor(Predictor* predictor)
 ConnectInterceptor::~ConnectInterceptor() {
 }
 
-void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) const {
+void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) {
   GURL request_scheme_host(Predictor::CanonicalizeUrl(request->url()));
   if (request_scheme_host == GURL::EmptyGURL())
     return;
@@ -95,7 +95,7 @@ ConnectInterceptor::TimedCache::TimedCache(const base::TimeDelta& max_duration)
 // Make Clang compilation happy with explicit destructor.
 ConnectInterceptor::TimedCache::~TimedCache() {}
 
-bool ConnectInterceptor::TimedCache::WasRecentlySeen(const GURL& url) const {
+bool ConnectInterceptor::TimedCache::WasRecentlySeen(const GURL& url) {
   DCHECK_EQ(url.GetWithEmptyPath(), url);
   // Evict any overly old entries.
   base::TimeTicks now = base::TimeTicks::Now();
@@ -109,7 +109,7 @@ bool ConnectInterceptor::TimedCache::WasRecentlySeen(const GURL& url) const {
   return mru_cache_.end() != mru_cache_.Peek(url);
 }
 
-void ConnectInterceptor::TimedCache::SetRecentlySeen(const GURL& url) const {
+void ConnectInterceptor::TimedCache::SetRecentlySeen(const GURL& url) {
   DCHECK_EQ(url.GetWithEmptyPath(), url);
   mru_cache_.Put(url, base::TimeTicks::Now());
 }
