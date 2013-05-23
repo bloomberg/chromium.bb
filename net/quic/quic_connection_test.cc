@@ -1370,6 +1370,49 @@ TEST_F(QuicConnectionTest, RetransmitWithSameEncryptionLevel) {
   EXPECT_EQ(0x02020202u, final_bytes_of_last_packet());
 }
 
+TEST_F(QuicConnectionTest,
+       DropRetransmitsForNullEncryptedPacketAfterForwardSecure) {
+  use_tagging_decrypter();
+  connection_.SetEncrypter(ENCRYPTION_NONE, new TaggingEncrypter(0x01));
+  QuicPacketSequenceNumber sequence_number;
+  SendStreamDataToPeer(1, "foo", 0, !kFin, &sequence_number);
+
+  connection_.SetEncrypter(ENCRYPTION_FORWARD_SECURE,
+                           new TaggingEncrypter(0x02));
+  connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(0);
+  EXPECT_CALL(*send_algorithm_, AbandoningPacket(sequence_number, _)).Times(1);
+
+  const QuicTime::Delta kDefaultRetransmissionTime =
+      QuicTime::Delta::FromMilliseconds(500);
+  QuicTime default_retransmission_time = clock_.ApproximateNow().Add(
+      kDefaultRetransmissionTime);
+
+  EXPECT_EQ(default_retransmission_time, helper_->retransmission_alarm());
+  // Simulate the retransimission alarm firing
+  clock_.AdvanceTime(kDefaultRetransmissionTime);
+  connection_.OnRetransmissionTimeout();
+}
+
+TEST_F(QuicConnectionTest, RetransmitPacketsWithInitialEncryption) {
+  use_tagging_decrypter();
+  connection_.SetEncrypter(ENCRYPTION_NONE, new TaggingEncrypter(0x01));
+  connection_.SetDefaultEncryptionLevel(ENCRYPTION_NONE);
+
+  SendStreamDataToPeer(1, "foo", 0, !kFin, NULL);
+
+  connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(0x02));
+  connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
+
+  SendStreamDataToPeer(2, "bar", 0, !kFin, NULL);
+
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(1);
+  EXPECT_CALL(*send_algorithm_, AbandoningPacket(_, _)).Times(1);
+
+  connection_.RetransmitUnackedPackets(QuicConnection::INITIAL_ENCRYPTION_ONLY);
+}
+
 TEST_F(QuicConnectionTest, TestRetransmitOrder) {
   QuicByteCount first_packet_size;
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).WillOnce(

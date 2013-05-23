@@ -20,7 +20,6 @@ namespace {
 const size_t kQuicTagSize = sizeof(uint32);
 const size_t kCryptoEndOffsetSize = sizeof(uint32);
 const size_t kNumEntriesSize = sizeof(uint16);
-const size_t kValueLenSize = sizeof(uint16);
 
 // OneShotVisitor is a framer visitor that records a single handshake message.
 class OneShotVisitor : public CryptoFramerVisitorInterface {
@@ -75,85 +74,12 @@ bool CryptoFramer::ProcessInput(StringPiece input) {
   if (error_ != QUIC_NO_ERROR) {
     return false;
   }
-  // Add this data to the buffer.
-  buffer_.append(input.data(), input.length());
-  QuicDataReader reader(buffer_.data(), buffer_.length());
-
-  switch (state_) {
-    case STATE_READING_TAG:
-      if (reader.BytesRemaining() < kQuicTagSize) {
-        break;
-      }
-      QuicTag message_tag;
-      reader.ReadUInt32(&message_tag);
-      message_.set_tag(message_tag);
-      state_ = STATE_READING_NUM_ENTRIES;
-    case STATE_READING_NUM_ENTRIES:
-      if (reader.BytesRemaining() < kNumEntriesSize + sizeof(uint16)) {
-        break;
-      }
-      reader.ReadUInt16(&num_entries_);
-      if (num_entries_ > kMaxEntries) {
-        error_ = QUIC_CRYPTO_TOO_MANY_ENTRIES;
-        return false;
-      }
-      uint16 padding;
-      reader.ReadUInt16(&padding);
-
-      tags_and_lengths_.reserve(num_entries_);
-      state_ = STATE_READING_TAGS_AND_LENGTHS;
-      values_len_ = 0;
-    case STATE_READING_TAGS_AND_LENGTHS: {
-      if (reader.BytesRemaining() <
-              num_entries_ * (kQuicTagSize + kCryptoEndOffsetSize)) {
-        break;
-      }
-
-      uint32 last_end_offset = 0;
-      for (unsigned i = 0; i < num_entries_; ++i) {
-        QuicTag tag;
-        reader.ReadUInt32(&tag);
-        if (i > 0 && tag <= tags_and_lengths_[i-1].first) {
-          if (tag == tags_and_lengths_[i-1].first) {
-            error_ = QUIC_CRYPTO_DUPLICATE_TAG;
-          } else {
-            error_ = QUIC_CRYPTO_TAGS_OUT_OF_ORDER;
-          }
-          return false;
-        }
-
-        uint32 end_offset;
-        reader.ReadUInt32(&end_offset);
-
-        if (end_offset < last_end_offset) {
-          error_ = QUIC_CRYPTO_TAGS_OUT_OF_ORDER;
-          return false;
-        }
-        tags_and_lengths_.push_back(
-            make_pair(tag, static_cast<size_t>(end_offset - last_end_offset)));
-        last_end_offset = end_offset;
-      }
-      values_len_ = last_end_offset;
-      state_ = STATE_READING_VALUES;
-    }
-    case STATE_READING_VALUES:
-      if (reader.BytesRemaining() < values_len_) {
-        break;
-      }
-      for (vector<pair<QuicTag, size_t> >::const_iterator
-           it = tags_and_lengths_.begin(); it != tags_and_lengths_.end();
-           it++) {
-        StringPiece value;
-        reader.ReadStringPiece(&value, it->second);
-        message_.SetStringPiece(it->first, value);
-      }
-      visitor_->OnHandshakeMessage(message_);
-      Clear();
-      state_ = STATE_READING_TAG;
-      break;
+  error_ = Process(input);
+  if (error_ != QUIC_NO_ERROR) {
+    visitor_->OnError(this);
+    return false;
   }
-  // Save any remaining data.
-  buffer_ = reader.PeekRemainingPayload().as_string();
+
   return true;
 }
 
@@ -266,6 +192,85 @@ void CryptoFramer::Clear() {
   tags_and_lengths_.clear();
   error_ = QUIC_NO_ERROR;
   state_ = STATE_READING_TAG;
+}
+
+QuicErrorCode CryptoFramer::Process(StringPiece input) {
+  // Add this data to the buffer.
+  buffer_.append(input.data(), input.length());
+  QuicDataReader reader(buffer_.data(), buffer_.length());
+
+  switch (state_) {
+    case STATE_READING_TAG:
+      if (reader.BytesRemaining() < kQuicTagSize) {
+        break;
+      }
+      QuicTag message_tag;
+      reader.ReadUInt32(&message_tag);
+      message_.set_tag(message_tag);
+      state_ = STATE_READING_NUM_ENTRIES;
+    case STATE_READING_NUM_ENTRIES:
+      if (reader.BytesRemaining() < kNumEntriesSize + sizeof(uint16)) {
+        break;
+      }
+      reader.ReadUInt16(&num_entries_);
+      if (num_entries_ > kMaxEntries) {
+        return QUIC_CRYPTO_TOO_MANY_ENTRIES;
+      }
+      uint16 padding;
+      reader.ReadUInt16(&padding);
+
+      tags_and_lengths_.reserve(num_entries_);
+      state_ = STATE_READING_TAGS_AND_LENGTHS;
+      values_len_ = 0;
+    case STATE_READING_TAGS_AND_LENGTHS: {
+      if (reader.BytesRemaining() <
+              num_entries_ * (kQuicTagSize + kCryptoEndOffsetSize)) {
+        break;
+      }
+
+      uint32 last_end_offset = 0;
+      for (unsigned i = 0; i < num_entries_; ++i) {
+        QuicTag tag;
+        reader.ReadUInt32(&tag);
+        if (i > 0 && tag <= tags_and_lengths_[i-1].first) {
+          if (tag == tags_and_lengths_[i-1].first) {
+            return QUIC_CRYPTO_DUPLICATE_TAG;
+          }
+          return QUIC_CRYPTO_TAGS_OUT_OF_ORDER;
+        }
+
+        uint32 end_offset;
+        reader.ReadUInt32(&end_offset);
+
+        if (end_offset < last_end_offset) {
+          return QUIC_CRYPTO_TAGS_OUT_OF_ORDER;
+        }
+        tags_and_lengths_.push_back(
+            make_pair(tag, static_cast<size_t>(end_offset - last_end_offset)));
+        last_end_offset = end_offset;
+      }
+      values_len_ = last_end_offset;
+      state_ = STATE_READING_VALUES;
+    }
+    case STATE_READING_VALUES:
+      if (reader.BytesRemaining() < values_len_) {
+        break;
+      }
+      for (vector<pair<QuicTag, size_t> >::const_iterator
+           it = tags_and_lengths_.begin(); it != tags_and_lengths_.end();
+           it++) {
+        StringPiece value;
+        reader.ReadStringPiece(&value, it->second);
+        message_.SetStringPiece(it->first, value);
+      }
+      visitor_->OnHandshakeMessage(message_);
+      Clear();
+      state_ = STATE_READING_TAG;
+      break;
+  }
+  // Save any remaining data.
+  buffer_ = reader.PeekRemainingPayload().as_string();
+  return QUIC_NO_ERROR;
 }
 
 // static

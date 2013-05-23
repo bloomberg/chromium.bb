@@ -280,6 +280,7 @@ TEST(CryptoFramerTest, ProcessInput) {
   EXPECT_TRUE(
       framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
   EXPECT_EQ(0u, framer.InputBytesRemaining());
+  EXPECT_EQ(0, visitor.error_count_);
   ASSERT_EQ(1u, visitor.messages_.size());
   const CryptoHandshakeMessage& message = visitor.messages_[0];
   EXPECT_EQ(0xFFAA7733, message.tag());
@@ -326,6 +327,7 @@ TEST(CryptoFramerTest, ProcessInputWithThreeKeys) {
   EXPECT_TRUE(
       framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
   EXPECT_EQ(0u, framer.InputBytesRemaining());
+  EXPECT_EQ(0, visitor.error_count_);
   ASSERT_EQ(1u, visitor.messages_.size());
   const CryptoHandshakeMessage& message = visitor.messages_[0];
   EXPECT_EQ(0xFFAA7733, message.tag());
@@ -400,6 +402,7 @@ TEST(CryptoFramerTest, ProcessInputTagsOutOfOrder) {
   EXPECT_FALSE(
       framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
   EXPECT_EQ(QUIC_CRYPTO_TAGS_OUT_OF_ORDER, framer.error());
+  EXPECT_EQ(1, visitor.error_count_);
 }
 
 TEST(CryptoFramerTest, ProcessEndOffsetsOutOfOrder) {
@@ -427,6 +430,7 @@ TEST(CryptoFramerTest, ProcessEndOffsetsOutOfOrder) {
   EXPECT_FALSE(
       framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
   EXPECT_EQ(QUIC_CRYPTO_TAGS_OUT_OF_ORDER, framer.error());
+  EXPECT_EQ(1, visitor.error_count_);
 }
 
 TEST(CryptoFramerTest, ProcessInputTooManyEntries) {
@@ -446,6 +450,7 @@ TEST(CryptoFramerTest, ProcessInputTooManyEntries) {
   EXPECT_FALSE(
       framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
   EXPECT_EQ(QUIC_CRYPTO_TOO_MANY_ENTRIES, framer.error());
+  EXPECT_EQ(1, visitor.error_count_);
 }
 
 TEST(CryptoFramerTest, ProcessInputZeroLength) {
@@ -472,6 +477,7 @@ TEST(CryptoFramerTest, ProcessInputZeroLength) {
 
   EXPECT_TRUE(
       framer.ProcessInput(StringPiece(AsChars(input), arraysize(input))));
+  EXPECT_EQ(0, visitor.error_count_);
 }
 
 }  // namespace test

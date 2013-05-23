@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "net/quic/crypto/scoped_evp_cipher_ctx.h"
 
 using base::StringPiece;
 
@@ -18,11 +17,13 @@ namespace {
 
 const size_t kKeySize = 16;
 const size_t kNoncePrefixSize = 4;
+const size_t kAESNonceSize = 12;
 
 }  // namespace
 
-Aes128Gcm12Encrypter::Aes128Gcm12Encrypter() {
-}
+Aes128Gcm12Encrypter::Aes128Gcm12Encrypter() {}
+
+Aes128Gcm12Encrypter::~Aes128Gcm12Encrypter() {}
 
 // static
 bool Aes128Gcm12Encrypter::IsSupported() { return true; }
@@ -33,6 +34,19 @@ bool Aes128Gcm12Encrypter::SetKey(StringPiece key) {
     return false;
   }
   memcpy(key_, key.data(), key.size());
+
+  // Set the cipher type and the key.
+  if (EVP_EncryptInit_ex(ctx_.get(), EVP_aes_128_gcm(), NULL, key_,
+                         NULL) == 0) {
+    return false;
+  }
+
+  // Set the IV (nonce) length.
+  if (EVP_CIPHER_CTX_ctrl(ctx_.get(), EVP_CTRL_GCM_SET_IVLEN, kAESNonceSize,
+                          NULL) == 0) {
+    return false;
+  }
+
   return true;
 }
 
@@ -41,7 +55,8 @@ bool Aes128Gcm12Encrypter::SetNoncePrefix(StringPiece nonce_prefix) {
   if (nonce_prefix.size() != kNoncePrefixSize) {
     return false;
   }
-  memcpy(nonce_, nonce_prefix.data(), nonce_prefix.size());
+  COMPILE_ASSERT(sizeof(nonce_prefix_) == kNoncePrefixSize, bad_nonce_length);
+  memcpy(nonce_prefix_, nonce_prefix.data(), nonce_prefix.size());
   return true;
 }
 
@@ -49,29 +64,13 @@ bool Aes128Gcm12Encrypter::Encrypt(StringPiece nonce,
                                    StringPiece associated_data,
                                    StringPiece plaintext,
                                    unsigned char* output) {
-  // |output_len| is passed to an OpenSSL function to receive the output
-  // length.
-  int output_len;
-
   if (nonce.size() != kNoncePrefixSize + sizeof(QuicPacketSequenceNumber)) {
     return false;
   }
 
-  ScopedEVPCipherCtx ctx;
-
-  // Set the cipher type and the key. The IV (nonce) is set below.
-  if (EVP_EncryptInit_ex(ctx.get(), EVP_aes_128_gcm(), NULL, key_, NULL) == 0) {
-    return false;
-  }
-
-  // Set the IV (nonce) length.
-  if (EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_IVLEN, nonce.size(),
-                          NULL) == 0) {
-    return false;
-  }
   // Set the IV (nonce).
   if (EVP_EncryptInit_ex(
-          ctx.get(), NULL, NULL, NULL,
+          ctx_.get(), NULL, NULL, NULL,
           reinterpret_cast<const unsigned char*>(nonce.data())) == 0) {
     return false;
   }
@@ -81,28 +80,30 @@ bool Aes128Gcm12Encrypter::Encrypt(StringPiece nonce,
   if (!associated_data.empty()) {
     // Set the associated data. The second argument (output buffer) must be
     // NULL.
+    int unused_len;
     if (EVP_EncryptUpdate(
-            ctx.get(), NULL, &output_len,
+            ctx_.get(), NULL, &unused_len,
             reinterpret_cast<const unsigned char*>(associated_data.data()),
             associated_data.size()) == 0) {
       return false;
     }
   }
 
+  int len;
   if (EVP_EncryptUpdate(
-          ctx.get(), output, &output_len,
+          ctx_.get(), output, &len,
           reinterpret_cast<const unsigned char*>(plaintext.data()),
           plaintext.size()) == 0) {
     return false;
   }
-  output += output_len;
+  output += len;
 
-  if (EVP_EncryptFinal_ex(ctx.get(), output, &output_len) == 0) {
+  if (EVP_EncryptFinal_ex(ctx_.get(), output, &len) == 0) {
     return false;
   }
-  output += output_len;
+  output += len;
 
-  if (EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_GET_TAG, kAuthTagSize,
+  if (EVP_CIPHER_CTX_ctrl(ctx_.get(), EVP_CTRL_GCM_GET_TAG, kAuthTagSize,
                           output) == 0) {
     return false;
   }
@@ -114,14 +115,14 @@ QuicData* Aes128Gcm12Encrypter::EncryptPacket(
     QuicPacketSequenceNumber sequence_number,
     StringPiece associated_data,
     StringPiece plaintext) {
-  COMPILE_ASSERT(sizeof(nonce_) == kNoncePrefixSize + sizeof(sequence_number),
-                 incorrect_nonce_size);
-  memcpy(nonce_ + kNoncePrefixSize, &sequence_number, sizeof(sequence_number));
-
   size_t ciphertext_size = GetCiphertextSize(plaintext.length());
   scoped_ptr<char[]> ciphertext(new char[ciphertext_size]);
 
-  if (!Encrypt(StringPiece(reinterpret_cast<char*>(nonce_), sizeof(nonce_)),
+  uint8 nonce[kNoncePrefixSize + sizeof(sequence_number)];
+  COMPILE_ASSERT(sizeof(nonce) == kAESNonceSize, bad_sequence_number_size);
+  memcpy(nonce, nonce_prefix_, kNoncePrefixSize);
+  memcpy(nonce + kNoncePrefixSize, &sequence_number, sizeof(sequence_number));
+  if (!Encrypt(StringPiece(reinterpret_cast<char*>(nonce), sizeof(nonce)),
                associated_data, plaintext,
                reinterpret_cast<unsigned char*>(ciphertext.get()))) {
     return NULL;
@@ -151,7 +152,8 @@ StringPiece Aes128Gcm12Encrypter::GetKey() const {
 }
 
 StringPiece Aes128Gcm12Encrypter::GetNoncePrefix() const {
-  return StringPiece(reinterpret_cast<const char*>(nonce_), kNoncePrefixSize);
+  return StringPiece(reinterpret_cast<const char*>(nonce_prefix_),
+                     kNoncePrefixSize);
 }
 
 }  // namespace net

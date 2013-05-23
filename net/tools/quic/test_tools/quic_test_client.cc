@@ -4,6 +4,7 @@
 
 #include "net/tools/quic/test_tools/quic_test_client.h"
 
+#include "googleurl/src/gurl.h"
 #include "net/tools/flip_server/balsa_headers.h"
 #include "net/tools/quic/test_tools/http_message_test_utils.h"
 
@@ -72,8 +73,17 @@ ssize_t QuicTestClient::SendRequest(const string& uri) {
 ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   stream_ = NULL;  // Always force creation of a stream for SendMessage.
 
+  // If we're not connected, try to find an sni hostname.
+  if (!connected()) {
+    GURL url(message.headers()->request_uri().as_string());
+    if (!url.host().empty()) {
+      client_.set_server_hostname(url.host());
+    }
+  }
+
   QuicReliableClientStream* stream = GetOrCreateStream();
   if (!stream) { return 0; }
+
   scoped_ptr<BalsaHeaders> munged_headers(MungeHeaders(message.headers()));
   return GetOrCreateStream()->SendRequest(
       munged_headers.get() ? *munged_headers.get() : *message.headers(),
@@ -97,8 +107,8 @@ string QuicTestClient::SendCustomSynchronousRequest(
 
 string QuicTestClient::SendSynchronousRequest(const string& uri) {
   if (SendRequest(uri) == 0) {
-    DLOG(ERROR) << "Failed to the request for uri:" << uri;
-    return std::string();
+    DLOG(ERROR) << "Failed the request for uri:" << uri;
+    return "";
   }
   WaitForResponse();
   return response_;

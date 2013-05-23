@@ -12,6 +12,7 @@
 #include "net/base/net_export.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/crypto/crypto_secret_boxer.h"
 #include "net/quic/quic_time.h"
 
 namespace net {
@@ -184,10 +185,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // observed client nonces in order to prevent replay attacks.
   mutable scoped_ptr<StrikeRegister> strike_register_;
 
-  // These members are used to encrypt and decrypt the source address tokens
-  // that we receive from and send to clients.
-  scoped_ptr<QuicEncrypter> source_address_token_encrypter_;
-  scoped_ptr<QuicDecrypter> source_address_token_decrypter_;
+  // source_address_token_boxer_ is used to protect the source-address tokens
+  // that are given to clients.
+  CryptoSecretBoxer source_address_token_boxer_;
 
   // proof_source_ contains an object that can provide certificate chains and
   // signatures.

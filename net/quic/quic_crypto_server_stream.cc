@@ -38,12 +38,9 @@ void QuicCryptoServerStream::OnHandshakeMessage(
 
   string error_details;
   CryptoHandshakeMessage reply;
-  QuicErrorCode error = crypto_config_.ProcessClientHello(
-      message, session()->connection()->guid(),
-      session()->connection()->peer_address(),
-      session()->connection()->clock(),
-      session()->connection()->random_generator(),
-      &crypto_negotiated_params_, &reply, &error_details);
+
+  QuicErrorCode error = ProcessClientHello(message, &reply, &error_details);
+
   if (error != QUIC_NO_ERROR) {
     CloseConnectionWithDetails(error, error_details);
     return;
@@ -92,6 +89,19 @@ void QuicCryptoServerStream::OnHandshakeMessage(
   encryption_established_ = true;
   handshake_confirmed_ = true;
   session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
+}
+
+QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
+    const CryptoHandshakeMessage& message,
+    CryptoHandshakeMessage* reply,
+    string* error_details) {
+  return crypto_config_.ProcessClientHello(
+      message,
+      session()->connection()->guid(),
+      session()->connection()->peer_address(),
+      session()->connection()->clock(),
+      session()->connection()->random_generator(),
+      &crypto_negotiated_params_, reply, error_details);
 }
 
 }  // namespace net

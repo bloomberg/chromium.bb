@@ -276,7 +276,8 @@ QuicEncryptedPacket* QuicFramer::ConstructPublicResetPacket(
   size_t len = GetPublicResetPacketSize();
   QuicDataWriter writer(len);
 
-  uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_RST);
+  uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_RST |
+                                   PACKET_PUBLIC_FLAGS_8BYTE_GUID);
   if (!writer.WriteUInt8(flags)) {
     return NULL;
   }
@@ -304,7 +305,8 @@ QuicEncryptedPacket* QuicFramer::ConstructVersionNegotiationPacket(
   size_t len = GetVersionNegotiationPacketSize(supported_versions.size());
   QuicDataWriter writer(len);
 
-  uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_VERSION);
+  uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_VERSION |
+                                   PACKET_PUBLIC_FLAGS_8BYTE_GUID);
   if (!writer.WriteUInt8(flags)) {
     return NULL;
   }
@@ -472,6 +474,7 @@ bool QuicFramer::WritePacketHeader(const QuicPacketHeader& header,
   if (header.public_header.version_flag) {
     flags |= PACKET_PUBLIC_FLAGS_VERSION;
   }
+  flags |= PACKET_PUBLIC_FLAGS_8BYTE_GUID;
   if (!writer->WriteUInt8(flags)) {
     return false;
   }
@@ -551,6 +554,12 @@ bool QuicFramer::ProcessPublicHeader(QuicPacketPublicHeader* public_header) {
     return false;
   }
 
+  if ((public_flags & PACKET_PUBLIC_FLAGS_8BYTE_GUID) !=
+          PACKET_PUBLIC_FLAGS_8BYTE_GUID) {
+    set_detailed_error("Only full length guids (8 bytes) currently supported.");
+    return false;
+  }
+
   public_header->reset_flag = (public_flags & PACKET_PUBLIC_FLAGS_RST) != 0;
   public_header->version_flag =
       (public_flags & PACKET_PUBLIC_FLAGS_VERSION) != 0;
@@ -581,10 +590,14 @@ bool QuicFramer::ProcessPublicHeader(QuicPacketPublicHeader* public_header) {
 // static
 bool QuicFramer::ReadGuidFromPacket(const QuicEncryptedPacket& packet,
                                     QuicGuid* guid) {
-  // TODO(ianswett): In the next CL, the flags will be used for guid length.
   QuicDataReader reader(packet.data(), packet.length());
   uint8 public_flags;
   if (!reader.ReadBytes(&public_flags, 1)) {
+    return false;
+  }
+  // Ensure it's an 8 byte guid.
+  if ((public_flags & PACKET_PUBLIC_FLAGS_8BYTE_GUID) !=
+          PACKET_PUBLIC_FLAGS_8BYTE_GUID) {
     return false;
   }
 

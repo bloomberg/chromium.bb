@@ -10,6 +10,10 @@
 #include "base/compiler_specific.h"
 #include "net/quic/crypto/quic_decrypter.h"
 
+#if defined(USE_OPENSSL)
+#include "net/quic/crypto/scoped_evp_cipher_ctx.h"
+#endif
+
 namespace net {
 
 namespace test {
@@ -30,7 +34,7 @@ class NET_EXPORT_PRIVATE Aes128Gcm12Decrypter : public QuicDecrypter {
   };
 
   Aes128Gcm12Decrypter();
-  virtual ~Aes128Gcm12Decrypter() {}
+  virtual ~Aes128Gcm12Decrypter();
 
   // Returns true if the underlying crypto library supports AES GCM.
   static bool IsSupported();
@@ -52,9 +56,12 @@ class NET_EXPORT_PRIVATE Aes128Gcm12Decrypter : public QuicDecrypter {
  private:
   // The 128-bit AES key.
   unsigned char key_[16];
-  // The nonce, a concatenation of a four-byte fixed prefix and a 8-byte
-  // packet sequence number.
-  unsigned char nonce_[12];
+  // The nonce prefix.
+  unsigned char nonce_prefix_[4];
+
+#if defined(USE_OPENSSL)
+  ScopedEVPCipherCtx ctx_;
+#endif
 };
 
 }  // namespace net

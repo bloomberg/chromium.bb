@@ -241,7 +241,7 @@ void QuicConnection::OnVersionNegotiationPacket(
   }
 
   version_negotiation_state_ = NEGOTIATED_VERSION;
-  RetransmitAllUnackedPackets();
+  RetransmitUnackedPackets(ALL_PACKETS);
 }
 
 void QuicConnection::OnRevivedPacket() {
@@ -591,7 +591,8 @@ bool QuicConnection::OnConnectionCloseFrame(
     debug_visitor_->OnConnectionCloseFrame(frame);
   }
   DLOG(INFO) << ENDPOINT << "Connection closed with error "
-             << QuicUtils::ErrorToString(frame.error_code);
+             << QuicUtils::ErrorToString(frame.error_code)
+             << " " << frame.error_details;
   CloseConnection(frame.error_code, true);
   return false;
 }
@@ -863,10 +864,23 @@ bool QuicConnection::MaybeRetransmitPacketForRTO(
   }
 }
 
-void QuicConnection::RetransmitAllUnackedPackets() {
-  for (UnackedPacketMap::iterator it = unacked_packets_.begin();
-       it != unacked_packets_.end(); ++it) {
-    RetransmitPacket(it->first);
+void QuicConnection::RetransmitUnackedPackets(
+    RetransmissionType retransmission_type) {
+  UnackedPacketMap::iterator current_it = unacked_packets_.begin();
+  UnackedPacketMap::iterator next_it;
+  while (current_it != unacked_packets_.end()) {
+    next_it = current_it;
+    ++next_it;
+
+    if (retransmission_type != INITIAL_ENCRYPTION_ONLY ||
+        current_it->second->encryption_level() == ENCRYPTION_INITIAL) {
+      // TODO(satyamshekhar): Think about congestion control here.
+      // Specifically, about the retransmission count of packets being sent
+      // proactively to achieve 0 (minimal) RTT.
+      RetransmitPacket(current_it->first);
+    }
+
+    current_it = next_it;
   }
 }
 
@@ -886,6 +900,7 @@ void QuicConnection::RetransmitPacket(
   // TODO(pwestin): Need to fix potential issue with FEC and a 1 packet
   // congestion window see b/8331807 for details.
   congestion_manager_.AbandoningPacket(sequence_number);
+
   // TODO(ianswett): Never change the sequence number of the connect packet.
   // Re-packetize the frames with a new sequence number for retransmission.
   // Retransmitted data packets do not use FEC, even when it's enabled.
@@ -969,6 +984,21 @@ void QuicConnection::MaybeSetupRetransmission(
   // SendStreamData().
 }
 
+void QuicConnection::DropPacket(QuicPacketSequenceNumber sequence_number) {
+  UnackedPacketMap::iterator unacked_it =
+      unacked_packets_.find(sequence_number);
+  // Packet was not meant to be retransmitted.
+  if (unacked_it == unacked_packets_.end()) {
+    DCHECK(!ContainsKey(retransmission_map_, sequence_number));
+    return;
+  }
+  // Delete the unacked packet.
+  delete unacked_it->second;
+  unacked_packets_.erase(unacked_it);
+  retransmission_map_.erase(sequence_number);
+  return;
+}
+
 bool QuicConnection::WritePacket(EncryptionLevel level,
                                  QuicPacketSequenceNumber sequence_number,
                                  QuicPacket* packet,
@@ -980,6 +1010,17 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
     delete packet;
     // Returning true because we deleted the packet and the caller shouldn't
     // delete it again.
+    return true;
+  }
+
+  if (encryption_level_ == ENCRYPTION_FORWARD_SECURE &&
+      level == ENCRYPTION_NONE) {
+    // Drop packets that are NULL encrypted since the peer won't accept them
+    // anymore.
+    DLOG(INFO) << ENDPOINT << "Dropped packet: " << sequence_number
+               << " since the packet is NULL encrypted.";
+    DropPacket(sequence_number);
+    delete packet;
     return true;
   }
 

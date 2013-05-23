@@ -53,17 +53,17 @@ StringPiece CommonCertSetsQUIC::GetCommonHashes() const {
 }
 
 StringPiece CommonCertSetsQUIC::GetCert(uint64 hash, uint32 index) const {
-  StringPiece cert;
   for (size_t i = 0; i < arraysize(kSets); i++) {
     if (kSets[i].hash == hash) {
       if (index < kSets[i].num_certs) {
-        cert.set(kSets[i].certs[index], kSets[i].lens[index]);
+        return StringPiece(reinterpret_cast<const char*>(kSets[i].certs[index]),
+                           kSets[i].lens[index]);
       }
       break;
     }
   }
 
-  return cert;
+  return StringPiece();
 }
 
 // Compare returns a value less than, equal to or greater than zero if |a| is

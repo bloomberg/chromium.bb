@@ -152,6 +152,8 @@ static const unsigned char kCommonCertSubstrings[] = {
 struct CertEntry {
  public:
   enum Type {
+    // Type 0 is reserved to mean "end of list" in the wire format.
+
     // COMPRESSED means that the certificate is included in the trailing zlib
     // data.
     COMPRESSED = 1,
@@ -235,15 +237,15 @@ size_t CertEntriesSize(const vector<CertEntry>& entries) {
 
   for (vector<CertEntry>::const_iterator i = entries.begin();
        i != entries.end(); ++i) {
+    entries_size++;
     switch (i->type) {
       case CertEntry::COMPRESSED:
-        entries_size++;
         break;
       case CertEntry::CACHED:
-        entries_size += 1 + sizeof(uint64);
+        entries_size += sizeof(uint64);
         break;
       case CertEntry::COMMON:
-        entries_size += 1 + sizeof(uint64) + sizeof(uint32);
+        entries_size += sizeof(uint64) + sizeof(uint32);
         break;
     }
   }
@@ -317,6 +319,7 @@ string ZlibDictForEntries(const vector<CertEntry>& entries,
 // HashCerts returns the FNV-1a hashes of |certs|.
 vector<uint64> HashCerts(const vector<string>& certs) {
   vector<uint64> ret;
+  ret.reserve(certs.size());
 
   for (vector<string>::const_iterator i = certs.begin();
        i != certs.end(); ++i) {
@@ -386,15 +389,11 @@ bool ParseEntries(StringPiece* in_out,
         if (!common_sets) {
           return false;
         }
-        if (in.size() < sizeof(uint64)) {
+        if (in.size() < sizeof(uint64) + sizeof(uint32)) {
           return false;
         }
         memcpy(&entry.set_hash, in.data(), sizeof(uint64));
         in.remove_prefix(sizeof(uint64));
-
-        if (in.size() < sizeof(uint32)) {
-          return false;
-        }
         memcpy(&entry.index, in.data(), sizeof(uint32));
         in.remove_prefix(sizeof(uint32));
 
@@ -415,6 +414,7 @@ bool ParseEntries(StringPiece* in_out,
   return true;
 }
 
+// ScopedZLib deals with the automatic destruction of a zlib context.
 class ScopedZLib {
  public:
   enum Type {
@@ -424,20 +424,29 @@ class ScopedZLib {
 
   explicit ScopedZLib(Type type) : z_(NULL), type_(type) {}
 
-  void reset(z_stream* z) { z_ = z; }
+  void reset(z_stream* z) {
+    Clear();
+    z_ = z;
+  }
 
   ~ScopedZLib() {
-    if (z_) {
-      if (type_ == DEFLATE) {
-        deflateEnd(z_);
-      } else {
-        inflateEnd(z_);
-      }
-      z_ = NULL;
-    }
+    Clear();
   }
 
  private:
+  void Clear() {
+    if (!z_) {
+      return;
+    }
+
+    if (type_ == DEFLATE) {
+      deflateEnd(z_);
+    } else {
+      inflateEnd(z_);
+    }
+    z_ = NULL;
+  }
+
   z_stream* z_;
   const Type type_;
 };
@@ -514,9 +523,9 @@ string CertCompressor::CompressChain(const vector<string>& certs,
       continue;
     }
 
-    uint32 length = certs[i].size();
-    z.next_in = reinterpret_cast<uint8*>(&length);
-    z.avail_in = sizeof(length);
+    uint32 length32 = certs[i].size();
+    z.next_in = reinterpret_cast<uint8*>(&length32);
+    z.avail_in = sizeof(length32);
     rv = deflate(&z, Z_NO_FLUSH);
     DCHECK_EQ(Z_OK, rv);
     DCHECK_EQ(0u, z.avail_in);

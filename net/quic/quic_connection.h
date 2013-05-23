@@ -202,6 +202,11 @@ class NET_EXPORT_PRIVATE QuicConnection
     FORCE
   };
 
+  enum RetransmissionType {
+    INITIAL_ENCRYPTION_ONLY,
+    ALL_PACKETS
+  };
+
   // Constructs a new QuicConnection for the specified |guid| and |address|.
   // |helper| will be owned by this connection.
   QuicConnection(QuicGuid guid,
@@ -350,6 +355,13 @@ class NET_EXPORT_PRIVATE QuicConnection
   // should next fire, or 0 if no retransmission alarm should be set.
   QuicTime OnRetransmissionTimeout();
 
+  // Retransmits unacked packets which were sent with initial encryption, if
+  // |initial_encryption_only| is true, otherwise retransmits all unacked
+  // packets. Used when the negotiated protocol version is different than what
+  // was initially assumed and when the visitor wants to re-transmit packets
+  // with initial encryption when the initial encrypter changes.
+  void RetransmitUnackedPackets(RetransmissionType retransmission_type);
+
   // Changes the encrypter used for level |level| to |encrypter|. The function
   // takes ownership of |encrypter|.
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
@@ -494,7 +506,12 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   void MaybeSetupRetransmission(QuicPacketSequenceNumber sequence_number);
   bool IsRetransmission(QuicPacketSequenceNumber sequence_number);
-  void RetransmitAllUnackedPackets();
+
+  // Drop packet corresponding to |sequence_number| by deleting entries from
+  // |unacked_packets_| and |retransmission_map_|, if present. We need to drop
+  // all packets with encryption level NONE after the default level has been set
+  // to FORWARD_SECURE.
+  void DropPacket(QuicPacketSequenceNumber sequence_number);
 
   // Writes as many queued packets as possible.  The connection must not be
   // blocked when this is called.

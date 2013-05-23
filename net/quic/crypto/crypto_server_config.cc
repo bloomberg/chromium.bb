@@ -42,29 +42,16 @@ const char QuicCryptoServerConfig::TESTING[] = "secret string for testing";
 
 QuicCryptoServerConfig::QuicCryptoServerConfig(
     StringPiece source_address_token_secret)
-    // AES-GCM is used to encrypt and authenticate source address tokens. The
-    // full, 96-bit nonce is used but we must ensure that an attacker cannot
-    // obtain two source address tokens with the same nonce. This occurs with
-    // probability 0.5 after 2**48 values. We assume that obtaining 2**48
-    // source address tokens is not possible: at a rate of 10M packets per
-    // second, it would still take the attacker a year to obtain the needed
-    // number of packets.
-    //
-    // TODO(agl): switch to an encrypter with a larger nonce space (i.e.
-    // Salsa20+Poly1305).
     : strike_register_lock_(),
-      source_address_token_encrypter_(new Aes128Gcm12Encrypter),
-      source_address_token_decrypter_(new Aes128Gcm12Decrypter),
       strike_register_max_entries_(1 << 10),
       strike_register_window_secs_(600),
       source_address_token_future_secs_(3600),
       source_address_token_lifetime_secs_(86400) {
   crypto::HKDF hkdf(source_address_token_secret, StringPiece() /* no salt */,
                     "QUIC source address token key",
-                    source_address_token_encrypter_->GetKeySize(),
+                    CryptoSecretBoxer::GetKeySize(),
                     0 /* no fixed IV needed */);
-  source_address_token_encrypter_->SetKey(hkdf.server_write_key());
-  source_address_token_decrypter_->SetKey(hkdf.server_write_key());
+  source_address_token_boxer_.SetKey(hkdf.server_write_key());
 }
 
 QuicCryptoServerConfig::~QuicCryptoServerConfig() {
@@ -573,63 +560,23 @@ string QuicCryptoServerConfig::NewSourceAddressToken(
   source_address_token.set_ip(ip.ToString());
   source_address_token.set_timestamp(now.ToUNIXSeconds());
 
-  string plaintext = source_address_token.SerializeAsString();
-  char nonce[12];
-  DCHECK_EQ(sizeof(nonce),
-            source_address_token_encrypter_->GetNoncePrefixSize() +
-            sizeof(QuicPacketSequenceNumber));
-  rand->RandBytes(nonce, sizeof(nonce));
-
-  size_t ciphertext_size =
-      source_address_token_encrypter_->GetCiphertextSize(plaintext.size());
-  string result;
-  result.resize(sizeof(nonce) + ciphertext_size);
-  memcpy(&result[0], &nonce, sizeof(nonce));
-
-  if (!source_address_token_encrypter_->Encrypt(
-          StringPiece(nonce, sizeof(nonce)), StringPiece(), plaintext,
-          reinterpret_cast<unsigned char*>(&result[sizeof(nonce)]))) {
-    DCHECK(false);
-    return string();
-  }
-
-  return result;
+  return source_address_token_boxer_.Box(
+      rand, source_address_token.SerializeAsString());
 }
 
 bool QuicCryptoServerConfig::ValidateSourceAddressToken(
     StringPiece token,
     const IPEndPoint& ip,
     QuicWallTime now) const {
-  char nonce[12];
-  DCHECK_EQ(sizeof(nonce),
-            source_address_token_encrypter_->GetNoncePrefixSize() +
-            sizeof(QuicPacketSequenceNumber));
-
-  if (token.size() <= sizeof(nonce)) {
-    return false;
-  }
-  memcpy(&nonce, token.data(), sizeof(nonce));
-  token.remove_prefix(sizeof(nonce));
-
-  unsigned char plaintext_stack[128];
-  scoped_ptr<unsigned char[]> plaintext_heap;
-  unsigned char* plaintext;
-  if (token.size() <= sizeof(plaintext_stack)) {
-    plaintext = plaintext_stack;
-  } else {
-    plaintext_heap.reset(new unsigned char[token.size()]);
-    plaintext = plaintext_heap.get();
-  }
-  size_t plaintext_length;
-
-  if (!source_address_token_decrypter_->Decrypt(
-          StringPiece(nonce, sizeof(nonce)), StringPiece(), token, plaintext,
-          &plaintext_length)) {
+  string storage;
+  StringPiece plaintext;
+  if (!source_address_token_boxer_.Unbox(token, &storage, &plaintext)) {
     return false;
   }
 
   SourceAddressToken source_address_token;
-  if (!source_address_token.ParseFromArray(plaintext, plaintext_length)) {
+  if (!source_address_token.ParseFromArray(plaintext.data(),
+                                           plaintext.size())) {
     return false;
   }
 

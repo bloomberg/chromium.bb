@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
@@ -37,14 +38,15 @@ class QuicSessionOwner {
 class QuicServerSession : public QuicSession {
  public:
   QuicServerSession(const QuicConfig& config,
-                    const QuicCryptoServerConfig& crypto_config,
-                    QuicConnection* connection,
+                    QuicConnection *connection,
                     QuicSessionOwner* owner);
 
   // Override the base class to notify the owner of the connection close.
   virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE;
 
   virtual ~QuicServerSession();
+
+  virtual void Initialize(const QuicCryptoServerConfig& crypto_config);
 
  protected:
   // QuicSession methods:
@@ -58,8 +60,11 @@ class QuicServerSession : public QuicSession {
   // possibly closing the connection, and returns false.
   virtual bool ShouldCreateIncomingReliableStream(QuicStreamId id);
 
+  virtual QuicCryptoServerStream* CreateQuicCryptoServerStream(
+    const QuicCryptoServerConfig& crypto_config);
+
  private:
-  QuicCryptoServerStream crypto_stream_;
+  scoped_ptr<QuicCryptoServerStream> crypto_stream_;
   QuicSessionOwner* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServerSession);

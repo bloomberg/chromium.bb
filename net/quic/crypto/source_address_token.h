@@ -20,7 +20,7 @@ class SourceAddressToken {
 
   std::string SerializeAsString() const;
 
-  bool ParseFromArray(unsigned char* plaintext, size_t plaintext_length);
+  bool ParseFromArray(const char* plaintext, size_t plaintext_length);
 
   std::string ip() const {
     return ip_;

@@ -63,7 +63,7 @@ string CryptoUtils::NormalizeHostname(const char* hostname) {
   url_canon::CanonHostInfo host_info;
   string host(CanonicalizeHost(hostname, &host_info));
 
-  // Walk backwards over the string, skipping any trailing dots.
+  // Walk backwards over the string, stopping at the first trailing dot.
   size_t host_end = host.length();
   while (host_end != 0 && host[host_end - 1] == '.') {
     host_end--;

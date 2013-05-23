@@ -106,6 +106,7 @@ base::LazyInstance<GcmSupportChecker>::Leaky g_gcm_support_checker =
 
 const size_t kKeySize = 16;
 const size_t kNoncePrefixSize = 4;
+const size_t kAESNonceSize = 12;
 
 // Calls PK11_Encrypt if it's available.  Otherwise, emulates CKM_AES_GCM using
 // CKM_AES_CTR and the GaloisHash class.
@@ -253,6 +254,8 @@ Aes128Gcm12Encrypter::Aes128Gcm12Encrypter() {
   ignore_result(g_gcm_support_checker.Get());
 }
 
+Aes128Gcm12Encrypter::~Aes128Gcm12Encrypter() {}
+
 // static
 bool Aes128Gcm12Encrypter::IsSupported() {
   // NSS 3.15 supports CKM_AES_GCM directly.
@@ -275,7 +278,8 @@ bool Aes128Gcm12Encrypter::SetNoncePrefix(StringPiece nonce_prefix) {
   if (nonce_prefix.size() != kNoncePrefixSize) {
     return false;
   }
-  memcpy(nonce_, nonce_prefix.data(), nonce_prefix.size());
+  COMPILE_ASSERT(sizeof(nonce_prefix_) == kNoncePrefixSize, bad_nonce_length);
+  memcpy(nonce_prefix_, nonce_prefix.data(), nonce_prefix.size());
   return true;
 }
 
@@ -343,24 +347,23 @@ QuicData* Aes128Gcm12Encrypter::EncryptPacket(
     QuicPacketSequenceNumber sequence_number,
     StringPiece associated_data,
     StringPiece plaintext) {
-  COMPILE_ASSERT(sizeof(nonce_) == kNoncePrefixSize + sizeof(sequence_number),
-                 incorrect_nonce_size);
-  memcpy(nonce_ + kNoncePrefixSize, &sequence_number, sizeof(sequence_number));
-
   size_t ciphertext_size = GetCiphertextSize(plaintext.length());
   scoped_ptr<char[]> ciphertext(new char[ciphertext_size]);
 
-  if (!Encrypt(StringPiece(reinterpret_cast<char*>(nonce_), sizeof(nonce_)),
+  uint8 nonce[kNoncePrefixSize + sizeof(sequence_number)];
+  COMPILE_ASSERT(sizeof(nonce) == kAESNonceSize, bad_sequence_number_size);
+  memcpy(nonce, nonce_prefix_, kNoncePrefixSize);
+  memcpy(nonce + kNoncePrefixSize, &sequence_number, sizeof(sequence_number));
+  if (!Encrypt(StringPiece(reinterpret_cast<char*>(nonce), sizeof(nonce)),
                associated_data, plaintext,
                reinterpret_cast<unsigned char*>(ciphertext.get()))) {
     return NULL;
   }
+
   return new QuicData(ciphertext.release(), ciphertext_size, true);
 }
 
-size_t Aes128Gcm12Encrypter::GetKeySize() const {
-  return kKeySize;
-}
+size_t Aes128Gcm12Encrypter::GetKeySize() const { return kKeySize; }
 
 size_t Aes128Gcm12Encrypter::GetNoncePrefixSize() const {
   return kNoncePrefixSize;
@@ -370,7 +373,7 @@ size_t Aes128Gcm12Encrypter::GetMaxPlaintextSize(size_t ciphertext_size) const {
   return ciphertext_size - kAuthTagSize;
 }
 
-// An AEAD_AES_128_GCM ciphertext is exactly 16 bytes longer than its
+// An AEAD_AES_128_GCM_12 ciphertext is exactly 12 bytes longer than its
 // corresponding plaintext.
 size_t Aes128Gcm12Encrypter::GetCiphertextSize(size_t plaintext_size) const {
   return plaintext_size + kAuthTagSize;
@@ -381,7 +384,8 @@ StringPiece Aes128Gcm12Encrypter::GetKey() const {
 }
 
 StringPiece Aes128Gcm12Encrypter::GetNoncePrefix() const {
-  return StringPiece(reinterpret_cast<const char*>(nonce_), kNoncePrefixSize);
+  return StringPiece(reinterpret_cast<const char*>(nonce_prefix_),
+                     kNoncePrefixSize);
 }
 
 }  // namespace net

@@ -106,6 +106,7 @@ base::LazyInstance<GcmSupportChecker>::Leaky g_gcm_support_checker =
 
 const size_t kKeySize = 16;
 const size_t kNoncePrefixSize = 4;
+const size_t kAESNonceSize = 12;
 
 // Calls PK11_Decrypt if it's available.  Otherwise, emulates CKM_AES_GCM using
 // CKM_AES_CTR and the GaloisHash class.
@@ -254,6 +255,8 @@ Aes128Gcm12Decrypter::Aes128Gcm12Decrypter() {
   ignore_result(g_gcm_support_checker.Get());
 }
 
+Aes128Gcm12Decrypter::~Aes128Gcm12Decrypter() {}
+
 // static
 bool Aes128Gcm12Decrypter::IsSupported() {
   // NSS 3.15 supports CKM_AES_GCM directly.
@@ -276,14 +279,15 @@ bool Aes128Gcm12Decrypter::SetNoncePrefix(StringPiece nonce_prefix) {
   if (nonce_prefix.size() != kNoncePrefixSize) {
     return false;
   }
-  memcpy(nonce_, nonce_prefix.data(), nonce_prefix.size());
+  COMPILE_ASSERT(sizeof(nonce_prefix_) == kNoncePrefixSize, bad_nonce_length);
+  memcpy(nonce_prefix_, nonce_prefix.data(), nonce_prefix.size());
   return true;
 }
 
 bool Aes128Gcm12Decrypter::Decrypt(StringPiece nonce,
                                    StringPiece associated_data,
                                    StringPiece ciphertext,
-                                   unsigned char* output,
+                                   uint8* output,
                                    size_t* output_length) {
   if (ciphertext.length() < kAuthTagSize ||
       nonce.size() != kNoncePrefixSize + sizeof(QuicPacketSequenceNumber)) {
@@ -352,18 +356,19 @@ QuicData* Aes128Gcm12Decrypter::DecryptPacket(
     QuicPacketSequenceNumber sequence_number,
     StringPiece associated_data,
     StringPiece ciphertext) {
-  COMPILE_ASSERT(sizeof(nonce_) == kNoncePrefixSize + sizeof(sequence_number),
-                 incorrect_nonce_size);
   if (ciphertext.length() < kAuthTagSize) {
     return NULL;
   }
   size_t plaintext_size;
   scoped_ptr<char[]> plaintext(new char[ciphertext.length()]);
 
-  memcpy(nonce_ + kNoncePrefixSize, &sequence_number, sizeof(sequence_number));
-  if (!Decrypt(StringPiece(reinterpret_cast<char*>(nonce_), sizeof(nonce_)),
+  uint8 nonce[kNoncePrefixSize + sizeof(sequence_number)];
+  COMPILE_ASSERT(sizeof(nonce) == kAESNonceSize, bad_sequence_number_size);
+  memcpy(nonce, nonce_prefix_, kNoncePrefixSize);
+  memcpy(nonce + kNoncePrefixSize, &sequence_number, sizeof(sequence_number));
+  if (!Decrypt(StringPiece(reinterpret_cast<char*>(nonce), sizeof(nonce)),
                associated_data, ciphertext,
-               reinterpret_cast<unsigned char*>(plaintext.get()),
+               reinterpret_cast<uint8*>(plaintext.get()),
                &plaintext_size)) {
     return NULL;
   }
@@ -375,7 +380,8 @@ StringPiece Aes128Gcm12Decrypter::GetKey() const {
 }
 
 StringPiece Aes128Gcm12Decrypter::GetNoncePrefix() const {
-  return StringPiece(reinterpret_cast<const char*>(nonce_), kNoncePrefixSize);
+  return StringPiece(reinterpret_cast<const char*>(nonce_prefix_),
+                     kNoncePrefixSize);
 }
 
 }  // namespace net

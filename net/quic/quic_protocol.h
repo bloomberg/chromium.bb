@@ -123,7 +123,12 @@ enum QuicPacketPublicFlags {
   PACKET_PUBLIC_FLAGS_NONE = 0,
   PACKET_PUBLIC_FLAGS_VERSION = 1 << 0,  // Packet header contains version info.
   PACKET_PUBLIC_FLAGS_RST = 1 << 1,  // Packet is a public reset packet.
-  PACKET_PUBLIC_FLAGS_MAX = (1 << 2) - 1  // All bits set.
+  // Packet header guid length in bytes.
+  PACKET_PUBLIC_FLAGS_0BYTE_GUID = 0,
+  PACKET_PUBLIC_FLAGS_1BYTE_GUID = 1 << 2,
+  PACKET_PUBLIC_FLAGS_4BYTE_GUID = 1 << 3,
+  PACKET_PUBLIC_FLAGS_8BYTE_GUID = 1 << 3 | 1 << 2,
+  PACKET_PUBLIC_FLAGS_MAX = (1 << 4) - 1  // All bits set.
 };
 
 enum QuicPacketPrivateFlags {
@@ -214,6 +219,8 @@ enum QuicErrorCode {
 
   // Crypto errors.
 
+  // Hanshake failed.
+  QUIC_HANDSHAKE_FAILED,
   // Handshake message contained out of order tags.
   QUIC_CRYPTO_TAGS_OUT_OF_ORDER,
   // Handshake message contained too many entries.
@@ -271,7 +278,7 @@ const QuicTag kUnsupportedVersion = -1;
 // Each time the wire format changes, this need needs to be incremented.
 // At some point, we will actually freeze the wire format and make an official
 // version number, but this works for now.
-const QuicTag kQuicVersion1 = TAG('Q', '0', '0', '3');
+const QuicTag kQuicVersion1 = TAG('Q', '0', '0', '4');
 #undef TAG
 
 // MakeQuicTag returns a value given the four bytes. For example:

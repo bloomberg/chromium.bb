@@ -371,11 +371,16 @@ QuicCryptoClientConfig::CachedState::GetServerConfig() const {
 }
 
 bool QuicCryptoClientConfig::CachedState::SetServerConfig(StringPiece scfg) {
+  if (scfg == server_config_) {
+    return true;
+  }
+
   scfg_.reset(CryptoFramer::ParseMessage(scfg));
   if (!scfg_.get()) {
     return false;
   }
   server_config_ = scfg.as_string();
+  server_config_valid_ = false;
   return true;
 }
 

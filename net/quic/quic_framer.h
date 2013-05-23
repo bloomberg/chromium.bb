@@ -314,7 +314,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   const std::string& detailed_error() { return detailed_error_; }
 
-  // Read the guid from a packet header.
+  // Read the full 8 byte guid from a packet header.
   // Return true on success, else false.
   static bool ReadGuidFromPacket(const QuicEncryptedPacket& packet,
                                  QuicGuid* guid);

@@ -5,9 +5,7 @@
 #ifndef NET_QUIC_CRYPTO_SCOPED_EVP_CIPHER_CTX_H_
 #define NET_QUIC_CRYPTO_SCOPED_EVP_CIPHER_CTX_H_
 
-#include <openssl/evp.h>
-
-#include "base/logging.h"
+typedef struct evp_cipher_ctx_st EVP_CIPHER_CTX;
 
 namespace net {
 
@@ -18,17 +16,13 @@ namespace net {
 // functions.
 class ScopedEVPCipherCtx {
  public:
-  ScopedEVPCipherCtx() { EVP_CIPHER_CTX_init(&ctx_); }
+  ScopedEVPCipherCtx();
+  ~ScopedEVPCipherCtx();
 
-  ~ScopedEVPCipherCtx() {
-    int rv = EVP_CIPHER_CTX_cleanup(&ctx_);
-    DCHECK_EQ(rv, 1);
-  }
-
-  EVP_CIPHER_CTX* get() { return &ctx_; }
+  EVP_CIPHER_CTX* get() const;
 
  private:
-  EVP_CIPHER_CTX ctx_;
+  EVP_CIPHER_CTX* const ctx_;
 };
 
 }  // namespace net

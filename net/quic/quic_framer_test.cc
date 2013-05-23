@@ -485,8 +485,8 @@ TEST_F(QuicFramerTest, EmptyPacket) {
 
 TEST_F(QuicFramerTest, LargePacket) {
   unsigned char packet[kMaxPacketSize + 1] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -515,8 +515,8 @@ TEST_F(QuicFramerTest, LargePacket) {
 
 TEST_F(QuicFramerTest, PacketHeader) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -566,12 +566,12 @@ TEST_F(QuicFramerTest, PacketHeader) {
 TEST_F(QuicFramerTest, PacketHeaderWithVersionFlag) {
   unsigned char packet[] = {
     // public flags (version)
-    0x01,
+    0x0D,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '3',
+    'Q', '0', '0', '4',
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -621,8 +621,8 @@ TEST_F(QuicFramerTest, PacketHeaderWithVersionFlag) {
 
 TEST_F(QuicFramerTest, InvalidPublicFlag) {
   unsigned char packet[] = {
-    // public flags
-    0x07,
+    // public flags (8 byte guid)
+    0x10,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -660,8 +660,8 @@ TEST_F(QuicFramerTest, InvalidPublicFlag) {
 
 TEST_F(QuicFramerTest, InvalidPrivateFlag) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -699,8 +699,8 @@ TEST_F(QuicFramerTest, InvalidPrivateFlag) {
 
 TEST_F(QuicFramerTest, PaddingFrame) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -741,8 +741,8 @@ TEST_F(QuicFramerTest, PaddingFrame) {
 
 TEST_F(QuicFramerTest, StreamFrame) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -810,13 +810,13 @@ TEST_F(QuicFramerTest, StreamFrame) {
 
 TEST_F(QuicFramerTest, StreamFrameWithVersion) {
   unsigned char packet[] = {
-    // public flags (version)
-    0x01,
+    // public flags (version, 8 byte guid)
+    0x0D,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '3',
+    'Q', '0', '0', '4',
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -885,8 +885,8 @@ TEST_F(QuicFramerTest, RejectPacket) {
   visitor_.accept_packet_ = false;
 
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -987,8 +987,8 @@ TEST_F(QuicFramerTest, RevivedStreamFrame) {
 
 TEST_F(QuicFramerTest, StreamFrameInFecGroup) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1041,8 +1041,8 @@ TEST_F(QuicFramerTest, StreamFrameInFecGroup) {
 
 TEST_F(QuicFramerTest, AckFrame) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1135,8 +1135,8 @@ TEST_F(QuicFramerTest, AckFrame) {
 
 TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1193,8 +1193,8 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
 
 TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1290,8 +1290,8 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
 
 TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1344,8 +1344,8 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
 
 TEST_F(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1371,8 +1371,8 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
 
 TEST_F(QuicFramerTest, RstStreamFrame) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1429,8 +1429,8 @@ TEST_F(QuicFramerTest, RstStreamFrame) {
 
 TEST_F(QuicFramerTest, ConnectionCloseFrame) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1515,8 +1515,8 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
 
 TEST_F(QuicFramerTest, GoAwayFrame) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1575,8 +1575,8 @@ TEST_F(QuicFramerTest, GoAwayFrame) {
 
 TEST_F(QuicFramerTest, PublicResetPacket) {
   unsigned char packet[] = {
-    // public flags (public reset)
-    0x02,
+    // public flags (public reset, 8 byte guid)
+    0x0E,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1627,13 +1627,13 @@ TEST_F(QuicFramerTest, PublicResetPacket) {
 
 TEST_F(QuicFramerTest, VersionNegotiationPacket) {
   unsigned char packet[] = {
-    // public flags (version)
-    0x01,
+    // public flags (version, 8 byte guid)
+    0x0D,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '3',
+    'Q', '0', '0', '4',
     'Q', '2', '.', '0',
   };
 
@@ -1664,8 +1664,8 @@ TEST_F(QuicFramerTest, VersionNegotiationPacket) {
 
 TEST_F(QuicFramerTest, FecPacket) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1716,8 +1716,8 @@ TEST_F(QuicFramerTest, ConstructPaddingFramePacket) {
   frames.push_back(QuicFrame(&padding_frame));
 
   unsigned char packet[kMaxPacketSize] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1766,8 +1766,8 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacket) {
   frames.push_back(QuicFrame(&stream_frame));
 
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1826,13 +1826,13 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacketWithVersionFlag) {
   frames.push_back(QuicFrame(&stream_frame));
 
   unsigned char packet[] = {
-    // public flags (version)
-    0x01,
+    // public flags (version, 8 byte guid)
+    0x0D,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '3',
+    'Q', '0', '0', '4',
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
@@ -1875,13 +1875,13 @@ TEST_F(QuicFramerTest, ConstructVersionNegotiationPacket) {
   header.version_flag = true;
 
   unsigned char packet[] = {
-    // public flags (version)
-    0x01,
+    // public flags (version, 8 byte guid)
+    0x0D,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '3',
+    'Q', '0', '0', '4',
     'Q', '2', '.', '0',
   };
 
@@ -1921,8 +1921,8 @@ TEST_F(QuicFramerTest, ConstructAckFramePacket) {
   frames.push_back(QuicFrame(&ack_frame));
 
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1984,8 +1984,8 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketTCP) {
   frames.push_back(QuicFrame(&congestion_feedback_frame));
 
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2046,8 +2046,8 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
   frames.push_back(QuicFrame(&frame));
 
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2112,8 +2112,8 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketFixRate) {
   frames.push_back(QuicFrame(&congestion_feedback_frame));
 
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2182,8 +2182,8 @@ TEST_F(QuicFramerTest, ConstructRstFramePacket) {
   rst_frame.error_details = "because I can";
 
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2248,8 +2248,8 @@ TEST_F(QuicFramerTest, ConstructCloseFramePacket) {
   frames.push_back(QuicFrame(&close_frame));
 
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2322,8 +2322,8 @@ TEST_F(QuicFramerTest, ConstructGoAwayPacket) {
   frames.push_back(QuicFrame(&goaway_frame));
 
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2368,8 +2368,8 @@ TEST_F(QuicFramerTest, ConstructPublicResetPacket) {
   reset_packet.nonce_proof = GG_UINT64_C(0xABCDEF0123456789);
 
   unsigned char packet[] = {
-    // public flags
-    0x02,
+    // public flags (public reset, 8 byte GUID)
+    0x0E,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2406,8 +2406,8 @@ TEST_F(QuicFramerTest, ConstructFecPacket) {
   fec_data.redundancy = "abcdefghijklmnop";
 
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2438,8 +2438,8 @@ TEST_F(QuicFramerTest, ConstructFecPacket) {
 TEST_F(QuicFramerTest, EncryptPacket) {
   QuicPacketSequenceNumber sequence_number = GG_UINT64_C(0x123456789ABC);
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2471,8 +2471,8 @@ TEST_F(QuicFramerTest, EncryptPacket) {
 TEST_F(QuicFramerTest, EncryptPacketWithVersionFlag) {
   QuicPacketSequenceNumber sequence_number = GG_UINT64_C(0x123456789ABC);
   unsigned char packet[] = {
-    // public flags (version)
-    0x01,
+    // public flags (version, 8 byte guid)
+    0x0D,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2665,8 +2665,8 @@ TEST_F(QuicFramerTest, CleanTruncation) {
 
 TEST_F(QuicFramerTest, EntropyFlagTest) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2706,8 +2706,8 @@ TEST_F(QuicFramerTest, EntropyFlagTest) {
 
 TEST_F(QuicFramerTest, FecEntropyFlagTest) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2748,8 +2748,8 @@ TEST_F(QuicFramerTest, FecEntropyFlagTest) {
 
 TEST_F(QuicFramerTest, StopPacketProcessing) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -2811,8 +2811,8 @@ TEST_F(QuicFramerTest, StopPacketProcessing) {
 
 TEST_F(QuicFramerTest, ConnectionCloseWithInvalidAck) {
   unsigned char packet[] = {
-    // public flags
-    0x00,
+    // public flags (8 byte guid)
+    0x0C,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,

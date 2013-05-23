@@ -181,9 +181,10 @@ QuicSession* QuicDispatcher::CreateQuicSession(
     EpollServer* epoll_server) {
   QuicConnectionHelperInterface* helper =
       new QuicEpollConnectionHelper(this, epoll_server);
-  return new QuicServerSession(
-      config_, crypto_config_,
-      new QuicConnection(guid, client_address, helper, true), this);
+  QuicServerSession* session = new QuicServerSession(
+       config_, new QuicConnection(guid, client_address, helper, true), this);
+  session->Initialize(crypto_config_);
+  return session;
 }
 
 }  // namespace tools

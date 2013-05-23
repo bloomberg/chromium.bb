@@ -24,9 +24,9 @@ string SourceAddressToken::SerializeAsString() const {
   return ip_ + " " + base::Int64ToString(timestamp_);
 }
 
-bool SourceAddressToken::ParseFromArray(unsigned char* plaintext,
+bool SourceAddressToken::ParseFromArray(const char* plaintext,
                                         size_t plaintext_length) {
-  string data(reinterpret_cast<const char*>(plaintext), plaintext_length);
+  string data(plaintext, plaintext_length);
   vector<string> results;
   base::SplitString(data, ' ', &results);
   if (results.size() < 2) {

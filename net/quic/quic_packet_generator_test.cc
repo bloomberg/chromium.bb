@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
+using std::string;
 using testing::InSequence;
 using testing::Return;
 using testing::SaveArg;
@@ -116,7 +117,7 @@ class QuicPacketGeneratorTest : public ::testing::Test {
   }
 
   QuicGoAwayFrame* CreateGoAwayFrame() {
-    return new QuicGoAwayFrame(QUIC_NO_ERROR, 1, std::string());
+    return new QuicGoAwayFrame(QUIC_NO_ERROR, 1, string());
   }
 
   void CheckPacketContains(const PacketContents& contents,

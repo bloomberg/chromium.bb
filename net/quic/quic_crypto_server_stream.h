@@ -32,6 +32,14 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   virtual void OnHandshakeMessage(
       const CryptoHandshakeMessage& message) OVERRIDE;
 
+ protected:
+  virtual QuicErrorCode ProcessClientHello(
+      const CryptoHandshakeMessage& message,
+      CryptoHandshakeMessage* reply,
+      string* error_details);
+
+  const QuicCryptoServerConfig* crypto_config() { return &crypto_config_; }
+
  private:
   friend class test::CryptoTestUtils;
 

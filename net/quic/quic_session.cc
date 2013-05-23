@@ -216,11 +216,29 @@ bool QuicSession::IsCryptoHandshakeConfirmed() {
 }
 
 void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
-  if (event == QuicSession::HANDSHAKE_CONFIRMED) {
-    LOG_IF(DFATAL, !config_.negotiated())
-        << "Handshake confirmed without parameter negotiation.";
-    connection_->SetConnectionTimeout(config_.idle_connection_state_lifetime());
-    max_open_streams_ = config_.max_streams_per_connection();
+  switch (event) {
+    // TODO(satyamshekhar): Move the logic of setting the encrypter/decrypter
+    // to QuicSession since it is the glue.
+    case ENCRYPTION_FIRST_ESTABLISHED:
+      break;
+
+    case ENCRYPTION_REESTABLISHED:
+      // Retransmit originally packets that were sent, since they can't be
+      // decrypted by the peer.
+      connection_->RetransmitUnackedPackets(
+          QuicConnection::INITIAL_ENCRYPTION_ONLY);
+      break;
+
+    case HANDSHAKE_CONFIRMED:
+      LOG_IF(DFATAL, !config_.negotiated())
+          << "Handshake confirmed without parameter negotiation.";
+      connection_->SetConnectionTimeout(
+          config_.idle_connection_state_lifetime());
+      max_open_streams_ = config_.max_streams_per_connection();
+      break;
+
+    default:
+      LOG(ERROR) << "Got unknown handshake event: " << event;
   }
 }
 
