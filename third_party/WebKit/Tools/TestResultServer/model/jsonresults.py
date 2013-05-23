@@ -295,11 +295,16 @@ class JsonResults(object):
             time = int(round(full_results['time'])) if 'time' in full_results else 0
             new_results['times'] = [[1, time]]
 
-            if expected == 'NOTRUN':
+            actual_failures = full_results['actual']
+            # Treat unexpected skips like NOTRUNs to avoid exploding the results JSON files
+            # when a bot exits early (e.g. due to too many crashes/timeouts).
+            if expected != 'SKIP' and actual_failures == 'SKIP':
+                expected = first_actual_failure = 'NOTRUN'
+            elif expected == 'NOTRUN':
                 first_actual_failure = expected
             else:
                 # FIXME: Include the retry result as well and find a nice way to display it in the flakiness dashboard.
-                first_actual_failure = full_results['actual'].split(' ')[0]
+                first_actual_failure = actual_failures.split(' ')[0]
             new_results['results'] = [[1, FAILURE_TO_CHAR[first_actual_failure]]]
 
             if BUG_KEY in full_results:

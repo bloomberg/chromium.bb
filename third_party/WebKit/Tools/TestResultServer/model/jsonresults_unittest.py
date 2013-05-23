@@ -87,6 +87,10 @@ FULL_RESULT_EXAMPLE = """ADD_RESULTS({
                     }
                 }
             },
+            "unexpected-skip.html": {
+                "expected": "PASS",
+                "actual": "SKIP"
+            },
             "media-document-audio-repaint.html": {
                 "expected": "IMAGE",
                 "image_diff_percent": 0,
