@@ -31,6 +31,7 @@
 #include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/favicon/imported_favicon_usage.h"
+#include "chrome/browser/importer/ie_importer_utils_win.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/pstore_declarations.h"
@@ -54,9 +55,6 @@ const char16 kSearchScopePath[] =
   L"Software\\Microsoft\\Internet Explorer\\SearchScopes";
 const char16 kIESettingsMain[] =
   L"Software\\Microsoft\\Internet Explorer\\Main";
-const char16 kIEFavoritesOrderKey[] =
-  L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\"
-  L"MenuOrder\\Favorites";
 const char16 kIEVersionKey[] =
   L"Software\\Microsoft\\Internet Explorer";
 const char16 kIEToolbarKey[] =
@@ -252,7 +250,8 @@ bool ParseFavoritesOrderRegistryTree(
 bool ParseFavoritesOrderInfo(
     const Importer* importer,
     std::map<base::FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
-  base::win::RegKey key(HKEY_CURRENT_USER, kIEFavoritesOrderKey, KEY_READ);
+  base::string16 key_path(importer::GetIEFavoritesOrderKey());
+  base::win::RegKey key(HKEY_CURRENT_USER, key_path.c_str(), KEY_READ);
   if (!key.Valid())
     return false;
   return ParseFavoritesOrderRegistryTree(importer, key, base::FilePath(),
@@ -420,14 +419,6 @@ void IEImporter::StartImport(const importer::SourceProfile& source_profile,
                              ImporterBridge* bridge) {
   bridge_ = bridge;
   source_path_ = source_profile.source_path;
-
-  // If there is indication that an override is required, but we fail to set it,
-  // prefer returning early to running the test with whatever is in the real
-  // registry.
-  if (!test_registry_overrider_.StartRegistryOverrideIfNeeded()) {
-    NOTREACHED();
-    return;
-  }
 
   bridge_->NotifyStarted();
 

@@ -839,6 +839,8 @@
         'browser/importer/ie_importer.h',
         'browser/importer/ie_importer_test_registry_overrider_win.cc',
         'browser/importer/ie_importer_test_registry_overrider_win.h',
+        'browser/importer/ie_importer_utils_win.cc',
+        'browser/importer/ie_importer_utils_win.h',
         'browser/importer/importer.cc',
         'browser/importer/importer.h',
         'browser/importer/importer_bridge.cc',
