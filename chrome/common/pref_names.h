@@ -21,7 +21,6 @@ extern const char kDefaultAppsInstalled[];
 extern const char kDisableScreenshots[];
 extern const char kHomePageIsNewTabPage[];
 extern const char kHomePage[];
-extern const char kHomePageChanged[];
 extern const char kManagedModeLocalPassphrase[];
 extern const char kManagedModeLocalSalt[];
 extern const char kManagedModeManualHosts[];

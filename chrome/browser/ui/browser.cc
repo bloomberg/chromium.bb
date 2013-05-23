@@ -379,9 +379,6 @@ Browser::Browser(const CreateParams& params)
       prefs::kShowBookmarkBar,
       base::Bind(&Browser::UpdateBookmarkBarState, base::Unretained(this),
                  BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE));
-  profile_pref_registrar_.Add(
-      prefs::kHomePage,
-      base::Bind(&Browser::MarkHomePageAsChanged, base::Unretained(this)));
 
   BrowserList::AddBrowser(this);
 
@@ -1787,10 +1784,6 @@ void Browser::ModelChanged(const SearchModel::State& old_state,
 void Browser::OnDevToolsDisabledChanged() {
   if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
     content::DevToolsManager::GetInstance()->CloseAllClientHosts();
-}
-
-void Browser::MarkHomePageAsChanged() {
-  profile_->GetPrefs()->SetBoolean(prefs::kHomePageChanged, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

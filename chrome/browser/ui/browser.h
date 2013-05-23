@@ -675,9 +675,6 @@ class Browser : public TabStripModelObserver,
   // Handle changes to kDevTools preference.
   void OnDevToolsDisabledChanged();
 
-  // Set the preference that indicates that the home page has been changed.
-  void MarkHomePageAsChanged();
-
   // UI update coalescing and handling ////////////////////////////////////////
 
   // Asks the toolbar (and as such the location bar) to update its state to

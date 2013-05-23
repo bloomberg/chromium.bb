@@ -33,9 +33,6 @@ const char kHomePageIsNewTabPage[] = "homepage_is_newtabpage";
 // This is the URL of the page to load when opening new tabs.
 const char kHomePage[] = "homepage";
 
-// Did the user change the home page after install?
-const char kHomePageChanged[] = "homepage_changed";
-
 // This preference is used to store the hash of a password of the custodian of
 // a managed user. It allows to unlock options which should be not available to
 // the managed user. The salt preference is used to derive the hash from the
