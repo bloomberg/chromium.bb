@@ -29,6 +29,7 @@ public class PersonalDataManager {
 
     public static class AutofillProfile {
         private String mGUID;
+        private String mOrigin;
         private String mFullName;
         private String mCompanyName;
         private String mAddressLine1;
@@ -41,17 +42,18 @@ public class PersonalDataManager {
         private String mEmailAddress;
 
         @CalledByNative("AutofillProfile")
-        public static AutofillProfile create(String guid, String fullName, String companyName,
-                String addressLine1, String addressLine2, String city, String state,
-                String zip, String country, String phoneNumber, String emailAddress) {
-            return new AutofillProfile(guid, fullName, companyName, addressLine1, addressLine2,
-                    city, state, zip, country, phoneNumber, emailAddress);
+        public static AutofillProfile create(String guid, String origin, String fullName,
+                String companyName, String addressLine1, String addressLine2, String city,
+                String state, String zip, String country, String phoneNumber, String emailAddress) {
+            return new AutofillProfile(guid, origin, fullName, companyName, addressLine1,
+                    addressLine2, city, state, zip, country, phoneNumber, emailAddress);
         }
 
-        public AutofillProfile(String guid, String fullName, String companyName,
+        public AutofillProfile(String guid, String origin, String fullName, String companyName,
                 String addressLine1, String addressLine2, String city, String state,
                 String zip, String country, String phoneNumber, String emailAddress) {
             mGUID = guid;
+            mOrigin = origin;
             mFullName = fullName;
             mCompanyName = companyName;
             mAddressLine1 = addressLine1;
@@ -67,6 +69,11 @@ public class PersonalDataManager {
         @CalledByNative("AutofillProfile")
         public String getGUID() {
             return mGUID;
+        }
+
+        @CalledByNative("AutofillProfile")
+        public String getOrigin() {
+            return mOrigin;
         }
 
         @CalledByNative("AutofillProfile")
@@ -123,6 +130,10 @@ public class PersonalDataManager {
             mGUID = guid;
         }
 
+        public void setOrigin(String origin) {
+            mOrigin = origin;
+        }
+
         public void setFullName(String fullName) {
             mFullName = fullName;
         }
@@ -168,6 +179,7 @@ public class PersonalDataManager {
         // Note that while some of these fields are numbers, they're predominantly read,
         // marshaled and compared as strings. To save conversions, we use strings everywhere.
         private String mGUID;
+        private String mOrigin;
         private String mName;
         private String mNumber;
         private String mObfuscatedNumber;
@@ -175,14 +187,15 @@ public class PersonalDataManager {
         private String mYear;
 
         @CalledByNative("CreditCard")
-        public static CreditCard create(String guid, String name, String number,
+        public static CreditCard create(String guid, String origin, String name, String number,
                 String obfuscatedNumber, String month, String year) {
-            return new CreditCard(guid, name, number, obfuscatedNumber, month, year);
+            return new CreditCard(guid, origin, name, number, obfuscatedNumber, month, year);
         }
 
-        public CreditCard(String guid, String name, String number, String obfuscatedNumber,
-                String month, String year) {
+        public CreditCard(String guid, String origin, String name, String number,
+                String obfuscatedNumber, String month, String year) {
             mGUID = guid;
+            mOrigin = origin;
             mName = name;
             mNumber = number;
             mObfuscatedNumber = obfuscatedNumber;
@@ -193,6 +206,11 @@ public class PersonalDataManager {
         @CalledByNative("CreditCard")
         public String getGUID() {
             return mGUID;
+        }
+
+        @CalledByNative("CreditCard")
+        public String getOrigin() {
+            return mOrigin;
         }
 
         @CalledByNative("CreditCard")
@@ -221,6 +239,10 @@ public class PersonalDataManager {
 
         public void setGUID(String guid) {
             mGUID = guid;
+        }
+
+        public void setOrigin(String origin) {
+            mOrigin = origin;
         }
 
         public void setName(String name) {

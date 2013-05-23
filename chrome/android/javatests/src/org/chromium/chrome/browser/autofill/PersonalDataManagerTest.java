@@ -38,13 +38,15 @@ public class PersonalDataManagerTest extends ChromiumTestShellTestBase {
     @SmallTest
     @Feature({"Autofill"})
     public void testAddAndEditProfiles() throws InterruptedException {
-        AutofillProfile profile = new AutofillProfile("", // guid
+        AutofillProfile profile = new AutofillProfile(
+                "" /* guid */, "https://www.example.com" /* origin */,
                 "John Smith", "Acme Inc.", "1 Main", "Apt A", "San Francisco", "CA",
                 "94102", "US", "4158889999", "john@acme.inc");
         String profileOneGUID = setProfile(profile);
         assertEquals(1, getNumberOfProfiles());
 
-        AutofillProfile profile2 = new AutofillProfile("", // guid
+        AutofillProfile profile2 = new AutofillProfile(
+                "" /* guid */, "http://www.example.com" /* origin */,
                 "John Hackock", "Acme Inc.", "1 Main", "Apt A", "San Francisco", "CA",
                 "94102", "US", "4158889999", "john@acme.inc");
         String profileTwoGUID = setProfile(profile2);
@@ -57,6 +59,7 @@ public class PersonalDataManagerTest extends ChromiumTestShellTestBase {
 
         AutofillProfile storedProfile = getProfile(profileOneGUID);
         assertEquals(profileOneGUID, storedProfile.getGUID());
+        assertEquals("https://www.example.com", storedProfile.getOrigin());
         assertEquals("Canada", storedProfile.getCountry());
         assertEquals("San Francisco", storedProfile.getCity());
         assertNotNull(getProfile(profileTwoGUID));
@@ -65,7 +68,8 @@ public class PersonalDataManagerTest extends ChromiumTestShellTestBase {
     @SmallTest
     @Feature({"Autofill"})
     public void testAddAndDeleteProfile() throws InterruptedException {
-        AutofillProfile profile = new AutofillProfile("", // guid
+        AutofillProfile profile = new AutofillProfile(
+                "" /* guid */, "Chrome settings" /* origin */,
                 "John Smith", "Acme Inc.", "1 Main", "Apt A", "San Francisco", "CA",
                 "94102", "US", "4158889999", "john@acme.inc");
         String profileOneGUID = setProfile(profile);
@@ -78,12 +82,14 @@ public class PersonalDataManagerTest extends ChromiumTestShellTestBase {
     @SmallTest
     @Feature({"Autofill"})
     public void testAddAndEditCreditCards() throws InterruptedException {
-        CreditCard card = new CreditCard("", // guid,
+        CreditCard card = new CreditCard(
+                "" /* guid */, "https://www.example.com" /* origin */,
                 "Visa", "1234123412341234", "", "5", "2020");
         String cardOneGUID = setCreditCard(card);
         assertEquals(1, getNumberOfCreditCards());
 
-        CreditCard card2 = new CreditCard("", // guid,
+        CreditCard card2 = new CreditCard(
+                "" /* guid */, "http://www.example.com" /* origin */,
                 "American Express", "1234123412341234", "", "8", "2020");
         String cardTwoGUID = setCreditCard(card2);
         assertEquals(2, getNumberOfCreditCards());
@@ -96,6 +102,7 @@ public class PersonalDataManagerTest extends ChromiumTestShellTestBase {
 
         CreditCard storedCard = getCreditCard(cardOneGUID);
         assertEquals(cardOneGUID, storedCard.getGUID());
+        assertEquals("https://www.example.com", storedCard.getOrigin());
         assertEquals("Visa", storedCard.getName());
         assertEquals("10", storedCard.getMonth());
         assertEquals("5678567856785678", storedCard.getNumber());
@@ -106,7 +113,8 @@ public class PersonalDataManagerTest extends ChromiumTestShellTestBase {
     @SmallTest
     @Feature({"Autofill"})
     public void testAddAndDeleteCreditCard() throws InterruptedException {
-        CreditCard card = new CreditCard("", // guid,
+        CreditCard card = new CreditCard(
+                "" /* guid */, "Chrome settings" /* origin */,
                 "Visa", "1234123412341234", "", "5", "2020");
         String cardOneGUID = setCreditCard(card);
         assertEquals(1, getNumberOfCreditCards());

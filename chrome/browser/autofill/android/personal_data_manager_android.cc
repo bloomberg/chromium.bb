@@ -33,6 +33,7 @@ ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
   return Java_AutofillProfile_create(
       env,
       ConvertUTF8ToJavaString(env, profile.guid()).obj(),
+      ConvertUTF8ToJavaString(env, profile.origin()).obj(),
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(NAME_FULL)).obj(),
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(COMPANY_NAME)).obj(),
       ConvertUTF16ToJavaString(
@@ -64,6 +65,9 @@ void PopulateNativeProfileFromJava(
     const jobject& jprofile,
     JNIEnv* env,
     AutofillProfile* profile) {
+  profile->set_origin(
+      ConvertJavaStringToUTF8(
+          Java_AutofillProfile_getOrigin(env, jprofile)));
   profile->SetRawInfo(
       NAME_FULL,
       ConvertJavaStringToUTF16(
@@ -113,6 +117,7 @@ ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
   return Java_CreditCard_create(
       env,
       ConvertUTF8ToJavaString(env, card.guid()).obj(),
+      ConvertUTF8ToJavaString(env, card.origin()).obj(),
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NAME)).obj(),
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NUMBER)).obj(),
       ConvertUTF16ToJavaString(env, card.ObfuscatedNumber()).obj(),
@@ -128,6 +133,8 @@ void PopulateNativeCreditCardFromJava(
     const jobject& jcard,
     JNIEnv* env,
     CreditCard* card) {
+  card->set_origin(
+      ConvertJavaStringToUTF8(Java_CreditCard_getOrigin(env, jcard)));
   card->SetRawInfo(
       CREDIT_CARD_NAME,
       ConvertJavaStringToUTF16(Java_CreditCard_getName(env, jcard)));
