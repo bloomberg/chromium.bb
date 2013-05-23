@@ -160,9 +160,6 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
     test_server_->RegisterRequestHandler(
         base::Bind(&OobeTest::HandleRequest, base::Unretained(this)));
     LOG(INFO) << "Set up http server at " << test_server_->base_url();
-    CHECK(test_server_->port() >= 8040 && test_server_->port() < 8045)
-        << "Current manifest_test.json for gaia_login restrictions "
-        << "does not allow this port";
 
     const GURL gaia_url("http://localhost:" + test_server_->base_url().port());
     content_browser_client_->browser_main_extra_parts_->set_gaia_url(gaia_url);

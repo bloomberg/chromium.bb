@@ -13,6 +13,8 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "net/base/ip_endpoint.h"
+#include "net/base/net_errors.h"
 #include "net/test/embedded_test_server/http_connection.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -22,10 +24,6 @@ namespace net {
 namespace test_server {
 
 namespace {
-
-const int kPort = 8040;
-const char kIp[] = "127.0.0.1";
-const int kRetries = 10;
 
 // Callback to handle requests with default predefined response for requests
 // matching the address |url|.
@@ -106,7 +104,7 @@ bool EmbeddedTestServer::InitializeAndWaitUntilReady() {
   }
   run_loop.Run();
 
-  return Started();
+  return Started() && base_url_.is_valid();
 }
 
 bool EmbeddedTestServer::ShutdownAndWaitUntilComplete() {
@@ -129,22 +127,20 @@ void EmbeddedTestServer::InitializeOnIOThread() {
   DCHECK(io_thread_->BelongsToCurrentThread());
   DCHECK(!Started());
 
-  int retries_left = kRetries + 1;
-  int try_port = kPort;
+  SocketDescriptor socket_descriptor =
+      TCPListenSocket::CreateAndBindAnyPort("127.0.0.1", &port_);
+  if (socket_descriptor == TCPListenSocket::kInvalidSocket)
+    return;
 
-  while (retries_left > 0) {
-    SocketDescriptor socket_descriptor = TCPListenSocket::CreateAndBind(
-        kIp,
-        try_port);
-    if (socket_descriptor != TCPListenSocket::kInvalidSocket) {
-      listen_socket_ = new HttpListenSocket(socket_descriptor, this);
-      listen_socket_->Listen();
-      base_url_ = GURL(base::StringPrintf("http://%s:%d", kIp, try_port));
-      port_ = try_port;
-      break;
-    }
-    retries_left--;
-    try_port++;
+  listen_socket_ = new HttpListenSocket(socket_descriptor, this);
+  listen_socket_->Listen();
+
+  IPEndPoint address;
+  int result = listen_socket_->GetLocalAddress(&address);
+  if (result == OK) {
+    base_url_ = GURL(std::string("http://") + address.ToString());
+  } else {
+    LOG(ERROR) << "GetLocalAddress failed: " << ErrorToString(result);
   }
 }
 

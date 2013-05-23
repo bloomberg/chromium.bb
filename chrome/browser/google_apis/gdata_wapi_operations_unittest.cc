@@ -852,11 +852,12 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
 
   EXPECT_TRUE(http_request_.has_content);
-  EXPECT_EQ("<?xml version=\"1.0\"?>\n"
-            "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n"
-            " <id>http://127.0.0.1:8040/feeds/default/private/full/"
-            "file%3A2_file_resource_id</id>\n"
-            "</entry>\n",
+  EXPECT_EQ(base::StringPrintf("<?xml version=\"1.0\"?>\n"
+                               "<entry xmlns=\"http://www.w3.org/2005/Atom\">\n"
+                               " <id>%sfeeds/default/private/full/"
+                               "file%%3A2_file_resource_id</id>\n"
+                               "</entry>\n",
+                               test_server_.base_url().spec().c_str()),
             http_request_.content);
 }
 
