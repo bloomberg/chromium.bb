@@ -962,9 +962,7 @@ void FrameLoader::prepareForHistoryNavigation()
     // loaded it.
     RefPtr<HistoryItem> currentItem = history()->currentItem();
     if (!currentItem) {
-        currentItem = HistoryItem::create();
-        history()->setCurrentItem(currentItem.get());
-        frame()->page()->backForward()->setCurrentItem(currentItem.get());
+        insertDummyHistoryItem();
 
         ASSERT(stateMachine()->isDisplayingInitialEmptyDocument());
         stateMachine()->advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
@@ -1180,15 +1178,19 @@ bool FrameLoader::willLoadMediaElementURL(KURL& url)
 
 void FrameLoader::reload(bool endToEndReload, const KURL& overrideURL, const String& overrideEncoding)
 {
-    if (!m_documentLoader)
+    DocumentLoader* documentLoader = activeDocumentLoader();
+    if (!documentLoader)
         return;
 
+    if (m_state == FrameStateProvisional)
+        insertDummyHistoryItem();
     frame()->loader()->history()->saveDocumentAndScrollState();
-    ResourceRequest request = m_documentLoader->request();
+
+    ResourceRequest request = documentLoader->request();
     if (!overrideURL.isEmpty())
         request.setURL(overrideURL);
-    else if (!m_documentLoader->unreachableURL().isEmpty())
-        request.setURL(m_documentLoader->unreachableURL());
+    else if (!documentLoader->unreachableURL().isEmpty())
+        request.setURL(documentLoader->unreachableURL());
 
     bool isFormSubmission = request.httpMethod() == "POST";
     if (overrideEncoding.isEmpty())
@@ -2412,6 +2414,13 @@ void FrameLoader::loadItem(HistoryItem* item)
         loadSameDocumentItem(item);
     else
         loadDifferentDocumentItem(item);
+}
+
+void FrameLoader::insertDummyHistoryItem()
+{
+    RefPtr<HistoryItem> currentItem = HistoryItem::create();
+    history()->setCurrentItem(currentItem.get());
+    frame()->page()->backForward()->setCurrentItem(currentItem.get());
 }
 
 ResourceError FrameLoader::cancelledError(const ResourceRequest& request) const

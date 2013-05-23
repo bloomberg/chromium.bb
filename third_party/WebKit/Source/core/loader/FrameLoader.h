@@ -268,6 +268,7 @@ private:
     
     void loadSameDocumentItem(HistoryItem*);
     void loadDifferentDocumentItem(HistoryItem*);
+    void insertDummyHistoryItem();
     
     void updateFirstPartyForCookies();
     void setFirstPartyForCookies(const KURL&);

@@ -1441,6 +1441,40 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState)
     ASSERT_EQ(previousScale, webViewImpl->pageScaleFactor());
 }
 
+class TestReloadWhileProvisionalFrameClient : public WebFrameClient {
+public:
+    virtual WebURLError cancelledError(WebFrame*, const WebURLRequest& request)
+    {
+        // Return a dummy error so the DocumentLoader doesn't assert when
+        // the reload cancels it.
+        WebURLError webURLError;
+        webURLError.domain = "";
+        webURLError.reason = 1;
+        webURLError.isCancellation = true;
+        webURLError.unreachableURL = WebURL();
+        return webURLError;
+    }
+};
+
+TEST_F(WebFrameTest, ReloadWhileProvisional)
+{
+    // Test that reloading while the previous load is still pending does not cause the initial
+    // request to get lost.
+    registerMockedHttpURLLoad("fixed_layout.html");
+
+    TestReloadWhileProvisionalFrameClient webFrameClient;
+    m_webView = FrameTestHelpers::createWebView(false, &webFrameClient);
+    FrameTestHelpers::loadFrame(m_webView->mainFrame(), m_baseURL + "fixed_layout.html");
+    // start reload before first request is delivered.
+    m_webView->mainFrame()->reload(true);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    ASSERT_EQ(WebURL(toKURL(m_baseURL + "fixed_layout.html")),
+        m_webView->mainFrame()->dataSource()->request().url());
+
+    m_webView->close();
+    m_webView = 0;
+}
+
 TEST_F(WebFrameTest, IframeRedirect)
 {
     registerMockedHttpURLLoad("iframe_redirect.html");
