@@ -161,6 +161,9 @@ static void GLibLogHandler(const gchar* log_domain,
     }
   } else if (strstr(message, "Unable to retrieve the file info for")) {
     LOG(ERROR) << "GTK File code error: " << message;
+  } else if (strstr(message, "Could not find the icon") &&
+             strstr(log_domain, "Gtk")) {
+    LOG(ERROR) << "GTK icon error: " << message;
   } else if (strstr(message, "Theme file for default has no") ||
              strstr(message, "Theme directory") ||
              strstr(message, "theme pixmap") ||
