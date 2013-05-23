@@ -58,6 +58,7 @@
     'public/browser/child_process_security_policy.h',
     'public/browser/color_chooser.h',
     'public/browser/compositor_util.h',
+    'public/browser/certificate_request_result_type.h',
     'public/browser/content_browser_client.cc',
     'public/browser/content_browser_client.h',
     'public/browser/cookie_store_factory.h',

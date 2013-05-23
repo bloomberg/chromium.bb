@@ -194,7 +194,8 @@ void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
 void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
                                     bool overridable,
                                     bool strict_enforcement) {
-  bool cancel_request = false;
+  CertificateRequestResultType result =
+      CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE;
   GetContentClient()->browser()->AllowCertificateError(
       handler->render_process_id(),
       handler->render_view_id(),
@@ -206,9 +207,19 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
       strict_enforcement,
       base::Bind(&SSLPolicy::OnAllowCertificate, base::Unretained(this),
                  make_scoped_refptr(handler)),
-      &cancel_request);
-  if (cancel_request)
-    handler->CancelRequest();
+      &result);
+  switch (result) {
+    case CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE:
+      break;
+    case CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL:
+      handler->CancelRequest();
+      break;
+    case CERTIFICATE_REQUEST_RESULT_TYPE_DENY:
+      handler->DenyRequest();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void SSLPolicy::InitializeEntryIfNeeded(NavigationEntryImpl* entry) {

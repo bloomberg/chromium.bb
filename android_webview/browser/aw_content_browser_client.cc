@@ -251,16 +251,16 @@ void AwContentBrowserClient::AllowCertificateError(
     bool overridable,
     bool strict_enforcement,
     const base::Callback<void(bool)>& callback,
-    bool* cancel_request) {
+    content::CertificateRequestResultType* result) {
 
   AwContentsClientBridgeBase* client =
       AwContentsClientBridgeBase::FromID(render_process_id, render_view_id);
-  if (client) {
+  bool cancel_request = true;
+  if (client)
     client->AllowCertificateError(cert_error, ssl_info.cert, request_url,
-                                  callback, cancel_request);
-  } else {
-    *cancel_request = true;
-  }
+                                  callback, &cancel_request);
+  if (cancel_request)
+    *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY;
 }
 
 WebKit::WebNotificationPresenter::Permission

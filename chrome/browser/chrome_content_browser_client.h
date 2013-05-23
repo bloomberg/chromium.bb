@@ -158,7 +158,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool overridable,
       bool strict_enforcement,
       const base::Callback<void(bool)>& callback,
-      bool* cancel_request) OVERRIDE;
+      content::CertificateRequestResultType* request) OVERRIDE;
   virtual void SelectClientCertificate(
       int render_process_id,
       int render_view_id,

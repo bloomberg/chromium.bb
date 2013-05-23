@@ -99,7 +99,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool overridable,
       bool strict_enforcement,
       const base::Callback<void(bool)>& callback,
-      bool* cancel_request) OVERRIDE;
+      content::CertificateRequestResultType* result) OVERRIDE;
   virtual WebKit::WebNotificationPresenter::Permission
       CheckDesktopNotificationPermission(
           const GURL& source_url,

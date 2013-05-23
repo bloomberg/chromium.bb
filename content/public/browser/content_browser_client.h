@@ -14,6 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/file_descriptor_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/socket_permission_request.h"
@@ -354,8 +355,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Informs the embedder that a certificate error has occured.  If
   // |overridable| is true and if |strict_enforcement| is false, the user
   // can ignore the error and continue. The embedder can call the callback
-  // asynchronously. If |cancel_request| is set to true, the request will be
-  // cancelled immediately and the callback won't be run.
+  // asynchronously. If |result| is not set to
+  // CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE, the request will be cancelled
+  // or denied immediately, and the callback won't be run.
   virtual void AllowCertificateError(
       int render_process_id,
       int render_view_id,
@@ -366,7 +368,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool overridable,
       bool strict_enforcement,
       const base::Callback<void(bool)>& callback,
-      bool* cancel_request) {}
+      CertificateRequestResultType* result) {}
 
   // Selects a SSL client certificate and returns it to the |callback|. If no
   // certificate was selected NULL is returned to the |callback|.
