@@ -88,7 +88,7 @@ interface IChromeFrame : IDispatch {
   uuid(E98FDFD9-312B-444a-A640-8E88F3CC08B8),
   oleautomation,
   nonextensible,
-  hidden,
+  hidden
 ]
 // Internal implementation interface. Not intended as an API. May change
 // frequently, don't treat this as frozen.

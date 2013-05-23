@@ -477,7 +477,7 @@ interface ICurrentState : IDispatch {
   dual,
   uuid(4E223325-C16B-4eeb-AEDC-19AA99A237FA),
   helpstring("IRegistrationUpdateHook Interface"),
-  pointer_default(unique),
+  pointer_default(unique)
 ]
 interface IRegistrationUpdateHook : IDispatch {
   HRESULT UpdateRegistry([in] BSTR app_id, [in] VARIANT_BOOL is_machine);
@@ -487,7 +487,7 @@ interface IRegistrationUpdateHook : IDispatch {
   object,
   uuid(b3a47570-0a85-4aea-8270-529d47899603),
   helpstring("ICredentialDialog Interface"),
-  pointer_default(unique),
+  pointer_default(unique)
 ]
 interface ICredentialDialog : IUnknown {
   HRESULT QueryUserForCredentials([in] ULONG_PTR owner_hwnd,
@@ -508,7 +508,7 @@ interface ICredentialDialog : IUnknown {
   dual,
   uuid(494B20CF-282E-4BDD-9F5D-B70CB09D351E),
   helpstring("IGoogleUpdate3Web Interface"),
-  pointer_default(unique),
+  pointer_default(unique)
 ]
 interface IGoogleUpdate3Web : IDispatch {
   HRESULT createAppBundleWeb([out, retval] IDispatch** app_bundle_web);
@@ -518,7 +518,7 @@ interface IGoogleUpdate3Web : IDispatch {
   object,
   uuid(2D363682-561D-4c3a-81C6-F2F82107562A),
   helpstring("IGoogleUpdate3WebSecurity Interface"),
-  pointer_default(unique),
+  pointer_default(unique)
 ]
 interface IGoogleUpdate3WebSecurity : IUnknown {
   HRESULT setOriginURL([in] BSTR origin_url);
@@ -529,7 +529,7 @@ interface IGoogleUpdate3WebSecurity : IUnknown {
   dual,
   uuid(DD42475D-6D46-496a-924E-BD5630B4CBBA),
   helpstring("IAppBundleWeb Interface"),
-  pointer_default(unique),
+  pointer_default(unique)
 ]
 interface IAppBundleWeb : IDispatch {
   [id(2)] HRESULT createApp([in] BSTR app_guid,
@@ -568,7 +568,7 @@ interface IAppBundleWeb : IDispatch {
   dual,
   uuid(18D0F672-18B4-48e6-AD36-6E6BF01DBBC4),
   helpstring("IAppWeb Interface"),
-  pointer_default(unique),
+  pointer_default(unique)
 ]
 interface IAppWeb : IDispatch {
   [propget] HRESULT appId([out, retval] BSTR*);
