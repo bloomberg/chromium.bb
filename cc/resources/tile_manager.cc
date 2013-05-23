@@ -864,10 +864,9 @@ void TileManager::DidFinishTileInitialization(Tile* tile) {
   if (tile->priority(ACTIVE_TREE).distance_to_visible_in_pixels == 0)
     did_initialize_visible_tile_ = true;
   if (tile->required_for_activation()) {
-    DCHECK(std::find(tiles_that_need_to_be_initialized_for_activation_.begin(),
-                     tiles_that_need_to_be_initialized_for_activation_.end(),
-                     tile) !=
-           tiles_that_need_to_be_initialized_for_activation_.end());
+    // It's possible that a tile required for activation is not in this list
+    // if it was marked as being required after being dispatched for
+    // rasterization but before AssignGPUMemory was called again.
     tiles_that_need_to_be_initialized_for_activation_.erase(tile);
   }
 }
