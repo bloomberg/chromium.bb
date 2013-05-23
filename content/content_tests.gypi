@@ -481,7 +481,6 @@
         '../webkit/fileapi/local_file_system_cross_operation_unittest.cc',
         '../webkit/fileapi/local_file_system_operation_unittest.cc',
         '../webkit/fileapi/local_file_system_operation_write_unittest.cc',
-        '../webkit/fileapi/local_file_system_quota_unittest.cc',
         '../webkit/fileapi/local_file_system_test_helper.cc',
         '../webkit/fileapi/local_file_system_test_helper.h',
         '../webkit/fileapi/mock_file_change_observer.cc',

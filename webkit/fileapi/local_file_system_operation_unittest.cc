@@ -16,8 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
-#include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/async_file_test_helper.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -37,9 +35,10 @@ namespace {
 
 const int kFileOperationStatusNotSet = 1;
 
-void AssertFileErrorEq(base::PlatformFileError expected,
+void AssertFileErrorEq(const tracked_objects::Location& from_here,
+                       base::PlatformFileError expected,
                        base::PlatformFileError actual) {
-  ASSERT_EQ(expected, actual);
+  ASSERT_EQ(expected, actual) << from_here.ToString();
 }
 
 }  // namespace (anonymous)
@@ -50,13 +49,13 @@ class LocalFileSystemOperationTest
       public base::SupportsWeakPtr<LocalFileSystemOperationTest> {
  public:
   LocalFileSystemOperationTest()
-      : status_(kFileOperationStatusNotSet) {
-    EXPECT_TRUE(base_.CreateUniqueTempDir());
-    change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
-  }
+      : status_(kFileOperationStatusNotSet) {}
 
  protected:
   virtual void SetUp() OVERRIDE {
+    EXPECT_TRUE(base_.CreateUniqueTempDir());
+    change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
+
     base::FilePath base_dir = base_.path().AppendASCII("filesystem");
     quota_manager_ = new quota::MockQuotaManager(
         false /* is_incognito */, base_dir,
@@ -216,6 +215,11 @@ class LocalFileSystemOperationTest
     shareable_file_ref_ = shareable_file_ref;
   }
 
+  int64 GetDataSizeOnDisk() {
+    return test_helper_.ComputeCurrentOriginUsage() -
+        test_helper_.ComputeCurrentDirectoryDatabaseUsage();
+  }
+
   void GetUsageAndQuota(int64* usage, int64* quota) {
     quota::QuotaStatusCode status =
         AsyncFileTestHelper::GetUsageAndQuota(
@@ -231,7 +235,7 @@ class LocalFileSystemOperationTest
 
     AsyncFileTestHelper::CreateFile(test_helper_.file_system_context(), url);
     NewOperation()->Remove(url, false /* recursive */,
-                           base::Bind(&AssertFileErrorEq,
+                           base::Bind(&AssertFileErrorEq, FROM_HERE,
                                       base::PLATFORM_FILE_OK));
     base::MessageLoop::current()->RunUntilIdle();
     change_observer()->ResetCount();
@@ -247,6 +251,12 @@ class LocalFileSystemOperationTest
     quota_manager()->SetQuota(test_helper_.origin(),
                               test_helper_.storage_type(),
                               usage);
+  }
+
+  int64 GetUsage() {
+    int64 usage = 0;
+    GetUsageAndQuota(&usage, NULL);
+    return usage;
   }
 
   void AddQuota(int64 quota_delta) {
@@ -390,7 +400,6 @@ TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirAndOverwrite) {
   // Make sure we've overwritten but not moved the source under the |dest_dir|.
   EXPECT_TRUE(DirectoryExists("dest"));
   EXPECT_FALSE(DirectoryExists("dest/src"));
-
 }
 
 TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcDirAndNew) {
@@ -1050,6 +1059,125 @@ TEST_F(LocalFileSystemOperationTest, TestCreateSnapshotFile) {
   // The FileSystemOpration implementation does not create a
   // shareable file reference.
   EXPECT_EQ(NULL, shareable_file_ref());
+}
+
+TEST_F(LocalFileSystemOperationTest,
+       TestMoveSuccessSrcDirRecursiveWithQuota) {
+  FileSystemURL src(CreateDirectory("src"));
+  int src_path_cost = GetUsage();
+
+  FileSystemURL dest(CreateDirectory("dest"));
+  FileSystemURL child_file1(CreateFile("src/file1"));
+  FileSystemURL child_file2(CreateFile("src/file2"));
+  FileSystemURL child_dir(CreateDirectory("src/dir"));
+  FileSystemURL grandchild_file1(CreateFile("src/dir/file1"));
+  FileSystemURL grandchild_file2(CreateFile("src/dir/file2"));
+
+  int total_path_cost = GetUsage();
+  EXPECT_EQ(0, GetDataSizeOnDisk());
+
+  NewOperation()->Truncate(
+      child_file1, 5000,
+      base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      child_file2, 400,
+      base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      grandchild_file1, 30,
+      base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      grandchild_file2, 2,
+      base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
+  base::MessageLoop::current()->RunUntilIdle();
+
+  const int64 all_file_size = 5000 + 400 + 30 + 2;
+  EXPECT_EQ(all_file_size, GetDataSizeOnDisk());
+  EXPECT_EQ(all_file_size + total_path_cost, GetUsage());
+
+  NewOperation()->Move(
+      src, dest,
+      base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_FALSE(DirectoryExists("src/dir"));
+  EXPECT_FALSE(FileExists("src/dir/file2"));
+  EXPECT_TRUE(DirectoryExists("dest/dir"));
+  EXPECT_TRUE(FileExists("dest/dir/file2"));
+
+  EXPECT_EQ(all_file_size, GetDataSizeOnDisk());
+  EXPECT_EQ(all_file_size + total_path_cost - src_path_cost,
+            GetUsage());
+}
+
+TEST_F(LocalFileSystemOperationTest,
+       TestCopySuccessSrcDirRecursiveWithQuota) {
+  FileSystemURL src(CreateDirectory("src"));
+  FileSystemURL dest1(CreateDirectory("dest1"));
+  FileSystemURL dest2(CreateDirectory("dest2"));
+
+  int64 usage = GetUsage();
+  FileSystemURL child_file1(CreateFile("src/file1"));
+  FileSystemURL child_file2(CreateFile("src/file2"));
+  FileSystemURL child_dir(CreateDirectory("src/dir"));
+  int64 child_path_cost = GetUsage() - usage;
+  usage += child_path_cost;
+
+  FileSystemURL grandchild_file1(CreateFile("src/dir/file1"));
+  FileSystemURL grandchild_file2(CreateFile("src/dir/file2"));
+  int64 total_path_cost = GetUsage();
+  int64 grandchild_path_cost = total_path_cost - usage;
+
+  EXPECT_EQ(0, GetDataSizeOnDisk());
+
+  NewOperation()->Truncate(
+      child_file1, 8000,
+      base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      child_file2, 700,
+      base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      grandchild_file1, 60,
+      base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
+  NewOperation()->Truncate(
+      grandchild_file2, 5,
+      base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
+  base::MessageLoop::current()->RunUntilIdle();
+
+  const int64 child_file_size = 8000 + 700;
+  const int64 grandchild_file_size = 60 + 5;
+  const int64 all_file_size = child_file_size + grandchild_file_size;
+  int64 expected_usage = all_file_size + total_path_cost;
+
+  usage = GetUsage();
+  EXPECT_EQ(all_file_size, GetDataSizeOnDisk());
+  EXPECT_EQ(expected_usage, usage);
+
+  // Copy src to dest1.
+  NewOperation()->Copy(
+      src, dest1,
+      base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
+  base::MessageLoop::current()->RunUntilIdle();
+
+  expected_usage += all_file_size + child_path_cost + grandchild_path_cost;
+  EXPECT_TRUE(DirectoryExists("src/dir"));
+  EXPECT_TRUE(FileExists("src/dir/file2"));
+  EXPECT_TRUE(DirectoryExists("dest1/dir"));
+  EXPECT_TRUE(FileExists("dest1/dir/file2"));
+
+  EXPECT_EQ(2 * all_file_size, GetDataSizeOnDisk());
+  EXPECT_EQ(expected_usage, GetUsage());
+
+  // Copy src/dir to dest2.
+  NewOperation()->Copy(
+      child_dir, dest2,
+      base::Bind(&AssertFileErrorEq, FROM_HERE, base::PLATFORM_FILE_OK));
+  base::MessageLoop::current()->RunUntilIdle();
+
+  expected_usage += grandchild_file_size + grandchild_path_cost;
+  usage = GetUsage();
+  EXPECT_EQ(2 * child_file_size + 3 * grandchild_file_size,
+            GetDataSizeOnDisk());
+  EXPECT_EQ(expected_usage, usage);
 }
 
 }  // namespace fileapi
