@@ -31,7 +31,7 @@ const char kInvalidInstanceTypeError[] =
 #define INPUT_FORMAT_VALIDATE(test) do { \
     if (!(test)) { \
       *bad_message = true; \
-      return scoped_ptr<ContentAction>(NULL); \
+      return scoped_refptr<ContentAction>(NULL); \
     } \
   } while (0)
 
@@ -43,7 +43,6 @@ const char kInvalidInstanceTypeError[] =
 class ShowPageAction : public ContentAction {
  public:
   ShowPageAction() {}
-  virtual ~ShowPageAction() {}
 
   // Implementation of ContentAction:
   virtual Type GetType() const OVERRIDE { return ACTION_SHOW_PAGE_ACTION; }
@@ -73,6 +72,7 @@ class ShowPageAction : public ContentAction {
     DCHECK(extension);
     return ExtensionActionManager::Get(profile)->GetPageAction(*extension);
   }
+  virtual ~ShowPageAction() {}
 
   DISALLOW_COPY_AND_ASSIGN(ShowPageAction);
 };
@@ -80,11 +80,11 @@ class ShowPageAction : public ContentAction {
 // Helper function for ContentActions that can be instantiated by just
 // calling the constructor.
 template <class T>
-scoped_ptr<ContentAction> CallConstructorFactoryMethod(
+scoped_refptr<ContentAction> CallConstructorFactoryMethod(
     const base::DictionaryValue* dict,
     std::string* error,
     bool* bad_message) {
-  return scoped_ptr<ContentAction>(new T);
+  return scoped_refptr<ContentAction>(new T);
 }
 
 struct ContentActionFactory {
@@ -93,7 +93,7 @@ struct ContentActionFactory {
   // messages in case the extension passed an action that was syntactically
   // correct but semantically incorrect. |bad_message| is set to true in case
   // |dict| does not confirm to the validated JSON specification.
-  typedef scoped_ptr<ContentAction>
+  typedef scoped_refptr<ContentAction>
       (* FactoryMethod)(const base::DictionaryValue* /* dict */,
                         std::string* /* error */,
                         bool* /* bad_message */);
@@ -121,7 +121,7 @@ ContentAction::ContentAction() {}
 ContentAction::~ContentAction() {}
 
 // static
-scoped_ptr<ContentAction> ContentAction::Create(
+scoped_refptr<ContentAction> ContentAction::Create(
     const base::Value& json_action,
     std::string* error,
     bool* bad_message) {
@@ -142,7 +142,7 @@ scoped_ptr<ContentAction> ContentAction::Create(
     return (*factory_method_iter->second)(action_dict, error, bad_message);
 
   *error = base::StringPrintf(kInvalidInstanceTypeError, instance_type.c_str());
-  return scoped_ptr<ContentAction>();
+  return scoped_refptr<ContentAction>();
 }
 
 }  // namespace extensions

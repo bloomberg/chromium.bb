@@ -52,6 +52,8 @@ struct RequestCookie {
   DISALLOW_COPY_AND_ASSIGN(RequestCookie);
 };
 
+bool NullableEquals(const RequestCookie* a, const RequestCookie* b);
+
 // Data container for ResponseCookies as defined in the declarative WebRequest
 // API definition.
 struct ResponseCookie {
@@ -69,6 +71,8 @@ struct ResponseCookie {
   DISALLOW_COPY_AND_ASSIGN(ResponseCookie);
 };
 
+bool NullableEquals(const ResponseCookie* a, const ResponseCookie* b);
+
 // Data container for FilterResponseCookies as defined in the declarative
 // WebRequest API definition.
 struct FilterResponseCookie : ResponseCookie {
@@ -80,6 +84,9 @@ struct FilterResponseCookie : ResponseCookie {
  private:
   DISALLOW_COPY_AND_ASSIGN(FilterResponseCookie);
 };
+
+bool NullableEquals(const FilterResponseCookie* a,
+                    const FilterResponseCookie* b);
 
 enum CookieModificationType {
   ADD,
@@ -99,6 +106,9 @@ struct RequestCookieModification {
   DISALLOW_COPY_AND_ASSIGN(RequestCookieModification);
 };
 
+bool NullableEquals(const RequestCookieModification* a,
+                    const RequestCookieModification* b);
+
 struct ResponseCookieModification {
   ResponseCookieModification();
   ~ResponseCookieModification();
@@ -110,6 +120,9 @@ struct ResponseCookieModification {
  private:
   DISALLOW_COPY_AND_ASSIGN(ResponseCookieModification);
 };
+
+bool NullableEquals(const ResponseCookieModification* a,
+                    const ResponseCookieModification* b);
 
 typedef std::vector<linked_ptr<RequestCookieModification> >
     RequestCookieModifications;

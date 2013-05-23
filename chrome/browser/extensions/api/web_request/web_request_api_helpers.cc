@@ -101,22 +101,96 @@ bool ParseCookieLifetime(net::ParsedCookie* cookie,
   return false;
 }
 
+bool NullableEquals(const int* a, const int* b) {
+  if ((a && !b) || (!a && b))
+    return false;
+  return (!a) || (*a == *b);
+}
+
+bool NullableEquals(const bool* a, const bool* b) {
+  if ((a && !b) || (!a && b))
+    return false;
+  return (!a) || (*a == *b);
+}
+
+bool NullableEquals(const std::string* a, const std::string* b) {
+  if ((a && !b) || (!a && b))
+    return false;
+  return (!a) || (*a == *b);
+}
+
 }  // namespace
 
 RequestCookie::RequestCookie() {}
 RequestCookie::~RequestCookie() {}
 
+bool NullableEquals(const RequestCookie* a, const RequestCookie* b) {
+  if ((a && !b) || (!a && b))
+    return false;
+  if (!a)
+    return true;
+  return NullableEquals(a->name.get(), b->name.get()) &&
+         NullableEquals(a->value.get(), b->value.get());
+}
+
 ResponseCookie::ResponseCookie() {}
 ResponseCookie::~ResponseCookie() {}
+
+bool NullableEquals(const ResponseCookie* a, const ResponseCookie* b) {
+  if ((a && !b) || (!a && b))
+    return false;
+  if (!a)
+    return true;
+  return NullableEquals(a->name.get(), b->name.get()) &&
+         NullableEquals(a->value.get(), b->value.get()) &&
+         NullableEquals(a->expires.get(), b->expires.get()) &&
+         NullableEquals(a->max_age.get(), b->max_age.get()) &&
+         NullableEquals(a->domain.get(), b->domain.get()) &&
+         NullableEquals(a->path.get(), b->path.get()) &&
+         NullableEquals(a->secure.get(), b->secure.get()) &&
+         NullableEquals(a->http_only.get(), b->http_only.get());
+}
 
 FilterResponseCookie::FilterResponseCookie() {}
 FilterResponseCookie::~FilterResponseCookie() {}
 
+bool NullableEquals(const FilterResponseCookie* a,
+                    const FilterResponseCookie* b) {
+  if ((a && !b) || (!a && b))
+    return false;
+  if (!a)
+    return true;
+  return NullableEquals(a->age_lower_bound.get(), b->age_lower_bound.get()) &&
+         NullableEquals(a->age_upper_bound.get(), b->age_upper_bound.get()) &&
+         NullableEquals(a->session_cookie.get(), b->session_cookie.get());
+}
+
 RequestCookieModification::RequestCookieModification() {}
 RequestCookieModification::~RequestCookieModification() {}
 
+bool NullableEquals(const RequestCookieModification* a,
+                    const RequestCookieModification* b) {
+  if ((a && !b) || (!a && b))
+    return false;
+  if (!a)
+    return true;
+  return NullableEquals(a->filter.get(), b->filter.get()) &&
+         NullableEquals(a->modification.get(), b->modification.get());
+}
+
 ResponseCookieModification::ResponseCookieModification() : type(ADD) {}
 ResponseCookieModification::~ResponseCookieModification() {}
+
+bool NullableEquals(const ResponseCookieModification* a,
+                    const ResponseCookieModification* b) {
+  if ((a && !b) || (!a && b))
+    return false;
+  if (!a)
+    return true;
+  return a->type == b->type &&
+         NullableEquals(a->filter.get(), b->filter.get()) &&
+         NullableEquals(a->modification.get(), b->modification.get());
+}
 
 EventResponseDelta::EventResponseDelta(
     const std::string& extension_id, const base::Time& extension_install_time)

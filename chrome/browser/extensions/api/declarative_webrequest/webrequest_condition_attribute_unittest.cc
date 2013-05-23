@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
@@ -35,7 +34,7 @@ TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
   MessageLoop message_loop(MessageLoop::TYPE_IO);
 
   std::string error;
-  scoped_ptr<WebRequestConditionAttribute> result;
+  scoped_refptr<const WebRequestConditionAttribute> result;
   StringValue string_value("main_frame");
   ListValue resource_types;
   resource_types.Append(Value::CreateStringValue("main_frame"));
@@ -80,7 +79,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   // ResourceType::Type is not 0, the default value.
   resource_types.Append(Value::CreateStringValue("sub_frame"));
 
-  scoped_ptr<WebRequestConditionAttribute> attribute =
+  scoped_refptr<const WebRequestConditionAttribute> attribute =
       WebRequestConditionAttribute::Create(
           keys::kResourceTypeKey, &resource_types, &error);
   EXPECT_EQ("", error);
@@ -107,7 +106,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   MessageLoop message_loop(MessageLoop::TYPE_IO);
 
   std::string error;
-  scoped_ptr<WebRequestConditionAttribute> result;
+  scoped_refptr<const WebRequestConditionAttribute> result;
 
   net::SpawnedTestServer test_server(
       net::SpawnedTestServer::TYPE_HTTP,
@@ -125,7 +124,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
 
   ListValue content_types;
   content_types.Append(Value::CreateStringValue("text/plain"));
-  scoped_ptr<WebRequestConditionAttribute> attribute_include =
+  scoped_refptr<const WebRequestConditionAttribute> attribute_include =
       WebRequestConditionAttribute::Create(
           keys::kContentTypeKey, &content_types, &error);
   EXPECT_EQ("", error);
@@ -137,7 +136,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
       WebRequestData(&url_request, ON_HEADERS_RECEIVED,
                      url_request.response_headers())));
 
-  scoped_ptr<WebRequestConditionAttribute> attribute_exclude =
+  scoped_refptr<const WebRequestConditionAttribute> attribute_exclude =
       WebRequestConditionAttribute::Create(
           keys::kExcludeContentTypeKey, &content_types, &error);
   EXPECT_EQ("", error);
@@ -148,7 +147,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
 
   content_types.Clear();
   content_types.Append(Value::CreateStringValue("something/invalid"));
-  scoped_ptr<WebRequestConditionAttribute> attribute_unincluded =
+  scoped_refptr<const WebRequestConditionAttribute> attribute_unincluded =
       WebRequestConditionAttribute::Create(
           keys::kContentTypeKey, &content_types, &error);
   EXPECT_EQ("", error);
@@ -157,7 +156,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
       WebRequestData(&url_request, ON_HEADERS_RECEIVED,
                      url_request.response_headers())));
 
-  scoped_ptr<WebRequestConditionAttribute> attribute_unexcluded =
+  scoped_refptr<const WebRequestConditionAttribute> attribute_unexcluded =
       WebRequestConditionAttribute::Create(
           keys::kExcludeContentTypeKey, &content_types, &error);
   EXPECT_EQ("", error);
@@ -175,7 +174,7 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
   std::string error;
   const FundamentalValue value_true(true);
   // This attribute matches only third party requests.
-  scoped_ptr<WebRequestConditionAttribute> third_party_attribute =
+  scoped_refptr<const WebRequestConditionAttribute> third_party_attribute =
       WebRequestConditionAttribute::Create(keys::kThirdPartyKey,
                                            &value_true,
                                            &error);
@@ -183,7 +182,7 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
   ASSERT_TRUE(third_party_attribute.get());
   const FundamentalValue value_false(false);
   // This attribute matches only first party requests.
-  scoped_ptr<WebRequestConditionAttribute> first_party_attribute =
+  scoped_refptr<const WebRequestConditionAttribute> first_party_attribute =
       WebRequestConditionAttribute::Create(keys::kThirdPartyKey,
                                            &value_false,
                                            &error);
@@ -247,7 +246,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
 
   // Create an attribute with an empty set of applicable stages.
   ListValue empty_list;
-  scoped_ptr<WebRequestConditionAttribute> empty_attribute =
+  scoped_refptr<const WebRequestConditionAttribute> empty_attribute =
       WebRequestConditionAttribute::Create(keys::kStagesKey,
                                            &empty_list,
                                            &error);
@@ -258,7 +257,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
   ListValue all_stages;
   for (size_t i = 0; i < arraysize(active_stages); ++i)
     all_stages.AppendString(active_stages[i].second);
-  scoped_ptr<WebRequestConditionAttribute> attribute_with_all =
+  scoped_refptr<const WebRequestConditionAttribute> attribute_with_all =
       WebRequestConditionAttribute::Create(keys::kStagesKey,
                                            &all_stages,
                                            &error);
@@ -266,7 +265,8 @@ TEST(WebRequestConditionAttributeTest, Stages) {
   ASSERT_TRUE(attribute_with_all.get());
 
   // Create one attribute for each single stage, to be applicable in that stage.
-  ScopedVector<WebRequestConditionAttribute> one_stage_attributes;
+  std::vector<scoped_refptr<const WebRequestConditionAttribute> >
+      one_stage_attributes;
 
   for (size_t i = 0; i < arraysize(active_stages); ++i) {
     ListValue single_stage_list;
@@ -274,7 +274,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
     one_stage_attributes.push_back(
         WebRequestConditionAttribute::Create(keys::kStagesKey,
                                              &single_stage_list,
-                                             &error).release());
+                                             &error));
     EXPECT_EQ("", error);
     ASSERT_TRUE(one_stage_attributes.back() != NULL);
   }
@@ -382,7 +382,7 @@ void MatchAndCheck(const std::vector< std::vector<const std::string*> >& tests,
   }
 
   std::string error;
-  scoped_ptr<WebRequestConditionAttribute> attribute =
+  scoped_refptr<const WebRequestConditionAttribute> attribute =
       WebRequestConditionAttribute::Create(key, &contains_headers, &error);
   ASSERT_EQ("", error);
   ASSERT_TRUE(attribute.get());

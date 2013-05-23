@@ -176,7 +176,7 @@ void WebRequestActionWithThreadsTest::CheckActionNeedsAllUrls(
 TEST(WebRequestActionTest, CreateAction) {
   std::string error;
   bool bad_message = false;
-  scoped_ptr<WebRequestAction> result;
+  scoped_refptr<const WebRequestAction> result;
 
   // Test wrong data type passed.
   error.clear();

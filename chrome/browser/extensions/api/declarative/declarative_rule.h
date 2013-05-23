@@ -135,7 +135,7 @@ template<typename ActionT>
 class DeclarativeActionSet {
  public:
   typedef std::vector<linked_ptr<base::Value> > AnyVector;
-  typedef std::vector<linked_ptr<const ActionT> > Actions;
+  typedef std::vector<scoped_refptr<const ActionT> > Actions;
 
   explicit DeclarativeActionSet(const Actions& actions);
 
@@ -356,10 +356,11 @@ DeclarativeActionSet<ActionT>::Create(
   for (AnyVector::const_iterator i = actions.begin();
        i != actions.end(); ++i) {
     CHECK(i->get());
-    scoped_ptr<ActionT> action = ActionT::Create(**i, error, bad_message);
+    scoped_refptr<const ActionT> action =
+        ActionT::Create(**i, error, bad_message);
     if (!error->empty() || *bad_message)
       return scoped_ptr<DeclarativeActionSet>(NULL);
-    result.push_back(make_linked_ptr(action.release()));
+    result.push_back(action);
   }
 
   return scoped_ptr<DeclarativeActionSet>(new DeclarativeActionSet(result));

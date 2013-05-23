@@ -198,41 +198,52 @@ TEST(DeclarativeConditionTest, FulfillConditionSet) {
 
 // DeclarativeAction
 
-struct SummingAction {
+class SummingAction : public base::RefCounted<SummingAction> {
+ public:
   typedef int ApplyInfo;
 
-  int increment;
-  int min_priority;
+  SummingAction(int increment, int min_priority)
+      : increment_(increment), min_priority_(min_priority) {}
 
-  static scoped_ptr<SummingAction> Create(const base::Value& action,
-                                          std::string* error,
-                                          bool* bad_message) {
-    scoped_ptr<SummingAction> result(new SummingAction());
+  static scoped_refptr<const SummingAction> Create(const base::Value& action,
+                                                   std::string* error,
+                                                   bool* bad_message) {
+    int increment = 0;
+    int min_priority = 0;
     const base::DictionaryValue* dict = NULL;
     EXPECT_TRUE(action.GetAsDictionary(&dict));
     if (dict->HasKey("error")) {
       EXPECT_TRUE(dict->GetString("error", error));
-      return result.Pass();
+      return scoped_refptr<const SummingAction>(NULL);
     }
     if (dict->HasKey("bad")) {
       *bad_message = true;
-      return result.Pass();
+      return scoped_refptr<const SummingAction>(NULL);
     }
 
-    EXPECT_TRUE(dict->GetInteger("value", &result->increment));
-    dict->GetInteger("priority", &result->min_priority);
-    return result.Pass();
+    EXPECT_TRUE(dict->GetInteger("value", &increment));
+    dict->GetInteger("priority", &min_priority);
+    return scoped_refptr<const SummingAction>(
+        new SummingAction(increment, min_priority));
   }
 
   void Apply(const std::string& extension_id,
              const base::Time& install_time,
              int* sum) const {
-    *sum += increment;
+    *sum += increment_;
   }
 
+  int increment() const { return increment_; }
   int minimum_priority() const {
-    return min_priority;
+    return min_priority_;
   }
+
+ private:
+  friend class base::RefCounted<SummingAction>;
+  virtual ~SummingAction() {}
+
+  int increment_;
+  int min_priority_;
 };
 typedef DeclarativeActionSet<SummingAction> SummingActionSet;
 
@@ -330,7 +341,7 @@ TEST(DeclarativeRuleTest, Create) {
   const Rule::ActionSet& action_set = rule->actions();
   const Rule::ActionSet::Actions& actions = action_set.actions();
   ASSERT_EQ(1u, actions.size());
-  EXPECT_EQ(2, actions[0]->increment);
+  EXPECT_EQ(2, actions[0]->increment());
 
   int sum = 0;
   rule->Apply(&sum);

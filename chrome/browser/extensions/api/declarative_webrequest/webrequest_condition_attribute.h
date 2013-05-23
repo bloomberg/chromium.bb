@@ -9,9 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/common/extensions/api/events.h"
 #include "webkit/glue/resource_type.h"
@@ -31,7 +30,8 @@ struct WebRequestData;
 
 // Base class for all condition attributes of the declarative Web Request API
 // except for condition attribute to test URLPatterns.
-class WebRequestConditionAttribute {
+class WebRequestConditionAttribute
+    : public base::RefCounted<WebRequestConditionAttribute> {
  public:
   enum Type {
     CONDITION_RESOURCE_TYPE,
@@ -43,13 +43,12 @@ class WebRequestConditionAttribute {
   };
 
   WebRequestConditionAttribute();
-  virtual ~WebRequestConditionAttribute();
 
   // Factory method that creates a WebRequestConditionAttribute for the JSON
   // dictionary {|name|: |value|} passed by the extension API. Sets |error| and
   // returns NULL if something fails.
   // The ownership of |value| remains at the caller.
-  static scoped_ptr<WebRequestConditionAttribute> Create(
+  static scoped_refptr<const WebRequestConditionAttribute> Create(
       const std::string& name,
       const base::Value* value,
       std::string* error);
@@ -65,15 +64,19 @@ class WebRequestConditionAttribute {
 
   virtual Type GetType() const = 0;
 
-  // Returns whether condition attributes of type |instance_type| are known
-  // and can be instantiated by Create().
-  static bool IsKnownType(const std::string& instance_type);
+  // Compares the Type of two WebRequestConditionAttributes, needs to be
+  // overridden for parameterized types.
+  virtual bool Equals(const WebRequestConditionAttribute* other) const;
+
+ protected:
+  friend class base::RefCounted<WebRequestConditionAttribute>;
+  virtual ~WebRequestConditionAttribute();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttribute);
 };
 
-typedef std::vector<linked_ptr<WebRequestConditionAttribute> >
+typedef std::vector<scoped_refptr<const WebRequestConditionAttribute> >
     WebRequestConditionAttributes;
 
 //
@@ -84,27 +87,26 @@ typedef std::vector<linked_ptr<WebRequestConditionAttribute> >
 class WebRequestConditionAttributeResourceType
     : public WebRequestConditionAttribute {
  public:
-  virtual ~WebRequestConditionAttributeResourceType();
-
-  static bool IsMatchingType(const std::string& instance_type);
-
   // Factory method, see WebRequestConditionAttribute::Create.
-  static scoped_ptr<WebRequestConditionAttribute> Create(
-      const std::string& name,
+  static scoped_refptr<const WebRequestConditionAttribute> Create(
+      const std::string& instance_type,
       const base::Value* value,
-      std::string* error);
+      std::string* error,
+      bool* bad_message);
 
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
   virtual bool IsFulfilled(
       const WebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
 
  private:
   explicit WebRequestConditionAttributeResourceType(
       const std::vector<ResourceType::Type>& types);
+  virtual ~WebRequestConditionAttributeResourceType();
 
-  std::vector<ResourceType::Type> types_;
+  const std::vector<ResourceType::Type> types_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeResourceType);
 };
@@ -114,29 +116,28 @@ class WebRequestConditionAttributeResourceType
 class WebRequestConditionAttributeContentType
     : public WebRequestConditionAttribute {
  public:
-  virtual ~WebRequestConditionAttributeContentType();
-
-  static bool IsMatchingType(const std::string& instance_type);
-
   // Factory method, see WebRequestConditionAttribute::Create.
-  static scoped_ptr<WebRequestConditionAttribute> Create(
+  static scoped_refptr<const WebRequestConditionAttribute> Create(
       const std::string& name,
       const base::Value* value,
-      std::string* error);
+      std::string* error,
+      bool* bad_message);
 
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
   virtual bool IsFulfilled(
       const WebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
 
  private:
   explicit WebRequestConditionAttributeContentType(
       const std::vector<std::string>& include_content_types,
       bool inclusive);
+  virtual ~WebRequestConditionAttributeContentType();
 
-  std::vector<std::string> content_types_;
-  bool inclusive_;
+  const std::vector<std::string> content_types_;
+  const bool inclusive_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeContentType);
 };
@@ -149,25 +150,24 @@ class WebRequestConditionAttributeContentType
 class WebRequestConditionAttributeRequestHeaders
     : public WebRequestConditionAttribute {
  public:
-  virtual ~WebRequestConditionAttributeRequestHeaders();
-
-  static bool IsMatchingType(const std::string& instance_type);
-
   // Factory method, see WebRequestConditionAttribute::Create.
-  static scoped_ptr<WebRequestConditionAttribute> Create(
+  static scoped_refptr<const WebRequestConditionAttribute> Create(
       const std::string& name,
       const base::Value* value,
-      std::string* error);
+      std::string* error,
+      bool* bad_message);
 
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
   virtual bool IsFulfilled(
       const WebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
 
  private:
   WebRequestConditionAttributeRequestHeaders(
       scoped_ptr<const HeaderMatcher> header_matcher, bool positive);
+  virtual ~WebRequestConditionAttributeRequestHeaders();
 
   const scoped_ptr<const HeaderMatcher> header_matcher_;
   const bool positive_;
@@ -183,25 +183,24 @@ class WebRequestConditionAttributeRequestHeaders
 class WebRequestConditionAttributeResponseHeaders
     : public WebRequestConditionAttribute {
  public:
-  virtual ~WebRequestConditionAttributeResponseHeaders();
-
-  static bool IsMatchingType(const std::string& instance_type);
-
   // Factory method, see WebRequestConditionAttribute::Create.
-  static scoped_ptr<WebRequestConditionAttribute> Create(
+  static scoped_refptr<const WebRequestConditionAttribute> Create(
       const std::string& name,
       const base::Value* value,
-      std::string* error);
+      std::string* error,
+      bool* bad_message);
 
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
   virtual bool IsFulfilled(
       const WebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
 
  private:
   WebRequestConditionAttributeResponseHeaders(
       scoped_ptr<const HeaderMatcher> header_matcher, bool positive);
+  virtual ~WebRequestConditionAttributeResponseHeaders();
 
   const scoped_ptr<const HeaderMatcher> header_matcher_;
   const bool positive_;
@@ -213,24 +212,23 @@ class WebRequestConditionAttributeResponseHeaders
 class WebRequestConditionAttributeThirdParty
     : public WebRequestConditionAttribute {
  public:
-  virtual ~WebRequestConditionAttributeThirdParty();
-
-  static bool IsMatchingType(const std::string& instance_type);
-
   // Factory method, see WebRequestConditionAttribute::Create.
-  static scoped_ptr<WebRequestConditionAttribute> Create(
+  static scoped_refptr<const WebRequestConditionAttribute> Create(
       const std::string& name,
       const base::Value* value,
-      std::string* error);
+      std::string* error,
+      bool* bad_message);
 
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
   virtual bool IsFulfilled(
       const WebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
 
  private:
   explicit WebRequestConditionAttributeThirdParty(bool match_third_party);
+  virtual ~WebRequestConditionAttributeThirdParty();
 
   const bool match_third_party_;
 
@@ -242,24 +240,23 @@ class WebRequestConditionAttributeThirdParty
 class WebRequestConditionAttributeStages
     : public WebRequestConditionAttribute {
  public:
-  virtual ~WebRequestConditionAttributeStages();
-
-  static bool IsMatchingType(const std::string& instance_type);
-
   // Factory method, see WebRequestConditionAttribute::Create.
-  static scoped_ptr<WebRequestConditionAttribute> Create(
+  static scoped_refptr<const WebRequestConditionAttribute> Create(
       const std::string& name,
       const base::Value* value,
-      std::string* error);
+      std::string* error,
+      bool* bad_message);
 
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
   virtual bool IsFulfilled(
       const WebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
 
  private:
   explicit WebRequestConditionAttributeStages(int allowed_stages);
+  virtual ~WebRequestConditionAttributeStages();
 
   const int allowed_stages_;  // Composition of RequestStage values.
 

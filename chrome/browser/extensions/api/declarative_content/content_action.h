@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 
 class Profile;
@@ -25,7 +25,7 @@ class WebContents;
 namespace extensions {
 
 // Base class for all ContentActions of the declarative content API.
-class ContentAction {
+class ContentAction : public base::RefCounted<ContentAction> {
  public:
   // Type identifiers for concrete ContentActions.
   enum Type {
@@ -38,7 +38,6 @@ class ContentAction {
   };
 
   ContentAction();
-  virtual ~ContentAction();
 
   virtual Type GetType() const = 0;
 
@@ -58,9 +57,13 @@ class ContentAction {
   // Sets |error| and returns NULL in case of a semantic error that cannot
   // be caught by schema validation. Sets |bad_message| and returns NULL
   // in case the input is syntactically unexpected.
-  static scoped_ptr<ContentAction> Create(const base::Value& json_action,
+  static scoped_refptr<ContentAction> Create(const base::Value& json_action,
                                           std::string* error,
                                           bool* bad_message);
+
+ protected:
+  friend class base::RefCounted<ContentAction>;
+  virtual ~ContentAction();
 };
 
 typedef DeclarativeActionSet<ContentAction> ContentActionSet;

@@ -89,11 +89,6 @@ class WebRequestCondition {
   void GetURLMatcherConditionSets(
       URLMatcherConditionSet::Vector* condition_sets) const;
 
-  // Returns the condition attributes checked by this condition.
-  const WebRequestConditionAttributes condition_attributes() const {
-    return condition_attributes_;
-  }
-
   // Returns a bit vector representing extensions::RequestStage. The bit vector
   // contains a 1 for each request stage during which the condition can be
   // tested.

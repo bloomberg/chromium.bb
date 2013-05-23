@@ -24,7 +24,7 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
   TestExtensionEnvironment env;
   std::string error;
   bool bad_message = false;
-  scoped_ptr<ContentAction> result;
+  scoped_refptr<const ContentAction> result;
 
   // Test wrong data type passed.
   error.clear();
@@ -56,7 +56,7 @@ TEST(DeclarativeContentActionTest, ShowPageAction) {
 
   std::string error;
   bool bad_message = false;
-  scoped_ptr<ContentAction> result = ContentAction::Create(
+  scoped_refptr<const ContentAction> result = ContentAction::Create(
       *ParseJson("{\n"
                  "  \"instanceType\": \"declarativeContent.ShowPageAction\",\n"
                  "}"),
