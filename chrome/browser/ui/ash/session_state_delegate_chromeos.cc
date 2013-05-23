@@ -10,10 +10,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 
-// TODO(skuhne): To be able to test this I had to hardcode the number of known
-// users. Get rid of it once it works.
-#define ADD_TEST_USER_ACCOUNTS_FOR_MULTI_USER_TEST_ENVIRONMENT 0
-
 SessionStateDelegate::SessionStateDelegate() {
 }
 
@@ -25,8 +21,7 @@ int SessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
 }
 
 int SessionStateDelegate::NumberOfLoggedInUsers() const {
-  return chromeos::UserManager::Get()->GetLoggedInUsers().size() +
-         ADD_TEST_USER_ACCOUNTS_FOR_MULTI_USER_TEST_ENVIRONMENT;
+  return chromeos::UserManager::Get()->GetLoggedInUsers().size();
 }
 
 bool SessionStateDelegate::IsActiveUserSessionStarted() const {
@@ -59,11 +54,6 @@ void SessionStateDelegate::UnlockScreen() {
 
 const base::string16 SessionStateDelegate::GetUserDisplayName(
     ash::MultiProfileIndex index) const {
-  if (ADD_TEST_USER_ACCOUNTS_FOR_MULTI_USER_TEST_ENVIRONMENT &&
-      static_cast<size_t>(index) >=
-          chromeos::UserManager::Get()->GetLoggedInUsers().size()) {
-    index = 0;
-  }
   DCHECK_LT(index, NumberOfLoggedInUsers());
   return chromeos::UserManager::Get()->
              GetLRULoggedInUsers()[index]->display_name();
@@ -71,11 +61,6 @@ const base::string16 SessionStateDelegate::GetUserDisplayName(
 
 const std::string SessionStateDelegate::GetUserEmail(
     ash::MultiProfileIndex index) const {
-  if (ADD_TEST_USER_ACCOUNTS_FOR_MULTI_USER_TEST_ENVIRONMENT &&
-      static_cast<size_t>(index) >=
-          chromeos::UserManager::Get()->GetLoggedInUsers().size()) {
-    index = 0;
-  }
   DCHECK_LT(index, NumberOfLoggedInUsers());
   return chromeos::UserManager::Get()->
              GetLRULoggedInUsers()[index]->display_email();
@@ -83,11 +68,6 @@ const std::string SessionStateDelegate::GetUserEmail(
 
 const gfx::ImageSkia& SessionStateDelegate::GetUserImage(
     ash::MultiProfileIndex index) const {
-  if (ADD_TEST_USER_ACCOUNTS_FOR_MULTI_USER_TEST_ENVIRONMENT &&
-      static_cast<size_t>(index) >=
-          chromeos::UserManager::Get()->GetLoggedInUsers().size()) {
-    index = 0;
-  }
   DCHECK_LT(index, NumberOfLoggedInUsers());
   return chromeos::UserManager::Get()->GetLRULoggedInUsers()[index]->image();
 }

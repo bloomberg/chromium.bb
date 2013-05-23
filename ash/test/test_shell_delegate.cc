@@ -27,6 +27,7 @@ TestShellDelegate::TestShellDelegate()
       screen_magnifier_enabled_(false),
       screen_magnifier_type_(kDefaultMagnifierType),
       num_exit_requests_(0),
+      multi_profiles_enabled_(false),
       test_session_state_delegate_(NULL) {
 }
 
@@ -38,7 +39,7 @@ bool TestShellDelegate::IsFirstRunAfterBoot() const {
 }
 
 bool TestShellDelegate::IsMultiProfilesEnabled() const {
-  return false;
+  return multi_profiles_enabled_;
 }
 
 bool TestShellDelegate::IsRunningInForcedAppMode() const {
