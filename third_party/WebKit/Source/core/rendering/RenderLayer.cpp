@@ -2580,7 +2580,7 @@ IntPoint RenderLayer::minimumScrollPosition() const
 IntPoint RenderLayer::maximumScrollPosition() const
 {
     RenderBox* box = renderBox();
-    if (!box)
+    if (!box || !box->hasOverflowClip())
         return -scrollOrigin();
 
     LayoutRect overflowRect(box->layoutOverflowRect());
