@@ -542,7 +542,7 @@ DirectoryTree.prototype.decorate = function(directoryModel) {
   // Add a handler for directory change.
   this.addEventListener('change', function() {
     if (this.selectedItem && this.currentPath_ != this.selectedItem.fullPath) {
-      this.currentPath_ = this.selectedItem;
+      this.currentPath_ = this.selectedItem.fullPath;
       this.selectedItem.doAction();
       return;
     }
