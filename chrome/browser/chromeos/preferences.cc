@@ -49,7 +49,8 @@ Preferences::Preferences()
 }
 
 Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
-    : input_method_manager_(input_method_manager) {
+    : prefs_(NULL),
+      input_method_manager_(input_method_manager) {
 }
 
 Preferences::~Preferences() {
