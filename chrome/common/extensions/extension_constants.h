@@ -167,6 +167,9 @@ namespace extension_misc {
   // The extension id of the Youtube application.
   extern const char kYoutubeAppId[];
 
+  // The extension id of the Identity API UI application.
+  extern const char kIdentityApiUiAppId[];
+
   // Note: this structure is an ASN.1 which encodes the algorithm used
   // with its parameters. This is defined in PKCS #1 v2.1 (RFC 3447).
   // It is encoding: { OID sha1WithRSAEncryption      PARAMETERS NULL }

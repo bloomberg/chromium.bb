@@ -234,6 +234,13 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
+  "identityPrivate": {
+    "channel": "stable",
+    "extension_types": [
+      "packaged_app"
+    ],
+    "location": "component"
+  },
   "idle": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"]

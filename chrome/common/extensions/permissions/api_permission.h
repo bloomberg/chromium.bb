@@ -80,6 +80,7 @@ class APIPermission {
     kGeolocation,
     kHistory,
     kIdentity,
+    kIdentityPrivate,
     kIdle,
     kInput,
     kInputMethodPrivate,
