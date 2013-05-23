@@ -252,7 +252,7 @@ function test2AfterClosing() {
 
 function testToday() {
     eventSender.keyDown('t');
-    shouldBeTrue('isCalendarTableScrollingWithAnimation()', true /* quiet */);
+    shouldBeTrueQuiet('isCalendarTableScrollingWithAnimation()');
     var now = new Date();
     var expectedWeek = popupWindow.Week.createFromToday().toString();
     return selectedValue() === expectedWeek && highlightedValue() === expectedWeek;

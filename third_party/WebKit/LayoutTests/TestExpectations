@@ -1526,7 +1526,7 @@ webkit.org/b/92811 [ Win Linux Debug ] compositing/video-page-visibility.html [ 
 webkit.org/b/92811 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
 webkit.org/b/83875 svg/text/font-size-below-point-five.svg [ Failure ImageOnlyFailure Pass ]
 
-crbug.com/236344 fast/forms/calendar-picker/week-picker-key-operations.html [ Failure Pass Crash ]
+crbug.com/236344 [ Debug ] fast/forms/calendar-picker/week-picker-key-operations.html [ Slow ]
 
 crbug.com/237270 fast/css/custom-font-xheight.html [ Pass Timeout ]
 crbug.com/237270 fast/css/sticky/sticky-top-zoomed.html [ Pass Timeout ]
