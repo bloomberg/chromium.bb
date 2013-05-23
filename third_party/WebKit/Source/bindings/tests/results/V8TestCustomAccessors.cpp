@@ -47,6 +47,8 @@ void initializeScriptWrappableForInterface(TestCustomAccessors* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
         ScriptWrappable::setTypeInfoInObject(object, &V8TestCustomAccessors::info);
+    else
+        ASSERT_NOT_REACHED();
 }
 #if defined(OS_WIN)
 namespace WebCore {

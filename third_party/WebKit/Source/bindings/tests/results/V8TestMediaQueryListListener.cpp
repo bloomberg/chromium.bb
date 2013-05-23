@@ -47,6 +47,8 @@ void initializeScriptWrappableForInterface(TestMediaQueryListListener* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
         ScriptWrappable::setTypeInfoInObject(object, &V8TestMediaQueryListListener::info);
+    else
+        ASSERT_NOT_REACHED();
 }
 #if defined(OS_WIN)
 namespace WebCore {

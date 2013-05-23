@@ -75,6 +75,7 @@ RaisesException
 ReadOnly
 Reflect=*
 Replaceable
+SetterCallWith=ScriptExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SetterRaisesException
 StrictTypeChecking
 TreatNullAs=NullString

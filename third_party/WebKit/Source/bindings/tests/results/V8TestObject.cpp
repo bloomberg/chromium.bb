@@ -77,6 +77,8 @@ void initializeScriptWrappableForInterface(TestObj* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
         ScriptWrappable::setTypeInfoInObject(object, &V8TestObject::info);
+    else
+        ASSERT_NOT_REACHED();
 }
 #if defined(OS_WIN)
 namespace WebCore {
@@ -838,7 +840,7 @@ static void withScriptExecutionContextAttributeAttrSetterCallback(v8::Local<v8::
 static v8::Handle<v8::Value> withActiveWindowAndFirstWindowAttributeAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    return toV8Fast(imp->withActiveWindowAndFirstWindowAttribute(activeDOMWindow(), firstDOMWindow()), info, imp);
+    return toV8Fast(imp->withActiveWindowAndFirstWindowAttribute(), info, imp);
 }
 
 static v8::Handle<v8::Value> withActiveWindowAndFirstWindowAttributeAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
@@ -4012,7 +4014,7 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjectAttrs[] = {
     {"withScriptStateAttribute", TestObjV8Internal::withScriptStateAttributeAttrGetterCallback, TestObjV8Internal::withScriptStateAttributeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'withScriptExecutionContextAttribute' (Type: 'attribute' ExtAttr: 'CallWith')
     {"withScriptExecutionContextAttribute", TestObjV8Internal::withScriptExecutionContextAttributeAttrGetterCallback, TestObjV8Internal::withScriptExecutionContextAttributeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'withActiveWindowAndFirstWindowAttribute' (Type: 'attribute' ExtAttr: 'CallWith')
+    // Attribute 'withActiveWindowAndFirstWindowAttribute' (Type: 'attribute' ExtAttr: 'SetterCallWith')
     {"withActiveWindowAndFirstWindowAttribute", TestObjV8Internal::withActiveWindowAndFirstWindowAttributeAttrGetterCallback, TestObjV8Internal::withActiveWindowAndFirstWindowAttributeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'withScriptStateAttributeRaises' (Type: 'attribute' ExtAttr: 'GetterRaisesException CallWith')
     {"withScriptStateAttributeRaises", TestObjV8Internal::withScriptStateAttributeRaisesAttrGetterCallback, TestObjV8Internal::withScriptStateAttributeRaisesAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

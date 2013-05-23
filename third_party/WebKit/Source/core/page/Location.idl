@@ -29,20 +29,20 @@
 [
     CheckSecurity,
 ] interface Location {
-    [DoNotCheckSecurityOnSetter, CustomSetter, Unforgeable] attribute DOMString href;
+    [SetterCallWith=ActiveWindow|FirstWindow, DoNotCheckSecurityOnSetter, Unforgeable] attribute DOMString href;
 
     [CallWith=ActiveWindow|FirstWindow, DoNotCheckSecurity, Unforgeable, ReadOnly, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void assign([Default=Undefined] optional DOMString url);
     [CallWith=ActiveWindow|FirstWindow, DoNotCheckSecurity, Unforgeable, ReadOnly, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] void replace([Default=Undefined] optional DOMString url);
     [CallWith=ActiveWindow, DoNotCheckSecurity, Unforgeable, ReadOnly] void reload();
 
     // URI decomposition attributes
-    [CallWith=ActiveWindow|FirstWindow, SetterRaisesException] attribute DOMString protocol;
-    [CallWith=ActiveWindow|FirstWindow] attribute DOMString host;
-    [CallWith=ActiveWindow|FirstWindow] attribute DOMString hostname;
-    [CallWith=ActiveWindow|FirstWindow] attribute DOMString port;
-    [CallWith=ActiveWindow|FirstWindow] attribute DOMString pathname;
-    [CallWith=ActiveWindow|FirstWindow] attribute DOMString search;
-    [CallWith=ActiveWindow|FirstWindow] attribute DOMString hash;
+    [SetterCallWith=ActiveWindow|FirstWindow, SetterRaisesException] attribute DOMString protocol;
+    [SetterCallWith=ActiveWindow|FirstWindow] attribute DOMString host;
+    [SetterCallWith=ActiveWindow|FirstWindow] attribute DOMString hostname;
+    [SetterCallWith=ActiveWindow|FirstWindow] attribute DOMString port;
+    [SetterCallWith=ActiveWindow|FirstWindow] attribute DOMString pathname;
+    [SetterCallWith=ActiveWindow|FirstWindow] attribute DOMString search;
+    [SetterCallWith=ActiveWindow|FirstWindow] attribute DOMString hash;
 
     readonly attribute DOMString origin;
 

@@ -124,7 +124,7 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
 
     [CallWith=ScriptState] attribute long withScriptStateAttribute;
     [CallWith=ScriptExecutionContext] attribute TestObject withScriptExecutionContextAttribute;
-    [CallWith=ActiveWindow|FirstWindow] attribute TestObject withActiveWindowAndFirstWindowAttribute;
+    [SetterCallWith=ActiveWindow|FirstWindow] attribute TestObject withActiveWindowAndFirstWindowAttribute;
     [CallWith=ScriptState, GetterRaisesException] attribute TestObject withScriptStateAttributeRaises;
     [CallWith=ScriptExecutionContext, GetterRaisesException] attribute TestObject withScriptExecutionContextAttributeRaises;
     [CallWith=ScriptExecutionContext|ScriptState] attribute TestObject withScriptExecutionContextAndScriptStateAttribute;

@@ -54,6 +54,8 @@ void initializeScriptWrappableForInterface(Float64Array* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
         ScriptWrappable::setTypeInfoInObject(object, &V8Float64Array::info);
+    else
+        ASSERT_NOT_REACHED();
 }
 #if defined(OS_WIN)
 namespace WebCore {

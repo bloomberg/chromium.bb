@@ -48,7 +48,7 @@ class Location : public ScriptWrappable, public RefCounted<Location>, public DOM
 public:
     static PassRefPtr<Location> create(Frame* frame) { return adoptRef(new Location(frame)); }
 
-    void setHref(const String&, DOMWindow* activeWindow, DOMWindow* firstWindow);
+    void setHref(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
     String href() const;
 
     void assign(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
@@ -56,19 +56,19 @@ public:
     void reload(DOMWindow* activeWindow);
 
     void setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&, ExceptionCode&);
-    String protocol(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    String protocol() const;
     void setHost(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
-    String host(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    String host() const;
     void setHostname(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
-    String hostname(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    String hostname() const;
     void setPort(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
-    String port(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    String port() const;
     void setPathname(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
-    String pathname(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    String pathname() const;
     void setSearch(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
-    String search(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    String search() const;
     void setHash(DOMWindow* activeWindow, DOMWindow* firstWindow, const String&);
-    String hash(DOMWindow* activeWindow, DOMWindow* firstWindow) const;
+    String hash() const;
     String origin() const;
 
     String toString() const { return href(); }

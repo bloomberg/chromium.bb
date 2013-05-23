@@ -64,7 +64,7 @@ String Location::href() const
     return url().string();
 }
 
-String Location::protocol(DOMWindow*, DOMWindow*) const
+String Location::protocol() const
 {
     if (!m_frame)
         return String();
@@ -72,7 +72,7 @@ String Location::protocol(DOMWindow*, DOMWindow*) const
     return url().protocol() + ":";
 }
 
-String Location::host(DOMWindow*, DOMWindow*) const
+String Location::host() const
 {
     if (!m_frame)
         return String();
@@ -83,7 +83,7 @@ String Location::host(DOMWindow*, DOMWindow*) const
     return url.hasPort() ? url.host() + ":" + String::number(url.port()) : url.host();
 }
 
-String Location::hostname(DOMWindow*, DOMWindow*) const
+String Location::hostname() const
 {
     if (!m_frame)
         return String();
@@ -91,7 +91,7 @@ String Location::hostname(DOMWindow*, DOMWindow*) const
     return url().host();
 }
 
-String Location::port(DOMWindow*, DOMWindow*) const
+String Location::port() const
 {
     if (!m_frame)
         return String();
@@ -100,7 +100,7 @@ String Location::port(DOMWindow*, DOMWindow*) const
     return url.hasPort() ? String::number(url.port()) : "";
 }
 
-String Location::pathname(DOMWindow*, DOMWindow*) const
+String Location::pathname() const
 {
     if (!m_frame)
         return String();
@@ -109,7 +109,7 @@ String Location::pathname(DOMWindow*, DOMWindow*) const
     return url.path().isEmpty() ? "/" : url.path();
 }
 
-String Location::search(DOMWindow*, DOMWindow*) const
+String Location::search() const
 {
     if (!m_frame)
         return String();
@@ -135,7 +135,7 @@ PassRefPtr<DOMStringList> Location::ancestorOrigins() const
     return origins.release();
 }
 
-String Location::hash(DOMWindow*, DOMWindow*) const
+String Location::hash() const
 {
     if (!m_frame)
         return String();
@@ -144,7 +144,7 @@ String Location::hash(DOMWindow*, DOMWindow*) const
     return fragmentIdentifier.isEmpty() ? emptyString() : "#" + fragmentIdentifier;
 }
 
-void Location::setHref(const String& url, DOMWindow* activeWindow, DOMWindow* firstWindow)
+void Location::setHref(DOMWindow* activeWindow, DOMWindow* firstWindow, const String& url)
 {
     if (!m_frame)
         return;

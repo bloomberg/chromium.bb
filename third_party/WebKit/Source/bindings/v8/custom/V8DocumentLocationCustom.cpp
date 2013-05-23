@@ -58,7 +58,7 @@ void V8Document::locationAttrSetterCustom(v8::Local<v8::String> name, v8::Local<
 
     DOMWindow* window = document->domWindow();
     if (Location* location = window->location())
-        location->setHref(toWebCoreString(value), active, first);
+        location->setHref(active, first, toWebCoreString(value));
 }
 
 } // namespace WebCore

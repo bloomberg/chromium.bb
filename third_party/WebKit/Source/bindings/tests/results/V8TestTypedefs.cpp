@@ -54,6 +54,8 @@ void initializeScriptWrappableForInterface(TestTypedefs* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
         ScriptWrappable::setTypeInfoInObject(object, &V8TestTypedefs::info);
+    else
+        ASSERT_NOT_REACHED();
 }
 #if defined(OS_WIN)
 namespace WebCore {

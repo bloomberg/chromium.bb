@@ -48,6 +48,8 @@ void initializeScriptWrappableForInterface(TestActiveDOMObject* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
         ScriptWrappable::setTypeInfoInObject(object, &V8TestActiveDOMObject::info);
+    else
+        ASSERT_NOT_REACHED();
 }
 #if defined(OS_WIN)
 namespace WebCore {

@@ -45,16 +45,6 @@
 
 namespace WebCore {
 
-void V8Location::hrefAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    Location* impl = V8Location::toNative(info.Holder());
-
-    // FIXME: Handle exceptions correctly.
-    String href = toWebCoreString(value);
-
-    impl->setHref(href, activeDOMWindow(), firstDOMWindow());
-}
-
 v8::Handle<v8::Value> V8Location::valueOfMethodCustom(const v8::Arguments& args)
 {
     // Just return the this object the way the normal valueOf function

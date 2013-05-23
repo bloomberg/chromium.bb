@@ -198,7 +198,7 @@ void V8DOMWindow::locationAttrSetterCustom(v8::Local<v8::String> name, v8::Local
       return;
 
     if (Location* location = imp->location())
-        location->setHref(toWebCoreString(value), active, first);
+        location->setHref(active, first, toWebCoreString(value));
 }
 
 void V8DOMWindow::openerAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)

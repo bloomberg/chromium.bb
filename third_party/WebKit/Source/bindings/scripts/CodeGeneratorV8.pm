@@ -1861,7 +1861,7 @@ END
             } else {
                 $functionName = "imp->${functionName}";
             }
-            my ($arg, $subCode) = GenerateCallWith($attribute->signature->extendedAttributes->{"CallWith"}, "    ", 1);
+            my ($arg, $subCode) = GenerateCallWith($attribute->signature->extendedAttributes->{"SetterCallWith"} || $attribute->signature->extendedAttributes->{"CallWith"}, "    ", 1);
             $code .= $subCode;
             unshift(@arguments, @$arg);
             $code .= "    ${functionName}(" . join(", ", @arguments) . ");\n";
