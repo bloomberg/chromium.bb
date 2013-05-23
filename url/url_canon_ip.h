@@ -7,17 +7,18 @@
 
 #include "base/string16.h"
 #include "url/url_canon.h"
+#include "url/url_export.h"
 #include "url/url_parse.h"
 
 namespace url_canon {
 
 // Writes the given IPv4 address to |output|.
-void AppendIPv4Address(const unsigned char address[4],
-                       CanonOutput* output);
+URL_EXPORT void AppendIPv4Address(const unsigned char address[4],
+                                  CanonOutput* output);
 
 // Writes the given IPv6 address to |output|.
-void AppendIPv6Address(const unsigned char address[16],
-                       CanonOutput* output);
+URL_EXPORT void AppendIPv6Address(const unsigned char address[16],
+                                  CanonOutput* output);
 
 // Searches the host name for the portions of the IPv4 address. On success,
 // each component will be placed into |components| and it will return true.
@@ -37,12 +38,12 @@ void AppendIPv6Address(const unsigned char address[16],
 // Mozilla), so this code path never gets hit. Our host canonicalization will
 // notice these spaces and escape them, which will make IP address finding
 // fail. This seems like better behavior than stripping after a space.
-bool FindIPv4Components(const char* spec,
-                        const url_parse::Component& host,
-                                 url_parse::Component components[4]);
-bool FindIPv4Components(const char16* spec,
-                        const url_parse::Component& host,
-                                 url_parse::Component components[4]);
+URL_EXPORT bool FindIPv4Components(const char* spec,
+                                   const url_parse::Component& host,
+                                   url_parse::Component components[4]);
+URL_EXPORT bool FindIPv4Components(const char16* spec,
+                                   const url_parse::Component& host,
+                                   url_parse::Component components[4]);
 
 // Converts an IPv4 address to a 32-bit number (network byte order).
 //
@@ -55,12 +56,12 @@ bool FindIPv4Components(const char16* spec,
 //
 // On success, |num_ipv4_components| will be populated with the number of
 // components in the IPv4 address.
-CanonHostInfo::Family IPv4AddressToNumber(
+URL_EXPORT CanonHostInfo::Family IPv4AddressToNumber(
     const char* spec,
     const url_parse::Component& host,
     unsigned char address[4],
     int* num_ipv4_components);
-CanonHostInfo::Family IPv4AddressToNumber(
+URL_EXPORT CanonHostInfo::Family IPv4AddressToNumber(
     const char16* spec,
     const url_parse::Component& host,
     unsigned char address[4],
@@ -71,12 +72,12 @@ CanonHostInfo::Family IPv4AddressToNumber(
 //
 // NOTE that |host| is expected to be surrounded by square brackets.
 // i.e. "[::1]" rather than "::1".
-bool IPv6AddressToNumber(const char* spec,
-                         const url_parse::Component& host,
-                         unsigned char address[16]);
-bool IPv6AddressToNumber(const char16* spec,
-                         const url_parse::Component& host,
-                         unsigned char address[16]);
+URL_EXPORT bool IPv6AddressToNumber(const char* spec,
+                                    const url_parse::Component& host,
+                                    unsigned char address[16]);
+URL_EXPORT bool IPv6AddressToNumber(const char16* spec,
+                                    const url_parse::Component& host,
+                                    unsigned char address[16]);
 
 }  // namespace url_canon
 

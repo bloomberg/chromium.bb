@@ -9,7 +9,7 @@
   'targets': [
     {
       'target_name': 'url',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../third_party/icu/icu.gyp:icudata',
@@ -52,7 +52,7 @@
         ],
       },
       'defines': [
-        'FULL_FILESYSTEM_URL_SUPPORT=1',
+        'URL_IMPLEMENTATION',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
@@ -73,9 +73,6 @@
         'url_parse_unittest.cc',
         'url_test_utils.h',
         'url_util_unittest.cc',
-      ],
-      'defines': [
-        'FULL_FILESYSTEM_URL_SUPPORT=1',
       ],
       'conditions': [
         ['os_posix==1 and OS!="mac" and OS!="ios"',
