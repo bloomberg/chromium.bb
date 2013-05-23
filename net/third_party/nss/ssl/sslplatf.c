@@ -38,12 +38,21 @@
  *
  * ***** END LICENSE BLOCK ***** */
 /* $Id$ */
-#include "ssl.h"
 #include "certt.h"
-#include "keythi.h"
-#include "sslimpl.h"
 #include "cryptohi.h"
+#include "keythi.h"
+#include "nss.h"
 #include "secitem.h"
+#include "ssl.h"
+#include "sslimpl.h"
+#include "prerror.h"
+#include "prinit.h"
+
+#ifdef NSS_PLATFORM_CLIENT_AUTH
+#ifdef XP_WIN32
+#include <NCrypt.h>
+#endif
+#endif
 
 #ifdef NSS_PLATFORM_CLIENT_AUTH
 CERTCertificateList*
@@ -98,20 +107,201 @@ loser:
 }
 
 #if defined(XP_WIN32)
+typedef SECURITY_STATUS (WINAPI *NCryptFreeObjectFunc)(NCRYPT_HANDLE);
+typedef SECURITY_STATUS (WINAPI *NCryptSignHashFunc)(
+    NCRYPT_KEY_HANDLE /* hKey */,
+    VOID* /* pPaddingInfo */,
+    PBYTE /* pbHashValue */,
+    DWORD /* cbHashValue */,
+    PBYTE /* pbSignature */,
+    DWORD /* cbSignature */,
+    DWORD* /* pcbResult */,
+    DWORD /* dwFlags */);
+
+static PRCallOnceType cngFunctionsInitOnce;
+static const PRCallOnceType pristineCallOnce;
+
+static PRLibrary *ncrypt_library = NULL;
+static NCryptFreeObjectFunc pNCryptFreeObject = NULL;
+static NCryptSignHashFunc pNCryptSignHash = NULL;
+
+static SECStatus
+ssl_ShutdownCngFunctions(void *appData, void *nssData)
+{
+    pNCryptSignHash = NULL;
+    pNCryptFreeObject = NULL;
+    if (ncrypt_library) {
+        PR_UnloadLibrary(ncrypt_library);
+        ncrypt_library = NULL;
+    }
+
+    cngFunctionsInitOnce = pristineCallOnce;
+
+    return SECSuccess;
+}
+
+static PRStatus
+ssl_InitCngFunctions(void)
+{
+    SECStatus rv;
+
+    ncrypt_library = PR_LoadLibrary("ncrypt.dll");
+    if (ncrypt_library == NULL)
+        goto loser;
+
+    pNCryptFreeObject = (NCryptFreeObjectFunc)PR_FindFunctionSymbol(
+        ncrypt_library, "NCryptFreeObject");
+    if (pNCryptFreeObject == NULL)
+        goto loser;
+
+    pNCryptSignHash = (NCryptSignHashFunc)PR_FindFunctionSymbol(
+        ncrypt_library, "NCryptSignHash");
+    if (pNCryptSignHash == NULL)
+        goto loser;
+
+    rv = NSS_RegisterShutdown(ssl_ShutdownCngFunctions, NULL);
+    if (rv != SECSuccess)
+        goto loser;
+
+    return PR_SUCCESS;
+
+loser:
+    pNCryptSignHash = NULL;
+    pNCryptFreeObject = NULL;
+    if (ncrypt_library) {
+        PR_UnloadLibrary(ncrypt_library);
+        ncrypt_library = NULL;
+    }
+
+    return PR_FAILURE;
+}
+
+static SECStatus
+ssl_InitCng(void)
+{
+    if (PR_CallOnce(&cngFunctionsInitOnce, ssl_InitCngFunctions) != PR_SUCCESS)
+        return SECFailure;
+    return SECSuccess;
+}
+
 void
 ssl_FreePlatformKey(PlatformKey key)
 {
-    if (key) {
-        if (key->dwKeySpec != CERT_NCRYPT_KEY_SPEC)
-            CryptReleaseContext(key->hCryptProv, 0);
-        /* FIXME(rsleevi): Close CNG keys. */
-        PORT_Free(key);
+    if (!key)
+        return;
+
+    if (key->dwKeySpec == CERT_NCRYPT_KEY_SPEC) {
+        if (ssl_InitCng() == SECSuccess) {
+            (*pNCryptFreeObject)(key->hNCryptKey);
+        }
+    } else {
+        CryptReleaseContext(key->hCryptProv, 0);
     }
+    PORT_Free(key);
 }
 
-SECStatus
-ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
-                        PRBool isTLS, KeyType keyType)
+static SECStatus
+ssl3_CngPlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
+                           PRBool isTLS, KeyType keyType)
+{
+    SECStatus       rv                = SECFailure;
+    SECURITY_STATUS ncrypt_status;
+    PRBool          doDerEncode       = PR_FALSE;
+    SECItem         hashItem;
+    DWORD           signatureLen      = 0;
+    DWORD           dwFlags           = 0;
+    VOID           *pPaddingInfo      = NULL;
+
+    /* Always encode using PKCS#1 block type, with no OID/encoded DigestInfo */
+    BCRYPT_PKCS1_PADDING_INFO rsaPaddingInfo;
+    rsaPaddingInfo.pszAlgId = NULL;
+
+    if (key->dwKeySpec != CERT_NCRYPT_KEY_SPEC) {
+        PR_SetError(SEC_ERROR_LIBRARY_FAILURE, 0);
+        return SECFailure;
+    }
+    if (ssl_InitCng() != SECSuccess) {
+        PR_SetError(SEC_ERROR_LIBRARY_FAILURE, 0);
+        return SECFailure;
+    }
+
+    switch (keyType) {
+        case rsaKey:
+            hashItem.data = hash->md5;
+            hashItem.len  = sizeof(SSL3Hashes);
+            dwFlags       = BCRYPT_PAD_PKCS1;
+            pPaddingInfo  = &rsaPaddingInfo;
+            break;
+        case dsaKey:
+        case ecKey:
+            if (keyType == ecKey) {
+                doDerEncode = PR_TRUE;
+            } else {
+                doDerEncode = isTLS;
+            }
+            hashItem.data = hash->sha;
+            hashItem.len  = sizeof(hash->sha);
+            break;
+        default:
+            PORT_SetError(SEC_ERROR_INVALID_KEY);
+            goto done;
+    }
+    PRINT_BUF(60, (NULL, "hash(es) to be signed", hashItem.data, hashItem.len));
+
+    ncrypt_status = (*pNCryptSignHash)(key->hNCryptKey, pPaddingInfo,
+                                       (PBYTE)hashItem.data, hashItem.len,
+                                       NULL, 0, &signatureLen, dwFlags);
+    if (FAILED(ncrypt_status) || signatureLen == 0) {
+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, ncrypt_status);
+        goto done;
+    }
+
+    buf->data = (unsigned char *)PORT_Alloc(signatureLen);
+    if (!buf->data) {
+        goto done;    /* error code was set. */
+    }
+
+    ncrypt_status = (*pNCryptSignHash)(key->hNCryptKey, pPaddingInfo,
+                                       (PBYTE)hashItem.data, hashItem.len,
+                                       (PBYTE)buf->data, signatureLen,
+                                       &signatureLen, dwFlags);
+    if (FAILED(ncrypt_status) || signatureLen == 0) {
+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, ncrypt_status);
+        goto done;
+    }
+
+    buf->len = signatureLen;
+
+    if (doDerEncode) {
+        SECItem   derSig = {siBuffer, NULL, 0};
+
+        /* This also works for an ECDSA signature */
+        rv = DSAU_EncodeDerSigWithLen(&derSig, buf, buf->len);
+        if (rv == SECSuccess) {
+            PORT_Free(buf->data);     /* discard unencoded signature. */
+            *buf = derSig;            /* give caller encoded signature. */
+        } else if (derSig.data) {
+            PORT_Free(derSig.data);
+        }
+    } else {
+        rv = SECSuccess;
+    }
+
+    PRINT_BUF(60, (NULL, "signed hashes", buf->data, buf->len));
+
+done:
+    if (rv != SECSuccess && buf->data) {
+        PORT_Free(buf->data);
+        buf->data = NULL;
+        buf->len = 0;
+    }
+
+    return rv;
+}
+
+static SECStatus
+ssl3_CAPIPlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
+                            PRBool isTLS, KeyType keyType)
 {
     SECStatus    rv             = SECFailure;
     PRBool       doDerEncode    = PR_FALSE;
@@ -149,25 +339,25 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
     PRINT_BUF(60, (NULL, "hash(es) to be signed", hashItem.data, hashItem.len));
 
     if (!CryptCreateHash(key->hCryptProv, hashAlg, 0, 0, &hHash)) {
-        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, GetLastError());
         goto done;
     }
     argLen = sizeof(hashLen);
     if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)&hashLen, &argLen, 0)) {
-        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, GetLastError());
         goto done;
     }
     if (hashLen != hashItem.len) {
-        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, 0);
         goto done;
     }
     if (!CryptSetHashParam(hHash, HP_HASHVAL, (BYTE*)hashItem.data, 0)) {
-        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, GetLastError());
         goto done;
     }
     if (!CryptSignHash(hHash, key->dwKeySpec, NULL, 0,
                        NULL, &signatureLen) || signatureLen == 0) {
-        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, GetLastError());
         goto done;
     }
     buf->data = (unsigned char *)PORT_Alloc(signatureLen);
@@ -176,7 +366,7 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
 
     if (!CryptSignHash(hHash, key->dwKeySpec, NULL, 0,
                        (BYTE*)buf->data, &signatureLen)) {
-        PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
+        PR_SetError(SSL_ERROR_SIGN_HASHES_FAILURE, GetLastError());
         goto done;
     }
     buf->len = signatureLen;
@@ -211,6 +401,16 @@ done:
         buf->data = NULL;
     }
     return rv;
+}
+
+SECStatus
+ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
+                        PRBool isTLS, KeyType keyType)
+{
+    if (key->dwKeySpec == CERT_NCRYPT_KEY_SPEC) {
+        return ssl3_CngPlatformSignHashes(hash, key, buf, isTLS, keyType);
+    }
+    return ssl3_CAPIPlatformSignHashes(hash, key, buf, isTLS, keyType);
 }
 
 #elif defined(XP_MACOSX)

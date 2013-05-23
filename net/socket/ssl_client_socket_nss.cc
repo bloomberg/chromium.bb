@@ -108,6 +108,8 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <wincrypt.h>
+
+#include "base/win/windows_version.h"
 #elif defined(OS_MACOSX)
 #include <Security/SecBase.h>
 #include <Security/SecCertificate.h>
@@ -1309,15 +1311,17 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
       HCRYPTPROV_OR_NCRYPT_KEY_HANDLE crypt_prov = 0;
       DWORD key_spec = 0;
       BOOL must_free = FALSE;
+      DWORD flags = 0;
+      if (base::win::GetVersion() >= base::win::VERSION_VISTA)
+        flags |= CRYPT_ACQUIRE_ALLOW_NCRYPT_KEY_FLAG;
+
       BOOL acquired_key = CryptAcquireCertificatePrivateKey(
-          cert_context, CRYPT_ACQUIRE_CACHE_FLAG, NULL,
-          &crypt_prov, &key_spec, &must_free);
+          cert_context, flags, NULL, &crypt_prov, &key_spec, &must_free);
 
       if (acquired_key) {
-        // Since we passed CRYPT_ACQUIRE_CACHE_FLAG, |must_free| must be false
-        // according to the MSDN documentation.
-        CHECK_EQ(must_free, FALSE);
-        DCHECK_NE(key_spec, CERT_NCRYPT_KEY_SPEC);
+        // Should never get a cached handle back - ownership must always be
+        // transferred.
+        CHECK_EQ(must_free, TRUE);
 
         SECItem der_cert;
         der_cert.type = siDERCertBuffer;
@@ -1357,10 +1361,7 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
         PCERT_KEY_CONTEXT key_context = reinterpret_cast<PCERT_KEY_CONTEXT>(
             PORT_ZAlloc(sizeof(CERT_KEY_CONTEXT)));
         key_context->cbSize = sizeof(*key_context);
-        // NSS will free this context when no longer in use, but the
-        // |must_free| result from CryptAcquireCertificatePrivateKey was false
-        // so we increment the refcount to negate NSS's future decrement.
-        CryptContextAddRef(crypt_prov, NULL, 0);
+        // NSS will free this context when no longer in use.
         key_context->hCryptProv = crypt_prov;
         key_context->dwKeySpec = key_spec;
         *result_private_key = key_context;
