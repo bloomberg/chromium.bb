@@ -469,6 +469,14 @@ class TestExpectationLine(object):
         return ' '.join(result)
 
     @staticmethod
+    def _filter_redundant_expectations(expectations):
+        if set(expectations) == set(['Pass', 'Skip']):
+            return ['Skip']
+        if set(expectations) == set(['Pass', 'Slow']):
+            return ['Slow']
+        return expectations
+
+    @staticmethod
     def _format_line(modifiers, name, expectations, comment, include_modifiers=True, include_expectations=True, include_comment=True):
         bugs = []
         new_modifiers = []
@@ -495,7 +503,8 @@ class TestExpectationLine(object):
             if new_modifiers:
                 result += '[ %s ] ' % ' '.join(new_modifiers)
         result += name
-        if include_expectations and new_expectations and set(new_expectations) != set(['Skip', 'Pass']):
+        if include_expectations and new_expectations:
+            new_expectations = TestExpectationLine._filter_redundant_expectations(new_expectations)
             result += ' [ %s ]' % ' '.join(sorted(set(new_expectations)))
         if include_comment and comment is not None:
             result += " #%s" % comment
