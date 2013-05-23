@@ -138,10 +138,16 @@ static inline bool hasCustomFocusLogic(Node* node)
 static inline bool isNonFocusableShadowHost(Node* node, KeyboardEvent* event)
 {
     ASSERT(node);
+    return !node->isFocusable() && isShadowHost(node) && !hasCustomFocusLogic(node);
+}
+
+static inline bool isNonKeyboardFocusableShadowHost(Node* node, KeyboardEvent* event)
+{
+    ASSERT(node);
     return !node->isKeyboardFocusable(event) && isShadowHost(node) && !hasCustomFocusLogic(node);
 }
 
-static inline bool isFocusableShadowHost(Node* node, KeyboardEvent* event)
+static inline bool isKeyboardFocusableShadowHost(Node* node, KeyboardEvent* event)
 {
     ASSERT(node);
     return node->isKeyboardFocusable(event) && isShadowHost(node) && !hasCustomFocusLogic(node);
@@ -150,13 +156,13 @@ static inline bool isFocusableShadowHost(Node* node, KeyboardEvent* event)
 static inline int adjustedTabIndex(Node* node, KeyboardEvent* event)
 {
     ASSERT(node);
-    return isNonFocusableShadowHost(node, event) ? 0 : node->tabIndex();
+    return isNonKeyboardFocusableShadowHost(node, event) ? 0 : node->tabIndex();
 }
 
 static inline bool shouldVisit(Node* node, KeyboardEvent* event)
 {
     ASSERT(node);
-    return node->isKeyboardFocusable(event) || isNonFocusableShadowHost(node, event);
+    return node->isKeyboardFocusable(event) || isNonKeyboardFocusableShadowHost(node, event);
 }
 
 FocusController::FocusController(Page* page)
@@ -359,7 +365,7 @@ Node* FocusController::findFocusableNodeAcrossFocusScope(FocusDirection directio
 {
     ASSERT(!currentNode || !isNonFocusableShadowHost(currentNode, event));
     Node* found;
-    if (currentNode && direction == FocusDirectionForward && isFocusableShadowHost(currentNode, event)) {
+    if (currentNode && direction == FocusDirectionForward && isKeyboardFocusableShadowHost(currentNode, event)) {
         Node* foundInInnerFocusScope = findFocusableNodeRecursively(direction, FocusNavigationScope::focusNavigationScopeOwnedByShadowHost(currentNode), 0, event);
         found = foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursively(direction, scope, currentNode, event);
     } else
@@ -371,7 +377,7 @@ Node* FocusController::findFocusableNodeAcrossFocusScope(FocusDirection directio
         if (!owner)
             break;
         scope = FocusNavigationScope::focusNavigationScopeOf(owner);
-        if (direction == FocusDirectionBackward && isFocusableShadowHost(owner, event)) {
+        if (direction == FocusDirectionBackward && isKeyboardFocusableShadowHost(owner, event)) {
             found = owner;
             break;
         }
@@ -388,17 +394,17 @@ Node* FocusController::findFocusableNodeRecursively(FocusDirection direction, Fo
     if (!found)
         return 0;
     if (direction == FocusDirectionForward) {
-        if (!isNonFocusableShadowHost(found, event))
+        if (!isNonKeyboardFocusableShadowHost(found, event))
             return found;
         Node* foundInInnerFocusScope = findFocusableNodeRecursively(direction, FocusNavigationScope::focusNavigationScopeOwnedByShadowHost(found), 0, event);
         return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursively(direction, scope, found, event);
     }
     ASSERT(direction == FocusDirectionBackward);
-    if (isFocusableShadowHost(found, event)) {
+    if (isKeyboardFocusableShadowHost(found, event)) {
         Node* foundInInnerFocusScope = findFocusableNodeRecursively(direction, FocusNavigationScope::focusNavigationScopeOwnedByShadowHost(found), 0, event);
         return foundInInnerFocusScope ? foundInInnerFocusScope : found;
     }
-    if (isNonFocusableShadowHost(found, event)) {
+    if (isNonKeyboardFocusableShadowHost(found, event)) {
         Node* foundInInnerFocusScope = findFocusableNodeRecursively(direction, FocusNavigationScope::focusNavigationScopeOwnedByShadowHost(found), 0, event);
         return foundInInnerFocusScope ? foundInInnerFocusScope :findFocusableNodeRecursively(direction, scope, found, event);
     }
@@ -445,7 +451,7 @@ static Node* previousNodeWithLowerTabIndex(Node* start, int tabIndex, KeyboardEv
     Node* winner = 0;
     for (Node* node = start; node; node = NodeRenderingTraversal::previousInScope(node)) {
         int currentTabIndex = adjustedTabIndex(node, event);
-        if ((shouldVisit(node, event) || isNonFocusableShadowHost(node, event)) && currentTabIndex < tabIndex && currentTabIndex > winningTabIndex) {
+        if ((shouldVisit(node, event) || isNonKeyboardFocusableShadowHost(node, event)) && currentTabIndex < tabIndex && currentTabIndex > winningTabIndex) {
             winner = node;
             winningTabIndex = currentTabIndex;
         }
