@@ -718,13 +718,13 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (!permissions_data_->ParsePermissions(this, error))
     return false;
 
-  if (!LoadSharedFeatures(error))
-    return false;
-
   if (manifest_->HasKey(keys::kConvertedFromUserScript)) {
     manifest_->GetBoolean(keys::kConvertedFromUserScript,
                           &converted_from_user_script_);
   }
+
+  if (!LoadSharedFeatures(error))
+    return false;
 
   if (HasMultipleUISurfaces()) {
     *error = ASCIIToUTF16(errors::kOneUISurfaceOnly);
