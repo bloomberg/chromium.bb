@@ -78,35 +78,6 @@ class SpdyStream::SynStreamBufferProducer : public SpdyBufferProducer {
   const base::WeakPtr<SpdyStream> stream_;
 };
 
-// A wrapper around a stream that calls into ProduceHeaderFrame() with
-// a given header block.
-class SpdyStream::HeaderBufferProducer : public SpdyBufferProducer {
- public:
-  HeaderBufferProducer(const base::WeakPtr<SpdyStream>& stream,
-                      scoped_ptr<SpdyHeaderBlock> headers)
-      : stream_(stream),
-        headers_(headers.Pass()) {
-    DCHECK(stream_);
-    DCHECK(headers_);
-  }
-
-  virtual ~HeaderBufferProducer() {}
-
-  virtual scoped_ptr<SpdyBuffer> ProduceBuffer() OVERRIDE {
-    if (!stream_) {
-      NOTREACHED();
-      return scoped_ptr<SpdyBuffer>();
-    }
-    DCHECK_GT(stream_->stream_id(), 0u);
-    return scoped_ptr<SpdyBuffer>(
-        new SpdyBuffer(stream_->ProduceHeaderFrame(headers_.Pass())));
-  }
-
- private:
-  const base::WeakPtr<SpdyStream> stream_;
-  scoped_ptr<SpdyHeaderBlock> headers_;
-};
-
 SpdyStream::SpdyStream(SpdySession* session,
                        const std::string& path,
                        RequestPriority priority,
@@ -212,21 +183,6 @@ scoped_ptr<SpdyFrame> SpdyStream::ProduceSynStreamFrame() {
       stream_id_, priority_, slot_, flags, *request_));
   send_time_ = base::TimeTicks::Now();
   return frame.Pass();
-}
-
-scoped_ptr<SpdyFrame> SpdyStream::ProduceHeaderFrame(
-    scoped_ptr<SpdyHeaderBlock> header_block) {
-  // We must need to write stream data.
-  // Until the headers have been completely sent, we can not be sure
-  // that our stream_id is correct.
-  DCHECK_GT(io_state_, STATE_SEND_HEADERS_COMPLETE);
-  DCHECK_GT(stream_id_, 0u);
-
-  // Create actual HEADERS frame just in time because it depends on
-  // compression context and should not be reordered after the creation.
-  scoped_ptr<SpdyFrame> header_frame(session_->CreateHeadersFrame(
-      stream_id_, *header_block, SpdyControlFlags()));
-  return header_frame.Pass();
 }
 
 void SpdyStream::DetachDelegate() {
@@ -624,18 +580,6 @@ int SpdyStream::SendRequest(bool has_upload_data) {
   CHECK_EQ(STATE_NONE, io_state_);
   io_state_ = STATE_GET_DOMAIN_BOUND_CERT;
   return DoLoop(OK);
-}
-
-void SpdyStream::SendHeaders(scoped_ptr<SpdyHeaderBlock> headers) {
-  // Until the first headers by SYN_STREAM have been completely sent, we can
-  // not be sure that our stream_id is correct.
-  DCHECK_GT(io_state_, STATE_SEND_HEADERS_COMPLETE);
-  CHECK_GT(stream_id_, 0u);
-
-  session_->EnqueueStreamWrite(
-      GetWeakPtr(), HEADERS,
-      scoped_ptr<SpdyBufferProducer>(
-          new HeaderBufferProducer(GetWeakPtr(), headers.Pass())));
 }
 
 void SpdyStream::SendStreamData(IOBuffer* data,

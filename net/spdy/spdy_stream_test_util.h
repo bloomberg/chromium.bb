@@ -106,9 +106,8 @@ class StreamDelegateDoNothing : public StreamDelegateBase {
 // Test delegate that sends data immediately in OnResponseReceived().
 class StreamDelegateSendImmediate : public StreamDelegateBase {
  public:
-  // Both |headers| and |buf| can be NULL.
+  // |data| can be NULL.
   StreamDelegateSendImmediate(const base::WeakPtr<SpdyStream>& stream,
-                              scoped_ptr<SpdyHeaderBlock> headers,
                               base::StringPiece data);
   virtual ~StreamDelegateSendImmediate();
 
@@ -119,7 +118,6 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
                                  int status) OVERRIDE;
 
  private:
-  scoped_ptr<SpdyHeaderBlock> headers_;
   base::StringPiece data_;
 };
 

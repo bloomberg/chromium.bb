@@ -135,10 +135,8 @@ SpdySendStatus StreamDelegateDoNothing::OnSendBodyComplete() {
 
 StreamDelegateSendImmediate::StreamDelegateSendImmediate(
     const base::WeakPtr<SpdyStream>& stream,
-    scoped_ptr<SpdyHeaderBlock> headers,
     base::StringPiece data)
     : StreamDelegateBase(stream),
-      headers_(headers.Pass()),
       data_(data) {}
 
 StreamDelegateSendImmediate::~StreamDelegateSendImmediate() {
@@ -159,9 +157,6 @@ int StreamDelegateSendImmediate::OnResponseReceived(
     int status) {
   status =
       StreamDelegateBase::OnResponseReceived(response, response_time, status);
-  if (headers_.get()) {
-    stream()->SendHeaders(headers_.Pass());
-  }
   if (data_.data()) {
     scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(data_.as_string()));
     stream()->SendStreamData(buf, buf->size(), DATA_FLAG_NONE);

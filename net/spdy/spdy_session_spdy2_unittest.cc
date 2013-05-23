@@ -245,8 +245,7 @@ TEST_F(SpdySessionSpdy2Test, ClientPing) {
   base::WeakPtr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != NULL);
-  test::StreamDelegateSendImmediate delegate(
-      spdy_stream1, scoped_ptr<SpdyHeaderBlock>(), NULL);
+  test::StreamDelegateSendImmediate delegate(spdy_stream1, NULL);
   spdy_stream1->SetDelegate(&delegate);
 
   base::TimeTicks before_ping_time = base::TimeTicks::Now();
@@ -300,8 +299,7 @@ TEST_F(SpdySessionSpdy2Test, ServerPing) {
   base::WeakPtr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != NULL);
-  test::StreamDelegateSendImmediate delegate(
-      spdy_stream1, scoped_ptr<SpdyHeaderBlock>(), NULL);
+  test::StreamDelegateSendImmediate delegate(spdy_stream1, NULL);
   spdy_stream1->SetDelegate(&delegate);
 
   // Flush the SpdySession::OnReadComplete() task.
@@ -398,8 +396,7 @@ TEST_F(SpdySessionSpdy2Test, FailedPing) {
   base::WeakPtr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != NULL);
-  test::StreamDelegateSendImmediate delegate(
-      spdy_stream1, scoped_ptr<SpdyHeaderBlock>(), NULL);
+  test::StreamDelegateSendImmediate delegate(spdy_stream1, NULL);
   spdy_stream1->SetDelegate(&delegate);
 
   session->set_connection_at_risk_of_loss_time(base::TimeDelta::FromSeconds(0));

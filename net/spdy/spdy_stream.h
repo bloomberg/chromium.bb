@@ -296,10 +296,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // For non push stream, it will send SYN_STREAM frame.
   int SendRequest(bool has_upload_data);
 
-  // Sends a HEADERS frame. The delegate will be notified via
-  // OnHeadersSent() when the send is complete.
-  void SendHeaders(scoped_ptr<SpdyHeaderBlock> headers);
-
   // Sends a DATA frame. The delegate will be notified via
   // OnSendBodyComplete() (if the response hasn't been received yet)
   // or OnDataSent() (if the response has been received) when the send

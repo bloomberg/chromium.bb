@@ -328,8 +328,7 @@ TEST_F(SpdySessionSpdy3Test, ClientPing) {
   base::WeakPtr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != NULL);
-  test::StreamDelegateSendImmediate delegate(
-      spdy_stream1, scoped_ptr<SpdyHeaderBlock>(), NULL);
+  test::StreamDelegateSendImmediate delegate(spdy_stream1, NULL);
   spdy_stream1->SetDelegate(&delegate);
 
   base::TimeTicks before_ping_time = base::TimeTicks::Now();
@@ -383,8 +382,7 @@ TEST_F(SpdySessionSpdy3Test, ServerPing) {
   base::WeakPtr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != NULL);
-  test::StreamDelegateSendImmediate delegate(
-      spdy_stream1, scoped_ptr<SpdyHeaderBlock>(), NULL);
+  test::StreamDelegateSendImmediate delegate(spdy_stream1, NULL);
   spdy_stream1->SetDelegate(&delegate);
 
   // Flush the SpdySession::OnReadComplete() task.
@@ -485,8 +483,7 @@ TEST_F(SpdySessionSpdy3Test, FailedPing) {
   base::WeakPtr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(session, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != NULL);
-  test::StreamDelegateSendImmediate delegate(
-      spdy_stream1, scoped_ptr<SpdyHeaderBlock>(), NULL);
+  test::StreamDelegateSendImmediate delegate(spdy_stream1, NULL);
   spdy_stream1->SetDelegate(&delegate);
 
   session->set_connection_at_risk_of_loss_time(base::TimeDelta::FromSeconds(0));
@@ -2615,8 +2612,7 @@ class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
  public:
   DropReceivedDataDelegate(const base::WeakPtr<SpdyStream>& stream,
                            base::StringPiece data)
-      : StreamDelegateSendImmediate(
-          stream, scoped_ptr<SpdyHeaderBlock>(), data) {}
+      : StreamDelegateSendImmediate(stream, data) {}
 
   virtual ~DropReceivedDataDelegate() {}
 
@@ -2763,8 +2759,7 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlNoSendLeaks31) {
   ASSERT_TRUE(stream.get() != NULL);
   EXPECT_EQ(0u, stream->stream_id());
 
-  test::StreamDelegateSendImmediate delegate(
-      stream, scoped_ptr<SpdyHeaderBlock>(), msg_data);
+  test::StreamDelegateSendImmediate delegate(stream, msg_data);
   stream->SetDelegate(&delegate);
 
   stream->set_spdy_headers(
@@ -2854,8 +2849,7 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
   ASSERT_TRUE(stream.get() != NULL);
   EXPECT_EQ(0u, stream->stream_id());
 
-  test::StreamDelegateSendImmediate delegate(
-      stream, scoped_ptr<SpdyHeaderBlock>(), msg_data);
+  test::StreamDelegateSendImmediate delegate(stream, msg_data);
   stream->SetDelegate(&delegate);
 
   stream->set_spdy_headers(

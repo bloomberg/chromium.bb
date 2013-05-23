@@ -763,30 +763,6 @@ int SpdySession::CreateCredentialFrame(
   return OK;
 }
 
-scoped_ptr<SpdyFrame> SpdySession::CreateHeadersFrame(
-    SpdyStreamId stream_id,
-    const SpdyHeaderBlock& headers,
-    SpdyControlFlags flags) {
-  ActiveStreamMap::const_iterator it = active_streams_.find(stream_id);
-  CHECK(it != active_streams_.end());
-  CHECK_EQ(it->second->stream_id(), stream_id);
-
-  // Create a HEADER frame.
-  scoped_ptr<SpdyFrame> frame(
-      buffered_spdy_framer_->CreateHeaders(
-          stream_id, flags, enable_compression_, &headers));
-
-  if (net_log().IsLoggingAllEvents()) {
-    bool fin = flags & CONTROL_FLAG_FIN;
-    net_log().AddEvent(
-        NetLog::TYPE_SPDY_SESSION_SEND_HEADERS,
-        base::Bind(&NetLogSpdySynCallback,
-                   &headers, fin, /*unidirectional=*/false,
-                   stream_id, 0));
-  }
-  return frame.Pass();
-}
-
 scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
                                                      IOBuffer* data,
                                                      int len,

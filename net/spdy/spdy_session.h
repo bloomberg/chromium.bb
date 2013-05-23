@@ -277,11 +277,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
                             RequestPriority priority,
                             scoped_ptr<SpdyFrame>* credential_frame);
 
-  // Creates and returns a HEADERS frame.
-  scoped_ptr<SpdyFrame> CreateHeadersFrame(SpdyStreamId stream_id,
-                                           const SpdyHeaderBlock& headers,
-                                           SpdyControlFlags flags);
-
   // Creates and returns a SpdyBuffer holding a data frame with the
   // given data. May return NULL if stalled by flow control.
   scoped_ptr<SpdyBuffer> CreateDataBuffer(SpdyStreamId stream_id,
