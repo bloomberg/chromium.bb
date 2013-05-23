@@ -222,6 +222,9 @@ const char kDisableWebAudio[]               = "disable-webaudio";
 #if defined(ENABLE_WEBRTC)
 // Enables WebRTC AEC recordings.
 const char kEnableWebRtcAecRecordings[]     = "enable-webrtc-aec-recordings";
+
+// Enable WebRTC DataChannels SCTP wire protocol support.
+const char kEnableSCTPDataChannels[]        = "enable-sctp-data-channels";
 #endif
 
 // Enables Web MIDI API.

@@ -840,6 +840,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #else
     switches::kDisableWebAudio,
 #endif
+    switches::kEnableSCTPDataChannels,
     switches::kEnableWebMIDI,
     switches::kEnableExperimentalCanvasFeatures,
     switches::kEnableExperimentalWebSocket,

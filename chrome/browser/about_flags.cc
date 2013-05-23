@@ -435,6 +435,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE("")
 #endif
   },
+  {
+    "enable-sctp-data-channels",
+    IDS_FLAGS_ENABLE_SCTP_DATA_CHANNELS_NAME,
+    IDS_FLAGS_ENABLE_SCTP_DATA_CHANNELS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableSCTPDataChannels)
+  },
 #if defined(OS_ANDROID)
   {
     "enable-webaudio",
