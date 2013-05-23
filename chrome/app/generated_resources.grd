@@ -8234,22 +8234,19 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
 
       <!-- Managed Mode Block Interstitial data -->
       <message name="IDS_BLOCK_INTERSTITIAL_TITLE" desc="A title for the managed mode block interstitial page.">
-        Sad Robot
+        Page blocked
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_MESSAGE" desc="A message for the user when they attempt to visit a site outside of any content pack.">
-        Sorry, you're not allowed to access the following page:
+        This page has been blocked.
       </message>
       <message name="IDS_BACK_BUTTON" desc="A button for going back to the last safe url after being blocked.">
         Go back
       </message>
-      <message name="IDS_CONTENT_PACKS_SECTION_BUTTON" desc="A button for going to the content pack starting page.">
-        Content Packs
+      <message name="IDS_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON" desc="A button for requesting access to blocked sites.">
+        Request access
       </message>
-      <message name="IDS_BYPASS_BLOCK_MESSAGE" desc="A label for allowing custodians to allow a blocked site.">
-        Custodians can also allow this site.
-      </message>
-      <message name="IDS_BYPASS_BLOCK_BUTTON" desc="A button for allowing blocked site.">
-        Preview
+      <message name="IDS_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE" desc="The text that tells the user that a request has been sent. This is followed by the manager's name">
+        A request to access this site has been sent to <ph name="NAME">$1<ex>John Doe</ex></ph>.
       </message>
 
       <!-- Content Settings dialog data -->
@@ -15240,15 +15237,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <message name="IDS_MANAGED_MODE_GO_BACK_ACTION" desc="Label for the button that goes back to a 'safe' page.">
       Take me back!
-    </message>
-    <message name="IDS_MANAGED_MODE_PREVIEW_MESSAGE" desc="Text of the infobar shown while a website is previewed.">
-      Do you want to add this website to the whitelist?
-    </message>
-    <message name="IDS_MANAGED_MODE_PREVIEW_ACCEPT" desc="Label for the button that adds the website to the manual whitelist.">
-      Add to whitelist
-    </message>
-    <message name="IDS_MANAGED_MODE_ALREADY_ADDED_MESSAGE" desc="Text of the message that indicates that the website was already on one of the whitelists.">
-      This website was already on the whitelist so it was not added again.
     </message>
 
     <!-- Password generation strings -->

@@ -23,22 +23,6 @@ class ManagedModeNavigationObserver
 
   // Sets the specific infobar as dismissed.
   void WarnInfobarDismissed();
-  void PreviewInfobarDismissed();
-
-  // Sets the state of the Observer from the outside.
-  void SetStateToRecordingAfterPreview();
-
-  // Returns whether the user should be allowed to navigate to this URL after
-  // he has clicked "Preview" on the interstitial.
-  bool CanTemporarilyNavigateHost(const GURL& url);
-
-  // Clears the state recorded in the observer.
-  void ClearObserverState();
-
-  // Whitelists exact URLs for redirects and host patterns for the final URL.
-  // If the URL uses HTTPS, whitelists only the host on HTTPS. Clears the
-  // observer state after adding the URLs.
-  void AddSavedURLsToWhitelistAndClearState();
 
   // Returns the elevation state for the corresponding WebContents.
   bool is_elevated() const;
@@ -54,50 +38,11 @@ class ManagedModeNavigationObserver
                                const base::Callback<void(bool)>& callback);
 
  private:
-  // An observer can be in one of the following states:
-  // - RECORDING_URLS_BEFORE_PREVIEW: This is the initial state when the user
-  // navigates to a new page. In this state the navigated URLs that should be
-  // blocked are recorded. The Observer moves to the next state when an
-  // interstitial was shown and the user clicked "Preview" on the interstitial.
-  // - RECORDING_URLS_AFTER_PREVIEW: URLs that should be blocked are
-  // still recorded while the page redirects. The Observer moves to the next
-  // state after the page finished redirecting (DidNavigateMainFrame gets
-  // called).
-  enum ObserverState {
-    RECORDING_URLS_BEFORE_PREVIEW,
-    RECORDING_URLS_AFTER_PREVIEW,
-  };
-
   friend class content::WebContentsUserData<ManagedModeNavigationObserver>;
 
   explicit ManagedModeNavigationObserver(content::WebContents* web_contents);
 
-  // Adding the temporary exception stops the ResourceThrottle from showing
-  // an interstitial for this RenderView. This allows the user to navigate
-  // around on the website after clicking preview.
-  void AddTemporaryException();
-  void RemoveTemporaryException();
-
-  void AddURLToPatternList(const GURL& url);
-
   // content::WebContentsObserver implementation.
-  // An example regarding the order in which these events take place for
-  // google.com in our case is as follows:
-  // 1. User types in google.com and clicks enter.
-  //  -> NavigateToPendingEntry: http://google.com
-  //  -> DidStartProvisionalLoadForFrame http://google.com
-  //  -> ProvisionalChangeToMainFrameUrl http://google.com
-  // 2. Interstitial is shown to the user. User clicks "Preview".
-  //  -> ProvisionalChangeToMainFrameUrl http://www.google.com (redirect)
-  //  -> DidCommitProvisionalLoadForFrame http://www.google.com (redirect)
-  //  -> DidNavigateMainFrame http://www.google.com
-  // 3. Page is shown.
-  virtual void NavigateToPendingEntry(
-      const GURL& url,
-      content::NavigationController::ReloadType reload_type) OVERRIDE;
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
   virtual void ProvisionalChangeToMainFrameUrl(
       const GURL& url,
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -108,10 +53,6 @@ class ManagedModeNavigationObserver
       content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
-  // Returns whether the user would stay in elevated state if he visits this
-  // URL.
-  bool ShouldStayElevatedForURL(const GURL& url);
-
   // Owned by the profile, so outlives us.
   ManagedUserService* managed_user_service_;
 
@@ -120,27 +61,10 @@ class ManagedModeNavigationObserver
 
   // Owned by the InfoBarService, which has the same lifetime as this object.
   InfoBarDelegate* warn_infobar_delegate_;
-  InfoBarDelegate* preview_infobar_delegate_;
-
-  ObserverState state_;
-  std::set<GURL> navigated_urls_;
-  GURL last_url_;
 
   // The elevation state corresponding to the current WebContents.
   // Will be set to true for non-managed users.
   bool is_elevated_;
-
-  int last_allowed_page_;
-
-  // There are two starting points for a new navigation:
-  // 1. NavigateToPendingEntry when the omnibox is used to navigate to a URL or
-  //    the user goes back or forward.
-  // 2. ProvisionalChangeToMainFrameURL when the user clicks on a link.
-  // The main problem is that ProvisionalChangeToMainFrameURL is called for
-  // redirects as well and we need a way to distinguish between the two
-  // scenarios. |finished_redirects_| helps us do that by tracking the cases
-  // when the user did not click on a URL.
-  bool finished_redirects_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedModeNavigationObserver);
 };

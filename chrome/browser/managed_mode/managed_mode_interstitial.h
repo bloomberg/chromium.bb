@@ -29,17 +29,12 @@ class ManagedModeInterstitial : public content::InterstitialPageDelegate {
   virtual ~ManagedModeInterstitial();
 
  private:
-  void GoToNewTabPage();
-
   // InterstitialPageDelegate implementation.
   virtual std::string GetHTMLContents() OVERRIDE;
   virtual void CommandReceived(const std::string& command) OVERRIDE;
   virtual void OnProceed() OVERRIDE;
   virtual void OnDontProceed() OVERRIDE;
 
-  // Will be called when the passphrase dialog is closed, which is shown after
-  // clicking the preview button.
-  void OnAuthorizationResult(bool success);
   void DispatchContinueRequest(bool continue_request);
 
   // Owns the interstitial, which owns us.

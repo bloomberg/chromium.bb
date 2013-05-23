@@ -8,17 +8,23 @@ function sendCommand(cmd) {
 }
 
 function initialize() {
-  if (!cr.isChromeOS) {
-    $('bypass-block-button').onclick = function(event) {
-      sendCommand('preview');
-    }
-  }
+  $('request-access-button').onclick = function(event) {
+    updateAfterRequestSent();
+    sendCommand('request');
+  };
   $('back-button').onclick = function(event) {
     sendCommand('back');
   };
-  $('content-packs-section-button').onclick = function(event) {
-    sendCommand('ntp');
-  };
+}
+
+/**
+ * Updates the interstitial to show that the request was sent.
+ */
+function updateAfterRequestSent() {
+  $('error-img').hidden = true;
+  $('request-access-button').hidden = true;
+  $('block-page-message').hidden = true;
+  $('request-sent-message').hidden = false;
 }
 
 document.addEventListener('DOMContentLoaded', initialize);
