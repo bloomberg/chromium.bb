@@ -473,7 +473,7 @@ rdp_compositor_create_output(struct rdp_compositor *c, int width, int height,
 
 	output->base.current = currentMode;
 	weston_output_init(&output->base, &c->base, 0, 0, width, height,
-			WL_OUTPUT_TRANSFORM_NORMAL);
+			   WL_OUTPUT_TRANSFORM_NORMAL, 1);
 
 	output->base.make = "weston";
 	output->base.model = "rdp";
