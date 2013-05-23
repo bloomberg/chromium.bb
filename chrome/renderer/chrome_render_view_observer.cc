@@ -10,7 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/prerender_messages.h"
@@ -40,8 +40,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/favicon_size.h"
@@ -55,9 +58,12 @@ using WebKit::WebAccessibilityObject;
 using WebKit::WebCString;
 using WebKit::WebDataSource;
 using WebKit::WebDocument;
+using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebGestureEvent;
 using WebKit::WebIconURL;
+using WebKit::WebNode;
+using WebKit::WebNodeList;
 using WebKit::WebRect;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSize;
@@ -422,18 +428,6 @@ bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
   return allowed;
 }
 
-const extensions::Extension* ChromeRenderViewObserver::GetExtension(
-    const WebSecurityOrigin& origin) const {
-  if (!EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
-    return NULL;
-
-  const std::string extension_id = origin.host().utf8().data();
-  if (!extension_dispatcher_->IsExtensionActive(extension_id))
-    return NULL;
-
-  return extension_dispatcher_->extensions()->GetByID(extension_id);
-}
-
 bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
                                                   bool defaultValue) {
   if (defaultValue)
@@ -635,12 +629,6 @@ void ChromeRenderViewObserver::DidStartLoading() {
 }
 
 void ChromeRenderViewObserver::DidStopLoading() {
-  CapturePageInfoLater(
-      false,  // preliminary_capture
-      base::TimeDelta::FromMilliseconds(
-          render_view()->GetContentStateImmediately() ?
-              0 : kDelayForCaptureMs));
-
   WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
   GURL osd_url = main_frame->document().openSearchDescriptionURL();
   if (!osd_url.is_empty()) {
@@ -648,14 +636,27 @@ void ChromeRenderViewObserver::DidStopLoading() {
         routing_id(), render_view()->GetPageId(), osd_url,
         search_provider::AUTODETECTED_PROVIDER));
   }
+
+  // Don't capture pages including refresh meta tag.
+  if (HasRefreshMetaTag(main_frame))
+    return;
+
+  CapturePageInfoLater(
+      render_view()->GetPageId(),
+      false,  // preliminary_capture
+      base::TimeDelta::FromMilliseconds(
+          render_view()->GetContentStateImmediately() ?
+              0 : kDelayForCaptureMs));
 }
 
 void ChromeRenderViewObserver::DidCommitProvisionalLoad(
     WebFrame* frame, bool is_new_navigation) {
-  if (!is_new_navigation)
+  // Don't capture pages being not new, or including refresh meta tag.
+  if (!is_new_navigation || HasRefreshMetaTag(frame))
     return;
 
   CapturePageInfoLater(
+      render_view()->GetPageId(),
       true,  // preliminary_capture
       base::TimeDelta::FromMilliseconds(kDelayForForcedCaptureMs));
 }
@@ -680,18 +681,23 @@ void ChromeRenderViewObserver::DidHandleGestureEvent(
       text_input_type != WebKit::WebTextInputTypeNone));
 }
 
-void ChromeRenderViewObserver::CapturePageInfoLater(bool preliminary_capture,
+void ChromeRenderViewObserver::CapturePageInfoLater(int page_id,
+                                                    bool preliminary_capture,
                                                     base::TimeDelta delay) {
   capture_timer_.Start(
       FROM_HERE,
       delay,
       base::Bind(&ChromeRenderViewObserver::CapturePageInfo,
                  base::Unretained(this),
+                 page_id,
                  preliminary_capture));
 }
 
-void ChromeRenderViewObserver::CapturePageInfo(bool preliminary_capture) {
-  int page_id = render_view()->GetPageId();
+void ChromeRenderViewObserver::CapturePageInfo(int page_id,
+                                               bool preliminary_capture) {
+  // If |page_id| is obsolete, we should stop indexing and capturing a page.
+  if (render_view()->GetPageId() != page_id)
+    return;
 
   if (!render_view()->GetWebView())
     return;
@@ -813,4 +819,43 @@ ExternalHostBindings* ChromeRenderViewObserver::GetExternalHostBindings() {
 
 bool ChromeRenderViewObserver::IsStrictSecurityHost(const std::string& host) {
   return (strict_security_hosts_.find(host) != strict_security_hosts_.end());
+}
+
+const extensions::Extension* ChromeRenderViewObserver::GetExtension(
+    const WebSecurityOrigin& origin) const {
+  if (!EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
+    return NULL;
+
+  const std::string extension_id = origin.host().utf8().data();
+  if (!extension_dispatcher_->IsExtensionActive(extension_id))
+    return NULL;
+
+  return extension_dispatcher_->extensions()->GetByID(extension_id);
+}
+
+bool ChromeRenderViewObserver::HasRefreshMetaTag(WebFrame* frame) {
+  if (!frame)
+    return false;
+  WebElement head = frame->document().head();
+  if (head.isNull() || !head.hasChildNodes())
+    return false;
+
+  const WebString tag_name(ASCIIToUTF16("meta"));
+  const WebString attribute_name(ASCIIToUTF16("http-equiv"));
+  const WebString attribute_value(ASCIIToUTF16("refresh"));
+
+  WebNodeList children = head.childNodes();
+  for (size_t i = 0; i < children.length(); ++i) {
+    WebNode node = children.item(i);
+    if (!node.isElementNode())
+      continue;
+    WebElement element = node.to<WebElement>();
+    if (!element.hasTagName(tag_name))
+      continue;
+    WebString value = element.getAttribute(attribute_name);
+    if (value.isNull() || value != attribute_value)
+      continue;
+    return true;
+  }
+  return false;
 }

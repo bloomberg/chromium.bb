@@ -146,11 +146,13 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
                                 bool animate);
 #endif
 
-  void CapturePageInfoLater(bool preliminary_capture, base::TimeDelta delay);
+  void CapturePageInfoLater(int page_id,
+                            bool preliminary_capture,
+                            base::TimeDelta delay);
 
   // Captures the thumbnail and text contents for indexing for the given load
   // ID.  Kicks off analysis of the captured text.
-  void CapturePageInfo(bool preliminary_capture);
+  void CapturePageInfo(int page_id, bool preliminary_capture);
 
   // Retrieves the text from the given frame contents, the page text up to the
   // maximum amount kMaxIndexChars will be placed into the given buffer.
@@ -165,6 +167,9 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // Otherwise returns NULL.
   const extensions::Extension* GetExtension(
       const WebKit::WebSecurityOrigin& origin) const;
+
+  // Checks if a page contains <meta http-equiv="refresh" ...> tag.
+  bool HasRefreshMetaTag(WebKit::WebFrame* frame);
 
   // Save the JavaScript to preload if a ViewMsg_WebUIJavaScript is received.
   scoped_ptr<WebUIJavaScript> webui_javascript_;
