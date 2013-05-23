@@ -29,6 +29,7 @@ void AddQueryResults(
     entry.time = baseline_time +
                  base::TimeDelta::FromHours(test_results[i].hour_offset);
     entry.url = GURL(test_results[i].url);
+    entry.all_timestamps.insert(entry.time.ToInternalValue());
     results->push_back(entry);
   }
 }
@@ -46,9 +47,9 @@ bool ResultEquals(
 
 }  // namespace
 
-// Tests that the RemoveDuplicateResults method correctly removes duplicate
+// Tests that the MergeDuplicateResults method correctly removes duplicate
 // visits to the same URL on the same day.
-TEST(HistoryUITest, RemoveDuplicateResults) {
+TEST(HistoryUITest, MergeDuplicateResults) {
   {
     // Basic test that duplicates on the same day are removed.
     TestResult test_data[] = {
@@ -59,7 +60,7 @@ TEST(HistoryUITest, RemoveDuplicateResults) {
     };
     std::vector<BrowsingHistoryHandler::HistoryEntry> results;
     AddQueryResults(test_data, arraysize(test_data), &results);
-    BrowsingHistoryHandler::RemoveDuplicateResults(&results);
+    BrowsingHistoryHandler::MergeDuplicateResults(&results);
 
     ASSERT_EQ(2U, results.size());
     EXPECT_TRUE(ResultEquals(results[0], test_data[3]));
@@ -75,7 +76,7 @@ TEST(HistoryUITest, RemoveDuplicateResults) {
     };
     std::vector<BrowsingHistoryHandler::HistoryEntry> results;
     AddQueryResults(test_data, arraysize(test_data), &results);
-    BrowsingHistoryHandler::RemoveDuplicateResults(&results);
+    BrowsingHistoryHandler::MergeDuplicateResults(&results);
 
     ASSERT_EQ(2U, results.size());
     EXPECT_TRUE(ResultEquals(results[0], test_data[2]));
@@ -99,12 +100,31 @@ TEST(HistoryUITest, RemoveDuplicateResults) {
     };
     std::vector<BrowsingHistoryHandler::HistoryEntry> results;
     AddQueryResults(test_data, arraysize(test_data), &results);
-    BrowsingHistoryHandler::RemoveDuplicateResults(&results);
+    BrowsingHistoryHandler::MergeDuplicateResults(&results);
 
     ASSERT_EQ(4U, results.size());
     EXPECT_TRUE(ResultEquals(results[0], test_data[7]));
     EXPECT_TRUE(ResultEquals(results[1], test_data[6]));
     EXPECT_TRUE(ResultEquals(results[2], test_data[3]));
     EXPECT_TRUE(ResultEquals(results[3], test_data[2]));
+  }
+
+  {
+    // Test that timestamps for duplicates are properly saved.
+    TestResult test_data[] = {
+      { "http://google.com", 0 },
+      { "http://google.de", 1 },
+      { "http://google.com", 2 },
+      { "http://google.com", 3 }  // Most recent.
+    };
+    std::vector<BrowsingHistoryHandler::HistoryEntry> results;
+    AddQueryResults(test_data, arraysize(test_data), &results);
+    BrowsingHistoryHandler::MergeDuplicateResults(&results);
+
+    ASSERT_EQ(2U, results.size());
+    EXPECT_TRUE(ResultEquals(results[0], test_data[3]));
+    EXPECT_TRUE(ResultEquals(results[1], test_data[1]));
+    EXPECT_EQ(3u, results[0].all_timestamps.size());
+    EXPECT_EQ(1u, results[1].all_timestamps.size());
   }
 }

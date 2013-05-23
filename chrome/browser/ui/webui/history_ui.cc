@@ -668,11 +668,15 @@ void BrowsingHistoryHandler::HandleRemoveBookmark(const ListValue* args) {
 }
 
 // static
-void BrowsingHistoryHandler::RemoveDuplicateResults(
+void BrowsingHistoryHandler::MergeDuplicateResults(
     std::vector<BrowsingHistoryHandler::HistoryEntry>* results) {
   std::vector<BrowsingHistoryHandler::HistoryEntry> new_results;
+  // Pre-reserve the size of the new vector. Since we're working with pointers
+  // later on not doing this could lead to the vector being resized and to
+  // pointers to invalid locations.
+  new_results.reserve(results->size());
   // Maps a URL to the most recent entry on a particular day.
-  std::map<GURL,BrowsingHistoryHandler::HistoryEntry>
+  std::map<GURL,BrowsingHistoryHandler::HistoryEntry*>
       current_day_entries;
 
   // Keeps track of the day that |current_day_urls| is holding the URLs for,
@@ -692,13 +696,12 @@ void BrowsingHistoryHandler::RemoveDuplicateResults(
 
     // Keep this visit if it's the first visit to this URL on the current day.
     if (current_day_entries.count(it->url) == 0) {
-      current_day_entries.insert(
-          std::pair<GURL,BrowsingHistoryHandler::HistoryEntry>(it->url, *it));
       new_results.push_back(*it);
+      current_day_entries[it->url] = &new_results.back();
     } else {
       // Keep track of the timestamps of all visits to the URL on the same day.
       BrowsingHistoryHandler::HistoryEntry* entry =
-          &current_day_entries[it->url];
+          current_day_entries[it->url];
       entry->all_timestamps.insert(
           it->all_timestamps.begin(), it->all_timestamps.end());
 
@@ -739,7 +742,7 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
     query_results_.insert(query_results_.end(),
                           web_history_query_results_.begin(),
                           web_history_query_results_.end());
-    RemoveDuplicateResults(&query_results_);
+    MergeDuplicateResults(&query_results_);
 
     if (local_result_count) {
       // In the best case, we expect that all local results are duplicated on

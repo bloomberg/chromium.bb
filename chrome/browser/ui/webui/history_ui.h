@@ -106,9 +106,10 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Removes duplicate entries from the query results, only retaining the most
-  // recent visit to a URL on a particular day.
-  static void RemoveDuplicateResults(
+  // Merges duplicate entries from the query results, only retaining the most
+  // recent visit to a URL on a particular day. That visit contains the
+  // timestamps of the other visits.
+  static void MergeDuplicateResults(
       std::vector<BrowsingHistoryHandler::HistoryEntry>* results);
 
  private:
