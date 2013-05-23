@@ -539,6 +539,10 @@ bool Extension::ShouldDisplayInExtensionSettings() const {
   if (Manifest::IsUnpackedLocation(location()))
     return true;
 
+  // Don't show apps that aren't visible in either launcher or ntp.
+  if (is_app() && !ShouldDisplayInAppLauncher() && !ShouldDisplayInNewTabPage())
+    return false;
+
   // Unless they are unpacked, never show hosted apps. Note: We intentionally
   // show packaged apps and platform apps because there are some pieces of
   // functionality that are only available in chrome://extensions/ but which

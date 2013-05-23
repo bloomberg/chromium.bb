@@ -19,6 +19,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/external_component_loader.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/external_pref_loader.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
@@ -459,6 +460,15 @@ void ExternalProviderImpl::CreateExternalProviders(
     }
 #endif
   }
+
+  provider_list->push_back(
+      linked_ptr<ExternalProviderInterface>(
+        new ExternalProviderImpl(
+            service,
+            new ExternalComponentLoader(),
+            Manifest::INVALID_LOCATION,
+            Manifest::EXTERNAL_POLICY_DOWNLOAD,
+            Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT)));
 }
 
 }  // namespace extensions

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -410,8 +412,21 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
                                    ExtensionIconSet::MATCH_BIGGER);
     id_to_icon[item.id()] = item_resource;
 
-    if (item.location() == Manifest::COMPONENT)
-      continue;  // Skip built-in extensions / apps;
+    // Don't show component extensions because they are only extensions as an
+    // implementation detail of Chrome.
+    if (item.location() == Manifest::COMPONENT &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kShowComponentExtensionOptions)) {
+      continue;
+    }
+
+    // Don't show apps that aren't visible in either launcher or ntp.
+    if (item.is_app() && !item.ShouldDisplayInAppLauncher() &&
+        !item.ShouldDisplayInNewTabPage() &&
+        !Manifest::IsUnpackedLocation(item.location())) {
+      continue;
+    }
+
     item_list.push_back(make_linked_ptr<developer::ItemInfo>(
         CreateItemInfo(
             item, service->IsExtensionEnabled(item.id())).release()));
