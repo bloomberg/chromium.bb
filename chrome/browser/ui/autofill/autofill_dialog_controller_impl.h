@@ -329,15 +329,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Sets the CVC result on |form_structure_| to the value in |cvc|.
   void SetCvcResult(const string16& cvc);
 
-  // Gets the value for |type| in |section|, whether it comes from manual user
-  // input or the active suggestion.
-  string16 GetValueFromSection(DialogSection section,
-                               AutofillFieldType type);
-
-  // Saves the data in |profile| to the personal data manager. This may add
-  // a new profile or tack onto an existing profile.
-  void SaveProfileGleanedFromSection(const AutofillProfile& profile,
-                                     DialogSection section);
+  // Gets the name from SECTION_CC (if that section is active). This might
+  // come from manual user input or the active suggestion.
+  string16 GetCcName();
 
   // Gets the SuggestionsMenuModel for |section|.
   SuggestionsMenuModel* SuggestionsMenuModelForSection(DialogSection section);

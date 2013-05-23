@@ -1287,7 +1287,6 @@ void AutofillDialogViews::InitChildViews() {
 
   save_in_chrome_checkbox_ =
       new views::Checkbox(controller_->SaveLocallyText());
-  save_in_chrome_checkbox_->SetChecked(true);
   button_strip_extra_view_->AddChildView(save_in_chrome_checkbox_);
 
   autocheckout_progress_bar_view_ = new views::View();

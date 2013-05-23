@@ -1685,9 +1685,6 @@ void AutofillDialogControllerImpl::OnNetworkError(int response_code) {
 // PersonalDataManagerObserver implementation.
 
 void AutofillDialogControllerImpl::OnPersonalDataChanged() {
-  if (is_submitting_)
-    return;
-
   SuggestionsUpdated();
 }
 
@@ -2035,15 +2032,11 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       FillFormGroupFromOutputs(output, &profile);
 
       // For billing, the profile name has to come from the CC section.
-      if (section == SECTION_BILLING) {
-        profile.SetRawInfo(NAME_FULL,
-                           GetValueFromSection(SECTION_CC, CREDIT_CARD_NAME));
-        profile.SetRawInfo(EMAIL_ADDRESS,
-                           GetValueFromSection(SECTION_EMAIL, EMAIL_ADDRESS));
-      }
+      if (section == SECTION_BILLING)
+        profile.SetRawInfo(NAME_FULL, GetCcName());
 
       if (ShouldSaveDetailsLocally())
-        SaveProfileGleanedFromSection(profile, section);
+        GetManager()->SaveImportedProfile(profile);
 
       FillFormStructureForSection(profile, 0, section, compare);
     }
@@ -2084,46 +2077,19 @@ void AutofillDialogControllerImpl::SetCvcResult(const string16& cvc) {
   }
 }
 
-string16 AutofillDialogControllerImpl::GetValueFromSection(
-    DialogSection section,
-    AutofillFieldType type) {
-  DCHECK(SectionIsActive(section));
+string16 AutofillDialogControllerImpl::GetCcName() {
+  DCHECK(SectionIsActive(SECTION_CC));
 
-  scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
-  if (wrapper)
-    return wrapper->GetInfo(type);
-
-  DetailOutputMap output;
-  view_->GetUserInput(section, &output);
-  for (DetailOutputMap::iterator iter = output.begin(); iter != output.end();
-       ++iter) {
-    if (iter->first->type == type)
-      return iter->second;
+  CreditCard card;
+  scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(SECTION_CC);
+  if (!wrapper) {
+    DetailOutputMap output;
+    view_->GetUserInput(SECTION_CC, &output);
+    FillFormGroupFromOutputs(output, &card);
+    wrapper.reset(new AutofillCreditCardWrapper(&card));
   }
 
-  return string16();
-}
-
-void AutofillDialogControllerImpl::SaveProfileGleanedFromSection(
-    const AutofillProfile& profile,
-    DialogSection section) {
-  if (section == SECTION_EMAIL) {
-    // Save the email address to the existing (suggested) billing profile. If
-    // there is no existing profile, the newly created one will pick up this
-    // email, so in that case do nothing.
-    scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(SECTION_BILLING);
-    if (wrapper) {
-      std::string item_key = SuggestionsMenuModelForSection(SECTION_BILLING)->
-          GetItemKeyForCheckedItem();
-      AutofillProfile* billing_profile =
-          GetManager()->GetProfileByGUID(item_key);
-      billing_profile->OverwriteWithOrAddTo(
-          profile,
-          g_browser_process->GetApplicationLocale());
-    }
-  } else {
-    GetManager()->SaveImportedProfile(profile);
-  }
+  return wrapper->GetInfo(CREDIT_CARD_NAME);
 }
 
 SuggestionsMenuModel* AutofillDialogControllerImpl::

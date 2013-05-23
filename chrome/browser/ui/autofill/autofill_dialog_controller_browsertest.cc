@@ -110,12 +110,6 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return ValidityData();
   }
 
-  // Saving to Chrome is tested in AutofillDialogController unit tests.
-  // TODO(estade): test that the view defaults to saving to Chrome.
-  virtual bool ShouldOfferToSaveInChrome() const OVERRIDE {
-    return false;
-  }
-
   // Increase visibility for testing.
   AutofillDialogView* view() { return AutofillDialogControllerImpl::view(); }
   const DetailInput* input_showing_popup() const {
