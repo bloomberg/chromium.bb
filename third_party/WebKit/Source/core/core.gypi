@@ -2635,7 +2635,6 @@
             'platform/chromium/PopupMenuChromium.h',
             'platform/chromium/PopupListBox.cpp',
             'platform/chromium/PopupListBox.h',
-            'platform/chromium/PopupMenuPrivate.h',
             'platform/chromium/Prerender.cpp',
             'platform/chromium/Prerender.h',
             'platform/chromium/PrerenderHandle.cpp',

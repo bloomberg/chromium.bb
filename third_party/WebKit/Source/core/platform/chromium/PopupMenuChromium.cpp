@@ -62,31 +62,31 @@ PopupMenuChromium::~PopupMenuChromium()
 {
     // When the PopupMenuChromium is destroyed, the client could already have been
     // deleted.
-    if (p.popup)
-        p.popup->listBox()->disconnectClient();
+    if (m_popup)
+        m_popup->listBox()->disconnectClient();
     hide();
 }
 
 void PopupMenuChromium::show(const FloatQuad& controlPosition, const IntSize& controlSize, int index)
 {
-    if (!p.popup) {
+    if (!m_popup) {
         Settings* settings = m_frameView->frame()->page()->settings();
         PopupContainerSettings popupSettings = dropDownSettings;
         popupSettings.deviceSupportsTouch = settings->deviceSupportsTouch();
-        p.popup = PopupContainer::create(client(), PopupContainer::Select, popupSettings);
+        m_popup = PopupContainer::create(client(), PopupContainer::Select, popupSettings);
     }
-    p.popup->showInRect(controlPosition, controlSize, m_frameView.get(), index);
+    m_popup->showInRect(controlPosition, controlSize, m_frameView.get(), index);
 }
 
 void PopupMenuChromium::hide()
 {
-    if (p.popup)
-        p.popup->hide();
+    if (m_popup)
+        m_popup->hide();
 }
 
 void PopupMenuChromium::updateFromElement()
 {
-    p.popup->listBox()->updateFromElement();
+    m_popup->listBox()->updateFromElement();
 }
 
 

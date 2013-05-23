@@ -32,13 +32,14 @@
 #define PopupMenuChromium_h
 
 #include "core/platform/PopupMenu.h"
-#include "core/platform/chromium/PopupMenuPrivate.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 class Frame;
 class FrameView;
 class IntRect;
+class PopupContainer;
 struct PopupItem;
 class PopupMenuClient;
 
@@ -62,7 +63,7 @@ private:
 
     PopupMenuClient* m_popupClient;
     RefPtr<FrameView> m_frameView;
-    PopupMenuPrivate p;
+    RefPtr<PopupContainer> m_popup;
 
     static int s_minimumRowHeight;
     static int s_optionRowHeightForTouch;
