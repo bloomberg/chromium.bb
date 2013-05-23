@@ -210,6 +210,12 @@ class CygTar(object):
       tarinfo.mode &= ~stat.S_IWOTH
       tarinfo.mode &= ~stat.S_IWGRP
 
+      # If we want cygwin to be able to extract this archive and use
+      # executables and dll files we need to mark all the archive members as
+      # executable.  This is essentially what happens anyway when the
+      # archive is extracted on win32.
+      tarinfo.mode |= stat.S_IXUSR | stat.S_IXOTH | stat.S_IXGRP
+
     # If this a symlink or hardlink, add it
     if tarinfo.issym() or tarinfo.islnk():
       tarinfo.size = 0
@@ -276,13 +282,13 @@ class CygTar(object):
   def Extract(self):
     """Extract the tarfile to the current directory."""
     try_mklink = True
-    div = float(len(self.tar.getmembers())) / 50.0
-    dots = 0
-    cnt = 0
 
     if self.verbose:
       sys.stdout.write('|' + ('-' * 48) + '|\n')
       sys.stdout.flush()
+      div = float(len(self.tar.getmembers())) / 50.0
+      dots = 0
+      cnt = 0
 
     for m in self.tar:
       if self.verbose:
