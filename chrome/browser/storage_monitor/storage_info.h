@@ -25,6 +25,8 @@ struct StorageInfo {
     MAC_IMAGE_CAPTURE,
     // An iTunes library.
     ITUNES,
+    // A Picasa database.
+    PICASA,
   };
 
   StorageInfo();

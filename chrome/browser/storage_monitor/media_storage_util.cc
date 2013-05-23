@@ -85,7 +85,8 @@ void FilterAttachedDevicesOnFileThread(MediaStorageUtil::DeviceIdSet* devices) {
     }
 
     if (type == StorageInfo::FIXED_MASS_STORAGE ||
-        type == StorageInfo::ITUNES) {
+        type == StorageInfo::ITUNES ||
+        type == StorageInfo::PICASA) {
       if (!file_util::PathExists(base::FilePath::FromUTF8Unsafe(unique_id)))
         missing_devices.insert(*it);
       continue;
@@ -175,8 +176,6 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
     return true;
   }
 
-  // TODO(vandebo) Check to see if the path points to an iTunes library file.
-
   // On Posix systems, there's one root so any absolute path could be valid.
   // TODO(gbillock): Delete this stanza? Posix systems should have the root
   // volume information. If not, we should move the below into the
@@ -205,7 +204,9 @@ base::FilePath MediaStorageUtil::FindDevicePathById(
   if (!StorageInfo::CrackDeviceId(device_id, &type, &unique_id))
     return base::FilePath();
 
-  if (type == StorageInfo::FIXED_MASS_STORAGE || type == StorageInfo::ITUNES) {
+  if (type == StorageInfo::FIXED_MASS_STORAGE ||
+      type == StorageInfo::ITUNES ||
+      type == StorageInfo::PICASA) {
     // For this type, the unique_id is the path.
     return base::FilePath::FromUTF8Unsafe(unique_id);
   }

@@ -17,6 +17,7 @@ const char kFixedMassStoragePrefix[] = "path:";
 const char kMtpPtpPrefix[] = "mtp:";
 const char kMacImageCapturePrefix[] = "ic:";
 const char kITunesPrefix[] = "itunes:";
+const char kPicasaPrefix[] = "picasa:";
 
 }  // namespace
 
@@ -58,6 +59,8 @@ std::string StorageInfo::MakeDeviceId(Type type, const std::string& unique_id) {
       return std::string(kMacImageCapturePrefix) + unique_id;
     case ITUNES:
       return std::string(kITunesPrefix) + unique_id;
+    case PICASA:
+      return std::string(kPicasaPrefix) + unique_id;
   }
   NOTREACHED();
   return std::string();
@@ -84,6 +87,8 @@ bool StorageInfo::CrackDeviceId(const std::string& device_id,
     found_type = MAC_IMAGE_CAPTURE;
   } else if (prefix == kITunesPrefix) {
     found_type = ITUNES;
+  } else if (prefix == kPicasaPrefix) {
+    found_type = PICASA;
   } else {
     NOTREACHED();
     return false;
@@ -121,7 +126,8 @@ bool StorageInfo::IsMassStorageDevice(const std::string& device_id) {
          (type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
           type == REMOVABLE_MASS_STORAGE_NO_DCIM ||
           type == FIXED_MASS_STORAGE ||
-          type == ITUNES);
+          type == ITUNES ||
+          type == PICASA);
 }
 
 }  // namespace chrome

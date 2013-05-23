@@ -48,8 +48,6 @@ class PicasaAlbumTableReader {
   const std::vector<AlbumInfo>& albums() const;
   const std::vector<AlbumInfo>& folders() const;
 
-  static base::FilePath PicasaDB3Dir();
-
  private:
   const base::FilePath directory_path_;
 

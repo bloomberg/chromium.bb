@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_finder.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/picasa_finder.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -52,6 +53,7 @@ const char kMediaGalleriesTypeUserAddedValue[] = "userAdded";
 const char kMediaGalleriesTypeBlackListedValue[] = "blackListed";
 
 const char kITunesGalleryName[] = "iTunes";
+const char kPicasaGalleryName[] = "Picasa";
 
 bool GetPrefId(const DictionaryValue& dict, MediaGalleryPrefId* value) {
   std::string string_id;
@@ -224,6 +226,13 @@ MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
                  weak_factory_.GetWeakPtr()));
 #endif
 
+  // TODO(tommycli): Turn on when Picasa code is ready.
+#if 0
+  picasa::PicasaFinder::FindPicasaDatabaseOnUIThread(
+      base::Bind(&MediaGalleriesPreferences::OnPicasaDeviceID,
+                 weak_factory_.GetWeakPtr()));
+#endif
+
   InitFromPrefs(false /*no notification*/);
 
   StorageMonitor* monitor = StorageMonitor::GetInstance();
@@ -267,6 +276,13 @@ void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
 void MediaGalleriesPreferences::OnITunesDeviceID(const std::string& device_id) {
   DCHECK(!device_id.empty());
   AddGalleryWithName(device_id, ASCIIToUTF16(kITunesGalleryName),
+                     base::FilePath(), false /*not user added*/);
+}
+
+void MediaGalleriesPreferences::OnPicasaDeviceID(const std::string& device_id) {
+  // TODO(tommycli): Implement support for location moves.
+  DCHECK(!device_id.empty());
+  AddGalleryWithName(device_id, ASCIIToUTF16(kPicasaGalleryName),
                      base::FilePath(), false /*not user added*/);
 }
 

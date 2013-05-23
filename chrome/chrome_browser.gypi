@@ -994,6 +994,8 @@
         'browser/media_galleries/fileapi/picasa/picasa_data_provider.h',
         'browser/media_galleries/fileapi/picasa/picasa_file_util.cc',
         'browser/media_galleries/fileapi/picasa/picasa_file_util.h',
+        'browser/media_galleries/fileapi/picasa/picasa_finder.cc',
+        'browser/media_galleries/fileapi/picasa/picasa_finder.h',
         'browser/media_galleries/fileapi/picasa/pmp_column_reader.cc',
         'browser/media_galleries/fileapi/picasa/pmp_column_reader.cc',
         'browser/media_galleries/fileapi/picasa/pmp_column_reader.cc',

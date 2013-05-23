@@ -212,6 +212,9 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   // Try to add an entry for the iTunes 'device'.
   void OnITunesDeviceID(const std::string& device_id);
 
+  // Try to add an entry for the Picasa 'device'.
+  void OnPicasaDeviceID(const std::string& device_id);
+
   // Builds |known_galleries_| from the persistent store.
   // Notifies GalleryChangeObservers if |notify_observers| is true.
   void InitFromPrefs(bool notify_observers);

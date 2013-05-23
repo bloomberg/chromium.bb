@@ -13,8 +13,6 @@
 #include "chrome/browser/media_galleries/fileapi/picasa/pmp_constants.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/pmp_table_reader.h"
 
-#define FPL(x) FILE_PATH_LITERAL(x)
-
 namespace picasa {
 
 namespace {
@@ -47,22 +45,6 @@ PicasaAlbumTableReader::PicasaAlbumTableReader(
       initialized_(false) {}
 
 PicasaAlbumTableReader::~PicasaAlbumTableReader() {}
-
-base::FilePath PicasaAlbumTableReader::PicasaDB3Dir() {
-  base::FilePath path;
-
-#if defined(OS_WIN)
-  if (!PathService::Get(base::DIR_LOCAL_APP_DATA, &path))
-    return base::FilePath();
-#elif defined(OS_MACOSX)
-  if (!PathService::Get(base::DIR_APP_DATA, &path))
-    return base::FilePath();
-#else
-  return base::FilePath();
-#endif
-
-  return path.Append(FPL("Google")).Append(FPL("Picasa2")).Append(FPL("db3"));
-}
 
 const std::vector<AlbumInfo>& PicasaAlbumTableReader::folders() const {
   DCHECK(initialized_);
