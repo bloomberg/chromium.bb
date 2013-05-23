@@ -59,6 +59,7 @@ TEST_F(ExtensionFromUserScript, Basic) {
   EXPECT_EQ("Does totally awesome stuff.", extension->description());
   EXPECT_EQ("IhCFCg9PMQTAcJdc9ytUP99WME+4yh6aMnM1uupkovo=",
             extension->public_key());
+  EXPECT_EQ(Manifest::TYPE_USER_SCRIPT, extension->GetType());
 
   ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension).size());
   const UserScript& script =
@@ -75,6 +76,7 @@ TEST_F(ExtensionFromUserScript, Basic) {
   ASSERT_EQ(1u, script.exclude_url_patterns().patterns().size());
   EXPECT_EQ("http://www.google.com/foo*",
             script.exclude_url_patterns().begin()->GetAsString());
+  EXPECT_TRUE(script.emulate_greasemonkey());
 
   // Make sure the files actually exist on disk.
   EXPECT_TRUE(file_util::PathExists(
@@ -83,7 +85,7 @@ TEST_F(ExtensionFromUserScript, Basic) {
       extension->path().Append(kManifestFilename)));
 }
 
-TEST_F(ExtensionFromUserScript, NoMetdata) {
+TEST_F(ExtensionFromUserScript, NoMetadata) {
   base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
@@ -110,6 +112,7 @@ TEST_F(ExtensionFromUserScript, NoMetdata) {
   EXPECT_EQ("", extension->description());
   EXPECT_EQ("k1WxKx54hX6tfl5gQaXD/m4d9QUMwRdXWM4RW+QkWcY=",
             extension->public_key());
+  EXPECT_EQ(Manifest::TYPE_USER_SCRIPT, extension->GetType());
 
   ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension).size());
   const UserScript& script =
@@ -117,6 +120,7 @@ TEST_F(ExtensionFromUserScript, NoMetdata) {
   ASSERT_EQ(1u, script.globs().size());
   EXPECT_EQ("*", script.globs()[0]);
   EXPECT_EQ(0u, script.exclude_globs().size());
+  EXPECT_TRUE(script.emulate_greasemonkey());
 
   URLPatternSet expected;
   AddPattern(&expected, "http://*/*");
@@ -174,6 +178,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentStart) {
   EXPECT_EQ("This script tests document-start", extension->description());
   EXPECT_EQ("RjmyI7+Gp/YHcW1qnu4xDxkJcL4cV4kTzdCA4BajCbk=",
             extension->public_key());
+  EXPECT_EQ(Manifest::TYPE_USER_SCRIPT, extension->GetType());
 
   // Validate run location.
   ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension).size());
@@ -208,6 +213,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentEnd) {
   EXPECT_EQ("This script tests document-end", extension->description());
   EXPECT_EQ("cpr5i8Mi24FzECV8UJe6tanwlU8SWesZosJ915YISvQ=",
             extension->public_key());
+  EXPECT_EQ(Manifest::TYPE_USER_SCRIPT, extension->GetType());
 
   // Validate run location.
   ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension).size());
@@ -243,6 +249,7 @@ TEST_F(ExtensionFromUserScript, RunAtDocumentIdle) {
   EXPECT_EQ("This script tests document-idle", extension->description());
   EXPECT_EQ("kHnHKec3O/RKKo5/Iu1hKqe4wQERthL0639isNtsfiY=",
             extension->public_key());
+  EXPECT_EQ(Manifest::TYPE_USER_SCRIPT, extension->GetType());
 
   // Validate run location.
   ASSERT_EQ(1u, ContentScriptsInfo::GetContentScripts(extension).size());
