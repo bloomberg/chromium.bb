@@ -110,6 +110,7 @@ class EventClientImpl;
 class EventRewriterEventFilter;
 class EventTransformationHandler;
 class FocusCycler;
+class MirrorWindowController;
 class MouseCursorEventFilter;
 class OutputConfiguratorAnimation;
 class OverlayEventFilter;
@@ -283,6 +284,9 @@ class ASH_EXPORT Shell
 
   internal::DisplayManager* display_manager() {
     return display_manager_.get();
+  }
+  internal::MirrorWindowController* mirror_window_controller() {
+    return mirror_window_controller_.get();
   }
   views::corewm::InputMethodEventFilter* input_method_filter() {
     return input_method_filter_.get();
@@ -572,6 +576,7 @@ class ASH_EXPORT Shell
   scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
 
   scoped_ptr<internal::DisplayManager> display_manager_;
+  scoped_ptr<internal::MirrorWindowController> mirror_window_controller_;
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   // Controls video output device state.

@@ -187,6 +187,8 @@ const AcceleratorData kDesktopAcceleratorData[] = {
   { false, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_RELEASED },
   { true, ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
     ADD_REMOVE_DISPLAY },
+  { true, ui::VKEY_M, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+    TOGGLE_MIRROR_MODE },
 #endif
   // Extra shortcut for display swaping as alt-f4 is taken on linux desktop.
   { true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,

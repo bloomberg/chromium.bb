@@ -16,6 +16,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/event_transformation_handler.h"
+#include "ash/display/mirror_window_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/screen_position_controller.h"
 #include "ash/drag_drop/drag_drop_controller.h"
@@ -211,6 +212,8 @@ Shell::Shell(ShellDelegate* delegate)
       simulate_modal_window_open_for_testing_(false) {
   DCHECK(delegate_.get());
   display_manager_.reset(new internal::DisplayManager);
+  mirror_window_controller_.reset(new internal::MirrorWindowController);
+
   ANNOTATE_LEAKING_OBJECT_PTR(screen_);  // see crbug.com/156466
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_);
   if (!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE))
@@ -297,6 +300,8 @@ Shell::~Shell() {
 
   power_button_controller_.reset();
   session_state_controller_.reset();
+
+  mirror_window_controller_.reset();
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // DisplayController before resetting |display_controller_|, since destruction
@@ -469,6 +474,7 @@ void Shell::Init() {
 
   screen_position_controller_.reset(new internal::ScreenPositionController);
   root_window_host_factory_.reset(delegate_->CreateRootWindowHostFactory());
+
   display_controller_->Start();
   display_controller_->InitPrimaryDisplay();
   aura::RootWindow* root_window = display_controller_->GetPrimaryRootWindow();
