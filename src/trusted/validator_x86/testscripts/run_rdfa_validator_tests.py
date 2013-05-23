@@ -118,8 +118,8 @@ def RunRdfaValidator(options, data):
   data += (-len(data) % BUNDLE_SIZE) * '\x90'
   assert len(data) % BUNDLE_SIZE == 0
 
+  tmp = tempfile.NamedTemporaryFile(mode='wb', delete=False)
   try:
-    tmp = tempfile.NamedTemporaryFile(mode='wb', delete=False)
     tmp.write(CreateElfContent(options.bits, data))
     tmp.close()
 
@@ -130,6 +130,7 @@ def RunRdfaValidator(options, data):
     assert stderr == '', stderr
     return_code = proc.wait()
   finally:
+    tmp.close()
     os.remove(tmp.name)
 
   # Remove the carriage return characters that we get on Windows.
