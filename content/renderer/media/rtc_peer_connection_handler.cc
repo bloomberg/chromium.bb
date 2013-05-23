@@ -8,10 +8,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/remote_media_stream_impl.h"
@@ -346,6 +348,15 @@ bool RTCPeerConnectionHandler::initialize(
   GetNativeIceServers(server_configuration, &servers);
 
   RTCMediaConstraints constraints(options);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSCTPDataChannels)) {
+    // TODO(jiayl): replace the hard coded string with
+    // webrtc::MediaConstraintsInterface::kEnableSctpDataChannels when
+    // the Libjingle change is rolled.
+    constraints.AddOptional("internalSctpDataChannels", "true");
+  }
+
   native_peer_connection_ =
       dependency_factory_->CreatePeerConnection(
           servers, &constraints, frame_, this);
