@@ -196,7 +196,9 @@ class WorkerXHRHttpLayoutTest : public InProcessBrowserLayoutTest {
 };
 
 // TestRunner appears to be broken on Windows. See http://crbug.com/177798
-#if defined(OS_WIN)
+// WorkerXHRHttpLayoutTest.Tests also crash under AddressSanitizer on Linux.
+// See http://crbug.com/242447.
+#if defined(OS_WIN) || defined(ADDRESS_SANITIZER)
 #define MAYBE_Tests DISABLED_Tests
 #else
 #define MAYBE_Tests Tests
