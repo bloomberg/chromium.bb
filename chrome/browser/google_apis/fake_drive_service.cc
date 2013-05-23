@@ -214,6 +214,11 @@ bool FakeDriveService::CancelForFilePath(const base::FilePath& file_path) {
   return true;
 }
 
+std::string FakeDriveService::CanonicalizeResourceId(
+    const std::string& resource_id) const {
+  return resource_id;
+}
+
 bool FakeDriveService::HasAccessToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return true;

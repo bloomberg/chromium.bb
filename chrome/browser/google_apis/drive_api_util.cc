@@ -15,6 +15,7 @@
 #include "chrome/browser/google_apis/drive_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
+#include "third_party/re2/re2/re2.h"
 
 namespace google_apis {
 namespace util {
@@ -120,6 +121,16 @@ std::string TranslateQuery(const std::string& original_query) {
 std::string ExtractResourceIdFromUrl(const GURL& url) {
   return net::UnescapeURLComponent(url.ExtractFileName(),
                                    net::UnescapeRule::URL_SPECIAL_CHARS);
+}
+
+std::string CanonicalizeResourceId(const std::string& resource_id) {
+  // If resource ID is in the old WAPI format starting with a prefix like
+  // "document:", strip it and return the remaining part.
+  std::string stripped_resource_id;
+  if (RE2::FullMatch(resource_id, "^[a-z-]+(?::|%3A)([\\w-]+)$",
+                     &stripped_resource_id))
+    return stripped_resource_id;
+  return resource_id;
 }
 
 }  // namespace util

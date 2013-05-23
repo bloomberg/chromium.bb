@@ -44,13 +44,15 @@ CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
                              JobScheduler* scheduler,
                              internal::ResourceMetadata* metadata,
                              internal::FileCache* cache,
-                             FileSystemInterface* file_system)
+                             FileSystemInterface* file_system,
+                             google_apis::DriveServiceInterface* drive_service)
   : blocking_task_runner_(blocking_task_runner),
     observer_(observer),
     scheduler_(scheduler),
     metadata_(metadata),
     cache_(cache),
     file_system_(file_system),
+    drive_service_(drive_service),
     create_file_operation_(new CreateFileOperation(blocking_task_runner,
                                                    observer,
                                                    scheduler,
@@ -425,11 +427,15 @@ void CopyOperation::TransferFileForResourceId(
     return;
   }
 
+  // GDoc file may contain a resource ID in the old format.
+  const std::string canonicalized_resource_id =
+      drive_service_->CanonicalizeResourceId(resource_id);
+
   // Otherwise, copy the document on the server side and add the new copy
   // to the destination directory (collection).
   CopyHostedDocumentToDirectory(
       remote_dest_file_path.DirName(),
-      resource_id,
+      canonicalized_resource_id,
       // Drop the document extension, which should not be
       // in the document title.
       // TODO(yoshiki): Remove this code with crbug.com/223304.

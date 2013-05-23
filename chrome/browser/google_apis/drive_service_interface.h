@@ -95,6 +95,10 @@ class DriveServiceInterface {
   // the operation was found and canceled.
   virtual bool CancelForFilePath(const base::FilePath& file_path) = 0;
 
+  // Converts the given resource ID into the desired format.
+  virtual std::string CanonicalizeResourceId(
+      const std::string& resource_id) const = 0;
+
   // Authentication service:
 
   // True if OAuth2 access token is retrieved and believed to be fresh.

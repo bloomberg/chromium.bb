@@ -270,10 +270,12 @@ TEST(FileSystemUtilTest, GDocFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
+  GURL url("https://docs.google.com/document/d/"
+           "1YsCnrMxxgp7LDdtlFDt-WdtEIth89vA9inrILtvK-Ug/edit");
+  std::string resource_id("1YsCnrMxxgp7LDdtlFDt-WdtEIth89vA9inrILtvK-Ug");
+
   // Read and write gdoc.
   base::FilePath file = temp_dir.path().AppendASCII("test.gdoc");
-  GURL url("https://document");
-  std::string resource_id("document:this_is_a_document");
   EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
   EXPECT_TRUE(HasGDocFileExtension(file));
   EXPECT_EQ(url, ReadUrlFromGDocFile(file));
@@ -281,8 +283,6 @@ TEST(FileSystemUtilTest, GDocFile) {
 
   // Read and write gsheet.
   file = temp_dir.path().AppendASCII("test.gsheet");
-  url = GURL("https://spreadsheet");
-  resource_id = "spreadsheet:this_is_a_spreadsheet";
   EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
   EXPECT_TRUE(HasGDocFileExtension(file));
   EXPECT_EQ(url, ReadUrlFromGDocFile(file));
@@ -290,8 +290,6 @@ TEST(FileSystemUtilTest, GDocFile) {
 
   // Read and write gslides.
   file = temp_dir.path().AppendASCII("test.gslides");
-  url = GURL("https://presentation");
-  resource_id = "presentation:this_is_a_presentation";
   EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
   EXPECT_TRUE(HasGDocFileExtension(file));
   EXPECT_EQ(url, ReadUrlFromGDocFile(file));
@@ -299,8 +297,6 @@ TEST(FileSystemUtilTest, GDocFile) {
 
   // Read and write gdraw.
   file = temp_dir.path().AppendASCII("test.gdraw");
-  url = GURL("https://drawing");
-  resource_id = "drawing:this_is_a_drawing";
   EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
   EXPECT_TRUE(HasGDocFileExtension(file));
   EXPECT_EQ(url, ReadUrlFromGDocFile(file));
@@ -308,8 +304,6 @@ TEST(FileSystemUtilTest, GDocFile) {
 
   // Read and write gtable.
   file = temp_dir.path().AppendASCII("test.gtable");
-  url = GURL("https://table");
-  resource_id = "table:this_is_a_table";
   EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
   EXPECT_TRUE(HasGDocFileExtension(file));
   EXPECT_EQ(url, ReadUrlFromGDocFile(file));
@@ -317,8 +311,6 @@ TEST(FileSystemUtilTest, GDocFile) {
 
   // Read and write glink.
   file = temp_dir.path().AppendASCII("test.glink");
-  url = GURL("https://link");
-  resource_id = "externalapp:this_is_a_link";
   EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
   EXPECT_TRUE(HasGDocFileExtension(file));
   EXPECT_EQ(url, ReadUrlFromGDocFile(file));

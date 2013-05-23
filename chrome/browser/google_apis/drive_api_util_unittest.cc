@@ -60,6 +60,21 @@ TEST(FileSystemUtilTest, ExtractResourceIdFromUrl) {
   EXPECT_EQ("", ExtractResourceIdFromUrl(GURL("https://www.example.com/")));
 }
 
+TEST(FileSystemUtilTest, CanonicalizeResourceId) {
+  std::string resource_id("1YsCnrMxxgp7LDdtlFDt-WdtEIth89vA9inrILtvK-Ug");
+
+  // New style ID is unchanged.
+  EXPECT_EQ(resource_id, CanonicalizeResourceId(resource_id));
+
+  // Drop prefixes from old style IDs.
+  EXPECT_EQ(resource_id, CanonicalizeResourceId("document:" + resource_id));
+  EXPECT_EQ(resource_id, CanonicalizeResourceId("spreadsheet:" + resource_id));
+  EXPECT_EQ(resource_id, CanonicalizeResourceId("presentation:" + resource_id));
+  EXPECT_EQ(resource_id, CanonicalizeResourceId("drawing:" + resource_id));
+  EXPECT_EQ(resource_id, CanonicalizeResourceId("table:" + resource_id));
+  EXPECT_EQ(resource_id, CanonicalizeResourceId("externalapp:" + resource_id));
+}
+
 }  // namespace util
 }  // namespace drive
 }  // namespace google_apis

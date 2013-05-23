@@ -50,6 +50,8 @@ class DriveAPIService : public DriveServiceInterface,
   virtual bool CanStartOperation() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;
   virtual bool CancelForFilePath(const base::FilePath& file_path) OVERRIDE;
+  virtual std::string CanonicalizeResourceId(
+      const std::string& resource_id) const OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
   virtual void ClearAccessToken() OVERRIDE;

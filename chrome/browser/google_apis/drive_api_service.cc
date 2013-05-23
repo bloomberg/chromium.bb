@@ -277,6 +277,11 @@ bool DriveAPIService::CancelForFilePath(const base::FilePath& file_path) {
   return runner_->operation_registry()->CancelForFilePath(file_path);
 }
 
+std::string DriveAPIService::CanonicalizeResourceId(
+    const std::string& resource_id) const {
+  return drive::util::CanonicalizeResourceId(resource_id);
+}
+
 std::string DriveAPIService::GetRootResourceId() const {
   return kDriveApiRootDirectoryResourceId;
 }

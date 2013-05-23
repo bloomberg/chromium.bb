@@ -38,6 +38,10 @@ std::string TranslateQuery(const std::string& original_query);
 // Extracts resource_id out of edit url.
 std::string ExtractResourceIdFromUrl(const GURL& url);
 
+// If |resource_id| is in the old resource ID format used by WAPI, converts it
+// into the new format.
+std::string CanonicalizeResourceId(const std::string& resource_id);
+
 }  // namespace util
 }  // namespace drive
 }  // namespace google_apis

@@ -13,6 +13,10 @@ class FilePath;
 class SequencedTaskRunner;
 }  // namespace base
 
+namespace google_apis {
+class DriveServiceInterface;
+}  // namespace google_apis
+
 namespace drive {
 
 class JobScheduler;
@@ -60,6 +64,7 @@ class DriveOperations {
             internal::ResourceMetadata* metadata,
             internal::FileCache* cache,
             FileSystemInterface* file_system,
+            google_apis::DriveServiceInterface* drive_service,
             base::SequencedTaskRunner* blocking_task_runner);
 
   // Wrapper function for create_directory_operation_.

@@ -224,6 +224,7 @@ void FileSystem::Initialize() {
                          resource_metadata_,
                          cache_,
                          this,  // FileSystemInterface
+                         drive_service_,
                          blocking_task_runner_);
 
   PrefService* pref_service = profile_->GetPrefs();

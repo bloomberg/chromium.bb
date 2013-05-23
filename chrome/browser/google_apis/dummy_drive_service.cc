@@ -24,6 +24,11 @@ bool DummyDriveService::CancelForFilePath(const base::FilePath& file_path) {
   return true;
 }
 
+std::string DummyDriveService::CanonicalizeResourceId(
+    const std::string& resource_id) const {
+  return resource_id;
+}
+
 bool DummyDriveService::HasAccessToken() const { return true; }
 
 bool DummyDriveService::HasRefreshToken() const { return true; }

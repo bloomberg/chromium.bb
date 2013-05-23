@@ -440,9 +440,7 @@ GURL ReadUrlFromGDocFile(const base::FilePath& file_path) {
 }
 
 std::string ReadResourceIdFromGDocFile(const base::FilePath& file_path) {
-  std::string resource_id = ReadStringFromGDocFile(file_path, "resource_id");
-  // TODO(hashimoto): Erase prefix like "document:". crbug.com/242798
-  return resource_id;
+  return ReadStringFromGDocFile(file_path, "resource_id");
 }
 
 }  // namespace util

@@ -156,6 +156,11 @@ bool GDataWapiService::CancelForFilePath(const base::FilePath& file_path) {
   return runner_->operation_registry()->CancelForFilePath(file_path);
 }
 
+std::string GDataWapiService::CanonicalizeResourceId(
+    const std::string& resource_id) const {
+  return resource_id;
+}
+
 std::string GDataWapiService::GetRootResourceId() const {
   return kWapiRootDirectoryResourceId;
 }

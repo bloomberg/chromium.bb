@@ -32,6 +32,7 @@ void DriveOperations::Init(OperationObserver* observer,
                            internal::ResourceMetadata* metadata,
                            internal::FileCache* cache,
                            FileSystemInterface* file_system,
+                           google_apis::DriveServiceInterface* drive_service,
                            base::SequencedTaskRunner* blocking_task_runner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -40,7 +41,8 @@ void DriveOperations::Init(OperationObserver* observer,
                                                        scheduler,
                                                        metadata,
                                                        cache,
-                                                       file_system));
+                                                       file_system,
+                                                       drive_service));
   create_directory_operation_.reset(new CreateDirectoryOperation(
       blocking_task_runner,
       observer,
