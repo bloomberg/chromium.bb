@@ -549,6 +549,45 @@ TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
   EXPECT_EQ("{\"title\":\"new name\"}", http_request_.content);
 }
 
+TEST_F(DriveApiOperationsTest, TouchResourceOperation) {
+  // Set an expected data file containing the directory's entry data.
+  // It'd be returned if we rename a directory.
+  expected_data_file_path_ =
+      test_util::GetTestFilePath("chromeos/drive/directory_entry.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<FileResource> file_resource;
+  const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
+  const base::Time::Exploded kLastViewedByMeDate =
+      {2013, 7, 0, 19, 15, 59, 13, 123};
+
+  // Touch a file with |resource_id|.
+  drive::TouchResourceOperation* operation = new drive::TouchResourceOperation(
+      operation_runner_.get(),
+      request_context_getter_.get(),
+      *url_generator_,
+      "resource_id",
+      base::Time::FromUTCExploded(kModifiedDate),
+      base::Time::FromUTCExploded(kLastViewedByMeDate),
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&error, &file_resource)));
+  operation_runner_->StartOperationWithRetry(operation);
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(net::test_server::METHOD_PATCH, http_request_.method);
+  EXPECT_EQ("/drive/v2/files/resource_id"
+            "?setModifiedDate=true&updateViewedDate=false",
+            http_request_.relative_url);
+  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
+
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("{\"lastViewedByMeDate\":\"2013-07-19T15:59:13.123Z\","
+            "\"modifiedDate\":\"2012-07-19T15:59:13.123Z\"}",
+            http_request_.content);
+}
+
 TEST_F(DriveApiOperationsTest, CopyResourceOperation) {
   // Set an expected data file containing the dummy file entry data.
   // It'd be returned if we copy a file.

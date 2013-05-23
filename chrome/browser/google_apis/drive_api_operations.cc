@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/operation_util.h"
+#include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -291,6 +292,59 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
   base::JSONWriter::Write(&root, upload_content);
 
   DVLOG(1) << "RenameResource data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
+}
+
+//=========================== TouchResourceOperation ===========================
+
+TouchResourceOperation::TouchResourceOperation(
+    OperationRunner* runner,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const DriveApiUrlGenerator& url_generator,
+    const std::string& resource_id,
+    const base::Time& modified_date,
+    const base::Time& last_viewed_by_me_date,
+    const FileResourceCallback& callback)
+    : GetDataOperation(runner, url_request_context_getter,
+                       base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+      url_generator_(url_generator),
+      resource_id_(resource_id),
+      modified_date_(modified_date),
+      last_viewed_by_me_date_(last_viewed_by_me_date) {
+  DCHECK(!modified_date.is_null());
+  DCHECK(!last_viewed_by_me_date.is_null());
+  DCHECK(!callback.is_null());
+}
+
+TouchResourceOperation::~TouchResourceOperation() {}
+
+net::URLFetcher::RequestType TouchResourceOperation::GetRequestType() const {
+  return net::URLFetcher::PATCH;
+}
+
+std::vector<std::string>
+TouchResourceOperation::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers;
+  headers.push_back(util::kIfMatchAllHeader);
+  return headers;
+}
+
+GURL TouchResourceOperation::GetURL() const {
+  return url_generator_.GetFileTouchUrl(resource_id_);
+}
+
+bool TouchResourceOperation::GetContentData(std::string* upload_content_type,
+                                            std::string* upload_content) {
+  *upload_content_type = kContentTypeApplicationJson;
+
+  base::DictionaryValue root;
+  root.SetString("modifiedDate", util::FormatTimeAsString(modified_date_));
+  root.SetString("lastViewedByMeDate",
+                 util::FormatTimeAsString(last_viewed_by_me_date_));
+  base::JSONWriter::Write(&root, upload_content);
+
+  DVLOG(1) << "TouchResource data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
 }

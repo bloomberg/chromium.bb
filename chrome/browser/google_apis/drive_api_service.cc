@@ -558,8 +558,15 @@ void DriveAPIService::TouchResource(
   DCHECK(!last_viewed_by_me_date.is_null());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this. (crbug.com/144369)
-  NOTIMPLEMENTED();
+  runner_->StartOperationWithRetry(
+      new drive::TouchResourceOperation(
+          runner_.get(),
+          url_request_context_getter_,
+          url_generator_,
+          resource_id,
+          modified_date,
+          last_viewed_by_me_date,
+          base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
 void DriveAPIService::AddResourceToDirectory(

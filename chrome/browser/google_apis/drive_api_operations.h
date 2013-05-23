@@ -246,6 +246,43 @@ class RenameResourceOperation : public EntryActionOperation {
   DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);
 };
 
+//=========================== TouchResourceOperation ===========================
+
+// This class performs the operation to touch a document/file/directory.
+// This uses "files.patch" of Drive API v2 rather than "files.touch". See also:
+// https://developers.google.com/drive/v2/reference/files/patch, and
+// https://developers.google.com/drive/v2/reference/files/touch
+class TouchResourceOperation : public GetDataOperation {
+ public:
+  // |callback| must not be null.
+  TouchResourceOperation(
+      OperationRunner* runner,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const DriveApiUrlGenerator& url_generator,
+      const std::string& resource_id,
+      const base::Time& modified_date,
+      const base::Time& last_viewed_by_me_date,
+      const FileResourceCallback& callback);
+  virtual ~TouchResourceOperation();
+
+ protected:
+  // UrlFetchOperationBase overrides.
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+  virtual GURL GetURL() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+
+  const std::string resource_id_;
+  const base::Time modified_date_;
+  const base::Time last_viewed_by_me_date_;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchResourceOperation);
+};
+
 //=========================== CopyResourceOperation ============================
 
 // This class performs the operation for copying a resource.
