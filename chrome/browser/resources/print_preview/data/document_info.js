@@ -168,6 +168,7 @@ cr.define('print_preview', function() {
       this.title_ = title;
       this.hasSelection_ = hasSelection;
       this.isInitialized_ = true;
+      cr.dispatchSimpleEvent(this, DocumentInfo.EventType.CHANGE);
     },
 
     /**
