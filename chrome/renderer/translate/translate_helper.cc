@@ -95,16 +95,19 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   // shouldn't affect translation.
   WebDocument document = GetMainFrame()->document();
   std::string content_language = document.contentLanguage().utf8();
+  std::string html_lang =
+      document.documentElement().getAttribute("lang").utf8();
   std::string cld_language;
   bool is_cld_reliable;
   std::string language = DeterminePageLanguage(
-      content_language, contents, &cld_language, &is_cld_reliable);
+      content_language, html_lang, contents, &cld_language, &is_cld_reliable);
 
   if (language.empty())
     return;
 
   language_determined_time_ = base::TimeTicks::Now();
 
+  // TODO(toyoshim): Add |html_lang| to LanguageDetectionDetails.
   GURL url(document.url());
   LanguageDetectionDetails details;
   details.time = base::Time::Now();
@@ -319,7 +322,20 @@ void TranslateHelper::ResetInvalidLanguageCode(std::string* code) {
 }
 
 // static
+void TranslateHelper::ApplyLanguageCodeCorrection(std::string* code) {
+  // Correct well-known format errors.
+  CorrectLanguageCodeTypo(code);
+
+  // Convert language code synonym firstly because sometime synonym code is in
+  // invalid format, e.g. 'fil'. After validation, such a 3 characters language
+  // gets converted to an empty string.
+  ConvertLanguageCodeSynonym(code);
+  ResetInvalidLanguageCode(code);
+}
+
+// static
 std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
+                                                   const std::string& html_lang,
                                                    const string16& contents,
                                                    std::string* cld_language_p,
                                                    bool* is_cld_reliable_p) {
@@ -337,17 +353,27 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
   ConvertLanguageCodeSynonym(&cld_language);
 #endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
-  // Correct well-known format errors.
-  std::string language = code;
-  CorrectLanguageCodeTypo(&language);
+  // Check if html lang attribute is valid.
+  std::string modified_html_lang;
+  if (!html_lang.empty()) {
+    modified_html_lang = html_lang;
+    ApplyLanguageCodeCorrection(&modified_html_lang);
+    TranslateHelperMetrics::ReportHtmlLang(html_lang, modified_html_lang);
+    VLOG(9) << "html lang based language code: " << modified_html_lang;
+  }
 
-  // Convert language code synonym firstly because sometime synonym code is in
-  // invalid format, e.g. 'fil'. After validation, such a 3 characters language
-  // gets converted to an empty string.
-  ConvertLanguageCodeSynonym(&language);
-  ResetInvalidLanguageCode(&language);
+  // Check if Content-Language is valid.
+  std::string modified_code;
+  if (!code.empty()) {
+    modified_code = code;
+    ApplyLanguageCodeCorrection(&modified_code);
+    TranslateHelperMetrics::ReportContentLanguage(code, modified_code);
+  }
 
-  TranslateHelperMetrics::ReportContentLanguage(code, language);
+  // Adopt |modified_html_lang| if it is valid. Otherwise, adopt
+  // |modified_code|.
+  std::string language = modified_html_lang.empty() ? modified_code :
+                                                      modified_html_lang;
 
 #if defined(ENABLE_LANGUAGE_DETECTION)
   // If |language| is empty, just use CLD result even though it might be

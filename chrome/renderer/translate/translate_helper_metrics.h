@@ -16,6 +16,7 @@ namespace TranslateHelperMetrics {
 enum MetricsNameIndex {
   UMA_LANGUAGE_DETECTION,
   UMA_CONTENT_LANGUAGE,
+  UMA_HTML_LANG,
   UMA_LANGUAGE_VERIFICATION,
   UMA_TIME_TO_BE_READY,
   UMA_TIME_TO_LOAD,
@@ -27,11 +28,11 @@ enum MetricsNameIndex {
 
 // A page may provide a Content-Language HTTP header or a META tag.
 // TranslateHelper checks if a server provides a valid Content-Language.
-enum ContentLanguageType {
-  CONTENT_LANGUAGE_NOT_PROVIDED,
-  CONTENT_LANGUAGE_VALID,
-  CONTENT_LANGUAGE_INVALID,
-  CONTENT_LANGUAGE_MAX,
+enum LanguageCheckType {
+  LANGUAGE_NOT_PROVIDED,
+  LANGUAGE_VALID,
+  LANGUAGE_INVALID,
+  LANGUAGE_MAX,
 };
 
 // When a valid Content-Language is provided, TranslateHelper checks if a
@@ -54,11 +55,18 @@ enum SchemeType {
 };
 
 // Called after TranslateHelper verifies a server providing Content-Language
-// header. |provided_code| contains a Content-Language header value which
+// header. |provided_code| contains a Content-Language header value which a
 // server provides. It can be empty string when a server doesn't provide it.
 // |revised_code| is a value modified by format error corrector.
 void ReportContentLanguage(const std::string& provided_code,
                            const std::string& revised_code);
+
+// Called after TranslateHelper verifies a page providing html lang attribute.
+// |provided_code| contains a html lang attribute which a page provides. It can
+// be empty string when a page doesn't provide it. |revised_code| is a value
+// modified by format error corrector.
+void ReportHtmlLang(const std::string& provided_code,
+                    const std::string& revised_code);
 
 // Called when CLD verifies Content-Language header.
 void ReportLanguageVerification(LanguageVerificationType type);
