@@ -92,12 +92,12 @@
         #'../third_party/skia/src/ports/SkPurgeableMemoryBlock_mac.cpp',
         '../third_party/skia/src/ports/SkPurgeableMemoryBlock_none.cpp',
 
-        '../third_party/skia/src/ports/FontHostConfiguration_android.cpp',
+        '../third_party/skia/src/ports/SkFontConfigInterface_android.cpp',
         #'../third_party/skia/src/ports/SkFontHost_FONTPATH.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType_common.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType_common.h',
-        '../third_party/skia/src/ports/SkFontHost_android.cpp',
+        '../third_party/skia/src/ports/SkFontConfigParser_android.cpp',
         #'../third_party/skia/src/ports/SkFontHost_ascender.cpp',
         #'../third_party/skia/src/ports/SkFontHost_linux.cpp',
         '../third_party/skia/src/ports/SkFontHost_mac.cpp',
@@ -326,7 +326,7 @@
             ['exclude', '_android\\.(cc|cpp)$'],
           ],
           'sources!': [
-            '../third_party/skia/src/core/SkPaintOptionsAndroid.cpp'
+            '../third_party/skia/src/core/SkPaintOptionsAndroid.cpp',
           ],
           'defines': [
             'SK_DEFAULT_FONT_CACHE_LIMIT=(20*1024*1024)',
@@ -394,6 +394,9 @@
           'sources/': [ ['exclude', '_gtk\\.(cc|cpp)$'] ],
         }],
         [ 'OS == "android"', {
+          'sources': [
+            '../third_party/skia/src/ports/SkFontHost_fontconfig.cpp',
+          ],
           'sources/': [
             ['exclude', '_linux\\.(cc|cpp)$'],
           ],
