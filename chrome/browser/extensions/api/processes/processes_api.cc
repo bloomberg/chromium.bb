@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
@@ -57,39 +58,39 @@ void SetProcessType(DictionaryValue* result,
                     int index) {
   // Determine process type.
   std::string type = keys::kProcessTypeOther;
-  TaskManager::Resource::Type resource_type = model->GetResourceType(index);
+  task_manager::Resource::Type resource_type = model->GetResourceType(index);
   switch (resource_type) {
-    case TaskManager::Resource::BROWSER:
+    case task_manager::Resource::BROWSER:
       type = keys::kProcessTypeBrowser;
       break;
-    case TaskManager::Resource::RENDERER:
+    case task_manager::Resource::RENDERER:
       type = keys::kProcessTypeRenderer;
       break;
-    case TaskManager::Resource::EXTENSION:
+    case task_manager::Resource::EXTENSION:
       type = keys::kProcessTypeExtension;
       break;
-    case TaskManager::Resource::NOTIFICATION:
+    case task_manager::Resource::NOTIFICATION:
       type = keys::kProcessTypeNotification;
       break;
-    case TaskManager::Resource::PLUGIN:
+    case task_manager::Resource::PLUGIN:
       type = keys::kProcessTypePlugin;
       break;
-    case TaskManager::Resource::WORKER:
+    case task_manager::Resource::WORKER:
       type = keys::kProcessTypeWorker;
       break;
-    case TaskManager::Resource::NACL:
+    case task_manager::Resource::NACL:
       type = keys::kProcessTypeNacl;
       break;
-    case TaskManager::Resource::UTILITY:
+    case task_manager::Resource::UTILITY:
       type = keys::kProcessTypeUtility;
       break;
-    case TaskManager::Resource::GPU:
+    case task_manager::Resource::GPU:
       type = keys::kProcessTypeGPU;
       break;
-    case TaskManager::Resource::PROFILE_IMPORT:
-    case TaskManager::Resource::ZYGOTE:
-    case TaskManager::Resource::SANDBOX_HELPER:
-    case TaskManager::Resource::UNKNOWN:
+    case task_manager::Resource::PROFILE_IMPORT:
+    case task_manager::Resource::ZYGOTE:
+    case task_manager::Resource::SANDBOX_HELPER:
+    case task_manager::Resource::UNKNOWN:
       type = keys::kProcessTypeOther;
       break;
     default:
@@ -395,7 +396,7 @@ void ProcessesEventRouter::OnItemsToBeRemoved(int start, int length) {
   // termination status, therefore we will rely on notifications and not on
   // the Task Manager data. We do use the rest of this method for non-renderer
   // processes.
-  if (model_->GetResourceType(start) == TaskManager::Resource::RENDERER)
+  if (model_->GetResourceType(start) == task_manager::Resource::RENDERER)
     return;
 
   // The callback function parameters.

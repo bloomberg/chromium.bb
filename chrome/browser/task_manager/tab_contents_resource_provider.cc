@@ -14,6 +14,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/task_manager/renderer_resource.h"
+#include "chrome/browser/task_manager/resource_provider.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -77,7 +79,7 @@ class TabContentsResource : public RendererResource {
   // longer an Instant overlay.
   void InstantCommitted();
 
-  // TaskManager::Resource methods:
+  // Resource methods:
   virtual Type GetType() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
@@ -124,7 +126,7 @@ bool TabContentsResource::HostsExtension() const {
   return web_contents_->GetURL().SchemeIs(extensions::kExtensionScheme);
 }
 
-TaskManager::Resource::Type TabContentsResource::GetType() const {
+Resource::Type TabContentsResource::GetType() const {
   return HostsExtension() ? EXTENSION : RENDERER;
 }
 
@@ -189,7 +191,7 @@ TabContentsResourceProvider::
 TabContentsResourceProvider::~TabContentsResourceProvider() {
 }
 
-TaskManager::Resource* TabContentsResourceProvider::GetResource(
+Resource* TabContentsResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {

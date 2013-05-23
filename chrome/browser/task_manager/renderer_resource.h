@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_TASK_MANAGER_RENDERER_RESOURCE_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #include "content/public/browser/render_view_host_observer.h"
 
 namespace content {
@@ -17,14 +17,14 @@ namespace task_manager {
 
 // Base class for various types of render process resources that provides common
 // functionality like stats tracking.
-class RendererResource : public TaskManager::Resource,
+class RendererResource : public Resource,
                          public content::RenderViewHostObserver {
  public:
   RendererResource(base::ProcessHandle process,
-                              content::RenderViewHost* render_view_host);
+                   content::RenderViewHost* render_view_host);
   virtual ~RendererResource();
 
-  // TaskManager::Resource methods:
+  // Resource methods:
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual int GetUniqueChildProcessId() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;

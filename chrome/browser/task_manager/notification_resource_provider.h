@@ -9,25 +9,26 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class BalloonHost;
+class TaskManager;
 
 namespace task_manager {
 
 class NotificationResource;
 
-class NotificationResourceProvider : public TaskManager::ResourceProvider,
+class NotificationResourceProvider : public ResourceProvider,
                                      public content::NotificationObserver {
  public:
   static NotificationResourceProvider* Create(TaskManager* task_manager);
 
-  // TaskManager::ResourceProvider interface
-  virtual TaskManager::Resource* GetResource(int origin_pid,
-                                             int render_process_host_id,
-                                             int routing_id) OVERRIDE;
+  // ResourceProvider interface
+  virtual Resource* GetResource(int origin_pid,
+                                int render_process_host_id,
+                                int routing_id) OVERRIDE;
   virtual void StartUpdating() OVERRIDE;
   virtual void StopUpdating() OVERRIDE;
 

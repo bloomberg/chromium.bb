@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/image/image_skia.h"
@@ -21,15 +21,15 @@ namespace task_manager {
 
 class PanelResource;
 
-class PanelResourceProvider : public TaskManager::ResourceProvider,
+class PanelResourceProvider : public ResourceProvider,
                               public content::NotificationObserver {
  public:
   explicit PanelResourceProvider(TaskManager* task_manager);
 
-  // TaskManager::ResourceProvider methods:
-  virtual TaskManager::Resource* GetResource(int origin_pid,
-                                             int render_process_host_id,
-                                             int routing_id) OVERRIDE;
+  // ResourceProvider methods:
+  virtual Resource* GetResource(int origin_pid,
+                                int render_process_host_id,
+                                int routing_id) OVERRIDE;
   virtual void StartUpdating() OVERRIDE;
   virtual void StopUpdating() OVERRIDE;
 

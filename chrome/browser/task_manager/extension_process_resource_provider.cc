@@ -13,6 +13,8 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/task_manager/resource_provider.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_process_host.h"
@@ -30,13 +32,13 @@ using extensions::Extension;
 
 namespace task_manager {
 
-class ExtensionProcessResource : public TaskManager::Resource {
+class ExtensionProcessResource : public Resource {
  public:
   explicit ExtensionProcessResource(
       content::RenderViewHost* render_view_host);
   virtual ~ExtensionProcessResource();
 
-  // TaskManager::Resource methods:
+  // Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
@@ -122,7 +124,7 @@ int ExtensionProcessResource::GetUniqueChildProcessId() const {
   return unique_process_id_;
 }
 
-TaskManager::Resource::Type ExtensionProcessResource::GetType() const {
+Resource::Type ExtensionProcessResource::GetType() const {
   return EXTENSION;
 }
 
@@ -170,7 +172,7 @@ ExtensionProcessResourceProvider::
 ExtensionProcessResourceProvider::~ExtensionProcessResourceProvider() {
 }
 
-TaskManager::Resource* ExtensionProcessResourceProvider::GetResource(
+Resource* ExtensionProcessResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
@@ -283,15 +285,15 @@ bool ExtensionProcessResourceProvider::
     IsHandledByThisProvider(content::RenderViewHost* render_view_host) {
   WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
   // Don't add WebContents that belong to a guest (those are handled by
-  // TaskManagerGuestResourceProvider). Otherwise they will be added twice, and
+  // GuestResourceProvider). Otherwise they will be added twice, and
   // in this case they will have the app's name as a title (due to the
   // ExtensionProcessResource constructor).
   if (web_contents->GetRenderProcessHost()->IsGuest())
     return false;
   extensions::ViewType view_type = extensions::GetViewType(web_contents);
   // Don't add WebContents (those are handled by
-  // TaskManagerTabContentsResourceProvider) or background contents (handled
-  // by TaskManagerBackgroundResourceProvider).
+  // TabContentsResourceProvider) or background contents (handled
+  // by BackgroundResourceProvider).
 #if defined(USE_ASH)
   return (view_type != extensions::VIEW_TYPE_TAB_CONTENTS &&
           view_type != extensions::VIEW_TYPE_BACKGROUND_CONTENTS);

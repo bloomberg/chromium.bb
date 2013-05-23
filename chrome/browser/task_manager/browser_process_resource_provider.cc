@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/string16.h"
+#include "chrome/browser/task_manager/resource_provider.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -65,7 +67,7 @@ BrowserProcessResource::~BrowserProcessResource() {
   base::CloseProcessHandle(process_);
 }
 
-// TaskManagerResource methods:
+// Resource methods:
 string16 BrowserProcessResource::GetTitle() const {
   if (title_.empty()) {
     title_ = l10n_util::GetStringUTF16(IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT);
@@ -93,7 +95,7 @@ int BrowserProcessResource::GetUniqueChildProcessId() const {
   return 0;
 }
 
-TaskManager::Resource::Type BrowserProcessResource::GetType() const {
+Resource::Type BrowserProcessResource::GetType() const {
   return BROWSER;
 }
 
@@ -140,7 +142,7 @@ BrowserProcessResourceProvider::
 BrowserProcessResourceProvider::~BrowserProcessResourceProvider() {
 }
 
-TaskManager::Resource* BrowserProcessResourceProvider::GetResource(
+Resource* BrowserProcessResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {

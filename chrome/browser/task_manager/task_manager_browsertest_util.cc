@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,15 +23,15 @@ namespace {
 int GetWebResourceCount(const TaskManagerModel* model) {
   int count = 0;
   for (int i = 0; i < model->ResourceCount(); i++) {
-    TaskManager::Resource::Type type = model->GetResourceType(i);
+    task_manager::Resource::Type type = model->GetResourceType(i);
     // Skip system infrastructure resources.
-    if (type == TaskManager::Resource::BROWSER ||
-        type == TaskManager::Resource::NACL ||
-        type == TaskManager::Resource::GPU ||
-        type == TaskManager::Resource::UTILITY ||
-        type == TaskManager::Resource::PROFILE_IMPORT ||
-        type == TaskManager::Resource::ZYGOTE ||
-        type == TaskManager::Resource::SANDBOX_HELPER) {
+    if (type == task_manager::Resource::BROWSER ||
+        type == task_manager::Resource::NACL ||
+        type == task_manager::Resource::GPU ||
+        type == task_manager::Resource::UTILITY ||
+        type == task_manager::Resource::PROFILE_IMPORT ||
+        type == task_manager::Resource::ZYGOTE ||
+        type == task_manager::Resource::SANDBOX_HELPER) {
       continue;
     }
 

@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -93,7 +93,7 @@ int RendererResource::GetUniqueChildProcessId() const {
   return unique_process_id_;
 }
 
-TaskManager::Resource::Type RendererResource::GetType() const {
+Resource::Type RendererResource::GetType() const {
   return RENDERER;
 }
 

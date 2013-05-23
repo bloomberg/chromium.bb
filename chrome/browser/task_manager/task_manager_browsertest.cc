@@ -20,6 +20,7 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -313,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
 
   // Check that the third entry (background) is an extension resource whose
   // title starts with "Extension:".
-  ASSERT_EQ(TaskManager::Resource::EXTENSION, model()->GetResourceType(
+  ASSERT_EQ(task_manager::Resource::EXTENSION, model()->GetResourceType(
       resource_count));
   ASSERT_TRUE(model()->GetResourceWebContents(resource_count) == NULL);
   ASSERT_TRUE(model()->GetResourceExtension(resource_count) != NULL);
@@ -324,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
 
   // Check that the fourth entry (page.html) is of type extension and has both
   // a tab contents and an extension. The title should start with "Extension:".
-  ASSERT_EQ(TaskManager::Resource::EXTENSION, model()->GetResourceType(
+  ASSERT_EQ(task_manager::Resource::EXTENSION, model()->GetResourceType(
       resource_count + 1));
   ASSERT_TRUE(model()->GetResourceWebContents(resource_count + 1) != NULL);
   ASSERT_TRUE(model()->GetResourceExtension(resource_count + 1) != NULL);
@@ -355,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
 
   // Check that the third entry (main.html) is of type extension and has both
   // a tab contents and an extension. The title should start with "App:".
-  ASSERT_EQ(TaskManager::Resource::EXTENSION, model()->GetResourceType(
+  ASSERT_EQ(task_manager::Resource::EXTENSION, model()->GetResourceType(
       resource_count));
   ASSERT_TRUE(model()->GetResourceWebContents(resource_count) != NULL);
   ASSERT_TRUE(model()->GetResourceExtension(resource_count) == extension);

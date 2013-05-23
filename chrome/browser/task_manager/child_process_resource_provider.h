@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_registrar.h"
+
+class TaskManager;
 
 namespace content {
 struct ChildProcessData;
@@ -22,14 +24,14 @@ namespace task_manager {
 class ChildProcessResource;
 
 class ChildProcessResourceProvider
-    : public TaskManager::ResourceProvider,
+    : public ResourceProvider,
       public content::BrowserChildProcessObserver {
  public:
   explicit ChildProcessResourceProvider(TaskManager* task_manager);
 
-  virtual TaskManager::Resource* GetResource(int origin_pid,
-                                             int render_process_host_id,
-                                             int routing_id) OVERRIDE;
+  virtual Resource* GetResource(int origin_pid,
+                                int render_process_host_id,
+                                int routing_id) OVERRIDE;
   virtual void StartUpdating() OVERRIDE;
   virtual void StopUpdating() OVERRIDE;
 

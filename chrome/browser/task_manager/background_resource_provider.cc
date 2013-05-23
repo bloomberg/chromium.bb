@@ -15,6 +15,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/task_manager/renderer_resource.h"
+#include "chrome/browser/task_manager/resource_provider.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
@@ -41,7 +43,7 @@ class BackgroundContentsResource : public RendererResource {
       const string16& application_name);
   virtual ~BackgroundContentsResource();
 
-  // TaskManager::Resource methods:
+  // Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
@@ -85,7 +87,7 @@ BackgroundContentsResource::BackgroundContentsResource(
     default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGINS_FAVICON);
   }
   // Ensure that the string has the appropriate direction markers (see comment
-  // in TaskManagerTabContentsResource::GetTitle()).
+  // in TabContentsResource::GetTitle()).
   base::i18n::AdjustStringForLocaleDirection(&application_name_);
 }
 
@@ -129,7 +131,7 @@ BackgroundContentsResourceProvider::
 BackgroundContentsResourceProvider::~BackgroundContentsResourceProvider() {
 }
 
-TaskManager::Resource* BackgroundContentsResourceProvider::GetResource(
+Resource* BackgroundContentsResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {

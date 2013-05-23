@@ -8,6 +8,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/renderer_resource.h"
+#include "chrome/browser/task_manager/resource_provider.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_util.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -32,7 +34,7 @@ class PanelResource : public RendererResource {
   explicit PanelResource(Panel* panel);
   virtual ~PanelResource();
 
-  // TaskManager::Resource methods:
+  // Resource methods:
   virtual Type GetType() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
@@ -66,7 +68,7 @@ PanelResource::PanelResource(Panel* panel)
 PanelResource::~PanelResource() {
 }
 
-TaskManager::Resource::Type PanelResource::GetType() const {
+Resource::Type PanelResource::GetType() const {
   return EXTENSION;
 }
 
@@ -116,7 +118,7 @@ PanelResourceProvider::PanelResourceProvider(TaskManager* task_manager)
 PanelResourceProvider::~PanelResourceProvider() {
 }
 
-TaskManager::Resource* PanelResourceProvider::GetResource(
+Resource* PanelResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {

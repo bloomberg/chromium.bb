@@ -8,6 +8,8 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/renderer_resource.h"
+#include "chrome/browser/task_manager/resource_provider.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -33,7 +35,7 @@ class GuestResource : public RendererResource {
   explicit GuestResource(content::RenderViewHost* render_view_host);
   virtual ~GuestResource();
 
-  // TaskManager::Resource methods:
+  // Resource methods:
   virtual Type GetType() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
@@ -54,7 +56,7 @@ GuestResource::GuestResource(RenderViewHost* render_view_host)
 GuestResource::~GuestResource() {
 }
 
-TaskManager::Resource::Type GuestResource::GetType() const {
+Resource::Type GuestResource::GetType() const {
   return GUEST;
 }
 
@@ -103,7 +105,7 @@ GuestResourceProvider::GuestResourceProvider(TaskManager* task_manager)
 GuestResourceProvider::~GuestResourceProvider() {
 }
 
-TaskManager::Resource* GuestResourceProvider::GetResource(
+Resource* GuestResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {

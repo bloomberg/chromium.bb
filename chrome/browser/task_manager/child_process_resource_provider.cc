@@ -8,6 +8,8 @@
 
 #include "base/i18n/rtl.h"
 #include "base/string16.h"
+#include "chrome/browser/task_manager/resource_provider.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_process_type.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -26,7 +28,7 @@ using content::WebContents;
 
 namespace task_manager {
 
-class ChildProcessResource : public TaskManager::Resource {
+class ChildProcessResource : public Resource {
  public:
   ChildProcessResource(int process_type,
                        const string16& name,
@@ -34,7 +36,7 @@ class ChildProcessResource : public TaskManager::Resource {
                        int unique_process_id);
   virtual ~ChildProcessResource();
 
-  // TaskManager::Resource methods:
+  // Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
@@ -93,7 +95,7 @@ ChildProcessResource::ChildProcessResource(
 ChildProcessResource::~ChildProcessResource() {
 }
 
-// TaskManagerResource methods:
+// Resource methods:
 string16 ChildProcessResource::GetTitle() const {
   if (title_.empty())
     title_ = GetLocalizedTitle();
@@ -117,29 +119,29 @@ int ChildProcessResource::GetUniqueChildProcessId() const {
   return unique_process_id_;
 }
 
-TaskManager::Resource::Type ChildProcessResource::GetType() const {
-  // Translate types to TaskManager::ResourceType, since ChildProcessData's type
+Resource::Type ChildProcessResource::GetType() const {
+  // Translate types to Resource::Type, since ChildProcessData's type
   // is not available for all TaskManager resources.
   switch (process_type_) {
     case content::PROCESS_TYPE_PLUGIN:
     case content::PROCESS_TYPE_PPAPI_PLUGIN:
     case content::PROCESS_TYPE_PPAPI_BROKER:
-      return TaskManager::Resource::PLUGIN;
+      return Resource::PLUGIN;
     case content::PROCESS_TYPE_UTILITY:
-      return TaskManager::Resource::UTILITY;
+      return Resource::UTILITY;
     case content::PROCESS_TYPE_ZYGOTE:
-      return TaskManager::Resource::ZYGOTE;
+      return Resource::ZYGOTE;
     case content::PROCESS_TYPE_SANDBOX_HELPER:
-      return TaskManager::Resource::SANDBOX_HELPER;
+      return Resource::SANDBOX_HELPER;
     case content::PROCESS_TYPE_GPU:
-      return TaskManager::Resource::GPU;
+      return Resource::GPU;
     case PROCESS_TYPE_PROFILE_IMPORT:
-      return TaskManager::Resource::PROFILE_IMPORT;
+      return Resource::PROFILE_IMPORT;
     case PROCESS_TYPE_NACL_LOADER:
     case PROCESS_TYPE_NACL_BROKER:
-      return TaskManager::Resource::NACL;
+      return Resource::NACL;
     default:
-      return TaskManager::Resource::UNKNOWN;
+      return Resource::UNKNOWN;
   }
 }
 
@@ -221,7 +223,7 @@ ChildProcessResourceProvider::
 ChildProcessResourceProvider::~ChildProcessResourceProvider() {
 }
 
-TaskManager::Resource* ChildProcessResourceProvider::GetResource(
+Resource* ChildProcessResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
@@ -263,7 +265,7 @@ void ChildProcessResourceProvider::BrowserChildProcessHostConnected(
     const content::ChildProcessData& data) {
   DCHECK(updating_);
 
-  // Workers are handled by TaskManagerWorkerResourceProvider.
+  // Workers are handled by WorkerResourceProvider.
   if (data.process_type == content::PROCESS_TYPE_WORKER)
     return;
   if (resources_.count(data.handle)) {

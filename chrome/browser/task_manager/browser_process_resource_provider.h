@@ -8,13 +8,15 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/process_util.h"
-#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/common/process_type.h"
+
+class TaskManager;
 
 namespace content {
 class RenderViewHost;
@@ -27,12 +29,12 @@ class Extension;
 
 namespace task_manager {
 
-class BrowserProcessResource : public TaskManager::Resource {
+class BrowserProcessResource : public Resource {
  public:
   BrowserProcessResource();
   virtual ~BrowserProcessResource();
 
-  // TaskManager::Resource methods:
+  // Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
@@ -59,15 +61,13 @@ class BrowserProcessResource : public TaskManager::Resource {
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessResource);
 };
 
-class BrowserProcessResourceProvider
-    : public TaskManager::ResourceProvider {
+class BrowserProcessResourceProvider : public ResourceProvider {
  public:
-  explicit BrowserProcessResourceProvider(
-      TaskManager* task_manager);
+  explicit BrowserProcessResourceProvider(TaskManager* task_manager);
 
-  virtual TaskManager::Resource* GetResource(int origin_pid,
-                                             int render_process_host_id,
-                                             int routing_id) OVERRIDE;
+  virtual Resource* GetResource(int origin_pid,
+                                int render_process_host_id,
+                                int routing_id) OVERRIDE;
   virtual void StartUpdating() OVERRIDE;
   virtual void StopUpdating() OVERRIDE;
 

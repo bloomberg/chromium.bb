@@ -9,18 +9,20 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/task_manager/task_manager.h"
+#include "base/memory/singleton.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/worker_service_observer.h"
+
+class TaskManager;
 
 namespace task_manager {
 
 class SharedWorkerResource;
 
-class WorkerResourceProvider
-    : public TaskManager::ResourceProvider,
-      public content::BrowserChildProcessObserver,
-      private content::WorkerServiceObserver {
+class WorkerResourceProvider : public ResourceProvider,
+                               public content::BrowserChildProcessObserver,
+                               private content::WorkerServiceObserver {
  public:
   explicit WorkerResourceProvider(TaskManager* task_manager);
 
@@ -32,10 +34,10 @@ class WorkerResourceProvider
 
   virtual ~WorkerResourceProvider();
 
-  // TaskManager::ResourceProvider implementation.
-  virtual TaskManager::Resource* GetResource(int origin_pid,
-                                             int render_process_host_id,
-                                             int routing_id) OVERRIDE;
+  // ResourceProvider implementation.
+  virtual Resource* GetResource(int origin_pid,
+                                int render_process_host_id,
+                                int routing_id) OVERRIDE;
   virtual void StartUpdating() OVERRIDE;
   virtual void StopUpdating() OVERRIDE;
 

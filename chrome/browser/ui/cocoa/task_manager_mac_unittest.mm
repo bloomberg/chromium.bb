@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #import "chrome/browser/ui/cocoa/task_manager_mac.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "grit/generated_resources.h"
@@ -17,7 +18,7 @@
 
 namespace {
 
-class TestResource : public TaskManager::Resource {
+class TestResource : public task_manager::Resource {
  public:
   TestResource(const string16& title, pid_t pid) : title_(title), pid_(pid) {}
   virtual string16 GetTitle() const OVERRIDE { return title_; }

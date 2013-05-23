@@ -8,9 +8,11 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+
+class TaskManager;
 
 namespace content {
 class RenderViewHost;
@@ -21,14 +23,14 @@ namespace task_manager {
 class ExtensionProcessResource;
 
 class ExtensionProcessResourceProvider
-    : public TaskManager::ResourceProvider,
+    : public ResourceProvider,
       public content::NotificationObserver {
  public:
   explicit ExtensionProcessResourceProvider(TaskManager* task_manager);
 
-  virtual TaskManager::Resource* GetResource(int origin_pid,
-                                             int render_process_host_id,
-                                             int routing_id) OVERRIDE;
+  virtual Resource* GetResource(int origin_pid,
+                                int render_process_host_id,
+                                int routing_id) OVERRIDE;
   virtual void StartUpdating() OVERRIDE;
   virtual void StopUpdating() OVERRIDE;
 

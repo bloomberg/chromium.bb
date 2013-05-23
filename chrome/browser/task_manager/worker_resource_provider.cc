@@ -11,6 +11,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/task_manager/resource_provider.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_process_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -31,7 +33,7 @@ namespace task_manager {
 // Objects of this class are created on the IO thread and then passed to the UI
 // thread where they are passed to the task manager. All methods must be called
 // only on the UI thread. Destructor may be called on any thread.
-class SharedWorkerResource : public TaskManager::Resource {
+class SharedWorkerResource : public Resource {
  public:
   SharedWorkerResource(const GURL& url,
                        const string16& name,
@@ -47,7 +49,7 @@ class SharedWorkerResource : public TaskManager::Resource {
   int process_id() const { return process_id_; }
 
  private:
-  // TaskManager::Resource methods:
+  // Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
@@ -123,7 +125,7 @@ int SharedWorkerResource::GetUniqueChildProcessId() const {
   return process_id_;
 }
 
-TaskManager::Resource::Type SharedWorkerResource::GetType() const {
+Resource::Type SharedWorkerResource::GetType() const {
   return WORKER;
 }
 
@@ -181,7 +183,7 @@ WorkerResourceProvider::~WorkerResourceProvider() {
   DeleteAllResources();
 }
 
-TaskManager::Resource* WorkerResourceProvider::GetResource(
+Resource* WorkerResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {

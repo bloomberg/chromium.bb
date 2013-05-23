@@ -9,6 +9,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -21,12 +22,12 @@
 
 namespace task_manager {
 
-class NotificationResource : public TaskManager::Resource {
+class NotificationResource : public Resource {
  public:
   explicit NotificationResource(BalloonHost* balloon_host);
   virtual ~NotificationResource();
 
-  // TaskManager::Resource interface
+  // Resource interface
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
@@ -94,7 +95,7 @@ int NotificationResource::GetUniqueChildProcessId() const {
   return unique_process_id_;
 }
 
-TaskManager::Resource::Type NotificationResource::GetType() const {
+Resource::Type NotificationResource::GetType() const {
   return NOTIFICATION;
 }
 
@@ -130,7 +131,7 @@ NotificationResourceProvider::
 NotificationResourceProvider::~NotificationResourceProvider() {
 }
 
-TaskManager::Resource* NotificationResourceProvider::GetResource(
+Resource* NotificationResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {

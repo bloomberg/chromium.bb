@@ -5,21 +5,19 @@
 #include "chrome/browser/task_manager/task_manager.h"
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -30,23 +28,19 @@
 #include "chrome/browser/task_manager/guest_resource_provider.h"
 #include "chrome/browser/task_manager/notification_resource_provider.h"
 #include "chrome/browser/task_manager/panel_resource_provider.h"
+#include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/tab_contents_resource_provider.h"
 #include "chrome/browser/task_manager/worker_resource_provider.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/result_codes.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/icu/public/i18n/unicode/coll.h"
@@ -55,11 +49,17 @@
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/image/image_skia.h"
 
+#if defined(OS_MACOSX)
+#include "content/public/browser/browser_child_process_host.h"
+#endif
+
 using content::BrowserThread;
-using content::OpenURLParams;
-using content::Referrer;
 using content::ResourceRequestInfo;
 using content::WebContents;
+using task_manager::Resource;
+using task_manager::ResourceProvider;
+
+class Profile;
 
 namespace {
 
@@ -163,6 +163,23 @@ void GetWinUSERHandles(base::ProcessHandle process,
 }
 #endif
 
+// Counts the number of extension background pages associated with this profile.
+int CountExtensionBackgroundPagesForProfile(Profile* profile) {
+  int count = 0;
+  ExtensionProcessManager* manager =
+      extensions::ExtensionSystem::Get(profile)->process_manager();
+  if (!manager)
+    return count;
+
+  const ExtensionProcessManager::ExtensionHostSet& background_hosts =
+      manager->background_hosts();
+  for (ExtensionProcessManager::const_iterator iter = background_hosts.begin();
+       iter != background_hosts.end(); ++iter) {
+    ++count;
+  }
+  return count;
+}
+
 }  // namespace
 
 class TaskManagerModelGpuDataManagerObserver
@@ -265,7 +282,7 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
   AddResourceProvider(new task_manager::GuestResourceProvider(task_manager));
 
 #if defined(ENABLE_NOTIFICATIONS)
-  TaskManager::ResourceProvider* provider =
+  ResourceProvider* provider =
       task_manager::NotificationResourceProvider::Create(task_manager);
   if (provider)
     AddResourceProvider(provider);
@@ -720,7 +737,7 @@ int TaskManagerModel::GetGoatsTeleported(int index) const {
 }
 
 bool TaskManagerModel::IsResourceFirstInGroup(int index) const {
-  TaskManager::Resource* resource = GetResource(index);
+  Resource* resource = GetResource(index);
   GroupMap::const_iterator iter = group_map_.find(resource->GetProcess());
   DCHECK(iter != group_map_.end());
   const ResourceList* group = iter->second;
@@ -728,7 +745,7 @@ bool TaskManagerModel::IsResourceFirstInGroup(int index) const {
 }
 
 bool TaskManagerModel::IsResourceLastInGroup(int index) const {
-  TaskManager::Resource* resource = GetResource(index);
+  Resource* resource = GetResource(index);
   GroupMap::const_iterator iter = group_map_.find(resource->GetProcess());
   DCHECK(iter != group_map_.end());
   const ResourceList* group = iter->second;
@@ -751,7 +768,7 @@ gfx::ImageSkia TaskManagerModel::GetResourceIcon(int index) const {
 
 TaskManagerModel::GroupRange
 TaskManagerModel::GetGroupRangeForResource(int index) const {
-  TaskManager::Resource* resource = GetResource(index);
+  Resource* resource = GetResource(index);
   GroupMap::const_iterator group_iter =
       group_map_.find(resource->GetProcess());
   DCHECK(group_iter != group_map_.end());
@@ -935,7 +952,7 @@ int TaskManagerModel::GetUniqueChildProcessId(int index) const {
   return GetResource(index)->GetUniqueChildProcessId();
 }
 
-TaskManager::Resource::Type TaskManagerModel::GetResourceType(int index) const {
+Resource::Type TaskManagerModel::GetResourceType(int index) const {
   return GetResource(index)->GetType();
 }
 
@@ -948,7 +965,7 @@ const extensions::Extension* TaskManagerModel::GetResourceExtension(
   return GetResource(index)->GetExtension();
 }
 
-void TaskManagerModel::AddResource(TaskManager::Resource* resource) {
+void TaskManagerModel::AddResource(Resource* resource) {
   resource->unique_id_ = ++last_unique_id_;
 
   base::ProcessHandle process = resource->GetProcess();
@@ -996,7 +1013,7 @@ void TaskManagerModel::AddResource(TaskManager::Resource* resource) {
                     OnItemsAdded(new_entry_index, 1));
 }
 
-void TaskManagerModel::RemoveResource(TaskManager::Resource* resource) {
+void TaskManagerModel::RemoveResource(Resource* resource) {
   base::ProcessHandle process = resource->GetProcess();
 
   // Find the associated group.
@@ -1314,8 +1331,7 @@ void TaskManagerModel::RefreshVideoMemoryUsageStats() {
   content::GpuDataManager::GetInstance()->RequestVideoMemoryUsageStatsUpdate();
 }
 
-int64 TaskManagerModel::GetNetworkUsageForResource(
-    TaskManager::Resource* resource) const {
+int64 TaskManagerModel::GetNetworkUsageForResource(Resource* resource) const {
   // Returns default of 0 if no network usage.
   return per_resource_cache_[resource].network_usage;
 }
@@ -1329,7 +1345,7 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
 
   // TODO(jcampan): this should be improved once we have a better way of
   // linking a network notification back to the object that initiated it.
-  TaskManager::Resource* resource = NULL;
+  Resource* resource = NULL;
   for (ResourceProviderList::iterator iter = providers_.begin();
        iter != providers_.end(); ++iter) {
     resource = (*iter)->GetResource(param.origin_pid,
@@ -1386,14 +1402,14 @@ void TaskManagerModel::NotifyMultipleBytesRead() {
                  base::Owned(bytes_read_buffer)));
 }
 
-int64 TaskManagerModel::GetNetworkUsage(TaskManager::Resource* resource) const {
+int64 TaskManagerModel::GetNetworkUsage(Resource* resource) const {
   int64 net_usage = GetNetworkUsageForResource(resource);
   if (net_usage == 0 && !resource->SupportNetworkUsage())
     return -1;
   return net_usage;
 }
 
-double TaskManagerModel::GetCPUUsage(TaskManager::Resource* resource) const {
+double TaskManagerModel::GetCPUUsage(Resource* resource) const {
   const PerProcessValues& values(per_process_cache_[resource->GetProcess()]);
   // Returns 0 if not valid, which is fine.
   return values.cpu_usage;
@@ -1453,8 +1469,7 @@ bool TaskManagerModel::CacheV8Memory(int index) const {
   return true;
 }
 
-void TaskManagerModel::AddResourceProvider(
-    TaskManager::ResourceProvider* provider) {
+void TaskManagerModel::AddResourceProvider(ResourceProvider* provider) {
   DCHECK(provider);
   providers_.push_back(provider);
 }
@@ -1464,7 +1479,7 @@ TaskManagerModel::PerResourceValues& TaskManagerModel::GetPerResourceValues(
   return per_resource_cache_[GetResource(index)];
 }
 
-TaskManager::Resource* TaskManagerModel::GetResource(int index) const {
+Resource* TaskManagerModel::GetResource(int index) const {
   CHECK_GE(index, 0);
   CHECK_LT(index, static_cast<int>(resources_.size()));
   return resources_[index];
@@ -1473,42 +1488,6 @@ TaskManager::Resource* TaskManagerModel::GetResource(int index) const {
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManager class
 ////////////////////////////////////////////////////////////////////////////////
-
-int TaskManager::Resource::GetRoutingID() const { return 0; }
-
-bool TaskManager::Resource::ReportsCacheStats() const { return false; }
-
-WebKit::WebCache::ResourceTypeStats
-TaskManager::Resource::GetWebCoreCacheStats() const {
-  return WebKit::WebCache::ResourceTypeStats();
-}
-
-bool TaskManager::Resource::ReportsFPS() const { return false; }
-
-float TaskManager::Resource::GetFPS() const { return 0.0f; }
-
-bool TaskManager::Resource::ReportsSqliteMemoryUsed() const { return false; }
-
-size_t TaskManager::Resource::SqliteMemoryUsedBytes() const { return 0; }
-
-const extensions::Extension* TaskManager::Resource::GetExtension() const {
-  return NULL;
-}
-
-bool TaskManager::Resource::ReportsV8MemoryStats() const { return false; }
-
-size_t TaskManager::Resource::GetV8MemoryAllocated() const { return 0; }
-
-size_t TaskManager::Resource::GetV8MemoryUsed() const { return 0; }
-
-bool TaskManager::Resource::CanInspect() const { return false; }
-
-content::WebContents* TaskManager::Resource::GetWebContents() const {
-  return NULL;
-}
-
-bool TaskManager::Resource::IsBackground() const { return false; }
-
 // static
 void TaskManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kTaskManagerWindowPlacement);
@@ -1568,27 +1547,6 @@ void TaskManager::OpenAboutMemory(chrome::HostDesktopType desktop_type) {
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);
 }
-
-namespace {
-
-// Counts the number of extension background pages associated with this profile.
-int CountExtensionBackgroundPagesForProfile(Profile* profile) {
-  int count = 0;
-  ExtensionProcessManager* manager =
-      extensions::ExtensionSystem::Get(profile)->process_manager();
-  if (!manager)
-    return count;
-
-  const ExtensionProcessManager::ExtensionHostSet& background_hosts =
-      manager->background_hosts();
-  for (ExtensionProcessManager::const_iterator iter = background_hosts.begin();
-       iter != background_hosts.end(); ++iter) {
-    ++count;
-  }
-  return count;
-}
-
-}  // namespace
 
 // static
 int TaskManager::GetBackgroundPageCount() {
