@@ -159,6 +159,11 @@ public class ChromeBrowserProvider extends ContentProvider {
     private int mNativeChromeBrowserProvider;
     private BookmarkNode mMobileBookmarksFolder;
 
+    /**
+     * Records whether we've received a call to one of the public ContentProvider APIs.
+     */
+    protected boolean mContentProviderApiCalled;
+
     private void ensureUriMatcherInitialized() {
         synchronized (mInitializeUriMatcherLock) {
             if (mUriMatcher != null) return;
@@ -300,9 +305,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
             String sortOrder) {
-        // We can not run in UI thread, do nothing for the official release.
-        if (isInUiThread()) return null;
-        if (!ensureNativeChromeLoaded()) return null;
+        if (!canHandleContentProviderApiCall()) return null;
 
         // Check for invalid id values if provided.
         // If it represents a bookmark node then it's the root node. Don't provide access here.
@@ -365,9 +368,7 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        // We can not run in UI thread, do nothing for the official release.
-        if (isInUiThread()) return null;
-        if (!ensureNativeChromeLoaded()) return null;
+        if (!canHandleContentProviderApiCall()) return null;
 
         int match = mUriMatcher.match(uri);
         Uri res = null;
@@ -400,9 +401,7 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        // We can not run in UI thread, do nothing for the official release.
-        if (isInUiThread()) return 0;
-        if (!ensureNativeChromeLoaded()) return 0;
+        if (!canHandleContentProviderApiCall()) return 0;
 
         // Check for invalid id values if provided.
         // If it represents a bookmark node then it's the root node and not mutable.
@@ -459,9 +458,7 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        // We can not run in UI thread, do nothing for the official release.
-        if (isInUiThread()) return 0;
-        if (!ensureNativeChromeLoaded()) return 0;
+        if (!canHandleContentProviderApiCall()) return 0;
 
         // Check for invalid id values if provided.
         // If it represents a bookmark node then it's the root node and not mutable.
@@ -698,8 +695,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         // Caller must have the READ_WRITE_BOOKMARK_FOLDERS permission.
         getContext().enforcePermission(getReadWritePermissionNameForBookmarkFolders(),
                                        Binder.getCallingPid(), Binder.getCallingUid(), TAG);
-        if (isInUiThread()) return null;
-        if (!ensureNativeChromeLoaded()) return null;
+        if (!canHandleContentProviderApiCall()) return null;
         if (method == null || extras == null) return null;
 
         Bundle result = new Bundle();
@@ -734,6 +730,18 @@ public class ChromeBrowserProvider extends ContentProvider {
         }
 
         return result;
+    }
+
+    /**
+     * Checks whether Chrome is sufficiently initialized to handle a call to the
+     * ChromeBrowserProvider.
+     */
+    private boolean canHandleContentProviderApiCall() {
+        mContentProviderApiCalled = true;
+
+        if (isInUiThread()) return false;
+        if (!ensureNativeChromeLoaded()) return false;
+        return true;
     }
 
     /**
