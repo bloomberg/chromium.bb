@@ -1358,6 +1358,7 @@ const char kCrasControlInterface[] = "org.chromium.cras.Control";
 // Methods.
 const char kSetOutputVolume[] = "SetOutputVolume";
 const char kSetOutputMute[] = "SetOutputMute";
+const char kSetOutputUserMute[] = "SetOutputUserMute";
 const char kSetInputGain[] = "SetInputGain";
 const char kSetInputMute[] = "SetInputMute";
 const char kGetVolumeState[] = "GetVolumeState";
