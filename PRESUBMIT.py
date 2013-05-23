@@ -231,6 +231,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
 
   base_function_pattern = r'ForTest(ing)?|for_test(ing)?'
   inclusion_pattern = input_api.re.compile(r'(%s)\s*\(' % base_function_pattern)
+  comment_pattern = input_api.re.compile(r'//.*%s' % base_function_pattern)
   exclusion_pattern = input_api.re.compile(
     r'::[A-Za-z0-9_]+(%s)|(%s)[^;]+\{' % (
       base_function_pattern, base_function_pattern))
@@ -251,6 +252,7 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
     line_number = 0
     for line in lines:
       if (inclusion_pattern.search(line) and
+          not comment_pattern.search(line) and
           not exclusion_pattern.search(line)):
         problems.append(
           '%s:%d\n    %s' % (local_path, line_number, line.strip()))
@@ -688,11 +690,13 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
                   _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST))
 
-  pattern = input_api.re.compile('"[^"]*google\.com[^"]*"')
+  base_pattern = '"[^"]*google\.com[^"]*"'
+  comment_pattern = input_api.re.compile('//.*%s' % base_pattern)
+  pattern = input_api.re.compile(base_pattern)
   problems = []  # items are (filename, line_number, line)
   for f in input_api.AffectedSourceFiles(FilterFile):
     for line_num, line in f.ChangedContents():
-      if pattern.search(line):
+      if not comment_pattern.search(line) and pattern.search(line):
         problems.append((f.LocalPath(), line_num, line))
 
   if problems:
@@ -774,9 +778,9 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
 
   owner_email = owner_email or input_api.change.author_email
 
-  reviewers_plus_owner = reviewers
+  reviewers_plus_owner = set(reviewers)
   if owner_email:
-    reviewers_plus_owner = set([owner_email]).union(reviewers)
+    reviewers_plus_owner.add(owner_email)
   missing_files = owners_db.files_not_covered_by(virtual_depended_on_files,
                                                  reviewers_plus_owner)
   unapproved_dependencies = ["'+%s'," % path[:-len('/DEPS')]
