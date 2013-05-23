@@ -16,6 +16,7 @@
 #include "base/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/threading/simple_thread.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace cc {
 
@@ -182,6 +183,9 @@ void WorkerPool::Inner::Shutdown() {
 
   while (workers_.size()) {
     scoped_ptr<base::DelegateSimpleThread> worker = workers_.take_front();
+    // http://crbug.com/240453 - Join() is considered IO and will block this
+    // thread. See also http://crbug.com/239423 for further ideas.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     worker->Join();
   }
 }

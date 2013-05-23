@@ -22,6 +22,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"  // Temporary
 #include "base/threading/thread_local.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/common/appcache/appcache_dispatcher.h"
@@ -117,6 +118,7 @@
 #include "third_party/webrtc/system_wrappers/interface/event_tracer.h"
 #endif
 
+using base::ThreadRestrictions;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebNetworkStateNotifier;
@@ -750,6 +752,10 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       compositor_thread_->Start();
       compositor_message_loop_proxy_ =
           compositor_thread_->message_loop_proxy();
+      compositor_message_loop_proxy_->PostTask(
+          FROM_HERE,
+          base::Bind(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed),
+                     false));
     }
 
     if (GetContentClient()->renderer()->ShouldCreateCompositorInputHandler()) {
