@@ -4,7 +4,6 @@
 
 #include "android_webview/browser/gpu_memory_buffer_impl.h"
 
-#include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -25,9 +24,7 @@ GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::Size size)
 }
 
 GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
-  DCHECK(buffer_id_ != 0);
   g_gl_draw_functions->release_graphic_buffer(buffer_id_);
-  buffer_id_ = 0;
 }
 
 void GpuMemoryBufferImpl::Map(gpu::GpuMemoryBuffer::AccessMode mode,
@@ -71,6 +68,25 @@ uint32 GpuMemoryBufferImpl::GetStride() {
 
 bool GpuMemoryBufferImpl::IsMapped() {
   return mapped_;
+}
+
+bool GpuMemoryBufferImpl::InitCheck() {
+  return buffer_id_ != 0;
+}
+
+// static
+scoped_ptr<gpu::GpuMemoryBuffer> GpuMemoryBufferImpl::CreateGpuMemoryBuffer(
+    int width, int height) {
+  DCHECK(width > 0);
+  DCHECK(height > 0);
+  scoped_ptr<GpuMemoryBufferImpl> result(new GpuMemoryBufferImpl(
+      gfx::Size(width, height)));
+
+  // Check if the buffer allocation succeeded.
+  if (!result->InitCheck())
+    return scoped_ptr<GpuMemoryBuffer>();
+
+  return result.PassAs<gpu::GpuMemoryBuffer>();
 }
 
 // static

@@ -124,8 +124,6 @@
         'browser/browser_view_renderer_impl.h',
         'browser/find_helper.cc',
         'browser/find_helper.h',
-        'browser/gpu_memory_buffer_factory_impl.cc',
-        'browser/gpu_memory_buffer_factory_impl.h',
         'browser/gpu_memory_buffer_impl.cc',
         'browser/gpu_memory_buffer_impl.h',
         'browser/in_process_renderer/in_process_renderer_client.cc',

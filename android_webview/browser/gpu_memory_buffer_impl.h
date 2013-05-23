@@ -16,6 +16,8 @@ namespace android_webview {
 
 class GpuMemoryBufferImpl : public gpu::GpuMemoryBuffer {
  public:
+  static scoped_ptr<gpu::GpuMemoryBuffer> CreateGpuMemoryBuffer(int width,
+                                                                int height);
   static void SetAwDrawGLFunctionTable(AwDrawGLFunctionTable* table);
   GpuMemoryBufferImpl(gfx::Size size);
   virtual ~GpuMemoryBufferImpl();
@@ -29,6 +31,9 @@ class GpuMemoryBufferImpl : public gpu::GpuMemoryBuffer {
   virtual uint32 GetStride() OVERRIDE;
 
  private:
+  // Returns true iff the buffer was allocated successfully.
+  bool InitCheck();
+
   int buffer_id_;
   gfx::Size size_;
   bool mapped_;

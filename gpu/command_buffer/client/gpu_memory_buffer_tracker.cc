@@ -30,6 +30,9 @@ GLuint GpuMemoryBufferTracker::CreateBuffer(
   scoped_ptr<GpuMemoryBuffer> buffer =
       factory_->CreateGpuMemoryBuffer(width, height, internalformat, &image_id);
 
+  if (buffer.get() == NULL)
+    return 0;
+
   std::pair<BufferMap::iterator, bool> result =
       buffers_.insert(std::make_pair(image_id, buffer.release()));
   GPU_DCHECK(result.second);

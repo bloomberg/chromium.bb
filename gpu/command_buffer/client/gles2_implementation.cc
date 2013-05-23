@@ -3712,8 +3712,13 @@ GLuint GLES2Implementation::CreateImageCHROMIUMHelper(
   helper_->CommandBufferHelper::Flush();
 
   // Create new buffer.
-  return gpu_memory_buffer_tracker_->CreateBuffer(
+  GLuint buffer_id = gpu_memory_buffer_tracker_->CreateBuffer(
       width, height, internalformat);
+  if (buffer_id == 0) {
+    SetGLError(GL_OUT_OF_MEMORY, "glCreateImageCHROMIUM", "out of GPU memory.");
+    return 0;
+  }
+  return buffer_id;
 }
 
 GLuint GLES2Implementation::CreateImageCHROMIUM(

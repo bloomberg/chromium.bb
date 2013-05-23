@@ -346,6 +346,10 @@ scoped_ptr<GpuMemoryBuffer> ImageFactoryInProcess::CreateGpuMemoryBuffer(
   DCHECK_EQ(GL_RGBA8_OES, internalformat);
   scoped_ptr<GpuMemoryBuffer> buffer =
       g_gpu_memory_buffer_creator(width, height);
+
+  if (buffer.get() == NULL)
+    return buffer.Pass();
+
   scoped_refptr<gfx::GLImage> gl_image =
       gfx::GLImage::CreateGLImageForGpuMemoryBuffer(buffer->GetNativeBuffer(),
                                                     gfx::Size(width, height));
