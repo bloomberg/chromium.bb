@@ -48,7 +48,6 @@ namespace WebCore {
 } // namespace WebCore
 using WebCore::ScriptWrappable;
 using WebCore::V8Float64Array;
-using WebCore::Float64Array;
 #endif
 void initializeScriptWrappableForInterface(Float64Array* object)
 {

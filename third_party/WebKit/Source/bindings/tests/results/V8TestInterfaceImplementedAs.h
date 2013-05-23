@@ -62,7 +62,7 @@ inline v8::Handle<v8::Object> wrap(RealClass* impl, v8::Handle<v8::Object> creat
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
         // Might be a XXXConstructor::info instead of an XXX::info. These will both have
         // the same object de-ref functions, though, so use that as the basis of the check.
-        RELEASE_ASSERT(actualInfo->derefObjectFunction == V8TestInterfaceImplementedAs::info.derefObjectFunction);
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == V8TestInterfaceImplementedAs::info.derefObjectFunction);
     }
     return V8TestInterfaceImplementedAs::createWrapper(impl, creationContext, isolate);
 }
