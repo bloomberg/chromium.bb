@@ -175,6 +175,12 @@ crbug.com/239769 [ Win ] svg/zoom/page/zoom-svg-through-object-with-absolute-siz
 crbug.com/239769 [ Win ] svg/zoom/page/zoom-svg-through-object-with-absolute-size.xhtml [ ImageOnlyFailure ]
 crbug.com/239769 [ Win ] svg/zoom/page/zoom-svg-through-object-with-percentage-size.xhtml [ ImageOnlyFailure ]
 crbug.com/240673 http/tests/security/filesystem-iframe-from-remote.html [ Failure Pass ]
+webkit.org/b/87321 fast/history/history-subframe-with-name.html [ Failure Pass ]
+crbug.com/243231 [ Mac ] animations/suspend-transform-animation.html [ ImageOnlyFailure Pass ]
+crbug.com/243232 [ Mac ] fast/forms/validation-message-appearance.html [ ImageOnlyFailure Pass ]
+crbug.com/243242 [ Linux ] virtual/softwarecompositing/layer-creation/overlap-animation-container.html [ Failure Pass ]
+crbug.com/243243 [ Linux ] virtual/gpu/fast/canvas/DrawImageSinglePixelStretch.html [ Timeout Pass ]
+webkit.org/b/106606 [ Release ] fast/canvas/webgl/context-release-upon-reload.html [ Slow ]
 
 # -----------------------------------------------------------------
 # To be rebaselined
