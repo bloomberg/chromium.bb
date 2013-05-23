@@ -62,6 +62,14 @@ class OverscrollController {
  private:
   friend class MockRenderWidgetHost;
 
+  // Different scrolling states.
+  enum ScrollState {
+    STATE_UNKNOWN,
+    STATE_PENDING,
+    STATE_CONTENT_SCROLLING,
+    STATE_OVERSCROLLING,
+  };
+
   // Returns true if the event indicates that the in-progress overscroll gesture
   // can now be completed.
   bool DispatchEventCompletesAction(
@@ -95,6 +103,13 @@ class OverscrollController {
 
   // The current state of overscroll gesture.
   OverscrollMode overscroll_mode_;
+
+  // Used to keep track of the scrolling state.
+  // If scrolling starts, and some scroll events are consumed at the beginning
+  // of the scroll (i.e. some content on the web-page was scrolled), then do not
+  // process any of the subsequent scroll events for generating overscroll
+  // gestures.
+  ScrollState scroll_state_;
 
   // The amount of overscroll in progress. These values are invalid when
   // |overscroll_mode_| is set to OVERSCROLL_NONE.
