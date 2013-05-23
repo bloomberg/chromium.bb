@@ -60,6 +60,40 @@ public:
     WEBKIT_EXPORT double requestTime() const;
     WEBKIT_EXPORT void setRequestTime(double);
 
+#ifdef ENABLE_DOUBLE_RESOURCE_LOAD_TIMING
+    WEBKIT_EXPORT double proxyStart() const;
+    WEBKIT_EXPORT void setProxyStart(double);
+
+    WEBKIT_EXPORT double proxyEnd() const;
+    WEBKIT_EXPORT void setProxyEnd(double);
+
+    WEBKIT_EXPORT double dnsStart() const;
+    WEBKIT_EXPORT void setDNSStart(double);
+
+    WEBKIT_EXPORT double dnsEnd() const;
+    WEBKIT_EXPORT void setDNSEnd(double);
+
+    WEBKIT_EXPORT double connectStart() const;
+    WEBKIT_EXPORT void setConnectStart(double);
+
+    WEBKIT_EXPORT double connectEnd() const;
+    WEBKIT_EXPORT void setConnectEnd(double);
+
+    WEBKIT_EXPORT double sendStart() const;
+    WEBKIT_EXPORT void setSendStart(double);
+
+    WEBKIT_EXPORT double sendEnd() const;
+    WEBKIT_EXPORT void setSendEnd(double);
+
+    WEBKIT_EXPORT double receiveHeadersEnd() const;
+    WEBKIT_EXPORT void setReceiveHeadersEnd(double);
+
+    WEBKIT_EXPORT double sslStart() const;
+    WEBKIT_EXPORT void setSSLStart(double);
+
+    WEBKIT_EXPORT double sslEnd() const;
+    WEBKIT_EXPORT void setSSLEnd(double);
+#else
     WEBKIT_EXPORT int proxyStart() const;
     WEBKIT_EXPORT void setProxyStart(int);
 
@@ -92,6 +126,7 @@ public:
 
     WEBKIT_EXPORT int sslEnd() const;
     WEBKIT_EXPORT void setSSLEnd(int);
+#endif
 
 #if WEBKIT_IMPLEMENTATION
     WebURLLoadTiming(const WTF::PassRefPtr<WebCore::ResourceLoadTiming>&);

@@ -63,6 +63,117 @@ void WebURLLoadTiming::setRequestTime(double time)
     m_private->requestTime = time;
 }
 
+#ifdef ENABLE_DOUBLE_RESOURCE_LOAD_TIMING
+double WebURLLoadTiming::proxyStart() const
+{
+    return m_private->proxyStart;
+}
+
+void WebURLLoadTiming::setProxyStart(double start)
+{
+    m_private->proxyStart = start;
+}
+
+double WebURLLoadTiming::proxyEnd() const
+{
+    return m_private->proxyEnd;
+}
+
+void WebURLLoadTiming::setProxyEnd(double end)
+{
+    m_private->proxyEnd = end;
+}
+
+double WebURLLoadTiming::dnsStart() const
+{
+    return m_private->dnsStart;
+}
+
+void WebURLLoadTiming::setDNSStart(double start)
+{
+    m_private->dnsStart = start;
+}
+
+double WebURLLoadTiming::dnsEnd() const
+{
+    return m_private->dnsEnd;
+}
+
+void WebURLLoadTiming::setDNSEnd(double end)
+{
+    m_private->dnsEnd = end;
+}
+
+double WebURLLoadTiming::connectStart() const
+{
+    return m_private->connectStart;
+}
+
+void WebURLLoadTiming::setConnectStart(double start)
+{
+    m_private->connectStart = start;
+}
+
+double WebURLLoadTiming::connectEnd() const
+{
+    return m_private->connectEnd;
+}
+
+void WebURLLoadTiming::setConnectEnd(double end)
+{
+    m_private->connectEnd = end;
+}
+
+double WebURLLoadTiming::sendStart() const
+{
+    return m_private->sendStart;
+}
+
+void WebURLLoadTiming::setSendStart(double start)
+{
+    m_private->sendStart = start;
+}
+
+double WebURLLoadTiming::sendEnd() const
+{
+    return m_private->sendEnd;
+}
+
+void WebURLLoadTiming::setSendEnd(double end)
+{
+    m_private->sendEnd = end;
+}
+
+double WebURLLoadTiming::receiveHeadersEnd() const
+{
+    return m_private->receiveHeadersEnd;
+}
+
+void WebURLLoadTiming::setReceiveHeadersEnd(double end)
+{
+    m_private->receiveHeadersEnd = end;
+}
+
+double WebURLLoadTiming::sslStart() const
+{
+    return m_private->sslStart;
+}
+
+void WebURLLoadTiming::setSSLStart(double start)
+{
+    m_private->sslStart = start;
+}
+
+double WebURLLoadTiming::sslEnd() const
+{
+    return m_private->sslEnd;
+}
+
+void WebURLLoadTiming::setSSLEnd(double end)
+{
+    m_private->sslEnd = end;
+}
+#else
 int WebURLLoadTiming::proxyStart() const
 {
     return m_private->proxyStart;
@@ -172,6 +283,7 @@ void WebURLLoadTiming::setSSLEnd(int end)
 {
     m_private->sslEnd = end;
 }
+#endif
 
 WebURLLoadTiming::WebURLLoadTiming(const PassRefPtr<ResourceLoadTiming>& value)
     : m_private(value)

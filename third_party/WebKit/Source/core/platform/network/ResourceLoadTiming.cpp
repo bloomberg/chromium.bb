@@ -28,9 +28,11 @@
 
 namespace WebCore {
 
+#ifndef ENABLE_DOUBLE_RESOURCE_LOAD_TIMING
 double ResourceLoadTiming::convertResourceLoadTimeToMonotonicTime(int deltaMilliseconds) const
 {
     return requestTime + deltaMilliseconds / 1000.0;
 }
+#endif
 
 }

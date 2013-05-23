@@ -83,6 +83,24 @@ public:
     // We want to present a unified timeline to Javascript. Using walltime is problematic, because the clock may skew while resources
     // load. To prevent that skew, we record a single reference walltime when root document navigation begins. All other times are
     // recorded using monotonicallyIncreasingTime(). When a time needs to be presented to Javascript, we build a pseudo-walltime
+#ifdef ENABLE_DOUBLE_RESOURCE_LOAD_TIMING
+    // using the following equation (requestTime as example):
+    //   pseudo time = document wall reference + (requestTime - document monotonic reference).
+    double requestTime; // All monotonicallyIncreasingTime() in seconds
+    double proxyStart;
+    double proxyEnd;
+    double dnsStart;
+    double dnsEnd;
+    double connectStart;
+    double connectEnd;
+    double sendStart;
+    double sendEnd;
+    double receiveHeadersEnd;
+    double sslStart;
+    double sslEnd;
+
+    double calculateMillisecondDelta(double time) const { return (time - requestTime) * 1000; }
+#else
     // using the following equation:
     //   pseudo time = document wall reference + (resource request time - document monotonic reference) + deltaMilliseconds / 1000.0.
     double convertResourceLoadTimeToMonotonicTime(int deltaMilliseconds) const;
@@ -99,21 +117,37 @@ public:
     int receiveHeadersEnd;
     int sslStart;
     int sslEnd;
+#endif
 
 private:
     ResourceLoadTiming()
+#ifdef ENABLE_DOUBLE_RESOURCE_LOAD_TIMING
         : requestTime(0)
-        , proxyStart(-1)
-        , proxyEnd(-1)
-        , dnsStart(-1)
-        , dnsEnd(-1)
-        , connectStart(-1)
-        , connectEnd(-1)
+        , proxyStart(0)
+        , proxyEnd(0)
+        , dnsStart(0)
+        , dnsEnd(0)
+        , connectStart(0)
+        , connectEnd(0)
         , sendStart(0)
         , sendEnd(0)
         , receiveHeadersEnd(0)
-        , sslStart(-1)
-        , sslEnd(-1)
+        , sslStart(0)
+        , sslEnd(0)
+#else
+    : requestTime(0)
+    , proxyStart(-1)
+    , proxyEnd(-1)
+    , dnsStart(-1)
+    , dnsEnd(-1)
+    , connectStart(-1)
+    , connectEnd(-1)
+    , sendStart(0)
+    , sendEnd(0)
+    , receiveHeadersEnd(0)
+    , sslStart(-1)
+    , sslEnd(-1)
+#endif
     {
     }
 };
