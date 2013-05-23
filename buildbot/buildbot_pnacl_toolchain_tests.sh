@@ -110,17 +110,6 @@ build-sbtc-prerequisites() {
 }
 
 
-scons-tests-pic() {
-  local platform=$1
-
-  echo "@@@BUILD_STEP scons-tests-pic [${platform}]@@@"
-  local extra="--mode=opt-host,nacl -k \
-               nacl_pic=1  pnacl_generate_pexe=0"
-  ${SCONS_COMMON} ${SCONS_PICK_TC} ${extra} \
-    platform=${platform} smoke_tests || handle-error
-}
-
-
 scons-tests-translator() {
   local platform=$1
 
@@ -410,8 +399,6 @@ tc-test-bot() {
         ${LLVM_TESTSUITE} testsuite-run ${arch} &&
         ${LLVM_TESTSUITE} testsuite-report ${arch} -v -c
     } || handle-error
-
-    scons-tests-pic ${arch}
 
     archived-frontend-test ${arch}
 

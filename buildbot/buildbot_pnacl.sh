@@ -182,9 +182,6 @@ tc-build-all() {
 relevant() {
   for i in "$@" ; do
     case $i in
-      nacl_pic=1)
-        echo -n "pic "
-        ;;
       use_sandboxed_translator=1)
         echo -n "sbtc "
         ;;
@@ -400,12 +397,6 @@ mode-buildbot-x86() {
   # also run some tests with the irt
   scons-stage-irt "${arch}" "${flags_run}" "${SCONS_S_M_IRT}"
 
-  # PIC
-  scons-stage-noirt "${arch}" "${flags_build} nacl_pic=1 pnacl_generate_pexe=0" \
-      "${SCONS_EVERYTHING}"
-  scons-stage-noirt "${arch}" "${flags_run} nacl_pic=1 pnacl_generate_pexe=0" \
-      "${SCONS_S_M}"
-
   # sandboxed translation
   build-sbtc-prerequisites ${arch}
   scons-stage-noirt "${arch}" "${flags_build} use_sandboxed_translator=1" \
@@ -447,11 +438,6 @@ mode-buildbot-arm() {
   # also run some tests with the irt
   scons-stage-irt "arm" "${qemuflags}" "${SCONS_S_M_IRT}"
 
-  # PIC
-  # Don't bother to build everything here, just the tests we want to run
-  scons-stage-noirt "arm" "${qemuflags} nacl_pic=1 pnacl_generate_pexe=0" \
-    "${SCONS_S_M}"
-
   # non-pexe-mode tests
   scons-stage-noirt "arm" "${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
 
@@ -469,8 +455,6 @@ mode-buildbot-arm-hw() {
   scons-stage-noirt "arm" "${hwflags}" "${SCONS_S_M}"
   # Large tests cannot be run in parallel
   scons-stage-noirt "arm" "${hwflags} -j1" "large_tests"
-  scons-stage-noirt "arm" "${hwflags} nacl_pic=1 pnacl_generate_pexe=0" \
-    "${SCONS_S_M}"
 
   # also run some tests with the irt
   scons-stage-irt "arm" "${hwflags}" "${SCONS_S_M_IRT}"
@@ -496,11 +480,6 @@ mode-trybot-qemu() {
 
   # also run some tests with the irt
   scons-stage-irt "arm" "${qemuflags}" "${SCONS_S_M_IRT}"
-
-  scons-stage-noirt "arm" "${qemuflags} nacl_pic=1 pnacl_generate_pexe=0" \
-      "${SCONS_EVERYTHING}"
-  scons-stage-noirt "arm" "${qemuflags} -j1 nacl_pic=1 pnacl_generate_pexe=0" \
-      "${SCONS_S_M}"
 
   # non-pexe tests
   scons-stage-noirt "arm" "${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
