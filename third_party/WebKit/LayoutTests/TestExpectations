@@ -1817,3 +1817,11 @@ crbug.com/243314 [ Mac Debug ] virtual/gpu/compositedscrolling/overflow/content-
 crbug.com/243314 [ Mac Debug ] virtual/gpu/fast/canvas/access-zero-sized-canvas.html [ Crash ]
 crbug.com/242851 editing/pasteboard/drop-file-svg.html [ Crash ]
 crbug.com/242851 editing/pasteboard/file-drag-to-editable.html [ Crash ]
+
+# Content failures
+crbug.com/243353 [ Mac ] animations/dynamic-stylesheet-loading.html [ Timeout ]
+crbug.com/243353 [ Mac ] animations/transition-and-animation-1.html [ Timeout ]
+crbug.com/243353 [ Mac ] animations/transition-and-animation-2.html [ Timeout Pass ]
+crbug.com/243357 [ Linux ] compositing/gestures/ [ ImageOnlyFailure Pass ]
+crbug.com/243360 [ Mac ] fast/repaint/fixed-move-after-keyboard-scroll.html [ ImageOnlyFailure ]
+crbug.com/243362 [ Mac ] plugins/destroy-plugin-from-callback.html [ Crash Pass ]
