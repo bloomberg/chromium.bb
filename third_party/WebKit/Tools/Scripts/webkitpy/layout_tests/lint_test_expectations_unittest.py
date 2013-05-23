@@ -47,9 +47,6 @@ class FakePort(object):
         self.host.ports_parsed.append(self.name)
         return {self.path: ''}
 
-    def bot_expectations(self):
-        return {}
-
     def skipped_layout_tests(self, _):
         return set([])
 

@@ -46,14 +46,24 @@ class BotTestExpectations(object):
     RESULTS_KEY = 'results'
     TESTS_KEY = 'tests'
     RESULTS_URL_PREFIX = 'http://test-results.appspot.com/testfile?master=ChromiumWebkit&testtype=layout-tests&name=results-small.json&builder='
-    FAILURE_MAP_KEY = 'failure_map'
-    # FIXME: Get this from the json instead of hard-coding it.
-    RESULT_TYPES_TO_IGNORE = ['N', 'X', 'Y']
+
+    # FIXME: This data is now in the results json. Get it from there.
+    MAP_ENCODED_RESULT_STRING_TO_EXPECTATIONS_VALUE = {
+        'P': 'Pass',
+        'N': '', # No data
+        'X': '', # Skip
+        'T': 'Timeout',
+        'F': 'Failure', # text-only
+        'C': 'Crash',
+        'I': 'ImageOnlyFailure',
+        'Z': 'Failure', # image+text
+        'O': 'Missing',
+    };
 
     def __init__(self, only_ignore_very_flaky):
         self._only_ignore_very_flaky = only_ignore_very_flaky
 
-    def expectations(self, port_name):
+    def expectations_string(self, port_name):
         builder_name = builders.builder_name_for_port_name(port_name)
         if not builder_name:
             return ""
@@ -62,19 +72,18 @@ class BotTestExpectations(object):
         try:
             _log.debug('Fetching flakiness data from appengine.')
             data = urllib2.urlopen(url)
-            parsed_data = json.load(data)
-            result = self._generate_expectations(parsed_data[builder_name], parsed_data[self.FAILURE_MAP_KEY])
+            parsed_data = json.load(data)[builder_name]
+            result = self._generate_expectations_string(parsed_data)
             return result
         except urllib2.URLError as error:
             _log.warning('Could not retrieve flakiness data from the bot.')
             _log.warning(error)
             return ""
 
-    def _generate_expectations(self, test_data, failure_map):
-        out = {}
-        self._failure_map = failure_map
+    def _generate_expectations_string(self, test_data):
+        out = []
         self._walk_tests_trie(test_data[self.TESTS_KEY], out)
-        return out
+        return "\n".join(out)
 
     def _actual_results_for_test(self, run_length_encoded_results):
         resultsMap = {}
@@ -84,7 +93,7 @@ class BotTestExpectations(object):
             numResults = result[self.RLE_LENGTH];
             result_string = result[self.RLE_VALUE];
 
-            if result_string in self.RESULT_TYPES_TO_IGNORE:
+            if result_string == 'N' or result_string == 'X':
                 continue
 
             if self._only_ignore_very_flaky and result_string not in seenResults:
@@ -96,7 +105,7 @@ class BotTestExpectations(object):
                 seenResults[result_string] = True
                 continue
 
-            expectation = self._failure_map[result_string]
+            expectation = self.MAP_ENCODED_RESULT_STRING_TO_EXPECTATIONS_VALUE[result_string]
             resultsMap[expectation] = True;
 
         return resultsMap.keys()
@@ -111,4 +120,4 @@ class BotTestExpectations(object):
             results = trie[name][self.RESULTS_KEY]
             actual_results = self._actual_results_for_test(results)
             if len(actual_results) > 1:
-                out[new_path] = sorted(actual_results)
+                out.append('Bug(auto) %s [ %s ]' % (new_path, " ".join(actual_results)))
