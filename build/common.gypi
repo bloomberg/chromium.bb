@@ -4052,17 +4052,10 @@
                 },
               },
             },
-            'xcode_settings': {
-              # It is necessary to link with the -fobjc-arc flag to use
-              # subscripting on iOS < 6.
-              'OTHER_LDFLAGS': [
-                '-fobjc-arc',
-              ],
-            },
             'conditions': [
-              # TODO(justincohen): ninja builds don't support signing yet.
-              ['"<(GENERATOR)"!="ninja"', {
+              ['"<(GENERATOR)"=="xcode"', {
                 'xcode_settings': {
+                  # TODO(justincohen): ninja builds don't support signing yet.
                   'conditions': [
                     ['chromium_ios_signing', {
                       # iOS SDK wants everything for device signed.
@@ -4073,6 +4066,59 @@
                     }],
                   ],
                 },
+              }],
+              ['"<(GENERATOR)"=="xcode" and clang!=1', {
+                'xcode_settings': {
+                  # It is necessary to link with the -fobjc-arc flag to use
+                  # subscripting on iOS < 6.
+                  'OTHER_LDFLAGS': [
+                    '-fobjc-arc',
+                  ],
+                },
+              }],
+              ['clang==1', {
+                'target_conditions': [
+                  ['_toolset=="target"', {
+                    'variables': {
+                      'developer_dir': '<!(xcode-select -print-path)',
+                      'arc_toolchain_path': '<(developer_dir)/Toolchains/XcodeDefault.xctoolchain/usr/lib/arc',
+                    },
+                    # It is necessary to force load libarclite from Xcode for
+                    # third_party/llvm-build because libarclite_* is only
+                    # distributed by Xcode.
+                    'conditions': [
+                      ['"<(GENERATOR)"=="ninja" and target_arch=="armv7"', {
+                        'xcode_settings': {
+                          'OTHER_LDFLAGS': [
+                            '-force_load',
+                            '<(arc_toolchain_path)/libarclite_iphoneos.a',
+                          ],
+                        },
+                      }],
+                      ['"<(GENERATOR)"=="ninja" and target_arch!="armv7"', {
+                        'xcode_settings': {
+                          'OTHER_LDFLAGS': [
+                            '-force_load',
+                            '<(arc_toolchain_path)/libarclite_iphonesimulator.a',
+                          ],
+                        },
+                      }],
+                      # Xcode sets target_arch at compile-time.
+                      ['"<(GENERATOR)"=="xcode"', {
+                        'xcode_settings': {
+                          'OTHER_LDFLAGS[arch=armv7]': [
+                            '-force_load',
+                            '<(arc_toolchain_path)/libarclite_iphoneos.a',
+                          ],
+                          'OTHER_LDFLAGS[arch=i386]': [
+                            '-force_load',
+                            '<(arc_toolchain_path)/libarclite_iphonesimulator.a',
+                          ],
+                        },
+                      }],
+                    ],
+                  }],
+                ],
               }],
             ],
           }],
