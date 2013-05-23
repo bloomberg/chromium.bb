@@ -184,6 +184,22 @@ webkit.org/b/106606 [ Release ] fast/canvas/webgl/context-release-upon-reload.ht
 crbug.com/243246 [ Mac ] fullscreen/exit-full-screen-iframe.html [ Timeout Pass ]
 crbug.com/243248 [ Mac ] fast/events/attempt-scroll-with-no-scrollbars.html [ Failure Pass ]
 crbug.com/243249 [ Mac ] http/tests/misc/submit-post-keygen.html [ Timeout Pass ]
+crbug.com/239769 [ Win ] css3/filters/effect-reference-subregion.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/deferred/fast/images/color-jpeg-with-color-profile.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/deferred/fast/images/exif-orientation-css.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/deferred/fast/images/exif-orientation-image-document.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/deferred/fast/images/exif-orientation.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/deferred/fast/images/jpeg-with-color-profile.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/deferred/fast/images/gif-large-checkerboard.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/deferred/fast/images/gray-scale-jpeg-with-color-profile.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/deferred/fast/images/png-with-color-profile.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/deferred/fast/images/webp-color-profile-lossless.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/deferred/fast/images/webp-color-profile-lossy-alpha.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/deferred/fast/images/webp-color-profile-lossy.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/gpu/compositedscrolling/scrollbars/listbox-scrollbar-combinations.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/gpu/compositedscrolling/scrollbars/overflow-scrollbar-combinations.html [ ImageOnlyFailure ]
+crbug.com/239769 [ Win ] virtual/softwarecompositing/color-matching/image-color-matching.html [ ImageOnlyFailure ]
 
 # -----------------------------------------------------------------
 # To be rebaselined
