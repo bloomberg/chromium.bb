@@ -253,14 +253,6 @@ bool StartupBrowserCreator::LaunchBrowser(
     chrome::startup::IsFirstRun is_first_run,
     int* return_code) {
 
-  // Note: This check should have been done in ProcessCmdLineImpl()
-  // before calling this function. However chromeos/login/login_utils.cc
-  // calls this function directly (see comments there) so I have to check it
-  // again as a workaround.
-  if (command_line.HasSwitch(switches::kSilentLaunch)) {
-    return true;
-  }
-
   in_synchronous_profile_launch_ =
       process_startup == chrome::startup::IS_PROCESS_STARTUP;
   DCHECK(profile);
@@ -275,19 +267,29 @@ bool StartupBrowserCreator::LaunchBrowser(
                  << "browser session.";
   }
 
-  StartupBrowserCreatorImpl lwp(cur_dir, command_line, this, is_first_run);
-  std::vector<GURL> urls_to_launch =
-      GetURLsFromCommandLine(command_line, cur_dir, profile);
-  bool launched = lwp.Launch(profile, urls_to_launch,
-                             in_synchronous_profile_launch_);
-  in_synchronous_profile_launch_ = false;
+  // Note: This check should have been done in ProcessCmdLineImpl()
+  // before calling this function. However chromeos/login/login_utils.cc
+  // calls this function directly (see comments there) so it has to be checked
+  // again.
+  const bool silent_launch = command_line.HasSwitch(switches::kSilentLaunch);
 
-  if (!launched) {
-    LOG(ERROR) << "launch error";
-    if (return_code)
-      *return_code = chrome::RESULT_CODE_INVALID_CMDLINE_URL;
-    return false;
+  if (!silent_launch) {
+    StartupBrowserCreatorImpl lwp(cur_dir, command_line, this, is_first_run);
+    const std::vector<GURL> urls_to_launch =
+        GetURLsFromCommandLine(command_line, cur_dir, profile);
+    const bool launched = lwp.Launch(profile, urls_to_launch,
+                               in_synchronous_profile_launch_);
+    in_synchronous_profile_launch_ = false;
+    if (!launched) {
+      LOG(ERROR) << "launch error";
+      if (return_code)
+        *return_code = chrome::RESULT_CODE_INVALID_CMDLINE_URL;
+      return false;
+    }
+  } else {
+    in_synchronous_profile_launch_ = false;
   }
+
   profile_launch_observer.Get().AddLaunched(profile);
 
 #if defined(OS_CHROMEOS)
