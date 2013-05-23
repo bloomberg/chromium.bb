@@ -3,37 +3,49 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""THIS SCRIPT IS DEPRECATED AND WILL SOON BE REMOVED.
+"""Main entry point for the NaCl SDK buildbot.
 
-Edit tools/build/scripts/slave/chromium/nacl_sdk_buildbot_run.py instead.
+The entry point used to be build_sdk.py itself, but we want
+to be able to simplify build_sdk (for example separating out
+the test code into test_sdk) and change its default behaviour
+while being able to separately control excactly what the bots
+run.
 """
-
 
 import buildbot_common
 import os
 import sys
+from buildbot_common import Run
+from build_paths import SDK_SRC_DIR, SCRIPT_DIR
 
-# Set the directory that this script lives in.
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def StepRunUnittests():
+  buildbot_common.BuildStep('Run unittests')
+
+  # Our tests shouldn't be using the proxy; they should all be connecting to
+  # localhost. Some slaves can't route HTTP traffic through the proxy to
+  # localhost (we get 504 gateway errors), so we clear it here.
+  env = dict(os.environ)
+  if 'http_proxy' in env:
+    del env['http_proxy']
+
+  Run([sys.executable, 'test_all.py'], env=env, cwd=SDK_SRC_DIR)
 
 
-SDK_BUILDER_MAP = {
-    'linux-sdk-mono32':
-        [sys.executable, 'nacl-mono-buildbot.py'],
-    'linux-sdk-mono64':
-        [sys.executable, 'nacl-mono-buildbot.py'],
-    'DEFAULT':
-        [sys.executable, 'build_sdk.py'],
-}
+def StepBuildSDK(args):
+  Run([sys.executable, 'build_sdk.py'] + args, cwd=SCRIPT_DIR)
+
+
+def StepTestSDK():
+  Run([sys.executable, 'test_sdk.py'], cwd=SCRIPT_DIR)
 
 
 def main(args):
-  args = args[1:]
-  buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
-  cmd = SDK_BUILDER_MAP.get(buildername) or SDK_BUILDER_MAP.get('DEFAULT')
-  buildbot_common.Run(cmd + args, cwd=SCRIPT_DIR)
+  StepRunUnittests()
+  StepBuildSDK(args)
+  StepTestSDK()
   return 0
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))

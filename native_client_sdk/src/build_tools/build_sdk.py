@@ -39,7 +39,6 @@ import generate_make
 import generate_notice
 import manifest_util
 import parse_dsc
-import test_sdk
 import verify_filelist
 
 from build_paths import SCRIPT_DIR, SDK_SRC_DIR, SRC_DIR, NACL_DIR, OUT_DIR
@@ -737,25 +736,6 @@ def BuildStepTarBundle(pepper_ver, tarfile):
        'pepper_' + pepper_ver], cwd=NACL_DIR)
 
 
-def BuildStepRunUnittests():
-  buildbot_common.BuildStep('Run unittests')
-  test_all_py = os.path.join(SDK_SRC_DIR, 'test_all.py')
-
-  # Our tests shouldn't be using the proxy; they should all be connecting to
-  # localhost. Some slaves can't route HTTP traffic through the proxy to
-  # localhost (we get 504 gateway errors), so we clear it here.
-  env = dict(os.environ)
-  if 'http_proxy' in env:
-    del env['http_proxy']
-  buildbot_common.Run([sys.executable, test_all_py], env=env)
-
-
-def BuildStepTestSDK():
-  args = []
-  if options.build_experimental:
-    args.append('--experimental')
-  test_sdk.main(args)
-
 
 def GetManifestBundle(pepper_ver, revision, tarfile, archive_url):
   with open(tarfile, 'rb') as tarfile_stream:
@@ -873,8 +853,6 @@ def BuildStepTarNaClPorts(pepper_ver, tarfile):
 
 def main(args):
   parser = optparse.OptionParser()
-  parser.add_option('--run-tests',
-      help='Run tests. This includes building examples.', action='store_true')
   parser.add_option('--skip-tar', help='Skip generating a tarball.',
       action='store_true')
   parser.add_option('--archive', help='Force the archive step.',
@@ -902,12 +880,8 @@ def main(args):
 
   generate_make.use_gyp = options.gyp
   if buildbot_common.IsSDKBuilder():
-    options.run_tests = True
     options.archive = True
     options.build_ports = True
-
-  if buildbot_common.IsSDKTrybot():
-    options.run_tests = True
 
   toolchains = ['newlib', 'glibc', 'arm', 'pnacl', 'host']
   print 'Building: ' + ' '.join(toolchains)
@@ -932,9 +906,6 @@ def main(args):
     # We don't want the currently configured NACL_SDK_ROOT to have any effect
     # of the build.
     del os.environ['NACL_SDK_ROOT']
-
-  if options.run_tests:
-    BuildStepRunUnittests()
 
   BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
   BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
@@ -967,9 +938,6 @@ def main(args):
     BuildStepBuildNaClPorts(pepper_ver, pepperdir)
     if not options.skip_tar:
       BuildStepTarNaClPorts(pepper_ver, ports_tarfile)
-
-  if options.run_tests:
-    BuildStepTestSDK()
 
   # Archive on non-trybots.
   if options.archive:
