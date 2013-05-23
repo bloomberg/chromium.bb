@@ -4,16 +4,26 @@
   body { background:green; }
 </style>
 <script>
+var styleElements = [];
 function handleMessage(event)
 {
+    function addStyleSheet(styleContent)
+    {
+        var styleElement = document.createElement("style");
+        styleElement.textContent = styleContent;
+        document.head.appendChild(styleElement);
+        styleElements.push(styleElement);
+    }
+
     switch (event.data) {
-    case "addStyleSheet":
-        var style = document.createElement("style");
-        style.textContent = "body { background-color: yellow; }";
-        document.head.appendChild(style);
+    case "addStyleSheets":
+        addStyleSheet("body { background-color: yellow; }");
+        addStyleSheet("body { background-color: yellow; }\n/*@ sourceURL=stylesheet-added-in-iframe.css */");
         break;
-    case "removeStyleSheet":
-        document.head.removeChild(document.head.children[0]);
+    case "removeStyleSheets":
+        for (var i = 0; i < styleElements.length; ++i)
+            document.head.removeChild(styleElements[i]);
+        styleElements = [];
         break;
     }
 }

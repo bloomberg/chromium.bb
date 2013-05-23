@@ -1264,17 +1264,17 @@ PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObje
 
     Document* document = styleSheet->ownerDocument();
     Frame* frame = document ? document->frame() : 0;
-    String sourceURLOverride = sourceURL();
-    bool hasSourceURLOverride = !sourceURLOverride.isEmpty();
+
     RefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> result = TypeBuilder::CSS::CSSStyleSheetHeader::create()
         .setStyleSheetId(id())
         .setOrigin(m_origin)
         .setDisabled(styleSheet->disabled())
-        .setSourceURL(hasSourceURLOverride ? sourceURLOverride : finalURL())
+        .setSourceURL(url())
         .setTitle(styleSheet->title())
-        .setFrameId(m_pageAgent->frameId(frame));
+        .setFrameId(m_pageAgent->frameId(frame))
+        .setIsInline(styleSheet->isInline() && !startsAtZero());
 
-    if (hasSourceURLOverride)
+    if (hasSourceURL())
         result->setHasSourceURL(true);
 
     String sourceMapURLValue = sourceMapURL();
@@ -1342,11 +1342,9 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRule(CS
         .setOrigin(m_origin)
         .setStyle(buildObjectForStyle(rule->style()));
 
-    // "sourceURL" is present only for regular rules, otherwise "origin" should be used in the frontend.
-    if (m_origin == TypeBuilder::CSS::StyleSheetOrigin::Regular) {
-        String sourceURLValue = sourceURL();
-        result->setSourceURL(!sourceURLValue.isEmpty() ? sourceURLValue : finalURL());
-    }
+    String url = this->url();
+    if (!url.isEmpty())
+        result->setSourceURL(url);
 
     if (canBind()) {
         InspectorCSSId id(ruleId(rule));
@@ -1476,25 +1474,64 @@ PassRefPtr<InspectorStyle> InspectorStyleSheet::inspectorStyleForId(const Inspec
 
 String InspectorStyleSheet::sourceURL() const
 {
-    if (origin() != TypeBuilder::CSS::StyleSheetOrigin::Regular)
-        return String();
+    if (!m_sourceURL.isNull())
+        return m_sourceURL;
+    if (m_origin != TypeBuilder::CSS::StyleSheetOrigin::Regular) {
+        m_sourceURL = "";
+        return m_sourceURL;
+    }
 
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
         String commentValue = ContentSearchUtils::findSourceURL(styleSheetText, ContentSearchUtils::CSSMagicComment);
-        if (!commentValue.isEmpty())
-            return commentValue;
+        if (!commentValue.isEmpty()) {
+            m_sourceURL = commentValue;
+            return m_sourceURL;
+        }
     }
+    m_sourceURL = "";
+    return m_sourceURL;
+}
 
-    return String();
+String InspectorStyleSheet::url() const
+{
+    // "sourceURL" is present only for regular rules, otherwise "origin" should be used in the frontend.
+    if (m_origin != TypeBuilder::CSS::StyleSheetOrigin::Regular)
+        return String();
+
+    CSSStyleSheet* styleSheet = pageStyleSheet();
+    if (!styleSheet)
+        return String();
+
+    if (hasSourceURL())
+        return sourceURL();
+
+    if (styleSheet->isInline() && startsAtZero())
+        return String();
+
+    return finalURL();
+}
+
+bool InspectorStyleSheet::hasSourceURL() const
+{
+    return !sourceURL().isEmpty();
+}
+
+bool InspectorStyleSheet::startsAtZero() const
+{
+    CSSStyleSheet* styleSheet = pageStyleSheet();
+    if (!styleSheet)
+        return true;
+
+    return styleSheet->startPositionInSource() == TextPosition::minimumPosition();
 }
 
 String InspectorStyleSheet::sourceMapURL() const
 {
     DEFINE_STATIC_LOCAL(String, sourceMapHttpHeader, (ASCIILiteral("X-SourceMap")));
 
-    if (origin() != TypeBuilder::CSS::StyleSheetOrigin::Regular)
+    if (m_origin != TypeBuilder::CSS::StyleSheetOrigin::Regular)
         return String();
 
     String styleSheetText;

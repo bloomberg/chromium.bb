@@ -11,7 +11,7 @@ background-color: white;
 
 ======== Matched CSS Rules ========
 [expanded] 
-*  { (host-rules.html:0)
+*  { ()
 border: 1px solid black;
     border-top-color: black;
     border-top-style: solid;

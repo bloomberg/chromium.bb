@@ -24,9 +24,10 @@
 #include "core/css/CSSParserMode.h"
 #include "core/css/CSSRule.h"
 #include "core/css/StyleSheet.h"
-#include <wtf/HashMap.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/text/AtomicStringHash.h"
+#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 
@@ -48,7 +49,7 @@ class CSSStyleSheet : public StyleSheet {
 public:
     static PassRefPtr<CSSStyleSheet> create(PassRefPtr<StyleSheetContents>, CSSImportRule* ownerRule = 0);
     static PassRefPtr<CSSStyleSheet> create(PassRefPtr<StyleSheetContents>, Node* ownerNode);
-    static PassRefPtr<CSSStyleSheet> createInline(Node*, const KURL&, const String& encoding = String());
+    static PassRefPtr<CSSStyleSheet> createInline(Node*, const KURL&, const TextPosition& startPosition = TextPosition::minimumPosition(), const String& encoding = String());
 
     virtual ~CSSStyleSheet();
 
@@ -105,11 +106,14 @@ public:
 
     StyleSheetContents* contents() const { return m_contents.get(); }
 
+    bool isInline() const { return m_isInlineStylesheet; }
+    TextPosition startPositionInSource() const { return m_startPosition; }
+
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
     CSSStyleSheet(PassRefPtr<StyleSheetContents>, CSSImportRule* ownerRule);
-    CSSStyleSheet(PassRefPtr<StyleSheetContents>, Node* ownerNode, bool isInlineStylesheet);
+    CSSStyleSheet(PassRefPtr<StyleSheetContents>, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition);
 
     virtual bool isCSSStyleSheet() const { return true; }
     virtual String type() const { return "text/css"; }
@@ -124,6 +128,8 @@ private:
 
     Node* m_ownerNode;
     CSSImportRule* m_ownerRule;
+
+    TextPosition m_startPosition;
 
     mutable RefPtr<MediaList> m_mediaCSSOMWrapper;
     mutable Vector<RefPtr<CSSRule> > m_childRuleCSSOMWrappers;

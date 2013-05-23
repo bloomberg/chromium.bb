@@ -238,6 +238,9 @@ private:
     bool inlineStyleSheetText(String* result) const;
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSRule> > buildArrayForRuleList(CSSRuleList*);
     PassRefPtr<TypeBuilder::CSS::SelectorList> buildObjectForSelectorList(CSSStyleRule*);
+    String url() const;
+    bool hasSourceURL() const;
+    bool startsAtZero() const;
 
     InspectorPageAgent* m_pageAgent;
     String m_id;
@@ -249,6 +252,7 @@ private:
     ParsedStyleSheet* m_parsedStyleSheet;
     mutable CSSStyleRuleVector m_flatRules;
     Listener* m_listener;
+    mutable String m_sourceURL;
 };
 
 class InspectorStyleSheetForInlineStyle : public InspectorStyleSheet {

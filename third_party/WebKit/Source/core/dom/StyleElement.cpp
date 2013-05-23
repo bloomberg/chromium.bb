@@ -49,10 +49,10 @@ static bool isCSS(Element* element, const AtomicString& type)
 StyleElement::StyleElement(Document* document, bool createdByParser)
     : m_createdByParser(createdByParser)
     , m_loading(false)
-    , m_startLineNumber(WTF::OrdinalNumber::beforeFirst())
+    , m_startPosition(TextPosition::belowRangePosition())
 {
     if (createdByParser && document && document->scriptableDocumentParser() && !document->isInDocumentWrite())
-        m_startLineNumber = document->scriptableDocumentParser()->lineNumber();
+        m_startPosition = document->scriptableDocumentParser()->textPosition();
 }
 
 StyleElement::~StyleElement()
@@ -119,7 +119,7 @@ void StyleElement::process(Element* e)
         if (isValidStyleChild(c)) {
             unsigned length = c->nodeValue().length();
             if (length > std::numeric_limits<unsigned>::max() - resultLength) {
-                createSheet(e, m_startLineNumber, "");
+                createSheet(e, "");
                 return;
             }
             resultLength += length;
@@ -135,7 +135,7 @@ void StyleElement::process(Element* e)
     }
     ASSERT(sheetText.length() == resultLength);
 
-    createSheet(e, m_startLineNumber, sheetText.toString());
+    createSheet(e, sheetText.toString());
 }
 
 void StyleElement::clearSheet()
@@ -144,7 +144,7 @@ void StyleElement::clearSheet()
     m_sheet.release()->clearOwnerNode();
 }
 
-void StyleElement::createSheet(Element* e, WTF::OrdinalNumber startLineNumber, const String& text)
+void StyleElement::createSheet(Element* e, const String& text)
 {
     ASSERT(e);
     ASSERT(e->inDocument());
@@ -157,7 +157,7 @@ void StyleElement::createSheet(Element* e, WTF::OrdinalNumber startLineNumber, c
 
     // If type is empty or CSS, this is a CSS style sheet.
     const AtomicString& type = this->type();
-    if (document->contentSecurityPolicy()->allowInlineStyle(e->document()->url(), startLineNumber) && isCSS(e, type)) {
+    if (document->contentSecurityPolicy()->allowInlineStyle(e->document()->url(), m_startPosition.m_line) && isCSS(e, type)) {
         RefPtr<MediaQuerySet> mediaQueries;
         if (e->isHTMLElement())
             mediaQueries = MediaQuerySet::createAllowingDescriptionSyntax(media());
@@ -170,10 +170,11 @@ void StyleElement::createSheet(Element* e, WTF::OrdinalNumber startLineNumber, c
             document->styleSheetCollection()->addPendingSheet();
             m_loading = true;
 
-            m_sheet = CSSStyleSheet::createInline(e, KURL(), document->inputEncoding());
+            TextPosition startPosition = m_startPosition == TextPosition::belowRangePosition() ? TextPosition::minimumPosition() : m_startPosition;
+            m_sheet = CSSStyleSheet::createInline(e, KURL(), startPosition, document->inputEncoding());
             m_sheet->setMediaQueries(mediaQueries.release());
             m_sheet->setTitle(e->title());
-            m_sheet->contents()->parseStringAtLine(text, startLineNumber.zeroBasedInt(), m_createdByParser);
+            m_sheet->contents()->parseStringAtLine(text, startPosition.m_line.zeroBasedInt(), m_createdByParser);
 
             m_loading = false;
         }

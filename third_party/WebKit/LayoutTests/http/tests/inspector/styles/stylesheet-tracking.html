@@ -44,14 +44,14 @@ function iframe()
     return document.getElementsByTagName("iframe")[0];
 }
 
-function addIframeStyleSheet()
+function addIframeStyleSheets()
 {
-    iframe().contentWindow.postMessage("addStyleSheet", "*");
+    iframe().contentWindow.postMessage("addStyleSheets", "*");
 }
 
-function removeIframeStyleSheet()
+function removeIframeStyleSheets()
 {
-    iframe().contentWindow.postMessage("removeStyleSheet", "*");
+    iframe().contentWindow.postMessage("removeStyleSheets", "*");
 }
 
 function removeIframe()
@@ -83,15 +83,15 @@ function test()
         function iframeAdded()
         {
             InspectorTest.addResult("=== Adding iframe stylesheet... ===");
-            waitStyleSheetAdded(1, removeIframeStyleSheet);
-            InspectorTest.evaluateInPage("addIframeStyleSheet()");
+            waitStyleSheetAdded(2, removeIframeStyleSheets);
+            InspectorTest.evaluateInPage("addIframeStyleSheets()");
         }
 
-        function removeIframeStyleSheet()
+        function removeIframeStyleSheets()
         {
             InspectorTest.addResult("=== Removing iframe stylesheet... ===");
-            waitStyleSheetRemoved(1, step1)
-            InspectorTest.evaluateInPage("removeIframeStyleSheet()");
+            waitStyleSheetRemoved(2, step1)
+            InspectorTest.evaluateInPage("removeIframeStyleSheets()");
         }
     }
 
@@ -213,13 +213,13 @@ function test()
             return a.sourceURL.localeCompare(b.sourceURL);
         }
         sheets = sheets.sort(sorter);
-        for (var i = 0; i < sheets.length; ++i)
-            InspectorTest.addResult(headerData(sheets[i]));
-    }
-
-    function headerData(header)
-    {
-        return "    URL=" + trimURL(header.sourceURL) + "\n    origin=" + header.origin;
+        for (var i = 0; i < sheets.length; ++i) {
+            var header = sheets[i];
+            InspectorTest.addResult("    URL=" + trimURL(header.sourceURL));
+            InspectorTest.addResult("    origin=" + header.origin);
+            InspectorTest.addResult("    isInline=" + header.isInline);
+            InspectorTest.addResult("    hasSourceURL=" + header.hasSourceURL);
+        }
     }
 
     function trimURL(url)
