@@ -50,6 +50,7 @@ class MessageCenterNotificationManager
       const std::string& notification_id) OVERRIDE;
   virtual void ShowSettings(const std::string& notification_id) OVERRIDE;
   virtual void ShowSettingsDialog(gfx::NativeView context) OVERRIDE;
+  virtual bool HasClickedListener(const std::string& notification_id) OVERRIDE;
 
   // MessageCenterObserver
   virtual void OnNotificationRemoved(const std::string& notification_id,

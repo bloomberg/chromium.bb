@@ -228,6 +228,14 @@ void MessageCenterNotificationManager::ShowSettingsDialog(
   settings_controller_->ShowSettingsDialog(context);
 }
 
+bool MessageCenterNotificationManager::HasClickedListener(
+    const std::string& notification_id) {
+  ProfileNotification* profile_notification =
+      FindProfileNotification(notification_id);
+  return profile_notification &&
+      profile_notification->notification().HasClickedListener();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MessageCenter::Observer
 void MessageCenterNotificationManager::OnNotificationRemoved(

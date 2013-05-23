@@ -11,13 +11,13 @@ Notification::Notification(const GURL& origin_url,
                            const string16& display_source,
                            const string16& replace_id,
                            NotificationDelegate* delegate)
- : type_(message_center::NOTIFICATION_TYPE_SIMPLE),
-    origin_url_(origin_url),
-    is_html_(true),
-    content_url_(content_url),
-    display_source_(display_source),
-    replace_id_(replace_id),
-    delegate_(delegate) {
+    : type_(message_center::NOTIFICATION_TYPE_SIMPLE),
+      origin_url_(origin_url),
+      is_html_(true),
+      content_url_(content_url),
+      display_source_(display_source),
+      replace_id_(replace_id),
+      delegate_(delegate) {
 }
 
 Notification::Notification(const GURL& origin_url,

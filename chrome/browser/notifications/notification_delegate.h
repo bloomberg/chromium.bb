@@ -33,6 +33,9 @@ class NotificationDelegate
   // To be called when a desktop notification is clicked.
   virtual void Click() = 0;
 
+  // Returns true if the delegate can handle click event.
+  virtual bool HasClickedListener();
+
   // To be called when the user clicks a button in a notification. TODO(miket):
   // consider providing default implementations of the pure virtuals of this
   // interface, to avoid pinging so many OWNERs each time we enhance it.

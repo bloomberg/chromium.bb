@@ -4,6 +4,10 @@
 
 #include "chrome/browser/notifications/notification_delegate.h"
 
+bool NotificationDelegate::HasClickedListener() {
+  return false;
+}
+
 void NotificationDelegate::ButtonClick(int button_index) {
 }
 

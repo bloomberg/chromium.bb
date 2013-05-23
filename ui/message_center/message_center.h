@@ -59,6 +59,9 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
     // Request to show the notification settings dialog. |context| is necessary
     // to create a new window.
     virtual void ShowSettingsDialog(gfx::NativeView context) = 0;
+
+    // Request to check if the notification has the listener of Clicked event.
+    virtual bool HasClickedListener(const std::string& notification_id) = 0;
   };
 
   // Called to set the delegate.  Generally called only once, except in tests.
@@ -76,6 +79,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual bool HasPopupNotifications() const = 0;
   virtual bool HasNotification(const std::string& id) = 0;
   virtual bool IsQuietMode() const = 0;
+  virtual bool HasClickedListener(const std::string& id) = 0;
 
   // Getters of the current notifications.
   virtual const NotificationList::Notifications& GetNotifications() = 0;

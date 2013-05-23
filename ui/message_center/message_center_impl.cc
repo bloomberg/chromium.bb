@@ -63,6 +63,10 @@ bool MessageCenterImpl::IsQuietMode() const {
   return notification_list_->quiet_mode();
 }
 
+bool MessageCenterImpl::HasClickedListener(const std::string& id) {
+  return delegate_ && delegate_->HasClickedListener(id);
+}
+
 const NotificationList::Notifications& MessageCenterImpl::GetNotifications() {
   return notification_list_->GetNotifications();
 }

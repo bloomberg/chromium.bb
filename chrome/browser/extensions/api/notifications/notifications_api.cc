@@ -32,9 +32,9 @@ const char kResultKey[] = "result";
 class NotificationsApiDelegate : public NotificationDelegate {
  public:
   NotificationsApiDelegate(ApiFunction* api_function,
-                          Profile* profile,
-                          const std::string& extension_id,
-                          const std::string& id)
+                           Profile* profile,
+                           const std::string& extension_id,
+                           const std::string& id)
       : api_function_(api_function),
         profile_(profile),
         extension_id_(extension_id),
@@ -69,6 +69,11 @@ class NotificationsApiDelegate : public NotificationDelegate {
   virtual void Click() OVERRIDE {
     scoped_ptr<ListValue> args(CreateBaseEventArgs());
     SendEvent(event_names::kOnNotificationClicked, args.Pass());
+  }
+
+  virtual bool HasClickedListener() OVERRIDE {
+    return ExtensionSystem::Get(profile_)->event_router()->HasEventListener(
+        event_names::kOnNotificationClicked);
   }
 
   virtual void ButtonClick(int index) OVERRIDE {

@@ -598,6 +598,9 @@ views::View* NotificationView::GetEventHandlerForPoint(
 }
 
 gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {
+  if (!message_center()->HasClickedListener(notification_id()))
+    return views::View::GetCursor(event);
+
 #if defined(USE_AURA)
   return ui::kCursorHand;
 #elif defined(OS_WIN)

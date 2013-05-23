@@ -42,6 +42,10 @@ bool FakeMessageCenter::IsQuietMode() const {
   return false;
 }
 
+bool FakeMessageCenter::HasClickedListener(const std::string& id) {
+  return false;
+}
+
 const NotificationList::Notifications& FakeMessageCenter::GetNotifications() {
   return empty_notifications_;
 }
