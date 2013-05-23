@@ -2775,23 +2775,10 @@ weston_compositor_init(struct weston_compositor *ec,
 {
 	struct wl_event_loop *loop;
 	struct xkb_rule_names xkb_names;
-        const struct config_key keyboard_config_keys[] = {
-		{ "keymap_rules", CONFIG_KEY_STRING, &xkb_names.rules },
-		{ "keymap_model", CONFIG_KEY_STRING, &xkb_names.model },
-		{ "keymap_layout", CONFIG_KEY_STRING, &xkb_names.layout },
-		{ "keymap_variant", CONFIG_KEY_STRING, &xkb_names.variant },
-		{ "keymap_options", CONFIG_KEY_STRING, &xkb_names.options },
-        };
-	const struct config_section cs[] = {
-                { "keyboard",
-                  keyboard_config_keys, ARRAY_LENGTH(keyboard_config_keys) },
-	};
-
-	memset(&xkb_names, 0, sizeof(xkb_names));
+	struct weston_config_section *s;
 
 	ec->config_fd = config_fd;
 	ec->config = weston_config_parse(config_fd);
-	parse_config_file(config_fd, cs, ARRAY_LENGTH(cs), ec);
 
 	ec->wl_display = display;
 	wl_signal_init(&ec->destroy_signal);
@@ -2829,6 +2816,17 @@ weston_compositor_init(struct weston_compositor *ec,
 	weston_plane_init(&ec->primary_plane, 0, 0);
 	weston_compositor_stack_plane(ec, &ec->primary_plane, NULL);
 
+	s = weston_config_get_section(ec->config, "keyboard", NULL, NULL);
+	weston_config_section_get_string(s, "keymap_rules",
+					 (char **) &xkb_names.rules, NULL);
+	weston_config_section_get_string(s, "keymap_model",
+					 (char **) &xkb_names.model, NULL);
+	weston_config_section_get_string(s, "keymap_layout",
+					 (char **) &xkb_names.layout, NULL);
+	weston_config_section_get_string(s, "keymap_variant",
+					 (char **) &xkb_names.variant, NULL);
+	weston_config_section_get_string(s, "keymap_options",
+					 (char **) &xkb_names.options, NULL);
 	if (weston_compositor_xkb_init(ec, &xkb_names) < 0)
 		return -1;
 
