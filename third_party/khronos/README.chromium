@@ -26,5 +26,6 @@ GLES2/gl2ext.h
  - Added include of gl2chromium.h
 EGL/eglplatform.h
  - Added EGLNative*Type for Mac.
+ - Added EGLNative*Type for native linux framebuffers.
 DEPS
  - Added DEPS file to prevent inclusion of external dependencies.
