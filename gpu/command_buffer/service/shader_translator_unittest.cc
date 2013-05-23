@@ -19,6 +19,8 @@ class ShaderTranslatorTest : public testing::Test {
  protected:
   virtual void SetUp() {
     ShBuiltInResources resources;
+    resources.MaxExpressionComplexity = 32;
+    resources.MaxCallStackDepth = 32;
     ShInitBuiltInResources(&resources);
     vertex_translator_ = new ShaderTranslator();
     fragment_translator_ = new ShaderTranslator();
@@ -63,7 +65,7 @@ TEST_F(ShaderTranslatorTest, ValidVertexShader) {
   // Info log must be NULL.
   EXPECT_TRUE(vertex_translator_->info_log() == NULL);
   // Translated shader must be valid and non-empty.
-  EXPECT_TRUE(vertex_translator_->translated_shader() != NULL);
+  ASSERT_TRUE(vertex_translator_->translated_shader() != NULL);
   EXPECT_GT(strlen(vertex_translator_->translated_shader()), 0u);
   // There should be no attributes or uniforms.
   EXPECT_TRUE(vertex_translator_->attrib_map().empty());
@@ -80,7 +82,7 @@ TEST_F(ShaderTranslatorTest, InvalidVertexShader) {
   // An invalid shader should fail.
   EXPECT_FALSE(vertex_translator_->Translate(bad_shader));
   // Info log must be valid and non-empty.
-  EXPECT_TRUE(vertex_translator_->info_log() != NULL);
+  ASSERT_TRUE(vertex_translator_->info_log() != NULL);
   EXPECT_GT(strlen(vertex_translator_->info_log()), 0u);
   // Translated shader must be NULL.
   EXPECT_TRUE(vertex_translator_->translated_shader() == NULL);
@@ -91,7 +93,7 @@ TEST_F(ShaderTranslatorTest, InvalidVertexShader) {
   // Try a good shader after bad.
   EXPECT_TRUE(vertex_translator_->Translate(good_shader));
   EXPECT_TRUE(vertex_translator_->info_log() == NULL);
-  EXPECT_TRUE(vertex_translator_->translated_shader() != NULL);
+  ASSERT_TRUE(vertex_translator_->translated_shader() != NULL);
   EXPECT_GT(strlen(vertex_translator_->translated_shader()), 0u);
 }
 
@@ -106,7 +108,7 @@ TEST_F(ShaderTranslatorTest, ValidFragmentShader) {
   // Info log must be NULL.
   EXPECT_TRUE(fragment_translator_->info_log() == NULL);
   // Translated shader must be valid and non-empty.
-  EXPECT_TRUE(fragment_translator_->translated_shader() != NULL);
+  ASSERT_TRUE(fragment_translator_->translated_shader() != NULL);
   EXPECT_GT(strlen(fragment_translator_->translated_shader()), 0u);
   // There should be no attributes or uniforms.
   EXPECT_TRUE(fragment_translator_->attrib_map().empty());
@@ -119,7 +121,7 @@ TEST_F(ShaderTranslatorTest, InvalidFragmentShader) {
   // An invalid shader should fail.
   EXPECT_FALSE(fragment_translator_->Translate(shader));
   // Info log must be valid and non-empty.
-  EXPECT_TRUE(fragment_translator_->info_log() != NULL);
+  ASSERT_TRUE(fragment_translator_->info_log() != NULL);
   EXPECT_GT(strlen(fragment_translator_->info_log()), 0u);
   // Translated shader must be NULL.
   EXPECT_TRUE(fragment_translator_->translated_shader() == NULL);
@@ -139,7 +141,7 @@ TEST_F(ShaderTranslatorTest, GetAttributes) {
   // Info log must be NULL.
   EXPECT_TRUE(vertex_translator_->info_log() == NULL);
   // Translated shader must be valid and non-empty.
-  EXPECT_TRUE(vertex_translator_->translated_shader() != NULL);
+  ASSERT_TRUE(vertex_translator_->translated_shader() != NULL);
   EXPECT_GT(strlen(vertex_translator_->translated_shader()), 0u);
   // There should be no uniforms.
   EXPECT_TRUE(vertex_translator_->uniform_map().empty());
@@ -174,7 +176,7 @@ TEST_F(ShaderTranslatorTest, GetUniforms) {
   // Info log must be NULL.
   EXPECT_TRUE(fragment_translator_->info_log() == NULL);
   // Translated shader must be valid and non-empty.
-  EXPECT_TRUE(fragment_translator_->translated_shader() != NULL);
+  ASSERT_TRUE(fragment_translator_->translated_shader() != NULL);
   EXPECT_GT(strlen(fragment_translator_->translated_shader()), 0u);
   // There should be no attributes.
   EXPECT_TRUE(fragment_translator_->attrib_map().empty());
@@ -213,7 +215,7 @@ TEST_F(ShaderTranslatorTest, BuiltInFunctionEmulation) {
   // Info log must be NULL.
   EXPECT_TRUE(vertex_translator_->info_log() == NULL);
   // Translated shader must be valid and non-empty.
-  EXPECT_TRUE(vertex_translator_->translated_shader() != NULL);
+  ASSERT_TRUE(vertex_translator_->translated_shader() != NULL);
   EXPECT_TRUE(strstr(vertex_translator_->translated_shader(),
                      "webgl_dot_emu") != NULL);
 }

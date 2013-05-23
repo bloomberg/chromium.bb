@@ -2504,6 +2504,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.MaxFragmentUniformVectors =
       group_->max_fragment_uniform_vectors();
   resources.MaxDrawBuffers = group_->max_draw_buffers();
+  resources.MaxExpressionComplexity = 256;
+  resources.MaxCallStackDepth = 256;
 
 #if (ANGLE_SH_VERSION >= 110)
   GLint range[2] = { 0, 0 };
