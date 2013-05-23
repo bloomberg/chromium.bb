@@ -31,9 +31,8 @@
 #include "config.h"
 #include "V8HTMLInputElement.h"
 
-#include "core/html/HTMLInputElement.h"
-
 #include "bindings/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 
@@ -43,7 +42,7 @@ v8::Handle<v8::Value> V8HTMLInputElement::selectionStartAttrGetterCustom(v8::Loc
     HTMLInputElement* imp = V8HTMLInputElement::toNative(holder);
 
     if (!imp->canHaveSelection())
-        return throwTypeError("Accessing selectionStart on an input element that cannot have a selection.", info.GetIsolate());
+        return setDOMException(INVALID_STATE_ERR, info.GetIsolate());
 
     int v = imp->selectionStart();
     return v8Integer(v, info.GetIsolate());
@@ -55,7 +54,7 @@ void V8HTMLInputElement::selectionStartAttrSetterCustom(v8::Local<v8::String> na
     HTMLInputElement* imp = V8HTMLInputElement::toNative(holder);
 
     if (!imp->canHaveSelection()) {
-        throwTypeError("Accessing selectionStart on an input element that cannot have a selection.", info.GetIsolate());
+        setDOMException(INVALID_STATE_ERR, info.GetIsolate());
         return;
     }
     imp->setSelectionStart(value->Int32Value());
@@ -67,7 +66,7 @@ v8::Handle<v8::Value> V8HTMLInputElement::selectionEndAttrGetterCustom(v8::Local
     HTMLInputElement* imp = V8HTMLInputElement::toNative(holder);
 
     if (!imp->canHaveSelection())
-        return throwTypeError("Accessing selectionEnd on an input element that cannot have a selection.", info.GetIsolate());
+        return setDOMException(INVALID_STATE_ERR, info.GetIsolate());
 
     int v = imp->selectionEnd();
     return v8Integer(v, info.GetIsolate());
@@ -79,7 +78,7 @@ void V8HTMLInputElement::selectionEndAttrSetterCustom(v8::Local<v8::String> name
     HTMLInputElement* imp = V8HTMLInputElement::toNative(holder);
 
     if (!imp->canHaveSelection()) {
-        throwTypeError("Accessing selectionEnd on an input element that cannot have a selection.", info.GetIsolate());
+        setDOMException(INVALID_STATE_ERR, info.GetIsolate());
         return;
     }
 
@@ -92,7 +91,7 @@ v8::Handle<v8::Value> V8HTMLInputElement::selectionDirectionAttrGetterCustom(v8:
     HTMLInputElement* imp = V8HTMLInputElement::toNative(holder);
 
     if (!imp->canHaveSelection())
-        return throwTypeError("Accessing selectionDirection on an input element that cannot have a selection.", info.GetIsolate());
+        return setDOMException(INVALID_STATE_ERR, info.GetIsolate());
 
     return v8String(imp->selectionDirection(), info.GetIsolate());
 }
@@ -103,7 +102,7 @@ void V8HTMLInputElement::selectionDirectionAttrSetterCustom(v8::Local<v8::String
     HTMLInputElement* imp = V8HTMLInputElement::toNative(holder);
 
     if (!imp->canHaveSelection()) {
-        throwTypeError("Accessing selectionDirection on an input element that cannot have a selection.", info.GetIsolate());
+        setDOMException(INVALID_STATE_ERR, info.GetIsolate());
         return;
     }
 
@@ -116,7 +115,7 @@ v8::Handle<v8::Value> V8HTMLInputElement::setSelectionRangeMethodCustom(const v8
     HTMLInputElement* imp = V8HTMLInputElement::toNative(holder);
 
     if (!imp->canHaveSelection())
-        return throwTypeError("Calling setSelectionRange on an input element that cannot have a selection.", args.GetIsolate());
+        return setDOMException(INVALID_STATE_ERR, args.GetIsolate());
 
     int start = args[0]->Int32Value();
     int end = args[1]->Int32Value();

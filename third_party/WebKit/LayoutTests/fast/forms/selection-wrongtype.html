@@ -10,60 +10,20 @@
 <div id="console"></div>
 <div>
 <script type="text/javascript">
-description('Tests to ensure selectionStart, selectionEnd, and selectionDirection throw exceptions when the input element is not a text field.');
+description('Tests to ensure selectionStart, selectionEnd, selectionDirection and selectionRange throw exceptions when the input element is not a text field.');
 
 var tests = document.getElementById('tests');
 for (var i = 0; i < tests.children.length; i++) {
     var test = tests.children[i];
     test.focus();
 
-    var name = test.type + ' - retrieving selectionStart';
-    try {
-        var value = test.selectionStart;
-        testFailed(name + ' did not throw an exception');
-    } catch (e) {
-        testPassed(name + ' threw an exception');
-    }
-
-    name = test.type + ' - assigning selectionStart';
-    try {
-        test.selectionStart = 0;
-        testFailed(name + ' did not throw an exception');
-    } catch (e) {
-        testPassed(name + ' threw an exception');
-    }
-
-    var name = test.type + ' - retrieving selectionEnd';
-    try {
-        var value = test.selectionEnd;
-        testFailed(name + ' did not throw an exception');
-    } catch (e) {
-        testPassed(name + ' threw an exception');
-    }
-
-    name = test.type + ' - assigning selectionEnd';
-    try {
-        test.selectionEnd = 0;
-        testFailed(name + ' did not throw an exception');
-    } catch (e) {
-        testPassed(name + ' threw an exception');
-    }
-
-    name = test.type + ' - retrieving selectionDirection';
-    try {
-        var value = test.selectionDirection;
-        testFailed(name + ' did not throw an exception');
-    } catch (e) {
-        testPassed(name + ' threw an exception');
-    }
-
-    name = test.type + ' - assigning selectionDirection';
-    try {
-        test.selectionDirection = 'forward';
-        testFailed(name + ' did not throw an exception');
-    } catch (e) {
-        testPassed(name + ' threw an exception');
-    }
+    shouldThrow('test.selectionStart');
+    shouldThrow('test.selectionStart = 0');
+    shouldThrow('test.selectionEnd');
+    shouldThrow('test.selectionEnd = 0');
+    shouldThrow('test.selectionDirection');
+    shouldThrow('test.selectionDirection = 0');
+    shouldThrow('test.selectionRange()');
 }
 
 tests.style.display = 'none';
