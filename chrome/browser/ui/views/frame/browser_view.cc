@@ -216,10 +216,12 @@ void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
                               chrome::HostDesktopType host_desktop_type,
                               int toolbar_overlap) {
   // Paint background for attached state, this is fade in/out.
-  DetachableToolbarView::PaintBackgroundAttachedMode(canvas, view,
+  gfx::Point background_image_offset =
       browser_view->OffsetPointForToolbarBackgroundImage(
-          gfx::Point(view->GetMirroredX(), view->y())),
-      host_desktop_type);
+          gfx::Point(view->GetMirroredX(), view->y()));
+  DetachableToolbarView::PaintBackgroundAttachedMode(canvas,
+      view->GetThemeProvider(), view->GetLocalBounds(),
+      background_image_offset, host_desktop_type);
   if (view->height() >= toolbar_overlap) {
     // Draw the separator below bookmark bar; this is fading in/out.
     DetachableToolbarView::PaintHorizontalBorder(canvas, view, false,
@@ -415,10 +417,12 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     if (!toolbar_overlap)
       DetachableToolbarView::PaintHorizontalBorderForState(canvas, host_view_);
   } else {
-    DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_,
+    gfx::Point background_image_offset =
         browser_view_->OffsetPointForToolbarBackgroundImage(
-            gfx::Point(host_view_->GetMirroredX(), host_view_->y())),
-        browser_->host_desktop_type());
+            gfx::Point(host_view_->GetMirroredX(), host_view_->y()));
+    DetachableToolbarView::PaintBackgroundAttachedMode(canvas,
+        host_view_->GetThemeProvider(), host_view_->GetLocalBounds(),
+        background_image_offset, browser_->host_desktop_type());
     if (host_view_->height() >= toolbar_overlap)
       DetachableToolbarView::PaintHorizontalBorderForState(canvas, host_view_);
   }

@@ -13,11 +13,16 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/webview/webview.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif  // USE_AURA
 
 namespace {
 
@@ -49,7 +54,6 @@ int OverlayHeightInPixels(int parent_height, int overlay_height,
 // - adds it as child when shadow is needed
 // - removes it as child when shadow is not needed or when overlay is nuked or
 //   when overlay is removed as child
-// - always makes sure it's the 2nd child after overlay in the view hierarchy.
 class ShadowView : public views::View {
  public:
   ShadowView() {
@@ -141,13 +145,6 @@ void OverlayContainer::SetOverlay(views::WebView* overlay,
 
   if (overlay_ != overlay) {
     if (overlay_) {
-      // Order of children is important: always |overlay_| first, then shadow
-      // view if necessary.  To make sure the next view is added in the right
-      // order, remove shadow view every time |overlay_| is removed. Don't nuke
-      // the shadow view now in case it's needed below when we handle
-      // |draw_drop_shadow|.
-      if (shadow_view_.get())
-        RemoveChildView(shadow_view_.get());
       RemoveChildView(overlay_);
     } else {
       // There's no previous overlay, repaint infobars when showing the new one.
@@ -211,10 +208,11 @@ void OverlayContainer::SetOverlay(views::WebView* overlay,
   // the shadow view will be removed.
   if (overlay_ && draw_drop_shadow_) {
 #if !defined(OS_WIN)
-    if (!shadow_view_.get())  // Shadow view has not been created.
+    if (!shadow_view_.get()) {
+      // Shadow view has not been created.
       shadow_view_.reset(new ShadowView());
-    if (!shadow_view_->parent())  // Shadow view has not been added.
       AddChildView(shadow_view_.get());
+    }
 #endif  // !defined(OS_WIN)
   } else if (!overlay_) {
     shadow_view_.reset();
@@ -225,9 +223,26 @@ void OverlayContainer::SetOverlay(views::WebView* overlay,
 }
 
 void OverlayContainer::MaybeStackAtTop(bool immersive_is_revealed) {
-  SetPaintToLayer(immersive_is_revealed && overlay_);
-  if (layer())
+#if defined(USE_AURA)
+  bool paint_to_layer = immersive_is_revealed && overlay_;
+  SetPaintToLayer(paint_to_layer);
+
+  if (paint_to_layer) {
+    SetFillsBoundsOpaquely(false);
     layer()->parent()->StackAtTop(layer());
+
+    if (overlay_->web_contents() == overlay_web_contents_) {
+      // The web contents layer should be above OverlayContainer's layer.
+      // TODO(pkotwicz): Reorder the layer for the NativeView attached to a
+      // NativeViewHost according to the position of the NativeViewHost in the
+      // view tree.
+      ui::Layer* overlay_layer =
+          overlay_web_contents_->GetView()->GetNativeView()->layer();
+      DCHECK_EQ(overlay_layer->parent(), layer()->parent());
+      overlay_layer->parent()->StackAtTop(overlay_layer);
+    }
+  }
+#endif  // defined(USE_AURA)
 }
 
 gfx::Rect OverlayContainer::GetOverlayBounds() const {
@@ -283,11 +298,15 @@ void OverlayContainer::Layout() {
 }
 
 void OverlayContainer::OnPaint(gfx::Canvas* canvas) {
-  // Since this overlaps with toolbar, paint the background as continuation from
+  // Paint the region which overlaps with the toolbar as a continuation of the
   // toolbar, like attached bookmark bar does.
-  DetachableToolbarView::PaintBackgroundAttachedMode(canvas, this,
+  gfx::Rect toolbar_background_bounds(width(),
+      BookmarkBarView::kToolbarAttachedBookmarkBarOverlap);
+  gfx::Point background_image_offset =
       browser_view_->OffsetPointForToolbarBackgroundImage(
-          gfx::Point(GetMirroredX(), y())),
+          gfx::Point(GetMirroredX(), y()));
+  DetachableToolbarView::PaintBackgroundAttachedMode(canvas, GetThemeProvider(),
+      toolbar_background_bounds, background_image_offset,
       browser_view_->browser()->host_desktop_type());
   // Paint a separator below toolbar.
   canvas->FillRect(

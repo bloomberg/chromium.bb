@@ -25,30 +25,28 @@ const SkColor DetachableToolbarView::kMiddleDividerColor =
 // static
 void DetachableToolbarView::PaintBackgroundAttachedMode(
     gfx::Canvas* canvas,
-    views::View* view,
+    ui::ThemeProvider* theme_provider,
+    const gfx::Rect& bounds,
     const gfx::Point& background_origin,
     chrome::HostDesktopType host_desktop_type) {
-  ui::ThemeProvider* tp = view->GetThemeProvider();
-  canvas->FillRect(view->GetLocalBounds(),
-                   tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
-  canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
-                       background_origin.x(), background_origin.y(), 0, 0,
-                       view->width(), view->height());
+  canvas->FillRect(bounds,
+                   theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
+  canvas->TileImageInt(*theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
+                       background_origin.x(), background_origin.y(), bounds.x(),
+                       bounds.y(), bounds.width(), bounds.height());
 #if defined(USE_ASH)
   if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH) {
     // Ash provides additional lightening at the edges of the toolbar.
     gfx::ImageSkia* toolbar_left =
-        tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_LEFT);
+        theme_provider->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_LEFT);
     canvas->TileImageInt(*toolbar_left,
-                         0, 0,
-                         0, 0,
-                         toolbar_left->width(), view->height());
+                         bounds.x(), bounds.y(),
+                         toolbar_left->width(), bounds.height());
     gfx::ImageSkia* toolbar_right =
-        tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_RIGHT);
+        theme_provider->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_RIGHT);
     canvas->TileImageInt(*toolbar_right,
-                         0, 0,
-                         view->width() - toolbar_right->width(), 0,
-                         toolbar_right->width(), view->height());
+                         bounds.right() - toolbar_right->width(), bounds.y(),
+                         toolbar_right->width(), bounds.height());
   }
 #endif
 }
