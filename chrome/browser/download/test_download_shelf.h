@@ -9,13 +9,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/download/download_shelf.h"
-
-namespace content {
-class DownloadManager;
-}
+#include "content/public/browser/download_manager.h"
 
 // An implementation of DownloadShelf for testing.
-class TestDownloadShelf : public DownloadShelf {
+class TestDownloadShelf : public DownloadShelf,
+                          public content::DownloadManager::Observer {
  public:
   TestDownloadShelf();
   virtual ~TestDownloadShelf();
@@ -31,6 +29,9 @@ class TestDownloadShelf : public DownloadShelf {
   // Set download_manager_ (and the result of calling GetDownloadManager())
   void set_download_manager(content::DownloadManager* download_manager);
 
+  // DownloadManager::Observer implementation.
+  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
+
  protected:
   virtual void DoAddDownload(content::DownloadItem* download) OVERRIDE;
   virtual void DoShow() OVERRIDE;
@@ -41,7 +42,7 @@ class TestDownloadShelf : public DownloadShelf {
  private:
   bool is_showing_;
   bool did_add_download_;
-  scoped_refptr<content::DownloadManager> download_manager_;
+  content::DownloadManager* download_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDownloadShelf);
 };

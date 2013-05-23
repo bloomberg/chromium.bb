@@ -8,10 +8,13 @@
 
 TestDownloadShelf::TestDownloadShelf()
     : is_showing_(false),
-      did_add_download_(false) {
+      did_add_download_(false),
+      download_manager_(NULL) {
 }
 
 TestDownloadShelf::~TestDownloadShelf() {
+  if (download_manager_)
+    download_manager_->RemoveObserver(this);
 }
 
 bool TestDownloadShelf::IsShowing() const {
@@ -28,7 +31,16 @@ Browser* TestDownloadShelf::browser() const {
 
 void TestDownloadShelf::set_download_manager(
     content::DownloadManager* download_manager) {
+  if (download_manager_)
+    download_manager_->RemoveObserver(this);
   download_manager_ = download_manager;
+  if (download_manager_)
+    download_manager_->AddObserver(this);
+}
+
+void TestDownloadShelf::ManagerGoingDown(content::DownloadManager* manager) {
+  DCHECK_EQ(manager, download_manager_);
+  download_manager_ = NULL;
 }
 
 void TestDownloadShelf::DoAddDownload(content::DownloadItem* download) {
@@ -48,5 +60,5 @@ base::TimeDelta TestDownloadShelf::GetTransientDownloadShowDelay() {
 }
 
 content::DownloadManager* TestDownloadShelf::GetDownloadManager() {
-  return download_manager_.get();
+  return download_manager_;
 }
