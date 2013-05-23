@@ -14,28 +14,29 @@ body.user-typed {
   overflow: hidden;
 }
 
+#active-suggestions-container {
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+}
+
+.suggestion-contents {
+  z-index: 1;
+}
+
 #ntp-contents {
   position: absolute;
   text-align: -webkit-center;
-  top: 125px;
   width: 100%;
 }
 
-body.google-page #ntp-contents {
-  top: 0;
+.non-google-page #ntp-contents {
+  top: -webkit-calc(50% - 155px);
 }
 
 body.hide-ntp #ntp-contents,
 body.hide-ntp #attribution {
   display: none;
-}
-
-body.user-typed #ntp-contents {
-  top: 164px;
-}
-
-body.user-typed.google-page #ntp-contents {
-  top: 39px;
 }
 
 body.user-typed #fakebox {
@@ -62,10 +63,6 @@ body.fakebox-animate #active-suggestions-container {
 
 body.fakebox-animate .suggestion-contents {
   visibility: hidden;
-}
-
-body.google-page #mv-top-margin {
-  display: none;
 }
 
 #logo {

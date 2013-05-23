@@ -38,12 +38,13 @@ var CLASSES = {
   FAKEBOX_ANIMATE: 'fakebox-animate', // triggers fakebox animation
   FAKEBOX_FOCUS: 'fakebox-focused', // Applies focus styles to the fakebox
   FAVICON: 'mv-favicon',
-  GOOGLE_PAGE: 'google-page', // shows the Google logo and fakebox
   HIDE_BLACKLIST_BUTTON: 'mv-x-hide', // hides blacklist button during animation
   HIDE_NOTIFICATION: 'mv-notice-hide',
   HIDE_NTP: 'hide-ntp', // hides NTP and disables scrollbars
   HIDE_TILE: 'mv-tile-hide', // hides tiles on small browser width
   HOVERED: 'hovered',
+  // Vertically centers the most visited section for a non-Google provided page
+  NON_GOOGLE_PAGE: 'non-google-page',
   PAGE: 'mv-page', // page tiles
   PAGE_READY: 'mv-page-ready',  // page tile when ready
   ROW: 'mv-row',  // tile row
@@ -1652,7 +1653,6 @@ function init() {
   }
 
   if (isGooglePage) {
-    document.body.classList.add(CLASSES.GOOGLE_PAGE);
     var logo = document.createElement('div');
     logo.id = IDS.LOGO;
 
@@ -1664,6 +1664,8 @@ function init() {
 
     ntpContents.insertBefore(fakebox, ntpContents.firstChild);
     ntpContents.insertBefore(logo, ntpContents.firstChild);
+  } else {
+    document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }
 
 
