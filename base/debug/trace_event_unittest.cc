@@ -1687,6 +1687,8 @@ TEST_F(TraceEventTestFixture, TraceOptionsParsing) {
             TraceLog::TraceOptionsFromString("record-continuously"));
 }
 
+// Not supported in split dll build. http://crbug.com/237249
+#if !defined(CHROME_SPLIT_DLL)
 TEST_F(TraceEventTestFixture, TraceSampling) {
   ManualTestSetUp();
 
@@ -1710,6 +1712,7 @@ TEST_F(TraceEventTestFixture, TraceSampling) {
   EXPECT_TRUE(FindNamePhase("Stuff", "P"));
   EXPECT_TRUE(FindNamePhase("Things", "P"));
 }
+#endif  // !CHROME_SPLIT_DLL
 
 class MyData : public base::debug::ConvertableToTraceFormat {
  public:
