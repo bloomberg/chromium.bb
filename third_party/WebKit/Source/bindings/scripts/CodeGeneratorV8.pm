@@ -564,20 +564,12 @@ sub GetSpecialAccessorFunctionForType
     my $special = shift;
     my $type = shift;
 
-    my @interfaces = ($interface);
-    ForAllParents($interface, sub {
-        my $currentInterface = shift;
-        push(@interfaces, $currentInterface);
-    });
-
-    foreach my $currentInterface (@interfaces) {
-        foreach my $function (@{$currentInterface->functions}) {
-            my $specials = $function->signature->specials;
-            my $specialExists = grep { $_ eq $special } @$specials;
-            my $parameters = $function->parameters;
-            if ($specialExists and scalar(@$parameters) == 1 and $parameters->[0]->type eq $type) {
-                return $function;
-            }
+    foreach my $function (@{$interface->functions}) {
+        my $specials = $function->signature->specials;
+        my $specialExists = grep { $_ eq $special } @$specials;
+        my $parameters = $function->parameters;
+        if ($specialExists and scalar(@$parameters) == 1 and $parameters->[0]->type eq $type) {
+            return $function;
         }
     }
 
