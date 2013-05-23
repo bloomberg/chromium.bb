@@ -96,9 +96,7 @@ class FileRef : public Resource {
   /// completion of MakeDirectory().
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
-  /// Succeeds if the directory already exists. Fails if ancestor
-  /// directortories do not exist (see MakeDirectoryIncludingAncestors for the
-  /// alternative).
+  /// Fails if the directory already exists.
   int32_t MakeDirectory(const CompletionCallback& cc);
 
   /// MakeDirectoryIncludingAncestors() makes a new directory in the file
@@ -109,7 +107,7 @@ class FileRef : public Resource {
   /// completion of MakeDirectoryIncludingAncestors().
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
-  /// Succeeds if the directory already exists.
+  /// Fails if the directory already exists.
   int32_t MakeDirectoryIncludingAncestors(const CompletionCallback& cc);
 
   /// Touch() Updates time stamps for a file.  You must have write access to the

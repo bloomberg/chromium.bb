@@ -107,9 +107,9 @@ interface PPB_FileRef {
    * if ancestor directories are not needed.
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
-   * Succeeds if the directory already exists. Fails if ancestor directories
-   * do not exist and <code>make_ancestors</code> was passed as
-   * <code>PP_FALSE</code>.
+   * Fails if the directory already exists or if ancestor directories do not
+   * exist and <code>make_ancestors</code> was not passed as
+   * <code>PP_TRUE</code>.
    */
   int32_t MakeDirectory([in] PP_Resource directory_ref,
                         [in] PP_Bool make_ancestors,

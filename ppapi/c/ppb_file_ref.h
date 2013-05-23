@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_ref.idl modified Wed May 22 15:08:49 2013. */
+/* From ppb_file_ref.idl modified Thu May  2 16:22:57 2013. */
 
 #ifndef PPAPI_C_PPB_FILE_REF_H_
 #define PPAPI_C_PPB_FILE_REF_H_
@@ -122,9 +122,9 @@ struct PPB_FileRef_1_1 {
    * if ancestor directories are not needed.
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
-   * Succeeds if the directory already exists. Fails if ancestor directories
-   * do not exist and <code>make_ancestors</code> was passed as
-   * <code>PP_FALSE</code>.
+   * Fails if the directory already exists or if ancestor directories do not
+   * exist and <code>make_ancestors</code> was not passed as
+   * <code>PP_TRUE</code>.
    */
   int32_t (*MakeDirectory)(PP_Resource directory_ref,
                            PP_Bool make_ancestors,
