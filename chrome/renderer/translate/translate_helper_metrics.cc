@@ -13,7 +13,6 @@ namespace {
 // a corresponding index in MetricsNameIndex and an entry in |kMetricsEntries|.
 const char kRenderer4LanguageDetection[] = "Renderer4.LanguageDetection";
 const char kTranslateContentLanguage[] = "Translate.ContentLanguage";
-const char kTranslateHtmlLang[] = "Translate.HtmlLang";
 const char kTranslateLanguageVerification[] = "Translate.LanguageVerification";
 const char kTranslateTimeToBeReady[] = "Translate.TimeToBeReady";
 const char kTranslateTimeToLoad[] = "Translate.TimeToLoad";
@@ -35,8 +34,6 @@ const MetricsEntry kMetricsEntries[] = {
     kRenderer4LanguageDetection },
   { TranslateHelperMetrics::UMA_CONTENT_LANGUAGE,
     kTranslateContentLanguage },
-  { TranslateHelperMetrics::UMA_HTML_LANG,
-    kTranslateHtmlLang },
   { TranslateHelperMetrics::UMA_LANGUAGE_VERIFICATION,
     kTranslateLanguageVerification },
   { TranslateHelperMetrics::UMA_TIME_TO_BE_READY,
@@ -54,32 +51,25 @@ const MetricsEntry kMetricsEntries[] = {
 COMPILE_ASSERT(arraysize(kMetricsEntries) == TranslateHelperMetrics::UMA_MAX,
                arraysize_of_kMetricsEntries_should_be_UMA_MAX);
 
-TranslateHelperMetrics::LanguageCheckType GetLanguageCheckMetric(
-    const std::string& provided_code,
-    const std::string& revised_code) {
-  if (provided_code.empty())
-    return TranslateHelperMetrics::LANGUAGE_NOT_PROVIDED;
-  else if (provided_code == revised_code)
-    return TranslateHelperMetrics::LANGUAGE_VALID;
-  return TranslateHelperMetrics::LANGUAGE_INVALID;
-}
-
 }  // namespace
 
 namespace TranslateHelperMetrics {
 
 void ReportContentLanguage(const std::string& provided_code,
                            const std::string& revised_code) {
-  UMA_HISTOGRAM_ENUMERATION(kTranslateContentLanguage,
-                            GetLanguageCheckMetric(provided_code, revised_code),
-                            TranslateHelperMetrics::LANGUAGE_MAX);
-}
-
-void ReportHtmlLang(const std::string& provided_code,
-                    const std::string& revised_code) {
-  UMA_HISTOGRAM_ENUMERATION(kTranslateHtmlLang,
-                            GetLanguageCheckMetric(provided_code, revised_code),
-                            TranslateHelperMetrics::LANGUAGE_MAX);
+  if (provided_code.empty()) {
+    UMA_HISTOGRAM_ENUMERATION(kTranslateContentLanguage,
+                              CONTENT_LANGUAGE_NOT_PROVIDED,
+                              CONTENT_LANGUAGE_MAX);
+  } else if (provided_code == revised_code) {
+    UMA_HISTOGRAM_ENUMERATION(kTranslateContentLanguage,
+                              CONTENT_LANGUAGE_VALID,
+                              CONTENT_LANGUAGE_MAX);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kTranslateContentLanguage,
+                              CONTENT_LANGUAGE_INVALID,
+                              CONTENT_LANGUAGE_MAX);
+  }
 }
 
 void ReportLanguageVerification(LanguageVerificationType type) {

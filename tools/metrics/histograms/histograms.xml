@@ -8594,17 +8594,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Translate.ContentLanguage" enum="TranslateLanguage">
+<histogram name="Translate.ContentLanguage" enum="TranslateContentLanguage">
   <summary>
     A page may provide a Content-Language HTTP header or a META tag. For each
     page load, measures whether the Content-Language header exists and is valid.
-  </summary>
-</histogram>
-
-<histogram name="Translate.HtmlLang" enum="TranslateLanguage">
-  <summary>
-    A page may provide a lang attribute in html tag. For each page load,
-    measures whether the lang attribute exists and is valid.
   </summary>
 </histogram>
 
@@ -13649,6 +13642,12 @@ other types of suffix sets.
   </int>
 </enum>
 
+<enum name="TranslateContentLanguage" type="int">
+  <int value="0" label="No Content-Language"/>
+  <int value="1" label="Valid Content-Language"/>
+  <int value="2" label="Invalid Content-Language"/>
+</enum>
+
 <enum name="TranslateError" type="int">
   <int value="0" label="No error"/>
   <int value="1" label="Network error"/>
@@ -13670,12 +13669,6 @@ other types of suffix sets.
   <int value="7" label="Auto translation by user configuration"/>
   <int value="8" label="Auto translation by linked from a translated page"/>
   <int value="9" label="Show infobar"/>
-</enum>
-
-<enum name="TranslateLanguage" type="int">
-  <int value="0" label="No language code"/>
-  <int value="1" label="Valid language code"/>
-  <int value="2" label="Invalid language code"/>
 </enum>
 
 <enum name="TranslateLanguageVerification" type="int">
