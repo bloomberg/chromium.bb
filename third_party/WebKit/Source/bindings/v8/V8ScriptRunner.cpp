@@ -98,7 +98,7 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
     return result;
 }
 
-v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, v8::Local<v8::Context> context)
+v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, v8::Local<v8::Context> context, const String& fileName, const TextPosition& scriptStartPosition, v8::ScriptData* scriptData)
 {
     v8::Local<v8::Value> result;
     if (context.IsEmpty())
@@ -107,7 +107,7 @@ v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::
         return result;
     {
         v8::Context::Scope scope(context);
-        v8::Handle<v8::Script> script = v8::Script::Compile(source);
+        v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, scriptData, isolate);
         if (script.IsEmpty())
             return result;
 
