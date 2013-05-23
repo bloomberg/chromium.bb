@@ -41,7 +41,7 @@ namespace WebKit {
 WEBKIT_EXPORT void initialize(Platform*);
 
 // Must be called on the thread that will be the main WebKit thread before
-// using any other WebKit APIs. The provided Platform; must be
+// using any other WebKit APIs. The provided Platform must be
 // non-null and must remain valid until the current thread calls shutdown.
 //
 // This is a special variant of initialize that does not intitialize V8.
@@ -52,9 +52,6 @@ WEBKIT_EXPORT void initializeWithoutV8(Platform*);
 // called. Any background threads created by WebKit are promised to be
 // terminated by the time this function returns.
 WEBKIT_EXPORT void shutdown();
-
-// Returns the Platform instance passed to initialize.
-WEBKIT_EXPORT Platform* webKitPlatformSupport();
 
 // Alters the rendering of content to conform to a fixed set of rules.
 WEBKIT_EXPORT void setLayoutTestMode(bool);
