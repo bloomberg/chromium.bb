@@ -725,10 +725,17 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
   // There should be an entry in the map created when we dispatched the
   // request.
-  GlobalRoutingID routing_id(info->GetGlobalRoutingID());
-  DCHECK(offline_policy_map_.end() != offline_policy_map_.find(routing_id));
-  offline_policy_map_[routing_id]->UpdateStateForSuccessfullyStartedRequest(
-      loader->request()->response_info());
+  OfflineMap::iterator policy_it(
+      offline_policy_map_.find(info->GetGlobalRoutingID()));
+  if (offline_policy_map_.end() != policy_it) {
+    policy_it->second->UpdateStateForSuccessfullyStartedRequest(
+        loader->request()->response_info());
+  } else {
+    // We should always have an entry in offline_policy_map_ from when
+    // this request traversed Begin{Download,SaveFile,Request}.
+    // TODO(rdsmith): This isn't currently true; see http://crbug.com/241176.
+    NOTREACHED();
+  }
 
   int render_process_id, render_view_id;
   if (!info->GetAssociatedRenderView(&render_process_id, &render_view_id))
