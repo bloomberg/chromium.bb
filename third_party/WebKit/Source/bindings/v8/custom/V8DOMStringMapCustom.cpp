@@ -45,14 +45,6 @@ v8::Handle<v8::Integer> V8DOMStringMap::namedPropertyQuery(v8::Local<v8::String>
     return v8::Handle<v8::Integer>();
 }
 
-v8::Handle<v8::Value> V8DOMStringMap::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    String value = V8DOMStringMap::toNative(info.Holder())->item(toWebCoreString(name));
-    if (value.isNull())
-        return v8Undefined();
-    return v8StringOrUndefined(value, info.GetIsolate());
-}
-
 v8::Handle<v8::Array> V8DOMStringMap::namedPropertyEnumerator(const v8::AccessorInfo& info)
 {
     Vector<String> names;
