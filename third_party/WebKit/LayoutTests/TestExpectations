@@ -1803,3 +1803,6 @@ crbug.com/243291 [ Debug ] css3/filters/custom/effect-custom-combined-missing.ht
 crbug.com/243291 [ Debug ] css3/filters/custom/effect-custom-transform-parameters.html [ Crash ]
 crbug.com/243298 [ Debug ] fast/forms/number/number-validation-message.html [ Crash ]
 crbug.com/243298 [ Debug ] fast/forms/date/input-date-validation-message.html [ Crash ]
+crbug.com/243300 [ Debug ] fast/events/popup-when-select-change.html [ Crash ]
+crbug.com/243300 [ Debug ] fast/frames/frame-name-reset.html [ Crash ]
+crbug.com/243300 [ Debug ] http/tests/security/popup-allowed-by-sandbox-when-allowed.html [ Crash ]
