@@ -1002,8 +1002,8 @@ webkit.org/b/81537 fast/events/touch/gesture/pad-gesture-fling.html [ Failure Pa
 
 webkit.org/b/81638 [ Mac Debug ] editing/selection/iframe.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/81931 [ Debug ] fast/images/destroyed-image-load-event.html [ Pass Timeout ]
-webkit.org/b/81931 [ Debug ] virtual/deferred/fast/images/destroyed-image-load-event.html [ Pass Timeout ]
+webkit.org/b/81931 fast/images/destroyed-image-load-event.html [ Pass Timeout ]
+webkit.org/b/81931 virtual/deferred/fast/images/destroyed-image-load-event.html [ Pass Timeout ]
 
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ Failure Pass ]
 webkit.org/b/82297 [ Mac ] fast/events/platform-wheelevent-paging-xy-in-scrolling-page.html [ Failure Pass ]
