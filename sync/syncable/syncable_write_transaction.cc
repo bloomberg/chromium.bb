@@ -134,7 +134,7 @@ void WriteTransaction::UpdateTransactionVersion(
         directory_->IncrementTransactionVersion(type);
         type_seen.Put(type);
       }
-      entry.Put(TRANSACTION_VERSION, directory_->GetTransactionVersion(type));
+      entry.UpdateTransactionVersion(directory_->GetTransactionVersion(type));
     }
   }
 

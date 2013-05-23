@@ -157,6 +157,10 @@ bool MutableEntry::PutIsDel(bool is_del) {
 
 bool MutableEntry::Put(Int64Field field, const int64& value) {
   DCHECK(kernel_);
+
+  // We shouldn't set TRANSACTION_VERSION here.  See UpdateTransactionVersion.
+  DCHECK_NE(TRANSACTION_VERSION, field);
+
   write_transaction_->SaveOriginal(kernel_);
   if (kernel_->ref(field) != value) {
     ScopedKernelLock lock(dir());
@@ -411,6 +415,12 @@ bool MutableEntry::Put(BitTemp field, bool value) {
   DCHECK(kernel_);
   kernel_->put(field, value);
   return true;
+}
+
+void MutableEntry::UpdateTransactionVersion(int64 value) {
+  ScopedKernelLock lock(dir());
+  kernel_->put(TRANSACTION_VERSION, value);
+  kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
 }
 
 // This function sets only the flags needed to get this entry to sync.
