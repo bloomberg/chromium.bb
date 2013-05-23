@@ -86,13 +86,13 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // SpdyStream::Delegate implementation.
   virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
   virtual void OnSendBody() OVERRIDE;
-  virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
+  virtual SpdySendStatus OnSendBodyComplete() OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
                                  int status) OVERRIDE;
   virtual void OnHeadersSent() OVERRIDE;
   virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
-  virtual void OnDataSent(size_t bytes_sent) OVERRIDE;
+  virtual void OnDataSent() OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
 
  private:
@@ -157,8 +157,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   // Temporary buffer used to read the request body from UploadDataStream.
   scoped_refptr<IOBufferWithSize> raw_request_body_buf_;
-  // Wraps raw_request_body_buf_ to read the remaining data progressively.
-  scoped_refptr<DrainableIOBuffer> request_body_buf_;
+  int raw_request_body_buf_size_;
 
   // Is there a scheduled read callback pending.
   bool buffered_read_callback_pending_;

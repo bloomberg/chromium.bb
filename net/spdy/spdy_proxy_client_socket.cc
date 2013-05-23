@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -41,7 +42,6 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
                                  auth_handler_factory)),
       user_buffer_len_(0),
       write_buffer_len_(0),
-      write_bytes_outstanding_(0),
       weak_factory_(this),
       net_log_(BoundNetLog::Make(spdy_stream->net_log().net_log(),
                                  NetLog::SOURCE_PROXY_CLIENT_SOCKET)) {
@@ -133,7 +133,6 @@ void SpdyProxyClientSocket::Disconnect() {
   read_callback_.Reset();
 
   write_buffer_len_ = 0;
-  write_bytes_outstanding_ = 0;
   write_callback_.Reset();
 
   next_state_ = STATE_DISCONNECTED;
@@ -227,33 +226,12 @@ int SpdyProxyClientSocket::Write(IOBuffer* buf, int buf_len,
     return ERR_SOCKET_NOT_CONNECTED;
 
   DCHECK(spdy_stream_);
-  write_bytes_outstanding_= buf_len;
-  if (buf_len <= kMaxSpdyFrameChunkSize) {
-    spdy_stream_->QueueStreamData(buf, buf_len, DATA_FLAG_NONE);
-    net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT,
-                                  buf_len, buf->data());
-    write_callback_ = callback;
-    write_buffer_len_ = buf_len;
-    return ERR_IO_PENDING;
-  }
-
-  // Since a SPDY Data frame can only include kMaxSpdyFrameChunkSize bytes
-  // we need to send multiple data frames
-  for (int i = 0; i < buf_len; i += kMaxSpdyFrameChunkSize) {
-    int len = std::min(kMaxSpdyFrameChunkSize, buf_len - i);
-    scoped_refptr<DrainableIOBuffer> iobuf(new DrainableIOBuffer(buf, i + len));
-    iobuf->SetOffset(i);
-    spdy_stream_->QueueStreamData(iobuf, len, DATA_FLAG_NONE);
-    net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT,
-                                  len, buf->data());
-  }
-  if (write_bytes_outstanding_ > 0) {
-    write_callback_ = callback;
-    write_buffer_len_ = buf_len;
-    return ERR_IO_PENDING;
-  } else {
-    return buf_len;
-  }
+  spdy_stream_->SendStreamData(buf, buf_len, DATA_FLAG_NONE);
+  net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT,
+                                buf_len, buf->data());
+  write_callback_ = callback;
+  write_buffer_len_ = buf_len;
+  return ERR_IO_PENDING;
 }
 
 bool SpdyProxyClientSocket::SetReceiveBufferSize(int32 size) {
@@ -474,8 +452,7 @@ void SpdyProxyClientSocket::OnSendBody() {
   CHECK(false);
 }
 
-SpdySendStatus SpdyProxyClientSocket::OnSendBodyComplete(
-    size_t /*bytes_sent*/) {
+SpdySendStatus SpdyProxyClientSocket::OnSendBodyComplete() {
   // Because we use |spdy_stream_| via STATE_OPEN (ala WebSockets)
   // OnSendBodyComplete() must never be called.
   CHECK(false);
@@ -528,20 +505,12 @@ int SpdyProxyClientSocket::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   return OK;
 }
 
-void SpdyProxyClientSocket::OnDataSent(size_t bytes_sent)  {
+void SpdyProxyClientSocket::OnDataSent()  {
   DCHECK(!write_callback_.is_null());
 
-  DCHECK_LE(static_cast<int>(bytes_sent), write_bytes_outstanding_);
-  write_bytes_outstanding_ -= static_cast<int>(bytes_sent);
-
-  if (write_bytes_outstanding_ == 0) {
-    int rv = write_buffer_len_;
-    write_buffer_len_ = 0;
-    write_bytes_outstanding_ = 0;
-    CompletionCallback c = write_callback_;
-    write_callback_.Reset();
-    c.Run(rv);
-  }
+  int rv = write_buffer_len_;
+  write_buffer_len_ = 0;
+  ResetAndReturn(&write_callback_).Run(rv);
 }
 
 void SpdyProxyClientSocket::OnClose(int status)  {
@@ -559,7 +528,6 @@ void SpdyProxyClientSocket::OnClose(int status)  {
   CompletionCallback write_callback = write_callback_;
   write_callback_.Reset();
   write_buffer_len_ = 0;
-  write_bytes_outstanding_ = 0;
 
   // If we're in the middle of connecting, we need to make sure
   // we invoke the connect callback.

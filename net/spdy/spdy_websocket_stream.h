@@ -76,13 +76,13 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
   // SpdyStream::Delegate
   virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
   virtual void OnSendBody() OVERRIDE;
-  virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
+  virtual SpdySendStatus OnSendBodyComplete() OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
                                  int status) OVERRIDE;
   virtual void OnHeadersSent() OVERRIDE;
   virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
-  virtual void OnDataSent(size_t bytes_sent) OVERRIDE;
+  virtual void OnDataSent() OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
 
  private:
@@ -97,6 +97,7 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
   SpdyStreamRequest stream_request_;
   base::WeakPtr<SpdyStream> stream_;
   scoped_refptr<SpdySession> spdy_session_;
+  size_t pending_send_data_length_;
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyWebSocketStream);

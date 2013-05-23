@@ -129,6 +129,7 @@ SpdyStream::SpdyStream(SpdySession* session,
       response_received_(false),
       session_(session),
       delegate_(NULL),
+      pending_send_flags_(DATA_FLAG_NONE),
       request_time_(base::Time::Now()),
       response_(new SpdyHeaderBlock),
       io_state_(STATE_NONE),
@@ -625,7 +626,7 @@ int SpdyStream::SendRequest(bool has_upload_data) {
   return DoLoop(OK);
 }
 
-void SpdyStream::QueueHeaders(scoped_ptr<SpdyHeaderBlock> headers) {
+void SpdyStream::SendHeaders(scoped_ptr<SpdyHeaderBlock> headers) {
   // Until the first headers by SYN_STREAM have been completely sent, we can
   // not be sure that our stream_id is correct.
   DCHECK_GT(io_state_, STATE_SEND_HEADERS_COMPLETE);
@@ -637,39 +638,13 @@ void SpdyStream::QueueHeaders(scoped_ptr<SpdyHeaderBlock> headers) {
           new HeaderBufferProducer(GetWeakPtr(), headers.Pass())));
 }
 
-void SpdyStream::QueueStreamData(IOBuffer* data,
-                                 int length,
-                                 SpdyDataFlags flags) {
-  // Until the headers have been completely sent, we can not be sure
-  // that our stream_id is correct.
-  DCHECK_GT(io_state_, STATE_SEND_HEADERS_COMPLETE);
-  CHECK_GT(stream_id_, 0u);
-
-  scoped_ptr<SpdyBuffer> data_buffer(session_->CreateDataBuffer(
-      stream_id_, data, length, flags));
-  // We'll get called again by PossiblyResumeIfSendStalled().
-  if (!data_buffer)
-    return;
-
-  if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM) {
-    DCHECK_GE(data_buffer->GetRemainingSize(),
-              session_->GetDataFrameMinimumSize());
-    size_t payload_size =
-        data_buffer->GetRemainingSize() - session_->GetDataFrameMinimumSize();
-    DCHECK_LE(payload_size, session_->GetDataFrameMaximumPayload());
-    DecreaseSendWindowSize(static_cast<int32>(payload_size));
-    // This currently isn't strictly needed, since write frames are
-    // discarded only if the stream is about to be closed. But have it
-    // here anyway just in case this changes.
-    data_buffer->AddConsumeCallback(
-        base::Bind(&SpdyStream::OnWriteBufferConsumed,
-                   GetWeakPtr(), payload_size));
-  }
-
-  session_->EnqueueStreamWrite(
-      GetWeakPtr(), DATA,
-      scoped_ptr<SpdyBufferProducer>(
-          new SimpleBufferProducer(data_buffer.Pass())));
+void SpdyStream::SendStreamData(IOBuffer* data,
+                                int length,
+                                SpdyDataFlags flags) {
+  CHECK(!pending_send_data_);
+  pending_send_data_ = new DrainableIOBuffer(data, length);
+  pending_send_flags_ = flags;
+  QueueNextDataFrame();
 }
 
 bool SpdyStream::GetSSLInfo(SSLInfo* ssl_info,
@@ -692,8 +667,7 @@ void SpdyStream::PossiblyResumeIfSendStalled() {
         NetLog::TYPE_SPDY_STREAM_FLOW_CONTROL_UNSTALLED,
         NetLog::IntegerCallback("stream_id", stream_id_));
     send_stalled_by_flow_control_ = false;
-    io_state_ = STATE_SEND_BODY;
-    DoLoop(OK);
+    QueueNextDataFrame();
   }
 }
 
@@ -903,11 +877,6 @@ int SpdyStream::DoSendHeadersComplete() {
 // DoSendBody is called to send the optional body for the request.  This call
 // will also be called as each write of a chunk of the body completes.
 int SpdyStream::DoSendBody() {
-  // If we're already in the STATE_SEND_BODY state, then we've already
-  // sent a portion of the body.  In that case, we need to first consume
-  // the bytes written in the body stream.  Note that the bytes written is
-  // the number of bytes in the frame that were written, only consume the
-  // data portion, of course.
   io_state_ = STATE_SEND_BODY_COMPLETE;
   CHECK(delegate_);
   delegate_->OnSendBody();
@@ -935,15 +904,25 @@ int SpdyStream::DoSendBodyComplete(int result) {
     return ERR_UNEXPECTED;
   }
 
+  send_bytes_ += frame_payload_size;
+
+  pending_send_data_->DidConsume(frame_payload_size);
+  if (pending_send_data_->BytesRemaining() > 0) {
+    io_state_ = STATE_SEND_BODY_COMPLETE;
+    QueueNextDataFrame();
+    return ERR_IO_PENDING;
+  }
+
+  pending_send_data_ = NULL;
+  pending_send_flags_ = DATA_FLAG_NONE;
+
   if (!delegate_) {
     NOTREACHED();
     return ERR_UNEXPECTED;
   }
 
-  send_bytes_ += frame_payload_size;
-
   io_state_ =
-      (delegate_->OnSendBodyComplete(frame_payload_size) == MORE_DATA_TO_SEND) ?
+      (delegate_->OnSendBodyComplete() == MORE_DATA_TO_SEND) ?
       STATE_SEND_BODY : STATE_WAITING_FOR_RESPONSE;
 
   return OK;
@@ -967,8 +946,19 @@ int SpdyStream::DoOpen() {
       }
 
       send_bytes_ += frame_payload_size;
+
+      pending_send_data_->DidConsume(frame_payload_size);
+      if (pending_send_data_->BytesRemaining() > 0) {
+        QueueNextDataFrame();
+        return ERR_IO_PENDING;
+      }
+
+      pending_send_data_ = NULL;
+      pending_send_flags_ = DATA_FLAG_NONE;
+
       if (delegate_)
-        delegate_->OnDataSent(frame_payload_size);
+        delegate_->OnDataSent();
+
       break;
     }
 
@@ -1000,6 +990,43 @@ void SpdyStream::UpdateHistograms() {
 
   UMA_HISTOGRAM_COUNTS("Net.SpdySendBytes", send_bytes_);
   UMA_HISTOGRAM_COUNTS("Net.SpdyRecvBytes", recv_bytes_);
+}
+
+void SpdyStream::QueueNextDataFrame() {
+  // Until the headers have been completely sent, we can not be sure
+  // that our stream_id is correct.
+  DCHECK_GT(io_state_, STATE_SEND_HEADERS_COMPLETE);
+  CHECK_GT(stream_id_, 0u);
+  CHECK(pending_send_data_);
+  CHECK_GT(pending_send_data_->BytesRemaining(), 0);
+
+  scoped_ptr<SpdyBuffer> data_buffer(session_->CreateDataBuffer(
+      stream_id_,
+      pending_send_data_, pending_send_data_->BytesRemaining(),
+      pending_send_flags_));
+  // We'll get called again by PossiblyResumeIfSendStalled().
+  if (!data_buffer)
+    return;
+
+  if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM) {
+    DCHECK_GE(data_buffer->GetRemainingSize(),
+              session_->GetDataFrameMinimumSize());
+    size_t payload_size =
+        data_buffer->GetRemainingSize() - session_->GetDataFrameMinimumSize();
+    DCHECK_LE(payload_size, session_->GetDataFrameMaximumPayload());
+    DecreaseSendWindowSize(static_cast<int32>(payload_size));
+    // This currently isn't strictly needed, since write frames are
+    // discarded only if the stream is about to be closed. But have it
+    // here anyway just in case this changes.
+    data_buffer->AddConsumeCallback(
+        base::Bind(&SpdyStream::OnWriteBufferConsumed,
+                   GetWeakPtr(), payload_size));
+  }
+
+  session_->EnqueueStreamWrite(
+      GetWeakPtr(), DATA,
+      scoped_ptr<SpdyBufferProducer>(
+          new SimpleBufferProducer(data_buffer.Pass())));
 }
 
 }  // namespace net

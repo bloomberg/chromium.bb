@@ -56,12 +56,12 @@ class NET_EXPORT_PRIVATE SpdyStream {
    public:
     Delegate() {}
 
-    // Called when SYN frame has been sent.
-    // Returns true if no more data to be sent after SYN frame.
+    // Called when SYN frame has been sent.  Must return whether
+    // there's body data to send.
     virtual SpdySendStatus OnSendHeadersComplete() = 0;
 
     // Called when the stream is ready to send body data.  The
-    // delegate must call QueueStreamData() on the stream, either
+    // delegate must call SendStreamData() on the stream, either
     // immediately or asynchronously (e.g., if the data to be send has
     // to be read asynchronously).
     //
@@ -69,10 +69,9 @@ class NET_EXPORT_PRIVATE SpdyStream {
     // OnSendBodyComplete() returns MORE_DATA_TO_SEND.
     virtual void OnSendBody() = 0;
 
-    // Called when body data has been sent. |bytes_sent| is the number
-    // of bytes that has been sent (may be zero). Must return whether
+    // Called when body data has been sent. Must return whether
     // there's more body data to send.
-    virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) = 0;
+    virtual SpdySendStatus OnSendBodyComplete() = 0;
 
     // Called when the SYN_STREAM, SYN_REPLY, or HEADERS frames are received.
     // Normal streams will receive a SYN_REPLY and optional HEADERS frames.
@@ -93,7 +92,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
     virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) = 0;
 
     // Called when data is sent.
-    virtual void OnDataSent(size_t bytes_sent) = 0;
+    virtual void OnDataSent() = 0;
 
     // Called when SpdyStream is closed. No other delegate functions
     // will be called after this is called, and the delegate must not
@@ -288,19 +287,28 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // this once crbug.com/113107 is addressed.
   bool body_sent() const { return io_state_ > STATE_SEND_BODY_COMPLETE; }
 
-  // Interface for Spdy[Http|WebSocket]Stream to use.
+  // Interface for the delegate to use.
+  //
+  // TODO(akalin): Mandate that only one send can be in flight at one
+  // time.
 
   // Sends the request.
   // For non push stream, it will send SYN_STREAM frame.
   int SendRequest(bool has_upload_data);
 
-  // Queues a HEADERS frame to be sent.
-  void QueueHeaders(scoped_ptr<SpdyHeaderBlock> headers);
+  // Sends a HEADERS frame. The delegate will be notified via
+  // OnHeadersSent() when the send is complete.
+  void SendHeaders(scoped_ptr<SpdyHeaderBlock> headers);
 
-  // Queues a DATA frame to be sent. May not queue all the data that
-  // is given (or even any of it) depending on flow control.
-  void QueueStreamData(IOBuffer* data, int length,
-                       SpdyDataFlags flags);
+  // Sends a DATA frame. The delegate will be notified via
+  // OnSendBodyComplete() (if the response hasn't been received yet)
+  // or OnDataSent() (if the response has been received) when the send
+  // is complete. Only one data send can be in flight at one time.
+  //
+  // |flags| must be DATA_FLAG_NONE except for the last piece of data
+  // for a request in a request/response stream, where it should be
+  // DATA_FLAG_FIN.
+  void SendStreamData(IOBuffer* data, int length, SpdyDataFlags flags);
 
   // Fills SSL info in |ssl_info| and returns true when SSL is in use.
   bool GetSSLInfo(SSLInfo* ssl_info,
@@ -390,6 +398,11 @@ class NET_EXPORT_PRIVATE SpdyStream {
   scoped_ptr<SpdyFrame> ProduceHeaderFrame(
       scoped_ptr<SpdyHeaderBlock> header_block);
 
+  // Queues the send for next frame of the remaining data in
+  // |pending_send_data_|. Must be called only when
+  // |pending_send_data_| and |pending_send_flags_| are set.
+  void QueueNextDataFrame();
+
   base::WeakPtrFactory<SpdyStream> weak_ptr_factory_;
 
   // Sentinel variable used to make sure we don't get destroyed by a
@@ -423,6 +436,10 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // The request to send.
   scoped_ptr<SpdyHeaderBlock> request_;
+
+  // The data waiting to be sent.
+  scoped_refptr<DrainableIOBuffer> pending_send_data_;
+  SpdyDataFlags pending_send_flags_;
 
   // The time at which the request was made that resulted in this response.
   // For cached responses, this time could be "far" in the past.

@@ -3007,7 +3007,7 @@ void SpdySessionSpdy3Test::RunResumeAfterUnstallTest31(
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(), delegate.TakeReceivedData());
-  EXPECT_EQ(static_cast<int>(kBodyDataSize), delegate.body_data_sent());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 // Run the resume-after-unstall test with all possible stall and
@@ -3190,13 +3190,13 @@ TEST_F(SpdySessionSpdy3Test, ResumeByPriorityAfterSendWindowSizeIncrease31) {
   EXPECT_EQ("200", delegate1.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate1.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(), delegate1.TakeReceivedData());
-  EXPECT_EQ(static_cast<int>(kBodyDataSize), delegate1.body_data_sent());
 
   EXPECT_TRUE(delegate2.send_headers_completed());
   EXPECT_EQ("200", delegate2.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate2.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(), delegate2.TakeReceivedData());
-  EXPECT_EQ(static_cast<int>(kBodyDataSize), delegate2.body_data_sent());
+
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 // Delegate that closes a given stream after sending its body.
@@ -3212,12 +3212,13 @@ class StreamClosingDelegate : public test::StreamDelegateWithBody {
     stream_to_close_ = stream_to_close;
   }
 
-  virtual void OnSendBody() OVERRIDE {
-    test::StreamDelegateWithBody::OnSendBody();
+  virtual SpdySendStatus OnSendBodyComplete() OVERRIDE {
+    SpdySendStatus status = test::StreamDelegateWithBody::OnSendBodyComplete();
     if (stream_to_close_) {
       stream_to_close_->Close();
       EXPECT_EQ(NULL, stream_to_close_.get());
     }
+    return status;
   }
 
  private:
@@ -3354,6 +3355,8 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedStreams31) {
   // Unstall stream2, which should then close stream3.
   delegate2.set_stream_to_close(stream3);
   UnstallSessionSend(session, kBodyDataSize);
+
+  data.RunFor(1);
   EXPECT_EQ(NULL, stream3.get());
 
   EXPECT_FALSE(stream2->send_stalled_by_flow_control());
@@ -3361,7 +3364,7 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedStreams31) {
   EXPECT_TRUE(session->IsStreamActive(stream_id2));
   EXPECT_FALSE(session->IsStreamActive(stream_id3));
 
-  data.RunFor(3);
+  data.RunFor(2);
   EXPECT_EQ(NULL, stream2.get());
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate1.WaitForClose());
@@ -3370,17 +3373,16 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedStreams31) {
 
   EXPECT_TRUE(delegate1.send_headers_completed());
   EXPECT_EQ(std::string(), delegate1.TakeReceivedData());
-  EXPECT_EQ(0, delegate1.body_data_sent());
 
   EXPECT_TRUE(delegate2.send_headers_completed());
   EXPECT_EQ("200", delegate2.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate2.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(), delegate2.TakeReceivedData());
-  EXPECT_EQ(static_cast<int>(kBodyDataSize), delegate2.body_data_sent());
 
   EXPECT_TRUE(delegate3.send_headers_completed());
   EXPECT_EQ(std::string(), delegate3.TakeReceivedData());
-  EXPECT_EQ(0, delegate3.body_data_sent());
+
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 // Cause a stall by reducing the flow control send window to
@@ -3489,11 +3491,11 @@ TEST_F(SpdySessionSpdy3Test, SendWindowSizeIncreaseWithDeletedSession31) {
 
   EXPECT_TRUE(delegate1.send_headers_completed());
   EXPECT_EQ(std::string(), delegate1.TakeReceivedData());
-  EXPECT_EQ(0, delegate1.body_data_sent());
 
   EXPECT_TRUE(delegate2.send_headers_completed());
   EXPECT_EQ(std::string(), delegate2.TakeReceivedData());
-  EXPECT_EQ(0, delegate2.body_data_sent());
+
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 // Tests the case of a non-SPDY request closing an idle SPDY session when no

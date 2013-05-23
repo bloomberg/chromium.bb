@@ -150,7 +150,7 @@ TEST_F(SpdyStreamSpdy3Test, SendDataAfterOpen) {
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
-  EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.data_sent());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 TEST_F(SpdyStreamSpdy3Test, SendHeaderAndDataAfterOpen) {
@@ -226,9 +226,8 @@ TEST_F(SpdyStreamSpdy3Test, SendHeaderAndDataAfterOpen) {
 
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("101", delegate.GetResponseHeaderValue(":status"));
-  EXPECT_EQ(1, delegate.headers_sent());
   EXPECT_EQ(std::string(), delegate.TakeReceivedData());
-  EXPECT_EQ(6, delegate.data_sent());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 TEST_F(SpdyStreamSpdy3Test, PushedStream) {
@@ -347,7 +346,7 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
-  EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.data_sent());
+  EXPECT_TRUE(data.at_write_eof());
 
   // Check that the NetLog was filled reasonably.
   net::CapturingNetLog::CapturedEntryList entries;
@@ -363,6 +362,133 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
   int stream_id2;
   ASSERT_TRUE(entries[pos].GetIntegerValue("stream_id", &stream_id2));
   EXPECT_EQ(static_cast<int>(stream_id), stream_id2);
+}
+
+// Make sure that large blocks of data are properly split up into
+// frame-sized chunks for a request/response (i.e., an HTTP-like)
+// stream.
+TEST_F(SpdyStreamSpdy3Test, SendLargeDataAfterOpenRequestResponse) {
+  GURL url(kStreamUrl);
+
+  session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
+  std::string chunk_data(kMaxSpdyFrameChunkSize, 'x');
+  scoped_ptr<SpdyFrame> chunk(
+      ConstructSpdyBodyFrame(
+          1, chunk_data.data(), chunk_data.length(), false));
+  MockWrite writes[] = {
+    CreateMockWrite(*req, 0),
+    CreateMockWrite(*chunk, 1),
+    CreateMockWrite(*chunk, 2),
+    CreateMockWrite(*chunk, 3),
+  };
+
+  scoped_ptr<SpdyFrame> resp(ConstructSpdyPostSynReply(NULL, 0));
+  MockRead reads[] = {
+    CreateMockRead(*resp, 4),
+    MockRead(ASYNC, 0, 0, 5), // EOF
+  };
+
+  OrderedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  scoped_refptr<SpdySession> session(CreateSpdySession());
+
+  InitializeSpdySession(session, host_port_pair_);
+
+  base::WeakPtr<SpdyStream> stream =
+      CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
+  ASSERT_TRUE(stream.get() != NULL);
+
+  std::string body_data(3 * kMaxSpdyFrameChunkSize, 'x');
+  StreamDelegateWithBody delegate(stream, body_data);
+  stream->SetDelegate(&delegate);
+
+  EXPECT_FALSE(stream->HasUrl());
+
+  stream->set_spdy_headers(
+      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_TRUE(stream->HasUrl());
+  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
+
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
+
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+
+  EXPECT_TRUE(delegate.send_headers_completed());
+  EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
+  EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
+  EXPECT_EQ(std::string(), delegate.TakeReceivedData());
+  EXPECT_TRUE(data.at_write_eof());
+}
+
+// Make sure that large blocks of data are properly split up into
+// frame-sized chunks for a bidirectional (i.e., non-HTTP-like)
+// stream.
+TEST_F(SpdyStreamSpdy3Test, SendLargeDataAfterOpenBidirectional) {
+  GURL url(kStreamUrl);
+
+  session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+
+  scoped_ptr<SpdyFrame> req(
+      ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
+  std::string chunk_data(kMaxSpdyFrameChunkSize, 'x');
+  scoped_ptr<SpdyFrame> chunk(
+      ConstructSpdyBodyFrame(
+          1, chunk_data.data(), chunk_data.length(), false));
+  MockWrite writes[] = {
+    CreateMockWrite(*req, 0),
+    CreateMockWrite(*chunk, 2),
+    CreateMockWrite(*chunk, 3),
+    CreateMockWrite(*chunk, 4),
+  };
+
+  scoped_ptr<SpdyFrame> resp(ConstructSpdyPostSynReply(NULL, 0));
+  MockRead reads[] = {
+    CreateMockRead(*resp, 1),
+    MockRead(ASYNC, 0, 0, 5), // EOF
+  };
+
+  OrderedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  scoped_refptr<SpdySession> session(CreateSpdySession());
+
+  InitializeSpdySession(session, host_port_pair_);
+
+  base::WeakPtr<SpdyStream> stream =
+      CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
+  ASSERT_TRUE(stream.get() != NULL);
+
+  std::string body_data(3 * kMaxSpdyFrameChunkSize, 'x');
+  StreamDelegateSendImmediate delegate(
+      stream, scoped_ptr<SpdyHeaderBlock>(), body_data);
+  stream->SetDelegate(&delegate);
+
+  EXPECT_FALSE(stream->HasUrl());
+
+  stream->set_spdy_headers(
+      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_TRUE(stream->HasUrl());
+  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
+
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
+
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
+
+  EXPECT_TRUE(delegate.send_headers_completed());
+  EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
+  EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
+  EXPECT_EQ(std::string(), delegate.TakeReceivedData());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 // Call IncreaseSendWindowSize on a stream with a large enough delta
@@ -530,7 +656,7 @@ void SpdyStreamSpdy3Test::RunResumeAfterUnstallRequestResponseTest(
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(), delegate.TakeReceivedData());
-  EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.body_data_sent());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncreaseRequestResponse) {
@@ -622,19 +748,15 @@ void SpdyStreamSpdy3Test::RunResumeAfterUnstallBidirectionalTest(
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
   EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
             delegate.TakeReceivedData());
-  EXPECT_EQ(static_cast<int>(kPostBodyLength), delegate.data_sent());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
-// TODO(akalin): Re-enable these when http://crbug.com/242288 is
-// fixed.
-TEST_F(SpdyStreamSpdy3Test,
-       DISABLED_ResumeAfterSendWindowSizeIncreaseBidirectional) {
+TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeIncreaseBidirectional) {
   RunResumeAfterUnstallBidirectionalTest(
       base::Bind(&IncreaseStreamSendWindowSize));
 }
 
-TEST_F(SpdyStreamSpdy3Test,
-       DISABLED_ResumeAfterSendWindowSizeAdjustBidirectional) {
+TEST_F(SpdyStreamSpdy3Test, ResumeAfterSendWindowSizeAdjustBidirectional) {
   RunResumeAfterUnstallBidirectionalTest(
       base::Bind(&AdjustStreamSendWindowSize));
 }

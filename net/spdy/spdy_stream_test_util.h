@@ -28,13 +28,13 @@ class ClosingDelegate : public SpdyStream::Delegate {
   // SpdyStream::Delegate implementation.
   virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
   virtual void OnSendBody() OVERRIDE;
-  virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
+  virtual SpdySendStatus OnSendBodyComplete() OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
                                  int status) OVERRIDE;
   virtual void OnHeadersSent() OVERRIDE;
   virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
-  virtual void OnDataSent(size_t bytes_sent) OVERRIDE;
+  virtual void OnDataSent() OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
 
   // Returns whether or not the stream is closed.
@@ -53,13 +53,13 @@ class StreamDelegateBase : public SpdyStream::Delegate {
 
   virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
   virtual void OnSendBody() = 0;
-  virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) = 0;
+  virtual SpdySendStatus OnSendBodyComplete() = 0;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
                                  int status) OVERRIDE;
   virtual void OnHeadersSent() OVERRIDE;
   virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
-  virtual void OnDataSent(size_t bytes_sent) OVERRIDE;
+  virtual void OnDataSent() OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
 
   // Waits for the stream to be closed and returns the status passed
@@ -79,8 +79,6 @@ class StreamDelegateBase : public SpdyStream::Delegate {
 
   std::string GetResponseHeaderValue(const std::string& name) const;
   bool send_headers_completed() const { return send_headers_completed_; }
-  int headers_sent() const { return headers_sent_; }
-  int data_sent() const { return data_sent_; }
 
  protected:
   const base::WeakPtr<SpdyStream>& stream() { return stream_; }
@@ -92,8 +90,6 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   bool send_headers_completed_;
   SpdyHeaderBlock response_;
   SpdyReadQueue received_data_queue_;
-  int headers_sent_;
-  int data_sent_;
 };
 
 // Test delegate that does nothing. Used to capture data about the
@@ -104,7 +100,7 @@ class StreamDelegateDoNothing : public StreamDelegateBase {
   virtual ~StreamDelegateDoNothing();
 
   virtual void OnSendBody() OVERRIDE;
-  virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
+  virtual SpdySendStatus OnSendBodyComplete() OVERRIDE;
 };
 
 // Test delegate that sends data immediately in OnResponseReceived().
@@ -117,7 +113,7 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
   virtual ~StreamDelegateSendImmediate();
 
   virtual void OnSendBody() OVERRIDE;
-  virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
+  virtual SpdySendStatus OnSendBodyComplete() OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
                                  int status) OVERRIDE;
@@ -136,13 +132,10 @@ class StreamDelegateWithBody : public StreamDelegateBase {
 
   virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
   virtual void OnSendBody() OVERRIDE;
-  virtual SpdySendStatus OnSendBodyComplete(size_t bytes_sent) OVERRIDE;
-
-  int body_data_sent() const { return body_data_sent_; }
+  virtual SpdySendStatus OnSendBodyComplete() OVERRIDE;
 
  private:
-  scoped_refptr<DrainableIOBuffer> buf_;
-  int body_data_sent_;
+  scoped_refptr<StringIOBuffer> buf_;
 };
 
 } // namespace test
