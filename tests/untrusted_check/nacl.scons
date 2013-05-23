@@ -17,7 +17,7 @@ nexe = env.ComponentProgram('untrusted_check_test',
 # nacl-newlib and nacl-glibc's abort() implementations produce
 # different exit codes.
 if env.Bit('nacl_glibc'):
-  expected_exit_status = 'untrusted_sigill'
+  expected_exit_status = 'untrusted_sigsegv'
 else:
   expected_exit_status = '1'
 
