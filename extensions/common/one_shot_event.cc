@@ -26,7 +26,11 @@ struct OneShotEvent::TaskInfo {
   base::Closure task;
 };
 
-OneShotEvent::OneShotEvent() : signaled_(false) {}
+OneShotEvent::OneShotEvent() : signaled_(false) {
+  // It's acceptable to construct the OneShotEvent on one thread, but
+  // immediately move it to another thread.
+  thread_checker_.DetachFromThread();
+}
 OneShotEvent::~OneShotEvent() {}
 
 void OneShotEvent::Post(const tracked_objects::Location& from_here,

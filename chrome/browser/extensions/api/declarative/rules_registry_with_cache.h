@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/one_shot_event.h"
 
 class Profile;
 
@@ -113,14 +114,9 @@ class RulesRegistryWithCache : public RulesRegistry {
                          bool log_storage_init_delay,
                          scoped_ptr<RuleStorageOnUI>* ui_part);
 
-  // Returns true if we are ready to process rules.
-  bool IsReady() {
-    DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
+  const OneShotEvent& ready() const {
     return ready_;
   }
-
-  // Add a callback to call when we transition to Ready.
-  void AddReadyCallback(const base::Closure& callback);
 
   // RulesRegistry implementation:
   virtual std::string AddRules(
@@ -165,7 +161,7 @@ class RulesRegistryWithCache : public RulesRegistry {
   void ProcessChangedRules(const std::string& extension_id);
 
   // Process the callbacks once the registry gets ready.
-  void OnReady(base::Time storage_init_time);
+  void MarkReady(base::Time storage_init_time);
 
   // Deserialize the rules from the given Value object and add them to the
   // RulesRegistry.
@@ -175,11 +171,9 @@ class RulesRegistryWithCache : public RulesRegistry {
 
   RulesDictionary rules_;
 
-  std::vector<base::Closure> ready_callbacks_;
-
-  // True when we have finished reading from storage for all extensions that
+  // Signaled when we have finished reading from storage for all extensions that
   // are loaded on startup.
-  bool ready_;
+  OneShotEvent ready_;
 
   // The factory needs to be declared before |storage_on_ui_|, so that it can
   // produce a pointer as a construction argument for |storage_on_ui_|.

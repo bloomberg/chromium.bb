@@ -78,7 +78,6 @@ RulesRegistryWithCache::RulesRegistryWithCache(
     bool log_storage_init_delay,
     scoped_ptr<RuleStorageOnUI>* ui_part)
     : RulesRegistry(owner_thread, event_name),
-      ready_(false),
       weak_ptr_factory_((profile) ? this : NULL),
       storage_on_ui_((profile
                           ? (new RuleStorageOnUI(profile,
@@ -101,10 +100,6 @@ RulesRegistryWithCache::RulesRegistryWithCache(
   weak_ptr_factory_.DetachFromThread();
 
   storage_on_ui_->Init();
-}
-
-void RulesRegistryWithCache::AddReadyCallback(const base::Closure& callback) {
-  ready_callbacks_.push_back(callback);
 }
 
 std::string RulesRegistryWithCache::AddRules(
@@ -222,20 +217,15 @@ void RulesRegistryWithCache::OnExtensionUnloaded(
 RulesRegistryWithCache::~RulesRegistryWithCache() {
 }
 
-void RulesRegistryWithCache::OnReady(base::Time storage_init_time) {
+void RulesRegistryWithCache::MarkReady(base::Time storage_init_time) {
   DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
-  DCHECK(!ready_);  // Avoid thread hopping, only call this once.
-
-  ready_ = true;
 
   if (!storage_init_time.is_null()) {
     UMA_HISTOGRAM_TIMES("Extensions.DeclarativeRulesStorageInitialization",
                         base::Time::Now() - storage_init_time);
   }
 
-  for (size_t i = 0; i < ready_callbacks_.size(); ++i)
-    ready_callbacks_[i].Run();
-  ready_callbacks_.clear();
+  ready_.Signal();
 }
 
 void RulesRegistryWithCache::DeserializeAndAddRules(
@@ -362,7 +352,7 @@ void RulesRegistryWithCache::RuleStorageOnUI::CheckIfReady() {
       rules_registry_thread_,
       FROM_HERE,
       base::Bind(
-          &RulesRegistryWithCache::OnReady, registry_, storage_init_time_));
+          &RulesRegistryWithCache::MarkReady, registry_, storage_init_time_));
   notified_registry_ = true;
 }
 

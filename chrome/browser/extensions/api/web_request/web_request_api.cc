@@ -1788,12 +1788,16 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
   for (RelevantRegistries::iterator i = relevant_registries.begin();
        i != relevant_registries.end(); ++i) {
     extensions::WebRequestRulesRegistry* rules_registry = i->first;
-    if (!rules_registry->IsReady()) {
+    if (!rules_registry->ready().is_signaled()) {
       // The rules registry is still loading. Block this request until it
       // finishes.
-      rules_registry->AddReadyCallback(
+      rules_registry->ready().Post(
+          FROM_HERE,
           base::Bind(&ExtensionWebRequestEventRouter::OnRulesRegistryReady,
-                     AsWeakPtr(), profile, event_name, request->identifier(),
+                     AsWeakPtr(),
+                     profile,
+                     event_name,
+                     request->identifier(),
                      request_stage));
       blocked_requests_[request->identifier()].num_handlers_blocking++;
       blocked_requests_[request->identifier()].request = request;
