@@ -101,6 +101,9 @@ const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 // Enable workspace switching via a three finger vertical scroll.
 const char kAshEnableWorkspaceScrubbing[] = "ash-enable-workspace-scrubbing";
 
+// Forces chrome to use mirror mode when an external display is connected.
+const char kAshForceMirrorMode[] = "ash-force-mirror-mode";
+
 // Sets a window size, optional position, and optional scale factor.
 // "1024x768" creates a window of size 1024x768.
 // "100+200-1024x768" positions the window at 100,200.

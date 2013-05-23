@@ -11,10 +11,12 @@
 
 #include <X11/extensions/Xrandr.h>
 
+#include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "base/message_pump_aurax11.h"
 #include "chromeos/display/output_util.h"
 #include "grit/ash_strings.h"
@@ -121,6 +123,11 @@ DisplayChangeObserverX11::~DisplayChangeObserverX11() {
 
 chromeos::OutputState DisplayChangeObserverX11::GetStateForDisplayIds(
     const std::vector<int64>& display_ids) const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshForceMirrorMode)) {
+    return chromeos::STATE_DUAL_MIRROR;
+  }
+
   CHECK_EQ(2U, display_ids.size());
   DisplayIdPair pair = std::make_pair(display_ids[0], display_ids[1]);
   DisplayLayout layout = Shell::GetInstance()->display_controller()->
