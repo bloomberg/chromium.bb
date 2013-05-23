@@ -13,6 +13,7 @@ with the prefix "UserAct".
 
 import inspect
 import os
+import sys
 
 from chromite.buildbot import constants
 from chromite.lib import commandline
@@ -302,6 +303,10 @@ Actions:"""
     if len(argspec.args) - 1 != len(args):
       parser.error('incorrect number of args: %s expects %s' %
                    (cmd, len(argspec.args) - 1))
-    functor(opts, *args)
+    try:
+      functor(opts, *args)
+    except cros_build_lib.RunCommandError:
+      # An error message has been issued on stderr by now.
+      sys.exit(1)
   else:
     parser.error('unknown action: %s' % (cmd,))
