@@ -82,7 +82,7 @@ class XboxController {
   static void WriteComplete(void* context, IOReturn result, void* arg0);
   static void GotData(void* context, IOReturn result, void* arg0);
 
-  void ProcessPacket(uint32 length);
+  void ProcessPacket(size_t length);
   void QueueRead();
 
   void IOError();

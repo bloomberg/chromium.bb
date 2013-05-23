@@ -387,7 +387,7 @@ void XboxController::WriteComplete(void* context, IOReturn result, void* arg0) {
 }
 
 void XboxController::GotData(void* context, IOReturn result, void* arg0) {
-  uint32 bytesRead = reinterpret_cast<uint32>(arg0);
+  size_t bytes_read = reinterpret_cast<size_t>(arg0);
   XboxController* controller = static_cast<XboxController*>(context);
 
   if (result != kIOReturnSuccess) {
@@ -397,13 +397,13 @@ void XboxController::GotData(void* context, IOReturn result, void* arg0) {
     return;
   }
 
-  controller->ProcessPacket(bytesRead);
+  controller->ProcessPacket(bytes_read);
 
   // Queue up another read.
   controller->QueueRead();
 }
 
-void XboxController::ProcessPacket(uint32 length) {
+void XboxController::ProcessPacket(size_t length) {
   if (length < 2) return;
   DCHECK(length <= read_buffer_size_);
   if (length > read_buffer_size_) {
