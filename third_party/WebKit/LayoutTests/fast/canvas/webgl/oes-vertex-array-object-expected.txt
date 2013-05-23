@@ -1,6 +1,3 @@
-CONSOLE MESSAGE: line 24: *** Error loading shader '[object WebGLShader]':INVALID_OPERATION
-CONSOLE MESSAGE: line 24: *** Error loading shader '[object WebGLShader]':INVALID_VALUE
-CONSOLE MESSAGE: line 24: Error in program linking:missing shaders
 This test verifies the functionality of the OES_vertex_array_object extension, if it is available.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -17,8 +14,8 @@ PASS getError was expected value: NO_ERROR : VERTEX_ARRAY_BINDING_OES query shou
 PASS Default value of VERTEX_ARRAY_BINDING_OES is null
 Testing binding a VAO
 PASS gl.getParameter(ext.VERTEX_ARRAY_BINDING_OES) is null
-FAIL gl.getParameter(ext.VERTEX_ARRAY_BINDING_OES) is not expected VAO
-FAIL gl.getParameter(ext.VERTEX_ARRAY_BINDING_OES) is not expected VAO
+PASS gl.getParameter(ext.VERTEX_ARRAY_BINDING_OES) is expected VAO
+PASS gl.getParameter(ext.VERTEX_ARRAY_BINDING_OES) is expected VAO
 PASS gl.getParameter(ext.VERTEX_ARRAY_BINDING_OES) is null
 PASS getError was expected value: INVALID_OPERATION : binding a deleted vertex array object
 PASS gl.getParameter(ext.VERTEX_ARRAY_BINDING_OES) is null
@@ -26,43 +23,27 @@ Testing object creation
 PASS getError was expected value: NO_ERROR : createVertexArrayOES should not set an error
 PASS vao is non-null.
 PASS ext.isVertexArrayOES(vao) is false
-FAIL ext.isVertexArrayOES(vao) should be true. Was false.
-FAIL ext.isVertexArrayOES(vao) should be true. Was false.
+PASS ext.isVertexArrayOES(vao) is true
+PASS ext.isVertexArrayOES(vao) is true
 PASS ext.isVertexArrayOES() is false
 PASS ext.isVertexArrayOES(null) is false
 Testing attributes work across bindings
-FAIL ELEMENT_ARRAY_BUFFER_BINDING not preserved
-FAIL ELEMENT_ARRAY_BUFFER_BINDING not preserved
-FAIL ELEMENT_ARRAY_BUFFER_BINDING not preserved
-FAIL ELEMENT_ARRAY_BUFFER_BINDING not preserved
-FAIL ELEMENT_ARRAY_BUFFER_BINDING not preserved
-FAIL ELEMENT_ARRAY_BUFFER_BINDING not preserved
-FAIL ELEMENT_ARRAY_BUFFER_BINDING not preserved
-FAIL ELEMENT_ARRAY_BUFFER_BINDING not preserved
+PASS All attributes preserved across bindings
 Testing that attribute values are not attached to bindings
 PASS Vertex attribute values are not attached to bindings
 Testing draws with various VAO bindings
-FAIL Draw 0 failed pixel test
-FAIL Draw 1 failed pixel test
+PASS Draw 0 passed pixel test
+PASS Draw 1 passed pixel test
 PASS Draw 2 passed pixel test
 Testing using deleted buffers referenced by VAOs
-FAIL buffer removed too early
-FAIL buffer removed too early
-FAIL buffer removed too early
-FAIL should be 255,0,0,255
-at (0, 0) expected: 255,0,0,255 was 255,255,255,255
-FAIL should be 0,255,0,255
-at (0, 0) expected: 0,255,0,255 was 255,255,255,255
-FAIL should be 0,0,255,255
-at (0, 0) expected: 0,0,255,255 was 255,255,255,255
-FAIL should be 0,255,255,255
-at (0, 0) expected: 0,255,255,255 was 255,255,255,255
+PASS should be 255,0,0,255
+PASS should be 0,255,0,255
+PASS should be 0,0,255,255
+PASS should be 0,255,255,255
 Testing that VAOs don't effect ARRAY_BUFFER binding.
-FAIL should be red
-at (0, 0) expected: 255,0,0,255 was 255,255,255,255
-FAIL should be green
-at (0, 0) expected: 0,255,0,255 was 255,255,255,255
-FAIL getError expected: NO_ERROR. Was INVALID_VALUE : there should be no errors
+PASS should be red
+PASS should be green
+PASS getError was expected value: NO_ERROR : there should be no errors
 
 PASS successfullyParsed is true
 
