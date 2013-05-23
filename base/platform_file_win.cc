@@ -286,10 +286,8 @@ PlatformFileError LastErrorToPlatformFileError(DWORD last_error) {
     case ERROR_DISK_CORRUPT:
       return PLATFORM_FILE_ERROR_IO;
     default:
-#if !defined(OS_NACL)  // NaCl build has no metrics code.
       UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownErrors.Windows",
                                   last_error);
-#endif
       return PLATFORM_FILE_ERROR_FAILED;
   }
 }
