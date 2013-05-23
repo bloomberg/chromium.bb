@@ -592,6 +592,9 @@ class FileManagerBrowserTestBase : public ExtensionApiTest,
   // Runs the file display test on the passed |volume|, shared by subclasses.
   void DoTestFileDisplay(TestVolume* volume);
 
+  // Runs the gallery open test on the passed |volume|, shared by subclasses.
+  void DoTestGalleryOpen(TestVolume* volume);
+
   // Runs the keyboard copy test on the passed |volume|, shared by subclasses.
   void DoTestKeyboardCopy(TestVolume* volume);
 
@@ -645,6 +648,12 @@ void FileManagerBrowserTestBase::DoTestFileDisplay(TestVolume* volume) {
   volume->CreateEntry(entry);
   listener.Reply("file added");
 
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+void FileManagerBrowserTestBase::DoTestGalleryOpen(TestVolume* volume) {
+  ResultCatcher catcher;
+  StartTest("galleryOpen" + volume->GetName());
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
@@ -779,6 +788,16 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestFileDisplay) {
   DoTestFileDisplay(&volume_);
 }
 
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestGalleryOpen) {
+  PrepareVolume();
+  DoTestGalleryOpen(&volume_);
+}
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestGalleryOpen) {
+  PrepareVolume();
+  DoTestGalleryOpen(&volume_);
+}
+
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
   PrepareVolume();
   DoTestKeyboardCopy(&volume_);
@@ -883,4 +902,5 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
   StartTest("transferFromOfflineToDrive");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
 }  // namespace

@@ -43,6 +43,23 @@ test.util.openMainWindow = function(path, callback) {
 };
 
 /**
+ * Gets a document in the Files.app's window, including iframes.
+ *
+ * @param {Window} contentWindow Window to be used.
+ * @param {string=} opt_iframeQuery Query for the iframe.
+ * @return {Document=} Returns the found document or undefined if not found.
+ * @private
+ */
+test.util.getDocument_ = function(contentWindow, opt_iframeQuery) {
+  if (opt_iframeQuery) {
+    var iframe = contentWindow.document.querySelector(opt_iframeQuery);
+    return iframe && iframe.contentWindow && iframe.contentWindow.document;
+  }
+
+  return contentWindow.document;
+};
+
+/**
  * Gets total Javascript error count from each app window.
  * @return {number} Error count.
  */
@@ -54,6 +71,19 @@ test.util.getErrorCount = function() {
       totalCount += contentWindow.JSErrorCount;
   }
   return totalCount;
+};
+
+/**
+ * Resizes the window to the specified dimensions.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {number} width Window width.
+ * @param {number} height Window height.
+ * @return {boolean} True for success.
+ */
+test.util.resizeWindow = function(contentWindow, width, height) {
+  appWindows[contentWindow.appID].resizeTo(width, height);
+  return true;
 };
 
 /**
@@ -96,6 +126,35 @@ test.util.getFileList = function(contentWindow) {
   }
   fileList.sort();
   return fileList;
+};
+
+/**
+ * Waits for an element and returns it as an array of it's attributes.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} targetQuery Query to specify the element.
+ * @param {?string} iframeQuery Iframe selector or null if no iframe.
+ * @param {function(Object)} callback Callback with a hash array of attributes.
+ */
+test.util.waitForElement = function(
+    contentWindow, targetQuery, iframeQuery, callback) {
+  function helper() {
+    var doc = test.util.getDocument_(contentWindow, iframeQuery);
+    if (doc) {
+      var element = doc.querySelector(targetQuery);
+      if (element) {
+        var attributes = {};
+        for (var i = 0; i < element.attributes.length; i++) {
+          attributes[element.attributes[i].nodeName] =
+              element.attributes[i].nodeValue;
+        }
+        callback(attributes);
+        return;
+      }
+    }
+    window.setTimeout(helper, 50);
+  }
+  helper();
 };
 
 /**
@@ -291,17 +350,21 @@ test.util.waitForFiles = function(contentWindow,
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
  * @param {Event} event Event to be sent.
+ * @param {string=} opt_iframeQuery Optional iframe selector.
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
-test.util.sendEvent = function(contentWindow, targetQuery, event) {
-  var target = contentWindow.document.querySelector(targetQuery);
-  if (target) {
-    target.dispatchEvent(event);
-    return true;
-  } else {
-    console.error('Target element for ' + targetQuery + ' not found.');
-    return false;
+test.util.sendEvent = function(
+    contentWindow, targetQuery, event, opt_iframeQuery) {
+  var doc = test.util.getDocument_(contentWindow, opt_iframeQuery);
+  if (doc) {
+    var target = doc.querySelector(targetQuery);
+    if (target) {
+      target.dispatchEvent(event);
+      return true;
+    }
   }
+  console.error('Target element for ' + targetQuery + ' not found.');
+  return false;
 };
 
 /**
@@ -312,26 +375,32 @@ test.util.sendEvent = function(contentWindow, targetQuery, event) {
  * @param {string} targetQuery Query to specify the element.
  * @param {string} keyIdentifier Identifier of the emulated key.
  * @param {boolean} ctrl Whether CTRL should be pressed, or not.
+ * @param {string=} opt_iframeQuery Optional iframe selector.
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
 test.util.fakeKeyDown = function(
-    contentWindow, targetQuery, keyIdentifier, ctrl) {
+    contentWindow, targetQuery, keyIdentifier, ctrl, opt_iframeQuery) {
   var event = new KeyboardEvent(
       'keydown',
       { bubbles: true, keyIdentifier: keyIdentifier, ctrlKey: ctrl });
-  return test.util.sendEvent(contentWindow, targetQuery, event);
+  return test.util.sendEvent(
+      contentWindow, targetQuery, event, opt_iframeQuery);
 };
 
 /**
- * Sends a fake mouse click event to the element specified by |targetQuery|.
+ * Sends a fake mouse click event (left button, single click) to the element
+ * specified by |targetQuery|.
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
+ * @param {string=} opt_iframeQuery Optional iframe selector.
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
-test.util.fakeMouseClick = function(contentWindow, targetQuery) {
-  var event = new MouseEvent('click', { bubbles: true });
-  return test.util.sendEvent(contentWindow, targetQuery, event);
+test.util.fakeMouseClick = function(
+    contentWindow, targetQuery, opt_iframeQuery) {
+  var event = new MouseEvent('click', { bubbles: true, detail: 1 });
+  return test.util.sendEvent(
+      contentWindow, targetQuery, event, opt_iframeQuery);
 };
 
 /**
@@ -339,11 +408,14 @@ test.util.fakeMouseClick = function(contentWindow, targetQuery) {
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
+ * @param {string=} opt_iframeQuery Optional iframe selector.
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
-test.util.fakeMouseDown = function(contentWindow, targetQuery) {
+test.util.fakeMouseDown = function(
+    contentWindow, targetQuery, opt_iframeQuery) {
   var event = new MouseEvent('mousedown', { bubbles: true });
-  return test.util.sendEvent(contentWindow, targetQuery, event);
+  return test.util.sendEvent(
+      contentWindow, targetQuery, event, opt_iframeQuery);
 };
 
 /**
@@ -385,8 +457,7 @@ test.util.deleteFile = function(contentWindow, filename) {
 test.util.registerRemoteTestUtils = function() {
   var onMessage = chrome.runtime ? chrome.runtime.onMessageExternal :
       chrome.extension.onMessageExternal;
-  // This callback function should be return whether the response value of
-  // message will be passed asynchronously or not.
+  // Return true for asynchronous functions and false for synchronous.
   onMessage.addListener(function(request, sender, sendResponse) {
     if (sender.id != test.util.TESTING_EXTENSION_ID) {
       console.error('The testing extension must be white-listed.');
@@ -415,12 +486,20 @@ test.util.registerRemoteTestUtils = function() {
     } else {
       // Functions working on a window.
       switch (request.func) {
+        case 'resizeWindow':
+          sendResponse(test.util.resizeWindow(
+              contentWindow, request.args[0], request.args[1]));
+          return false;
         case 'getSelectedFiles':
           sendResponse(test.util.getSelectedFiles(contentWindow));
           return false;
         case 'getFileList':
           sendResponse(test.util.getFileList(contentWindow));
           return false;
+        case 'waitForElement':
+          test.util.waitForElement(
+              contentWindow, request.args[0], request.args[1], sendResponse);
+          return true;
         case 'performAutocompleteAndWait':
           test.util.performAutocompleteAndWait(
               contentWindow, request.args[0], request.args[1], sendResponse);
@@ -446,11 +525,11 @@ test.util.registerRemoteTestUtils = function() {
           return false;
         case 'fakeMouseClick':
           sendResponse(test.util.fakeMouseClick(
-              contentWindow, request.args[0]));
+              contentWindow, request.args[0], request.args[1]));
           return false;
         case 'fakeMouseDown':
           sendResponse(test.util.fakeMouseDown(
-              contentWindow, request.args[0]));
+              contentWindow, request.args[0], request.args[1]));
           return false;
         case 'copyFile':
           sendResponse(test.util.copyFile(contentWindow, request.args[0]));

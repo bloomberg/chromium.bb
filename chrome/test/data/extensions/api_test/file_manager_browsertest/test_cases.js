@@ -152,6 +152,69 @@ testcase.intermediate.fileDisplay = function(path) {
 };
 
 /**
+ * Tests if the gallery shows up for the selected image and that the image
+ * gets displayed.
+ *
+ * @param {string} path Directory path to be tested.
+ */
+testcase.intermediate.galleryOpen = function(path) {
+  var appId;
+  var steps = [
+    function() {
+      setupAndWaitUntilReady(path, steps.shift());
+    },
+    function(inAppId) {
+      appId = inAppId;
+      // Resize the window to desired dimensions to avoid flakyness.
+      callRemoteTestUtil('resizeWindow', appId, [320, 320], steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      // Select the image.
+      callRemoteTestUtil(
+          'selectFile', appId, ['My Desktop Background.png'], steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      // Click on the label to enter the photo viewer.
+      callRemoteTestUtil(
+          'fakeMouseClick',
+          appId,
+          ['#file-list li.table-row[selected] .filename-label span'],
+          steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      // Wait for the image in the gallery's screen image.
+      callRemoteTestUtil('waitForElement',
+                         appId,
+                         ['.gallery .content canvas.image',
+                          'iframe.overlay-pane'],
+                         steps.shift());
+    },
+    function(attributes) {
+      // Verify the gallery's screen image.
+      chrome.test.assertEq('320', attributes['width']);
+      chrome.test.assertEq('240', attributes['height']);
+      // Get the full-resolution image.
+      callRemoteTestUtil('waitForElement',
+                         appId,
+                         ['.gallery .content canvas.fullres',
+                          'iframe.overlay-pane'],
+                         steps.shift());
+    },
+    function(attributes) {
+      // Verify the gallery's screen image.
+      chrome.test.assertEq('800', attributes['width']);
+      chrome.test.assertEq('600', attributes['height']);
+      chrome.test.succeed();
+    },
+  ];
+  steps = steps.map(function(f) { return chrome.test.callbackPass(f); });
+  steps.shift()();
+};
+
+/**
  * Tests copying a file to the same directory and waits until the file lists
  * changes.
  *
@@ -193,6 +256,10 @@ testcase.fileDisplayDownloads = function() {
   testcase.intermediate.fileDisplay('/Downloads');
 };
 
+testcase.galleryOpenDownloads = function() {
+  testcase.intermediate.galleryOpen('/Downloads');
+};
+
 testcase.keyboardCopyDownloads = function() {
   testcase.intermediate.keyboardCopy('/Downloads');
 };
@@ -203,6 +270,10 @@ testcase.keyboardDeleteDownloads = function() {
 
 testcase.fileDisplayDrive = function() {
   testcase.intermediate.fileDisplay('/drive/root');
+};
+
+testcase.galleryOpenDrive = function() {
+  testcase.intermediate.galleryOpen('/drive/root');
 };
 
 testcase.keyboardCopyDrive = function() {
