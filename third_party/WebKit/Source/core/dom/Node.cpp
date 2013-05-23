@@ -1036,7 +1036,7 @@ bool Node::isDescendantOf(const Node *other) const
     if (!other || !other->hasChildNodes() || inDocument() != other->inDocument())
         return false;
     if (other->isDocumentNode())
-        return document() == other && !isDocumentNode() && inDocument();
+        return document() == other && !isDocumentNode() && inDocument() && !isInShadowTree();
     for (const ContainerNode* n = parentNode(); n; n = n->parentNode()) {
         if (n == other)
             return true;

@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+  <div id="sandbox"></div>
+<script>
+description("Tests for node's contains().");
+
+document.getElementById('sandbox').appendChild(
+   createDOM('div', {'id': 'shadowHostA'},
+       createShadowRoot(
+           createDOM('div', {'id': 'divA'}),
+           createDOM('div', {'id': 'shadowHostB'},
+               createShadowRoot(
+                   createDOM('div', {'id': 'divB'}))),
+           createDOM('div', {'id': 'shadowHostC'},
+               createShadowRoot(
+                   createDOM('div', {'id': 'divC'}))))));
+
+
+// Comparing a document with a node in a shadow tree.
+shouldBeFalse('document.contains(getNodeInShadowTreeStack("shadowHostA/"))');
+shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/").contains(document)');
+shouldBeFalse('document.contains(getNodeInShadowTreeStack("shadowHostA/divA"))');
+shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/divA").contains(document)');
+
+// Comparing a node in document with a node in a shadow tree.
+shouldBeTrue('getNodeInShadowTreeStack("shadowHostA/").contains(getNodeInShadowTreeStack("shadowHostA/divA"))');
+shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/divA").contains(getNodeInShadowTreeStack("shadowHostA/"))');
+
+// Comparing a node in a shadow tree with a node in a shadow tree enclosing the first tree.
+shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/"))');
+shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostB/").contains(getNodeInShadowTreeStack("shadowHostA/"))');
+shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/divA").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/divB"))');
+shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostB/divB").contains(getNodeInShadowTreeStack("shadowHostA/divA"))');
+
+// Comparing a node in a shadow tree with a node in a sibling shadow tree.
+shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostB/").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostC/"))');
+shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostC/").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/"))');
+shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostB/divB").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostC/divC"))');
+shouldBeFalse('getNodeInShadowTreeStack("shadowHostA/shadowHostC/divC").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/divB"))');
+
+// Self-comparing a node in a shadow tree.
+shouldBeTrue('getNodeInShadowTreeStack("shadowHostA/shadowHostB").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB"))');
+shouldBeTrue('getNodeInShadowTreeStack("shadowHostA/shadowHostB/").contains(getNodeInShadowTreeStack("shadowHostA/shadowHostB/"))');
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
