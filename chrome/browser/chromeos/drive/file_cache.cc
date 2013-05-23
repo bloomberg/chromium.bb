@@ -131,12 +131,13 @@ void DeleteFilesSelectively(const base::FilePath& path_to_delete_pattern,
 // Used to implement GetFile, MarkAsMounted.
 void RunGetFileFromCacheCallback(
     const GetFileFromCacheCallback& callback,
-    scoped_ptr<std::pair<FileError, base::FilePath> > result) {
+    base::FilePath* file_path,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  DCHECK(result.get());
+  DCHECK(file_path);
 
-  callback.Run(result->first, result->second);
+  callback.Run(error, *file_path);
 }
 
 // Runs callback with pointers dereferenced.
@@ -292,12 +293,14 @@ void FileCache::GetFileOnUIThread(const std::string& resource_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  base::FilePath* cache_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&FileCache::GetFile,
-                 base::Unretained(this), resource_id, md5),
-      base::Bind(&RunGetFileFromCacheCallback, callback));
+                 base::Unretained(this), resource_id, md5, cache_file_path),
+      base::Bind(&RunGetFileFromCacheCallback,
+                 callback, base::Owned(cache_file_path)));
 }
 
 void FileCache::StoreOnUIThread(const std::string& resource_id,
@@ -383,12 +386,14 @@ void FileCache::MarkAsMountedOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  base::FilePath* cache_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&FileCache::MarkAsMounted,
-                 base::Unretained(this), resource_id, md5),
-      base::Bind(RunGetFileFromCacheCallback, callback));
+                 base::Unretained(this), resource_id, md5, cache_file_path),
+      base::Bind(RunGetFileFromCacheCallback,
+                 callback, base::Owned(cache_file_path)));
 }
 
 void FileCache::MarkAsUnmountedOnUIThread(
@@ -600,19 +605,16 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   return HasEnoughSpaceFor(num_bytes, cache_root_path_);
 }
 
-scoped_ptr<FileCache::GetFileResult> FileCache::GetFile(
-    const std::string& resource_id,
-    const std::string& md5) {
+FileError FileCache::GetFile(const std::string& resource_id,
+                             const std::string& md5,
+                             base::FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();
-
-  scoped_ptr<GetFileResult> result(new GetFileResult);
+  DCHECK(cache_file_path);
 
   FileCacheEntry cache_entry;
   if (!GetCacheEntry(resource_id, md5, &cache_entry) ||
-      !cache_entry.is_present()) {
-    result->first = FILE_ERROR_NOT_FOUND;
-    return result.Pass();
-  }
+      !cache_entry.is_present())
+    return FILE_ERROR_NOT_FOUND;
 
   CachedFileOrigin file_origin;
   if (cache_entry.is_mounted()) {
@@ -622,12 +624,12 @@ scoped_ptr<FileCache::GetFileResult> FileCache::GetFile(
   } else {
     file_origin = CACHED_FILE_FROM_SERVER;
   }
-  result->first = FILE_ERROR_OK;
-  result->second = GetCacheFilePath(resource_id,
-                                    md5,
-                                    GetSubDirectoryType(cache_entry),
-                                    file_origin);
-  return result.Pass();
+
+  *cache_file_path = GetCacheFilePath(resource_id,
+                                      md5,
+                                      GetSubDirectoryType(cache_entry),
+                                      file_origin);
+  return FILE_ERROR_OK;
 }
 
 FileError FileCache::StoreInternal(const std::string& resource_id,
@@ -813,24 +815,19 @@ FileError FileCache::Unpin(const std::string& resource_id,
   return FILE_ERROR_OK;
 }
 
-scoped_ptr<FileCache::GetFileResult> FileCache::MarkAsMounted(
-    const std::string& resource_id,
-    const std::string& md5) {
+FileError FileCache::MarkAsMounted(const std::string& resource_id,
+                                   const std::string& md5,
+                                   base::FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();
-
-  scoped_ptr<GetFileResult> result(new GetFileResult);
+  DCHECK(cache_file_path);
 
   // Get cache entry associated with the resource_id and md5
   FileCacheEntry cache_entry;
-  if (!GetCacheEntry(resource_id, md5, &cache_entry)) {
-    result->first = FILE_ERROR_NOT_FOUND;
-    return result.Pass();
-  }
+  if (!GetCacheEntry(resource_id, md5, &cache_entry))
+    return FILE_ERROR_NOT_FOUND;
 
-  if (cache_entry.is_mounted()) {
-    result->first = FILE_ERROR_INVALID_OPERATION;
-    return result.Pass();
-  }
+  if (cache_entry.is_mounted())
+    return FILE_ERROR_INVALID_OPERATION;
 
   // Get the subdir type and path for the unmounted state.
   CacheSubDirectoryType unmounted_subdir =
@@ -844,26 +841,25 @@ scoped_ptr<FileCache::GetFileResult> FileCache::MarkAsMounted(
       resource_id, md5, mounted_subdir, CACHED_FILE_MOUNTED);
 
   // Move cache file.
-  bool success = MoveFile(unmounted_path, mounted_path);
+  if (!MoveFile(unmounted_path, mounted_path))
+    return FILE_ERROR_FAILED;
 
-  if (success) {
-    // Ensures the file is readable to cros_disks. See crbug.com/236994.
-    file_util::SetPosixFilePermissions(
-        mounted_path,
-        file_util::FILE_PERMISSION_READ_BY_USER |
-        file_util::FILE_PERMISSION_WRITE_BY_USER |
-        file_util::FILE_PERMISSION_READ_BY_GROUP |
-        file_util::FILE_PERMISSION_READ_BY_OTHERS);
+  // Ensures the file is readable to cros_disks. See crbug.com/236994.
+  file_util::SetPosixFilePermissions(
+      mounted_path,
+      file_util::FILE_PERMISSION_READ_BY_USER |
+      file_util::FILE_PERMISSION_WRITE_BY_USER |
+      file_util::FILE_PERMISSION_READ_BY_GROUP |
+      file_util::FILE_PERMISSION_READ_BY_OTHERS);
 
-    // Now that cache operation is complete, update metadata.
-    cache_entry.set_md5(md5);
-    cache_entry.set_is_mounted(true);
-    cache_entry.set_is_persistent(true);
-    metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
-  }
-  result->first = success ? FILE_ERROR_OK : FILE_ERROR_FAILED;
-  result->second = mounted_path;
-  return result.Pass();
+  // Now that cache operation is complete, update metadata.
+  cache_entry.set_md5(md5);
+  cache_entry.set_is_mounted(true);
+  cache_entry.set_is_persistent(true);
+  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+
+  *cache_file_path = mounted_path;
+  return FILE_ERROR_OK;
 }
 
 FileError FileCache::MarkAsUnmounted(const base::FilePath& file_path) {

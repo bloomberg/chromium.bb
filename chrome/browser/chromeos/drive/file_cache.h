@@ -304,8 +304,6 @@ class FileCache {
  private:
   friend class FileCacheTest;
 
-  typedef std::pair<FileError, base::FilePath> GetFileResult;
-
   // Enum defining origin of a cached file.
   enum CachedFileOrigin {
     CACHED_FILE_FROM_SERVER = 0,
@@ -342,8 +340,9 @@ class FileCache {
   bool FreeDiskSpaceIfNeededFor(int64 num_bytes);
 
   // Used to implement GetFileOnUIThread.
-  scoped_ptr<GetFileResult> GetFile(const std::string& resource_id,
-                                    const std::string& md5);
+  FileError GetFile(const std::string& resource_id,
+                    const std::string& md5,
+                    base::FilePath* cache_file_path);
 
   // Used to implement Store and StoreLocallyModifiedOnUIThread.
   // TODO(hidehiko): Merge this method with Store(), after
@@ -363,8 +362,9 @@ class FileCache {
                   const std::string& md5);
 
   // Used to implement MarkAsMountedOnUIThread.
-  scoped_ptr<GetFileResult> MarkAsMounted(const std::string& resource_id,
-                                          const std::string& md5);
+  FileError MarkAsMounted(const std::string& resource_id,
+                          const std::string& md5,
+                          base::FilePath* cache_file_path);
 
   // Used to implement MarkAsUnmountedOnUIThread.
   FileError MarkAsUnmounted(const base::FilePath& file_path);
