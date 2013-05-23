@@ -11,6 +11,7 @@
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
+class Time;
 }  // namespace base
 
 namespace google_apis {
@@ -35,6 +36,7 @@ class MoveOperation;
 class OperationObserver;
 class RemoveOperation;
 class SearchOperation;
+class TouchOperation;
 class UpdateOperation;
 
 // Callback for DriveOperations::Search.
@@ -111,6 +113,13 @@ class DriveOperations {
               bool is_recursive,
               const FileOperationCallback& callback);
 
+  // Wrapper function for touch_operation_.
+  // |callback| must not be null.
+  void TouchFile(const base::FilePath& file_path,
+                 const base::Time& last_access_time,
+                 const base::Time& last_modified_time,
+                 const FileOperationCallback& callback);
+
   // Wrapper function for update_operation_.
   // |callback| must not be null.
   void UpdateFileByResourceId(const std::string& resource_id,
@@ -129,6 +138,7 @@ class DriveOperations {
   scoped_ptr<CreateFileOperation> create_file_operation_;
   scoped_ptr<MoveOperation> move_operation_;
   scoped_ptr<RemoveOperation> remove_operation_;
+  scoped_ptr<TouchOperation> touch_operation_;
   scoped_ptr<UpdateOperation> update_operation_;
   scoped_ptr<SearchOperation> search_operation_;
 };

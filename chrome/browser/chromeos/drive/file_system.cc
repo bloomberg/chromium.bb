@@ -420,8 +420,8 @@ void FileSystem::TouchFile(const base::FilePath& file_path,
   DCHECK(!last_modified_time.is_null());
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this (crbug.com/144369).
-  NOTIMPLEMENTED();
+  drive_operations_.TouchFile(
+      file_path, last_access_time, last_modified_time, callback);
 }
 
 void FileSystem::Pin(const base::FilePath& file_path,

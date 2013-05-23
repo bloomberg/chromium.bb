@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/search_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/touch_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -57,6 +58,8 @@ void DriveOperations::Init(OperationObserver* observer,
       new MoveOperation(observer, scheduler, metadata));
   remove_operation_.reset(
       new RemoveOperation(observer, scheduler, metadata, cache));
+  touch_operation_.reset(
+      new TouchOperation(blocking_task_runner, observer, scheduler, metadata));
   update_operation_.reset(
       new UpdateOperation(observer, scheduler, metadata, cache));
   search_operation_.reset(
@@ -132,6 +135,19 @@ void DriveOperations::Remove(const base::FilePath& file_path,
   DCHECK(!callback.is_null());
 
   remove_operation_->Remove(file_path, is_recursive, callback);
+}
+
+void DriveOperations::TouchFile(const base::FilePath& file_path,
+                                const base::Time& last_access_time,
+                                const base::Time& last_modified_time,
+                                const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!last_access_time.is_null());
+  DCHECK(!last_modified_time.is_null());
+  DCHECK(!callback.is_null());
+
+  touch_operation_->TouchFile(
+      file_path, last_access_time, last_modified_time, callback);
 }
 
 void DriveOperations::UpdateFileByResourceId(
