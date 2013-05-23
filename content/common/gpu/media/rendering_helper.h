@@ -24,9 +24,6 @@ class RenderingHelper {
   // Create a platform specifc implementation this object.
   static RenderingHelper* Create();
 
-  // Platform specific setup.
-  static void InitializePlatform();
-
   RenderingHelper() {}
   virtual ~RenderingHelper() {}
 

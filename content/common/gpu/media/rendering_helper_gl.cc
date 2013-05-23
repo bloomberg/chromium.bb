@@ -157,11 +157,6 @@ RenderingHelper* RenderingHelper::Create() {
   return new RenderingHelperGL;
 }
 
-// static
-void RenderingHelper::InitializePlatform() {
-  gfx::InitializeGLBindings(RenderingHelperGL::kGLImplementation);
-}
-
 RenderingHelperGL::RenderingHelperGL() {
   Clear();
 }
@@ -204,6 +199,7 @@ void RenderingHelperGL::Initialize(
     done.Wait();
   }
 
+  gfx::InitializeGLBindings(RenderingHelperGL::kGLImplementation);
   scoped_refptr<GLContextStubWithExtensions> stub_context(
       new GLContextStubWithExtensions());
   suppress_swap_to_display_ = suppress_swap_to_display;
@@ -409,6 +405,7 @@ void RenderingHelperGL::UnInitialize(base::WaitableEvent* done) {
     CHECK(eglDestroySurface(gl_display_, gl_surfaces_[i]));
   CHECK(eglTerminate(gl_display_));
 #endif
+  gfx::ClearGLBindings();
   Clear();
   done->Signal();
 }

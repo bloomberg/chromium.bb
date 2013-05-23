@@ -966,7 +966,6 @@ int main(int argc, char **argv) {
   }
 
   base::ShadowingAtExitManager at_exit_manager;
-  content::RenderingHelper::InitializePlatform();
 
 #if defined(OS_WIN)
   content::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
