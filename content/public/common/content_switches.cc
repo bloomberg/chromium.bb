@@ -295,6 +295,18 @@ const char kDisableCompositingForFixedPosition[] =
 const char kEnableHighDpiCompositingForFixedPosition[] =
      "enable-high-dpi-fixed-position-compositing";
 
+// Enable/Disable the creation of compositing layers for RenderLayers with a
+// transition on a property that supports accelerated animation (that is,
+// opacity, -webkit-transform, and -webkit-filter), even when no animation is
+// running. These options allow for three possible scenarios:
+//  1. Default (enabled only if we dectect a highDPI display)
+//  2. Enabled always.
+//  3. Disabled always.
+const char kEnableCompositingForTransition[] =
+     "enable-transition-compositing";
+const char kDisableCompositingForTransition[] =
+     "disable-transition-compositing";
+
 // Enables CSS3 custom filters
 const char kEnableCssShaders[]              = "enable-css-shaders";
 

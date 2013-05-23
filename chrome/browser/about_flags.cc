@@ -118,6 +118,14 @@ const Experiment::Choice kEnableCompositingForFixedPositionChoices[] = {
     switches::kEnableHighDpiCompositingForFixedPosition, ""}
 };
 
+const Experiment::Choice kEnableCompositingForTransitionChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableCompositingForTransition, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableCompositingForTransition, ""},
+};
+
 const Experiment::Choice kGDIPresentChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_PRESENT_WITH_GDI_FIRST_SHOW,
@@ -451,6 +459,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_COMPOSITING_FOR_FIXED_POSITION_DESCRIPTION,
     kOsAll,
     MULTI_VALUE_TYPE(kEnableCompositingForFixedPositionChoices)
+  },
+  {
+    "enable-compositing-for-transition",
+    IDS_FLAGS_COMPOSITING_FOR_TRANSITION_NAME,
+    IDS_FLAGS_COMPOSITING_FOR_TRANSITION_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kEnableCompositingForTransitionChoices)
   },
   // TODO(bbudge): When NaCl is on by default, remove this flag entry.
   {

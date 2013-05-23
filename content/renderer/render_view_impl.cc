@@ -517,10 +517,21 @@ static WindowOpenDisposition NavigationPolicyToDisposition(
   }
 }
 
+// Returns true if the device scale is high enough that losing subpixel
+// antialiasing won't have a noticeable effect on text quality.
+static bool DeviceScaleEnsuresTextQuality(float device_scale_factor) {
+#if defined(OS_ANDROID)
+  // On Android, we never have subpixel antialiasing.
+  return true;
+#else
+  return device_scale_factor > 1.5f;
+#endif
+
+}
+
 static bool ShouldUseFixedPositionCompositing(float device_scale_factor) {
   // Compositing for fixed-position elements is dependent on
-  // device_scale_factor if high-DPI flag is set, with no other
-  // overriding switch. http://crbug.com/172738
+  // device_scale_factor if no flag is set. http://crbug.com/172738
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   if (command_line.HasSwitch(switches::kDisableCompositingForFixedPosition))
@@ -529,13 +540,19 @@ static bool ShouldUseFixedPositionCompositing(float device_scale_factor) {
   if (command_line.HasSwitch(switches::kEnableCompositingForFixedPosition))
     return true;
 
-  if (device_scale_factor > 1.0f &&
-      command_line.HasSwitch(
-          switches::kEnableHighDpiCompositingForFixedPosition))
+  return DeviceScaleEnsuresTextQuality(device_scale_factor);
+}
+
+static bool ShouldUseTransitionCompositing(float device_scale_factor) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kDisableCompositingForTransition))
+    return false;
+
+  if (command_line.HasSwitch(switches::kEnableCompositingForTransition))
     return true;
 
-  // Default, when no switch is specified, is to be enabled only for high-DPI.
-  return device_scale_factor > 1.0f;
+  return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
 static FaviconURL::IconType ToFaviconType(WebKit::WebIconURL::Type type) {
@@ -738,6 +755,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   webview()->setDeviceScaleFactor(device_scale_factor_);
   webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
       ShouldUseFixedPositionCompositing(device_scale_factor_));
+  webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
+      ShouldUseTransitionCompositing(device_scale_factor_));
 
   webkit_glue::ApplyWebPreferences(webkit_preferences_, webview());
   webview()->initializeMainFrame(this);
@@ -6034,6 +6053,8 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
     webview()->setDeviceScaleFactor(device_scale_factor);
     webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
         ShouldUseFixedPositionCompositing(device_scale_factor_));
+    webview()->settings()->setAcceleratedCompositingForTransitionEnabled(
+        ShouldUseTransitionCompositing(device_scale_factor_));
   }
   if (auto_resize_mode_)
     AutoResizeCompositor();
