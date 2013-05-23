@@ -804,6 +804,12 @@ chrome_pfq.add_config('lumpy-chrome-pfq',
   boards=['lumpy'],
 )
 
+chrome_pfq.add_config('daisy_spring-chrome-pfq',
+  arm,
+  boards=['daisy_spring'],
+  important=False,
+)
+
 chromium_info = chromium_pfq.derive(
   chrome_rev=constants.CHROME_REV_TOT,
   use_lkgm=True,
