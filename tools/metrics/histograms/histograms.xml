@@ -1976,6 +1976,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="InstantExtended.FallbackToLocalOverlay"
+    enum="InstantExtended_FallbackCause">
+  <summary>
+    Records the cause for falling back to a local overlay at the time of
+    fallback.
+  </summary>
+</histogram>
+
 <histogram name="InstantExtended.InstantNavigation"
     enum="InstantExtended_InstantNavigation">
   <summary>
@@ -11435,6 +11443,15 @@ other types of suffix sets.
   <int value="0" label="URL_ADDED_TO_BLACKLIST"/>
   <int value="1" label="URL_REMOVED_FROM_BLACKLIST"/>
   <int value="2" label="URL_BLOCKED_BY_BLACKLIST"/>
+</enum>
+
+<enum name="InstantExtended_FallbackCause" type="int">
+  <int value="0" label="Fallback did not occur"/>
+  <int value="1" label="Page not current: unknown"/>
+  <int value="2" label="Page not current: empty instant url"/>
+  <int value="3" label="Page not current: origin/path mismatch"/>
+  <int value="4" label="Page not current: instant not supported"/>
+  <int value="5" label="No overlay"/>
 </enum>
 
 <enum name="InstantExtended_InstantNavigation" type="int">

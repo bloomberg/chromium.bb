@@ -72,6 +72,17 @@ class WebContents;
 class InstantController : public InstantPage::Delegate,
                           public content::NotificationObserver {
  public:
+  // For reporting fallbacks to local overlay.
+  enum InstantFallbackReason {
+    INSTANT_FALLBACK_NONE = 0,
+    INSTANT_FALLBACK_UNKNOWN = 1,
+    INSTANT_FALLBACK_INSTANT_URL_EMPTY = 2,
+    INSTANT_FALLBACK_ORIGIN_PATH_MISMATCH = 3,
+    INSTANT_FALLBACK_INSTANT_NOT_SUPPORTED = 4,
+    INSTANT_FALLBACK_NO_OVERLAY = 5,
+    INSTANT_FALLBACK_MAX = 6,
+  };
+
   InstantController(BrowserInstantController* browser,
                     bool extended_enabled);
   virtual ~InstantController();
@@ -199,6 +210,14 @@ class InstantController : public InstantPage::Delegate,
   // Resets list of debug events.
   void ClearDebugEvents();
 
+  // Returns the correct Instant URL to use from the following possibilities:
+  //   o The default search engine's Instant URL
+  //   o The --instant-url command line switch
+  //   o The local page (see GetLocalInstantURL())
+  // Returns empty string if no valid Instant URL is available (this is only
+  // possible in non-extended mode where we don't have a local page fall-back).
+  virtual std::string GetInstantURL() const;
+
   // See comments for |debug_events_| below.
   const std::list<std::pair<int64, std::string> >& debug_events() {
     return debug_events_;
@@ -213,8 +232,18 @@ class InstantController : public InstantPage::Delegate,
   // happen through the InstantController interface.
   InstantOverlayModel* model() { return &model_; }
 
+ protected:
+  // Accessors are made protected for testing purposes.
+  virtual bool extended_enabled() const;
+
+  virtual InstantOverlay* overlay() const;
+  virtual InstantTab* instant_tab() const;
+  virtual InstantNTP* ntp() const;
+
  private:
   friend class InstantTestBase;
+  FRIEND_TEST_ALL_PREFIXES(InstantControllerTest,
+                           ShouldSwitchToLocalOverlayReturn);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UsesOverlayIfTabNotReady);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
@@ -269,9 +298,6 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LogDropdownShown);
 
   Profile* profile() const;
-  InstantOverlay* overlay() const;
-  InstantTab* instant_tab() const;
-  InstantNTP* ntp() const;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
@@ -334,14 +360,6 @@ class InstantController : public InstantPage::Delegate,
   // chrome::GetLocalInstantURL.)
   std::string GetLocalInstantURL() const;
 
-  // Returns the correct Instant URL to use from the following possibilities:
-  //   o The default search engine's Instant URL
-  //   o The --instant-url command line switch
-  //   o The local page (see GetLocalInstantURL())
-  // Returns empty string if no valid Instant URL is available (this is only
-  // possible in non-extended mode where we don't have a local page fall-back).
-  std::string GetInstantURL() const;
-
   // Returns true if |page| has an up-to-date Instant URL and supports Instant.
   // Note that local URLs will not pass this check.
   bool PageIsCurrent(const InstantPage* page) const;
@@ -359,8 +377,8 @@ class InstantController : public InstantPage::Delegate,
   // |instant_url| is empty or if there is no active tab.
   void ResetOverlay(const std::string& instant_url);
 
-  // Returns true if we should switch to using the local overlay.
-  bool ShouldSwitchToLocalOverlay() const;
+  // Returns an enum value indicating the reason to fallback.
+  InstantFallbackReason ShouldSwitchToLocalOverlay() const;
 
   // If the active tab is an Instant search results page, sets |instant_tab_| to
   // point to it. Else, deletes any existing |instant_tab_|.

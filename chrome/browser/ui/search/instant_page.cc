@@ -21,6 +21,10 @@ InstantPage::Delegate::~Delegate() {
 InstantPage::~InstantPage() {
 }
 
+bool InstantPage::supports_instant() const {
+  return supports_instant_;
+}
+
 bool InstantPage::IsLocal() const {
   return contents() &&
       (contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl) ||

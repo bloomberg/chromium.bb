@@ -118,7 +118,7 @@ class InstantPage : public content::WebContentsObserver {
   // out false, and is set to true whenever we get any message from the page.
   // Once true, it never becomes false (the page isn't expected to drop API
   // support suddenly).
-  bool supports_instant() const { return supports_instant_; }
+  virtual bool supports_instant() const;
 
   // True if Instant support has been tested and determined for this page at
   // least once. Note that Instant support may change in the future.
@@ -128,7 +128,7 @@ class InstantPage : public content::WebContentsObserver {
 
   // Returns true if the page is the local NTP (i.e. its URL is
   // chrome::kChromeSearchLocalNTPURL).
-  bool IsLocal() const;
+  virtual bool IsLocal() const;
 
   // Tells the page that the user typed |text| into the omnibox. If |verbatim|
   // is false, the page predicts the query the user means to type and fetches
