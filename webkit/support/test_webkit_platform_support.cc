@@ -42,12 +42,12 @@
 #include "webkit/gpu/webgraphicscontext3d_provider_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
-#include "webkit/renderer/compositor_bindings/web_layer_tree_view_impl_for_testing.h"
 #include "webkit/support/gc_extension.h"
 #include "webkit/support/simple_database_system.h"
 #include "webkit/support/test_webmessageportchannel.h"
 #include "webkit/support/web_audio_device_mock.h"
 #include "webkit/support/web_gesture_curve_mock.h"
+#include "webkit/support/web_layer_tree_view_impl_for_testing.h"
 #include "webkit/support/webkit_support.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
@@ -530,7 +530,7 @@ WebKit::WebLayerTreeView*
       new WebLayerTreeViewImplForTesting(
           webkit_support::FAKE_CONTEXT, NULL));
 
-  if (!view->initialize(scoped_ptr<cc::Thread>()))
+  if (!view->Initialize(scoped_ptr<cc::Thread>()))
     return NULL;
   return view.release();
 }

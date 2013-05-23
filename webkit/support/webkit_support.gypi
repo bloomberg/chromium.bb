@@ -78,6 +78,8 @@
         'web_audio_device_mock.h',
         'web_gesture_curve_mock.cc',
         'web_gesture_curve_mock.h',
+        'web_layer_tree_view_impl_for_testing.cc',
+        'web_layer_tree_view_impl_for_testing.h',
       ],
       'conditions': [
         ['OS=="mac"', {

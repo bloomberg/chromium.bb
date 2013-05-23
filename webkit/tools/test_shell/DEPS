@@ -3,4 +3,5 @@ include_rules = [
   "+mac",
   "+third_party/zlib",
   "+ui",
+  "+webkit/support"
 ]

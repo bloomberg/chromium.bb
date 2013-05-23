@@ -21,7 +21,6 @@
 #include "webkit/renderer/compositor_bindings/web_solid_color_layer_impl.h"
 #include "webkit/renderer/compositor_bindings/web_transform_animation_curve_impl.h"
 #include "webkit/renderer/compositor_bindings/web_transform_operations_impl.h"
-#include "webkit/support/webkit_support.h"
 
 using WebKit::WebAnimation;
 using WebKit::WebAnimationCurve;

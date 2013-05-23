@@ -70,12 +70,12 @@
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
 #include "webkit/plugins/webplugininfo.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
-#include "webkit/renderer/compositor_bindings/web_layer_tree_view_impl_for_testing.h"
 #include "webkit/support/platform_support.h"
 #include "webkit/support/simple_database_system.h"
 #include "webkit/support/test_webidbfactory.h"
 #include "webkit/support/test_webkit_platform_support.h"
 #include "webkit/support/test_webplugin_page_delegate.h"
+#include "webkit/support/web_layer_tree_view_impl_for_testing.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_dom_storage_system.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
@@ -467,7 +467,7 @@ WebKit::WebLayerTreeView* CreateLayerTreeView(
   scoped_ptr<webkit::WebLayerTreeViewImplForTesting> view(
       new webkit::WebLayerTreeViewImplForTesting(type, client));
 
-  if (!view->initialize(compositor_thread.Pass()))
+  if (!view->Initialize(compositor_thread.Pass()))
     return NULL;
   return view.release();
 }

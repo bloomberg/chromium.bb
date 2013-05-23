@@ -26,8 +26,6 @@
       'web_layer_impl_fixed_bounds.h',
       'web_to_ccscrollbar_theme_painter_adapter.cc',
       'web_to_ccscrollbar_theme_painter_adapter.h',
-      'web_layer_tree_view_impl_for_testing.cc',
-      'web_layer_tree_view_impl_for_testing.h',
       'web_scrollbar_layer_impl.cc',
       'web_scrollbar_layer_impl.h',
       'web_solid_color_layer_impl.cc',

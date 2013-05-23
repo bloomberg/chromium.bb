@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/compositor_bindings/web_layer_tree_view_impl_for_testing.h"
+#include "webkit/support/web_layer_tree_view_impl_for_testing.h"
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -43,7 +43,7 @@ WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
 
 WebLayerTreeViewImplForTesting::~WebLayerTreeViewImplForTesting() {}
 
-bool WebLayerTreeViewImplForTesting::initialize(
+bool WebLayerTreeViewImplForTesting::Initialize(
     scoped_ptr<cc::Thread> compositor_thread) {
   cc::LayerTreeSettings settings;
 

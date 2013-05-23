@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
-#define WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
+#ifndef WEBKIT_SUPPORT_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
+#define WEBKIT_SUPPORT_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
-#include "webkit/renderer/compositor_bindings/webkit_compositor_bindings_export.h"
 #include "webkit/support/webkit_support.h"
 
 namespace cc {
@@ -23,13 +22,12 @@ namespace webkit {
 class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
                                        public cc::LayerTreeHostClient {
  public:
-  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebLayerTreeViewImplForTesting(
+  WebLayerTreeViewImplForTesting(
       webkit_support::LayerTreeViewType type,
       webkit_support::DRTLayerTreeViewClient* client);
   virtual ~WebLayerTreeViewImplForTesting();
 
-  WEBKIT_COMPOSITOR_BINDINGS_EXPORT bool initialize(
-      scoped_ptr<cc::Thread> compositor_thread);
+  bool Initialize(scoped_ptr<cc::Thread> compositor_thread);
 
   // WebKit::WebLayerTreeView implementation.
   virtual void setSurfaceReady();
@@ -91,4 +89,4 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
 
 }  // namespace webkit
 
-#endif  // WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
+#endif  // WEBKIT_SUPPORT_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_

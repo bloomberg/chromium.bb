@@ -40,4 +40,8 @@ include_rules = [
   "+crypto",
   "+net",
   "+third_party/npapi/bindings",
+
+  # webkit/support is only test support code, nothing outside of webkit/support
+  # should pull it in.
+  "-webkit/support",
 ]
