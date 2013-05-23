@@ -2542,13 +2542,10 @@ void RenderViewImpl::didBlur() {
 //
 void RenderViewImpl::show(WebNavigationPolicy policy) {
   if (did_show_) {
-#if defined(OS_ANDROID)
     // When supports_multiple_windows is disabled, popups are reusing
     // the same view. In some scenarios, this makes WebKit to call show() twice.
-    if (!webkit_preferences_.supports_multiple_windows)
-      return;
-#endif
-    NOTREACHED() << "received extraneous Show call";
+    if (webkit_preferences_.supports_multiple_windows)
+      NOTREACHED() << "received extraneous Show call";
     return;
   }
   did_show_ = true;
