@@ -4,9 +4,9 @@
 
 #include "webkit/dom_storage/dom_storage_database.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "sql/diagnostic_error_delegate.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -15,13 +15,16 @@ namespace {
 
 const base::FilePath::CharType kJournal[] = FILE_PATH_LITERAL("-journal");
 
-class HistogramUniquifier {
- public:
-  static const char* name() { return "Sqlite.DomStorageDatabase.Error"; }
-};
-
-sql::ErrorDelegate* GetErrorHandlerForDomStorageDatabase() {
-  return new sql::DiagnosticErrorDelegate<HistogramUniquifier>();
+void DatabaseErrorCallback(int error, sql::Statement* stmt) {
+  // Without a callback to ignore errors,
+  // DomStorageDatabaseTest.TestCanOpenFileThatIsNotADatabase fails with:
+  // ERROR:connection.cc(735)] sqlite error 522, errno 0: disk I/O error
+  // FATAL:connection.cc(750)] disk I/O error
+  // <backtrace>
+  // <crash>
+  //
+  // TODO(shess): If/when infrastructure lands which can allow tests
+  // to handle SQLite errors appropriately, remove this.
 }
 
 }  // anon namespace
@@ -159,7 +162,8 @@ bool DomStorageDatabase::LazyOpen(bool create_if_needed) {
   }
 
   db_.reset(new sql::Connection());
-  db_->set_error_delegate(GetErrorHandlerForDomStorageDatabase());
+  db_->set_histogram_tag("DomStorageDatabase");
+  db_->set_error_callback(base::Bind(&DatabaseErrorCallback));
 
   if (file_path_.empty()) {
     // This code path should only be triggered by unit tests.
