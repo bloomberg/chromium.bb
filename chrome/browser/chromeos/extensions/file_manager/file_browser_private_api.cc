@@ -2906,6 +2906,13 @@ bool SearchDriveMetadataFunction::RunImpl() {
   if (!search_params->GetInteger("maxResults", &max_results_))
     return false;
 
+  drive::util::Log("%s[%d] called. (types: '%s', maxResults: '%d')",
+                   name().c_str(),
+                   request_id(),
+                   types_.c_str(),
+                   max_results_);
+  set_log_on_completion(true);
+
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   BrowserContext::GetStoragePartition(profile(), site_instance)->
       GetFileSystemContext()->OpenFileSystem(

@@ -676,7 +676,7 @@ class SearchDriveFunction : public AsyncExtensionFunction {
 
 // Similar to SearchDriveFunction but this one is used for searching drive
 // metadata which is stored locally.
-class SearchDriveMetadataFunction : public AsyncExtensionFunction {
+class SearchDriveMetadataFunction : public FileBrowserFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.searchDriveMetadata",
                              FILEBROWSERPRIVATE_SEARCHDRIVEMETADATA)
