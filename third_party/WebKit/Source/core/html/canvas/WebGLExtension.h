@@ -35,22 +35,22 @@ class WebGLExtension {
 public:
     // Extension names are needed to properly wrap instances in JavaScript objects.
     enum ExtensionName {
-        WebGLLoseContextName,
         EXTDrawBuffersName,
         EXTTextureFilterAnisotropicName,
-        OESTextureFloatName,
-        OESTextureHalfFloatName,
-        OESStandardDerivativesName,
-        OESVertexArrayObjectName,
-        WebGLDebugRendererInfoName,
-        WebGLDebugShadersName,
-        WebGLCompressedTextureS3TCName,
-        WebGLDepthTextureName,
         OESElementIndexUintName,
+        OESStandardDerivativesName,
+        OESTextureFloatLinearName,
+        OESTextureFloatName,
+        OESTextureHalfFloatLinearName,
+        OESTextureHalfFloatName,
+        OESVertexArrayObjectName,
         WebGLCompressedTextureATCName,
         WebGLCompressedTexturePVRTCName,
-        OESTextureFloatLinearName,
-        OESTextureHalfFloatLinearName,
+        WebGLCompressedTextureS3TCName,
+        WebGLDebugRendererInfoName,
+        WebGLDebugShadersName,
+        WebGLDepthTextureName,
+        WebGLLoseContextName,
     };
 
     void ref() { m_context->ref(); }

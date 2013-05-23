@@ -177,10 +177,6 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
     v8::Handle<v8::Value> extensionObject;
     const char* referenceName = 0;
     switch (extension->getName()) {
-    case WebGLExtension::WebGLLoseContextName:
-        extensionObject = toV8(static_cast<WebGLLoseContext*>(extension), contextObject, isolate);
-        referenceName = "webGLLoseContextName";
-        break;
     case WebGLExtension::EXTDrawBuffersName:
         extensionObject = toV8(static_cast<EXTDrawBuffers*>(extension), contextObject, isolate);
         referenceName = "extDrawBuffersName";
@@ -188,6 +184,10 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
     case WebGLExtension::EXTTextureFilterAnisotropicName:
         extensionObject = toV8(static_cast<EXTTextureFilterAnisotropic*>(extension), contextObject, isolate);
         referenceName = "extTextureFilterAnisotropicName";
+        break;
+    case WebGLExtension::OESElementIndexUintName:
+        extensionObject = toV8(static_cast<OESElementIndexUint*>(extension), contextObject, isolate);
+        referenceName = "oesElementIndexUintName";
         break;
     case WebGLExtension::OESStandardDerivativesName:
         extensionObject = toV8(static_cast<OESStandardDerivatives*>(extension), contextObject, isolate);
@@ -213,18 +213,6 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
         extensionObject = toV8(static_cast<OESVertexArrayObject*>(extension), contextObject, isolate);
         referenceName = "oesVertexArrayObjectName";
         break;
-    case WebGLExtension::OESElementIndexUintName:
-        extensionObject = toV8(static_cast<OESElementIndexUint*>(extension), contextObject, isolate);
-        referenceName = "oesElementIndexUintName";
-        break;
-    case WebGLExtension::WebGLDebugRendererInfoName:
-        extensionObject = toV8(static_cast<WebGLDebugRendererInfo*>(extension), contextObject, isolate);
-        referenceName = "webGLDebugRendererInfoName";
-        break;
-    case WebGLExtension::WebGLDebugShadersName:
-        extensionObject = toV8(static_cast<WebGLDebugShaders*>(extension), contextObject, isolate);
-        referenceName = "webGLDebugShadersName";
-        break;
     case WebGLExtension::WebGLCompressedTextureATCName:
         extensionObject = toV8(static_cast<WebGLCompressedTextureATC*>(extension), contextObject, isolate);
         referenceName = "webGLCompressedTextureATCName";
@@ -236,9 +224,21 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
         extensionObject = toV8(static_cast<WebGLCompressedTextureS3TC*>(extension), contextObject, isolate);
         referenceName = "webGLCompressedTextureS3TCName";
         break;
+    case WebGLExtension::WebGLDebugRendererInfoName:
+        extensionObject = toV8(static_cast<WebGLDebugRendererInfo*>(extension), contextObject, isolate);
+        referenceName = "webGLDebugRendererInfoName";
+        break;
+    case WebGLExtension::WebGLDebugShadersName:
+        extensionObject = toV8(static_cast<WebGLDebugShaders*>(extension), contextObject, isolate);
+        referenceName = "webGLDebugShadersName";
+        break;
     case WebGLExtension::WebGLDepthTextureName:
         extensionObject = toV8(static_cast<WebGLDepthTexture*>(extension), contextObject, isolate);
         referenceName = "webGLDepthTextureName";
+        break;
+    case WebGLExtension::WebGLLoseContextName:
+        extensionObject = toV8(static_cast<WebGLLoseContext*>(extension), contextObject, isolate);
+        referenceName = "webGLLoseContextName";
         break;
     }
     ASSERT(!extensionObject.IsEmpty());

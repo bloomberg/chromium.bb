@@ -2105,19 +2105,23 @@ WebGLExtension* WebGLRenderingContext::getExtension(const String& name)
     static const char* bothPrefixes[] = { "", "WEBKIT_", NULL, };
 
     WebGLExtension* extension = 0;
-    if (getExtensionIfMatch<OESStandardDerivatives>(name, m_oesStandardDerivatives, unprefixed, extension))
+    if (getExtensionIfMatch<EXTDrawBuffers>(name, m_extDrawBuffers, unprefixed, extension))
         return extension;
     if (getExtensionIfMatch<EXTTextureFilterAnisotropic>(name, m_extTextureFilterAnisotropic, webkitPrefix, extension))
         return extension;
+    if (getExtensionIfMatch<OESElementIndexUint>(name, m_oesElementIndexUint, unprefixed, extension))
+        return extension;
+    if (getExtensionIfMatch<OESStandardDerivatives>(name, m_oesStandardDerivatives, unprefixed, extension))
+        return extension;
     if (getExtensionIfMatch<OESTextureFloat>(name, m_oesTextureFloat, unprefixed, extension))
+        return extension;
+    if (getExtensionIfMatch<OESTextureFloatLinear>(name, m_oesTextureFloatLinear, unprefixed, extension))
         return extension;
     if (getExtensionIfMatch<OESTextureHalfFloat>(name, m_oesTextureHalfFloat, unprefixed, extension))
         return extension;
+    if (getExtensionIfMatch<OESTextureHalfFloatLinear>(name, m_oesTextureHalfFloatLinear, unprefixed, extension))
+        return extension;
     if (getExtensionIfMatch<OESVertexArrayObject>(name, m_oesVertexArrayObject, unprefixed, extension))
-        return extension;
-    if (getExtensionIfMatch<OESElementIndexUint>(name, m_oesElementIndexUint, unprefixed, extension))
-        return extension;
-    if (getExtensionIfMatch<WebGLLoseContext>(name, m_webglLoseContext, bothPrefixes, extension))
         return extension;
     if (getExtensionIfMatch<WebGLCompressedTextureATC>(name, m_webglCompressedTextureATC, webkitPrefix, extension))
         return extension;
@@ -2127,11 +2131,7 @@ WebGLExtension* WebGLRenderingContext::getExtension(const String& name)
         return extension;
     if (getExtensionIfMatch<WebGLDepthTexture>(name, m_webglDepthTexture, bothPrefixes, extension))
         return extension;
-    if (getExtensionIfMatch<EXTDrawBuffers>(name, m_extDrawBuffers, unprefixed, extension))
-        return extension;
-    if (getExtensionIfMatch<OESTextureFloatLinear>(name, m_oesTextureFloatLinear, unprefixed, extension))
-        return extension;
-    if (getExtensionIfMatch<OESTextureHalfFloatLinear>(name, m_oesTextureHalfFloatLinear, unprefixed, extension))
+    if (getExtensionIfMatch<WebGLLoseContext>(name, m_webglLoseContext, bothPrefixes, extension))
         return extension;
     if (allowPrivilegedExtensions()) {
         if (getExtensionIfMatch<WebGLDebugRendererInfo>(name, m_webglDebugRendererInfo, unprefixed, extension))
