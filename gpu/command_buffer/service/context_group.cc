@@ -213,6 +213,20 @@ bool ContextGroup::Initialize(
     return false;
   }
 
+  // TODO(gman): Use workarounds similar to max_texture_size above to implement.
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationOSMesaGL) {
+    // Some shaders in Skia needed more than the min.
+    max_fragment_uniform_vectors_ =
+       std::min(static_cast<uint32>(kMinFragmentUniformVectors * 2),
+                max_fragment_uniform_vectors_);
+    max_varying_vectors_ =
+       std::min(static_cast<uint32>(kMinVaryingVectors * 2),
+                max_varying_vectors_);
+    max_vertex_uniform_vectors_ =
+       std::min(static_cast<uint32>(kMinVertexUniformVectors * 2),
+                max_vertex_uniform_vectors_);
+  }
+
   if (!texture_manager_->Initialize()) {
     LOG(ERROR) << "Context::Group::Initialize failed because texture manager "
                << "failed to initialize.";
