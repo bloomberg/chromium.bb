@@ -82,9 +82,11 @@ static v8::Handle<v8::Value> npObjectInvokeImpl(const v8::Arguments& args, Invok
         else
             element = V8HTMLObjectElement::toNative(args.Holder());
         ScriptInstance scriptInstance = element->getInstance();
-        if (scriptInstance)
-            npObject = v8ObjectToNPObject(scriptInstance->instance());
-        else
+        if (scriptInstance) {
+            v8::Isolate* isolate = v8::Isolate::GetCurrent();
+            v8::HandleScope handleScope(isolate);
+            npObject = v8ObjectToNPObject(scriptInstance->newLocal(isolate));
+        } else
             npObject = 0;
     } else {
         // The holder object is not a subtype of HTMLPlugInElement, it must be an NPObject which has three

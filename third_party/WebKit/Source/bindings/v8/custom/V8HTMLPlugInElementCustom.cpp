@@ -51,7 +51,7 @@ static v8::Handle<v8::Value> npObjectNamedGetter(v8::Local<v8::String> name, con
     if (!scriptInstance)
         return v8Undefined();
 
-    v8::Local<v8::Object> instance = v8::Local<v8::Object>::New(scriptInstance->instance());
+    v8::Local<v8::Object> instance = scriptInstance->newLocal(v8::Isolate::GetCurrent());
     if (instance.IsEmpty())
         return v8Undefined();
 
@@ -66,7 +66,7 @@ static v8::Handle<v8::Value> npObjectNamedSetter(v8::Local<v8::String> name, v8:
     if (!scriptInstance)
         return v8Undefined();
 
-    v8::Local<v8::Object> instance = v8::Local<v8::Object>::New(scriptInstance->instance());
+    v8::Local<v8::Object> instance = scriptInstance->newLocal(v8::Isolate::GetCurrent());
     if (instance.IsEmpty())
         return v8Undefined();
 
@@ -126,7 +126,7 @@ v8::Handle<v8::Value> npObjectIndexedGetter(uint32_t index, const v8::AccessorIn
     if (!scriptInstance)
         return v8Undefined();
 
-    v8::Local<v8::Object> instance = v8::Local<v8::Object>::New(scriptInstance->instance());
+    v8::Local<v8::Object> instance = scriptInstance->newLocal(v8::Isolate::GetCurrent());
     if (instance.IsEmpty())
         return v8Undefined();
 
@@ -141,7 +141,7 @@ v8::Handle<v8::Value> npObjectIndexedSetter(uint32_t index, v8::Local<v8::Value>
     if (!scriptInstance)
         return v8Undefined();
 
-    v8::Local<v8::Object> instance = v8::Local<v8::Object>::New(scriptInstance->instance());
+    v8::Local<v8::Object> instance = scriptInstance->newLocal(v8::Isolate::GetCurrent());
     if (instance.IsEmpty())
         return v8Undefined();
 
