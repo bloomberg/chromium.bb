@@ -106,9 +106,12 @@ _OS_NEGATIVE_FILTER['win'] = [
 ]
 _OS_NEGATIVE_FILTER['linux'] = []
 _OS_NEGATIVE_FILTER['mac'] = [
-    'AlertsTest.testShouldAllowUsersToDismissAnAlertManually',
+    # https://code.google.com/p/chromedriver/issues/detail?id=26
     'AlertsTest.testAlertShouldNotAllowAdditionalCommandsIfDismissed',
+    'AlertsTest.testShouldAllowUsersToDismissAnAlertManually',
     'FormHandlingTest.handleFormWithJavascriptAction',
+    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=354
+    'AlertsTest.testShouldAllowUsersToAcceptAnAlertInAFrame',
 ]
 _OS_NEGATIVE_FILTER['android'] = [
     'AlertsTest.*',
