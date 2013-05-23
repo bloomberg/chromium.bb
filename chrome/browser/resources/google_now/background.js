@@ -23,8 +23,7 @@
 // TODO(vadimt): Honor the flag the enables Google Now integration.
 // TODO(vadimt): Figure out the final values of the constants.
 // TODO(vadimt): Remove 'console' calls.
-// TODO(vadimt): Consider sending JS stacks for unexpected exceptions (including
-// ones from verify()), unfinished and infinite tasks, chrome.* API errors and
+// TODO(vadimt): Consider sending JS stacks for chrome.* API errors and
 // malformed server responses.
 
 /**
@@ -246,6 +245,8 @@ function parseAndShowNotificationCards(response, callback) {
   tasks.debugSetStepName('parseAndShowNotificationCards-storage-get');
   storage.get(['activeNotifications', 'recentDismissals'], function(items) {
     console.log('parseAndShowNotificationCards-get ' + JSON.stringify(items));
+    items.activeNotifications = items.activeNotifications || {};
+    items.recentDismissals = items.recentDismissals || {};
 
     // Build a set of non-expired recent dismissals. It will be used for
     // client-side filtering of cards.
@@ -416,6 +417,9 @@ function processPendingDismissals(callbackBoolean) {
   storage.get(['pendingDismissals', 'recentDismissals'], function(items) {
     console.log('processPendingDismissals-storage-get ' +
                 JSON.stringify(items));
+    items.pendingDismissals = items.pendingDismissals || [];
+    items.recentDismissals = items.recentDismissals || {};
+
     var dismissalsChanged = false;
 
     function onFinish(success) {
@@ -476,6 +480,8 @@ function onNotificationClicked(notificationId, selector) {
   tasks.add(CARD_CLICKED_TASK_NAME, function(callback) {
     tasks.debugSetStepName('onNotificationClicked-get-activeNotifications');
     storage.get('activeNotifications', function(items) {
+      items.activeNotifications = items.activeNotifications || {};
+
       var actionUrls = items.activeNotifications[notificationId].actionUrls;
       if (typeof actionUrls != 'object') {
         callback();
@@ -520,6 +526,8 @@ function onNotificationClosed(notificationId, byUser) {
 
     tasks.debugSetStepName('onNotificationClosed-get-pendingDismissals');
     storage.get('pendingDismissals', function(items) {
+      items.pendingDismissals = items.pendingDismissals || [];
+
       var dismissal = {
         notificationId: notificationId,
         time: Date.now()
@@ -540,8 +548,7 @@ function initialize() {
   updateCardsAttempts.start(MAXIMUM_POLLING_PERIOD_SECONDS);
 
   var initialStorage = {
-    activeNotifications: {},
-    recentDismissals: {}
+    activeNotifications: {}
   };
   storage.set(initialStorage);
 
@@ -551,7 +558,6 @@ function initialize() {
 chrome.runtime.onInstalled.addListener(function(details) {
   console.log('onInstalled ' + JSON.stringify(details));
   if (details.reason != 'chrome_update') {
-    storage.set({pendingDismissals: []});
     initialize();
   }
 });
