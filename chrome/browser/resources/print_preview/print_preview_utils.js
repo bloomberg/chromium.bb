@@ -97,10 +97,6 @@ function removeDuplicates(inArray) {
  * @return {Array.<{from: number, to: number}>} An array of page range objects.
  */
 function pageRangeTextToPageRanges(pageRangeText, totalPageCount) {
-  if (pageRangeText == '') {
-    return [];
-  }
-
   var MAX_PAGE_NUMBER = 1000000000;
   totalPageCount = totalPageCount ? totalPageCount : MAX_PAGE_NUMBER;
 
