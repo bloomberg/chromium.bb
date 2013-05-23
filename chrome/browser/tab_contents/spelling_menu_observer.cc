@@ -65,13 +65,13 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
   if (params.misspelled_word.empty())
     return;
 
-  bool useSpellingService = SpellingServiceClient::IsAvailable(
-      profile, SpellingServiceClient::SPELLCHECK);
-  bool useSuggestions = SpellingServiceClient::IsAvailable(
-      profile, SpellingServiceClient::SUGGEST);
   suggestions_ = params.dictionary_suggestions;
+  misspelled_word_ = params.misspelled_word;
 
-  if (!suggestions_.empty() || (useSuggestions && !useSpellingService))
+  bool use_suggestions = SpellingServiceClient::IsAvailable(
+      profile, SpellingServiceClient::SUGGEST);
+
+  if (!suggestions_.empty() || use_suggestions)
     proxy_->AddSeparator();
 
   // Append Dictionary spell check suggestions.
@@ -82,14 +82,38 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
                         params.dictionary_suggestions[i]);
   }
 
-  // Append a placeholder item for the suggestion from the Spelling serivce and
-  // send a request to the service if we can retrieve suggestions from it.
-  // Also, see if we can use the spelling service to get an ideal suggestion.
-  // Otherwise, we'll fall back to the set of suggestions.
-  if (useSuggestions || useSpellingService) {
-    // Initialize variables used in OnTextCheckComplete(). We copy the input
-    // text to the result text so we can replace its misspelled regions with
-    // suggestions.
+  // The service types |SpellingServiceClient::SPELLCHECK| and
+  // |SpellingServiceClient::SUGGEST| are mutually exclusive. Only one is
+  // available at at time.
+  //
+  // When |SpellingServiceClient::SPELLCHECK| is available, the contextual
+  // suggestions from |SpellingServiceClient| are already stored in
+  // |params.dictionary_suggestions|.  |SpellingMenuObserver| places these
+  // suggestions in the slots |IDC_SPELLCHECK_SUGGESTION_[0-LAST]|. If
+  // |SpellingMenuObserver| queried |SpellingServiceClient| again, then quality
+  // of suggestions would be reduced by lack of context around the misspelled
+  // word.
+  //
+  // When |SpellingServiceClient::SUGGEST| is available,
+  // |params.dictionary_suggestions| contains suggestions only from Hunspell
+  // dictionary. |SpellingMenuObserver| queries |SpellingServiceClient| with the
+  // misspelled word without the surrounding context. Spellcheck suggestions
+  // from |SpellingServiceClient::SUGGEST| are not available until
+  // |SpellingServiceClient| responds to the query. While |SpellingMenuObserver|
+  // waits for |SpellingServiceClient|, it shows a placeholder text "Loading
+  // suggestion..." in the |IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION| slot. After
+  // |SpellingServiceClient| responds to the query, |SpellingMenuObserver|
+  // replaces the placeholder text with either the spelling suggestion or the
+  // message "No more suggestions from Google." The "No more suggestions"
+  // message is there when |SpellingServiceClient| returned the same suggestion
+  // as Hunspell.
+  if (use_suggestions) {
+    // Append a placeholder item for the suggestion from the Spelling service
+    // and send a request to the service if we can retrieve suggestions from it.
+    // Also, see if we can use the spelling service to get an ideal suggestion.
+    // Otherwise, we'll fall back to the set of suggestions.  Initialize
+    // variables used in OnTextCheckComplete(). We copy the input text to the
+    // result text so we can replace its misspelled regions with suggestions.
     succeeded_ = false;
     result_ = params.misspelled_word;
 
@@ -98,21 +122,16 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
     // item now since Chrome will call IsCommandIdEnabled() and disable it.)
     loading_message_ =
         l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_CHECKING);
-    if (!useSpellingService) {
-      proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION,
-                          loading_message_);
-    }
+    proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION,
+                        loading_message_);
     // Invoke a JSON-RPC call to the Spelling service in the background so we
     // can update the placeholder item when we receive its response. It also
     // starts the animation timer so we can show animation until we receive
     // it.
-    SpellingServiceClient::ServiceType type = SpellingServiceClient::SUGGEST;
-    if (useSpellingService)
-      type = SpellingServiceClient::SPELLCHECK;
     bool result = client_->RequestTextCheck(
-        profile, type, params.misspelled_word,
+        profile, SpellingServiceClient::SUGGEST, params.misspelled_word,
         base::Bind(&SpellingMenuObserver::OnTextCheckComplete,
-                   base::Unretained(this), type));
+                   base::Unretained(this), SpellingServiceClient::SUGGEST));
     if (result) {
       loading_frame_ = 0;
       animation_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
@@ -120,7 +139,15 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
     }
   }
 
-  if (!params.dictionary_suggestions.empty()) {
+  if (params.dictionary_suggestions.empty()) {
+    proxy_->AddMenuItem(
+        IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS,
+        l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS));
+    bool use_spelling_service = SpellingServiceClient::IsAvailable(
+        profile, SpellingServiceClient::SPELLCHECK);
+    if (use_suggestions || use_spelling_service)
+      proxy_->AddSeparator();
+  } else {
     proxy_->AddSeparator();
 
     // |spellcheck_service| can be null when the suggested word is
@@ -133,14 +160,6 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
 
   // If word is misspelled, give option for "Add to dictionary" and a check item
   // "Ask Google for suggestions".
-  if (params.dictionary_suggestions.empty()) {
-    proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS,
-        l10n_util::GetStringUTF16(
-            IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS));
-    if (useSuggestions || useSpellingService)
-      proxy_->AddSeparator();
-  }
-  misspelled_word_ = params.misspelled_word;
   proxy_->AddMenuItem(IDC_SPELLCHECK_ADD_TO_DICTIONARY,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY));
 
