@@ -1385,7 +1385,7 @@ END
         $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($attribute->signature) . "()))\n        return v8::Handle<v8::Value>(v8Null(info.GetIsolate()));\n\n";
     }
 
-    my $useExceptions = 1 if $attribute->signature->extendedAttributes->{"GetterRaisesException"};
+    my $useExceptions = 1 if $attribute->signature->extendedAttributes->{"GetterRaisesException"} ||  $attribute->signature->extendedAttributes->{"RaisesException"};
     my $isNullable = $attribute->signature->isNullable;
     if ($useExceptions) {
         AddToImplIncludes("core/dom/ExceptionCode.h");
@@ -1810,7 +1810,7 @@ END
 
     $code .= GenerateCustomElementInvocationScopeIfNeeded($attribute->signature->extendedAttributes);
 
-    my $useExceptions = 1 if $attribute->signature->extendedAttributes->{"SetterRaisesException"};
+    my $useExceptions = 1 if $attribute->signature->extendedAttributes->{"SetterRaisesException"} ||  $attribute->signature->extendedAttributes->{"RaisesException"};
 
     if ($useExceptions) {
         AddToImplIncludes("core/dom/ExceptionCode.h");

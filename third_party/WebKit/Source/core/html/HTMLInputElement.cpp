@@ -562,6 +562,78 @@ bool HTMLInputElement::canHaveSelection() const
     return isTextField();
 }
 
+int HTMLInputElement::selectionStartForBinding(ExceptionCode& ec) const
+{
+    if (!canHaveSelection()) {
+        ec = INVALID_STATE_ERR;
+        return 0;
+    }
+    return HTMLTextFormControlElement::selectionStart();
+}
+
+int HTMLInputElement::selectionEndForBinding(ExceptionCode& ec) const
+{
+    if (!canHaveSelection()) {
+        ec = INVALID_STATE_ERR;
+        return 0;
+    }
+    return HTMLTextFormControlElement::selectionEnd();
+}
+
+String HTMLInputElement::selectionDirectionForBinding(ExceptionCode& ec) const
+{
+    if (!canHaveSelection()) {
+        ec = INVALID_STATE_ERR;
+        return String();
+    }
+    return HTMLTextFormControlElement::selectionDirection();
+}
+
+void HTMLInputElement::setSelectionStartForBinding(int start, ExceptionCode& ec)
+{
+    if (!canHaveSelection()) {
+        ec = INVALID_STATE_ERR;
+        return;
+    }
+    HTMLTextFormControlElement::setSelectionStart(start);
+}
+
+void HTMLInputElement::setSelectionEndForBinding(int end, ExceptionCode& ec)
+{
+    if (!canHaveSelection()) {
+        ec = INVALID_STATE_ERR;
+        return;
+    }
+    HTMLTextFormControlElement::setSelectionEnd(end);
+}
+
+void HTMLInputElement::setSelectionDirectionForBinding(const String& direction, ExceptionCode& ec)
+{
+    if (!canHaveSelection()) {
+        ec = INVALID_STATE_ERR;
+        return;
+    }
+    HTMLTextFormControlElement::setSelectionDirection(direction);
+}
+
+void HTMLInputElement::setSelectionRangeForBinding(int start, int end, ExceptionCode& ec)
+{
+    if (!canHaveSelection()) {
+        ec = INVALID_STATE_ERR;
+        return;
+    }
+    HTMLTextFormControlElement::setSelectionRange(start, end);
+}
+
+void HTMLInputElement::setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionCode& ec)
+{
+    if (!canHaveSelection()) {
+        ec = INVALID_STATE_ERR;
+        return;
+    }
+    HTMLTextFormControlElement::setSelectionRange(start, end, direction);
+}
+
 void HTMLInputElement::accessKeyAction(bool sendMouseEvents)
 {
     m_inputType->accessKeyAction(sendMouseEvents);

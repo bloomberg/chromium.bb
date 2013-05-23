@@ -181,7 +181,14 @@ public:
 
     void setValueFromRenderer(const String&);
 
-    bool canHaveSelection() const;
+    int selectionStartForBinding(ExceptionCode&) const;
+    int selectionEndForBinding(ExceptionCode&) const;
+    String selectionDirectionForBinding(ExceptionCode&) const;
+    void setSelectionStartForBinding(int, ExceptionCode&);
+    void setSelectionEndForBinding(int, ExceptionCode&);
+    void setSelectionDirectionForBinding(const String&, ExceptionCode&);
+    void setSelectionRangeForBinding(int start, int end, ExceptionCode&);
+    void setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionCode&);
 
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
@@ -381,6 +388,8 @@ private:
     void resetListAttributeTargetObserver();
     void parseMaxLengthAttribute(const AtomicString&);
     void updateValueIfNeeded();
+
+    bool canHaveSelection() const;
 
     // Returns null if this isn't associated with any radio button group.
     CheckedRadioButtons* checkedRadioButtons() const;
