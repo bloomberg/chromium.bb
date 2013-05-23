@@ -40,7 +40,7 @@ class CloseResultWaiter {
     CHECK(!waiting_for_result_);
     while (!have_result_) {
       waiting_for_result_ = true;
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
       waiting_for_result_ = false;
     }
     return result_;
@@ -50,7 +50,7 @@ class CloseResultWaiter {
     result_ = result;
     have_result_ = true;
     if (waiting_for_result_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
  private:
@@ -172,7 +172,7 @@ int MockHttpStream::ReadResponseBody(IOBuffer* buf,
     user_buf_ = buf;
     buf_len_ = buf_len;
     callback_ = callback;
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&MockHttpStream::CompleteRead, weak_factory_.GetWeakPtr()));
     return ERR_IO_PENDING;

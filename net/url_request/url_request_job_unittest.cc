@@ -51,7 +51,7 @@ TEST(URLRequestJob, TransactionNotifiedWhenDone) {
   req.set_method("GET");
   req.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(network_layer.done_reading_called());
 
@@ -72,7 +72,7 @@ TEST(URLRequestJob, SyncTransactionNotifiedWhenDone) {
   req.set_method("GET");
   req.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(network_layer.done_reading_called());
 

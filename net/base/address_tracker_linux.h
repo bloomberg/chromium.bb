@@ -28,8 +28,8 @@ namespace internal {
 
 // Keeps track of network interface addresses using rtnetlink. Used by
 // NetworkChangeNotifier to provide signals to registered IPAddressObservers.
-class NET_EXPORT_PRIVATE AddressTrackerLinux
-    : public MessageLoopForIO::Watcher {
+class NET_EXPORT_PRIVATE AddressTrackerLinux :
+    public base::MessageLoopForIO::Watcher {
  public:
   typedef std::map<IPAddressNumber, struct ifaddrmsg> AddressMap;
 
@@ -79,7 +79,7 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux
   base::Closure link_callback_;
 
   int netlink_fd_;
-  MessageLoopForIO::FileDescriptorWatcher watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher watcher_;
 
   mutable base::Lock address_map_lock_;
   AddressMap address_map_;

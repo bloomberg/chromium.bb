@@ -22,10 +22,9 @@ URLRequestSimpleJob::URLRequestSimpleJob(
 void URLRequestSimpleJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&URLRequestSimpleJob::StartAsync,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&URLRequestSimpleJob::StartAsync, weak_factory_.GetWeakPtr()));
 }
 
 bool URLRequestSimpleJob::GetMimeType(std::string* mime_type) const {

@@ -212,8 +212,8 @@ void StreamListenSocket::WatchSocket(WaitState state) {
   watcher_.StartWatching(socket_event_, this);
 #elif defined(OS_POSIX)
   // Implicitly calls StartWatchingFileDescriptor().
-  MessageLoopForIO::current()->WatchFileDescriptor(
-      socket_, true, MessageLoopForIO::WATCH_READ, &watcher_, this);
+  base::MessageLoopForIO::current()->WatchFileDescriptor(
+      socket_, true, base::MessageLoopForIO::WATCH_READ, &watcher_, this);
   wait_state_ = state;
 #endif
 }

@@ -142,7 +142,7 @@ void QuicClientSession::StartReading() {
   // Data was read, process it.
   // Schedule the work through the message loop to avoid recursive
   // callbacks.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&QuicClientSession::OnReadComplete,
                  weak_factory_.GetWeakPtr(), rv));

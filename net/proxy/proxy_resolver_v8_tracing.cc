@@ -134,7 +134,7 @@ class ProxyResolverV8Tracing::Job
   void ReleaseCallback();
 
   ProxyResolverV8* v8_resolver();
-  MessageLoop* worker_loop();
+  base::MessageLoop* worker_loop();
   HostResolver* host_resolver();
   ProxyResolverErrorObserver* error_observer();
   NetLog* net_log();
@@ -441,7 +441,7 @@ ProxyResolverV8Tracing::Job::~Job() {
 }
 
 void ProxyResolverV8Tracing::Job::CheckIsOnWorkerThread() const {
-  DCHECK_EQ(MessageLoop::current(), parent_->thread_->message_loop());
+  DCHECK_EQ(base::MessageLoop::current(), parent_->thread_->message_loop());
 }
 
 void ProxyResolverV8Tracing::Job::CheckIsOnOriginThread() const {

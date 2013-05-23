@@ -147,7 +147,7 @@ void URLRequestTestJob::SetPriority(RequestPriority priority) {
 void URLRequestTestJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&URLRequestTestJob::StartAsync,
                             weak_factory_.GetWeakPtr()));
 }
@@ -296,7 +296,7 @@ bool URLRequestTestJob::NextReadAsync() {
 
 void URLRequestTestJob::AdvanceJob() {
   if (auto_advance_) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&URLRequestTestJob::ProcessNextOperation,
                               weak_factory_.GetWeakPtr()));
     return;

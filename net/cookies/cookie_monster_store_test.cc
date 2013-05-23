@@ -41,9 +41,10 @@ void MockPersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
     out_cookies = load_result_;
     loaded_ = true;
   }
-  MessageLoop::current()->PostTask(FROM_HERE,
-    base::Bind(&LoadedCallbackTask::Run,
-               new LoadedCallbackTask(loaded_callback, out_cookies)));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&LoadedCallbackTask::Run,
+                 new LoadedCallbackTask(loaded_callback, out_cookies)));
 }
 
 void MockPersistentCookieStore::LoadCookiesForKey(
@@ -52,10 +53,11 @@ void MockPersistentCookieStore::LoadCookiesForKey(
   if (!loaded_) {
     Load(loaded_callback);
   } else {
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
         base::Bind(&LoadedCallbackTask::Run,
-            new LoadedCallbackTask(loaded_callback,
-                std::vector<CanonicalCookie*>())));
+                   new LoadedCallbackTask(loaded_callback,
+                                          std::vector<CanonicalCookie*>())));
   }
 }
 
@@ -77,7 +79,7 @@ void MockPersistentCookieStore::DeleteCookie(const CanonicalCookie& cookie) {
 
 void MockPersistentCookieStore::Flush(const base::Closure& callback) {
   if (!callback.is_null())
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
+    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void MockPersistentCookieStore::SetForceKeepSessionState() {
@@ -144,9 +146,10 @@ void MockSimplePersistentCookieStore::Load(
        it != cookies_.end(); it++)
     out_cookies.push_back(new CanonicalCookie(it->second));
 
-  MessageLoop::current()->PostTask(FROM_HERE,
-    base::Bind(&LoadedCallbackTask::Run,
-               new LoadedCallbackTask(loaded_callback, out_cookies)));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&LoadedCallbackTask::Run,
+                 new LoadedCallbackTask(loaded_callback, out_cookies)));
   loaded_ = true;
 }
 
@@ -155,10 +158,11 @@ void MockSimplePersistentCookieStore::LoadCookiesForKey(const std::string& key,
   if (!loaded_) {
     Load(loaded_callback);
   } else {
-    MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&LoadedCallbackTask::Run,
-        new LoadedCallbackTask(loaded_callback,
-          std::vector<CanonicalCookie*>())));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&LoadedCallbackTask::Run,
+                   new LoadedCallbackTask(loaded_callback,
+                                          std::vector<CanonicalCookie*>())));
   }
 }
 
@@ -185,7 +189,7 @@ void MockSimplePersistentCookieStore::DeleteCookie(
 
 void MockSimplePersistentCookieStore::Flush(const base::Closure& callback) {
   if (!callback.is_null())
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
+    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void MockSimplePersistentCookieStore::SetForceKeepSessionState() {

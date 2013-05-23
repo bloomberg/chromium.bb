@@ -20,8 +20,8 @@
 DiskCacheTest::DiskCacheTest() {
   CHECK(temp_dir_.CreateUniqueTempDir());
   cache_path_ = temp_dir_.path();
-  if (!MessageLoop::current())
-    message_loop_.reset(new MessageLoopForIO());
+  if (!base::MessageLoop::current())
+    message_loop_.reset(new base::MessageLoopForIO());
 }
 
 DiskCacheTest::~DiskCacheTest() {
@@ -256,7 +256,7 @@ void DiskCacheTestWithCache::InitDiskCache() {
 
   if (!cache_thread_.IsRunning()) {
     ASSERT_TRUE(cache_thread_.StartWithOptions(
-                    base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+        base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
   }
   ASSERT_TRUE(cache_thread_.message_loop() != NULL);
 

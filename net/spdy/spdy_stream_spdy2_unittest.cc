@@ -69,7 +69,7 @@ class SpdyStreamSpdy2Test : public testing::Test {
   }
 
   virtual void TearDown() {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   SpdyTestUtil spdy_util_;

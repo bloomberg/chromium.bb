@@ -93,13 +93,13 @@ class BaseNetworkChangeNotifierAndroidTest : public testing::Test {
   void SetOnline() {
     delegate_.SetOnline();
     // Note that this is needed because ObserverListThreadSafe uses PostTask().
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void SetOffline() {
     delegate_.SetOffline();
     // See comment above.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   NetworkChangeNotifierDelegateAndroid delegate_;

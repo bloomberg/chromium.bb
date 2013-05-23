@@ -197,7 +197,7 @@ void HttpStreamFactoryImpl::Job::Resume(Job* job) {
   // We know we're blocked if the next_state_ is STATE_WAIT_FOR_JOB_COMPLETE.
   // Unblock |this|.
   if (next_state_ == STATE_WAIT_FOR_JOB_COMPLETE) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&HttpStreamFactoryImpl::Job::OnIOComplete,
                    ptr_factory_.GetWeakPtr(), OK));
@@ -406,7 +406,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
   DCHECK(result == OK || waiting_job_ == NULL);
 
   if (IsPreconnecting()) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(
             &HttpStreamFactoryImpl::Job::OnPreconnectsComplete,
@@ -419,7 +419,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
     GetSSLInfo();
 
     next_state_ = STATE_WAITING_USER_ACTION;
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(
             &HttpStreamFactoryImpl::Job::OnCertificateErrorCallback,
@@ -441,7 +441,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
             proxy_socket->GetConnectResponseInfo();
 
         next_state_ = STATE_WAITING_USER_ACTION;
-        MessageLoop::current()->PostTask(
+        base::MessageLoop::current()->PostTask(
             FROM_HERE,
             base::Bind(
                 &HttpStreamFactoryImpl::Job::OnNeedsProxyAuthCallback,
@@ -452,7 +452,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
       return ERR_IO_PENDING;
 
     case ERR_SSL_CLIENT_AUTH_CERT_NEEDED:
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(
               &HttpStreamFactoryImpl::Job::OnNeedsClientAuthCallback,
@@ -468,7 +468,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
 
         ProxyClientSocket* proxy_socket =
             static_cast<ProxyClientSocket*>(connection_->socket());
-        MessageLoop::current()->PostTask(
+        base::MessageLoop::current()->PostTask(
             FROM_HERE,
             base::Bind(
                 &HttpStreamFactoryImpl::Job::OnHttpsProxyTunnelResponseCallback,
@@ -481,13 +481,13 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
     case OK:
       next_state_ = STATE_DONE;
       if (new_spdy_session_) {
-        MessageLoop::current()->PostTask(
+        base::MessageLoop::current()->PostTask(
             FROM_HERE,
             base::Bind(
                 &HttpStreamFactoryImpl::Job::OnSpdySessionReadyCallback,
                 ptr_factory_.GetWeakPtr()));
       } else {
-        MessageLoop::current()->PostTask(
+        base::MessageLoop::current()->PostTask(
             FROM_HERE,
             base::Bind(
                 &HttpStreamFactoryImpl::Job::OnStreamReadyCallback,
@@ -496,7 +496,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
       return ERR_IO_PENDING;
 
     default:
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(
               &HttpStreamFactoryImpl::Job::OnStreamFailedCallback,

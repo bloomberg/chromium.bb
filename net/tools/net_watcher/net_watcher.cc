@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
   // Just make the main message loop the network loop.
-  MessageLoopForIO network_loop;
+  base::MessageLoopForIO network_loop;
 
   NetWatcher net_watcher;
 

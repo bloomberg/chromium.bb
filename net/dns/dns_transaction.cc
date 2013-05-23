@@ -541,7 +541,7 @@ class DnsTransactionImpl : public DnsTransaction,
       AttemptResult result = ProcessAttemptResult(StartQuery());
       if (result.rv == OK) {
         // DnsTransaction must never succeed synchronously.
-        MessageLoop::current()->PostTask(
+        base::MessageLoop::current()->PostTask(
             FROM_HERE,
             base::Bind(&DnsTransactionImpl::DoCallback, AsWeakPtr(), result));
         return ERR_IO_PENDING;

@@ -319,7 +319,7 @@ int LoadOperations(const base::FilePath& path, RankCrashes action,
 
 // Main function on the child process.
 int SlaveCode(const base::FilePath& path, RankCrashes action) {
-  MessageLoopForIO message_loop;
+  base::MessageLoopForIO message_loop;
 
   base::FilePath full_path;
   if (!CreateTargetFolder(path, action, &full_path)) {
@@ -329,7 +329,7 @@ int SlaveCode(const base::FilePath& path, RankCrashes action) {
 
   base::Thread cache_thread("CacheThread");
   if (!cache_thread.StartWithOptions(
-          base::Thread::Options(MessageLoop::TYPE_IO, 0)))
+          base::Thread::Options(base::MessageLoop::TYPE_IO, 0)))
     return GENERIC;
 
   if (action <= disk_cache::INSERT_ONE_3)

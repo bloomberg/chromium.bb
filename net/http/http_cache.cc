@@ -966,11 +966,9 @@ void HttpCache::ProcessPendingQueue(ActiveEntry* entry) {
     return;
   entry->will_process_pending_queue = true;
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&HttpCache::OnProcessPendingQueue,
-                 AsWeakPtr(),
-                 entry));
+      base::Bind(&HttpCache::OnProcessPendingQueue, AsWeakPtr(), entry));
 }
 
 void HttpCache::OnProcessPendingQueue(ActiveEntry* entry) {
@@ -1126,10 +1124,10 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
     // go away from the callback.
     pending_op->writer = pending_item;
 
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&HttpCache::OnBackendCreated, AsWeakPtr(),
-                   result, pending_op));
+        base::Bind(
+            &HttpCache::OnBackendCreated, AsWeakPtr(), result, pending_op));
   } else {
     building_backend_ = false;
     DeletePendingOp(pending_op);

@@ -80,7 +80,7 @@ class SpdyHttpStreamSpdy3Test : public testing::Test {
 
  protected:
   virtual void TearDown() OVERRIDE {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   // Initializes the session using DeterministicSocketData.  It's advisable
@@ -392,7 +392,7 @@ void SpdyHttpStreamSpdy3Test::RunSendChunkedPostTest(
   // This triggers reading the body and the EOF, causing the session to shut
   // down.
   data()->CompleteRead();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.

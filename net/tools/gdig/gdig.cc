@@ -253,12 +253,12 @@ GDig::Result GDig::Main(int argc, const char* argv[]) {
 #endif
 
   base::AtExitManager exit_manager;
-  MessageLoopForIO loop;
+  base::MessageLoopForIO loop;
 
   result_ = RESULT_PENDING;
   Start();
   if (result_ == RESULT_PENDING)
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
   // Destroy it while MessageLoopForIO is alive.
   dns_config_service_.reset();
@@ -374,18 +374,16 @@ void GDig::Start() {
                                                base::Unretained(this)));
     timeout_closure_.Reset(base::Bind(&GDig::OnTimeout,
                                       base::Unretained(this)));
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        timeout_closure_.callback(),
-        config_timeout_);
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, timeout_closure_.callback(), config_timeout_);
   }
 }
 
 void GDig::Finish(Result result) {
   DCHECK_NE(RESULT_PENDING, result);
   result_ = result;
-  if (MessageLoop::current())
-    MessageLoop::current()->Quit();
+  if (base::MessageLoop::current())
+    base::MessageLoop::current()->Quit();
 }
 
 void GDig::OnDnsConfig(const DnsConfig& dns_config_const) {
@@ -433,10 +431,10 @@ void GDig::ReplayNextEntry() {
     const ReplayLogEntry& entry = replay_log_[replay_log_index_];
     if (time_since_start < entry.start_time) {
       // Delay call to next time and return.
-      MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&GDig::ReplayNextEntry, base::Unretained(this)),
-        entry.start_time - time_since_start);
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&GDig::ReplayNextEntry, base::Unretained(this)),
+          entry.start_time - time_since_start);
       return;
     }
 

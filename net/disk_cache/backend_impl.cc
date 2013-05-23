@@ -1000,8 +1000,8 @@ void BackendImpl::CriticalError(int error) {
   disabled_ = true;
 
   if (!num_refs_)
-    MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&BackendImpl::RestartCache, GetWeakPtr(), true));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&BackendImpl::RestartCache, GetWeakPtr(), true));
 }
 
 void BackendImpl::ReportError(int error) {
@@ -1779,8 +1779,8 @@ void BackendImpl::DecreaseNumRefs() {
   num_refs_--;
 
   if (!num_refs_ && disabled_)
-    MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&BackendImpl::RestartCache, GetWeakPtr(), true));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&BackendImpl::RestartCache, GetWeakPtr(), true));
 }
 
 void BackendImpl::IncreaseNumEntries() {

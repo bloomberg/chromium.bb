@@ -2425,7 +2425,7 @@ void HttpCache::Transaction::OnIOComplete(int result) {
 
 void HttpCache::Transaction::ScheduleDelayedLoop(base::TimeDelta delay,
                                                  int result) {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&HttpCache::Transaction::RunDelayedLoop,
                  weak_factory_.GetWeakPtr(),

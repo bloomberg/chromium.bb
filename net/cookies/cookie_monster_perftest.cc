@@ -30,10 +30,10 @@ int CountInString(const std::string& str, char c) {
 
 class CookieMonsterTest : public testing::Test {
  public:
-  CookieMonsterTest() : message_loop_(new MessageLoopForIO()) {}
+  CookieMonsterTest() : message_loop_(new base::MessageLoopForIO()) {}
 
  private:
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
 };
 
 class BaseCallback {
@@ -47,7 +47,7 @@ class BaseCallback {
     // Therefore, callbacks will actually always complete synchronously. If the
     // tests get more advanced we need to add other means of signaling
     // completion.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_TRUE(has_run_);
     has_run_ = false;
   }
@@ -145,7 +145,7 @@ TEST_F(CookieMonsterTest, TestAddCookiesOnSingleHost) {
 
   PerfTimeLogger timer3("Cookie_monster_deleteall_single_host");
   cm->DeleteAllAsync(CookieMonster::DeleteCallback());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   timer3.Done();
 }
 
@@ -178,7 +178,7 @@ TEST_F(CookieMonsterTest, TestAddCookieOnManyHosts) {
 
   PerfTimeLogger timer3("Cookie_monster_deleteall_many_hosts");
   cm->DeleteAllAsync(CookieMonster::DeleteCallback());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   timer3.Done();
 }
 

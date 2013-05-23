@@ -65,7 +65,7 @@ void NetworkTimeNotifier::UpdateNetworkTime(const base::Time& network_time,
       base::TimeDelta::FromMilliseconds(kTicksResolutionMs);
 
   for (size_t i = 0; i < observers_.size(); ++i) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(observers_[i],
                    network_time_,
@@ -79,7 +79,7 @@ void NetworkTimeNotifier::AddObserver(
   DCHECK(thread_checker_.CalledOnValidThread());
   observers_.push_back(observer_callback);
   if (!network_time_.is_null()) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(observer_callback,
                    network_time_,

@@ -48,7 +48,7 @@ class NET_EXPORT StreamListenSocket
 #if defined(OS_WIN)
       public base::win::ObjectWatcher::Delegate {
 #elif defined(OS_POSIX)
-      public MessageLoopForIO::Watcher {
+      public base::MessageLoopForIO::Watcher {
 #endif
 
  public:
@@ -123,7 +123,7 @@ class NET_EXPORT StreamListenSocket
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
   WaitState wait_state_;
   // The socket's libevent wrapper.
-  MessageLoopForIO::FileDescriptorWatcher watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher watcher_;
 #endif
 
   // NOTE: This is for unit test use only!

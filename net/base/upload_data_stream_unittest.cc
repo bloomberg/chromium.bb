@@ -89,8 +89,8 @@ class MockUploadElementReader : public UploadElementReader {
 
  private:
   void OnInit(const CompletionCallback& callback) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback, init_result_));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, init_result_));
   }
 
   int OnRead(IOBuffer* buf,
@@ -101,8 +101,8 @@ class MockUploadElementReader : public UploadElementReader {
     if (IsInMemory()) {
       return read_result_;
     } else {
-      MessageLoop::current()->PostTask(FROM_HERE,
-                                       base::Bind(callback, read_result_));
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(callback, read_result_));
       return ERR_IO_PENDING;
     }
   }
@@ -490,7 +490,7 @@ TEST_F(UploadDataStreamTest, ReadAsync) {
   TestCompletionCallback read_callback1;
   EXPECT_EQ(static_cast<int>(kTestDataSize),
             stream.Read(buf, kTestDataSize, read_callback1.callback()));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(read_callback1.have_result());
 
   // Consume the second element.

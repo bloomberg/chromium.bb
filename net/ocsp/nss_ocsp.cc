@@ -59,7 +59,7 @@ class OCSPIOLoop {
   void StartUsing() {
     base::AutoLock autolock(lock_);
     used_ = true;
-    io_loop_ = MessageLoopForIO::current();
+    io_loop_ = base::MessageLoopForIO::current();
     DCHECK(io_loop_);
   }
 
@@ -85,7 +85,7 @@ class OCSPIOLoop {
   void ReuseForTesting() {
     {
       base::AutoLock autolock(lock_);
-      DCHECK(MessageLoopForIO::current());
+      DCHECK(base::MessageLoopForIO::current());
       thread_checker_.DetachFromThread();
       thread_checker_.CalledOnValidThread();
       shutdown_ = false;
@@ -107,7 +107,7 @@ class OCSPIOLoop {
   std::set<OCSPRequestSession*> requests_;  // Protected by |lock_|.
   bool used_;  // Protected by |lock_|.
   // This should not be modified after |used_|.
-  MessageLoopForIO* io_loop_;  // Protected by |lock_|.
+  base::MessageLoopForIO* io_loop_;  // Protected by |lock_|.
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(OCSPIOLoop);
@@ -282,7 +282,7 @@ class OCSPRequestSession
                                   const GURL& new_url,
                                   bool* defer_redirect) OVERRIDE {
     DCHECK_EQ(request, request_);
-    DCHECK_EQ(MessageLoopForIO::current(), io_loop_);
+    DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 
     if (!new_url.SchemeIs("http")) {
       // Prevent redirects to non-HTTP schemes, including HTTPS. This matches
@@ -293,7 +293,7 @@ class OCSPRequestSession
 
   virtual void OnResponseStarted(URLRequest* request) OVERRIDE {
     DCHECK_EQ(request, request_);
-    DCHECK_EQ(MessageLoopForIO::current(), io_loop_);
+    DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 
     int bytes_read = 0;
     if (request->status().is_success()) {
@@ -308,7 +308,7 @@ class OCSPRequestSession
   virtual void OnReadCompleted(URLRequest* request,
                                int bytes_read) OVERRIDE {
     DCHECK_EQ(request, request_);
-    DCHECK_EQ(MessageLoopForIO::current(), io_loop_);
+    DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 
     do {
       if (!request_->status().is_success() || bytes_read <= 0)
@@ -336,7 +336,7 @@ class OCSPRequestSession
     {
       base::AutoLock autolock(lock_);
       if (io_loop_)
-        DCHECK_EQ(MessageLoopForIO::current(), io_loop_);
+        DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
     }
 #endif
     if (request_) {
@@ -389,7 +389,7 @@ class OCSPRequestSession
     {
       base::AutoLock autolock(lock_);
       DCHECK(!io_loop_);
-      io_loop_ = MessageLoopForIO::current();
+      io_loop_ = base::MessageLoopForIO::current();
       g_ocsp_io_loop.Get().AddRequest(this);
     }
 
@@ -438,7 +438,7 @@ class OCSPRequestSession
   mutable base::Lock lock_;
   base::ConditionVariable cv_;
 
-  MessageLoop* io_loop_;          // Message loop of the IO thread
+  base::MessageLoop* io_loop_;  // Message loop of the IO thread
   bool finished_;
 
   DISALLOW_COPY_AND_ASSIGN(OCSPRequestSession);
@@ -536,7 +536,7 @@ void OCSPIOLoop::PostTaskToIOLoop(
 
 void OCSPIOLoop::EnsureIOLoop() {
   base::AutoLock autolock(lock_);
-  DCHECK_EQ(MessageLoopForIO::current(), io_loop_);
+  DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 }
 
 void OCSPIOLoop::AddRequest(OCSPRequestSession* request) {
@@ -940,7 +940,7 @@ char* GetAlternateOCSPAIAInfo(CERTCertificate *cert) {
 
 void SetMessageLoopForNSSHttpIO() {
   // Must have a MessageLoopForIO.
-  DCHECK(MessageLoopForIO::current());
+  DCHECK(base::MessageLoopForIO::current());
 
   bool used = g_ocsp_io_loop.Get().used();
 

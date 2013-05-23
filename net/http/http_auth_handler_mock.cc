@@ -59,10 +59,10 @@ int HttpAuthHandlerMock::ResolveCanonicalName(
       EXPECT_TRUE(callback_.is_null());
       rv = ERR_IO_PENDING;
       callback_ = callback;
-      MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(
-              &HttpAuthHandlerMock::OnResolveCanonicalName,
-              weak_factory_.GetWeakPtr()));
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&HttpAuthHandlerMock::OnResolveCanonicalName,
+                     weak_factory_.GetWeakPtr()));
       break;
     default:
       NOTREACHED();
@@ -118,10 +118,10 @@ int HttpAuthHandlerMock::GenerateAuthTokenImpl(
     EXPECT_TRUE(auth_token_ == NULL);
     callback_ = callback;
     auth_token_ = auth_token;
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(
-            &HttpAuthHandlerMock::OnGenerateAuthToken,
-            weak_factory_.GetWeakPtr()));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&HttpAuthHandlerMock::OnGenerateAuthToken,
+                   weak_factory_.GetWeakPtr()));
     return ERR_IO_PENDING;
   } else {
     if (generate_rv_ == OK)

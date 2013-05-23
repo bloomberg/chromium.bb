@@ -249,7 +249,7 @@ int ClientSocketPoolBaseHelper::RequestSocket(
     // re-entrancy issues if the socket pool is doing something else at the
     // time.
     if (group->IsStalledOnPoolMaxSockets(max_sockets_per_group_)) {
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(
               &ClientSocketPoolBaseHelper::TryToCloseSocketsInLayeredPools,
@@ -1093,7 +1093,7 @@ void ClientSocketPoolBaseHelper::InvokeUserCallbackLater(
     ClientSocketHandle* handle, const CompletionCallback& callback, int rv) {
   CHECK(!ContainsKey(pending_callback_map_, handle));
   pending_callback_map_[handle] = CallbackResultPair(callback, rv);
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ClientSocketPoolBaseHelper::InvokeUserCallback,
                  weak_factory_.GetWeakPtr(), handle));
@@ -1140,7 +1140,7 @@ void ClientSocketPoolBaseHelper::Group::StartBackupSocketTimer(
   if (weak_factory_.HasWeakPtrs())
     return;
 
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&Group::OnBackupSocketTimerFired, weak_factory_.GetWeakPtr(),
                  group_name, pool),

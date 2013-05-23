@@ -281,8 +281,9 @@ void MockDiskEntry::CallbackLater(const net::CompletionCallback& callback,
                                   int result) {
   if (ignore_callbacks_)
     return StoreAndDeliverCallbacks(true, this, callback, result);
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &MockDiskEntry::RunCallback, this, callback, result));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MockDiskEntry::RunCallback, this, callback, result));
 }
 
 void MockDiskEntry::RunCallback(
@@ -472,7 +473,7 @@ void MockDiskCache::ReleaseAll() {
 
 void MockDiskCache::CallbackLater(const net::CompletionCallback& callback,
                                   int result) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&CallbackForwader, callback, result));
 }
 

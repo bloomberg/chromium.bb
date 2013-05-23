@@ -74,7 +74,7 @@ class MockPipelineDelegate : public HttpPipelinedConnection::Delegate {
       HttpPipelinedConnection::Feedback feedback));
 };
 
-class SuddenCloseObserver : public MessageLoop::TaskObserver {
+class SuddenCloseObserver : public base::MessageLoop::TaskObserver {
  public:
   SuddenCloseObserver(HttpStream* stream, int close_before_task)
       : stream_(stream),
@@ -85,7 +85,7 @@ class SuddenCloseObserver : public MessageLoop::TaskObserver {
     ++current_task_;
     if (current_task_ == close_before_task_) {
       stream_->Close(false);
-      MessageLoop::current()->RemoveTaskObserver(this);
+      base::MessageLoop::current()->RemoveTaskObserver(this);
     }
   }
 
@@ -106,7 +106,7 @@ class HttpPipelinedConnectionImplTest : public testing::Test {
   }
 
   void TearDown() {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void Initialize(MockRead* reads, size_t reads_count,
@@ -744,7 +744,7 @@ TEST_F(HttpPipelinedConnectionImplTest, AbortWhileSendingSecondRequest) {
 
   data_->RunFor(1);
   EXPECT_LE(OK, ok_callback.WaitForResult());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   aborted_stream->Close(true);
   EXPECT_EQ(ERR_PIPELINE_EVICTION, evicted_callback.WaitForResult());
   evicted_stream->Close(true);
@@ -989,8 +989,8 @@ TEST_F(HttpPipelinedConnectionImplTest, CloseCalledBeforeReadCallback) {
   // 1. DoReadHeadersLoop, which will post:
   // 2. InvokeUserCallback
   SuddenCloseObserver observer(evicted_stream.get(), 2);
-  MessageLoop::current()->AddTaskObserver(&observer);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->AddTaskObserver(&observer);
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(evicted_callback.have_result());
 }
 
@@ -1141,7 +1141,7 @@ TEST_F(HttpPipelinedConnectionImplTest, CloseBeforeSendCallbackRuns) {
   close_stream.reset();
   close_callback.reset();
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(HttpPipelinedConnectionImplTest, CloseBeforeReadCallbackRuns) {
@@ -1175,7 +1175,7 @@ TEST_F(HttpPipelinedConnectionImplTest, CloseBeforeReadCallbackRuns) {
   close_stream.reset();
   close_callback.reset();
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(HttpPipelinedConnectionImplTest, AbortWhileSendQueued) {
@@ -1577,7 +1577,7 @@ TEST_F(HttpPipelinedConnectionImplTest, OnPipelineHasCapacity) {
                                     &response, callback_.callback()));
 
   EXPECT_CALL(delegate_, OnPipelineHasCapacity(pipeline_.get())).Times(0);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   stream->Close(false);
   EXPECT_CALL(delegate_, OnPipelineHasCapacity(pipeline_.get())).Times(1);
@@ -1594,7 +1594,7 @@ TEST_F(HttpPipelinedConnectionImplTest, OnPipelineHasCapacityWithoutSend) {
   scoped_ptr<HttpStream> stream(NewTestStream("ok.html"));
 
   EXPECT_CALL(delegate_, OnPipelineHasCapacity(pipeline_.get())).Times(1);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   stream->Close(false);
   EXPECT_CALL(delegate_, OnPipelineHasCapacity(pipeline_.get())).Times(1);

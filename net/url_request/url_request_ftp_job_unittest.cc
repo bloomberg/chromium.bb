@@ -577,7 +577,7 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotFollowRedirects) {
   url_request.Start();
   EXPECT_TRUE(url_request.is_pending());
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(url_request.is_pending());
   EXPECT_EQ(0, request_delegate.response_started_count());

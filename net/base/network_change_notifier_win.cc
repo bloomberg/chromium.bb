@@ -61,7 +61,7 @@ NetworkChangeNotifierWin::NetworkChangeNotifierWin()
   memset(&addr_overlapped_, 0, sizeof addr_overlapped_);
   addr_overlapped_.hEvent = WSACreateEvent();
   dns_config_service_thread_->StartWithOptions(
-      base::Thread::Options(MessageLoop::TYPE_IO, 0));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 }
 
 NetworkChangeNotifierWin::~NetworkChangeNotifierWin() {
@@ -253,7 +253,7 @@ void NetworkChangeNotifierWin::WatchForAddressChange() {
                                  sequential_failures_);
     }
 
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&NetworkChangeNotifierWin::WatchForAddressChange,
                    weak_factory_.GetWeakPtr()),

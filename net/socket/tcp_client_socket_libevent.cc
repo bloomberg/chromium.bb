@@ -321,9 +321,9 @@ int TCPClientSocketLibevent::DoConnect() {
 
   // Otherwise the connect() is going to complete asynchronously, so watch
   // for its completion.
-  if (!MessageLoopForIO::current()->WatchFileDescriptor(
-          socket_, true, MessageLoopForIO::WATCH_WRITE, &write_socket_watcher_,
-          &write_watcher_)) {
+  if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
+          socket_, true, base::MessageLoopForIO::WATCH_WRITE,
+          &write_socket_watcher_, &write_watcher_)) {
     connect_os_error_ = errno;
     DVLOG(1) << "WatchFileDescriptor failed: " << connect_os_error_;
     return MapSystemError(connect_os_error_);
@@ -461,8 +461,8 @@ int TCPClientSocketLibevent::Read(IOBuffer* buf,
     return net_error;
   }
 
-  if (!MessageLoopForIO::current()->WatchFileDescriptor(
-          socket_, true, MessageLoopForIO::WATCH_READ,
+  if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
+          socket_, true, base::MessageLoopForIO::WATCH_READ,
           &read_socket_watcher_, &read_watcher_)) {
     DVLOG(1) << "WatchFileDescriptor failed on read, errno " << errno;
     return MapSystemError(errno);
@@ -502,8 +502,8 @@ int TCPClientSocketLibevent::Write(IOBuffer* buf,
     return net_error;
   }
 
-  if (!MessageLoopForIO::current()->WatchFileDescriptor(
-          socket_, true, MessageLoopForIO::WATCH_WRITE,
+  if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
+          socket_, true, base::MessageLoopForIO::WATCH_WRITE,
           &write_socket_watcher_, &write_watcher_)) {
     DVLOG(1) << "WatchFileDescriptor failed on write, errno " << errno;
     return MapSystemError(errno);

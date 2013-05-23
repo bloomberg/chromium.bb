@@ -35,10 +35,10 @@ int main(int argc, char**argv) {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
 
   // Do work here.
-  MessageLoop loop;
+  base::MessageLoop loop;
   HttpServer server(std::string(),
                     80);  // TODO(mbelshe): make port configurable
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   if (parsed_command_line.HasSwitch("stats")) {
     // Dump the stats table.

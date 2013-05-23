@@ -231,7 +231,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
   }
 
   virtual bool Init(base::SingleThreadTaskRunner* glib_thread_task_runner,
-                    MessageLoopForIO* file_loop) OVERRIDE {
+                    base::MessageLoopForIO* file_loop) OVERRIDE {
     DCHECK(glib_thread_task_runner->BelongsToCurrentThread());
     DCHECK(!client_);
     DCHECK(!task_runner_);
@@ -559,7 +559,7 @@ class SettingGetterImplGSettings
   bool LoadAndCheckVersion(base::Environment* env);
 
   virtual bool Init(base::SingleThreadTaskRunner* glib_thread_task_runner,
-                    MessageLoopForIO* file_loop) OVERRIDE {
+                    base::MessageLoopForIO* file_loop) OVERRIDE {
     DCHECK(glib_thread_task_runner->BelongsToCurrentThread());
     DCHECK(!client_);
     DCHECK(!task_runner_);
@@ -917,7 +917,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   }
 
   virtual bool Init(base::SingleThreadTaskRunner* glib_thread_task_runner,
-                    MessageLoopForIO* file_loop) OVERRIDE {
+                    base::MessageLoopForIO* file_loop) OVERRIDE {
     // This has to be called on the UI thread (http://crbug.com/69057).
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     DCHECK(inotify_fd_ < 0);
@@ -952,7 +952,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   virtual bool SetUpNotifications(
       ProxyConfigServiceLinux::Delegate* delegate) OVERRIDE {
     DCHECK(inotify_fd_ >= 0);
-    DCHECK(MessageLoop::current() == file_loop_);
+    DCHECK(base::MessageLoop::current() == file_loop_);
     // We can't just watch the kioslaverc file directly, since KDE will write
     // a new copy of it and then rename it whenever settings are changed and
     // inotify watches inodes (so we'll be watching the old deleted file after
@@ -962,8 +962,11 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
                           IN_MODIFY | IN_MOVED_TO) < 0)
       return false;
     notify_delegate_ = delegate;
-    if (!file_loop_->WatchFileDescriptor(inotify_fd_, true,
-            MessageLoopForIO::WATCH_READ, &inotify_watcher_, this))
+    if (!file_loop_->WatchFileDescriptor(inotify_fd_,
+                                         true,
+                                         base::MessageLoopForIO::WATCH_READ,
+                                         &inotify_watcher_,
+                                         this))
       return false;
     // Simulate a change to avoid possibly losing updates before this point.
     OnChangeNotification();
@@ -977,7 +980,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   // Implement base::MessagePumpLibevent::Watcher.
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE {
     DCHECK_EQ(fd, inotify_fd_);
-    DCHECK(MessageLoop::current() == file_loop_);
+    DCHECK(base::MessageLoop::current() == file_loop_);
     OnChangeNotification();
   }
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {
@@ -1243,7 +1246,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
 
   // This is the callback from the debounce timer.
   void OnDebouncedNotification() {
-    DCHECK(MessageLoop::current() == file_loop_);
+    DCHECK(base::MessageLoop::current() == file_loop_);
     VLOG(1) << "inotify change notification for kioslaverc";
     UpdateCachedSettings();
     CHECK(notify_delegate_);
@@ -1256,7 +1259,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   // an event for kioslaverc is seen.
   void OnChangeNotification() {
     DCHECK_GE(inotify_fd_,  0);
-    DCHECK(MessageLoop::current() == file_loop_);
+    DCHECK(base::MessageLoop::current() == file_loop_);
     char event_buf[(sizeof(inotify_event) + NAME_MAX + 1) * 4];
     bool kioslaverc_touched = false;
     ssize_t r;
@@ -1329,7 +1332,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   // Message loop of the file thread, for reading kioslaverc. If NULL,
   // just read it directly (for testing). We also handle inotify events
   // on this thread.
-  MessageLoopForIO* file_loop_;
+  base::MessageLoopForIO* file_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingGetterImplKDE);
 };
@@ -1548,7 +1551,7 @@ ProxyConfigServiceLinux::Delegate::Delegate(
 void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
     base::SingleThreadTaskRunner* glib_thread_task_runner,
     base::SingleThreadTaskRunner* io_thread_task_runner,
-    MessageLoopForIO* file_loop) {
+    base::MessageLoopForIO* file_loop) {
   // We should be running on the default glib main loop thread right
   // now. gconf can only be accessed from this thread.
   DCHECK(glib_thread_task_runner->BelongsToCurrentThread());

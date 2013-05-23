@@ -32,12 +32,12 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
     file_list_.push_back(data.info);
     paths_.push_back(data.path);
     if (quit_loop_after_each_file_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   virtual void OnListDone(int error) OVERRIDE {
     error_ = error;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
     if (recursive_)
       CheckRecursiveSort();
     else
@@ -143,7 +143,7 @@ TEST_F(DirectoryListerTest, BigDirTest) {
   DirectoryLister lister(root_path(), &delegate);
   lister.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(OK, delegate.error());
 }
@@ -154,7 +154,7 @@ TEST_F(DirectoryListerTest, BigDirRecursiveTest) {
                          &delegate);
   lister.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(OK, delegate.error());
 }
@@ -164,13 +164,13 @@ TEST_F(DirectoryListerTest, CancelTest) {
   DirectoryLister lister(root_path(), &delegate);
   lister.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   int num_files = delegate.num_files();
 
   lister.Cancel();
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(num_files, delegate.num_files());
 }
@@ -185,7 +185,7 @@ TEST_F(DirectoryListerTest, EmptyDirTest) {
   DirectoryLister lister(tempDir.path(), &delegate);
   lister.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Contains only the parent directory ("..")
   EXPECT_EQ(1, delegate.num_files());

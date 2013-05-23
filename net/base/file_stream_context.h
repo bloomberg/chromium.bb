@@ -48,7 +48,7 @@ namespace net {
 class IOBuffer;
 
 #if defined(OS_WIN)
-class FileStream::Context : public MessageLoopForIO::IOHandler {
+class FileStream::Context : public base::MessageLoopForIO::IOHandler {
 #elif defined(OS_POSIX)
 class FileStream::Context {
 #endif
@@ -192,7 +192,7 @@ class FileStream::Context {
   void IOCompletionIsPending(const CompletionCallback& callback, IOBuffer* buf);
 
   // Implementation of MessageLoopForIO::IOHandler.
-  virtual void OnIOCompleted(MessageLoopForIO::IOContext* context,
+  virtual void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
                              DWORD bytes_read,
                              DWORD error) OVERRIDE;
 #elif defined(OS_POSIX)
@@ -213,7 +213,7 @@ class FileStream::Context {
   BoundNetLog bound_net_log_;
 
 #if defined(OS_WIN)
-  MessageLoopForIO::IOContext io_context_;
+  base::MessageLoopForIO::IOContext io_context_;
   CompletionCallback callback_;
   scoped_refptr<IOBuffer> in_flight_buf_;
   FileErrorSource error_source_;

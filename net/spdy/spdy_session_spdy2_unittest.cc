@@ -305,7 +305,7 @@ TEST_F(SpdySessionSpdy2Test, ServerPing) {
   spdy_stream1->SetDelegate(&delegate);
 
   // Flush the SpdySession::OnReadComplete() task.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_FALSE(spdy_session_pool_->HasSession(key_));
 
@@ -727,7 +727,7 @@ TEST_F(SpdySessionSpdy2Test, CancelPendingCreateStream) {
   callback.reset();
 
   // Should not crash when running the pending callback.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(SpdySessionSpdy2Test, SendInitialSettingsOnNewSession) {
@@ -763,7 +763,7 @@ TEST_F(SpdySessionSpdy2Test, SendInitialSettingsOnNewSession) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(data.at_write_eof());
 }
 
@@ -808,7 +808,7 @@ TEST_F(SpdySessionSpdy2Test, SendSettingsOnNewSession) {
 
   scoped_refptr<SpdySession> session = CreateInitializedSession();
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(data.at_write_eof());
 }
 
@@ -925,7 +925,7 @@ void IPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type) {
   pool_peer.AddAlias(test_hosts[0].addresses.front(), test_hosts[0].key);
 
   // Flush the SpdySession::OnReadComplete() task.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // The third host has no overlap with the first, so it can't pool IPs.
   EXPECT_FALSE(spdy_session_pool->HasSession(test_hosts[2].key));
@@ -1097,7 +1097,7 @@ TEST_F(SpdySessionSpdy2Test, CloseSessionOnError) {
   InitializeSession(http_session_.get(), session.get(), test_host_port_pair_);
 
   // Flush the SpdySession::OnReadComplete() task.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_FALSE(spdy_session_pool_->HasSession(key_));
 
@@ -1189,7 +1189,7 @@ TEST_F(SpdySessionSpdy2Test, OutOfOrderSynStreams) {
 
   spdy_stream1->SendRequest(false);
   spdy_stream2->SendRequest(false);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(NULL, spdy_stream1.get());
   EXPECT_EQ(NULL, spdy_stream2.get());
@@ -1600,7 +1600,7 @@ TEST_F(SpdySessionSpdy2Test, CloseTwoStalledCreateStream) {
   EXPECT_EQ(0u, delegate1.stream_id());
   data.RunFor(3);
   // Pump loop for SpdySession::ProcessPendingStreamRequests().
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(NULL, spdy_stream1.get());
   EXPECT_EQ(1u, delegate1.stream_id());
   EXPECT_EQ(2u, session->num_active_streams() + session->num_created_streams());
@@ -1768,7 +1768,7 @@ TEST_F(SpdySessionSpdy2Test, NeedsCredentials) {
   EXPECT_FALSE(session->NeedsCredentials());
 
   // Flush the SpdySession::OnReadComplete() task.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   spdy_session_pool_->Remove(session);
 }
@@ -2351,7 +2351,7 @@ TEST_F(SpdySessionSpdy2Test, CloseOneIdleConnectionFailsWhenSessionInUse) {
   EXPECT_TRUE(spdy_stream1->HasUrl());
 
   spdy_stream1->SendRequest(false);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Release the session, so holding onto a pointer here does not affect
   // anything.

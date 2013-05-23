@@ -53,12 +53,11 @@ class ProxyConfigServiceAndroidTestBase : public testing::Test {
   // suite (see net/test/net_test_suite.cc).
   ProxyConfigServiceAndroidTestBase(const StringMap& initial_configuration)
       : configuration_(initial_configuration),
-        message_loop_(MessageLoop::current()),
-        service_(
-            message_loop_->message_loop_proxy(),
-            message_loop_->message_loop_proxy(),
-            base::Bind(&ProxyConfigServiceAndroidTestBase::GetProperty,
-                       base::Unretained(this))) {}
+        message_loop_(base::MessageLoop::current()),
+        service_(message_loop_->message_loop_proxy(),
+                 message_loop_->message_loop_proxy(),
+                 base::Bind(&ProxyConfigServiceAndroidTestBase::GetProperty,
+                            base::Unretained(this))) {}
 
   virtual ~ProxyConfigServiceAndroidTestBase() {}
 
@@ -104,7 +103,7 @@ class ProxyConfigServiceAndroidTestBase : public testing::Test {
 
   StringMap configuration_;
   TestObserver observer_;
-  MessageLoop* const message_loop_;
+  base::MessageLoop* const message_loop_;
   ProxyConfigServiceAndroid service_;
 };
 

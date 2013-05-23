@@ -1225,7 +1225,7 @@ void CookieMonster::FlushStore(const base::Closure& callback) {
   if (initialized_ && store_)
     store_->Flush(callback);
   else if (!callback.is_null())
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
+    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 bool CookieMonster::SetCookieWithOptions(const GURL& url,

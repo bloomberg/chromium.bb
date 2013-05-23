@@ -161,7 +161,7 @@ TEST_F(DiskCacheTest, Hash) {
 TEST_F(DiskCacheTest, CacheBackendPerformance) {
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
-                  base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
   ASSERT_TRUE(CleanupCacheDir());
   net::TestCompletionCallback cb;
@@ -180,7 +180,7 @@ TEST_F(DiskCacheTest, CacheBackendPerformance) {
 
   EXPECT_TRUE(TimeWrite(num_entries, cache, &entries));
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   delete cache;
 
   ASSERT_TRUE(file_util::EvictFileFromSystemCache(
@@ -204,7 +204,7 @@ TEST_F(DiskCacheTest, CacheBackendPerformance) {
 
   EXPECT_TRUE(TimeRead(num_entries, cache, entries, false));
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   delete cache;
 }
 
@@ -247,6 +247,6 @@ TEST_F(DiskCacheTest, BlockFilesPerformance) {
   }
 
   timer2.Done();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   delete[] address;
 }

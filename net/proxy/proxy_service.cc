@@ -591,7 +591,7 @@ class ProxyService::ProxyScriptDeciderPoller {
   void StartPollTimer() {
     DCHECK(!decider_.get());
 
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ProxyScriptDeciderPoller::DoPoll,
                    weak_factory_.GetWeakPtr()),
@@ -638,14 +638,13 @@ class ProxyService::ProxyScriptDeciderPoller {
       // rather than calling it directly -- this is done to avoid an ugly
       // destruction sequence, since |this| might be destroyed as a result of
       // the notification.
-      MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &ProxyScriptDeciderPoller::NotifyProxyServiceOfChange,
-            weak_factory_.GetWeakPtr(),
-            result,
-            make_scoped_refptr(decider_->script_data()),
-            decider_->effective_config()));
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&ProxyScriptDeciderPoller::NotifyProxyServiceOfChange,
+                     weak_factory_.GetWeakPtr(),
+                     result,
+                     make_scoped_refptr(decider_->script_data()),
+                     decider_->effective_config()));
       return;
     }
 
@@ -1336,7 +1335,7 @@ void ProxyService::ForceReloadProxyConfig() {
 // static
 ProxyConfigService* ProxyService::CreateSystemProxyConfigService(
     base::SingleThreadTaskRunner* io_thread_task_runner,
-    MessageLoop* file_loop) {
+    base::MessageLoop* file_loop) {
 #if defined(OS_WIN)
   return new ProxyConfigServiceWin();
 #elif defined(OS_IOS)
@@ -1359,21 +1358,22 @@ ProxyConfigService* ProxyService::CreateSystemProxyConfigService(
       base::ThreadTaskRunnerHandle::Get();
 
   // The file loop should be a MessageLoopForIO on Linux.
-  DCHECK_EQ(MessageLoop::TYPE_IO, file_loop->type());
+  DCHECK_EQ(base::MessageLoop::TYPE_IO, file_loop->type());
 
   // Synchronously fetch the current proxy config (since we are
   // running on glib_default_loop). Additionally register for
   // notifications (delivered in either |glib_default_loop| or
   // |file_loop|) to keep us updated when the proxy config changes.
   linux_config_service->SetupAndFetchInitialConfig(
-      glib_thread_task_runner, io_thread_task_runner,
-      static_cast<MessageLoopForIO*>(file_loop));
+      glib_thread_task_runner,
+      io_thread_task_runner,
+      static_cast<base::MessageLoopForIO*>(file_loop));
 
   return linux_config_service;
 #elif defined(OS_ANDROID)
   return new ProxyConfigServiceAndroid(
       io_thread_task_runner,
-      MessageLoop::current()->message_loop_proxy());
+      base::MessageLoop::current()->message_loop_proxy());
 #else
   LOG(WARNING) << "Failed to choose a system proxy settings fetcher "
                   "for this platform.";
@@ -1502,20 +1502,21 @@ void ProxyService::OnDNSChanged() {
   OnIPAddressChanged();
 }
 
-SyncProxyServiceHelper::SyncProxyServiceHelper(MessageLoop* io_message_loop,
-                                               ProxyService* proxy_service)
+SyncProxyServiceHelper::SyncProxyServiceHelper(
+    base::MessageLoop* io_message_loop,
+    ProxyService* proxy_service)
     : io_message_loop_(io_message_loop),
       proxy_service_(proxy_service),
       event_(false, false),
       callback_(base::Bind(&SyncProxyServiceHelper::OnCompletion,
                            base::Unretained(this))) {
-  DCHECK(io_message_loop_ != MessageLoop::current());
+  DCHECK(io_message_loop_ != base::MessageLoop::current());
 }
 
 int SyncProxyServiceHelper::ResolveProxy(const GURL& url,
                                          ProxyInfo* proxy_info,
                                          const BoundNetLog& net_log) {
-  DCHECK(io_message_loop_ != MessageLoop::current());
+  DCHECK(io_message_loop_ != base::MessageLoop::current());
 
   io_message_loop_->PostTask(
       FROM_HERE,
@@ -1532,7 +1533,7 @@ int SyncProxyServiceHelper::ResolveProxy(const GURL& url,
 
 int SyncProxyServiceHelper::ReconsiderProxyAfterError(
     const GURL& url, ProxyInfo* proxy_info, const BoundNetLog& net_log) {
-  DCHECK(io_message_loop_ != MessageLoop::current());
+  DCHECK(io_message_loop_ != base::MessageLoop::current());
 
   io_message_loop_->PostTask(
       FROM_HERE,

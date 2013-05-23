@@ -16,7 +16,7 @@ namespace net {
 // SpdySessionTestTaskObserver is a MessageLoop::TaskObserver that monitors the
 // completion of all tasks executed by the current MessageLoop, recording the
 // number of tasks that refer to a specific function and filename.
-class SpdySessionTestTaskObserver : public MessageLoop::TaskObserver {
+class SpdySessionTestTaskObserver : public base::MessageLoop::TaskObserver {
  public:
   // Creates a SpdySessionTaskObserver that will record all tasks that are
   // executed that were posted by the function named by |function_name|, located

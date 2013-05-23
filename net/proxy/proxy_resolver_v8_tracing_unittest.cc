@@ -35,7 +35,7 @@ class ProxyResolverV8TracingTest : public testing::Test {
     // Drain any pending messages, which may be left over from cancellation.
     // This way they get reliably run as part of the current test, rather than
     // spilling into the next test's execution.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 };
 
@@ -776,7 +776,7 @@ class BlockableHostResolver : public HostResolver {
 
     // Indicate to the caller that a request was received.
     EXPECT_TRUE(waiting_for_resolve_);
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 
     // This line is intentionally after action_.Run(), since one of the
     // tests does a cancellation inside of Resolve(), and it is more
@@ -807,7 +807,7 @@ class BlockableHostResolver : public HostResolver {
   // Waits until Resolve() has been called.
   void WaitUntilRequestIsReceived() {
     waiting_for_resolve_ = true;
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     DCHECK(waiting_for_resolve_);
     waiting_for_resolve_ = false;
   }

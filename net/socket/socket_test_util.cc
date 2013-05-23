@@ -325,7 +325,7 @@ MockWriteResult DelayedSocketData::OnWrite(const std::string& data) {
   MockWriteResult rv = StaticSocketDataProvider::OnWrite(data);
   // Now that our write has completed, we can allow reads to continue.
   if (!--write_delay_ && read_in_progress_)
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&DelayedSocketData::CompleteRead,
                    weak_factory_.GetWeakPtr()),
@@ -416,7 +416,7 @@ MockWriteResult OrderedSocketData::OnWrite(const std::string& data) {
     // DoSendRequest() will return ERR_IO_PENDING, and there's a race.  If the
     // SYN_REPLY causes OnResponseReceived() to get called before
     // SpdyStream::ReadResponseHeaders() is called, we hit a NOTREACHED().
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&OrderedSocketData::CompleteRead,
                    weak_factory_.GetWeakPtr()),
@@ -776,9 +776,12 @@ MockClientSocket::~MockClientSocket() {}
 
 void MockClientSocket::RunCallbackAsync(const CompletionCallback& callback,
                                         int result) {
-  MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&MockClientSocket::RunCallback, weak_factory_.GetWeakPtr(),
-                 callback, result));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MockClientSocket::RunCallback,
+                 weak_factory_.GetWeakPtr(),
+                 callback,
+                 result));
 }
 
 void MockClientSocket::RunCallback(const net::CompletionCallback& callback,
@@ -1561,10 +1564,12 @@ int MockUDPClientSocket::CompleteRead() {
 
 void MockUDPClientSocket::RunCallbackAsync(const CompletionCallback& callback,
                                            int result) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&MockUDPClientSocket::RunCallback, weak_factory_.GetWeakPtr(),
-                 callback, result));
+      base::Bind(&MockUDPClientSocket::RunCallback,
+                 weak_factory_.GetWeakPtr(),
+                 callback,
+                 result));
 }
 
 void MockUDPClientSocket::RunCallback(const CompletionCallback& callback,

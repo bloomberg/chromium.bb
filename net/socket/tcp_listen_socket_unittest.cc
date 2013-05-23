@@ -33,10 +33,10 @@ TCPListenSocketTester::TCPListenSocketTester()
 
 void TCPListenSocketTester::SetUp() {
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
   thread_.reset(new base::Thread("socketio_test"));
   thread_->StartWithOptions(options);
-  loop_ = reinterpret_cast<MessageLoopForIO*>(thread_->message_loop());
+  loop_ = reinterpret_cast<base::MessageLoopForIO*>(thread_->message_loop());
 
   loop_->PostTask(FROM_HERE, base::Bind(
       &TCPListenSocketTester::Listen, this));

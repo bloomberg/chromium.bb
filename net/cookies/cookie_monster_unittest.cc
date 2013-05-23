@@ -637,7 +637,8 @@ struct CookiesInputInfo {
 };
 
 ACTION(QuitCurrentMessageLoop) {
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
 }
 
 // TODO(erikwright): When the synchronous helpers 'GetCookies' etc. are removed,
@@ -2003,9 +2004,10 @@ class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
 
   virtual void Load(const LoadedCallback& loaded_callback) OVERRIDE {
     std::vector<CanonicalCookie*> out_cookies;
-    MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&net::LoadedCallbackTask::Run,
-                 new net::LoadedCallbackTask(loaded_callback, out_cookies)));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&net::LoadedCallbackTask::Run,
+                   new net::LoadedCallbackTask(loaded_callback, out_cookies)));
   }
 
   virtual void LoadCookiesForKey(
@@ -2068,14 +2070,14 @@ TEST_F(CookieMonsterTest, FlushStore) {
 
   // Before initialization, FlushStore() should just run the callback.
   cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter.get()));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_EQ(0, store->flush_count());
   ASSERT_EQ(1, counter->callback_count());
 
   // NULL callback is safe.
   cm->FlushStore(base::Closure());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_EQ(0, store->flush_count());
   ASSERT_EQ(1, counter->callback_count());
@@ -2083,14 +2085,14 @@ TEST_F(CookieMonsterTest, FlushStore) {
   // After initialization, FlushStore() should delegate to the store.
   GetAllCookies(cm);  // Force init.
   cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter.get()));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_EQ(1, store->flush_count());
   ASSERT_EQ(2, counter->callback_count());
 
   // NULL callback is still safe.
   cm->FlushStore(base::Closure());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_EQ(2, store->flush_count());
   ASSERT_EQ(2, counter->callback_count());
@@ -2099,12 +2101,12 @@ TEST_F(CookieMonsterTest, FlushStore) {
   cm = new CookieMonster(NULL, NULL);
   GetAllCookies(cm);  // Force init.
   cm->FlushStore(base::Closure());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_EQ(2, counter->callback_count());
 
   cm->FlushStore(base::Bind(&CallbackCounter::Callback, counter.get()));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_EQ(3, counter->callback_count());
 }

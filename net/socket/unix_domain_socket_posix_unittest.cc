@@ -202,7 +202,7 @@ class UnixDomainSocketTestHelper : public testing::Test {
 
   scoped_ptr<base::Thread> CreateAndRunServerThread() {
     base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
+    options.message_loop_type = base::MessageLoop::TYPE_IO;
     scoped_ptr<base::Thread> thread(new base::Thread("socketio_test"));
     thread->StartWithOptions(options);
     thread->message_loop()->PostTask(

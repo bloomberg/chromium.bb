@@ -40,13 +40,13 @@ SimpleCacheDumper::~SimpleCacheDumper() {
 }
 
 int SimpleCacheDumper::Run() {
-  MessageLoopForIO main_message_loop;
+  base::MessageLoopForIO main_message_loop;
 
   LOG(INFO) << "Reading cache from: " << input_path_.value();
   LOG(INFO) << "Writing cache to: " << output_path_.value();
 
   if (!cache_thread_->StartWithOptions(
-          base::Thread::Options(MessageLoop::TYPE_IO, 0))) {
+          base::Thread::Options(base::MessageLoop::TYPE_IO, 0))) {
     LOG(ERROR) << "Unable to start thread";
     return ERR_UNEXPECTED;
   }
@@ -263,7 +263,7 @@ void SimpleCacheDumper::OnIOComplete(int rv) {
     rv_ = rv;
     delete cache_;
     cache_ = NULL;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 }
 

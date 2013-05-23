@@ -73,7 +73,7 @@ NetworkChangeNotifierMac::NetworkChangeNotifierMac()
   // SetInitialConnectionType().
   config_watcher_.reset(new NetworkConfigWatcherMac(&forwarder_));
   dns_config_service_thread_->StartWithOptions(
-        base::Thread::Options(MessageLoop::TYPE_IO, 0));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 }
 
 NetworkChangeNotifierMac::~NetworkChangeNotifierMac() {

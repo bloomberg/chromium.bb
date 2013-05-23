@@ -129,7 +129,7 @@ class NET_EXPORT_PRIVATE TCPClientSocketLibevent : public StreamSocket,
     FAST_OPEN_MAX_VALUE
   };
 
-  class ReadWatcher : public MessageLoopForIO::Watcher {
+  class ReadWatcher : public base::MessageLoopForIO::Watcher {
    public:
     explicit ReadWatcher(TCPClientSocketLibevent* socket) : socket_(socket) {}
 
@@ -145,7 +145,7 @@ class NET_EXPORT_PRIVATE TCPClientSocketLibevent : public StreamSocket,
     DISALLOW_COPY_AND_ASSIGN(ReadWatcher);
   };
 
-  class WriteWatcher : public MessageLoopForIO::Watcher {
+  class WriteWatcher : public base::MessageLoopForIO::Watcher {
    public:
     explicit WriteWatcher(TCPClientSocketLibevent* socket) : socket_(socket) {}
 
@@ -204,8 +204,8 @@ class NET_EXPORT_PRIVATE TCPClientSocketLibevent : public StreamSocket,
   int current_address_index_;
 
   // The socket's libevent wrappers
-  MessageLoopForIO::FileDescriptorWatcher read_socket_watcher_;
-  MessageLoopForIO::FileDescriptorWatcher write_socket_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher read_socket_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher write_socket_watcher_;
 
   // The corresponding watchers for reads and writes.
   ReadWatcher read_watcher_;

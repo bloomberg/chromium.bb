@@ -123,8 +123,8 @@ int TCPServerSocketLibevent::Accept(
   int result = AcceptInternal(socket);
 
   if (result == ERR_IO_PENDING) {
-    if (!MessageLoopForIO::current()->WatchFileDescriptor(
-            socket_, true, MessageLoopForIO::WATCH_READ,
+    if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
+            socket_, true, base::MessageLoopForIO::WATCH_READ,
             &accept_socket_watcher_, this)) {
       PLOG(ERROR) << "WatchFileDescriptor failed on read";
       return MapSystemError(errno);

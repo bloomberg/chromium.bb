@@ -73,7 +73,7 @@ class SpdyStreamSpdy3Test : public testing::Test {
   }
 
   virtual void TearDown() {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void RunResumeAfterUnstallRequestResponseTest(

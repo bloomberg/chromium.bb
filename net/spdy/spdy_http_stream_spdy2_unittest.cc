@@ -74,7 +74,7 @@ class SpdyHttpStreamSpdy2Test : public testing::Test {
  protected:
   virtual void TearDown() OVERRIDE {
     crypto::ECSignatureCreator::SetFactoryForTesting(NULL);
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   // Initializes the session using DeterministicSocketData.  It's advisable
@@ -357,7 +357,7 @@ TEST_F(SpdyHttpStreamSpdy2Test, SendChunkedPost) {
   // This triggers reading the body and the EOF, causing the session to shut
   // down.
   data()->CompleteRead();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.

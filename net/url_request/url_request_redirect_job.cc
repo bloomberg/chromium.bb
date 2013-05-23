@@ -20,7 +20,7 @@ URLRequestRedirectJob::URLRequestRedirectJob(URLRequest* request,
       weak_factory_(this) {}
 
 void URLRequestRedirectJob::Start() {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestRedirectJob::StartAsync,
                  weak_factory_.GetWeakPtr()));

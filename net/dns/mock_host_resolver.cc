@@ -88,7 +88,7 @@ int MockHostResolverBase::Resolve(const RequestInfo& info,
     *handle = reinterpret_cast<RequestHandle>(id);
 
   if (!ondemand_mode_) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&MockHostResolverBase::ResolveNow, AsWeakPtr(), id));
   }
@@ -127,7 +127,7 @@ void MockHostResolverBase::ResolveAllPending() {
   DCHECK(CalledOnValidThread());
   DCHECK(ondemand_mode_);
   for (RequestMap::iterator i = requests_.begin(); i != requests_.end(); ++i) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&MockHostResolverBase::ResolveNow, AsWeakPtr(), i->first));
   }

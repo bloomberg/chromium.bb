@@ -196,7 +196,7 @@ class CertVerifierWorker {
         flags_(flags),
         crl_set_(crl_set),
         additional_trust_anchors_(additional_trust_anchors),
-        origin_loop_(MessageLoop::current()),
+        origin_loop_(base::MessageLoop::current()),
         cert_verifier_(cert_verifier),
         canceled_(false),
         error_(ERR_FAILED) {
@@ -207,7 +207,7 @@ class CertVerifierWorker {
   X509Certificate* certificate() const { return cert_; }
 
   bool Start() {
-    DCHECK_EQ(MessageLoop::current(), origin_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), origin_loop_);
 
     return base::WorkerPool::PostTask(
         FROM_HERE, base::Bind(&CertVerifierWorker::Run, base::Unretained(this)),
@@ -217,7 +217,7 @@ class CertVerifierWorker {
   // Cancel is called from the origin loop when the MultiThreadedCertVerifier is
   // getting deleted.
   void Cancel() {
-    DCHECK_EQ(MessageLoop::current(), origin_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), origin_loop_);
     base::AutoLock locked(lock_);
     canceled_ = true;
   }
@@ -242,7 +242,7 @@ class CertVerifierWorker {
 
   // DoReply runs on the origin thread.
   void DoReply() {
-    DCHECK_EQ(MessageLoop::current(), origin_loop_);
+    DCHECK_EQ(base::MessageLoop::current(), origin_loop_);
     {
       // We lock here because the worker thread could still be in Finished,
       // after the PostTask, but before unlocking |lock_|. If we do not lock in
@@ -291,7 +291,7 @@ class CertVerifierWorker {
   const int flags_;
   scoped_refptr<CRLSet> crl_set_;
   const CertificateList additional_trust_anchors_;
-  MessageLoop* const origin_loop_;
+  base::MessageLoop* const origin_loop_;
   MultiThreadedCertVerifier* const cert_verifier_;
 
   // lock_ protects canceled_.

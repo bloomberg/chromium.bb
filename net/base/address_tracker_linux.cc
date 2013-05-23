@@ -157,8 +157,8 @@ void AddressTrackerLinux::Init() {
     is_offline_initialized_cv_.Signal();
   }
 
-  rv = MessageLoopForIO::current()->WatchFileDescriptor(
-      netlink_fd_, true, MessageLoopForIO::WATCH_READ, &watcher_, this);
+  rv = base::MessageLoopForIO::current()->WatchFileDescriptor(
+      netlink_fd_, true, base::MessageLoopForIO::WATCH_READ, &watcher_, this);
   if (rv < 0) {
     PLOG(ERROR) << "Could not watch NETLINK socket";
     AbortAndForceOnline();

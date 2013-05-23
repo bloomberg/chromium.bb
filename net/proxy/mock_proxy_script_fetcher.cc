@@ -30,7 +30,7 @@ int MockProxyScriptFetcher::Fetch(const GURL& url, base::string16* text,
   pending_request_text_ = text;
 
   if (waiting_for_fetch_)
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 
   return ERR_IO_PENDING;
 }
@@ -62,7 +62,7 @@ bool MockProxyScriptFetcher::has_pending_request() const {
 void MockProxyScriptFetcher::WaitUntilFetch() {
   DCHECK(!has_pending_request());
   waiting_for_fetch_ = true;
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   waiting_for_fetch_ = false;
 }
 

@@ -43,9 +43,9 @@ class ExampleEmployer::ExampleWorker
  public:
   ExampleWorker(ExampleEmployer* employer,
                 const net::CompletionCallback& callback)
-      : employer_(employer), callback_(callback),
-        origin_loop_(MessageLoop::current()) {
-  }
+      : employer_(employer),
+        callback_(callback),
+        origin_loop_(base::MessageLoop::current()) {}
   void DoWork();
   void DoCallback();
  private:
@@ -58,7 +58,7 @@ class ExampleEmployer::ExampleWorker
   net::CompletionCallback callback_;
   // Used to post ourselves onto the origin thread.
   base::Lock origin_loop_lock_;
-  MessageLoop* origin_loop_;
+  base::MessageLoop* origin_loop_;
 };
 
 void ExampleEmployer::ExampleWorker::DoWork() {

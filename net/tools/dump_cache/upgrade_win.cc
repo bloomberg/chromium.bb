@@ -117,7 +117,7 @@ enum {
 
 // -----------------------------------------------------------------------
 
-class BaseSM : public MessageLoopForIO::IOHandler {
+class BaseSM : public base::MessageLoopForIO::IOHandler {
  public:
   explicit BaseSM(HANDLE channel);
   virtual ~BaseSM();
@@ -128,8 +128,8 @@ class BaseSM : public MessageLoopForIO::IOHandler {
   bool ConnectChannel();
   bool IsPending();
 
-  MessageLoopForIO::IOContext in_context_;
-  MessageLoopForIO::IOContext out_context_;
+  base::MessageLoopForIO::IOContext in_context_;
+  base::MessageLoopForIO::IOContext out_context_;
   disk_cache::EntryImpl* entry_;
   HANDLE channel_;
   int state_;
@@ -155,9 +155,9 @@ BaseSM::BaseSM(HANDLE channel)
   memset(&out_context_, 0, sizeof(out_context_));
   in_context_.handler = this;
   out_context_.handler = this;
-  MessageLoopForIO::current()->RegisterIOHandler(channel_, this);
+  base::MessageLoopForIO::current()->RegisterIOHandler(channel_, this);
   CHECK(cache_thread_.StartWithOptions(
-            base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 }
 
 BaseSM::~BaseSM() {
@@ -224,8 +224,9 @@ class MasterSM : public BaseSM {
   }
 
   bool DoInit();
-  virtual void OnIOCompleted(MessageLoopForIO::IOContext* context,
-                             DWORD bytes_transfered, DWORD error);
+  virtual void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
+                             DWORD bytes_transfered,
+                             DWORD error);
 
  private:
   enum {
@@ -268,8 +269,9 @@ class MasterSM : public BaseSM {
   const base::FilePath path_;
 };
 
-void MasterSM::OnIOCompleted(MessageLoopForIO::IOContext* context,
-                             DWORD bytes_transfered, DWORD error) {
+void MasterSM::OnIOCompleted(base::MessageLoopForIO::IOContext* context,
+                             DWORD bytes_transfered,
+                             DWORD error) {
   pending_count_--;
   if (context == &out_context_) {
     if (!error)
@@ -542,7 +544,8 @@ void MasterSM::SendQuit() {
 
 void MasterSM::DoEnd() {
   DEBUGMSG("Master DoEnd\n");
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
 }
 
 void MasterSM::Fail() {
@@ -559,8 +562,9 @@ class SlaveSM : public BaseSM {
   virtual ~SlaveSM();
 
   bool DoInit();
-  virtual void OnIOCompleted(MessageLoopForIO::IOContext* context,
-                             DWORD bytes_transfered, DWORD error);
+  virtual void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
+                             DWORD bytes_transfered,
+                             DWORD error);
 
  private:
   enum {
@@ -610,8 +614,9 @@ SlaveSM::~SlaveSM() {
     cache_->EndEnumeration(&iterator_);
 }
 
-void SlaveSM::OnIOCompleted(MessageLoopForIO::IOContext* context,
-                            DWORD bytes_transfered, DWORD error) {
+void SlaveSM::OnIOCompleted(base::MessageLoopForIO::IOContext* context,
+                            DWORD bytes_transfered,
+                            DWORD error) {
   pending_count_--;
   if (state_ == SLAVE_END) {
     if (IsPending())
@@ -854,7 +859,8 @@ void SlaveSM::DoReadDataComplete(int ret) {
 
 void SlaveSM::DoEnd() {
   DEBUGMSG("\t\t\tSlave DoEnd\n");
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
 }
 
 void SlaveSM::Fail() {
@@ -887,7 +893,7 @@ HANDLE CreateServer(base::string16* pipe_number) {
 
 // This is the controller process for an upgrade operation.
 int UpgradeCache(const base::FilePath& output_path, HANDLE pipe) {
-  MessageLoop loop(MessageLoop::TYPE_IO);
+  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
 
   MasterSM master(output_path, pipe);
   if (!master.DoInit()) {
@@ -902,7 +908,7 @@ int UpgradeCache(const base::FilePath& output_path, HANDLE pipe) {
 // This process will only execute commands from the controller.
 int RunSlave(const base::FilePath& input_path,
              const base::string16& pipe_number) {
-  MessageLoop loop(MessageLoop::TYPE_IO);
+  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
 
   base::win::ScopedHandle pipe(OpenServer(pipe_number));
   if (!pipe.IsValid()) {

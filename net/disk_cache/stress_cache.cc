@@ -108,7 +108,7 @@ void StressTheCache(int iteration) {
 
   base::Thread cache_thread("CacheThread");
   if (!cache_thread.StartWithOptions(
-          base::Thread::Options(MessageLoop::TYPE_IO, 0)))
+          base::Thread::Options(base::MessageLoop::TYPE_IO, 0)))
     return;
 
   disk_cache::BackendImpl* cache =
@@ -188,11 +188,11 @@ void StressTheCache(int iteration) {
 bool g_crashing = false;
 
 // RunSoon() and CrashCallback() reference each other, unfortunately.
-void RunSoon(MessageLoop* target_loop);
+void RunSoon(base::MessageLoop* target_loop);
 
 void CrashCallback() {
   // Keep trying to run.
-  RunSoon(MessageLoop::current());
+  RunSoon(base::MessageLoop::current());
 
   if (g_crashing)
     return;
@@ -210,7 +210,7 @@ void CrashCallback() {
   }
 }
 
-void RunSoon(MessageLoop* target_loop) {
+void RunSoon(base::MessageLoop* target_loop) {
   const base::TimeDelta kTaskDelay = base::TimeDelta::FromSeconds(10);
   target_loop->PostDelayedTask(
       FROM_HERE, base::Bind(&CrashCallback), kTaskDelay);
@@ -275,7 +275,7 @@ int main(int argc, const char* argv[]) {
 
   // Some time for the memory manager to flush stuff.
   base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(3));
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
   char* end;
   long int iteration = strtol(argv[1], &end, 0);

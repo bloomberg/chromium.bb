@@ -257,12 +257,11 @@ class Request {
   int WaitForResult() {
     if (completed())
       return result_;
-    base::CancelableClosure closure(MessageLoop::QuitClosure());
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            closure.callback(),
-                                            TestTimeouts::action_max_timeout());
+    base::CancelableClosure closure(base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, closure.callback(), TestTimeouts::action_max_timeout());
     quit_on_complete_ = true;
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     bool did_quit = !quit_on_complete_;
     quit_on_complete_ = false;
     closure.Cancel();
@@ -286,7 +285,7 @@ class Request {
     if (handler_)
       handler_->Handle(this);
     if (quit_on_complete_) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
       quit_on_complete_ = false;
     }
   }
@@ -713,7 +712,8 @@ TEST_F(HostResolverImplTest, DeleteWithinCallback) {
 
       // Quit after returning from OnCompleted (to give it a chance at
       // incorrectly running the cancelled tasks).
-      MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+                                             base::MessageLoop::QuitClosure());
     }
   };
   set_handler(new MyHandler());
@@ -725,7 +725,7 @@ TEST_F(HostResolverImplTest, DeleteWithinCallback) {
   proc_->SignalMultiple(1u);  // One for "a".
 
   // |MyHandler| will send quit message once all the requests have finished.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(HostResolverImplTest, DeleteWithinAbortedCallback) {
@@ -738,7 +738,8 @@ TEST_F(HostResolverImplTest, DeleteWithinAbortedCallback) {
 
       // Quit after returning from OnCompleted (to give it a chance at
       // incorrectly running the cancelled tasks).
-      MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+                                             base::MessageLoop::QuitClosure());
     }
   };
   set_handler(new MyHandler());
@@ -757,7 +758,7 @@ TEST_F(HostResolverImplTest, DeleteWithinAbortedCallback) {
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
 
   // |MyHandler| will send quit message once all the requests have finished.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[0]->result());
   EXPECT_EQ(ERR_IO_PENDING, requests_[1]->result());
@@ -816,7 +817,7 @@ TEST_F(HostResolverImplTest, BypassCache) {
         EXPECT_EQ(ERR_IO_PENDING, CreateRequest(info)->Resolve());
       } else if (71 == req->info().port()) {
         // Test is done.
-        MessageLoop::current()->Quit();
+        base::MessageLoop::current()->Quit();
       } else {
         FAIL() << "Unexpected request";
       }
@@ -828,7 +829,7 @@ TEST_F(HostResolverImplTest, BypassCache) {
   proc_->SignalMultiple(3u);  // Only need two, but be generous.
 
   // |verifier| will send quit message once all the requests have finished.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(2u, proc_->GetCaptureList().size());
 }
 
@@ -845,7 +846,7 @@ TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange) {
 
   // Flush cache by triggering an IP address change.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-  MessageLoop::current()->RunUntilIdle();  // Notification happens async.
+  base::MessageLoop::current()->RunUntilIdle();  // Notification happens async.
 
   // Resolve "host1" again -- this time it won't be served from cache, so it
   // will complete asynchronously.
@@ -862,7 +863,7 @@ TEST_F(HostResolverImplTest, AbortOnIPAddressChanged) {
   EXPECT_TRUE(proc_->WaitFor(1u));
   // Triggering an IP address change.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-  MessageLoop::current()->RunUntilIdle();  // Notification happens async.
+  base::MessageLoop::current()->RunUntilIdle();  // Notification happens async.
   proc_->SignalAll();
 
   EXPECT_EQ(ERR_NETWORK_CHANGED, req->WaitForResult());
@@ -880,7 +881,7 @@ TEST_F(HostResolverImplTest, ObeyPoolConstraintsAfterIPAddressChange) {
   EXPECT_TRUE(proc_->WaitFor(1u));
   // Triggering an IP address change.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-  MessageLoop::current()->RunUntilIdle();  // Notification happens async.
+  base::MessageLoop::current()->RunUntilIdle();  // Notification happens async.
   proc_->SignalMultiple(3u);  // Let the false-start go so that we can catch it.
 
   EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[0]->WaitForResult());
@@ -924,7 +925,7 @@ TEST_F(HostResolverImplTest, AbortOnlyExistingRequestsOnIPAddressChange) {
   // Trigger an IP address change.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
   // This should abort all running jobs.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[0]->result());
   EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[1]->result());
   EXPECT_EQ(ERR_NETWORK_CHANGED, requests_[2]->result());
@@ -1232,7 +1233,7 @@ TEST_F(HostResolverImplTest, MultipleAttempts) {
 
   resolver_proc->WaitForAllAttemptsToFinish(
       base::TimeDelta::FromMilliseconds(60000));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(resolver_proc->total_attempts_resolved(), kTotalAttempts);
   EXPECT_EQ(resolver_proc->resolved_attempt_number(), kAttemptNumberToResolve);
@@ -1287,7 +1288,7 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
   void ChangeDnsConfig(const DnsConfig& config) {
     NetworkChangeNotifier::SetDnsConfig(config);
     // Notification is delivered asynchronously.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   MockDnsClientRuleList dns_rules_;

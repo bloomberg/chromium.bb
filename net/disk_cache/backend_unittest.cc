@@ -228,7 +228,7 @@ TEST_F(DiskCacheTest, CreateBackend) {
     ASSERT_TRUE(CleanupCacheDir());
     base::Thread cache_thread("CacheThread");
     ASSERT_TRUE(cache_thread.StartWithOptions(
-                    base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+        base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
     // Test the private factory method(s).
     disk_cache::Backend* cache = NULL;
@@ -258,7 +258,7 @@ TEST_F(DiskCacheTest, CreateBackend) {
     delete cache;
   }
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // Tests that |BackendImpl| fails to initialize with a missing file.
@@ -268,7 +268,7 @@ TEST_F(DiskCacheBackendTest, CreateBackend_MissingFile) {
   file_util::Delete(filename, false);
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
-                  base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
   net::TestCompletionCallback cb;
 
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
@@ -313,7 +313,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingFileIO(bool fast) {
     ASSERT_TRUE(CleanupCacheDir());
     base::Thread cache_thread("CacheThread");
     ASSERT_TRUE(cache_thread.StartWithOptions(
-                    base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+        base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
     uint32 flags = disk_cache::kNoBuffering;
     if (!fast)
@@ -359,7 +359,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingFileIO(bool fast) {
     }
   }
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
 #if defined(OS_WIN)
   // Wait for the actual operation to complete, or we'll keep a file handle that
@@ -390,7 +390,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingIO(bool fast) {
     ASSERT_TRUE(CleanupCacheDir());
     base::Thread cache_thread("CacheThread");
     ASSERT_TRUE(cache_thread.StartWithOptions(
-                    base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+        base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
     uint32 flags = disk_cache::kNoBuffering;
     if (!fast)
@@ -410,7 +410,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingIO(bool fast) {
     cache_ = NULL;
   }
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(DiskCacheBackendTest, ShutdownWithPendingIO) {
@@ -433,7 +433,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingCreate(bool fast) {
     ASSERT_TRUE(CleanupCacheDir());
     base::Thread cache_thread("CacheThread");
     ASSERT_TRUE(cache_thread.StartWithOptions(
-                    base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+        base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
     disk_cache::BackendFlags flags =
       fast ? disk_cache::kNone : disk_cache::kNoRandom;
@@ -449,7 +449,7 @@ void DiskCacheBackendTest::BackendShutdownWithPendingCreate(bool fast) {
     EXPECT_FALSE(cb.have_result());
   }
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(DiskCacheBackendTest, ShutdownWithPendingCreate) {
@@ -471,7 +471,7 @@ TEST_F(DiskCacheTest, TruncatedIndex) {
 
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
-                  base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
   net::TestCompletionCallback cb;
 
   disk_cache::Backend* backend = NULL;
@@ -921,7 +921,7 @@ void DiskCacheBackendTest::BackendTrimInvalidEntry() {
   // If we evicted the entry in less than 20mS, we have one entry in the cache;
   // if it took more than that, we posted a task and we'll delete the second
   // entry too.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // This may be not thread-safe in general, but for now it's OK so add some
   // ThreadSanitizer annotations to ignore data races on cache_.
@@ -986,7 +986,7 @@ void DiskCacheBackendTest::BackendTrimInvalidEntry2() {
   FlushQueueForTest();
 
   // We may abort the eviction before cleaning up everything.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   FlushQueueForTest();
   // If it's not clear enough: we may still have eviction tasks running at this
   // time, so the number of entries is changing while we read it.
@@ -1670,7 +1670,7 @@ TEST_F(DiskCacheTest, WrongVersion) {
   ASSERT_TRUE(CopyTestCache("wrong_version"));
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
-                  base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
   net::TestCompletionCallback cb;
 
   disk_cache::BackendImpl* cache = new disk_cache::BackendImpl(
@@ -1687,7 +1687,7 @@ TEST_F(DiskCacheBackendTest, DeleteOld) {
   SetNewEviction();
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
-                  base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
   net::TestCompletionCallback cb;
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
@@ -2481,7 +2481,7 @@ void DiskCacheBackendTest::BackendDoomAll() {
   ASSERT_EQ(0, cache_->GetEntryCount());
 
   // We should stop posting tasks at some point (if we post any).
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   disk_cache::Entry *entry3, *entry4;
   EXPECT_NE(net::OK, OpenEntry("third", &entry3));
@@ -2572,7 +2572,7 @@ TEST_F(DiskCacheTest, MultipleInstances) {
 
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
-      base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
   net::TestCompletionCallback cb;
 
   const int kNumberOfCaches = 2;
@@ -2982,7 +2982,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOverBlockfileCache) {
   // Check that the |SimpleBackendImpl| does not favor this structure.
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
-                  base::Thread::Options(MessageLoop::TYPE_IO, 0)));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
   disk_cache::SimpleBackendImpl* simple_cache =
       new disk_cache::SimpleBackendImpl(cache_path_, 0, net::DISK_CACHE,
                                         cache_thread.message_loop_proxy(),
@@ -3013,11 +3013,9 @@ TEST_F(DiskCacheBackendTest, BlockfileCacheOverSimpleCache) {
   // Check that the |BackendImpl| does not favor this structure.
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
-                  base::Thread::Options(MessageLoop::TYPE_IO, 0)));
-  disk_cache::BackendImpl* cache =
-      new disk_cache::BackendImpl(cache_path_,
-                                  base::MessageLoopProxy::current(),
-                                  NULL);
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
+  disk_cache::BackendImpl* cache = new disk_cache::BackendImpl(
+      cache_path_, base::MessageLoopProxy::current(), NULL);
   cache->SetUnitTestMode();
   net::TestCompletionCallback cb;
   int rv = cache->Init(cb.callback());

@@ -63,5 +63,5 @@ void NetTestSuite::InitializeTestThreadNoNetworkChangeNotifier() {
   // the process of running these unit tests.
   host_resolver_proc_->AddRule("*", "127.0.0.1");
 
-  message_loop_.reset(new MessageLoopForIO());
+  message_loop_.reset(new base::MessageLoopForIO());
 }

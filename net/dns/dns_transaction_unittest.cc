@@ -276,7 +276,7 @@ class TransactionHelper {
 
     // Tell MessageLoop to quit now, in case any ASSERT_* fails.
     if (quit_in_callback_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
 
     if (expected_answer_count_ >= 0) {
       ASSERT_EQ(OK, rv);
@@ -303,7 +303,7 @@ class TransactionHelper {
 
   bool Run(DnsTransactionFactory* factory) {
     StartTransaction(factory);
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     return has_completed();
   }
 
@@ -311,7 +311,7 @@ class TransactionHelper {
   bool RunUntilDone(DnsTransactionFactory* factory) {
     set_quit_in_callback();
     StartTransaction(factory);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     return has_completed();
   }
 
@@ -498,7 +498,7 @@ TEST_F(DnsTransactionTest, ConcurrentLookup) {
   TransactionHelper helper1(kT1HostName, kT1Qtype, kT1RecordCount);
   helper1.StartTransaction(transaction_factory_.get());
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(helper0.has_completed());
   EXPECT_TRUE(helper1.has_completed());
@@ -517,7 +517,7 @@ TEST_F(DnsTransactionTest, CancelLookup) {
 
   helper0.Cancel();
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_FALSE(helper0.has_completed());
   EXPECT_TRUE(helper1.has_completed());
@@ -533,7 +533,7 @@ TEST_F(DnsTransactionTest, DestroyFactory) {
   // Destroying the client does not affect running requests.
   transaction_factory_.reset(NULL);
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_TRUE(helper0.has_completed());
 }
@@ -624,7 +624,7 @@ TEST_F(DnsTransactionTest, Timeout) {
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_TIMED_OUT);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
-  MessageLoop::current()->AssertIdle();
+  base::MessageLoop::current()->AssertIdle();
 }
 
 TEST_F(DnsTransactionTest, ServerFallbackAndRotate) {

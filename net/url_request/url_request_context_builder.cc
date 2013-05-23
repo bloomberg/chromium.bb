@@ -138,7 +138,7 @@ class BasicURLRequestContext : public URLRequestContext {
 
   void StartCacheThread() {
     cache_thread_.StartWithOptions(
-        base::Thread::Options(MessageLoop::TYPE_IO, 0));
+        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   }
 
   scoped_refptr<base::MessageLoopProxy> cache_message_loop_proxy() {
@@ -148,10 +148,10 @@ class BasicURLRequestContext : public URLRequestContext {
 
   void StartFileThread() {
     file_thread_.StartWithOptions(
-        base::Thread::Options(MessageLoop::TYPE_DEFAULT, 0));
+        base::Thread::Options(base::MessageLoop::TYPE_DEFAULT, 0));
   }
 
-  MessageLoop* file_message_loop() {
+  base::MessageLoop* file_message_loop() {
     DCHECK(file_thread_.IsRunning());
     return file_thread_.message_loop();
   }

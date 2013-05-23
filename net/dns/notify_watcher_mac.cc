@@ -26,10 +26,10 @@ bool NotifyWatcherMac::Watch(const char* key, const CallbackType& callback) {
   if (status != NOTIFY_STATUS_OK)
     return false;
   DCHECK_GE(notify_fd_, 0);
-  if (!MessageLoopForIO::current()->WatchFileDescriptor(
+  if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
           notify_fd_,
           true,
-          MessageLoopForIO::WATCH_READ,
+          base::MessageLoopForIO::WATCH_READ,
           &watcher_,
           this)) {
     Cancel();

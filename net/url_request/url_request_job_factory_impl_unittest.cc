@@ -27,10 +27,9 @@ class MockURLRequestJob : public URLRequestJob {
   virtual void Start() OVERRIDE {
     // Start reading asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&MockURLRequestJob::StartAsync,
-                   weak_factory_.GetWeakPtr()));
+        base::Bind(&MockURLRequestJob::StartAsync, weak_factory_.GetWeakPtr()));
   }
 
  protected:
@@ -63,7 +62,7 @@ TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
   TestURLRequest request(GURL("foo://bar"), &delegate, &request_context, NULL);
   request.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(ERR_UNKNOWN_URL_SCHEME, request.status().error());
 }
@@ -77,7 +76,7 @@ TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
   TestURLRequest request(GURL("foo://bar"), &delegate, &request_context, NULL);
   request.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(URLRequestStatus::SUCCESS, request.status().status());
   EXPECT_EQ(OK, request.status().error());
 }

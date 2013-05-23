@@ -51,7 +51,7 @@ class EmbeddedTestServerTest : public testing::Test,
 
   virtual void SetUp() OVERRIDE {
     base::Thread::Options thread_options;
-    thread_options.message_loop_type = MessageLoop::TYPE_IO;
+    thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
     ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
 
     request_context_getter_ = new TestURLRequestContextGetter(
@@ -69,7 +69,7 @@ class EmbeddedTestServerTest : public testing::Test,
   virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
     ++num_responses_received_;
     if (num_responses_received_ == num_responses_expected_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   // Waits until the specified number of responses are received.
@@ -77,7 +77,7 @@ class EmbeddedTestServerTest : public testing::Test,
     num_responses_received_ = 0;
     num_responses_expected_ = num_responses;
     // Will be terminated in OnURLFetchComplete().
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   // Handles |request| sent to |path| and returns the response per |content|,

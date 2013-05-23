@@ -82,7 +82,7 @@ DeterministicSocketDataTest::DeterministicSocketDataTest()
 
 void DeterministicSocketDataTest::TearDown() {
   // Empty the current queue.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   PlatformTest::TearDown();
 }
 

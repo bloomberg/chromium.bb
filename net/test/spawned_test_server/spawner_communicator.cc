@@ -110,25 +110,25 @@ SpawnerCommunicator::~SpawnerCommunicator() {
 }
 
 void SpawnerCommunicator::WaitForResponse() {
-  DCHECK_NE(MessageLoop::current(), io_thread_.message_loop());
+  DCHECK_NE(base::MessageLoop::current(), io_thread_.message_loop());
   event_.Wait();
   event_.Reset();
 }
 
 void SpawnerCommunicator::StartIOThread() {
-  DCHECK_NE(MessageLoop::current(), io_thread_.message_loop());
+  DCHECK_NE(base::MessageLoop::current(), io_thread_.message_loop());
   if (is_running_)
     return;
 
   allowed_port_.reset(new ScopedPortException(port_));
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
   is_running_ = io_thread_.StartWithOptions(options);
   DCHECK(is_running_);
 }
 
 void SpawnerCommunicator::Shutdown() {
-  DCHECK_NE(MessageLoop::current(), io_thread_.message_loop());
+  DCHECK_NE(base::MessageLoop::current(), io_thread_.message_loop());
   DCHECK(is_running_);
   // The request and its context should be created and destroyed only on the
   // IO thread.
@@ -164,9 +164,9 @@ void SpawnerCommunicator::SendCommandAndWaitForResultOnIOThread(
     const std::string& post_data,
     int* result_code,
     std::string* data_received) {
-  MessageLoop* loop = io_thread_.message_loop();
+  base::MessageLoop* loop = io_thread_.message_loop();
   DCHECK(loop);
-  DCHECK_EQ(MessageLoop::current(), loop);
+  DCHECK_EQ(base::MessageLoop::current(), loop);
 
   // Prepare the URLRequest for sending the command.
   DCHECK(!cur_request_.get());
@@ -196,9 +196,10 @@ void SpawnerCommunicator::SendCommandAndWaitForResultOnIOThread(
   }
 
   // Post a task to timeout this request if it takes too long.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&SpawnerCommunicator::OnTimeout, weak_factory_.GetWeakPtr(),
+      base::Bind(&SpawnerCommunicator::OnTimeout,
+                 weak_factory_.GetWeakPtr(),
                  current_request_id),
       TestTimeouts::action_max_timeout());
 

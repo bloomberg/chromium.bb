@@ -101,7 +101,7 @@ void MockPersistentStore::Load(const LoadedCallback& loaded_callback) {
         new DefaultServerBoundCertStore::ServerBoundCert(it->second));
   }
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(loaded_callback, base::Passed(&certs)));
 }
 
@@ -150,7 +150,7 @@ TEST(DefaultServerBoundCertStoreTest, TestLoading) {
       base::Time(),
       "e", "f");
   // Wait for load & queued set task.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, store.GetCertCount());
   store.SetServerBoundCert(
       "twitter.com",
@@ -219,7 +219,7 @@ TEST(DefaultServerBoundCertStoreTest, TestDuplicateCerts) {
       "c", "d");
 
   // Wait for load & queued set tasks.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, store.GetCertCount());
   EXPECT_TRUE(store.GetServerBoundCert("verisign.com",
                                        &type,
@@ -254,7 +254,7 @@ TEST(DefaultServerBoundCertStoreTest, TestAsyncGet) {
       base::Bind(&AsyncGetCertHelper::Callback, base::Unretained(&helper))));
 
   // Wait for load & queued get tasks.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, store.GetCertCount());
   EXPECT_EQ("not set", cert);
   EXPECT_TRUE(helper.called_);
@@ -288,7 +288,7 @@ TEST(DefaultServerBoundCertStoreTest, TestDeleteAll) {
       base::Time(),
       "e", "f");
   // Wait for load & queued set tasks.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(3, store.GetCertCount());
   int delete_finished = 0;
@@ -323,7 +323,7 @@ TEST(DefaultServerBoundCertStoreTest, TestAsyncGetAndDeleteAll) {
   // Tasks have not run yet.
   EXPECT_EQ(0u, pre_certs.size());
   // Wait for load & queued tasks.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, store.GetCertCount());
   EXPECT_EQ(2u, pre_certs.size());
   EXPECT_EQ(0u, post_certs.size());
@@ -344,7 +344,7 @@ TEST(DefaultServerBoundCertStoreTest, TestDelete) {
       base::Time(),
       "a", "b");
   // Wait for load & queued set task.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   store.SetServerBoundCert(
       "google.com",
@@ -424,7 +424,7 @@ TEST(DefaultServerBoundCertStoreTest, TestAsyncDelete) {
   EXPECT_FALSE(a_helper.called_);
   EXPECT_FALSE(b_helper.called_);
   // Wait for load & queued tasks.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, delete_finished);
   EXPECT_EQ(1, store.GetCertCount());
   EXPECT_EQ("not set", cert);
@@ -472,7 +472,7 @@ TEST(DefaultServerBoundCertStoreTest, TestGetAll) {
       base::Time(),
       "g", "h");
   // Wait for load & queued set tasks.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(4, store.GetCertCount());
   ServerBoundCertStore::ServerBoundCertList certs;
@@ -497,7 +497,7 @@ TEST(DefaultServerBoundCertStoreTest, TestInitializeFrom) {
       base::Time(),
       "c", "d");
   // Wait for load & queued set tasks.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, store.GetCertCount());
 
   ServerBoundCertStore::ServerBoundCertList source_certs;
@@ -567,7 +567,7 @@ TEST(DefaultServerBoundCertStoreTest, TestAsyncInitializeFrom) {
   store.InitializeFrom(source_certs);
   EXPECT_EQ(0, store.GetCertCount());
   // Wait for load & queued tasks.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(3, store.GetCertCount());
 
   ServerBoundCertStore::ServerBoundCertList certs;

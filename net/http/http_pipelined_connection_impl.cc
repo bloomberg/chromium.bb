@@ -140,7 +140,7 @@ void HttpPipelinedConnectionImpl::InitializeParser(
   // In case our first stream doesn't SendRequest() immediately, we should still
   // allow others to use this pipeline.
   if (pipeline_id == 1) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&HttpPipelinedConnectionImpl::ActivatePipeline,
                    weak_factory_.GetWeakPtr()));
@@ -517,7 +517,7 @@ int HttpPipelinedConnectionImpl::DoReadStreamClosed() {
     return OK;
   }
   completed_one_request_ = true;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&HttpPipelinedConnectionImpl::StartNextDeferredRead,
                  weak_factory_.GetWeakPtr()));
@@ -773,7 +773,7 @@ void HttpPipelinedConnectionImpl::QueueUserCallback(
     const tracked_objects::Location& from_here) {
   CHECK(stream_info_map_[pipeline_id].pending_user_callback.is_null());
   stream_info_map_[pipeline_id].pending_user_callback = callback;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       from_here,
       base::Bind(&HttpPipelinedConnectionImpl::FireUserCallback,
                  weak_factory_.GetWeakPtr(), pipeline_id, rv));

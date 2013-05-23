@@ -184,7 +184,8 @@ void URLFetcherTest::CleanupAfterFetchComplete() {
                     // because the destructor won't necessarily run on the
                     // same thread that CreateFetcher() did.
 
-  io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  io_message_loop_proxy()->PostTask(FROM_HERE,
+                                    base::MessageLoop::QuitClosure());
   // If the current message loop is not the IO loop, it will be shut down when
   // the main loop returns and this thread subsequently goes out of scope.
 }
@@ -220,7 +221,8 @@ void URLFetcherMockDnsTest::CreateFetcher(const GURL& url) {
 }
 
 void URLFetcherMockDnsTest::OnURLFetchComplete(const URLFetcher* source) {
-  io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  io_message_loop_proxy()->PostTask(FROM_HERE,
+                                    base::MessageLoop::QuitClosure());
   ASSERT_EQ(fetcher_, source);
   EXPECT_EQ(test_url_, source->GetOriginalURL());
   completed_fetcher_.reset(fetcher_);
@@ -422,7 +424,8 @@ class CancelTestURLRequestContext : public ThrottlingTestURLRequestContext {
   virtual ~CancelTestURLRequestContext() {
     // The d'tor should execute in the IO thread. Post the quit task to the
     // current thread.
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
   }
 };
 
@@ -899,7 +902,7 @@ TEST_F(URLFetcherTest, SameThreadsTest) {
   // thread.
   CreateFetcher(test_server.GetURL("defaultresponse"));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherTest, DifferentThreadsTest) {
@@ -921,7 +924,7 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
                  base::Unretained(this),
                  test_server.GetURL("defaultresponse")));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 void CancelAllOnIO() {
@@ -940,10 +943,8 @@ TEST_F(URLFetcherTest, CancelAll) {
 
   CreateFetcher(test_server.GetURL("defaultresponse"));
   io_message_loop_proxy()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&CancelAllOnIO),
-      MessageLoop::QuitClosure());
-  MessageLoop::current()->Run();
+      FROM_HERE, base::Bind(&CancelAllOnIO), base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(0, GetNumFetcherCores());
   delete fetcher_;
 }
@@ -956,7 +957,7 @@ TEST_F(URLFetcherMockDnsTest, DontRetryOnNetworkChangedByDefault) {
   CreateFetcher(test_url_);
   fetcher_->Start();
   EXPECT_EQ(0, GetNumFetcherCores());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // The fetcher is now running, but is pending the host resolve.
   EXPECT_EQ(1, GetNumFetcherCores());
@@ -965,7 +966,7 @@ TEST_F(URLFetcherMockDnsTest, DontRetryOnNetworkChangedByDefault) {
 
   // A network change notification aborts the connect job.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, GetNumFetcherCores());
   EXPECT_FALSE(resolver_.has_pending_requests());
   ASSERT_TRUE(completed_fetcher_);
@@ -983,7 +984,7 @@ TEST_F(URLFetcherMockDnsTest, RetryOnNetworkChangedAndFail) {
   fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
   fetcher_->Start();
   EXPECT_EQ(0, GetNumFetcherCores());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // The fetcher is now running, but is pending the host resolve.
   EXPECT_EQ(1, GetNumFetcherCores());
@@ -994,7 +995,7 @@ TEST_F(URLFetcherMockDnsTest, RetryOnNetworkChangedAndFail) {
   for (int i = 0; i < 3; ++i) {
     // A network change notification aborts the connect job.
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     // But the fetcher retries automatically.
     EXPECT_EQ(1, GetNumFetcherCores());
@@ -1005,7 +1006,7 @@ TEST_F(URLFetcherMockDnsTest, RetryOnNetworkChangedAndFail) {
   // A 4th failure doesn't trigger another retry, and propagates the error
   // to the owner of the fetcher.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, GetNumFetcherCores());
   EXPECT_FALSE(resolver_.has_pending_requests());
   ASSERT_TRUE(completed_fetcher_);
@@ -1023,7 +1024,7 @@ TEST_F(URLFetcherMockDnsTest, RetryOnNetworkChangedAndSucceed) {
   fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
   fetcher_->Start();
   EXPECT_EQ(0, GetNumFetcherCores());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // The fetcher is now running, but is pending the host resolve.
   EXPECT_EQ(1, GetNumFetcherCores());
@@ -1034,7 +1035,7 @@ TEST_F(URLFetcherMockDnsTest, RetryOnNetworkChangedAndSucceed) {
   for (int i = 0; i < 3; ++i) {
     // A network change notification aborts the connect job.
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     // But the fetcher retries automatically.
     EXPECT_EQ(1, GetNumFetcherCores());
@@ -1044,7 +1045,7 @@ TEST_F(URLFetcherMockDnsTest, RetryOnNetworkChangedAndSucceed) {
 
   // Now let it succeed by resolving the pending request.
   resolver_.ResolveAllPending();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // URLFetcherMockDnsTest::OnURLFetchComplete() will quit the loop.
   EXPECT_EQ(0, GetNumFetcherCores());
@@ -1063,7 +1064,7 @@ TEST_F(URLFetcherPostTest, Basic) {
   ASSERT_TRUE(test_server.Start());
 
   CreateFetcher(test_server.GetURL("echo"));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherPostFileTest, Basic) {
@@ -1073,7 +1074,7 @@ TEST_F(URLFetcherPostFileTest, Basic) {
   ASSERT_TRUE(test_server.Start());
 
   CreateFetcher(test_server.GetURL("echo"));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherPostFileTest, Range) {
@@ -1085,7 +1086,7 @@ TEST_F(URLFetcherPostFileTest, Range) {
   SetUploadRange(30, 100);
 
   CreateFetcher(test_server.GetURL("echo"));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherEmptyPostTest, Basic) {
@@ -1095,7 +1096,7 @@ TEST_F(URLFetcherEmptyPostTest, Basic) {
   ASSERT_TRUE(test_server.Start());
 
   CreateFetcher(test_server.GetURL("echo"));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherUploadProgressTest, Basic) {
@@ -1105,7 +1106,7 @@ TEST_F(URLFetcherUploadProgressTest, Basic) {
   ASSERT_TRUE(test_server.Start());
 
   CreateFetcher(test_server.GetURL("echo"));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherDownloadProgressTest, Basic) {
@@ -1126,7 +1127,7 @@ TEST_F(URLFetcherDownloadProgressTest, Basic) {
   CreateFetcher(test_server.GetURL(
       std::string(kTestServerFilePrefix) + kFileToFetch));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherDownloadProgressCancelTest, CancelWhileProgressReport) {
@@ -1141,7 +1142,7 @@ TEST_F(URLFetcherDownloadProgressCancelTest, CancelWhileProgressReport) {
   CreateFetcher(test_server.GetURL(
       std::string(kTestServerFilePrefix) + kFileToFetch));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherHeadersTest, Headers) {
@@ -1152,7 +1153,7 @@ TEST_F(URLFetcherHeadersTest, Headers) {
   ASSERT_TRUE(test_server.Start());
 
   CreateFetcher(test_server.GetURL("files/with-headers.html"));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   // The actual tests are in the URLFetcherHeadersTest fixture.
 }
 
@@ -1166,7 +1167,7 @@ TEST_F(URLFetcherSocketAddressTest, SocketAddress) {
 
   // Reusing "with-headers.html" but doesn't really matter.
   CreateFetcher(test_server.GetURL("files/with-headers.html"));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   // The actual tests are in the URLFetcherSocketAddressTest fixture.
 }
 
@@ -1178,7 +1179,7 @@ TEST_F(URLFetcherStopOnRedirectTest, StopOnRedirect) {
 
   CreateFetcher(
       test_server.GetURL(std::string("server-redirect?") + kRedirectTarget));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(callback_called_);
 }
 
@@ -1205,7 +1206,7 @@ TEST_F(URLFetcherProtectTest, Overload) {
 
   CreateFetcher(url);
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherProtectTest, ServerUnavailable) {
@@ -1233,7 +1234,7 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
 
   CreateFetcher(url);
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
@@ -1263,7 +1264,7 @@ TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
 
   CreateFetcher(url);
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
@@ -1275,7 +1276,7 @@ TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
   ASSERT_TRUE(test_server.Start());
 
   CreateFetcher(test_server.GetURL("defaultresponse"));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherCancelTest, ReleasesContext) {
@@ -1298,7 +1299,7 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
       base::Bind(&URLFetcherCancelTest::CreateFetcher,
                  base::Unretained(this), url));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
@@ -1335,7 +1336,7 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
       FROM_HERE,
       base::Bind(&URLFetcherTest::CreateFetcher, base::Unretained(this), url));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherMultipleAttemptTest, SameData) {
@@ -1349,7 +1350,7 @@ TEST_F(URLFetcherMultipleAttemptTest, SameData) {
   // thread.
   CreateFetcher(test_server.GetURL("defaultresponse"));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherFileTest, SmallGet) {
@@ -1368,7 +1369,7 @@ TEST_F(URLFetcherFileTest, SmallGet) {
       test_server.GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
       temp_dir.path().AppendASCII(kFileToFetch));
 
-  MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 
   ASSERT_FALSE(file_util::PathExists(file_path_))
       << file_path_.value() << " not removed.";
@@ -1391,7 +1392,7 @@ TEST_F(URLFetcherFileTest, LargeGet) {
       test_server.GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
       temp_dir.path().AppendASCII(kFileToFetch));
 
-  MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 }
 
 TEST_F(URLFetcherFileTest, CanTakeOwnershipOfFile) {
@@ -1410,11 +1411,11 @@ TEST_F(URLFetcherFileTest, CanTakeOwnershipOfFile) {
       test_server.GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
       temp_dir.path().AppendASCII(kFileToFetch));
 
-  MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 
-  MessageLoop::current()->RunUntilIdle();
-  ASSERT_FALSE(file_util::PathExists(file_path_))
-      << file_path_.value() << " not removed.";
+  base::MessageLoop::current()->RunUntilIdle();
+  ASSERT_FALSE(file_util::PathExists(file_path_)) << file_path_.value()
+                                                  << " not removed.";
 }
 
 
@@ -1442,7 +1443,7 @@ TEST_F(URLFetcherFileTest, OverwriteExistingFile) {
       test_server.GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
       file_path_);
 
-  MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 }
 
 TEST_F(URLFetcherFileTest, TryToOverwriteDirectory) {
@@ -1467,9 +1468,9 @@ TEST_F(URLFetcherFileTest, TryToOverwriteDirectory) {
       test_server.GetURL(std::string(kTestServerFilePrefix) + kFileToFetch),
       file_path_);
 
-  MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(URLFetcherFileTest, SmallGetToTempFile) {
@@ -1484,7 +1485,7 @@ TEST_F(URLFetcherFileTest, SmallGetToTempFile) {
   CreateFetcherForTempFile(
       test_server.GetURL(std::string(kTestServerFilePrefix) + kFileToFetch));
 
-  MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 
   ASSERT_FALSE(file_util::PathExists(file_path_))
       << file_path_.value() << " not removed.";
@@ -1503,7 +1504,7 @@ TEST_F(URLFetcherFileTest, LargeGetToTempFile) {
   CreateFetcherForTempFile(test_server.GetURL(
       std::string(kTestServerFilePrefix) + kFileToFetch));
 
-  MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 }
 
 TEST_F(URLFetcherFileTest, CanTakeOwnershipOfTempFile) {
@@ -1518,11 +1519,11 @@ TEST_F(URLFetcherFileTest, CanTakeOwnershipOfTempFile) {
   CreateFetcherForTempFile(test_server.GetURL(
       std::string(kTestServerFilePrefix) + kFileToFetch));
 
-  MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
+  base::MessageLoop::current()->Run();  // OnURLFetchComplete() will Quit().
 
-  MessageLoop::current()->RunUntilIdle();
-  ASSERT_FALSE(file_util::PathExists(file_path_))
-      << file_path_.value() << " not removed.";
+  base::MessageLoop::current()->RunUntilIdle();
+  ASSERT_FALSE(file_util::PathExists(file_path_)) << file_path_.value()
+                                                  << " not removed.";
 }
 
 }  // namespace

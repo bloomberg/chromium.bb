@@ -50,7 +50,7 @@ int BufferedWriteStreamSocket::Write(IOBuffer* buf, int buf_len,
       wrapped_write_in_progress_ ? backup_buffer_.get() : io_buffer_.get();
   AppendBuffer(idle_buffer, buf, buf_len);
   if (!callback_pending_) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&BufferedWriteStreamSocket::DoDelayedWrite,
                    weak_factory_.GetWeakPtr()));

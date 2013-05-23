@@ -97,7 +97,7 @@ class TCPListenSocketTester :
   virtual void DidClose(StreamListenSocket* sock) OVERRIDE;
 
   scoped_ptr<base::Thread> thread_;
-  MessageLoopForIO* loop_;
+  base::MessageLoopForIO* loop_;
   scoped_refptr<TCPListenSocket> server_;
   StreamListenSocket* connection_;
   TCPListenSocketTestAction last_action_;

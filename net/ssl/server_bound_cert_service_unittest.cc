@@ -352,7 +352,7 @@ TEST_F(ServerBoundCertServiceTest, CancelRequest) {
   sequenced_worker_pool_->FlushForTesting();
   // Wait for reply from ServerBoundCertServiceWorker to be posted back to the
   // ServerBoundCertService.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Even though the original request was cancelled, the service will still
   // store the result, it just doesn't call the callback.
@@ -385,7 +385,7 @@ TEST_F(ServerBoundCertServiceTest, CancelRequestByHandleDestruction) {
   sequenced_worker_pool_->FlushForTesting();
   // Wait for reply from ServerBoundCertServiceWorker to be posted back to the
   // ServerBoundCertService.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Even though the original request was cancelled, the service will still
   // store the result, it just doesn't call the callback.
@@ -420,7 +420,7 @@ TEST_F(ServerBoundCertServiceTest, DestructionWithPendingRequest) {
   // ServerBoundCertServiceWorker should not post anything back to the
   // non-existant ServerBoundCertService, but run the loop just to be sure it
   // doesn't.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // If we got here without crashing or a valgrind error, it worked.
 }
@@ -434,7 +434,7 @@ TEST_F(ServerBoundCertServiceTest, RequestAfterPoolShutdown) {
   sequenced_worker_pool_ = NULL;
 
   // Ensure any shutdown code is processed.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Make a request that will force synchronous completion.
   std::string host("encrypted.google.com");

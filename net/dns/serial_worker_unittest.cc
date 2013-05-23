@@ -55,7 +55,7 @@ class SerialWorkerTest : public testing::Test {
   }
 
   void OnWorkFinished() {
-    EXPECT_TRUE(message_loop_ == MessageLoop::current());
+    EXPECT_TRUE(message_loop_ == base::MessageLoop::current());
     EXPECT_EQ(output_value_, input_value_);
     BreakNow("OnWorkFinished");
   }
@@ -63,7 +63,7 @@ class SerialWorkerTest : public testing::Test {
  protected:
   void BreakCallback(std::string breakpoint) {
     breakpoint_ = breakpoint;
-    MessageLoop::current()->QuitNow();
+    base::MessageLoop::current()->QuitNow();
   }
 
   void BreakNow(std::string b) {
@@ -97,7 +97,7 @@ class SerialWorkerTest : public testing::Test {
 
   // test::Test methods
   virtual void SetUp() OVERRIDE {
-    message_loop_ = MessageLoop::current();
+    message_loop_ = base::MessageLoop::current();
     worker_ = new TestSerialWorker(this);
   }
 
@@ -126,7 +126,7 @@ class SerialWorkerTest : public testing::Test {
   base::Lock work_lock_;
 
   // Loop for this thread.
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 
   // WatcherDelegate under test.
   scoped_refptr<TestSerialWorker> worker_;

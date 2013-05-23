@@ -220,7 +220,7 @@ void WebSocketJob::OnSentData(SocketStream* socket, int amount_sent) {
     DCHECK_GT(amount_sent, 0);
     current_send_buffer_ = NULL;
     if (!weak_ptr_factory_for_send_pending_.HasWeakPtrs()) {
-      MessageLoopForIO::current()->PostTask(
+      base::MessageLoopForIO::current()->PostTask(
           FROM_HERE,
           base::Bind(&WebSocketJob::SendPending,
                      weak_ptr_factory_for_send_pending_.GetWeakPtr()));
@@ -642,7 +642,7 @@ void WebSocketJob::Wakeup() {
     return;
   waiting_ = false;
   DCHECK(!callback_.is_null());
-  MessageLoopForIO::current()->PostTask(
+  base::MessageLoopForIO::current()->PostTask(
       FROM_HERE,
       base::Bind(&WebSocketJob::RetryPendingIO,
                  weak_ptr_factory_.GetWeakPtr()));

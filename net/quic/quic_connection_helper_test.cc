@@ -362,7 +362,7 @@ TEST_F(QuicConnectionHelperTest, WritePacketToWireAsync) {
   int error = 0;
   EXPECT_EQ(-1, helper_->WritePacketToWire(*GetWrite(0), &error));
   EXPECT_EQ(ERR_IO_PENDING, error);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(AtEof());
 }
 

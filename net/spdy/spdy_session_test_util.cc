@@ -15,11 +15,11 @@ SpdySessionTestTaskObserver::SpdySessionTestTaskObserver(
     : executed_count_(0),
       file_name_(file_name),
       function_name_(function_name) {
-  MessageLoop::current()->AddTaskObserver(this);
+  base::MessageLoop::current()->AddTaskObserver(this);
 }
 
 SpdySessionTestTaskObserver::~SpdySessionTestTaskObserver() {
-  MessageLoop::current()->RemoveTaskObserver(this);
+  base::MessageLoop::current()->RemoveTaskObserver(this);
 }
 
 void SpdySessionTestTaskObserver::WillProcessTask(

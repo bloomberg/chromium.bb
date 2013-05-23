@@ -21,7 +21,7 @@ struct MyOverlapped {
     return &context_.overlapped;
   }
 
-  MessageLoopForIO::IOContext context_;
+  base::MessageLoopForIO::IOContext context_;
   scoped_refptr<disk_cache::File> file_;
   disk_cache::FileIOCallback* callback_;
 };
@@ -29,16 +29,19 @@ struct MyOverlapped {
 COMPILE_ASSERT(!offsetof(MyOverlapped, context_), starts_with_overlapped);
 
 // Helper class to handle the IO completion notifications from the message loop.
-class CompletionHandler : public MessageLoopForIO::IOHandler {
-  virtual void OnIOCompleted(MessageLoopForIO::IOContext* context,
-                             DWORD actual_bytes, DWORD error);
+class CompletionHandler : public base::MessageLoopForIO::IOHandler {
+  virtual void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
+                             DWORD actual_bytes,
+                             DWORD error);
 };
 
 static base::LazyInstance<CompletionHandler> g_completion_handler =
     LAZY_INSTANCE_INITIALIZER;
 
-void CompletionHandler::OnIOCompleted(MessageLoopForIO::IOContext* context,
-                                      DWORD actual_bytes, DWORD error) {
+void CompletionHandler::OnIOCompleted(
+    base::MessageLoopForIO::IOContext* context,
+    DWORD actual_bytes,
+    DWORD error) {
   MyOverlapped* data = reinterpret_cast<MyOverlapped*>(context);
 
   if (error) {
@@ -84,7 +87,7 @@ bool File::Init(const base::FilePath& name) {
   if (INVALID_HANDLE_VALUE == platform_file_)
     return false;
 
-  MessageLoopForIO::current()->RegisterIOHandler(
+  base::MessageLoopForIO::current()->RegisterIOHandler(
       platform_file_, g_completion_handler.Pointer());
 
   init_ = true;
@@ -259,8 +262,8 @@ void File::WaitForPendingIO(int* num_pending_io) {
   while (*num_pending_io) {
     // Asynchronous IO operations may be in flight and the completion may end
     // up calling us back so let's wait for them.
-    MessageLoopForIO::IOHandler* handler = g_completion_handler.Pointer();
-    MessageLoopForIO::current()->WaitForIOCompletion(100, handler);
+    base::MessageLoopForIO::IOHandler* handler = g_completion_handler.Pointer();
+    base::MessageLoopForIO::current()->WaitForIOCompletion(100, handler);
   }
 }
 

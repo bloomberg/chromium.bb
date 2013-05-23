@@ -44,7 +44,7 @@ class Driver {
   void ClientStarted() { clients_++; }
   void ClientStopped() {
     if (!--clients_) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   }
 
@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
   bool use_cache = parsed_command_line.HasSwitch("use-cache");
 
   // Do work here.
-  MessageLoop loop(MessageLoop::TYPE_IO);
+  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
 
   scoped_ptr<net::HostResolver> host_resolver(
       net::HostResolver::CreateDefaultResolver(NULL));
@@ -180,7 +180,7 @@ int main(int argc, char** argv) {
     for (int i = 0; i < client_limit; i++)
       clients[i] = new Client(factory, url);
 
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   // Print Statistics here.

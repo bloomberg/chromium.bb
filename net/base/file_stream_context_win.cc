@@ -170,7 +170,7 @@ int FileStream::Context::Truncate(int64 bytes) {
 }
 
 void FileStream::Context::OnAsyncFileOpened() {
-  MessageLoopForIO::current()->RegisterIOHandler(file_, this);
+  base::MessageLoopForIO::current()->RegisterIOHandler(file_, this);
 }
 
 FileStream::Context::IOResult FileStream::Context::SeekFileImpl(Whence whence,
@@ -202,9 +202,10 @@ void FileStream::Context::IOCompletionIsPending(
   async_in_progress_ = true;
 }
 
-void FileStream::Context::OnIOCompleted(MessageLoopForIO::IOContext* context,
-                                        DWORD bytes_read,
-                                        DWORD error) {
+void FileStream::Context::OnIOCompleted(
+    base::MessageLoopForIO::IOContext* context,
+    DWORD bytes_read,
+    DWORD error) {
   DCHECK_EQ(&io_context_, context);
   DCHECK(!callback_.is_null());
   DCHECK(async_in_progress_);

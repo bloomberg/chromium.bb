@@ -160,7 +160,7 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
     SOCKET_OPTION_MULTICAST_LOOP = 1 << 2
   };
 
-  class ReadWatcher : public MessageLoopForIO::Watcher {
+  class ReadWatcher : public base::MessageLoopForIO::Watcher {
    public:
     explicit ReadWatcher(UDPSocketLibevent* socket) : socket_(socket) {}
 
@@ -176,7 +176,7 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
     DISALLOW_COPY_AND_ASSIGN(ReadWatcher);
   };
 
-  class WriteWatcher : public MessageLoopForIO::Watcher {
+  class WriteWatcher : public base::MessageLoopForIO::Watcher {
    public:
     explicit WriteWatcher(UDPSocketLibevent* socket) : socket_(socket) {}
 
@@ -250,8 +250,8 @@ class NET_EXPORT UDPSocketLibevent : public base::NonThreadSafe {
   mutable scoped_ptr<IPEndPoint> remote_address_;
 
   // The socket's libevent wrappers
-  MessageLoopForIO::FileDescriptorWatcher read_socket_watcher_;
-  MessageLoopForIO::FileDescriptorWatcher write_socket_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher read_socket_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher write_socket_watcher_;
 
   // The corresponding watchers for reads and writes.
   ReadWatcher read_watcher_;

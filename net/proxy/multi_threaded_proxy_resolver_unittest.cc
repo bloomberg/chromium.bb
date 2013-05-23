@@ -30,7 +30,7 @@ class MockProxyResolver : public ProxyResolver {
  public:
   MockProxyResolver()
       : ProxyResolver(true /*expects_pac_bytes*/),
-        wrong_loop_(MessageLoop::current()),
+        wrong_loop_(base::MessageLoop::current()),
         request_count_(0),
         purge_count_(0) {}
 
@@ -100,10 +100,10 @@ class MockProxyResolver : public ProxyResolver {
     // message loop of MultiThreadedProxyResolver's worker thread, we do
     // know that it is going to be distinct from the loop running the
     // test, so at least make sure it isn't the main loop.
-    EXPECT_NE(MessageLoop::current(), wrong_loop_);
+    EXPECT_NE(base::MessageLoop::current(), wrong_loop_);
   }
 
-  MessageLoop* wrong_loop_;
+  base::MessageLoop* wrong_loop_;
   int request_count_;
   int purge_count_;
   scoped_refptr<ProxyResolverScriptData> last_script_data_;
@@ -561,7 +561,7 @@ TEST(MultiThreadedProxyResolverTest, SingleThread_CancelRequestByDeleting) {
   resolver.reset();
 
   // Give any posted tasks a chance to run (in case there is badness).
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Check that none of the outstanding requests were completed.
   EXPECT_FALSE(callback0.have_result());
@@ -645,7 +645,7 @@ TEST(MultiThreadedProxyResolverTest, ThreeThreads_Basic) {
   ASSERT_EQ(1u, factory->resolvers().size());
   EXPECT_EQ(1, factory->resolvers()[0]->request_count());
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // We now start 8 requests in parallel -- this will cause the maximum of
   // three threads to be provisioned (an additional two from what we already

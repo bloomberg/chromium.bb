@@ -74,7 +74,7 @@ class QuitDelegate : public net::URLFetcherDelegate {
 
   // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   virtual void OnURLFetchDownloadProgress(
@@ -273,7 +273,7 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  MessageLoopForIO main_loop;
+  base::MessageLoopForIO main_loop;
 
   // NOTE: A NetworkChangeNotifier could be instantiated here, but
   // that interferes with the request that will be sent; some

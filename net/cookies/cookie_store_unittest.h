@@ -75,10 +75,10 @@ class CookieStoreTest : public testing::Test {
         url_google_bar_(kUrlGoogleBar) {
     // This test may be used outside of the net test suite, and thus may not
     // have a message loop.
-    if (!MessageLoop::current())
-      message_loop_.reset(new MessageLoop);
-    weak_factory_.reset(
-        new base::WeakPtrFactory<MessageLoop>(MessageLoop::current()));
+    if (!base::MessageLoop::current())
+      message_loop_.reset(new base::MessageLoop);
+    weak_factory_.reset(new base::WeakPtrFactory<base::MessageLoop>(
+        base::MessageLoop::current()));
   }
 
   // Helper methods for the asynchronous Cookie Store API that call the
@@ -185,10 +185,11 @@ class CookieStoreTest : public testing::Test {
 
   void RunFor(int ms) {
     // Runs the test thread message loop for up to |ms| milliseconds.
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&MessageLoop::Quit, weak_factory_->GetWeakPtr()),
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&base::MessageLoop::Quit, weak_factory_->GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(ms));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     weak_factory_->InvalidateWeakPtrs();
   }
 
@@ -226,8 +227,8 @@ class CookieStoreTest : public testing::Test {
   GURL url_google_foo_;
   GURL url_google_bar_;
 
-  scoped_ptr<base::WeakPtrFactory<MessageLoop> > weak_factory_;
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::WeakPtrFactory<base::MessageLoop> > weak_factory_;
+  scoped_ptr<base::MessageLoop> message_loop_;
 
  private:
   // Returns a set of strings of type "name=value". Fails in case of duplicate.

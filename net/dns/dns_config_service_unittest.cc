@@ -21,7 +21,7 @@ class DnsConfigServiceTest : public testing::Test {
   void OnConfigChanged(const DnsConfig& config) {
     last_config_ = config;
     if (quit_on_config_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
  protected:
@@ -53,12 +53,11 @@ class DnsConfigServiceTest : public testing::Test {
   };
 
   void WaitForConfig(base::TimeDelta timeout) {
-    base::CancelableClosure closure(MessageLoop::QuitClosure());
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            closure.callback(),
-                                            timeout);
+    base::CancelableClosure closure(base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, closure.callback(), timeout);
     quit_on_config_ = true;
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     quit_on_config_ = false;
     closure.Cancel();
   }

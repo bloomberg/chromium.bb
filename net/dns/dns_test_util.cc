@@ -65,9 +65,8 @@ class MockTransaction : public DnsTransaction,
     if (MockDnsClientRule::FAIL_SYNC == result_)
       return ERR_NAME_NOT_RESOLVED;
     // Using WeakPtr to cleanly cancel when transaction is destroyed.
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&MockTransaction::Finish, AsWeakPtr()));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&MockTransaction::Finish, AsWeakPtr()));
     return ERR_IO_PENDING;
   }
 

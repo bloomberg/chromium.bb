@@ -51,7 +51,7 @@ class DiskCacheTest : public PlatformTest {
 
  private:
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
 };
 
 // Provides basic support for cache related tests.

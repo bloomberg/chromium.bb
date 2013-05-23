@@ -16,10 +16,10 @@ namespace net {
 
 class IPEndPoint;
 
-class NET_EXPORT_PRIVATE TCPServerSocketLibevent
-    : public ServerSocket,
-      public base::NonThreadSafe,
-      public MessageLoopForIO::Watcher {
+class NET_EXPORT_PRIVATE TCPServerSocketLibevent :
+    public ServerSocket,
+    public base::NonThreadSafe,
+    public base::MessageLoopForIO::Watcher {
  public:
   TCPServerSocketLibevent(net::NetLog* net_log,
                           const net::NetLog::Source& source);
@@ -43,7 +43,7 @@ class NET_EXPORT_PRIVATE TCPServerSocketLibevent
 
   int socket_;
 
-  MessageLoopForIO::FileDescriptorWatcher accept_socket_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher accept_socket_watcher_;
 
   scoped_ptr<StreamSocket>* accept_socket_;
   CompletionCallback accept_callback_;

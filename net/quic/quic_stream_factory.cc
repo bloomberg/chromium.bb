@@ -374,7 +374,7 @@ QuicClientSession* QuicStreamFactory::CreateSession(
   socket->Connect(addr);
 
   QuicConnectionHelper* helper = new QuicConnectionHelper(
-      MessageLoop::current()->message_loop_proxy(),
+      base::MessageLoop::current()->message_loop_proxy(),
       clock_.get(), random_generator_, socket);
 
   QuicConnection* connection = new QuicConnection(guid, addr, helper, false);

@@ -154,7 +154,7 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
 
   if (pushed_) {
     CHECK(response_received());
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&SpdyStream::PushedStreamReplayData, GetWeakPtr()));
   } else {

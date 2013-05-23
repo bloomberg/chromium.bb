@@ -78,13 +78,13 @@ class FakeDataChannel {
         return net::ERR_CONNECTION_RESET;
       write_called_after_close_ = true;
       write_callback_ = callback;
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(&FakeDataChannel::DoWriteCallback,
                                 weak_factory_.GetWeakPtr()));
       return net::ERR_IO_PENDING;
     }
     data_.push(new net::DrainableIOBuffer(buf, buf_len));
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&FakeDataChannel::DoReadCallback,
                               weak_factory_.GetWeakPtr()));
     return buf_len;
@@ -523,10 +523,10 @@ TEST_F(SSLServerSocketTest, ClientWriteAfterServerClose) {
   client_ret = write_callback.GetResult(client_ret);
   EXPECT_GT(client_ret, 0);
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(),
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(10));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 // This test executes ExportKeyingMaterial() on the client and server sockets,

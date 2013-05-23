@@ -197,7 +197,7 @@ void TestTransactionConsumer::DidFinish(int result) {
   state_ = DONE;
   error_ = result;
   if (--quit_counter_ == 0)
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 void TestTransactionConsumer::Read() {
@@ -373,7 +373,7 @@ void MockNetworkTransaction::SetPriority(net::RequestPriority priority) {
 
 void MockNetworkTransaction::CallbackLater(
     const net::CompletionCallback& callback, int result) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&MockNetworkTransaction::RunCallback,
                             weak_factory_.GetWeakPtr(), callback, result));
 }

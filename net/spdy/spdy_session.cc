@@ -642,7 +642,7 @@ void SpdySession::ProcessPendingStreamRequests() {
         DCHECK(!ContainsKey(pending_stream_request_completions_,
                             pending_request));
         pending_stream_request_completions_.insert(pending_request);
-        MessageLoop::current()->PostTask(
+        base::MessageLoop::current()->PostTask(
             FROM_HERE,
             base::Bind(&SpdySession::CompleteStreamRequest,
                        weak_factory_.GetWeakPtr(), pending_request));
@@ -1032,7 +1032,7 @@ int SpdySession::DoLoop(int result) {
 int SpdySession::DoRead() {
   if (bytes_read_ > kMaxReadBytes) {
     state_ = STATE_DO_READ;
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&SpdySession::StartRead,
                    weak_factory_.GetWeakPtr()));
@@ -1150,7 +1150,7 @@ void SpdySession::WriteSocketLater() {
     return;
 
   delayed_write_pending_ = true;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&SpdySession::WriteSocket, weak_factory_.GetWeakPtr()));
 }
@@ -2147,7 +2147,7 @@ void SpdySession::PlanToCheckPingStatus() {
     return;
 
   check_ping_status_pending_ = true;
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&SpdySession::CheckPingStatus, weak_factory_.GetWeakPtr(),
                  base::TimeTicks::Now()), hung_interval_);
@@ -2175,7 +2175,7 @@ void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
   }
 
   // Check the status of connection after a delay.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&SpdySession::CheckPingStatus, weak_factory_.GetWeakPtr(),
                  now),

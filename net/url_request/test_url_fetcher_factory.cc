@@ -296,7 +296,7 @@ FakeURLFetcher::FakeURLFetcher(const GURL& url,
 FakeURLFetcher::~FakeURLFetcher() {}
 
 void FakeURLFetcher::Start() {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FakeURLFetcher::RunDelegate, weak_factory_.GetWeakPtr()));
 }

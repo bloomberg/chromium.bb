@@ -21,7 +21,7 @@ URLRequestErrorJob::URLRequestErrorJob(
 URLRequestErrorJob::~URLRequestErrorJob() {}
 
 void URLRequestErrorJob::Start() {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestErrorJob::StartAsync, weak_factory_.GetWeakPtr()));
 }

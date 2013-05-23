@@ -239,7 +239,7 @@ TEST_F(FileStreamTest, AsyncRead_EarlyDelete) {
   if (rv < 0) {
     EXPECT_EQ(ERR_IO_PENDING, rv);
     // The callback should not be called if the request is cancelled.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_FALSE(callback.have_result());
   } else {
     EXPECT_EQ(std::string(kTestData, rv), std::string(buf->data(), rv));
@@ -460,7 +460,7 @@ TEST_F(FileStreamTest, AsyncWrite_EarlyDelete) {
   if (rv < 0) {
     EXPECT_EQ(ERR_IO_PENDING, rv);
     // The callback should not be called if the request is cancelled.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_FALSE(callback.have_result());
   } else {
     ok = file_util::GetFileSize(temp_file_path(), &file_size);
@@ -780,7 +780,7 @@ class TestWriteReadCompletionCallback {
     DCHECK(!waiting_for_result_);
     while (!have_result_) {
       waiting_for_result_ = true;
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
       waiting_for_result_ = false;
     }
     have_result_ = false;  // auto-reset for next callback
@@ -818,7 +818,8 @@ class TestWriteReadCompletionCallback {
         scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(4);
         rv = stream_->Read(buf, buf->size(), callback.callback());
         if (rv == ERR_IO_PENDING) {
-          MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+          base::MessageLoop::ScopedNestableTaskAllower allow(
+              base::MessageLoop::current());
           rv = callback.WaitForResult();
         }
         EXPECT_LE(0, rv);
@@ -832,7 +833,7 @@ class TestWriteReadCompletionCallback {
     result_ = *total_bytes_written_;
     have_result_ = true;
     if (waiting_for_result_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   int result_;
@@ -913,7 +914,7 @@ class TestWriteCloseCompletionCallback {
     DCHECK(!waiting_for_result_);
     while (!have_result_) {
       waiting_for_result_ = true;
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
       waiting_for_result_ = false;
     }
     have_result_ = false;  // auto-reset for next callback
@@ -944,7 +945,7 @@ class TestWriteCloseCompletionCallback {
     result_ = *total_bytes_written_;
     have_result_ = true;
     if (waiting_for_result_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   int result_;
@@ -1037,7 +1038,7 @@ TEST_F(FileStreamTest, AsyncOpenAndDelete) {
   // complete. Should be safe.
   stream.reset();
   // open_callback won't be called.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(open_callback.have_result());
 }
 

@@ -225,10 +225,12 @@ URLRequest::URLRequest(const GURL& url,
   SIMPLE_STATS_COUNTER("URLRequestCount");
 
   // Sanity check out environment.
-  DCHECK(MessageLoop::current()) << "The current MessageLoop must exist";
+  DCHECK(base::MessageLoop::current())
+      << "The current base::MessageLoop must exist";
 
-  DCHECK(MessageLoop::current()->IsType(MessageLoop::TYPE_IO)) << ""
-      "The current MessageLoop must be TYPE_IO";
+  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO))
+      << ""
+         "The current base::MessageLoop must be TYPE_IO";
 
   CHECK(context);
   context->url_requests()->insert(this);
@@ -263,10 +265,12 @@ URLRequest::URLRequest(const GURL& url,
   SIMPLE_STATS_COUNTER("URLRequestCount");
 
   // Sanity check out environment.
-  DCHECK(MessageLoop::current()) << "The current MessageLoop must exist";
+  DCHECK(base::MessageLoop::current())
+      << "The current base::MessageLoop must exist";
 
-  DCHECK(MessageLoop::current()->IsType(MessageLoop::TYPE_IO)) << ""
-      "The current MessageLoop must be TYPE_IO";
+  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO))
+      << ""
+         "The current base::MessageLoop must be TYPE_IO";
 
   CHECK(context);
   context->url_requests()->insert(this);

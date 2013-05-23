@@ -42,7 +42,7 @@ class MockHttpStreamFactoryImpl : public HttpStreamFactoryImpl {
   void WaitForPreconnects() {
     while (!preconnect_done_) {
       waiting_for_preconnect_ = true;
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
       waiting_for_preconnect_ = false;
     }
   }
@@ -52,7 +52,7 @@ class MockHttpStreamFactoryImpl : public HttpStreamFactoryImpl {
   virtual void OnPreconnectsCompleteInternal() OVERRIDE {
     preconnect_done_ = true;
     if (waiting_for_preconnect_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   bool preconnect_done_;
@@ -73,7 +73,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
       HttpStreamBase* stream) OVERRIDE {
     stream_done_ = true;
     if (waiting_for_stream_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     stream_.reset(stream);
     used_ssl_config_ = used_ssl_config;
   }
@@ -103,7 +103,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   void WaitForStream() {
     while (!stream_done_) {
       waiting_for_stream_ = true;
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
       waiting_for_stream_ = false;
     }
   }

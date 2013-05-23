@@ -42,10 +42,11 @@ void DelayedCookieMonster::SetCookieWithOptionsAsync(
       base::Bind(&DelayedCookieMonster::SetCookiesInternalCallback,
                  base::Unretained(this)));
   DCHECK_EQ(did_run_, true);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DelayedCookieMonster::InvokeSetCookiesCallback,
-                 base::Unretained(this), callback),
+                 base::Unretained(this),
+                 callback),
       base::TimeDelta::FromMilliseconds(kDelayedTime));
 }
 
@@ -59,10 +60,11 @@ void DelayedCookieMonster::GetCookiesWithOptionsAsync(
       base::Bind(&DelayedCookieMonster::GetCookiesWithOptionsInternalCallback,
                  base::Unretained(this)));
   DCHECK_EQ(did_run_, true);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DelayedCookieMonster::InvokeGetCookieStringCallback,
-                 base::Unretained(this), callback),
+                 base::Unretained(this),
+                 callback),
       base::TimeDelta::FromMilliseconds(kDelayedTime));
 }
 

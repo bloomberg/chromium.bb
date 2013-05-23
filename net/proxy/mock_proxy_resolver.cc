@@ -10,14 +10,15 @@
 namespace net {
 
 MockAsyncProxyResolverBase::Request::Request(
-    MockAsyncProxyResolverBase* resolver, const GURL& url, ProxyInfo* results,
+    MockAsyncProxyResolverBase* resolver,
+    const GURL& url,
+    ProxyInfo* results,
     const CompletionCallback& callback)
-        : resolver_(resolver),
-          url_(url),
-          results_(results),
-          callback_(callback),
-          origin_loop_(MessageLoop::current()) {
-    }
+    : resolver_(resolver),
+      url_(url),
+      results_(results),
+      callback_(callback),
+      origin_loop_(base::MessageLoop::current()) {}
 
     void MockAsyncProxyResolverBase::Request::CompleteNow(int rv) {
       CompletionCallback callback = callback_;
@@ -30,16 +31,14 @@ MockAsyncProxyResolverBase::Request::Request(
 
 MockAsyncProxyResolverBase::Request::~Request() {}
 
-
 MockAsyncProxyResolverBase::SetPacScriptRequest::SetPacScriptRequest(
-        MockAsyncProxyResolverBase* resolver,
-        const scoped_refptr<ProxyResolverScriptData>& script_data,
-        const CompletionCallback& callback)
-        : resolver_(resolver),
-          script_data_(script_data),
-          callback_(callback),
-          origin_loop_(MessageLoop::current()) {
-    }
+    MockAsyncProxyResolverBase* resolver,
+    const scoped_refptr<ProxyResolverScriptData>& script_data,
+    const CompletionCallback& callback)
+    : resolver_(resolver),
+      script_data_(script_data),
+      callback_(callback),
+      origin_loop_(base::MessageLoop::current()) {}
 
 MockAsyncProxyResolverBase::SetPacScriptRequest::~SetPacScriptRequest() {}
 
