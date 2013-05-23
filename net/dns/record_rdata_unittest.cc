@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "net/dns/record_rdata.h"
+#include "net/base/net_util.h"
 #include "net/dns/dns_response.h"
+#include "net/dns/record_rdata.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -52,6 +53,9 @@ TEST(RecordRdataTest, ParseSrvRecord) {
   ASSERT_EQ(259, record2_obj->port());
 
   ASSERT_EQ("www2.google.com", record2_obj->target());
+
+  ASSERT_TRUE(record1_obj->IsEqual(record1_obj.get()));
+  ASSERT_FALSE(record1_obj->IsEqual(record2_obj.get()));
 }
 
 TEST(RecordRdataTest, ParseARecord) {
@@ -71,6 +75,33 @@ TEST(RecordRdataTest, ParseARecord) {
   ASSERT_TRUE(record_obj != NULL);
 
   ASSERT_EQ("127.0.0.1", IPAddressToString(record_obj->address()));
+
+  ASSERT_TRUE(record_obj->IsEqual(record_obj.get()));
+}
+
+TEST(RecordRdataTest, ParseAAAARecord) {
+  scoped_ptr<AAAARecordRdata> record_obj;
+
+  // These are just the rdata portions of the DNS records, rather than complete
+  // records, but it works well enough for this test.
+
+  const char record[] = {
+    0x12, 0x34, 0x56, 0x78,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x09  // 1234:5678::9A
+  };
+
+  DnsRecordParser parser(record, sizeof(record), 0);
+  base::StringPiece record_strpiece(record, sizeof(record));
+
+  record_obj = AAAARecordRdata::Create(record_strpiece, parser);
+  ASSERT_TRUE(record_obj != NULL);
+
+  ASSERT_EQ("1234:5678::9",
+            IPAddressToString(record_obj->address()));
+
+  ASSERT_TRUE(record_obj->IsEqual(record_obj.get()));
 }
 
 TEST(RecordRdataTest, ParseCnameRecord) {
@@ -93,6 +124,8 @@ TEST(RecordRdataTest, ParseCnameRecord) {
   ASSERT_TRUE(record_obj != NULL);
 
   ASSERT_EQ("www.google.com", record_obj->cname());
+
+  ASSERT_TRUE(record_obj->IsEqual(record_obj.get()));
 }
 
 TEST(RecordRdataTest, ParsePtrRecord) {
@@ -115,6 +148,8 @@ TEST(RecordRdataTest, ParsePtrRecord) {
   ASSERT_TRUE(record_obj != NULL);
 
   ASSERT_EQ("www.google.com", record_obj->ptrdomain());
+
+  ASSERT_TRUE(record_obj->IsEqual(record_obj.get()));
 }
 
 TEST(RecordRdataTest, ParseTxtRecord) {
@@ -141,6 +176,8 @@ TEST(RecordRdataTest, ParseTxtRecord) {
   expected.push_back("com");
 
   ASSERT_EQ(expected, record_obj->texts());
+
+  ASSERT_TRUE(record_obj->IsEqual(record_obj.get()));
 }
 
 }  // namespace net

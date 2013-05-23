@@ -90,6 +90,11 @@ static const uint8 kLabelPointer = 0xc0;
 static const uint8 kLabelDirect = 0x0;
 static const uint16 kOffsetMask = 0x3fff;
 
+// In MDns the most significant bit of the rrclass is designated as the
+// "cache-flush bit", as described in http://www.rfc-editor.org/rfc/rfc6762.txt
+// section 10.2.
+static const uint16 kMDnsClassMask = 0x7FFF;
+
 static const int kMaxNameLength = 255;
 
 // RFC 1035, section 4.2.1: Messages carried by UDP are restricted to 512
@@ -129,4 +134,3 @@ static const uint16 kFlagAA = 0x400;
 }  // namespace net
 
 #endif  // NET_DNS_DNS_PROTOCOL_H_
-

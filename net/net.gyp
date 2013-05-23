@@ -443,6 +443,8 @@
         'dns/host_resolver_proc.h',
         'dns/mapped_host_resolver.cc',
         'dns/mapped_host_resolver.h',
+        'dns/mdns_cache.cc',
+        'dns/mdns_cache.h',
         'dns/notify_watcher_mac.cc',
         'dns/notify_watcher_mac.h',
         'dns/record_parsed.cc',
@@ -1297,6 +1299,8 @@
         }],
         [ 'enable_mdns != 1', {
             'sources!' : [
+              'dns/mdns_cache.cc',
+              'dns/mdns_cache.h',
               'dns/record_parsed.cc',
               'dns/record_parsed.h',
               'dns/record_rdata.cc',
@@ -1533,6 +1537,7 @@
         'dns/host_cache_unittest.cc',
         'dns/host_resolver_impl_unittest.cc',
         'dns/mapped_host_resolver_unittest.cc',
+        'dns/mdns_cache_unittest.cc',
         'dns/serial_worker_unittest.cc',
         'dns/record_parsed_unittest.cc',
         'dns/record_rdata_unittest.cc',
@@ -1923,6 +1928,7 @@
 
         [ 'enable_mdns != 1', {
             'sources!' : [
+              'dns/mdns_cache_unittest.cc',
               'dns/record_parsed_unittest.cc',
               'dns/record_rdata_unittest.cc',
             ],

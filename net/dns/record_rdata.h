@@ -27,6 +27,9 @@ class NET_EXPORT_PRIVATE RecordRdata {
  public:
   virtual ~RecordRdata() {}
 
+  virtual bool IsEqual(const RecordRdata* other) const = 0;
+  virtual uint16 Type() const = 0;
+
  protected:
   RecordRdata();
 
@@ -45,6 +48,9 @@ class NET_EXPORT_PRIVATE SrvRecordRdata : public RecordRdata {
   virtual ~SrvRecordRdata();
   static scoped_ptr<SrvRecordRdata> Create(const base::StringPiece& data,
                                            const DnsRecordParser& parser);
+
+  virtual bool IsEqual(const RecordRdata* other) const OVERRIDE;
+  virtual uint16 Type() const OVERRIDE;
 
   uint16 priority() const { return priority_; }
   uint16 weight() const { return weight_; }
@@ -73,6 +79,8 @@ class NET_EXPORT_PRIVATE ARecordRdata : public RecordRdata {
   virtual ~ARecordRdata();
   static scoped_ptr<ARecordRdata> Create(const base::StringPiece& data,
                                          const DnsRecordParser& parser);
+  virtual bool IsEqual(const RecordRdata* other) const OVERRIDE;
+  virtual uint16 Type() const OVERRIDE;
 
   const IPAddressNumber& address() const { return address_; }
 
@@ -84,6 +92,28 @@ class NET_EXPORT_PRIVATE ARecordRdata : public RecordRdata {
   DISALLOW_COPY_AND_ASSIGN(ARecordRdata);
 };
 
+// AAAA Record format (http://www.ietf.org/rfc/rfc1035.txt):
+// 16 bytes for IP address.
+class NET_EXPORT_PRIVATE AAAARecordRdata : public RecordRdata {
+ public:
+  static const uint16 kType = dns_protocol::kTypeAAAA;
+
+  virtual ~AAAARecordRdata();
+  static scoped_ptr<AAAARecordRdata> Create(const base::StringPiece& data,
+                                         const DnsRecordParser& parser);
+  virtual bool IsEqual(const RecordRdata* other) const OVERRIDE;
+  virtual uint16 Type() const OVERRIDE;
+
+  const IPAddressNumber& address() const { return address_; }
+
+ private:
+  AAAARecordRdata();
+
+  IPAddressNumber address_;
+
+  DISALLOW_COPY_AND_ASSIGN(AAAARecordRdata);
+};
+
 // CNAME record format (http://www.ietf.org/rfc/rfc1035.txt):
 // cname: On the wire representation of domain name.
 class NET_EXPORT_PRIVATE CnameRecordRdata : public RecordRdata {
@@ -93,6 +123,8 @@ class NET_EXPORT_PRIVATE CnameRecordRdata : public RecordRdata {
   virtual ~CnameRecordRdata();
   static scoped_ptr<CnameRecordRdata> Create(const base::StringPiece& data,
                                              const DnsRecordParser& parser);
+  virtual bool IsEqual(const RecordRdata* other) const OVERRIDE;
+  virtual uint16 Type() const OVERRIDE;
 
   std::string cname() const { return cname_; }
 
@@ -113,6 +145,8 @@ class NET_EXPORT_PRIVATE PtrRecordRdata : public RecordRdata {
   virtual ~PtrRecordRdata();
   static scoped_ptr<PtrRecordRdata> Create(const base::StringPiece& data,
                                            const DnsRecordParser& parser);
+  virtual bool IsEqual(const RecordRdata* other) const OVERRIDE;
+  virtual uint16 Type() const OVERRIDE;
 
   std::string ptrdomain() const { return ptrdomain_; }
 
@@ -134,6 +168,8 @@ class NET_EXPORT_PRIVATE TxtRecordRdata : public RecordRdata {
   virtual ~TxtRecordRdata();
   static scoped_ptr<TxtRecordRdata> Create(const base::StringPiece& data,
                                            const DnsRecordParser& parser);
+  virtual bool IsEqual(const RecordRdata* other) const OVERRIDE;
+  virtual uint16 Type() const OVERRIDE;
 
   const std::vector<std::string>& texts() const { return texts_; }
 
@@ -144,6 +180,7 @@ class NET_EXPORT_PRIVATE TxtRecordRdata : public RecordRdata {
 
   DISALLOW_COPY_AND_ASSIGN(TxtRecordRdata);
 };
-}
+
+}  // namespace net
 
 #endif  // NET_DNS_RECORD_RDATA_H_
