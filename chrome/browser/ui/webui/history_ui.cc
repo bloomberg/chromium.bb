@@ -228,20 +228,6 @@ bool GetResultTimeAndUrl(Value* result, base::Time* time, string16* url) {
   return false;
 }
 
-// Removes all entries in |entry_list| that are older than the |cutoff|.
-// |entry_list| must already be sorted in reverse chronological order.
-void RemoveOlderEntries(
-    std::vector<BrowsingHistoryHandler::HistoryEntry>* entry_list,
-    base::Time cutoff) {
-  for (std::vector<BrowsingHistoryHandler::HistoryEntry>::iterator it =
-      entry_list->begin(); it != entry_list->end(); ++it) {
-    if (it->time < cutoff) {
-      entry_list->erase(it, entry_list->end());
-      break;
-    }
-  }
-}
-
 // Returns true if |entry| represents a local visit that had no corresponding
 // visit on the server.
 bool IsLocalOnlyResult(const BrowsingHistoryHandler::HistoryEntry& entry) {
@@ -727,17 +713,6 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
   // Combine the local and remote results into |query_results_|, and remove
   // any duplicates.
   if (!web_history_query_results_.empty()) {
-    if (!query_results_.empty()) {
-      // Each result set covers a particular time range. Determine the
-      // intersection of the two time ranges, discard any entries from either
-      // set that are older than that, and then combine the results.
-      base::Time cutoff_time = std::max(
-          query_results_.back().time,
-          web_history_query_results_.back().time);
-      RemoveOlderEntries(&query_results_, cutoff_time);
-      RemoveOlderEntries(&web_history_query_results_, cutoff_time);
-    }
-
     int local_result_count = query_results_.size();
     query_results_.insert(query_results_.end(),
                           web_history_query_results_.begin(),
