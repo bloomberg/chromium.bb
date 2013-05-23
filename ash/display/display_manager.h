@@ -14,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/display.h"
 
 namespace gfx {
 class Display;
@@ -135,7 +134,7 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   // Returns the mirroring status.
   bool IsMirrored() const;
-  int64 mirrored_display_id() const { return mirrored_display_.id(); }
+  int64 mirrored_display_id() const { return mirrored_display_id_; }
 
   // Returns the display object nearest given |window|.
   const gfx::Display& GetDisplayNearestPoint(
@@ -161,6 +160,10 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // desktop, this returns the first display ID.
   int64 GetDisplayIdForUIScaling() const;
 
+  // RootWindowObserver overrides:
+  virtual void OnRootWindowResized(const aura::RootWindow* root,
+                                   const gfx::Size& new_size) OVERRIDE;
+
   // Change the mirror mode.
   void SetMirrorMode(bool mirrored);
 
@@ -168,13 +171,6 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // of on a device.
   void AddRemoveDisplay();
   void ToggleDisplayScaleFactor();
-
-  // RootWindowObserver overrides:
-  virtual void OnRootWindowResized(const aura::RootWindow* root,
-                                   const gfx::Size& new_size) OVERRIDE;
-
-  // TODO(oshima): This will be SoftwareMirroringController override:
-  void SetSoftwareMirroring(bool enabled);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
@@ -213,7 +209,7 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   int64 first_display_id_;
 
-  gfx::Display mirrored_display_;
+  int64 mirrored_display_id_;
 
   // List of current active dispays.
   DisplayList displays_;
@@ -231,8 +227,6 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // window wil update the display properly. This is set to false
   // on device as well as during the unit tests.
   bool change_display_upon_host_resize_;
-
-  bool software_mirroring_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };

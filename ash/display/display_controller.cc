@@ -621,10 +621,6 @@ DisplayLayout DisplayController::GetRegisteredDisplayLayout(
 }
 
 void DisplayController::ToggleMirrorMode() {
-  internal::DisplayManager* display_manager = GetDisplayManager();
-  if (display_manager->num_connected_displays() <= 1)
-    return;
-
   if (limiter_) {
     if  (limiter_->IsThrottled())
       return;
@@ -632,12 +628,15 @@ void DisplayController::ToggleMirrorMode() {
   }
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   Shell* shell = Shell::GetInstance();
-  internal::OutputConfiguratorAnimation* animation =
-      shell->output_configurator_animation();
-  animation->StartFadeOutAnimation(base::Bind(
-      base::IgnoreResult(&internal::DisplayManager::SetMirrorMode),
-      base::Unretained(display_manager),
-      !display_manager->IsMirrored()));
+  internal::DisplayManager* display_manager = GetDisplayManager();
+  if (display_manager->num_connected_displays() > 1) {
+    internal::OutputConfiguratorAnimation* animation =
+        shell->output_configurator_animation();
+    animation->StartFadeOutAnimation(base::Bind(
+        base::IgnoreResult(&internal::DisplayManager::SetMirrorMode),
+        base::Unretained(display_manager),
+        !display_manager->IsMirrored()));
+  }
 #endif
 }
 

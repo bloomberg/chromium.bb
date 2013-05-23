@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
-#include "ash/test/mirror_window_test_api.h"
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 #include "ui/aura/env.h"
@@ -713,11 +712,7 @@ TEST_F(DisplayManagerTest, Rotate) {
             GetDisplayInfoAt(1).bounds_in_pixel().ToString());
   EXPECT_EQ("400x300",
             GetDisplayInfoAt(1).size_in_pixel().ToString());
-  reset();
   UpdateDisplay("100x200/b,300x400");
-  EXPECT_EQ("2 0 0", GetCountSummary());
-  reset();
-
   EXPECT_EQ("1,1 100x200",
             GetDisplayInfoAt(0).bounds_in_pixel().ToString());
   EXPECT_EQ("100x200",
@@ -727,13 +722,6 @@ TEST_F(DisplayManagerTest, Rotate) {
             GetDisplayInfoAt(1).bounds_in_pixel().ToString());
   EXPECT_EQ("300x400",
             GetDisplayInfoAt(1).size_in_pixel().ToString());
-
-  UpdateDisplay("200x200");
-  EXPECT_EQ("1 0 1", GetCountSummary());
-  reset();
-
-  UpdateDisplay("200x200/l");
-  EXPECT_EQ("1 0 0", GetCountSummary());
 }
 
 TEST_F(DisplayManagerTest, UIScale) {
@@ -849,27 +837,6 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateMouseCursorAfterRotateZoom) {
   EXPECT_EQ("700,50", env->last_mouse_location().ToString());
   UpdateDisplay("600x400,400x300*2@1.5");
   EXPECT_EQ("750,75", env->last_mouse_location().ToString());
-}
-
-TEST_F(DisplayManagerTest, SoftwareMirroring) {
-  UpdateDisplay("300x400,400x500");
-
-  test::MirrorWindowTestApi test_api;
-  EXPECT_EQ(NULL, test_api.GetRootWindow());
-
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetSoftwareMirroring(true);
-  display_manager->UpdateDisplays();
-  EXPECT_EQ(1U, display_manager->GetNumDisplays());
-  EXPECT_EQ("0,0 300x400",
-            Shell::GetScreen()->GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("400x500", test_api.GetRootWindow()->GetHostSize().ToString());
-  EXPECT_TRUE(display_manager->IsMirrored());
-
-  display_manager->SetMirrorMode(false);
-  EXPECT_EQ(NULL, test_api.GetRootWindow());
-  EXPECT_EQ(2U, display_manager->GetNumDisplays());
-  EXPECT_FALSE(display_manager->IsMirrored());
 }
 
 }  // namespace internal
