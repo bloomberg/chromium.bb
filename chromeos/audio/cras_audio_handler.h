@@ -187,12 +187,19 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void SetupAudioInputState();
   void SetupAudioOutputState();
 
+  // Initializes audio state, which should only be called when CrasAudioHandler
+  // is created or cras audio client is restarted.
+  void InitializeAudioState();
+
   // Applies the audio muting policies whenever the user logs in or policy
   // change notification is received.
   void ApplyAudioPolicy();
 
-  // Sets output volume to specified value and notifies observers.
+  // Sets output volume to specified value of |volume|.
   void SetOutputVolumeInternal(int volume);
+
+  // Sets output mute state to |mute_on|.
+  bool SetOutputMuteInternal(bool mute_on);
 
   // Sets output volume to specified value and notifies observers.
   void SetInputGainInternal(int gain);
