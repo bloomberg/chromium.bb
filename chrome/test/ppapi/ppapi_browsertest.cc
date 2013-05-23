@@ -731,7 +731,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef) {
       LIST_TEST(DISABLED_FileRef_ReadDirectoryEntries)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, FileRef) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(FileRef)) {
   RunTestViaHTTP(
       LIST_TEST(FileRef_Create)
       LIST_TEST(FileRef_GetFileSystemType)
