@@ -323,6 +323,12 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
     return PROCESS_NOTIFIED;
   }
 
+  CommandLine command_line(*CommandLine::ForCurrentProcess());
+  command_line.AppendSwitchASCII(
+      switches::kOriginalProcessStartTime,
+      base::Int64ToString(
+          base::CurrentProcessInfo::CreationTime()->ToInternalValue()));
+
   // Non-metro mode, send our command line to the other chrome message window.
   // format is "START\0<<<current directory>>>\0<<<commandline>>>".
   std::wstring to_send(L"START\0", 6);  // want the NULL in the string.
@@ -331,13 +337,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
     return PROCESS_NONE;
   to_send.append(cur_dir.value());
   to_send.append(L"\0", 1);  // Null separator.
-  to_send.append(::GetCommandLineW());
-  // Add the process start time as a flag.
-  to_send.append(L" --");
-  to_send.append(ASCIIToWide(switches::kOriginalProcessStartTime));
-  to_send.append(L"=");
-  to_send.append(base::Int64ToString16(
-      base::CurrentProcessInfo::CreationTime()->ToInternalValue()));
+  to_send.append(command_line.GetCommandLineString());
   to_send.append(L"\0", 1);  // Null separator.
 
   base::win::ScopedHandle process_handle;
