@@ -140,7 +140,7 @@ if apt-cache show libjpeg-dev >/dev/null 2>&1; then
 else
   dev_list="${dev_list} libjpeg62-dev"
 fi
-if apt-cache show libudev1 >/dev/null 2>&1; then
+if [ "$(apt-cache pkgnames libudev1 2>&1)" == "libudev1" ] ; then
   dev_list="${dev_list} libudev1"
 else
   dev_list="${dev_list} libudev0"
