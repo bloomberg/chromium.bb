@@ -47,6 +47,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'asan',
     'asan-informational',
     'refresh-packages',
+    'platform2',
 )
 
 def OverrideConfigForTrybot(build_config, options):
@@ -998,6 +999,26 @@ incremental_arm.add_config('beaglebone-incremental',
   build_tests=False,
   rootfs_verification=False,
   description='Incremental Beaglebone Builder',
+)
+
+platform2 = _config(
+  useflags=['platform2'],
+  trybot_list=True,
+  description='Platform2 Builder',
+)
+
+platform2_incremental = platform2.derive(
+  incremental,
+  description='Incremental Platform2 Builder',
+)
+
+platform2_incremental.add_config('x86-incremental-platform2',
+  boards=['x86-generic'],
+)
+
+platform2_incremental.add_config('daisy-incremental-platform2',
+  arm,
+  boards=['daisy'],
 )
 
 #
