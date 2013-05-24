@@ -769,7 +769,7 @@ body[new-ui] .dialog-header .buttonbar button:not(:active) {
   -webkit-box-shadow: none;
 }
 
-body[new-ui] .dialog-header button:not(:hover):not(focus) {
+body[new-ui] .dialog-header button:not(:hover):not(focus):not(:active) {
   background-color: transparent;
   border-color: transparent;
 }
