@@ -1757,8 +1757,6 @@
         'browser/ui/views/location_bar/icon_label_bubble_view.h',
         'browser/ui/views/location_bar/keyword_hint_view.cc',
         'browser/ui/views/location_bar/keyword_hint_view.h',
-        'browser/ui/views/location_bar/location_bar_decoration_view.cc',
-        'browser/ui/views/location_bar/location_bar_decoration_view.h',
         'browser/ui/views/location_bar/location_bar_layout.cc',
         'browser/ui/views/location_bar/location_bar_layout.h',
         'browser/ui/views/location_bar/location_bar_separator_view.cc',
