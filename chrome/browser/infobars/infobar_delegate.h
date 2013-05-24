@@ -104,7 +104,7 @@ class InfoBarDelegate {
 
   // Return the icon to be shown for this InfoBar. If the returned Image is
   // empty, no icon is shown.
-  gfx::Image GetIcon() const;
+  virtual gfx::Image GetIcon() const;
 
   content::WebContents* web_contents() {
     return owner_ ? owner_->web_contents() : NULL;
