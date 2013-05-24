@@ -53,8 +53,7 @@ typedef linked_ptr<extension_web_request_api_helpers::EventResponseDelta>
 class WebRequestAction : public base::RefCounted<WebRequestAction> {
  public:
   // Type identifiers for concrete WebRequestActions. If you add a new type,
-  // also update |action_names| in WebRequestActionFactory, update the
-  // unittest WebRequestActionTest.GetName, and add a
+  // also update the unittest WebRequestActionTest.GetName, and add a
   // WebRequestActionWithThreadsTest.Permission* unittest.
   enum Type {
     ACTION_CANCEL_REQUEST,
@@ -106,7 +105,7 @@ class WebRequestAction : public base::RefCounted<WebRequestAction> {
 
   // Return the JavaScript type name corresponding to type(). If there are
   // more names, they are returned separated by a colon.
-  const std::string& GetName() const;
+  virtual std::string GetName() const = 0;
 
   int minimum_priority() const {
     return minimum_priority_;
@@ -187,6 +186,7 @@ class WebRequestCancelAction : public WebRequestAction {
   WebRequestCancelAction();
 
   // Implementation of WebRequestAction:
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -204,6 +204,7 @@ class WebRequestRedirectAction : public WebRequestAction {
 
   // Implementation of WebRequestAction:
   virtual bool Equals(const WebRequestAction* other) const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -223,6 +224,7 @@ class WebRequestRedirectToTransparentImageAction : public WebRequestAction {
   WebRequestRedirectToTransparentImageAction();
 
   // Implementation of WebRequestAction:
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -240,6 +242,7 @@ class WebRequestRedirectToEmptyDocumentAction : public WebRequestAction {
   WebRequestRedirectToEmptyDocumentAction();
 
   // Implementation of WebRequestAction:
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -264,6 +267,7 @@ class WebRequestRedirectByRegExAction : public WebRequestAction {
 
   // Implementation of WebRequestAction:
   virtual bool Equals(const WebRequestAction* other) const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -286,6 +290,7 @@ class WebRequestSetRequestHeaderAction : public WebRequestAction {
 
   // Implementation of WebRequestAction:
   virtual bool Equals(const WebRequestAction* other) const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -306,6 +311,7 @@ class WebRequestRemoveRequestHeaderAction : public WebRequestAction {
 
   // Implementation of WebRequestAction:
   virtual bool Equals(const WebRequestAction* other) const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -326,6 +332,7 @@ class WebRequestAddResponseHeaderAction : public WebRequestAction {
 
   // Implementation of WebRequestAction:
   virtual bool Equals(const WebRequestAction* other) const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -348,6 +355,7 @@ class WebRequestRemoveResponseHeaderAction : public WebRequestAction {
 
   // Implementation of WebRequestAction:
   virtual bool Equals(const WebRequestAction* other) const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -370,6 +378,7 @@ class WebRequestIgnoreRulesAction : public WebRequestAction {
 
   // Implementation of WebRequestAction:
   virtual bool Equals(const WebRequestAction* other) const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -396,6 +405,7 @@ class WebRequestRequestCookieAction : public WebRequestAction {
 
   // Implementation of WebRequestAction:
   virtual bool Equals(const WebRequestAction* other) const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -419,6 +429,7 @@ class WebRequestResponseCookieAction : public WebRequestAction {
 
   // Implementation of WebRequestAction:
   virtual bool Equals(const WebRequestAction* other) const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,
@@ -439,6 +450,7 @@ class WebRequestSendMessageToExtensionAction : public WebRequestAction {
 
   // Implementation of WebRequestAction:
   virtual bool Equals(const WebRequestAction* other) const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual LinkedPtrEventResponseDelta CreateDelta(
       const WebRequestData& request_data,
       const std::string& extension_id,

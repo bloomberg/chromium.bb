@@ -346,12 +346,7 @@ scoped_refptr<const WebRequestAction> CreateSendMessageToExtensionAction(
 }
 
 struct WebRequestActionFactory {
-  typedef std::map<WebRequestAction::Type, const std::string> ActionNames;
-
   DedupingFactory<WebRequestAction> factory;
-
-  // Translates action types into the corresponding JavaScript names.
-  ActionNames action_names;
 
   WebRequestActionFactory() : factory(5) {
     factory.RegisterFactoryMethod(
@@ -423,44 +418,6 @@ struct WebRequestActionFactory {
         keys::kSendMessageToExtensionType,
         DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
         &CreateSendMessageToExtensionAction);
-
-#define INSERT_ACTION_NAME(type, name) \
-    action_names.insert(ActionNames::value_type(type, name));
-    std::vector<std::string> names_buffer;
-    names_buffer.push_back(keys::kAddRequestCookieType);
-    names_buffer.push_back(keys::kEditRequestCookieType);
-    names_buffer.push_back(keys::kRemoveRequestCookieType);
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_MODIFY_REQUEST_COOKIE,
-                       JoinString(names_buffer, ", "));
-    names_buffer.clear();
-    names_buffer.push_back(keys::kAddResponseCookieType);
-    names_buffer.push_back(keys::kEditResponseCookieType);
-    names_buffer.push_back(keys::kRemoveResponseCookieType);
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_MODIFY_RESPONSE_COOKIE,
-                       JoinString(names_buffer, ", "));
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_ADD_RESPONSE_HEADER,
-                       keys::kAddResponseHeaderType);
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_CANCEL_REQUEST,
-                       keys::kCancelRequestType);
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_REDIRECT_BY_REGEX_DOCUMENT,
-                       keys::kRedirectByRegExType);
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_REDIRECT_REQUEST,
-                       keys::kRedirectRequestType);
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_REDIRECT_TO_TRANSPARENT_IMAGE,
-                       keys::kRedirectToTransparentImageType);
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_REDIRECT_TO_EMPTY_DOCUMENT,
-                       keys::kRedirectToEmptyDocumentType);
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_SET_REQUEST_HEADER,
-                       keys::kSetRequestHeaderType);
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_REMOVE_REQUEST_HEADER,
-                       keys::kRemoveRequestHeaderType);
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_REMOVE_RESPONSE_HEADER,
-                       keys::kRemoveResponseHeaderType);
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_IGNORE_RULES,
-                       keys::kIgnoreRulesType);
-    INSERT_ACTION_NAME(WebRequestAction::ACTION_SEND_MESSAGE_TO_EXTENSION,
-                       keys::kSendMessageToExtensionType);
-#undef INSERT_ACTION_NAME
   }
 };
 
@@ -477,15 +434,6 @@ WebRequestAction::~WebRequestAction() {}
 
 bool WebRequestAction::Equals(const WebRequestAction* other) const {
   return type() == other->type();
-}
-
-const std::string& WebRequestAction::GetName() const {
-  const WebRequestActionFactory::ActionNames& names =
-      g_web_request_action_factory.Get().action_names;
-  std::map<WebRequestAction::Type, const std::string>::const_iterator it =
-      names.find(type());
-  CHECK(it != names.end());
-  return it->second;
 }
 
 bool WebRequestAction::HasPermission(const ExtensionInfoMap* extension_info_map,
@@ -580,6 +528,10 @@ WebRequestCancelAction::WebRequestCancelAction()
 
 WebRequestCancelAction::~WebRequestCancelAction() {}
 
+std::string WebRequestCancelAction::GetName() const {
+  return keys::kCancelRequestType;
+}
+
 LinkedPtrEventResponseDelta WebRequestCancelAction::CreateDelta(
     const WebRequestData& request_data,
     const std::string& extension_id,
@@ -610,6 +562,10 @@ bool WebRequestRedirectAction::Equals(const WebRequestAction* other) const {
              static_cast<const WebRequestRedirectAction*>(other)->redirect_url_;
 }
 
+std::string WebRequestRedirectAction::GetName() const {
+  return keys::kRedirectRequestType;
+}
+
 LinkedPtrEventResponseDelta WebRequestRedirectAction::CreateDelta(
     const WebRequestData& request_data,
     const std::string& extension_id,
@@ -637,6 +593,10 @@ WebRequestRedirectToTransparentImageAction::
 WebRequestRedirectToTransparentImageAction::
 ~WebRequestRedirectToTransparentImageAction() {}
 
+std::string WebRequestRedirectToTransparentImageAction::GetName() const {
+  return keys::kRedirectToTransparentImageType;
+}
+
 LinkedPtrEventResponseDelta
 WebRequestRedirectToTransparentImageAction::CreateDelta(
     const WebRequestData& request_data,
@@ -662,6 +622,10 @@ WebRequestRedirectToEmptyDocumentAction::
 
 WebRequestRedirectToEmptyDocumentAction::
 ~WebRequestRedirectToEmptyDocumentAction() {}
+
+std::string WebRequestRedirectToEmptyDocumentAction::GetName() const {
+  return keys::kRedirectToEmptyDocumentType;
+}
 
 LinkedPtrEventResponseDelta
 WebRequestRedirectToEmptyDocumentAction::CreateDelta(
@@ -754,6 +718,10 @@ bool WebRequestRedirectByRegExAction::Equals(
          to_pattern_ == casted_other->to_pattern_;
 }
 
+std::string WebRequestRedirectByRegExAction::GetName() const {
+  return keys::kRedirectByRegExType;
+}
+
 LinkedPtrEventResponseDelta WebRequestRedirectByRegExAction::CreateDelta(
     const WebRequestData& request_data,
     const std::string& extension_id,
@@ -800,6 +768,11 @@ bool WebRequestSetRequestHeaderAction::Equals(
   return name_ == casted_other->name_ && value_ == casted_other->value_;
 }
 
+std::string WebRequestSetRequestHeaderAction::GetName() const {
+  return keys::kSetRequestHeaderType;
+}
+
+
 LinkedPtrEventResponseDelta
 WebRequestSetRequestHeaderAction::CreateDelta(
     const WebRequestData& request_data,
@@ -833,6 +806,10 @@ bool WebRequestRemoveRequestHeaderAction::Equals(
   const WebRequestRemoveRequestHeaderAction* casted_other =
       static_cast<const WebRequestRemoveRequestHeaderAction*>(other);
   return name_ == casted_other->name_;
+}
+
+std::string WebRequestRemoveRequestHeaderAction::GetName() const {
+  return keys::kRemoveRequestHeaderType;
 }
 
 LinkedPtrEventResponseDelta
@@ -870,6 +847,10 @@ bool WebRequestAddResponseHeaderAction::Equals(
   const WebRequestAddResponseHeaderAction* casted_other =
       static_cast<const WebRequestAddResponseHeaderAction*>(other);
   return name_ == casted_other->name_ && value_ == casted_other->value_;
+}
+
+std::string WebRequestAddResponseHeaderAction::GetName() const {
+  return keys::kAddResponseHeaderType;
 }
 
 LinkedPtrEventResponseDelta
@@ -919,6 +900,10 @@ bool WebRequestRemoveResponseHeaderAction::Equals(
       static_cast<const WebRequestRemoveResponseHeaderAction*>(other);
   return name_ == casted_other->name_ && value_ == casted_other->value_ &&
          has_value_ == casted_other->has_value_;
+}
+
+std::string WebRequestRemoveResponseHeaderAction::GetName() const {
+  return keys::kRemoveResponseHeaderType;
 }
 
 LinkedPtrEventResponseDelta
@@ -974,6 +959,10 @@ bool WebRequestIgnoreRulesAction::Equals(const WebRequestAction* other) const {
          ignore_tag_ == casted_other->ignore_tag_;
 }
 
+std::string WebRequestIgnoreRulesAction::GetName() const {
+  return keys::kIgnoreRulesType;
+}
+
 LinkedPtrEventResponseDelta WebRequestIgnoreRulesAction::CreateDelta(
     const WebRequestData& request_data,
     const std::string& extension_id,
@@ -1007,6 +996,19 @@ bool WebRequestRequestCookieAction::Equals(
   return helpers::NullableEquals(
       request_cookie_modification_.get(),
       casted_other->request_cookie_modification_.get());
+}
+
+std::string WebRequestRequestCookieAction::GetName() const {
+  switch (request_cookie_modification_->type) {
+    case helpers::ADD:
+      return keys::kAddRequestCookieType;
+    case helpers::EDIT:
+      return keys::kEditRequestCookieType;
+    case helpers::REMOVE:
+      return keys::kRemoveRequestCookieType;
+  }
+  NOTREACHED();
+  return "";
 }
 
 LinkedPtrEventResponseDelta WebRequestRequestCookieAction::CreateDelta(
@@ -1049,6 +1051,19 @@ bool WebRequestResponseCookieAction::Equals(
       casted_other->response_cookie_modification_.get());
 }
 
+std::string WebRequestResponseCookieAction::GetName() const {
+  switch (response_cookie_modification_->type) {
+    case helpers::ADD:
+      return keys::kAddResponseCookieType;
+    case helpers::EDIT:
+      return keys::kEditResponseCookieType;
+    case helpers::REMOVE:
+      return keys::kRemoveResponseCookieType;
+  }
+  NOTREACHED();
+  return "";
+}
+
 LinkedPtrEventResponseDelta WebRequestResponseCookieAction::CreateDelta(
     const WebRequestData& request_data,
     const std::string& extension_id,
@@ -1085,6 +1100,10 @@ bool WebRequestSendMessageToExtensionAction::Equals(
   const WebRequestSendMessageToExtensionAction* casted_other =
       static_cast<const WebRequestSendMessageToExtensionAction*>(other);
   return message_ == casted_other->message_;
+}
+
+std::string WebRequestSendMessageToExtensionAction::GetName() const {
+  return keys::kSendMessageToExtensionType;
 }
 
 LinkedPtrEventResponseDelta WebRequestSendMessageToExtensionAction::CreateDelta(
