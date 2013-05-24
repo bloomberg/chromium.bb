@@ -14,9 +14,6 @@ namespace ui {
 
 // A class to recognize compose and dead key sequence.
 // Outputs composed character.
-//
-// TODO(hashimoto): support unicode character composition starting with
-// Ctrl-Shift-U. http://crosbug.com/15925
 class UI_EXPORT CharacterComposer {
  public:
   CharacterComposer();
@@ -27,7 +24,8 @@ class UI_EXPORT CharacterComposer {
   // Filters keypress.
   // Returns true if the keypress is recognized as a part of composition
   // sequence.
-  // |keyval| must be a GDK_KEY_* constants.
+  // |keyval| must be a GDK_KEY_* constant.
+  // |keycode| must be a X key code.
   // |flags| must be a combination of ui::EF_* flags.
   //
   // composed_character() returns non empty string when there is a character
@@ -36,7 +34,10 @@ class UI_EXPORT CharacterComposer {
   // after this method returns true.
   // Return values of composed_character() and preedit_string() are empty after
   // this method returns false.
-  bool FilterKeyPress(unsigned int keyval, unsigned int flags);
+  //
+  // TODO(nona): Actually a X KeySym is passed to |keyval|, so we should use
+  // XK_* rather than GDK_KEY_*.
+  bool FilterKeyPress(unsigned int keyval, unsigned int keycode, int flags);
 
   // Returns a string consisting of composed character.
   // Empty string is returned when there is no composition result.
@@ -56,10 +57,12 @@ class UI_EXPORT CharacterComposer {
   };
 
   // Filters keypress in key sequence mode.
-  bool FilterKeyPressSequenceMode(unsigned int keyval, unsigned int flags);
+  bool FilterKeyPressSequenceMode(unsigned int keyval, unsigned int keycode,
+                                  int flags);
 
   // Filters keypress in hexadecimal mode.
-  bool FilterKeyPressHexMode(unsigned int keyval, unsigned int flags);
+  bool FilterKeyPressHexMode(unsigned int keyval, unsigned int keycode,
+                             int flags);
 
   // Commit a character composed from hexadecimal uncode sequence
   void CommitHex();

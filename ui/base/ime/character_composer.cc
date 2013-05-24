@@ -4,6 +4,8 @@
 
 #include "ui/base/ime/character_composer.h"
 
+#include <X11/Xlib.h>
+
 #include <algorithm>
 #include <iterator>
 
@@ -14,6 +16,7 @@
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/glib/glib_integers.h"
+#include "ui/base/x/x11_util.h"
 
 // Note for Gtk removal: gtkimcontextsimpleseqs.h does not #include any Gtk
 // headers and only contains one big guint16 array |gtk_compose_seqs_compact|
@@ -349,6 +352,19 @@ bool UTF32CharacterToUTF16(uint32 character, string16* output) {
   return true;
 }
 
+// Converts a X keycode to a X keysym with no modifiers.
+KeySym XKeyCodeToXKeySym(unsigned int keycode) {
+  Display* display = ui::GetXDisplay();
+  if (!display)
+    return NoSymbol;
+
+  XKeyEvent x_key_event = {0};
+  x_key_event.type = KeyPress;
+  x_key_event.display = display;
+  x_key_event.keycode = keycode;
+  return ::XLookupKeysym(&x_key_event, 0);
+}
+
 // Returns an hexadecimal digit integer (0 to 15) corresponding to |keyval|.
 // -1 is returned when |keyval| cannot be a hexadecimal digit.
 int KeyvalToHexDigit(unsigned int keyval) {
@@ -377,7 +393,8 @@ void CharacterComposer::Reset() {
 }
 
 bool CharacterComposer::FilterKeyPress(unsigned int keyval,
-                                       unsigned int flags) {
+                                       unsigned int keycode,
+                                       int flags) {
   composed_character_.clear();
   preedit_string_.clear();
 
@@ -401,9 +418,9 @@ bool CharacterComposer::FilterKeyPress(unsigned int keyval,
   // Filter key press in an appropriate manner.
   switch (composition_mode_) {
     case KEY_SEQUENCE_MODE:
-      return FilterKeyPressSequenceMode(keyval, flags);
+      return FilterKeyPressSequenceMode(keyval, keycode, flags);
     case HEX_MODE:
-      return FilterKeyPressHexMode(keyval, flags);
+      return FilterKeyPressHexMode(keyval, keycode, flags);
     default:
       NOTREACHED();
       return false;
@@ -411,7 +428,8 @@ bool CharacterComposer::FilterKeyPress(unsigned int keyval,
 }
 
 bool CharacterComposer::FilterKeyPressSequenceMode(unsigned int keyval,
-                                                   unsigned int flags) {
+                                                   unsigned int keycode,
+                                                   int flags) {
   DCHECK(composition_mode_ == KEY_SEQUENCE_MODE);
   compose_buffer_.push_back(keyval);
 
@@ -436,10 +454,18 @@ bool CharacterComposer::FilterKeyPressSequenceMode(unsigned int keyval,
 }
 
 bool CharacterComposer::FilterKeyPressHexMode(unsigned int keyval,
-                                              unsigned int flags) {
+                                              unsigned int keycode,
+                                              int flags) {
   DCHECK(composition_mode_ == HEX_MODE);
   const size_t kMaxHexSequenceLength = 8;
-  const int hex_digit = KeyvalToHexDigit(keyval);
+  int hex_digit = KeyvalToHexDigit(keyval);
+  if (hex_digit < 0) {
+    // With 101 keyboard, control + shift + 3 produces '#', but a user may
+    // have intended to type '3'.  So, if a hexadecimal character was not found,
+    // suppose a user is holding shift key (and possibly control key, too) and
+    // try a character with modifier keys removed.
+    hex_digit = KeyvalToHexDigit(XKeyCodeToXKeySym(keycode));
+  }
 
   if (keyval == GDK_KEY_Escape) {
     // Cancel composition when ESC is pressed.

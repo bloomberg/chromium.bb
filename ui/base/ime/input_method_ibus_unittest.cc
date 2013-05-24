@@ -92,6 +92,8 @@ class TestableInputMethodIBus : public InputMethodIBus {
   // InputMethodIBus override.
   virtual void ProcessKeyEventPostIME(const base::NativeEvent& native_key_event,
                                       uint32 ibus_keyval,
+                                      uint32 ibus_keycode,
+                                      uint32 ibus_state,
                                       bool handled) OVERRIDE {
     process_key_event_post_ime_args_.event = *native_key_event;
     process_key_event_post_ime_args_.ibus_keyval = ibus_keyval;
