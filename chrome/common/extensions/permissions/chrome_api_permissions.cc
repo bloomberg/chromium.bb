@@ -253,7 +253,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       IDS_EXTENSION_PROMPT_WARNING_USB,
       PermissionMessage::kUsb },
     { APIPermission::kUsbDevice, "usbDevices",
-      APIPermissionInfo::kFlagMustBeOptional, 0, PermissionMessage::kNone,
+      APIPermissionInfo::kFlagNone, 0, PermissionMessage::kNone,
       &CreateAPIPermission<UsbDevicePermission> },
     { APIPermission::kSystemIndicator, "systemIndicator",
       APIPermissionInfo::kFlagNone,

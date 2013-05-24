@@ -64,11 +64,9 @@ chrome.usb.findDevices(FindDeviceOptions, callback)
     <td>FindDeviceOptions (object)</td>
     <td>An object specifying both a <code>vendorId</code> (long) and
       <code>productId</code> (long) used to find the correct type of device on
-      the bus. Before calling this, your extension manifest must declare the
-      <code>optional_permissons</code> with a <code>usbDevices</code>
-      section containing the same <code>vendorId</code> and
-      <code>deviceId</code> combination and must have received user consent
-      via <code>chrome.permissions.request(...)</code>.
+      the bus. Your manifest must declare the<code>usbDevices</code> permission
+      section listing all the <code>vendorId</code> and
+      <code>deviceId</code> pairs your app wants to access.
     </td>
   </tr>
   <tr>

@@ -252,34 +252,6 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_Plugins) {
 #endif
 }
 
-TEST(ExtensionPermissionsTest, OptionalOnlyPermission) {
-  // Set feature current channel to dev because the only permission that must
-  // be optional (usbDevices) is only available on dev channel.
-  Feature::ScopedCurrentChannel scoped_channel(
-      chrome::VersionInfo::CHANNEL_DEV);
-
-  scoped_refptr<Extension> extension;
-  std::string error;
-  extension = LoadManifestUnchecked("optional_only_permission",
-                                    "manifest1.json",
-                                    Manifest::INTERNAL, Extension::NO_FLAGS,
-                                    &error);
-  EXPECT_TRUE(extension == NULL);
-  ASSERT_EQ(
-      ErrorUtils::FormatErrorMessage(
-          extension_manifest_errors::kPermissionMustBeOptional,
-          "usbDevices"),
-      error);
-
-  error.clear();
-  extension = LoadManifestUnchecked("optional_only_permission",
-                                    "manifest2.json",
-                                    Manifest::INTERNAL, Extension::NO_FLAGS,
-                                    &error);
-  EXPECT_TRUE(extension != NULL);
-  EXPECT_TRUE(error.empty());
-}
-
 // Base class for testing the CanExecuteScriptOnPage and CanCaptureVisiblePage
 // methods of Extension for extensions with various permissions.
 class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
