@@ -51,12 +51,6 @@ class PolicyWatcherLinux : public PolicyWatcher {
       : PolicyWatcher(task_runner),
         config_dir_(config_dir),
         weak_factory_(this) {
-    // Detach the factory because we ensure that only the policy thread ever
-    // calls methods on this. Also, the API contract of having to call
-    // StopWatching() (which signals completion) after StartWatching()
-    // before this object can be destructed ensures there are no users of
-    // this object before it is destructed.
-    weak_factory_.DetachFromThread();
   }
 
   virtual ~PolicyWatcherLinux() {}
@@ -84,8 +78,12 @@ class PolicyWatcherLinux : public PolicyWatcher {
 
   virtual void StopWatchingInternal() OVERRIDE {
     DCHECK(OnPolicyWatcherThread());
-    // Cancel any inflight requests.
+
+    // Stop watching for changes to files in the policies directory.
     watcher_.reset();
+
+    // Orphan any pending OnFilePathChanged tasks.
+    weak_factory_.InvalidateWeakPtrs();
   }
 
  private:

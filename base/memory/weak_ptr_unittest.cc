@@ -339,7 +339,7 @@ TEST(WeakPtrTest, MoveOwnershipExplicitlyObjectNotReferenced) {
   // Case 1: The target is not bound to any thread yet. So calling
   // DetachFromThread() is a no-op.
   Target target;
-  target.DetachFromThread();
+  target.DetachFromThreadHack();
 
   // Case 2: The target is bound to main thread but no WeakPtr is pointing to
   // it. In this case, it will be re-bound to any thread trying to get a
@@ -347,7 +347,7 @@ TEST(WeakPtrTest, MoveOwnershipExplicitlyObjectNotReferenced) {
   {
     WeakPtr<Target> weak_ptr = target.AsWeakPtr();
   }
-  target.DetachFromThread();
+  target.DetachFromThreadHack();
 }
 
 TEST(WeakPtrTest, MoveOwnershipExplicitly) {
@@ -362,7 +362,7 @@ TEST(WeakPtrTest, MoveOwnershipExplicitly) {
     EXPECT_EQ(&target, background.DeRef(arrow));
 
     // Detach from background thread.
-    target.DetachFromThread();
+    target.DetachFromThreadHack();
 
     // Re-bind to main thread.
     EXPECT_EQ(&target, arrow->target.get());
@@ -500,7 +500,7 @@ TEST(WeakPtrDeathTest, WeakPtrCopyDoesNotChangeThreadBinding) {
   background.DeleteArrow(arrow_copy);
 }
 
-TEST(WeakPtrDeathTest, NonOwnerThreadDereferencesWeakPtr) {
+TEST(WeakPtrDeathTest, NonOwnerThreadDereferencesWeakPtrAfterReference) {
   // The default style "fast" does not support multi-threaded tests
   // (introduces deadlock on Linux).
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
@@ -512,6 +512,7 @@ TEST(WeakPtrDeathTest, NonOwnerThreadDereferencesWeakPtr) {
   // thread ownership can not be implicitly moved).
   Arrow arrow;
   arrow.target = target.AsWeakPtr();
+  arrow.target.get();
 
   // Background thread tries to deref target, which violates thread ownership.
   BackgroundThread background;
@@ -519,21 +520,64 @@ TEST(WeakPtrDeathTest, NonOwnerThreadDereferencesWeakPtr) {
   ASSERT_DEATH(background.DeRef(&arrow), "");
 }
 
-TEST(WeakPtrDeathTest, NonOwnerThreadDeletesObject) {
+TEST(WeakPtrDeathTest, NonOwnerThreadDeletesWeakPtrAfterReference) {
   // The default style "fast" does not support multi-threaded tests
   // (introduces deadlock on Linux).
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
   scoped_ptr<Target> target(new Target());
-  // Main thread creates an arrow referencing the Target (so target's thread
-  // ownership can not be implicitly moved).
+
+  // Main thread creates an arrow referencing the Target.
   Arrow arrow;
   arrow.target = target->AsWeakPtr();
 
-  // Background thread tries to delete target, which violates thread ownership.
+  // Background thread tries to deref target, binding it to the thread.
+  BackgroundThread background;
+  background.Start();
+  background.DeRef(&arrow);
+
+  // Main thread deletes Target, violating thread binding.
+  Target* foo = target.release();
+  ASSERT_DEATH(delete foo, "");
+}
+
+TEST(WeakPtrDeathTest, NonOwnerThreadDeletesObjectAfterReference) {
+  // The default style "fast" does not support multi-threaded tests
+  // (introduces deadlock on Linux).
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+  scoped_ptr<Target> target(new Target());
+
+  // Main thread creates an arrow referencing the Target, and references it, so
+  // that it becomes bound to the thread.
+  Arrow arrow;
+  arrow.target = target->AsWeakPtr();
+  arrow.target.get();
+
+  // Background thread tries to delete target, volating thread binding.
   BackgroundThread background;
   background.Start();
   ASSERT_DEATH(background.DeleteTarget(target.release()), "");
+}
+
+TEST(WeakPtrDeathTest, NonOwnerThreadReferencesObjectAfterDeletion) {
+  // The default style "fast" does not support multi-threaded tests
+  // (introduces deadlock on Linux).
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+  scoped_ptr<Target> target(new Target());
+
+  // Main thread creates an arrow referencing the Target.
+  Arrow arrow;
+  arrow.target = target->AsWeakPtr();
+
+  // Background thread tries to delete target, binding the object to the thread.
+  BackgroundThread background;
+  background.Start();
+  background.DeleteTarget(target.release());
+
+  // Main thread attempts to dereference the target, violating thread binding.
+  ASSERT_DEATH(arrow.target.get(), "");
 }
 
 #endif
