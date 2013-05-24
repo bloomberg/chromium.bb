@@ -14,6 +14,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
@@ -21,6 +22,10 @@
 #include "extensions/common/one_shot_event.h"
 
 class Profile;
+
+namespace base {
+class Value;
+}  // namespace base
 
 namespace extensions {
 
@@ -38,6 +43,10 @@ class RulesRegistryWithCache : public RulesRegistry {
   // registering rules on initialization will be logged with UMA.
   class RuleStorageOnUI : public content::NotificationObserver {
    public:
+    // This key is used to store in preferences whether there are some
+    // declarative rules stored in the rule store.
+    static const char kRulesStoredKey[];
+
     RuleStorageOnUI(Profile* profile,
                     const std::string& storage_key,
                     content::BrowserThread::ID rules_registry_thread,
@@ -58,6 +67,9 @@ class RulesRegistryWithCache : public RulesRegistry {
     }
 
    private:
+    FRIEND_TEST_ALL_PREFIXES(RulesRegistryWithCacheTest,
+                             DeclarativeRulesStored);
+
     // NotificationObserver
     virtual void Observe(int type,
                          const content::NotificationSource& source,
@@ -72,6 +84,14 @@ class RulesRegistryWithCache : public RulesRegistry {
     void ReadFromStorage(const std::string& extension_id);
     void ReadFromStorageCallback(const std::string& extension_id,
                                  scoped_ptr<base::Value> value);
+
+    // Check the preferences whether the extension with |extension_id| has some
+    // rules stored on disk. If this information is not in the preferences, true
+    // is returned as a safe default value.
+    bool GetDeclarativeRulesStored(const std::string& extension_id) const;
+    // Modify the preference to |rules_stored|.
+    void SetDeclarativeRulesStored(const std::string& extension_id,
+                                   bool rules_stored);
 
     content::NotificationRegistrar registrar_;
 

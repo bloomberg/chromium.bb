@@ -14,6 +14,11 @@ class TestRulesRegistry : public RulesRegistryWithCache {
  public:
   TestRulesRegistry(content::BrowserThread::ID owner_thread,
                     const char* event_name);
+  TestRulesRegistry(
+      Profile* profile,
+      const char* event_name,
+      content::BrowserThread::ID owner_thread,
+      scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI>* ui_part);
 
   // RulesRegistryWithCache implementation:
   virtual std::string AddRulesImpl(

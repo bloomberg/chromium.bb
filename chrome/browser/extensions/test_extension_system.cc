@@ -31,6 +31,7 @@ namespace extensions {
 
 TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
+      value_store_(NULL),
       info_map_(new ExtensionInfoMap()) {
 }
 
@@ -84,7 +85,10 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
     bool autoupdate_enabled) {
   if (!ExtensionPrefs::Get(profile_))
     CreateExtensionPrefs(command_line, install_directory);
-  state_store_.reset(new StateStore(profile_, new TestingValueStore()));
+  // The ownership of |value_store_| is immediately transferred to state_store_,
+  // but we keep a naked pointer to the TestingValueStore.
+  value_store_ = new TestingValueStore();
+  state_store_.reset(new StateStore(profile_, value_store_));
   blacklist_.reset(new Blacklist(ExtensionPrefs::Get(profile_)));
   standard_management_policy_provider_.reset(
       new StandardManagementPolicyProvider(ExtensionPrefs::Get(profile_)));

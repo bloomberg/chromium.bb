@@ -2,19 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative/test_rules_registry.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
 
 // Here we test the TestRulesRegistry which is the simplest possible
 // implementation of RulesRegistryWithCache as a proxy for
 // RulesRegistryWithCache.
 
+#include "base/command_line.h"
 #include "base/message_loop.h"
+#include "chrome/browser/extensions/api/declarative/test_rules_registry.h"
+#include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/value_store/testing_value_store.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
+
 namespace {
-const char extension_id[] = "ext";
-const char extension2_id[] = "ext2";
+// The |extension_id| needs to pass the Extension::IdIsValid test.
+const char extension_id[] = "abcdefghijklmnopabcdefghijklmnop";
+const char extension2_id[] = "ponmlkjihgfedcbaponmlkjihgfedcba";
 const char rule_id[] = "rule";
 const char rule2_id[] = "rule2";
 }
@@ -24,7 +37,8 @@ namespace extensions {
 class RulesRegistryWithCacheTest : public testing::Test {
  public:
   RulesRegistryWithCacheTest()
-      : ui_(content::BrowserThread::UI, &message_loop_),
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        file_thread_(content::BrowserThread::FILE, &message_loop_),
         registry_(new TestRulesRegistry(content::BrowserThread::UI,
                                         "" /*event_name*/)) {}
 
@@ -60,8 +74,14 @@ class RulesRegistryWithCacheTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
-  content::TestBrowserThread ui_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
   scoped_refptr<TestRulesRegistry> registry_;
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::ScopedTestUserManager test_user_manager_;
+#endif
 };
 
 TEST_F(RulesRegistryWithCacheTest, AddRules) {
@@ -175,6 +195,80 @@ TEST_F(RulesRegistryWithCacheTest, OnExtensionUnloaded) {
   registry_->OnExtensionUnloaded(extension_id);
   EXPECT_EQ(0, GetNumberOfRules(extension_id));
   EXPECT_EQ(1, GetNumberOfRules(extension2_id));
+}
+
+TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
+  TestingProfile profile;
+  // TestingProfile::Init makes sure that the factory method for a corresponding
+  // extension system creates a TestExtensionSystem.
+  extensions::TestExtensionSystem* system =
+      static_cast<extensions::TestExtensionSystem*>(
+          extensions::ExtensionSystem::Get(&profile));
+  ExtensionPrefs* extension_prefs = system->CreateExtensionPrefs(
+      CommandLine::ForCurrentProcess(), base::FilePath());
+  system->CreateExtensionService(
+      CommandLine::ForCurrentProcess(), base::FilePath(), false);
+  // The value store is first created during CreateExtensionService.
+  TestingValueStore* store = system->value_store();
+
+  scoped_ptr<RulesRegistryWithCache::RuleStorageOnUI> ui_part;
+  scoped_refptr<RulesRegistryWithCache> registry(new TestRulesRegistry(
+      &profile, "testEvent", content::BrowserThread::UI, &ui_part));
+
+  // 1. Test the handling of preferences.
+  // Default value is always true.
+  EXPECT_TRUE(ui_part->GetDeclarativeRulesStored(extension_id));
+
+  extension_prefs->UpdateExtensionPref(
+      extension_id,
+      RulesRegistryWithCache::RuleStorageOnUI::kRulesStoredKey,
+      new base::FundamentalValue(false));
+  EXPECT_FALSE(ui_part->GetDeclarativeRulesStored(extension_id));
+
+  extension_prefs->UpdateExtensionPref(
+      extension_id,
+      RulesRegistryWithCache::RuleStorageOnUI::kRulesStoredKey,
+      new base::FundamentalValue(true));
+  EXPECT_TRUE(ui_part->GetDeclarativeRulesStored(extension_id));
+
+  // 2. Test writing behavior.
+  int write_count = store->write_count();
+
+  scoped_ptr<base::ListValue> value(new ListValue);
+  value->AppendBoolean(true);
+  ui_part->WriteToStorage(extension_id, value.PassAs<base::Value>());
+  EXPECT_TRUE(ui_part->GetDeclarativeRulesStored(extension_id));
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(write_count + 1, store->write_count());
+  write_count = store->write_count();
+
+  value.reset(new ListValue);
+  ui_part->WriteToStorage(extension_id, value.PassAs<base::Value>());
+  EXPECT_FALSE(ui_part->GetDeclarativeRulesStored(extension_id));
+  message_loop_.RunUntilIdle();
+  // No rules currently, but previously there were, so we expect a write.
+  EXPECT_EQ(write_count + 1, store->write_count());
+  write_count = store->write_count();
+
+  value.reset(new ListValue);
+  ui_part->WriteToStorage(extension_id, value.PassAs<base::Value>());
+  EXPECT_FALSE(ui_part->GetDeclarativeRulesStored(extension_id));
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(write_count, store->write_count());
+
+  // 3. Test reading behavior.
+  int read_count = store->read_count();
+
+  ui_part->SetDeclarativeRulesStored(extension_id, false);
+  ui_part->ReadFromStorage(extension_id);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(read_count, store->read_count());
+  read_count = store->read_count();
+
+  ui_part->SetDeclarativeRulesStored(extension_id, true);
+  ui_part->ReadFromStorage(extension_id);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(read_count + 1, store->read_count());
 }
 
 }  //  namespace extensions

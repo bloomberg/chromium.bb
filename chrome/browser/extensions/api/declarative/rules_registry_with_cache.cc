@@ -10,7 +10,9 @@
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/state_store.h"
@@ -251,6 +253,9 @@ void RulesRegistryWithCache::ProcessChangedRules(
 
 // RulesRegistryWithCache::RuleStorageOnUI
 
+const char RulesRegistryWithCache::RuleStorageOnUI::kRulesStoredKey[] =
+    "has_declarative_rules";
+
 RulesRegistryWithCache::RuleStorageOnUI::RuleStorageOnUI(
     Profile* profile,
     const std::string& storage_key,
@@ -286,8 +291,7 @@ void RulesRegistryWithCache::RuleStorageOnUI::Init() {
 
   if (profile_->IsOffTheRecord()) {
     log_storage_init_delay_ = false;
-    ExtensionService* extension_service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
+    ExtensionService* extension_service = system.extension_service();
     DCHECK(extension_service->is_ready());
     const ExtensionSet* extensions = extension_service->extensions();
     for (ExtensionSet::const_iterator i = extensions->begin();
@@ -309,6 +313,14 @@ void RulesRegistryWithCache::RuleStorageOnUI::WriteToStorage(
     scoped_ptr<base::Value> value) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!profile_)
+    return;
+
+  const ListValue* rules = NULL;
+  CHECK(value->GetAsList(&rules));
+  bool rules_stored_previously = GetDeclarativeRulesStored(extension_id);
+  bool store_rules = !rules->empty();
+  SetDeclarativeRulesStored(extension_id, store_rules);
+  if (!rules_stored_previously && !store_rules)
     return;
 
   StateStore* store = ExtensionSystem::Get(profile_)->rules_store();
@@ -359,12 +371,19 @@ void RulesRegistryWithCache::RuleStorageOnUI::ReadFromStorage(
   if (!profile_)
     return;
 
+  if (log_storage_init_delay_ && storage_init_time_.is_null())
+    storage_init_time_ = base::Time::Now();
+
+  if (!GetDeclarativeRulesStored(extension_id)) {
+    ExtensionSystem::Get(profile_)->ready().Post(
+        FROM_HERE, base::Bind(&RuleStorageOnUI::CheckIfReady, GetWeakPtr()));
+    return;
+  }
+
   extensions::StateStore* store = ExtensionSystem::Get(profile_)->rules_store();
   if (!store)
     return;
   waiting_for_extensions_.insert(extension_id);
-  if (log_storage_init_delay_ && storage_init_time_.is_null())
-    storage_init_time_ = base::Time::Now();
   store->GetExtensionValue(extension_id,
                            storage_key_,
                            base::Bind(&RuleStorageOnUI::ReadFromStorageCallback,
@@ -389,6 +408,30 @@ void RulesRegistryWithCache::RuleStorageOnUI::ReadFromStorageCallback(
   if (waiting_for_extensions_.empty())
     ExtensionSystem::Get(profile_)->ready().Post(
         FROM_HERE, base::Bind(&RuleStorageOnUI::CheckIfReady, GetWeakPtr()));
+}
+
+bool RulesRegistryWithCache::RuleStorageOnUI::GetDeclarativeRulesStored(
+    const std::string& extension_id) const {
+  CHECK(profile_);
+  const ExtensionScopedPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
+
+  bool rules_stored = true;
+  if (extension_prefs->ReadPrefAsBoolean(
+          extension_id, kRulesStoredKey, &rules_stored))
+    return rules_stored;
+
+  // Safe default -- if we don't know that the rules are not stored, we force
+  // a read by returning true.
+  return true;
+}
+
+void RulesRegistryWithCache::RuleStorageOnUI::SetDeclarativeRulesStored(
+    const std::string& extension_id,
+    bool rules_stored) {
+  CHECK(profile_);
+  ExtensionScopedPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
+  extension_prefs->UpdateExtensionPref(
+      extension_id, kRulesStoredKey, new base::FundamentalValue(rules_stored));
 }
 
 }  // namespace extensions
