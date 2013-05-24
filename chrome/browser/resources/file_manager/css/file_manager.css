@@ -803,10 +803,6 @@ body[new-ui] .dialog-header button:not(:hover):not(focus):not(:active) {
   width: 100%;
 }
 
-#search-box[hidden] {
-  display: none;  /* Required, since overriden by #search-box. */
-}
-
 body[new-ui] #search-box {
   -webkit-margin-end: 0;
   -webkit-padding-after: 0;
@@ -826,6 +822,10 @@ body[new-ui] #search-box {
   position: relative;
   transition: width 0;
   width: 58px;
+}
+
+body #search-box[hidden] {
+  display: none;  /* Required, since overriden by #search-box. */
 }
 
 html[dir='rtl'] #search-box {
