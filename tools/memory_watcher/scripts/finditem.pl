@@ -19,7 +19,7 @@ sub process_raw($$) {
   open (LOGFILE, "$file") or die("could not open $file");
   while(<LOGFILE>) {
     my $line = $_;
-    if ($line =~ m/([0-9]*) bytes, ([0-9]*) items/) {
+    if ($line =~ m/([0-9]*) bytes, ([0-9]*) allocs/) {
       $save = "";
       $print = 0;
       $bytes = $1;

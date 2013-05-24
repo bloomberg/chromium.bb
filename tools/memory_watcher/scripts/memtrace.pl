@@ -43,7 +43,7 @@ sub process_raw($) {
     my $line = $_;
 #print "$line";
     chomp($line);
-    if ($line =~ m/([0-9]*) bytes, ([0-9]*) items/) {
+    if ($line =~ m/([0-9]*) bytes, ([0-9]*) allocs/) {
 
 #print "START\n";
       # Dump "prior" frame here

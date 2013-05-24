@@ -47,7 +47,7 @@ sub process_raw($$) {
     my $line = $_;
 #print "$line";
     chomp($line);
-    if ($line =~ m/([0-9]*) bytes, ([0-9]*) items/) {
+    if ($line =~ m/([0-9]*) bytes, ([0-9]*) allocs/) {
 
       # If we didn't find any frames to account this to, log that.
       if ($blamed == 0) {
