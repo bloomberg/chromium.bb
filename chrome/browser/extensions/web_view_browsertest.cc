@@ -404,7 +404,29 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     return guest_web_contents;
   }
 
+  // Runs media_access/allow tests.
   void MediaAccessAPIAllowTestHelper(const std::string& test_name);
+
+  // Runs media_access/deny tests, each of them are run separately otherwise
+  // they timeout (mostly on Windows).
+  void MediaAccessAPIDenyTestHelper(const std::string& test_name) {
+    ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+    ExtensionTestMessageListener loaded_listener("loaded", false);
+    LoadAndLaunchPlatformApp("web_view/media_access/deny");
+    ASSERT_TRUE(loaded_listener.WaitUntilSatisfied());
+
+    content::WebContents* embedder_web_contents =
+        GetFirstShellWindowWebContents();
+    ASSERT_TRUE(embedder_web_contents);
+
+    ExtensionTestMessageListener test_run_listener("PASSED", false);
+    test_run_listener.AlsoListenForFailureMessage("FAILED");
+    EXPECT_TRUE(
+        content::ExecuteScript(
+            embedder_web_contents,
+            base::StringPrintf("startDenyTest('%s')", test_name.c_str())));
+    ASSERT_TRUE(test_run_listener.WaitUntilSatisfied());
+  }
 
  private:
   scoped_ptr<content::FakeSpeechRecognitionManager>
@@ -840,11 +862,29 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CloseOnLoadcommit) {
   ASSERT_TRUE(done_test_listener.WaitUntilSatisfied());
 }
 
-// Disabled for being flaky: http://crbug.com/237985
-IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_MediaAccessAPIDeny) {
-  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/web_view/media_access/deny")) << message_;
+IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIDeny_TestDeny) {
+  MediaAccessAPIDenyTestHelper("testDeny");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       MediaAccessAPIDeny_TestDenyThenAllowThrows) {
+  MediaAccessAPIDenyTestHelper("testDenyThenAllowThrows");
+
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       MediaAccessAPIDeny_TestDenyWithPreventDefault) {
+  MediaAccessAPIDenyTestHelper("testDenyWithPreventDefault");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       MediaAccessAPIDeny_TestNoListenersImplyDeny) {
+  MediaAccessAPIDenyTestHelper("testNoListenersImplyDeny");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       MediaAccessAPIDeny_TestNoPreventDefaultImpliesDeny) {
+  MediaAccessAPIDenyTestHelper("testNoPreventDefaultImpliesDeny");
 }
 
 void WebViewTest::MediaAccessAPIAllowTestHelper(const std::string& test_name) {

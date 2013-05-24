@@ -7,6 +7,24 @@ embedder.tests = {};
 embedder.baseGuestURL = '';
 embedder.guestURL = '';
 
+embedder.passTest = function() {
+  chrome.test.sendMessage('PASSED');
+};
+
+embedder.failTest = function(opt_msg) {
+  if (opt_msg) {
+    window.console.log(opt_msg);
+  }
+  chrome.test.sendMessage('FAILED');
+};
+
+embedder.assertTrue = function(condition, msg) {
+  if (!condition) {
+    window.console.log('embedder assertion failure: ' + msg);
+    embedder.failTest();
+  }
+};
+
 /** @private */
 embedder.setUpGuest_ = function() {
   document.querySelector('#webview-tag-container').innerHTML =
@@ -14,9 +32,7 @@ embedder.setUpGuest_ = function() {
       ' src="' + embedder.guestURL + '"' +
       '></webview>';
   var webview = document.querySelector('webview');
-  if (!webview) {
-    chrome.test.fail('No <webview> element created');
-  }
+  embedder.assertTrue(webview, 'No <webview> element created');
   return webview;
 };
 
@@ -35,8 +51,9 @@ embedder.registerAndWaitForPostMessage_ = function(webview, testName) {
   var onPostMessageReceived = function(e) {
     var data = JSON.parse(e.data);
     if (data[1] == '' + testName) {
-      chrome.test.assertEq('access-denied', data[0]);
-      chrome.test.succeed();
+      embedder.assertTrue('access-denied' == data[0],
+                          'expected access-denied, found' + data[0]);
+      embedder.passTest();
     }
   };
   window.addEventListener('message', onPostMessageReceived);
@@ -44,9 +61,10 @@ embedder.registerAndWaitForPostMessage_ = function(webview, testName) {
 
 /** @private */
 embedder.assertCorrectMediaEvent_ = function(e) {
-  chrome.test.assertEq('media', e.permission);
-  chrome.test.assertTrue(!!e.url);
-  chrome.test.assertTrue(e.url.indexOf(embedder.baseGuestURL) == 0);
+  embedder.assertTrue('media' == e.permission, 'permission: ' + e.permission);
+  embedder.assertTrue(!!e.url, 'e.url must be defined');
+  embedder.assertTrue(e.url.indexOf(embedder.baseGuestURL) == 0,
+                      'wrong e.url, ' + e.url);
 };
 
 // Each test loads a guest which requests media access.
@@ -62,9 +80,7 @@ embedder.tests.testDeny = function testDeny() {
 
   var onPermissionRequest = function(e) {
     chrome.test.log('Embedder notified on permissionRequest');
-    chrome.test.assertEq('media', e.permission);
-    chrome.test.assertTrue(!!e.url);
-    chrome.test.assertTrue(e.url.indexOf(embedder.baseGuestURL) == 0);
+    embedder.assertCorrectMediaEvent_(e);
 
     e.request.deny();
     // Calling allow/deny after this should raise exception.
@@ -76,7 +92,7 @@ embedder.tests.testDeny = function testDeny() {
         exceptionCaught = true;
       }
       if (!exceptionCaught) {
-        chrome.test.fail('Expected exception on multiple e.allow()');
+        chrome.failTest('Expected exception on multiple e.allow()');
       }
     });
   };
@@ -105,7 +121,7 @@ embedder.tests.testDenyThenAllowThrows = function testDenyThenAllowThrows() {
       ++exceptionCount;
     }
     if (callCount == 1 && exceptionCount == 1) {
-      chrome.test.succeed();
+      embedder.passTest();
     }
   };
 
@@ -168,6 +184,25 @@ embedder.tests.testNoPreventDefaultImpliesDeny =
   embedder.registerAndWaitForPostMessage_(webview, 'test5');
 };
 
+embedder.testNamesToTestMap = {
+  'testDeny': embedder.tests.testDeny,
+  'testDenyThenAllowThrows': embedder.tests.testDenyThenAllowThrows,
+  'testDenyWithPreventDefault': embedder.tests.testDenyWithPreventDefault,
+  'testNoListenersImplyDeny': embedder.tests.testNoListenersImplyDeny,
+  'testNoPreventDefaultImpliesDeny':
+      embedder.tests.testNoPreventDefaultImpliesDeny
+};
+
+window['startDenyTest'] = function(testName) {
+  var testFunction = embedder.testNamesToTestMap[testName];
+  if (!testFunction) {
+    embedder.failTest('No such test: ' + testName);
+    return;
+  }
+  testFunction();
+};
+
+
 onload = function() {
   chrome.test.getConfig(function(config) {
     embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
@@ -175,13 +210,6 @@ onload = function() {
         '/files/extensions/platform_apps/web_view/media_access' +
         '/media_access_guest.html';
     chrome.test.log('Guest url is: ' + embedder.guestURL);
-
-    chrome.test.runTests([
-      embedder.tests.testDeny,
-      embedder.tests.testDenyThenAllowThrows,
-      embedder.tests.testDenyWithPreventDefault,
-      embedder.tests.testNoListenersImplyDeny,
-      embedder.tests.testNoPreventDefaultImpliesDeny
-    ]);
+    chrome.test.sendMessage('loaded');
   });
 };
