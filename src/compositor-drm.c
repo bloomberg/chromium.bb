@@ -1851,8 +1851,12 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->backlight = backlight_init(drm_device,
 					   connector->connector_type);
 	if (output->backlight) {
+		weston_log("Initialized backlight, device %s\n",
+			   output->backlight->path);
 		output->base.set_backlight = drm_set_backlight;
 		output->base.backlight_current = drm_get_backlight(output);
+	} else {
+		weston_log("Failed to initialize backlight\n");
 	}
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
