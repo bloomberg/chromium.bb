@@ -224,7 +224,8 @@ WebKit::WebGLId RenderWidgetHostViewAndroid::GetScaledContentTexture(
   return helper->CopyAndScaleTexture(texture_id_in_layer_,
                                      texture_size_in_layer_,
                                      size,
-                                     true);
+                                     true,
+                                     GLHelper::SCALER_QUALITY_FAST);
 }
 
 bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
@@ -240,10 +241,12 @@ bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
 
   GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
 
-  WebKit::WebGLId texture = helper->CopyAndScaleTexture(texture_id_in_layer_,
-                                                        texture_size_in_layer_,
-                                                        bitmap.size(),
-                                                        true);
+  WebKit::WebGLId texture = helper->CopyAndScaleTexture(
+      texture_id_in_layer_,
+      texture_size_in_layer_,
+      bitmap.size(),
+      true,
+      GLHelper::SCALER_QUALITY_FAST);
   if (texture == 0)
     return false;
 

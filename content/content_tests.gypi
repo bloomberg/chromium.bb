@@ -946,6 +946,46 @@
             }],
           ],
         },
+        {
+          'target_name': 'content_gl_tests',
+          'type': '<(gtest_target_type)',
+          'defines!': ['CONTENT_IMPLEMENTATION'],
+          'dependencies': [
+            'content_common',
+            'test_support_content',
+            '../base/base.gyp:test_support_base',
+            '../testing/gtest.gyp:gtest',
+            '../ui/ui.gyp:ui',
+            '../ui/gl/gl.gyp:gl',
+            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'common/gpu/client/gl_helper_unittests.cc',
+          ],
+        },
+        {
+          'target_name': 'content_gl_benchmark',
+          'type': '<(gtest_target_type)',
+          'defines!': ['CONTENT_IMPLEMENTATION'],
+          'dependencies': [
+            'content_common',
+            'test_support_content',
+            '../base/base.gyp:test_support_base',
+            '../testing/gtest.gyp:gtest',
+            '../ui/ui.gyp:ui',
+            '../ui/gl/gl.gyp:gl',
+            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'common/gpu/client/gl_helper_benchmark.cc',
+          ],
+        },
       ],
     }],
     ['chromeos==1 or OS=="win"', {
