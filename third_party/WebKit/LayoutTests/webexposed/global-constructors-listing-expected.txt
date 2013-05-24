@@ -189,6 +189,10 @@ MediaElementAudioSourceNode
 MediaError
 MediaKeyError
 MediaKeyEvent
+MediaKeyMessageEvent
+MediaKeyNeededEvent
+MediaKeySession
+MediaKeys
 MediaList
 MediaStreamAudioDestinationNode
 MediaStreamAudioSourceNode
