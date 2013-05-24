@@ -100,6 +100,9 @@ RulesRegistryWithCache::RulesRegistryWithCache(
 
   ui_part->reset(storage_on_ui_.get());
 
+  // After construction, |this| continues to live only on |owner_thread|.
+  weak_ptr_factory_.DetachFromThread();
+
   storage_on_ui_->Init();
 }
 

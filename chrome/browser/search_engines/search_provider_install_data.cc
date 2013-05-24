@@ -167,6 +167,7 @@ SearchProviderInstallData::SearchProviderInstallData(
   // the given notification occurs.
   new GoogleURLObserver(profile, new GoogleURLChangeNotifier(AsWeakPtr()),
                         ui_death_notification, ui_death_source);
+  DetachFromThread();
 }
 
 SearchProviderInstallData::~SearchProviderInstallData() {

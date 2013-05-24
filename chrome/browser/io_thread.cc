@@ -584,6 +584,11 @@ void IOThread::Init() {
                           FROM_HERE,
                           base::Bind(&IOThread::InitSystemRequestContext,
                                      weak_factory_.GetWeakPtr()));
+
+  // We constructed the weak pointer on the IO thread but it will be
+  // used on the UI thread.  Call this to avoid a thread checker
+  // error.
+  weak_factory_.DetachFromThread();
 }
 
 void IOThread::CleanUp() {

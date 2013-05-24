@@ -105,6 +105,8 @@ bool PluginInfoMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 void PluginInfoMessageFilter::OnDestruct() const {
   const_cast<PluginInfoMessageFilter*>(this)->
+      weak_ptr_factory_.DetachFromThread();
+  const_cast<PluginInfoMessageFilter*>(this)->
       weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Destroy on the UI thread because we contain a |PrefMember|.

@@ -240,6 +240,9 @@ class SGIVideoSyncVSyncProvider
         shim_((new SGIVideoSyncProviderThreadShim(window))->AsWeakPtr()),
         cancel_vsync_flag_(shim_->cancel_vsync_flag()),
         vsync_lock_(shim_->vsync_lock()) {
+    // The WeakPtr is bound to the SGIVideoSyncThread. We only use it for
+    // PostTask.
+    shim_->DetachFromThread();
     vsync_thread_->message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&SGIVideoSyncProviderThreadShim::Initialize, shim_));

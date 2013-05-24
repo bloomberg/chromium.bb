@@ -158,7 +158,11 @@ HRESULT UIAutomationClient::Context::EventHandler::HandleAutomationEvent(
 base::WeakPtr<UIAutomationClient::Context>
     UIAutomationClient::Context::Create() {
   Context* context = new Context();
-  return context->weak_ptr_factory_.GetWeakPtr();
+  base::WeakPtr<Context> context_ptr(context->weak_ptr_factory_.GetWeakPtr());
+  // Unbind from this thread so that the instance will bind to the automation
+  // thread when Initialize is called.
+  context->weak_ptr_factory_.DetachFromThread();
+  return context_ptr;
 }
 
 void UIAutomationClient::Context::DeleteOnAutomationThread() {

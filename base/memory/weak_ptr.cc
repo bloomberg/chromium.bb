@@ -8,23 +8,17 @@ namespace base {
 namespace internal {
 
 WeakReference::Flag::Flag() : is_valid_(true) {
-  // Flags only become bound when checked for validity, or invalidated,
-  // so that we can check that later validity/invalidation operations on
-  // the same Flag take place on the same thread.
-  thread_checker_.DetachFromThread();
 }
 
 void WeakReference::Flag::Invalidate() {
   // The flag being invalidated with a single ref implies that there are no
   // weak pointers in existence. Allow deletion on other thread in this case.
-  DCHECK(thread_checker_.CalledOnValidThread() || HasOneRef())
-      << "WeakPtrs must be checked and invalidated on the same thread.";
+  DCHECK(thread_checker_.CalledOnValidThread() || HasOneRef());
   is_valid_ = false;
 }
 
 bool WeakReference::Flag::IsValid() const {
-  DCHECK(thread_checker_.CalledOnValidThread())
-      << "WeakPtrs must be checked and invalidated on the same thread.";
+  DCHECK(thread_checker_.CalledOnValidThread());
   return is_valid_;
 }
 
@@ -52,10 +46,10 @@ WeakReferenceOwner::~WeakReferenceOwner() {
 }
 
 WeakReference WeakReferenceOwner::GetRef() const {
-  // If we hold the last reference to the Flag then create a new one.
+  // We also want to reattach to the current thread if all previous references
+  // have gone away.
   if (!HasRefs())
     flag_ = new WeakReference::Flag();
-
   return WeakReference(flag_);
 }
 
