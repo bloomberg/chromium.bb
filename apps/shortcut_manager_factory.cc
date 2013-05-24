@@ -16,13 +16,6 @@ ShortcutManager* ShortcutManagerFactory::GetForProfile(Profile* profile) {
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
-// static
-void ShortcutManagerFactory::ResetForProfile(Profile* profile) {
-  ShortcutManagerFactory* factory = GetInstance();
-  factory->BrowserContextShutdown(profile);
-  factory->BrowserContextDestroyed(profile);
-}
-
 ShortcutManagerFactory* ShortcutManagerFactory::GetInstance() {
   return Singleton<ShortcutManagerFactory>::get();
 }

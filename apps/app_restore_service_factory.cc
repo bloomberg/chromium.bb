@@ -17,13 +17,6 @@ AppRestoreService* AppRestoreServiceFactory::GetForProfile(Profile* profile) {
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
-// static
-void AppRestoreServiceFactory::ResetForProfile(Profile* profile) {
-  AppRestoreServiceFactory* factory = GetInstance();
-  factory->BrowserContextShutdown(profile);
-  factory->BrowserContextDestroyed(profile);
-}
-
 AppRestoreServiceFactory* AppRestoreServiceFactory::GetInstance() {
   return Singleton<AppRestoreServiceFactory>::get();
 }

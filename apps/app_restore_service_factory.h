@@ -21,8 +21,6 @@ class AppRestoreServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static AppRestoreService* GetForProfile(Profile* profile);
 
-  static void ResetForProfile(Profile* profile);
-
   static AppRestoreServiceFactory* GetInstance();
 
  private:

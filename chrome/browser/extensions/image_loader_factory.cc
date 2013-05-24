@@ -17,13 +17,6 @@ ImageLoader* ImageLoaderFactory::GetForProfile(Profile* profile) {
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
-// static
-void ImageLoaderFactory::ResetForProfile(Profile* profile) {
-  ImageLoaderFactory* factory = GetInstance();
-  factory->BrowserContextShutdown(profile);
-  factory->BrowserContextDestroyed(profile);
-}
-
 ImageLoaderFactory* ImageLoaderFactory::GetInstance() {
   return Singleton<ImageLoaderFactory>::get();
 }

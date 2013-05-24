@@ -21,8 +21,6 @@ class ImageLoaderFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ImageLoader* GetForProfile(Profile* profile);
 
-  static void ResetForProfile(Profile* profile);
-
   static ImageLoaderFactory* GetInstance();
 
  private:

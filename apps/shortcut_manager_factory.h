@@ -23,8 +23,6 @@ class ShortcutManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ShortcutManager* GetForProfile(Profile* profile);
 
-  static void ResetForProfile(Profile* profile);
-
   static ShortcutManagerFactory* GetInstance();
 
  private:
