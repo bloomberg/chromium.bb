@@ -342,17 +342,14 @@ void RenderTextWin::SetSelectionModel(const SelectionModel& model) {
   ResetLayout();
 }
 
-void RenderTextWin::GetGlyphBounds(size_t index,
-                                   ui::Range* xspan,
-                                   int* height) {
+ui::Range RenderTextWin::GetGlyphBounds(size_t index) {
   const size_t run_index =
       GetRunContainingCaret(SelectionModel(index, CURSOR_FORWARD));
   DCHECK_LT(run_index, runs_.size());
   internal::TextRun* run = runs_[run_index];
   const size_t layout_index = TextIndexToLayoutIndex(index);
-  xspan->set_start(GetGlyphXBoundary(run, layout_index, false));
-  xspan->set_end(GetGlyphXBoundary(run, layout_index, true));
-  *height = run->font.GetHeight();
+  return ui::Range(GetGlyphXBoundary(run, layout_index, false),
+                   GetGlyphXBoundary(run, layout_index, true));
 }
 
 std::vector<Rect> RenderTextWin::GetSubstringBounds(const ui::Range& range) {

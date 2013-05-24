@@ -368,11 +368,11 @@ class UI_EXPORT RenderText {
   // Sets the selection model, the argument is assumed to be valid.
   virtual void SetSelectionModel(const SelectionModel& model);
 
-  // Get the height and horizontal bounds (relative to the left of the text, not
-  // the view) of the glyph starting at |index|. If the glyph is RTL then
-  // xspan->is_reversed(). This does not return a Rect because a Rect can't have
-  // a negative width.
-  virtual void GetGlyphBounds(size_t index, ui::Range* xspan, int* height) = 0;
+  // Get the horizontal bounds (relative to the left of the text, not the view)
+  // of the glyph starting at |index|. If the glyph is RTL then the returned
+  // Range will have is_reversed() true.  (This does not return a Rect because a
+  // Rect can't have a negative width.)
+  virtual ui::Range GetGlyphBounds(size_t index) = 0;
 
   // Get the visual bounds containing the logical substring within the |range|.
   // If |range| is empty, the result is empty. These bounds could be visually

@@ -285,11 +285,8 @@ TEST_F(RenderTextTest, ObscuredText) {
   }
 
   // GetGlyphBounds() should yield the entire string bounds for text index 0.
-  int height = 0;
-  ui::Range bounds;
-  render_text->GetGlyphBounds(0U, &bounds, &height);
   EXPECT_EQ(render_text->GetStringSize().width(),
-            static_cast<int>(bounds.length()));
+            static_cast<int>(render_text->GetGlyphBounds(0U).length()));
 
   // Cursoring is independent of underlying characters when text is obscured.
   const wchar_t* const texts[] = {

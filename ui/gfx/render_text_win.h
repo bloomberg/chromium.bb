@@ -80,9 +80,7 @@ class RenderTextWin : public RenderText {
       const SelectionModel& selection,
       VisualCursorDirection direction) OVERRIDE;
   virtual void SetSelectionModel(const SelectionModel& model) OVERRIDE;
-  virtual void GetGlyphBounds(size_t index,
-                              ui::Range* xspan,
-                              int* height) OVERRIDE;
+  virtual ui::Range GetGlyphBounds(size_t index) OVERRIDE;
   virtual std::vector<Rect> GetSubstringBounds(const ui::Range& range) OVERRIDE;
   virtual size_t TextIndexToLayoutIndex(size_t index) const OVERRIDE;
   virtual size_t LayoutIndexToTextIndex(size_t index) const OVERRIDE;

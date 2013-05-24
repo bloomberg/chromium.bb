@@ -68,10 +68,9 @@ SelectionModel RenderTextMac::AdjacentWordSelectionModel(
   return SelectionModel();
 }
 
-void RenderTextMac::GetGlyphBounds(size_t index,
-                                   ui::Range* xspan,
-                                   int* height) {
+ui::Range RenderTextMac::GetGlyphBounds(size_t index) {
   // TODO(asvitkine): Implement this. http://crbug.com/131618
+  return ui::Range();
 }
 
 std::vector<Rect> RenderTextMac::GetSubstringBounds(const ui::Range& range) {

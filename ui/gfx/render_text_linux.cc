@@ -206,14 +206,11 @@ SelectionModel RenderTextLinux::AdjacentWordSelectionModel(
   return cur;
 }
 
-void RenderTextLinux::GetGlyphBounds(size_t index,
-                                     ui::Range* xspan,
-                                     int* height) {
+ui::Range RenderTextLinux::GetGlyphBounds(size_t index) {
   PangoRectangle pos;
   pango_layout_index_to_pos(layout_, TextIndexToLayoutIndex(index), &pos);
   // TODO(derat): Support fractional ranges for subpixel positioning?
-  *xspan = ui::Range(PANGO_PIXELS(pos.x), PANGO_PIXELS(pos.x + pos.width));
-  *height = PANGO_PIXELS(pos.height);
+  return ui::Range(PANGO_PIXELS(pos.x), PANGO_PIXELS(pos.x + pos.width));
 }
 
 std::vector<Rect> RenderTextLinux::GetSubstringBounds(const ui::Range& range) {

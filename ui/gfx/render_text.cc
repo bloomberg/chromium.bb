@@ -664,19 +664,17 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
   // overtype the next character.
   LogicalCursorDirection caret_affinity =
       insert_mode ? caret.caret_affinity() : CURSOR_FORWARD;
-  int x = 0, width = 1, height = 0;
+  int x = 0, width = 1;
+  Size size = GetStringSize();
   if (caret_pos == (caret_affinity == CURSOR_BACKWARD ? 0 : text().length())) {
     // The caret is attached to the boundary. Always return a 1-dip width caret,
     // since there is nothing to overtype.
-    Size size = GetStringSize();
     if ((GetTextDirection() == base::i18n::RIGHT_TO_LEFT) == (caret_pos == 0))
       x = size.width();
-    height = size.height();
   } else {
     size_t grapheme_start = (caret_affinity == CURSOR_FORWARD) ?
         caret_pos : IndexOfAdjacentGrapheme(caret_pos, CURSOR_BACKWARD);
-    ui::Range xspan;
-    GetGlyphBounds(grapheme_start, &xspan, &height);
+    ui::Range xspan(GetGlyphBounds(grapheme_start));
     if (insert_mode) {
       x = (caret_affinity == CURSOR_BACKWARD) ? xspan.end() : xspan.start();
     } else {  // overtype mode
@@ -684,9 +682,7 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
       width = xspan.length();
     }
   }
-  height = std::min(height, display_rect().height());
-  int y = (display_rect().height() - height) / 2;
-  return Rect(ToViewPoint(Point(x, y)), Size(width, height));
+  return Rect(ToViewPoint(Point(x, 0)), Size(width, size.height()));
 }
 
 const Rect& RenderText::GetUpdatedCursorBounds() {
