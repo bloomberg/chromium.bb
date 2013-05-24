@@ -1069,13 +1069,13 @@ void LocationBarViewGtk::Observe(int type,
         // 12.1px = 9pt @ 96dpi
         gtk_util::ForceFontSizePixels(security_info_label_, 12.1);
         gtk_util::ForceFontSizePixels(tab_to_search_full_label_,
-            browser_defaults::kAutocompleteEditFontPixelSize);
+                                      browser_defaults::kOmniboxFontPixelSize);
         gtk_util::ForceFontSizePixels(tab_to_search_partial_label_,
-            browser_defaults::kAutocompleteEditFontPixelSize);
+                                      browser_defaults::kOmniboxFontPixelSize);
         gtk_util::ForceFontSizePixels(tab_to_search_hint_leading_label_,
-            browser_defaults::kAutocompleteEditFontPixelSize);
+                                      browser_defaults::kOmniboxFontPixelSize);
         gtk_util::ForceFontSizePixels(tab_to_search_hint_trailing_label_,
-            browser_defaults::kAutocompleteEditFontPixelSize);
+                                      browser_defaults::kOmniboxFontPixelSize);
 
         const int top_bottom = popup_window_mode_ ? kBorderThickness : 0;
         gtk_alignment_set_padding(GTK_ALIGNMENT(location_entry_alignment_),

@@ -1709,9 +1709,7 @@ gfx::Font OmniboxViewGtk::GetFont() {
     return gfx::Font(
         ui::ResourceBundle::GetSharedInstance().GetFont(
             ui::ResourceBundle::BaseFont).GetFontName(),
-        popup_window_mode_ ?
-            browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
-            browser_defaults::kAutocompleteEditFontPixelSize);
+            browser_defaults::kOmniboxFontPixelSize);
   }
 
   // If we haven't initialized the text view yet, just create a temporary one

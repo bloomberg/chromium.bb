@@ -20,11 +20,8 @@ extern const bool kCanToggleSystemTitleBar;
 
 #endif
 
-// Size of the font used in the autocomplete box for normal windows, in pixels.
-extern const int kAutocompleteEditFontPixelSize;
-
-// Size of the font used in the autocomplete box for popup windows, in pixels.
-extern const int kAutocompleteEditFontPixelSizeInPopup;
+// Size of the font used in the omnibox, in pixels.
+extern const int kOmniboxFontPixelSize;
 
 // Width of mini-tabs.
 extern const int kMiniTabWidth;

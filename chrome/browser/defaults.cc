@@ -12,20 +12,15 @@ const bool kCanToggleSystemTitleBar = false;
 #else
 const bool kCanToggleSystemTitleBar = true;
 #endif
+#endif
 
-#if defined(OS_CHROMEOS)
+#if defined(TOOLKIT_GTK)
+// 14px = 10.5pt @ 96dpi.
+const int kOmniboxFontPixelSize = 14;
+#else
 // Make the regular omnibox text two points larger than the nine-point font
 // used in the tab strip (11pt / 72pt/in * 96px/in = 14.667px).
-const int kAutocompleteEditFontPixelSize = 15;
-const int kAutocompleteEditFontPixelSizeInPopup = 10;
-#elif defined(TOOLKIT_GTK)
-// 14px = 10.5pt @ 96dpi.
-const int kAutocompleteEditFontPixelSize = 14;
-// On Windows, popup windows' location text uses a font 5/6 the size of
-// that in a regular window, which we duplicate here for GTK.
-const int kAutocompleteEditFontPixelSizeInPopup =
-    kAutocompleteEditFontPixelSize * 5.0 / 6.0;
-#endif
+const int kOmniboxFontPixelSize = 15;
 #endif
 
 #if defined(TOOLKIT_VIEWS)

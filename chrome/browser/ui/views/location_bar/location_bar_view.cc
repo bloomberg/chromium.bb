@@ -246,10 +246,7 @@ void LocationBarView::Init() {
   gfx::Font font(ui::ResourceBundle::GetSharedInstance().GetFont(
       ui::ResourceBundle::BaseFont));
   const int current_font_size = font.GetFontSize();
-  const int kAutocompleteEditFontPixelSize = 15;
-  const int kAutocompleteEditFontPixelSizeInPopup = 12;
-  const int desired_font_size = is_popup_mode_ ?
-      kAutocompleteEditFontPixelSizeInPopup : kAutocompleteEditFontPixelSize;
+  const int desired_font_size = browser_defaults::kOmniboxFontPixelSize;
   if (current_font_size < desired_font_size)
     font = font.DeriveFont(desired_font_size - current_font_size);
   // Shrink large fonts to make them fit.
