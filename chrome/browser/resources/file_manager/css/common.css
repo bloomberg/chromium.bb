@@ -143,7 +143,7 @@ body:not([new-ui]) .buttonbar button.small {
 
 body:not([new-ui]) .buttonbar button {
   -webkit-margin-after: 0;
-  -webkit-margin-begin: 0;
+  -webkit-margin-before: 0;
   -webkit-margin-end: 0;
   -webkit-margin-start: 8px;
   -webkit-user-select: none;
@@ -231,7 +231,7 @@ body:not([new-ui]) .buttonbar button.action:active {
   border: 1px solid transparent;
   color: #FFF;
   font-weight: bold;
-  letter-spacing: 1;
+  letter-spacing: 1px;
   text-transform: uppercase;
 }
 
