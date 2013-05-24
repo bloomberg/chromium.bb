@@ -31,17 +31,7 @@
 #include "config.h"
 #include "V8HTMLLinkElement.h"
 
-#include "V8DOMSettableTokenList.h"
-#include "bindings/v8/V8Binding.h"
-#include "core/html/HTMLLinkElement.h"
-
 namespace WebCore {
-
-v8::Handle<v8::Value> V8HTMLLinkElement::sizesAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    HTMLLinkElement* imp = V8HTMLLinkElement::toNative(info.Holder());
-    return toV8Fast(imp->sizes(), info, imp);
-}
 
 void V8HTMLLinkElement::sizesAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {

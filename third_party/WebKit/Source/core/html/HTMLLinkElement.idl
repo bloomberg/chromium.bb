@@ -27,7 +27,7 @@ interface HTMLLinkElement : HTMLElement {
     [Reflect] attribute DOMString media;
     [Reflect] attribute DOMString rel;
     [Reflect] attribute DOMString rev;
-    [Custom] attribute DOMSettableTokenList sizes;
+    [CustomSetter] attribute DOMSettableTokenList sizes;
     [Reflect] attribute DOMString target;
     [Reflect] attribute DOMString type;
 
