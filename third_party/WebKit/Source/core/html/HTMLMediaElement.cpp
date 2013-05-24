@@ -90,6 +90,7 @@
 #endif
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
+// FIXME: Remove dependency on modules/encryptedmedia (http://crbug.com/242754).
 #include "modules/encryptedmedia/MediaKeyNeededEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 #endif
