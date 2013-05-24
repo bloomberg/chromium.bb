@@ -48,7 +48,7 @@
 
     readonly attribute DOMStringList ancestorOrigins;
 
-    [NotEnumerable, Custom, Unforgeable, ReadOnly, ImplementedAs=toStringFunction] DOMString toString();
+    [NotEnumerable, Unforgeable, ReadOnly, ImplementedAs=href] DOMString toString();
     [NotEnumerable, Custom, Unforgeable, ReadOnly] any valueOf();
 };
 

@@ -31,18 +31,6 @@
 #include "config.h"
 #include "V8Location.h"
 
-#include "V8DOMWindow.h"
-#include "bindings/v8/BindingSecurity.h"
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8EventListener.h"
-#include "bindings/v8/V8Utilities.h"
-#include "core/dom/Document.h"
-#include "core/loader/FrameLoader.h"
-#include "core/page/Frame.h"
-#include "core/page/Location.h"
-#include "core/platform/KURL.h"
-#include "wtf/text/WTFString.h"
-
 namespace WebCore {
 
 v8::Handle<v8::Value> V8Location::valueOfMethodCustom(const v8::Arguments& args)
@@ -53,16 +41,6 @@ v8::Handle<v8::Value> V8Location::valueOfMethodCustom(const v8::Arguments& args)
     // objects, since that would provide a hook to change the string
     // conversion behavior of location objects.
     return args.This();
-}
-
-v8::Handle<v8::Value> V8Location::toStringMethodCustom(const v8::Arguments& args)
-{
-    v8::Handle<v8::Object> holder = args.Holder();
-    Location* imp = V8Location::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
-        return v8::Undefined();
-    String result = imp->href();
-    return v8String(result, args.GetIsolate());
 }
 
 }  // namespace WebCore
