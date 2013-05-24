@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "base/at_exit.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 
@@ -16,12 +17,15 @@ namespace {
 using gpu::gles2::ShaderTranslator;
 
 void FinalizeShaderTranslator(void* /* dummy */) {
+  TRACE_EVENT0("gpu", "ShFinalize");
   ShFinalize();
 }
 
 bool InitializeShaderTranslator() {
   static bool initialized = false;
-  if (!initialized && ShInitialize()) {
+  if (!initialized) {
+    TRACE_EVENT0("gpu", "ShInitialize");
+    CHECK(ShInitialize());
     base::AtExitManager::RegisterCallback(&FinalizeShaderTranslator, NULL);
     initialized = true;
   }
@@ -138,8 +142,11 @@ bool ShaderTranslator::Init(
   ShShaderOutput shader_output =
       (glsl_implementation_type == kGlslES ? SH_ESSL_OUTPUT : SH_GLSL_OUTPUT);
 
-  compiler_ = ShConstructCompiler(
-      shader_type, shader_spec, shader_output, resources);
+  {
+    TRACE_EVENT0("gpu", "ShConstructCompiler");
+    compiler_ = ShConstructCompiler(
+        shader_type, shader_spec, shader_output, resources);
+  }
   compiler_options_ = *resources;
   implementation_is_glsl_es_ = (glsl_implementation_type == kGlslES);
   needs_built_in_function_emulation_ =
@@ -168,8 +175,11 @@ bool ShaderTranslator::Translate(const char* shader) {
   ClearResults();
 
   bool success = false;
-  if (ShCompile(compiler_, &shader, 1, GetCompileOptions())) {
-    success = true;
+  {
+    TRACE_EVENT0("gpu", "ShCompile");
+    success = !!ShCompile(compiler_, &shader, 1, GetCompileOptions());
+  }
+  if (success) {
     // Get translated shader.
     ANGLEGetInfoType obj_code_len = 0;
     ShGetInfo(compiler_, SH_OBJECT_CODE_LENGTH, &obj_code_len);
