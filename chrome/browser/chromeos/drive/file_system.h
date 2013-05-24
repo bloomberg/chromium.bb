@@ -185,13 +185,6 @@ class FileSystem : public FileSystemInterface,
   // Called on preference change.
   void OnDisableDriveHostedFilesChanged();
 
-  // Part of Search(). Called after DriveOperations::Search is completed.
-  void OnSearch(const SearchCallback& callback,
-                FileError error,
-                bool is_update_needed,
-                const GURL& next_feed,
-                scoped_ptr<std::vector<SearchResultInfo> > result);
-
   // Part of CreateDirectory(). Called after ChangeListLoader::LoadIfNeeded()
   // is called and made sure that the resource metadata is loaded.
   void CreateDirectoryAfterLoad(const base::FilePath& directory_path,

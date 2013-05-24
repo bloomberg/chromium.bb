@@ -41,15 +41,12 @@ class UpdateOperation;
 
 // Callback for DriveOperations::Search.
 // On success, |error| is FILE_ERROR_OK, and remaining arguments are valid to
-// use. if |is_update_needed| is true, some mismatch is found between
-// the result from the server and local metadata, so the caller should update
-// the resource metadata.
+// use.
 // |next_feed| is the URL to fetch the remaining result from the server. Maybe
 // empty if there is no more results.
 // On error, |error| is set to other than FILE_ERROR_OK, and the caller
 // shouldn't use remaining arguments.
 typedef base::Callback<void(FileError error,
-                            bool is_update_needed,
                             const GURL& next_feed,
                             scoped_ptr<std::vector<SearchResultInfo> > result)>
     SearchOperationCallback;

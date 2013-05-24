@@ -26,16 +26,12 @@ namespace file_system {
 namespace {
 
 // Refreshes entries of |resource_metadata| based on |resource_list|, and
-// returns the result. |is_update_needed| will be set to true, if an
-// inconsistency is found between |resource_list| and |resource_metadata|.
-// Refreshed entries will be stored into |result|.
+// returns the result. Refreshed entries will be stored into |result|.
 FileError RefreshEntriesOnBlockingPool(
     internal::ResourceMetadata* resource_metadata,
     scoped_ptr<google_apis::ResourceList> resource_list,
-    bool* is_update_needed,
     std::vector<SearchResultInfo>* result) {
   DCHECK(resource_metadata);
-  DCHECK(is_update_needed);
   DCHECK(result);
 
   const ScopedVector<google_apis::ResourceEntry>& entries =
@@ -49,13 +45,18 @@ FileError RefreshEntriesOnBlockingPool(
     if (error == FILE_ERROR_OK) {
       result->push_back(SearchResultInfo(drive_file_path, entry));
     } else if (error == FILE_ERROR_NOT_FOUND) {
-      // If a result is not present in our local resource metadata,
-      // it is necessary to update the resource metadata.
-      // This may happen if the entry has recently been added to the drive (and
-      // we haven't received the delta update feed yet).
-      // This is not a fatal error, so skip to add the result, but notify
-      // the caller that the update is needed.
-      *is_update_needed = true;
+      // The result is absent in local resource metadata. There are two cases:
+      //
+      // 1) Resource metadata is not up-to-date, and the entry has recently
+      //    been added to the drive. This is not a fatal error, so just skip to
+      //    add the result. We should soon receive XMPP update notification
+      //    and refresh both the metadata and search result UI in Files.app.
+      //
+      // 2) Resource metadata is not fully loaded.
+      // TODO(kinaba) crbug.com/181075:
+      //    In this case, we are doing "fast fetch" fetching directory lists on
+      //    the fly to quickly deliver results to the user. However, we have no
+      //    such equivalent for Search.
     } else {
       // Otherwise, it is a fatal error. Give up to return the search result.
       return error;
@@ -110,8 +111,7 @@ void SearchOperation::SearchAfterGetResourceList(
 
   FileError error = util::GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
-    callback.Run(
-        error, false, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
+    callback.Run(error, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
     return;
   }
 
@@ -128,11 +128,10 @@ void SearchOperation::SearchAfterGetResourceList(
   if (resource_list->entries().empty()) {
     // Short cut. If the resource entry is empty, we don't need to refresh
     // the resource metadata.
-    callback.Run(FILE_ERROR_OK, false, next_feed, result.Pass());
+    callback.Run(FILE_ERROR_OK, next_feed, result.Pass());
     return;
   }
 
-  bool* is_update_needed = new bool(false);
   std::vector<SearchResultInfo>* result_ptr = result.get();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
@@ -140,34 +139,29 @@ void SearchOperation::SearchAfterGetResourceList(
       base::Bind(&RefreshEntriesOnBlockingPool,
                  metadata_,
                  base::Passed(&resource_list),
-                 is_update_needed,
                  result_ptr),
       base::Bind(&SearchOperation::SearchAfterRefreshEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  next_feed,
-                 base::Owned(is_update_needed),
                  base::Passed(&result)));
 }
 
 void SearchOperation::SearchAfterRefreshEntry(
     const SearchOperationCallback& callback,
     const GURL& next_feed,
-    bool* is_update_needed,
     scoped_ptr<std::vector<SearchResultInfo> > result,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  DCHECK(is_update_needed);
   DCHECK(result);
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(
-        error, false, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
+    callback.Run(error, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
     return;
   }
 
-  callback.Run(error, *is_update_needed, next_feed, result.Pass());
+  callback.Run(error, next_feed, result.Pass());
 }
 
 }  // namespace file_system

@@ -1187,31 +1187,13 @@ void FileSystem::OnGetAboutResource(
                about_resource->quota_bytes_used());
 }
 
-void FileSystem::OnSearch(const SearchCallback& callback,
-                          FileError error,
-                          bool is_update_needed,
-                          const GURL& next_feed,
-                          scoped_ptr<std::vector<SearchResultInfo> > result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (is_update_needed)
-    CheckForUpdates();
-
-  callback.Run(error, next_feed, result.Pass());
-}
-
 void FileSystem::Search(const std::string& search_query,
                         const GURL& next_feed,
                         const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  drive_operations_.Search(search_query,
-                           next_feed,
-                           base::Bind(&FileSystem::OnSearch,
-                                      weak_ptr_factory_.GetWeakPtr(),
-                                      callback));
+  drive_operations_.Search(search_query, next_feed, callback);
 }
 
 void FileSystem::SearchMetadata(const std::string& query,

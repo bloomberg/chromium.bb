@@ -62,7 +62,6 @@ class SearchOperation {
   void SearchAfterRefreshEntry(
       const SearchOperationCallback& callback,
       const GURL& next_feed,
-      bool* is_update_needed,
       scoped_ptr<std::vector<SearchResultInfo> > result,
       FileError error);
 

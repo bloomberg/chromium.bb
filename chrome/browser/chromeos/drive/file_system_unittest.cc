@@ -1766,7 +1766,7 @@ TEST_F(DriveFileSystemTest, ContentSearch) {
       GURL());
 
   file_system_->Search("Directory", GURL(), callback);
-  message_loop_.Run();  // Wait to get our result.
+  google_apis::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
@@ -1780,21 +1780,15 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
       "New Directory 1!",
       google_apis::test_util::CreateCopyResultCallback(
           &error, &resource_entry));
-  message_loop_.RunUntilIdle();
+  google_apis::test_util::RunBlockingPoolTask();
 
   // As the result of the first Search(), only entries in the current file
   // system snapshot are expected to be returned (i.e. "New Directory 1!"
   // shouldn't be included in the search result even though it matches
   // "Directory 1".
   const SearchResultPair kExpectedResults[] = {
-    { "drive/root/Directory 1", true }
+      { "drive/root/Directory 1", true }
   };
-
-  // At the same time, unknown entry should trigger delta feed request.
-  // This will cause notification to directory observers (e.g., File Browser)
-  // so that they can request search again.
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(_))
-      .Times(AtLeast(1));
 
   SearchCallback callback = base::Bind(
       &DriveSearchCallback,
@@ -1803,8 +1797,6 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
       GURL());
 
   file_system_->Search("\"Directory 1\"", GURL(), callback);
-  // Make sure all the delayed tasks to complete.
-  // message_loop_.Run() can return before the delta feed processing finishes.
   google_apis::test_util::RunBlockingPoolTask();
 }
 
@@ -1821,7 +1813,7 @@ TEST_F(DriveFileSystemTest, ContentSearchEmptyResult) {
       GURL());
 
   file_system_->Search("\"no-match query\"", GURL(), callback);
-  message_loop_.Run();  // Wait to get our result.
+  google_apis::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(DriveFileSystemTest, GetAvailableSpace) {
