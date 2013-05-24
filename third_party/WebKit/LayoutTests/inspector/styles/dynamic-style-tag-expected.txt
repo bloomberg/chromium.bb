@@ -60,7 +60,7 @@ color: red;
 
 ======== Matched CSS Rules ========
 [expanded] 
-.inline-style-created-by-script-with-source-url  { ()
+.inline-style-created-by-script-with-source-url  { (inlineStyleCreatedByScript.css:1 -> inlineStyleCreatedByScript.css:1:1)
 /-- overloaded --/ color: grey;
 
 [expanded] 
@@ -68,7 +68,7 @@ color: red;
 /-- overloaded --/ color: orange;
 
 [expanded] 
-.inline-style-added-by-document-write-with-source-url  { ()
+.inline-style-added-by-document-write-with-source-url  { (inlineStyleAddedByDocumentWrite.css:2 -> inlineStyleAddedByDocumentWrite.css:2:1)
 /-- overloaded --/ color: yellow;
 
 [expanded] 

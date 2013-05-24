@@ -1,0 +1,13 @@
+Tests that stylesheets with sourceURL comment are shown in the Sources panel.
+
+
+Running: testSourceURLCommentInInlineScript
+
+Running: testSourceURLComment
+body { color: black; }
+/*@ sourceURL=css/addedInlineStylesheet.css */
+
+Running: testNonRelativeURL
+body { color: red; }
+/*@ sourceURL=/css/nonRelativeInlineStylesheet.css */
+
