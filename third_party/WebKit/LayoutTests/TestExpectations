@@ -747,7 +747,7 @@ code.google.com/p/v8/issues/detail?id=953 fast/regex/pcre-test-1.html [ Timeout 
 crbug.com/59665 webkit.org/b/45021 media/context-menu-actions.html [ Skip ]
 
 webkit.org/b/91429 [ Debug ] fast/frames/calculate-round.html [ Timeout ]
-webkit.org/b/91429 [ Linux Mac ] http/tests/plugins/post-url-file.html [ Timeout ]
+webkit.org/b/91429 [ Linux Mac Win ] http/tests/plugins/post-url-file.html [ Timeout ]
 
 #///////////////////////////////////////////////////////////////////////////
 # End DRT failures
@@ -1808,7 +1808,8 @@ crbug.com/243353 [ Mac ] animations/animation-direction-reverse.html [ Timeout ]
 crbug.com/243353 [ Mac ] animations/play-state-suspend.html [ Timeout ]
 crbug.com/243353 [ Mac ] animations/play-state.html [ Timeout ]
 crbug.com/243353 [ Win Linux ] animations/suspend-resume-animation.html [ Failure Pass ]
-crbug.com/243353 [ Win ] animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
+crbug.com/243353 [ Win Linux ] animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
+crbug.com/243353 [ Linux ] animations/animation-direction-reverse.html [ Failure Pass ]
 crbug.com/243353 [ Mac ] animations/play-state-paused.html [ Timeout ]
 crbug.com/243353 [ Win Linux ] animations/play-state-paused.html [ Failure Pass ]
 crbug.com/243357 [ Linux ] compositing/gestures/ [ ImageOnlyFailure Pass ]
@@ -1833,7 +1834,9 @@ crbug.com/243515 [ Win Mac ] fast/autoresize/basic.html [ Pass Timeout ]
 crbug.com/243516 [ Mac ] transitions/transition-hit-test-transform.html [ Timeout ]
 crbug.com/243520 [ Mac ] fast/css/font-weight-1.html [ Failure Pass ]
 crbug.com/243523 http/tests/history/back-with-fragment-change.php [ Pass Timeout Failure ]
-crbug.com/243538 [ Win ] fast/text/international/complex-character-based-fallback.html [ Failure ]
+crbug.com/243538 [ Win ] fast/text/international/complex-character-based-fallback.html [ Failure ImageOnlyFailure ]
 crbug.com/243538 [ Win ] transforms/2d/hindi-rotated.html [ Failure ]
 crbug.com/243543 [ Win7 ] virtual/gpu/fast/hidpi/video-controls-in-hidpi.html [ Failure ]
-
+crbug.com/243592 [ Win ] fast/dom/Window/window-screen-properties.html [ Failure ]
+crbug.com/243593 [ Win ] fast/media/color-does-not-include-alpha.html [ Failure ]
+crbug.com/243596 [ Win ] inspector-protocol/input/dispatchMouseEvent.html [ Failure ]
