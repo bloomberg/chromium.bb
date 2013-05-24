@@ -26,7 +26,9 @@
 #ifndef GraphicsTypes_h
 #define GraphicsTypes_h
 
-#include <wtf/Forward.h>
+#include "third_party/skia/include/core/SkPaint.h"
+
+#include "wtf/Forward.h"
 
 namespace WebCore {
 
@@ -92,9 +94,17 @@ enum GradientSpreadMethod {
     SpreadMethodRepeat
 };
 
-enum LineCap { ButtCap, RoundCap, SquareCap };
+enum LineCap {
+    ButtCap = SkPaint::kButt_Cap,
+    RoundCap = SkPaint::kRound_Cap,
+    SquareCap = SkPaint::kSquare_Cap
+};
 
-enum LineJoin { MiterJoin, RoundJoin, BevelJoin };
+enum LineJoin {
+    MiterJoin = SkPaint::kMiter_Join,
+    RoundJoin = SkPaint::kRound_Join,
+    BevelJoin = SkPaint::kBevel_Join
+};
 
 enum HorizontalAlignment { AlignLeft, AlignRight, AlignHCenter };
 

@@ -60,15 +60,12 @@ private:
         : m_strokeStyle(SolidStroke)
         , m_strokeThickness(0)
         , m_strokeColor(Color::black)
-        , m_strokeColorPacked(0xFF000000)
         , m_strokeColorSpace(ColorSpaceDeviceRGB)
-        , m_dashRatio(3)
         , m_miterLimit(4)
         , m_lineCap(SkPaint::kDefault_Cap)
         , m_lineJoin(SkPaint::kDefault_Join)
         , m_dash(0)
         , m_fillColor(Color::black)
-        , m_fillColorPacked(0xFF000000)
         , m_fillColorSpace(ColorSpaceDeviceRGB)
         , m_fillRule(RULE_NONZERO)
         , m_looper(0)
@@ -93,17 +90,14 @@ private:
         : m_strokeStyle(other.m_strokeStyle)
         , m_strokeThickness(other.m_strokeThickness)
         , m_strokeColor(other.m_strokeColor)
-        , m_strokeColorPacked(other.m_strokeColorPacked)
         , m_strokeColorSpace(other.m_strokeColorSpace)
         , m_strokeGradient(other.m_strokeGradient)
         , m_strokePattern(other.m_strokePattern)
-        , m_dashRatio(other.m_dashRatio)
         , m_miterLimit(other.m_miterLimit)
         , m_lineCap(other.m_lineCap)
         , m_lineJoin(other.m_lineJoin)
         , m_dash(other.m_dash)
         , m_fillColor(other.m_fillColor)
-        , m_fillColorPacked(other.m_fillColorPacked)
         , m_fillColorSpace(other.m_fillColorSpace)
         , m_fillRule(other.m_fillRule)
         , m_fillGradient(other.m_fillGradient)
@@ -154,11 +148,9 @@ private:
     StrokeStyle m_strokeStyle;
     float m_strokeThickness;
     Color m_strokeColor;
-    SkColor m_strokeColorPacked;
     ColorSpace m_strokeColorSpace;
     RefPtr<Gradient> m_strokeGradient;
     RefPtr<Pattern> m_strokePattern;
-    int m_dashRatio; // Ratio of the length of a dash to its width.
     float m_miterLimit;
     SkPaint::Cap m_lineCap;
     SkPaint::Join m_lineJoin;
@@ -166,7 +158,6 @@ private:
 
     // Fill.
     Color m_fillColor;
-    SkColor m_fillColorPacked;
     ColorSpace m_fillColorSpace;
     WindRule m_fillRule;
     RefPtr<Gradient> m_fillGradient;

@@ -34,6 +34,7 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextState.h"
+#include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/skia/OpaqueRegionSkia.h"
 
@@ -79,6 +80,7 @@ public:
         return m_canvas;
     }
     const SkCanvas* canvas() const { return m_canvas; }
+    bool paintingDisabled() const { return !m_canvas; }
 
     const SkBitmap* bitmap() const
     {
@@ -93,80 +95,82 @@ public:
 
     SkDevice* createCompatibleDevice(const IntSize&, bool hasAlpha) const;
 
-    float strokeThickness() const;
-    void setStrokeThickness(float);
-    StrokeStyle strokeStyle() const;
-    void setStrokeStyle(StrokeStyle);
-    Color strokeColor() const;
-    ColorSpace strokeColorSpace() const;
+    // ---------- State management methods -----------------
+    void save();
+    void restore();
+
+    void saveLayer(const SkRect* bounds, const SkPaint*, SkCanvas::SaveFlags = SkCanvas::kARGB_ClipLayer_SaveFlag);
+    void restoreLayer();
+
+    float strokeThickness() const { return m_state->m_strokeThickness; }
+    void setStrokeThickness(float thickness) { m_state->m_strokeThickness = thickness; }
+
+    StrokeStyle strokeStyle() const { return m_state->m_strokeStyle; }
+    void setStrokeStyle(StrokeStyle style) { m_state->m_strokeStyle = style; }
+
+    Color strokeColor() const { return m_state->m_strokeColor; }
+    ColorSpace strokeColorSpace() const { return m_state->m_strokeColorSpace; }
     void setStrokeColor(const Color&, ColorSpace);
 
+    Pattern* strokePattern() const { return m_state->m_strokePattern.get(); }
     void setStrokePattern(PassRefPtr<Pattern>);
-    Pattern* strokePattern() const;
 
+    Gradient* strokeGradient() const { return m_state->m_strokeGradient.get(); }
     void setStrokeGradient(PassRefPtr<Gradient>);
-    Gradient* strokeGradient() const;
 
-    WindRule fillRule() const;
-    void setFillRule(WindRule);
-    Color fillColor() const;
-    ColorSpace fillColorSpace() const;
+    void setLineCap(LineCap cap) { m_state->m_lineCap = (SkPaint::Cap)cap; }
+    void setLineDash(const DashArray&, float dashOffset);
+    void setLineJoin(LineJoin join) { m_state->m_lineJoin = (SkPaint::Join)join; }
+    void setMiterLimit(float limit) { m_state->m_miterLimit = limit; }
+
+    WindRule fillRule() const { return m_state->m_fillRule; }
+    void setFillRule(WindRule fillRule) { m_state->m_fillRule = fillRule; }
+
+    Color fillColor() const { return m_state->m_fillColor; }
+    ColorSpace fillColorSpace() const { return m_state->m_fillColorSpace; }
     void setFillColor(const Color&, ColorSpace);
+    SkColor effectiveFillColor() const { return m_state->applyAlpha(m_state->m_fillColor.rgb()); }
 
     void setFillPattern(PassRefPtr<Pattern>);
-    Pattern* fillPattern() const;
+    Pattern* fillPattern() const { return m_state->m_fillPattern.get(); }
 
     void setFillGradient(PassRefPtr<Gradient>);
-    Gradient* fillGradient() const;
+    Gradient* fillGradient() const { return m_state->m_fillGradient.get(); }
 
-    // Skia state methods.
-    SkDrawLooper* drawLooper() const;
-    SkColor effectiveFillColor() const;
+    SkDrawLooper* drawLooper() const { return m_state->m_looper; }
+    void setDashPathEffect(SkDashPathEffect*);
+    SkColor effectiveStrokeColor() const { return m_state->applyAlpha(m_state->m_strokeColor.rgb()); }
+
     int getNormalizedAlpha() const;
-    bool getClipBounds(SkRect* bounds) const { return m_canvas->getClipBounds(bounds); }
-    const SkMatrix& getTotalMatrix() const { return m_canvas->getTotalMatrix(); }
-    bool isPrintingDevice() const { return m_canvas->getTopDevice()->getDeviceCapabilities() & SkDevice::kVector_Capability; }
 
-    bool readPixels(SkBitmap* bitmap, int x, int y, SkCanvas::Config8888 config8888 = SkCanvas::kNative_Premul_Config8888)
-    {
-        if (paintingDisabled())
-            return false;
+    bool getClipBounds(SkRect* bounds) const;
+    const SkMatrix& getTotalMatrix() const;
+    bool isPrintingDevice() const;
 
-        return m_canvas->readPixels(bitmap, x, y, config8888);
-    }
+    void setShadowsIgnoreTransforms(bool ignoreTransforms) { m_state->m_shadowsIgnoreTransforms = ignoreTransforms; }
+    bool shadowsIgnoreTransforms() const { return m_state->m_shadowsIgnoreTransforms; }
 
-    bool clipRect(const SkRect& rect, AntiAliasingMode aa = NotAntiAliased, SkRegion::Op op = SkRegion::kIntersect_Op)
-    {
-        if (paintingDisabled())
-            return false;
+    void setShouldAntialias(bool antialias) { m_state->m_shouldAntialias = antialias; }
+    bool shouldAntialias() const { return m_state->m_shouldAntialias; }
 
-        realizeSave(SkCanvas::kClip_SaveFlag);
-
-        return m_canvas->clipRect(rect, op, aa == AntiAliased);
-    }
-
-    void setMatrix(const SkMatrix& matrix)
-    {
-        if (paintingDisabled())
-            return;
-
-        realizeSave(SkCanvas::kMatrix_SaveFlag);
-
-        m_canvas->setMatrix(matrix);
-    }
-
-    void setShadowsIgnoreTransforms(bool);
-    bool shadowsIgnoreTransforms() const;
-
-    void setShouldAntialias(bool);
-    bool shouldAntialias() const;
-
-    void setShouldSmoothFonts(bool);
-    bool shouldSmoothFonts() const;
+    void setShouldSmoothFonts(bool smoothFonts) { m_state->m_shouldSmoothFonts = smoothFonts; }
+    bool shouldSmoothFonts() const { return m_state->m_shouldSmoothFonts; }
 
     // Turn off LCD text for the paint if not supported on this context.
     void adjustTextRenderMode(SkPaint*);
     bool couldUseLCDRenderedText();
+
+    TextDrawingModeFlags textDrawingMode() const { return m_state->m_textDrawingMode; }
+    void setTextDrawingMode(TextDrawingModeFlags mode) { m_state->m_textDrawingMode = mode; }
+
+    void setAlpha(float alpha) { m_state->m_alpha = alpha; }
+
+    void setImageInterpolationQuality(InterpolationQuality quality) { m_state->m_interpolationQuality = quality; }
+    InterpolationQuality imageInterpolationQuality() const { return m_state->m_interpolationQuality; }
+
+    void setCompositeOperation(CompositeOperator, BlendMode = BlendModeNormal);
+    CompositeOperator compositeOperation() const { return m_state->m_compositeOperator; }
+    BlendMode blendModeOperation() const { return m_state->m_blendMode; }
 
     // Change the way document markers are rendered.
     // Any deviceScaleFactor higher than 1.5 is enough to justify setting this flag.
@@ -198,14 +202,12 @@ public:
     void setTrackTextRegion(bool track) { m_trackTextRegion = track; }
     const SkRect& textRegion() const { return m_textRegion; }
 
-    void setImageInterpolationQuality(InterpolationQuality);
-    InterpolationQuality imageInterpolationQuality() const;
+    bool updatingControlTints() const { return m_updatingControlTints; }
+    void setUpdatingControlTints(bool updatingTints) { m_updatingControlTints = updatingTints; }
+    // ---------- End state management methods -----------------
 
-    void save();
-    void restore();
-
-    void saveLayer(const SkRect* bounds, const SkPaint*, SkCanvas::SaveFlags = SkCanvas::kARGB_ClipLayer_SaveFlag);
-    void restoreLayer();
+    // Get the contents of the image buffer
+    bool readPixels(SkBitmap*, int, int, SkCanvas::Config8888 = SkCanvas::kNative_Premul_Config8888);
 
     // Sets up the paint for the current fill style.
     void setupPaintForFilling(SkPaint*) const;
@@ -233,7 +235,7 @@ public:
 
     void fillRect(const FloatRect&);
     void fillRect(const FloatRect&, const Color&, ColorSpace);
-    void fillRect(const FloatRect&, Gradient&);
+    void fillRect(const FloatRect& rect, Gradient& gradient) { gradient.fill(this, rect); }
     void fillRect(const FloatRect&, const Color&, ColorSpace, CompositeOperator);
     void fillRoundedRect(const IntRect&, const IntSize& topLeft, const IntSize& topRight, const IntSize& bottomLeft, const IntSize& bottomRight, const Color&, ColorSpace);
     void fillRoundedRect(const RoundedRect&, const Color&, ColorSpace);
@@ -280,17 +282,15 @@ public:
     void drawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkRect& textRect, const SkPaint&);
     void drawTextOnPath(const void* text, size_t byteLength, const SkPath&, const SkRect& textRect, const SkMatrix*, const SkPaint&);
 
-    void clip(const IntRect&);
-    void clip(const FloatRect&);
+    void clip(const IntRect& rect) { clip(FloatRect(rect)); }
+    void clip(const FloatRect& rect) { clipRect(rect); }
     void clipRoundedRect(const RoundedRect&);
-    void clipOut(const IntRect&);
+    void clipOut(const IntRect& rect) { clipRect(rect, NotAntiAliased, SkRegion::kDifference_Op); }
     void clipOutRoundedRect(const RoundedRect&);
-    void clipPath(const Path&, WindRule);
+    void clipPath(const Path&, WindRule = RULE_EVENODD);
     void clipConvexPolygon(size_t numPoints, const FloatPoint*, bool antialias = true);
     void clipToImageBuffer(ImageBuffer*, const FloatRect&);
-
-    TextDrawingModeFlags textDrawingMode() const;
-    void setTextDrawingMode(TextDrawingModeFlags);
+    bool clipRect(const SkRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
 
     void drawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);
     void drawEmphasisMarks(const Font&, const TextRunPaintInfo&, const AtomicString& mark, const FloatPoint&);
@@ -303,11 +303,6 @@ public:
         DocumentMarkerGrammarLineStyle
     };
     void drawLineForDocumentMarker(const FloatPoint&, float width, DocumentMarkerLineStyle);
-
-    bool paintingDisabled() const { return !m_canvas; }
-
-    bool updatingControlTints() const;
-    void setUpdatingControlTints(bool);
 
     void beginTransparencyLayer(float opacity);
     void endTransparencyLayer();
@@ -329,54 +324,41 @@ public:
     void drawFocusRing(const Vector<IntRect>&, int width, int offset, const Color&);
     void drawFocusRing(const Path&, int width, int offset, const Color&);
 
-    void setLineCap(LineCap);
-    void setLineDash(const DashArray&, float dashOffset);
-    void setLineJoin(LineJoin);
-    void setMiterLimit(float);
-
-    void setAlpha(float);
-
-    void setCompositeOperation(CompositeOperator, BlendMode = BlendModeNormal);
-    CompositeOperator compositeOperation() const;
-    BlendMode blendModeOperation() const;
-
-    void clip(const Path&, WindRule = RULE_EVENODD);
-
     // This clip function is used only by <canvas> code. It allows
     // implementations to handle clipping on the canvas differently since
     // the discipline is different.
     void canvasClip(const Path&, WindRule = RULE_EVENODD);
     void clipOut(const Path&);
 
+    // ---------- Transformation methods -----------------
+    enum IncludeDeviceScale { DefinitelyIncludeDeviceScale, PossiblyIncludeDeviceScale };
+    AffineTransform getCTM(IncludeDeviceScale includeScale = PossiblyIncludeDeviceScale) const;
+    void concatCTM(const AffineTransform& affine) { concat(affine); }
+    void setCTM(const AffineTransform& affine) { setMatrix(affine); }
+    void setMatrix(const SkMatrix&);
+
     void scale(const FloatSize&);
     void rotate(float angleInRadians);
     void translate(const FloatSize& size) { translate(size.width(), size.height()); }
     void translate(float x, float y);
 
-    void setURLForRect(const KURL&, const IntRect&);
+    // This function applies the device scale factor to the context, making the context capable of
+    // acting as a base-level context for a HiDPI environment.
+    void applyDeviceScaleFactor(float deviceScaleFactor) { scale(FloatSize(deviceScaleFactor, deviceScaleFactor)); }
+    // ---------- End transformation methods -----------------
 
+    // URL drawing
+    void setURLForRect(const KURL&, const IntRect&);
     void setURLFragmentForRect(const String& name, const IntRect&);
     void addURLTargetAtPoint(const String& name, const IntPoint&);
-
-    void concatCTM(const AffineTransform&);
-    void setCTM(const AffineTransform&);
-
-    enum IncludeDeviceScale { DefinitelyIncludeDeviceScale, PossiblyIncludeDeviceScale };
-    AffineTransform getCTM(IncludeDeviceScale includeScale = PossiblyIncludeDeviceScale) const;
+    bool supportsURLFragments() { return printing(); }
 
     // Create an image buffer compatible with this context, with suitable resolution
     // for drawing into the buffer and then into this context.
     PassOwnPtr<ImageBuffer> createCompatibleBuffer(const IntSize&, bool hasAlpha = true) const;
     bool isCompatibleWithBuffer(ImageBuffer*) const;
 
-    // This function applies the device scale factor to the context, making the context capable of
-    // acting as a base-level context for a HiDPI environment.
-    void applyDeviceScaleFactor(float);
-
-    bool shouldIncludeChildWindows() const { return false; }
-
     static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle);
-    bool supportsURLFragments() { return printing(); }
 
 private:
     static void addCornerArc(SkPath*, const SkRect&, const IntSize&, int);
@@ -409,6 +391,8 @@ private:
         return value;
     }
 
+    void setDrawLooper(SkDrawLooper* looper) { SkRefCnt_SafeAssign(m_state->m_looper, looper); }
+
     // Sets up the common flags on a paint for antialiasing, effects, etc.
     // This is implicitly called by setupPaintFill and setupPaintStroke, but
     // you may wish to call it directly sometimes if you don't want that other
@@ -419,43 +403,13 @@ private:
     void drawOuterPath(const SkPath&, SkPaint&, int);
     void drawInnerPath(const SkPath&, SkPaint&, int);
 
-    // State access methods
-    void setDrawLooper(SkDrawLooper*);
-    void setDashPathEffect(SkDashPathEffect*);
-    SkColor effectiveStrokeColor() const;
-
     // SkCanvas wrappers.
     bool isDrawingToLayer() const { return m_canvas->isDrawingToLayer(); }
 
-    bool clipPath(const SkPath& path, AntiAliasingMode aa = NotAntiAliased, SkRegion::Op op = SkRegion::kIntersect_Op)
-    {
-        if (paintingDisabled())
-            return false;
+    bool clipPath(const SkPath&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
+    bool clipRRect(const SkRRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
 
-        realizeSave(SkCanvas::kClip_SaveFlag);
-
-        return m_canvas->clipPath(path, op, aa == AntiAliased);
-    }
-
-    bool clipRRect(const SkRRect& rect, AntiAliasingMode aa = NotAntiAliased, SkRegion::Op op = SkRegion::kIntersect_Op)
-    {
-        if (paintingDisabled())
-            return false;
-
-        realizeSave(SkCanvas::kClip_SaveFlag);
-
-        return m_canvas->clipRRect(rect, op, aa == AntiAliased);
-    }
-
-    bool concat(const SkMatrix& matrix)
-    {
-        if (paintingDisabled())
-            return false;
-
-        realizeSave(SkCanvas::kMatrix_SaveFlag);
-
-        return m_canvas->concat(matrix);
-    }
+    bool concat(const SkMatrix&);
 
     // Used when restoring and the state has an image clip. Only shows the pixels in
     // m_canvas that are also in imageBuffer.

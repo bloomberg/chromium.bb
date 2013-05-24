@@ -2480,7 +2480,7 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             if (hasBorderRadius) {
                 Path path;
                 path.addRoundedRect(border);
-                context->clip(path);
+                context->clipPath(path);
                 roundedHole.shrinkRadii(shadowSpread);
             } else
                 context->clip(border.rect());
