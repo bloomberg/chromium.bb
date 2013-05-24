@@ -7,7 +7,7 @@ element.style  { ()
 ======== Matched CSS Rules ========
 [expanded] 
 media="all" (svg-style.xhtml)
-rect  { (svg-style.xhtml:38)
+rect  { (svg-style.xhtml:38 -> svg-style.xhtml:38:1)
 fill: red;
 
 [expanded] 

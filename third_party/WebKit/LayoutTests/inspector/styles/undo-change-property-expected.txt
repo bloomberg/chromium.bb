@@ -6,7 +6,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-change-property.html:7)
+.container  { (undo-change-property.html:7 -> undo-change-property.html:7:1)
 font-weight: bold;
 
 [expanded] 
@@ -20,7 +20,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-change-property.html:7)
+.container  { (undo-change-property.html:7 -> undo-change-property.html:7:1)
 font-weight: normal;
 
 [expanded] 
@@ -34,7 +34,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-change-property.html:7)
+.container  { (undo-change-property.html:7 -> undo-change-property.html:7:1)
 font-weight: bold;
 
 [expanded] 
@@ -48,7 +48,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-change-property.html:7)
+.container  { (undo-change-property.html:7 -> undo-change-property.html:7:1)
 font-weight: normal;
 
 [expanded] 

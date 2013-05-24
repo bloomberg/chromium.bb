@@ -8,11 +8,11 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-div:active, a:active  { (force-pseudo-state.html:12)
+div:active, a:active  { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:1)
 font-weight: bold;
 
 [expanded] 
-div:hover, a:hover  { (force-pseudo-state.html:4)
+div:hover, a:hover  { (force-pseudo-state.html:4 -> force-pseudo-state.html:4:1)
 color: red;
 
 [expanded] 
@@ -39,11 +39,11 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-div:active, a:active  { (force-pseudo-state.html:12)
+div:active, a:active  { (force-pseudo-state.html:12 -> force-pseudo-state.html:12:1)
 font-weight: bold;
 
 [expanded] 
-div:focus, a:focus  { (force-pseudo-state.html:8)
+div:focus, a:focus  { (force-pseudo-state.html:8 -> force-pseudo-state.html:8:1)
 border: 1px solid green;
     border-top-color: green;
     border-top-style: solid;

@@ -6,20 +6,20 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO  { (selector-list.html:19)
+FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO  { (selector-list.html:19 -> selector-list.html:19:1)
 color: green;
 
 [expanded] 
-#inspected  { (selector-list.html:10)
+#inspected  { (selector-list.html:10 -> selector-list.html:10:1)
 
 [expanded] 
-#InSpEcTeD  { (selector-list.html:7)
+#InSpEcTeD  { (selector-list.html:7 -> selector-list.html:7:1)
 
 [expanded] 
-#inspected  { (selector-list.html:4)
+#inspected  { (selector-list.html:4 -> selector-list.html:4:1)
 
 [expanded] 
-FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO  { (selector-list.html:19)
+FOO bAr, #inspected, MOO>BAR, htML div, Foo~Moo, MOO  { (selector-list.html:19 -> selector-list.html:19:1)
 /-- overloaded --/ color: green;
 
 [expanded] 

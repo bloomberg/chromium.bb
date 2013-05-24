@@ -57,20 +57,20 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#container .foo  { (elements-panel-styles.css:12)
+#container .foo  { (elements-panel-styles.css:12 -> elements-panel-styles.css:12:1)
 font-style: italic !important;
 
 [expanded] 
-.foo  { (elements-panel-styles.css:47)
+.foo  { (elements-panel-styles.css:47 -> elements-panel-styles.css:47:1)
 
 [expanded] 
-.foo, .foo::before  { (elements-panel-styles.css:28)
+.foo, .foo::before  { (elements-panel-styles.css:28 -> elements-panel-styles.css:28:1)
 content: "[before Foo]";
 color: blue;
 display: block !important;
 
 [expanded] 
-.foo  { (elements-panel-styles.css:16)
+.foo  { (elements-panel-styles.css:16 -> elements-panel-styles.css:16:1)
 /-- overloaded --/ color: black;
 margin-left: 1px;
 margin: 10px 0 2px;
@@ -103,27 +103,27 @@ div  { (user agent stylesheet)
 
 ======== Inherited from div#container ========
 [expanded] 
-#container  { (elements-panel-styles.css:5)
+#container  { (elements-panel-styles.css:5 -> elements-panel-styles.css:5:1)
 font-family: serif;
 font-size: 14px;
 /-- overloaded --/ color: red;
 
 ======== Inherited from body ========
 [expanded] 
-body  { (elements-panel-styles.css:1)
+body  { (elements-panel-styles.css:1 -> elements-panel-styles.css:1:1)
 /-- overloaded --/ font-size: 12px;
 
 
 ======== Pseudo ::before element ========
 [expanded] 
-.foo::before  { (elements-panel-styles.css:51)
+.foo::before  { (elements-panel-styles.css:51 -> elements-panel-styles.css:51:1)
 
 [expanded] 
-.foo::before  { (elements-panel-styles.css:34)
+.foo::before  { (elements-panel-styles.css:34 -> elements-panel-styles.css:34:1)
 color: red;
 
 [expanded] 
-.foo, .foo::before  { (elements-panel-styles.css:28)
+.foo, .foo::before  { (elements-panel-styles.css:28 -> elements-panel-styles.css:28:1)
 content: "[before Foo]";
 /-- overloaded --/ color: blue;
 display: block !important;
@@ -131,12 +131,12 @@ display: block !important;
 
 ======== Pseudo ::after element ========
 [expanded] 
-.foo::after  { (elements-panel-styles.css:42)
+.foo::after  { (elements-panel-styles.css:42 -> elements-panel-styles.css:42:1)
 font-family: courier;
 content: "[after Foo 2]";
 
 [expanded] 
-.foo::after  { (elements-panel-styles.css:38)
+.foo::after  { (elements-panel-styles.css:38 -> elements-panel-styles.css:38:1)
 /-- overloaded --/ content: "[after Foo]";
 color: green;
 

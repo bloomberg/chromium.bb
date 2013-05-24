@@ -7,7 +7,7 @@ element.style  { ()
 ======== Matched CSS Rules ========
 [expanded] 
 media="screen" (styles-edit-property-after-invalid-rule.html)
-#container  { (styles-edit-property-after-invalid-rule.html:10)
+#container  { (styles-edit-property-after-invalid-rule.html:10 -> styles-edit-property-after-invalid-rule.html:10:1)
 padding: 15px;
 
 [expanded] 
@@ -22,7 +22,7 @@ element.style  { ()
 ======== Matched CSS Rules ========
 [expanded] 
 media="screen" (styles-edit-property-after-invalid-rule.html)
-#container  { (styles-edit-property-after-invalid-rule.html:10)
+#container  { (styles-edit-property-after-invalid-rule.html:10 -> styles-edit-property-after-invalid-rule.html:10:1)
 padding: 20px;
 
 [expanded] 

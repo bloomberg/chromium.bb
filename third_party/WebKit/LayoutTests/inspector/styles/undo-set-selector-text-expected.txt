@@ -6,7 +6,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#inspected  { (undo-set-selector-text.html:4)
+#inspected  { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:1)
 color: green;
 
 [expanded] 
@@ -20,7 +20,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#inspected, #other  { (undo-set-selector-text.html:4)
+#inspected, #other  { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:1)
 color: green;
 
 [expanded] 
@@ -34,7 +34,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#inspected  { (undo-set-selector-text.html:4)
+#inspected  { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:1)
 color: green;
 
 [expanded] 
@@ -48,7 +48,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#inspected, #other  { (undo-set-selector-text.html:4)
+#inspected, #other  { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:1)
 color: green;
 
 [expanded] 

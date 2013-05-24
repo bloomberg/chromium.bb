@@ -75,7 +75,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.red div:first-child  { (styles-update-from-js.html:4)
+.red div:first-child  { (styles-update-from-js.html:4 -> styles-update-from-js.html:4:1)
 background-color: red;
 
 [expanded] 
@@ -96,7 +96,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-div[foo="bar"] + div  { (styles-update-from-js.html:8)
+div[foo="bar"] + div  { (styles-update-from-js.html:8 -> styles-update-from-js.html:8:1)
 background-color: blue;
 
 [expanded] 

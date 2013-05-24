@@ -7,7 +7,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#inspected  { (set-style-text.html:4)
+#inspected  { (set-style-text.html:4 -> set-style-text.html:4:1)
 color: green;
 
 [expanded] 
@@ -21,7 +21,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#inspected  { (set-style-text.html:4)
+#inspected  { (set-style-text.html:4 -> set-style-text.html:4:1)
 color: red;
 
 [expanded] 

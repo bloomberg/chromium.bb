@@ -11,7 +11,7 @@ background-color: white;
 
 ======== Matched CSS Rules ========
 [expanded] 
-*  { (keyframes-rules.html:9)
+*  { (keyframes-rules.html:9 -> keyframes-rules.html:9:1)
 /-- overloaded --/ background-color: papayawhip;
 
 [expanded] 

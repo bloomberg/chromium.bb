@@ -8,7 +8,7 @@ color: red;
 
 ======== Matched CSS Rules ========
 [expanded] 
-#inspected  { (commit-selector.html:4)
+#inspected  { (commit-selector.html:4 -> commit-selector.html:4:1)
 /-- overloaded --/ color: green;
 
 [expanded] 
@@ -23,7 +23,7 @@ color: red;
 
 ======== Matched CSS Rules ========
 [expanded] 
-hr, #inspected  { (commit-selector.html:4)
+hr, #inspected  { (commit-selector.html:4 -> commit-selector.html:4:1)
 /-- overloaded --/ color: green;
 
 [expanded] 
@@ -38,7 +38,7 @@ color: red;
 
 ======== Matched CSS Rules ========
 [expanded] [no-affect] 
-#inspectedChanged  { (commit-selector.html:4)
+#inspectedChanged  { (commit-selector.html:4 -> commit-selector.html:4:1)
 color: green;
 
 [expanded] 

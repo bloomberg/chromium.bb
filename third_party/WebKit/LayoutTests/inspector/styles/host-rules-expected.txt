@@ -28,7 +28,7 @@ border: 1px solid black;
 /-- overloaded --/ background-color: red;
 
 [expanded] 
-*  { (host-rules.html:4)
+*  { (host-rules.html:4 -> host-rules.html:4:1)
 /-- overloaded --/ background-color: papayawhip;
 
 [expanded] 

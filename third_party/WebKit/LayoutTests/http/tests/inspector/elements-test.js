@@ -125,8 +125,15 @@ InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatch
         var text = element.textContent;
         if (text)
             return text;
-        element = element.querySelector("[data-uncopyable]");
-        return element ? element.getAttribute("data-uncopyable") : "";
+        var anchor = element.querySelector("[data-uncopyable]");
+        if (!anchor)
+            return "";
+        var anchorText = anchor.getAttribute("data-uncopyable");
+        var name = anchor.uiSourceCode ? anchor.uiSourceCode.name() : (new WebInspector.ParsedURL(anchor.href)).lastPathComponent;
+        var anchorTarget = name +  ":" + (anchor.lineNumber + 1);
+        if (typeof anchor.columnNumber === "number")
+            anchorTarget += ":" + (anchor.columnNumber + 1);
+        return anchorText + " -> " + anchorTarget;
     }
 
     function buildMarkedSelectors(element)

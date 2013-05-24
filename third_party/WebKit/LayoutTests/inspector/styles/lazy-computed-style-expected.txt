@@ -8,7 +8,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#inspected  { (lazy-computed-style.html:15)
+#inspected  { (lazy-computed-style.html:15 -> lazy-computed-style.html:15:1)
 background: gray;
     background-image: initial;
     background-position-x: initial;
@@ -22,12 +22,12 @@ background: gray;
     background-color: gray;
 
 [expanded] 
-#inspected  { (lazy-computed-style.html:10)
+#inspected  { (lazy-computed-style.html:10 -> lazy-computed-style.html:10:1)
 /-- overloaded --/ background-color: black;
 font-family: Courier;
 
 [expanded] 
-#inspected  { (lazy-computed-style.html:5)
+#inspected  { (lazy-computed-style.html:5 -> lazy-computed-style.html:5:1)
 /-- overloaded --/ background-color: green;
 /-- overloaded --/ font-family: Times;
 
@@ -66,7 +66,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#inspected  { (lazy-computed-style.html:15)
+#inspected  { (lazy-computed-style.html:15 -> lazy-computed-style.html:15:1)
 background: gray;
     background-image: initial;
     background-position-x: initial;
@@ -80,12 +80,12 @@ background: gray;
     background-color: gray;
 
 [expanded] 
-#inspected  { (lazy-computed-style.html:10)
+#inspected  { (lazy-computed-style.html:10 -> lazy-computed-style.html:10:1)
 /-- overloaded --/ background-color: black;
 font-family: Courier;
 
 [expanded] 
-#inspected  { (lazy-computed-style.html:5)
+#inspected  { (lazy-computed-style.html:5 -> lazy-computed-style.html:5:1)
 /-- overloaded --/ background-color: green;
 /-- overloaded --/ font-family: Times;
 

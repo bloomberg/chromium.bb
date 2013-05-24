@@ -13,7 +13,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#p1  { (region-style-crash.html:6)
+#p1  { (region-style-crash.html:6 -> region-style-crash.html:6:1)
 color: #ff0000;
 
 [expanded] 

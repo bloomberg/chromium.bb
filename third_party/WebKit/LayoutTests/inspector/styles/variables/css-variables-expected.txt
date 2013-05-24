@@ -12,7 +12,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#inspected  { (css-variables.html:7)
+#inspected  { (css-variables.html:7 -> css-variables.html:7:1)
 -webkit-var-a: green;
 color: -webkit-var(a);
 

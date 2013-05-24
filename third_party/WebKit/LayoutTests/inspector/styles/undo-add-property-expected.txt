@@ -7,7 +7,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-add-property.html:7)
+.container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
 font-weight: bold;
 
 [expanded] 
@@ -21,7 +21,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-add-property.html:7)
+.container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
 font-weight: bold;
 margin-left: 2px;
 
@@ -36,7 +36,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-add-property.html:7)
+.container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
 font-weight: bold;
 
 [expanded] 
@@ -50,7 +50,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-add-property.html:7)
+.container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
 font-weight: bold;
 margin-left: 2px;
 
@@ -66,7 +66,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-add-property.html:7)
+.container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
 font-weight: bold;
 margin-left: 2px;
 
@@ -81,7 +81,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-add-property.html:7)
+.container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
 margin-top: 0px;
 font-weight: bold;
 margin-left: 2px;
@@ -97,7 +97,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-add-property.html:7)
+.container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
 font-weight: bold;
 margin-left: 2px;
 
@@ -112,7 +112,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-add-property.html:7)
+.container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
 margin-top: 0px;
 font-weight: bold;
 margin-left: 2px;
@@ -129,7 +129,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-add-property.html:7)
+.container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
 margin-top: 0px;
 font-weight: bold;
 margin-left: 2px;
@@ -145,7 +145,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-add-property.html:7)
+.container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
 margin-top: 0px;
 margin-right: 1px;
 font-weight: bold;
@@ -162,7 +162,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-add-property.html:7)
+.container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
 margin-top: 0px;
 font-weight: bold;
 margin-left: 2px;
@@ -178,7 +178,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-.container  { (undo-add-property.html:7)
+.container  { (undo-add-property.html:7 -> undo-add-property.html:7:1)
 margin-top: 0px;
 margin-right: 1px;
 font-weight: bold;
