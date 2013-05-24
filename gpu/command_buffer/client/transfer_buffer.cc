@@ -4,8 +4,8 @@
 
 // A class to Manage a growing transfer buffer.
 
-#include "../client/transfer_buffer.h"
-#include "../client/cmd_buffer_helper.h"
+#include "gpu/command_buffer/client/transfer_buffer.h"
+#include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
 namespace gpu {
 

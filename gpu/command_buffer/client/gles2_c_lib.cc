@@ -6,7 +6,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include "../client/gles2_lib.h"
+#include "gpu/command_buffer/client/gles2_lib.h"
 
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES
@@ -18,7 +18,7 @@ extern "C" {
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.
-#include "../client/gles2_c_lib_autogen.h"
+#include "gpu/command_buffer/client/gles2_c_lib_autogen.h"
 }  // extern "C"
 
 

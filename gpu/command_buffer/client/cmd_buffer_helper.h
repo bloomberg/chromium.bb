@@ -10,11 +10,11 @@
 #include <string.h>
 #include <time.h>
 
-#include "../../gpu_export.h"
-#include "../common/logging.h"
-#include "../common/constants.h"
-#include "../common/cmd_buffer_common.h"
-#include "../common/command_buffer.h"
+#include "gpu/command_buffer/common/cmd_buffer_common.h"
+#include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/logging.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 

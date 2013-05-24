@@ -5,8 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_MAILBOX_H_
 #define GPU_COMMAND_BUFFER_MAILBOX_H_
 
-#include "../../gpu_export.h"
-#include "../common/types.h"
+#include "gpu/command_buffer/common/types.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 

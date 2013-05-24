@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_BUFFER_H_
 #define GPU_COMMAND_BUFFER_COMMON_BUFFER_H_
 
-#include "../common/types.h"
+#include "gpu/command_buffer/common/types.h"
 
 namespace base {
   class SharedMemory;

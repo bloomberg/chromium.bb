@@ -4,9 +4,9 @@
 
 // This file contains the implementation of the RingBuffer class.
 
-#include "../client/ring_buffer.h"
+#include "gpu/command_buffer/client/ring_buffer.h"
 #include <algorithm>
-#include "../client/cmd_buffer_helper.h"
+#include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
 namespace gpu {
 

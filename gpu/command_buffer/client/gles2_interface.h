@@ -20,7 +20,7 @@ class GLES2_IMPL_EXPORT GLES2Interface {
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
   // this file instead of having to edit some template or the code generator.
-  #include "../client/gles2_interface_autogen.h"
+  #include "gpu/command_buffer/client/gles2_interface_autogen.h"
 };
 
 }  // namespace gles2

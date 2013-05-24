@@ -14,20 +14,20 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "../client/buffer_tracker.h"
-#include "../client/client_context_state.h"
-#include "../client/gles2_cmd_helper.h"
-#include "../client/gles2_interface.h"
-#include "../client/gpu_memory_buffer_tracker.h"
-#include "../client/image_factory.h"
-#include "../client/query_tracker.h"
-#include "../client/ref_counted.h"
-#include "../client/ring_buffer.h"
-#include "../client/share_group.h"
-#include "../common/compiler_specific.h"
-#include "../common/debug_marker_manager.h"
-#include "../common/gles2_cmd_utils.h"
 #include "gles2_impl_export.h"
+#include "gpu/command_buffer/client/buffer_tracker.h"
+#include "gpu/command_buffer/client/client_context_state.h"
+#include "gpu/command_buffer/client/gles2_cmd_helper.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_tracker.h"
+#include "gpu/command_buffer/client/image_factory.h"
+#include "gpu/command_buffer/client/query_tracker.h"
+#include "gpu/command_buffer/client/ref_counted.h"
+#include "gpu/command_buffer/client/ring_buffer.h"
+#include "gpu/command_buffer/client/share_group.h"
+#include "gpu/command_buffer/common/compiler_specific.h"
+#include "gpu/command_buffer/common/debug_marker_manager.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
 #if !defined(NDEBUG) && !defined(__native_client__) && !defined(GLES2_CONFORMANCE_TESTS)  // NOLINT
   #if defined(GLES2_INLINE_OPTIMIZATION)
@@ -197,7 +197,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
   // this file instead of having to edit some template or the code generator.
-  #include "../client/gles2_implementation_autogen.h"
+  #include "gpu/command_buffer/client/gles2_implementation_autogen.h"
 
   virtual void DisableVertexAttribArray(GLuint index) OVERRIDE;
   virtual void EnableVertexAttribArray(GLuint index) OVERRIDE;

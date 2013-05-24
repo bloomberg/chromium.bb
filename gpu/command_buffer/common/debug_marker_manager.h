@@ -7,7 +7,7 @@
 
 #include <stack>
 #include <string>
-#include "../../gpu_export.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {

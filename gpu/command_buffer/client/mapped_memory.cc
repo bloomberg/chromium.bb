@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gpu/command_buffer/client/mapped_memory.h"
+
 #include <algorithm>
 #include <functional>
 
-#include "../client/mapped_memory.h"
-#include "../client/cmd_buffer_helper.h"
+#include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
 namespace gpu {
 

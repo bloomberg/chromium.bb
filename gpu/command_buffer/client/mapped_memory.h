@@ -7,10 +7,10 @@
 
 #include <vector>
 
-#include "../../gpu_export.h"
-#include "../common/types.h"
-#include "../client/fenced_allocator.h"
-#include "../common/buffer.h"
+#include "gpu/command_buffer/client/fenced_allocator.h"
+#include "gpu/command_buffer/common/buffer.h"
+#include "gpu/command_buffer/common/types.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 

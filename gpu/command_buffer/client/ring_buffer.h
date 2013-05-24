@@ -9,9 +9,9 @@
 
 #include <deque>
 
-#include "../../gpu_export.h"
-#include "../common/logging.h"
-#include "../common/types.h"
+#include "gpu/command_buffer/common/logging.h"
+#include "gpu/command_buffer/common/types.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 class CommandBufferHelper;

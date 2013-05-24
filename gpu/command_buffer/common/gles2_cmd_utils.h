@@ -12,8 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "../common/types.h"
 #include "gpu/command_buffer/common/gles2_utils_export.h"
+#include "gpu/command_buffer/common/types.h"
 
 namespace gpu {
 namespace gles2 {

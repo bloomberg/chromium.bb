@@ -7,9 +7,9 @@
 
 #include <GLES2/gl2.h>
 #include "base/memory/scoped_ptr.h"
-#include "../client/ref_counted.h"
-#include "../common/gles2_cmd_format.h"
 #include "gles2_impl_export.h"
+#include "gpu/command_buffer/client/ref_counted.h"
+#include "gpu/command_buffer/common/gles2_cmd_format.h"
 
 namespace gpu {
 namespace gles2 {

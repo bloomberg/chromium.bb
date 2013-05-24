@@ -6,11 +6,11 @@
 #define GPU_COMMAND_BUFFER_CLIENT_TRANSFER_BUFFER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "../../gpu_export.h"
-#include "../common/buffer.h"
-#include "../common/compiler_specific.h"
-#include "../common/gles2_cmd_utils.h"
-#include "../client/ring_buffer.h"
+#include "gpu/command_buffer/client/ring_buffer.h"
+#include "gpu/command_buffer/common/buffer.h"
+#include "gpu/command_buffer/common/compiler_specific.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 

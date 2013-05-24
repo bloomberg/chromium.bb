@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "../client/vertex_array_object_manager.h"
+#include "gpu/command_buffer/client/vertex_array_object_manager.h"
 
-#include "../client/gles2_cmd_helper.h"
-#include "../client/gles2_implementation.h"
-#include "../common/logging.h"
+#include "gpu/command_buffer/client/gles2_cmd_helper.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/common/logging.h"
 
 #if defined(__native_client__) && !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 #define GLES2_SUPPORT_CLIENT_SIDE_ARRAYS

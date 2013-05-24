@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "../client/atomicops.h"
-#include "../client/share_group.h"
-#include "../client/gles2_implementation.h"
-#include "../client/program_info_manager.h"
-#include "../common/id_allocator.h"
-#include "../common/logging.h"
+#include "gpu/command_buffer/client/atomicops.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/program_info_manager.h"
+#include "gpu/command_buffer/client/share_group.h"
+#include "gpu/command_buffer/common/id_allocator.h"
+#include "gpu/command_buffer/common/logging.h"
 
 namespace gpu {
 namespace gles2 {

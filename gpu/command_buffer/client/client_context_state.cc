@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "../client/client_context_state.h"
-#include "../common/logging.h"
+#include "gpu/command_buffer/client/client_context_state.h"
+#include "gpu/command_buffer/common/logging.h"
 
 namespace gpu {
 namespace gles2 {

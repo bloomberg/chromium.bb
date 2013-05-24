@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "../client/buffer_tracker.h"
+#include "gpu/command_buffer/client/buffer_tracker.h"
 
-#include "../client/atomicops.h"
-#include "../client/cmd_buffer_helper.h"
-#include "../client/mapped_memory.h"
+#include "gpu/command_buffer/client/atomicops.h"
+#include "gpu/command_buffer/client/cmd_buffer_helper.h"
+#include "gpu/command_buffer/client/mapped_memory.h"
 
 namespace gpu {
 namespace gles2 {

@@ -5,10 +5,10 @@
 #include <map>
 
 #include "base/compiler_specific.h"
-#include "../client/program_info_manager.h"
-#include "../client/atomicops.h"
-#include "../client/gles2_implementation.h"
-#include "../common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/client/atomicops.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/program_info_manager.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
 namespace gpu {
 namespace gles2 {

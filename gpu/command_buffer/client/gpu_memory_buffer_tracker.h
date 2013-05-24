@@ -7,9 +7,9 @@
 
 #include <GLES2/gl2.h>
 
-#include "../client/hash_tables.h"
 #include "base/basictypes.h"
 #include "gles2_impl_export.h"
+#include "gpu/command_buffer/client/hash_tables.h"
 
 namespace gpu {
 class GpuMemoryBuffer;

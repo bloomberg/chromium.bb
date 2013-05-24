@@ -5,9 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_IMAGE_FACTORY_MOCK_H_
 #define GPU_COMMAND_BUFFER_CLIENT_IMAGE_FACTORY_MOCK_H_
 
-#include "../client/gpu_memory_buffer.h"
-#include "../client/image_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer.h"
+#include "gpu/command_buffer/client/image_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace gpu {

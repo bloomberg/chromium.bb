@@ -4,7 +4,7 @@
 
 // A class to emulate GLES2 over command buffers.
 
-#include "../client/gles2_implementation.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 
 #include <algorithm>
 #include <map>
@@ -15,16 +15,16 @@
 #include <string.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
-#include "../client/buffer_tracker.h"
-#include "../client/gpu_memory_buffer.h"
-#include "../client/gpu_memory_buffer_tracker.h"
-#include "../client/mapped_memory.h"
-#include "../client/program_info_manager.h"
-#include "../client/query_tracker.h"
-#include "../client/transfer_buffer.h"
-#include "../client/vertex_array_object_manager.h"
-#include "../common/gles2_cmd_utils.h"
-#include "../common/trace_event.h"
+#include "gpu/command_buffer/client/buffer_tracker.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_tracker.h"
+#include "gpu/command_buffer/client/mapped_memory.h"
+#include "gpu/command_buffer/client/program_info_manager.h"
+#include "gpu/command_buffer/client/query_tracker.h"
+#include "gpu/command_buffer/client/transfer_buffer.h"
+#include "gpu/command_buffer/client/vertex_array_object_manager.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/trace_event.h"
 
 #if defined(__native_client__) && !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
 #define GLES2_SUPPORT_CLIENT_SIDE_ARRAYS
@@ -3861,7 +3861,7 @@ void GLES2Implementation::GetImageParameterivCHROMIUM(
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.
-#include "../client/gles2_implementation_impl_autogen.h"
+#include "gpu/command_buffer/client/gles2_implementation_impl_autogen.h"
 
 }  // namespace gles2
 }  // namespace gpu

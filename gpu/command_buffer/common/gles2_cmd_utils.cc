@@ -10,8 +10,8 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
-#include "../common/gles2_cmd_utils.h"
-#include "../common/gles2_cmd_format.h"
+#include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
 namespace gpu {
 namespace gles2 {
@@ -798,7 +798,7 @@ bool ContextCreationAttribParser::Parse(const std::vector<int32>& attribs) {
   return true;
 }
 
-#include "../common/gles2_cmd_utils_implementation_autogen.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils_implementation_autogen.h"
 
 }  // namespace gles2
 }  // namespace gpu

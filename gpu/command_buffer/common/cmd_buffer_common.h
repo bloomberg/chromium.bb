@@ -9,10 +9,10 @@
 
 #include <stddef.h>
 
-#include "../../gpu_export.h"
-#include "../common/types.h"
-#include "../common/bitfield_helpers.h"
-#include "../common/logging.h"
+#include "gpu/command_buffer/common/bitfield_helpers.h"
+#include "gpu/command_buffer/common/logging.h"
+#include "gpu/command_buffer/common/types.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 

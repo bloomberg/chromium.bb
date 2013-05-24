@@ -8,9 +8,9 @@
 #include <GLES2/gl2.h>
 
 #include <deque>
-#include "../client/hash_tables.h"
-#include "../common/gles2_cmd_format.h"
 #include "gles2_impl_export.h"
+#include "gpu/command_buffer/client/hash_tables.h"
+#include "gpu/command_buffer/common/gles2_cmd_format.h"
 
 namespace gpu {
 

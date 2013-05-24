@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "../client/gpu_memory_buffer_tracker.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_tracker.h"
 
-#include "../client/gles2_implementation.h"
-#include "../client/gpu_memory_buffer.h"
-#include "../client/image_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer.h"
+#include "gpu/command_buffer/client/image_factory.h"
 
 namespace gpu {
 namespace gles2 {

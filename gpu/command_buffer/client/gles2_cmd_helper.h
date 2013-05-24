@@ -5,9 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H_
 
-#include "../../gpu_export.h"
-#include "../client/cmd_buffer_helper.h"
-#include "../common/gles2_cmd_format.h"
+#include "gpu/command_buffer/client/cmd_buffer_helper.h"
+#include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -21,7 +21,7 @@ class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
   // Include the auto-generated part of this class. We split this because it
   // means we can easily edit the non-auto generated parts right here in this
   // file instead of having to edit some template or the code generator.
-  #include "../client/gles2_cmd_helper_autogen.h"
+  #include "gpu/command_buffer/client/gles2_cmd_helper_autogen.h"
 
   // Helpers that could not be auto-generated.
   // TODO(gman): Auto generate these.

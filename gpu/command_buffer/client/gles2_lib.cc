@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "../client/gles2_lib.h"
+#include "gpu/command_buffer/client/gles2_lib.h"
 #include <string.h>
-#include "../common/thread_local.h"
+#include "gpu/command_buffer/common/thread_local.h"
 
 namespace gles2 {
 

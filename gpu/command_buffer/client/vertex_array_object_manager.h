@@ -7,9 +7,9 @@
 
 #include <GLES2/gl2.h>
 #include "base/memory/scoped_ptr.h"
-#include "../client/hash_tables.h"
-#include "../common/types.h"
 #include "gles2_impl_export.h"
+#include "gpu/command_buffer/client/hash_tables.h"
+#include "gpu/command_buffer/common/types.h"
 
 namespace gpu {
 namespace gles2 {

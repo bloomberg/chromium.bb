@@ -7,8 +7,8 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_LIB_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_LIB_H_
 
-#include "../client/gles2_interface.h"
 #include "gpu/command_buffer/client/gles2_c_lib_export.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace gles2 {
 
