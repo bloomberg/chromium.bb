@@ -88,8 +88,12 @@ public:
         Vector<UChar, 32> value;
     };
 
-    typedef WTF::Vector<Attribute, 10> AttributeList;
-    typedef WTF::Vector<UChar, 1024> DataVector;
+    typedef Vector<Attribute, 10> AttributeList;
+
+    // By using an inline capacity of 256, we avoid spilling over into an malloced buffer
+    // approximately 99% of the time based on a non-scientific browse around a number of
+    // popular web sites on 23 May 2013.
+    typedef Vector<UChar, 256> DataVector;
 
     HTMLToken() { clear(); }
 
