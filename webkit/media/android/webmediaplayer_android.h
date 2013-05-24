@@ -91,7 +91,7 @@ class WebMediaPlayerAndroid
   virtual void setSize(const WebKit::WebSize& size);
   virtual void paint(WebKit::WebCanvas* canvas,
                      const WebKit::WebRect& rect,
-                     uint8_t alpha);
+                     unsigned char alpha);
 
   virtual bool copyVideoTextureToPlatformTexture(
       WebKit::WebGraphicsContext3D* web_graphics_context,

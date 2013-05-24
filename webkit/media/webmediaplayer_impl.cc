@@ -521,7 +521,7 @@ void WebMediaPlayerImpl::setSize(const WebSize& size) {
 
 void WebMediaPlayerImpl::paint(WebCanvas* canvas,
                                const WebRect& rect,
-                               uint8_t alpha) {
+                               unsigned char alpha) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   if (!accelerated_compositing_reported_) {

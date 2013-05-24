@@ -13,14 +13,10 @@
 #if defined(ENABLE_PEPPER_CDMS)
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 #include "webkit/media/crypto/ppapi_decryptor.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
-// TODO(xhwang): Put this include after "ppapi_plugin_instance.h" for definition
-// of "uint8_t", which WebMediaPlayer.h uses without including a header for it.
-// See: https://bugs.webkit.org/show_bug.cgi?id=92031
-// Fix include order here when the bug is fixed.
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 namespace webkit_media {

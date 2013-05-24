@@ -42,7 +42,7 @@ static bool IsEitherYV12OrYV12AOrYV16OrNative(
 //
 // TODO(hclam): The fast paint method should support flipping and mirroring.
 // Disable the flipping and mirroring checks once we have it.
-static bool CanFastPaint(SkCanvas* canvas, uint8_t alpha,
+static bool CanFastPaint(SkCanvas* canvas, uint8 alpha,
                          media::VideoFrame::Format format) {
   if (alpha != 0xFF || !IsEitherYV12OrYV16(format))
     return false;
@@ -284,7 +284,7 @@ SkCanvasVideoRenderer::~SkCanvasVideoRenderer() {}
 void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
                                   SkCanvas* canvas,
                                   const gfx::RectF& dest_rect,
-                                  uint8_t alpha) {
+                                  uint8 alpha) {
   if (alpha == 0) {
     return;
   }

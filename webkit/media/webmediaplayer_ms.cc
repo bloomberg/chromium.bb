@@ -306,7 +306,7 @@ void WebMediaPlayerMS::setSize(const WebSize& size) {
 
 void WebMediaPlayerMS::paint(WebCanvas* canvas,
                              const WebRect& rect,
-                             uint8_t alpha) {
+                             unsigned char alpha) {
   DVLOG(3) << "WebMediaPlayerMS::paint";
   DCHECK(thread_checker_.CalledOnValidThread());
 

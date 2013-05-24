@@ -287,7 +287,7 @@ void WebMediaPlayerAndroid::setSize(const WebKit::WebSize& size) {
 
 void WebMediaPlayerAndroid::paint(WebKit::WebCanvas* canvas,
                                   const WebKit::WebRect& rect,
-                                  uint8_t alpha) {
+                                  unsigned char alpha) {
   NOTIMPLEMENTED();
 }
 

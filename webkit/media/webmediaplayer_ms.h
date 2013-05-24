@@ -88,7 +88,7 @@ class WebMediaPlayerMS
 
   virtual void paint(WebKit::WebCanvas* canvas,
                      const WebKit::WebRect& rect,
-                     uint8_t alpha) OVERRIDE;
+                     unsigned char alpha) OVERRIDE;
 
   // True if the loaded media has a playable video/audio track.
   virtual bool hasVideo() const OVERRIDE;
