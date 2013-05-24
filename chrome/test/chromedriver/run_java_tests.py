@@ -201,7 +201,7 @@ def PrintTestResults(results):
 
   print 'Ran %s tests' % len(results)
   print 'Failed %s:' % len(failures)
-  util.AddBuildStepText('failed %s/%s' % (len(failures), len(results))
+  util.AddBuildStepText('failed %s/%s' % (len(failures), len(results)))
   for result in failures:
     print '=' * 80
     print '=' * 10, result.GetName(), '(%ss)' % result.GetTime()
