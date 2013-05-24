@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 }
 
 // TODO(vabr): Cure these flaky tests, http://crbug.com/238179.
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if !defined(NDEBUG)
 #define MAYBE_PostData1 DISABLED_PostData1
 #define MAYBE_PostData2 DISABLED_PostData2
 #else
