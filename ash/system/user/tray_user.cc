@@ -799,18 +799,14 @@ void UserView::AddUserCard(SystemTrayItem* owner,
   }
   ash::SessionStateDelegate* delegate =
       ash::Shell::GetInstance()->session_state_delegate();
-  views::View* details = new views::View;
-  details->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, kUserDetailsVerticalPadding, 0));
   views::Label* username = NULL;
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   if (!multiprofile_index_) {
-    views::Label* username = new views::Label(
+    username = new views::Label(
         login == ash::user::LOGGED_IN_GUEST ?
             bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_GUEST_LABEL) :
             delegate->GetUserDisplayName(multiprofile_index_));
     username->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    details->AddChildView(username);
   }
 
   views::Label* additional = NULL;
@@ -822,7 +818,6 @@ void UserView::AddUserCard(SystemTrayItem* owner,
 
     additional->SetFont(bundle.GetFont(ui::ResourceBundle::SmallFont));
     additional->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    details->AddChildView(additional);
   }
 
   // Adjust text properties dependent on if it is an active or inactive user.
@@ -836,11 +831,19 @@ void UserView::AddUserCard(SystemTrayItem* owner,
       username->SetDisabledColor(text_color);
   }
 
-  // Use a small font for email address if username exists as well.
-  if (username)
-    additional->SetFont(bundle.GetFont(ui::ResourceBundle::SmallFont));
-
-  user_card_view_->AddChildView(details);
+  if (additional && username) {
+    views::View* details = new views::View;
+    details->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kVertical, 0, kUserDetailsVerticalPadding, 0));
+    details->AddChildView(username);
+    details->AddChildView(additional);
+    user_card_view_->AddChildView(details);
+  } else {
+    if (username)
+      user_card_view_->AddChildView(username);
+    if (additional)
+      user_card_view_->AddChildView(additional);
+  }
 }
 
 views::View* UserView::CreateIconForUserCard(ash::user::LoginStatus login) {
