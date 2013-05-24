@@ -257,25 +257,27 @@ class GerritHelper(object):
 
   def Query(self, query, sort=None, current_patch=True, options=(),
             dryrun=False, raw=False, _resume_sortkey=None):
-    """Freeform querying of a gerrit server
+    """Freeform querying of a gerrit server.
 
     Args:
-     query: gerrit query to run: see the official docs for valid parameters:
-       http://gerrit.googlecode.com/svn/documentation/2.1.7/cmd-query.html
-     sort: if given, the key in the resultant json to sort on
-     current_patch: If True, append --current-patch-set to options.  If this
-       is set to False, return the raw dictionary.  If False, raw is forced
-       to True.
-     options: any additional commandline options to pass to gerrit query
+      query: gerrit query to run: see the official docs for valid parameters:
+        http://gerrit.googlecode.com/svn/documentation/2.1.7/cmd-query.html
+      sort: if given, the key in the resultant json to sort on
+      current_patch: If True, append --current-patch-set to options.  If this
+        is set to False, return the raw dictionary.  If False, raw is forced
+        to True.
+      options: Any additional commandline options to pass to the gerrit query.
 
     Returns:
-     a sequence of dictionaries from the gerrit server
+      A sequence of JSON dictionaries from the gerrit server. This includes
+      patch dependencies in the 'dependsOn' and 'neededBy' fields.
     Raises:
-     RunCommandException if the invocation fails, or GerritException if
-     there is something wrong w/ the query parameters given
+      RunCommandException if the invocation fails, or GerritException if
+      there is something wrong with the query parameters given
     """
 
-    cmd = self.ssh_prefix + ['gerrit', 'query', '--format=JSON']
+    cmd = self.ssh_prefix + ['gerrit', 'query', '--format=JSON',
+                             '--dependencies']
     cmd.extend(options)
     if current_patch:
       cmd.append('--current-patch-set')

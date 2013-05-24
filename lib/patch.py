@@ -715,71 +715,13 @@ class GitRepoPatch(object):
     self.Apply(manifest.GetProjectPath(self.project, True),
                manifest_branch, trivial=trivial)
 
-  def GerritDependencies(self, git_repo, upstream):
-    """Returns an ordered list of dependencies from Gerrit.
+  def GerritDependencies(self):
+    """Returns a list of Gerrit change numbers that this patch depends on.
 
-    The list of changes are in order from FETCH_HEAD back to m/master. Note that
-    this function only works if your repo is already up to date (i.e. you've run
-    repo sync recently).
-
-    Arguments:
-      git_repo: The git repository to fetch/access this commit from.
-    Returns:
-      An ordered list of Gerrit ChangeIds that this patch depends on.
-      Note that if the commit lacks a ChangeId, the parent's sha1 is returned.
+    Ordinary patches have no Gerrit-style dependencies since they're not
+    from Gerrit at all. See GerritPatch.GerritDependencies instead.
     """
-    dependencies = []
-    logging.debug('Checking for Gerrit dependencies for change %s', self)
-
-    rev = self.Fetch(git_repo)
-
-    try:
-      return_obj = git.RunGit(
-          git_repo, ['log', '-z', '-n1', '--pretty=format:%H%n%B',
-                     '%s..%s^' % (upstream, rev)])
-    except cros_build_lib.RunCommandError, e:
-      if e.result.returncode != 128:
-        raise
-      # Errorcode 128 means "object not found"; either we've got an
-      # internal bug (tracking_branch was wrong, fetch somehow didn't get
-      # that actual rev, etc), or... this is the first commit in a repository.
-      # The following code checks for that, raising the original
-      # exception if not.
-      result = git.RunGit(git_repo, ['rev-list', '-n2', rev])
-      if len(result.output.split()) != 1:
-        raise
-      # First commit of a repository; obviously, it has no dependencies.
-      return []
-
-    patches = []
-    if return_obj.output:
-      # Only do this if we have output; else it leads
-      # to an invalid [''] result which we can't identify
-      # as differing from actual output for a single patch that
-      # lacks a commit message.
-      # Because the explicit null addition, strip off the last record.
-      patches = unicode(return_obj.output, 'ascii', 'ignore').split('\0')
-
-    for patch_output in patches:
-      sha1, commit_msg = patch_output.split('\n', 1)
-      try:
-        dep = FormatChangeId(self._ParseChangeId(commit_msg),
-                             force_internal=self.internal, strict=True)
-      except BrokenChangeID, e:
-        if not e.missing:
-          raise
-        cros_build_lib.Warning(
-            "Parent %s lacks a ChangeId; using the parent's sha1 as the "
-            "dependency.", sha1)
-        dep = FormatSha1(sha1, force_internal=self.internal, strict=True)
-      dependencies.append(dep)
-
-    if dependencies:
-      logging.debug('Found %s Gerrit dependencies for change %s', dependencies,
-                   self)
-      # Ensure that our parent's ChangeId's are internal if we are.
-
-    return dependencies
+    return []
 
   def _SetChangeId(self, change_id):
     """Set this instances change_id, and id from the given ChangeId.
@@ -1119,6 +1061,11 @@ class GerritPatch(GitRepoPatch):
     l.append(FormatGerritNumber(self.gerrit_number,
                                 force_internal=self.internal))
     return l
+
+  def GerritDependencies(self):
+    """Returns the list of Gerrit change numbers that this patch depends on."""
+    return [FormatGerritNumber(d['number'], force_internal=self.internal)
+            for d in self.patch_dict.get('dependsOn', [])]
 
   def IsAlreadyMerged(self):
     """Returns whether the patch has already been merged in Gerrit."""
