@@ -35,15 +35,16 @@
 
             function keyMessage(event)
             {
-                run('mediaKeySession.addKey(invalidKey)');
+                run('mediaKeySession.update(invalidKey)');
             }
 
             function keyError(event)
             {
-                run('mediaKeySession.addKey(validKey)');
+                run('mediaKeySession.update(validKey)');
             }
         </script>
     </head>
     <body onload="runTest()">
         <p>This tests the events created by MediaKeys.</p>
+    </body>
 </html>

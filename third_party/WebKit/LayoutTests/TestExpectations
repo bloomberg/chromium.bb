@@ -1314,10 +1314,6 @@ crbug.com/239549 inspector-protocol/heap-profiler/heap-snapshot-with-detached-do
 webkit.org/b/109312 fast/canvas/canvas-drawImage-shadow.html [ Failure Pass ]
 webkit.org/b/109312 virtual/gpu/fast/canvas/canvas-drawImage-shadow.html [ Failure Pass ]
 
-# ENABLE_ENCRYPTED_MEDIA_V2 is not enabled.
-crbug.com/224791 media/encrypted-media/encrypted-media-v2-events.html [ Skip ]
-crbug.com/224791 media/encrypted-media/encrypted-media-v2-syntax.html [ Skip ]
-
 webkit.org/b/109963 [ Debug ] inspector/profiler/heap-snapshot-get-profile-crash.html [ Crash Pass ]
 
 webkit.org/b/110247 [ Debug ] fast/workers/storage/interrupt-database.html [ Crash Pass Slow ]

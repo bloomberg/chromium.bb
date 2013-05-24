@@ -25,10 +25,11 @@
                     internals.initializeMockCDM();
 
                 consoleWrite("Test MediaKeys.");
-                testExpected('typeof window.MediaKeys', 'object');
+                testExpected('typeof window.MediaKeys', 'function');
                 testDOMException('new MediaKeys("")', "DOMException.INVALID_ACCESS_ERR");
                 testDOMException('new MediaKeys("unsupported")', "DOMException.NOT_SUPPORTED_ERR");
                 run('mediaKeys = new MediaKeys("com.webcore.mock")');
+                testExpected('typeof mediaKeys', 'object');
                 testExpected('mediaKeys.keySystem', 'com.webcore.mock');
                 testExpected('typeof mediaKeys.createSession', 'function');
                 testDOMException('mediaKeys.createSession("", new Uint8Array(1))', "DOMException.INVALID_ACCESS_ERR");

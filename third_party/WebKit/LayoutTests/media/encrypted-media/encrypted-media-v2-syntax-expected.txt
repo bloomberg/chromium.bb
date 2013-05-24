@@ -1,10 +1,11 @@
 This tests the basic API of MediaKeys and MediaKeySession.
 
 Test MediaKeys.
-EXPECTED (typeof window.MediaKeys == 'object') OK
+EXPECTED (typeof window.MediaKeys == 'function') OK
 TEST(new MediaKeys("")) THROWS(DOMException.INVALID_ACCESS_ERR) OK
 TEST(new MediaKeys("unsupported")) THROWS(DOMException.NOT_SUPPORTED_ERR) OK
 RUN(mediaKeys = new MediaKeys("com.webcore.mock"))
+EXPECTED (typeof mediaKeys == 'object') OK
 EXPECTED (mediaKeys.keySystem == 'com.webcore.mock') OK
 EXPECTED (typeof mediaKeys.createSession == 'function') OK
 TEST(mediaKeys.createSession("", new Uint8Array(1))) THROWS(DOMException.INVALID_ACCESS_ERR) OK
