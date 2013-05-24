@@ -1609,6 +1609,7 @@
         'http/mock_sspi_library_win.h',
         'http/transport_security_state_unittest.cc',
         'http/url_security_manager_unittest.cc',
+        'ocsp/nss_ocsp_unittest.cc',
         'proxy/dhcp_proxy_script_adapter_fetcher_win_unittest.cc',
         'proxy/dhcp_proxy_script_fetcher_factory_unittest.cc',
         'proxy/dhcp_proxy_script_fetcher_win_unittest.cc',
@@ -1879,6 +1880,13 @@
             'http/http_auth_handler_negotiate_unittest.cc',
             'http/mock_gssapi_library_posix.cc',
             'http/mock_gssapi_library_posix.h',
+          ],
+        }],
+        [ 'use_openssl == 1 or (use_glib == 0 and OS != "ios")', {
+          # Only include this test when on Posix and using NSS for
+          # cert verification or on iOS (which also uses NSS for certs).
+          'sources!': [
+            'ocsp/nss_ocsp_unittest.cc',
           ],
         }],
         [ 'use_openssl==1', {
