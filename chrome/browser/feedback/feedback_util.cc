@@ -17,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -32,6 +33,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_request_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
@@ -200,6 +202,12 @@ void FeedbackUtil::SendFeedback(Profile* profile,
   fetcher->SetRequestContext(profile->GetRequestContext());
   fetcher->SetLoadFlags(
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
+
+  net::HttpRequestHeaders headers;
+  chrome_variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
+      fetcher->GetOriginalURL(), profile->IsOffTheRecord(), false, &headers);
+  fetcher->SetExtraRequestHeaders(headers.ToString());
+
   fetcher->SetUploadData(std::string(kProtBufMimeType), *post_body);
   fetcher->Start();
 }
