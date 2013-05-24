@@ -22,8 +22,11 @@ import subprocess2
 
 class Error(Exception):
   """gclient exception class."""
-  pass
-
+  def __init__(self, msg, *args, **kwargs):
+    index = getattr(threading.currentThread(), 'index', 0)
+    if index:
+      msg = '\n'.join('%d> %s' % (index, l) for l in msg.splitlines())
+    super(Error, self).__init__(msg, *args, **kwargs)
 
 def SplitUrlRevision(url):
   """Splits url and returns a two-tuple: url, rev"""
