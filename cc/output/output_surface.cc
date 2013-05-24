@@ -112,9 +112,9 @@ void OutputSurface::DiscardBackbuffer() {
     context3d_->discardBackbufferCHROMIUM();
 }
 
-void OutputSurface::Reshape(gfx::Size size) {
+void OutputSurface::Reshape(gfx::Size size, float scale_factor) {
   DCHECK(context3d_);
-  context3d_->reshape(size.width(), size.height());
+  context3d_->reshapeWithScaleFactor(size.width(), size.height(), scale_factor);
 }
 
 void OutputSurface::BindFramebuffer() {

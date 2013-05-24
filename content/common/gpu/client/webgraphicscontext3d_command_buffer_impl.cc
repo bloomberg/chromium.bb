@@ -567,6 +567,11 @@ void WebGraphicsContext3DCommandBufferImpl::postSubBufferCHROMIUM(
 }
 
 void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
+  reshapeWithScaleFactor(width, height, 1.f);
+}
+
+void WebGraphicsContext3DCommandBufferImpl::reshapeWithScaleFactor(
+    int width, int height, float scale_factor) {
   cached_width_ = width;
   cached_height_ = height;
 

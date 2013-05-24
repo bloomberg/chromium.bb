@@ -52,6 +52,9 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   virtual gfx::Size DeviceViewportSize() const OVERRIDE {
     return viewport_size_;
   }
+  virtual float DeviceScaleFactor() const OVERRIDE {
+    return 1.f;
+  }
   virtual const LayerTreeSettings& Settings() const OVERRIDE {
     return settings_;
   }

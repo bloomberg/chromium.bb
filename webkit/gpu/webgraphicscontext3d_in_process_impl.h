@@ -78,6 +78,8 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessImpl :
   virtual bool setParentContext(WebGraphicsContext3D* parent_context);
 
   virtual void reshape(int width, int height);
+  virtual void reshapeWithScaleFactor(
+    int width, int height, float scaleFactor);
 
   virtual bool readBackFramebuffer(unsigned char* pixels, size_t bufferSize);
   virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size,

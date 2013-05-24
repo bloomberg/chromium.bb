@@ -34,7 +34,8 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   virtual int width();
   virtual int height();
 
-  virtual void reshape(int width, int height);
+  virtual void reshapeWithScaleFactor(
+      int width, int height, float scale_factor);
 
   virtual bool isContextLost();
   virtual WebKit::WGC3Denum getGraphicsResetStatusARB();

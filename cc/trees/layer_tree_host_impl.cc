@@ -1204,6 +1204,10 @@ gfx::Size LayerTreeHostImpl::DeviceViewportSize() const {
   return device_viewport_size();
 }
 
+float LayerTreeHostImpl::DeviceScaleFactor() const {
+  return device_scale_factor_;
+}
+
 gfx::SizeF LayerTreeHostImpl::VisibleViewportSize() const {
   gfx::SizeF dip_size =
       gfx::ScaleSize(DeviceViewportSize(), 1.f / device_scale_factor());
@@ -1510,6 +1514,9 @@ void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {
   if (device_scale_factor == device_scale_factor_)
     return;
   device_scale_factor_ = device_scale_factor;
+
+  if (renderer_)
+    renderer_->ViewportChanged();
 
   UpdateMaxScrollOffset();
   SetFullRootLayerDamage();

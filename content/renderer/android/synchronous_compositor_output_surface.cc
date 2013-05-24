@@ -119,7 +119,8 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   return true;
 }
 
-void SynchronousCompositorOutputSurface::Reshape(gfx::Size size) {
+void SynchronousCompositorOutputSurface::Reshape(
+    gfx::Size size, float scale_factor) {
   // Intentional no-op: surface size is controlled by the embedder.
 }
 

@@ -182,6 +182,7 @@ class CC_EXPORT LayerTreeHostImpl
   // RendererClient implementation
  private:
   virtual gfx::Size DeviceViewportSize() const OVERRIDE;
+  virtual float DeviceScaleFactor() const OVERRIDE;
   virtual const LayerTreeSettings& Settings() const OVERRIDE;
  public:
   virtual void DidLoseOutputSurface() OVERRIDE;

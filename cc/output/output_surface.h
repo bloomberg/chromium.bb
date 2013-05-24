@@ -87,7 +87,7 @@ class CC_EXPORT OutputSurface {
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
 
-  virtual void Reshape(gfx::Size size);
+  virtual void Reshape(gfx::Size size, float scale_factor);
 
   virtual void BindFramebuffer();
 

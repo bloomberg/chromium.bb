@@ -103,7 +103,8 @@ int TestWebGraphicsContext3D::height() {
   return height_;
 }
 
-void TestWebGraphicsContext3D::reshape(int width, int height) {
+void TestWebGraphicsContext3D::reshapeWithScaleFactor(
+    int width, int height, float scale_factor) {
   width_ = width;
   height_ = height;
 }

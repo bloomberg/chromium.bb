@@ -151,7 +151,10 @@ class FakeRendererClient : public RendererClient {
         last_call_was_set_visibility_(0),
         root_layer_(LayerImpl::Create(host_impl_.active_tree(), 1)),
         memory_allocation_limit_bytes_(
-            PrioritizedResourceManager::DefaultMemoryAllocationLimit()) {
+            PrioritizedResourceManager::DefaultMemoryAllocationLimit()),
+        viewport_size_(gfx::Size(1, 1)),
+        scale_factor_(1.f),
+        is_viewport_changed_(true) {
     root_layer_->CreateRenderSurface();
     RenderPass::Id render_pass_id =
         root_layer_->render_surface()->RenderPassId();
@@ -165,6 +168,9 @@ class FakeRendererClient : public RendererClient {
   virtual gfx::Size DeviceViewportSize() const OVERRIDE {
     static gfx::Size fake_size(1, 1);
     return fake_size;
+  }
+  virtual float DeviceScaleFactor() const OVERRIDE {
+    return scale_factor_;
   }
   virtual const LayerTreeSettings& Settings() const OVERRIDE {
     static LayerTreeSettings fake_settings;
@@ -199,6 +205,14 @@ class FakeRendererClient : public RendererClient {
       bool* last_call_was_set_visibility) {
     last_call_was_set_visibility_ = last_call_was_set_visibility;
   }
+  void set_viewport_and_scale(
+      gfx::Size viewport_size, float scale_factor) {
+    viewport_size_ = viewport_size;
+    scale_factor_ = scale_factor;
+    is_viewport_changed_ = true;
+  }
+  bool is_viewport_changed() const { return is_viewport_changed_; }
+  void clear_viewport_changed() { is_viewport_changed_ = false; }
 
   RenderPass* root_render_pass() { return render_passes_in_draw_order_.back(); }
   RenderPassList* render_passes_in_draw_order() {
@@ -217,6 +231,9 @@ class FakeRendererClient : public RendererClient {
   scoped_ptr<LayerImpl> root_layer_;
   RenderPassList render_passes_in_draw_order_;
   size_t memory_allocation_limit_bytes_;
+  gfx::Size viewport_size_;
+  float scale_factor_;
+  bool is_viewport_changed_;
 };
 
 class FakeRendererGL : public GLRenderer {
@@ -1437,7 +1454,8 @@ class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
   MOCK_METHOD0(discardBackbufferCHROMIUM, void());
   MOCK_METHOD2(bindFramebuffer, void(WGC3Denum target, WebGLId framebuffer));
   MOCK_METHOD0(prepareTexture, void());
-  MOCK_METHOD2(reshape, void(int width, int height));
+  MOCK_METHOD3(reshapeWithScaleFactor,
+               void(int width, int height, float scale_factor));
   MOCK_METHOD4(drawElements,
                void(WGC3Denum mode,
                     WGC3Dsizei count,
@@ -1462,7 +1480,7 @@ class MockOutputSurface : public OutputSurface {
   MOCK_METHOD1(SendFrameToParentCompositor, void(CompositorFrame* frame));
   MOCK_METHOD0(EnsureBackbuffer, void());
   MOCK_METHOD0(DiscardBackbuffer, void());
-  MOCK_METHOD1(Reshape, void(gfx::Size size));
+  MOCK_METHOD2(Reshape, void(gfx::Size size, float scale_factor));
   MOCK_METHOD0(BindFramebuffer, void());
   MOCK_METHOD2(PostSubBuffer, void(gfx::Rect rect, const LatencyInfo&));
   MOCK_METHOD1(SwapBuffers, void(const LatencyInfo&));
@@ -1490,7 +1508,11 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
 
     EXPECT_CALL(output_surface_, EnsureBackbuffer()).WillRepeatedly(Return());
 
-    EXPECT_CALL(output_surface_, Reshape(_)).Times(1);
+    if (is_viewport_changed()) {
+      EXPECT_CALL(output_surface_,
+                  Reshape(DeviceViewportSize(), DeviceScaleFactor())).Times(1);
+      clear_viewport_changed();
+    }
 
     EXPECT_CALL(output_surface_, BindFramebuffer()).Times(1);
 
@@ -1513,6 +1535,30 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
 TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap) {
   DrawFrame();
 
+  EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
+  renderer_.SwapBuffers(LatencyInfo());
+}
+
+TEST_F(MockOutputSurfaceTest, DrawFrameAndResizeAndSwap) {
+  DrawFrame();
+  EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
+  renderer_.SwapBuffers(LatencyInfo());
+
+  set_viewport_and_scale(gfx::Size(2, 2), 2.f);
+  renderer_.ViewportChanged();
+
+  DrawFrame();
+  EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
+  renderer_.SwapBuffers(LatencyInfo());
+
+  DrawFrame();
+  EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
+  renderer_.SwapBuffers(LatencyInfo());
+
+  set_viewport_and_scale(gfx::Size(1, 1), 1.f);
+  renderer_.ViewportChanged();
+
+  DrawFrame();
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
   renderer_.SwapBuffers(LatencyInfo());
 }

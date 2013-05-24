@@ -21,6 +21,7 @@ class ScopedResource;
 class CC_EXPORT RendererClient {
  public:
   virtual gfx::Size DeviceViewportSize() const = 0;
+  virtual float DeviceScaleFactor() const = 0;
   virtual const LayerTreeSettings& Settings() const = 0;
   virtual void SetFullRootLayerDamage() = 0;
   virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
@@ -46,6 +47,8 @@ class CC_EXPORT Renderer {
   gfx::Size ViewportSize() const { return client_->DeviceViewportSize(); }
   int ViewportWidth() const { return ViewportSize().width(); }
   int ViewportHeight() const { return ViewportSize().height(); }
+
+  float DeviceScaleFactor() const { return client_->DeviceScaleFactor(); }
 
   virtual void ViewportChanged() {}
   virtual void ReceiveCompositorFrameAck(const CompositorFrameAck& ack) {}

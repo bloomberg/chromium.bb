@@ -32,7 +32,7 @@ class MailboxOutputSurface : public CompositorOutputSurface {
   virtual void SendFrameToParentCompositor(cc::CompositorFrame* frame) OVERRIDE;
   virtual void EnsureBackbuffer() OVERRIDE;
   virtual void DiscardBackbuffer() OVERRIDE;
-  virtual void Reshape(gfx::Size size) OVERRIDE;
+  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void BindFramebuffer() OVERRIDE;
   virtual void PostSubBuffer(gfx::Rect rect, const cc::LatencyInfo&) OVERRIDE;
   virtual void SwapBuffers(const cc::LatencyInfo&) OVERRIDE;

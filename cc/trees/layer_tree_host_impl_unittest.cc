@@ -2662,16 +2662,32 @@ TEST_F(LayerTreeHostImplTest, ViewportCovered) {
 
 class ReshapeTrackerContext: public TestWebGraphicsContext3D {
  public:
-  ReshapeTrackerContext() : reshape_called_(false) {}
+  ReshapeTrackerContext()
+    : reshape_called_(false),
+      last_reshape_width_(-1),
+      last_reshape_height_(-1),
+      last_reshape_scale_factor_(-1.f) {
+  }
 
-  virtual void reshape(int width, int height) OVERRIDE {
+  virtual void reshapeWithScaleFactor(
+      int width, int height, float scale_factor) OVERRIDE {
     reshape_called_ = true;
+    last_reshape_width_ = width;
+    last_reshape_height_ = height;
+    last_reshape_scale_factor_ = scale_factor;
   }
 
   bool reshape_called() const { return reshape_called_; }
+  void clear_reshape_called() { reshape_called_ = false; }
+  int last_reshape_width() { return last_reshape_width_; }
+  int last_reshape_height() { return last_reshape_height_; }
+  int last_reshape_scale_factor() { return last_reshape_scale_factor_; }
 
  private:
   bool reshape_called_;
+  int last_reshape_width_;
+  int last_reshape_height_;
+  float last_reshape_scale_factor_;
 };
 
 class FakeDrawableLayerImpl: public LayerImpl {
@@ -2703,12 +2719,39 @@ TEST_F(LayerTreeHostImplTest, ReshapeNotCalledUntilDraw) {
   root->SetDrawsContent(true);
   host_impl_->active_tree()->SetRootLayer(root.Pass());
   EXPECT_FALSE(reshape_tracker->reshape_called());
+  reshape_tracker->clear_reshape_called();
 
   LayerTreeHostImpl::FrameData frame;
+  host_impl_->SetViewportSize(gfx::Size(10, 10));
+  host_impl_->SetDeviceScaleFactor(1.f);
   EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
   host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
   EXPECT_TRUE(reshape_tracker->reshape_called());
+  EXPECT_EQ(reshape_tracker->last_reshape_width(), 10);
+  EXPECT_EQ(reshape_tracker->last_reshape_height(), 10);
+  EXPECT_EQ(reshape_tracker->last_reshape_scale_factor(), 1.f);
   host_impl_->DidDrawAllLayers(frame);
+  reshape_tracker->clear_reshape_called();
+
+  host_impl_->SetViewportSize(gfx::Size(20, 30));
+  EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  EXPECT_TRUE(reshape_tracker->reshape_called());
+  EXPECT_EQ(reshape_tracker->last_reshape_width(), 20);
+  EXPECT_EQ(reshape_tracker->last_reshape_height(), 30);
+  EXPECT_EQ(reshape_tracker->last_reshape_scale_factor(), 1.f);
+  host_impl_->DidDrawAllLayers(frame);
+  reshape_tracker->clear_reshape_called();
+
+  host_impl_->SetDeviceScaleFactor(2.f);
+  EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
+  EXPECT_TRUE(reshape_tracker->reshape_called());
+  EXPECT_EQ(reshape_tracker->last_reshape_width(), 20);
+  EXPECT_EQ(reshape_tracker->last_reshape_height(), 30);
+  EXPECT_EQ(reshape_tracker->last_reshape_scale_factor(), 2.f);
+  host_impl_->DidDrawAllLayers(frame);
+  reshape_tracker->clear_reshape_called();
 }
 
 class PartialSwapTrackerContext : public TestWebGraphicsContext3D {
@@ -4505,6 +4548,9 @@ class TestRenderer : public GLRenderer, public RendererClient {
   // RendererClient implementation.
   virtual gfx::Size DeviceViewportSize() const OVERRIDE {
     return viewport_size_;
+  }
+  virtual float DeviceScaleFactor() const OVERRIDE {
+    return 1.f;
   }
   virtual const LayerTreeSettings& Settings() const OVERRIDE {
     return settings_;

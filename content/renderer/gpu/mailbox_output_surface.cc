@@ -113,7 +113,7 @@ void MailboxOutputSurface::DiscardBackbuffer() {
   }
 }
 
-void MailboxOutputSurface::Reshape(gfx::Size size) {
+void MailboxOutputSurface::Reshape(gfx::Size size, float scale_factor) {
   if (size == size_)
     return;
 

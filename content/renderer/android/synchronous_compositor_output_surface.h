@@ -34,7 +34,7 @@ class SynchronousCompositorOutputSurface
   // OutputSurface.
   virtual bool ForcedDrawToSoftwareDevice() const OVERRIDE;
   virtual bool BindToClient(cc::OutputSurfaceClient* surface_client) OVERRIDE;
-  virtual void Reshape(gfx::Size size) OVERRIDE;
+  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void SendFrameToParentCompositor(cc::CompositorFrame* frame) OVERRIDE;
   virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
   virtual void SwapBuffers(const cc::LatencyInfo& info) OVERRIDE;

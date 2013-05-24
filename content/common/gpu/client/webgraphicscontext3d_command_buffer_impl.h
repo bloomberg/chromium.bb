@@ -128,6 +128,8 @@ class WebGraphicsContext3DCommandBufferImpl
                                WebGraphicsSyncPointCallback* callback);
 
   virtual void reshape(int width, int height);
+  virtual void reshapeWithScaleFactor(
+      int width, int height, float scale_factor);
 
   virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size);
   virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size,

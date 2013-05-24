@@ -321,7 +321,8 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
     // can leave the window at the wrong size if we never draw and the proper
     // viewport size is never set.
     is_viewport_changed_ = false;
-    output_surface_->Reshape(gfx::Size(ViewportWidth(), ViewportHeight()));
+    output_surface_->Reshape(gfx::Size(ViewportWidth(), ViewportHeight()),
+                             DeviceScaleFactor());
   }
 
   MakeContextCurrent();

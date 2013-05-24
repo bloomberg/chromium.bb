@@ -343,6 +343,11 @@ void WebGraphicsContext3DInProcessImpl::reshape(int width, int height) {
   scanline_ = new unsigned char[width * 4];
 }
 
+void WebGraphicsContext3DInProcessImpl::reshapeWithScaleFactor(
+    int width, int height, float scaleFactor) {
+  reshape(width, height);
+}
+
 bool WebGraphicsContext3DInProcessImpl::AllocateOffscreenFrameBuffer(
     int width, int height) {
   GLenum target = GL_TEXTURE_2D;
