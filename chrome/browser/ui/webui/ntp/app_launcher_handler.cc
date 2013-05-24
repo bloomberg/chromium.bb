@@ -755,6 +755,28 @@ void AppLauncherHandler::RecordAppLaunchType(
 }
 
 // static
+void AppLauncherHandler::RecordAppListSearchLaunch(const Extension* extension) {
+  extension_misc::AppLaunchBucket bucket =
+      extension_misc::APP_LAUNCH_APP_LIST_SEARCH;
+  if (extension->id() == extension_misc::kWebStoreAppId)
+    bucket = extension_misc::APP_LAUNCH_APP_LIST_SEARCH_WEBSTORE;
+  else if (extension->id() == extension_misc::kChromeAppId)
+    bucket = extension_misc::APP_LAUNCH_APP_LIST_SEARCH_CHROME;
+  AppLauncherHandler::RecordAppLaunchType(bucket, extension->GetType());
+}
+
+// static
+void AppLauncherHandler::RecordAppListMainLaunch(const Extension* extension) {
+  extension_misc::AppLaunchBucket bucket =
+      extension_misc::APP_LAUNCH_APP_LIST_MAIN;
+  if (extension->id() == extension_misc::kWebStoreAppId)
+    bucket = extension_misc::APP_LAUNCH_APP_LIST_MAIN_WEBSTORE;
+  else if (extension->id() == extension_misc::kChromeAppId)
+    bucket = extension_misc::APP_LAUNCH_APP_LIST_MAIN_CHROME;
+  AppLauncherHandler::RecordAppLaunchType(bucket, extension->GetType());
+}
+
+// static
 void AppLauncherHandler::RecordWebStoreLaunch() {
   RecordAppLaunchType(extension_misc::APP_LAUNCH_NTP_WEBSTORE,
       extensions::Manifest::TYPE_HOSTED_APP);

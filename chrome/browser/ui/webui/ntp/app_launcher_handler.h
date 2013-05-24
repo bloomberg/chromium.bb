@@ -116,6 +116,12 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   static void RecordAppLaunchType(extension_misc::AppLaunchBucket bucket,
                                   extensions::Manifest::Type app_type);
 
+  // Records an app launch from the search view of the app list.
+  static void RecordAppListSearchLaunch(const extensions::Extension* extension);
+
+  // Records an app launch from the main view of the app list.
+  static void RecordAppListMainLaunch(const extensions::Extension* extension);
+
  private:
   struct AppInstallInfo {
     AppInstallInfo();

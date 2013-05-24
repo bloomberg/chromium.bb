@@ -268,6 +268,18 @@ namespace extension_misc {
     // User clicked app launcher search result.
     APP_LAUNCH_APP_LIST_SEARCH,
 
+    // User clicked the chrome app icon from the app launcher's main view.
+    APP_LAUNCH_APP_LIST_MAIN_CHROME,
+
+    // User clicked the webstore icon from the app launcher's main view.
+    APP_LAUNCH_APP_LIST_MAIN_WEBSTORE,
+
+    // User clicked the chrome app icon from the app launcher's search view.
+    APP_LAUNCH_APP_LIST_SEARCH_CHROME,
+
+    // User clicked the webstore icon from the app launcher's search view.
+    APP_LAUNCH_APP_LIST_SEARCH_WEBSTORE,
+
     APP_LAUNCH_BUCKET_BOUNDARY,
     APP_LAUNCH_BUCKET_INVALID
   };

@@ -258,9 +258,7 @@ void ExtensionAppItem::Activate(int event_flags) {
   if (RunExtensionEnableFlow())
     return;
 
-  AppLauncherHandler::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_APP_LIST_MAIN,
-      extension->GetType());
+  AppLauncherHandler::RecordAppListMainLaunch(extension);
   controller_->ActivateApp(profile_, extension, event_flags);
 }
 

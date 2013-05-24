@@ -66,11 +66,10 @@ void AppResult::Open(int event_flags) {
   if (!extension)
     return;
 
-  AppLauncherHandler::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_APP_LIST_SEARCH,
-      extension->GetType());
+  AppLauncherHandler::RecordAppListSearchLaunch(extension);
   content::RecordAction(
       content::UserMetricsAction("AppList_ClickOnAppFromSearch"));
+
   controller_->ActivateApp(profile_, extension, event_flags);
 }
 
