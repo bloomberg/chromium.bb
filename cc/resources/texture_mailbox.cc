@@ -10,7 +10,8 @@
 namespace cc {
 
 TextureMailbox::TextureMailbox()
-    : sync_point_(0) {
+    : target_(GL_TEXTURE_2D),
+      sync_point_(0) {
 }
 
 TextureMailbox::TextureMailbox(
