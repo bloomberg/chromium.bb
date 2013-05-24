@@ -6,6 +6,8 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
@@ -23,11 +25,16 @@
 
 class PopupCollectionTest : public ui::CocoaTest {
  public:
-  PopupCollectionTest() {
+  PopupCollectionTest()
+    : message_loop_(base::MessageLoop::TYPE_UI) {
     message_center::MessageCenter::Initialize();
     center_ = message_center::MessageCenter::Get();
     collection_.reset(
         [[MCPopupCollection alloc] initWithMessageCenter:center_]);
+    [collection_ setAnimationDuration:0.001];
+    [collection_ setAnimationEndedCallback:^{
+        OnAnimationEnded();
+    }];
   }
 
   virtual void TearDown() OVERRIDE {
@@ -66,6 +73,8 @@ class PopupCollectionTest : public ui::CocoaTest {
                              string16(),
                              std::string(),
                              NULL);
+
+    WaitForAnimationEnded();
   }
 
   bool CheckSpacingBetween(MCPopupController* upper, MCPopupController* lower) {
@@ -76,6 +85,21 @@ class PopupCollectionTest : public ui::CocoaTest {
     return delta == message_center::kMarginBetweenItems;
   }
 
+  void WaitForAnimationEnded() {
+    if (![collection_ isAnimating])
+      return;
+    nested_run_loop_.reset(new base::RunLoop());
+    nested_run_loop_->Run();
+    nested_run_loop_.reset();
+  }
+
+  void OnAnimationEnded() {
+    if (nested_run_loop_.get())
+      nested_run_loop_->Quit();
+  }
+
+  base::MessageLoop message_loop_;
+  scoped_ptr<base::RunLoop> nested_run_loop_;
   message_center::MessageCenter* center_;
   scoped_nsobject<MCPopupCollection> collection_;
 };
@@ -86,6 +110,7 @@ TEST_F(PopupCollectionTest, AddThreeCloseOne) {
   EXPECT_EQ(3u, [[collection_ popups] count]);
 
   center_->RemoveNotification("2", true);
+  WaitForAnimationEnded();
   EXPECT_EQ(2u, [[collection_ popups] count]);
 }
 
@@ -103,20 +128,23 @@ TEST_F(PopupCollectionTest, AttemptFourOneOffscreen) {
                            string16(),
                            std::string(),
                            NULL);
+  WaitForAnimationEnded();
 
-  // Remove "1" and "4" should fit on screen.
+  // Remove "1" and "3" should fit on screen.
   center_->RemoveNotification("1", true);
+  WaitForAnimationEnded();
   ASSERT_EQ(2u, [[collection_ popups] count]);
 
   EXPECT_EQ("2", [[[collection_ popups] objectAtIndex:0] notificationID]);
-  EXPECT_EQ("4", [[[collection_ popups] objectAtIndex:1] notificationID]);
+  EXPECT_EQ("3", [[[collection_ popups] objectAtIndex:1] notificationID]);
 
-  // Remove "2" and "3" should fit on screen.
+  // Remove "2" and "4" should fit on screen.
   center_->RemoveNotification("2", true);
+  WaitForAnimationEnded();
   ASSERT_EQ(2u, [[collection_ popups] count]);
 
-  EXPECT_EQ("4", [[[collection_ popups] objectAtIndex:0] notificationID]);
-  EXPECT_EQ("3", [[[collection_ popups] objectAtIndex:1] notificationID]);
+  EXPECT_EQ("3", [[[collection_ popups] objectAtIndex:0] notificationID]);
+  EXPECT_EQ("4", [[[collection_ popups] objectAtIndex:1] notificationID]);
 }
 
 TEST_F(PopupCollectionTest, LayoutSpacing) {
@@ -145,11 +173,13 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
                            string16(),
                            std::string(),
                            optional.get());
+  WaitForAnimationEnded();
   EXPECT_TRUE(CheckSpacingBetween([popups objectAtIndex:2],
                                   [popups objectAtIndex:3]));
 
   // Remove "2".
   center_->RemoveNotification("2", true);
+  WaitForAnimationEnded();
   EXPECT_TRUE(CheckSpacingBetween([popups objectAtIndex:0],
                                   [popups objectAtIndex:1]));
   EXPECT_TRUE(CheckSpacingBetween([popups objectAtIndex:1],
@@ -157,6 +187,7 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
 
   // Remove "1".
   center_->RemoveNotification("2", true);
+  WaitForAnimationEnded();
   EXPECT_EQ(message_center::kMarginBetweenItems,
             kScreenSize - NSMaxY([[[popups objectAtIndex:0] window] frame]));
   EXPECT_TRUE(CheckSpacingBetween([popups objectAtIndex:0],
@@ -175,6 +206,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
                            string16(),
                            std::string(),
                            NULL);
+  WaitForAnimationEnded();
   EXPECT_EQ(1u, [[collection_ popups] count]);
 
   // Now give the notification a longer message so that it no longer fits.
@@ -190,6 +222,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
                                            "very very very very very very very "
                                            "long notification."),
                               NULL);
+  WaitForAnimationEnded();
   EXPECT_EQ(0u, [[collection_ popups] count]);
 }
 
@@ -205,6 +238,7 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
   EXPECT_FALSE([[controller iconView] image]);
   center_->SetNotificationIcon("2",
       gfx::Image([[NSImage imageNamed:NSImageNameUser] retain]));
+  WaitForAnimationEnded();
   EXPECT_TRUE([[controller iconView] image]);
 
   EXPECT_EQ(3u, [popups count]);
@@ -227,6 +261,7 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
                            string16(),
                            std::string(),
                            NULL);
+  WaitForAnimationEnded();
   EXPECT_GT(NSHeight([[controller view] frame]), NSHeight(old_frame));
 
   // Test updated spacing.

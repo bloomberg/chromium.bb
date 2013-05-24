@@ -10,6 +10,10 @@
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_style.h"
 
+namespace {
+const float kAnimationDuration = 0.2;
+}  // namespace
+
 @interface MCPopupCollection (Private)
 // Returns the primary screen's visible frame rectangle.
 - (NSRect)screenFrame;
@@ -28,10 +32,20 @@
 // Closes all the popups.
 - (void)removeAllNotifications;
 
-// Positions popup notifications for the |index|th notification in |popups_|.
-// This will put the proper amount of space between popup |index - 1| and
-// |index| and then any subsequent notifications.
-- (void)layoutNotificationsStartingAt:(NSUInteger)index;
+// Returns the index of the popup showing the notification with the given ID.
+- (NSUInteger)indexOfPopupWithNotificationID:(const std::string&)notificationID;
+
+// Repositions all popup notifications if needed.
+- (void)layoutNotifications;
+
+// Fits as many new notifications as possible on screen.
+- (void)layoutNewNotifications;
+
+// Process notifications pending to remove when no animation is being played.
+- (void)processPendingRemoveNotifications;
+
+// Process notifications pending to update when no animation is being played.
+- (void)processPendingUpdateNotifications;
 @end
 
 namespace {
@@ -51,12 +65,7 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
 
   virtual void OnNotificationAdded(
       const std::string& notification_id) OVERRIDE {
-    for (const auto& notification : message_center_->GetPopupNotifications()) {
-      if (notification->id() == notification_id) {
-        [popup_collection_ addNotification:notification];
-        return;
-      }
-    }
+    [popup_collection_ layoutNewNotifications];
   }
 
   virtual void OnNotificationRemoved(const std::string& notification_id,
@@ -84,6 +93,7 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
     messageCenter_ = messageCenter;
     observer_.reset(new PopupCollectionObserver(messageCenter_, self));
     popups_.reset([[NSMutableArray alloc] init]);
+    popupAnimationDuration_ = kAnimationDuration;
   }
   return self;
 }
@@ -91,6 +101,24 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
 - (void)dealloc {
   [self removeAllNotifications];
   [super dealloc];
+}
+
+- (BOOL)isAnimating {
+  return !animatingNotificationIDs_.empty();
+}
+
+- (NSTimeInterval)popupAnimationDuration {
+  return popupAnimationDuration_;
+}
+
+- (void)onPopupAnimationEnded:(const std::string&)notificationID {
+  animatingNotificationIDs_.erase(notificationID);
+  if (![self isAnimating])
+    [self layoutNotifications];
+
+  // Quit the test run loop when no more animation is being played.
+  if (![self isAnimating] && testingAnimationEndedCallback_)
+    testingAnimationEndedCallback_.get()();
 }
 
 // Testing API /////////////////////////////////////////////////////////////////
@@ -103,6 +131,15 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
   testingScreenFrame_ = frame;
 }
 
+- (void)setAnimationDuration:(NSTimeInterval)duration {
+  popupAnimationDuration_ = duration;
+}
+
+- (void)setAnimationEndedCallback:
+    (message_center::AnimationEndedCallback)callback {
+  testingAnimationEndedCallback_.reset(Block_copy(callback));
+}
+
 // Private /////////////////////////////////////////////////////////////////////
 
 - (NSRect)screenFrame {
@@ -112,12 +149,18 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
 }
 
 - (BOOL)addNotification:(const message_center::Notification*)notification {
-  scoped_nsobject<MCPopupController> popup(
+  // Wait till all existing animations end.
+  if ([self isAnimating])
+    return NO;
+
+  // The popup is owned by itself. It will be released at close.
+  MCPopupController* popup =
       [[MCPopupController alloc] initWithNotification:notification
-                                        messageCenter:messageCenter_]);
+                                        messageCenter:messageCenter_
+                                      popupCollection:self];
 
   NSRect screenFrame = [self screenFrame];
-  NSRect popupFrame = [[popup window] frame];
+  NSRect popupFrame = [popup bounds];
 
   CGFloat x = NSMaxX(screenFrame) - message_center::kMarginBetweenItems -
       NSWidth(popupFrame);
@@ -127,109 +170,84 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
   if (!bottomPopup) {
     y = NSMaxY(screenFrame);
   } else {
-    y = NSMinY([[bottomPopup window] frame]);
+    y = NSMinY([bottomPopup bounds]);
   }
 
   y -= message_center::kMarginBetweenItems + NSHeight(popupFrame);
 
   if (y > NSMinY(screenFrame)) {
-    [[popup window] setFrameOrigin:NSMakePoint(x, y)];
-    [popup showWindow:self];
-    [popups_ addObject:popup];  // Transfer ownership.
+    animatingNotificationIDs_.insert(notification->id());
+    NSRect bounds = [popup bounds];
+    bounds.origin.x = x;
+    bounds.origin.y = y;
+    [popup showWithAnimation:bounds];
+    [popups_ addObject:popup];
     return YES;
   }
 
+  // The popup cannot fit on screen, so it has to be released now.
+  [popup release];
   return NO;
 }
 
 - (void)updateNotification:(const std::string&)notificationID {
-  // Find the controller for this notification ID.
-  NSUInteger index = [popups_ indexOfObjectPassingTest:
-      ^BOOL(id popup, NSUInteger i, BOOL* stop) {
-          return [popup notificationID] == notificationID;
-      }];
   // The notification may not be on screen.
-  if (index == NSNotFound)
+  if ([self indexOfPopupWithNotificationID:notificationID] == NSNotFound)
     return;
 
-  // Find the corresponding model object for the ID. This may be a replaced
-  // notification, so the controller's current model object may be stale.
-  const message_center::Notification* notification = NULL;
-  const auto& modelPopups = messageCenter_->GetPopupNotifications();
-  for (auto it = modelPopups.begin(); it != modelPopups.end(); ++it) {
-    if ((*it)->id() == notificationID) {
-      notification = *it;
-      break;
-    }
-  }
-  DCHECK(notification);
-  if (!notification)
+  // Don't bother with the update if the notification is going to be removed.
+  if (pendingRemoveNotificationIDs_.find(notificationID) !=
+          pendingRemoveNotificationIDs_.end()) {
     return;
-
-  MCPopupController* popup = [popups_ objectAtIndex:index];
-
-  CGFloat oldHeight =
-      NSHeight([[[popup notificationController] view] frame]);
-  CGFloat newHeight = NSHeight(
-      [[popup notificationController] updateNotification:notification]);
-
-  // The notification has changed height. This requires updating the popup
-  // window and any popups that come below it.
-  if (oldHeight != newHeight) {
-    NSRect popupFrame = [[popup window] frame];
-    popupFrame.origin.y -= newHeight - oldHeight;
-    popupFrame.size.height += newHeight - oldHeight;
-    [[popup window] setFrame:popupFrame display:YES];
-
-    // Start re-layout of notifications at this index, so that it readjusts
-    // the Y origin of this notification.
-    [self layoutNotificationsStartingAt:index];
   }
+
+  pendingUpdateNotificationIDs_.insert(notificationID);
+  [self processPendingUpdateNotifications];
 }
 
 - (void)removeNotification:(const std::string&)notificationID {
-  NSUInteger index = [popups_ indexOfObjectPassingTest:
-      ^BOOL(id popup, NSUInteger index, BOOL* stop) {
-          return [popup notificationID] == notificationID;
-      }];
   // The notification may not be on screen.
-  if (index == NSNotFound)
+  if ([self indexOfPopupWithNotificationID:notificationID] == NSNotFound)
     return;
 
-  [[popups_ objectAtIndex:index] close];
-  [popups_ removeObjectAtIndex:index];
+  // Don't bother with the update if the notification is going to be removed.
+  pendingUpdateNotificationIDs_.erase(notificationID);
 
-  if (index < [popups_ count])
-    [self layoutNotificationsStartingAt:index];
+  pendingRemoveNotificationIDs_.insert(notificationID);
+  [self processPendingRemoveNotifications];
 }
 
 - (void)removeAllNotifications {
-  [popups_ makeObjectsPerformSelector:@selector(close)];
+  [popups_ makeObjectsPerformSelector:@selector(closeWithAnimation)];
+  [popups_ makeObjectsPerformSelector:@selector(markPopupCollectionGone)];
   [popups_ removeAllObjects];
 }
 
-- (void)layoutNotificationsStartingAt:(NSUInteger)index {
+- (NSUInteger)indexOfPopupWithNotificationID:
+    (const std::string&)notificationID {
+  return [popups_ indexOfObjectPassingTest:
+      ^BOOL(id popup, NSUInteger index, BOOL* stop) {
+          return [popup notificationID] == notificationID;
+      }];
+}
+
+- (void)layoutNotifications {
+  // Wait till all existing animations end.
+  if ([self isAnimating])
+    return;
+
   NSRect screenFrame = [self screenFrame];
-  std::set<std::string> onScreen;
 
-  // Calcluate the bottom edge of the |index - 1|th popup.
-  CGFloat maxY = 0;
-  if (index == 0)
-    maxY = NSMaxY(screenFrame);
-  else
-    maxY = NSMinY([[[popups_ objectAtIndex:index - 1] window] frame]);
+  // The popup starts at top-right corner.
+  CGFloat maxY = NSMaxY(screenFrame);
 
-  // Collect the IDs of popups that are currently on screen.
-  for (NSUInteger i = 0; i < index; ++i)
-    onScreen.insert([[popups_ objectAtIndex:i] notificationID]);
-
-  // Iterate between [index, count) notifications and reposition each. If one
-  // does not fit on screen, close it and any other on-screen popups that come
-  // after it.
+  // Iterate all notifications and reposition each if needed. If one does not
+  // fit on screen, close it and any other on-screen popups that come after it.
   NSUInteger removeAt = NSNotFound;
-  for (NSUInteger i = index; i < [popups_ count]; ++i) {
+  for (NSUInteger i = 0; i < [popups_ count]; ++i) {
     MCPopupController* popup = [popups_ objectAtIndex:i];
-    NSRect frame = [[popup window] frame];
+    NSRect oldFrame = [popup bounds];
+    NSRect frame = oldFrame;
     frame.origin.y = maxY - message_center::kMarginBetweenItems -
                      NSHeight(frame);
 
@@ -240,8 +258,10 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
       break;
     }
 
-    [[popup window] setFrame:frame display:YES];
-    onScreen.insert([popup notificationID]);
+    if (!NSEqualRects(frame, oldFrame)) {
+      [popup setBounds:frame];
+      animatingNotificationIDs_.insert([popup notificationID]);
+    }
 
     // Set the new maximum Y to be the bottom of this notification.
     maxY = NSMinY(frame);
@@ -254,17 +274,94 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
       [popups_ removeLastObject];
     }
   } else {
-    // Display any new popups that can now fit on screen.
-    const auto& allPopups = messageCenter_->GetPopupNotifications();
-    for (auto it = allPopups.begin(); it != allPopups.end(); ++it) {
-      if (onScreen.find((*it)->id()) == onScreen.end()) {
-        // If there's no room left on screen to display notifications, stop
-        // trying.
-        if (![self addNotification:*it])
-          break;
-      }
+    [self layoutNewNotifications];
+  }
+
+  [self processPendingRemoveNotifications];
+  [self processPendingUpdateNotifications];
+}
+
+- (void)layoutNewNotifications {
+  // Wait till all existing animations end.
+  if ([self isAnimating])
+    return;
+
+  // Display any new popups that can now fit on screen, starting from the
+  // oldest notification that has not been shown up.
+  const auto& allPopups = messageCenter_->GetPopupNotifications();
+  for (auto it = allPopups.rbegin(); it != allPopups.rend(); ++it) {
+    if ([self indexOfPopupWithNotificationID:(*it)->id()] == NSNotFound) {
+      // If there's no room left on screen to display notifications, stop
+      // trying.
+      if (![self addNotification:*it])
+        break;
     }
   }
+}
+
+- (void)processPendingRemoveNotifications {
+  // Wait till all existing animations end.
+  if ([self isAnimating])
+    return;
+
+  for (const auto& notificationID : pendingRemoveNotificationIDs_) {
+    NSUInteger index = [self indexOfPopupWithNotificationID:notificationID];
+    if (index != NSNotFound) {
+      [[popups_ objectAtIndex:index] closeWithAnimation];
+      animatingNotificationIDs_.insert(notificationID);
+      [popups_ removeObjectAtIndex:index];
+    }
+  }
+  pendingRemoveNotificationIDs_.clear();
+}
+
+- (void)processPendingUpdateNotifications {
+  // Wait till all existing animations end.
+  if ([self isAnimating])
+    return;
+
+  if (pendingUpdateNotificationIDs_.empty())
+    return;
+
+  // Go through all model objects in the message center. If there is a replaced
+  // notification, the controller's current model object may be stale.
+  const auto& modelPopups = messageCenter_->GetPopupNotifications();
+  for (auto iter = modelPopups.begin(); iter != modelPopups.end(); ++iter) {
+    const std::string& notificationID = (*iter)->id();
+
+    // Does the notification need to be updated?
+    if (pendingUpdateNotificationIDs_.find(notificationID) ==
+            pendingUpdateNotificationIDs_.end()) {
+      continue;
+    }
+
+    // Is the notification still on screen?
+    NSUInteger index = [self indexOfPopupWithNotificationID:notificationID];
+    if (index == NSNotFound)
+      continue;
+
+    MCPopupController* popup = [popups_ objectAtIndex:index];
+
+    CGFloat oldHeight =
+        NSHeight([[[popup notificationController] view] frame]);
+    CGFloat newHeight = NSHeight(
+        [[popup notificationController] updateNotification:*iter]);
+
+    // The notification has changed height. This requires updating the popup
+    // window.
+    if (oldHeight != newHeight) {
+      NSRect popupFrame = [popup bounds];
+      popupFrame.origin.y -= newHeight - oldHeight;
+      popupFrame.size.height += newHeight - oldHeight;
+      [popup setBounds:popupFrame];
+    }
+  }
+
+  pendingUpdateNotificationIDs_.clear();
+
+  // Start re-layout of all notifications, so that it readjusts the Y origin of
+  // all updated popups and any popups that come below them.
+  [self layoutNotifications];
 }
 
 @end

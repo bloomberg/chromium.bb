@@ -27,7 +27,11 @@ TEST_F(PopupControllerTest, Creation) {
 
   scoped_nsobject<MCPopupController> controller(
       [[MCPopupController alloc] initWithNotification:notification.get()
-                                        messageCenter:NULL]);
+                                        messageCenter:nil
+                                      popupCollection:nil]);
+  // Add an extra ref count for scoped_nsobject since MCPopupController will
+  // release itself when it is being closed.
+  [controller retain];
 
   EXPECT_TRUE([controller window]);
   EXPECT_EQ(notification.get(), [controller notification]);

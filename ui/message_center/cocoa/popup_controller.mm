@@ -9,6 +9,7 @@
 #import "base/mac/foundation_util.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #import "ui/message_center/cocoa/notification_controller.h"
+#import "ui/message_center/cocoa/popup_collection.h"
 #include "ui/message_center/message_center.h"
 
 #if !defined(MAC_OS_X_VERSION_10_7) || \
@@ -116,17 +117,22 @@ typedef NSUInteger NSEventSwipeTrackingOptions;
 @implementation MCPopupController
 
 - (id)initWithNotification:(const message_center::Notification*)notification
-    messageCenter:(message_center::MessageCenter*)messageCenter {
+             messageCenter:(message_center::MessageCenter*)messageCenter
+           popupCollection:(MCPopupCollection*)popupCollection {
   scoped_nsobject<MCPopupWindow> window(
       [[MCPopupWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
-                                       styleMask:NSBorderlessWindowMask
-                                         backing:NSBackingStoreBuffered
-                                           defer:YES]);
+                                  styleMask:NSBorderlessWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:YES]);
   if ((self = [super initWithWindow:window])) {
     messageCenter_ = messageCenter;
+    popupCollection_ = popupCollection;
     notificationController_.reset(
         [[MCNotificationController alloc] initWithNotification:notification
                                                  messageCenter:messageCenter_]);
+    isClosing_ = NO;
+    bounds_ = [[notificationController_ view] frame];
+
     [window setReleasedWhenClosed:NO];
 
     [window setLevel:NSFloatingWindowLevel];
@@ -136,10 +142,18 @@ typedef NSUInteger NSEventSwipeTrackingOptions;
         NSWindowCollectionBehaviorFullScreenAuxiliary];
 
     [window setHasShadow:YES];
-    [window setFrame:[[notificationController_ view] frame] display:NO];
     [window setContentView:[notificationController_ view]];
   }
   return self;
+}
+
+- (void)close {
+  if (boundsAnimation_) {
+    [boundsAnimation_ stopAnimation];
+    boundsAnimation_.reset();
+  }
+  [super close];
+  [self release];
 }
 
 - (MCNotificationController*)notificationController {
@@ -176,6 +190,67 @@ typedef NSUInteger NSEventSwipeTrackingOptions;
   swipeGestureEnded_ |= ended;
   if (swipeGestureEnded_ && isComplete)
     messageCenter_->RemoveNotification([self notificationID], /*by_user=*/true);
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  if (animation != boundsAnimation_.get())
+    return;
+  boundsAnimation_.reset();
+
+  [popupCollection_ onPopupAnimationEnded:[self notificationID]];
+
+  if (isClosing_)
+    [self close];
+}
+
+- (void)showWithAnimation:(NSRect)newBounds {
+  NSRect startBounds = newBounds;
+  startBounds.origin.x += startBounds.size.width;
+  startBounds.size.width = 0;
+  bounds_ = startBounds;
+  [[self window] setFrame:startBounds display:NO];
+  [self showWindow:nil];
+  [self setBounds:newBounds];
+}
+
+- (void)closeWithAnimation {
+  if (isClosing_)
+    return;
+  isClosing_ = YES;
+
+  NSDictionary* animationDict = @{
+    NSViewAnimationTargetKey:   [self window],
+    NSViewAnimationEffectKey:   NSViewAnimationFadeOutEffect
+  };
+  boundsAnimation_.reset([[NSViewAnimation alloc]
+      initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
+  [boundsAnimation_ setDuration:[popupCollection_ popupAnimationDuration]];
+  [boundsAnimation_ setDelegate:self];
+  [boundsAnimation_ startAnimation];
+}
+
+- (void)markPopupCollectionGone {
+  popupCollection_ = nil;
+}
+
+- (NSRect)bounds {
+  return bounds_;
+}
+
+- (void)setBounds:(NSRect)newBounds {
+  if (isClosing_ || NSEqualRects(bounds_ , newBounds))
+    return;
+  bounds_ = newBounds;
+
+  NSDictionary* animationDict = @{
+    NSViewAnimationTargetKey:   [self window],
+    NSViewAnimationEndFrameKey: [NSValue valueWithRect:newBounds]
+  };
+  boundsAnimation_.reset([[NSViewAnimation alloc]
+      initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
+  [boundsAnimation_ setDuration:[popupCollection_ popupAnimationDuration]];
+  [boundsAnimation_ setDelegate:self];
+  [boundsAnimation_ startAnimation];
 }
 
 @end
