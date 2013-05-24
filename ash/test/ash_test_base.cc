@@ -119,14 +119,7 @@ void AshTestBase::SetUp() {
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kForceAshToDesktop)) {
-    ipc_thread_.reset(new base::Thread("test_metro_viewer_ipc_thread"));
-    base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
-    ipc_thread_->StartWithOptions(options);
-
-    metro_viewer_host_.reset(
-        new TestMetroViewerProcessHost("viewer",
-                                       ipc_thread_->message_loop_proxy()));
+    metro_viewer_host_.reset(new TestMetroViewerProcessHost("viewer"));
     CHECK(metro_viewer_host_->LaunchViewerAndWaitForConnection(
         win8::test::kDefaultTestAppUserModelId));
     aura::RemoteRootWindowHostWin* root_window_host =

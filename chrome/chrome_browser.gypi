@@ -1094,8 +1094,6 @@
         'browser/metrics/variations/variations_request_scheduler_mobile.h',
         'browser/metrics/variations/variations_service.cc',
         'browser/metrics/variations/variations_service.h',
-        'browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.cc',
-        'browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.h',
         'browser/native_window_notification_source.h',
         'browser/net/about_protocol_handler.cc',
         'browser/net/about_protocol_handler.h',
@@ -2636,6 +2634,10 @@
             ['exclude', '^browser/lifetime/application_lifetime_stub.cc'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views*'],
           ],
+          'sources': [
+            'browser/metro_viewer/metro_viewer_process_host_win.cc',
+            'browser/metro_viewer/metro_viewer_process_host_win.h',
+          ],
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
             '../ui/compositor/compositor.gyp:compositor',
@@ -2650,8 +2652,7 @@
               ],
               'dependencies': [
                 'launcher_support',
-                '../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
-                '../win8/win8.gyp:metro_viewer',
+                '../ui/metro_viewer/metro_viewer.gyp:metro_viewer',
               ],
             }],
           ],
