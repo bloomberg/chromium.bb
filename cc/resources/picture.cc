@@ -39,7 +39,7 @@ const int kPictureVersion = 1;
 // 4 bytes for version, 4 * 4 for each of the 2 rects.
 const unsigned int kMinPictureSizeBytes = 36;
 
-bool EncodeBitmap(SkWStream* stream, const SkBitmap& bm) {
+SkData* EncodeBitmap(size_t* offset, const SkBitmap& bm) {
   const int kJpegQuality = 80;
   std::vector<unsigned char> data;
 
@@ -49,7 +49,7 @@ bool EncodeBitmap(SkWStream* stream, const SkBitmap& bm) {
   if (bm.isOpaque()) {
     SkAutoLockPixels lock_bitmap(bm);
     if (bm.empty())
-      return false;
+      return NULL;
 
     encoding_succeeded = gfx::JPEGCodec::Encode(
         reinterpret_cast<unsigned char*>(bm.getAddr32(0, 0)),
@@ -63,9 +63,11 @@ bool EncodeBitmap(SkWStream* stream, const SkBitmap& bm) {
     encoding_succeeded = gfx::PNGCodec::EncodeBGRASkBitmap(bm, false, &data);
   }
 
-  if (encoding_succeeded)
-    return stream->write(&data.front(), data.size());
-  return false;
+  if (encoding_succeeded) {
+    *offset = 0;
+    return SkData::NewWithCopy(&data.front(), data.size());
+  }
+  return NULL;
 }
 
 bool DecodeBitmap(const void* buffer, size_t size, SkBitmap* bm) {

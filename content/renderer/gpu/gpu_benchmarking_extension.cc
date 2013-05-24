@@ -21,8 +21,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewBenchmarkSupport.h"
+#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "v8/include/v8.h"
@@ -38,13 +40,20 @@ using WebKit::WebViewBenchmarkSupport;
 
 const char kGpuBenchmarkingExtensionName[] = "v8/GpuBenchmarking";
 
-static bool PNGEncodeBitmapToStream(SkWStream* stream, const SkBitmap& bm) {
+static SkData* EncodeBitmapToData(size_t* offset, const SkBitmap& bm) {
+    SkPixelRef* pr = bm.pixelRef();
+    if (pr != NULL) {
+        SkData* data = pr->refEncodedData();
+        if (data != NULL) {
+            *offset = bm.pixelRefOffset();
+            return data;
+        }
+    }
     std::vector<unsigned char> vector;
     if (gfx::PNGCodec::EncodeBGRASkBitmap(bm, true, &vector)) {
-        if (stream->write(&vector.front() , vector.size()))
-            return true;
+        return SkData::NewWithCopy(&vector.front() , vector.size());
     }
-    return false;
+    return NULL;
 }
 
 namespace {
@@ -75,7 +84,7 @@ class SkPictureRecorder : public WebViewBenchmarkSupport::PaintClient {
     DCHECK(!filepath.empty());
     SkFILEWStream file(filepath.c_str());
     DCHECK(file.isValid());
-    picture_.serialize(&file, &PNGEncodeBitmapToStream);
+    picture_.serialize(&file, &EncodeBitmapToData);
   }
 
  private:
