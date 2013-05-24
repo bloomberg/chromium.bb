@@ -652,6 +652,8 @@ static void AdjustRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enableInputTypeWeek(false);
   // Android does not have support for PagePopup
   WebRuntimeFeatures::enablePagePopup(false);
+  // datalist on Android is not enabled
+  WebRuntimeFeatures::enableDataListElement(false);
 #endif
 }
 
