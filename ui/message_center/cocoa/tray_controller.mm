@@ -11,20 +11,33 @@
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 
+@interface MCTrayWindow : NSPanel
+@end
+
+@implementation MCTrayWindow
+
+- (BOOL)canBecomeKeyWindow {
+  return YES;
+}
+
+@end
+
 @implementation MCTrayController
 
 - (id)initWithMessageCenterTray:(message_center::MessageCenterTray*)tray {
-  scoped_nsobject<NSPanel> window(
-      [[NSPanel alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
-                                 styleMask:NSBorderlessWindowMask
-                                   backing:NSBackingStoreBuffered
-                                     defer:NO]);
-  [window setHasShadow:YES];
-  [window setHidesOnDeactivate:NO];
-  [window setLevel:NSFloatingWindowLevel];
-
+  scoped_nsobject<MCTrayWindow> window(
+      [[MCTrayWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
+                                      styleMask:NSBorderlessWindowMask
+                                        backing:NSBackingStoreBuffered
+                                          defer:NO]);
   if ((self = [super initWithWindow:window])) {
     tray_ = tray;
+
+    [window setDelegate:self];
+    [window setHasShadow:YES];
+    [window setHidesOnDeactivate:NO];
+    [window setLevel:NSFloatingWindowLevel];
+
     viewController_.reset([[MCTrayViewController alloc] initWithMessageCenter:
         tray_->message_center()]);
     NSView* contentView = [viewController_ view];
@@ -52,6 +65,10 @@
   windowFrame.origin.y -= delta;
   windowFrame.size.height += delta;
   [[self window] setFrame:windowFrame display:YES];
+}
+
+- (void)windowDidResignKey:(NSNotification*)notification {
+  tray_->HideMessageCenterBubble();
 }
 
 @end

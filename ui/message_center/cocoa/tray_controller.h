@@ -20,7 +20,7 @@ class MessageCenterTray;
 // The window controller for the message center tray. This merely hosts the
 // view from MCTrayViewController.
 MESSAGE_CENTER_EXPORT
-@interface MCTrayController : NSWindowController {
+@interface MCTrayController : NSWindowController<NSWindowDelegate> {
  @private
   message_center::MessageCenterTray* tray_;  // Weak, indirectly owns this.
 
