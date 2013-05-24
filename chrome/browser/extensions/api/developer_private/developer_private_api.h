@@ -380,54 +380,6 @@ class DeveloperPrivateExportSyncfsFolderToLocalfsFunction
    bool success_;
 };
 
-class DeveloperPrivateLoadProjectToSyncfsFunction
-    : public AsyncExtensionFunction {
-  public:
-   DECLARE_EXTENSION_FUNCTION("developerPrivate.loadProjectToSyncfs",
-                              DEVELOPERPRIVATE_LOADPROJECTTOSYNCFS);
-
-   DeveloperPrivateLoadProjectToSyncfsFunction();
-
-  protected:
-   virtual ~DeveloperPrivateLoadProjectToSyncfsFunction();
-
-   // ExtensionFunction
-   virtual bool RunImpl() OVERRIDE;
-
-   void CopyFolder(const base::FilePath::StringType& project_name);
-
-   void CopyFiles(const std::vector<base::FilePath>& paths);
-
-   void CopyFilesCallback(const base::PlatformFileError result);
-
-  private:
-   // Number of pending copy files callbacks.
-   // It should only be modified on the IO Thread.
-   int pendingCallbacksCount_;
-
-   // True only when all the copyFiles job are successful.
-   // It should only be modified on the IO thread.
-   bool success_;
-
-   scoped_refptr<fileapi::FileSystemContext> context_;
-};
-
-class DeveloperPrivateGetProjectsInfoFunction : public AsyncExtensionFunction {
-  public:
-   DECLARE_EXTENSION_FUNCTION("developerPrivate.getProjectsInfo",
-                              DEVELOPERPRIVATE_GETPROJECTSINFO);
-
-   DeveloperPrivateGetProjectsInfoFunction();
-
-  protected:
-   virtual ~DeveloperPrivateGetProjectsInfoFunction();
-
-   void ReadFolder();
-
-   // ExtensionFunction
-   virtual bool RunImpl() OVERRIDE;
-};
-
 class DeveloperPrivateLoadProjectFunction : public AsyncExtensionFunction {
   public:
    DECLARE_EXTENSION_FUNCTION("developerPrivate.loadProject",
