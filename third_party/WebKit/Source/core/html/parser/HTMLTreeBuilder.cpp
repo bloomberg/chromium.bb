@@ -146,38 +146,36 @@ static HTMLFormElement* closestFormAncestor(Element* element)
     return 0;
 }
 
-class HTMLTreeBuilder::ExternalCharacterTokenBuffer {
-    WTF_MAKE_NONCOPYABLE(ExternalCharacterTokenBuffer);
+class HTMLTreeBuilder::CharacterTokenBuffer {
+    WTF_MAKE_NONCOPYABLE(CharacterTokenBuffer);
 public:
-    explicit ExternalCharacterTokenBuffer(AtomicHTMLToken* token)
-        : m_current(token->characters())
-        , m_end(m_current + token->charactersLength())
-        , m_isAll8BitData(token->isAll8BitData())
+    explicit CharacterTokenBuffer(AtomicHTMLToken* token)
+        : m_characters(token->characters().impl())
+        , m_current(0)
+        , m_end(token->characters().length())
     {
         ASSERT(!isEmpty());
     }
 
-    explicit ExternalCharacterTokenBuffer(const String& string)
-        : m_current(string.characters())
-        , m_end(m_current + string.length())
-        , m_isAll8BitData(string.length() && string.is8Bit())
+    explicit CharacterTokenBuffer(const String& characters)
+        : m_characters(characters.impl())
+        , m_current(0)
+        , m_end(characters.length())
     {
         ASSERT(!isEmpty());
     }
 
-    ~ExternalCharacterTokenBuffer()
+    ~CharacterTokenBuffer()
     {
         ASSERT(isEmpty());
     }
 
     bool isEmpty() const { return m_current == m_end; }
 
-    bool isAll8BitData() const { return m_isAll8BitData; }
-
     void skipAtMostOneLeadingNewline()
     {
         ASSERT(!isEmpty());
-        if (*m_current == '\n')
+        if ((*m_characters)[m_current] == '\n')
             ++m_current;
     }
 
@@ -199,37 +197,49 @@ public:
     String takeRemaining()
     {
         ASSERT(!isEmpty());
-        const UChar* start = m_current;
+        unsigned start = m_current;
         m_current = m_end;
-        size_t length = m_current - start;
-
-        if (isAll8BitData())
-            return String::make8BitFrom16BitSource(start, length);
-
-        return String(start, length);
+        // Notice that substring is smart enough to return *this when start == 0.
+        return String(m_characters->substring(start, m_end - start));
     }
 
     void giveRemainingTo(StringBuilder& recipient)
     {
-        recipient.append(m_current, m_end - m_current);
+        if (m_characters->is8Bit())
+            recipient.append(m_characters->characters8() + m_current, m_end - m_current);
+        else
+            recipient.append(m_characters->characters16() + m_current, m_end - m_current);
         m_current = m_end;
     }
 
     String takeRemainingWhitespace()
     {
         ASSERT(!isEmpty());
-        Vector<UChar> whitespace;
-        do {
-            UChar cc = *m_current++;
-            if (isHTMLSpace(cc))
-                whitespace.append(cc);
-        } while (m_current < m_end);
+        const unsigned start = m_current;
+        m_current = m_end; // One way or another, we're taking everything!
+
+        unsigned length = 0;
+        for (unsigned i = start; i < m_end; ++i) {
+            if (isHTMLSpace((*m_characters)[i]))
+                ++length;
+        }
         // Returning the null string when there aren't any whitespace
         // characters is slightly cleaner semantically because we don't want
         // to insert a text node (as opposed to inserting an empty text node).
-        if (whitespace.isEmpty())
+        if (!length)
             return String();
-        return String::adopt(whitespace);
+        if (length == start - m_end) // It's all whitespace.
+            return String(m_characters->substring(start, start - m_end));
+
+        StringBuilder result;
+        result.reserveCapacity(length);
+        for (unsigned i = start; i < m_end; ++i) {
+            UChar c = (*m_characters)[i];
+            if (isHTMLSpace(c))
+                result.append(c);
+        }
+
+        return result.toString();
     }
 
 private:
@@ -237,7 +247,7 @@ private:
     void skipLeading()
     {
         ASSERT(!isEmpty());
-        while (characterPredicate(*m_current)) {
+        while (characterPredicate((*m_characters)[m_current])) {
             if (++m_current == m_end)
                 return;
         }
@@ -247,20 +257,17 @@ private:
     String takeLeading()
     {
         ASSERT(!isEmpty());
-        const UChar* start = m_current;
+        const unsigned start = m_current;
         skipLeading<characterPredicate>();
         if (start == m_current)
             return String();
-        if (isAll8BitData())
-            return String::make8BitFrom16BitSource(start, m_current - start);
-        return String(start, m_current - start);
+        return String(m_characters->substring(start, m_current - start));
     }
 
-    const UChar* m_current;
-    const UChar* m_end;
-    bool m_isAll8BitData;
+    RefPtr<StringImpl> m_characters;
+    unsigned m_current;
+    unsigned m_end;
 };
-
 
 HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, HTMLDocument* document, ParserContentPolicy parserContentPolicy, bool, const HTMLParserOptions& options)
     : m_framesetOk(true)
@@ -447,7 +454,7 @@ void HTMLTreeBuilder::processFakeEndTag(const QualifiedName& tagName)
 void HTMLTreeBuilder::processFakeCharacters(const String& characters)
 {
     ASSERT(!characters.isEmpty());
-    ExternalCharacterTokenBuffer buffer(characters);
+    CharacterTokenBuffer buffer(characters);
     processCharacterBuffer(buffer);
 }
 
@@ -2239,11 +2246,11 @@ void HTMLTreeBuilder::processComment(AtomicHTMLToken* token)
 void HTMLTreeBuilder::processCharacter(AtomicHTMLToken* token)
 {
     ASSERT(token->type() == HTMLToken::Character);
-    ExternalCharacterTokenBuffer buffer(token);
+    CharacterTokenBuffer buffer(token);
     processCharacterBuffer(buffer);
 }
 
-void HTMLTreeBuilder::processCharacterBuffer(ExternalCharacterTokenBuffer& buffer)
+void HTMLTreeBuilder::processCharacterBuffer(CharacterTokenBuffer& buffer)
 {
 ReprocessBuffer:
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/tokenization.html#parsing-main-inbody
@@ -2411,10 +2418,10 @@ ReprocessBuffer:
     }
 }
 
-void HTMLTreeBuilder::processCharacterBufferForInBody(ExternalCharacterTokenBuffer& buffer)
+void HTMLTreeBuilder::processCharacterBufferForInBody(CharacterTokenBuffer& buffer)
 {
     m_tree.reconstructTheActiveFormattingElements();
-    String characters = buffer.takeRemaining();
+    const String& characters = buffer.takeRemaining();
     m_tree.insertTextNode(characters);
     if (m_framesetOk && !isAllWhitespaceOrReplacementCharacters(characters))
         m_framesetOk = false;
@@ -2779,7 +2786,7 @@ void HTMLTreeBuilder::processTokenInForeignContent(AtomicHTMLToken* token)
         m_tree.insertComment(token);
         return;
     case HTMLToken::Character: {
-        String characters = String(token->characters(), token->charactersLength());
+        const String& characters = token->characters();
         m_tree.insertTextNode(characters);
         if (m_framesetOk && !isAllWhitespaceOrReplacementCharacters(characters))
             m_framesetOk = false;

@@ -82,21 +82,10 @@ public:
         return m_attributes;
     }
 
-    const UChar* characters() const
+    const String& characters() const
     {
         ASSERT(m_type == HTMLToken::Character);
-        return m_externalCharacters;
-    }
-
-    size_t charactersLength() const
-    {
-        ASSERT(m_type == HTMLToken::Character);
-        return m_externalCharactersLength;
-    }
-
-    bool isAll8BitData() const
-    {
-        return m_isAll8BitData;
+        return m_data;
     }
 
     const String& comment() const
@@ -139,16 +128,12 @@ public:
             initializeAttributes(token.attributes());
             break;
         }
+        case HTMLToken::Character:
         case HTMLToken::Comment:
             if (token.isAll8BitData())
-                m_data = String::make8BitFrom16BitSource(token.comment());
+                m_data = String::make8BitFrom16BitSource(token.data());
             else
-                m_data = String(token.comment());
-            break;
-        case HTMLToken::Character:
-            m_externalCharacters = token.characters().data();
-            m_externalCharactersLength = token.characters().size();
-            m_isAll8BitData = token.isAll8BitData();
+                m_data = String(token.data());
             break;
         }
     }
@@ -184,29 +169,15 @@ public:
             m_selfClosing = token.selfClosing();
             m_name = token.data().asString();
             break;
+        case HTMLToken::Character:
         case HTMLToken::Comment:
             m_data = token.data().asString();
             break;
-        case HTMLToken::Character: {
-            const String& string = token.data().asString();
-            m_externalCharacters = string.characters();
-            m_externalCharactersLength = string.length();
-            m_isAll8BitData = token.isAll8BitData();
-            // FIXME: We would like a stronger ASSERT here:
-            // ASSERT(string.is8Bit() == token.isAll8BitData());
-            // but currently that fires, likely due to bugs in HTMLTokenizer
-            // not setting isAll8BitData in all the times it could.
-            ASSERT(!token.isAll8BitData() || string.is8Bit());
-            break;
-        }
         }
     }
 
     explicit AtomicHTMLToken(HTMLToken::Type type)
         : m_type(type)
-        , m_externalCharacters(0)
-        , m_externalCharactersLength(0)
-        , m_isAll8BitData(false)
         , m_selfClosing(false)
     {
     }
@@ -214,9 +185,6 @@ public:
     AtomicHTMLToken(HTMLToken::Type type, const AtomicString& name, const Vector<Attribute>& attributes = Vector<Attribute>())
         : m_type(type)
         , m_name(name)
-        , m_externalCharacters(0)
-        , m_externalCharactersLength(0)
-        , m_isAll8BitData(false)
         , m_selfClosing(false)
         , m_attributes(attributes)
     {
@@ -236,20 +204,8 @@ private:
     // "name" for DOCTYPE, StartTag, and EndTag
     AtomicString m_name;
 
-    // "data" for Comment
+    // "data" for Comment, "characters" for Character
     String m_data;
-
-    // "characters" for Character
-    //
-    // We don't want to copy the the characters out of the Token, so we
-    // keep a pointer to its buffer instead. This buffer is owned by the
-    // Token and causes a lifetime dependence between these objects.
-    //
-    // FIXME: Add a mechanism for "internalizing" the characters when the
-    //        HTMLToken is destructed.
-    const UChar* m_externalCharacters;
-    size_t m_externalCharactersLength;
-    bool m_isAll8BitData;
 
     // For DOCTYPE
     OwnPtr<DoctypeData> m_doctypeData;

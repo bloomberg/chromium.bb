@@ -84,7 +84,7 @@ public:
     void setShouldSkipLeadingNewline(bool shouldSkip) { m_shouldSkipLeadingNewline = shouldSkip; }
 
 private:
-    class ExternalCharacterTokenBuffer;
+    class CharacterTokenBuffer;
     // Represents HTML5 "insertion mode"
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#insertion-mode
     enum InsertionMode {
@@ -145,8 +145,8 @@ private:
     // needs to assert which tokens it can be called with.
     void processAnyOtherEndTagForInBody(AtomicHTMLToken*);
 
-    void processCharacterBuffer(ExternalCharacterTokenBuffer&);
-    inline void processCharacterBufferForInBody(ExternalCharacterTokenBuffer&);
+    void processCharacterBuffer(CharacterTokenBuffer&);
+    inline void processCharacterBufferForInBody(CharacterTokenBuffer&);
 
     void processFakeStartTag(const QualifiedName&, const Vector<Attribute>& attributes = Vector<Attribute>());
     void processFakeEndTag(const QualifiedName&);
