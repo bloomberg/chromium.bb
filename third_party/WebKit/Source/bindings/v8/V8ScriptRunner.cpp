@@ -32,11 +32,13 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/loader/CachedMetadata.h"
 #include "core/loader/cache/CachedScript.h"
+#include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
 
 PassOwnPtr<v8::ScriptData> V8ScriptRunner::precompileScript(v8::Handle<v8::String> code, CachedScript* cachedScript)
 {
+    TRACE_EVENT0("v8", "v8.compile");
     // A pseudo-randomly chosen ID used to store and retrieve V8 ScriptData from
     // the CachedScript. If the format changes, this ID should be changed too.
     static const unsigned dataTypeID = 0xECC13BD7;
@@ -62,6 +64,7 @@ PassOwnPtr<v8::ScriptData> V8ScriptRunner::precompileScript(v8::Handle<v8::Strin
 
 v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const TextPosition& scriptStartPosition, v8::ScriptData* scriptData, v8::Isolate* isolate)
 {
+    TRACE_EVENT0("v8", "v8.compile");
     v8::Handle<v8::String> name = v8String(fileName, isolate);
     v8::Handle<v8::Integer> line = v8Integer(scriptStartPosition.m_line.zeroBasedInt(), isolate);
     v8::Handle<v8::Integer> column = v8Integer(scriptStartPosition.m_column.zeroBasedInt(), isolate);
@@ -71,6 +74,7 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
 
 v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> script, ScriptExecutionContext* context)
 {
+    TRACE_EVENT0("v8", "v8.run");
     if (script.IsEmpty())
         return v8::Local<v8::Value>();
 
@@ -100,6 +104,7 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
 
 v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, v8::Local<v8::Context> context, const String& fileName, const TextPosition& scriptStartPosition, v8::ScriptData* scriptData)
 {
+    TRACE_EVENT0("v8", "v8.run");
     v8::Local<v8::Value> result;
     if (context.IsEmpty())
         context = v8::Context::New(isolate);
