@@ -90,8 +90,8 @@
 #endif
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
-#include "MediaKeyNeededEvent.h"
-#include "MediaKeys.h"
+#include "modules/encryptedmedia/MediaKeyNeededEvent.h"
+#include "modules/encryptedmedia/MediaKeys.h"
 #endif
 
 using namespace std;

@@ -51,8 +51,8 @@ modules/device_orientation/DeviceMotionEvent
 core/dom/DeviceOrientationEvent
 OrientationEvent interfaceName=Event, conditional=ORIENTATION_EVENTS
 core/html/MediaKeyEvent
-MediaKeyMessageEvent conditional=ENCRYPTED_MEDIA_V2
-MediaKeyNeededEvent conditional=ENCRYPTED_MEDIA_V2
+modules/encryptedmedia/MediaKeyMessageEvent conditional=ENCRYPTED_MEDIA_V2
+modules/encryptedmedia/MediaKeyNeededEvent conditional=ENCRYPTED_MEDIA_V2
 core/html/track/TrackEvent
 core/dom/AutocompleteErrorEvent
 core/css/CSSFontFaceLoadEvent

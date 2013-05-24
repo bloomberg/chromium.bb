@@ -118,8 +118,8 @@
 #include "core/rendering/RenderLayerBacking.h"
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
-#include "CDM.h"
-#include "MockCDM.h"
+#include "core/testing/MockCDM.h"
+#include "modules/encryptedmedia/CDM.h"
 #endif
 
 #include "core/page/CaptionUserPreferences.h"

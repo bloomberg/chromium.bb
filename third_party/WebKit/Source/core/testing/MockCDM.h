@@ -28,7 +28,7 @@
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 
-#include "CDMPrivate.h"
+#include "modules/encryptedmedia/CDMPrivate.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

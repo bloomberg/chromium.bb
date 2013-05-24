@@ -67,7 +67,7 @@ void MediaKeySession::close()
 {
     if (m_session)
         m_session->releaseKeys();
-    m_session = 0;
+    m_session.clear();
     m_asyncEventQueue->cancelAllEvents();
 }
 

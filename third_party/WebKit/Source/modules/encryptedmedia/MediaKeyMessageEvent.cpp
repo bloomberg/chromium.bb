@@ -36,7 +36,6 @@ namespace WebCore {
 
 MediaKeyMessageEventInit::MediaKeyMessageEventInit()
 {
-    ScriptWrappable::init(this);
 }
 
 MediaKeyMessageEvent::MediaKeyMessageEvent()
@@ -49,7 +48,7 @@ MediaKeyMessageEvent::MediaKeyMessageEvent(const AtomicString& type, const Media
     , m_message(initializer.message)
     , m_destinationURL(initializer.destinationURL)
 {
-    ScritpWrappable::init(this);
+    ScriptWrappable::init(this);
 }
 
 MediaKeyMessageEvent::~MediaKeyMessageEvent()

@@ -3582,6 +3582,8 @@
             'testing/InternalSettings.cpp',
             'testing/InternalSettings.h',
             'testing/MallocStatistics.h',
+            'testing/MockCDM.cpp',
+            'testing/MockCDM.h',
             'testing/MockPagePopupDriver.cpp',
             'testing/MockPagePopupDriver.h',
             'testing/TypeConversions.h',
