@@ -28,8 +28,9 @@ var remoting = remoting || {};
  * @param {string} hostPublicKey The base64 encoded version of the host's
  *     public key.
  * @param {string} accessCode The IT2Me access code. Blank for Me2Me.
- * @param {function(function(string): void): void} fetchPin Called by Me2Me
- *     connections when a PIN needs to be obtained interactively.
+ * @param {function(boolean, function(string): void): void} fetchPin
+ *     Called by Me2Me connections when a PIN needs to be obtained
+ *     interactively.
  * @param {function(string, string, string,
  *                  function(string, string): void): void}
  *     fetchThirdPartyToken Called by Me2Me connections when a third party
@@ -745,14 +746,16 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
       remoting.ClientPlugin.Feature.ASYNC_PIN)) {
     // Plugin supports asynchronously asking for the PIN.
     plugin.useAsyncPinDialog();
-    var fetchPin = function() {
-      that.fetchPin_(plugin.onPinFetched.bind(plugin));
+    /** @param {boolean} pairingSupported */
+    var fetchPin = function(pairingSupported) {
+      that.fetchPin_(pairingSupported, plugin.onPinFetched.bind(plugin));
     };
     plugin.fetchPinHandler = fetchPin;
     this.connectToHost_('');
   } else {
-    // Plugin doesn't support asynchronously asking for the PIN, ask now.
-    this.fetchPin_(this.connectToHost_.bind(this));
+    // Clients that don't support asking for a PIN asynchronously also don't
+    // support pairing, so request the PIN now without offering to remember it.
+    this.fetchPin_(false, this.connectToHost_.bind(this));
   }
 };
 

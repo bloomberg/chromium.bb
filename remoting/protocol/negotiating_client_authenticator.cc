@@ -125,12 +125,12 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
   } else {
     DCHECK(current_method_.type() == AuthenticationMethod::SPAKE2 ||
            current_method_.type() == AuthenticationMethod::SPAKE2_PAIR);
-    // TODO(jamiewalch): Add a bool parameter to the fetch secret callback to
-    // indicate whether or not to show the "remember me" checkbox. Set it to
-    // (current_method_.type() == AuthenticationMethod::SPAKE2_PAIR).
-    fetch_secret_callback_.Run(base::Bind(
+    bool pairing_supported =
+        (current_method_.type() == AuthenticationMethod::SPAKE2_PAIR);
+    SecretFetchedCallback callback = base::Bind(
         &NegotiatingClientAuthenticator::CreateV2AuthenticatorWithSecret,
-        weak_factory_.GetWeakPtr(), preferred_initial_state, resume_callback));
+        weak_factory_.GetWeakPtr(), preferred_initial_state, resume_callback);
+    fetch_secret_callback_.Run(pairing_supported, callback);
   }
 }
 

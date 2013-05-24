@@ -41,7 +41,7 @@ void PairingClientAuthenticator::CreateV2AuthenticatorWithPIN(
   SecretFetchedCallback callback = base::Bind(
       &PairingClientAuthenticator::OnPinFetched,
       weak_factory_.GetWeakPtr(), initial_state, set_authenticator_callback);
-  fetch_pin_callback_.Run(callback);
+  fetch_pin_callback_.Run(true, callback);
 }
 
 void PairingClientAuthenticator::AddPairingElements(buzz::XmlElement* message) {

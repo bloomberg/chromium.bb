@@ -50,7 +50,7 @@ remoting.ClientPluginAsync = function(plugin) {
   this.onDesktopSizeUpdateHandler = function () {};
   /** @param {!Array.<string>} capabilities The negotiated capabilities. */
   this.onSetCapabilitiesHandler = function (capabilities) {};
-  this.fetchPinHandler = function () {};
+  this.fetchPinHandler = function (supportsPairing) {};
 
   /** @type {number} */
   this.pluginApiVersion_ = -1;
@@ -263,7 +263,20 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     var ready = /** @type {boolean} */ message.data['ready'];
     this.onConnectionReadyHandler(ready);
   } else if (message.method == 'fetchPin') {
-    this.fetchPinHandler();
+    // The pairingSupported value in the dictionary indicates whether both
+    // client and host support pairing. If the client doesn't support pairing,
+    // then the value won't be there at all, so give it a default of false.
+    /** @type {boolean} */
+    var pairingSupported = false;
+    if ('pairingSupported' in message.data) {
+      pairingSupported =
+          /** @type {boolean} */ message.data['pairingSupported'];
+      if (typeof pairingSupported != 'boolean') {
+        console.error('Received incorrect fetchPin message.');
+        return;
+      }
+    }
+    this.fetchPinHandler(pairingSupported);
   } else if (message.method == 'setCapabilities') {
     if (typeof message.data['capabilities'] != 'string') {
       console.error('Received incorrect setCapabilities message.');

@@ -549,6 +549,7 @@ button {
 .checkbox-label {
   display: block;
   padding-__MSG_@@bidi_start_edge__: 20px;
+  margin-top: 12px;
 }
 
 .checkbox-label input[type=checkbox] {

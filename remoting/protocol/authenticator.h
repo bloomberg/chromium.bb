@@ -21,6 +21,7 @@ class ChannelAuthenticator;
 
 typedef base::Callback<void(const std::string& secret)> SecretFetchedCallback;
 typedef base::Callback<void(
+    bool pairing_supported,
     const SecretFetchedCallback& secret_fetched_callback)> FetchSecretCallback;
 
 // Authenticator is an abstract interface for authentication protocol

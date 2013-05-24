@@ -521,35 +521,39 @@ found in the LICENSE file.
           </div>
         </div> <!-- home.client.host-needs-upgrade -->
 
-        <div data-ui-mode="home.client.pin-prompt" class="centered">
+        <div data-ui-mode="home.client.pin-prompt">
           <div id="pin-message"
                i18n-content="PIN_MESSAGE"
                class="message"></div>
-          <div>
-            <form id="pin-form" action="">
-              <label for="pin-entry"
-                     i18n-content="PIN"
-                     class="editbox-label"></label>
-              <input id="pin-entry"
-                     type="password"
-                     autofocus="autofocus"
-                     autocomplete="off"/>
-              <button id="connect-button"
-                      type="submit"
-                      i18n-content="CONNECT_BUTTON">
-              </button>
-              <button id="cancel-pin-entry-button"
-                      type="button"
-                      i18n-content="CANCEL">
-              </button>
-            </form>
-            <div id="startup-mode-box-me2me" class="information-box" hidden>
-              <span i18n-content="WARNING_NOT_WINDOWED"></span>
-              <a href="http://support.google.com/chrome/bin/answer.py?hl=en&answer=1649523"
-                 target="_blank"
-                 i18n-content="LEARN_HOW"></a>
-            </div> <!-- startup-mode-box-it2me -->
-          </div>
+          <form id="pin-form" action="" class="centered">
+            <label for="pin-entry"
+                   i18n-content="PIN"
+                   class="editbox-label"></label>
+            <input id="pin-entry"
+                   type="password"
+                   autofocus="autofocus"
+                   autocomplete="off"/>
+            <button id="connect-button"
+                    type="submit"
+                    i18n-content="CONNECT_BUTTON">
+            </button>
+            <button id="cancel-pin-entry-button"
+                    type="button"
+                    i18n-content="CANCEL">
+            </button>
+          </form>
+          <label id="remember-pin" class="checkbox-label">
+            <input id="remember-pin-checkbox" type="checkbox">
+            <span i18n-content="REMEMBER_PIN"></span>
+          </label>
+          <div id="startup-mode-box-me2me"
+               class="information-box centered"
+               hidden>
+            <span i18n-content="WARNING_NOT_WINDOWED"></span>
+            <a href="http://support.google.com/chrome/bin/answer.py?hl=en&answer=1649523"
+               target="_blank"
+               i18n-content="LEARN_HOW"></a>
+          </div> <!-- startup-mode-box-it2me -->
         </div> <!-- client.pin-prompt -->
 
         <div data-ui-mode="home.client.third-party-auth" class="centered">

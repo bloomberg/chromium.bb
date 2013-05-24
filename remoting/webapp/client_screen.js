@@ -265,8 +265,11 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
     thirdPartyTokenFetcher.fetchToken();
   };
 
-  /** @param {function(string):void} onPinFetched */
-  var requestPin = function(onPinFetched) {
+  /**
+   * @param {boolean} supportsPairing
+   * @param {function(string):void} onPinFetched
+   */
+  var requestPin = function(supportsPairing, onPinFetched) {
     /** @type {Element} */
     var pinForm = document.getElementById('pin-form');
     /** @type {Element} */
@@ -296,6 +299,11 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
     pinForm.addEventListener('submit', onSubmitOrCancel, false);
     pinCancel.addEventListener('click', onSubmitOrCancel, false);
 
+    var rememberPin = document.getElementById('remember-pin');
+    rememberPin.hidden = !supportsPairing;
+    var checkbox = /** @type {HTMLInputElement} */
+        document.getElementById('remember-pin-checkbox');
+    checkbox.checked = false;
     var message = document.getElementById('pin-message');
     l10n.localizeElement(message, host.hostName);
     remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);

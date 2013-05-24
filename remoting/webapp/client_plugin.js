@@ -33,7 +33,7 @@ remoting.ClientPlugin.prototype.onConnectionReadyHandler;
 remoting.ClientPlugin.prototype.onDesktopSizeUpdateHandler;
 /** @type {function(!Array.<string>): void} Capabilities negotiated callback. */
 remoting.ClientPlugin.prototype.onSetCapabilitiesHandler;
-/** @type {function(): void} Request a PIN from the user. */
+/** @type {function(boolean): void} Request a PIN from the user. */
 remoting.ClientPlugin.prototype.fetchPinHandler;
 
 /**

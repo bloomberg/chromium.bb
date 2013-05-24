@@ -118,7 +118,8 @@ remoting.SessionConnector.prototype.reset = function() {
   this.pendingXhr_ = null;
 
   /**
-   * @type {function(function(string):void): void}
+   * Function to interactively obtain the PIN from the user.
+   * @type {function(boolean, function(string):void):void}
    * @private
    */
   this.fetchPin_ = function(onPinFetched) {};
@@ -146,7 +147,7 @@ remoting.SessionConnector.prototype.reset = function() {
  * Initiate a Me2Me connection.
  *
  * @param {remoting.Host} host The Me2Me host to which to connect.
- * @param {function(function(string):void):void} fetchPin Function to
+ * @param {function(boolean, function(string):void):void} fetchPin Function to
  *     interactively obtain the PIN from the user.
  * @param {function(string, string, string,
  *                  function(string, string): void): void}
@@ -313,7 +314,7 @@ remoting.SessionConnector.prototype.createSessionIfReady_ = function() {
     return;
   }
 
-  var securityTypes = 'third_party,spake2_hmac,spake2_plain';
+  var securityTypes = 'third_party,spake2_pair,spake2_hmac,spake2_plain';
   this.clientSession_ = new remoting.ClientSession(
       this.hostJid_, this.clientJid_, this.hostPublicKey_, this.passPhrase_,
       this.fetchPin_, this.fetchThirdPartyToken_, securityTypes, this.hostId_,

@@ -552,6 +552,9 @@
       <message desc="Survey link for users that want to take part." name="IDR_SIGN_ME_UP">
         Take the survey
       </message>
+      <message desc="Check-box displayed when the user enters their PIN to connect to a host allowing them to 'pair' the client and host, avoiding the need to enter the PIN each time." name="IDR_REMEMBER_PIN">
+        Don't ask for a PIN again when connecting to this host from this computer.
+      </message>
     </messages>
   </release>
 </grit>

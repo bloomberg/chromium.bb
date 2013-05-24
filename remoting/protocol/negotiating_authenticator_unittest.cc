@@ -69,10 +69,13 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
       methods.push_back(AuthenticationMethod::Spake2(
           AuthenticationMethod::NONE));
     }
+    bool pairing_expected = pairing_registry != NULL;
+    FetchSecretCallback fetch_secret_callback = base::Bind(
+        &NegotiatingAuthenticatorTest::FetchSecret,
+        client_interactive_pin, pairing_expected);
     client_as_negotiating_authenticator_ = new NegotiatingClientAuthenticator(
         client_id, client_paired_secret,
-        kTestHostId, base::Bind(&NegotiatingAuthenticatorTest::FetchSecret,
-                                client_interactive_pin),
+        kTestHostId, fetch_secret_callback,
         scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher>(), methods);
     client_.reset(client_as_negotiating_authenticator_);
   }
@@ -93,8 +96,11 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
 
   static void FetchSecret(
       const std::string& client_secret,
+      bool pairing_supported,
+      bool pairing_expected,
       const protocol::SecretFetchedCallback& secret_fetched_callback) {
     secret_fetched_callback.Run(client_secret);
+    ASSERT_EQ(pairing_supported, pairing_expected);
   }
 
   void VerifyRejected(Authenticator::RejectionReason reason) {
