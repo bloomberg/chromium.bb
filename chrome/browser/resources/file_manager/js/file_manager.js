@@ -33,8 +33,20 @@ function FileManager() {
  * to mitigate flickering. If images load faster then the delay they replace
  * old images smoothly. On the other hand we don't want to keep old images
  * too long.
+ *
+ * @type {number}
+ * @const
  */
 FileManager.THUMBNAIL_SHOW_DELAY = 100;
+
+/**
+ * Delay for resizing the list and the grid view in milliseconds. Used to
+ * avoid janky window resize.
+ *
+ * @type {number}
+ * @const
+ */
+FileManager.LIST_GRID_RESIZE_DELAY = 100;
 
 FileManager.prototype = {
   __proto__: cr.EventTarget.prototype
@@ -1549,18 +1561,31 @@ DialogType.isModal = function(type) {
   FileManager.prototype.onResize_ = function() {
     if (this.listType_ == FileManager.ListType.THUMBNAIL) {
       var g = this.grid_;
-      g.startBatchUpdates();
-      setTimeout(function() {
+      if (this.resizeGridTimer_) {
+        clearTimeout(this.resizeGridTimer_);
+        this.resizeGridTimer_ = null;
+      }
+      this.resizeGridTimer_ = setTimeout(function() {
+        g.startBatchUpdates();
         g.columns = 0;
         g.redraw();
         g.endBatchUpdates();
-      }, 0);
+        this.resizeGridTimer_ = null;
+      }.bind(this), FileManager.LIST_GRID_RESIZE_DELAY);
     } else {
-      if (util.platform.newUI()) {
-        if (this.table_.clientWidth > 0)
-          this.table_.normalizeColumns();
+      var t = this.table_;
+      if (this.resizeTableTimer_) {
+        clearTimeout(this.resizeTableTimer_);
+        this.resizeTableTimer_ = null;
       }
-      this.table_.redraw();
+      this.resizeTableTimer_ = setTimeout(function() {
+        if (util.platform.newUI()) {
+          if (t.clientWidth > 0)
+            t.normalizeColumns();
+        }
+        t.redraw();
+        this.resizeTableTimer_ = null;
+      }.bind(this), FileManager.LIST_GRID_RESIZE_DELAY);
     }
 
     if (!util.platform.newUI()) {
