@@ -62,6 +62,10 @@ struct StorageInfo {
   // (type isn't MTP_OR_PTP).
   static bool IsMassStorageDevice(const std::string& device_id);
 
+  static bool IsITunesDevice(const std::string& device_id);
+
+  static bool IsPicasaDevice(const std::string& device_id);
+
   // Unique device id - persists between device attachments.
   // This is the string that should be used as the label for a particular
   // storage device when interacting with the API. Clients should treat

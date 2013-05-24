@@ -130,4 +130,16 @@ bool StorageInfo::IsMassStorageDevice(const std::string& device_id) {
           type == PICASA);
 }
 
+// static
+bool StorageInfo::IsITunesDevice(const std::string& device_id) {
+  Type type;
+  return CrackDeviceId(device_id, &type, NULL) && type == ITUNES;
+}
+
+// static
+bool StorageInfo::IsPicasaDevice(const std::string& device_id) {
+  Type type;
+  return CrackDeviceId(device_id, &type, NULL) && type == PICASA;
+}
+
 }  // namespace chrome

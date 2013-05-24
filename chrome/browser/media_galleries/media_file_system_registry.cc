@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/browser/media_galleries/media_file_system_context.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
@@ -576,9 +577,18 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     CHECK(path.IsAbsolute());
     CHECK(!path.ReferencesParent());
     std::string fs_name(extension_misc::kMediaFileSystemPathPart);
-    const std::string fsid =
-        IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-            fileapi::kFileSystemTypeNativeMedia, path, &fs_name);
+
+    std::string fsid;
+    if (StorageInfo::IsITunesDevice(device_id)) {
+      NOTIMPLEMENTED();
+    } else if (StorageInfo::IsPicasaDevice(device_id)) {
+      fsid = ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
+          path);
+    } else {
+      fsid = IsolatedContext::GetInstance()->RegisterFileSystemForPath(
+          fileapi::kFileSystemTypeNativeMedia, path, &fs_name);
+    }
+
     CHECK(!fsid.empty());
     return fsid;
   }

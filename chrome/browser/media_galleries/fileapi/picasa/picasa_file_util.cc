@@ -39,7 +39,7 @@ class DirectorySkippingFileEnumerator
   virtual base::FilePath Next() OVERRIDE {
     while (true) {
       base::FilePath next = base_enumerator_->Next();
-      if (next.empty() || !IsDirectory())
+      if (next.empty() || !base_enumerator_->IsDirectory())
         return next;
     }
   }

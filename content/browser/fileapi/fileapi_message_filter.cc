@@ -749,12 +749,14 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     // - the file comes from sandboxed filesystem. Reading sandboxed files is
     //   always permitted, but only implicitly.
     // - the underlying filesystem returned newly created snapshot file.
-    // - the file comes from an external drive filesystem. The renderer has
-    //   already been granted read permission for the file's nominal path, but
-    //   for drive files, platform paths differ from the nominal paths.
+    // - the nominal path differs from the platform path. This can happen even
+    //   when the filesystem has been granted permissions. This happens with:
+    //   - Drive filesystems
+    //   - Picasa filesystems
     DCHECK(snapshot_file ||
            fileapi::SandboxMountPointProvider::IsSandboxType(url.type()) ||
-           url.type() == fileapi::kFileSystemTypeDrive);
+           url.type() == fileapi::kFileSystemTypeDrive ||
+           url.type() == fileapi::kFileSystemTypePicasa);
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         process_id_, platform_path);
     if (snapshot_file) {
