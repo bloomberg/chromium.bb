@@ -67,10 +67,12 @@ void BoxLayout::Layout(View* host) {
       gfx::Rect bounds(x, y, child_area.width(), child_area.height());
       if (orientation_ == kHorizontal) {
         bounds.set_width(child->GetPreferredSize().width() + padding);
-        x += bounds.width() + between_child_spacing_;
+        if (bounds.width() > 0)
+          x += bounds.width() + between_child_spacing_;
       } else {
         bounds.set_height(child->GetHeightForWidth(bounds.width()) + padding);
-        y += bounds.height() + between_child_spacing_;
+        if (bounds.height() > 0)
+          y += bounds.height() + between_child_spacing_;
       }
       // Clamp child view bounds to |child_area|.
       bounds.Intersect(child_area);
@@ -115,6 +117,9 @@ gfx::Size BoxLayout::GetPreferredSizeForChildWidth(View* host,
         continue;
 
       gfx::Size size(child->GetPreferredSize());
+      if (size.IsEmpty())
+        continue;
+
       gfx::Rect child_bounds(position, 0, size.width(), size.height());
       child_area_bounds.Union(child_bounds);
       position += size.width() + between_child_spacing_;
@@ -126,9 +131,11 @@ gfx::Size BoxLayout::GetPreferredSizeForChildWidth(View* host,
       if (!child->visible())
         continue;
 
-      height += child->GetHeightForWidth(child_area_width);
-      if (i != 0)
+      int extra_height = child->GetHeightForWidth(child_area_width);
+      // Only add |between_child_spacing_| if this is not the only child.
+      if (height != 0 && extra_height > 0)
         height += between_child_spacing_;
+      height += extra_height;
     }
 
     child_area_bounds.set_width(child_area_width);

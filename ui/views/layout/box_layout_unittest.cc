@@ -134,4 +134,26 @@ TEST_F(BoxLayoutTest, UseHeightForWidth) {
   EXPECT_EQ(110, layout_->GetPreferredHeightForWidth(host_.get(), 50));
 }
 
+TEST_F(BoxLayoutTest, EmptyPreferredSize) {
+  for (size_t i = 0; i < 2; i++) {
+    BoxLayout::Orientation orientation = i == 0 ? BoxLayout::kHorizontal :
+                                                  BoxLayout::kVertical;
+    host_->RemoveAllChildViews(true);
+    host_->SetLayoutManager(new BoxLayout(orientation, 0, 0, 5));
+    View* v1 = new StaticSizedView(gfx::Size());
+    host_->AddChildView(v1);
+    View* v2 = new StaticSizedView(gfx::Size(10, 10));
+    host_->AddChildView(v2);
+    host_->SizeToPreferredSize();
+    host_->Layout();
+
+    EXPECT_EQ(v2->GetPreferredSize().width(), host_->bounds().width()) << i;
+    EXPECT_EQ(v2->GetPreferredSize().height(), host_->bounds().height()) << i;
+    EXPECT_EQ(v1->GetPreferredSize().width(), v1->bounds().width()) << i;
+    EXPECT_EQ(v1->GetPreferredSize().height(), v1->bounds().height()) << i;
+    EXPECT_EQ(v2->GetPreferredSize().width(), v2->bounds().width()) << i;
+    EXPECT_EQ(v2->GetPreferredSize().height(), v2->bounds().height()) << i;
+  }
+}
+
 }  // namespace views

@@ -424,8 +424,6 @@ AutofillDialogViews::AccountChooser::~AccountChooser() {}
 void AutofillDialogViews::AccountChooser::Update() {
   gfx::Image icon = controller_->AccountChooserImage();
   image_->SetImage(icon.AsImageSkia());
-  // Hack around http://crbug.com/239932
-  image_->SetVisible(!icon.IsEmpty());
   label_->SetText(controller_->AccountChooserText());
 
   bool show_link = !controller_->MenuModelForAccountChooser();
