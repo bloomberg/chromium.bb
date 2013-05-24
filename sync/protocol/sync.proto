@@ -33,6 +33,7 @@ import "get_updates_caller_info.proto";
 import "history_delete_directive_specifics.proto";
 import "nigori_specifics.proto";
 import "managed_user_setting_specifics.proto";
+import "managed_user_specifics.proto";
 import "password_specifics.proto";
 import "preference_specifics.proto";
 import "priority_preference_specifics.proto";
@@ -116,6 +117,7 @@ message EntitySpecifics {
   optional FaviconTrackingSpecifics favicon_tracking = 181534;
   optional FaviconImageSpecifics favicon_image = 182019;
   optional ManagedUserSettingSpecifics managed_user_setting = 186662;
+  optional ManagedUserSpecifics managed_user = 194582;
 }
 
 message SyncEntity {

@@ -104,6 +104,9 @@ void AddDefaultFieldValue(ModelType datatype,
     case MANAGED_USER_SETTINGS:
       specifics->mutable_managed_user_setting();
       break;
+    case MANAGED_USERS:
+      specifics->mutable_managed_user();
+      break;
     default:
       NOTREACHED() << "No known extension for model type.";
   }
@@ -192,6 +195,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       return sync_pb::EntitySpecifics::kFaviconTrackingFieldNumber;
     case MANAGED_USER_SETTINGS:
       return sync_pb::EntitySpecifics::kManagedUserSettingFieldNumber;
+    case MANAGED_USERS:
+      return sync_pb::EntitySpecifics::kManagedUserFieldNumber;
     default:
       NOTREACHED() << "No known extension for model type.";
       return 0;
@@ -311,6 +316,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_managed_user_setting())
     return MANAGED_USER_SETTINGS;
 
+  if (specifics.has_managed_user())
+    return MANAGED_USERS;
+
   return UNSPECIFIED;
 }
 
@@ -362,6 +370,8 @@ ModelTypeSet EncryptableUserTypes() {
   encryptable_user_types.RemoveAll(PriorityUserTypes());
   // Managed user settings are not encrypted since they are set server-side.
   encryptable_user_types.Remove(MANAGED_USER_SETTINGS);
+  // Managed users are not encrypted since they are managed server-side.
+  encryptable_user_types.Remove(MANAGED_USERS);
   // Proxy types have no sync representation and are therefore not encrypted.
   // Note however that proxy types map to one or more protocol types, which
   // may or may not be encrypted themselves.
@@ -452,6 +462,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Favicon Tracking";
     case MANAGED_USER_SETTINGS:
       return "Managed User Settings";
+    case MANAGED_USERS:
+      return "Managed Users";
     case PROXY_TABS:
       return "Tabs";
     default:
@@ -521,6 +533,8 @@ int ModelTypeToHistogramInt(ModelType model_type) {
       return 25;
     case MANAGED_USER_SETTINGS:
       return 26;
+    case MANAGED_USERS:
+      return 27;
     // Silence a compiler warning.
     case MODEL_TYPE_COUNT:
       return 0;
@@ -604,6 +618,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return FAVICON_TRACKING;
   else if (model_type_string == "Managed User Settings")
     return MANAGED_USER_SETTINGS;
+  else if (model_type_string == "Managed Users")
+    return MANAGED_USERS;
   else if (model_type_string == "Tabs")
     return PROXY_TABS;
   else
@@ -694,6 +710,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_favicon_tracking";
     case MANAGED_USER_SETTINGS:
       return "google_chrome_managed_user_settings";
+    case MANAGED_USERS:
+      return "google_chrome_managed_users";
     case PROXY_TABS:
       return std::string();
     default:
@@ -732,6 +750,7 @@ const char kDictionaryNotificationType[] = "DICTIONARY";
 const char kFaviconImageNotificationType[] = "FAVICON_IMAGE";
 const char kFaviconTrackingNotificationType[] = "FAVICON_TRACKING";
 const char kManagedUserSettingNotificationType[] = "MANAGED_USER_SETTING";
+const char kManagedUserNotificationType[] = "MANAGED_USER";
 }  // namespace
 
 bool RealModelTypeToNotificationType(ModelType model_type,
@@ -808,6 +827,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case MANAGED_USER_SETTINGS:
       *notification_type = kManagedUserSettingNotificationType;
+      return true;
+    case MANAGED_USERS:
+      *notification_type = kManagedUserNotificationType;
       return true;
     default:
       break;
@@ -889,6 +911,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kManagedUserSettingNotificationType) {
     *model_type = MANAGED_USER_SETTINGS;
+    return true;
+  } else if (notification_type == kManagedUserNotificationType) {
+    *model_type = MANAGED_USERS;
     return true;
   }
   *model_type = UNSPECIFIED;

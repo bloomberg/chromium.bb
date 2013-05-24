@@ -108,7 +108,10 @@
       case ::syncer::MANAGED_USER_SETTINGS: \
         PER_DATA_TYPE_MACRO("ManagedUserSetting"); \
         break; \
-      case ::syncer::PROXY_TABS :\
+      case ::syncer::MANAGED_USERS: \
+        PER_DATA_TYPE_MACRO("ManagedUser"); \
+        break; \
+      case ::syncer::PROXY_TABS: \
         PER_DATA_TYPE_MACRO("Tabs"); \
         break; \
       default: \

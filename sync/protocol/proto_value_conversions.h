@@ -42,6 +42,7 @@ class GlobalIdDirective;
 class HistoryDeleteDirectiveSpecifics;
 class KeystoreEncryptionFlagsSpecifics;
 class ManagedUserSettingSpecifics;
+class ManagedUserSpecifics;
 class NigoriSpecifics;
 class PasswordSpecifics;
 class PasswordSpecificsData;
@@ -169,6 +170,9 @@ SYNC_EXPORT base::DictionaryValue* HistoryDeleteDirectiveSpecificsToValue(
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* ManagedUserSettingSpecificsToValue(
     const sync_pb::ManagedUserSettingSpecifics& managed_user_setting_specifics);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* ManagedUserSpecificsToValue(
+    const sync_pb::ManagedUserSpecifics& managed_user_specifics);
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* NigoriSpecificsToValue(
     const sync_pb::NigoriSpecifics& nigori_specifics);

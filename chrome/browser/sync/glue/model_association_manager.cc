@@ -30,6 +30,9 @@ static const syncer::ModelType kStartOrder[] = {
   syncer::EXPERIMENTS,          //  Listed for completeness.
   syncer::PROXY_TABS,           //  Listed for completeness.
   syncer::BOOKMARKS,            //  UI thread datatypes.
+  syncer::MANAGED_USERS,        //  Syncing managed users on initial login might
+                                //  block creating a new managed user, so we
+                                //  want to do it early.
   syncer::PREFERENCES,
   syncer::PRIORITY_PREFERENCES,
   syncer::EXTENSIONS,

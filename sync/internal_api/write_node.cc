@@ -193,6 +193,13 @@ void WriteNode::SetManagedUserSettingSpecifics(
   SetEntitySpecifics(entity_specifics);
 }
 
+void WriteNode::SetManagedUserSpecifics(
+    const sync_pb::ManagedUserSpecifics& new_value) {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.mutable_managed_user()->CopyFrom(new_value);
+  SetEntitySpecifics(entity_specifics);
+}
+
 void WriteNode::SetDeviceInfoSpecifics(
     const sync_pb::DeviceInfoSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;

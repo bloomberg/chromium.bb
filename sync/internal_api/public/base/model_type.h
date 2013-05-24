@@ -95,6 +95,10 @@ enum ModelType {
   PRIORITY_PREFERENCES,
   // Managed user settings.
   MANAGED_USER_SETTINGS,
+  // Managed users. Every managed user is a profile that is configured remotely
+  // by this user and can have restrictions applied. MANAGED_USERS and
+  // MANAGED_USER_SETTINGS can not be encrypted.
+  MANAGED_USERS,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered

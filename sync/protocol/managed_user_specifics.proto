@@ -1,0 +1,26 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for managed user settings.
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package sync_pb;
+
+// Properties of managed user sync objects.
+message ManagedUserSpecifics {
+  // A randomly-generated identifier for the managed user.
+  optional string id = 1;
+  // The human-visible name of the managed user
+  optional string name = 2;
+  // This flag is set by the server to acknowledge that it has committed a
+  // newly created managed user.
+  optional bool acknowledged = 3 [default = false];
+}

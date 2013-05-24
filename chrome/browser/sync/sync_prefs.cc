@@ -351,6 +351,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncTabs;
     case syncer::PRIORITY_PREFERENCES:
       return prefs::kSyncPriorityPreferences;
+    case syncer::MANAGED_USERS:
+      return prefs::kSyncManagedUsers;
     default:
       break;
   }

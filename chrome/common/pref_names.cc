@@ -1781,6 +1781,7 @@ const char kSyncFaviconImages[] = "sync.favicon_images";
 const char kSyncFaviconTracking[] = "sync.favicon_tracking";
 const char kSyncHistoryDeleteDirectives[] = "sync.history_delete_directives";
 const char kSyncManagedUserSettings[] = "sync.managed_user_settings";
+const char kSyncManagedUsers[] = "sync.managed_users";
 const char kSyncPasswords[] = "sync.passwords";
 const char kSyncPreferences[] = "sync.preferences";
 const char kSyncPriorityPreferences[] = "sync.priority_preferences";
