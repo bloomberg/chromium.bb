@@ -46,3 +46,15 @@ class MemoryMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     for h in self.histograms:
       h.GetValue(page, tab, results)
+
+    if tab.browser.is_profiler_active('tcmalloc-heap'):
+      # The tcmalloc_heap_profiler dumps files at regular
+      # intervals (~20 secs).
+      # This is a minor optimization to ensure it'll dump the last file when
+      # the test completes.
+      tab.ExecuteJavaScript("""
+        if (chrome && chrome.memoryBenchmarking) {
+          chrome.memoryBenchmarking.heapProfilerDump('final', 'renderer');
+          chrome.memoryBenchmarking.heapProfilerDump('final', 'browser');
+        }
+      """)
