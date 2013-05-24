@@ -119,9 +119,10 @@ void StringCache::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 
 IntegerCache::IntegerCache()
 {
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
     for (int value = 0; value < numberOfCachedSmallIntegers; value++)
-        m_smallIntegers[value].set(v8::Integer::New(value));
+        m_smallIntegers[value].set(isolate, v8::Integer::New(value));
 }
 
 } // namespace WebCore

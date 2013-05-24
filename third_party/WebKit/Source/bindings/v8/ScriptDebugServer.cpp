@@ -85,8 +85,8 @@ public:
         if (preprocessorFunction.IsEmpty() || !preprocessorFunction->IsFunction())
             return;
 
-        m_utilityContext.set(context);
-        m_preprocessorFunction.set(v8::Handle<v8::Function>::Cast(preprocessorFunction));
+        m_utilityContext.set(isolate, context);
+        m_preprocessorFunction.set(isolate, v8::Handle<v8::Function>::Cast(preprocessorFunction));
     }
 
     String preprocessSourceCode(const String& sourceCode, const String& sourceName)
@@ -242,7 +242,7 @@ void ScriptDebugServer::breakProgram()
         return;
 
     if (m_breakProgramCallbackTemplate.get().IsEmpty()) {
-        m_breakProgramCallbackTemplate.set(v8::FunctionTemplate::New());
+        m_breakProgramCallbackTemplate.set(m_isolate, v8::FunctionTemplate::New());
         m_breakProgramCallbackTemplate.get()->SetCallHandler(&ScriptDebugServer::breakProgramCallback, v8::External::New(this));
     }
 
@@ -396,7 +396,7 @@ void ScriptDebugServer::breakProgram(v8::Handle<v8::Object> executionState, v8::
     if (!listener)
         return;
 
-    m_executionState.set(executionState);
+    m_executionState.set(m_isolate, executionState);
     ScriptState* currentCallFrameState = ScriptState::forContext(m_pausedContext);
     listener->didPause(currentCallFrameState, currentCallFrame(), ScriptValue(exception));
 
@@ -504,12 +504,12 @@ void ScriptDebugServer::ensureDebuggerScriptCompiled()
     if (!m_debuggerScript.get().IsEmpty())
         return;
 
-    v8::HandleScope scope;
+    v8::HandleScope scope(m_isolate);
     v8::Handle<v8::String> source = v8String(String(reinterpret_cast<const char*>(DebuggerScriptSource_js), sizeof(DebuggerScriptSource_js)), m_isolate);
     v8::Local<v8::Value> value = V8ScriptRunner::compileAndRunInternalScript(source, m_isolate, v8::Debug::GetDebugContext());
     ASSERT(!value.IsEmpty());
     ASSERT(value->IsObject());
-    m_debuggerScript.set(v8::Handle<v8::Object>::Cast(value));
+    m_debuggerScript.set(m_isolate, v8::Handle<v8::Object>::Cast(value));
 }
 
 v8::Local<v8::Value> ScriptDebugServer::functionScopes(v8::Handle<v8::Function> function)

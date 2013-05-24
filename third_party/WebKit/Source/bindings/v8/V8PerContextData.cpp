@@ -71,7 +71,7 @@ void V8PerContextData::dispose()
     v8::Handle<v8::Value> prototypeValue = object->Get(prototypeString); \
     if (prototypeValue.IsEmpty()) \
         return false; \
-    m_##name##Prototype.set(prototypeValue); \
+    m_##name##Prototype.set(v8::Isolate::GetCurrent(), prototypeValue);  \
 }
 
 bool V8PerContextData::init()

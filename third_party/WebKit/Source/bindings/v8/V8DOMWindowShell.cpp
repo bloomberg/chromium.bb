@@ -202,7 +202,7 @@ bool V8DOMWindowShell::initializeIfNeeded()
     v8::Context::Scope contextScope(context);
 
     if (m_global.isEmpty()) {
-        m_global.set(context->Global());
+        m_global.set(m_isolate, context->Global());
         if (m_global.isEmpty()) {
             disposeContext();
             return false;
@@ -292,7 +292,7 @@ void V8DOMWindowShell::createContext()
     v8::ExtensionConfiguration extensionConfiguration(index, extensionNames.get());
 
     v8::HandleScope handleScope(m_isolate);
-    m_context.set(v8::Context::New(m_isolate, &extensionConfiguration, globalTemplate, m_global.newLocal(m_isolate)));
+    m_context.set(m_isolate, v8::Context::New(m_isolate, &extensionConfiguration, globalTemplate, m_global.newLocal(m_isolate)));
 
     double contextCreationDurationInMilliseconds = (currentTime() - contextCreationStartInSeconds) * 1000;
     const char* histogramName = "WebCore.V8DOMWindowShell.createContext.MainWorld";
@@ -337,7 +337,7 @@ bool V8DOMWindowShell::installDOMWindow()
 void V8DOMWindowShell::updateDocumentWrapper(v8::Handle<v8::Object> wrapper)
 {
     ASSERT(m_world->isMainWorld());
-    m_document.set(wrapper);
+    m_document.set(m_isolate, wrapper);
 }
 
 void V8DOMWindowShell::updateDocumentProperty()

@@ -95,7 +95,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
         return true;
 
     v8::Persistent<v8::ObjectTemplate> globalTemplate;
-    m_context.set(v8::Context::New(m_isolate, 0, globalTemplate));
+    m_context.set(m_isolate, v8::Context::New(m_isolate, 0, globalTemplate));
     if (m_context.isEmpty())
         return false;
 

@@ -95,7 +95,7 @@ void V8AbstractEventListener::handleEvent(ScriptExecutionContext* context, Event
 
 void V8AbstractEventListener::setListenerObject(v8::Handle<v8::Object> listener)
 {
-    m_listener.set(listener);
+    m_listener.set(m_isolate, listener);
     m_listener.get().MakeWeak(m_isolate, this, &makeWeakCallback);
 }
 

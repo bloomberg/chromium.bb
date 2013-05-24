@@ -41,8 +41,9 @@ namespace WebCore {
 
 RegularExpression::RegularExpression(const String& pattern, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
 {
-    v8::HandleScope handleScope;
-    v8::Local<v8::Context> context = V8PerIsolateData::current()->ensureRegexContext();
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+    v8::Local<v8::Context> context = V8PerIsolateData::from(isolate)->ensureRegexContext();
     v8::Context::Scope scope(context);
 
     unsigned flags = v8::RegExp::kNone;
@@ -56,7 +57,7 @@ RegularExpression::RegularExpression(const String& pattern, TextCaseSensitivity 
 
     // If the regex failed to compile we'll get an empty handle.
     if (!regex.IsEmpty())
-        m_regex.set(regex);
+        m_regex.set(isolate, regex);
 }
 
 int RegularExpression::match(const String& string, int startFrom, int* matchLength) const

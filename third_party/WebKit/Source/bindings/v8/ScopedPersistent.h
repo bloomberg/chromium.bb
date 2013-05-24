@@ -61,9 +61,9 @@ public:
 
     bool isEmpty() const { return m_handle.IsEmpty(); }
 
-    void set(v8::Handle<T> handle)
+    void set(v8::Isolate* isolate, v8::Handle<T> handle)
     {
-        m_handle.Reset(v8::Isolate::GetCurrent(), handle);
+        m_handle.Reset(isolate, handle);
     }
 
     // Note: This is clear in the OwnPtr sense, not the v8::Handle sense.

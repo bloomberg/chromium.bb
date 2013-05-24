@@ -61,7 +61,7 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     , m_gcEventData(adoptPtr(new GCEventData()))
     , m_shouldCollectGarbageSoon(false)
 {
-    m_v8Null.set(v8::Null(isolate));
+    m_v8Null.set(isolate, v8::Null(isolate));
 }
 
 V8PerIsolateData::~V8PerIsolateData()
@@ -87,7 +87,7 @@ void V8PerIsolateData::ensureInitialized(v8::Isolate* isolate)
 v8::Persistent<v8::Value> V8PerIsolateData::ensureLiveRoot()
 {
     if (m_liveRoot.isEmpty())
-        m_liveRoot.set(v8::Null());
+        m_liveRoot.set(m_isolate, v8::Null());
     return m_liveRoot.get();
 }
 
@@ -101,7 +101,7 @@ void V8PerIsolateData::dispose(v8::Isolate* isolate)
 v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
 {
     if (m_toStringTemplate.isEmpty())
-        m_toStringTemplate.set(v8::FunctionTemplate::New(constructorOfToString));
+        m_toStringTemplate.set(m_isolate, v8::FunctionTemplate::New(constructorOfToString));
     return v8::Local<v8::FunctionTemplate>::New(m_toStringTemplate.get());
 }
 
@@ -164,7 +164,7 @@ v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
 {
     if (m_regexContext.isEmpty()) {
         v8::HandleScope handleScope(m_isolate);
-        m_regexContext.set(v8::Context::New(m_isolate));
+        m_regexContext.set(m_isolate, v8::Context::New(m_isolate));
     }
     return v8::Local<v8::Context>::New(m_regexContext.get());
 }
