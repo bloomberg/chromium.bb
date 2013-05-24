@@ -1861,6 +1861,8 @@ crbug.com/243730 [ Mac ] fast/dom/HTMLMeterElement/meter-optimums.html [ Timeout
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ ImageOnlyFailure Pass ]
 crbug.com/238858 [ Win Debug ] virtual/gpu/fast/hidpi/focus-rings.html [ Pass Timeout ]
 crbug.com/243736 [ Release ] storage/websql/quota-tracking.html [ Failure Pass ]
+crbug.com/243738 [ Linux Mac ] http/tests/loading/preload-append-scan.php [ Failure Pass ]
+crbug.com/243738 [ Win ] http/tests/loading/preload-append-scan.php [ Timeout Pass ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass ]
