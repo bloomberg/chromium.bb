@@ -262,6 +262,8 @@ weston_config_get_section(struct weston_config *config, const char *section,
 	struct weston_config_section *s;
 	struct weston_config_entry *e;
 
+	if (config == NULL)
+		return NULL;
 	wl_list_for_each(s, &config->section_list, link) {
 		if (strcmp(s->name, section) != 0)
 			continue;
