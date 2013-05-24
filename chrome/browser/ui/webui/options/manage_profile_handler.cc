@@ -101,8 +101,7 @@ void ManageProfileHandler::GetLocalizedValues(
   localized_strings->SetBoolean("profileShortcutsEnabled",
                                 ProfileShortcutManager::IsFeatureEnabled());
   localized_strings->SetBoolean("managedUsersEnabled",
-                                CommandLine::ForCurrentProcess()->HasSwitch(
-                                    switches::kEnableManagedUsers));
+                                ManagedUserService::AreManagedUsersEnabled());
 }
 
 void ManageProfileHandler::InitializeHandler() {

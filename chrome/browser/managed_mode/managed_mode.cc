@@ -11,6 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -50,7 +51,7 @@ void ManagedMode::InitImpl(Profile* profile) {
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  if (command_line->HasSwitch(switches::kEnableManagedUsers)) {
+  if (ManagedUserService::AreManagedUsersEnabled()) {
     RecordAction(UserMetricsAction("ManagedMode_StartupEnableManagedSwitch"));
   }
 

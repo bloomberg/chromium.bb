@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/utf_string_conversions.h"
@@ -45,6 +46,8 @@ using content::BrowserThread;
 
 namespace {
 
+const char kManagedModeFinchActive[] = "Active";
+const char kManagedModeFinchName[] = "ManagedModeLaunch";
 const char kManagedUserPseudoEmail[] = "managed_user@localhost";
 
 std::string CanonicalizeHostname(const std::string& hostname) {
@@ -194,6 +197,15 @@ void ManagedUserService::RegisterUserPrefs(
   registry->RegisterStringPref(
       prefs::kManagedModeLocalSalt, std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+// static
+bool ManagedUserService::AreManagedUsersEnabled() {
+  // Allow enabling by command line for now for easier development.
+  return base::FieldTrialList::FindFullName(kManagedModeFinchName) ==
+             kManagedModeFinchActive ||
+         CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableManagedUsers);
 }
 
 scoped_refptr<const ManagedModeURLFilter>

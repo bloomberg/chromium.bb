@@ -82,6 +82,7 @@
 #include "ui/webui/web_ui_util.h"
 
 #if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/managed_mode/managed_user_registration_service.h"
 #include "chrome/browser/managed_mode/managed_user_registration_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
@@ -1121,7 +1122,7 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
   if (create_shortcut)
     callbacks.push_back(base::Bind(&CreateDesktopShortcutForProfile));
 
-  if (managed_user) {
+  if (managed_user && ManagedUserService::AreManagedUsersEnabled()) {
 #if defined(ENABLE_MANAGED_USERS)
     ManagedUserRegistrationService* registration_service =
         ManagedUserRegistrationServiceFactory::GetForProfile(profile);

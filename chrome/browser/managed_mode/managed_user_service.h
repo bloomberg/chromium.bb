@@ -59,6 +59,10 @@ class ManagedUserService : public BrowserContextKeyedService,
 
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Returns whether managed users are enabled by Finch or the command line
+  // flag.
+  static bool AreManagedUsersEnabled();
+
   // Returns the URL filter for the IO thread, for filtering network requests
   // (in ManagedModeResourceThrottle).
   scoped_refptr<const ManagedModeURLFilter> GetURLFilterForIOThread();
