@@ -134,20 +134,18 @@ JSON_RESULTS_OLD_TEMPLATE = (
     '{"Webkit":{'
     '"allFixableCount":[[TESTDATA_COUNT]],'
     '"blinkRevision":[[TESTDATA_WEBKITREVISION]],'
-    '"webkitRevision":[[TESTDATA_WEBKITREVISION]],'
     '"buildNumbers":[[TESTDATA_BUILDNUMBERS]],'
     '"chromeRevision":[[TESTDATA_CHROMEREVISION]],'
-    '"deferredCounts":[[TESTDATA_COUNTS]],'
     '"fixableCount":[[TESTDATA_COUNT]],'
     '"fixableCounts":[[TESTDATA_COUNTS]],'
-    '"num_failures_by_type":{"AUDIO":[[TESTDATA_COUNT]],"CRASH":[[TESTDATA_COUNT]],"FAIL":[[TESTDATA_COUNT]],"IMAGE":[[TESTDATA_COUNT]],"IMAGE+TEXT":[[TESTDATA_COUNT]],"MISSING":[[TESTDATA_COUNT]],"PASS":[[TESTDATA_COUNT]],"SKIP":[[TESTDATA_COUNT]],"TEXT":[[TESTDATA_COUNT]],"TIMEOUT":[[TESTDATA_COUNT]]},'
     '"secondsSinceEpoch":[[TESTDATA_TIMES]],'
-    '"tests":{[TESTDATA_TESTS]},'
-    '"wontfixCounts":[[TESTDATA_COUNTS]]'
+    '"tests":{[TESTDATA_TESTS]}'
     '},'
     '"failure_map": %s,'
     '"version":[VERSION]'
     '}') % simplejson.dumps(CHAR_TO_FAILURE)
+
+JSON_RESULTS_COUNTS = '{"' + '":[[TESTDATA_COUNT]],"'.join([char for char in CHAR_TO_FAILURE.values()]) + '":[[TESTDATA_COUNT]]}'
 
 JSON_RESULTS_TEMPLATE = (
     '{"Webkit":{'
@@ -157,27 +155,17 @@ JSON_RESULTS_TEMPLATE = (
     '"chromeRevision":[[TESTDATA_CHROMEREVISION]],'
     '"fixableCount":[[TESTDATA_COUNT]],'
     '"fixableCounts":[[TESTDATA_COUNTS]],'
-    '"num_failures_by_type":{"AUDIO":[[TESTDATA_COUNT]],"CRASH":[[TESTDATA_COUNT]],"FAIL":[[TESTDATA_COUNT]],"IMAGE":[[TESTDATA_COUNT]],"IMAGE+TEXT":[[TESTDATA_COUNT]],"MISSING":[[TESTDATA_COUNT]],"PASS":[[TESTDATA_COUNT]],"SKIP":[[TESTDATA_COUNT]],"TEXT":[[TESTDATA_COUNT]],"TIMEOUT":[[TESTDATA_COUNT]]},'
+    '"num_failures_by_type":%s,'
     '"secondsSinceEpoch":[[TESTDATA_TIMES]],'
     '"tests":{[TESTDATA_TESTS]}'
     '},'
     '"failure_map": %s,'
     '"version":[VERSION]'
-    '}') % simplejson.dumps(CHAR_TO_FAILURE)
+    '}') % (JSON_RESULTS_COUNTS, simplejson.dumps(CHAR_TO_FAILURE))
 
-JSON_RESULTS_COUNTS_TEMPLATE = (
-    '{'
-    '"%s":[TESTDATA],'
-    '"%s":[TESTDATA],'
-    '"%s":[TESTDATA],'
-    '"%s":[TESTDATA],'
-    '"%s":[TESTDATA],'
-    '"%s":[TESTDATA],'
-    '"%s":[TESTDATA],'
-    '"%s":[TESTDATA]}') % (CRASH, TEXT, IMAGE, MISSING, PASS, TIMEOUT, SKIP, IMAGE_PLUS_TEXT)
+JSON_RESULTS_COUNTS_TEMPLATE = '{"' + '":[TESTDATA],"'.join([char for char in CHAR_TO_FAILURE]) + '":[TESTDATA]}'
 
-JSON_RESULTS_TEST_LIST_TEMPLATE = (
-    '{"Webkit":{"tests":{[TESTDATA_TESTS]}}}')
+JSON_RESULTS_TEST_LIST_TEMPLATE = '{"Webkit":{"tests":{[TESTDATA_TESTS]}}}'
 
 
 class JsonResultsTest(unittest.TestCase):
@@ -261,7 +249,7 @@ class JsonResultsTest(unittest.TestCase):
         merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, is_full_results_format=False, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
         self.assert_json_equal(merged_results, incremental_results)
 
-    def test_old_keys_deleted(self):
+    def test_failures_by_type_added(self):
         aggregated_results = self._make_test_json({
             "builds": ["2", "1"],
             "tests": {
@@ -279,7 +267,7 @@ class JsonResultsTest(unittest.TestCase):
                     "times": [[1, 0]],
                 }
             }
-        })
+        }, json_string=JSON_RESULTS_OLD_TEMPLATE)
         merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, is_full_results_format=False, num_runs=200, sort_keys=True)
         self.assert_json_equal(merged_results, self._make_test_json({
             "builds": ["3", "2", "1"],

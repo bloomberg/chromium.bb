@@ -54,6 +54,7 @@ BUILD_NUMBERS_KEY = "buildNumbers"
 EXPECTED_KEY = "expected"
 FAILURE_MAP_KEY = "failure_map"
 FAILURES_BY_TYPE_KEY = "num_failures_by_type"
+FIXABLE_COUNTS_KEY = "fixableCounts"
 RESULTS_KEY = "results"
 TESTS_KEY = "tests"
 TIME_KEY = "time"
@@ -64,6 +65,8 @@ AUDIO = "A"
 CRASH = "C"
 IMAGE = "I"
 IMAGE_PLUS_TEXT = "Z"
+# This is only output by gtests.
+FLAKY = "L"
 MISSING = "O"
 NO_DATA = "N"
 NOTRUN = "Y"
@@ -76,6 +79,7 @@ AUDIO_STRING = "AUDIO"
 CRASH_STRING = "CRASH"
 IMAGE_PLUS_TEXT_STRING = "IMAGE+TEXT"
 IMAGE_STRING = "IMAGE"
+FLAKY_STRING = "FLAKY"
 MISSING_STRING = "MISSING"
 NO_DATA_STRING = "NO DATA"
 NOTRUN_STRING = "NOTRUN"
@@ -89,6 +93,7 @@ FAILURE_TO_CHAR = {
     CRASH_STRING: CRASH,
     IMAGE_PLUS_TEXT_STRING: IMAGE_PLUS_TEXT,
     IMAGE_STRING: IMAGE,
+    FLAKY_STRING: FLAKY,
     MISSING_STRING: MISSING,
     NO_DATA_STRING: NO_DATA,
     NOTRUN_STRING: NOTRUN,
@@ -285,6 +290,24 @@ class JsonResults(object):
         return encoded_list
 
     @classmethod
+    def _convert_gtest_json_to_aggregate_results_format(cls, json):
+        # FIXME: Change gtests over to uploading the full results format like layout-tests
+        # so we don't have to do this normalizing.
+
+        if FAILURES_BY_TYPE_KEY in json:
+            # This is already in the right format.
+            return
+
+        failures_by_type = {}
+        for fixableCount in json[FIXABLE_COUNTS_KEY]:
+            for failure_type, count in fixableCount.items():
+                failure_string = CHAR_TO_FAILURE[failure_type]
+                if failure_string not in failures_by_type:
+                    failures_by_type[failure_string] = []
+                failures_by_type[failure_string].append(count)
+        json[FAILURES_BY_TYPE_KEY] = failures_by_type
+
+    @classmethod
     def _check_json(cls, builder, json):
         version = json[VERSIONS_KEY]
         if version > JSON_RESULTS_HIERARCHICAL_VERSION:
@@ -300,13 +323,7 @@ class JsonResults(object):
             logging.error("Missing build number in json results.")
             return False
 
-        # FIXME: These keys are no longer used. Delete this code once the bots have cycled
-        # and these keys are no longer in any of the aggregate JSON files.
-        keys_to_delete = ['deferredCounts', 'wontfixCounts', 'webkitRevision']
-        for key in keys_to_delete:
-            if key in json[builder]:
-                del json[builder][key]
-
+        cls._convert_gtest_json_to_aggregate_results_format(json[builder])
         return True
 
     @classmethod
@@ -368,7 +385,7 @@ class JsonResults(object):
                 # FIXME: Have the consumers of these use num_failures_by_type directly and stop include these counts.
                 'allFixableCount': [num_total_tests],
                 'fixableCount': [num_failing_tests],
-                'fixableCounts': [fixableCounts],
+                FIXABLE_COUNTS_KEY: [fixableCounts],
                 # FIXME: Have all the consumers of this switch over to the full_results_format keys
                 # so we don't have to do this silly conversion.
                 BUILD_NUMBERS_KEY: [full_results_format['build_number']],
