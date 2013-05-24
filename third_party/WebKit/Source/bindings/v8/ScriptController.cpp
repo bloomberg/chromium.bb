@@ -184,7 +184,7 @@ ScriptValue ScriptController::callFunctionEvenIfScriptDisabled(v8::Handle<v8::Fu
     return ScriptValue(callFunction(function, receiver, argc, argv));
 }
 
-static void resourceInfo(const v8::Handle<v8::Function> function, String& resourceName, int& lineNumber)
+static inline void resourceInfo(const v8::Handle<v8::Function> function, String& resourceName, int& lineNumber)
 {
     v8::ScriptOrigin origin = function->GetScriptOrigin();
     if (origin.ResourceName().IsEmpty()) {
@@ -196,7 +196,7 @@ static void resourceInfo(const v8::Handle<v8::Function> function, String& resour
     }
 }
 
-static String resourceString(const v8::Handle<v8::Function> function)
+static inline String resourceString(const v8::Handle<v8::Function> function)
 {
     String resourceName;
     int lineNumber;
@@ -211,6 +211,11 @@ static String resourceString(const v8::Handle<v8::Function> function)
 
 v8::Local<v8::Value> ScriptController::callFunctionWithInstrumentation(ScriptExecutionContext* context, v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[])
 {
+    V8GCController::checkMemoryUsage();
+
+    if (V8RecursionScope::recursionLevel() >= kMaxRecursionDepth)
+        return handleMaxRecursionDepthExceeded();
+
     InspectorInstrumentationCookie cookie;
     if (InspectorInstrumentation::timelineAgentEnabled(context)) {
         String resourceName;
@@ -219,9 +224,15 @@ v8::Local<v8::Value> ScriptController::callFunctionWithInstrumentation(ScriptExe
         cookie = InspectorInstrumentation::willCallFunction(context, resourceName, lineNumber);
     }
 
-    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, context, receiver, argc, args);
+    v8::Local<v8::Value> result;
+    {
+        TRACE_EVENT1("v8", "v8.callFunction", "callsite", resourceString(function).utf8());
+        V8RecursionScope recursionScope(context);
+        result = function->Call(receiver, argc, args);
+    }
 
     InspectorInstrumentation::didCallFunction(cookie);
+    crashIfV8IsDead();
     return result;
 }
 
@@ -529,6 +540,7 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
 
     return npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(v8plugin), window);
 }
+
 
 void ScriptController::clearWindowShell()
 {

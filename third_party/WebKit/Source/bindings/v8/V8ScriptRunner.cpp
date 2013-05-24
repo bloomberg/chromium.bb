@@ -110,46 +110,15 @@ v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::
         context = v8::Context::New(isolate);
     if (context.IsEmpty())
         return result;
+    {
+        v8::Context::Scope scope(context);
+        v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, scriptData, isolate);
+        if (script.IsEmpty())
+            return result;
 
-    v8::Context::Scope scope(context);
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, scriptStartPosition, scriptData, isolate);
-    if (script.IsEmpty())
-        return result;
-
-    V8RecursionScope::MicrotaskSuppression recursionScope;
-    result = script->Run();
-    return result;
-}
-
-static String functionInfo(const v8::Handle<v8::Function> function)
-{
-    String resourceName = "undefined";
-    int lineNumber = 1;
-    v8::ScriptOrigin origin = function->GetScriptOrigin();
-    if (!origin.ResourceName().IsEmpty()) {
-        resourceName = toWebCoreString(origin.ResourceName());
-        lineNumber = function->GetScriptLineNumber() + 1;
+        V8RecursionScope::MicrotaskSuppression recursionScope;
+        result = script->Run();
     }
-
-    StringBuilder builder;
-    builder.append(resourceName);
-    builder.append(':');
-    builder.appendNumber(lineNumber);
-    return builder.toString();
-}
-
-v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Handle<v8::Function> function, ScriptExecutionContext* context, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[])
-{
-    TRACE_EVENT0("v8", "v8.callFunction");
-    V8GCController::checkMemoryUsage();
-
-    if (V8RecursionScope::recursionLevel() >= kMaxRecursionDepth)
-        return handleMaxRecursionDepthExceeded();
-
-    V8RecursionScope recursionScope(context);
-    v8::Local<v8::Value> result = function->Call(receiver, argc, args);
-
-    crashIfV8IsDead();
     return result;
 }
 
