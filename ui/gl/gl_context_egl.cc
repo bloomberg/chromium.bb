@@ -98,8 +98,10 @@ bool GLContextEGL::MakeCurrent(GLSurface* surface) {
                "context", context_,
                "surface", surface);
 
-  if (unbind_fbo_on_makecurrent_)
+  if (unbind_fbo_on_makecurrent_ &&
+      eglGetCurrentContext() != EGL_NO_CONTEXT) {
     glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+  }
 
   if (!eglMakeCurrent(display_,
                       surface->GetHandle(),
