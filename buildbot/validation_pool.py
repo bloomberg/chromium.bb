@@ -281,7 +281,7 @@ class PatchSeries(object):
     """
     helper = self._LookupHelper(query)
     query = query_text = cros_patch.FormatPatchDep(query, force_external=True)
-    if parent_lookup:
+    if parent_lookup and not query.isdigit():
       query_text = "project:%s AND branch:%s AND %s" % (
           change.project,
           self.GetTrackingBranchForChange(change, True),
