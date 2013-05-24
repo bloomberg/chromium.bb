@@ -385,7 +385,7 @@ int HostService::RunInConsole() {
   }
 
   // Create a window for receiving session change notifications.
-  base::win::MessageWindow window;
+  win::MessageWindow window;
   if (!window.Create(this)) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to create the session notification window";

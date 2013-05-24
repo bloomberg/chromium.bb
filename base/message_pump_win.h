@@ -17,7 +17,6 @@
 #include "base/message_pump_observer.h"
 #include "base/observer_list.h"
 #include "base/time.h"
-#include "base/win/message_window.h"
 #include "base/win/scoped_handle.h"
 
 namespace base {
@@ -126,9 +125,7 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
 // an excellent choice.  It is also helpful that the starter messages that are
 // placed in the queue when new task arrive also awakens DoRunLoop.
 //
-class BASE_EXPORT MessagePumpForUI
-    : public MessagePumpWin,
-      public win::MessageWindow::Delegate {
+class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
  public:
   // A MessageFilter implements the common Peek/Translate/Dispatch code to deal
   // with windows messages.
@@ -178,14 +175,12 @@ class BASE_EXPORT MessagePumpForUI
   void PumpOutPendingPaintMessages();
 
  private:
-  // win::MessageWindow::Delegate interface.
-  virtual bool HandleMessage(HWND hwnd,
-                             UINT message,
-                             WPARAM wparam,
-                             LPARAM lparam,
-                             LRESULT* result) OVERRIDE;
-
+  static LRESULT CALLBACK WndProcThunk(HWND window_handle,
+                                       UINT message,
+                                       WPARAM wparam,
+                                       LPARAM lparam);
   virtual void DoRunLoop();
+  void InitMessageWnd();
   void WaitForWork();
   void HandleWorkMessage();
   void HandleTimerMessage();
@@ -193,10 +188,13 @@ class BASE_EXPORT MessagePumpForUI
   bool ProcessMessageHelper(const MSG& msg);
   bool ProcessPumpReplacementMessage();
 
-  scoped_ptr<MessageFilter> message_filter_;
+  // Instance of the module containing the window procedure.
+  HMODULE instance_;
 
   // A hidden message-only window.
-  scoped_ptr<win::MessageWindow> window_;
+  HWND message_hwnd_;
+
+  scoped_ptr<MessageFilter> message_filter_;
 };
 
 //-----------------------------------------------------------------------------

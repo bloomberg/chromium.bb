@@ -2,26 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_WIN_MESSAGE_WINDOW_H_
-#define BASE_WIN_MESSAGE_WINDOW_H_
+#ifndef REMOTING_HOST_WIN_MESSAGE_WINDOW_H_
+#define REMOTING_HOST_WIN_MESSAGE_WINDOW_H_
 
 #include <windows.h>
 
 #include <string>
 
-#include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
 
-namespace base {
+namespace remoting {
 namespace win {
 
 // Implements a message-only window.
-class BASE_EXPORT MessageWindow : base::NonThreadSafe {
+class MessageWindow : base::NonThreadSafe {
  public:
   // Handles incoming window messages.
-  class BASE_EXPORT Delegate {
+  class Delegate {
    public:
     virtual ~Delegate() {}
 
@@ -33,6 +32,7 @@ class BASE_EXPORT MessageWindow : base::NonThreadSafe {
   };
 
   MessageWindow();
+  MessageWindow(const std::string& class_name, HINSTANCE instance);
   ~MessageWindow();
 
   // Registers the window class and creates the window. The incoming messages
@@ -62,6 +62,6 @@ class BASE_EXPORT MessageWindow : base::NonThreadSafe {
 };
 
 }  // namespace win
-}  // namespace base
+}  // namespace remoting
 
-#endif  // BASE_WIN_MESSAGE_WINDOW_H_
+#endif  // REMOTING_HOST_WIN_MESSAGE_WINDOW_H_
