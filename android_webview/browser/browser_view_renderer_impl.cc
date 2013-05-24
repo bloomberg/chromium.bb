@@ -342,7 +342,7 @@ bool BrowserViewRendererImpl::DrawSW(jobject java_canvas,
   if (!g_sw_draw_functions ||
       (pixels = g_sw_draw_functions->access_pixels(env, java_canvas)) == NULL) {
     ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
-        env, clip.width(), clip.height()));
+        env, clip.width(), clip.height(), true));
     if (!jbitmap.obj())
       return false;
 
@@ -420,7 +420,7 @@ ScopedJavaLocalRef<jobject> BrowserViewRendererImpl::CapturePicture() {
   // If Skia versions are not compatible, workaround it by rasterizing the
   // picture into a bitmap and drawing it into a new Java picture.
   ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
-      env, picture->width(), picture->height()));
+      env, picture->width(), picture->height(), false));
   if (!jbitmap.obj())
     return ScopedJavaLocalRef<jobject>();
 

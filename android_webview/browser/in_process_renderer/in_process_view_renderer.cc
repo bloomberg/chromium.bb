@@ -9,6 +9,7 @@
 #include "android_webview/public/browser/draw_gl.h"
 #include "android_webview/public/browser/draw_sw.h"
 #include "base/android/jni_android.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_view_host.h"
@@ -246,8 +247,11 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
                                            const gfx::Rect& clip) {
   TRACE_EVENT0("android_webview", "InProcessViewRenderer::DrawSW");
 
-  if (clip.IsEmpty())
+  if (clip.IsEmpty()) {
+    TRACE_EVENT_INSTANT0("android_webview", "Empty Clip",
+                         TRACE_EVENT_SCOPE_THREAD);
     return true;
+  }
 
   JNIEnv* env = AttachCurrentThread();
 
@@ -256,14 +260,20 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
       sw_functions->access_pixels(env, java_canvas) : NULL;
   // Render into an auxiliary bitmap if pixel info is not available.
   if (pixels == NULL) {
+    TRACE_EVENT0("android_webview", "Render to Aux Bitmap");
     ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
-        env, clip.width(), clip.height()));
-    if (!jbitmap.obj())
+        env, clip.width(), clip.height(), true));
+    if (!jbitmap.obj()) {
+      TRACE_EVENT_INSTANT0("android_webview", "Bitmap Alloc Fail",
+                           TRACE_EVENT_SCOPE_THREAD);
       return false;
+    }
 
     if (!RasterizeIntoBitmap(env, jbitmap, clip.x(), clip.y(),
                              base::Bind(&InProcessViewRenderer::RenderSW,
                                         base::Unretained(this)))) {
+      TRACE_EVENT_INSTANT0("android_webview", "Rasterize Fail",
+                           TRACE_EVENT_SCOPE_THREAD);
       return false;
     }
 
@@ -334,9 +344,12 @@ InProcessViewRenderer::CapturePicture() {
   }
 
   // If Skia versions are not compatible, workaround it by rasterizing the
-  // picture into a bitmap and drawing it into a new Java picture.
+  // picture into a bitmap and drawing it into a new Java picture. Pass false
+  // for |cache_result| as the picture we create will hold a shallow reference
+  // to the bitmap drawn, and we don't want subsequent draws to corrupt any
+  // previously returned pictures.
   ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
-      env, picture->width(), picture->height()));
+      env, picture->width(), picture->height(), false));
   if (!jbitmap.obj())
     return ScopedJavaLocalRef<jobject>();
 
