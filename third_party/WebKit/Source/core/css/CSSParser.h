@@ -79,6 +79,8 @@ public:
         PropertyDeclarationError,
         InvalidPropertyValueError,
         InvalidPropertyError,
+        InvalidSelectorError,
+        InvalidRuleError,
         GeneralError
     };
 
@@ -368,7 +370,7 @@ public:
     bool m_hasFontFaceOnlyValues;
     bool m_hadSyntacticallyValidCSSRule;
     bool m_logErrors;
-    bool m_ignoreErrorsInDeclaration;
+    bool m_ignoreErrors;
 
     bool m_inFilterRule;
 
@@ -388,7 +390,10 @@ public:
     void startProperty();
     void endProperty(bool isImportantFound, bool isPropertyParsed, ErrorType = NoError);
     void startEndUnknownRule();
+
+    void endInvalidRuleHeader();
     void reportError(const CSSParserLocation&, ErrorType = GeneralError);
+    void resumeErrorLogging() { m_ignoreErrors = false; }
 
     inline int lex(void* yylval) { return (this->*m_lexFunc)(yylval); }
 
@@ -409,7 +414,6 @@ public:
     static KURL completeURL(const CSSParserContext&, const String& url);
 
     CSSParserLocation currentLocation();
-    CSSParserLocation getSource(const CSSParserLocation& begin, const CSSParserLocation& end) const;
 
 private:
     enum PropertyType {
@@ -569,6 +573,9 @@ private:
     int m_lineNumber;
     int m_tokenStartLineNumber;
     int m_lastSelectorLineNumber;
+    CSSRuleSourceData::Type m_ruleHeaderType;
+    unsigned m_ruleHeaderStartOffset;
+    int m_ruleHeaderStartLineNumber;
 
     bool m_allowImportRules;
     bool m_allowNamespaceDeclarations;
@@ -678,9 +685,7 @@ private:
 
 struct CSSParserLocation {
     int lineNumber;
-    CSSParserString content;
-
-    CSSParserLocation trimTrailingWhitespace() const;
+    CSSParserString token;
 };
 
 class CSSParser::SourceDataHandler {

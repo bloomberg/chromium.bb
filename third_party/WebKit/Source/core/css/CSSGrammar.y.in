@@ -1549,7 +1549,7 @@ declaration:
             $$ = parser->parseValue(static_cast<CSSPropertyID>($1), $6);
             if (!$$) {
                 parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
-                parser->reportError(parser->getSource($4, parser->currentLocation()).trimTrailingWhitespace(), CSSParser::InvalidPropertyValueError);
+                parser->reportError($4, CSSParser::InvalidPropertyValueError);
             } else
                 isPropertyParsed = true;
             parser->m_valueList = nullptr;
@@ -1911,10 +1911,17 @@ at_rule_recovery:
     ;
 
 invalid_rule:
-    error rule_error_recovery invalid_block {
+    error rule_error_recovery at_invalid_rule_header_end invalid_block {
+        parser->resumeErrorLogging();
         $$ = 0;
     }
     ;
+
+at_invalid_rule_header_end:
+   /* empty */ {
+       parser->endInvalidRuleHeader();
+   }
+   ;
 
 invalid_block:
     '{' error_recovery closing_brace {

@@ -70,6 +70,8 @@ struct CSSParserString {
         m_is8Bit = false;
     }
 
+    void trimTrailingWhitespace();
+
     bool is8Bit() const { return m_is8Bit; }
     const LChar* characters8() const { ASSERT(is8Bit()); return m_data.characters8; }
     const UChar* characters16() const { ASSERT(!is8Bit()); return m_data.characters16; }

@@ -1215,9 +1215,9 @@ void pseudoElementDestroyedImpl(InstrumentingAgents* instrumentingAgents, Pseudo
         layerTreeAgent->pseudoElementDestroyed(pseudoElement);
 }
 
-bool cssErrorFilter(const CSSParserLocation& location, int propertyId, int errorType)
+bool cssErrorFilter(const CSSParserString& content, int propertyId, int errorType)
 {
-    return InspectorCSSAgent::cssErrorFilter(location, propertyId, errorType);
+    return InspectorCSSAgent::cssErrorFilter(content, propertyId, errorType);
 }
 
 } // namespace InspectorInstrumentation

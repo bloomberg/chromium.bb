@@ -633,9 +633,8 @@ static bool hasNonWebkitVendorSpecificPrefix(const CSSParserString& string)
 }
 
 // static
-bool InspectorCSSAgent::cssErrorFilter(const CSSParserLocation& location, int propertyId, int errorType)
+bool InspectorCSSAgent::cssErrorFilter(const CSSParserString& content, int propertyId, int errorType)
 {
-    const CSSParserString & content = location.content;
     const size_t contentLength = content.length();
 
     switch (errorType) {

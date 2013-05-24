@@ -42,7 +42,7 @@
 
 namespace WebCore {
 
-struct CSSParserLocation;
+struct CSSParserString;
 class CSSRule;
 class CSSRuleList;
 class CSSStyleDeclaration;
@@ -90,7 +90,7 @@ public:
     };
 
     static CSSStyleRule* asCSSStyleRule(CSSRule*);
-    static bool cssErrorFilter(const CSSParserLocation&, int propertyId, int errorType);
+    static bool cssErrorFilter(const CSSParserString& content, int propertyId, int errorType);
 
     static PassOwnPtr<InspectorCSSAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent)
     {
