@@ -6,11 +6,7 @@ package org.chromium.content.browser.input;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.text.format.DateUtils;
-import android.util.AttributeSet;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.DatePicker;
@@ -33,8 +29,6 @@ public class MonthPicker extends FrameLayout {
 
     private static final int DEFAULT_END_YEAR = 2100;
 
-    private static final boolean DEFAULT_ENABLED_STATE = true;
-
     private final NumberPicker mMonthSpinner;
 
     private final NumberPicker mYearSpinner;
@@ -53,8 +47,6 @@ public class MonthPicker extends FrameLayout {
 
     private Calendar mCurrentDate;
 
-    private boolean mIsEnabled = DEFAULT_ENABLED_STATE;
-
     /**
      * The callback used to indicate the user changes\d the date.
      */
@@ -72,15 +64,7 @@ public class MonthPicker extends FrameLayout {
     }
 
     public MonthPicker(Context context) {
-        this(context, null);
-    }
-
-    public MonthPicker(Context context, AttributeSet attrs) {
-        this(context, attrs, android.R.attr.datePickerStyle);
-    }
-
-    public MonthPicker(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+        super(context, null, android.R.attr.datePickerStyle);
 
         // initialization based on locale
         setCurrentLocale(Locale.getDefault());
@@ -216,22 +200,6 @@ public class MonthPicker extends FrameLayout {
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
-        if (mIsEnabled == enabled) {
-            return;
-        }
-        super.setEnabled(enabled);
-        mMonthSpinner.setEnabled(enabled);
-        mYearSpinner.setEnabled(enabled);
-        mIsEnabled = enabled;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return mIsEnabled;
-    }
-
-    @Override
     public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event) {
         onPopulateAccessibilityEvent(event);
         return true;
@@ -303,26 +271,6 @@ public class MonthPicker extends FrameLayout {
         setDate(year, month);
         updateSpinners();
         notifyDateChanged();
-    }
-
-    // Override so we are in complete control of save / restore for this widget.
-    @Override
-    protected void dispatchRestoreInstanceState(SparseArray<Parcelable> container) {
-        dispatchThawSelfOnly(container);
-    }
-
-    @Override
-    protected Parcelable onSaveInstanceState() {
-        Parcelable superState = super.onSaveInstanceState();
-        return new SavedState(superState, getYear(), getMonth());
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Parcelable state) {
-        SavedState ss = (SavedState) state;
-        super.onRestoreInstanceState(ss.getSuperState());
-        setDate(ss.mYear, ss.mMonth);
-        updateSpinners();
     }
 
     /**
@@ -404,13 +352,6 @@ public class MonthPicker extends FrameLayout {
     }
 
     /**
-     * @return The selected day of month.
-     */
-    public int getDayOfMonth() {
-        return mCurrentDate.get(Calendar.DAY_OF_MONTH);
-    }
-
-    /**
      * Notifies the listener, if such, for a change in the selected date.
      */
     private void notifyDateChanged() {
@@ -418,53 +359,5 @@ public class MonthPicker extends FrameLayout {
         if (mMonthChangedListener != null) {
             mMonthChangedListener.onMonthChanged(this, getYear(), getMonth());
         }
-    }
-
-    /**
-     * Class for managing state storing/restoring.
-     */
-    private static class SavedState extends BaseSavedState {
-
-        private final int mYear;
-
-        private final int mMonth;
-
-        /**
-         * Constructor called from {@link DatePicker#onSaveInstanceState()}
-         */
-        private SavedState(Parcelable superState, int year, int month) {
-            super(superState);
-            mYear = year;
-            mMonth = month;
-        }
-
-        /**
-         * Constructor called from {@link #CREATOR}
-         */
-        private SavedState(Parcel in) {
-            super(in);
-            mYear = in.readInt();
-            mMonth = in.readInt();
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            super.writeToParcel(dest, flags);
-            dest.writeInt(mYear);
-            dest.writeInt(mMonth);
-        }
-
-        @SuppressWarnings("all")
-        // suppress unused and hiding
-        public static final Parcelable.Creator<SavedState> CREATOR = new Creator<SavedState>() {
-
-            public SavedState createFromParcel(Parcel in) {
-                return new SavedState(in);
-            }
-
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
-            }
-        };
     }
 }
