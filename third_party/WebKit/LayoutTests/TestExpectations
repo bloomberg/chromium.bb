@@ -1865,6 +1865,7 @@ crbug.com/243713 virtual/gpu/fast/canvas/webgl/context-release-upon-reload.html 
 crbug.com/243713 [ Win Linux ] virtual/gpu/fast/hidpi/clip-text-in-hidpi.html [ Timeout Pass ]
 crbug.com/243725 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure Pass ]
 crbug.com/243730 [ Mac ] fast/dom/HTMLMeterElement/meter-optimums.html [ Timeout ImageOnlyFailure Missing Pass ]
+crbug.com/243730 [ Linux Mac Win ] fast/dom/HTMLMeterElement/meter-element.html [ Timeout Pass ]
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ ImageOnlyFailure Pass ]
 crbug.com/238858 [ Win Debug ] virtual/gpu/fast/hidpi/focus-rings.html [ Pass Timeout ]
 crbug.com/243736 [ Release ] storage/websql/quota-tracking.html [ Failure Pass ]
