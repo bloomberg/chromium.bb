@@ -80,7 +80,8 @@ class Stats {
   int GetLargeEntriesSize();
 
   // Writes the stats into |data|, to be stored at the given cache address.
-  bool SerializeStats(void* data, int num_bytes, Addr* address);
+  // Returns the number of bytes copied.
+  int SerializeStats(void* data, int num_bytes, Addr* address);
 
   // Support for StatsHistograms. Together, these methods allow StatsHistograms
   // to take a snapshot of the data_sizes_ as the histogram data.

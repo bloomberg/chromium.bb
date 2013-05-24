@@ -1394,8 +1394,8 @@ void BackendImpl::StoreStats() {
   int size = stats_.StorageSize();
   scoped_ptr<char[]> data(new char[size]);
   Addr address;
-  bool rv = stats_.SerializeStats(data.get(), size, &address);
-  DCHECK(rv);
+  size = stats_.SerializeStats(data.get(), size, &address);
+  DCHECK(size);
   if (!address.is_initialized())
     return;
 
@@ -1405,7 +1405,7 @@ void BackendImpl::StoreStats() {
 
   size_t offset = address.start_block() * address.BlockSize() +
                   kBlockHeaderSize;
-  rv = file->Write(data.get(), size, offset);  // ignore result.
+  file->Write(data.get(), size, offset);  // ignore result.
 }
 
 void BackendImpl::RestartCache(bool failure) {

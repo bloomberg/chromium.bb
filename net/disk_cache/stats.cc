@@ -207,10 +207,10 @@ int Stats::GetLargeEntriesSize() {
   return total;
 }
 
-bool Stats::SerializeStats(void* data, int num_bytes, Addr* address) {
+int Stats::SerializeStats(void* data, int num_bytes, Addr* address) {
   OnDiskStats* stats = reinterpret_cast<OnDiskStats*>(data);
   if (num_bytes < static_cast<int>(sizeof(*stats)))
-    return false;
+    return 0;
 
   stats->signature = kDiskSignature;
   stats->size = sizeof(stats);
@@ -218,7 +218,7 @@ bool Stats::SerializeStats(void* data, int num_bytes, Addr* address) {
   memcpy(stats->counters, counters_, sizeof(counters_));
 
   *address = storage_addr_;
-  return true;
+  return sizeof(*stats);
 }
 
 int Stats::GetBucketRange(size_t i) const {
