@@ -2724,7 +2724,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, TabsApi) {
+// Fails often on Windows dbg bots. http://crbug.com/177163
+#if defined(OS_WIN)
+#define MAYBE_TabsApi DISABLED_TabsApi
+#else
+#define MAYBE_TabsApi TabsApi
+#endif  // defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, MAYBE_TabsApi) {
   ASSERT_TRUE(StartTestServer());
   extensions::FrameNavigationState::set_allow_extension_scheme(true);
 

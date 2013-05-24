@@ -120,8 +120,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_Uninstall) {
   ASSERT_TRUE(RunExtensionSubtest("management/test", "uninstall.html"));
 }
 
+// Fails often on Windows dbg bots. http://crbug.com/177163
+#if defined(OS_WIN)
+#define MAYBE_ManagementPolicyAllowed DISABLED_ManagementPolicyAllowed
+#else
+#define MAYBE_ManagementPolicyAllowed ManagementPolicyAllowed
+#endif  // defined(OS_WIN)
 // Tests actions on extensions when no management policy is in place.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyAllowed) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
+                       MAYBE_ManagementPolicyAllowed) {
   LoadExtensions();
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
@@ -139,8 +146,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyAllowed) {
                                          true));
 }
 
+// Fails often on Windows dbg bots. http://crbug.com/177163
+#if defined(OS_WIN)
+#define MAYBE_ManagementPolicyProhibited DISABLED_ManagementPolicyProhibited
+#else
+#define MAYBE_ManagementPolicyProhibited ManagementPolicyProhibited
+#endif  // defined(OS_WIN)
 // Tests actions on extensions when management policy prohibits those actions.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyProhibited) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
+                       MAYBE_ManagementPolicyProhibited) {
   LoadExtensions();
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
