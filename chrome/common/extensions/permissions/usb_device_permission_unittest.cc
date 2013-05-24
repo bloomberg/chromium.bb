@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -38,7 +39,7 @@ TEST(USBDevicePermissionTest, MAYBE_PermissionMessage) {
   };
 
   // Prepare data set
-  base::ListValue* permission_list = new base::ListValue();
+  scoped_ptr<base::ListValue> permission_list(new base::ListValue());
   permission_list->Append(
       UsbDevicePermissionData(0x02ad, 0x138c).ToValue()->DeepCopy());
   permission_list->Append(
@@ -48,7 +49,7 @@ TEST(USBDevicePermissionTest, MAYBE_PermissionMessage) {
 
   UsbDevicePermission permission(
       PermissionsInfo::GetInstance()->GetByID(APIPermission::kUsbDevice));
-  ASSERT_TRUE(permission.FromValue(permission_list));
+  ASSERT_TRUE(permission.FromValue(permission_list.get()));
 
   PermissionMessages messages = permission.GetMessages();
   ASSERT_EQ(3U, messages.size());
