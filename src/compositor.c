@@ -94,7 +94,7 @@ sigchld_handler(int signal_number, void *data)
 static void
 weston_output_transform_init(struct weston_output *output, uint32_t transform);
 static void
-weston_output_scale_init(struct weston_output *output, uint32_t scale);
+weston_output_scale_init(struct weston_output *output, int32_t scale);
 
 WL_EXPORT int
 weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode)
@@ -365,7 +365,7 @@ weston_surface_to_global_float(struct weston_surface *surface,
 WL_EXPORT void
 weston_transformed_coord(int width, int height,
 			 enum wl_output_transform transform,
-			 uint32_t scale,
+			 int32_t scale,
 			 float sx, float sy, float *bx, float *by)
 {
 	switch (transform) {
@@ -411,7 +411,7 @@ weston_transformed_coord(int width, int height,
 WL_EXPORT pixman_box32_t
 weston_transformed_rect(int width, int height,
 			enum wl_output_transform transform,
-			uint32_t scale,
+			int32_t scale,
 			pixman_box32_t rect)
 {
 	float x1, x2, y1, y2;
@@ -1630,7 +1630,7 @@ surface_set_buffer_transform(struct wl_client *client,
 static void
 surface_set_buffer_scale(struct wl_client *client,
 			 struct wl_resource *resource,
-			 uint32_t scale)
+			 int32_t scale)
 {
 	struct weston_surface *surface = resource->data;
 
@@ -2669,7 +2669,7 @@ weston_output_transform_init(struct weston_output *output, uint32_t transform)
 }
 
 static void
-weston_output_scale_init(struct weston_output *output, uint32_t scale)
+weston_output_scale_init(struct weston_output *output, int32_t scale)
 {
         output->scale = scale;
 }
@@ -2689,7 +2689,7 @@ weston_output_move(struct weston_output *output, int x, int y)
 WL_EXPORT void
 weston_output_init(struct weston_output *output, struct weston_compositor *c,
 		   int x, int y, int width, int height, uint32_t transform,
-		   uint32_t scale)
+		   int32_t scale)
 {
 	output->compositor = c;
 	output->x = x;

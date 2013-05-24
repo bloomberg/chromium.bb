@@ -183,7 +183,7 @@ struct weston_output {
 	char *make, *model, *serial_number;
 	uint32_t subpixel;
 	uint32_t transform;
-	uint32_t scale;
+	int32_t scale;
 
 	struct weston_mode *current;
 	struct weston_mode *origin;
@@ -612,7 +612,7 @@ struct weston_subsurface {
 		uint32_t buffer_transform;
 
 		/* wl_surface.set_buffer_scale */
-		uint32_t buffer_scale;
+		int32_t buffer_scale;
 	} cached;
 
 	int synchronized;
@@ -716,7 +716,7 @@ struct weston_surface {
 
 	struct weston_buffer_reference buffer_ref;
 	uint32_t buffer_transform;
-	uint32_t buffer_scale;
+	int32_t buffer_scale;
 	int keep_buffer; /* bool for backends to prevent early release */
 
 	/* All the pending state, that wl_surface.commit will apply. */
@@ -744,7 +744,7 @@ struct weston_surface {
 		uint32_t buffer_transform;
 
 		/* wl_surface.set_scaling_factor */
-		uint32_t buffer_scale;
+		int32_t buffer_scale;
 	} pending;
 
 	/*
@@ -1025,7 +1025,7 @@ void
 weston_output_move(struct weston_output *output, int x, int y);
 void
 weston_output_init(struct weston_output *output, struct weston_compositor *c,
-		   int x, int y, int width, int height, uint32_t transform, uint32_t scale);
+		   int x, int y, int width, int height, uint32_t transform, int32_t scale);
 void
 weston_output_destroy(struct weston_output *output);
 
@@ -1156,12 +1156,12 @@ module_init(struct weston_compositor *compositor,
 void
 weston_transformed_coord(int width, int height,
 			 enum wl_output_transform transform,
-			 uint32_t scale,
+			 int32_t scale,
 			 float sx, float sy, float *bx, float *by);
 pixman_box32_t
 weston_transformed_rect(int width, int height,
 			enum wl_output_transform transform,
-			uint32_t scale,
+			int32_t scale,
 			pixman_box32_t rect);
 
 #ifdef  __cplusplus

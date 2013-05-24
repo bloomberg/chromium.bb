@@ -258,7 +258,7 @@ window_get_buffer_scale(struct window *window);
 
 void
 window_set_buffer_scale(struct window *window,
-                        uint32_t scale);
+                        int32_t scale);
 
 uint32_t
 window_get_output_scale(struct window *window);

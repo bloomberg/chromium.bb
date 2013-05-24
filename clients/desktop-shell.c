@@ -1115,7 +1115,7 @@ output_handle_done(void *data,
 static void
 output_handle_scale(void *data,
                     struct wl_output *wl_output,
-                    uint32_t scale)
+                    int32_t scale)
 {
 	struct output *output = data;
 

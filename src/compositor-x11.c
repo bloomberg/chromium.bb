@@ -114,7 +114,7 @@ struct x11_output {
 	int			shm_id;
 	void		       *buf;
 	uint8_t			depth;
-	uint32_t                scale;
+	int32_t                 scale;
 };
 
 static struct xkb_keymap *
@@ -777,7 +777,7 @@ static struct x11_output *
 x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			     int width, int height, int fullscreen,
 			     int no_input, char *configured_name,
-			     uint32_t transform, uint32_t scale)
+			     uint32_t transform, int32_t scale)
 {
 	static const char name[] = "Weston Compositor";
 	static const char class[] = "weston-1\0Weston Compositor";

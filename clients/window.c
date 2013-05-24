@@ -159,7 +159,7 @@ struct toysurface {
 	 */
 	cairo_surface_t *(*prepare)(struct toysurface *base, int dx, int dy,
 				    int32_t width, int32_t height, uint32_t flags,
-				    enum wl_output_transform buffer_transform, uint32_t buffer_scale);
+				    enum wl_output_transform buffer_transform, int32_t buffer_scale);
 
 	/*
 	 * Post the surface to the server, returning the server allocation
@@ -167,7 +167,7 @@ struct toysurface {
 	 * after calling this.
 	 */
 	void (*swap)(struct toysurface *base,
-		     enum wl_output_transform buffer_transform, uint32_t buffer_scale,
+		     enum wl_output_transform buffer_transform, int32_t buffer_scale,
 		     struct rectangle *server_allocation);
 
 	/*
@@ -210,7 +210,7 @@ struct surface {
 
 	enum window_buffer_type buffer_type;
 	enum wl_output_transform buffer_transform;
-	uint32_t buffer_scale;
+	int32_t buffer_scale;
 
 	cairo_surface_t *cairo_surface;
 
@@ -468,7 +468,7 @@ debug_print(void *proxy, int line, const char *func, const char *fmt, ...)
 #endif
 
 static void
-surface_to_buffer_size (enum wl_output_transform buffer_transform, uint32_t buffer_scale, int32_t *width, int32_t *height)
+surface_to_buffer_size (enum wl_output_transform buffer_transform, int32_t buffer_scale, int32_t *width, int32_t *height)
 {
 	int32_t tmp;
 
@@ -490,7 +490,7 @@ surface_to_buffer_size (enum wl_output_transform buffer_transform, uint32_t buff
 }
 
 static void
-buffer_to_surface_size (enum wl_output_transform buffer_transform, uint32_t buffer_scale, int32_t *width, int32_t *height)
+buffer_to_surface_size (enum wl_output_transform buffer_transform, int32_t buffer_scale, int32_t *width, int32_t *height)
 {
 	int32_t tmp;
 
@@ -531,7 +531,7 @@ to_egl_window_surface(struct toysurface *base)
 static cairo_surface_t *
 egl_window_surface_prepare(struct toysurface *base, int dx, int dy,
 			   int32_t width, int32_t height, uint32_t flags,
-			   enum wl_output_transform buffer_transform, uint32_t buffer_scale)
+			   enum wl_output_transform buffer_transform, int32_t buffer_scale)
 {
 	struct egl_window_surface *surface = to_egl_window_surface(base);
 
@@ -545,7 +545,7 @@ egl_window_surface_prepare(struct toysurface *base, int dx, int dy,
 
 static void
 egl_window_surface_swap(struct toysurface *base,
-			enum wl_output_transform buffer_transform, uint32_t buffer_scale,
+			enum wl_output_transform buffer_transform, int32_t buffer_scale,
 			struct rectangle *server_allocation)
 {
 	struct egl_window_surface *surface = to_egl_window_surface(base);
@@ -1017,7 +1017,7 @@ static const struct wl_buffer_listener shm_surface_buffer_listener = {
 static cairo_surface_t *
 shm_surface_prepare(struct toysurface *base, int dx, int dy,
 		    int32_t width, int32_t height, uint32_t flags,
-		    enum wl_output_transform buffer_transform, uint32_t buffer_scale)
+		    enum wl_output_transform buffer_transform, int32_t buffer_scale)
 {
 	int resize_hint = !!(flags & SURFACE_HINT_RESIZE);
 	struct shm_surface *surface = to_shm_surface(base);
@@ -1095,7 +1095,7 @@ out:
 
 static void
 shm_surface_swap(struct toysurface *base,
-		 enum wl_output_transform buffer_transform, uint32_t buffer_scale,
+		 enum wl_output_transform buffer_transform, int32_t buffer_scale,
 		 struct rectangle *server_allocation)
 {
 	struct shm_surface *surface = to_shm_surface(base);
@@ -1457,7 +1457,7 @@ window_set_buffer_transform(struct window *window,
 
 void
 window_set_buffer_scale(struct window *window,
-			    uint32_t scale)
+			int32_t scale)
 {
 	window->main_surface->buffer_scale = scale;
 	wl_surface_set_buffer_scale(window->main_surface->surface,
@@ -1720,7 +1720,7 @@ widget_cairo_update_transform(struct widget *widget, cairo_t *cr)
 	enum wl_output_transform transform;
 	int surface_width, surface_height;
 	int translate_x, translate_y;
-	uint32_t scale;
+	int32_t scale;
 
 	surface_width = surface->allocation.width;
 	surface_height = surface->allocation.height;
@@ -4501,7 +4501,7 @@ display_handle_done(void *data,
 static void
 display_handle_scale(void *data,
 		     struct wl_output *wl_output,
-		     uint32_t scale)
+		     int32_t scale)
 {
 	struct output *output = data;
 
