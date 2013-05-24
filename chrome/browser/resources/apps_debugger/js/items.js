@@ -30,6 +30,8 @@ cr.define('apps_dev_tool', function() {
           this.handleUpdateItemNow_.bind(this));
       var packItemOverlay =
           apps_dev_tool.PackItemOverlay.getInstance().initializePage();
+
+      preventDefaultOnPoundLinkClicks();  // From webui/js/util.js
     },
 
     /**
