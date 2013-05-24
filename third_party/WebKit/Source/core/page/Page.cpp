@@ -431,24 +431,25 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
 {
     FrameView* view = mainFrame()->view();
 
-    if (scale == m_pageScaleFactor) {
-        if (view && view->scrollPosition() != origin)
-            view->setScrollPosition(origin);
-        return;
+    bool oldProgrammaticScroll = view->inProgrammaticScroll();
+    view->setInProgrammaticScroll(false);
+
+    if (scale != m_pageScaleFactor) {
+        m_pageScaleFactor = scale;
+
+        if (view)
+            view->setVisibleContentScaleFactor(scale);
+
+        mainFrame()->deviceOrPageScaleFactorChanged();
+
+        if (view)
+            view->setViewportConstrainedObjectsNeedLayout();
     }
 
-    m_pageScaleFactor = scale;
-
-    if (view)
-        view->setVisibleContentScaleFactor(scale);
-
-    mainFrame()->deviceOrPageScaleFactorChanged();
-
-    if (view)
-        view->setViewportConstrainedObjectsNeedLayout();
-
     if (view && view->scrollPosition() != origin)
-        view->setScrollPosition(origin);
+        view->notifyScrollPositionChanged(origin);
+
+    view->setInProgrammaticScroll(oldProgrammaticScroll);
 }
 
 void Page::setDeviceScaleFactor(float scaleFactor)

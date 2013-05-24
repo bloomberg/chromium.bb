@@ -33,6 +33,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/cache/CachedResourceLoader.h"
+#include "core/page/Chrome.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
@@ -129,6 +130,8 @@ Settings::Settings(Page* page)
 #else
     , m_textAutosizingEnabled(false)
 #endif
+    , m_useWideViewport(true)
+    , m_loadWithOverviewMode(true)
     SETTINGS_INITIALIZER_LIST
     , m_isJavaEnabled(false)
     , m_loadsImagesAutomatically(false)
@@ -248,6 +251,26 @@ void Settings::setTextAutosizingWindowSizeOverride(const IntSize& textAutosizing
 
     m_textAutosizingWindowSizeOverride = textAutosizingWindowSizeOverride;
     m_page->setNeedsRecalcStyleInAllFrames();
+}
+
+void Settings::setUseWideViewport(bool useWideViewport)
+{
+    if (m_useWideViewport == useWideViewport)
+        return;
+
+    m_useWideViewport = useWideViewport;
+    if (m_page->chrome() && m_page->mainFrame())
+        m_page->chrome()->dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportArguments());
+}
+
+void Settings::setLoadWithOverviewMode(bool loadWithOverviewMode)
+{
+    if (m_loadWithOverviewMode == loadWithOverviewMode)
+        return;
+
+    m_loadWithOverviewMode = loadWithOverviewMode;
+    if (m_page->chrome() && m_page->mainFrame())
+        m_page->chrome()->dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportArguments());
 }
 
 void Settings::setTextAutosizingFontScaleFactor(float fontScaleFactor)

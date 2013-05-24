@@ -97,6 +97,12 @@ public:
     void setTextAutosizingWindowSizeOverride(const IntSize&);
     const IntSize& textAutosizingWindowSizeOverride() const { return m_textAutosizingWindowSizeOverride; }
 
+    void setUseWideViewport(bool);
+    bool useWideViewport() const { return m_useWideViewport; }
+
+    void setLoadWithOverviewMode(bool);
+    bool loadWithOverviewMode() const { return m_loadWithOverviewMode; }
+
     // Only set by Layout Tests.
     void setMediaTypeOverride(const String&);
     const String& mediaTypeOverride() const { return m_mediaTypeOverride; }
@@ -172,6 +178,8 @@ private:
     float m_textAutosizingFontScaleFactor;
     IntSize m_textAutosizingWindowSizeOverride;
     bool m_textAutosizingEnabled : 1;
+    bool m_useWideViewport : 1;
+    bool m_loadWithOverviewMode : 1;
 
     SETTINGS_MEMBER_VARIABLES
 

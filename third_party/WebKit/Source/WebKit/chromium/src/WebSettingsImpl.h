@@ -105,13 +105,13 @@ public:
     virtual void setGestureTapHighlightEnabled(bool);
     virtual void setHyperlinkAuditingEnabled(bool);
     virtual void setImagesEnabled(bool);
-    virtual void setInitializeAtMinimumPageScale(bool);
     virtual void setJavaEnabled(bool);
     virtual void setJavaScriptCanAccessClipboard(bool);
     virtual void setJavaScriptCanOpenWindowsAutomatically(bool);
     virtual void setJavaScriptEnabled(bool);
     virtual void setLayoutFallbackWidth(int);
     virtual void setLoadsImagesAutomatically(bool);
+    virtual void setLoadWithOverviewMode(bool);
     virtual void setLocalStorageEnabled(bool);
     virtual void setMediaPlaybackRequiresUserGesture(bool);
     virtual void setMemoryInfoEnabled(bool);
@@ -171,13 +171,11 @@ public:
     bool showFPSCounter() const { return m_showFPSCounter; }
     bool showPaintRects() const { return m_showPaintRects; }
     bool renderVSyncNotificationEnabled() const { return m_renderVSyncNotificationEnabled; }
-    bool initializeAtMinimumPageScale() const { return m_initializeAtMinimumPageScale; }
     bool autoZoomFocusedNodeToLegibleScale() const { return m_autoZoomFocusedNodeToLegibleScale; }
     bool gestureTapHighlightEnabled() const { return m_gestureTapHighlightEnabled; }
     bool doubleTapToZoomEnabled() const { return m_doubleTapToZoomEnabled; }
     bool perTilePaintingEnabled() const { return m_perTilePaintingEnabled; }
     bool supportDeprecatedTargetDensityDPI() const { return m_supportDeprecatedTargetDensityDPI; }
-    bool useWideViewport() const { return m_useWideViewport; }
 
 private:
     WebCore::Settings* m_settings;
@@ -185,8 +183,6 @@ private:
     bool m_showPaintRects;
     bool m_renderVSyncNotificationEnabled;
     bool m_viewportEnabled;
-    bool m_initializeAtMinimumPageScale;
-    bool m_useWideViewport;
     bool m_gestureTapHighlightEnabled;
     bool m_autoZoomFocusedNodeToLegibleScale;
     bool m_deferredImageDecodingEnabled;

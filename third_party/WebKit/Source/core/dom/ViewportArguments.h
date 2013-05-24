@@ -28,6 +28,7 @@
 #ifndef ViewportArguments_h
 #define ViewportArguments_h
 
+#include "core/page/PageScaleConstraints.h"
 #include "core/platform/graphics/FloatSize.h"
 #include <wtf/Forward.h>
 
@@ -41,17 +42,6 @@ enum ViewportErrorCode {
     TruncatedViewportArgumentValueError,
     MaximumScaleTooLargeError,
     TargetDensityDpiUnsupported
-};
-
-struct ViewportAttributes {
-    FloatSize layoutSize;
-
-    float initialScale;
-    float minimumScale;
-    float maximumScale;
-
-    float userScalable;
-    float orientation;
 };
 
 struct ViewportArguments {
@@ -96,7 +86,7 @@ struct ViewportArguments {
     }
 
     // All arguments are in CSS units.
-    ViewportAttributes resolve(const FloatSize& initialViewportSize, const FloatSize& deviceSize, int defaultWidth) const;
+    PageScaleConstraints resolve(const FloatSize& initialViewportSize, const FloatSize& deviceSize, int defaultWidth) const;
 
     float width;
     float minWidth;
@@ -133,17 +123,7 @@ struct ViewportArguments {
     {
         return !(*this == other);
     }
-
-    // FIXME: We're going to keep this constant around until all embedders
-    // refactor their code to no longer need it.
-    static const float deprecatedTargetDPI;
 };
-
-ViewportAttributes computeViewportAttributes(ViewportArguments args, int desktopWidth, int deviceWidth, int deviceHeight, float devicePixelRatio, IntSize visibleViewport);
-
-void restrictMinimumScaleFactorToViewportSize(ViewportAttributes& result, IntSize visibleViewport, float devicePixelRatio);
-void restrictScaleFactorToInitialScaleIfNotUserScalable(ViewportAttributes& result);
-float computeMinimumScaleFactorForContentContained(const ViewportAttributes& result, const IntSize& viewportSize, const IntSize& contentSize);
 
 void setViewportFeature(const String& keyString, const String& valueString, Document*, void* data);
 void reportViewportWarning(Document*, ViewportErrorCode, const String& replacement1, const String& replacement2);

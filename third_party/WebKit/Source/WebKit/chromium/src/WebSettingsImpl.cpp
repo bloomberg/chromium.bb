@@ -53,8 +53,6 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings)
     , m_showPaintRects(false)
     , m_renderVSyncNotificationEnabled(false)
     , m_viewportEnabled(false)
-    , m_initializeAtMinimumPageScale(true)
-    , m_useWideViewport(true)
     , m_gestureTapHighlightEnabled(true)
     , m_autoZoomFocusedNodeToLegibleScale(false)
     , m_deferredImageDecodingEnabled(false)
@@ -199,9 +197,9 @@ void WebSettingsImpl::setImagesEnabled(bool enabled)
     m_settings->setImagesEnabled(enabled);
 }
 
-void WebSettingsImpl::setInitializeAtMinimumPageScale(bool enabled)
+void WebSettingsImpl::setLoadWithOverviewMode(bool enabled)
 {
-    m_initializeAtMinimumPageScale = enabled;
+    m_settings->setLoadWithOverviewMode(enabled);
 }
 
 void WebSettingsImpl::setPluginsEnabled(bool enabled)
@@ -261,7 +259,7 @@ void WebSettingsImpl::setAuthorAndUserStylesEnabled(bool enabled)
 
 void WebSettingsImpl::setUseWideViewport(bool useWideViewport)
 {
-    m_useWideViewport = useWideViewport;
+    m_settings->setUseWideViewport(useWideViewport);
 }
 
 void WebSettingsImpl::setDoubleTapToZoomEnabled(bool doubleTapToZoomEnabled)

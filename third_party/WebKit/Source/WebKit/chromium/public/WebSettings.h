@@ -113,13 +113,13 @@ public:
     virtual void setGestureTapHighlightEnabled(bool) = 0;
     virtual void setHyperlinkAuditingEnabled(bool) = 0;
     virtual void setImagesEnabled(bool) = 0;
-    virtual void setInitializeAtMinimumPageScale(bool) = 0;
     virtual void setJavaEnabled(bool) = 0;
     virtual void setJavaScriptCanAccessClipboard(bool) = 0;
     virtual void setJavaScriptCanOpenWindowsAutomatically(bool) = 0;
     virtual void setJavaScriptEnabled(bool) = 0;
     virtual void setLayoutFallbackWidth(int) = 0;
     virtual void setLoadsImagesAutomatically(bool) = 0;
+    virtual void setLoadWithOverviewMode(bool) = 0;
     virtual void setLocalStorageEnabled(bool) = 0;
     virtual void setMediaPlaybackRequiresUserGesture(bool) = 0;
     virtual void setMemoryInfoEnabled(bool) = 0;
@@ -177,6 +177,7 @@ public:
     void setApplyPageScaleFactorInCompositor(bool enabled) { }
     void setApplyDefaultDeviceScaleFactorInCompositor(bool enabled) { }
     void setFixedElementsLayoutRelativeToFrame(bool) { }
+    void setInitializeAtMinimumPageScale(bool enabled) { setLoadWithOverviewMode(enabled); }
 
 protected:
     ~WebSettings() { }
