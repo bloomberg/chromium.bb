@@ -247,24 +247,26 @@ def BuildStepUntarToolchains(pepperdir, platform, arch, toolchains):
 NACL_HEADER_MAP = {
   'newlib': [
       ('src/include/nacl/nacl_exception.h', 'nacl/'),
+      ('src/include/nacl/nacl_minidump.h', 'nacl/'),
+      ('src/untrusted/irt/irt.h', ''),
+      ('src/untrusted/irt/irt_ppapi.h', ''),
       ('src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
       ('src/untrusted/nacl/nacl_startup.h', 'nacl/'),
       ('src/untrusted/nacl/nacl_thread.h', 'nacl/'),
       ('src/untrusted/nacl/pnacl.h', ''),
-      ('src/untrusted/irt/irt.h', ''),
-      ('src/untrusted/irt/irt_ppapi.h', ''),
       ('src/untrusted/pthread/pthread.h', ''),
       ('src/untrusted/pthread/semaphore.h', ''),
       ('src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
   ],
   'glibc': [
       ('src/include/nacl/nacl_exception.h', 'nacl/'),
+      ('src/include/nacl/nacl_minidump.h', 'nacl/'),
+      ('src/untrusted/irt/irt.h', ''),
+      ('src/untrusted/irt/irt_ppapi.h', ''),
       ('src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
       ('src/untrusted/nacl/nacl_startup.h', 'nacl/'),
       ('src/untrusted/nacl/nacl_thread.h', 'nacl/'),
       ('src/untrusted/nacl/pnacl.h', ''),
-      ('src/untrusted/irt/irt.h', ''),
-      ('src/untrusted/irt/irt_ppapi.h', ''),
       ('src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
   ],
   'host': []
@@ -404,18 +406,24 @@ TOOLCHAIN_LIBS = {
   'newlib' : [
     'crti.o',
     'crtn.o',
+    'libminidump_generator.a',
     'libnacl.a',
     'libnacl_dyncode.a',
+    'libnacl_exception.a',
     'libnacl_list_mappings.a',
+    'libnosys.a',
     'libppapi.a',
     'libppapi_stub.a',
-    'libnosys.a',
     'libpthread.a',
   ],
   'glibc': [
+    'libminidump_generator.a',
+    'libminidump_generator.so',
     'libnacl.a',
     'libnacl_dyncode.a',
     'libnacl_dyncode.so',
+    'libnacl_exception.a',
+    'libnacl_exception.so',
     'libnacl_list_mappings.a',
     'libnacl_list_mappings.so',
     'libppapi.a',
@@ -429,6 +437,7 @@ def GypNinjaInstall(pepperdir, platform, toolchains):
   build_dir = 'gypbuild'
   ninja_out_dir = os.path.join(OUT_DIR, build_dir, 'Release')
   tools_files = [
+    ['dump_syms', 'dump_syms'],
     ['sel_ldr', 'sel_ldr_x86_32'],
     ['ncval_x86_32', 'ncval_x86_32'],
     ['ncval_arm', 'ncval_arm'],
@@ -518,7 +527,14 @@ def GypNinjaBuild_NaCl(platform, rel_out_dir):
           os.path.join(SRC_DIR, out_dir, 'Release', dst))
 
 
-def GypNinjaBuild_Chrome(arch, rel_out_dir):
+def GypNinjaBuild_Breakpad(platform, rel_out_dir):
+  gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
+  out_dir = MakeNinjaRelPath(rel_out_dir)
+  gyp_file = os.path.join(SRC_DIR, 'breakpad', 'breakpad.gyp')
+  GypNinjaBuild('ia32', gyp_py, gyp_file, 'dump_syms', out_dir)
+
+
+def GypNinjaBuild_PPAPI(arch, rel_out_dir):
   gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
   out_dir = MakeNinjaRelPath(rel_out_dir)
   gyp_file = os.path.join(SRC_DIR, 'ppapi', 'native_client',
@@ -578,6 +594,7 @@ def BuildStepBuildToolchains(pepperdir, platform, toolchains):
   buildbot_common.BuildStep('SDK Items')
 
   GypNinjaBuild_NaCl(platform, 'gypbuild')
+  GypNinjaBuild_Breakpad(platform, 'gypbuild')
 
   tcname = platform + '_x86'
   newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
@@ -585,10 +602,10 @@ def BuildStepBuildToolchains(pepperdir, platform, toolchains):
   pnacldir = os.path.join(pepperdir, 'toolchain', tcname + '_pnacl')
 
   if set(toolchains) & set(['glibc', 'newlib']):
-    GypNinjaBuild_Chrome('ia32', 'gypbuild')
+    GypNinjaBuild_PPAPI('ia32', 'gypbuild')
 
   if 'arm' in toolchains:
-    GypNinjaBuild_Chrome('arm', 'gypbuild-arm')
+    GypNinjaBuild_PPAPI('arm', 'gypbuild-arm')
 
   GypNinjaInstall(pepperdir, platform, toolchains)
 
