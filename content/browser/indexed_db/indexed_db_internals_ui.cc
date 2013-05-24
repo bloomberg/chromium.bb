@@ -301,8 +301,8 @@ void IndexedDBInternalsUI::OnDownloadStarted(
     net::Error error) {
 
   if (error != net::OK) {
-    LOG(ERROR) << "Error downloading database dump: "
-               << net::ErrorToString(error);
+    LOG(ERROR)
+        << "Error downloading database dump: " << net::ErrorToString(error);
     return;
   }
 
