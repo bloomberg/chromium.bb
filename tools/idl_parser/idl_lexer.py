@@ -115,7 +115,7 @@ class IDLLexer(object):
     return t
 
   def t_integer(self, t):
-    r'-?(0([0-7]*|[Xx][0-9A-Fa-f]+)|[1-9][0-9]*)'
+    r'-?(0([Xx][0-9A-Fa-f]+|[0-7]*)|[1-9][0-9]*)'
     return t
 
 
