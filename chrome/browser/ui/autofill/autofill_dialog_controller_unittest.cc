@@ -544,6 +544,51 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   EXPECT_TRUE(!!controller()->MenuModelForSection(SECTION_EMAIL));
 }
 
+// Makes sure that the choice of which Autofill profile to use for each section
+// is sticky.
+TEST_F(AutofillDialogControllerTest, AutofillProfileDefaults) {
+  AutofillProfile full_profile(test::GetFullProfile());
+  full_profile.set_origin(kSettingsOrigin);
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  AutofillProfile full_profile2(test::GetFullProfile2());
+  full_profile2.set_origin(kSettingsOrigin);
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile2);
+
+  // Until a selection has been made, the default shipping suggestion is the
+  // first one (after "use billing").
+  SuggestionsMenuModel* shipping_model = static_cast<SuggestionsMenuModel*>(
+      controller()->MenuModelForSection(SECTION_SHIPPING));
+  EXPECT_EQ(1, shipping_model->checked_item());
+
+  for (int i = 2; i >= 0; --i) {
+    shipping_model = static_cast<SuggestionsMenuModel*>(
+        controller()->MenuModelForSection(SECTION_SHIPPING));
+    shipping_model->ExecuteCommand(i, 0);
+    FillCreditCardInputs();
+    controller()->OnAccept();
+
+    TearDown();
+    SetUp();
+    controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+    controller()->GetTestingManager()->AddTestingProfile(&full_profile2);
+    shipping_model = static_cast<SuggestionsMenuModel*>(
+        controller()->MenuModelForSection(SECTION_SHIPPING));
+    EXPECT_EQ(i, shipping_model->checked_item());
+  }
+
+  // Try again, but don't add the default profile to the PDM. The dialog
+  // should fall back to the first profile.
+  shipping_model->ExecuteCommand(2, 0);
+  FillCreditCardInputs();
+  controller()->OnAccept();
+  TearDown();
+  SetUp();
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  shipping_model = static_cast<SuggestionsMenuModel*>(
+      controller()->MenuModelForSection(SECTION_SHIPPING));
+  EXPECT_EQ(1, shipping_model->checked_item());
+}
+
 TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   ui::MenuModel* email_model =
@@ -572,6 +617,11 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   ASSERT_TRUE(!!email_model);
   EXPECT_EQ(4, email_model->GetItemCount());
 
+  // The first one is the default.
+  SuggestionsMenuModel* email_suggestions = static_cast<SuggestionsMenuModel*>(
+      controller()->MenuModelForSection(SECTION_EMAIL));
+  EXPECT_EQ(0, email_suggestions->checked_item());
+
   email_model->ActivatedAt(0);
   EXPECT_EQ(kEmail1,
             controller()->SuggestionStateForSection(SECTION_EMAIL).text);
@@ -583,6 +633,19 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
   EXPECT_EQ(kEmail2, inputs[0].initial_value);
+
+  // The choice of variant is persisted across runs of the dialog.
+  email_model->ActivatedAt(0);
+  email_model->ActivatedAt(1);
+  FillCreditCardInputs();
+  controller()->OnAccept();
+
+  TearDown();
+  SetUp();
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  email_suggestions = static_cast<SuggestionsMenuModel*>(
+      controller()->MenuModelForSection(SECTION_EMAIL));
+  EXPECT_EQ(1, email_suggestions->checked_item());
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillCreditCards) {

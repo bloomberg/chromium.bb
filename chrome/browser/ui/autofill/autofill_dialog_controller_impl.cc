@@ -19,6 +19,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
@@ -90,6 +91,11 @@ const char kCartCurrency[] = "USD";
 const char kAddNewItemKey[] = "add-new-item";
 const char kManageItemsKey[] = "manage-items";
 const char kSameAsBillingKey[] = "same-as-billing";
+
+// Keys for the kAutofillDialogAutofillDefault pref dictionary (do not change
+// these values).
+const char kGuidPrefKey[] = "guid";
+const char kVariantPrefKey[] = "variant";
 
 // This string is stored along with saved addresses and credit cards in the
 // WebDB, and hence should not be modified, so that it remains consistent over
@@ -240,6 +246,32 @@ string16 GetValueForType(const DetailOutputMap& output,
   return string16();
 }
 
+// Returns a string descriptor for a DialogSection, for use with prefs (do not
+// change these values).
+std::string SectionToPrefString(DialogSection section) {
+  switch (section) {
+    case SECTION_CC:
+      return "cc";
+
+    case SECTION_BILLING:
+      return "billing";
+
+    case SECTION_CC_BILLING:
+      // The SECTION_CC_BILLING section isn't active when using Autofill.
+      NOTREACHED();
+      return std::string();
+
+    case SECTION_SHIPPING:
+      return "shipping";
+
+    case SECTION_EMAIL:
+      return "email";
+  }
+
+  NOTREACHED();
+  return std::string();
+}
+
 // Check if a given MaskedInstrument is allowed for the purchase.
 bool IsInstrumentAllowed(
     const wallet::WalletItems::MaskedInstrument& instrument) {
@@ -315,6 +347,9 @@ void AutofillDialogControllerImpl::RegisterUserPrefs(
   registry->RegisterBooleanPref(
       ::prefs::kAutofillDialogPayWithoutWallet,
       kPayWithoutWalletDefault,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      ::prefs::kAutofillDialogAutofillDefault,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
@@ -986,18 +1021,9 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
     return scoped_ptr<DataModelWrapper>(new AutofillCreditCardWrapper(card));
   }
 
-  // Calculate the variant by looking at how many items come from the same
-  // data model.
-  size_t variant = 0;
-  for (int i = model->checked_item() - 1; i >= 0; --i) {
-    if (model->GetItemKeyAt(i) == item_key)
-      variant++;
-    else
-      break;
-  }
-
   AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
   DCHECK(profile);
+  size_t variant = GetSelectedVariantForModel(*model);
   return scoped_ptr<DataModelWrapper>(
       new AutofillProfileWrapper(profile, variant));
 }
@@ -1858,11 +1884,10 @@ void AutofillDialogControllerImpl::OpenTabWithUrl(const GURL& url) {
 
 void AutofillDialogControllerImpl::DisableWallet() {
   signin_helper_.reset();
-  account_chooser_model_.SetHadWalletError();
-  GetWalletClient()->CancelRequests();
   wallet_items_.reset();
-  full_wallet_.reset();
+  GetWalletClient()->CancelRequests();
   SetIsSubmitting(false);
+  account_chooser_model_.SetHadWalletError();
 }
 
 void AutofillDialogControllerImpl::SuggestionsUpdated() {
@@ -2017,12 +2042,21 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_SHIPPING_ADDRESS));
 
   if (!IsPayingWithWallet()) {
-    // When using Autofill, the default option is the first suggestion, if
-    // one exists. Otherwise it's the "Use shipping for billing" item.
-    const std::string& first_real_suggestion_item_key =
-        suggested_shipping_.GetItemKeyAt(1);
-    if (IsASuggestionItemKey(first_real_suggestion_item_key))
-      suggested_shipping_.SetCheckedItem(first_real_suggestion_item_key);
+    for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
+      DialogSection section = static_cast<DialogSection>(i);
+      if (!SectionIsActive(section))
+        continue;
+
+      // Set the starting choice for the menu. First set to the default in case
+      // the GUID saved in prefs refers to a profile that no longer exists.
+      std::string guid;
+      int variant;
+      GetDefaultAutofillChoice(section, &guid, &variant);
+      SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+      model->SetCheckedItemNthWithKey(guid, variant + 1);
+      if (GetAutofillChoice(section, &guid, &variant))
+        model->SetCheckedItemNthWithKey(guid, variant + 1);
+    }
   }
 
   if (view_)
@@ -2296,6 +2330,9 @@ bool AutofillDialogControllerImpl::ShouldSaveDetailsLocally() {
 void AutofillDialogControllerImpl::SetIsSubmitting(bool submitting) {
   is_submitting_ = submitting;
 
+  if (!submitting)
+    full_wallet_.reset();
+
   if (view_) {
     view_->UpdateButtonStrip();
     view_->UpdateNotificationArea();
@@ -2526,6 +2563,21 @@ void AutofillDialogControllerImpl::FinishSubmit() {
     FillOutputForSection(SECTION_SHIPPING);
   }
 
+  if (!IsPayingWithWallet()) {
+    for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
+      DialogSection section = static_cast<DialogSection>(i);
+      if (!SectionIsActive(section))
+        continue;
+
+      SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+      std::string item_key = model->GetItemKeyForCheckedItem();
+      if (IsASuggestionItemKey(item_key) || item_key == kSameAsBillingKey) {
+        int variant = GetSelectedVariantForModel(*model);
+        PersistAutofillChoice(section, item_key, variant);
+      }
+    }
+  }
+
   callback_.Run(&form_structure_, !wallet_items_ ? std::string() :
       wallet_items_->google_transaction_id());
   callback_ = base::Callback<void(const FormStructure*, const std::string&)>();
@@ -2558,6 +2610,70 @@ void AutofillDialogControllerImpl::FinishSubmit() {
       Hide();
       break;
   }
+}
+
+void AutofillDialogControllerImpl::PersistAutofillChoice(
+    DialogSection section,
+    const std::string& guid,
+    int variant) {
+  DCHECK(!IsPayingWithWallet());
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  value->SetString(kGuidPrefKey, guid);
+  value->SetInteger(kVariantPrefKey, variant);
+
+  DictionaryPrefUpdate updater(profile()->GetPrefs(),
+                               ::prefs::kAutofillDialogAutofillDefault);
+  base::DictionaryValue* autofill_choice = updater.Get();
+  autofill_choice->Set(SectionToPrefString(section), value.release());
+}
+
+void AutofillDialogControllerImpl::GetDefaultAutofillChoice(
+    DialogSection section,
+    std::string* guid,
+    int* variant) {
+  DCHECK(!IsPayingWithWallet());
+  // The default choice is the first thing in the menu that is a suggestion
+  // item.
+  *variant = 0;
+  SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+  for (int i = 0; i < model->GetItemCount(); ++i) {
+    if (IsASuggestionItemKey(model->GetItemKeyAt(i))) {
+      *guid = model->GetItemKeyAt(i);
+      break;
+    }
+  }
+}
+
+bool AutofillDialogControllerImpl::GetAutofillChoice(DialogSection section,
+                                                     std::string* guid,
+                                                     int* variant) {
+  DCHECK(!IsPayingWithWallet());
+  const base::DictionaryValue* choices = profile()->GetPrefs()->GetDictionary(
+      ::prefs::kAutofillDialogAutofillDefault);
+  if (!choices)
+    return false;
+
+  const base::DictionaryValue* choice = NULL;
+  if (!choices->GetDictionary(SectionToPrefString(section), &choice))
+    return false;
+
+  choice->GetString(kGuidPrefKey, guid);
+  choice->GetInteger(kVariantPrefKey, variant);
+  return true;
+}
+
+size_t AutofillDialogControllerImpl::GetSelectedVariantForModel(
+    const SuggestionsMenuModel& model) {
+  size_t variant = 0;
+  // Calculate the variant by looking at how many items come from the same
+  // data model.
+  for (int i = model.checked_item() - 1; i >= 0; --i) {
+    if (model.GetItemKeyAt(i) == model.GetItemKeyForCheckedItem())
+      variant++;
+    else
+      break;
+  }
+  return variant;
 }
 
 void AutofillDialogControllerImpl::LogOnFinishSubmitMetrics() {

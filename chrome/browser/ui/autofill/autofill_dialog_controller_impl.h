@@ -457,6 +457,26 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // in order to fill |form_structure_| and pass data back to the invoking page.
   void FinishSubmit();
 
+  // Writes to prefs the choice of AutofillDataModel for |section|.
+  void PersistAutofillChoice(DialogSection section,
+                             const std::string& guid,
+                             int variant);
+
+  // Sets the outparams to the default AutofillDataModel for |section| (which is
+  // the first one in the menu that is a suggestion item).
+  void GetDefaultAutofillChoice(DialogSection section,
+                                std::string* guid,
+                                int* variant);
+
+  // Reads from prefs the choice of AutofillDataModel for |section|. Returns
+  // whether there was a setting to read.
+  bool GetAutofillChoice(DialogSection section,
+                         std::string* guid,
+                         int* variant);
+
+  // Calculates which AutofillDataModel variant |model| is referring to.
+  size_t GetSelectedVariantForModel(const SuggestionsMenuModel& model);
+
   // Logs metrics when the dialog is submitted.
   void LogOnFinishSubmitMetrics();
 
