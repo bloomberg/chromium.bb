@@ -20,8 +20,8 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/mock_file_change_observer.h"
+#include "webkit/fileapi/sandbox_file_system_test_helper.h"
 #include "webkit/quota/mock_quota_manager.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -65,7 +65,7 @@ class LocalFileSystemOperationTest
     quota_manager_proxy_ = new quota::MockQuotaManagerProxy(
         quota_manager(),
         base::MessageLoopProxy::current());
-    test_helper_.SetUp(base_dir, quota_manager_proxy_.get());
+    sandbox_file_system_.SetUp(base_dir, quota_manager_proxy_.get());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -73,11 +73,11 @@ class LocalFileSystemOperationTest
     quota_manager_proxy()->SimulateQuotaManagerDestroyed();
     quota_manager_ = NULL;
     quota_manager_proxy_ = NULL;
-    test_helper_.TearDown();
+    sandbox_file_system_.TearDown();
   }
 
   LocalFileSystemOperation* NewOperation() {
-    LocalFileSystemOperation* operation = test_helper_.NewOperation();
+    LocalFileSystemOperation* operation = sandbox_file_system_.NewOperation();
     operation->operation_context()->set_change_observers(change_observers());
     return operation;
   }
@@ -103,7 +103,7 @@ class LocalFileSystemOperationTest
   }
 
  FileSystemFileUtil* file_util() {
-    return test_helper_.file_util();
+    return sandbox_file_system_.file_util();
   }
 
  const ChangeObserverList& change_observers() const {
@@ -115,36 +115,39 @@ class LocalFileSystemOperationTest
   }
 
   scoped_ptr<FileSystemOperationContext> NewContext() {
-    FileSystemOperationContext* context = test_helper_.NewOperationContext();
+    FileSystemOperationContext* context =
+        sandbox_file_system_.NewOperationContext();
     // Grant enough quota for all test cases.
     context->set_allowed_bytes_growth(1000000);
     return make_scoped_ptr(context);
   }
 
   FileSystemURL URLForPath(const std::string& path) const {
-    return test_helper_.CreateURLFromUTF8(path);
+    return sandbox_file_system_.CreateURLFromUTF8(path);
   }
 
   base::FilePath PlatformPath(const std::string& path) {
-    return test_helper_.GetLocalPath(base::FilePath::FromUTF8Unsafe(path));
+    return sandbox_file_system_.GetLocalPath(
+        base::FilePath::FromUTF8Unsafe(path));
   }
 
   bool FileExists(const std::string& path) {
     return AsyncFileTestHelper::FileExists(
-        test_helper_.file_system_context(), URLForPath(path),
+        sandbox_file_system_.file_system_context(), URLForPath(path),
         AsyncFileTestHelper::kDontCheckSize);
   }
 
   bool DirectoryExists(const std::string& path) {
     return AsyncFileTestHelper::DirectoryExists(
-        test_helper_.file_system_context(), URLForPath(path));
+        sandbox_file_system_.file_system_context(), URLForPath(path));
   }
 
   FileSystemURL CreateFile(const std::string& path) {
     FileSystemURL url = URLForPath(path);
     bool created = false;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-              file_util()->EnsureFileExists(NewContext().get(), url, &created));
+              file_util()->EnsureFileExists(NewContext().get(),
+                                            url, &created));
     EXPECT_TRUE(created);
     return url;
   }
@@ -216,14 +219,16 @@ class LocalFileSystemOperationTest
   }
 
   int64 GetDataSizeOnDisk() {
-    return test_helper_.ComputeCurrentOriginUsage() -
-        test_helper_.ComputeCurrentDirectoryDatabaseUsage();
+    return sandbox_file_system_.ComputeCurrentOriginUsage() -
+        sandbox_file_system_.ComputeCurrentDirectoryDatabaseUsage();
   }
 
   void GetUsageAndQuota(int64* usage, int64* quota) {
     quota::QuotaStatusCode status =
         AsyncFileTestHelper::GetUsageAndQuota(
-            quota_manager_, test_helper_.origin(), test_helper_.type(),
+            quota_manager_,
+            sandbox_file_system_.origin(),
+            sandbox_file_system_.type(),
             usage, quota);
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(quota::kQuotaStatusOk, status);
@@ -233,7 +238,8 @@ class LocalFileSystemOperationTest
     int64 base_usage;
     GetUsageAndQuota(&base_usage, NULL);
 
-    AsyncFileTestHelper::CreateFile(test_helper_.file_system_context(), url);
+    AsyncFileTestHelper::CreateFile(
+        sandbox_file_system_.file_system_context(), url);
     NewOperation()->Remove(url, false /* recursive */,
                            base::Bind(&AssertFileErrorEq, FROM_HERE,
                                       base::PLATFORM_FILE_OK));
@@ -248,8 +254,8 @@ class LocalFileSystemOperationTest
   void GrantQuotaForCurrentUsage() {
     int64 usage;
     GetUsageAndQuota(&usage, NULL);
-    quota_manager()->SetQuota(test_helper_.origin(),
-                              test_helper_.storage_type(),
+    quota_manager()->SetQuota(sandbox_file_system_.origin(),
+                              sandbox_file_system_.storage_type(),
                               usage);
   }
 
@@ -262,8 +268,8 @@ class LocalFileSystemOperationTest
   void AddQuota(int64 quota_delta) {
     int64 quota;
     GetUsageAndQuota(NULL, &quota);
-    quota_manager()->SetQuota(test_helper_.origin(),
-                              test_helper_.storage_type(),
+    quota_manager()->SetQuota(sandbox_file_system_.origin(),
+                              sandbox_file_system_.storage_type(),
                               quota + quota_delta);
   }
 
@@ -274,7 +280,7 @@ class LocalFileSystemOperationTest
   // Common temp base for nondestructive uses.
   base::ScopedTempDir base_;
 
-  LocalFileSystemTestOriginHelper test_helper_;
+  SandboxFileSystemTestHelper sandbox_file_system_;
 
   // For post-operation status.
   int status_;

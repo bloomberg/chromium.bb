@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_LOCAL_FILE_SYSTEM_TEST_HELPER_H_
-#define WEBKIT_FILEAPI_LOCAL_FILE_SYSTEM_TEST_HELPER_H_
+#ifndef WEBKIT_FILEAPI_SANDBOX_FILE_SYSTEM_TEST_HELPER_H_
+#define WEBKIT_FILEAPI_SANDBOX_FILE_SYSTEM_TEST_HELPER_H_
 
 #include <string>
 
@@ -33,15 +33,15 @@ class LocalFileSystemOperation;
 
 // Filesystem test helper class that encapsulates test environment for
 // a given {origin, type} pair.  This helper only works for sandboxed
-// file systems (Temporary, Persistent or Test types).
-class LocalFileSystemTestOriginHelper {
+// file systems (Temporary or Persistent).
+class SandboxFileSystemTestHelper {
  public:
-  LocalFileSystemTestOriginHelper(const GURL& origin, FileSystemType type);
-  LocalFileSystemTestOriginHelper();
-  ~LocalFileSystemTestOriginHelper();
+  SandboxFileSystemTestHelper(const GURL& origin, FileSystemType type);
+  SandboxFileSystemTestHelper();
+  ~SandboxFileSystemTestHelper();
 
   void SetUp(const base::FilePath& base_dir);
-  // If you want to use more than one LocalFileSystemTestOriginHelper in
+  // If you want to use more than one SandboxFileSystemTestHelper in
   // a single base directory, they have to share a context, so that they don't
   // have multiple databases fighting over the lock to the origin directory
   // [deep down inside ObfuscatedFileUtil].
@@ -86,7 +86,7 @@ class LocalFileSystemTestOriginHelper {
   FileSystemUsageCache* usage_cache();
 
  private:
-  void SetUpFileUtil();
+  void SetUpFileSystem();
 
   scoped_refptr<FileSystemContext> file_system_context_;
 
@@ -97,4 +97,4 @@ class LocalFileSystemTestOriginHelper {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_LOCAL_FILE_SYSTEM_TEST_HELPER_H_
+#endif  // WEBKIT_FILEAPI_SANDBOX_FILE_SYSTEM_TEST_HELPER_H_

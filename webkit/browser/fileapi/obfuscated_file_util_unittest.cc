@@ -22,9 +22,9 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
-#include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/mock_file_change_observer.h"
 #include "webkit/fileapi/mock_file_system_context.h"
+#include "webkit/fileapi/sandbox_file_system_test_helper.h"
 #include "webkit/fileapi/test_file_set.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_manager.h"
@@ -121,7 +121,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
       : origin_(GURL("http://www.example.com")),
         type_(kFileSystemTypeTemporary),
         weak_factory_(this),
-        test_helper_(origin_, type_),
+        sandbox_file_system_(origin_, type_),
         quota_status_(quota::kQuotaStatusUnknown),
         usage_(-1) {
   }
@@ -139,27 +139,28 @@ class ObfuscatedFileUtilTest : public testing::Test {
         base::MessageLoopProxy::current(),
         storage_policy);
 
-    // Every time we create a new helper, it creates another context, which
-    // creates another path manager, another sandbox_mount_point_provider, and
+    // Every time we create a new sandbox_file_system helper,
+    // it creates another context, which creates another path manager,
+    // another sandbox_mount_point_provider, and
     // another OFU.  We need to pass in the context to skip all that.
     file_system_context_ = CreateFileSystemContextForTesting(
         quota_manager_->proxy(),
         data_dir_.path());
 
-    test_helper_.SetUp(file_system_context_.get());
+    sandbox_file_system_.SetUp(file_system_context_.get());
 
     change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
   }
 
   virtual void TearDown() {
     quota_manager_ = NULL;
-    test_helper_.TearDown();
+    sandbox_file_system_.TearDown();
   }
 
   scoped_ptr<FileSystemOperationContext> LimitedContext(
       int64 allowed_bytes_growth) {
     scoped_ptr<FileSystemOperationContext> context(
-        test_helper_.NewOperationContext());
+        sandbox_file_system_.NewOperationContext());
     context->set_allowed_bytes_growth(allowed_bytes_growth);
     return context.Pass();
   }
@@ -169,13 +170,13 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   FileSystemOperationContext* NewContext(
-      LocalFileSystemTestOriginHelper* helper) {
+      SandboxFileSystemTestHelper* file_system) {
     change_observer()->ResetCount();
     FileSystemOperationContext* context;
-    if (helper)
-      context = helper->NewOperationContext();
+    if (file_system)
+      context = file_system->NewOperationContext();
     else
-      context = test_helper_.NewOperationContext();
+      context = sandbox_file_system_.NewOperationContext();
     // Setting allowed_bytes_growth big enough for all tests.
     context->set_allowed_bytes_growth(1024 * 1024);
     context->set_change_observers(change_observers());
@@ -194,17 +195,17 @@ class ObfuscatedFileUtilTest : public testing::Test {
   // and obfuscated_file_util_.
   // Use this for tests which need to run in multiple origins; we need a test
   // helper per origin.
-  LocalFileSystemTestOriginHelper* NewHelper(
+  SandboxFileSystemTestHelper* NewFileSystem(
       const GURL& origin, fileapi::FileSystemType type) {
-    LocalFileSystemTestOriginHelper* helper =
-        new LocalFileSystemTestOriginHelper(origin, type);
+    SandboxFileSystemTestHelper* file_system =
+        new SandboxFileSystemTestHelper(origin, type);
 
-    helper->SetUp(file_system_context_.get());
-    return helper;
+    file_system->SetUp(file_system_context_.get());
+    return file_system;
   }
 
   ObfuscatedFileUtil* ofu() {
-    return static_cast<ObfuscatedFileUtil*>(test_helper_.file_util());
+    return static_cast<ObfuscatedFileUtil*>(sandbox_file_system_.file_util());
   }
 
   const base::FilePath& test_directory() const {
@@ -220,32 +221,32 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   int64 ComputeTotalFileSize() {
-    return test_helper_.ComputeCurrentOriginUsage() -
-        test_helper_.ComputeCurrentDirectoryDatabaseUsage();
+    return sandbox_file_system_.ComputeCurrentOriginUsage() -
+        sandbox_file_system_.ComputeCurrentDirectoryDatabaseUsage();
   }
 
   void GetUsageFromQuotaManager() {
     int64 quota = -1;
     quota_status_ = AsyncFileTestHelper::GetUsageAndQuota(
-      quota_manager_, origin(), test_helper_.type(),
+      quota_manager_, origin(), sandbox_file_system_.type(),
       &usage_, &quota);
     EXPECT_EQ(quota::kQuotaStatusOk, quota_status_);
   }
 
   void RevokeUsageCache() {
-    quota_manager_->ResetUsageTracker(test_helper_.storage_type());
-    usage_cache()->Delete(test_helper_.GetUsageCachePath());
+    quota_manager_->ResetUsageTracker(sandbox_file_system_.storage_type());
+    usage_cache()->Delete(sandbox_file_system_.GetUsageCachePath());
   }
 
   int64 SizeByQuotaUtil() {
-    return test_helper_.GetCachedOriginUsage();
+    return sandbox_file_system_.GetCachedOriginUsage();
   }
 
   int64 SizeInUsageFile() {
     base::MessageLoop::current()->RunUntilIdle();
     int64 usage = 0;
-    return usage_cache()->GetUsage(test_helper_.GetUsageCachePath(), &usage) ?
-        usage : -1;
+    return usage_cache()->GetUsage(
+        sandbox_file_system_.GetUsageCachePath(), &usage) ? usage : -1;
   }
 
   bool PathExists(const FileSystemURL& url) {
@@ -263,11 +264,11 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   int64 usage() const { return usage_; }
   FileSystemUsageCache* usage_cache() {
-    return test_helper_.usage_cache();
+    return sandbox_file_system_.usage_cache();
   }
 
   FileSystemURL CreateURLFromUTF8(const std::string& path) {
-    return test_helper_.CreateURLFromUTF8(path);
+    return sandbox_file_system_.CreateURLFromUTF8(path);
   }
 
   int64 PathCost(const FileSystemURL& url) {
@@ -275,7 +276,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   FileSystemURL CreateURL(const base::FilePath& path) {
-    return test_helper_.CreateURL(path);
+    return sandbox_file_system_.CreateURL(path);
   }
 
   void CheckFileAndCloseHandle(
@@ -362,10 +363,10 @@ class ObfuscatedFileUtilTest : public testing::Test {
   class UsageVerifyHelper {
    public:
     UsageVerifyHelper(scoped_ptr<FileSystemOperationContext> context,
-                      LocalFileSystemTestOriginHelper* test_helper,
+                      SandboxFileSystemTestHelper* file_system,
                       int64 expected_usage)
         : context_(context.Pass()),
-          test_helper_(test_helper),
+          sandbox_file_system_(file_system),
           expected_usage_(expected_usage) {}
 
     ~UsageVerifyHelper() {
@@ -380,25 +381,25 @@ class ObfuscatedFileUtilTest : public testing::Test {
    private:
     void Check() {
       ASSERT_EQ(expected_usage_,
-                test_helper_->GetCachedOriginUsage());
+                sandbox_file_system_->GetCachedOriginUsage());
     }
 
     scoped_ptr<FileSystemOperationContext> context_;
-    LocalFileSystemTestOriginHelper* test_helper_;
+    SandboxFileSystemTestHelper* sandbox_file_system_;
     int64 expected_usage_;
   };
 
   scoped_ptr<UsageVerifyHelper> AllowUsageIncrease(int64 requested_growth) {
-    int64 usage = test_helper_.GetCachedOriginUsage();
+    int64 usage = sandbox_file_system_.GetCachedOriginUsage();
     return scoped_ptr<UsageVerifyHelper>(new UsageVerifyHelper(
         LimitedContext(requested_growth),
-        &test_helper_, usage + requested_growth));
+        &sandbox_file_system_, usage + requested_growth));
   }
 
   scoped_ptr<UsageVerifyHelper> DisallowUsageIncrease(int64 requested_growth) {
-    int64 usage = test_helper_.GetCachedOriginUsage();
+    int64 usage = sandbox_file_system_.GetCachedOriginUsage();
     return scoped_ptr<UsageVerifyHelper>(new UsageVerifyHelper(
-        LimitedContext(requested_growth - 1), &test_helper_, usage));
+        LimitedContext(requested_growth - 1), &sandbox_file_system_, usage));
   }
 
   void FillTestDirectory(
@@ -641,16 +642,12 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   int64 ComputeCurrentUsage() {
-    return test_helper_.ComputeCurrentOriginUsage() -
-        test_helper_.ComputeCurrentDirectoryDatabaseUsage();
-  }
-
-  const LocalFileSystemTestOriginHelper& test_helper() const {
-    return test_helper_;
+    return sandbox_file_system_.ComputeCurrentOriginUsage() -
+        sandbox_file_system_.ComputeCurrentDirectoryDatabaseUsage();
   }
 
   FileSystemContext* file_system_context() {
-    return test_helper_.file_system_context();
+    return sandbox_file_system_.file_system_context();
   }
 
  private:
@@ -661,7 +658,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   GURL origin_;
   fileapi::FileSystemType type_;
   base::WeakPtrFactory<ObfuscatedFileUtilTest> weak_factory_;
-  LocalFileSystemTestOriginHelper test_helper_;
+  SandboxFileSystemTestHelper sandbox_file_system_;
   quota::QuotaStatusCode quota_status_;
   int64 usage_;
   MockFileChangeObserver change_observer_;
@@ -1416,7 +1413,7 @@ TEST_F(ObfuscatedFileUtilTest, TestEnumerator) {
   EXPECT_FALSE(DirectoryExists(dest_url));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             AsyncFileTestHelper::Copy(
-                test_helper().file_system_context(), src_url, dest_url));
+                file_system_context(), src_url, dest_url));
 
   ValidateTestDirectory(dest_url, files, directories);
   EXPECT_TRUE(DirectoryExists(src_url));
@@ -1452,26 +1449,28 @@ TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
     GURL origin_url(record.origin_url);
     origins_expected.insert(origin_url);
     if (record.has_temporary) {
-      scoped_ptr<LocalFileSystemTestOriginHelper> helper(
-          NewHelper(origin_url, kFileSystemTypeTemporary));
-      scoped_ptr<FileSystemOperationContext> context(NewContext(helper.get()));
+      scoped_ptr<SandboxFileSystemTestHelper> file_system(
+          NewFileSystem(origin_url, kFileSystemTypeTemporary));
+      scoped_ptr<FileSystemOperationContext> context(
+          NewContext(file_system.get()));
       bool created = false;
       ASSERT_EQ(base::PLATFORM_FILE_OK,
                 ofu()->EnsureFileExists(
                     context.get(),
-                    helper->CreateURLFromUTF8("file"),
+                    file_system->CreateURLFromUTF8("file"),
                     &created));
       EXPECT_TRUE(created);
     }
     if (record.has_persistent) {
-      scoped_ptr<LocalFileSystemTestOriginHelper> helper(
-          NewHelper(origin_url, kFileSystemTypePersistent));
-      scoped_ptr<FileSystemOperationContext> context(NewContext(helper.get()));
+      scoped_ptr<SandboxFileSystemTestHelper> file_system(
+          NewFileSystem(origin_url, kFileSystemTypePersistent));
+      scoped_ptr<FileSystemOperationContext> context(
+          NewContext(file_system.get()));
       bool created = false;
       ASSERT_EQ(base::PLATFORM_FILE_OK,
                 ofu()->EnsureFileExists(
                     context.get(),
-                    helper->CreateURLFromUTF8("file"),
+                    file_system->CreateURLFromUTF8("file"),
                     &created));
       EXPECT_TRUE(created);
     }

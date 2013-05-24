@@ -11,7 +11,7 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/local_file_system_operation.h"
-#include "webkit/fileapi/local_file_system_test_helper.h"
+#include "webkit/fileapi/sandbox_file_system_test_helper.h"
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
@@ -24,7 +24,7 @@ using fileapi::FileSystemContext;
 using fileapi::FileSystemOperationContext;
 using fileapi::FileSystemURL;
 using fileapi::FileSystemURLSet;
-using fileapi::LocalFileSystemTestOriginHelper;
+using fileapi::SandboxFileSystemTestHelper;
 using quota::QuotaManager;
 using quota::QuotaStatusCode;
 
@@ -248,7 +248,7 @@ TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
             file_system_.CreateDirectory(URL("dir")));
 
   // Set up another (non-syncable) local file system.
-  LocalFileSystemTestOriginHelper other_file_system_(
+  SandboxFileSystemTestHelper other_file_system_(
       GURL("http://foo.com/"), fileapi::kFileSystemTypeTemporary);
   other_file_system_.SetUp(file_system_.file_system_context());
 

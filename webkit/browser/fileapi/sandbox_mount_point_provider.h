@@ -184,7 +184,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
 
  private:
   friend class SandboxQuotaObserver;
-  friend class LocalFileSystemTestOriginHelper;
+  friend class SandboxFileSystemTestHelper;
   friend class SandboxMountPointProviderMigrationTest;
   friend class SandboxMountPointProviderOriginEnumeratorTest;
 
