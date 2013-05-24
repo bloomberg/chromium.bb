@@ -61,7 +61,7 @@ SpeechSynthesis status=experimental
 StyleScoped status=experimental
 Touch status=stable
 VideoTrack status=stable
-WebAnimation
+WebAnimations
 WebAudio condition=WEB_AUDIO, status=stable
 WebMIDI status=test
 WebKitMediaSource status=stable

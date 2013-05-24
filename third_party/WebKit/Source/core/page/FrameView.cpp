@@ -2023,7 +2023,7 @@ void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
     for (Frame* frame = m_frame.get(); frame; frame = frame->tree()->traverseNext()) {
         frame->view()->serviceScrollAnimations();
         frame->animation()->serviceAnimations();
-        if (RuntimeEnabledFeatures::webAnimationEnabled())
+        if (RuntimeEnabledFeatures::webAnimationsEnabled())
             frame->document()->timeline()->serviceAnimations(monotonicAnimationStartTime);
     }
 

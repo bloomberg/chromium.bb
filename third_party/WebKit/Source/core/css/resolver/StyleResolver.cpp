@@ -2062,7 +2062,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     state.setLineHeightValue(0);
     applyMatchedProperties<HighPriorityProperties>(matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
     // Animation contributions are processed here because CSS Animations are overridable by user !important rules.
-    if (RuntimeEnabledFeatures::webAnimationEnabled())
+    if (RuntimeEnabledFeatures::webAnimationsEnabled())
         applyAnimatedProperties<HighPriorityProperties>(element);
     applyMatchedProperties<HighPriorityProperties>(matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
@@ -2092,7 +2092,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
 
     // Now do the author and user normal priority properties and all the !important properties.
     applyMatchedProperties<LowPriorityProperties>(matchResult, false, matchResult.ranges.lastUARule + 1, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
-    if (RuntimeEnabledFeatures::webAnimationEnabled())
+    if (RuntimeEnabledFeatures::webAnimationsEnabled())
         applyAnimatedProperties<LowPriorityProperties>(element);
     applyMatchedProperties<LowPriorityProperties>(matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
