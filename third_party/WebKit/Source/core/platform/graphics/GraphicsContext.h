@@ -323,7 +323,7 @@ public:
 
     // It is assumed that this draw looper is used only for shadows
     // (i.e. a draw looper is set if and only if there is a shadow).
-    void setDrawLooper(DrawLooper&);
+    void setDrawLooper(const DrawLooper&);
     void clearDrawLooper();
 
     void drawFocusRing(const Vector<IntRect>&, int width, int offset, const Color&);

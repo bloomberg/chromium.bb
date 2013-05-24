@@ -64,7 +64,10 @@ public:
 
     DrawLooper();
     ~DrawLooper() { }
-    SkLayerDrawLooper* skDrawLooper() { return m_skDrawLooper.get(); }
+
+    // Callees should not modify this looper other than to iterate over it.
+    // A downcast to SkLayerDrawLooper* is tantamount to a const_cast.
+    SkDrawLooper* skDrawLooper() const { return m_skDrawLooper.get(); }
 
     void addUnmodifiedContent();
     void addShadow(const FloatSize& offset, float blur, const Color&,

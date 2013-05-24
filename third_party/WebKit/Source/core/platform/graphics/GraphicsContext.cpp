@@ -203,7 +203,7 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
     setDrawLooper(drawLooper);
 }
 
-void GraphicsContext::setDrawLooper(DrawLooper& drawLooper)
+void GraphicsContext::setDrawLooper(const DrawLooper& drawLooper)
 {
     if (paintingDisabled())
         return;

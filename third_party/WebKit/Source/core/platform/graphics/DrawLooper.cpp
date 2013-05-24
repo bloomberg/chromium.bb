@@ -45,7 +45,7 @@ DrawLooper::DrawLooper() : m_skDrawLooper(new SkLayerDrawLooper) { }
 
 void DrawLooper::addUnmodifiedContent()
 {
-    skDrawLooper()->addLayer();
+    m_skDrawLooper->addLayer();
 }
 
 void DrawLooper::addShadow(const FloatSize& offset, float blur, const Color& color,
@@ -80,7 +80,7 @@ void DrawLooper::addShadow(const FloatSize& offset, float blur, const Color& col
     info.fOffset.set(offset.width(), offset.height());
     info.fPostTranslate = (shadowTransformMode == ShadowIgnoresTransforms);
 
-    SkPaint* paint = skDrawLooper()->addLayer(info);
+    SkPaint* paint = m_skDrawLooper->addLayer(info);
 
     if (blur) {
         uint32_t mfFlags = SkBlurMaskFilter::kHighQuality_BlurFlag;
