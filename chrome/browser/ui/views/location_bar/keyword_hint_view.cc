@@ -77,15 +77,13 @@ gfx::Size KeywordHintView::GetMinimumSize() {
 }
 
 void KeywordHintView::Layout() {
-  gfx::Size tab_size(tab_image_->GetPreferredSize());
-  bool show_labels = (width() != tab_size.width());
+  int tab_width = tab_image_->GetPreferredSize().width();
+  bool show_labels = (width() != tab_width);
   gfx::Size leading_size(leading_label_->GetPreferredSize());
   leading_label_->SetBounds(0, 0, show_labels ? leading_size.width() : 0,
                             leading_size.height());
-  // Amount of space to offset the tab image from the top of the view by.
-  const int kTabImageYOffset = 1;
-  tab_image_->SetBounds(leading_label_->bounds().right(), kTabImageYOffset,
-                        tab_size.width(), tab_size.height());
+  tab_image_->SetBounds(leading_label_->bounds().right(), 0, tab_width,
+                        height());
   gfx::Size trailing_size(trailing_label_->GetPreferredSize());
   trailing_label_->SetBounds(tab_image_->bounds().right(), 0,
                              show_labels ? trailing_size.width() : 0,
