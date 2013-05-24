@@ -227,16 +227,16 @@ class ClientUsageTracker::GatherHostUsageTask
 
 // UsageTracker ----------------------------------------------------------
 
-UsageTracker::UsageTracker(const QuotaClientList& clients, StorageType type,
+UsageTracker::UsageTracker(const QuotaClientList& clients,
+                           StorageType type,
                            SpecialStoragePolicy* special_storage_policy)
     : type_(type),
       weak_factory_(this) {
   for (QuotaClientList::const_iterator iter = clients.begin();
       iter != clients.end();
       ++iter) {
-    client_tracker_map_.insert(std::make_pair(
-        (*iter)->id(),
-        new ClientUsageTracker(this, *iter, type, special_storage_policy)));
+    client_tracker_map_[(*iter)->id()] =
+        new ClientUsageTracker(this, *iter, type, special_storage_policy);
   }
 }
 
@@ -252,46 +252,56 @@ ClientUsageTracker* UsageTracker::GetClientTracker(QuotaClient::ID client_id) {
 }
 
 void UsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
-  if (client_tracker_map_.size() == 0) {
-    // No clients registered.
-    callback.Run(0, 0);
+  if (!global_usage_callbacks_.Add(callback))
     return;
-  }
-  if (global_usage_callbacks_.Add(callback)) {
-    // This is the first call.  Asks each ClientUsageTracker to collect
-    // usage information.
-    global_usage_.pending_clients = client_tracker_map_.size();
-    global_usage_.usage = 0;
-    global_usage_.unlimited_usage = 0;
-    for (ClientTrackerMap::iterator iter = client_tracker_map_.begin();
-         iter != client_tracker_map_.end();
-         ++iter) {
-      iter->second->GetGlobalUsage(
-          base::Bind(&UsageTracker::DidGetClientGlobalUsage,
-                     weak_factory_.GetWeakPtr()));
-    }
-  }
+
+  TrackingInfo* info = new TrackingInfo;
+  // Calling GetGlobalUsage(accumulator) may synchronously
+  // return if the usage is cached, which may in turn dispatch
+  // the completion callback before we finish looping over
+  // all clients (because info->pending_clients may reach 0
+  // during the loop).
+  // To avoid this, we add one more pending client as a sentinel
+  // and fire the sentinel callback at the end.
+  info->pending_clients = client_tracker_map_.size() + 1;
+  GlobalUsageCallback accumulator = base::Bind(
+      &UsageTracker::DidGetClientGlobalUsage, weak_factory_.GetWeakPtr(),
+      base::Owned(info));
+
+  for (ClientTrackerMap::iterator iter = client_tracker_map_.begin();
+       iter != client_tracker_map_.end();
+       ++iter)
+    iter->second->GetGlobalUsage(accumulator);
+
+  // Fire the sentinel as we've now called GetGlobalUsage for all clients.
+  accumulator.Run(0, 0);
 }
 
-void UsageTracker::GetHostUsage(
-    const std::string& host, const UsageCallback& callback) {
-  if (client_tracker_map_.size() == 0) {
-    // No clients registered.
-    callback.Run(0);
+void UsageTracker::GetHostUsage(const std::string& host,
+                                const UsageCallback& callback) {
+  if (!host_usage_callbacks_.Add(host, callback))
     return;
-  }
-  if (host_usage_callbacks_.Add(host, callback)) {
-    // This is the first call for the given host.
-    DCHECK(outstanding_host_usage_.find(host) == outstanding_host_usage_.end());
-    outstanding_host_usage_[host].pending_clients = client_tracker_map_.size();
-    for (ClientTrackerMap::iterator iter = client_tracker_map_.begin();
-         iter != client_tracker_map_.end();
-         ++iter) {
-      iter->second->GetHostUsage(host,
-          base::Bind(&UsageTracker::DidGetClientHostUsage,
-                     weak_factory_.GetWeakPtr(), host));
-    }
-  }
+
+  TrackingInfo* info = new TrackingInfo;
+  // Calling GetHostUsage(accumulator) may synchronously
+  // return if the usage is cached, which may in turn dispatch
+  // the completion callback before we finish looping over
+  // all clients (because info->pending_clients may reach 0
+  // during the loop).
+  // To avoid this, we add one more pending client as a sentinel
+  // and fire the sentinel callback at the end.
+  info->pending_clients = client_tracker_map_.size() + 1;
+  UsageCallback accumulator = base::Bind(
+      &UsageTracker::DidGetClientHostUsage, weak_factory_.GetWeakPtr(),
+      base::Owned(info), host);
+
+  for (ClientTrackerMap::iterator iter = client_tracker_map_.begin();
+       iter != client_tracker_map_.end();
+       ++iter)
+    iter->second->GetHostUsage(host, accumulator);
+
+  // Fire the sentinel as we've now called GetHostUsage for all clients.
+  accumulator.Run(0);
 }
 
 void UsageTracker::UpdateUsageCache(
@@ -329,41 +339,45 @@ void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,
   client_tracker->SetUsageCacheEnabled(origin, enabled);
 }
 
-void UsageTracker::DidGetClientGlobalUsage(int64 usage,
+void UsageTracker::DidGetClientGlobalUsage(TrackingInfo* info,
+                                           int64 usage,
                                            int64 unlimited_usage) {
-  global_usage_.usage += usage;
-  global_usage_.unlimited_usage += unlimited_usage;
-  if (--global_usage_.pending_clients == 0) {
-    // Defend against confusing inputs from clients.
-    if (global_usage_.usage < 0)
-      global_usage_.usage = 0;
-    // TODO(michaeln): The unlimited number is not trustworthy, it
-    // can get out of whack when apps are installed or uninstalled.
-    if (global_usage_.unlimited_usage > global_usage_.usage)
-      global_usage_.unlimited_usage = global_usage_.usage;
-    else if (global_usage_.unlimited_usage < 0)
-      global_usage_.unlimited_usage = 0;
+  info->usage += usage;
+  info->unlimited_usage += unlimited_usage;
 
-    // All the clients have returned their usage data.  Dispatches the
-    // pending callbacks.
-    global_usage_callbacks_.Run(
-        MakeTuple(global_usage_.usage, global_usage_.unlimited_usage));
-  }
+  if (--info->pending_clients)
+    return;
+
+  // Defend against confusing inputs from clients.
+  if (info->usage < 0)
+    info->usage = 0;
+
+  // TODO(michaeln): The unlimited number is not trustworthy, it
+  // can get out of whack when apps are installed or uninstalled.
+  if (info->unlimited_usage > info->usage)
+    info->unlimited_usage = info->usage;
+  else if (info->unlimited_usage < 0)
+    info->unlimited_usage = 0;
+
+  // All the clients have returned their usage data.  Dispatch the
+  // pending callbacks.
+  global_usage_callbacks_.Run(MakeTuple(info->usage, info->unlimited_usage));
 }
 
-void UsageTracker::DidGetClientHostUsage(const std::string& host,
+void UsageTracker::DidGetClientHostUsage(TrackingInfo* info,
+                                         const std::string& host,
                                          int64 usage) {
-  TrackingInfo& info = outstanding_host_usage_[host];
-  info.usage += usage;
-  if (--info.pending_clients == 0) {
-    // Defend against confusing inputs from clients.
-    if (info.usage < 0)
-      info.usage = 0;
-    // All the clients have returned their usage data.  Dispatches the
-    // pending callbacks.
-    host_usage_callbacks_.Run(host, MakeTuple(info.usage));
-    outstanding_host_usage_.erase(host);
-  }
+  info->usage += usage;
+  if (--info->pending_clients)
+    return;
+
+  // Defend against confusing inputs from clients.
+  if (info->usage < 0)
+    info->usage = 0;
+
+  // All the clients have returned their usage data.  Dispatch the
+  // pending callbacks.
+  host_usage_callbacks_.Run(host, MakeTuple(info->usage));
 }
 
 // ClientUsageTracker ----------------------------------------------------

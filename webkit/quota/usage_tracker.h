@@ -63,15 +63,15 @@ class WEBKIT_STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
   typedef std::map<QuotaClient::ID, ClientUsageTracker*> ClientTrackerMap;
 
   friend class ClientUsageTracker;
-  void DidGetClientGlobalUsage(int64 usage,
+  void DidGetClientGlobalUsage(TrackingInfo* info,
+                               int64 usage,
                                int64 unlimited_usage);
-  void DidGetClientHostUsage(const std::string& host,
+  void DidGetClientHostUsage(TrackingInfo* info,
+                             const std::string& host,
                              int64 usage);
 
   const StorageType type_;
   ClientTrackerMap client_tracker_map_;
-  TrackingInfo global_usage_;
-  std::map<std::string, TrackingInfo> outstanding_host_usage_;
 
   GlobalUsageCallbackQueue global_usage_callbacks_;
   HostUsageCallbackMap host_usage_callbacks_;
