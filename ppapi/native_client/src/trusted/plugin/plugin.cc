@@ -9,11 +9,6 @@
 
 #include "native_client/src/trusted/plugin/plugin.h"
 
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -32,6 +27,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+#include "native_client/src/trusted/plugin/file_utils.h"
 #include "native_client/src/trusted/plugin/json_manifest.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
@@ -1104,75 +1100,44 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
     }
     return;
   }
-  // Duplicate the file descriptor in order to create a FILE stream with it
-  // that can later be closed without closing the original descriptor.  The
-  // browser will take care of the original descriptor.
+  // SlurpFile closes the file descriptor after reading (or on error).
+  // Duplicate our file descriptor since it will be handled by the browser.
   int dup_file_desc = DUP(file_desc);
-  struct stat stat_buf;
-  if (0 != fstat(dup_file_desc, &stat_buf)) {
-    CLOSE(dup_file_desc);
-    error_info.SetReport(ERROR_MANIFEST_STAT,
-                         "could not stat manifest file.");
-    ReportLoadError(error_info);
-    return;
-  }
-  size_t bytes_to_read = static_cast<size_t>(stat_buf.st_size);
-  if (bytes_to_read > kNaClManifestMaxFileBytes) {
-    CLOSE(dup_file_desc);
-    error_info.SetReport(ERROR_MANIFEST_TOO_LARGE,
-                         "manifest file too large.");
-    ReportLoadError(error_info);
-    return;
-  }
-  FILE* json_file = fdopen(dup_file_desc, "rb");
-  PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen "
-                 "(dup_file_desc=%"NACL_PRId32", json_file=%p)\n",
-                 dup_file_desc, static_cast<void*>(json_file)));
-  if (json_file == NULL) {
-    CLOSE(dup_file_desc);
-    error_info.SetReport(ERROR_MANIFEST_OPEN,
-                         "could not open manifest file.");
-    ReportLoadError(error_info);
-    return;
-  }
-  nacl::scoped_array<char> json_buffer(new char[bytes_to_read + 1]);
-  if (json_buffer == NULL) {
-    fclose(json_file);
-    error_info.SetReport(ERROR_MANIFEST_MEMORY_ALLOC,
-                         "could not allocate manifest memory.");
-    ReportLoadError(error_info);
-    return;
-  }
-  // json_buffer could hold a large enough buffer that the system might need
-  // multiple reads to fill it, so iterate through reads.
-  size_t total_bytes_read = 0;
-  while (0 < bytes_to_read) {
-    size_t bytes_this_read = fread(&json_buffer[total_bytes_read],
-                                   sizeof(char),
-                                   bytes_to_read,
-                                   json_file);
-    if (bytes_this_read < bytes_to_read &&
-        (feof(json_file) || ferror(json_file))) {
-      PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen failed: "
-                     "total_bytes_read=%"NACL_PRIuS" "
-                     "bytes_to_read=%"NACL_PRIuS"\n",
-                     total_bytes_read, bytes_to_read));
-      fclose(json_file);
-      error_info.SetReport(ERROR_MANIFEST_READ,
-                           "could not read manifest file.");
-      ReportLoadError(error_info);
-      return;
-    }
-    total_bytes_read += bytes_this_read;
-    bytes_to_read -= bytes_this_read;
-  }
-  // Once the bytes are read, the FILE is no longer needed, so close it.  This
-  // allows for early returns without leaking the |json_file| FILE object.
-  fclose(json_file);
-  // No need to close |file_desc|, that is handled by |nexe_downloader_|.
-  json_buffer[total_bytes_read] = '\0';  // Force null termination.
+  nacl::string json_buffer;
+  file_utils::StatusCode status = file_utils::SlurpFile(
+      dup_file_desc, json_buffer, kNaClManifestMaxFileBytes);
 
-  ProcessNaClManifest(json_buffer.get());
+  if (status != file_utils::PLUGIN_FILE_SUCCESS) {
+    switch (status) {
+      case file_utils::PLUGIN_FILE_SUCCESS:
+        CHECK(0);
+        break;
+      case file_utils::PLUGIN_FILE_ERROR_MEM_ALLOC:
+        error_info.SetReport(ERROR_MANIFEST_MEMORY_ALLOC,
+                             "could not allocate manifest memory.");
+        break;
+      case file_utils::PLUGIN_FILE_ERROR_OPEN:
+        error_info.SetReport(ERROR_MANIFEST_OPEN,
+                             "could not open manifest file.");
+        break;
+      case file_utils::PLUGIN_FILE_ERROR_FILE_TOO_LARGE:
+        error_info.SetReport(ERROR_MANIFEST_TOO_LARGE,
+                             "manifest file too large.");
+        break;
+      case file_utils::PLUGIN_FILE_ERROR_STAT:
+        error_info.SetReport(ERROR_MANIFEST_STAT,
+                             "could not stat manifest file.");
+        break;
+      case file_utils::PLUGIN_FILE_ERROR_READ:
+        error_info.SetReport(ERROR_MANIFEST_READ,
+                             "could not read manifest file.");
+        break;
+    }
+    ReportLoadError(error_info);
+    return;
+  }
+
+  ProcessNaClManifest(json_buffer);
 }
 
 void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {

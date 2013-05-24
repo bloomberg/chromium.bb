@@ -135,7 +135,7 @@ void PnaclTranslateThread::DoTranslate() {
     nacl::MutexLocker ml(&subprocess_mu_);
     int64_t llc_start_time = NaClGetTimeOfDayMicroseconds();
     llc_subprocess_.reset(
-      StartSubprocess(PnaclUrls::GetLlcUrl(), manifest_, &error_info));
+      StartSubprocess(resources_->GetLlcUrl(), manifest_, &error_info));
     if (llc_subprocess_ == NULL) {
       TranslateFailed(ERROR_PNACL_LLC_SETUP,
                       "Compile process could not be created: " +
@@ -278,7 +278,7 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
     nacl::MutexLocker ml(&subprocess_mu_);
     int64_t ld_start_time = NaClGetTimeOfDayMicroseconds();
     ld_subprocess_.reset(
-      StartSubprocess(PnaclUrls::GetLdUrl(), manifest_, &error_info));
+      StartSubprocess(resources_->GetLdUrl(), manifest_, &error_info));
     if (ld_subprocess_ == NULL) {
       TranslateFailed(ERROR_PNACL_LD_SETUP,
                       "Link process could not be created: " +

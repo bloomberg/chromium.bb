@@ -158,8 +158,10 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
                    const PnaclOptions& pnacl_options,
                    const pp::CompletionCallback& translate_notify_callback);
 
+  // Callback for when the resource info JSON file has been read.
+  void ResourceInfoWasRead(int32_t pp_error);
+
   // Callback for when llc and ld have been downloaded.
-  // This is the first callback invoked in response to BitcodeToNative.
   void ResourcesDidLoad(int32_t pp_error);
 
   // Callbacks for temporary file related stages.

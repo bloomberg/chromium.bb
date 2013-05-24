@@ -26,15 +26,23 @@ class PnaclCoordinator;
 // Constants for loading LLC and LD.
 class PnaclUrls {
  public:
+  // Get the base URL prefix for Pnacl resources (without platform prefix).
   static nacl::string GetBaseUrl();
+
+  // Return {platform_prefix}/url
+  static nacl::string PrependPlatformPrefix(const nacl::string& url);
+
   static bool IsPnaclComponent(const nacl::string& full_url);
   static nacl::string PnaclComponentURLToFilename(
       const nacl::string& full_url);
-  static const nacl::string GetLlcUrl() { return nacl::string(kLlcUrl); }
-  static const nacl::string GetLdUrl() { return nacl::string(kLdUrl); }
+
+  // Get the URL for the resource info JSON file that contains information
+  // about loadable resources.
+  static const nacl::string GetResourceInfoUrl() {
+    return nacl::string(kResourceInfoUrl);
+  }
  private:
-  static const char kLlcUrl[];
-  static const char kLdUrl[];
+  static const char kResourceInfoUrl[];
 };
 
 // Loads a list of resources, providing a way to get file descriptors for
@@ -44,20 +52,35 @@ class PnaclResources {
  public:
   PnaclResources(Plugin* plugin,
                  PnaclCoordinator* coordinator,
-                 const Manifest* manifest,
-                 const std::vector<nacl::string>& resource_urls,
-                 const pp::CompletionCallback& all_loaded_callback)
+                 const Manifest* manifest)
       : plugin_(plugin),
         coordinator_(coordinator),
         manifest_(manifest),
-        resource_urls_(resource_urls),
-        all_loaded_callback_(all_loaded_callback) {
+        llc_tool_name(kDefaultLlcName),
+        ld_tool_name(kDefaultLdName) {
   }
   virtual ~PnaclResources();
 
-  // Start loading the resources.  After construction, this is the first step.
-  virtual void StartLoad();
-  // Get file descs by name. Only valid after all_loaded_callback_ has been run.
+  // Read the resource info JSON file.  This is the first step after
+  // construction; it has to be completed before StartLoad is called.
+  virtual void ReadResourceInfo(
+      const nacl::string& resource_info_url,
+      const pp::CompletionCallback& resource_info_read_cb);
+
+  // Start loading the resources.
+  virtual void StartLoad(
+      const pp::CompletionCallback& all_loaded_callback);
+
+  const nacl::string& GetLlcUrl() {
+    return llc_tool_name;
+  }
+
+  const nacl::string& GetLdUrl() {
+    return ld_tool_name;
+  }
+
+  // Get file descs by name. Only valid after StartLoad's completion callback
+  // fired.
   nacl::DescWrapper* WrapperForUrl(const nacl::string& url);
 
   static int32_t GetPnaclFD(Plugin* plugin, const char* filename);
@@ -71,13 +94,28 @@ class PnaclResources {
   PnaclCoordinator* coordinator_;
   // The manifest for looking up resource URLs.
   const Manifest* manifest_;
-  // The list of resource URLs (relative to resource_base_url_) to load.
-  std::vector<nacl::string> resource_urls_;
-  // Callback to be invoked when all resources can be guaranteed available.
-  pp::CompletionCallback all_loaded_callback_;
   // The descriptor wrappers for the downloaded URLs.  Only valid
   // once all_loaded_callback_ has been invoked.
   std::map<nacl::string, nacl::DescWrapper*> resource_wrappers_;
+
+  // The names of the llc and ld nexes are read from the resource info file.
+  // These are default values if the resource file does not contain the names.
+  // TODO(eliben): this should be eventually removed, once all nacl deps
+  // propagate - the names should always exist in the resource info JSON file.
+  static const char kDefaultLlcName[];
+  static const char kDefaultLdName[];
+
+  // Tool names for llc and ld; read from the resource info file.
+  nacl::string llc_tool_name;
+  nacl::string ld_tool_name;
+
+  // Parses resource info json data in |buf|.  Returns true if successful.
+  // Otherwise returns false and places an error message in |errmsg|.
+  bool ParseResourceInfo(const nacl::string& buf, nacl::string& errmsg);
+
+  // Convenience function for reporting an error while reading the resource
+  // info file.
+  void ReadResourceInfoError(const nacl::string& msg);
 };
 
 }  // namespace plugin;

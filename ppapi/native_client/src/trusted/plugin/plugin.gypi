@@ -7,6 +7,7 @@
     'chromium_code': 1,  # Use higher warning level.
     'common_sources': [
       'file_downloader.cc',
+      'file_utils.cc',
       'json_manifest.cc',
       'local_temp_file.cc',
       'module_ppapi.cc',
