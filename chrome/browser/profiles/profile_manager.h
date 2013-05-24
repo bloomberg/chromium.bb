@@ -47,12 +47,20 @@ class ProfileManager : public base::NonThreadSafe,
   // Physically remove deleted profile directories from disk.
   static void NukeDeletedProfilesFromDisk();
 
+  // The following DEPRECATED functions should be removed: crbug.com/83792.
+
   // DEPRECATED: DO NOT USE unless in ChromeOS.
   // Returns the default profile.  This adds the profile to the
   // ProfileManager if it doesn't already exist.  This method returns NULL if
   // the profile doesn't exist and we can't create it.
   // The profile used can be overridden by using --login-profile on cros.
   Profile* GetDefaultProfile(const base::FilePath& user_data_dir);
+
+  // DEPRECATED: Temporary measure to ensure that GetDefaultProfile() is not
+  // called before CreateProfile() is called in chrome_browser_main.cc.
+  // If GetDefaultProfile() or GetDefaultProfileOrOffTheRecord() is called
+  // before this, a CHECK will be triggered.
+  static void AllowGetDefaultProfile();
 
   // DEPRECATED: DO NOT USE unless in ChromeOS.
   // Same as instance method but provides the default user_data_dir as well.

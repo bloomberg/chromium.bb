@@ -1252,6 +1252,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     browser_process_->profile_manager()->SetWillImport();
   }
 
+  // Called before CreateProfile because creating the profile can trigger
+  // calls to GetDefaultProfile().
+  ProfileManager::AllowGetDefaultProfile();
+
   profile_ = CreateProfile(parameters(), user_data_dir_, parsed_command_line());
   if (!profile_)
     return content::RESULT_CODE_NORMAL_EXIT;
