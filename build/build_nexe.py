@@ -3,40 +3,57 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from optparse import OptionParser
-import os
-import subprocess
-import sys
-import tempfile
-
 """NEXE building script
 
 This module will take a set of source files, include paths, library paths, and
 additional arguments, and use them to build.
 """
 
+from optparse import OptionParser
+import os
+import subprocess
+import sys
+import tempfile
 
-def ErrOut(text):
-  """ErrOut prints an error message and the command-line that caused it.
+class Error(Exception):
+  pass
 
-  Prints to standard err, both the command-line normally, and separated by
-  >>...<< to make it easier to copy and paste the command, or to
-  find command formating issues.
-  """
-  sys.stderr.write('\n\n')
-  sys.stderr.write( '>>>' + '>> <<'.join(sys.argv) + '<<\n\n')
-  sys.stderr.write(' '.join(sys.argv) + '<<\n\n')
-  sys.stderr.write(text + '\n')
-  sys.exit(1)
+
+def FixPath(path):
+  # On Windows, |path| can be a long relative path: ..\..\..\..\out\Foo\bar...
+  # If the full path -- os.path.join(os.getcwd(), path) -- is longer than 255
+  # characters, then any operations that open or check for existence will fail.
+  # We can't use os.path.abspath here, because that calls into a Windows
+  # function that still has the path length limit. Instead, we'll cheat and
+  # normalize the path lexically.
+  path = os.path.normpath(os.path.join(os.getcwd(), path))
+  if sys.platform in ['win32', 'cygwin']:
+    if len(path) > 255:
+      raise Error('Path "%s" is too long (%d characters), and will fail.\n' % (
+          path, len(path)))
+  return path
+
+
+def IsFile(path):
+  return os.path.isfile(FixPath(path))
 
 
 def MakeDir(outdir):
+  outdir = FixPath(outdir)
   if outdir and not os.path.exists(outdir):
     # There may be a race creating this directory, so ignore failure.
     try:
       os.makedirs(outdir)
     except OSError:
       pass
+
+
+def RemoveFile(path):
+  os.remove(FixPath(path))
+
+
+def OpenFile(path, mode='r'):
+  return open(FixPath(path), mode)
 
 
 def RemoveQuotes(opt):
@@ -60,7 +77,7 @@ def ArgToList(opt):
 def GetMTime(filepath):
   """GetMTime returns the last modification time of the file or None."""
   try:
-    return os.path.getmtime(filepath)
+    return os.path.getmtime(FixPath(filepath))
   except OSError:
     return None
 
@@ -97,7 +114,7 @@ class Builder(object):
     elif sys.platform.startswith('darwin'):
       self.osname = 'mac'
     else:
-      ErrOut('Toolchain OS %s not supported.' % sys.platform)
+      raise Error('Toolchain OS %s not supported.' % sys.platform)
 
     # pnacl toolchain can be selected in three different ways
     # 1. by specifying --arch=pnacl directly to generate
@@ -125,16 +142,16 @@ class Builder(object):
       self.subarch = ''
       self.is_pnacl_toolchain = True
     else:
-      ErrOut('Toolchain architecture %s not supported.' % arch)
+      raise Error('Toolchain architecture %s not supported.' % arch)
 
     if toolname not in ['newlib', 'glibc']:
-      ErrOut('Toolchain of type %s not supported.' % toolname)
+      raise Error('Toolchain of type %s not supported.' % toolname)
 
     if arch == 'arm' and toolname == 'glibc':
-      ErrOut('arm glibc not yet supported.')
+      raise Error('arm glibc not yet supported.')
 
     if arch == 'pnacl' and toolname == 'glibc':
-      ErrOut('pnacl glibc not yet supported.')
+      raise Error('pnacl glibc not yet supported.')
 
     if self.is_pnacl_toolchain:
       mainarch = 'x86'
@@ -155,8 +172,8 @@ class Builder(object):
     self.toolchain = os.path.join(options.toolpath, tooldir)
     self.toolbin = os.path.join(self.toolchain, tool_subdir, 'bin')
     self.toolstamp = os.path.join(self.toolchain, 'stamp.prep')
-    if not os.path.isfile(self.toolstamp):
-      ErrOut('Could not find toolchain prep stamp file: %s' % (self.toolstamp))
+    if not IsFile(self.toolstamp):
+      raise Error('Could not find toolchain prep stamp file: ' + self.toolstamp)
 
     self.inc_paths = ArgToList(options.incdirs)
     self.lib_paths = ArgToList(options.libdirs)
@@ -311,13 +328,13 @@ class Builder(object):
         ecode = subprocess.call(cmd_line)
 
     except Exception, err:
-      ErrOut('\n%s\nFAILED: %s\n\n' % (' '.join(cmd_line), str(err)))
+      raise Error('\n%s\nFAILED: %s\n\n' % (' '.join(cmd_line), str(err)))
     if ecode != 0:
       print 'Err %d: nacl-%s %s' % (ecode, os.path.basename(cmd_line[0]), out)
       print '>>%s<<' % '<< >>'.join(cmd_line)
 
     if temp_file is not None:
-      os.remove(temp_file.name)
+      RemoveFile(temp_file.name)
     return ecode
 
   def RunWithRetry(self, cmd_line, out):
@@ -330,8 +347,8 @@ class Builder(object):
   def GetObjectName(self, src):
     if self.strip:
       src = src.replace(self.strip,'')
-    filepath, filename = os.path.split(src)
-    filename, ext = os.path.splitext(filename)
+    _, filename = os.path.split(src)
+    filename, _ = os.path.splitext(filename)
     if self.suffix:
       return os.path.join(self.outdir, filename + '.o')
     else:
@@ -339,8 +356,8 @@ class Builder(object):
       return os.path.join(self.outdir, os.path.splitext(filename)[0] + '.o')
 
   def CleanOutput(self, out):
-    if os.path.isfile(out):
-      os.remove(out)
+    if IsFile(out):
+      RemoveFile(out)
 
   def FixWindowsPath(self, path):
     # The windows version of the nacl toolchain returns badly
@@ -362,17 +379,17 @@ class Builder(object):
     return path
 
   def NeedsRebuild(self, outd, out, src, rebuilt=False):
-    if not os.path.isfile(self.toolstamp):
+    if not IsFile(self.toolstamp):
       if rebuilt:
-        print 'Could not find toolchain stamp file %s.' % self.toolstamp
+        raise Error('Could not find toolchain stamp file %s.' % self.toolstamp)
       return True
-    if not os.path.isfile(outd):
+    if not IsFile(outd):
       if rebuilt:
-        print 'Could not find dependency file %s.' % outd
+        raise Error('Could not find dependency file %s.' % outd)
       return True
-    if not os.path.isfile(out):
+    if not IsFile(out):
       if rebuilt:
-        print 'Could not find output file %s.' % out
+        raise Error('Could not find output file %s.' % out)
       return True
     stamp_tm = GetMTime(self.toolstamp)
     out_tm = GetMTime(out)
@@ -380,27 +397,26 @@ class Builder(object):
     src_tm = GetMTime(src)
     if IsStale(out_tm, stamp_tm, rebuilt):
       if rebuilt:
-        print 'Output %s is older than toolchain stamp %s' % (out,
-                                                              self.toolstamp)
+        raise Error('Output %s is older than toolchain stamp %s' % (
+            out, self.toolstamp))
       return True
     if IsStale(out_tm, src_tm, rebuilt):
       if rebuilt:
-        print 'Output %s is older than source %s.' % (out, src)
+        raise Error('Output %s is older than source %s.' % (out, src))
       return True
 
     if IsStale(outd_tm, src_tm, rebuilt):
       if rebuilt:
-        print 'Dependency file is older than source %s.' % src
+        raise Error('Dependency file is older than source %s.' % src)
       return True
 
     # Decode emitted makefile.
-    fh = open(outd, 'r')
-    deps = fh.read()
-    fh.close()
+    with open(FixPath(outd), 'r') as fh:
+      deps = fh.read()
     # Remove line continuations
     deps = deps.replace('\\\n', ' ')
     deps = deps.replace('\n', '')
-    # The dependancies are whitespace delimited following the first ':'
+    # The dependencies are whitespace delimited following the first ':'
     deps = deps.split(':', 1)[1]
     deps = deps.split()
     if sys.platform in ['win32', 'cygwin']:
@@ -410,19 +426,21 @@ class Builder(object):
       file_tm = GetMTime(filename)
       if IsStale(out_tm, file_tm, rebuilt):
         if rebuilt:
-          print 'Dependency %s is older than output %s.' % (filename, out)
+          raise Error('Dependency %s is older than output %s.' % (
+              filename, out))
         return True
 
       if IsStale(outd_tm, file_tm, rebuilt):
         if rebuilt:
-          print 'Dependency %s is older than dep file %s.' % (filename, outd)
+          raise Error('Dependency %s is older than dep file %s.' % (
+              filename, outd))
         return True
     return False
 
   def Compile(self, src):
     """Compile the source with pre-determined options."""
 
-    filename, ext = os.path.splitext(src)
+    _, ext = os.path.splitext(src)
     if ext in ['.c', '.S']:
       bin_name = self.GetCCompiler()
       extra = ['-std=gnu99']
@@ -454,10 +472,14 @@ class Builder(object):
     err = self.RunWithRetry(cmd_line, out)
     if err:
       self.CleanOutput(outd)
-      ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
-    elif self.NeedsRebuild(outd, out, src, True):
-      ErrOut('\nFailed to compile %s to %s with deps %s and cmdline:\t%s' %
-          (src, out, outd, ' '.join(cmd_line)))
+      raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+    else:
+      try:
+        self.NeedsRebuild(outd, out, src, True)
+      except Error, e:
+        raise Error('\nFailed to compile %s to %s with deps %s and cmdline:\t%s'
+                    '\nNeedsRebuild returned error: %s' % (
+                        src, out, outd, ' '.join(cmd_line), e))
     return out
 
   def Link(self, srcs):
@@ -475,7 +497,7 @@ class Builder(object):
 
     err = self.RunWithRetry(cmd_line, out)
     if err:
-      ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+      raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
     return out
 
   # For now, only support translating a pexe, and not .o file(s)
@@ -489,7 +511,7 @@ class Builder(object):
 
     err = self.RunWithRetry(cmd_line, out)
     if err:
-      ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+      raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
     return out
 
   def Archive(self, srcs):
@@ -513,7 +535,7 @@ class Builder(object):
     self.CleanOutput(out)
     err = self.RunWithRetry(cmd_line, out)
     if err:
-      ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+      raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
     return out
 
   def Strip(self, src):
@@ -533,12 +555,12 @@ class Builder(object):
       cmd_line = [strip_name, strip_option, src, '-o', out]
       err = self.RunWithRetry(cmd_line, out)
       if err:
-        ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+        raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
     else:
       cmd_line = [strip_name, strip_option, src, '-o', pre_debug_tagging]
       err = self.RunWithRetry(cmd_line, pre_debug_tagging)
       if err:
-        ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+        raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
 
       # Tag with a debug link to foo.debug copying from foo.untagged to foo.
       objcopy_name = self.GetObjCopy()
@@ -546,7 +568,7 @@ class Builder(object):
                   pre_debug_tagging, out]
       err = self.RunWithRetry(cmd_line, out)
       if err:
-        ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+        raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
 
       # Drop the untagged intermediate.
       self.CleanOutput(pre_debug_tagging)
@@ -563,7 +585,7 @@ class Builder(object):
     cmd_line = [bin_name, src, '-o', out]
     err = self.RunWithRetry(cmd_line, out)
     if err:
-      ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
+      raise Error('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
     return out
 
   def Generate(self, srcs):
@@ -583,9 +605,9 @@ class Builder(object):
       if self.strip_debug:
         self.Strip(out)
       elif self.strip_all:
-        ErrOut('FAILED: --strip-all on libs will result in unusable libs.')
+        raise Error('FAILED: --strip-all on libs will result in unusable libs.')
     else:
-      ErrOut('FAILED: Unknown outtype %s:\n' % (self.outtype))
+      raise Error('FAILED: Unknown outtype %s:\n' % (self.outtype))
 
 
 def Main(argv):
@@ -641,33 +663,37 @@ def Main(argv):
     parser.print_help()
     return 1
 
-  if options.source_list:
-    source_list_handle = open(options.source_list, 'r')
-    source_list = source_list_handle.read().splitlines()
-    source_list_handle.close()
-    files = files + source_list
+  try:
+    if options.source_list:
+      source_list_handle = open(options.source_list, 'r')
+      source_list = source_list_handle.read().splitlines()
+      source_list_handle.close()
+      files = files + source_list
 
-  # Fix slash style to insulate invoked toolchains.
-  options.toolpath = os.path.normpath(options.toolpath)
+    # Fix slash style to insulate invoked toolchains.
+    options.toolpath = os.path.normpath(options.toolpath)
 
-  build = Builder(options)
-  objs = []
+    build = Builder(options)
+    objs = []
 
-  if build.outtype == 'translate':
-    # Just translate a pexe to a nexe
-    if len(files) != 1:
-      ErrOut('Pexe translation requires exactly one input file.')
-    build.Translate(files[0])
+    if build.outtype == 'translate':
+      # Just translate a pexe to a nexe
+      if len(files) != 1:
+        parser.error('Pexe translation requires exactly one input file.')
+      build.Translate(files[0])
+      return 0
+
+    for filename in files:
+      out = build.Compile(filename)
+      if out:
+        objs.append(out)
+    # Do not link if building an object
+    if not options.compile_only:
+      build.Generate(objs)
     return 0
-
-  for filename in files:
-    out = build.Compile(filename)
-    if out:
-      objs.append(out)
-  # Do not link if building an object
-  if not options.compile_only:
-    build.Generate(objs)
-  return 0
+  except Error, e:
+    sys.stderr.write('%s\n' % e)
+    return 1
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv))
