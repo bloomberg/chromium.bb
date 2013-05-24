@@ -80,27 +80,6 @@ OmniboxState::OmniboxState(const OmniboxEditModel::State& model_state,
 
 OmniboxState::~OmniboxState() {}
 
-// The following const value is the same as in browser_defaults.
-const int kAutocompleteEditFontPixelSize = 15;
-// Font size 10px (as defined in browser_defaults) is too small for many
-// non-Latin/Greek/Cyrillic (non-LGC) scripts. For pop-up window, the total
-// rectangle is 21px tall and the height available for "ink" is 17px (please
-// refer to kAutocompleteVerticalMarginInPopup). With 12px font size, the
-// tallest glyphs in UI fonts we're building for ChromeOS (across all scripts)
-// still fit within 17px "ink" height.
-const int kAutocompleteEditFontPixelSizeInPopup = 12;
-
-// The following 2 values are based on kAutocompleteEditFontPixelSize and
-// kAutocompleteEditFontPixelSizeInPopup. They should be changed accordingly
-// if font size for autocomplete edit (in popup) change.
-const int kAutocompleteVerticalMargin = 1;
-const int kAutocompleteVerticalMarginInPopup = 2;
-
-int GetEditFontPixelSize(bool popup_window_mode) {
-  return popup_window_mode ? kAutocompleteEditFontPixelSizeInPopup :
-                             kAutocompleteEditFontPixelSize;
-}
-
 // This will write |url| and |text| to the clipboard as a well-formed URL.
 void DoCopyURL(const GURL& url, const string16& text, Profile* profile) {
   BookmarkNodeData data;
@@ -132,6 +111,9 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       select_all_on_gesture_tap_(false) {
   RemoveBorder();
   set_id(VIEW_ID_OMNIBOX);
+  SetFont(font);
+  SetVerticalMargins(font_y_offset, 0);
+  SetVerticalAlignment(gfx::ALIGN_TOP);
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -157,10 +139,6 @@ void OmniboxViewViews::Init() {
   if (popup_window_mode_)
     SetReadOnly(true);
 
-  const int font_size = GetEditFontPixelSize(popup_window_mode_);
-  if (font_size != font().GetFontSize())
-    SetFont(font().DeriveFont(font_size - font().GetFontSize()));
-
   // Initialize the popup view using the same font.
   popup_view_.reset(OmniboxPopupContentsView::Create(
       font(), this, model(), location_bar_view_));
@@ -169,10 +147,6 @@ void OmniboxViewViews::Init() {
   chromeos::input_method::InputMethodManager::Get()->
       AddCandidateWindowObserver(this);
 #endif
-}
-
-gfx::Font OmniboxViewViews::GetFont() {
-  return font();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

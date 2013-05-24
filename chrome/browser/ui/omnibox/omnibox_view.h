@@ -218,9 +218,6 @@ class OmniboxView {
 
   // Performs the drop of a drag and drop operation on the view.
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) = 0;
-
-  // Returns the font.
-  virtual gfx::Font GetFont() = 0;
 #endif
 
   // Returns a string with any leading javascript schemas stripped from the

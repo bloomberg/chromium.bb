@@ -118,7 +118,6 @@ class OmniboxViewWin
   virtual int GetMaxEditWidth(int entry_width) const OVERRIDE;
   virtual views::View* AddToView(views::View* parent) OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual gfx::Font GetFont() OVERRIDE;
 
   int GetPopupMaxYCoordinate();
 

@@ -1075,10 +1075,6 @@ int OmniboxViewWin::OnPerformDrop(const ui::DropTargetEvent& event) {
   return OnPerformDropImpl(event, false);
 }
 
-gfx::Font OmniboxViewWin::GetFont() {
-  return font_;
-}
-
 int OmniboxViewWin::OnPerformDropImpl(const ui::DropTargetEvent& event,
                                       bool in_drag) {
   const ui::OSExchangeData& data = event.data();
