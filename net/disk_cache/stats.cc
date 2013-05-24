@@ -61,7 +61,7 @@ static const char* kCounterNames[] = {
   "Last report",
   "Last report timer",
   "Doom recent entries",
-  "ga.js evicted"
+  "unused"
 };
 COMPILE_ASSERT(arraysize(kCounterNames) == disk_cache::Stats::MAX_COUNTER,
                update_the_names);
@@ -113,6 +113,9 @@ bool Stats::Init(void* data, int num_bytes, Addr address) {
 
   memcpy(data_sizes_, stats->data_sizes, sizeof(data_sizes_));
   memcpy(counters_, stats->counters, sizeof(counters_));
+
+  // Clean up old value.
+  SetCounter(UNUSED, 0);
   return true;
 }
 

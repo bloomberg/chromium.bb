@@ -299,13 +299,9 @@ bool Eviction::EvictEntry(CacheRankingsBlock* node, bool empty,
     entry->entry()->Store();
     rankings_->Insert(entry->rankings(), true, Rankings::DELETED);
   }
-  if (!empty) {
+  if (!empty)
     backend_->OnEvent(Stats::TRIM_ENTRY);
 
-    static const char gajs[] = "http://www.google-analytics.com/ga.js";
-    if (!entry->GetKey().compare(gajs))
-      backend_->OnEvent(Stats::GAJS_EVICTED);
-  }
   entry->Release();
 
   return true;
