@@ -29,6 +29,16 @@ class LocationRequest
       const std::string& extension_id,
       const std::string& request_name);
 
+  // Finishes the necessary setup for this object.
+  // Call this method immediately after taking a strong reference
+  // to this object.
+  //
+  // Ideally, we would do this at construction time, but currently
+  // our refcount starts at zero. BrowserThread::PostTask will take a ref
+  // and potentially release it before we are done, destroying us in the
+  // constructor.
+  void Initialize();
+
   const std::string& request_name() const { return request_name_; }
 
   // Grants permission for using geolocation.
@@ -68,7 +78,10 @@ LocationRequest::LocationRequest(
       location_manager_(location_manager) {
   // TODO(vadimt): use request_info.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
 
+void LocationRequest::Initialize() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   callback_ = base::Bind(&LocationRequest::OnLocationUpdate,
                          base::Unretained(this));
 
@@ -132,6 +145,7 @@ void LocationManager::AddLocationRequest(const std::string& extension_id,
   LocationRequestPointer location_request = new LocationRequest(AsWeakPtr(),
                                                                 extension_id,
                                                                 request_name);
+  location_request->Initialize();
   location_requests_.insert(
       LocationRequestMap::value_type(extension_id, location_request));
 }
