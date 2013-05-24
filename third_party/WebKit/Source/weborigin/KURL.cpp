@@ -69,10 +69,10 @@ static const char* asURLChar8Subtle(const String& spec)
 // Returns the characters for the given string, or a pointer to a static empty
 // string if the input string is null. This will always ensure we have a non-
 // null character pointer since ReplaceComponents has special meaning for null.
-static const url_parse::UTF16Char* charactersOrEmpty(const String& str)
+static const char* charactersOrEmpty(const StringUTF8Adaptor& string)
 {
-    static const url_parse::UTF16Char zero = 0;
-    return str.characters() ? reinterpret_cast<const url_parse::UTF16Char*>(str.characters()) : &zero;
+    static const char zero = 0;
+    return string.data() ? string.data() : &zero;
 }
 
 static bool isSchemeFirstChar(char c)
@@ -399,18 +399,18 @@ bool KURL::setProtocol(const String& protocol)
 {
     // Firefox and IE remove everything after the first ':'.
     int separatorPosition = protocol.find(':');
-    String newProtocol = protocol.substring(0, separatorPosition);
+    StringUTF8Adaptor newProtocol(protocol.substring(0, separatorPosition));
 
     // If KURL is given an invalid scheme, it returns failure without modifying
     // the URL at all. This is in contrast to most other setters which modify
     // the URL and set "m_isValid."
     url_canon::RawCanonOutputT<char> canonProtocol;
     url_parse::Component protocolComponent;
-    if (!url_canon::CanonicalizeScheme(newProtocol.characters(), url_parse::Component(0, newProtocol.length()), &canonProtocol, &protocolComponent)
+    if (!url_canon::CanonicalizeScheme(newProtocol.data(), url_parse::Component(0, newProtocol.length()), &canonProtocol, &protocolComponent)
         || !protocolComponent.is_nonempty())
         return false;
 
-    Replacements replacements;
+    url_canon::Replacements<char> replacements;
     replacements.SetScheme(charactersOrEmpty(newProtocol), url_parse::Component(0, newProtocol.length()));
     replaceComponents(replacements);
 
@@ -425,29 +425,34 @@ bool KURL::setProtocol(const String& protocol)
 
 void KURL::setHost(const String& host)
 {
-    Replacements replacements;
-    replacements.SetHost(charactersOrEmpty(host), url_parse::Component(0, host.length()));
+    StringUTF8Adaptor hostUTF8(host);
+    url_canon::Replacements<char> replacements;
+    replacements.SetHost(charactersOrEmpty(hostUTF8), url_parse::Component(0, hostUTF8.length()));
     replaceComponents(replacements);
 }
 
-void KURL::setHostAndPort(const String& s)
+void KURL::setHostAndPort(const String& hostAndPort)
 {
-    String host = s;
+    String host = hostAndPort;
     String port;
-    int hostEnd = s.find(":");
+    int hostEnd = hostAndPort.find(":");
     if (hostEnd != -1) {
-        host = s.left(hostEnd);
-        port = s.substring(hostEnd + 1);
+        host = hostAndPort.left(hostEnd);
+        port = hostAndPort.substring(hostEnd + 1);
     }
 
-    Replacements replacements;
-    // Host can't be removed, so we always set.
-    replacements.SetHost(charactersOrEmpty(host), url_parse::Component(0, host.length()));
+    StringUTF8Adaptor hostUTF8(host);
+    StringUTF8Adaptor portUTF8(port);
 
-    if (port.isEmpty()) // Port may be removed, so we support clearing.
+    url_canon::Replacements<char> replacements;
+    // Host can't be removed, so we always set.
+    replacements.SetHost(charactersOrEmpty(hostUTF8), url_parse::Component(0, hostUTF8.length()));
+
+    if (!portUTF8.length()) // Port may be removed, so we support clearing.
         replacements.ClearPort();
     else
-        replacements.SetPort(charactersOrEmpty(port), url_parse::Component(0, port.length()));
+        replacements.SetPort(charactersOrEmpty(portUTF8), url_parse::Component(0, portUTF8.length()));
+
     replaceComponents(replacements);
 }
 
@@ -455,7 +460,7 @@ void KURL::removePort()
 {
     if (!hasPort())
         return;
-    Replacements replacements;
+    url_canon::Replacements<char> replacements;
     replacements.ClearPort();
     replaceComponents(replacements);
 }
@@ -463,9 +468,10 @@ void KURL::removePort()
 void KURL::setPort(unsigned short i)
 {
     String portString = String::number(i);
+    ASSERT(portString.is8Bit());
 
-    Replacements replacements;
-    replacements.SetPort(reinterpret_cast<const url_parse::UTF16Char*>(portString.characters()), url_parse::Component(0, portString.length()));
+    url_canon::Replacements<char> replacements;
+    replacements.SetPort(reinterpret_cast<const char*>(portString.characters8()), url_parse::Component(0, portString.length()));
     replaceComponents(replacements);
 }
 
@@ -478,8 +484,9 @@ void KURL::setUser(const String& user)
 
     // The canonicalizer will clear any usernames that are empty, so we
     // don't have to explicitly call ClearUsername() here.
-    Replacements replacements;
-    replacements.SetUsername(charactersOrEmpty(user), url_parse::Component(0, user.length()));
+    StringUTF8Adaptor userUTF8(user);
+    url_canon::Replacements<char> replacements;
+    replacements.SetUsername(charactersOrEmpty(userUTF8), url_parse::Component(0, userUTF8.length()));
     replaceComponents(replacements);
 }
 
@@ -492,43 +499,47 @@ void KURL::setPass(const String& pass)
 
     // The canonicalizer will clear any passwords that are empty, so we
     // don't have to explicitly call ClearUsername() here.
-    Replacements replacements;
-    replacements.SetPassword(charactersOrEmpty(pass), url_parse::Component(0, pass.length()));
+    StringUTF8Adaptor passUTF8(pass);
+    url_canon::Replacements<char> replacements;
+    replacements.SetPassword(charactersOrEmpty(passUTF8), url_parse::Component(0, passUTF8.length()));
     replaceComponents(replacements);
 }
 
-void KURL::setFragmentIdentifier(const String& s)
+void KURL::setFragmentIdentifier(const String& fragment)
 {
     // This function is commonly called to clear the ref, which we
     // normally don't have, so we optimize this case.
-    if (s.isNull() && !m_parsed.ref.is_valid())
+    if (fragment.isNull() && !m_parsed.ref.is_valid())
         return;
 
-    Replacements replacements;
-    if (s.isNull())
+    StringUTF8Adaptor fragmentUTF8(fragment);
+
+    url_canon::Replacements<char> replacements;
+    if (fragment.isNull())
         replacements.ClearRef();
     else
-        replacements.SetRef(charactersOrEmpty(s), url_parse::Component(0, s.length()));
+        replacements.SetRef(charactersOrEmpty(fragmentUTF8), url_parse::Component(0, fragmentUTF8.length()));
     replaceComponents(replacements);
 }
 
 void KURL::removeFragmentIdentifier()
 {
-    Replacements replacements;
+    url_canon::Replacements<char> replacements;
     replacements.ClearRef();
     replaceComponents(replacements);
 }
 
 void KURL::setQuery(const String& query)
 {
-    Replacements replacements;
+    StringUTF8Adaptor queryUTF8(query);
+    url_canon::Replacements<char> replacements;
     if (query.isNull()) {
         // KURL.cpp sets to null to clear any query.
         replacements.ClearQuery();
     } else if (query.length() > 0 && query[0] == '?') {
         // WebCore expects the query string to begin with a question mark, but
         // GoogleURL doesn't. So we trim off the question mark when setting.
-        replacements.SetQuery(charactersOrEmpty(query), url_parse::Component(1, query.length() - 1));
+        replacements.SetQuery(charactersOrEmpty(queryUTF8), url_parse::Component(1, queryUTF8.length() - 1));
     } else {
         // When set with the empty string or something that doesn't begin with
         // a question mark, KURL.cpp will add a question mark for you. The only
@@ -536,7 +547,7 @@ void KURL::setQuery(const String& query)
         // string. KURL.cpp will leave a '?' with nothing following it in the
         // URL, whereas we'll clear it.
         // FIXME We should eliminate this difference.
-        replacements.SetQuery(charactersOrEmpty(query), url_parse::Component(0, query.length()));
+        replacements.SetQuery(charactersOrEmpty(queryUTF8), url_parse::Component(0, queryUTF8.length()));
     }
     replaceComponents(replacements);
 }
@@ -545,8 +556,9 @@ void KURL::setPath(const String& path)
 {
     // Empty paths will be canonicalized to "/", so we don't have to worry
     // about calling ClearPath().
-    Replacements replacements;
-    replacements.SetPath(charactersOrEmpty(path), url_parse::Component(0, path.length()));
+    StringUTF8Adaptor pathUTF8(path);
+    url_canon::Replacements<char> replacements;
+    replacements.SetPath(charactersOrEmpty(pathUTF8), url_parse::Component(0, pathUTF8.length()));
     replaceComponents(replacements);
 }
 
@@ -809,7 +821,8 @@ String KURL::componentString(const url_parse::Component& component) const
     return string().substring(component.begin, component.len);
 }
 
-void KURL::replaceComponents(const Replacements& replacements)
+template<typename CHAR>
+void KURL::replaceComponents(const url_canon::Replacements<CHAR>& replacements)
 {
     url_canon::RawCanonOutputT<char> output;
     url_parse::Parsed newParsed;

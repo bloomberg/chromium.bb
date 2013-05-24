@@ -180,8 +180,8 @@ private:
 
     String componentString(const url_parse::Component&) const;
 
-    typedef url_canon::Replacements<url_parse::UTF16Char> Replacements;
-    void replaceComponents(const Replacements&);
+    template<typename CHAR>
+    void replaceComponents(const url_canon::Replacements<CHAR>&);
 
     template <typename CHAR>
     void init(const KURL& base, const CHAR* relative, int relativeLength, const WTF::TextEncoding* queryEncoding);
