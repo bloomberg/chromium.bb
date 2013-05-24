@@ -1040,9 +1040,8 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
              << ", encryption level: "
              << QuicUtils::EncryptionLevelToString(level)
              << ", length:" << packet->length();
-  // TODO(rtenneti): Get StringToHexASCIIDump of packet.
   DVLOG(2) << ENDPOINT << "packet(" << sequence_number << "): " << std::endl
-           << packet->AsStringPiece();
+           << QuicUtils::StringToHexASCIIDump(packet->AsStringPiece());
 
   DCHECK(encrypted->length() <= kMaxPacketSize)
       << "Packet " << sequence_number << " will not be read; too large: "

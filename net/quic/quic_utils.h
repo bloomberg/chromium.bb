@@ -63,6 +63,13 @@ class NET_EXPORT_PRIVATE QuicUtils {
   // name if possible (i.e. kABCD -> "ABCD"), or will just treat it as a number
   // if not.
   static std::string TagToString(QuicTag tag);
+
+  // Given a binary buffer, return a hex+ASCII dump in the style of
+  // tcpdump's -X and -XX options:
+  // "0x0000:  0090 69bd 5400 000d 610f 0189 0800 4500  ..i.T...a.....E.\n"
+  // "0x0010:  001c fb98 4000 4001 7e18 d8ef 2301 455d  ....@.@.~...#.E]\n"
+  // "0x0020:  7fe2 0800 6bcb 0bc6 806e                 ....k....n\n"
+  static std::string StringToHexASCIIDump(base::StringPiece in_buffer);
 };
 
 }  // namespace net

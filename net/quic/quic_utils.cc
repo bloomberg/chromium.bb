@@ -8,8 +8,10 @@
 
 #include "base/logging.h"
 #include "base/port.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 
+using base::StringPiece;
 using std::string;
 
 namespace net {
@@ -231,6 +233,38 @@ string QuicUtils::TagToString(QuicTag tag) {
   }
 
   return base::UintToString(orig_tag);
+}
+
+// static
+string QuicUtils::StringToHexASCIIDump(StringPiece in_buffer) {
+  int offset = 0;
+  const int kBytesPerLine = 16;   // Max bytes dumped per line
+  const char* buf = in_buffer.data();
+  int bytes_remaining = in_buffer.size();
+  string s;   // our output
+  const char* p = buf;
+  while (bytes_remaining > 0) {
+    const int line_bytes = std::min(bytes_remaining, kBytesPerLine);
+    base::StringAppendF(&s, "0x%04x:  ", offset);  // Do the line header
+    for (int i = 0; i < kBytesPerLine; ++i) {
+      if (i < line_bytes) {
+        base::StringAppendF(&s, "%02x", static_cast<unsigned char>(p[i]));
+      } else {
+        s += "  ";    // two-space filler instead of two-space hex digits
+      }
+      if (i % 2) s += ' ';
+    }
+    s += ' ';
+    for (int i = 0; i < line_bytes; ++i) {  // Do the ASCII dump
+      s+= (p[i] >  32 && p[i] < 127) ? p[i] : '.';
+    }
+
+    bytes_remaining -= line_bytes;
+    offset += line_bytes;
+    p += line_bytes;
+    s += '\n';
+  }
+  return s;
 }
 
 }  // namespace net
