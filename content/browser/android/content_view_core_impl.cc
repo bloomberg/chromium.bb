@@ -1288,8 +1288,11 @@ void ContentViewCoreImpl::AttachExternalVideoSurface(JNIEnv* env,
 #if defined(GOOGLE_TV)
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
-  if (rvhi && rvhi->media_player_manager()) {
-    rvhi->media_player_manager()->AttachExternalVideoSurface(
+  MediaPlayerManagerImpl* media_player_manager_impl =
+      rvhi ? static_cast<MediaPlayerManagerImpl*>(rvhi->media_player_manager())
+           : NULL;
+  if (media_player_manager_impl) {
+    media_player_manager_impl->AttachExternalVideoSurface(
         static_cast<int>(player_id), jsurface);
   }
 #endif
@@ -1301,8 +1304,11 @@ void ContentViewCoreImpl::DetachExternalVideoSurface(JNIEnv* env,
 #if defined(GOOGLE_TV)
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
-  if (rvhi && rvhi->media_player_manager()) {
-    rvhi->media_player_manager()->DetachExternalVideoSurface(
+  MediaPlayerManagerImpl* media_player_manager_impl =
+      rvhi ? static_cast<MediaPlayerManagerImpl*>(rvhi->media_player_manager())
+           : NULL;
+  if (media_player_manager_impl) {
+    media_player_manager_impl->DetachExternalVideoSurface(
         static_cast<int>(player_id));
   }
 #endif
