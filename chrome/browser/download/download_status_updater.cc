@@ -67,7 +67,7 @@ bool DownloadStatusUpdater::GetProgress(float* progress,
       (*it)->GetManager()->GetAllDownloads(&items);
       for (content::DownloadManager::DownloadVector::const_iterator it =
           items.begin(); it != items.end(); ++it) {
-        if ((*it)->IsInProgress()) {
+        if ((*it)->GetState() == content::DownloadItem::IN_PROGRESS) {
           ++*download_count;
           if ((*it)->GetTotalBytes() <= 0) {
             // There may or may not be more data coming down this pipe.
@@ -101,7 +101,7 @@ void DownloadStatusUpdater::OnDownloadCreated(
   // Ignore downloads loaded from history, which are in a terminal state.
   // TODO(benjhayden): Use the Observer interface to distinguish between
   // historical and started downloads.
-  if (item->IsInProgress()) {
+  if (item->GetState() == content::DownloadItem::IN_PROGRESS) {
     UpdateAppIconDownloadProgress(item);
     new WasInProgressData(item);
   }
@@ -111,7 +111,7 @@ void DownloadStatusUpdater::OnDownloadCreated(
 
 void DownloadStatusUpdater::OnDownloadUpdated(
     content::DownloadManager* manager, content::DownloadItem* item) {
-  if (item->IsInProgress()) {
+  if (item->GetState() == content::DownloadItem::IN_PROGRESS) {
     // If the item was interrupted/cancelled and then resumed/restarted, then
     // set WasInProgress so that UpdateAppIconDownloadProgress() will be called
     // when it completes.

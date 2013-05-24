@@ -232,8 +232,6 @@ content::MockDownloadItem*
       .WillByDefault(Return(false));
   ON_CALL(*item, IsDangerous())
       .WillByDefault(Return(false));
-  ON_CALL(*item, IsInProgress())
-      .WillByDefault(Return(true));
   ON_CALL(*item, IsTemporary())
       .WillByDefault(Return(false));
   EXPECT_CALL(*download_manager_, GetDownload(id))

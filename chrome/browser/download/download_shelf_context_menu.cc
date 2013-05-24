@@ -47,9 +47,9 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
 
   if (download_model.IsMalicious())
     model = GetMaliciousMenuModel();
-  else if (download_item_->IsComplete())
+  else if (download_item_->GetState() == DownloadItem::COMPLETE)
     model = GetFinishedMenuModel();
-  else if (download_item_->IsInterrupted())
+  else if (download_item_->GetState() == DownloadItem::INTERRUPTED)
     model = GetInterruptedMenuModel();
   else
     model = GetInProgressMenuModel();
@@ -75,7 +75,7 @@ bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
     case CANCEL:
       return download_item_->IsPartialDownload();
     case TOGGLE_PAUSE:
-      return download_item_->IsInProgress();
+      return download_item_->GetState() == DownloadItem::IN_PROGRESS;
     case DISCARD:
     case KEEP:
     case LEARN_MORE_SCANNING:
@@ -183,7 +183,8 @@ string16 DownloadShelfContextMenu::GetLabelForCommandId(int command_id) const {
     case SHOW_IN_FOLDER:
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_SHOW);
     case OPEN_WHEN_COMPLETE:
-      if (download_item_ && download_item_->IsInProgress())
+      if (download_item_ &&
+          download_item_->GetState() == DownloadItem::IN_PROGRESS)
         return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE);
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_OPEN);
     case ALWAYS_OPEN_TYPE:

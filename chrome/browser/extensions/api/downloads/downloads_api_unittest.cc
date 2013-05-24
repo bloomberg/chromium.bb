@@ -639,7 +639,7 @@ class MockIconExtractorImpl : public DownloadFileIconExtractor {
 };
 
 bool ItemNotInProgress(DownloadItem* item) {
-  return !item->IsInProgress();
+  return item->GetState() != DownloadItem::IN_PROGRESS;
 }
 
 // Cancels the underlying DownloadItem when the ScopedCancellingItem goes out of
@@ -670,7 +670,7 @@ class ScopedItemVectorCanceller {
   ~ScopedItemVectorCanceller() {
     for (DownloadManager::DownloadVector::const_iterator item = items_->begin();
          item != items_->end(); ++item) {
-      if ((*item)->IsInProgress())
+      if ((*item)->GetState() == DownloadItem::IN_PROGRESS)
         (*item)->Cancel(true);
       content::DownloadUpdatedObserver observer(
           (*item), base::Bind(&ItemNotInProgress));
@@ -901,7 +901,7 @@ class JustInProgressDownloadObserver
 };
 
 bool ItemIsInterrupted(DownloadItem* item) {
-  return item->IsInterrupted();
+  return item->GetState() == DownloadItem::INTERRUPTED;
 }
 
 }  // namespace
@@ -971,12 +971,12 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   // And now cancel.
   EXPECT_TRUE(RunFunction(new DownloadsCancelFunction(),
                           DownloadItemIdAsArgList(download_item)));
-  EXPECT_TRUE(download_item->IsCancelled());
+  EXPECT_EQ(DownloadItem::CANCELLED, download_item->GetState());
 
   // Cancel again.  Shouldn't have any effect.
   EXPECT_TRUE(RunFunction(new DownloadsCancelFunction(),
                           DownloadItemIdAsArgList(download_item)));
-  EXPECT_TRUE(download_item->IsCancelled());
+  EXPECT_EQ(DownloadItem::CANCELLED, download_item->GetState());
 
   // Calling paused on a non-active download yields kInvalidOperationError.
   std::string error = RunFunctionAndReturnError(
@@ -1504,9 +1504,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_TRUE(RunFunction(new DownloadsPauseFunction(), on_item_arg));
   EXPECT_TRUE(on_item->IsPaused());
   EXPECT_TRUE(RunFunction(new DownloadsCancelFunction(), on_item_arg));
-  EXPECT_TRUE(on_item->IsCancelled());
+  EXPECT_EQ(DownloadItem::CANCELLED, on_item->GetState());
   EXPECT_TRUE(RunFunction(new DownloadsCancelFunction(), on_item_arg));
-  EXPECT_TRUE(on_item->IsCancelled());
+  EXPECT_EQ(DownloadItem::CANCELLED, on_item->GetState());
   error = RunFunctionAndReturnError(new DownloadsPauseFunction(), on_item_arg);
   EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
                error.c_str());
@@ -1524,9 +1524,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_TRUE(RunFunction(new DownloadsPauseFunction(), off_item_arg));
   EXPECT_TRUE(off_item->IsPaused());
   EXPECT_TRUE(RunFunction(new DownloadsCancelFunction(), off_item_arg));
-  EXPECT_TRUE(off_item->IsCancelled());
+  EXPECT_EQ(DownloadItem::CANCELLED, off_item->GetState());
   EXPECT_TRUE(RunFunction(new DownloadsCancelFunction(), off_item_arg));
-  EXPECT_TRUE(off_item->IsCancelled());
+  EXPECT_EQ(DownloadItem::CANCELLED, off_item->GetState());
   error = RunFunctionAndReturnError(new DownloadsPauseFunction(),
                                     off_item_arg);
   EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
@@ -2281,7 +2281,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename.
   std::string error;
@@ -2347,7 +2347,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename.
   std::string error;
@@ -2423,7 +2423,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename.
   std::string error;
@@ -2487,7 +2487,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename.
   std::string error;
@@ -2551,7 +2551,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename.
   std::string error;
@@ -2616,7 +2616,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename.
   std::string error;
@@ -2680,7 +2680,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename.
   std::string error;
@@ -2744,7 +2744,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename.
   std::string error;
@@ -2808,7 +2808,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename. Absolute paths should be rejected.
   std::string error;
@@ -2873,7 +2873,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename. Empty basenames should be rejected.
   std::string error;
@@ -2937,7 +2937,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename.
   std::string error;
@@ -2992,7 +2992,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename.
   // Also test that DetermineFilename allows (chrome) extensions to set
@@ -3062,7 +3062,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Remove a determiner while waiting for it.
   RemoveFilenameDeterminer(host);
@@ -3118,7 +3118,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename events.
   std::string error;
@@ -3177,7 +3177,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename.
   error = "";
@@ -3251,7 +3251,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename events.
   std::string error;
@@ -3309,7 +3309,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"slow.txt\"}]",
                          result_id)));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   // Respond to the onDeterminingFilename.
   error = "";
@@ -3397,7 +3397,7 @@ IN_PROC_BROWSER_TEST_F(
                          "  \"filename\":\"download-unknown-size\"}]",
                          item->GetId())));
   ASSERT_TRUE(item->GetTargetFilePath().empty());
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   ClearEvents();
   ui_test_utils::NavigateToURLWithDisposition(

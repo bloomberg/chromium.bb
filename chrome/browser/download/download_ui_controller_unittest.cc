@@ -118,13 +118,10 @@ DownloadUIControllerTest::GetTestDelegate() {
 TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic) {
   scoped_ptr<MockDownloadItem> item = GetMockDownload();
   DownloadUIController controller(manager(), GetTestDelegate());
-  EXPECT_CALL(*item, IsInProgress())
-      .WillOnce(Return(true));
   EXPECT_CALL(*item, GetTargetFilePath())
       .WillOnce(ReturnRefOfCopy(base::FilePath()));
-  EXPECT_CALL(*item, IsComplete())
-      .Times(AnyNumber())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*item, GetState())
+      .WillRepeatedly(Return(content::DownloadItem::IN_PROGRESS));
 
   ASSERT_TRUE(manager_observer());
   manager_observer()->OnDownloadCreated(manager(), item.get());
@@ -148,13 +145,10 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic) {
 TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyReadyOnCreate) {
   scoped_ptr<MockDownloadItem> item = GetMockDownload();
   DownloadUIController controller(manager(), GetTestDelegate());
-  EXPECT_CALL(*item, IsInProgress())
-      .WillOnce(Return(true));
   EXPECT_CALL(*item, GetTargetFilePath())
       .WillOnce(ReturnRefOfCopy(base::FilePath(FILE_PATH_LITERAL("foo"))));
-  EXPECT_CALL(*item, IsComplete())
-      .Times(AnyNumber())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*item, GetState())
+      .WillRepeatedly(Return(content::DownloadItem::IN_PROGRESS));
 
   ASSERT_TRUE(manager_observer());
   manager_observer()->OnDownloadCreated(manager(), item.get());
@@ -166,11 +160,8 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyReadyOnCreate) {
 TEST_F(DownloadUIControllerTest, DownloadUIController_NoNotifyHistory) {
   scoped_ptr<MockDownloadItem> item = GetMockDownload();
   DownloadUIController controller(manager(), GetTestDelegate());
-  EXPECT_CALL(*item, IsInProgress())
-      .WillOnce(Return(false));
-  EXPECT_CALL(*item, IsComplete())
-      .Times(AnyNumber())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*item, GetState())
+      .WillRepeatedly(Return(content::DownloadItem::COMPLETE));
 
   ASSERT_TRUE(manager_observer());
   manager_observer()->OnDownloadCreated(manager(), item.get());

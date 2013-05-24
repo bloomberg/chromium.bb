@@ -112,8 +112,10 @@ class DownloadStatusUpdaterTest : public testing::Test {
     for (int i = 0; i < item_count; ++i) {
       content::MockDownloadItem* item =
           new StrictMock<content::MockDownloadItem>;
-      EXPECT_CALL(*item, IsInProgress())
-          .WillRepeatedly(Return(i < in_progress_count));
+      content::DownloadItem::DownloadState state =
+          i < in_progress_count ? content::DownloadItem::IN_PROGRESS
+              : content::DownloadItem::CANCELLED;
+      EXPECT_CALL(*item, GetState()).WillRepeatedly(Return(state));
       EXPECT_CALL(*item, AddObserver(_))
           .WillOnce(Return());
       manager_items_[manager_index].push_back(item);
@@ -154,8 +156,8 @@ class DownloadStatusUpdaterTest : public testing::Test {
   // Transition specified item to completed.
   void CompleteItem(int manager_index, int item_index) {
     content::MockDownloadItem* item(Item(manager_index, item_index));
-    EXPECT_CALL(*item, IsInProgress())
-        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*item, GetState())
+        .WillRepeatedly(Return(content::DownloadItem::COMPLETE));
     updater_->OnDownloadUpdated(managers_[manager_index], item);
   }
 

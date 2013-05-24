@@ -124,7 +124,7 @@ DownloadUIController::~DownloadUIController() {
 void DownloadUIController::OnDownloadCreated(content::DownloadManager* manager,
                                              content::DownloadItem* item) {
   // If this isn't a new download, there's nothing to do.
-  if (!item->IsInProgress())
+  if (item->GetState() != content::DownloadItem::IN_PROGRESS)
     return;
 
   DownloadItemModel(item).SetShouldNotifyUI(true);
@@ -146,7 +146,7 @@ void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
 
   // Can't be complete. That would imply that we didn't receive an
   // OnDownloadUpdated() after the target was determined.
-  DCHECK(!item->IsComplete());
+  DCHECK_NE(content::DownloadItem::COMPLETE, item->GetState());
 
   DownloadItemModel(item).SetShouldNotifyUI(false);
   delegate_->NotifyDownloadStarting(item);

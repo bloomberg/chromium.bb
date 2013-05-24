@@ -66,7 +66,6 @@ class DownloadItemModelTest : public testing::Test {
   void SetupDownloadItemDefaults() {
     ON_CALL(item_, GetReceivedBytes()).WillByDefault(Return(1));
     ON_CALL(item_, GetTotalBytes()).WillByDefault(Return(2));
-    ON_CALL(item_, IsInProgress()).WillByDefault(Return(true));
     ON_CALL(item_, TimeRemaining(_)).WillByDefault(Return(false));
     ON_CALL(item_, GetMimeType()).WillByDefault(Return("text/html"));
     ON_CALL(item_, AllDataSaved()).WillByDefault(Return(false));
@@ -93,9 +92,6 @@ class DownloadItemModelTest : public testing::Test {
             (reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) ?
                 DownloadItem::IN_PROGRESS :
                 DownloadItem::INTERRUPTED));
-    EXPECT_CALL(item_, IsInProgress())
-        .WillRepeatedly(Return(
-            reason == content::DOWNLOAD_INTERRUPT_REASON_NONE));
   }
 
   content::MockDownloadItem& item() {
@@ -396,14 +392,6 @@ TEST_F(DownloadItemModelTest, ShouldRemoveFromShelfWhenComplete) {
         .WillRepeatedly(Return(test_case.is_auto_open));
     EXPECT_CALL(item(), GetState())
         .WillRepeatedly(Return(test_case.state));
-    EXPECT_CALL(item(), IsCancelled())
-        .WillRepeatedly(Return(test_case.state == DownloadItem::CANCELLED));
-    EXPECT_CALL(item(), IsComplete())
-        .WillRepeatedly(Return(test_case.state == DownloadItem::COMPLETE));
-    EXPECT_CALL(item(), IsInProgress())
-        .WillRepeatedly(Return(test_case.state == DownloadItem::IN_PROGRESS));
-    EXPECT_CALL(item(), IsInterrupted())
-        .WillRepeatedly(Return(test_case.state == DownloadItem::INTERRUPTED));
     EXPECT_CALL(item(), IsDangerous())
         .WillRepeatedly(Return(test_case.is_dangerous));
 

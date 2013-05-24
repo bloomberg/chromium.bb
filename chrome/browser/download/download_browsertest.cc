@@ -147,7 +147,7 @@ class PercentWaiter : public content::DownloadItem::Observer {
   }
 
   bool WaitForFinished() {
-    if (item_->IsComplete()) {
+    if (item_->GetState() == DownloadItem::COMPLETE) {
       return item_->PercentComplete() == 100;
     }
     waiting_ = true;
@@ -161,13 +161,13 @@ class PercentWaiter : public content::DownloadItem::Observer {
     DCHECK_EQ(item_, item);
     if (!error_ &&
         ((prev_percent_ > item_->PercentComplete()) ||
-         (item_->IsComplete() &&
+         (item_->GetState() == DownloadItem::COMPLETE &&
           (item_->PercentComplete() != 100)))) {
       error_ = true;
       if (waiting_)
         MessageLoopForUI::current()->Quit();
     }
-    if (item_->IsComplete() && waiting_)
+    if (item_->GetState() == DownloadItem::COMPLETE && waiting_)
       MessageLoopForUI::current()->Quit();
   }
 
@@ -2725,7 +2725,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
     EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
     content::DownloadItem* item = manager->GetDownload(index);
     ASSERT_TRUE(item);
-    ASSERT_TRUE(item->IsComplete());
+    ASSERT_EQ(DownloadItem::COMPLETE, item->GetState());
     base::FilePath target_path(item->GetTargetFilePath());
     EXPECT_EQ(std::string("a_zip_file") +
         (index == 0 ? std::string(".zip") :
@@ -2843,14 +2843,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_PauseResumeCancel) {
   ASSERT_TRUE(download_item);
   ASSERT_FALSE(download_item->GetTargetFilePath().empty());
   EXPECT_FALSE(download_item->IsPaused());
-  EXPECT_FALSE(download_item->IsCancelled());
+  EXPECT_NE(DownloadItem::CANCELLED, download_item->GetState());
   download_item->Pause();
   EXPECT_TRUE(download_item->IsPaused());
   download_item->Resume();
   EXPECT_FALSE(download_item->IsPaused());
-  EXPECT_FALSE(download_item->IsCancelled());
+  EXPECT_NE(DownloadItem::CANCELLED, download_item->GetState());
   download_item->Cancel(true);
-  EXPECT_TRUE(download_item->IsCancelled());
+  EXPECT_EQ(DownloadItem::CANCELLED, download_item->GetState());
 }
 
 // The Mac downloaded files quarantine feature is implemented by the

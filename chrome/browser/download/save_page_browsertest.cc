@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
 
   // Close the tab; does this cancel the download?
   GetCurrentTab(browser())->Close();
-  EXPECT_TRUE(items[0]->IsCancelled());
+  EXPECT_EQ(DownloadItem::CANCELLED, items[0]->GetState());
 
   EXPECT_FALSE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));

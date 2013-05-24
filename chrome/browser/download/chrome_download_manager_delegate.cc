@@ -111,7 +111,7 @@ base::FilePath GetPlatformDownloadPath(Profile* profile,
   // - Not Complete, and there's no intermediate file: GetFullPath() will be
   //     empty. This shouldn't happen since CanShowInFolder() returns false and
   //     this function shouldn't have been called.
-  if (download->IsComplete()) {
+  if (download->GetState() == DownloadItem::COMPLETE) {
     DCHECK(!download->GetTargetFilePath().empty());
     return download->GetTargetFilePath();
   }
@@ -369,7 +369,7 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
 }
 
 void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
-  DCHECK(download->IsComplete());
+  DCHECK_EQ(DownloadItem::COMPLETE, download->GetState());
   if (!download->CanOpenDownload())
     return;
   platform_util::OpenItem(GetPlatformDownloadPath(profile_, download));

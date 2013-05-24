@@ -124,14 +124,16 @@ IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, TestAll) {
 
   // If the download is no longer in-progress, the dialog should dismiss itself.
   SetUpExpectations(DownloadDangerPrompt::CANCEL);
-  EXPECT_CALL(download(), IsInProgress()).WillOnce(Return(false));
+  EXPECT_CALL(download(), GetState()).WillOnce(
+      Return(content::DownloadItem::CANCELLED));
   download_observer()->OnDownloadUpdated(&download());
   VerifyExpectations();
 
   // If the download is no longer dangerous (because it was accepted), the
   // dialog should dismiss itself.
   SetUpExpectations(DownloadDangerPrompt::CANCEL);
-  EXPECT_CALL(download(), IsInProgress()).WillOnce(Return(true));
+  EXPECT_CALL(download(), GetState()).WillOnce(
+      Return(content::DownloadItem::IN_PROGRESS));
   EXPECT_CALL(download(), IsDangerous()).WillOnce(Return(false));
   download_observer()->OnDownloadUpdated(&download());
   VerifyExpectations();

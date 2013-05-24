@@ -375,7 +375,9 @@ DownloadItem* GetDownloadIfInProgress(
     bool include_incognito,
     int id) {
   DownloadItem* download_item = GetDownload(profile, include_incognito, id);
-  return download_item && download_item->IsInProgress() ? download_item : NULL;
+  if (download_item && (download_item->GetState() == DownloadItem::IN_PROGRESS))
+    return download_item;
+  return NULL;
 }
 
 enum DownloadsFunctionName {
@@ -1105,7 +1107,7 @@ bool DownloadsOpenFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DownloadItem* download_item = GetDownload(
       profile(), include_incognito(), params->download_id);
-  if (!download_item || !download_item->IsComplete()) {
+  if (!download_item || download_item->GetState() != DownloadItem::COMPLETE) {
     error_ = download_extension_errors::kInvalidOperationError;
     return false;
   }
@@ -1296,7 +1298,7 @@ bool ExtensionDownloadsEventRouter::DetermineFilename(
     *error = download_extension_errors::kTooManyListenersError;
     return false;
   }
-  if (!item->IsInProgress()) {
+  if (item->GetState() != DownloadItem::IN_PROGRESS) {
     *error = download_extension_errors::kInvalidOperationError;
     return false;
   }

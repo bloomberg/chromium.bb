@@ -399,7 +399,8 @@ bool DownloadItemModel::ShouldRemoveFromShelfWhenComplete() const {
     return true;
 
   // If the download is interrupted or cancelled, it should not be removed.
-  if (download_->IsInterrupted() || download_->IsCancelled())
+  DownloadItem::DownloadState state = download_->GetState();
+  if (state == DownloadItem::INTERRUPTED || state == DownloadItem::CANCELLED)
     return false;
 
   // If the download is dangerous or malicious, we should display a warning on
@@ -466,7 +467,7 @@ string16 DownloadItemModel::GetProgressSizesString() const {
 }
 
 string16 DownloadItemModel::GetInProgressStatusString() const {
-  DCHECK(download_->IsInProgress());
+  DCHECK_EQ(DownloadItem::IN_PROGRESS, download_->GetState());
 
   TimeDelta time_remaining;
   // time_remaining is only known if the download isn't paused.

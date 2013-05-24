@@ -57,8 +57,8 @@ DownloadShelfTest::DownloadShelfTest()
       .WillByDefault(Return(DownloadItem::TARGET_DISPOSITION_OVERWRITE));
   ON_CALL(*download_item_, GetURL())
       .WillByDefault(ReturnRefOfCopy(GURL("http://example.com/foo")));
-  ON_CALL(*download_item_, IsComplete()).WillByDefault(Return(false));
-  ON_CALL(*download_item_, IsInProgress()).WillByDefault(Return(true));
+  ON_CALL(*download_item_, GetState())
+      .WillByDefault(Return(DownloadItem::IN_PROGRESS));
   ON_CALL(*download_item_, IsTemporary()).WillByDefault(Return(false));
   ON_CALL(*download_item_, ShouldOpenFileBasedOnExtension())
       .WillByDefault(Return(false));
@@ -148,8 +148,8 @@ TEST_F(DownloadShelfTest, AddDelayedCompletedDownload) {
   EXPECT_FALSE(shelf()->did_add_download());
   EXPECT_FALSE(shelf()->IsShowing());
 
-  EXPECT_CALL(*download_item(), IsComplete())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*download_item(), GetState())
+      .WillRepeatedly(Return(DownloadItem::COMPLETE));
 
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
@@ -170,8 +170,8 @@ TEST_F(DownloadShelfTest, AddDelayedCompleteNonTransientDownload) {
   EXPECT_FALSE(shelf()->did_add_download());
   EXPECT_FALSE(shelf()->IsShowing());
 
-  EXPECT_CALL(*download_item(), IsComplete())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*download_item(), GetState())
+      .WillRepeatedly(Return(DownloadItem::COMPLETE));
   EXPECT_CALL(*download_item(), ShouldOpenFileBasedOnExtension())
       .WillRepeatedly(Return(false));
   ASSERT_FALSE(DownloadItemModel(download_item())

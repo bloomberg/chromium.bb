@@ -182,7 +182,7 @@ DownloadTargetDeterminer::Result
   //
   // A virtual path is determined for DOA downloads for display purposes. This
   // is why this check is performed here instead of at the start.
-  if (!download_->IsInProgress())
+  if (download_->GetState() != DownloadItem::IN_PROGRESS)
     return COMPLETE;
   return CONTINUE;
 }

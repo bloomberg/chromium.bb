@@ -101,7 +101,7 @@ content::DownloadManager* DownloadShelf::GetDownloadManager() {
 }
 
 void DownloadShelf::ShowDownload(DownloadItem* download) {
-  if (download->IsComplete() &&
+  if (download->GetState() == DownloadItem::COMPLETE &&
       DownloadItemModel(download).ShouldRemoveFromShelfWhenComplete()) {
     return;
   }
