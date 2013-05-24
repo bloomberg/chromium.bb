@@ -52,4 +52,8 @@
 # implemented in r9162 (https://chromiumcodereview.appspot.com/14938004)
 crbug.com/241761 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
 
+# Skia r9262 (don't overclamp cubics (see skbug.com/1316)) changed
+# the way curves are drawn. The changes to this image are imperceptible
+crbug.com/243726 svg/as-background-image/svg-as-background-6.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
