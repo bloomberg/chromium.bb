@@ -22,6 +22,8 @@ const int64 kMaxBlockTimecode = 0x07FFFLL;
 int32 SerializeInt(IMkvWriter* writer, int64 value, int32 size);
 
 // Returns the size in bytes of the element.
+int32 GetUIntSize(uint64 value);
+int32 GetCodedUIntSize(uint64 value);
 uint64 EbmlMasterElementSize(uint64 type, uint64 value);
 uint64 EbmlElementSize(uint64 type, uint64 value);
 uint64 EbmlElementSize(uint64 type, float value);
