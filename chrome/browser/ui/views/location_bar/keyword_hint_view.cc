@@ -31,7 +31,7 @@ KeywordHintView::KeywordHintView(Profile* profile,
   leading_label_ = CreateLabel(font, font_y_offset, location_bar_view);
   tab_image_->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_LOCATION_BAR_KEYWORD_HINT_TAB));
+          IDR_OMNIBOX_KEYWORD_HINT_TAB));
   AddChildView(tab_image_);
   trailing_label_ = CreateLabel(font, font_y_offset, location_bar_view);
 }

@@ -461,7 +461,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
       theme_service_->BuildLabel(std::string(), kHintTextColor);
   gtk_widget_set_sensitive(tab_to_search_hint_leading_label_, FALSE);
   tab_to_search_hint_icon_ = gtk_image_new_from_pixbuf(
-      rb.GetNativeImageNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB).ToGdkPixbuf());
+      rb.GetNativeImageNamed(IDR_OMNIBOX_KEYWORD_HINT_TAB).ToGdkPixbuf());
   tab_to_search_hint_trailing_label_ =
       theme_service_->BuildLabel(std::string(), kHintTextColor);
   gtk_widget_set_sensitive(tab_to_search_hint_trailing_label_, FALSE);

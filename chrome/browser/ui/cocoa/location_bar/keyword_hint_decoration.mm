@@ -51,7 +51,7 @@ KeywordHintDecoration::~KeywordHintDecoration() {
 NSImage* KeywordHintDecoration::GetHintImage() {
   if (!hint_image_) {
     hint_image_.reset(ResourceBundle::GetSharedInstance().
-        GetNativeImageNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB).CopyNSImage());
+        GetNativeImageNamed(IDR_OMNIBOX_KEYWORD_HINT_TAB).CopyNSImage());
   }
   return hint_image_;
 }
