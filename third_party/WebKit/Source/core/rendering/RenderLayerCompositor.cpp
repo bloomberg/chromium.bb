@@ -1571,7 +1571,7 @@ CompositingReasons RenderLayerCompositor::directReasonsForCompositing(const Rend
         directReasons |= CompositingReasonAnimation;
 
     if (requiresCompositingForTransition(renderer))
-        directReasons |= CompositingReasonTransition;
+        directReasons |= CompositingReasonAnimation;
 
     if (requiresCompositingForFilters(renderer))
         directReasons |= CompositingReasonFilters;
@@ -1626,9 +1626,6 @@ const char* RenderLayerCompositor::logReasonsForCompositing(const RenderLayer* l
 
     if (reasons & CompositingReasonAnimation)
         return "animation";
-
-    if (reasons & CompositingReasonTransition)
-        return "transition";
 
     if (reasons & CompositingReasonFilters)
         return "filters";

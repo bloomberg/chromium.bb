@@ -29,6 +29,7 @@
 #include "WebAnimation.h"
 #include "WebColor.h"
 #include "WebCommon.h"
+#include "WebCompositingReasons.h"
 
 // Remove after making setPositionConstraint() pure virtual.
 #include "WebLayerPositionConstraint.h"
@@ -139,6 +140,10 @@ public:
     virtual void setBackgroundFilters(const WebFilterOperations&) = 0;
 
     virtual void setDebugName(WebString) = 0;
+
+    // Provides a bitfield that describe why this composited layer was created.
+    // FIXME: non-pure until the chromium-side implements this.
+    virtual void setCompositingReasons(WebCompositingReasons) { }
 
     // An animation delegate is notified when animations are started and
     // stopped. The WebLayer does not take ownership of the delegate, and it is

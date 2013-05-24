@@ -50,6 +50,7 @@
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderIFrame.h"
 #include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
@@ -122,7 +123,7 @@ RenderLayerBacking::~RenderLayerBacking()
     destroyGraphicsLayers();
 }
 
-PassOwnPtr<GraphicsLayer> RenderLayerBacking::createGraphicsLayer(const String& name)
+PassOwnPtr<GraphicsLayer> RenderLayerBacking::createGraphicsLayer(const String& name, CompositingReasons reasons)
 {
     GraphicsLayerFactory* graphicsLayerFactory = 0;
     if (Page* page = renderer()->frame()->page())
@@ -135,7 +136,9 @@ PassOwnPtr<GraphicsLayer> RenderLayerBacking::createGraphicsLayer(const String& 
 #else
     UNUSED_PARAM(name);
 #endif
-    
+
+    graphicsLayer->setCompositingReasons(reasons);
+
     return graphicsLayer.release();
 }
 
@@ -190,7 +193,7 @@ void RenderLayerBacking::createPrimaryGraphicsLayer()
     layerName = m_owningLayer->debugName();
 #endif
     
-    m_graphicsLayer = createGraphicsLayer(layerName);
+    m_graphicsLayer = createGraphicsLayer(layerName, m_owningLayer->compositingReasons());
 
     if (m_isMainFrameRenderViewLayer)
         m_graphicsLayer->setContentsOpaque(true);
@@ -344,6 +347,13 @@ void RenderLayerBacking::updateAfterWidgetResize()
             innerCompositor->frameViewDidChangeLocation(contentsBox().location());
         }
     }
+}
+
+void RenderLayerBacking::updateCompositingReasons()
+{
+    // All other layers owned by this backing will have the same compositing reason
+    // for their lifetime, so they are initialized only when created.
+    m_graphicsLayer->setCompositingReasons(m_owningLayer->compositingReasons());
 }
 
 void RenderLayerBacking::updateAfterLayout(UpdateAfterLayoutFlags flags)
@@ -718,6 +728,8 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
     updateDrawsContent(isSimpleContainer);
     updateAfterWidgetResize();
     registerScrollingLayers();
+
+    updateCompositingReasons();
 }
 
 void RenderLayerBacking::registerScrollingLayers()
@@ -837,7 +849,7 @@ bool RenderLayerBacking::updateClippingLayers(bool needsAncestorClip, bool needs
 
     if (needsAncestorClip) {
         if (!m_ancestorClippingLayer) {
-            m_ancestorClippingLayer = createGraphicsLayer("Ancestor clipping Layer");
+            m_ancestorClippingLayer = createGraphicsLayer("Ancestor clipping Layer", CompositingReasonLayerForClip);
             m_ancestorClippingLayer->setMasksToBounds(true);
             layersChanged = true;
         }
@@ -849,7 +861,7 @@ bool RenderLayerBacking::updateClippingLayers(bool needsAncestorClip, bool needs
     
     if (needsDescendantClip) {
         if (!m_childContainmentLayer) {
-            m_childContainmentLayer = createGraphicsLayer("Child clipping Layer");
+            m_childContainmentLayer = createGraphicsLayer("Child clipping Layer", CompositingReasonLayerForClip);
             m_childContainmentLayer->setMasksToBounds(true);
             layersChanged = true;
         }
@@ -872,7 +884,7 @@ bool RenderLayerBacking::updateOverflowControlsLayers(bool needsHorizontalScroll
     bool horizontalScrollbarLayerChanged = false;
     if (needsHorizontalScrollbarLayer) {
         if (!m_layerForHorizontalScrollbar) {
-            m_layerForHorizontalScrollbar = createGraphicsLayer("horizontal scrollbar");
+            m_layerForHorizontalScrollbar = createGraphicsLayer("horizontal scrollbar", CompositingReasonLayerForScrollbar);
             horizontalScrollbarLayerChanged = true;
         }
     } else if (m_layerForHorizontalScrollbar) {
@@ -883,7 +895,7 @@ bool RenderLayerBacking::updateOverflowControlsLayers(bool needsHorizontalScroll
     bool verticalScrollbarLayerChanged = false;
     if (needsVerticalScrollbarLayer) {
         if (!m_layerForVerticalScrollbar) {
-            m_layerForVerticalScrollbar = createGraphicsLayer("vertical scrollbar");
+            m_layerForVerticalScrollbar = createGraphicsLayer("vertical scrollbar", CompositingReasonLayerForScrollbar);
             verticalScrollbarLayerChanged = true;
         }
     } else if (m_layerForVerticalScrollbar) {
@@ -894,7 +906,7 @@ bool RenderLayerBacking::updateOverflowControlsLayers(bool needsHorizontalScroll
     bool scrollCornerLayerChanged = false;
     if (needsScrollCornerLayer) {
         if (!m_layerForScrollCorner) {
-            m_layerForScrollCorner = createGraphicsLayer("scroll corner");
+            m_layerForScrollCorner = createGraphicsLayer("scroll corner", CompositingReasonLayerForScrollbar);
             scrollCornerLayerChanged = true;
         }
     } else if (m_layerForScrollCorner) {
@@ -971,7 +983,7 @@ bool RenderLayerBacking::updateForegroundLayer(bool needsForegroundLayer)
 #ifndef NDEBUG
             layerName = m_owningLayer->debugName() + " (foreground)";
 #endif
-            m_foregroundLayer = createGraphicsLayer(layerName);
+            m_foregroundLayer = createGraphicsLayer(layerName, CompositingReasonLayerForForeground);
             m_foregroundLayer->setDrawsContent(true);
             m_foregroundLayer->setPaintingPhase(GraphicsLayerPaintForeground);
             layerChanged = true;
@@ -997,7 +1009,7 @@ bool RenderLayerBacking::updateBackgroundLayer(bool needsBackgroundLayer)
 #ifndef NDEBUG
             layerName = m_owningLayer->debugName() + " (background)";
 #endif
-            m_backgroundLayer = createGraphicsLayer(layerName);
+            m_backgroundLayer = createGraphicsLayer(layerName, CompositingReasonLayerForBackground);
             m_backgroundLayer->setDrawsContent(true);
             m_backgroundLayer->setAnchorPoint(FloatPoint3D());
             m_backgroundLayer->setPaintingPhase(GraphicsLayerPaintBackground);
@@ -1009,7 +1021,7 @@ bool RenderLayerBacking::updateBackgroundLayer(bool needsBackgroundLayer)
 #ifndef NDEBUG
             layerName = m_owningLayer->debugName() + " (contents containment)";
 #endif
-            m_contentsContainmentLayer = createGraphicsLayer(layerName);
+            m_contentsContainmentLayer = createGraphicsLayer(layerName, CompositingReasonLayerForBackground);
             layerChanged = true;
         }
     } else {
@@ -1033,7 +1045,7 @@ bool RenderLayerBacking::updateMaskLayer(bool needsMaskLayer)
     bool layerChanged = false;
     if (needsMaskLayer) {
         if (!m_maskLayer) {
-            m_maskLayer = createGraphicsLayer("Mask");
+            m_maskLayer = createGraphicsLayer("Mask", CompositingReasonLayerForMask);
             m_maskLayer->setDrawsContent(true);
             m_maskLayer->setPaintingPhase(GraphicsLayerPaintMask);
             layerChanged = true;
@@ -1057,12 +1069,12 @@ bool RenderLayerBacking::updateScrollingLayers(bool needsScrollingLayers)
     if (needsScrollingLayers) {
         if (!m_scrollingLayer) {
             // Outer layer which corresponds with the scroll view.
-            m_scrollingLayer = createGraphicsLayer("Scrolling container");
+            m_scrollingLayer = createGraphicsLayer("Scrolling container", CompositingReasonLayerForClip);
             m_scrollingLayer->setDrawsContent(false);
             m_scrollingLayer->setMasksToBounds(true);
 
             // Inner layer which renders the content that scrolls.
-            m_scrollingContentsLayer = createGraphicsLayer("Scrolled Contents");
+            m_scrollingContentsLayer = createGraphicsLayer("Scrolled Contents", CompositingReasonLayerForScrollingContainer);
             m_scrollingContentsLayer->setDrawsContent(true);
             GraphicsLayerPaintingPhase paintPhase = GraphicsLayerPaintOverflowContents | GraphicsLayerPaintCompositedScroll;
             if (!m_foregroundLayer)

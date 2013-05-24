@@ -180,7 +180,7 @@ private:
     void createPrimaryGraphicsLayer();
     void destroyGraphicsLayers();
     
-    PassOwnPtr<GraphicsLayer> createGraphicsLayer(const String&);
+    PassOwnPtr<GraphicsLayer> createGraphicsLayer(const String& name, CompositingReasons);
 
     RenderLayerModelObject* renderer() const { return m_owningLayer->renderer(); }
     RenderLayerCompositor* compositor() const { return m_owningLayer->compositor(); }
@@ -232,6 +232,8 @@ private:
     Color rendererBackgroundColor() const;
     void updateBackgroundColor(bool isSimpleContainer);
     void updateContentsRect(bool isSimpleContainer);
+
+    void updateCompositingReasons();
 
     bool hasVisibleNonCompositingDescendantLayers() const;
 

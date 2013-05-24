@@ -43,6 +43,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
+#include <public/WebCompositingReasons.h>
 #include <public/WebContentLayer.h>
 #include <public/WebImageLayer.h>
 #include <public/WebLayer.h>
@@ -231,6 +232,8 @@ public:
 
     // Layer ID from platform-specific layer. Only used to identify layers in the compositor for debugging purposes.
     int debugID() const;
+
+    void setCompositingReasons(WebKit::WebCompositingReasons);
 
     GraphicsLayer* parent() const { return m_parent; };
     void setParent(GraphicsLayer*); // Internal use only.

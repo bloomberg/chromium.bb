@@ -1069,6 +1069,11 @@ int GraphicsLayer::debugID() const
     return m_layer ? m_layer->layer()->id() : DebugIDNoCompositedLayer;
 }
 
+void GraphicsLayer::setCompositingReasons(WebKit::WebCompositingReasons reasons)
+{
+    m_layer->layer()->setCompositingReasons(reasons);
+}
+
 void GraphicsLayer::setPosition(const FloatPoint& point)
 {
     m_position = point;

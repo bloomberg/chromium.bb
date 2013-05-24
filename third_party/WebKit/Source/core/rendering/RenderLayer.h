@@ -91,33 +91,42 @@ enum {
     CompositingReasonIFrame                                 = 1 << 4,
     CompositingReasonBackfaceVisibilityHidden               = 1 << 5,
     CompositingReasonAnimation                              = 1 << 6,
-    CompositingReasonTransition                             = 1 << 7,
-    CompositingReasonFilters                                = 1 << 8,
-    CompositingReasonPositionFixed                          = 1 << 9,
-    CompositingReasonPositionSticky                         = 1 << 10,
-    CompositingReasonOverflowScrollingTouch                 = 1 << 11,
-    CompositingReasonBlending                               = 1 << 12,
+    CompositingReasonFilters                                = 1 << 7,
+    CompositingReasonPositionFixed                          = 1 << 8,
+    CompositingReasonPositionSticky                         = 1 << 9,
+    CompositingReasonOverflowScrollingTouch                 = 1 << 10,
+    CompositingReasonBlending                               = 1 << 11,
 
     // Overlap reasons that require knowing what's behind you in paint-order before knowing the answer
-    CompositingReasonAssumedOverlap                         = 1 << 13,
-    CompositingReasonOverlap                                = 1 << 14,
-    CompositingReasonNegativeZIndexChildren                 = 1 << 15,
+    CompositingReasonAssumedOverlap                         = 1 << 12,
+    CompositingReasonOverlap                                = 1 << 13,
+    CompositingReasonNegativeZIndexChildren                 = 1 << 14,
 
     // Subtree reasons that require knowing what the status of your subtree is before knowing the answer
-    CompositingReasonTransformWithCompositedDescendants     = 1 << 16,
-    CompositingReasonOpacityWithCompositedDescendants       = 1 << 17,
-    CompositingReasonMaskWithCompositedDescendants          = 1 << 18,
-    CompositingReasonReflectionWithCompositedDescendants    = 1 << 19,
-    CompositingReasonFilterWithCompositedDescendants        = 1 << 20,
-    CompositingReasonBlendingWithCompositedDescendants      = 1 << 21,
-    CompositingReasonClipsCompositingDescendants            = 1 << 22,
-    CompositingReasonPerspective                            = 1 << 23,
-    CompositingReasonPreserve3D                             = 1 << 24,
-    CompositingReasonReflectionOfCompositedParent           = 1 << 25,
+    CompositingReasonTransformWithCompositedDescendants     = 1 << 15,
+    CompositingReasonOpacityWithCompositedDescendants       = 1 << 16,
+    CompositingReasonMaskWithCompositedDescendants          = 1 << 17,
+    CompositingReasonReflectionWithCompositedDescendants    = 1 << 18,
+    CompositingReasonFilterWithCompositedDescendants        = 1 << 19,
+    CompositingReasonBlendingWithCompositedDescendants      = 1 << 20,
+    CompositingReasonClipsCompositingDescendants            = 1 << 21,
+    CompositingReasonPerspective                            = 1 << 22,
+    CompositingReasonPreserve3D                             = 1 << 23,
+    CompositingReasonReflectionOfCompositedParent           = 1 << 24,
 
     // The root layer is a special case that may be forced to be a layer, but also it needs to be
     // a layer if anything else in the subtree is composited.
-    CompositingReasonRoot                                   = 1 << 26
+    CompositingReasonRoot                                   = 1 << 25,
+
+    // RenderLayerBacking internal hierarchy reasons
+    CompositingReasonLayerForClip                           = 1 << 26,
+    CompositingReasonLayerForScrollbar                      = 1 << 27,
+    CompositingReasonLayerForScrollingContainer             = 1 << 28,
+    CompositingReasonLayerForForeground                     = 1 << 29,
+    CompositingReasonLayerForBackground                     = 1 << 30,
+    CompositingReasonLayerForMask                           = 1 << 31,
+
+    // Note: if you add more reasons here, you will need to update the WebCompositingReasons enum as well.
 };
 typedef unsigned CompositingReasons;
 
