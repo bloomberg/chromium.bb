@@ -122,7 +122,6 @@ def MaybeRelease(revision):
       '--summary', 'version of ChromeDriver2 r%s' % revision,
       '--project', 'chromedriver',
       '--user', 'chromedriver.bot@gmail.com',
-      '--label', 'Release',
       zip_path
   ]
   with open(os.devnull, 'wb') as no_output:
