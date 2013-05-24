@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -91,11 +92,12 @@ RenderViewHost* BrowserListTabContentsProvider::CreateNewTarget() {
   const BrowserList* browser_list =
       BrowserList::GetInstance(host_desktop_type_);
 
-  if (browser_list->empty())
+  if (browser_list->empty()) {
     chrome::NewEmptyWindow(profile_, host_desktop_type_);
-
-  if (browser_list->empty())
-    return NULL;
+    return browser_list->empty() ? NULL :
+           browser_list->get(0)->tab_strip_model()->GetActiveWebContents()->
+               GetRenderViewHost();
+  }
 
   content::WebContents* web_contents = chrome::AddSelectedTabWithURL(
       browser_list->get(0),
