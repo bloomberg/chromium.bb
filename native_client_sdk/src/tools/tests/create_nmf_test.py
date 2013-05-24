@@ -12,11 +12,16 @@ import unittest
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(SCRIPT_DIR)
 DATA_DIR = os.path.join(SCRIPT_DIR, 'data')
+CHROME_SRC = os.path.dirname(os.path.dirname(os.path.dirname(PARENT_DIR)))
+MOCK_DIR = os.path.join(CHROME_SRC, "third_party", "pymock")
 
+# For the mock library
+sys.path.append(MOCK_DIR)
 sys.path.append(PARENT_DIR)
 
-import getos
 import create_nmf
+import getos
+import mock
 
 
 class TestIsDynamicElf(unittest.TestCase):
@@ -75,13 +80,35 @@ class TestParseElfHeader(unittest.TestCase):
     self.assertFalse(dynamic)
 
 
+class TestDefaultLibpath(unittest.TestCase):
+  def testWithoutNaClSDKRoot(self):
+    """GetDefaultLibPath wihtout NACL_SDK_ROOT set
+
+    In the absence of NACL_SDK_ROOT GetDefaultLibPath should
+    return the empty list."""
+    with mock.patch.dict('os.environ', clear=True):
+      paths = create_nmf.GetDefaultLibPath('Debug')
+    self.assertEqual(paths, [])
+
+  def testHonorNaClSDKRoot(self):
+    with mock.patch.dict('os.environ', {'NACL_SDK_ROOT': '/dummy/path'}):
+      paths = create_nmf.GetDefaultLibPath('Debug')
+    for path in paths:
+      self.assertTrue(path.startswith('/dummy/path'))
+
+  def testIncludesNaClPorts(self):
+    with mock.patch.dict('os.environ', {'NACL_SDK_ROOT': '/dummy/path'}):
+      paths = create_nmf.GetDefaultLibPath('Debug')
+    self.assertTrue(any(os.path.join('ports', 'lib') in p for p in paths),
+                    "naclports libpath missing: %s" % str(paths))
+
+
 class TestNmfUtils(unittest.TestCase):
   """Tests for the main NmfUtils class in create_nmf."""
 
   def setUp(self):
     self.tempdir = None
-    chrome_src = os.path.dirname(os.path.dirname(os.path.dirname(PARENT_DIR)))
-    toolchain = os.path.join(chrome_src, 'native_client', 'toolchain')
+    toolchain = os.path.join(CHROME_SRC, 'native_client', 'toolchain')
     self.toolchain = os.path.join(toolchain, '%s_x86' % getos.GetPlatform())
     self.objdump = os.path.join(self.toolchain, 'bin', 'i686-nacl-objdump')
     if os.name == 'nt':

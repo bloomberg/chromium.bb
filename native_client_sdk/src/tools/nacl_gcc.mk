@@ -352,15 +352,13 @@ NMF_ARCHES := $(foreach arch,$(ARCHES),_$(arch).nexe)
 # $2 = Additional create_nmf.py arguments
 #
 NMF := python $(NACL_SDK_ROOT)/tools/create_nmf.py
-GLIBC_DUMP := $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/bin/objdump
-GLIBC_PATHS := -L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib32
-GLIBC_PATHS += -L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib
-GLIBC_PATHS += -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_64/$(CONFIG)
-GLIBC_PATHS += -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)
+ifeq ($(CONFIG),Debug)
+NMF_FLAGS += --debug-libs
+endif
 
 
 define NMF_RULE
 all:$(OUTDIR)/$(1).nmf
 $(OUTDIR)/$(1).nmf : $(foreach arch,$(NMF_ARCHES),$(OUTDIR)/$(1)$(arch)) $(GLIBC_SO_LIST)
-	$(call LOG,CREATE_NMF,$$@,$(NMF) -o $$@ $$^ -D $(GLIBC_DUMP) $(GLIBC_PATHS) -s $(OUTDIR) $(2) $(GLIBC_REMAP))
+	$(call LOG,CREATE_NMF,$$@,$(NMF) $(NMF_FLAGS) -o $$@ $$^ $(GLIBC_PATHS) -s $(OUTDIR) $(2) $(GLIBC_REMAP))
 endef

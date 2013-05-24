@@ -14,6 +14,7 @@ import struct
 import subprocess
 import sys
 
+import getos
 import quote
 
 if sys.version_info < (2, 6, 0):
@@ -22,6 +23,8 @@ if sys.version_info < (2, 6, 0):
 
 NeededMatcher = re.compile('^ *NEEDED *([^ ]+)\n$')
 FormatMatcher = re.compile('^(.+):\\s*file format (.+)\n$')
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 OBJDUMP_ARCH_MAP = {
     # Names returned by Linux's objdump:
@@ -251,7 +254,9 @@ class NmfUtils(object):
           set(['x86-32/libc.so', 'x86-64/libgcc.so'])
     '''
     if not self.objdump:
-      raise Error('No objdump executable specified (see --help for more info)')
+      self.objdump = FindObjdumpExecutable()
+      if not self.objdump:
+        raise Error('No objdump executable found (see --help for more info)')
     DebugPrint('GleanFromObjdump(%s)' % ([self.objdump, '-p'] + files.keys()))
     proc = subprocess.Popen([self.objdump, '-p'] + files.keys(),
                             stdout=subprocess.PIPE,
@@ -519,6 +524,68 @@ def ParseExtraFiles(encoded_list, err):
   return canonicalized
 
 
+def GetSDKRoot():
+  """Determine current NACL_SDK_ROOT, either via the environment variable
+  itself, or by attempting to derive it from the location of this script.
+  """
+  sdk_root = os.environ.get('NACL_SDK_ROOT')
+  if not sdk_root:
+    sdk_root = os.path.dirname(SCRIPT_DIR)
+    if not os.path.exists(os.path.join(sdk_root, 'toolchain')):
+      return None
+
+  return sdk_root
+
+
+def FindObjdumpExecutable():
+  """Derive path to objdump executable to use for determining shared
+  object dependencies.
+  """
+  sdk_root = GetSDKRoot()
+  if not sdk_root:
+    return None
+
+  osname = getos.GetPlatform()
+  toolchain = os.path.join(sdk_root, 'toolchain', '%s_x86_glibc' % osname)
+  objdump = os.path.join(toolchain, 'bin', 'x86_64-nacl-objdump')
+  if osname == 'win':
+    objdump += '.exe'
+
+  if not os.path.exists(objdump):
+    sys.stderr.write('WARNING: failed to find objdump in default '
+                     'location: %s' % objdump)
+    return None
+
+  return objdump
+
+
+def GetDefaultLibPath(config):
+  """Derive default library path to use when searching for shared
+  objects.  This currently include the toolchain library folders
+  as well as the top level SDK lib folder and the naclports lib
+  folder.  We include both 32-bit and 64-bit library paths.
+  """
+  assert(config in ('Debug', 'Release'))
+  sdk_root = GetSDKRoot()
+  if not sdk_root:
+    # TOOD(sbc): output a warning here?  We would also need to suppress
+    # the warning when run from the chromium build.
+    return []
+
+  osname = getos.GetPlatform()
+  libpath = [
+    'toolchain/%s_x86_glibc/x86_64-nacl/lib' % osname,
+    'toolchain/%s_x86_glibc/x86_64-nacl/lib32' % osname,
+    'lib/glibc_x86_32/%s' % config,
+    'lib/glibc_x86_64/%s' % config,
+    'ports/lib/glibc_x86_32/%s' % config,
+    'ports/lib/glibc_x86_64/%s' % config,
+  ]
+  libpath = [os.path.normpath(p) for p in libpath]
+  libpath = [os.path.join(sdk_root, p) for p in libpath]
+  return libpath
+
+
 def main(argv):
   parser = optparse.OptionParser(
       usage='Usage: %prog [options] nexe [extra_libs...]')
@@ -526,8 +593,14 @@ def main(argv):
                     help='Write manifest file to FILE (default is stdout)',
                     metavar='FILE')
   parser.add_option('-D', '--objdump', dest='objdump',
-                    help='Use TOOL as the "objdump" tool to run',
+                    help='Override the default "objdump" tool used to find '
+                         'shared object dependencies',
                     metavar='TOOL')
+  parser.add_option('--no-default-libpath',
+                    help="Don't include the SDK default library paths")
+  parser.add_option('--debug-libs', action='store_true',
+                    help='Use debug library paths when constructing default '
+                         'library path.')
   parser.add_option('-L', '--library-path', dest='lib_path',
                     action='append', default=[],
                     help='Add DIRECTORY to library search path',
@@ -577,6 +650,11 @@ def main(argv):
     path_prefix = options.path_prefix.split('/')
   else:
     path_prefix = []
+
+  if not options.no_default_libpath:
+    # Add default libraries paths to the end of the search path.
+    config = options.debug_libs and 'Debug' or 'Release'
+    options.lib_path += GetDefaultLibPath(config)
 
   nmf = NmfUtils(objdump=options.objdump,
                  main_files=args,
