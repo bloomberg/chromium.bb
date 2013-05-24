@@ -793,7 +793,9 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestGalleryOpen) {
   DoTestGalleryOpen(&volume_);
 }
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestGalleryOpen) {
+// Disabled temporarily since fails on Linux Chromium OS ASAN Tests (2).
+// TODO(mtomasz): crbug.com/243611.
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestGalleryOpen) {
   PrepareVolume();
   DoTestGalleryOpen(&volume_);
 }
