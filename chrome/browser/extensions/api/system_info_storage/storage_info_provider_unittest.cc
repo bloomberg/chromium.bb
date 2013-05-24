@@ -35,10 +35,10 @@ struct TestUnitInfo {
 };
 
 const struct TestUnitInfo kTestingData[] = {
-  {"C:", "unknown", 1000, 10, 0},
-  {"d:", "removable", 2000, 10, 1 },
-  {"/home","harddisk", 3000, 10, 2},
-  {"/", "removable", 4000, 10, 3}
+  {"C:", systeminfo::kStorageTypeUnknown, 1000, 10, 0},
+  {"d:", systeminfo::kStorageTypeRemovable, 2000, 10, 1 },
+  {"/home", systeminfo::kStorageTypeFixed, 3000, 10, 2},
+  {"/", systeminfo::kStorageTypeRemovable, 4000, 10, 3}
 };
 
 // The watching interval for unit test is 1 milliseconds.

@@ -10,9 +10,9 @@ chrome.systemInfo = chrome.experimental.systemInfo;
 var testData = [
   { id: "0xbeaf", type: "unknown", capacity: 4098,
     availableCapacity: 1000, step: 0 },
-  { id: "/home", type: "harddisk", capacity: 4098,
+  { id: "/home", type: "fixed", capacity: 4098,
     availableCapacity: 1000, step: 10 },
-  { id: "/data", type: "harddisk", capacity: 10000,
+  { id: "/data", type: "fixed", capacity: 10000,
     availableCapacity: 1000, step: 4097 }
 ];
 

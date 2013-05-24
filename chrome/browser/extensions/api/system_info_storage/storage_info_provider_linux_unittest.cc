@@ -39,9 +39,9 @@ struct TestMountEntry {
 };
 
 const TestMountEntry mount_entries[] = {
-  { "/boot", "harddisk", 100, 50 },
-  { "/", "harddisk", 200, 100 },
-  { "/home", "removable", 300, 100 }
+  { "/boot", systeminfo::kStorageTypeFixed, 100, 50 },
+  { "/", systeminfo::kStorageTypeFixed, 200, 100 },
+  { "/home", systeminfo::kStorageTypeRemovable, 300, 100 }
 };
 
 typedef std::map<std::string, struct TestMountEntry> TestMountEntryMap;

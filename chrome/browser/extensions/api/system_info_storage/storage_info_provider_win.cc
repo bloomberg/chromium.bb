@@ -63,7 +63,7 @@ bool StorageInfoProviderWin::QueryUnitInfo(const std::string& id,
   DWORD ret = GetDriveType(drive.c_str());
   switch (ret) {
     case DRIVE_FIXED:
-      type = systeminfo::kStorageTypeHardDisk;
+      type = systeminfo::kStorageTypeFixed;
       break;
     case DRIVE_REMOVABLE:
       type = systeminfo::kStorageTypeRemovable;

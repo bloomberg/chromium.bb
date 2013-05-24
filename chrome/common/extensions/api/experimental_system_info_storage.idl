@@ -5,19 +5,18 @@
 namespace experimental.systemInfo.storage {
 
   enum StorageUnitType {
-    // Unknow storage type.
-    unknown,
-    // Hard disk.
-    harddisk,
-    // Removable storage, e.g.USB device.
-    removable
+    // The storage has fixed media, e.g. hard disk or SSD.
+    fixed,
+    // The storage is removable, e.g. USB flash drive.
+    removable,
+    // The storage type is unknown.
+    unknown
   };
 
   dictionary StorageUnitInfo {
     // The unique id of the storage unit.
     DOMString id;
-    // The type of storage device. The value is one of the constants defined
-    // for this type.
+    // The media type of the storage unit.
     StorageUnitType type;
     // The total amount of the storage space, in bytes.
     double capacity;

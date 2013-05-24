@@ -90,7 +90,7 @@ bool StorageInfoProviderLinux::QueryStorageType(const std::string& mount_path,
   if (GetUdevDevicePropertyValue(device, "ID_BUS") == "usb") {
     *type = systeminfo::kStorageTypeRemovable;
   } else if (GetUdevDevicePropertyValue(device, "ID_TYPE") == "disk") {
-    *type = systeminfo::kStorageTypeHardDisk;
+    *type = systeminfo::kStorageTypeFixed;
   } else {
     *type = systeminfo::kStorageTypeUnknown;
   }

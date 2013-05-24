@@ -18,7 +18,7 @@ using api::experimental_system_info_storage::StorageUnitInfo;
 namespace systeminfo {
 
 const char kStorageTypeUnknown[] = "unknown";
-const char kStorageTypeHardDisk[] = "harddisk";
+const char kStorageTypeFixed[] = "fixed";
 const char kStorageTypeRemovable[] = "removable";
 
 }  // namespace systeminfo

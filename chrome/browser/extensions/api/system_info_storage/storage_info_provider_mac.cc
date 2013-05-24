@@ -129,7 +129,7 @@ void StorageInfoProviderMac::BuildStorageTypeMap() {
     else if (CFBooleanGetValue(base::mac::CFCast<CFBooleanRef>(removable_cf)))
       dev_path_to_type_map_[dev_path] = systeminfo::kStorageTypeRemovable;
     else
-      dev_path_to_type_map_[dev_path] =  systeminfo::kStorageTypeHardDisk;
+      dev_path_to_type_map_[dev_path] =  systeminfo::kStorageTypeFixed;
   }
 }
 

@@ -20,6 +20,9 @@ using extensions::api::experimental_system_info_storage::ParseStorageUnitType;
 using extensions::api::experimental_system_info_storage::StorageUnitInfo;
 using extensions::StorageInfoProvider;
 using extensions::StorageInfo;
+using extensions::systeminfo::kStorageTypeFixed;
+using extensions::systeminfo::kStorageTypeRemovable;
+using extensions::systeminfo::kStorageTypeUnknown;
 
 struct TestUnitInfo {
   std::string id;
@@ -31,13 +34,13 @@ struct TestUnitInfo {
 };
 
 struct TestUnitInfo kTestingData[] = {
-  {"0xbeaf", "unknown", 4098, 1000, 0},
-  {"/home", "harddisk", 4098, 1000, 10},
-  {"/data", "harddisk", 10000, 1000, 4097}
+  {"0xbeaf", kStorageTypeUnknown, 4098, 1000, 0},
+  {"/home", kStorageTypeFixed, 4098, 1000, 10},
+  {"/data", kStorageTypeFixed, 10000, 1000, 4097}
 };
 
 struct TestUnitInfo kRemovableStorageData[] = {
-  {"/media/usb1", "removable", 4098, 1000, 1}
+  {"/media/usb1", kStorageTypeRemovable, 4098, 1000, 1}
 };
 
 const char kRemovableStorageDeviceName[] = "deviceName";
