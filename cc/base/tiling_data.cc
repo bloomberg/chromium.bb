@@ -146,14 +146,13 @@ gfx::Rect TilingData::TileBounds(int i, int j) const {
   int hi_x = max_texture_size_x * (i + 1) + border_texels_;
   if (i + 1 == num_tiles_x_)
     hi_x += border_texels_;
-  if (hi_x > total_size_x)
-    hi_x = total_size_x;
 
   int hi_y = max_texture_size_y * (j + 1) + border_texels_;
   if (j + 1 == num_tiles_y_)
     hi_y += border_texels_;
-  if (hi_y > total_size_y)
-    hi_y = total_size_y;
+
+  hi_x = std::min(hi_x, total_size_x);
+  hi_y = std::min(hi_y, total_size_y);
 
   int x = lo_x;
   int y = lo_y;
@@ -169,27 +168,32 @@ gfx::Rect TilingData::TileBounds(int i, int j) const {
 }
 
 gfx::Rect TilingData::TileBoundsWithBorder(int i, int j) const {
-  gfx::Rect bounds = TileBounds(i, j);
+  AssertTile(i, j);
+  int max_texture_size_x = max_texture_size_.width() - 2 * border_texels_;
+  int max_texture_size_y = max_texture_size_.height() - 2 * border_texels_;
+  int total_size_x = total_size_.width();
+  int total_size_y = total_size_.height();
 
-  if (border_texels_) {
-    int x1 = bounds.x();
-    int x2 = bounds.right();
-    int y1 = bounds.y();
-    int y2 = bounds.bottom();
+  int lo_x = max_texture_size_x * i;
+  int lo_y = max_texture_size_y * j;
 
-    if (i > 0)
-      x1-= border_texels_;
-    if (i < (num_tiles_x_ - 1))
-      x2+= border_texels_;
-    if (j > 0)
-      y1-= border_texels_;
-    if (j < (num_tiles_y_ - 1))
-      y2+= border_texels_;
+  int hi_x = lo_x + max_texture_size_x + 2 * border_texels_;
+  int hi_y = lo_y + max_texture_size_y + 2 * border_texels_;
 
-    bounds = gfx::Rect(x1, y1, x2 - x1, y2 - y1);
-  }
+  hi_x = std::min(hi_x, total_size_x);
+  hi_y = std::min(hi_y, total_size_y);
 
-  return bounds;
+  int x = lo_x;
+  int y = lo_y;
+  int width = hi_x - lo_x;
+  int height = hi_y - lo_y;
+  DCHECK_GE(x, 0);
+  DCHECK_GE(y, 0);
+  DCHECK_GE(width, 0);
+  DCHECK_GE(height, 0);
+  DCHECK_LE(x, total_size_.width());
+  DCHECK_LE(y, total_size_.height());
+  return gfx::Rect(x, y, width, height);
 }
 
 int TilingData::TilePositionX(int x_index) const {
