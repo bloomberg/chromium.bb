@@ -75,12 +75,11 @@ bool OutputSurface::ForcedDrawToSoftwareDevice() const {
 bool OutputSurface::BindToClient(
     cc::OutputSurfaceClient* client) {
   DCHECK(client);
+  if (context3d_ && !context3d_->makeContextCurrent())
+    return false;
   client_ = client;
   if (!context3d_)
     return true;
-  if (!context3d_->makeContextCurrent())
-    return false;
-
   string extensions_string = UTF16ToASCII(context3d_->getString(GL_EXTENSIONS));
   vector<string> extensions_list;
   base::SplitString(extensions_string, ' ', &extensions_list);
