@@ -14,6 +14,11 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#endif
+
 using content::NavigationEntry;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabContentsSyncedTabDelegate);
@@ -68,6 +73,27 @@ NavigationEntry* TabContentsSyncedTabDelegate::GetEntryAtIndex(int i) const {
 
 NavigationEntry* TabContentsSyncedTabDelegate::GetActiveEntry() const {
   return web_contents_->GetController().GetActiveEntry();
+}
+
+bool TabContentsSyncedTabDelegate::ProfileIsManaged() const {
+#if defined(ENABLE_MANAGED_USERS)
+  return ManagedUserService::ProfileIsManaged(profile());
+#else
+  return false;
+#endif
+}
+
+const std::vector<const content::NavigationEntry*>*
+TabContentsSyncedTabDelegate::GetBlockedNavigations() const {
+#if defined(ENABLE_MANAGED_USERS)
+  ManagedModeNavigationObserver* navigation_observer =
+      ManagedModeNavigationObserver::FromWebContents(web_contents_);
+  DCHECK(navigation_observer);
+  return navigation_observer->blocked_navigations();
+#else
+  NOTREACHED();
+  return NULL;
+#endif
 }
 
 bool TabContentsSyncedTabDelegate::IsPinned() const {

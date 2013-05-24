@@ -198,6 +198,8 @@ base::DictionaryValue* TabNavigationToValue(
   SET_INT64(global_id);
   SET_STR(search_terms);
   SET_STR(favicon_url);
+  SET_ENUM(blocked_state, GetBlockedStateString);
+  SET_STR_REP(content_pack_categories);
   return value;
 }
 

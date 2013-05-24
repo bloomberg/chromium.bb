@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -14,6 +15,10 @@
 class InfoBarDelegate;
 class ManagedModeURLFilter;
 class ManagedUserService;
+
+namespace content {
+class NavigationEntry;
+}
 
 class ManagedModeNavigationObserver
     : public content::WebContentsObserver,
@@ -30,8 +35,12 @@ class ManagedModeNavigationObserver
   // Set the elevation state for the corresponding WebContents.
   void set_elevated(bool is_elevated);
 
-  // Adds a special history entry for the visit attempt and shows the
-  // interstitial.
+  const std::vector<const content::NavigationEntry*>* blocked_navigations()
+      const {
+    return &blocked_navigations_.get();
+  }
+
+  // Called when a network request to |url| is blocked.
   static void OnRequestBlocked(int render_process_host_id,
                                int render_view_id,
                                const GURL& url,
@@ -53,6 +62,8 @@ class ManagedModeNavigationObserver
       content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
+  void OnRequestBlockedInternal(const GURL& url);
+
   // Owned by the profile, so outlives us.
   ManagedUserService* managed_user_service_;
 
@@ -61,6 +72,8 @@ class ManagedModeNavigationObserver
 
   // Owned by the InfoBarService, which has the same lifetime as this object.
   InfoBarDelegate* warn_infobar_delegate_;
+
+  ScopedVector<const content::NavigationEntry> blocked_navigations_;
 
   // The elevation state corresponding to the current WebContents.
   // Will be set to true for non-managed users.

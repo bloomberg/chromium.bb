@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -56,6 +57,7 @@
 using content::BrowserThread;
 using content::NavigationEntry;
 using prefs::kSyncSessionsGUID;
+using sessions::SerializedNavigationEntry;
 using syncer::SESSIONS;
 
 namespace {
@@ -136,13 +138,6 @@ SessionModelAssociator::~SessionModelAssociator() {
   DCHECK(CalledOnValidThread());
 }
 
-bool SessionModelAssociator::InitSyncNodeFromChromeId(
-    const std::string& id,
-    syncer::BaseNode* sync_node) {
-  NOTREACHED();
-  return false;
-}
-
 bool SessionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(CalledOnValidThread());
   CHECK(has_nodes);
@@ -160,12 +155,6 @@ bool SessionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
-int64 SessionModelAssociator::GetSyncIdFromChromeId(const size_t& id) {
-  DCHECK(CalledOnValidThread());
-  return GetSyncIdFromSessionTag(
-      TabNodePool::TabIdToTag(GetCurrentMachineTag(), id));
-}
-
 int64 SessionModelAssociator::GetSyncIdFromSessionTag(const std::string& tag) {
   DCHECK(CalledOnValidThread());
   syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
@@ -173,19 +162,6 @@ int64 SessionModelAssociator::GetSyncIdFromSessionTag(const std::string& tag) {
   if (node.InitByClientTagLookup(SESSIONS, tag) != syncer::BaseNode::INIT_OK)
     return syncer::kInvalidId;
   return node.GetId();
-}
-
-const size_t*
-SessionModelAssociator::GetChromeNodeFromSyncId(int64 sync_id) {
-  NOTREACHED();
-  return NULL;
-}
-
-bool SessionModelAssociator::InitSyncNodeFromChromeId(
-    const size_t& id,
-    syncer::BaseNode* sync_node) {
-  NOTREACHED();
-  return false;
 }
 
 bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
@@ -472,19 +448,37 @@ void SessionModelAssociator::SetSessionTabFromDelegate(
   session_tab->timestamp = mtime;
   const int current_index = tab_delegate.GetCurrentEntryIndex();
   const int pending_index = tab_delegate.GetPendingEntryIndex();
-  const int min_index = std::max(0,
-                                 current_index - kMaxSyncNavigationCount);
+  const int min_index = std::max(0, current_index - kMaxSyncNavigationCount);
   const int max_index = std::min(current_index + kMaxSyncNavigationCount,
                                  tab_delegate.GetEntryCount());
+  bool is_managed = tab_delegate.ProfileIsManaged();
   session_tab->navigations.clear();
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?
-       tab_delegate.GetPendingEntry() : tab_delegate.GetEntryAtIndex(i);
+        tab_delegate.GetPendingEntry() : tab_delegate.GetEntryAtIndex(i);
     DCHECK(entry);
-    if (entry->GetVirtualURL().is_valid()) {
+    if (!entry->GetVirtualURL().is_valid())
+      continue;
+
+    session_tab->navigations.push_back(
+        SerializedNavigationEntry::FromNavigationEntry(i, *entry));
+    if (is_managed) {
+      session_tab->navigations.back().set_blocked_state(
+          SerializedNavigationEntry::STATE_ALLOWED);
+    }
+  }
+
+  if (is_managed) {
+    const std::vector<const NavigationEntry*>& blocked_navigations =
+        *tab_delegate.GetBlockedNavigations();
+    int offset = session_tab->navigations.size();
+    for (size_t i = 0; i < blocked_navigations.size(); ++i) {
       session_tab->navigations.push_back(
-          ::sessions::SerializedNavigationEntry::FromNavigationEntry(i,
-                                                                     *entry));
+          SerializedNavigationEntry::FromNavigationEntry(
+              i + offset, *blocked_navigations[i]));
+      session_tab->navigations.back().set_blocked_state(
+          SerializedNavigationEntry::STATE_BLOCKED);
+      // TODO(bauerb): Add categories
     }
   }
   session_tab->session_storage_persistent_id.clear();
@@ -502,16 +496,6 @@ void SessionModelAssociator::FaviconsUpdated(
         favicon_cache_.OnPageFaviconUpdated(*i);
     }
   }
-}
-
-void SessionModelAssociator::Associate(const size_t* tab,
-                                       int64 sync_id) {
-  NOTIMPLEMENTED();
-}
-
-void SessionModelAssociator::Disassociate(int64 sync_id) {
-  DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
 }
 
 void SessionModelAssociator::OnFaviconUpdated(
@@ -1125,7 +1109,7 @@ bool SessionModelAssociator::TabHasValidEntry(
   return found_valid_url;
 }
 
-// If this functionality changes, SyncedSession::ShouldSyncSessionTab should be
+// If this functionality changes, browser_sync::ShouldSyncSessionTab should be
 // modified to match.
 bool SessionModelAssociator::ShouldSyncTab(const SyncedTabDelegate& tab) const {
   DCHECK(CalledOnValidThread());

@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -35,7 +36,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::Time;
 using content::BrowserThread;
+using content::NavigationEntry;
 using content::UserMetricsAction;
 
 namespace {
@@ -235,20 +238,31 @@ void ManagedModeNavigationObserver::OnRequestBlocked(
       tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
   if (!web_contents) {
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(callback, true));
+        BrowserThread::IO, FROM_HERE, base::Bind(callback, false));
     return;
   }
 
+  ManagedModeNavigationObserver* navigation_observer =
+      ManagedModeNavigationObserver::FromWebContents(web_contents);
+  if (navigation_observer)
+    navigation_observer->OnRequestBlockedInternal(url);
+
+  // Show the interstitial.
+  new ManagedModeInterstitial(web_contents, url, callback);
+}
+
+void ManagedModeNavigationObserver::OnRequestBlockedInternal(const GURL& url) {
+  Time timestamp = Time::Now();  // TODO(bauerb): Use SaneTime when available.
   // Create a history entry for the attempt and mark it as such.
   history::HistoryAddPageArgs add_page_args(
-        web_contents->GetURL(), base::Time::Now(), web_contents, 0,
-        web_contents->GetURL(), history::RedirectList(),
+        url, timestamp, web_contents(), 0,
+        url, history::RedirectList(),
         content::PAGE_TRANSITION_BLOCKED, history::SOURCE_BROWSED,
         false);
 
   // Add the entry to the history database.
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   HistoryService* history_service =
      HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
 
@@ -256,6 +270,8 @@ void ManagedModeNavigationObserver::OnRequestBlocked(
   if (history_service)
     history_service->AddPage(add_page_args);
 
-  // Show the interstitial.
-  new ManagedModeInterstitial(web_contents, url, callback);
+  scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
+  entry->SetVirtualURL(url);
+  entry->SetTimestamp(timestamp);
+  blocked_navigations_.push_back(entry.release());
 }

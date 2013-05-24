@@ -52,7 +52,7 @@ class SyncedWindowDelegate;
 // Contains all logic for associating the Chrome sessions model and
 // the sync sessions model.
 class SessionModelAssociator
-    : public PerDataTypeAssociatorInterface<size_t, size_t>,
+    : public AssociatorInterface,
       public base::SupportsWeakPtr<SessionModelAssociator>,
       public FaviconCacheObserver,
       public base::NonThreadSafe {
@@ -69,7 +69,7 @@ class SessionModelAssociator
   // return false if an error occurred.
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) OVERRIDE;
 
-  // AssociatorInterface and PerDataTypeAssociator Interface implementation.
+  // AssociatorInterface implementation.
   virtual void AbortAssociation() OVERRIDE {
     // No implementation needed, this associator runs on the main thread.
   }
@@ -77,29 +77,10 @@ class SessionModelAssociator
   // See ModelAssociator interface.
   virtual bool CryptoReadyIfNecessary() OVERRIDE;
 
-  // Returns sync id for the given chrome model id.
-  // Returns syncer::kInvalidId if the sync node is not found for the given
-  // chrome id.
-  virtual int64 GetSyncIdFromChromeId(const size_t& id) OVERRIDE;
-
   // Returns sync id for the given session tag.
   // Returns syncer::kInvalidId if the sync node is not found for the given
   // tag
   virtual int64 GetSyncIdFromSessionTag(const std::string& tag);
-
-  // Not used.
-  virtual const size_t* GetChromeNodeFromSyncId(int64 sync_id)
-      OVERRIDE;
-
-  // Not used.
-  virtual bool InitSyncNodeFromChromeId(const size_t& id,
-                                        syncer::BaseNode* sync_node) OVERRIDE;
-
-  // Not used.
-  virtual void Associate(const size_t* tab, int64 sync_id) OVERRIDE;
-
-  // Not used.
-  virtual void Disassociate(int64 sync_id) OVERRIDE;
 
   // FaviconCacheObserver interface.
   virtual void OnFaviconUpdated(const GURL& page_url,
@@ -139,12 +120,6 @@ class SessionModelAssociator
   virtual syncer::SyncError AssociateModels(
       syncer::SyncMergeResult* local_merge_result,
       syncer::SyncMergeResult* syncer_merge_result) OVERRIDE;
-
-  // Initializes the given sync node from the given chrome node id.
-  // Returns false if no sync node was found for the given chrome node id or
-  // if the initialization of sync node fails.
-  virtual bool InitSyncNodeFromChromeId(const std::string& id,
-                                        syncer::BaseNode* sync_node);
 
   // Clear local sync data buffers. Does not delete sync nodes to avoid
   // tombstones. TODO(zea): way to eventually delete orphaned nodes.

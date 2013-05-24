@@ -219,6 +219,18 @@ const char* SingletonEventTypeString(
   return "";
 }
 
+const char* GetBlockedStateString(
+    sync_pb::TabNavigation::BlockedState state) {
+  ASSERT_ENUM_BOUNDS(sync_pb::TabNavigation, BlockedState,
+                     STATE_ALLOWED, STATE_BLOCKED);
+  switch (state) {
+    ENUM_CASE(sync_pb::TabNavigation, STATE_ALLOWED);
+    ENUM_CASE(sync_pb::TabNavigation, STATE_BLOCKED);
+  }
+  NOTREACHED();
+  return "";
+}
+
 #undef ASSERT_ENUM_BOUNDS
 #undef ENUM_CASE
 

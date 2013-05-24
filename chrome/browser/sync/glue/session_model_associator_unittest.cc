@@ -185,6 +185,9 @@ class SyncedTabDelegateMock : public SyncedTabDelegate {
   MOCK_CONST_METHOD0(GetPendingEntry, content::NavigationEntry*());
   MOCK_CONST_METHOD1(GetEntryAtIndex, content::NavigationEntry*(int i));
   MOCK_CONST_METHOD0(GetActiveEntry, content::NavigationEntry*());
+  MOCK_CONST_METHOD0(ProfileIsManaged, bool());
+  MOCK_CONST_METHOD0(GetBlockedNavigations,
+                     const std::vector<const content::NavigationEntry*>*());
   MOCK_CONST_METHOD0(IsPinned, bool());
 };
 
@@ -336,6 +339,7 @@ TEST_F(SyncSessionModelAssociatorTest, SetSessionTabFromDelegate) {
       Return(entry3.get()));
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
+  EXPECT_CALL(tab_mock, ProfileIsManaged()).WillRepeatedly(Return(false));
 
   SessionTab session_tab;
   session_tab.window_id.set_id(1);
@@ -370,6 +374,83 @@ TEST_F(SyncSessionModelAssociatorTest, SetSessionTabFromDelegate) {
   EXPECT_EQ(kTime1, session_tab.navigations[0].timestamp());
   EXPECT_EQ(kTime2, session_tab.navigations[1].timestamp());
   EXPECT_EQ(kTime3, session_tab.navigations[2].timestamp());
+  EXPECT_EQ(SerializedNavigationEntry::STATE_INVALID,
+            session_tab.navigations[0].blocked_state());
+  EXPECT_EQ(SerializedNavigationEntry::STATE_INVALID,
+            session_tab.navigations[1].blocked_state());
+  EXPECT_EQ(SerializedNavigationEntry::STATE_INVALID,
+            session_tab.navigations[2].blocked_state());
+  EXPECT_TRUE(session_tab.session_storage_persistent_id.empty());
+}
+
+// Tests that for managed users blocked navigations are recorded and marked as
+// such, while regular navigations are marked as allowed.
+TEST_F(SyncSessionModelAssociatorTest, BlockedNavigations) {
+  NiceMock<SyncedTabDelegateMock> tab_mock;
+  EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
+  scoped_ptr<content::NavigationEntry> entry1(
+      content::NavigationEntry::Create());
+  entry1->SetVirtualURL(GURL("http://www.google.com"));
+  entry1->SetTimestamp(kTime1);
+  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(0));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(
+      Return(entry1.get()));
+  EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(1));
+  EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
+
+  content::NavigationEntry* entry2 = content::NavigationEntry::Create();
+  entry2->SetVirtualURL(GURL("http://blocked.com/foo"));
+  entry2->SetTimestamp(kTime2);
+  content::NavigationEntry* entry3 = content::NavigationEntry::Create();
+  entry3->SetVirtualURL(GURL("http://evil.com"));
+  entry3->SetTimestamp(kTime3);
+  ScopedVector<const content::NavigationEntry> blocked_navigations;
+  blocked_navigations.push_back(entry2);
+  blocked_navigations.push_back(entry3);
+
+  EXPECT_CALL(tab_mock, ProfileIsManaged()).WillRepeatedly(Return(true));
+  EXPECT_CALL(tab_mock, GetBlockedNavigations()).WillRepeatedly(
+      Return(&blocked_navigations.get()));
+
+  SessionTab session_tab;
+  session_tab.window_id.set_id(1);
+  session_tab.tab_id.set_id(1);
+  session_tab.tab_visual_index = 1;
+  session_tab.current_navigation_index = 1;
+  session_tab.pinned = true;
+  session_tab.extension_app_id = "app id";
+  session_tab.user_agent_override = "override";
+  session_tab.timestamp = kTime5;
+  session_tab.navigations.push_back(
+      SerializedNavigationEntryTestHelper::CreateNavigation(
+          "http://www.example.com", "Example"));
+  session_tab.session_storage_persistent_id = "persistent id";
+  SetSessionTabFromDelegate(tab_mock, kTime4, &session_tab);
+
+  EXPECT_EQ(0, session_tab.window_id.id());
+  EXPECT_EQ(0, session_tab.tab_id.id());
+  EXPECT_EQ(0, session_tab.tab_visual_index);
+  EXPECT_EQ(0, session_tab.current_navigation_index);
+  EXPECT_FALSE(session_tab.pinned);
+  EXPECT_TRUE(session_tab.extension_app_id.empty());
+  EXPECT_TRUE(session_tab.user_agent_override.empty());
+  EXPECT_EQ(kTime4, session_tab.timestamp);
+  ASSERT_EQ(3u, session_tab.navigations.size());
+  EXPECT_EQ(entry1->GetVirtualURL(),
+            session_tab.navigations[0].virtual_url());
+  EXPECT_EQ(entry2->GetVirtualURL(),
+            session_tab.navigations[1].virtual_url());
+  EXPECT_EQ(entry3->GetVirtualURL(),
+            session_tab.navigations[2].virtual_url());
+  EXPECT_EQ(kTime1, session_tab.navigations[0].timestamp());
+  EXPECT_EQ(kTime2, session_tab.navigations[1].timestamp());
+  EXPECT_EQ(kTime3, session_tab.navigations[2].timestamp());
+  EXPECT_EQ(SerializedNavigationEntry::STATE_ALLOWED,
+            session_tab.navigations[0].blocked_state());
+  EXPECT_EQ(SerializedNavigationEntry::STATE_BLOCKED,
+            session_tab.navigations[1].blocked_state());
+  EXPECT_EQ(SerializedNavigationEntry::STATE_BLOCKED,
+            session_tab.navigations[2].blocked_state());
   EXPECT_TRUE(session_tab.session_storage_persistent_id.empty());
 }
 

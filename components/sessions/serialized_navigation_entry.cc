@@ -26,7 +26,8 @@ SerializedNavigationEntry::SerializedNavigationEntry()
       transition_type_(content::PAGE_TRANSITION_TYPED),
       has_post_data_(false),
       post_id_(-1),
-      is_overriding_user_agent_(false) {}
+      is_overriding_user_agent_(false),
+      blocked_state_(STATE_INVALID) {}
 
 SerializedNavigationEntry::~SerializedNavigationEntry() {}
 
@@ -141,6 +142,10 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
   navigation.search_terms_ = UTF8ToUTF16(sync_data.search_terms());
   if (sync_data.has_favicon_url())
     navigation.favicon_url_ = GURL(sync_data.favicon_url());
+
+  // We shouldn't sync session data for managed users down at the moment.
+  DCHECK(!sync_data.has_blocked_state());
+  DCHECK_EQ(0, sync_data.content_pack_categories_size());
 
   return navigation;
 }
@@ -337,6 +342,10 @@ scoped_ptr<NavigationEntry> SerializedNavigationEntry::ToNavigationEntry(
   entry->SetTimestamp(timestamp_);
   entry->SetExtraData(kSearchTermsKey, search_terms_);
 
+  // These fields should have default values.
+  DCHECK_EQ(STATE_INVALID, blocked_state_);
+  DCHECK_EQ(0u, content_pack_categories_.size());
+
   return entry.Pass();
 }
 
@@ -432,6 +441,17 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
 
   if (favicon_url_.is_valid())
     sync_data.set_favicon_url(favicon_url_.spec());
+
+  if (blocked_state_ != STATE_INVALID) {
+    sync_data.set_blocked_state(
+        static_cast<sync_pb::TabNavigation_BlockedState>(blocked_state_));
+  }
+
+  for (std::set<std::string>::const_iterator it =
+           content_pack_categories_.begin();
+       it != content_pack_categories_.end(); ++it) {
+    sync_data.add_content_pack_categories(*it);
+  }
 
   return sync_data;
 }
