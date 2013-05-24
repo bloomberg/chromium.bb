@@ -27,8 +27,7 @@
 [
     ConstructorTemplate=TypedArray,
     CustomToV8,
-    DoNotCheckConstants,
-    TypedArray=int
+    DoNotCheckConstants
 ] interface Int32Array : ArrayBufferView {
     const unsigned long BYTES_PER_ELEMENT = 4;
 

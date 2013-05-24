@@ -28,8 +28,7 @@
     ConstructorTemplate=TypedArray,
     CustomIndexedSetter,
     CustomToV8,
-    DoNotCheckConstants,
-    TypedArray=double
+    DoNotCheckConstants
 ] interface Float64Array : ArrayBufferView {
     Int32Array foo(Float32Array array);
     void set();

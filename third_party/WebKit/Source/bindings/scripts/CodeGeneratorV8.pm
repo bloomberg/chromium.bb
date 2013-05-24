@@ -175,17 +175,17 @@ my %nonWrapperTypes = ("CompareHow" => 1,
                        "any" => 1,
                       );
 
-my %typedArrayHash = ("ArrayBuffer" => 1,
-                      "ArrayBufferView" => 1,
-                      "Uint8Array" => 1,
-                      "Uint8ClampedArray" => 1,
-                      "Uint16Array" => 1,
-                      "Uint32Array" => 1,
-                      "Int8Array" => 1,
-                      "Int16Array" => 1,
-                      "Int32Array" => 1,
-                      "Float32Array" => 1,
-                      "Float64Array" => 1,
+my %typedArrayHash = ("ArrayBuffer" => [],
+                      "ArrayBufferView" => [],
+                      "Uint8Array" => ["unsigned char", "v8::kExternalUnsignedByteArray"],
+                      "Uint8ClampedArray" => ["unsigned char", "v8::kExternalPixelArray"],
+                      "Uint16Array" => ["unsigned short", "v8::kExternalUnsignedShortArray"],
+                      "Uint32Array" => ["unsigned int", "v8::kExternalUnsignedIntArray"],
+                      "Int8Array" => ["signed char", "v8::kExternalByteArray"],
+                      "Int16Array" => ["short", "v8::kExternalShortArray"],
+                      "Int32Array" => ["int", "v8::kExternalIntArray"],
+                      "Float32Array" => ["float", "v8::kExternalFloatArray"],
+                      "Float64Array" => ["double", "v8::kExternalDoubleArray"],
                      );
 
 my %enumTypeHash = ();
@@ -2116,7 +2116,7 @@ END
 
     $code .= GenerateArgumentsCountCheck($function, $interface);
 
-    if ($name eq "set" and $interface->extendedAttributes->{"TypedArray"}) {
+    if ($name eq "set" and IsConstructorTemplate($interface, "TypedArray")) {
         AddToImplIncludes("bindings/v8/custom/V8ArrayBufferViewCustom.h");
         $code .= <<END;
     return setWebGLArrayHelper<$implClassName, ${v8ClassName}>(args);
@@ -2625,14 +2625,13 @@ sub GenerateTypedArrayConstructor
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
-    my $viewType = GetTypeNameOfExternalTypedArray($interface);
-    my $type = $interface->extendedAttributes->{"TypedArray"};
+    my ($nativeType, $arrayType) = GetNativeTypeOfTypedArray($interface);
     AddToImplIncludes("bindings/v8/custom/V8ArrayBufferViewCustom.h");
 
     $implementation{nameSpaceInternal}->add(<<END);
 static v8::Handle<v8::Value> constructor(const v8::Arguments& args)
 {
-    return constructWebGLArray<$implClassName, ${v8ClassName}, $type>(args, &${v8ClassName}::info, $viewType);
+    return constructWebGLArray<$implClassName, ${v8ClassName}, $nativeType>(args, &${v8ClassName}::info, $arrayType);
 }
 
 END
@@ -3414,15 +3413,15 @@ END
         GenerateSecurityCheckFunctions($interface);
     }
 
-    if ($interface->extendedAttributes->{"TypedArray"}) {
-        my $viewType = GetTypeNameOfExternalTypedArray($interface);
+    if (IsConstructorTemplate($interface, "TypedArray")) {
+        my ($nativeType, $arrayType) = GetNativeTypeOfTypedArray($interface);
         $implementation{nameSpaceWebCore}->add(<<END);
 v8::Handle<v8::Object> wrap($implClassName* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     v8::Handle<v8::Object> wrapper = ${v8ClassName}::createWrapper(impl, creationContext, isolate);
     if (!wrapper.IsEmpty())
-        wrapper->SetIndexedPropertiesToExternalArrayData(impl->baseAddress(), $viewType, impl->length());
+        wrapper->SetIndexedPropertiesToExternalArrayData(impl->baseAddress(), $arrayType, impl->length());
     return wrapper;
 }
 
@@ -4659,22 +4658,12 @@ sub IsCallbackInterface
     return ($fileContents =~ /callback\s+interface\s+(\w+)/gs);
 }
 
-sub GetTypeNameOfExternalTypedArray
+sub GetNativeTypeOfTypedArray
 {
     my $interface = shift;
     my $interfaceName = $interface->name;
-    my $viewType = $interface->extendedAttributes->{"TypedArray"};
-    return "v8::kExternalByteArray" if $viewType eq "signed char" and $interfaceName eq "Int8Array";
-    return "v8::kExternalPixelArray" if $viewType eq "unsigned char" and $interfaceName eq "Uint8ClampedArray";
-    return "v8::kExternalUnsignedByteArray" if $viewType eq "unsigned char" and $interfaceName eq "Uint8Array";
-    return "v8::kExternalShortArray" if $viewType eq "short" and $interfaceName eq "Int16Array";
-    return "v8::kExternalUnsignedShortArray" if $viewType eq "unsigned short" and $interfaceName eq "Uint16Array";
-    return "v8::kExternalIntArray" if $viewType eq "int" and $interfaceName eq "Int32Array";
-    return "v8::kExternalUnsignedIntArray" if $viewType eq "unsigned int" and $interfaceName eq "Uint32Array";
-    return "v8::kExternalFloatArray" if $viewType eq "float" and $interfaceName eq "Float32Array";
-    return "v8::kExternalDoubleArray" if $viewType eq "double" and $interfaceName eq "Float64Array";
-
-    die "TypedArray of unknown type is found";
+    die "TypedArray of unknown type is found" unless $typedArrayHash{$interface->name};
+    return @{$typedArrayHash{$interface->name}};
 }
 
 sub IsDOMNodeType
