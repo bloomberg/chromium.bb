@@ -430,6 +430,19 @@ class PowerManagerClientImpl : public PowerManagerClient {
         NOTREACHED();
         break;
     }
+
+    // Check power status values are consistent
+    if (!status.is_calculating_battery_time) {
+      int64 battery_seconds_to_goal = status.line_power_on ?
+          status.battery_seconds_to_full : status.battery_seconds_to_empty;
+      if (battery_seconds_to_goal < 0) {
+        LOG(ERROR) << "Received power supply status with negative seconds to "
+            << (status.line_power_on ? "full" : "empty")
+            << ". Assume time is still being calculated.";
+        status.is_calculating_battery_time = true;
+      }
+    }
+
     VLOG(1) << "Power status: " << status.ToString();
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));
   }
