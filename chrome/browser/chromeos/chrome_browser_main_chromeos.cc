@@ -86,6 +86,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/storage_monitor/storage_monitor_chromeos.h"
+#include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -640,6 +641,10 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
+  // Initialize the Ash Shell after the Default Profile has been created and
+  // before ash dependent systems are initialized.
+  chrome::OpenAsh();
+
   // Restarting Chrome inside existing user session. Possible cases:
   // 1. Chrome is restarted after crash.
   // 2. Chrome is started in browser_tests skipping the login flow
@@ -865,10 +870,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Clean up dependency on CrosSettings and stop pending data fetches.
   KioskAppManager::Shutdown();
 
-  ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
+  chrome::CloseAsh();
 
   // Destroy the UserManager after ash has been destroyed.
   UserManager::Destroy();
+
+  ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }
 
 void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {

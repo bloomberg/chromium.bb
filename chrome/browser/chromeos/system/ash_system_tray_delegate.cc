@@ -238,7 +238,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
  public:
   SystemTrayDelegate()
       : ui_weak_ptr_factory_(
-            new base::WeakPtrFactory<SystemTrayDelegate>(this)),
+          new base::WeakPtrFactory<SystemTrayDelegate>(this)),
+        user_profile_(NULL),
         clock_type_(base::k24HourClock),
         search_key_mapped_to_(input_method::kSearchKey),
         screen_locked_(false),
@@ -250,32 +251,36 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         volume_control_delegate_(new VolumeController()) {
     // Register notifications on construction so that events such as
     // PROFILE_CREATED do not get missed if they happen before Initialize().
-    registrar_.Add(this,
+    registrar_.reset(new content::NotificationRegistrar);
+    registrar_->Add(this,
                    chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                    content::NotificationService::AllSources());
-    registrar_.Add(this,
+    registrar_->Add(this,
                    chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                    content::NotificationService::AllSources());
     if (GetUserLoginStatus() == ash::user::LOGGED_IN_NONE) {
-      registrar_.Add(this,
+      registrar_->Add(this,
                      chrome::NOTIFICATION_SESSION_STARTED,
                      content::NotificationService::AllSources());
     }
-    registrar_.Add(this,
+    registrar_->Add(this,
                    chrome::NOTIFICATION_PROFILE_CREATED,
                    content::NotificationService::AllSources());
-    registrar_.Add(this,
+    registrar_->Add(this,
+                   chrome::NOTIFICATION_PROFILE_DESTROYED,
+                   content::NotificationService::AllSources());
+    registrar_->Add(this,
                    chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
                    content::NotificationService::AllSources());
-    registrar_.Add(
+    registrar_->Add(
         this,
         chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
         content::NotificationService::AllSources());
-    registrar_.Add(
+    registrar_->Add(
         this,
         chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
         content::NotificationService::AllSources());
-    registrar_.Add(
+    registrar_->Add(
         this,
         chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
         content::NotificationService::AllSources());
@@ -315,16 +320,17 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     CHECK(bluetooth_adapter_);
     bluetooth_adapter_->AddObserver(this);
 
-    local_state_registrar_.Init(g_browser_process->local_state());
+    local_state_registrar_.reset(new PrefChangeRegistrar);
+    local_state_registrar_->Init(g_browser_process->local_state());
 
     UpdateSessionStartTime();
     UpdateSessionLengthLimit();
 
-    local_state_registrar_.Add(
+    local_state_registrar_->Add(
         prefs::kSessionStartTime,
         base::Bind(&SystemTrayDelegate::UpdateSessionStartTime,
                    base::Unretained(this)));
-    local_state_registrar_.Add(
+    local_state_registrar_->Add(
         prefs::kSessionLengthLimit,
         base::Bind(&SystemTrayDelegate::UpdateSessionLengthLimit,
                    base::Unretained(this)));
@@ -339,6 +345,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual ~SystemTrayDelegate() {
+    // Unregister PrefChangeRegistrars.
+    local_state_registrar_.reset();
+    user_pref_registrar_.reset();
+
+    // Unregister content notifications befure destroying any components.
+    registrar_.reset();
+
     if (!ash::switches::UseNewAudioHandler() && AudioHandler::GetInstance()) {
       AudioHandler::GetInstance()->RemoveVolumeObserver(this);
     }
@@ -902,6 +915,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void SetProfile(Profile* profile) {
+    user_profile_ = profile;
     PrefService* prefs = profile->GetPrefs();
     user_pref_registrar_.reset(new PrefChangeRegistrar);
     user_pref_registrar_->Init(prefs);
@@ -929,6 +943,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         profile->GetPrefs()->GetInteger(prefs::kLanguageRemapSearchKeyTo);
   }
 
+  bool UnsetProfile(Profile* profile) {
+    if (profile != user_profile_)
+      return false;
+    user_pref_registrar_.reset();
+    return true;
+  }
+
   void ObserveGDataUpdates() {
     DriveIntegrationService* integration_service =
         FindDriveIntegrationService();
@@ -950,7 +971,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void UpdateSessionStartTime() {
-    const PrefService* local_state = local_state_registrar_.prefs();
+    const PrefService* local_state = local_state_registrar_->prefs();
     if (local_state->HasPrefPath(prefs::kSessionStartTime)) {
       have_session_start_time_ = true;
       session_start_time_ = base::TimeTicks::FromInternalValue(
@@ -963,7 +984,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void UpdateSessionLengthLimit() {
-    const PrefService* local_state = local_state_registrar_.prefs();
+    const PrefService* local_state = local_state_registrar_->prefs();
     if (local_state->HasPrefPath(prefs::kSessionLengthLimit)) {
       have_session_length_limit_ = true;
       session_length_limit_ = base::TimeDelta::FromMilliseconds(
@@ -1072,9 +1093,17 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       }
       case chrome::NOTIFICATION_PROFILE_CREATED: {
         SetProfile(content::Source<Profile>(source).ptr());
-        registrar_.Remove(this,
-                          chrome::NOTIFICATION_PROFILE_CREATED,
-                          content::NotificationService::AllSources());
+        registrar_->Remove(this,
+                           chrome::NOTIFICATION_PROFILE_CREATED,
+                           content::NotificationService::AllSources());
+        break;
+      }
+      case chrome::NOTIFICATION_PROFILE_DESTROYED: {
+        if (UnsetProfile(content::Source<Profile>(source).ptr())) {
+          registrar_->Remove(this,
+                             chrome::NOTIFICATION_PROFILE_DESTROYED,
+                             content::NotificationService::AllSources());
+        }
         break;
       }
       case chrome::NOTIFICATION_SESSION_STARTED: {
@@ -1283,9 +1312,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   scoped_ptr<base::WeakPtrFactory<SystemTrayDelegate> > ui_weak_ptr_factory_;
-  content::NotificationRegistrar registrar_;
-  PrefChangeRegistrar local_state_registrar_;
+  scoped_ptr<content::NotificationRegistrar> registrar_;
+  scoped_ptr<PrefChangeRegistrar> local_state_registrar_;
   scoped_ptr<PrefChangeRegistrar> user_pref_registrar_;
+  Profile* user_profile_;
   std::string active_network_path_;
   base::HourClockType clock_type_;
   int search_key_mapped_to_;
