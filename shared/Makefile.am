@@ -1,6 +1,6 @@
 noinst_LTLIBRARIES = libshared.la libshared-cairo.la
 
-libshared_la_CFLAGS = $(GCC_CFLAGS)
+libshared_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 
 libshared_la_SOURCES =				\
 	config-parser.c				\
