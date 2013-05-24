@@ -58,6 +58,11 @@ class Storage;
 
 struct EventListenerInfo;
 
+// SECURITY NOTE: Although the InjectedScriptHost is intended for use solely by the inspector,
+// a reference to the InjectedScriptHost may be leaked to the page being inspected. Thus, the
+// InjectedScriptHost must never implemment methods that have more power over the page than the
+// page already has itself (e.g. origin restriction bypasses).
+
 class InjectedScriptHost : public RefCounted<InjectedScriptHost>, public ScriptWrappable {
 public:
     static PassRefPtr<InjectedScriptHost> create();
