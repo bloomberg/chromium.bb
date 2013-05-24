@@ -276,45 +276,134 @@ void test_jump_into_super_inst_create(void) {
   assert(errno == EINVAL);
 }
 
-void test_start_with_super_inst_replace(void) {
+int test_simle_replacement(const char *fragment1, const char *fragment1_end,
+                           const char *fragment2, const char *fragment2_end) {
   uint8_t *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
   int rc;
 
   /* The original version is fine. */
-  copy_and_pad_fragment(buf, sizeof(buf), &jump_into_super_inst_original,
-                        &jump_into_super_inst_original_end);
+  copy_and_pad_fragment(buf, sizeof(buf), fragment1, fragment1_end);
   rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
   assert(rc == 0);
+
+  copy_and_pad_fragment(buf, sizeof(buf), fragment2, fragment2_end);
+  rc = nacl_dyncode_modify(load_area, buf, sizeof(buf));
+  return rc;
+}
+
+void test_start_with_super_inst_replace(void) {
+  int rc;
 
   /*
    * Replace the code with itself.  This makes sure that replacement code can
    * start with a super instruction.
    */
-  copy_and_pad_fragment(buf, sizeof(buf), &jump_into_super_inst_original,
-                        &jump_into_super_inst_original_end);
-  rc = nacl_dyncode_modify(load_area, buf, sizeof(buf));
+  rc = test_simle_replacement(&jump_into_super_inst_original,
+                              &jump_into_super_inst_original_end,
+                              &jump_into_super_inst_original,
+                              &jump_into_super_inst_original_end);
   assert(rc == 0);
 }
 
-void test_jump_into_super_inst_replace(void) {
-  uint8_t *load_area = allocate_code_space(1);
-  uint8_t buf[BUF_SIZE];
+#if defined(__i386__)
+void test_delete_superinstruction(void) {
   int rc;
 
-  /* The original version is fine. */
-  copy_and_pad_fragment(buf, sizeof(buf), &jump_into_super_inst_original,
-                        &jump_into_super_inst_original_end);
-  rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
-  assert(rc == 0);
+  /* Replace the superinstruction with normal instruction of the same size. */
+  rc = test_simle_replacement(&delete_superinstruction,
+                              &delete_superinstruction_end,
+                              &delete_superinstruction_replace,
+                              &delete_superinstruction_replace_end);
+  assert(rc != 0);
+  assert(errno == EINVAL);
+}
+
+void test_delete_superinstruction_split(void) {
+  int rc;
+
+  /*
+   * Replace the superinstruction with couple of normal instruction of the same
+   * size as atomic instructions of the superinstruction.
+   */
+  rc = test_simle_replacement(&delete_superinstruction_split,
+                              &delete_superinstruction_split_end,
+                              &delete_superinstruction_split_replace,
+                              &delete_superinstruction_split_replace_end);
+  assert(rc != 0);
+  assert(errno == EINVAL);
+}
+
+void test_create_superinstruction(void) {
+  int rc;
+
+  /* Replace normal instruction with the superinstruction of the same size. */
+  rc = test_simle_replacement(&create_superinstruction_split,
+                              &create_superinstruction_split_end,
+                              &create_superinstruction_split_replace,
+                              &create_superinstruction_split_replace_end);
+  assert(rc != 0);
+  assert(errno == EINVAL);
+}
+
+void test_create_superinstruction_split(void) {
+  int rc;
+
+  /*
+   * Replace couple of normal instruction which have sizes identical to the size
+   * of atomic instructions in the superinstruction with said superinstruction.
+   */
+  rc = test_simle_replacement(&create_superinstruction,
+                              &create_superinstruction_end,
+                              &create_superinstruction_replace,
+                              &create_superinstruction_replace_end);
+  assert(rc != 0);
+  assert(errno == EINVAL);
+}
+
+void test_change_boundaris_first_instructions(void) {
+  int rc;
+
+  /*
+   * Replace the code with the code which shifts boundary between first and
+   * second instruction.
+   */
+  rc = test_simle_replacement(
+      &change_boundaries_first_instructions,
+      &change_boundaries_first_instructions_end,
+      &change_boundaries_first_instructions_replace,
+      &change_boundaries_first_instructions_replace_end);
+  assert(rc != 0);
+  assert(errno == EINVAL);
+}
+
+void test_change_boundaris_last_instructions(void) {
+  int rc;
+
+  /*
+   * Replace the code with the code which shifts boundary between last and next
+   * to last instructions.
+   */
+  rc = test_simle_replacement(&change_boundaries_last_instructions,
+                              &change_boundaries_last_instructions_end,
+                              &change_boundaries_last_instructions_replace,
+                              &change_boundaries_last_instructions_replace_end);
+  assert(rc != 0);
+  assert(errno == EINVAL);
+}
+#endif
+
+void test_jump_into_super_inst_replace(void) {
+  int rc;
 
   /*
    * The modified version cannot be used as a replacement.
    * See: http://code.google.com/p/nativeclient/issues/detail?id=2563
    */
-  copy_and_pad_fragment(buf, sizeof(buf), &jump_into_super_inst_modified,
-                        &jump_into_super_inst_modified_end);
-  rc = nacl_dyncode_modify(load_area, buf, sizeof(buf));
+  rc = test_simle_replacement(&jump_into_super_inst_original,
+                              &jump_into_super_inst_original_end,
+                              &jump_into_super_inst_modified,
+                              &jump_into_super_inst_modified_end);
   assert(rc != 0);
   assert(errno == EINVAL);
 }
@@ -348,6 +437,14 @@ int TestMain(void) {
 #endif
   RUN_TEST(test_illegal_code_replacment);
   RUN_TEST(test_external_jump_target_replacement);
+#if defined(__i386__)
+  RUN_TEST(test_delete_superinstruction);
+  RUN_TEST(test_delete_superinstruction_split);
+  RUN_TEST(test_create_superinstruction);
+  RUN_TEST(test_create_superinstruction_split);
+  RUN_TEST(test_change_boundaris_first_instructions);
+  RUN_TEST(test_change_boundaris_last_instructions);
+#endif
 
   return 0;
 }

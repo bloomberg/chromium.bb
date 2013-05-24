@@ -383,3 +383,86 @@ template_instr_replace:
         mov $0x11111111,%eax
 template_instr_replace_end:
 
+#if defined(__i386__)
+        .global delete_superinstruction
+        .global delete_superinstruction_end
+        .global delete_superinstruction_replace
+        .global delete_superinstruction_replace_end
+        .p2align 5
+delete_superinstruction:
+        and  $0xffffffe0,%ecx
+        jmp  *%ecx
+delete_superinstruction_end:
+delete_superinstruction_replace:
+        mov    $0x12345678,%ecx
+delete_superinstruction_replace_end:
+        .global delete_superinstruction_split
+        .global delete_superinstruction_split_end
+        .global delete_superinstruction_split_replace
+        .global delete_superinstruction_split_replace_end
+        .p2align 5
+delete_superinstruction_split:
+        and  $0xffffffe0,%ecx
+        jmp  *%ecx
+delete_superinstruction_split_end:
+delete_superinstruction_split_replace:
+        and  $0xffffffe0,%ecx
+        mov  %ecx,%ecx
+delete_superinstruction_split_replace_end:
+        .global create_superinstruction
+        .global create_superinstruction_end
+        .global create_superinstruction_replace
+        .global create_superinstruction_replace_end
+        .p2align 5
+create_superinstruction:
+        mov    $0x12345678,%ecx
+create_superinstruction_end:
+create_superinstruction_replace:
+        and  $0xffffffe0,%ecx
+        jmp  *%ecx
+create_superinstruction_replace_end:
+        .global create_superinstruction_split
+        .global create_superinstruction_split_end
+        .global create_superinstruction_split_replace
+        .global create_superinstruction_split_replace_end
+        .p2align 5
+create_superinstruction_split:
+        and  $0xffffffe0,%ecx
+        mov  %ecx,%ecx
+create_superinstruction_split_end:
+create_superinstruction_split_replace:
+        and  $0xffffffe0,%ecx
+        jmp  *%ecx
+create_superinstruction_split_replace_end:
+        .global change_boundaries_first_instructions
+        .global change_boundaries_first_instructions_end
+        .global change_boundaries_first_instructions_replace
+        .global change_boundaries_first_instructions_replace_end
+        .p2align 5
+change_boundaries_first_instructions:
+        mov %eax,%eax
+        lea (%eax,%eax),%eax
+change_boundaries_first_instructions_end:
+change_boundaries_first_instructions_replace:
+        lea (%eax,%eax),%eax
+        mov %eax,%eax
+change_boundaries_first_instructions_replace_end:
+        .global change_boundaries_last_instructions
+        .global change_boundaries_last_instructions_end
+        .global change_boundaries_last_instructions_replace
+        .global change_boundaries_last_instructions_replace_end
+        .p2align 5
+change_boundaries_last_instructions:
+        .fill 32 - 5, 1, 0x90
+        mov %eax,%eax
+        lea (%eax,%eax),%eax
+change_boundaries_last_instructions_end:
+change_boundaries_last_instructions_replace:
+        .fill 32 - 5, 1, 0x90
+        lea (%eax,%eax),%eax
+        mov %eax,%eax
+change_boundaries_last_instructions_replace_end:
+#elif defined(__x86_64__)
+#else
+# error "Unsupported architecture"
+#endif

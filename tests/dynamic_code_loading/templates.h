@@ -39,6 +39,32 @@ extern char jump_into_super_inst_original_end;
 extern char jump_into_super_inst_modified;
 extern char jump_into_super_inst_modified_end;
 #endif
+#if defined(__i386__)
+extern char delete_superinstruction;
+extern char delete_superinstruction_end;
+extern char delete_superinstruction_replace;
+extern char delete_superinstruction_replace_end;
+extern char delete_superinstruction_split;
+extern char delete_superinstruction_split_end;
+extern char delete_superinstruction_split_replace;
+extern char delete_superinstruction_split_replace_end;
+extern char create_superinstruction;
+extern char create_superinstruction_end;
+extern char create_superinstruction_replace;
+extern char create_superinstruction_replace_end;
+extern char create_superinstruction_split;
+extern char create_superinstruction_split_end;
+extern char create_superinstruction_split_replace;
+extern char create_superinstruction_split_replace_end;
+extern char change_boundaries_first_instructions;
+extern char change_boundaries_first_instructions_end;
+extern char change_boundaries_first_instructions_replace;
+extern char change_boundaries_first_instructions_replace_end;
+extern char change_boundaries_last_instructions;
+extern char change_boundaries_last_instructions_end;
+extern char change_boundaries_last_instructions_replace;
+extern char change_boundaries_last_instructions_replace_end;
+#endif
 
 extern char template_func_external_jump_target;
 extern char template_func_external_jump_target_end;
