@@ -536,10 +536,11 @@ class TGen(GeneratorByFile):
         for child in members:
           rtype, name, arrays, args = cgen.GetComponents(
               child, build, 'return')
-          if not _IsNewestMember(child, members, releases):
-            version = node.GetVersion(build).replace('.', '_')
-            name += '_' + version
           if child.InReleases([build]):
+            if not _IsNewestMember(child, members, releases):
+              version = child.GetVersion(
+                  child.first_release[build]).replace('.', '_')
+              name += '_' + version
             generated_functions.append(name)
         out.Write(',\n'.join(['  &%s' % f for f in generated_functions]))
         out.Write('\n};\n\n')
@@ -574,11 +575,11 @@ def Main(args):
   idldir = os.path.join(idldir, 'test_thunk', '*.idl')
   filenames = glob.glob(idldir)
   ast = ParseFiles(filenames)
-  if tgen.GenerateRange(ast, ['M13', 'M14'], {}):
-    print "Golden file for M13-M14 failed."
+  if tgen.GenerateRange(ast, ['M13', 'M14', 'M15'], {}):
+    print "Golden file for M13-M15 failed."
     failed = 1
   else:
-    print "Golden file for M13-M14 passed."
+    print "Golden file for M13-M15 passed."
 
   return failed
 

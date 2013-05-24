@@ -95,6 +95,7 @@ class IDLOutFile(object):
     filename = os.path.realpath(self.filename)
     self.open = False
     outtext = ''.join(self.outlist)
+    oldtext = ''
 
     if not self.always_write:
       if os.path.isfile(filename):

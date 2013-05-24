@@ -19,6 +19,7 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
+  VLOG(4) << "PPB_Simple::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -26,24 +27,37 @@ PP_Resource Create(PP_Instance instance) {
 }
 
 PP_Bool IsSimple(PP_Resource resource) {
+  VLOG(4) << "PPB_Simple::IsSimple()";
   EnterResource<PPB_Simple_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 void PostMessage(PP_Instance instance, PP_Var message) {
+  VLOG(4) << "PPB_Simple::PostMessage()";
   EnterInstance enter(instance);
-  if (enter.succeeded())
-    enter.functions()->PostMessage(instance, message);
+  if (enter.failed())
+    return;
+  enter.functions()->PostMessage(instance, message);
 }
 
-uint32_t DoUint32Instance(PP_Instance instance) {
+uint32_t DoUint32Instance_0_5(PP_Instance instance) {
+  VLOG(4) << "PPB_Simple::DoUint32Instance()";
   EnterInstance enter(instance);
   if (enter.failed())
     return 0;
-  return enter.functions()->DoUint32Instance(instance);
+  return enter.functions()->DoUint32Instance0_5(instance);
+}
+
+uint32_t DoUint32Instance(PP_Instance instance, PP_Resource resource) {
+  VLOG(4) << "PPB_Simple::DoUint32Instance()";
+  EnterInstance enter(instance);
+  if (enter.failed())
+    return 0;
+  return enter.functions()->DoUint32Instance(instance, resource);
 }
 
 uint32_t DoUint32Resource(PP_Resource instance) {
+  VLOG(4) << "PPB_Simple::DoUint32Resource()";
   EnterResource<PPB_Simple_API> enter(instance, true);
   if (enter.failed())
     return 0;
@@ -51,6 +65,7 @@ uint32_t DoUint32Resource(PP_Resource instance) {
 }
 
 uint32_t DoUint32ResourceNoErrors(PP_Resource instance) {
+  VLOG(4) << "PPB_Simple::DoUint32ResourceNoErrors()";
   EnterResource<PPB_Simple_API> enter(instance, false);
   if (enter.failed())
     return 0;
@@ -58,6 +73,7 @@ uint32_t DoUint32ResourceNoErrors(PP_Resource instance) {
 }
 
 int32_t OnFailure12(PP_Instance instance) {
+  VLOG(4) << "PPB_Simple::OnFailure12()";
   EnterInstance enter(instance);
   if (enter.failed())
     return 12;
@@ -68,18 +84,27 @@ const PPB_Simple_0_5 g_ppb_simple_thunk_0_5 = {
   &Create,
   &IsSimple,
   &PostMessage,
-  &DoUint32Instance,
+  &DoUint32Instance_0_5,
   &DoUint32Resource,
-  &DoUint32ResourceNoErrors,
+  &DoUint32ResourceNoErrors
 };
 
 const PPB_Simple_1_0 g_ppb_simple_thunk_1_0 = {
   &Create,
   &IsSimple,
+  &DoUint32Instance_0_5,
+  &DoUint32Resource,
+  &DoUint32ResourceNoErrors,
+  &OnFailure12
+};
+
+const PPB_Simple_1_5 g_ppb_simple_thunk_1_5 = {
+  &Create,
+  &IsSimple,
   &DoUint32Instance,
   &DoUint32Resource,
   &DoUint32ResourceNoErrors,
-  &OnFailure12,
+  &OnFailure12
 };
 
 }  // namespace
@@ -90,6 +115,10 @@ const PPB_Simple_0_5* GetPPB_Simple_0_5_Thunk() {
 
 const PPB_Simple_1_0* GetPPB_Simple_1_0_Thunk() {
   return &g_ppb_simple_thunk_1_0;
+}
+
+const PPB_Simple_1_5* GetPPB_Simple_1_5_Thunk() {
+  return &g_ppb_simple_thunk_1_5;
 }
 
 }  // namespace thunk

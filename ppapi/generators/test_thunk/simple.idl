@@ -11,7 +11,8 @@
 
 label Chrome {
   M13 = 0.5,
-  M14 = 1.0
+  M14 = 1.0,
+  M15 = 1.5
 };
 
 interface PPB_Simple {
@@ -23,6 +24,10 @@ interface PPB_Simple {
   void PostMessage([in] PP_Instance instance, [in] PP_Var message);
 
   uint32_t DoUint32Instance([in] PP_Instance instance);
+
+  [version=1.5]
+  uint32_t DoUint32Instance([in] PP_Instance instance,
+                            [in] PP_Resource resource);
 
   uint32_t DoUint32Resource([in] PP_Resource instance);
 
