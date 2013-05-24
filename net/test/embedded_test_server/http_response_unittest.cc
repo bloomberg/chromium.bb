@@ -10,7 +10,7 @@ namespace net {
 namespace test_server {
 
 TEST(HttpResponseTest, GenerateResponse) {
-  HttpResponse response;
+  BasicHttpResponse response;
   response.set_code(SUCCESS);
   response.set_content("Sample content - Hello world!");
   response.set_content_type("text/plain");

@@ -12,7 +12,7 @@
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using std::string;
 namespace content {
@@ -128,8 +128,6 @@ class WebRTCInternalsBrowserTest: public ContentBrowserTest {
     // assume this switch is set by default in content_browsertests.
     ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
-
-    ASSERT_TRUE(test_server()->Start());
   }
 
  protected:
@@ -582,7 +580,8 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, ConvertedGraphs) {
 IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest,
                        MAYBE_WithRealPeerConnectionCall) {
   // Start a peerconnection call in the first window.
-  GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
   ASSERT_TRUE(ExecuteJavascript("call({video:true});"));
   ExpectTitle("OK");
