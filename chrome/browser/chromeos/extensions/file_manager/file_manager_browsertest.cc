@@ -8,38 +8,30 @@
 //  - Selecting a file and copy-pasting it with the keyboard copies the file.
 //  - Selecting a file and pressing delete deletes it.
 
-#include <algorithm>
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
-#include "base/platform_file.h"
-#include "base/threading/platform_thread.h"
+#include "base/run_loop.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/file_system.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/extensions/file_manager/drive_test_util.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/render_view_host.h"
-#include "net/base/escape.h"
 #include "webkit/fileapi/external_mount_points.h"
 
 namespace {
@@ -585,9 +577,6 @@ class FileManagerBrowserTestBase : public ExtensionApiTest,
   void CreateTestEntries(TestVolume* volume, const TestEntryInfo* entries,
                          size_t num_entries);
 
-  // After starting the test, set up volumes.
-  virtual void PrepareVolume() = 0;
-
   // Runs the file display test on the passed |volume|, shared by subclasses.
   void DoTestFileDisplay(TestVolume* volume);
 
@@ -693,13 +682,14 @@ class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase {
  public:
   FileManagerBrowserLocalTest() : volume_("Downloads") {}
 
-  virtual void SetUp() OVERRIDE {
+ protected:
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture();
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-    ExtensionApiTest::SetUp();
   }
 
- protected:
-  virtual void PrepareVolume() OVERRIDE {
+  virtual void SetUpOnMainThread() OVERRIDE {
+    FileManagerBrowserTestBase::SetUpOnMainThread();
     ASSERT_TRUE(volume_.Mount(browser()->profile()));
     CreateTestEntries(&volume_, kTestEntrySetCommon,
                       arraysize(kTestEntrySetCommon));
@@ -718,20 +708,15 @@ INSTANTIATE_TEST_CASE_P(InNonGuestMode,
 
 // A class to test Drive's volumes
 class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
- public:
-  virtual void SetUp() OVERRIDE {
+ protected:
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture();
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
     ASSERT_TRUE(volume_.SetUp());
-    ExtensionApiTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
-    // The system service should be deleted by the time this function is
-    // called hence no need to call RemoveObserver().
-  }
-
- protected:
-  virtual void PrepareVolume() OVERRIDE {
+  virtual void SetUpOnMainThread() OVERRIDE {
+    FileManagerBrowserTestBase::SetUpOnMainThread();
     CreateTestEntries(&volume_, kTestEntrySetCommon,
                       arraysize(kTestEntrySetCommon));
     // For testing Drive, create more entries with Drive specific attributes.
@@ -754,14 +739,15 @@ class FileManagerBrowserTransferTest : public FileManagerBrowserTestBase {
  public:
   FileManagerBrowserTransferTest() : local_volume_("Downloads") {}
 
-  virtual void SetUp() OVERRIDE {
+ protected:
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture();
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
     ASSERT_TRUE(drive_volume_.SetUp());
-    ExtensionApiTest::SetUp();
   }
 
- protected:
-  virtual void PrepareVolume() OVERRIDE {
+  virtual void SetUpOnMainThread() OVERRIDE {
+    FileManagerBrowserTestBase::SetUpOnMainThread();
     ASSERT_TRUE(local_volume_.Mount(browser()->profile()));
     CreateTestEntries(&local_volume_, kTestEntrySetCommon,
                       arraysize(kTestEntrySetCommon));
@@ -783,34 +769,28 @@ INSTANTIATE_TEST_CASE_P(InNonGuestMode,
                         ::testing::Values(false));
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestFileDisplay) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   DoTestFileDisplay(&volume_);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestGalleryOpen) {
-  PrepareVolume();
   DoTestGalleryOpen(&volume_);
 }
 
 // Disabled temporarily since fails on Linux Chromium OS ASAN Tests (2).
 // TODO(mtomasz): crbug.com/243611.
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestGalleryOpen) {
-  PrepareVolume();
   DoTestGalleryOpen(&volume_);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   DoTestKeyboardCopy(&volume_);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardDelete) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   DoTestKeyboardDelete(&volume_);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("openSidebarRecent"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -818,21 +798,18 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
 
 // TODO(hirono): Bring back the offline feature. http://crbug.com/238545
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestOpenOffline) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("openSidebarOffline"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenSharedWithMe) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("openSidebarSharedWithMe"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAutocomplete) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("autocomplete"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -840,25 +817,20 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAutocomplete) {
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromDriveToDownloads) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(
-      StartTest("transferFromDriveToDownloads"));
+  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromDriveToDownloads"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromDownloadsToDrive) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(
-      StartTest("transferFromDownloadsToDrive"));
+  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromDownloadsToDrive"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromSharedToDownloads) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("transferFromSharedToDownloads"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -866,7 +838,6 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromSharedToDrive) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("transferFromSharedToDrive"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -874,7 +845,6 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromRecentToDownloads) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("transferFromRecentToDownloads"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -882,7 +852,6 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromRecentToDrive) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("transferFromRecentToDrive"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -891,7 +860,6 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
 // TODO(hirono): Bring back the offline feature. http://crbug.com/238545
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        DISABLED_TransferFromOfflineToDownloads) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("transferFromOfflineToDownloads"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -900,7 +868,6 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
 // TODO(hirono): Bring back the offline feature. http://crbug.com/238545
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        DISABLED_TransferFromOfflineToDrive) {
-  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("transferFromOfflineToDrive"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
