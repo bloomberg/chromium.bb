@@ -11,6 +11,7 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/common/page_state.h"
 #include "content/public/common/ssl_status.h"
 
 namespace content {
@@ -46,8 +47,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual const GURL& GetVirtualURL() const OVERRIDE;
   virtual void SetTitle(const string16& title) OVERRIDE;
   virtual const string16& GetTitle() const OVERRIDE;
-  virtual void SetContentState(const std::string& state) OVERRIDE;
-  virtual const std::string& GetContentState() const OVERRIDE;
+  virtual void SetPageState(const PageState& state) OVERRIDE;
+  virtual const PageState& GetPageState() const OVERRIDE;
   virtual void SetPageID(int page_id) OVERRIDE;
   virtual int32 GetPageID() const OVERRIDE;
   virtual const string16& GetTitleForDisplay(
@@ -219,7 +220,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   bool update_virtual_url_with_url_;
   string16 title_;
   FaviconStatus favicon_;
-  std::string content_state_;
+  PageState page_state_;
   int32 page_id_;
   SSLStatus ssl_;
   PageTransition transition_type_;

@@ -19,6 +19,7 @@ class GURL;
 class Profile;
 
 namespace content {
+class PageState;
 class WebContents;
 struct SSLStatus;
 }
@@ -152,7 +153,7 @@ void ViewSource(Browser* browser, content::WebContents* tab);
 void ViewSource(Browser* browser,
                 content::WebContents* tab,
                 const GURL& url,
-                const std::string& content_state);
+                const content::PageState& page_state);
 
 void ViewSelectedSource(Browser* browser);
 bool CanViewSource(const Browser* browser);

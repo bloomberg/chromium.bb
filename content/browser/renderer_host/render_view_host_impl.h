@@ -60,6 +60,7 @@ class MediaPlayerManager;
 namespace content {
 
 class ChildProcessSecurityPolicyImpl;
+class PageState;
 class PowerSaveBlocker;
 class RenderViewHostObserver;
 class RenderWidgetHostDelegate;
@@ -481,7 +482,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDidFailProvisionalLoadWithError(
       const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnNavigate(const IPC::Message& msg);
-  void OnUpdateState(int32 page_id, const std::string& state);
+  void OnUpdateState(int32 page_id, const PageState& state);
   void OnUpdateTitle(int32 page_id,
                      const string16& title,
                      WebKit::WebTextDirection title_direction);
@@ -573,7 +574,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   void ClearPowerSaveBlockers();
 
-  bool CanAccessFilesOfSerializedState(const std::string& state) const;
+  bool CanAccessFilesOfPageState(const PageState& state) const;
 
   // Our delegate, which wants to know about changes in the RenderView.
   RenderViewHostDelegate* delegate_;

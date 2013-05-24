@@ -71,6 +71,7 @@ class UnloadController;
 
 namespace content {
 class NavigationController;
+class PageState;
 class SessionStorageNamespace;
 }
 
@@ -554,7 +555,7 @@ class Browser : public TabStripModelObserver,
   virtual void ViewSourceForFrame(
       content::WebContents* source,
       const GURL& frame_url,
-      const std::string& frame_content_state) OVERRIDE;
+      const content::PageState& frame_page_state) OVERRIDE;
   virtual void ShowRepostFormWarningDialog(
       content::WebContents* source) OVERRIDE;
   virtual bool ShouldCreateWebContents(

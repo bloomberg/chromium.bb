@@ -12,7 +12,6 @@
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/util/time.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
-#include "webkit/glue/glue_serialize.h"
 
 using content::NavigationEntry;
 
@@ -41,7 +40,7 @@ SerializedNavigationEntry SerializedNavigationEntry::FromNavigationEntry(
   navigation.referrer_ = entry.GetReferrer();
   navigation.virtual_url_ = entry.GetVirtualURL();
   navigation.title_ = entry.GetTitle();
-  navigation.content_state_ = entry.GetContentState();
+  navigation.page_state_ = entry.GetPageState();
   navigation.transition_type_ = entry.GetTransitionType();
   navigation.has_post_data_ = entry.GetHasPostData();
   navigation.post_id_ = entry.GetPostID();
@@ -69,7 +68,8 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
                         WebKit::WebReferrerPolicyDefault);
   navigation.virtual_url_ = GURL(sync_data.virtual_url());
   navigation.title_ = UTF8ToUTF16(sync_data.title());
-  navigation.content_state_ = sync_data.state();
+  navigation.page_state_ =
+      content::PageState::CreateFromEncodedData(sync_data.state());
 
   uint32 transition = 0;
   if (sync_data.has_page_transition()) {
@@ -205,7 +205,7 @@ enum TypeMask {
 // index_
 // virtual_url_
 // title_
-// content_state_
+// page_state_
 // transition_type_
 //
 // Added on later:
@@ -228,12 +228,12 @@ void SerializedNavigationEntry::WriteToPickle(int max_size,
 
   WriteString16ToPickle(pickle, &bytes_written, max_size, title_);
 
-  std::string content_state = content_state_;
-  if (has_post_data_) {
-    content_state =
-        webkit_glue::RemovePasswordDataFromHistoryState(content_state);
-  }
-  WriteStringToPickle(pickle, &bytes_written, max_size, content_state);
+  content::PageState page_state = page_state_;
+  if (has_post_data_)
+    page_state = page_state.RemovePasswordData();
+
+  WriteStringToPickle(pickle, &bytes_written, max_size,
+                      page_state.ToEncodedData());
 
   pickle->WriteInt(transition_type_);
 
@@ -259,15 +259,16 @@ void SerializedNavigationEntry::WriteToPickle(int max_size,
 
 bool SerializedNavigationEntry::ReadFromPickle(PickleIterator* iterator) {
   *this = SerializedNavigationEntry();
-  std::string virtual_url_spec;
+  std::string virtual_url_spec, page_state_data;
   int transition_type_int = 0;
   if (!iterator->ReadInt(&index_) ||
       !iterator->ReadString(&virtual_url_spec) ||
       !iterator->ReadString16(&title_) ||
-      !iterator->ReadString(&content_state_) ||
+      !iterator->ReadString(&page_state_data) ||
       !iterator->ReadInt(&transition_type_int))
     return false;
   virtual_url_ = GURL(virtual_url_spec);
+  page_state_ = content::PageState::CreateFromEncodedData(page_state_data);
   transition_type_ = static_cast<content::PageTransition>(transition_type_int);
 
   // type_mask did not always exist in the written stream. As such, we
@@ -333,7 +334,7 @@ scoped_ptr<NavigationEntry> SerializedNavigationEntry::ToNavigationEntry(
           browser_context));
 
   entry->SetTitle(title_);
-  entry->SetContentState(content_state_);
+  entry->SetPageState(page_state_);
   entry->SetPageID(page_id);
   entry->SetHasPostData(has_post_data_);
   entry->SetPostID(post_id_);

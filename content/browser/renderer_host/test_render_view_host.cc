@@ -13,12 +13,12 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/page_state.h"
 #include "content/public/common/password_form.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/rect.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webpreferences.h"
 
 namespace content {
@@ -58,7 +58,7 @@ void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
   params->gesture = NavigationGestureUser;
   params->was_within_same_page = false;
   params->is_post = false;
-  params->content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
+  params->page_state = PageState::CreateFromURL(url);
 }
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
@@ -337,20 +337,11 @@ void TestRenderViewHost::SendNavigateWithParameters(
   params.history_list_was_cleared = simulate_history_list_was_cleared_;
   params.original_request_url = original_request_url;
 
-  WebKit::WebHTTPBody http_body;
-  http_body.initialize();
-
-  WebKit::WebHistoryItem history_item;
-  history_item.initialize();
-  history_item.setURLString(WebKit::WebString::fromUTF8(url.spec()));
-  if (file_path_for_history_item) {
-    const char char_data[] = "data";
-    http_body.appendData(WebKit::WebData(char_data, arraysize(char_data)-1));
-    http_body.appendFile(WebKit::WebString::fromUTF8(
-        file_path_for_history_item->MaybeAsASCII()));
-    history_item.setHTTPBody(http_body);
-  }
-  params.content_state = webkit_glue::HistoryItemToString(history_item);
+  params.page_state = PageState::CreateForTesting(
+      url,
+      false,
+      file_path_for_history_item ? "data" : NULL,
+      file_path_for_history_item);
 
   ViewHostMsg_FrameNavigate msg(1, params);
   OnNavigate(msg);
@@ -388,17 +379,11 @@ void TestRenderViewHost::TestOnStartDragging(
 void TestRenderViewHost::TestOnUpdateStateWithFile(
     int process_id,
     const base::FilePath& file_path) {
-  WebKit::WebHTTPBody http_body;
-  http_body.initialize();
-  const char char_data[] = "data";
-  http_body.appendData(WebKit::WebData(char_data, arraysize(char_data)-1));
-  http_body.appendFile(WebKit::WebString::fromUTF8(file_path.MaybeAsASCII()));
-
-  WebKit::WebHistoryItem history_item;
-  history_item.initialize();
-  history_item.setURLString("http://www.google.com");
-  history_item.setHTTPBody(http_body);
-  OnUpdateState(process_id, webkit_glue::HistoryItemToString(history_item));
+  OnUpdateState(process_id,
+                PageState::CreateForTesting(GURL("http://www.google.com"),
+                                            false,
+                                            "data",
+                                            &file_path));
 }
 
 void TestRenderViewHost::set_simulate_fetch_via_proxy(bool proxy) {

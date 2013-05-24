@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/common/page_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "content/shell/common/shell_test_configuration.h"
@@ -114,7 +115,7 @@ class WebKitTestRunner : public RenderViewObserver,
   void OnSetTestConfiguration(const ShellTestConfiguration& params);
   void OnSessionHistory(
       const std::vector<int>& routing_ids,
-      const std::vector<std::vector<std::string> >& session_histories,
+      const std::vector<std::vector<PageState> >& session_histories,
       const std::vector<unsigned>& current_entry_indexes);
   void OnReset();
   void OnNotifyDone();
@@ -132,7 +133,7 @@ class WebKitTestRunner : public RenderViewObserver,
   ShellTestConfiguration test_config_;
 
   std::vector<int> routing_ids_;
-  std::vector<std::vector<std::string> > session_histories_;
+  std::vector<std::vector<PageState> > session_histories_;
   std::vector<unsigned> current_entry_indexes_;
 
   bool is_main_window_;

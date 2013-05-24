@@ -73,7 +73,6 @@
 #include "content/public/common/url_utils.h"
 #include "net/base/escape.h"
 #include "webkit/common/user_agent/user_agent_util.h"
-#include "webkit/glue/glue_serialize.h"
 
 #if defined(OS_MACOSX)
 #include "ui/base/cocoa/find_pasteboard.h"
@@ -996,13 +995,13 @@ void ViewSource(Browser* browser, WebContents* contents) {
   if (!entry)
     return;
 
-  ViewSource(browser, contents, entry->GetURL(), entry->GetContentState());
+  ViewSource(browser, contents, entry->GetURL(), entry->GetPageState());
 }
 
 void ViewSource(Browser* browser,
                 WebContents* contents,
                 const GURL& url,
-                const std::string& content_state) {
+                const content::PageState& page_state) {
   content::RecordAction(UserMetricsAction("ViewSource"));
   DCHECK(contents);
 
@@ -1020,8 +1019,7 @@ void ViewSource(Browser* browser,
   active_entry->SetVirtualURL(view_source_url);
 
   // Do not restore scroller position.
-  active_entry->SetContentState(
-      webkit_glue::RemoveScrollOffsetFromHistoryState(content_state));
+  active_entry->SetPageState(page_state.RemoveScrollOffset());
 
   // Do not restore title, derive it from the url.
   active_entry->SetTitle(string16());

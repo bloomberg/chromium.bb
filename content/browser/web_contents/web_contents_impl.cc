@@ -217,7 +217,7 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
   }
   params->referrer = entry.GetReferrer();
   params->transition = entry.GetTransitionType();
-  params->state = entry.GetContentState();
+  params->page_state = entry.GetPageState();
   params->navigation_type =
       GetNavigationType(controller.GetBrowserContext(), entry, reload_type);
   params->request_time = base::Time::Now();
@@ -1984,11 +1984,11 @@ void WebContentsImpl::ViewSource() {
 }
 
 void WebContentsImpl::ViewFrameSource(const GURL& url,
-                                      const std::string& content_state) {
+                                      const PageState& page_state) {
   if (!delegate_)
     return;
 
-  delegate_->ViewSourceForFrame(this, url, content_state);
+  delegate_->ViewSourceForFrame(this, url, page_state);
 }
 
 int WebContentsImpl::GetMinimumZoomPercent() const {
@@ -2901,7 +2901,7 @@ void WebContentsImpl::DidNavigate(
 
 void WebContentsImpl::UpdateState(RenderViewHost* rvh,
                                   int32 page_id,
-                                  const std::string& state) {
+                                  const PageState& page_state) {
   // Ensure that this state update comes from either the active RVH or one of
   // the swapped out RVHs.  We don't expect to hear from any other RVHs.
   DCHECK(rvh == GetRenderViewHost() || render_manager_.IsOnSwappedOutList(rvh));
@@ -2918,9 +2918,9 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
     return;
   NavigationEntry* entry = controller_.GetEntryAtIndex(entry_index);
 
-  if (state == entry->GetContentState())
+  if (page_state == entry->GetPageState())
     return;  // Nothing to update.
-  entry->SetContentState(state);
+  entry->SetPageState(page_state);
   controller_.NotifyEntryChanged(entry, entry_index);
 }
 

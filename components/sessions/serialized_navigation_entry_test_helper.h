@@ -17,6 +17,7 @@ class Time;
 }
 
 namespace content {
+class PageState;
 struct Referrer;
 }
 
@@ -38,8 +39,8 @@ class SerializedNavigationEntryTestHelper {
       const std::string& virtual_url,
       const std::string& title);
 
-  static void SetContentState(const std::string& content_state,
-                              SerializedNavigationEntry* navigation);
+  static void SetPageState(const content::PageState& page_state,
+                           SerializedNavigationEntry* navigation);
 
   static void SetHasPostData(bool has_post_data,
                              SerializedNavigationEntry* navigation);

@@ -1409,9 +1409,9 @@ void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {
 
 void Browser::ViewSourceForFrame(WebContents* source,
                                  const GURL& frame_url,
-                                 const std::string& frame_content_state) {
+                                 const content::PageState& frame_page_state) {
   DCHECK(source);
-  chrome::ViewSource(this, source, frame_url, frame_content_state);
+  chrome::ViewSource(this, source, frame_url, frame_page_state);
 }
 
 void Browser::ShowRepostFormWarningDialog(WebContents* source) {
