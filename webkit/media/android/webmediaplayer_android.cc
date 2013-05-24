@@ -58,6 +58,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       is_playing_(false),
       needs_establish_peer_(true),
+      stream_texture_proxy_initialized_(false),
       has_size_info_(false),
       stream_texture_factory_(factory),
       needs_external_surface_(false),
@@ -154,11 +155,17 @@ void WebMediaPlayerAndroid::pause() {
 
 void WebMediaPlayerAndroid::seek(double seconds) {
   pending_seek_ = seconds;
+  if (seeking_ && media_source_delegate_)
+    media_source_delegate_->CancelPendingSeek();
   seeking_ = true;
 
   base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
+#if defined(GOOGLE_TV)
+  // TODO(qinmin): check if GTV can also defer the seek until the browser side
+  // player is ready.
   if (media_source_delegate_)
     media_source_delegate_->Seek(seek_time);
+#endif
   if (proxy_)
     proxy_->Seek(player_id_, seek_time);
 }
@@ -498,6 +505,19 @@ void WebMediaPlayerAndroid::OnMediaPlayerPause() {
   client_->playbackStateChanged();
 }
 
+void WebMediaPlayerAndroid::OnMediaSeekRequest(base::TimeDelta time_to_seek,
+                                               bool request_texture_peer) {
+  if (!media_source_delegate_)
+    return;
+
+  if (!seeking_)
+    media_source_delegate_->CancelPendingSeek();
+  media_source_delegate_->Seek(time_to_seek);
+  OnTimeUpdate(time_to_seek);
+  if (request_texture_peer)
+    EstablishSurfaceTexturePeer();
+}
+
 void WebMediaPlayerAndroid::UpdateNetworkState(
     WebMediaPlayer::NetworkState state) {
   network_state_ = state;
@@ -589,11 +609,12 @@ void WebMediaPlayerAndroid::SetVideoFrameProviderClient(
 }
 
 scoped_refptr<media::VideoFrame> WebMediaPlayerAndroid::GetCurrentFrame() {
-  if (stream_texture_proxy_ && !stream_texture_proxy_->IsBoundToThread() &&
+  if (!stream_texture_proxy_initialized_ && stream_texture_proxy_ &&
       stream_id_ && !needs_external_surface_) {
     gfx::Size natural_size = current_frame_->natural_size();
     stream_texture_proxy_->BindToCurrentThread(
         stream_id_, natural_size.width(), natural_size.height());
+    stream_texture_proxy_initialized_ = true;
   }
   return current_frame_;
 }
@@ -603,6 +624,16 @@ void WebMediaPlayerAndroid::PutCurrentFrame(
 }
 
 void WebMediaPlayerAndroid::EstablishSurfaceTexturePeer() {
+  if (media_source_delegate_ && stream_texture_factory_) {
+    // MediaCodec will release the old surface when it goes away, we need to
+    // recreate a new one each time this is called.
+    stream_texture_factory_->DestroyStreamTexture(texture_id_);
+    stream_id_ = 0;
+    texture_id_ = 0;
+    stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
+    ReallocateVideoFrame();
+    stream_texture_proxy_initialized_ = false;
+  }
   if (stream_texture_factory_.get() && stream_id_)
     stream_texture_factory_->EstablishPeer(stream_id_, player_id_);
   needs_establish_peer_ = false;

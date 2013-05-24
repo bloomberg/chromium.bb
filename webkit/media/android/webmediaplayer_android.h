@@ -146,16 +146,18 @@ class WebMediaPlayerAndroid
       OVERRIDE;
 
   // Media player callback handlers.
-  virtual void OnMediaMetadataChanged(base::TimeDelta duration, int width,
-                                      int height, bool success);
-  virtual void OnPlaybackComplete();
-  virtual void OnBufferingUpdate(int percentage);
-  virtual void OnSeekComplete(base::TimeDelta current_time);
-  virtual void OnMediaError(int error_type);
-  virtual void OnVideoSizeChanged(int width, int height);
+  void OnMediaMetadataChanged(base::TimeDelta duration, int width,
+                              int height, bool success);
+  void OnPlaybackComplete();
+  void OnBufferingUpdate(int percentage);
+  void OnSeekComplete(base::TimeDelta current_time);
+  void OnMediaError(int error_type);
+  void OnVideoSizeChanged(int width, int height);
+  void OnMediaSeekRequest(base::TimeDelta time_to_seek,
+                          bool request_texture_peer);
 
   // Called to update the current time.
-  virtual void OnTimeUpdate(base::TimeDelta current_time);
+  void OnTimeUpdate(base::TimeDelta current_time);
 
   // Functions called when media player status changes.
   void OnMediaPlayerPlay();
@@ -277,6 +279,9 @@ class WebMediaPlayerAndroid
 
   // Whether media player needs to re-establish the surface texture peer.
   bool needs_establish_peer_;
+
+  // Whether |stream_texture_proxy_| is initialized.
+  bool stream_texture_proxy_initialized_;
 
   // Whether the video size info is available.
   bool has_size_info_;

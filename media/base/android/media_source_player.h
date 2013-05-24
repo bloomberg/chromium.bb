@@ -131,6 +131,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   virtual bool CanSeekForward() OVERRIDE;
   virtual bool CanSeekBackward() OVERRIDE;
   virtual bool IsPlayerReady() OVERRIDE;
+  virtual void OnSeekRequestAck() OVERRIDE;
 
   // Called when the demuxer is ready.
   virtual void DemuxerReady(
@@ -141,11 +142,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
       const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) OVERRIDE;
 
  private:
-  // Update the timestamps for A/V sync scheduling. |kickoff_time| keeps
-  // track of when the job is started. We need this to check if a seek is
-  // performed during decoding.
+  // Update the timestamps for A/V sync scheduling.
   void UpdateTimestamps(
-      const base::Time& kickoff_time,
       const base::TimeDelta& presentation_timestamp,
       const base::Time& wallclock_time);
 
@@ -157,9 +155,14 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
 
   // Called when the decoder finishes its task.
   void MediaDecoderCallback(
-        bool is_audio, const base::Time& kickoff_time,
-        const base::TimeDelta& presentation_timestamp,
+        bool is_audio, const base::TimeDelta& presentation_timestamp,
         const base::Time& wallclock_time, bool end_of_stream);
+
+  // Handle pending events when all the decoder jobs finished.
+  void ProcessPendingEvents();
+
+  // Flush the decoders and clean up all the data needs to be decoded.
+  void ClearDecodingData();
 
   // Called to decoder more data.
   void DecodeMoreAudio();
@@ -169,8 +172,16 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   bool HasVideo();
   bool HasAudio();
 
-  // Pending play event while player is preparing.
-  bool pending_play_;
+  enum PendingEventFlags {
+    NO_EVENT_PENDING = 0,
+    SEEK_EVENT_PENDING = 1 << 0,
+    SURFACE_CHANGE_EVENT_PENDING = 1 << 1,
+  };
+  // Pending event that the player needs to do.
+  unsigned pending_event_;
+
+  // Number of active decoding tasks.
+  int active_decoding_tasks_;
 
   // Stats about the media.
   base::TimeDelta duration_;
@@ -195,7 +206,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   // due to network or decoding problem.
   base::Time start_wallclock_time_;
   base::TimeDelta start_presentation_timestamp_;
-  base::Time last_seek_time_;
 
   // Decoder jobs
   ScopedMediaDecoderJob audio_decoder_job_;
@@ -210,6 +220,9 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   bool waiting_for_video_data_;
   MediaPlayerHostMsg_ReadFromDemuxerAck_Params received_audio_;
   MediaPlayerHostMsg_ReadFromDemuxerAck_Params received_video_;
+
+  // Whether the video decoder need to use anempty surface.
+  bool use_empty_surface_;
 
   // Weak pointer passed to media decoder jobs for callbacks.
   base::WeakPtrFactory<MediaSourcePlayer> weak_this_;

@@ -192,7 +192,8 @@ MediaSourcePlayer::MediaSourcePlayer(
     int player_id,
     MediaPlayerManager* manager)
     : MediaPlayerAndroid(player_id, manager),
-      pending_play_(false),
+      pending_event_(NO_EVENT_PENDING),
+      active_decoding_tasks_(0),
       width_(0),
       height_(0),
       audio_codec_(kUnknownAudioCodec),
@@ -207,6 +208,7 @@ MediaSourcePlayer::MediaSourcePlayer(
       video_access_unit_index_(0),
       waiting_for_audio_data_(false),
       waiting_for_video_data_(false),
+      use_empty_surface_(true),
       weak_this_(this) {
 }
 
@@ -215,8 +217,15 @@ MediaSourcePlayer::~MediaSourcePlayer() {
 }
 
 void MediaSourcePlayer::SetVideoSurface(jobject surface) {
-  video_decoder_job_.reset();
-  if (!surface) {
+  use_empty_surface_ =  surface ? false : true;
+
+  // If we haven't processed a surface change event, do so now.
+  if (active_decoding_tasks_ > 0) {
+    pending_event_ |= SURFACE_CHANGE_EVENT_PENDING;
+    // Request a seek so that the next decoder will decode an I-frame first.
+    // Or otherwise, MediaCodec might crash. See b/8950387.
+    pending_event_ |= SEEK_EVENT_PENDING;
+    ProcessPendingEvents();
     return;
   }
 
@@ -226,16 +235,27 @@ void MediaSourcePlayer::SetVideoSurface(jobject surface) {
         gfx::Size(width_, height_), surface));
   }
 
-  if (pending_play_)
-    StartInternal();
-
   // Inform the fullscreen view the player is ready.
   // TODO(qinmin): refactor MediaPlayerBridge so that we have a better way
   // to inform ContentVideoView.
   OnMediaMetadataChanged(duration_, width_, height_, true);
+
+  if (pending_event_ & SURFACE_CHANGE_EVENT_PENDING) {
+    // We should already requested a seek in this case.
+    pending_event_ &= ~SURFACE_CHANGE_EVENT_PENDING;
+  } else {
+    // Perform a seek so the new decoder can get the I-frame first.
+    pending_event_ |= SEEK_EVENT_PENDING;
+    ProcessPendingEvents();
+    return;
+  }
+
+  if (playing_)
+    StartInternal();
 }
 
 void MediaSourcePlayer::Start() {
+  playing_ = true;
   if (HasAudio() && !audio_decoder_job_) {
     audio_decoder_job_.reset(new AudioDecoderJob(
         base::MessageLoopProxy::current(), audio_codec_, sampling_rate_,
@@ -244,7 +264,6 @@ void MediaSourcePlayer::Start() {
 
   if (HasVideo() && !video_decoder_job_) {
     // StartInternal() will be delayed until SetVideoSurface() gets called.
-    pending_play_ = true;
     return;
   }
 
@@ -252,13 +271,12 @@ void MediaSourcePlayer::Start() {
 }
 
 void MediaSourcePlayer::Pause() {
-  pending_play_ = false;
   playing_ = false;
   start_wallclock_time_ = base::Time();
 }
 
 bool MediaSourcePlayer::IsPlaying() {
-  return pending_play_ || playing_;
+  return playing_;
 }
 
 int MediaSourcePlayer::GetVideoWidth() {
@@ -271,17 +289,8 @@ int MediaSourcePlayer::GetVideoHeight() {
 
 void MediaSourcePlayer::SeekTo(base::TimeDelta timestamp) {
   last_presentation_timestamp_ = timestamp;
-  start_wallclock_time_ = base::Time();
-  last_seek_time_ = base::Time::Now();
-  if (audio_decoder_job_)
-    audio_decoder_job_->Flush();
-  if (video_decoder_job_)
-    video_decoder_job_->Flush();
-  received_audio_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
-  received_video_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
-  audio_access_unit_index_ = 0;
-  video_access_unit_index_ = 0;
-  OnSeekComplete();
+  pending_event_ |= SEEK_EVENT_PENDING;
+  ProcessPendingEvents();
 }
 
 base::TimeDelta MediaSourcePlayer::GetCurrentTime() {
@@ -293,8 +302,12 @@ base::TimeDelta MediaSourcePlayer::GetDuration() {
 }
 
 void MediaSourcePlayer::Release() {
+  ClearDecodingData();
   audio_decoder_job_.reset();
   video_decoder_job_.reset();
+  active_decoding_tasks_ = 0;
+  playing_ = false;
+  pending_event_ = NO_EVENT_PENDING;
   ReleaseMediaResourcesFromManager();
 }
 
@@ -318,9 +331,9 @@ bool MediaSourcePlayer::IsPlayerReady() {
 }
 
 void MediaSourcePlayer::StartInternal() {
-  if (playing_)
+  // Do nothing if the decoders are already running.
+  if (active_decoding_tasks_ > 0 || pending_event_ != NO_EVENT_PENDING)
     return;
-  playing_ = true;
 
   if (HasAudio()) {
     audio_finished_ = false;
@@ -349,41 +362,77 @@ void MediaSourcePlayer::DemuxerReady(
 
 void MediaSourcePlayer::ReadFromDemuxerAck(
     const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) {
+  if (params.type == DemuxerStream::AUDIO)
+    waiting_for_audio_data_ = false;
+  else
+    waiting_for_video_data_ = false;
+
+  // If there is a pending seek request, ignore the data from the chunk demuxer.
+  // The data will be requested later when OnSeekRequestAck() is called.
+  if (pending_event_ & SEEK_EVENT_PENDING)
+    return;
+
   if (params.type == DemuxerStream::AUDIO) {
     DCHECK_EQ(0u, audio_access_unit_index_);
     received_audio_ = params;
-    waiting_for_audio_data_ = false;
-    DecodeMoreAudio();
+    if (!pending_event_)
+      DecodeMoreAudio();
   } else {
     DCHECK_EQ(0u, video_access_unit_index_);
     received_video_ = params;
-    waiting_for_video_data_ = false;
-    DecodeMoreVideo();
+    if (!pending_event_)
+      DecodeMoreVideo();
   }
+}
+
+void MediaSourcePlayer::OnSeekRequestAck() {
+  pending_event_ &= ~SEEK_EVENT_PENDING;
+  OnSeekComplete();
+  if (playing_)
+    StartInternal();
 }
 
 void MediaSourcePlayer::UpdateTimestamps(
-    const base::Time& kickoff_time,
     const base::TimeDelta& presentation_timestamp,
     const base::Time& wallclock_time) {
-  // If the job was posted after last seek, update the presentation time.
-  // Otherwise, ignore it.
-  if (kickoff_time > last_seek_time_) {
-    last_presentation_timestamp_ = presentation_timestamp;
-    OnTimeUpdated();
-    if (start_wallclock_time_.is_null() && playing_) {
-      start_wallclock_time_ = wallclock_time;
-      start_presentation_timestamp_ = last_presentation_timestamp_;
-    }
+  last_presentation_timestamp_ = presentation_timestamp;
+  OnTimeUpdated();
+  if (start_wallclock_time_.is_null() && playing_) {
+    start_wallclock_time_ = wallclock_time;
+    start_presentation_timestamp_ = last_presentation_timestamp_;
   }
 }
 
+void MediaSourcePlayer::ProcessPendingEvents() {
+  // Wait for all the decoding jobs to finish before sending a seek request.
+  if (active_decoding_tasks_ > 0)
+    return;
+
+  DCHECK(pending_event_ != NO_EVENT_PENDING);
+  if (use_empty_surface_ && (pending_event_ & SURFACE_CHANGE_EVENT_PENDING)) {
+    video_decoder_job_.reset();
+    pending_event_ &= ~SURFACE_CHANGE_EVENT_PENDING;
+  }
+
+  ClearDecodingData();
+  manager()->OnMediaSeekRequest(player_id(),
+                                last_presentation_timestamp_,
+                                pending_event_ & SURFACE_CHANGE_EVENT_PENDING);
+}
+
 void MediaSourcePlayer::MediaDecoderCallback(
-    bool is_audio, const base::Time& kickoff_time,
-    const base::TimeDelta& presentation_timestamp,
+    bool is_audio, const base::TimeDelta& presentation_timestamp,
     const base::Time& wallclock_time, bool end_of_stream) {
+  if (active_decoding_tasks_ > 0)
+    active_decoding_tasks_--;
+
+  if (pending_event_ != NO_EVENT_PENDING) {
+    ProcessPendingEvents();
+    return;
+  }
+
   if (is_audio || !HasAudio())
-    UpdateTimestamps(kickoff_time, presentation_timestamp, wallclock_time);
+    UpdateTimestamps(presentation_timestamp, wallclock_time);
 
   if (end_of_stream) {
     PlaybackCompleted(is_audio);
@@ -414,8 +463,9 @@ void MediaSourcePlayer::DecodeMoreAudio() {
       received_audio_.access_units[audio_access_unit_index_],
       start_wallclock_time_, start_presentation_timestamp_,
       base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
-                 weak_this_.GetWeakPtr(), true, base::Time::Now()));
-  ++audio_access_unit_index_;
+                 weak_this_.GetWeakPtr(), true));
+  active_decoding_tasks_++;
+  audio_access_unit_index_++;
 }
 
 void MediaSourcePlayer::DecodeMoreVideo() {
@@ -433,8 +483,9 @@ void MediaSourcePlayer::DecodeMoreVideo() {
       received_video_.access_units[video_access_unit_index_],
       start_wallclock_time_, start_presentation_timestamp_,
       base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
-                 weak_this_.GetWeakPtr(), false, base::Time::Now()));
-  ++video_access_unit_index_;
+                 weak_this_.GetWeakPtr(), false));
+  active_decoding_tasks_++;
+  video_access_unit_index_++;
 }
 
 
@@ -449,6 +500,18 @@ void MediaSourcePlayer::PlaybackCompleted(bool is_audio) {
     start_wallclock_time_ = base::Time();
     OnPlaybackComplete();
   }
+}
+
+void MediaSourcePlayer::ClearDecodingData() {
+  if (audio_decoder_job_)
+    audio_decoder_job_->Flush();
+  if (video_decoder_job_)
+    video_decoder_job_->Flush();
+  start_wallclock_time_ = base::Time();
+  received_audio_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
+  received_video_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
+  audio_access_unit_index_ = 0;
+  video_access_unit_index_ = 0;
 }
 
 bool MediaSourcePlayer::HasVideo() {

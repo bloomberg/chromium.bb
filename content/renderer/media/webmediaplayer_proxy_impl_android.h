@@ -78,6 +78,8 @@ class WebMediaPlayerProxyImplAndroid
   void OnPlayerPause(int player_id);
   void OnReadFromDemuxer(
       int player_id, media::DemuxerStream::Type type, bool seek_done);
+  void OnMediaSeekRequest(int player_id, base::TimeDelta time_to_seek,
+                          bool request_texture_peer);
 
   webkit_media::WebMediaPlayerManagerAndroid* manager_;
 

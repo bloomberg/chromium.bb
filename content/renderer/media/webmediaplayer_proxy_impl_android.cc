@@ -45,6 +45,7 @@ bool WebMediaPlayerProxyImplAndroid::OnMessageReceived(
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPlay, OnPlayerPlay)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPause, OnPlayerPause)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_ReadFromDemuxer, OnReadFromDemuxer)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaSeekRequest, OnMediaSeekRequest)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -216,5 +217,15 @@ webkit_media::WebMediaPlayerAndroid*
   return static_cast<webkit_media::WebMediaPlayerAndroid*>(
       manager_->GetMediaPlayer(player_id));
 }
+
+void WebMediaPlayerProxyImplAndroid::OnMediaSeekRequest(
+    int player_id, base::TimeDelta time_to_seek, bool request_texture_peer) {
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
+  if (player) {
+    Send(new MediaPlayerHostMsg_MediaSeekRequestAck(routing_id(), player_id));
+    player->OnMediaSeekRequest(time_to_seek, request_texture_peer);
+  }
+}
+
 
 }  // namespace content

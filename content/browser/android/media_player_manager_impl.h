@@ -73,6 +73,8 @@ class MediaPlayerManagerImpl
   virtual media::MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE;
   virtual media::MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE;
   virtual void DestroyAllMediaPlayers() OVERRIDE;
+  virtual void OnMediaSeekRequest(int player_id, base::TimeDelta time_to_seek,
+                                  bool request_surface) OVERRIDE;
 
 #if defined(GOOGLE_TV)
   void AttachExternalVideoSurface(int player_id, jobject surface);
@@ -105,6 +107,7 @@ class MediaPlayerManagerImpl
   void OnReadFromDemuxerAck(
       int player_id,
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
+  void OnMediaSeekRequestAck(int player_id);
 
 #if defined(GOOGLE_TV)
   void OnNotifyExternalSurface(

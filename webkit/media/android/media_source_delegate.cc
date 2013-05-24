@@ -229,6 +229,11 @@ void MediaSourceDelegate::Seek(base::TimeDelta time) {
       BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerError));
 }
 
+void MediaSourceDelegate::CancelPendingSeek() {
+  if (chunk_demuxer_)
+    chunk_demuxer_->CancelPendingSeek();
+}
+
 void MediaSourceDelegate::SetTotalBytes(int64 total_bytes) {
   NOTIMPLEMENTED();
 }

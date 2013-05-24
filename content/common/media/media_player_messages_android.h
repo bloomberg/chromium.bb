@@ -121,6 +121,12 @@ IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DidMediaPlayerPlay,
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DidMediaPlayerPause,
                     int /* player_id */)
 
+// Media seek is requested.
+IPC_MESSAGE_ROUTED3(MediaPlayerMsg_MediaSeekRequest,
+                    int /* player_id */,
+                    base::TimeDelta /* time_to_seek */,
+                    bool /* request_texture_peer */)
+
 // The media source player reads data from demuxer
 IPC_MESSAGE_ROUTED3(MediaPlayerMsg_ReadFromDemuxer,
                     int /* player_id */,
@@ -166,6 +172,10 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_EnterFullscreen,
 
 // Request the player to exit fullscreen.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_ExitFullscreen,
+                    int /* player_id */)
+
+// Sent when the seek request is received by the WebMediaPlayerAndroid.
+IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_MediaSeekRequestAck,
                     int /* player_id */)
 
 // Inform the media source player that the demuxer is ready.

@@ -82,6 +82,8 @@ class MediaSourceDelegate : public media::DemuxerHost {
 
   void Seek(base::TimeDelta time);
 
+  void CancelPendingSeek();
+
   // Called when DemuxerStreamPlayer needs to read data from ChunkDemuxer.
   // If it's the first request after the seek, |seek_done| will be true.
   void OnReadFromDemuxer(media::DemuxerStream::Type type, bool seek_done);

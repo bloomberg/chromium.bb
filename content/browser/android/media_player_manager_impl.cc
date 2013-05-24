@@ -66,12 +66,14 @@ bool MediaPlayerManagerImpl::OnMessageReceived(const IPC::Message& msg) {
                         DestroyAllMediaPlayers)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DemuxerReady,
                         OnDemuxerReady)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ReadFromDemuxerAck,
+                        OnReadFromDemuxerAck)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaSeekRequestAck,
+                        OnMediaSeekRequestAck)
 #if defined(GOOGLE_TV)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyExternalSurface,
                             OnNotifyExternalSurface)
 #endif
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ReadFromDemuxerAck,
-                        OnReadFromDemuxerAck)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -261,6 +263,12 @@ void MediaPlayerManagerImpl::OnReadFromDemuxerAck(
     player->ReadFromDemuxerAck(params);
 }
 
+void MediaPlayerManagerImpl::OnMediaSeekRequestAck(int player_id) {
+  MediaPlayerAndroid* player = GetPlayer(player_id);
+  if (player)
+    player->OnSeekRequestAck();
+}
+
 MediaPlayerAndroid* MediaPlayerManagerImpl::GetPlayer(int player_id) {
   for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
       it != players_.end(); ++it) {
@@ -304,9 +312,20 @@ void MediaPlayerManagerImpl::OnBufferingUpdate(
 }
 
 void MediaPlayerManagerImpl::OnSeekComplete(int player_id,
-                                               base::TimeDelta current_time) {
+                                            base::TimeDelta current_time) {
   Send(new MediaPlayerMsg_MediaSeekCompleted(
       routing_id(), player_id, current_time));
+}
+
+void MediaPlayerManagerImpl::OnMediaSeekRequest(
+    int player_id, base::TimeDelta time_to_seek, bool request_surface) {
+  bool request_texture_peer = request_surface;
+  if (request_surface && player_id == fullscreen_player_id_) {
+    video_view_.CreateContentVideoView();
+    request_texture_peer = false;
+  }
+  Send(new MediaPlayerMsg_MediaSeekRequest(
+      routing_id(), player_id, time_to_seek, request_texture_peer));
 }
 
 void MediaPlayerManagerImpl::OnError(int player_id, int error) {
