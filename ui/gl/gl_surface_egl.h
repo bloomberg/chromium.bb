@@ -69,6 +69,9 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual VSyncProvider* GetVSyncProvider() OVERRIDE;
 
+  // Create a NativeViewGLSurfaceEGL with an externally provided VSyncProvider.
+  virtual bool Initialize(VSyncProvider* sync_provider);
+
  protected:
   virtual ~NativeViewGLSurfaceEGL();
   void SetHandle(EGLSurface surface);

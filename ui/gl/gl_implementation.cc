@@ -76,6 +76,10 @@ WGLApi* g_current_wgl_context;
 EGLApi* g_current_egl_context;
 GLXApi* g_current_glx_context;
 
+#elif defined(USE_OZONE)
+
+EGLApi* g_current_egl_context;
+
 #elif defined(OS_ANDROID)
 
 EGLApi* g_current_egl_context;

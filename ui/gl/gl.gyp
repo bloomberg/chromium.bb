@@ -55,6 +55,7 @@
         'gl_context.h',
         'gl_context_android.cc',
         'gl_context_mac.mm',
+        'gl_context_ozone.cc',
         'gl_context_osmesa.cc',
         'gl_context_osmesa.h',
         'gl_context_stub.cc',
@@ -70,6 +71,7 @@
         'gl_image.h',
         'gl_image_android.cc',
         'gl_image_mac.cc',
+        'gl_image_ozone.cc',
         'gl_image_stub.cc',
         'gl_image_stub.h',
         'gl_image_win.cc',
@@ -77,6 +79,7 @@
         'gl_implementation.cc',
         'gl_implementation.h',
         'gl_implementation_android.cc',
+        'gl_implementation_ozone.cc',
         'gl_implementation_mac.cc',
         'gl_implementation_win.cc',
         'gl_implementation_x11.cc',
@@ -90,7 +93,6 @@
         'gl_state_restorer.h',
         'gl_surface.cc',
         'gl_surface.h',
-        'gl_surface_android.cc',
         'gl_surface_mac.cc',
         'gl_surface_stub.cc',
         'gl_surface_stub.h',
@@ -174,7 +176,7 @@
         },
       ],
       'conditions': [
-        ['OS in ("win", "android") or (OS == "linux" and use_x11 == 1)', {
+        ['OS in ("win", "android", "linux")', {
           'sources': [
             'egl_util.cc',
             'egl_util.h',

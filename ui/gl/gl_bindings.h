@@ -206,6 +206,8 @@ typedef uint64 EGLuint64CHROMIUM;
 #elif defined(USE_X11)
 #include "gl_bindings_autogen_egl.h"
 #include "gl_bindings_autogen_glx.h"
+#elif defined(USE_OZONE)
+#include "gl_bindings_autogen_egl.h"
 #elif defined(OS_ANDROID)
 #include "gl_bindings_autogen_egl.h"
 #endif
@@ -255,7 +257,7 @@ struct GL_EXPORT DriverWGL {
 };
 #endif
 
-#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || defined(USE_OZONE)
 struct GL_EXPORT DriverEGL {
   void InitializeBindings();
   void InitializeExtensionBindings(GLContext* context);
@@ -301,6 +303,11 @@ GL_EXPORT extern EGLApi* g_current_egl_context;
 GL_EXPORT extern GLXApi* g_current_glx_context;
 GL_EXPORT extern DriverEGL g_driver_egl;
 GL_EXPORT extern DriverGLX g_driver_glx;
+
+#elif defined(USE_OZONE)
+
+GL_EXPORT extern EGLApi* g_current_egl_context;
+GL_EXPORT extern DriverEGL g_driver_egl;
 
 #elif defined(OS_ANDROID)
 

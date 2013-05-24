@@ -14,11 +14,17 @@
 #include "build/build_config.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_stub.h"
 
 #if defined(USE_X11)
 extern "C" {
 #include <X11/Xlib.h>
 }
+#endif
+
+#if defined (USE_OZONE)
+#include "ui/base/ozone/surface_factory_ozone.h"
 #endif
 
 using ui::GetLastEGLErrorString;
@@ -83,6 +89,10 @@ bool GLSurfaceEGL::InitializeOneOff() {
   if (initialized)
     return true;
 
+#if defined (USE_OZONE)
+  ui::SurfaceFactoryOzone::GetInstance()->InitializeHardware();
+#endif
+
 #if defined(USE_X11)
   g_native_display = base::MessagePumpForUI::GetDefaultXDisplay();
 #else
@@ -146,7 +156,8 @@ bool GLSurfaceEGL::InitializeOneOff() {
 
   initialized = true;
 
-#if defined(USE_X11) || defined(OS_ANDROID)
+#if defined(USE_X11) || defined(OS_ANDROID) \
+    || defined(USE_OZONE)
   return true;
 #else
   g_software_native_display = EGL_SOFTWARE_DISPLAY_ANGLE;
@@ -230,6 +241,10 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
 }
 
 bool NativeViewGLSurfaceEGL::Initialize() {
+  return Initialize(NULL);
+}
+
+bool NativeViewGLSurfaceEGL::Initialize(VSyncProvider* sync_provider) {
   DCHECK(!surface_);
 
   if (window_ == kNullAcceleratedWidget) {
@@ -270,9 +285,10 @@ bool NativeViewGLSurfaceEGL::Initialize() {
                                       &surfaceVal);
   supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
 
-  if (g_egl_sync_control_supported)
+  if (sync_provider)
+    vsync_provider_.reset(sync_provider);
+  else if (g_egl_sync_control_supported)
     vsync_provider_.reset(new EGLSyncControlVSyncProvider(surface_));
-
   return true;
 }
 
@@ -584,5 +600,67 @@ void* PbufferGLSurfaceEGL::GetShareHandle() {
 PbufferGLSurfaceEGL::~PbufferGLSurfaceEGL() {
   Destroy();
 }
+
+#if defined(ANDROID) || defined(USE_OZONE)
+
+// static
+bool GLSurface::InitializeOneOffInternal() {
+  DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
+
+  if (!GLSurfaceEGL::InitializeOneOff()) {
+    LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
+    return false;
+  }
+  return true;
+}
+
+// static
+scoped_refptr<GLSurface>
+GLSurface::CreateViewGLSurface(bool software, gfx::AcceleratedWidget window) {
+  if (software)
+    return NULL;
+
+  DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
+  if (window) {
+    scoped_refptr<NativeViewGLSurfaceEGL> surface;
+    VSyncProvider* sync_provider = NULL;
+#if defined(USE_OZONE)
+    window = ui::SurfaceFactoryOzone::GetInstance()->RealizeAcceleratedWidget(
+        window));
+    sync_provider =
+        ui::SurfaceFactoryOzone::GetInstance()->GetVSyncProvider(window);
+#endif
+    surface = new NativeViewGLSurfaceEGL(false, window);
+    if(surface->Initialize(sync_provider))
+      return surface;
+  } else {
+    scoped_refptr<GLSurface> surface = new GLSurfaceStub();
+    if (surface->Initialize())
+      return surface;
+  }
+  return NULL;
+}
+
+// static
+scoped_refptr<GLSurface>
+GLSurface::CreateOffscreenGLSurface(bool software, const gfx::Size& size) {
+  if (software)
+    return NULL;
+
+  switch (GetGLImplementation()) {
+    case kGLImplementationEGLGLES2: {
+      scoped_refptr<PbufferGLSurfaceEGL> surface(
+          new PbufferGLSurfaceEGL(false, size));
+      if (!surface->Initialize())
+        return NULL;
+      return surface;
+    }
+    default:
+      NOTREACHED();
+      return NULL;
+  }
+}
+
+#endif
 
 }  // namespace gfx

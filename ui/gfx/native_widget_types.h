@@ -250,6 +250,9 @@ static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
 #elif defined(OS_ANDROID)
   typedef uint64 PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = 0;
+#elif defined(USE_OZONE)
+  typedef intptr_t PluginWindowHandle;
+  const PluginWindowHandle kNullPluginWindow = 0;
 #else
   // On OS X we don't have windowed plugins.
   // We use a NULL/0 PluginWindowHandle in shared code to indicate there
@@ -314,6 +317,9 @@ typedef NSView* AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = 0;
 #elif defined(OS_ANDROID)
 typedef ANativeWindow* AcceleratedWidget;
+const AcceleratedWidget kNullAcceleratedWidget = 0;
+#elif defined(USE_OZONE)
+typedef intptr_t AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = 0;
 #else
 #error unknown platform
