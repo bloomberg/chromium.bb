@@ -138,6 +138,24 @@ class DumpHelper : public base::PlatformThread::Delegate {
   DISALLOW_COPY_AND_ASSIGN(DumpHelper);
 };
 
+void SIGABRTHandler(int signal) {
+  // The OSX abort() (link below) masks all signals for the process,
+  // and all except SIGABRT for the thread.  SIGABRT will be masked
+  // when the SIGABRT is sent, which means at this point only SIGKILL
+  // and SIGSTOP can be delivered.  Unmask others so that the code
+  // below crashes as desired.
+  //
+  // http://www.opensource.apple.com/source/Libc/Libc-825.26/stdlib/FreeBSD/abort.c
+  sigset_t mask;
+  sigemptyset(&mask);
+  sigaddset(&mask, signal);
+  pthread_sigmask(SIG_SETMASK, &mask, NULL);
+
+  // Most interesting operations are not safe in a signal handler, just crash.
+  char* volatile death_ptr = NULL;
+  *death_ptr = '!';
+}
+
 }  // namespace
 
 bool IsCrashReporterEnabled() {
@@ -274,6 +292,14 @@ void InitCrashReporter() {
 
   logging::SetLogMessageHandler(&FatalMessageHandler);
   logging::SetDumpWithoutCrashingFunction(&DumpHelper::DumpWithoutCrashing);
+
+  // abort() sends SIGABRT, which breakpad does not intercept.
+  // Register a signal handler to crash in a way breakpad will
+  // intercept.
+  struct sigaction sigact;
+  memset(&sigact, 0, sizeof(sigact));
+  sigact.sa_handler = SIGABRTHandler;
+  CHECK(0 == sigaction(SIGABRT, &sigact, NULL));
 }
 
 void InitCrashProcessInfo() {
