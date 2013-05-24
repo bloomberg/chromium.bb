@@ -65,8 +65,8 @@ public:
     void count(ScriptState*, PassRefPtr<ScriptArguments>);
     void markTimeline(PassRefPtr<ScriptArguments>);
     const ProfilesArray& profiles() const { return m_profiles; }
-    void profile(const String&, ScriptState*);
-    void profileEnd(const String&, ScriptState*);
+    void profile(ScriptState*, const String&);
+    void profileEnd(ScriptState*, const String&);
     void time(const String&);
     void timeEnd(ScriptState*, const String&);
     void timeStamp(PassRefPtr<ScriptArguments>);

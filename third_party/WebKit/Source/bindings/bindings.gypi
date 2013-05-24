@@ -149,7 +149,6 @@
             'v8/custom/V8CanvasRenderingContext2DCustom.cpp',
             'v8/custom/V8CanvasRenderingContextCustom.cpp',
             'v8/custom/V8ClipboardCustom.cpp',
-            'v8/custom/V8ConsoleCustom.cpp',
             'v8/custom/V8CryptoCustom.cpp',
             'v8/custom/V8CustomElementConstructorCustom.cpp',
             'v8/custom/V8CustomEventCustom.cpp',

@@ -161,7 +161,7 @@ void Console::markTimeline(PassRefPtr<ScriptArguments> arguments)
 }
 
 
-void Console::profile(const String& title, ScriptState* state)
+void Console::profile(ScriptState* state, const String& title)
 {
     Page* page = this->page();
     if (!page)
@@ -182,7 +182,7 @@ void Console::profile(const String& title, ScriptState* state)
     InspectorInstrumentation::addStartProfilingMessageToConsole(page, resolvedTitle, lastCaller.lineNumber(), lastCaller.sourceURL());
 }
 
-void Console::profileEnd(const String& title, ScriptState* state)
+void Console::profileEnd(ScriptState* state, const String& title)
 {
     Page* page = this->page();
     if (!page)
