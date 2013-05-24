@@ -11,50 +11,16 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/win/scoped_handle.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
-namespace IPC {
-class ChannelProxy;
-class Listener;
-}  // namespace IPC
-
 namespace remoting {
-
-// Pipe name prefix used by Chrome IPC channels to convert a channel name into
-// a pipe name.
-extern const char kChromePipeNamePrefix[];
 
 // This lock should be taken when creating handles that will be inherited by
 // a child process. Without it the child process can inherit handles created for
 // a different child process started at the same time.
 extern base::LazyInstance<base::Lock>::Leaky g_inherit_handles_lock;
-
-// Creates an already connected IPC channel. The server end of the channel
-// is wrapped into a channel proxy that will invoke methods of |delegate|
-// on the caller's thread while using |io_task_runner| to send and receive
-// messages in the background. The client end is returned as an inheritable NT
-// handle. |pipe_security_descriptor| is applied to the underlying pipe.
-bool CreateConnectedIpcChannel(
-    const std::string& channel_name,
-    const std::string& pipe_security_descriptor,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    IPC::Listener* delegate,
-    base::win::ScopedHandle* client_out,
-    scoped_ptr<IPC::ChannelProxy>* server_out);
-
-// Creates the server end of the IPC channel and applies the security
-// descriptor |pipe_security_descriptor| to it.
-bool CreateIpcChannel(
-    const std::string& channel_name,
-    const std::string& pipe_security_descriptor,
-    base::win::ScopedHandle* pipe_out);
 
 // Creates a copy of the current process token for the given |session_id| so
 // it can be used to launch a process in that session.

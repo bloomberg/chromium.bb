@@ -26,6 +26,7 @@
 #include "ipc/ipc_message.h"
 #include "remoting/base/typed_buffer.h"
 #include "remoting/host/ipc_constants.h"
+#include "remoting/host/ipc_util.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/security_descriptor.h"
 #include "remoting/host/win/window_station_and_desktop.h"
@@ -44,12 +45,6 @@ namespace {
 // supported by the OS, the worker process is started at low integrity level.
 // UnprivilegedProcessDelegate replaces the first printf parameter in
 // the strings below by the logon SID assigned to the worker process.
-
-// Security descriptor used to protect the named pipe in between
-// CreateNamedPipe() and CreateFile() calls before it is passed to the network
-// process. It gives full access to LocalSystem and denies access by anyone
-// else.
-const char kDaemonIpcSd[] = "O:SYG:SYD:(A;;GA;;;SY)";
 
 // Security descriptor of the desktop the worker process attaches to. It gives
 // SYSTEM and the logon SID full access to the desktop.
@@ -235,9 +230,6 @@ void UnprivilegedProcessDelegate::LaunchProcess(
 
   scoped_ptr<IPC::ChannelProxy> server;
 
-  // Generate a unique name for the channel.
-  std::string channel_name = IPC::Channel::GenerateUniqueRandomChannelID();
-
   // Create a restricted token that will be used to run the worker process.
   ScopedHandle token;
   if (!CreateRestrictedToken(&token)) {
@@ -283,8 +275,8 @@ void UnprivilegedProcessDelegate::LaunchProcess(
 
     // Create a connected IPC channel.
     ScopedHandle client;
-    if (!CreateConnectedIpcChannel(channel_name, kDaemonIpcSd, io_task_runner_,
-                                   this, &client, &server)) {
+    if (!CreateConnectedIpcChannel(io_task_runner_, this, client.Receive(),
+                                   &server)) {
       ReportFatalError();
       return;
     }

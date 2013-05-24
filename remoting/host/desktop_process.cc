@@ -122,11 +122,11 @@ bool DesktopProcess::Start(
       AutoThread::Create("Video capture thread", caller_task_runner_);
 
   // Create a desktop agent.
-  desktop_agent_ = DesktopSessionAgent::Create(audio_task_runner,
-                                               caller_task_runner_,
-                                               input_task_runner_,
-                                               io_task_runner,
-                                               video_capture_task_runner);
+  desktop_agent_ = new DesktopSessionAgent(audio_task_runner,
+                                           caller_task_runner_,
+                                           input_task_runner_,
+                                           io_task_runner,
+                                           video_capture_task_runner);
 
   // Start the agent and create an IPC channel to talk to it.
   IPC::PlatformFileForTransit desktop_pipe;

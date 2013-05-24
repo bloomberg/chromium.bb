@@ -16,6 +16,7 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/ipc_util.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
@@ -106,18 +107,27 @@ class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
 DesktopSessionAgent::Delegate::~Delegate() {
 }
 
-DesktopSessionAgent::~DesktopSessionAgent() {
-  DCHECK(!audio_capturer_);
-  DCHECK(!desktop_environment_);
-  DCHECK(!network_channel_);
-  DCHECK(!screen_controls_);
-  DCHECK(!video_capturer_);
-
-  CloseDesktopPipeHandle();
+DesktopSessionAgent::DesktopSessionAgent(
+    scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> input_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner)
+    : audio_capture_task_runner_(audio_capture_task_runner),
+      caller_task_runner_(caller_task_runner),
+      input_task_runner_(input_task_runner),
+      io_task_runner_(io_task_runner),
+      video_capture_task_runner_(video_capture_task_runner),
+      control_factory_(this),
+      desktop_pipe_(IPC::InvalidPlatformFileForTransit()),
+      next_shared_buffer_id_(1),
+      shared_buffers_(0),
+      started_(false) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 
 bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   bool handled = true;
   if (started_) {
@@ -147,7 +157,7 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DesktopSessionAgent::OnChannelConnected(int32 peer_pid) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   VLOG(1) << "IPC: desktop <- network (" << peer_pid << ")";
 
@@ -155,7 +165,7 @@ void DesktopSessionAgent::OnChannelConnected(int32 peer_pid) {
 }
 
 void DesktopSessionAgent::OnChannelError() {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // Make sure the channel is closed.
   network_channel_.reset();
@@ -167,7 +177,7 @@ void DesktopSessionAgent::OnChannelError() {
 }
 
 webrtc::SharedMemory* DesktopSessionAgent::CreateSharedMemory(size_t size) {
-  DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
+  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
 
   scoped_ptr<SharedBuffer> buffer =
       SharedBuffer::Create(this, size, next_shared_buffer_id_);
@@ -197,6 +207,16 @@ webrtc::SharedMemory* DesktopSessionAgent::CreateSharedMemory(size_t size) {
   return buffer.release();
 }
 
+DesktopSessionAgent::~DesktopSessionAgent() {
+  DCHECK(!audio_capturer_);
+  DCHECK(!desktop_environment_);
+  DCHECK(!network_channel_);
+  DCHECK(!screen_controls_);
+  DCHECK(!video_capturer_);
+
+  CloseDesktopPipeHandle();
+}
+
 const std::string& DesktopSessionAgent::client_jid() const {
   return client_jid_;
 }
@@ -206,13 +226,13 @@ void DesktopSessionAgent::DisconnectSession() {
 }
 
 void DesktopSessionAgent::OnLocalMouseMoved(const SkIPoint& new_pos) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   remote_input_filter_->LocalMouseMoved(new_pos);
 }
 
 void DesktopSessionAgent::SetDisableInputs(bool disable_inputs) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // Do not expect this method to be called because it is only used by It2Me.
   NOTREACHED();
@@ -222,7 +242,7 @@ void DesktopSessionAgent::OnStartSessionAgent(
     const std::string& authenticated_jid,
     const ScreenResolution& resolution,
     bool virtual_terminal) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!started_);
   DCHECK(!audio_capturer_);
   DCHECK(!desktop_environment_);
@@ -266,18 +286,18 @@ void DesktopSessionAgent::OnStartSessionAgent(
   // Start the audio capturer.
   if (delegate_->desktop_environment_factory().SupportsAudioCapture()) {
     audio_capturer_ = desktop_environment_->CreateAudioCapturer();
-    audio_capture_task_runner()->PostTask(
+    audio_capture_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DesktopSessionAgent::StartAudioCapturer, this));
   }
 
   // Start the video capturer.
   video_capturer_ = desktop_environment_->CreateVideoCapturer();
-  video_capture_task_runner()->PostTask(
+  video_capture_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DesktopSessionAgent::StartVideoCapturer, this));
 }
 
 void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
-  DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
+  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
 
   last_frame_.reset(frame);
 
@@ -301,7 +321,7 @@ void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
 
 void DesktopSessionAgent::OnCursorShapeChanged(
     scoped_ptr<media::MouseCursorShape> cursor_shape) {
-  DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
+  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
 
   SendToNetwork(new ChromotingDesktopNetworkMsg_CursorShapeChanged(
       *cursor_shape));
@@ -309,7 +329,7 @@ void DesktopSessionAgent::OnCursorShapeChanged(
 
 void DesktopSessionAgent::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   std::string serialized_event;
   if (!event.SerializeToString(&serialized_event)) {
@@ -322,7 +342,7 @@ void DesktopSessionAgent::InjectClipboardEvent(
 }
 
 void DesktopSessionAgent::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
-  DCHECK(audio_capture_task_runner()->BelongsToCurrentThread());
+  DCHECK(audio_capture_task_runner_->BelongsToCurrentThread());
 
   std::string serialized_packet;
   if (!packet->SerializeToString(&serialized_packet)) {
@@ -335,20 +355,22 @@ void DesktopSessionAgent::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
 
 bool DesktopSessionAgent::Start(const base::WeakPtr<Delegate>& delegate,
                                 IPC::PlatformFileForTransit* desktop_pipe_out) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(delegate_.get() == NULL);
 
   delegate_ = delegate;
 
   // Create an IPC channel to communicate with the network process.
-  bool result = CreateChannelForNetworkProcess(&desktop_pipe_,
-                                               &network_channel_);
+  bool result = CreateConnectedIpcChannel(io_task_runner_,
+                                          this,
+                                          &desktop_pipe_,
+                                          &network_channel_);
   *desktop_pipe_out = desktop_pipe_;
   return result;
 }
 
 void DesktopSessionAgent::Stop() {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   delegate_.reset();
 
@@ -373,18 +395,18 @@ void DesktopSessionAgent::Stop() {
     screen_controls_.reset();
 
     // Stop the audio capturer.
-    audio_capture_task_runner()->PostTask(
+    audio_capture_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DesktopSessionAgent::StopAudioCapturer, this));
 
     // Stop the video capturer.
-    video_capture_task_runner()->PostTask(
+    video_capture_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DesktopSessionAgent::StopVideoCapturer, this));
   }
 }
 
 void DesktopSessionAgent::OnCaptureFrame() {
-  if (!video_capture_task_runner()->BelongsToCurrentThread()) {
-    video_capture_task_runner()->PostTask(
+  if (!video_capture_task_runner_->BelongsToCurrentThread()) {
+    video_capture_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&DesktopSessionAgent::OnCaptureFrame, this));
     return;
@@ -400,7 +422,7 @@ void DesktopSessionAgent::OnCaptureFrame() {
 
 void DesktopSessionAgent::OnInjectClipboardEvent(
     const std::string& serialized_event) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   protocol::ClipboardEvent event;
   if (!event.ParseFromString(serialized_event)) {
@@ -415,7 +437,7 @@ void DesktopSessionAgent::OnInjectClipboardEvent(
 
 void DesktopSessionAgent::OnInjectKeyEvent(
     const std::string& serialized_event) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   protocol::KeyEvent event;
   if (!event.ParseFromString(serialized_event)) {
@@ -435,7 +457,7 @@ void DesktopSessionAgent::OnInjectKeyEvent(
 
 void DesktopSessionAgent::OnInjectMouseEvent(
     const std::string& serialized_event) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   protocol::MouseEvent event;
   if (!event.ParseFromString(serialized_event)) {
@@ -450,15 +472,15 @@ void DesktopSessionAgent::OnInjectMouseEvent(
 
 void DesktopSessionAgent::SetScreenResolution(
     const ScreenResolution& resolution) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   if (screen_controls_ && resolution.IsEmpty())
     screen_controls_->SetScreenResolution(resolution);
 }
 
 void DesktopSessionAgent::SendToNetwork(IPC::Message* message) {
-  if (!caller_task_runner()->BelongsToCurrentThread()) {
-    caller_task_runner()->PostTask(
+  if (!caller_task_runner_->BelongsToCurrentThread()) {
+    caller_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&DesktopSessionAgent::SendToNetwork, this, message));
     return;
@@ -472,7 +494,7 @@ void DesktopSessionAgent::SendToNetwork(IPC::Message* message) {
 }
 
 void DesktopSessionAgent::StartAudioCapturer() {
-  DCHECK(audio_capture_task_runner()->BelongsToCurrentThread());
+  DCHECK(audio_capture_task_runner_->BelongsToCurrentThread());
 
   if (audio_capturer_) {
     audio_capturer_->Start(base::Bind(&DesktopSessionAgent::ProcessAudioPacket,
@@ -481,13 +503,13 @@ void DesktopSessionAgent::StartAudioCapturer() {
 }
 
 void DesktopSessionAgent::StopAudioCapturer() {
-  DCHECK(audio_capture_task_runner()->BelongsToCurrentThread());
+  DCHECK(audio_capture_task_runner_->BelongsToCurrentThread());
 
   audio_capturer_.reset();
 }
 
 void DesktopSessionAgent::StartVideoCapturer() {
-  DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
+  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
 
   if (video_capturer_) {
     video_capturer_->SetMouseShapeObserver(this);
@@ -496,7 +518,7 @@ void DesktopSessionAgent::StartVideoCapturer() {
 }
 
 void DesktopSessionAgent::StopVideoCapturer() {
-  DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
+  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
 
   video_capturer_.reset();
   last_frame_.reset();
@@ -505,27 +527,8 @@ void DesktopSessionAgent::StopVideoCapturer() {
   DCHECK_EQ(shared_buffers_, 0);
 }
 
-DesktopSessionAgent::DesktopSessionAgent(
-    scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> input_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner)
-    : audio_capture_task_runner_(audio_capture_task_runner),
-      caller_task_runner_(caller_task_runner),
-      input_task_runner_(input_task_runner),
-      io_task_runner_(io_task_runner),
-      video_capture_task_runner_(video_capture_task_runner),
-      control_factory_(this),
-      desktop_pipe_(IPC::InvalidPlatformFileForTransit()),
-      next_shared_buffer_id_(1),
-      shared_buffers_(0),
-      started_(false) {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
-}
-
 void DesktopSessionAgent::OnSharedBufferDeleted(int id) {
-  DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
+  DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
   DCHECK(id != 0);
 
   shared_buffers_--;

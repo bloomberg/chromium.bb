@@ -62,7 +62,7 @@ class DesktopSessionAgent
     virtual void OnNetworkProcessDisconnected() = 0;
   };
 
-  static scoped_refptr<DesktopSessionAgent> Create(
+  DesktopSessionAgent(
       scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> input_task_runner,
@@ -101,12 +101,6 @@ class DesktopSessionAgent
  protected:
   friend class base::RefCountedThreadSafe<DesktopSessionAgent>;
 
-  DesktopSessionAgent(
-      scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> input_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner);
   virtual ~DesktopSessionAgent();
 
   // ClientSessionControl interface.
@@ -114,12 +108,6 @@ class DesktopSessionAgent
   virtual void DisconnectSession() OVERRIDE;
   virtual void OnLocalMouseMoved(const SkIPoint& position) OVERRIDE;
   virtual void SetDisableInputs(bool disable_inputs) OVERRIDE;
-
-  // Creates a connected IPC channel to be used to access the screen/audio
-  // recorders and input stubs.
-  virtual bool CreateChannelForNetworkProcess(
-      IPC::PlatformFileForTransit* client_out,
-      scoped_ptr<IPC::ChannelProxy>* server_out) = 0;
 
   // Handles StartSessionAgent request from the client.
   void OnStartSessionAgent(const std::string& authenticated_jid,
@@ -155,32 +143,6 @@ class DesktopSessionAgent
 
   // Posted to |video_capture_task_runner_| to stop the video capturer.
   void StopVideoCapturer();
-
-  // Getters providing access to the task runners for platform-specific derived
-  // classes.
-  scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner() const {
-    return audio_capture_task_runner_;
-  }
-
-  scoped_refptr<AutoThreadTaskRunner> caller_task_runner() const {
-    return caller_task_runner_;
-  }
-
-  scoped_refptr<AutoThreadTaskRunner> input_task_runner() const {
-    return input_task_runner_;
-  }
-
-  scoped_refptr<AutoThreadTaskRunner> io_task_runner() const {
-    return io_task_runner_;
-  }
-
-  scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner() const {
-    return video_capture_task_runner_;
-  }
-
-  const base::WeakPtr<Delegate>& delegate() const {
-    return delegate_;
-  }
 
  private:
   class SharedBuffer;
