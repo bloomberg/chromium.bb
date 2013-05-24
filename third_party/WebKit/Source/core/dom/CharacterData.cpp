@@ -77,8 +77,9 @@ unsigned CharacterData::parserAppendData(const String& string, unsigned offset, 
     // Some text break iterator implementations work best if the passed buffer is as small as possible,
     // see <https://bugs.webkit.org/show_bug.cgi?id=29092>.
     // We need at least two characters look-ahead to account for UTF-16 surrogates.
-    if (characterLengthLimit < characterLength) {
-        NonSharedCharacterBreakIterator it(string.characters() + offset, (characterLengthLimit + 2 > characterLength) ? characterLength : characterLengthLimit + 2);
+    ASSERT(!string.is8Bit() || string.containsOnlyLatin1()); // Latin-1 doesn't have unbreakable boundaries.
+    if (characterLengthLimit < characterLength && !string.is8Bit()) {
+        NonSharedCharacterBreakIterator it(string.characters16() + offset, (characterLengthLimit + 2 > characterLength) ? characterLength : characterLengthLimit + 2);
         if (!isTextBreak(it, characterLengthLimit))
             characterLengthLimit = textBreakPreceding(it, characterLengthLimit);
     }
