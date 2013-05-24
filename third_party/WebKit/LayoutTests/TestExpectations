@@ -342,7 +342,8 @@ crbug.com/78376 http/tests/media/video-play-stall-seek.html [ Timeout ]
 crbug.com/73609 http/tests/media/video-play-stall.html [ Failure Slow ]
 
 # We haven't implemented reverse audio/video playback.
-crbug.com/33099 media/video-reverse-play-duration.html [ Timeout ]
+crbug.com/33099 [ Win Linux Mac Release ] media/video-reverse-play-duration.html [ Timeout ]
+crbug.com/33099 [ Win Linux Debug ] media/video-reverse-play-duration.html [ Timeout ]
 crbug.com/33099 media/video-timeupdate-reverse-play.html [ Timeout ]
 
 crbug.com/100798 [ Mac Debug ] fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
@@ -1791,6 +1792,13 @@ crbug.com/243314 [ Mac Debug ] compositing/reflections/remove-add-reflection.htm
 crbug.com/243314 [ Mac Debug ] inspector/styles/styles-source-lines-inline.html [ Crash ]
 crbug.com/243314 [ Mac Debug ] virtual/gpu/compositedscrolling/overflow/content-loses-scrollbars.html [ Crash ]
 crbug.com/243314 [ Mac Debug ] virtual/gpu/fast/canvas/access-zero-sized-canvas.html [ Crash ]
+crbug.com/243314 [ Mac Debug ] css2.1/20110323/background-intrinsic-008.htm [ Crash ]
+crbug.com/243314 [ Mac Debug ] editing/style/font-face-unquote.html [ Crash ]
+crbug.com/243314 [ Mac Debug ] fast/dom/node-move-to-new-document-crash-main.html [ Crash ]
+crbug.com/243314 [ Mac Debug ] fast/forms/text/text-set-selection-crash.html [ Crash ]
+crbug.com/243314 [ Mac Debug ] media/video-reverse-play-duration.html [ Crash Timeout ]
+crbug.com/243314 [ Mac Debug ] svg/custom/js-late-clipPath-and-object-creation.svg [ Crash ]
+crbug.com/243314 [ Mac Debug ] virtual/gpu/compositedscrolling/overflow/build-paint-order-list-where-opt-in-decisions-can-affect-each-other.html [ Crash ]
 crbug.com/242851 editing/pasteboard/drop-file-svg.html [ Crash ]
 crbug.com/242851 editing/pasteboard/file-drag-to-editable.html [ Crash ]
 
