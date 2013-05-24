@@ -317,8 +317,7 @@ class TestPatchSeries(base):
     self.SetPatchApply(patch1)
     self.SetPatchApply(patch3)
 
-    self._SetQuery(series, patch2, query=patch2.gerrit_number,
-        is_parent=False).AndReturn(patch2)
+    self._SetQuery(series, patch2, query=patch2.gerrit_number).AndReturn(patch2)
 
     self.mox.ReplayAll()
     applied = self.assertResults(series, [patch1, patch3], [patch3, patch1])[0]
@@ -361,12 +360,9 @@ class TestPatchSeries(base):
     self.testCrosGerritDeps(cros_internal=False)
 
   @staticmethod
-  def _SetQuery(series, change, is_parent=False, query=None):
+  def _SetQuery(series, change, query=None):
     helper = series._helper_pool.GetHelper(change.remote)
     query = change.id if query is None else query
-    if is_parent:
-      query = "project:%s AND branch:%s AND %s" % (
-          change.project, os.path.basename(change.tracking_branch), query)
     return helper.QuerySingleRecord(query, must_match=True)
 
   def testApplyMissingDep(self):
@@ -380,7 +376,7 @@ class TestPatchSeries(base):
     patch1, patch2 = self.GetPatches(2)
 
     self.SetPatchDeps(patch2, [patch1.id])
-    self._SetQuery(series, patch1, is_parent=True).AndReturn(patch1)
+    self._SetQuery(series, patch1).AndReturn(patch1)
 
     self.mox.ReplayAll()
     self.assertResults(series, [patch2],
@@ -396,14 +392,14 @@ class TestPatchSeries(base):
     patch2 = self.GetPatches(1)
 
     self.SetPatchDeps(patch2, [patch1.id])
-    self._SetQuery(series, patch1, is_parent=True).AndReturn(patch1)
+    self._SetQuery(series, patch1).AndReturn(patch1)
     self.SetPatchApply(patch2)
 
     # Used to ensure that an uncommitted change put in the lookup cache
     # isn't invalidly pulled into the graph...
     patch3, patch4, patch5 = self.GetPatches(3)
 
-    self._SetQuery(series, patch3, is_parent=True).AndReturn(patch3)
+    self._SetQuery(series, patch3).AndReturn(patch3)
     self.SetPatchDeps(patch4, [patch3.id])
     self.SetPatchDeps(patch5, [patch3.id])
 

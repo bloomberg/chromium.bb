@@ -226,15 +226,6 @@ class PatchSeries(object):
     self._lookup_cache = cros_patch.PatchCache()
     self._change_deps_cache = {}
 
-  def GetTrackingBranchForChange(self, change, for_gerrit=False):
-    """Identify the branch to work against for this change.
-
-    Args:
-      gerrit: If True, give the shortened form; no refs/heads, no refs/remotes.
-    """
-    ref = self.manifest.GetProjectsLocalRevision(change.project)
-    return git.StripRefs(ref) if for_gerrit else ref
-
   def GetGitRepoForChange(self, change):
     return self.manifest.GetProjectPath(change.project, True)
 
@@ -281,11 +272,6 @@ class PatchSeries(object):
     """
     helper = self._LookupHelper(query)
     query = query_text = cros_patch.FormatPatchDep(query, force_external=True)
-    if parent_lookup and not query.isdigit():
-      query_text = "project:%s AND branch:%s AND %s" % (
-          change.project,
-          self.GetTrackingBranchForChange(change, True),
-          query_text)
     change = helper.QuerySingleRecord(query_text, must_match=True)
     # If the query was a gerrit number based query, check the projects/change-id
     # to see if we already have it locally, but couldn't map it since we didn't
@@ -342,8 +328,7 @@ class PatchSeries(object):
       dep_change = self._lookup_cache[dep]
       if parent_lookup and dep_change is not None:
         if not (parent.project == dep_change.project and
-                self.GetTrackingBranchForChange(parent, True) ==
-                self.GetTrackingBranchForChange(dep_change, True)):
+                parent.tracking_branch == dep_change.tracking_branch):
           # TODO(build): In this scenario, the cache will get updated
           # with the new CL pulled from gerrit; this is questionable,
           # but there isn't a good answer here.  Rare enough it's being
