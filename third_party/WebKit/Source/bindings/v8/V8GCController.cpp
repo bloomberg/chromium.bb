@@ -41,6 +41,8 @@
 #include "bindings/v8/V8RecursionScope.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/Attr.h"
+#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/platform/MemoryUsageSupport.h"
 #include "core/platform/chromium/TraceEvent.h"
@@ -174,6 +176,20 @@ private:
             if (node->firstChild()) {
                 node = node->firstChild();
                 continue;
+            }
+            if (node->isShadowRoot()) {
+                if (ShadowRoot* youngerShadowRoot = toShadowRoot(node)->youngerShadowRoot()) {
+                    node = youngerShadowRoot;
+                    continue;
+                }
+            }
+            if (node->isElementNode()) {
+                if (ElementShadow* shadow = toElement(node)->shadow()) {
+                    if (ShadowRoot* oldestShadowRoot = shadow->oldestShadowRoot()) {
+                        node = oldestShadowRoot;
+                        continue;
+                    }
+                }
             }
             while (!node->nextSibling()) {
                 if (!node->parentOrShadowHostNode())
