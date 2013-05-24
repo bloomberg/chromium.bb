@@ -760,7 +760,7 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
             }
         }
         if (!dragImage) {
-            dragImage = createDragImageForSelection(src);
+            dragImage = createDragImageForSelection(src->dragImageForSelection(), DragImageAlpha);
             dragLoc = dragLocForSelectionDrag(src);
             m_dragOffset = IntPoint(dragOrigin.x() - dragLoc.x(), dragOrigin.y() - dragLoc.y());
         }
@@ -801,7 +801,9 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
         }
 
         if (!dragImage) {
-            dragImage = createDragImageForLink(linkURL, hitTestResult.textContent(), src);
+            FontRenderingMode renderingMode = src->settings() ? src->settings()->fontRenderingMode() : NormalRenderingMode;
+            float deviceScaleFactor = src->page() ? src->page()->deviceScaleFactor() : 1;
+            dragImage = createDragImageForLink(linkURL, hitTestResult.textContent(), renderingMode, deviceScaleFactor);
             IntSize size = dragImageSize(dragImage);
             m_dragOffset = IntPoint(-size.width() / 2, -LinkDragBorderInset);
             dragLoc = IntPoint(mouseDraggedPoint.x() + m_dragOffset.x(), mouseDraggedPoint.y() + m_dragOffset.y());

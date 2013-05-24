@@ -28,12 +28,10 @@
 
 #include "core/platform/chromium/DragImageRef.h"
 #include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/FontRenderingMode.h"
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/IntSize.h"
 #include <wtf/Forward.h>
-
-//We need to #define YOffset as it needs to be shared with WebKit
-#define DragLabelBorderYOffset 2
 
 namespace WebCore {
     
@@ -53,9 +51,9 @@ namespace WebCore {
     DragImageRef dissolveDragImageToFraction(DragImageRef image, float delta);
     
     DragImageRef createDragImageFromImage(Image*, RespectImageOrientationEnum = DoNotRespectImageOrientation);
-    DragImageRef createDragImageForSelection(Frame*);    
+    DragImageRef createDragImageForSelection(DragImageRef, float dragImageAlpha);
     DragImageRef createDragImageIconForCachedImage(CachedImage*);
-    DragImageRef createDragImageForLink(KURL&, const String& label, Frame*);
+    DragImageRef createDragImageForLink(const KURL&, const String& label, FontRenderingMode, float deviceScaleFactor);
     void deleteDragImage(DragImageRef);
 }
 

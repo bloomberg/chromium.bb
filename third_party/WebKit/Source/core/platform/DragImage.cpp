@@ -26,11 +26,44 @@
 #include "config.h"
 #include "core/platform/DragImage.h"
 
-#include "core/page/DragController.h"
-#include "core/page/Frame.h"
+#include "core/platform/KURL.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/FontDescription.h"
+#include "core/platform/graphics/FontSelector.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/StringTruncator.h"
+#include "core/platform/graphics/TextRun.h"
 
 namespace WebCore {
     
+const float kDragLabelBorderX = 4;
+// Keep border_y in synch with DragController::LinkDragBorderInset.
+const float kDragLabelBorderY = 2;
+const float kDragLabelRadius = 5;
+const float kLabelBorderYOffset = 2;
+
+const float kMinDragLabelWidthBeforeClip = 120;
+const float kMaxDragLabelWidth = 300;
+const float kMaxDragLabelStringWidth = (kMaxDragLabelWidth - 2 * kDragLabelBorderX);
+
+const float kDragLinkLabelFontSize = 11;
+const float kDragLinkUrlFontSize = 10;
+
+static Font dragLabelFont(int size, FontWeight fontWeight, FontRenderingMode renderingMode)
+{
+    FontDescription description;
+    description.setWeight(fontWeight);
+
+    description.setSpecifiedSize(size);
+    description.setComputedSize(size);
+    description.setRenderingMode(renderingMode);
+    Font result(description, 0, 0);
+    result.update(0);
+    return result;
+}
+
 DragImageRef fitDragImageToMaxSize(DragImageRef image, const IntSize& srcSize, const IntSize& size)
 {
     float heightResizeRatio = 0.0f;
@@ -63,18 +96,86 @@ DragImageRef fitDragImageToMaxSize(DragImageRef image, const IntSize& srcSize, c
     return scaleDragImage(image, FloatSize(scalex, scaley));
 }
     
-DragImageRef createDragImageForSelection(Frame* frame)
+DragImageRef createDragImageForSelection(DragImageRef image, float dragImageAlpha)
 {
-    DragImageRef image = frame->dragImageForSelection();
     if (image)
-        image = dissolveDragImageToFraction(image, DragController::DragImageAlpha);
+        image = dissolveDragImageToFraction(image, dragImageAlpha);
     return image;
 }
 
-DragImageRef createDragImageForLink(KURL&, const String&, Frame*)
+DragImageRef createDragImageForLink(const KURL& url, const String& inLabel, FontRenderingMode renderingMode, float deviceScaleFactor)
 {
-    // FIXME: Implement or remove call from DragController.
-    return 0;
+    const Font labelFont = dragLabelFont(kDragLinkLabelFontSize, FontWeightBold, renderingMode);
+    const Font urlFont = dragLabelFont(kDragLinkUrlFontSize, FontWeightNormal, renderingMode);
+    FontCachePurgePreventer fontCachePurgePreventer;
+
+    bool drawURLString = true;
+    bool clipURLString = false;
+    bool clipLabelString = false;
+
+    String urlString = url.string();
+    String label = inLabel;
+    if (label.isEmpty()) {
+        drawURLString = false;
+        label = urlString;
+    }
+
+    // First step is drawing the link drag image width.
+    TextRun labelRun(label.impl());
+    TextRun urlRun(urlString.impl());
+    IntSize labelSize(labelFont.width(labelRun), labelFont.fontMetrics().ascent() + labelFont.fontMetrics().descent());
+
+    if (labelSize.width() > kMaxDragLabelStringWidth) {
+        labelSize.setWidth(kMaxDragLabelStringWidth);
+        clipLabelString = true;
+    }
+
+    IntSize urlStringSize;
+    IntSize imageSize(labelSize.width() + kDragLabelBorderX * 2, labelSize.height() + kDragLabelBorderY * 2);
+
+    if (drawURLString) {
+        urlStringSize.setWidth(urlFont.width(urlRun));
+        urlStringSize.setHeight(urlFont.fontMetrics().ascent() + urlFont.fontMetrics().descent());
+        imageSize.setHeight(imageSize.height() + urlStringSize.height());
+        if (urlStringSize.width() > kMaxDragLabelStringWidth) {
+            imageSize.setWidth(kMaxDragLabelWidth);
+            clipURLString = true;
+        } else
+            imageSize.setWidth(std::max(labelSize.width(), urlStringSize.width()) + kDragLabelBorderX * 2);
+    }
+
+    // We now know how big the image needs to be, so we create and
+    // fill the background
+    IntSize scaledImageSize = imageSize;
+    scaledImageSize.scale(deviceScaleFactor);
+    OwnPtr<ImageBuffer> buffer(ImageBuffer::create(scaledImageSize, deviceScaleFactor, ColorSpaceDeviceRGB));
+    if (!buffer)
+        return 0;
+
+    const float DragLabelRadius = 5;
+    const IntSize radii(DragLabelRadius, DragLabelRadius);
+    IntRect rect(IntPoint(), imageSize);
+    const Color backgroundColor(140, 140, 140);
+    buffer->context()->fillRoundedRect(rect, radii, radii, radii, radii, backgroundColor, ColorSpaceDeviceRGB);
+
+    // Draw the text
+    if (drawURLString) {
+        if (clipURLString)
+            urlString = StringTruncator::centerTruncate(urlString, imageSize.width() - (kDragLabelBorderX * 2.0f), urlFont, StringTruncator::EnableRoundingHacks);
+        IntPoint textPos(kDragLabelBorderX, imageSize.height() - (kLabelBorderYOffset + urlFont.fontMetrics().descent()));
+        TextRun textRun(urlString);
+        buffer->context()->drawText(urlFont, TextRunPaintInfo(textRun), textPos);
+    }
+
+    if (clipLabelString)
+        label = StringTruncator::rightTruncate(label, imageSize.width() - (kDragLabelBorderX * 2.0f), labelFont, StringTruncator::EnableRoundingHacks);
+
+    IntPoint textPos(kDragLabelBorderX, kDragLabelBorderY + labelFont.pixelSize());
+    TextRun textRun(label);
+    buffer->context()->drawText(urlFont, TextRunPaintInfo(textRun), textPos);
+
+    RefPtr<Image> image = buffer->copyImage();
+    return createDragImageFromImage(image.get());
 }
 
 } // namespace WebCore
