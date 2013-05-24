@@ -179,7 +179,7 @@ class JsonResults(object):
         for key in incremental_json.keys():
             # Merge json results except "tests" properties (results, times etc).
             # "tests" properties will be handled separately.
-            if key == TESTS_KEY:
+            if key == TESTS_KEY or key == FAILURE_MAP_KEY:
                 continue
 
             if key in aggregated_json:
@@ -443,7 +443,7 @@ class JsonResults(object):
             return None
 
         aggregated_json[VERSIONS_KEY] = JSON_RESULTS_HIERARCHICAL_VERSION
-        aggregated_json[FAILURE_MAP_KEY] = CHAR_TO_FAILURE
+        aggregated_json[builder][FAILURE_MAP_KEY] = CHAR_TO_FAILURE
         cls._normalize_results(aggregated_json[builder][TESTS_KEY], num_runs)
         return cls._generate_file_data(aggregated_json, sort_keys)
 

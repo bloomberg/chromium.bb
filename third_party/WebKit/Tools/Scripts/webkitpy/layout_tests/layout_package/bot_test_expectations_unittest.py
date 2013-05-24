@@ -62,9 +62,9 @@ class BotTestExpectationsTest(unittest.TestCase):
         # self._assert_is_flaky('PFFFFP', False)
 
     def _results_json_from_test_data(self, test_data):
+        test_data[bot_test_expectations.ResultsJSON.FAILURE_MAP_KEY] = self.FAILURE_MAP
         json_dict = {
             'builder': test_data,
-            bot_test_expectations.ResultsJSON.FAILURE_MAP_KEY: self.FAILURE_MAP,
         }
         return bot_test_expectations.ResultsJSON('builder', json_dict)
 

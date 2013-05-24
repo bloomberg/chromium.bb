@@ -98,7 +98,7 @@ class ResultsJSON(object):
         return self._walk_trie(tests_trie, parent_path='')
 
     def expectation_for_type(self, type_char):
-        return self._json[self.FAILURE_MAP_KEY][type_char]
+        return self._json[self.builder_name][self.FAILURE_MAP_KEY][type_char]
 
     # Knowing how to parse the run-length-encoded values in results.json
     # is a detail of this class.
