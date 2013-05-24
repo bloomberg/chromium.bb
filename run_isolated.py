@@ -1097,10 +1097,12 @@ class Remote(object):
           raise IOError('Encountered an HTTPException.\n%s' % e)
         except zlib.error as e:
           # Log the first bytes to see if it's uncompressed data.
-          logging.warning('%r', e[:512])
-          raise IOError(
-              'Problem unzipping data for item %s. Got %d bytes.\n%s' %
-              (item, size, e))
+          remaining_size = len(connection.read())
+          msg = ('Problem unzipping data for item %s. Processed %d of %d bytes.'
+                 '\n%s' % (item, size, size + remaining_size, e))
+          logging.error(msg)
+          raise IOError(msg)
+
 
       return download_file
 
