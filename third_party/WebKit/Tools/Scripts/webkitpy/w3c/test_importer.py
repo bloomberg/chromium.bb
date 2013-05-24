@@ -264,6 +264,7 @@ class TestImporter(object):
         total_imported_tests = 0
         total_imported_reftests = 0
         total_imported_jstests = 0
+        total_prefixed_properties = {}
 
         for dir_to_copy in self.import_list:
 
@@ -318,12 +319,15 @@ class TestImporter(object):
                 # FIXME: Eventually, so should js when support is added for this type of conversion
                 mimetype = mimetypes.guess_type(orig_filepath)
                 if 'html' in str(mimetype[0]) or 'xml' in str(mimetype[0])  or 'css' in str(mimetype[0]):
-
                     converted_file = converter.convert_for_webkit(new_path, filename=orig_filepath)
 
                     if not converted_file:
                         shutil.copyfile(orig_filepath, new_filepath)  # The file was unmodified.
                     else:
+                        for prefixed_property in converted_file[0]:
+                            total_prefixed_properties.setdefault(prefixed_property, 0)
+                            total_prefixed_properties[prefixed_property] += 1
+
                         prefixed_properties.extend(set(converted_file[0]) - set(prefixed_properties))
                         outfile = open(new_filepath, 'wb')
                         outfile.write(converted_file[1])
@@ -342,6 +346,10 @@ class TestImporter(object):
         print 'Imported ' + str(total_imported_reftests) + ' reftests'
         print 'Imported ' + str(total_imported_jstests) + ' JS tests'
         print 'Imported ' + str(total_imported_tests - total_imported_jstests - total_imported_reftests) + ' pixel/manual tests'
+        print
+        print "Properties needing prefixes (by count):"
+        for prefixed_property in sorted(total_prefixed_properties, key=lambda p: total_prefixed_properties[p]):
+            print "  %s: %s" % (prefixed_property, total_prefixed_properties[prefixed_property])
 
     def setup_destination_directory(self):
         """ Creates a destination directory that mirrors that of the source approved or submitted directory """
