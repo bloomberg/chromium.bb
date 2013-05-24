@@ -1846,6 +1846,7 @@ crbug.com/243599 [ Release ] fast/loader/stateobjects/replacestate-in-onunload.h
 crbug.com/243599 http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/243649 [ Mac ] transitions/cancel-transition.html [ Failure Pass ]
 crbug.com/243655 [ Win7 ] compositing/iframes/scroll-grandchild-iframe.html [ Timeout ]
+crbug.com/243657 [ Mac Debug ] svg/text/font-size-too-large-crash.svg [ Crash Pass ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass ]
