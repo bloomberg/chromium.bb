@@ -88,6 +88,9 @@ WebrtcBrowserTest.GetAudioAndVideoStreamAndStop
 WebrtcBrowserTest.GetVideoStreamAndStop
 WebRTCInternalsBrowserTest.WithRealPeerConnectionCall
 
+# http://crbug.com/175683
+WebrtcBrowserTest.CallWithDataAndLaterAddMedia
+
 # http://crbug.com/224134
 RenderWidgetHostBrowserTest.GetSnapshotFromRendererTest
 
