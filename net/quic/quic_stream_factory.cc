@@ -389,6 +389,9 @@ QuicClientSession* QuicStreamFactory::CreateSession(
                             host_port_proxy_pair.first.host(), QuicConfig(),
                             crypto_config, net_log.net_log());
   session->config()->SetDefaults();
+  session->config()->set_idle_connection_state_lifetime(
+      QuicTime::Delta::FromSeconds(30),
+      QuicTime::Delta::FromSeconds(30));
   all_sessions_.insert(session);  // owning pointer
   return session;
 }
