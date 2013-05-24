@@ -381,36 +381,27 @@ get_animation_type(char *animation)
 static void
 shell_configuration(struct desktop_shell *shell, int config_fd)
 {
-	char *path = NULL;
-	int duration = 60;
-	unsigned int num_workspaces = DEFAULT_NUM_WORKSPACES;
-	char *modifier = NULL;
-	char *win_animation = NULL;
+	struct weston_config_section *section;
+	int duration;
+	char *s;
 
-	struct config_key shell_keys[] = {
-		{ "binding-modifier",   CONFIG_KEY_STRING, &modifier },
-		{ "animation",          CONFIG_KEY_STRING, &win_animation},
-		{ "num-workspaces",
-			CONFIG_KEY_UNSIGNED_INTEGER, &num_workspaces },
-	};
-
-	struct config_key saver_keys[] = {
-		{ "path",       CONFIG_KEY_STRING,  &path },
-		{ "duration",   CONFIG_KEY_INTEGER, &duration },
-	};
-
-	struct config_section cs[] = {
-		{ "shell", shell_keys, ARRAY_LENGTH(shell_keys), NULL },
-		{ "screensaver", saver_keys, ARRAY_LENGTH(saver_keys), NULL },
-	};
-
-	parse_config_file(config_fd, cs, ARRAY_LENGTH(cs), shell);
-
-	shell->screensaver.path = path;
+	section = weston_config_get_section(shell->compositor->config,
+					    "screensaver", NULL, NULL);
+	weston_config_section_get_string(section,
+					 "path", &shell->screensaver.path, NULL);
+	weston_config_section_get_int(section, "duration", &duration, 60);
 	shell->screensaver.duration = duration * 1000;
-	shell->binding_modifier = get_modifier(modifier);
-	shell->win_animation_type = get_animation_type(win_animation);
-	shell->workspaces.num = num_workspaces > 0 ? num_workspaces : 1;
+
+	section = weston_config_get_section(shell->compositor->config,
+					    "shell", NULL, NULL);
+	weston_config_section_get_string(section,
+					 "binding-modifier", &s, "super");
+	shell->binding_modifier = get_modifier(s);
+	weston_config_section_get_string(section, "animation", &s, "none");
+	shell->win_animation_type = get_animation_type(s);
+	weston_config_section_get_uint(section, "num-workspaces",
+				       &shell->workspaces.num,
+				       DEFAULT_NUM_WORKSPACES);
 }
 
 static void
