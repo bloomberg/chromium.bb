@@ -1854,6 +1854,7 @@ crbug.com/243663 [ SnowLeopard Win7 Debug ] compositing/transitions/scale-transi
 crbug.com/243683 [ Linux ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Pass Failure ]
 crbug.com/243353 animations/play-state-suspend.html [ Failure Timeout Pass ]
 crbug.com/243353 animations/play-state.html [ Failure Timeout Pass ]
+crbug.com/243701 [ Mac ] editing/execCommand/apply-style-command-crash.html [ Failure Pass ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass ]
