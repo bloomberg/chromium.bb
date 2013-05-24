@@ -44,6 +44,7 @@ include_rules = [
   "+sync/protocol",  # Sync protobuf files.
   "+third_party/cros_system_api",
   "+win8/util",
+  "+win8/viewer",
   "+xib_localizers", # For generated mac localization helpers
 
   # TODO(stuartmorgan): Remove these by refactoring necessary code out of

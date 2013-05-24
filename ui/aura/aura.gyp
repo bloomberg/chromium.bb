@@ -122,8 +122,8 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            '../metro_viewer/metro_viewer.gyp:metro_viewer',
-            '../../ipc/ipc.gyp:ipc',         
+            '../metro_viewer/metro_viewer.gyp:metro_viewer_messages',
+            '../../ipc/ipc.gyp:ipc',
           ],
         }],
       ],
