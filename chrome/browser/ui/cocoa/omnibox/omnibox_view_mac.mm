@@ -143,8 +143,7 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
       popup_view_(OmniboxPopupViewMac::Create(this, model(), field)),
       field_(field),
       delete_was_pressed_(false),
-      delete_at_end_pressed_(false),
-      line_height_(0) {
+      delete_at_end_pressed_(false) {
   [field_ setObserver:this];
 
   // Needed so that editing doesn't lose the styling.
@@ -154,8 +153,6 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
   scoped_nsobject<NSLayoutManager>
       layoutManager([[NSLayoutManager alloc] init]);
   [layoutManager setUsesScreenFonts:YES];
-  line_height_ = [layoutManager defaultLineHeightForFont:GetFieldFont()];
-  DCHECK_GT(line_height_, 0);
 }
 
 OmniboxViewMac::~OmniboxViewMac() {
@@ -441,8 +438,9 @@ void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
   // otherwise the baseline may shift "downwards".
   scoped_nsobject<NSMutableParagraphStyle>
       paragraph_style([[NSMutableParagraphStyle alloc] init]);
-  [paragraph_style setMaximumLineHeight:line_height_];
-  [paragraph_style setMinimumLineHeight:line_height_];
+  CGFloat line_height = [[field_ cell] lineHeight];
+  [paragraph_style setMaximumLineHeight:line_height];
+  [paragraph_style setMinimumLineHeight:line_height];
   [as addAttribute:NSParagraphStyleAttributeName value:paragraph_style
              range:as_entire_string];
 

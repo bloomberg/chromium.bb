@@ -16,7 +16,11 @@
 
 @implementation StyledTextFieldCell
 
-- (CGFloat)baselineAdjust {
+- (CGFloat)topTextFrameOffset {
+  return 0.0;
+}
+
+- (CGFloat)bottomTextFrameOffset {
   return 0.0;
 }
 
@@ -32,16 +36,24 @@
   return NO;
 }
 
+- (NSRect)textFrameForFrameInternal:(NSRect)cellFrame {
+  CGFloat topOffset = [self topTextFrameOffset];
+  NSRect textFrame = cellFrame;
+  textFrame.origin.y += topOffset;
+  textFrame.size.height -= topOffset + [self bottomTextFrameOffset];
+  return textFrame;
+}
+
 // Returns the same value as textCursorFrameForFrame, but does not call it
 // directly to avoid potential infinite loops.
 - (NSRect)textFrameForFrame:(NSRect)cellFrame {
-  return NSInsetRect(cellFrame, 0, [self baselineAdjust]);
+  return [self textFrameForFrameInternal:cellFrame];
 }
 
 // Returns the same value as textFrameForFrame, but does not call it directly to
 // avoid potential infinite loops.
 - (NSRect)textCursorFrameForFrame:(NSRect)cellFrame {
-  return NSInsetRect(cellFrame, 0, [self baselineAdjust]);
+  return [self textFrameForFrameInternal:cellFrame];
 }
 
 // Override to show the I-beam cursor only in the area given by

@@ -221,7 +221,7 @@ const CGFloat kIconSize = 26.0;
 }
 
 - (NSRect)textFrameForFrame:(NSRect)cellFrame {
-  // Baseclass insets the rect by baselineAdjust.
+  // Baseclass insets the rect by top and bottom offsets.
   NSRect textFrame = [super textFrameForFrame:cellFrame];
   textFrame = [self getTextFrame:textFrame];
   return [self adjustFrameForFrame:textFrame];
@@ -269,7 +269,11 @@ const CGFloat kIconSize = 26.0;
   [view addTrackingArea:area];
 }
 
-- (CGFloat)baselineAdjust {
+- (CGFloat)topTextFrameOffset {
+  return 1.0;
+}
+
+- (CGFloat)bottomTextFrameOffset {
   return 1.0;
 }
 

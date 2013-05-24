@@ -13,8 +13,6 @@
 
 namespace {
 
-const CGFloat kBaselineAdjust = 1.0;
-
 // How far to offset the keyword token into the field.
 const NSInteger kResultsXOffset = 3;
 
@@ -40,8 +38,12 @@ CGFloat WidthForResults(NSAttributedString* resultsString) {
 
 @implementation FindBarTextFieldCell
 
-- (CGFloat)baselineAdjust {
-  return kBaselineAdjust;
+- (CGFloat)topTextFrameOffset {
+  return 1.0;
+}
+
+- (CGFloat)bottomTextFrameOffset {
+  return 1.0;
 }
 
 - (CGFloat)cornerRadius {

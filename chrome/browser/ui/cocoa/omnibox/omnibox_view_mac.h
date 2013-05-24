@@ -178,9 +178,6 @@ class OmniboxViewMac : public OmniboxView,
   // Was the delete key pressed with an empty selection at the end of the edit?
   bool delete_at_end_pressed_;
 
-  // The maximum/standard line height for the displayed text.
-  CGFloat line_height_;
-
   string16 suggest_text_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewMac);

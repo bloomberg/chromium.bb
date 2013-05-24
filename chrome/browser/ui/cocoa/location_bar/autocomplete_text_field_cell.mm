@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
+#include "chrome/browser/search/search.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/button_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
@@ -18,8 +19,6 @@
 using extensions::FeatureSwitch;
 
 namespace {
-
-const CGFloat kBaselineAdjust = 3.0;
 
 // Matches the clipping radius of |GradientButtonCell|.
 const CGFloat kCornerRadius = 3.0;
@@ -216,8 +215,14 @@ size_t CalculatePositionsInFrame(
 
 @implementation AutocompleteTextFieldCell
 
-- (CGFloat)baselineAdjust {
-  return kBaselineAdjust;
+- (CGFloat)topTextFrameOffset {
+  if (chrome::IsInstantExtendedAPIEnabled())
+    return 2.0;
+  return 3.0;
+}
+
+- (CGFloat)bottomTextFrameOffset {
+  return 3.0;
 }
 
 - (CGFloat)cornerRadius {
@@ -231,6 +236,12 @@ size_t CalculatePositionsInFrame(
 
 - (BOOL)shouldDrawBezel {
   return YES;
+}
+
+- (CGFloat)lineHeight {
+  if (chrome::IsInstantExtendedAPIEnabled())
+    return 19;
+  return 16;
 }
 
 - (void)clearDecorations {

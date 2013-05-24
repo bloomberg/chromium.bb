@@ -28,6 +28,9 @@ class LocationBarDecoration;
   BOOL hideFocusState_;
 }
 
+// Line height used for text in this cell.
+- (CGFloat)lineHeight;
+
 // Clear |leftDecorations_| and |rightDecorations_|.
 - (void)clearDecorations;
 
