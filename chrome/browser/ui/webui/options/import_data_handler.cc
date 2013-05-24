@@ -109,16 +109,12 @@ void ImportDataHandler::ImportData(const ListValue* args) {
                                      state);
     import_did_succeed_ = false;
 
-    // TODO(gab): Make Linux use OOP import as well (http://crbug.com/56816) and
-    // get rid of these ugly ifdefs.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-    // The Google Toolbar importer doesn't work for the out-of-process import.
-    // This is the only entry point for this importer (it is never used on first
-    // run). See discussion on http://crbug.com/219419 for details.
-    if (source_profile.importer_type == importer::TYPE_GOOGLE_TOOLBAR5)
-      importer_host_ = new ImporterHost;
-    else
-      importer_host_ = new ExternalProcessImporterHost;
+    // TODO(csilv): Out-of-process import has only been qualified on MacOS X,
+    // so we will only use it on that platform since it is required. Remove this
+    // conditional logic once oop import is qualified for Linux/Windows.
+    // http://crbug.com/22142
+#if defined(OS_MACOSX)
+    importer_host_ = new ExternalProcessImporterHost;
 #else
     importer_host_ = new ImporterHost;
 #endif

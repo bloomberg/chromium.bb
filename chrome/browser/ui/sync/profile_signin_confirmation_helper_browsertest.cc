@@ -22,6 +22,11 @@ class ProfileSigninConfirmationHelperBrowserTest : public InProcessBrowserTest {
     // Force the first-run flow to trigger autoimport.
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kForceFirstRun);
+
+    // The forked import process should run BrowserMain.
+    CommandLine import_arguments((CommandLine::NoProgram()));
+    import_arguments.AppendSwitch(content::kLaunchAsBrowser);
+    first_run::SetExtraArgumentsForImportProcess(import_arguments);
   }
 
  private:
@@ -31,7 +36,7 @@ class ProfileSigninConfirmationHelperBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationHelperBrowserTest,
                        HasNotBeenShutdown) {
 #if !defined(OS_CHROMEOS)
-  EXPECT_TRUE(first_run::auto_import_state() & first_run::AUTO_IMPORT_CALLED);
+  EXPECT_TRUE(first_run::DidPerformProfileImport(NULL));
 #endif
   EXPECT_FALSE(ui::HasBeenShutdown(browser()->profile()));
 }

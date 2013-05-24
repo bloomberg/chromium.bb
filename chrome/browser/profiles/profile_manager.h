@@ -127,6 +127,10 @@ class ProfileManager : public base::NonThreadSafe,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Returns true if the given command line indicates that this is a short-lived
+  // profile import process.
+  static bool IsImportProcess(const CommandLine& command_line);
+
   // Indicate that an import process will run for the next created Profile.
   void SetWillImport();
   bool will_import() { return will_import_; }

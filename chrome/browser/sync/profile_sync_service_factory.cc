@@ -39,6 +39,10 @@ ProfileSyncService* ProfileSyncServiceFactory::GetForProfile(
   if (!ProfileSyncService::IsSyncEnabled())
     return NULL;
 
+  // Do not start sync on the import process.
+  if (ProfileManager::IsImportProcess(*CommandLine::ForCurrentProcess()))
+    return NULL;
+
   return static_cast<ProfileSyncService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }

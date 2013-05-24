@@ -30,7 +30,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/favicon/imported_favicon_usage.h"
-#include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/importer/ie_importer_utils_win.h"
 #include "chrome/browser/importer/ie_importer_test_registry_overrider_win.h"
@@ -485,7 +484,8 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
 
   // Starts to import the above settings.
   // Deletes itself.
-  ImporterHost* host = new ExternalProcessImporterHost;
+  // TODO(gab): Use ExternalProcessImporterHost on Windows.
+  ImporterHost* host = new ImporterHost;
   TestObserver* observer = new TestObserver();
   host->SetObserver(observer);
 
@@ -561,7 +561,8 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest,
 
     // Starts to import the above settings.
     // Deletes itself.
-    ImporterHost* host = new ExternalProcessImporterHost;
+    // TODO(gab): Use ExternalProcessImporterHost on Windows.
+    ImporterHost* host = new ImporterHost;
     MalformedFavoritesRegistryTestObserver* observer =
         new MalformedFavoritesRegistryTestObserver();
     host->SetObserver(observer);

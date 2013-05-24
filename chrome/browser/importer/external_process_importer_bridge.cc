@@ -21,14 +21,12 @@
 #endif
 
 namespace {
-
 // Rather than sending all import items over IPC at once we chunk them into
 // separate requests.  This avoids the case of a large import causing
 // oversized IPC messages.
 const int kNumBookmarksToSend = 100;
 const int kNumHistoryRowsToSend = 100;
 const int kNumFaviconsToSend = 100;
-
 }
 
 ExternalProcessImporterBridge::ExternalProcessImporterBridge(
@@ -48,23 +46,18 @@ void ExternalProcessImporterBridge::AddBookmarks(
   Send(new ProfileImportProcessHostMsg_NotifyBookmarksImportStart(
       first_folder_name, bookmarks.size()));
 
-  // |bookmarks_left| is required for the checks below as Windows has a
-  // Debug bounds-check which prevents pushing an iterator beyond its end()
-  // (i.e., |it + 2 < s.end()| crashes in debug mode if |i + 1 == s.end()|).
-  int bookmarks_left = bookmarks.end() - bookmarks.begin();
-  for (std::vector<ImportedBookmarkEntry>::const_iterator it =
-           bookmarks.begin(); it < bookmarks.end();) {
+  std::vector<ImportedBookmarkEntry>::const_iterator it;
+  for (it = bookmarks.begin(); it < bookmarks.end();
+       it = it + kNumBookmarksToSend) {
     std::vector<ImportedBookmarkEntry> bookmark_group;
     std::vector<ImportedBookmarkEntry>::const_iterator end_group =
-        it + std::min(bookmarks_left, kNumBookmarksToSend);
+        it + kNumBookmarksToSend < bookmarks.end() ?
+        it + kNumBookmarksToSend : bookmarks.end();
     bookmark_group.assign(it, end_group);
 
     Send(new ProfileImportProcessHostMsg_NotifyBookmarksImportGroup(
         bookmark_group));
-    bookmarks_left -= end_group - it;
-    it = end_group;
   }
-  DCHECK_EQ(0, bookmarks_left);
 }
 
 void ExternalProcessImporterBridge::AddHomePage(const GURL& home_page) {
@@ -83,23 +76,17 @@ void ExternalProcessImporterBridge::SetFavicons(
   Send(new ProfileImportProcessHostMsg_NotifyFaviconsImportStart(
     favicons.size()));
 
-  // |favicons_left| is required for the checks below as Windows has a
-  // Debug bounds-check which prevents pushing an iterator beyond its end()
-  // (i.e., |it + 2 < s.end()| crashes in debug mode if |i + 1 == s.end()|).
-  int favicons_left = favicons.end() - favicons.begin();
-  for (std::vector<ImportedFaviconUsage>::const_iterator it =
-           favicons.begin(); it < favicons.end();) {
+  std::vector<ImportedFaviconUsage>::const_iterator it;
+  for (it = favicons.begin(); it < favicons.end();
+       it = it + kNumFaviconsToSend) {
     std::vector<ImportedFaviconUsage> favicons_group;
     std::vector<ImportedFaviconUsage>::const_iterator end_group =
-        it + std::min(favicons_left, kNumFaviconsToSend);
+        std::min(it + kNumFaviconsToSend, favicons.end());
     favicons_group.assign(it, end_group);
 
-    Send(new ProfileImportProcessHostMsg_NotifyFaviconsImportGroup(
-        favicons_group));
-    favicons_left -= end_group - it;
-    it = end_group;
+  Send(new ProfileImportProcessHostMsg_NotifyFaviconsImportGroup(
+      favicons_group));
   }
-  DCHECK_EQ(0, favicons_left);
 }
 
 void ExternalProcessImporterBridge::SetHistoryItems(
@@ -107,22 +94,18 @@ void ExternalProcessImporterBridge::SetHistoryItems(
     history::VisitSource visit_source) {
   Send(new ProfileImportProcessHostMsg_NotifyHistoryImportStart(rows.size()));
 
-  // |rows_left| is required for the checks below as Windows has a
-  // Debug bounds-check which prevents pushing an iterator beyond its end()
-  // (i.e., |it + 2 < s.end()| crashes in debug mode if |i + 1 == s.end()|).
-  int rows_left = rows.end() - rows.begin();
-  for (history::URLRows::const_iterator it = rows.begin(); it < rows.end();) {
+  history::URLRows::const_iterator it;
+  for (it = rows.begin(); it < rows.end();
+       it = it + kNumHistoryRowsToSend) {
     history::URLRows row_group;
     history::URLRows::const_iterator end_group =
-        it + std::min(rows_left, kNumHistoryRowsToSend);
+        it + kNumHistoryRowsToSend < rows.end() ?
+        it + kNumHistoryRowsToSend : rows.end();
     row_group.assign(it, end_group);
 
-    Send(new ProfileImportProcessHostMsg_NotifyHistoryImportGroup(
-        row_group, visit_source));
-    rows_left -= end_group - it;
-    it = end_group;
+    Send(new ProfileImportProcessHostMsg_NotifyHistoryImportGroup(row_group,
+         visit_source));
   }
-  DCHECK_EQ(0, rows_left);
 }
 
 void ExternalProcessImporterBridge::SetKeywords(

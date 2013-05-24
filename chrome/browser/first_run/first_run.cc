@@ -27,7 +27,6 @@
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/importer_type.h"
-#include "chrome/browser/importer/profile_writer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -62,49 +61,14 @@ using content::UserMetricsAction;
 
 namespace {
 
-// A bitfield formed from values in AutoImportState to record the state of
-// AutoImport. This is used in testing to verify import startup actions that
-// occur before an observer can be registered in the test.
-uint16 g_auto_import_state = first_run::AUTO_IMPORT_NONE;
-
 // Flags for functions of similar name.
 bool g_should_show_welcome_page = false;
 bool g_should_do_autofill_personal_data_manager_first_run = false;
 
-// This class acts as an observer for the ImporterProgressObserver::ImportEnded
-// callback. When the import process is started, certain errors may cause
-// ImportEnded() to be called synchronously, but the typical case is that
-// ImportEnded() is called asynchronously. Thus we have to handle both cases.
-class ImportEndedObserver : public importer::ImporterProgressObserver {
- public:
-  ImportEndedObserver() : ended_(false),
-                          should_quit_message_loop_(false) {}
-  virtual ~ImportEndedObserver() {}
-
-  // importer::ImporterProgressObserver:
-  virtual void ImportStarted() OVERRIDE {}
-  virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
-  virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
-  virtual void ImportEnded() OVERRIDE {
-    ended_ = true;
-    if (should_quit_message_loop_)
-      MessageLoop::current()->Quit();
-  }
-
-  void set_should_quit_message_loop() {
-    should_quit_message_loop_ = true;
-  }
-
-  bool ended() const {
-    return ended_;
-  }
-
- private:
-  // Set if the import has ended.
-  bool ended_;
-
-  bool should_quit_message_loop_;
-};
+// Flags indicating whether a first-run profile auto import was performed, and
+// whether the importer process exited successfully.
+bool did_perform_profile_import = false;
+bool profile_import_exited_successfully = false;
 
 // Helper class that performs delayed first-run tasks that need more of the
 // chrome infrastructure to be up and running before they can be attempted.
@@ -227,65 +191,33 @@ void SetImportItem(PrefService* user_prefs,
   user_prefs->ClearPref(pref_path);
 }
 
-// Launches the import, via |importer_host|, from |source_profile| into
-// |target_profile| for the items specified in the |items_to_import| bitfield.
-// This may be done in a separate process depending on the platform, but it will
-// always block until done.
-void ImportFromSourceProfile(ImporterHost* importer_host,
-                             const importer::SourceProfile& source_profile,
-                             Profile* target_profile,
-                             uint16 items_to_import) {
-  ImportEndedObserver observer;
+// Imports bookmarks from an html file. The path to the file is provided in
+// the command line.
+void ImportFromFile(Profile* profile, const CommandLine& cmdline) {
+  base::FilePath file_path =
+      cmdline.GetSwitchValuePath(switches::kImportFromFile);
+  if (file_path.empty()) {
+    NOTREACHED();
+    return;
+  }
+
+  // Deletes itself.
+  ImporterHost* importer_host = new ImporterHost;
+  importer_host->set_headless();
+
+  importer::SourceProfile source_profile;
+  source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
+  source_profile.source_path = file_path;
+
+  first_run::internal::ImportEndedObserver observer;
   importer_host->SetObserver(&observer);
-  importer_host->StartImportSettings(source_profile,
-                                     target_profile,
-                                     items_to_import,
-                                     new ProfileWriter(target_profile));
+  importer_host->StartImportSettings(
+      source_profile, profile, importer::FAVORITES, new ProfileWriter(profile));
   // If the import process has not errored out, block on it.
   if (!observer.ended()) {
     observer.set_should_quit_message_loop();
     MessageLoop::current()->Run();
   }
-}
-
-// Imports bookmarks from an html file whose path is provided by
-// |import_bookmarks_path|.
-void ImportFromFile(Profile* profile,
-                    ImporterHost* file_importer_host,
-                    const std::string& import_bookmarks_path) {
-  importer::SourceProfile source_profile;
-  source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
-
-  const base::FilePath::StringType& import_bookmarks_path_str =
-#if defined(OS_WIN)
-      UTF8ToUTF16(import_bookmarks_path);
-#else
-      import_bookmarks_path;
-#endif
-  source_profile.source_path = base::FilePath(import_bookmarks_path_str);
-
-  ImportFromSourceProfile(file_importer_host, source_profile, profile,
-                          importer::FAVORITES);
-  g_auto_import_state |= first_run::AUTO_IMPORT_BOOKMARKS_FILE_IMPORTED;
-}
-
-// Imports settings from the first profile in |importer_list|.
-void ImportSettings(Profile* profile,
-                    ImporterHost* importer_host,
-                    scoped_refptr<ImporterList> importer_list,
-                    int items_to_import) {
-  const importer::SourceProfile& source_profile =
-      importer_list->GetSourceProfileAt(0);
-
-  // Ensure that importers aren't requested to import items that they do not
-  // support. If there is no overlap, skip.
-  items_to_import &= source_profile.services_supported;
-  if (items_to_import == 0)
-    return;
-
-  ImportFromSourceProfile(importer_host, source_profile, profile,
-                          items_to_import);
-  g_auto_import_state |= first_run::AUTO_IMPORT_PROFILE_IMPORTED;
 }
 
 GURL UrlFromString(const std::string& in) {
@@ -308,6 +240,16 @@ FirstRunState first_run_ = FIRST_RUN_UNKNOWN;
 
 static base::LazyInstance<base::FilePath> master_prefs_path_for_testing
     = LAZY_INSTANCE_INITIALIZER;
+
+// TODO(gab): This will go back inline above when it is moved to first_run.cc
+// (see TODO above), but needs to be separate for now to satisfy clang error:
+// "[chromium-style] virtual methods with non-empty bodies shouldn't be declared
+// inline".
+void ImportEndedObserver::ImportEnded() {
+  ended_ = true;
+  if (should_quit_message_loop_)
+    MessageLoop::current()->Quit();
+}
 
 installer::MasterPreferences*
     LoadMasterPrefs(base::FilePath* master_prefs_path) {
@@ -412,15 +354,11 @@ void SetupMasterPrefsFromInstallPrefs(
     out_prefs->suppress_first_run_default_browser_prompt = true;
   }
 
-  install_prefs.GetString(
-      installer::master_preferences::kDistroImportBookmarksFromFilePref,
-      &out_prefs->import_bookmarks_path);
-
   out_prefs->variations_seed = install_prefs.GetVariationsSeed();
 
   install_prefs.GetString(
-      installer::master_preferences::kDistroSuppressDefaultBrowserPromptPref,
-      &out_prefs->suppress_default_browser_prompt_for_version);
+     installer::master_preferences::kDistroSuppressDefaultBrowserPromptPref,
+     &out_prefs->suppress_default_browser_prompt_for_version);
 }
 
 void SetDefaultBrowser(installer::MasterPreferences* install_prefs){
@@ -451,6 +389,18 @@ bool IsOrganicFirstRun() {
   return google_util::IsOrganicFirstRun(brand);
 }
 #endif
+
+int ImportBookmarkFromFileIfNeeded(Profile* profile,
+                                   const CommandLine& cmdline) {
+  if (cmdline.HasSwitch(switches::kImportFromFile)) {
+    // Silently import preset bookmarks from file.
+    // This is an OEM scenario.
+    ImportFromFile(profile, cmdline);
+  }
+  // ImportBookmarkFromFileIfNeeded() will go away as part of
+  // http://crbug.com/219419, so it is fine to hardcode |true| for now.
+  return true;
+}
 
 }  // namespace internal
 }  // namespace first_run
@@ -546,6 +496,21 @@ bool ShouldDoPersonalDataManagerFirstRun() {
 void LogFirstRunMetric(FirstRunBubbleMetric metric) {
   UMA_HISTOGRAM_ENUMERATION("FirstRun.SearchEngineBubble", metric,
                             NUM_FIRST_RUN_BUBBLE_METRICS);
+}
+
+namespace {
+CommandLine* GetExtraArgumentsInstance() {
+  CR_DEFINE_STATIC_LOCAL(CommandLine, arguments, (CommandLine::NoProgram()));
+  return &arguments;
+}
+}  // namespace
+
+void SetExtraArgumentsForImportProcess(const CommandLine& arguments) {
+  GetExtraArgumentsInstance()->AppendArguments(arguments, false);
+}
+
+const CommandLine& GetExtraArgumentsForImportProcess() {
+  return *GetExtraArgumentsInstance();
 }
 
 // static
@@ -669,6 +634,9 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
 
     internal::SetupMasterPrefsFromInstallPrefs(*install_prefs, out_prefs);
 
+    internal::SetImportPreferencesAndLaunchImport(out_prefs,
+                                                  install_prefs.get());
+
     internal::SetDefaultBrowser(install_prefs.get());
   }
 
@@ -679,15 +647,15 @@ void AutoImport(
     Profile* profile,
     bool homepage_defined,
     int import_items,
-    int dont_import_items,
-    const std::string& import_bookmarks_path) {
+    int dont_import_items) {
 #if !defined(USE_AURA)
   // Deletes itself.
   ImporterHost* importer_host;
   // TODO(csilv,mirandac): Out-of-process import has only been qualified on
-  // MacOS X and Windows, so we will only use it on those platforms.
-  // Linux still uses the in-process import (http://crbug.com/56816).
-#if defined(OS_MACOSX) || defined(OS_WIN)
+  // MacOS X, so we will only use it on that platform since it is required.
+  // Remove this conditional logic once oop import is qualified for
+  // Linux/Windows. http://crbug.com/22142
+#if defined(OS_MACOSX)
   importer_host = new ExternalProcessImporterHost;
 #else
   importer_host = new ImporterHost;
@@ -753,28 +721,15 @@ void AutoImport(
     importer::LogImporterUseToMetrics(
         "AutoImport", importer_list->GetSourceProfileAt(0).importer_type);
 
-    ImportSettings(profile, importer_host, importer_list, items);
-  }
-
-  if (!import_bookmarks_path.empty()) {
-    // Deletes itself.
-    ImporterHost* file_importer_host;
-    // TODO(gab): Make Linux use OOP import as well (http://crbug.com/56816) and
-    // get rid of these ugly ifdefs.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-    file_importer_host = new ExternalProcessImporterHost;
-#else
-    file_importer_host = new ImporterHost;
-#endif
-    file_importer_host->set_headless();
-
-    ImportFromFile(profile, file_importer_host, import_bookmarks_path);
+    profile_import_exited_successfully =
+        internal::ImportSettings(profile, importer_host, importer_list, items);
+    DCHECK(profile_import_exited_successfully);
   }
 
   content::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
 
 #endif  // !defined(USE_AURA)
-  g_auto_import_state |= AUTO_IMPORT_CALLED;
+  did_perform_profile_import = true;
 }
 
 void DoPostImportTasks(Profile* profile, bool make_chrome_default) {
@@ -795,8 +750,10 @@ void DoPostImportTasks(Profile* profile, bool make_chrome_default) {
   internal::DoPostImportPlatformSpecificTasks(profile);
 }
 
-uint16 auto_import_state() {
-  return g_auto_import_state;
+bool DidPerformProfileImport(bool* exited_successfully) {
+  if (exited_successfully)
+    *exited_successfully = profile_import_exited_successfully;
+  return did_perform_profile_import;
 }
 
 }  // namespace first_run

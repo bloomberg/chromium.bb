@@ -207,6 +207,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // If import is going to run in a separate process (the profile itself is on
   // the main process), wait for import to finish before initializing the
   // routers.
+  CHECK(!ProfileManager::IsImportProcess(*command_line));
   if (g_browser_process->profile_manager()->will_import()) {
     extension_service_->InitEventRoutersAfterImport();
   } else {

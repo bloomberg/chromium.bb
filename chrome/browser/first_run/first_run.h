@@ -39,13 +39,6 @@ class PrefRegistrySyncable;
 // install work for this user. After that the sentinel file is created.
 namespace first_run {
 
-enum AutoImportState {
-  AUTO_IMPORT_NONE = 0,
-  AUTO_IMPORT_CALLED = 1 << 0,
-  AUTO_IMPORT_PROFILE_IMPORTED = 1 << 1,
-  AUTO_IMPORT_BOOKMARKS_FILE_IMPORTED = 1 << 2,
-};
-
 enum FirstRunBubbleMetric {
   FIRST_RUN_BUBBLE_SHOWN = 0,       // The search engine bubble was shown.
   FIRST_RUN_BUBBLE_CHANGE_INVOKED,  // The bubble's "Change" was invoked.
@@ -84,7 +77,6 @@ struct MasterPrefs {
   bool suppress_first_run_default_browser_prompt;
   std::vector<GURL> new_tabs;
   std::vector<GURL> bookmarks;
-  std::string import_bookmarks_path;
   std::string variations_seed;
   std::string suppress_default_browser_prompt_for_version;
 };
@@ -138,22 +130,35 @@ bool ShouldDoPersonalDataManagerFirstRun();
 // Log a metric for the "FirstRun.SearchEngineBubble" histogram.
 void LogFirstRunMetric(FirstRunBubbleMetric metric);
 
+// Allow a test to specify additional arguments for the profile import process.
+void SetExtraArgumentsForImportProcess(const CommandLine& arguments);
+
+// Get any extra arguments set with SetExtraArgumentsForImportProcess.
+const CommandLine& GetExtraArgumentsForImportProcess();
+
+// -- Platform-specific functions --
+
 // Automatically import history and home page (and search engine, if
-// ShouldShowSearchEngineDialog is true). Also imports bookmarks from file if
-// |import_bookmarks_path| is not empty.
+// ShouldShowSearchEngineDialog is true).
 void AutoImport(Profile* profile,
                 bool homepage_defined,
                 int import_items,
-                int dont_import_items,
-                const std::string& import_bookmarks_path);
+                int dont_import_items);
 
 // Does remaining first run tasks for |profile| and makes Chrome default browser
 // if |make_chrome_default|. This can pop the first run consent dialog on linux.
 void DoPostImportTasks(Profile* profile, bool make_chrome_default);
 
-// Returns the current state of AutoImport as recorded in a bitfield formed from
-// values in AutoImportState.
-uint16 auto_import_state();
+// Whether a first-run import was triggered before the browser mainloop began.
+// This is used in testing to verify import startup actions that occur before
+// an observer can be registered in the test.
+bool DidPerformProfileImport(bool* exited_successfully);
+
+// Imports bookmarks and/or browser items (depending on platform support)
+// in this process. This function is paired with first_run::ImportSettings().
+// This function might or might not show a visible UI depending on the
+// cmdline parameters.
+int ImportNow(Profile* profile, const CommandLine& cmdline);
 
 // Set a master preferences file path that overrides platform defaults.
 void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs);

@@ -167,7 +167,8 @@ bool Profile::IsNewProfile() {
   // TODO(dconnelly): revisit this when crbug.com/22142 (unifying the profile
   // import code) is fixed.
   return GetOriginalProfile()->GetPrefs()->GetInitializationStatus() ==
-      PrefService::INITIALIZATION_STATUS_CREATED_NEW_PREF_STORE;
+      PrefService::INITIALIZATION_STATUS_CREATED_NEW_PREF_STORE ||
+          first_run::DidPerformProfileImport(NULL);
 }
 
 bool Profile::IsSyncAccessible() {

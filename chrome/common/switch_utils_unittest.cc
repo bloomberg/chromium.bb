@@ -14,6 +14,8 @@ TEST(SwitchUtilsTest, RemoveSwitches) {
     FILE_PATH_LITERAL("program"),
     FILE_PATH_LITERAL("--app=http://www.google.com/"),
     FILE_PATH_LITERAL("--force-first-run"),
+    FILE_PATH_LITERAL("--import"),
+    FILE_PATH_LITERAL("--import-from-file=c:\\test.html"),
     FILE_PATH_LITERAL("--make-default-browser"),
     FILE_PATH_LITERAL("--foo"),
     FILE_PATH_LITERAL("--bar")};
@@ -22,7 +24,7 @@ TEST(SwitchUtilsTest, RemoveSwitches) {
 
   std::map<std::string, CommandLine::StringType> switches =
       cmd_line.GetSwitches();
-  EXPECT_EQ(5U, switches.size());
+  EXPECT_EQ(7U, switches.size());
 
   switches::RemoveSwitchesForAutostart(&switches);
   EXPECT_EQ(2U, switches.size());
@@ -38,6 +40,8 @@ TEST(SwitchUtilsTest, RemoveSwitchesFromString) {
       L"program"
       L" --app=http://www.google.com/"
       L" --force-first-run"
+      L" --import"
+      L" --import-from-file=c:\\test.html"
       L" --make-default-browser"
       L" --foo"
       L" --bar");
@@ -45,7 +49,7 @@ TEST(SwitchUtilsTest, RemoveSwitchesFromString) {
 
   std::map<std::string, CommandLine::StringType> switches =
       cmd_line.GetSwitches();
-  EXPECT_EQ(5U, switches.size());
+  EXPECT_EQ(7U, switches.size());
 
   switches::RemoveSwitchesForAutostart(&switches);
   EXPECT_EQ(2U, switches.size());

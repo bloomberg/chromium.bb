@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -66,97 +64,60 @@ IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShouldShowWelcomePage) {
 
 #if !defined(OS_CHROMEOS)
 namespace {
-
-// A generic test class to be subclassed by test classes testing specific
-// master_preferences. All subclasses must call SetMasterPreferencesForTest()
-// from their SetUp() method before deferring the remainder of Setup() to this
-// class.
-class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
+class FirstRunIntegrationBrowserTest : public InProcessBrowserTest {
  public:
-  FirstRunMasterPrefsBrowserTestBase() {}
+  FirstRunIntegrationBrowserTest() {}
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kForceFirstRun);
+    EXPECT_FALSE(first_run::DidPerformProfileImport(NULL));
+
+    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+
+    // The forked import process should run BrowserMain.
+    CommandLine import_arguments((CommandLine::NoProgram()));
+    import_arguments.AppendSwitch(content::kLaunchAsBrowser);
+    first_run::SetExtraArgumentsForImportProcess(import_arguments);
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FirstRunIntegrationBrowserTest);
+};
+
+class FirstRunMasterPrefsBrowserTest : public FirstRunIntegrationBrowserTest {
+ public:
+  FirstRunMasterPrefsBrowserTest() {}
 
  protected:
   virtual void SetUp() OVERRIDE {
-    // All users of this test class need to call SetMasterPreferencesForTest()
-    // before this class' SetUp() is invoked.
-    ASSERT_TRUE(text_.get());
-
     ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file_));
-    EXPECT_TRUE(file_util::WriteFile(prefs_file_, text_->c_str(),
-                                     text_->size()));
+    // TODO(tapted): Make this reusable.
+    const char text[] =
+        "{\n"
+        "  \"distribution\": {\n"
+        "    \"import_bookmarks\": false,\n"
+        "    \"import_history\": false,\n"
+        "    \"import_home_page\": false,\n"
+        "    \"import_search_engine\": false\n"
+        "  }\n"
+        "}\n";
+    EXPECT_TRUE(file_util::WriteFile(prefs_file_, text, strlen(text)));
     first_run::SetMasterPrefsPathForTesting(prefs_file_);
 
     // This invokes BrowserMain, and does the import, so must be done last.
-    InProcessBrowserTest::SetUp();
+    FirstRunIntegrationBrowserTest::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
     EXPECT_TRUE(file_util::Delete(prefs_file_, false));
-    InProcessBrowserTest::TearDown();
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kForceFirstRun);
-    EXPECT_EQ(first_run::AUTO_IMPORT_NONE, first_run::auto_import_state());
-
-    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-  }
-
-  void SetMasterPreferencesForTest(const char text[]) {
-    text_.reset(new std::string(text));
+    FirstRunIntegrationBrowserTest::TearDown();
   }
 
  private:
   base::FilePath prefs_file_;
-  scoped_ptr<std::string> text_;
 
-  DISALLOW_COPY_AND_ASSIGN(FirstRunMasterPrefsBrowserTestBase);
+  DISALLOW_COPY_AND_ASSIGN(FirstRunMasterPrefsBrowserTest);
 };
-
-template<const char Text[]>
-class FirstRunMasterPrefsBrowserTestT
-    : public FirstRunMasterPrefsBrowserTestBase {
- public:
-  FirstRunMasterPrefsBrowserTestT() {}
-
- protected:
-  virtual void SetUp() OVERRIDE {
-    SetMasterPreferencesForTest(Text);
-    FirstRunMasterPrefsBrowserTestBase::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FirstRunMasterPrefsBrowserTestT);
-};
-
-}  // namespace
-
-// TODO(tapted): Investigate why this fails on Linux bots but does not
-// reproduce locally. See http://crbug.com/178062 .
-// TODO(tapted): Investigate why this fails on mac_asan flakily
-// http://crbug.com/181499 .
-#if defined(OS_LINUX) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
-#define MAYBE_ImportDefault DISABLED_ImportDefault
-#else
-#define MAYBE_ImportDefault ImportDefault
-#endif
-
-extern const char kImportDefault[] =
-    "{\n"
-    "}\n";
-typedef FirstRunMasterPrefsBrowserTestT<kImportDefault>
-    FirstRunMasterPrefsImportDefault;
-IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportDefault, MAYBE_ImportDefault) {
-  int auto_import_state = first_run::auto_import_state();
-  // Aura builds skip over the import process.
-#if defined(USE_AURA)
-  EXPECT_EQ(first_run::AUTO_IMPORT_CALLED, auto_import_state);
-#else
-  EXPECT_EQ(first_run::AUTO_IMPORT_CALLED |
-                first_run::AUTO_IMPORT_PROFILE_IMPORTED,
-            auto_import_state);
-#endif
 }
 
 // TODO(tapted): Investigate why this fails on Linux bots but does not
@@ -164,52 +125,28 @@ IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportDefault, MAYBE_ImportDefault) {
 // TODO(tapted): Investigate why this fails on mac_asan flakily
 // http://crbug.com/181499 .
 #if defined(OS_LINUX) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
-#define MAYBE_ImportBookmarksFile DISABLED_ImportBookmarksFile
+#define MAYBE_WaitForImport DISABLED_WaitForImport
 #else
-#define MAYBE_ImportBookmarksFile ImportBookmarksFile
+#define MAYBE_WaitForImport WaitForImport
 #endif
 
-// The bookmarks file doesn't actually need to exist for this integration test
-// to trigger the interaction being tested.
-extern const char kImportBookmarksFile[] =
-    "{\n"
-    "  \"distribution\": {\n"
-    "     \"import_bookmarks_from_file\": \"/foo/doesntexists.wtv\"\n"
-    "  }\n"
-    "}\n";
-typedef FirstRunMasterPrefsBrowserTestT<kImportBookmarksFile>
-    FirstRunMasterPrefsImportBookmarksFile;
-IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportBookmarksFile,
-                       MAYBE_ImportBookmarksFile) {
-  int auto_import_state = first_run::auto_import_state();
+IN_PROC_BROWSER_TEST_F(FirstRunIntegrationBrowserTest, MAYBE_WaitForImport) {
+  bool success = false;
+  EXPECT_TRUE(first_run::DidPerformProfileImport(&success));
   // Aura builds skip over the import process.
 #if defined(USE_AURA)
-  EXPECT_EQ(first_run::AUTO_IMPORT_CALLED, auto_import_state);
+  EXPECT_FALSE(success);
 #else
-  EXPECT_EQ(first_run::AUTO_IMPORT_CALLED |
-                first_run::AUTO_IMPORT_PROFILE_IMPORTED |
-                first_run::AUTO_IMPORT_BOOKMARKS_FILE_IMPORTED,
-            auto_import_state);
+  EXPECT_TRUE(success);
 #endif
 }
 
 // Test an import with all import options disabled. This is a regression test
 // for http://crbug.com/169984 where this would cause the import process to
 // stay running, and the NTP to be loaded with no apps.
-extern const char kImportNothing[] =
-    "{\n"
-    "  \"distribution\": {\n"
-    "    \"import_bookmarks\": false,\n"
-    "    \"import_history\": false,\n"
-    "    \"import_home_page\": false,\n"
-    "    \"import_search_engine\": false\n"
-    "  }\n"
-    "}\n";
-typedef FirstRunMasterPrefsBrowserTestT<kImportNothing>
-    FirstRunMasterPrefsImportNothing;
-IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportNothing,
+IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsBrowserTest,
                        ImportNothingAndShowNewTabPage) {
-  EXPECT_EQ(first_run::AUTO_IMPORT_CALLED, first_run::auto_import_state());
+  EXPECT_TRUE(first_run::DidPerformProfileImport(NULL));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
