@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A binary wrapper for QuicClient.  Connects to --hostname on
+// A binary wrapper for QuicClient.  Connects to --hostname or --address on
 // --port and requests URLs specified on the command line.
 //
 // For example:
@@ -11,6 +11,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/base/ip_endpoint.h"
 #include "net/tools/quic/quic_client.h"
 
@@ -20,7 +21,22 @@ std::string FLAGS_hostname = "localhost";
 
 int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
-
+  CommandLine* line = CommandLine::ForCurrentProcess();
+  if (line->HasSwitch("port")) {
+    int port;
+    if (base::StringToInt(line->GetSwitchValueASCII("port"), &port)) {
+      FLAGS_port = port;
+    }
+  }
+  if (line->HasSwitch("address")) {
+    FLAGS_address = line->GetSwitchValueASCII("address");
+  }
+  if (line->HasSwitch("hostname")) {
+    FLAGS_hostname = line->GetSwitchValueASCII("hostname");
+  }
+  LOG(INFO) << "server port: " << FLAGS_port
+            << " address: " << FLAGS_address
+            << " hostname: " << FLAGS_hostname;
 
   base::AtExitManager exit_manager;
 
