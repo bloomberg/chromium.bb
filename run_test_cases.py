@@ -771,27 +771,33 @@ def process_output(lines, test_cases):
     elif test_case:
       test_case_data['output'] += line
       i = line.find(OK_PREFIX)
-      if i == -1:
-        i = line.find(FAILED_PREFIX)
-      if i > 0:
-        # Missing a LF at the end of the test case.
-        line = line[i:]
       if i >= 0:
-        # The test completed.
-        match = re.search(r' \((\d+) ms\)', line)
-        if match:
-          test_case_data['duration'] = float(match.group(1)) / 1000.
-        else:
-          # Make sure duration is at least not None since the test case ran.
-          test_case_data['duration'] = 0
-        test_case_data['returncode'] = int(line.startswith(FAILED_PREFIX))
-        if not test_cases:
-          # Its the last test case. Eat all the remaining lines.
-          eat_last_lines = True
-          continue
-        yield test_case_data
-        test_case = None
-        test_case_data = None
+        result = 0
+        line = line[i + len(OK_PREFIX):]
+      else:
+        i = line.find(FAILED_PREFIX)
+        if i >= 0:
+          line = line[i + len(FAILED_PREFIX):]
+          result = 1
+      if i >= 0:
+        # The test completed. It's important to make sure the test case name
+        # match too, since it could be a fake output.
+        if line.startswith(test_case):
+          line = line[len(test_case):]
+          match = re.search(r' \((\d+) ms\)', line)
+          if match:
+            test_case_data['duration'] = float(match.group(1)) / 1000.
+          else:
+            # Make sure duration is at least not None since the test case ran.
+            test_case_data['duration'] = 0
+          test_case_data['returncode'] = result
+          if not test_cases:
+            # Its the last test case. Eat all the remaining lines.
+            eat_last_lines = True
+            continue
+          yield test_case_data
+          test_case = None
+          test_case_data = None
     else:
       accumulation += line
 

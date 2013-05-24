@@ -58,7 +58,7 @@ def process_output(content, test_cases):
       run_test_cases.process_output(content.splitlines(True), test_cases))
 
 
-class RunTestCases(unittest.TestCase):
+class RunTestCasesSlow(unittest.TestCase):
   def test_call_with_timeout(self):
     timedout = 1 if sys.platform == 'win32' else -9
     # Format is:
@@ -405,6 +405,8 @@ class RunTestCases(unittest.TestCase):
     self.assertTrue(count < 1000000, count)
     self.assertTrue(count > 0, count)
 
+
+class RunTestCasesFast(unittest.TestCase):
   def test_convert_to_lines(self):
     data = [
       (
@@ -687,6 +689,26 @@ class RunTestCases(unittest.TestCase):
       },
     ]
     actual = process_output(data, ['Test.1'])
+    self.assertEquals(expected, actual)
+
+  def test_process_output_fake_ok(self):
+    data = (
+      '[ RUN      ] TestFix.TestCase\n'
+      '[1:2/3:WARNING:extension_apitest.cc(169)] Workaround for 177163, '
+        'prematurely stopping test\n'
+      '[       OK ] X (1000ms total)\n'
+      '[0523/230139:ERROR:test_launcher.cc(365)] Test timeout (45000 ms) '
+        'exceeded for ExtensionManagementApiTest.ManagementPolicyProhibited\n')
+    expected = [
+      {
+        'crashed': True,
+        'duration': 0,
+        'output': data,
+        'returncode': 1,
+        'test_case': 'TestFix.TestCase',
+      },
+    ]
+    actual = process_output(data, ['TestFix.TestCase'])
     self.assertEquals(expected, actual)
 
   def test_calc_cluster_default(self):
