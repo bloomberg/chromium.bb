@@ -520,14 +520,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void UpdateExtensionsNow(base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
-#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
-  // Dumps a heap profile.
-  // It also checks whether the heap profiler is running, or not.
-  // Uses the JSON interface for input/output.
-  void HeapProfilerDump(base::DictionaryValue* args,
-                        IPC::Message* reply_message);
-#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
-
   // Overrides the current geoposition.
   // Uses the JSON interface for input/output.
   void OverrideGeoposition(base::DictionaryValue* args,
@@ -662,10 +654,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void DenyCurrentFullscreenOrMouseLockRequest(Browser* browser,
             base::DictionaryValue* args,
             IPC::Message* reply_message);
-
-  // Waits for all views to stop loading or a modal dialog to become active.
-  void WaitForAllViewsToStopLoading(base::DictionaryValue* args,
-                                    IPC::Message* reply_message);
 
   // Gets the browser and tab index of the given tab. Uses the JSON interface.
   // Either "tab_id" or "tab_handle" must be specified, but not both. "tab_id"
@@ -877,20 +865,6 @@ class TestingAutomationProvider : public AutomationProvider,
   //          }
   //   output: { "result": AUTOMATION_MSG_NAVIGATION_SUCCESS  // optional }
   void ReloadJSON(base::DictionaryValue* args, IPC::Message* reply_message);
-
-  // Captures the entire page of the the specified tab, including the
-  // non-visible portions of the page, and saves the PNG to a file.
-  // The pair |windex| and |tab_index| or the single |auto_id| must be given
-  // to specify the tab.
-  // Example:
-  //   input: { "windex": 1,
-  //            "tab_index": 1,
-  //            "auto_id": { "type": 0, "id": "awoein" },
-  //            "path": "/tmp/foo.png"
-  //          }
-  //   output: none
-  void CaptureEntirePageJSON(
-      base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Gets the cookies for the given URL. Uses the JSON interface.
   // "expiry" refers to the amount of seconds since the Unix epoch. If omitted,
@@ -1168,24 +1142,6 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: none
   void SendWebkitKeyEvent(base::DictionaryValue* args,
                           IPC::Message* message);
-
-  // Processes the WebKit mouse event with the specified properties.
-  // The pair |windex| and |tab_index| or the single |auto_id| must be given
-  // to specify the render view.
-  // Example:
-  //   input: { "windex": 1,
-  //            "tab_index": 1,
-  //            "auto_id": { "type": 0, "id": "awoein" },
-  //            "type": automation::kMouseDown,
-  //            "button": automation::kLeftButton,
-  //            "x": 100,
-  //            "y": 200,
-  //            "click_count": 1,
-  //            "modifiers": automation::kShiftKeyMask,
-  //          }
-  //   output: none
-  void ProcessWebMouseEvent(base::DictionaryValue* args,
-                            IPC::Message* message);
 
   // Gets the active JavaScript modal dialog's message.
   // Example:

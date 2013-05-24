@@ -19,7 +19,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/automation/automation_provider_json.h"
-#include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/browser/personal_data_manager_observer.h"
@@ -53,7 +52,6 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
-struct AutomationMouseEvent;
 class AutomationProvider;
 class BalloonCollection;
 class Browser;
@@ -1266,91 +1264,6 @@ class SavePackageNotificationObserver
   DISALLOW_COPY_AND_ASSIGN(SavePackageNotificationObserver);
 };
 
-// This class manages taking a snapshot of a page.
-class PageSnapshotTaker : public TabEventObserver,
-                          public content::NotificationObserver {
- public:
-  PageSnapshotTaker(AutomationProvider* automation,
-                    IPC::Message* reply_message,
-                    content::WebContents* web_contents,
-                    const base::FilePath& path);
-  virtual ~PageSnapshotTaker();
-
-  // Start the process of taking a snapshot of the entire page.
-  void Start();
-
- private:
-  // Overridden from TabEventObserver:
-  virtual void OnSnapshotEntirePageACK(
-      bool success,
-      const std::vector<unsigned char>& png_data,
-      const std::string& error_msg) OVERRIDE;
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // Helper method to send a response back to the client. Deletes this.
-  void SendMessage(bool success, const std::string& error_msg);
-
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-  content::WebContents* web_contents_;
-  base::FilePath image_path_;
-  content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(PageSnapshotTaker);
-};
-
-// Processes automation mouse events and invokes a callback when processing
-// has completed.
-class AutomationMouseEventProcessor : public content::RenderViewHostObserver,
-                                      public content::NotificationObserver {
- public:
-  typedef base::Callback<void(const gfx::Point&)> CompletionCallback;
-  typedef base::Callback<void(const automation::Error&)> ErrorCallback;
-
-  // Creates a new processor which immediately processes the given event.
-  // Either the |completion_callback| or |error_callback| will be called
-  // exactly once. After invoking the callback, this class will delete itself.
-  // The |completion_callback| will be given the point at which the mouse event
-  // occurred.
-  AutomationMouseEventProcessor(content::RenderViewHost* render_view_host,
-                                const AutomationMouseEvent& event,
-                                const CompletionCallback& completion_callback,
-                                const ErrorCallback& error_callback);
-  virtual ~AutomationMouseEventProcessor();
-
- private:
-  // IPC message handlers.
-  virtual void OnWillProcessMouseEventAt(const gfx::Point& point);
-  virtual void OnProcessMouseEventACK(
-      bool success,
-      const std::string& error_msg);
-
-  // Overriden from RenderViewHostObserver.
-  virtual void RenderViewHostDestroyed(content::RenderViewHost* host) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // Helper method to invoke the appropriate callback. Uses the given error
-  // only if the operation failed. Deletes this.
-  void InvokeCallback(const automation::Error& error);
-
-  content::NotificationRegistrar registrar_;
-  CompletionCallback completion_callback_;
-  ErrorCallback error_callback_;
-  bool has_point_;
-  gfx::Point point_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutomationMouseEventProcessor);
-};
-
 class NTPInfoObserver : public content::NotificationObserver {
  public:
   NTPInfoObserver(AutomationProvider* automation, IPC::Message* reply_message);
@@ -1523,45 +1436,6 @@ class InputEventAckNotificationObserver : public content::NotificationObserver {
   int count_;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventAckNotificationObserver);
-};
-
-// Allows the automation provider to wait for all render views to finish any
-// pending loads. This wait is only guaranteed for views that exist at the
-// observer's creation. Will send a message on construction if no views are
-// currently loading.
-class AllViewsStoppedLoadingObserver : public TabEventObserver,
-                                       public content::NotificationObserver {
- public:
-  AllViewsStoppedLoadingObserver(
-      AutomationProvider* automation,
-      IPC::Message* reply_message,
-      ExtensionProcessManager* extension_process_manager);
-  virtual ~AllViewsStoppedLoadingObserver();
-
-  // TabEventObserver implementation.
-  virtual void OnFirstPendingLoad(content::WebContents* web_contents) OVERRIDE;
-  virtual void OnNoMorePendingLoads(
-      content::WebContents* web_contents) OVERRIDE;
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
- private:
-  typedef std::set<content::WebContents*> TabSet;
-
-  // Checks if there are no pending loads. If none, it will send an automation
-  // relpy and delete itself.
-  void CheckIfNoMorePendingLoads();
-
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-  ExtensionProcessManager* extension_process_manager_;
-  content::NotificationRegistrar registrar_;
-  TabSet pending_tabs_;
-
-  DISALLOW_COPY_AND_ASSIGN(AllViewsStoppedLoadingObserver);
 };
 
 // Observer used to listen for new tab creation to complete.

@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_messages.h"
-#include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "googleurl/src/gurl.h"
@@ -367,22 +366,6 @@ bool TabProxy::OverrideEncoding(const std::string& encoding) {
   sender_->Send(new AutomationMsg_OverrideEncoding(handle_, encoding,
                                                    &succeeded));
   return succeeded;
-}
-
-bool TabProxy::CaptureEntirePageAsPNG(const base::FilePath& path) {
-  if (!is_valid())
-    return false;
-
-  int browser_index, tab_index;
-  automation::Error error;
-  if (!SendGetIndicesFromTabHandleJSONRequest(
-         sender_, handle_, &browser_index, &tab_index, &error)) {
-    return false;
-  }
-
-  return SendCaptureEntirePageJSONRequest(
-      sender_, WebViewLocator::ForIndexPair(browser_index, tab_index),
-      path, &error);
 }
 
 #if defined(OS_WIN)

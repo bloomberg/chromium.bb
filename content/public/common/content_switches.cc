@@ -242,11 +242,7 @@ const char kDisableXSSAuditor[]             = "disable-xss-auditor";
 // Specifies if the |DOMAutomationController| needs to be bound in the
 // renderer. This binding happens on per-frame basis and hence can potentially
 // be a performance bottleneck. One should only enable it when automating dom
-// based tests. Also enables sending/receiving renderer automation messages
-// through the |AutomationRenderViewHelper|.
-//
-// TODO(kkania): Rename this to enable-renderer-automation after moving the
-// |DOMAutomationController| to the |AutomationRenderViewHelper|.
+// based tests.
 const char kDomAutomationController[]       = "dom-automation";
 
 // Loosen security. Needed for tests using some of the functionality of

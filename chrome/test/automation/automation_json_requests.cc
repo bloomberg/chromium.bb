@@ -348,7 +348,7 @@ bool SendReloadJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
 
-bool SendCaptureEntirePageJSONRequest(
+bool SendCaptureEntirePageJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     const base::FilePath& path,
@@ -363,7 +363,7 @@ bool SendCaptureEntirePageJSONRequest(
 }
 
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
-bool SendHeapProfilerDumpJSONRequest(
+bool SendHeapProfilerDumpJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     const std::string& reason,
@@ -654,7 +654,7 @@ bool SendNativeKeyEventJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
 
-bool SendWebMouseEventJSONRequest(
+bool SendWebMouseEventJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     const WebMouseEvent& mouse_event,
@@ -762,7 +762,7 @@ bool SendAcceptPromptAppModalDialogJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
 
-bool SendWaitForAllViewsToStopLoadingJSONRequest(
+bool SendWaitForAllViewsToStopLoadingJSONRequestDeprecated(
     AutomationMessageSender* sender,
     Error* error) {
   DictionaryValue dict;

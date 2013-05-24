@@ -108,7 +108,6 @@
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/startup/startup_types.h"
 #include "chrome/common/automation_constants.h"
-#include "chrome/common/automation_events.h"
 #include "chrome/common/automation_id.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
@@ -1605,8 +1604,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::ActivateTabJSON;
   handler_map_["BringBrowserToFront"] =
       &TestingAutomationProvider::BringBrowserToFrontJSON;
-  handler_map_["WaitForAllTabsToStopLoading"] =
-      &TestingAutomationProvider::WaitForAllViewsToStopLoading;
   handler_map_["GetIndicesFromTab"] =
       &TestingAutomationProvider::GetIndicesFromTab;
   handler_map_["NavigateToURL"] =
@@ -1649,8 +1646,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::OpenFindInPage;
   handler_map_["IsFindInPageVisible"] =
       &TestingAutomationProvider::IsFindInPageVisible;
-  handler_map_["CaptureEntirePage"] =
-      &TestingAutomationProvider::CaptureEntirePageJSON;
   handler_map_["SetDownloadShelfVisible"] =
       &TestingAutomationProvider::SetDownloadShelfVisibleJSON;
   handler_map_["IsDownloadShelfVisible"] =
@@ -1717,8 +1712,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::DragAndDropFilePaths;
   handler_map_["SendWebkitKeyEvent"] =
       &TestingAutomationProvider::SendWebkitKeyEvent;
-  handler_map_["ProcessWebMouseEvent"] =
-      &TestingAutomationProvider::ProcessWebMouseEvent;
   handler_map_["ActivateTab"] =
       &TestingAutomationProvider::ActivateTabJSON;
   handler_map_["GetAppModalDialogMessage"] =
@@ -1767,10 +1760,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::TriggerBrowserActionById;
   handler_map_["UpdateExtensionsNow"] =
       &TestingAutomationProvider::UpdateExtensionsNow;
-#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
-  handler_map_["HeapProfilerDump"] =
-      &TestingAutomationProvider::HeapProfilerDump;
-#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
   handler_map_["OverrideGeoposition"] =
       &TestingAutomationProvider::OverrideGeoposition;
   handler_map_["SimulateAsanMemoryBug"] =
@@ -4051,64 +4040,6 @@ void TestingAutomationProvider::UpdateExtensionsNow(
   updater->CheckNow(params);
 }
 
-#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
-// Sample json input: { "command": "HeapProfilerDump",
-//                      "process_type": "renderer",
-//                      "reason": "Perf bot",
-//                      "tab_index": 0,
-//                      "windex": 0 }
-// "auto_id" is acceptable instead of "tab_index" and "windex".
-void TestingAutomationProvider::HeapProfilerDump(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-
-  std::string process_type_string;
-  if (!args->GetString("process_type", &process_type_string)) {
-    reply.SendError("No process type is specified");
-    return;
-  }
-
-  std::string reason_string;
-  if (args->GetString("reason", &reason_string))
-    reason_string += " (via PyAuto testing)";
-  else
-    reason_string = "By PyAuto testing";
-
-  if (process_type_string == "browser") {
-    if (!::IsHeapProfilerRunning()) {
-      reply.SendError("The heap profiler is not running");
-      return;
-    }
-    ::HeapProfilerDump(reason_string.c_str());
-    reply.SendSuccess(NULL);
-    return;
-  } else if (process_type_string == "renderer") {
-    WebContents* web_contents;
-    std::string error;
-
-    if (!GetTabFromJSONArgs(args, &web_contents, &error)) {
-      reply.SendError(error);
-      return;
-    }
-
-    RenderViewHost* render_view = web_contents->GetRenderViewHost();
-    if (!render_view) {
-      reply.SendError("Tab has no associated RenderViewHost");
-      return;
-    }
-
-    AutomationTabHelper* automation_tab_helper =
-        AutomationTabHelper::FromWebContents(web_contents);
-    automation_tab_helper->HeapProfilerDump(reason_string);
-    reply.SendSuccess(NULL);
-    return;
-  }
-
-  reply.SendError("Process type is not supported");
-}
-#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
-
 namespace {
 
 void SendSuccessIfAlive(
@@ -4407,143 +4338,6 @@ void TestingAutomationProvider::SendWebkitKeyEvent(
   }
   new InputEventAckNotificationObserver(this, reply_message, event.type, 1);
   view->ForwardKeyboardEvent(event);
-}
-
-namespace {
-
-bool ReadScriptEvaluationRequestList(
-    base::Value* value,
-    std::vector<ScriptEvaluationRequest>* list,
-    std::string* error_msg) {
-  ListValue* request_list;
-  if (!value->GetAsList(&request_list))
-    return false;
-
-  for (size_t i = 0; i < request_list->GetSize(); ++i) {
-    DictionaryValue* request_dict;
-    if (!request_list->GetDictionary(i, &request_dict)) {
-      *error_msg = "Script evaluation request was not a dictionary";
-      return false;
-    }
-    ScriptEvaluationRequest request;
-    if (!request_dict->GetString("script", &request.script) ||
-        !request_dict->GetString("frame_xpath", &request.frame_xpath)) {
-      *error_msg = "Script evaluation request was invalid";
-      return false;
-    }
-    list->push_back(request);
-  }
-  return true;
-}
-
-void SendPointIfAlive(
-    base::WeakPtr<AutomationProvider> provider,
-    IPC::Message* reply_message,
-    const gfx::Point& point) {
-  if (provider) {
-    DictionaryValue dict;
-    dict.SetInteger("x", point.x());
-    dict.SetInteger("y", point.y());
-    AutomationJSONReply(provider.get(), reply_message).SendSuccess(&dict);
-  }
-}
-
-void SendErrorIfAlive(
-    base::WeakPtr<AutomationProvider> provider,
-    IPC::Message* reply_message,
-    const automation::Error& error) {
-  if (provider) {
-    AutomationJSONReply(provider.get(), reply_message).SendError(error);
-  }
-}
-
-}  // namespace
-
-void TestingAutomationProvider::ProcessWebMouseEvent(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  if (SendErrorIfModalDialogActive(this, reply_message))
-    return;
-
-  RenderViewHost* view;
-  std::string error;
-  if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {
-    AutomationJSONReply(this, reply_message).SendError(error);
-    return;
-  }
-
-  int type;
-  int button;
-  int modifiers;
-  WebKit::WebMouseEvent event;
-  if (!args->GetInteger("type", &type) ||
-      !args->GetInteger("button", &button) ||
-      !args->GetInteger("x", &event.x) ||
-      !args->GetInteger("y", &event.y) ||
-      !args->GetInteger("click_count", &event.clickCount) ||
-      !args->GetInteger("modifiers", &modifiers)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("WebMouseEvent has missing or invalid parameters");
-    return;
-  }
-  if (type == automation::kMouseDown) {
-    event.type = WebKit::WebInputEvent::MouseDown;
-  } else if (type == automation::kMouseUp) {
-    event.type = WebKit::WebInputEvent::MouseUp;
-  } else if (type == automation::kMouseMove) {
-    event.type = WebKit::WebInputEvent::MouseMove;
-  } else if (type == automation::kMouseEnter) {
-    event.type = WebKit::WebInputEvent::MouseEnter;
-  } else if (type == automation::kMouseLeave) {
-    event.type = WebKit::WebInputEvent::MouseLeave;
-  } else if (type == automation::kContextMenu) {
-    event.type = WebKit::WebInputEvent::ContextMenu;
-  } else {
-    AutomationJSONReply(this, reply_message)
-        .SendError("'type' refers to an unrecognized mouse event type");
-    return;
-  }
-  if (button == automation::kLeftButton) {
-    event.button = WebKit::WebMouseEvent::ButtonLeft;
-  } else if (button == automation::kMiddleButton) {
-    event.button = WebKit::WebMouseEvent::ButtonMiddle;
-  } else if (button == automation::kRightButton) {
-    event.button = WebKit::WebMouseEvent::ButtonRight;
-  } else if (button == automation::kNoButton) {
-    event.button = WebKit::WebMouseEvent::ButtonNone;
-  } else {
-    AutomationJSONReply(this, reply_message)
-        .SendError("'button' refers to an unrecognized button");
-    return;
-  }
-  event.modifiers = 0;
-  if (modifiers & automation::kShiftKeyMask)
-    event.modifiers |= WebKit::WebInputEvent::ShiftKey;
-  if (modifiers & automation::kControlKeyMask)
-    event.modifiers |= WebKit::WebInputEvent::ControlKey;
-  if (modifiers & automation::kAltKeyMask)
-    event.modifiers |= WebKit::WebInputEvent::AltKey;
-  if (modifiers & automation::kMetaKeyMask)
-    event.modifiers |= WebKit::WebInputEvent::MetaKey;
-
-  AutomationMouseEvent automation_event;
-  automation_event.mouse_event = event;
-  Value* location_script_chain_value;
-  if (args->Get("location_script_chain", &location_script_chain_value)) {
-    if (!ReadScriptEvaluationRequestList(
-            location_script_chain_value,
-            &automation_event.location_script_chain,
-            &error)) {
-      AutomationJSONReply(this, reply_message).SendError(error);
-      return;
-    }
-  }
-
-  new AutomationMouseEventProcessor(
-      view,
-      automation_event,
-      base::Bind(&SendPointIfAlive, AsWeakPtr(), reply_message),
-      base::Bind(&SendErrorIfAlive, AsWeakPtr(), reply_message));
 }
 
 namespace {
@@ -4864,20 +4658,6 @@ void TestingAutomationProvider::DenyCurrentFullscreenOrMouseLockRequest(
     IPC::Message* reply_message) {
   browser->fullscreen_controller()->OnDenyFullscreenPermission();
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
-}
-
-void TestingAutomationProvider::WaitForAllViewsToStopLoading(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  if (AppModalDialogQueue::GetInstance()->HasActiveDialog()) {
-    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
-    return;
-  }
-
-  // This class will send the message immediately if no tab is loading.
-  new AllViewsStoppedLoadingObserver(
-      this, reply_message,
-          extensions::ExtensionSystem::Get(profile())->process_manager());
 }
 
 void TestingAutomationProvider::WaitForTabToBeRestored(
@@ -5444,40 +5224,6 @@ void TestingAutomationProvider::ReloadJSON(
   new NavigationNotificationObserver(&controller, this, reply_message,
                                      1, false, true);
   controller.Reload(false);
-}
-
-void TestingAutomationProvider::CaptureEntirePageJSON(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  if (SendErrorIfModalDialogActive(this, reply_message))
-    return;
-
-  WebContents* web_contents;
-  std::string error;
-
-  if (!GetTabFromJSONArgs(args, &web_contents, &error)) {
-    AutomationJSONReply(this, reply_message).SendError(error);
-    return;
-  }
-
-  base::FilePath::StringType path_str;
-  if (!args->GetString("path", &path_str)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("'path' missing or invalid");
-    return;
-  }
-
-  RenderViewHost* render_view = web_contents->GetRenderViewHost();
-  if (render_view) {
-    base::FilePath path(path_str);
-    // This will delete itself when finished.
-    PageSnapshotTaker* snapshot_taker = new PageSnapshotTaker(
-        this, reply_message, web_contents, path);
-    snapshot_taker->Start();
-  } else {
-    AutomationJSONReply(this, reply_message)
-        .SendError("Tab has no associated RenderViewHost");
-  }
 }
 
 void TestingAutomationProvider::GetCookiesJSON(

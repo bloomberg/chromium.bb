@@ -202,10 +202,6 @@ class TabProxy : public AutomationResourceProxy {
   // Uses the specified encoding to override encoding of the page in the tab.
   bool OverrideEncoding(const std::string& encoding) WARN_UNUSED_RESULT;
 
-  // Captures the entire page and saves as a PNG at the given path. Returns
-  // true on success.
-  bool CaptureEntirePageAsPNG(const base::FilePath& path) WARN_UNUSED_RESULT;
-
 #if defined(OS_WIN)
   // Resizes the tab window.
   // The parent_window parameter allows a parent to be specified for the window

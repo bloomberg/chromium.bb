@@ -238,19 +238,21 @@ bool SendReloadJSONRequest(
     const WebViewLocator& locator,
     automation::Error* error) WARN_UNUSED_RESULT;
 
+// Deprecated, no longer works with Chrome 29+.
 // Requests a snapshot of the entire page to be saved to the given path
 // in PNG format.
 // Returns true on success.
-bool SendCaptureEntirePageJSONRequest(
+bool SendCaptureEntirePageJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     const base::FilePath& path,
     automation::Error* error) WARN_UNUSED_RESULT;
 
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+// Deprecated, no longer works with Chrome 29+.
 // Requests a heap profile dump.
 // Returns true on success.
-bool SendHeapProfilerDumpJSONRequest(
+bool SendHeapProfilerDumpJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     const std::string& reason,
@@ -395,9 +397,10 @@ bool SendNativeKeyEventJSONRequest(
     int modifiers,
     automation::Error* error) WARN_UNUSED_RESULT;
 
+// Deprecated, no longer works with Chrome 29+.
 // Requests to send the WebKit event for the given |WebMouseEvent| in a
 // specified view. Returns true on success.
-bool SendWebMouseEventJSONRequest(
+bool SendWebMouseEventJSONRequestDeprecated(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
     const WebMouseEvent& mouse_event,
@@ -450,8 +453,9 @@ bool SendAcceptPromptAppModalDialogJSONRequest(
     const std::string& prompt_text,
     automation::Error* error) WARN_UNUSED_RESULT;
 
+// Deprecated, no longer works with Chrome 29+.
 // Requests to wait for all views to stop loading. Returns true on success.
-bool SendWaitForAllViewsToStopLoadingJSONRequest(
+bool SendWaitForAllViewsToStopLoadingJSONRequestDeprecated(
     AutomationMessageSender* sender,
     automation::Error* error) WARN_UNUSED_RESULT;
 

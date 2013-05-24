@@ -3628,13 +3628,15 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return self.ExecuteJavascript(js, tab_index, windex)
 
   def HeapProfilerDump(self, process_type, reason, tab_index=0, windex=0):
-    """Dumps a heap profile.  It works only on Linux and ChromeOS.
+    """Dumps a heap profile. It works only on Linux and ChromeOS.
 
     We need an environment variable "HEAPPROFILE" set to a directory and a
     filename prefix, for example, "/tmp/prof".  In a case of this example,
     heap profiles will be dumped into "/tmp/prof.(pid).0002.heap",
     "/tmp/prof.(pid).0003.heap", and so on.  Nothing happens when this
     function is called without the env.
+
+    Also, this requires the --enable-memory-benchmarking command line flag.
 
     Args:
       process_type: A string which is one of 'browser' or 'renderer'.
@@ -3653,14 +3655,18 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     assert process_type in ('browser', 'renderer')
     if self.IsLinux():  # IsLinux() also implies IsChromeOS().
-      cmd_dict = {
-        'command': 'HeapProfilerDump',
-        'process_type': process_type,
-        'reason': reason,
-        'windex': windex,
-        'tab_index': tab_index,
-      }
-      self._GetResultFromJSONRequest(cmd_dict)
+      js = """
+          if (!chrome.memoryBenchmarking ||
+              !chrome.memoryBenchmarking.isHeapProfilerRunning()) {
+            domAutomationController.send('memory benchmarking disabled');
+          } else {
+            chrome.memoryBenchmarking.heapProfilerDump("%s", "%s");
+            domAutomationController.send('success');
+          }
+      """ % (process_type, reason.replace('"', '\\"'))
+      result = self.ExecuteJavascript(js, tab_index, windex)
+      if result != 'success':
+        raise JSONInterfaceError('Heap profiler dump failed: ' + result)
     else:
       logging.warn('Heap-profiling is not supported in this OS.')
 

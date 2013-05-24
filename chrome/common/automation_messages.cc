@@ -52,36 +52,6 @@ ContextMenuModel::Item::Item()
 
 namespace IPC {
 
-void ParamTraits<AutomationMouseEvent>::Write(Message* m,
-                                              const param_type& p) {
-  WriteParam(m, std::string(reinterpret_cast<const char*>(&p.mouse_event),
-                            sizeof(p.mouse_event)));
-  WriteParam(m, p.location_script_chain);
-}
-
-bool ParamTraits<AutomationMouseEvent>::Read(const Message* m,
-                                             PickleIterator* iter,
-                                             param_type* p) {
-  std::string mouse_event;
-  if (!ReadParam(m, iter, &mouse_event))
-    return false;
-  memcpy(&p->mouse_event, mouse_event.c_str(), mouse_event.length());
-  if (!ReadParam(m, iter, &p->location_script_chain))
-    return false;
-  return true;
-}
-
-void ParamTraits<AutomationMouseEvent>::Log(const param_type& p,
-                                            std::string* l) {
-  l->append("(");
-  LogParam(std::string(reinterpret_cast<const char*>(&p.mouse_event),
-                       sizeof(p.mouse_event)),
-           l);
-  l->append(", ");
-  LogParam(p.location_script_chain, l);
-  l->append(")");
-}
-
 void ParamTraits<ContextMenuModel>::Write(Message* m,
                                           const param_type& p) {
   WriteParam(m, p.items.size());

@@ -99,10 +99,6 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-#if defined(ENABLE_AUTOMATION)
-#include "chrome/renderer/automation/automation_renderer_helper.h"
-#endif
-
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationManager;
@@ -357,12 +353,6 @@ void ChromeContentRendererClient::RenderViewCreated(
 #endif
 
   new NetErrorHelper(render_view);
-
-#if defined(ENABLE_AUTOMATION)
-  // Used only for testing/automation.
-  if (command_line->HasSwitch(switches::kDomAutomationController))
-    new AutomationRendererHelper(render_view);
-#endif
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   new OneClickSigninAgent(render_view);

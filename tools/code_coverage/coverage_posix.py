@@ -317,7 +317,6 @@ gTestInclusions = {
          'nacl_host.*',
          # 'src/chrome/browser/automation'
          'AutomationMiscBrowserTest.*',
-         'AutomationTabHelperBrowserTest.*',
          # 'src/chrome/browser/autofill'
          'FormStructureBrowserTest.*',
          'AutofillPopupViewBrowserTest.*',

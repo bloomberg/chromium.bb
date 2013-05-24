@@ -410,7 +410,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
 
     # Ensure Chrome enables remote debugging on port 9222.  This is required to
     # interact with Chrome's remote inspector.
-    extra_flags = ['--remote-debugging-port=9222']
+    # Also, enable the memory benchmarking V8 extension for heap dumps.
+    extra_flags = ['--remote-debugging-port=9222',
+                   '--enable-memory-benchmarking']
     if deep_memory_profile:
       extra_flags.append('--no-sandbox')
     if self._use_wpr:

@@ -120,7 +120,6 @@ BrowserEncodingTest.*
 ShowModalDialogTest.*
 NaClGdbTest.*
 # DrM-i#1052-c#17
-AutomationTabHelperBrowserTest.*
 PageCyclerBrowserTest.*
 PrerenderBrowserTestWithExtensions.*
 NotificationsPermissionTest.*
@@ -265,7 +264,6 @@ PasswordGenerationManagerTest.*
 PasswordAutofillManagerTest.*
 FormAutocompleteTest.*
 FormAutofillTest.*
-AutomationRendererHelperTest.*
 ContentSettingsTest.*
 BrowserActionsContainerTest.*
 SessionRestoreTest.*

@@ -47,8 +47,6 @@
         ],
       },
       'sources': [
-        'renderer/automation/automation_renderer_helper.cc',
-        'renderer/automation/automation_renderer_helper.h',
         'renderer/benchmarking_extension.cc',
         'renderer/benchmarking_extension.h',
         'renderer/extensions/api_activity_logger.cc',

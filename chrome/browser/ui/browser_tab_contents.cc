@@ -49,10 +49,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
 
-#if defined(ENABLE_AUTOMATION)
-#include "chrome/browser/automation/automation_tab_helper.h"
-#endif
-
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
@@ -162,10 +158,6 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   ThumbnailTabHelper::CreateForWebContents(web_contents);
   TranslateTabHelper::CreateForWebContents(web_contents);
   ZoomController::CreateForWebContents(web_contents);
-
-#if defined(ENABLE_AUTOMATION)
-  AutomationTabHelper::CreateForWebContents(web_contents);
-#endif
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   captive_portal::CaptivePortalTabHelper::CreateForWebContents(web_contents);

@@ -203,8 +203,6 @@
         'browser/automation/automation_resource_message_filter.h',
         'browser/automation/automation_resource_tracker.cc',
         'browser/automation/automation_resource_tracker.h',
-        'browser/automation/automation_tab_helper.cc',
-        'browser/automation/automation_tab_helper.h',
         'browser/automation/automation_tab_tracker.cc',
         'browser/automation/automation_tab_tracker.h',
         'browser/automation/automation_util.cc',

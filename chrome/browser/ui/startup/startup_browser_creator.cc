@@ -61,6 +61,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/navigation_controller.h"
 #include "grit/locale_settings.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"

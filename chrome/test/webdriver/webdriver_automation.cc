@@ -714,7 +714,7 @@ void Automation::SendWebMouseEvent(const WebViewId& view_id,
     return;
 
   automation::Error auto_error;
-  if (!SendWebMouseEventJSONRequest(
+  if (!SendWebMouseEventJSONRequestDeprecated(
           automation(), view_locator, event, &auto_error)) {
     *error = Error::FromAutomationError(auto_error);
   }
@@ -729,7 +729,7 @@ void Automation::CaptureEntirePageAsPNG(const WebViewId& view_id,
     return;
 
   automation::Error auto_error;
-  if (!SendCaptureEntirePageJSONRequest(
+  if (!SendCaptureEntirePageJSONRequestDeprecated(
           automation(), view_locator, path, &auto_error)) {
     *error = Error::FromAutomationError(auto_error);
   }
@@ -745,7 +745,7 @@ void Automation::HeapProfilerDump(const WebViewId& view_id,
     return;
 
   automation::Error auto_error;
-  if (!SendHeapProfilerDumpJSONRequest(
+  if (!SendHeapProfilerDumpJSONRequestDeprecated(
           automation(), view_locator, reason, &auto_error)) {
     *error = Error::FromAutomationError(auto_error);
   }
@@ -976,7 +976,8 @@ void Automation::GetChromeDriverAutomationVersion(int* version, Error** error) {
 
 void Automation::WaitForAllViewsToStopLoading(Error** error) {
   automation::Error auto_error;
-  if (!SendWaitForAllViewsToStopLoadingJSONRequest(automation(), &auto_error))
+  if (!SendWaitForAllViewsToStopLoadingJSONRequestDeprecated(
+          automation(), &auto_error))
     *error = Error::FromAutomationError(auto_error);
 }
 
