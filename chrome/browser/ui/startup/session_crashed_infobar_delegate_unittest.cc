@@ -60,9 +60,9 @@ TEST_F(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   EXPECT_EQ(1U, infobar_service->infobar_count());
-  SessionCrashedInfoBarDelegate* info_bar =
+  scoped_ptr<SessionCrashedInfoBarDelegate> info_bar(
       reinterpret_cast<SessionCrashedInfoBarDelegate*>(
-          InfoBarService::FromWebContents(web_contents)->infobar_at(0));
+          InfoBarService::FromWebContents(web_contents)->infobar_at(0)));
 
   // Open another browser.
   scoped_ptr<Browser> opened_browser(

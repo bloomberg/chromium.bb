@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_STARTUP_SESSION_CRASHED_PROMPT_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -24,6 +25,9 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
  private:
   FRIEND_TEST_ALL_PREFIXES(SessionCrashedInfoBarDelegateUnitTest,
                            DetachingTabWithCrashedInfoBar);
+#if defined(UNIT_TEST)
+  friend struct base::DefaultDeleter<SessionCrashedInfoBarDelegate>;
+#endif
 
   SessionCrashedInfoBarDelegate(InfoBarService* infobar_service,
                                 Browser* browser);
