@@ -1101,6 +1101,17 @@ class Remote(object):
           msg = ('Problem unzipping data for item %s. Processed %d of %d bytes.'
                  '\n%s' % (item, size, size + remaining_size, e))
           logging.error(msg)
+
+          # Testing seems to show that if a few machines are trying to download
+          # the same blob, they can cause each other to fail. So if we hit a
+          # zip error, this is the most likely cause (it only downloads some of
+          # the data). Randomly sleep for between 5 and 25 seconds to try and
+          # spread out the downloads.
+          # TODO(csharp): Switch from blobstorage to cloud storage and see if
+          # that solves the issue.
+          sleep_duration = (random.random() * 20) + 5
+          time.sleep(sleep_duration)
+
           raise IOError(msg)
 
 
