@@ -73,6 +73,12 @@ class DriveMetadataStore
   SyncStatusCode ReadEntry(const fileapi::FileSystemURL& url,
                            DriveMetadata* metadata) const;
 
+  // Marks |origin| as incremental sync and associates it with the directory
+  // identified by |resource_id|.
+  // |origin| must not already be an incremental sync origin.
+  void AddIncrementalSyncOrigin(const GURL& origin,
+                                const std::string& resource_id);
+
   // Returns true if |origin| is a batch sync origin, a incremental sync origin
   // or a disabled origin.
   bool IsKnownOrigin(const GURL& origin) const;
@@ -88,15 +94,6 @@ class DriveMetadataStore
 
   // Returns true if |origin| is a disabled origin.
   bool IsOriginDisabled(const GURL& origin) const;
-
-  // Marks |origin| as a batch sync origin and associates it with the directory
-  // identified by |resource_id|.
-  // |origin| must not be a batch sync origin nor an incremental sync origin.
-  void AddBatchSyncOrigin(const GURL& origin, const std::string& resource_id);
-
-  // Marks |origin| as an incremental sync origin.
-  // |origin| must be a batch sync origin.
-  void MoveBatchSyncOriginToIncremental(const GURL& origin);
 
   void EnableOrigin(const GURL& origin,
                     const SyncStatusCallback& callback);
@@ -157,6 +154,15 @@ class DriveMetadataStore
 
  private:
   friend class DriveMetadataStoreTest;
+
+  // Marks |origin| as a batch sync origin and associates it with the directory
+  // identified by |resource_id|.
+  // |origin| must not be a batch sync origin nor an incremental sync origin.
+  void AddBatchSyncOrigin(const GURL& origin, const std::string& resource_id);
+
+  // Marks |origin| as an incremental sync origin.
+  // |origin| must be a batch sync origin.
+  void MoveBatchSyncOriginToIncremental(const GURL& origin);
 
   void UpdateDBStatus(SyncStatusCode status);
   void UpdateDBStatusAndInvokeCallback(const SyncStatusCallback& callback,

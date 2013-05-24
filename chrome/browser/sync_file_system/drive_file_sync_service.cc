@@ -381,20 +381,24 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     return;
   }
 
+  // TODO(calvinlo): Move the code to delete legacy batch_sync_origin keys from
+  // DB into DriveMetadataStore.InitializeDBOnFileThread.
+  std::vector<GURL> batch_origins_to_delete;
+  typedef std::map<GURL, std::string>::const_iterator origin_itr;
+  for (origin_itr itr = metadata_store_->batch_sync_origins().begin();
+       itr != metadata_store_->batch_sync_origins().end(); ++itr) {
+    batch_origins_to_delete.push_back(itr->first);
+  }
+  for (std::vector<GURL>::const_iterator itr = batch_origins_to_delete.begin();
+       itr != batch_origins_to_delete.end(); ++itr) {
+    metadata_store_->RemoveOrigin(*itr, base::Bind(&EmptyStatusCallback));
+  }
+
   DCHECK(pending_batch_sync_origins_.empty());
 
   UpdateRegisteredOrigins();
 
   largest_fetched_changestamp_ = metadata_store_->GetLargestChangeStamp();
-
-  // Mark all the batch sync origins as 'pending' so that we can start
-  // batch sync when we're ready.
-  for (std::map<GURL, std::string>::const_iterator itr =
-           metadata_store_->batch_sync_origins().begin();
-       itr != metadata_store_->batch_sync_origins().end();
-       ++itr) {
-    pending_batch_sync_origins_.insert(itr->first);
-  }
 
   DriveMetadataStore::URLAndDriveMetadataList to_be_fetched_files;
   status = metadata_store_->GetToBeFetchedFiles(&to_be_fetched_files);
@@ -409,6 +413,10 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     SyncFileType file_type = SYNC_FILE_TYPE_FILE;
     if (metadata.type() == DriveMetadata::RESOURCE_TYPE_FOLDER)
       file_type = SYNC_FILE_TYPE_DIRECTORY;
+    if (!metadata_store_->IsIncrementalSyncOrigin(url.origin())) {
+      metadata_store_->DeleteEntry(url, base::Bind(&EmptyStatusCallback));
+      continue;
+    }
     AppendFetchChange(url.origin(), url.path(), resource_id, file_type);
   }
 
@@ -511,27 +519,35 @@ void DriveFileSyncService::DoEnableOriginForTrackingChanges(
   }
 
   metadata_store_->EnableOrigin(origin, callback);
-  pending_batch_sync_origins_.insert(origin);
+  pending_batch_sync_origins_.insert(
+      *metadata_store_->disabled_origins().find(origin));
 }
 
 void DriveFileSyncService::DoDisableOriginForTrackingChanges(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  if (!metadata_store_->IsBatchSyncOrigin(origin) &&
-      !metadata_store_->IsIncrementalSyncOrigin(origin)) {
+  pending_batch_sync_origins_.erase(origin);
+  if (!metadata_store_->IsIncrementalSyncOrigin(origin)) {
     callback.Run(SYNC_STATUS_OK);
     return;
   }
 
   remote_change_handler_.RemoveChangesForOrigin(origin);
-  pending_batch_sync_origins_.erase(origin);
   metadata_store_->DisableOrigin(origin, callback);
 }
 
 void DriveFileSyncService::DoUninstallOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
+  // Because origin management is now split between DriveFileSyncService and
+  // DriveMetadataStore, resource_id must be checked for in two places.
   std::string resource_id = metadata_store_->GetResourceIdForOrigin(origin);
+  if (resource_id.empty()) {
+    std::map<GURL, std::string>::const_iterator iterator =
+        pending_batch_sync_origins_.find(origin);
+    if (iterator != pending_batch_sync_origins_.end())
+      resource_id = iterator->second;
+  }
 
   // An empty resource_id indicates either one of following two cases:
   // 1) origin is not in metadata_store_ because the extension was never
@@ -619,11 +635,15 @@ void DriveFileSyncService::DoApplyLocalChange(
 void DriveFileSyncService::UpdateRegisteredOrigins() {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(pending_batch_sync_origins_.empty());
+  DCHECK(metadata_store_->batch_sync_origins().empty());
   if (!extension_service)
     return;
 
   std::vector<GURL> origins;
   metadata_store_->GetAllOrigins(&origins);
+
+  // Update the status of every origin using status from ExtensionService.
   for (std::vector<GURL>::const_iterator itr = origins.begin();
        itr != origins.end(); ++itr) {
     std::string extension_id = itr->host();
@@ -633,16 +653,16 @@ void DriveFileSyncService::UpdateRegisteredOrigins() {
     if (!extension_service->GetInstalledExtension(extension_id)) {
       // Extension has been uninstalled.
       UninstallOrigin(origin, base::Bind(&EmptyStatusCallback));
-    } else if ((metadata_store_->IsBatchSyncOrigin(origin) ||
-                metadata_store_->IsIncrementalSyncOrigin(origin)) &&
+    } else if (metadata_store_->IsIncrementalSyncOrigin(origin) &&
                !extension_service->IsExtensionEnabled(extension_id)) {
-      // Extension has been disabled.
+      // Incremental Extension has been disabled.
       metadata_store_->DisableOrigin(origin, base::Bind(&EmptyStatusCallback));
     } else if (metadata_store_->IsOriginDisabled(origin) &&
                extension_service->IsExtensionEnabled(extension_id)) {
       // Extension has been re-enabled.
+      pending_batch_sync_origins_.insert(
+          *metadata_store_->disabled_origins().find(origin));
       metadata_store_->EnableOrigin(origin, base::Bind(&EmptyStatusCallback));
-      pending_batch_sync_origins_.insert(origin);
     }
   }
 }
@@ -650,16 +670,12 @@ void DriveFileSyncService::UpdateRegisteredOrigins() {
 void DriveFileSyncService::StartBatchSync(
     const SyncStatusCallback& callback) {
   DCHECK(GetCurrentState() == REMOTE_SERVICE_OK || may_have_unfetched_changes_);
+  DCHECK(!pending_batch_sync_origins_.empty());
 
-  if (pending_batch_sync_origins_.empty()) {
-    callback.Run(SYNC_STATUS_OK);
-    return;
-  }
-
-  GURL origin = *pending_batch_sync_origins_.begin();
-  pending_batch_sync_origins_.erase(pending_batch_sync_origins_.begin());
-  std::string resource_id = metadata_store_->GetResourceIdForOrigin(origin);
+  GURL origin = pending_batch_sync_origins_.begin()->first;
+  std::string resource_id = pending_batch_sync_origins_.begin()->second;
   DCHECK(!resource_id.empty());
+  pending_batch_sync_origins_.erase(pending_batch_sync_origins_.begin());
 
   DCHECK(!metadata_store_->IsOriginDisabled(origin));
 
@@ -696,11 +712,8 @@ void DriveFileSyncService::DidGetDriveDirectoryForOrigin(
     return;
   }
 
-  // Add this origin to batch sync origin if it hasn't been already.
-  if (!metadata_store_->IsKnownOrigin(origin)) {
-    metadata_store_->AddBatchSyncOrigin(origin, resource_id);
-    pending_batch_sync_origins_.insert(origin);
-  }
+  if (!metadata_store_->IsKnownOrigin(origin))
+    pending_batch_sync_origins_.insert(std::make_pair(origin, resource_id));
 
   callback.Run(SYNC_STATUS_OK);
 }
@@ -727,7 +740,7 @@ void DriveFileSyncService::DidGetLargestChangeStampForBatchSync(
     google_apis::GDataErrorCode error,
     int64 largest_changestamp) {
   if (error != google_apis::HTTP_SUCCESS) {
-    pending_batch_sync_origins_.insert(origin);
+    pending_batch_sync_origins_.insert(std::make_pair(origin, resource_id));
     callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error));
     return;
   }
@@ -745,17 +758,19 @@ void DriveFileSyncService::DidGetLargestChangeStampForBatchSync(
                  AsWeakPtr(),
                  callback,
                  origin,
+                 resource_id,
                  largest_changestamp));
 }
 
 void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
     const SyncStatusCallback& callback,
     const GURL& origin,
+    const std::string& resource_id,
     int64 largest_changestamp,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> feed) {
   if (error != google_apis::HTTP_SUCCESS) {
-    pending_batch_sync_origins_.insert(origin);
+    pending_batch_sync_origins_.insert(std::make_pair(origin, resource_id));
     callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error));
     return;
   }
@@ -763,8 +778,25 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
   typedef ScopedVector<google_apis::ResourceEntry>::const_iterator iterator;
   for (iterator itr = feed->entries().begin();
        itr != feed->entries().end(); ++itr) {
-    AppendRemoteChange(origin, **itr, largest_changestamp,
+    const google_apis::ResourceEntry& entry = **itr;
+    AppendRemoteChange(origin, entry, largest_changestamp,
                        RemoteChangeHandler::REMOTE_SYNC_TYPE_BATCH);
+
+    // Save to be fetched file to DB for restore in case of crash.
+    DriveMetadata metadata;
+    metadata.set_resource_id(entry.resource_id());
+    metadata.set_md5_checksum(entry.file_md5());
+    metadata.set_conflicted(false);
+    metadata.set_to_be_fetched(true);
+
+    base::FilePath path = TitleToPath(entry.title());
+    fileapi::FileSystemURL url(CreateSyncableFileSystemURL(
+        origin, kServiceName, path));
+    // TODO(calvinlo): Write metadata and origin data as single batch command
+    // so it's not possible for the DB to contain a DriveMetadata with an
+    // unknown origin.
+    metadata_store_->UpdateEntry(url, metadata,
+                                 base::Bind(&EmptyStatusCallback));
   }
 
   GURL next_feed_url;
@@ -775,16 +807,12 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
                    AsWeakPtr(),
                    callback,
                    origin,
+                   resource_id,
                    largest_changestamp));
     return;
   }
 
-  // Move |origin| to the incremental sync origin set if the origin has no file.
-  if (metadata_store_->IsBatchSyncOrigin(origin) &&
-      !remote_change_handler_.HasChangesForOrigin(origin)) {
-    metadata_store_->MoveBatchSyncOriginToIncremental(origin);
-  }
-
+  metadata_store_->AddIncrementalSyncOrigin(origin, resource_id);
   may_have_unfetched_changes_ = true;
   callback.Run(SYNC_STATUS_OK);
 }
@@ -1367,12 +1395,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
 
 void DriveFileSyncService::RemoveRemoteChange(
     const FileSystemURL& url) {
-  if (!remote_change_handler_.RemoveChangeForURL(url))
-    return;
-  if (metadata_store_->IsBatchSyncOrigin(url.origin()) &&
-      !remote_change_handler_.HasChangesForOrigin(url.origin())) {
-    metadata_store_->MoveBatchSyncOriginToIncremental(url.origin());
-  }
+  remote_change_handler_.RemoveChangeForURL(url);
 }
 
 void DriveFileSyncService::MarkConflict(
@@ -1716,8 +1739,6 @@ void DriveFileSyncService::DidEnsureOriginRoot(
   if (status == SYNC_STATUS_OK &&
       metadata_store_->IsKnownOrigin(origin)) {
     metadata_store_->SetOriginRootDirectory(origin, resource_id);
-    if (metadata_store_->IsBatchSyncOrigin(origin))
-      pending_batch_sync_origins_.insert(origin);
   }
   callback.Run(status, resource_id);
 }

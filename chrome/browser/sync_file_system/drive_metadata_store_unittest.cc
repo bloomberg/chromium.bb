@@ -221,15 +221,6 @@ class DriveMetadataStoreTest : public testing::Test {
     EXPECT_FALSE(metadata_store()->IsOriginDisabled(origin));
   }
 
-  void VerifyBatchSyncOrigin(const GURL& origin,
-                             const std::string& resource_id) {
-    EXPECT_TRUE(metadata_store()->IsBatchSyncOrigin(origin));
-    EXPECT_FALSE(metadata_store()->IsIncrementalSyncOrigin(origin));
-    EXPECT_FALSE(metadata_store()->IsOriginDisabled(origin));
-    EXPECT_EQ(resource_id,
-              GetResourceID(metadata_store()->batch_sync_origins(), origin));
-  }
-
   void VerifyIncrementalSyncOrigin(const GURL& origin,
                                    const std::string& resource_id) {
     EXPECT_FALSE(metadata_store()->IsBatchSyncOrigin(origin));
@@ -448,97 +439,77 @@ TEST_F(DriveMetadataStoreTest, StoreSyncRootDirectory) {
 TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
   const GURL kOrigin1("chrome-extension://example1");
   const GURL kOrigin2("chrome-extension://example2");
-  const GURL kOrigin3("chrome-extension://example3");
   const std::string kResourceId1("hoge");
   const std::string kResourceId2("fuga");
-  const std::string kResourceId3("foo");
 
   InitializeDatabase();
 
   // Make sure origins have not been marked yet.
   VerifyUntrackedOrigin(kOrigin1);
   VerifyUntrackedOrigin(kOrigin2);
-  VerifyUntrackedOrigin(kOrigin3);
 
-  // Mark origins as batch sync origins.
-  metadata_store()->AddBatchSyncOrigin(kOrigin1, kResourceId1);
-  metadata_store()->AddBatchSyncOrigin(kOrigin2, kResourceId2);
-  metadata_store()->AddBatchSyncOrigin(kOrigin3, kResourceId3);
-  VerifyBatchSyncOrigin(kOrigin1, kResourceId1);
-  VerifyBatchSyncOrigin(kOrigin2, kResourceId2);
-  VerifyBatchSyncOrigin(kOrigin3, kResourceId3);
-
-  // Mark |kOrigin1| as an incremental sync origin, and disable |kOrigin3| as
-  // a disabled sync origin. |kOrigin2| should have still been marked as a
-  // batch sync origin.
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin1);
-  DisableOrigin(kOrigin3);
+  // Mark origins as incremental sync origins.
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin1, kResourceId1);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin2, kResourceId2);
   VerifyIncrementalSyncOrigin(kOrigin1, kResourceId1);
-  VerifyBatchSyncOrigin(kOrigin2, kResourceId2);
-  VerifyDisabledOrigin(kOrigin3, kResourceId3);
+  VerifyIncrementalSyncOrigin(kOrigin2, kResourceId2);
+
+  // Disabled origin 2, origin 1 should still be incremental.
+  DisableOrigin(kOrigin2);
+  VerifyIncrementalSyncOrigin(kOrigin1, kResourceId1);
+  VerifyDisabledOrigin(kOrigin2, kResourceId2);
 
   DropSyncOriginsInStore();
 
   // Make sure origins have been dropped.
   VerifyUntrackedOrigin(kOrigin1);
   VerifyUntrackedOrigin(kOrigin2);
-  VerifyUntrackedOrigin(kOrigin3);
 
   RestoreOriginsFromDB();
 
   // Make sure origins have been restored.
   VerifyIncrementalSyncOrigin(kOrigin1, kResourceId1);
-  VerifyBatchSyncOrigin(kOrigin2, kResourceId2);
-  VerifyDisabledOrigin(kOrigin3, kResourceId3);
+  VerifyDisabledOrigin(kOrigin2, kResourceId2);
 
   VerifyReverseMap();
 }
 
 TEST_F(DriveMetadataStoreTest, DisableOrigin) {
   const GURL kOrigin1("chrome-extension://example1");
-  const GURL kOrigin2("chrome-extension://example2");
   const std::string kResourceId1("hoge");
-  const std::string kResourceId2("fuga");
 
   InitializeDatabase();
   EXPECT_EQ(SYNC_STATUS_OK, SetLargestChangeStamp(1));
 
-  metadata_store()->AddBatchSyncOrigin(kOrigin1, kResourceId1);
-  metadata_store()->AddBatchSyncOrigin(kOrigin2, kResourceId2);
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
-  VerifyBatchSyncOrigin(kOrigin1, kResourceId1);
-  VerifyIncrementalSyncOrigin(kOrigin2, kResourceId2);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin1, kResourceId1);
+  VerifyIncrementalSyncOrigin(kOrigin1, kResourceId1);
 
   DisableOrigin(kOrigin1);
-  DisableOrigin(kOrigin2);
   VerifyDisabledOrigin(kOrigin1, kResourceId1);
-  VerifyDisabledOrigin(kOrigin2, kResourceId2);
 
+  // Re-enabled origins go back to DriveFileSyncService and are not tracked
+  // in DriveMetadataStore.
   EnableOrigin(kOrigin1);
-  EnableOrigin(kOrigin2);
-  VerifyBatchSyncOrigin(kOrigin1, kResourceId1);
-  VerifyBatchSyncOrigin(kOrigin2, kResourceId2);
+  VerifyUntrackedOrigin(kOrigin1);
 }
 
 TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
   const GURL kOrigin1("chrome-extension://example1");
   const GURL kOrigin2("chrome-extension://example2");
   const GURL kOrigin3("chrome-extension://example3");
-  const GURL kOrigin4("chrome-extension://example4");
-  const GURL kOrigin5("chrome-extension://example5");
   const std::string kResourceId1("hogera");
   const std::string kResourceId2("fugaga");
   const std::string kResourceId3("piyopiyo");
-  const std::string kResourceId5("hogehoge");
 
   InitializeDatabase();
   EXPECT_EQ(SYNC_STATUS_OK, SetLargestChangeStamp(1));
 
-  metadata_store()->AddBatchSyncOrigin(kOrigin1, kResourceId1);
-  metadata_store()->AddBatchSyncOrigin(kOrigin2, kResourceId2);
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
-  metadata_store()->AddBatchSyncOrigin(kOrigin3, kResourceId3);
-  metadata_store()->AddBatchSyncOrigin(kOrigin5, kResourceId5);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin1, kResourceId1);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin2, kResourceId2);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin3, kResourceId3);
+  DisableOrigin(kOrigin3);
+  EXPECT_EQ(2u, metadata_store()->incremental_sync_origins().size());
+  EXPECT_EQ(1u, metadata_store()->disabled_origins().size());
 
   EXPECT_EQ(SYNC_STATUS_OK,
             UpdateEntry(
@@ -555,39 +526,22 @@ TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
                 CreateSyncableFileSystemURL(
                     kOrigin3, kServiceName, base::FilePath(FPL("waf"))),
                 CreateMetadata("baz", "egg", false, false)));
-  EXPECT_EQ(SYNC_STATUS_OK,
-            UpdateEntry(
-                CreateSyncableFileSystemURL(
-                    kOrigin4, kServiceName, base::FilePath(FPL("cue"))),
-                CreateMetadata("lat", "fork", false, false)));
-  EXPECT_EQ(SYNC_STATUS_OK,
-            UpdateEntry(
-                CreateSyncableFileSystemURL(
-                    kOrigin5, kServiceName, base::FilePath(FPL("tac"))),
-                CreateMetadata("pov", "spoon", false, false)));
-  EXPECT_EQ(SYNC_STATUS_OK,
-            UpdateEntry(
-                CreateSyncableFileSystemURL(
-                    kOrigin1, kServiceName, base::FilePath(FPL("tic"))),
-                CreateMetadata("zav", "sause", false, false)));
 
-  EXPECT_EQ(SYNC_STATUS_OK, RemoveOrigin(kOrigin1));
   EXPECT_EQ(SYNC_STATUS_OK, RemoveOrigin(kOrigin2));
-  EXPECT_EQ(SYNC_STATUS_OK, RemoveOrigin(kOrigin4));
-  EXPECT_EQ(SYNC_STATUS_OK, RemoveOrigin(kOrigin5));
+  EXPECT_EQ(SYNC_STATUS_OK, RemoveOrigin(kOrigin3));
 
   DropDatabase();
   InitializeDatabase();
 
-  // kOrigin3 should be only remaining batch sync origin.
-  EXPECT_EQ(1u, metadata_store()->batch_sync_origins().size());
-  EXPECT_TRUE(metadata_store()->IsBatchSyncOrigin(kOrigin3));
-  EXPECT_TRUE(metadata_store()->incremental_sync_origins().empty());
-  EXPECT_TRUE(metadata_store()->disabled_origins().empty());
+  // kOrigin1 should be the only one left.
+  EXPECT_EQ(0u, metadata_store()->batch_sync_origins().size());
+  EXPECT_EQ(1u, metadata_store()->incremental_sync_origins().size());
+  EXPECT_EQ(0u, metadata_store()->disabled_origins().size());
+  EXPECT_TRUE(metadata_store()->IsIncrementalSyncOrigin(kOrigin1));
   EXPECT_EQ(1u, metadata_map().size());
 
   DriveMetadataStore::MetadataMap::const_iterator found =
-      metadata_map().find(kOrigin3);
+      metadata_map().find(kOrigin1);
   EXPECT_TRUE(found != metadata_map().end() && found->second.size() == 1u);
 
   VerifyReverseMap();
@@ -605,10 +559,9 @@ TEST_F(DriveMetadataStoreTest, GetResourceIdForOrigin) {
   EXPECT_EQ(SYNC_STATUS_OK, SetLargestChangeStamp(1));
   metadata_store()->SetSyncRootDirectory("root");
 
-  metadata_store()->AddBatchSyncOrigin(kOrigin1, kResourceId1);
-  metadata_store()->AddBatchSyncOrigin(kOrigin2, kResourceId2);
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
-  metadata_store()->AddBatchSyncOrigin(kOrigin3, kResourceId3);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin1, kResourceId1);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin2, kResourceId2);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin3, kResourceId3);
   DisableOrigin(kOrigin3);
 
   EXPECT_EQ(kResourceId1, metadata_store()->GetResourceIdForOrigin(kOrigin1));
@@ -717,23 +670,18 @@ TEST_F(DriveMetadataStoreTest, MigrationFromV0) {
 
 TEST_F(DriveMetadataStoreTest, ResetOriginRootDirectory) {
   const GURL kOrigin1("chrome-extension://example1");
-  const GURL kOrigin2("chrome-extension://example2");
   const std::string kResourceId1("hoge");
   const std::string kResourceId2("fuga");
-  const std::string kResourceId3("piyo");
 
   InitializeDatabase();
   EXPECT_EQ(SYNC_STATUS_OK, SetLargestChangeStamp(1));
 
-  metadata_store()->AddBatchSyncOrigin(kOrigin1, kResourceId1);
-  metadata_store()->AddBatchSyncOrigin(kOrigin2, kResourceId2);
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
-  VerifyBatchSyncOrigin(kOrigin1, kResourceId1);
-  VerifyIncrementalSyncOrigin(kOrigin2, kResourceId2);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin1, kResourceId1);
+  VerifyIncrementalSyncOrigin(kOrigin1, kResourceId1);
   VerifyReverseMap();
 
-  metadata_store()->SetOriginRootDirectory(kOrigin2, kResourceId3);
-  VerifyIncrementalSyncOrigin(kOrigin2, kResourceId3);
+  metadata_store()->SetOriginRootDirectory(kOrigin1, kResourceId2);
+  VerifyIncrementalSyncOrigin(kOrigin1, kResourceId2);
   VerifyReverseMap();
 }
 

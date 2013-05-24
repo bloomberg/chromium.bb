@@ -30,6 +30,7 @@
 #include "net/base/escape.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/sync_direction.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
@@ -79,10 +80,6 @@ void DidInitialize(bool* done, SyncStatusCode status, bool created) {
   EXPECT_TRUE(created);
 }
 
-void DidUpdateEntry(SyncStatusCode status) {
-  EXPECT_EQ(SYNC_STATUS_OK, status);
-}
-
 void DidGetSyncRoot(bool* done,
                     SyncStatusCode status,
                     const std::string& resource_id) {
@@ -96,6 +93,10 @@ void ExpectEqStatus(bool* done,
   EXPECT_FALSE(*done);
   *done = true;
   EXPECT_EQ(expected, actual);
+}
+
+void ExpectOkStatus(SyncStatusCode status) {
+  EXPECT_EQ(SYNC_STATUS_OK, status);
 }
 
 // Mocks adding an installed extension to ExtensionService.
@@ -349,11 +350,10 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     message_loop()->RunUntilIdle();
   }
 
-  void VerifySizeOfRegisteredOrigins(
-      DriveMetadataStore::ResourceIdByOrigin::size_type b_size,
-      DriveMetadataStore::ResourceIdByOrigin::size_type i_size,
-      DriveMetadataStore::ResourceIdByOrigin::size_type d_size) {
-    EXPECT_EQ(b_size, metadata_store()->batch_sync_origins().size());
+  void VerifySizeOfRegisteredOrigins(size_t b_size,
+                                     size_t i_size,
+                                     size_t d_size) {
+    EXPECT_EQ(b_size, pending_batch_sync_origins()->size());
     EXPECT_EQ(i_size, metadata_store()->incremental_sync_origins().size());
     EXPECT_EQ(d_size, metadata_store()->disabled_origins().size());
   }
@@ -388,6 +388,9 @@ class DriveFileSyncServiceMockTest : public testing::Test {
 
   MessageLoop* message_loop() { return &message_loop_; }
   DriveFileSyncService* sync_service() { return sync_service_.get(); }
+  std::map<GURL, std::string>* pending_batch_sync_origins() {
+    return &(sync_service()->pending_batch_sync_origins_);
+  }
 
   const RemoteChangeHandler& remote_change_handler() const {
     return sync_service_->remote_change_handler_;
@@ -600,47 +603,6 @@ class DriveFileSyncServiceMockTest : public testing::Test {
 
 #if !defined(OS_ANDROID)
 
-TEST_F(DriveFileSyncServiceMockTest, BatchSyncOnInitialization) {
-  const GURL kOrigin1 = ExtensionNameToGURL(FPL("example1"));
-  const GURL kOrigin2 = ExtensionNameToGURL(FPL("example2"));
-  const std::string kDirectoryResourceId1(
-      "folder:origin_directory_resource_id");
-  const std::string kDirectoryResourceId2(
-      "folder:origin_directory_resource_id2");
-  const std::string kSyncRootResourceId("folder:sync_root_resource_id");
-
-  metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
-  metadata_store()->AddBatchSyncOrigin(kOrigin1, kDirectoryResourceId1);
-  metadata_store()->AddBatchSyncOrigin(kOrigin2, kDirectoryResourceId2);
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
-
-  Sequence change_queue_seq;
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(0))
-      .InSequence(change_queue_seq);
-  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(1))
-      .Times(AnyNumber())
-      .InSequence(change_queue_seq);
-
-  SetUpDriveServiceExpectCallsForGetAboutResource();
-  SetUpDriveServiceExpectCallsForGetResourceListInDirectory(
-      "chromeos/sync_file_system/listing_files_in_directory.json",
-      kDirectoryResourceId1);
-
-  // The service will get called for incremental sync at the end after
-  // batch sync's done.
-  SetUpDriveServiceExpectCallsForIncrementalSync();
-
-  SetUpDriveSyncService(true);
-  message_loop()->RunUntilIdle();
-
-  // kOrigin1 should be a batch sync origin and kOrigin2 should be an
-  // incremental sync origin.
-  // 4 pending remote changes are from listing_files_in_directory as batch sync
-  // changes.
-  VerifySizeOfRegisteredOrigins(1u, 1u, 0u);
-  EXPECT_EQ(1u, remote_change_handler().ChangesSize());
-}
-
 TEST_F(DriveFileSyncServiceMockTest, RegisterNewOrigin) {
   const GURL kOrigin("chrome-extension://example");
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
@@ -726,8 +688,8 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterExistingOrigin) {
   message_loop()->RunUntilIdle();
   EXPECT_TRUE(done);
 
-  // The origin should be registered as a batch sync origin.
-  VerifySizeOfRegisteredOrigins(1u, 0u, 0u);
+  // The origin should be registered as an incremental sync origin.
+  VerifySizeOfRegisteredOrigins(0u, 1u, 0u);
 
   // |listing_files_in_directory| contains 4 items to sync.
   EXPECT_EQ(1u, remote_change_handler().ChangesSize());
@@ -743,27 +705,17 @@ TEST_F(DriveFileSyncServiceMockTest, UnregisterOrigin) {
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
-  metadata_store()->AddBatchSyncOrigin(kOrigin1, kDirectoryResourceId1);
-  metadata_store()->AddBatchSyncOrigin(kOrigin2, kDirectoryResourceId2);
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin1, kDirectoryResourceId1);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin2, kDirectoryResourceId2);
 
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
 
-  InSequence sequence;
-
-  SetUpDriveServiceExpectCallsForGetAboutResource();
-  SetUpDriveServiceExpectCallsForGetResourceListInDirectory(
-      "chromeos/sync_file_system/listing_files_in_directory.json",
-      kDirectoryResourceId1);
-
-  SetUpDriveServiceExpectCallsForIncrementalSync();
-
   SetUpDriveSyncService(true);
   message_loop()->RunUntilIdle();
 
-  VerifySizeOfRegisteredOrigins(1u, 1u, 0u);
-  EXPECT_EQ(1u, remote_change_handler().ChangesSize());
+  VerifySizeOfRegisteredOrigins(0u, 2u, 0u);
+  EXPECT_EQ(0u, remote_change_handler().ChangesSize());
 
   bool done = false;
   sync_service()->UnregisterOriginForTrackingChanges(
@@ -789,64 +741,36 @@ TEST_F(DriveFileSyncServiceMockTest, UpdateRegisteredOrigins) {
       extensions::id_util::GenerateIdForPath(base::FilePath(FPL("example2")));
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
-  metadata_store()->AddBatchSyncOrigin(kOrigin1, kDirectoryResourceId1);
-  metadata_store()->AddBatchSyncOrigin(kOrigin2, kDirectoryResourceId2);
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin1, kDirectoryResourceId1);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin2, kDirectoryResourceId2);
 
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
-
-  InSequence sequence;
-
-  SetUpDriveServiceExpectCallsForGetAboutResource();
-  SetUpDriveServiceExpectCallsForGetResourceListInDirectory(
-      "chromeos/sync_file_system/listing_files_in_directory.json",
-      kDirectoryResourceId1);
-
-  SetUpDriveServiceExpectCallsForIncrementalSync();
 
   SetUpDriveSyncService(true);
   message_loop()->RunUntilIdle();
 
   // [1] Both extensions and origins are enabled. Nothing to do.
-  VerifySizeOfRegisteredOrigins(1u, 1u, 0u);
+  VerifySizeOfRegisteredOrigins(0u, 2u, 0u);
   UpdateRegisteredOrigins();
-  VerifySizeOfRegisteredOrigins(1u, 1u, 0u);
+  VerifySizeOfRegisteredOrigins(0u, 2u, 0u);
 
+  // [2] Extension 1 should move to disabled list.
   DisableExtension(extension_id1);
-  DisableExtension(extension_id2);
-
-  // [2] Origins should be disabled since extensions were disabled.
-  VerifySizeOfRegisteredOrigins(1u, 1u, 0u);
   UpdateRegisteredOrigins();
-  VerifySizeOfRegisteredOrigins(0u, 0u, 2u);
+  VerifySizeOfRegisteredOrigins(0u, 1u, 1u);
 
-  // [3] Both extensions and origins are disabled. Nothing to do.
-  VerifySizeOfRegisteredOrigins(0u, 0u, 2u);
+  // [3] Make sure that state remains the same, nothing should change.
   UpdateRegisteredOrigins();
-  VerifySizeOfRegisteredOrigins(0u, 0u, 2u);
+  VerifySizeOfRegisteredOrigins(0u, 1u, 1u);
 
-  EnableExtension(extension_id1);
-  EnableExtension(extension_id2);
-
-  // [4] Origins should be re-enabled since extensions were re-enabled.
-  VerifySizeOfRegisteredOrigins(0u, 0u, 2u);
-  UpdateRegisteredOrigins();
-  VerifySizeOfRegisteredOrigins(2u, 0u, 0u);
-
+  // [4] Uninstall Extension 2.
   UninstallExtension(extension_id2);
+  UpdateRegisteredOrigins();
+  VerifySizeOfRegisteredOrigins(0u, 0u, 1u);
 
-  // Prepare for UninstallOrigin called by UpdateRegisteredOrigins.
-  EXPECT_CALL(*mock_drive_service(),
-              DeleteResource(kDirectoryResourceId2, _, _))
-      .WillOnce(InvokeEntryActionCallback(google_apis::HTTP_SUCCESS));
-  SetUpDriveServiceExpectCallsForGetAboutResource();
-  SetUpDriveServiceExpectCallsForGetResourceListInDirectory(
-      "chromeos/sync_file_system/listing_files_in_directory.json",
-      kDirectoryResourceId1);
-
-  // [5] |kOrigin2| should be unregistered since its extension was uninstalled.
-  VerifySizeOfRegisteredOrigins(2u, 0u, 0u);
+  // [5] Re-enable Extension 1. It moves back to batch and not to incremental.
+  EnableExtension(extension_id1);
   UpdateRegisteredOrigins();
   VerifySizeOfRegisteredOrigins(1u, 0u, 0u);
 }
@@ -877,8 +801,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Busy) {
   const base::FilePath::StringType kFileName(FPL("File 1.mp3"));
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
-  metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin, kDirectoryResourceId);
 
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
@@ -914,8 +837,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_NewFile) {
   const std::string kFileResourceId("file:2_file_resource_id");
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
-  metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin, kDirectoryResourceId);
 
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
@@ -957,8 +879,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_UpdateFile) {
   const std::string kFileResourceId("file:2_file_resource_id");
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
-  metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin, kDirectoryResourceId);
 
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
@@ -1042,8 +963,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Override) {
   const fileapi::FileSystemURL kURL(CreateURL(kOrigin, kFilePath.value()));
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
-  metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin, kDirectoryResourceId);
 
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());
@@ -1103,8 +1023,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Folder) {
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
-  metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
-  metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin);
+  metadata_store()->AddIncrementalSyncOrigin(kOrigin, kDirectoryResourceId);
 
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(_))
       .Times(AnyNumber());

@@ -471,6 +471,13 @@ SyncStatusCode DriveMetadataStore::ReadEntry(const FileSystemURL& url,
   return SYNC_STATUS_OK;
 }
 
+void DriveMetadataStore::AddIncrementalSyncOrigin(
+    const GURL& origin,
+    const std::string& resource_id) {
+  AddBatchSyncOrigin(origin, resource_id);
+  MoveBatchSyncOriginToIncremental(origin);
+}
+
 void DriveMetadataStore::SetSyncRootDirectory(const std::string& resource_id) {
   DCHECK(CalledOnValidThread());
 
@@ -533,46 +540,6 @@ bool DriveMetadataStore::IsOriginDisabled(const GURL& origin) const {
   return ContainsKey(disabled_origins_, origin);
 }
 
-void DriveMetadataStore::AddBatchSyncOrigin(const GURL& origin,
-                                            const std::string& resource_id) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!IsBatchSyncOrigin(origin));
-  DCHECK(!IsIncrementalSyncOrigin(origin));
-  DCHECK(!IsOriginDisabled(origin));
-  DCHECK_EQ(SYNC_STATUS_OK, db_status_);
-
-  batch_sync_origins_.insert(std::make_pair(origin, resource_id));
-  origin_by_resource_id_.insert(std::make_pair(resource_id, origin));
-
-  // Store a pair of |origin| and |resource_id| in the DB.
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
-      base::Bind(&DriveMetadataDB::UpdateOriginAsBatchSync,
-                 base::Unretained(db_.get()), origin, resource_id),
-      base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
-}
-
-void DriveMetadataStore::MoveBatchSyncOriginToIncremental(const GURL& origin) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(IsBatchSyncOrigin(origin));
-  DCHECK(!IsIncrementalSyncOrigin(origin));
-  DCHECK(!IsOriginDisabled(origin));
-  DCHECK_EQ(SYNC_STATUS_OK, db_status_);
-
-  std::map<GURL, std::string>::iterator found =
-      batch_sync_origins_.find(origin);
-  incremental_sync_origins_.insert(std::make_pair(origin, found->second));
-
-  // Store a pair of |origin| and |resource_id| in the DB.
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
-      base::Bind(&DriveMetadataDB::UpdateOriginAsIncrementalSync,
-                 base::Unretained(db_.get()), origin, found->second),
-      base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
-
-  batch_sync_origins_.erase(found);
-}
-
 void DriveMetadataStore::EnableOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
@@ -586,8 +553,8 @@ void DriveMetadataStore::EnableOrigin(
   std::string resource_id = found->second;
   disabled_origins_.erase(found);
 
-  // Ensure |origin| is marked as a batch sync origin.
-  batch_sync_origins_.insert(std::make_pair(origin, resource_id));
+  // |Origin| goes back to DriveFileSyncService.pending_batch_sync_origins_
+  // only and is not stored in drive_metadata_store.
   found = incremental_sync_origins_.find(origin);
   if (found != incremental_sync_origins_.end())
     incremental_sync_origins_.erase(found);
@@ -660,6 +627,48 @@ void DriveMetadataStore::DidUpdateOrigin(
     SyncStatusCode status) {
   UpdateDBStatus(status);
   callback.Run(status);
+}
+
+void DriveMetadataStore::AddBatchSyncOrigin(const GURL& origin,
+                                            const std::string& resource_id) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!IsIncrementalSyncOrigin(origin));
+  DCHECK(!IsOriginDisabled(origin));
+  DCHECK_EQ(SYNC_STATUS_OK, db_status_);
+
+  if (IsBatchSyncOrigin(origin))
+    return;
+
+  batch_sync_origins_.insert(std::make_pair(origin, resource_id));
+  origin_by_resource_id_.insert(std::make_pair(resource_id, origin));
+
+  // Store a pair of |origin| and |resource_id| in the DB.
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_, FROM_HERE,
+      base::Bind(&DriveMetadataDB::UpdateOriginAsBatchSync,
+                 base::Unretained(db_.get()), origin, resource_id),
+      base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
+}
+
+void DriveMetadataStore::MoveBatchSyncOriginToIncremental(const GURL& origin) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(IsBatchSyncOrigin(origin));
+  DCHECK(!IsIncrementalSyncOrigin(origin));
+  DCHECK(!IsOriginDisabled(origin));
+  DCHECK_EQ(SYNC_STATUS_OK, db_status_);
+
+  std::map<GURL, std::string>::iterator found =
+      batch_sync_origins_.find(origin);
+  incremental_sync_origins_.insert(std::make_pair(origin, found->second));
+
+  // Store a pair of |origin| and |resource_id| in the DB.
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_, FROM_HERE,
+      base::Bind(&DriveMetadataDB::UpdateOriginAsIncrementalSync,
+                 base::Unretained(db_.get()), origin, found->second),
+      base::Bind(&DriveMetadataStore::UpdateDBStatus, AsWeakPtr()));
+
+  batch_sync_origins_.erase(found);
 }
 
 void DriveMetadataStore::UpdateDBStatus(SyncStatusCode status) {

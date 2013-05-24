@@ -242,6 +242,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
   void DidGetDirectoryContentForBatchSync(
       const SyncStatusCallback& callback,
       const GURL& origin,
+      const std::string& resource_id,
       int64 largest_changestamp,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> feed);
@@ -400,7 +401,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   int64 largest_fetched_changestamp_;
 
-  std::set<GURL> pending_batch_sync_origins_;
+  std::map<GURL, std::string> pending_batch_sync_origins_;
 
   // Is set to true when there's a fair possibility that we have some
   // remote changes that haven't been fetched yet.

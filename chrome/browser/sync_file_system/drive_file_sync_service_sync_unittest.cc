@@ -173,8 +173,8 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     EXPECT_TRUE(done);
 
     metadata_store_->SetSyncRootDirectory(kSyncRootResourceId);
-    metadata_store_->AddBatchSyncOrigin(GURL(kAppOrigin), kParentResourceId);
-    metadata_store_->MoveBatchSyncOriginToIncremental(GURL(kAppOrigin));
+    metadata_store_->AddIncrementalSyncOrigin(GURL(kAppOrigin),
+                                              kParentResourceId);
 
     sync_service_ = DriveFileSyncService::CreateForTesting(
         &profile_,

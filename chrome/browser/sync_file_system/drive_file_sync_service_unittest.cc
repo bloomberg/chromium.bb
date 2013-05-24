@@ -115,8 +115,9 @@ TEST_F(DriveFileSyncServiceTest, DeleteOriginDirectory) {
 
   // Add meta_data entry so GURL->resourse_id mapping is there.
   const GURL origin_gurl("chrome-extension://uninstallme");
-  metadata_store()->AddBatchSyncOrigin(origin_gurl,
-                                       origin_dir_resource_id);
+  metadata_store()->AddIncrementalSyncOrigin(origin_gurl,
+                                             origin_dir_resource_id);
+
   // Delete the origin directory.
   bool done = false;
   sync_service()->UninstallOrigin(
