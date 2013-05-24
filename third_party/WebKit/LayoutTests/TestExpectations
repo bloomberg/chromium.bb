@@ -1805,7 +1805,6 @@ crbug.com/243353 [ Mac ] animations/transition-and-animation-2.html [ Pass Timeo
 crbug.com/243353 [ Mac ] animations/suspend-resume-animation.html [ Timeout ]
 crbug.com/243353 [ Mac ] animations/animation-direction-normal.html [ Timeout ]
 crbug.com/243353 [ Mac ] animations/animation-direction-reverse.html [ Timeout ]
-crbug.com/243353 [ Mac ] animations/play-state.html [ Timeout ]
 crbug.com/243353 [ Win Linux ] animations/suspend-resume-animation.html [ Failure Pass ]
 crbug.com/243353 [ Win Linux ] animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/243353 [ Linux ] animations/animation-direction-reverse.html [ Failure Pass ]
@@ -1853,9 +1852,8 @@ crbug.com/243663 [ Win7 Debug ] compositing/animation/computed-style-during-dela
 crbug.com/243663 [ Win7 Debug ] compositing/reflections/nested-reflection-transition.html [ Failure ]
 crbug.com/243663 [ SnowLeopard Win7 Debug ] compositing/transitions/scale-transition-no-start.html [ Failure ]
 crbug.com/243683 [ Linux ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Pass Failure ]
-crbug.com/243353 [ Mac Debug ] animations/play-state-suspend.html [ Timeout ]
-crbug.com/243353 [ Linux Debug ] animations/play-state-suspend.html [ Timeout ]
-crbug.com/243353 [ Mac Win Linux Release ] animations/play-state-suspend.html [ Failure Pass ]
+crbug.com/243353 animations/play-state-suspend.html [ Failure Timeout Pass ]
+crbug.com/243353 animations/play-state.html [ Failure Timeout Pass ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass ]
