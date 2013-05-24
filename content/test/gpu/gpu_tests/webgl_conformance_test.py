@@ -51,7 +51,7 @@ class WebGLConformanceTest(page_test.PageTest):
   def __init__(self):
     super(WebGLConformanceTest, self).__init__('ValidatePage')
 
-  def CreatePageSet(self, options):
+  def CreatePageSet(self, _, options):
     tests = WebGLConformanceTest._ParseTests('00_test_list.txt', '1.0.1')
 
     page_set_dict = {
