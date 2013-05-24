@@ -8,8 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/strings/stringize_macros.h"
 #include "base/thread_task_runner_handle.h"
@@ -24,23 +22,14 @@ namespace {
 // Returns NULL on failure, and logs an error message.
 scoped_ptr<base::DictionaryValue> ConfigDictionaryFromMessage(
     const base::DictionaryValue& message) {
-  scoped_ptr<base::DictionaryValue> config_dict;
-  std::string config_str;
-  if (!message.GetString("config", &config_str)) {
-    LOG(ERROR) << "'config' not found.";
-    return config_dict.Pass();
+  scoped_ptr<base::DictionaryValue> result;
+  const base::DictionaryValue* config_dict;
+  if (message.GetDictionary("config", &config_dict)) {
+    result.reset(config_dict->DeepCopy());
+  } else {
+    LOG(ERROR) << "'config' dictionary not found";
   }
-
-  // TODO(lambroslambrou): Fix the webapp to embed the config dictionary
-  // directly into the request, rather than as a serialized JSON string.
-  scoped_ptr<base::Value> config(
-      base::JSONReader::Read(config_str, base::JSON_ALLOW_TRAILING_COMMAS));
-  if (!config || !config->IsType(base::Value::TYPE_DICTIONARY)) {
-    LOG(ERROR) << "Bad config parameter.";
-    return config_dict.Pass();
-  }
-  config_dict.reset(reinterpret_cast<base::DictionaryValue*>(config.release()));
-  return config_dict.Pass();
+  return result.Pass();
 }
 
 }  // namespace
@@ -61,8 +50,7 @@ NativeMessagingHost::NativeMessagingHost(
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
-NativeMessagingHost::~NativeMessagingHost() {
-}
+NativeMessagingHost::~NativeMessagingHost() {}
 
 void NativeMessagingHost::Start() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
@@ -198,18 +186,18 @@ bool NativeMessagingHost::ProcessUpdateDaemonConfig(
 bool NativeMessagingHost::ProcessGetDaemonConfig(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
-  daemon_controller_->GetConfig(base::Bind(
-      &NativeMessagingHost::SendConfigResponse,
-      base::Unretained(this), base::Passed(&response)));
+  daemon_controller_->GetConfig(
+      base::Bind(&NativeMessagingHost::SendConfigResponse,
+                 base::Unretained(this), base::Passed(&response)));
   return true;
 }
 
 bool NativeMessagingHost::ProcessGetUsageStatsConsent(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
-  daemon_controller_->GetUsageStatsConsent(base::Bind(
-      &NativeMessagingHost::SendUsageStatsConsentResponse,
-      base::Unretained(this), base::Passed(&response)));
+  daemon_controller_->GetUsageStatsConsent(
+      base::Bind(&NativeMessagingHost::SendUsageStatsConsentResponse,
+                 base::Unretained(this), base::Passed(&response)));
   return true;
 }
 
@@ -237,9 +225,9 @@ bool NativeMessagingHost::ProcessStartDaemon(
 bool NativeMessagingHost::ProcessStopDaemon(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
-  daemon_controller_->Stop(base::Bind(
-      &NativeMessagingHost::SendAsyncResult, base::Unretained(this),
-      base::Passed(&response)));
+  daemon_controller_->Stop(
+      base::Bind(&NativeMessagingHost::SendAsyncResult, base::Unretained(this),
+                 base::Passed(&response)));
   return true;
 }
 
@@ -257,9 +245,9 @@ bool NativeMessagingHost::ProcessGetDaemonState(
 void NativeMessagingHost::SendResponse(
     scoped_ptr<base::DictionaryValue> response) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
-    caller_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &NativeMessagingHost::SendResponse, weak_ptr_,
-        base::Passed(&response)));
+    caller_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&NativeMessagingHost::SendResponse, weak_ptr_,
+                              base::Passed(&response)));
     return;
   }
 
@@ -270,12 +258,7 @@ void NativeMessagingHost::SendResponse(
 void NativeMessagingHost::SendConfigResponse(
     scoped_ptr<base::DictionaryValue> response,
     scoped_ptr<base::DictionaryValue> config) {
-  // TODO(lambroslambrou): Fix the web-app to accept the config dictionary
-  // directly embedded in the response, rather than as serialized JSON. See
-  // http://crbug.com/232135.
-  std::string config_json;
-  base::JSONWriter::Write(config.get(), &config_json);
-  response->SetString("config", config_json);
+  response->Set("config", config.release());
   SendResponse(response.Pass());
 }
 

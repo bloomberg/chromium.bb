@@ -128,7 +128,7 @@ remoting.HostDispatcher.prototype.generateKeyPair = function(callback) {
 };
 
 /**
- * @param {string} config
+ * @param {Object} config
  * @param {function(remoting.HostController.AsyncResult):void} callback
  * @return {void}
  */
@@ -142,17 +142,34 @@ remoting.HostDispatcher.prototype.updateDaemonConfig = function(config,
       this.nativeMessagingHost_.updateDaemonConfig(config, callback);
       break;
     case remoting.HostDispatcher.State.NPAPI:
-      this.npapiHost_.updateDaemonConfig(config, callback);
+      this.npapiHost_.updateDaemonConfig(JSON.stringify(config), callback);
       break;
   }
-
 };
 
 /**
- * @param {function(string):void} callback
+ * @param {function(Object):void} callback
  * @return {void}
  */
 remoting.HostDispatcher.prototype.getDaemonConfig = function(callback) {
+  /**
+   * Converts the config string from the NPAPI plugin to an Object, to pass to
+   * |callback|.
+   * @param {string} configStr
+   * @return {void}
+   */
+  function callbackForNpapi(configStr) {
+    var config = null;
+    try {
+      config = JSON.parse(configStr);
+    } catch (err) {}
+    if (typeof(config) != 'object') {
+      // TODO(lambroslambrou): Call error handler here when that's implemented.
+      config = null;
+    }
+    callback(/** @type {Object} */ (config));
+  }
+
   switch (this.state_) {
     case remoting.HostDispatcher.State.UNKNOWN:
       this.pendingRequests_.push(this.getDaemonConfig.bind(this, callback));
@@ -161,7 +178,7 @@ remoting.HostDispatcher.prototype.getDaemonConfig = function(callback) {
       this.nativeMessagingHost_.getDaemonConfig(callback);
       break;
     case remoting.HostDispatcher.State.NPAPI:
-      this.npapiHost_.getDaemonConfig(callback);
+      this.npapiHost_.getDaemonConfig(callbackForNpapi);
       break;
   }
 };
@@ -204,7 +221,7 @@ remoting.HostDispatcher.prototype.getUsageStatsConsent = function(callback) {
 };
 
 /**
- * @param {string} config
+ * @param {Object} config
  * @param {boolean} consent
  * @param {function(remoting.HostController.AsyncResult):void} callback
  * @return {void}
@@ -220,7 +237,7 @@ remoting.HostDispatcher.prototype.startDaemon = function(config, consent,
       this.nativeMessagingHost_.startDaemon(config, consent, callback);
       break;
     case remoting.HostDispatcher.State.NPAPI:
-      this.npapiHost_.startDaemon(config, consent, callback);
+      this.npapiHost_.startDaemon(JSON.stringify(config), consent, callback);
       break;
   }
 };

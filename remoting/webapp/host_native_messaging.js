@@ -252,7 +252,7 @@ remoting.HostNativeMessaging.prototype.onIncomingMessage_ = function(message) {
     case 'getDaemonConfigResponse':
       /** @type {*} */
       var config = message['config'];
-      if (checkType_('config', config, 'string')) {
+      if (checkType_('config', config, 'object')) {
         callback(config);
       }
       break;
@@ -372,7 +372,7 @@ remoting.HostNativeMessaging.prototype.generateKeyPair = function(callback) {
  * includes these parameters. Changes take effect before the callback
  * is called.
  *
- * @param {string} config The new config parameters, JSON encoded dictionary.
+ * @param {Object} config The new config parameters.
  * @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.
  * @return {void} Nothing.
@@ -389,7 +389,7 @@ remoting.HostNativeMessaging.prototype.updateDaemonConfig =
  * Loads daemon config. The config is passed as a JSON formatted string to the
  * callback.
  *
- * @param {function(string):void} callback Callback.
+ * @param {function(Object):void} callback Callback.
  * @return {void} Nothing.
  */
 remoting.HostNativeMessaging.prototype.getDaemonConfig = function(callback) {
@@ -425,7 +425,7 @@ remoting.HostNativeMessaging.prototype.getUsageStatsConsent =
 /**
  * Starts the daemon process with the specified configuration.
  *
- * @param {string} config Host configuration.
+ * @param {Object} config Host configuration.
  * @param {boolean} consent Consent to report crash dumps.
  * @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback.
