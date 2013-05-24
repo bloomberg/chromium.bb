@@ -2816,43 +2816,24 @@ bool SearchDriveFunction::RunImpl() {
   if (!args_->GetDictionary(0, &search_params))
     return false;
 
-  if (!search_params->GetString("query", &query_))
+  std::string query;
+  if (!search_params->GetString("query", &query))
     return false;
 
-  if (!search_params->GetString("nextFeed", &next_feed_))
+  std::string next_feed;
+  if (!search_params->GetString("nextFeed", &next_feed))
     return false;
-
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  BrowserContext::GetStoragePartition(profile(), site_instance)->
-      GetFileSystemContext()->OpenFileSystem(
-          source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
-          base::Bind(&SearchDriveFunction::OnFileSystemOpened, this));
-  return true;
-}
-
-void SearchDriveFunction::OnFileSystemOpened(
-    base::PlatformFileError result,
-    const std::string& file_system_name,
-    const GURL& file_system_url) {
-  if (result != base::PLATFORM_FILE_OK) {
-    SendResponse(false);
-    return;
-  }
-
-  file_system_name_ = file_system_name;
-  file_system_url_ = file_system_url;
 
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
   // |integration_service| is NULL if Drive is disabled.
-  if (!integration_service || !integration_service->file_system()) {
-    SendResponse(false);
-    return;
-  }
+  if (!integration_service || !integration_service->file_system())
+    return false;
 
   integration_service->file_system()->Search(
-      query_, GURL(next_feed_),
+      query, GURL(next_feed),
       base::Bind(&SearchDriveFunction::OnSearch, this));
+  return true;
 }
 
 void SearchDriveFunction::OnSearch(
@@ -2869,10 +2850,16 @@ void SearchDriveFunction::OnSearch(
   base::ListValue* entries = new ListValue();
 
   // Convert Drive files to something File API stack can understand.
+  GURL origin_url = source_url_.GetOrigin();
+  fileapi::FileSystemType file_system_type = fileapi::kFileSystemTypeExternal;
+  GURL file_system_root_url =
+      fileapi::GetFileSystemRootURI(origin_url, file_system_type);
+  std::string file_system_name =
+      fileapi::GetFileSystemName(origin_url, file_system_type);
   for (size_t i = 0; i < results->size(); ++i) {
     DictionaryValue* entry = new DictionaryValue();
-    entry->SetString("fileSystemName", file_system_name_);
-    entry->SetString("fileSystemRoot", file_system_url_.spec());
+    entry->SetString("fileSystemName", file_system_name);
+    entry->SetString("fileSystemRoot", file_system_root_url.spec());
     entry->SetString("fileFullPath", "/" + results->at(i).path.value());
     entry->SetBoolean("fileIsDirectory",
                       results->at(i).entry.file_info().is_directory());
@@ -2887,8 +2874,7 @@ void SearchDriveFunction::OnSearch(
   SendResponse(true);
 }
 
-SearchDriveMetadataFunction::SearchDriveMetadataFunction()
-    : max_results_(0) {}
+SearchDriveMetadataFunction::SearchDriveMetadataFunction() {}
 
 SearchDriveMetadataFunction::~SearchDriveMetadataFunction() {}
 
@@ -2897,66 +2883,48 @@ bool SearchDriveMetadataFunction::RunImpl() {
   if (!args_->GetDictionary(0, &search_params))
     return false;
 
-  if (!search_params->GetString("query", &query_))
+  std::string query;
+  if (!search_params->GetString("query", &query))
     return false;
 
-  if (!search_params->GetString("types", &types_))
+  std::string types;
+  if (!search_params->GetString("types", &types))
     return false;
 
-  if (!search_params->GetInteger("maxResults", &max_results_))
+  int max_results = 0;
+  if (!search_params->GetInteger("maxResults", &max_results))
     return false;
 
   drive::util::Log("%s[%d] called. (types: '%s', maxResults: '%d')",
                    name().c_str(),
                    request_id(),
-                   types_.c_str(),
-                   max_results_);
+                   types.c_str(),
+                   max_results);
   set_log_on_completion(true);
-
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  BrowserContext::GetStoragePartition(profile(), site_instance)->
-      GetFileSystemContext()->OpenFileSystem(
-          source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
-          base::Bind(&SearchDriveMetadataFunction::OnFileSystemOpened, this));
-  return true;
-}
-
-void SearchDriveMetadataFunction::OnFileSystemOpened(
-    base::PlatformFileError result,
-    const std::string& file_system_name,
-    const GURL& file_system_url) {
-  if (result != base::PLATFORM_FILE_OK) {
-    SendResponse(false);
-    return;
-  }
-
-  file_system_name_ = file_system_name;
-  file_system_url_ = file_system_url;
 
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
   // |integration_service| is NULL if Drive is disabled.
-  if (!integration_service || !integration_service->file_system()) {
-    SendResponse(false);
-    return;
-  }
+  if (!integration_service || !integration_service->file_system())
+    return false;
 
   int options = drive::SEARCH_METADATA_ALL;
   // TODO(hirono): Switch to the JSON scheme compiler. http://crbug.com/241693
-  if (types_ == "EXCLUDE_DIRECTORIES")
+  if (types == "EXCLUDE_DIRECTORIES")
     options = drive::SEARCH_METADATA_EXCLUDE_DIRECTORIES;
-  else if (types_ == "SHARED_WITH_ME")
+  else if (types == "SHARED_WITH_ME")
     options = drive::SEARCH_METADATA_SHARED_WITH_ME;
-  else if (types_ == "OFFLINE")
+  else if (types == "OFFLINE")
     options = drive::SEARCH_METADATA_OFFLINE;
   else
-    DCHECK_EQ("ALL", types_);
+    DCHECK_EQ("ALL", types);
 
   integration_service->file_system()->SearchMetadata(
-      query_,
+      query,
       options,
-      max_results_,
+      max_results,
       base::Bind(&SearchDriveMetadataFunction::OnSearchMetadata, this));
+  return true;
 }
 
 void SearchDriveMetadataFunction::OnSearchMetadata(
@@ -2975,13 +2943,19 @@ void SearchDriveMetadataFunction::OnSearchMetadata(
   // file_browser_handler_custom_bindings.cc and
   // file_browser_private_custom_bindings.js for how this is magically
   // converted to a FileEntry.
+  GURL origin_url = source_url_.GetOrigin();
+  fileapi::FileSystemType file_system_type = fileapi::kFileSystemTypeExternal;
+  GURL file_system_root_url =
+      fileapi::GetFileSystemRootURI(origin_url, file_system_type);
+  std::string file_system_name =
+      fileapi::GetFileSystemName(origin_url, file_system_type);
   for (size_t i = 0; i < results->size(); ++i) {
     DictionaryValue* result_dict = new DictionaryValue();
 
     // FileEntry fields.
     DictionaryValue* entry = new DictionaryValue();
-    entry->SetString("fileSystemName", file_system_name_);
-    entry->SetString("fileSystemRoot", file_system_url_.spec());
+    entry->SetString("fileSystemName", file_system_name);
+    entry->SetString("fileSystemRoot", file_system_root_url.spec());
     entry->SetString("fileFullPath", "/" + results->at(i).path.value());
     entry->SetBoolean("fileIsDirectory",
                       results->at(i).entry.file_info().is_directory());

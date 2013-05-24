@@ -656,22 +656,10 @@ class SearchDriveFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Callback fo OpenFileSystem called from RunImpl.
-  void OnFileSystemOpened(base::PlatformFileError result,
-                          const std::string& file_system_name,
-                          const GURL& file_system_url);
-  // Callback for google_apis::SearchAsync called after file system is opened.
+  // Callback for Search().
   void OnSearch(drive::FileError error,
                 const GURL& next_feed,
                 scoped_ptr<std::vector<drive::SearchResultInfo> > result_paths);
-
-  // Query for which the search is being performed.
-  std::string query_;
-  std::string next_feed_;
-  // Information about remote file system we will need to create file entries
-  // to represent search results.
-  std::string file_system_name_;
-  GURL file_system_url_;
 };
 
 // Similar to SearchDriveFunction but this one is used for searching drive
@@ -689,30 +677,9 @@ class SearchDriveMetadataFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Callback fo OpenFileSystem called from RunImpl.
-  void OnFileSystemOpened(base::PlatformFileError result,
-                          const std::string& file_system_name,
-                          const GURL& file_system_url);
-  // Callback for LocalSearch().
-  void OnSearchMetadata(
-      drive::FileError error,
-      scoped_ptr<drive::MetadataSearchResultVector> results);
-
-  // Query for which the search is being performed.
-  std::string query_;
-  // String representing what type of entries are needed. It corresponds to
-  // SearchMetadataOptions:
-  // SEARCH_METADATA_OPTION_EXCLUDE_DIRECTORIES => "EXCLUDE_DIRECTORIES"
-  // SEARCH_METADATA_OPTION_ALL => "ALL"
-  std::string types_;
-  // Maximum number of results. The results contains |max_num_results_| entries
-  // at most.
-  int max_results_;
-
-  // Information about remote file system we will need to create file entries
-  // to represent search results.
-  std::string file_system_name_;
-  GURL file_system_url_;
+  // Callback for SearchMetadata();
+  void OnSearchMetadata(drive::FileError error,
+                        scoped_ptr<drive::MetadataSearchResultVector> results);
 };
 
 class ClearDriveCacheFunction : public AsyncExtensionFunction {
