@@ -672,12 +672,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, SpdyURLTest) {
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));
 
-  const SpdyHeaderBlock& spdy_header =
-    http_stream->stream()->spdy_headers();
-  if (spdy_header.find(":path") != spdy_header.end())
-    EXPECT_EQ("/foo?query=what", spdy_header.find(":path")->second);
-  else
-    FAIL() << "No url is set in spdy_header!";
+  EXPECT_EQ(base_url, http_stream->stream()->GetUrl().spec());
 
   // This triggers the MockWrite and read 2
   callback.WaitForResult();

@@ -227,8 +227,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   const BoundNetLog& net_log() const { return net_log_; }
 
-  const SpdyHeaderBlock& spdy_headers() const;
-  void set_spdy_headers(scoped_ptr<SpdyHeaderBlock> headers);
   base::Time GetRequestTime() const;
   void SetRequestTime(base::Time t);
 
@@ -291,7 +289,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Sends the request.
   // For non push stream, it will send SYN_STREAM frame.
-  int SendRequest(bool has_upload_data);
+  int SendRequest(scoped_ptr<SpdyHeaderBlock> headers, bool has_upload_data);
 
   // Sends a DATA frame. The delegate will be notified via
   // OnSendBodyComplete() (if the response hasn't been received yet)

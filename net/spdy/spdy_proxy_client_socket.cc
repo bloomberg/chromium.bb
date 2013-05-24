@@ -368,9 +368,8 @@ int SpdyProxyClientSocket::DoSendRequest() {
     (*headers)["url"] = endpoint_.ToString();
     headers->erase("scheme");
   }
-  spdy_stream_->set_spdy_headers(headers.Pass());
 
-  return spdy_stream_->SendRequest(true);
+  return spdy_stream_->SendRequest(headers.Pass(), true);
 }
 
 int SpdyProxyClientSocket::DoSendRequestComplete(int result) {

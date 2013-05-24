@@ -135,12 +135,11 @@ TEST_F(SpdyStreamSpdy3Test, SendDataAfterOpen) {
 
   EXPECT_FALSE(stream->HasUrl());
 
-  stream->set_spdy_headers(
+  scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
@@ -251,12 +250,11 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
 
   EXPECT_FALSE(stream->HasUrl());
 
-  stream->set_spdy_headers(
+  scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
@@ -332,12 +330,11 @@ TEST_F(SpdyStreamSpdy3Test, SendLargeDataAfterOpenRequestResponse) {
 
   EXPECT_FALSE(stream->HasUrl());
 
-  stream->set_spdy_headers(
+  scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
@@ -395,12 +392,11 @@ TEST_F(SpdyStreamSpdy3Test, SendLargeDataAfterOpenBidirectional) {
 
   EXPECT_FALSE(stream->HasUrl());
 
-  stream->set_spdy_headers(
+  scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
@@ -453,12 +449,11 @@ TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
   StreamDelegateSendImmediate delegate(stream, kPostBodyStringPiece);
   stream->SetDelegate(&delegate);
 
-  stream->set_spdy_headers(
+  scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
   data.RunFor(1);
 
@@ -547,15 +542,13 @@ void SpdyStreamSpdy3Test::RunResumeAfterUnstallRequestResponseTest(
   stream->SetDelegate(&delegate);
 
   EXPECT_FALSE(stream->HasUrl());
-
-  stream->set_spdy_headers(
-      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
-  EXPECT_TRUE(stream->HasUrl());
-  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
+  EXPECT_TRUE(stream->HasUrl());
+  EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
   StallStream(stream);
 
@@ -636,12 +629,11 @@ void SpdyStreamSpdy3Test::RunResumeAfterUnstallBidirectionalTest(
 
   EXPECT_FALSE(stream->HasUrl());
 
-  stream->set_spdy_headers(
+  scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
   data.RunFor(1);
 

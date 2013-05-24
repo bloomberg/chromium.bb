@@ -212,15 +212,6 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   base::Time request_time = base::Time::Now();
   CHECK(stream_.get());
 
-  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
-  CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
-                                   headers.get(), stream_->GetProtocolVersion(),
-                                   direct_);
-  stream_->net_log().AddEvent(
-      NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS,
-      base::Bind(&SpdyHeaderBlockNetLogCallback, headers.get()));
-  stream_->set_spdy_headers(headers.Pass());
-
   stream_->SetRequestTime(request_time);
   // This should only get called in the case of a request occurring
   // during server push that has already begun but hasn't finished,
@@ -265,7 +256,14 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     return result;
   response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
 
-  result = stream_->SendRequest(has_upload_data_);
+  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
+  CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
+                                   headers.get(), stream_->GetProtocolVersion(),
+                                   direct_);
+  stream_->net_log().AddEvent(
+      NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS,
+      base::Bind(&SpdyHeaderBlockNetLogCallback, headers.get()));
+  result = stream_->SendRequest(headers.Pass(), has_upload_data_);
   if (result == ERR_IO_PENDING) {
     CHECK(callback_.is_null());
     callback_ = callback;

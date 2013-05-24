@@ -56,8 +56,7 @@ int SpdyWebSocketStream::SendRequest(scoped_ptr<SpdyHeaderBlock> headers) {
     NOTREACHED();
     return ERR_UNEXPECTED;
   }
-  stream_->set_spdy_headers(headers.Pass());
-  int result = stream_->SendRequest(true);
+  int result = stream_->SendRequest(headers.Pass(), true);
   if (result < OK && result != ERR_IO_PENDING)
     Close();
   return result;

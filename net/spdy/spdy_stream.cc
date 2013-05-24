@@ -194,15 +194,6 @@ void SpdyStream::DetachDelegate() {
   Cancel();
 }
 
-const SpdyHeaderBlock& SpdyStream::spdy_headers() const {
-  DCHECK(request_ != NULL);
-  return *request_.get();
-}
-
-void SpdyStream::set_spdy_headers(scoped_ptr<SpdyHeaderBlock> headers) {
-  request_.reset(headers.release());
-}
-
 void SpdyStream::AdjustSendWindowSize(int32 delta_window_size) {
   DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
 
@@ -570,7 +561,11 @@ void SpdyStream::Close() {
   }
 }
 
-int SpdyStream::SendRequest(bool has_upload_data) {
+int SpdyStream::SendRequest(scoped_ptr<SpdyHeaderBlock> headers,
+                            bool has_upload_data) {
+  DCHECK(!request_);
+  request_ = headers.Pass();
+
   // Pushed streams do not send any data, and should always be
   // idle. However, we still want to return IO_PENDING to mimic
   // non-push behavior.

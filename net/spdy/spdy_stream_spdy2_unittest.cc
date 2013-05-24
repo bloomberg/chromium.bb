@@ -126,12 +126,11 @@ TEST_F(SpdyStreamSpdy2Test, SendDataAfterOpen) {
 
   EXPECT_FALSE(stream->HasUrl());
 
-  stream->set_spdy_headers(
+  scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
@@ -239,12 +238,11 @@ TEST_F(SpdyStreamSpdy2Test, StreamError) {
 
   EXPECT_FALSE(stream->HasUrl());
 
-  stream->set_spdy_headers(
+  scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
@@ -320,12 +318,11 @@ TEST_F(SpdyStreamSpdy2Test, SendLargeDataAfterOpenRequestResponse) {
 
   EXPECT_FALSE(stream->HasUrl());
 
-  stream->set_spdy_headers(
+  scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
@@ -383,12 +380,11 @@ TEST_F(SpdyStreamSpdy2Test, SendLargeDataAfterOpenBidirectional) {
 
   EXPECT_FALSE(stream->HasUrl());
 
-  stream->set_spdy_headers(
+  scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
-
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
