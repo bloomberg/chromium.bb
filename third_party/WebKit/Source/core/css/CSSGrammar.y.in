@@ -685,7 +685,7 @@ media:
     | before_media_rule MEDIA_SYM at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space block_rule_list save_block {
         $$ = parser->createMediaRule(0, $7);
     }
-    | before_media_rule MEDIA_SYM at_rule_header_end_maybe_space ';' {
+    | before_media_rule MEDIA_SYM at_rule_recovery {
         $$ = 0;
         parser->endRuleBody(true);
     }
@@ -789,6 +789,10 @@ before_keyframes_rule:
 keyframes:
     before_keyframes_rule WEBKIT_KEYFRAMES_SYM maybe_space keyframe_name at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space keyframes_rule closing_brace {
         $$ = parser->createKeyframesRule($4, parser->sinkFloatingKeyframeVector($9));
+    }
+  | before_keyframes_rule WEBKIT_KEYFRAMES_SYM at_rule_recovery {
+        $$ = 0;
+        parser->endRuleBody(true);
     }
     ;
   
@@ -983,7 +987,7 @@ host:
     '{' at_rule_body_start maybe_space block_rule_list save_block {
         $$ = parser->createHostRule($7);
     }
-    | before_host_rule HOST_SYM at_rule_header_end_maybe_space ';' {
+    | before_host_rule HOST_SYM at_rule_recovery {
         $$ = 0;
         parser->endRuleBody(true);
     }
@@ -1036,6 +1040,10 @@ region:
             $$ = 0;
             parser->endRuleBody(true);
         }
+    }
+  | before_region_rule WEBKIT_REGION_RULE_SYM at_rule_recovery {
+        $$ = 0;
+        parser->endRuleBody(true);
     }
 ;
 
@@ -1903,11 +1911,14 @@ invalid_at:
     ATKEYWORD at_rule_recovery {
         $$ = 0;
     }
+  | margin_sym at_rule_recovery {
+        $$ = 0;
+    }
     ;
 
 at_rule_recovery:
-    error ';'
-  | error invalid_block
+    error rule_error_recovery ';'
+  | error rule_error_recovery invalid_block
     ;
 
 invalid_rule:

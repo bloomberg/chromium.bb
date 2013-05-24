@@ -1,0 +1,78 @@
+<html>
+<body>
+<div>
+Tests error recovery in @-rules.
+</div>
+
+<div>
+<style>@foo #; #test1{display: none}</style>
+<div id="test1"></div>
+
+<style>@foo {#} #test2{display: none}</style>
+<div id="test2"></div>
+
+<style>@media #; #test3{display: none}</style>
+<div id="test3"></div>
+
+<style>@media {#} #test4{display: none}</style>
+<div id="test4"></div>
+
+<style>@supports #; #test5{display: none}</style>
+<div id="test5"></div>
+
+<style>@supports (display: block) {#} #test6{display: none}</style>
+<div id="test6"></div>
+
+<style>@-webkit-keyframes #; #test7{display: none}</style>
+<div id="test7"></div>
+
+<style>@-webkit-keyframes x {#} #test8{display: none}</style>
+<div id="test8"></div>
+
+<style>@page #; #test9{display: none}</style>
+<div id="test9"></div>
+
+<style>@page x {#} #test10{display: none}</style>
+<div id="test10"></div>
+
+<style>@host #; #test11{display: none}</style>
+<div id="test11"></div>
+
+<style>@host {#} #test12{display: none}</style>
+<div id="test12"></div>
+
+<style>@-webkit-viewport #; #test13{display: none}</style>
+<div id="test13"></div>
+
+<style>@-webkit-viewport {#} #test14{display: none}</style>
+<div id="test14"></div>
+
+<style>@-webkit-region #; #test15{display: none}</style>
+<div id="test15"></div>
+
+<style>@-webkit-region x {#} #test16{display: none}</style>
+<div id="test16"></div>
+
+<style>@font-face #; #test17{display: none}</style>
+<div id="test17"></div>
+
+<style>@font-face x {#} #test18{display: none}</style>
+<div id="test18"></div>
+
+<style>@top-left #; #test19{display: none}</style>
+<div id="test19"></div>
+
+<style>@top-left x {#} #test20{display: none}</style>
+<div id="test20"></div>
+
+</div>
+
+<script type="text/javascript">
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+var tests = document.querySelectorAll("[id^=test]");
+for (var i = 0; i < tests.length; i++)
+    tests[i].textContent = "Test " + tests[i].id + " failed.";
+</script>
+</body>

@@ -1,0 +1,5 @@
+Tests error recovery in @-rules.
+Test test4 failed.
+Test test6 failed.
+Test test8 failed.
+Test test12 failed.
