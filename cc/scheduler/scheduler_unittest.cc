@@ -210,6 +210,64 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrameSentToMainThread) {
   client.Reset();
 }
 
+TEST(SchedulerTest, TextureAcquisitionCausesCommitInsteadOfDraw) {
+  FakeSchedulerClient client;
+  scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
+  SchedulerSettings default_scheduler_settings;
+  Scheduler* scheduler = client.CreateScheduler(
+      make_scoped_ptr(new FrameRateController(time_source)),
+      default_scheduler_settings);
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+
+  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client);
+  client.Reset();
+  scheduler->DidCreateAndInitializeOutputSurface();
+
+  scheduler->SetNeedsRedraw();
+  EXPECT_TRUE(scheduler->RedrawPending());
+  EXPECT_TRUE(time_source->Active());
+
+  time_source->Tick();
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 1);
+  EXPECT_FALSE(scheduler->RedrawPending());
+  EXPECT_FALSE(time_source->Active());
+  client.Reset();
+
+  scheduler->SetMainThreadNeedsLayerTextures();
+  EXPECT_ACTION("ScheduledActionAcquireLayerTexturesForMainThread",
+                client,
+                0,
+                2);
+  // A commit was started by SetMainThreadNeedsLayerTextures().
+  EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 1, 2);
+  client.Reset();
+
+  scheduler->SetNeedsRedraw();
+  EXPECT_TRUE(scheduler->RedrawPending());
+  EXPECT_TRUE(time_source->Active());
+
+  // No draw happens since the textures are acquired by the main thread.
+  time_source->Tick();
+  EXPECT_EQ(0, client.num_actions_());
+  EXPECT_TRUE(scheduler->RedrawPending());
+  EXPECT_TRUE(time_source->Active());
+
+  scheduler->FinishCommit();
+  EXPECT_ACTION("ScheduledActionCommit", client, 0, 1);
+  EXPECT_TRUE(scheduler->RedrawPending());
+  EXPECT_TRUE(time_source->Active());
+  client.Reset();
+
+  // Now we can draw again after the commit happens.
+  time_source->Tick();
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 1);
+  EXPECT_FALSE(scheduler->RedrawPending());
+  EXPECT_FALSE(time_source->Active());
+  client.Reset();
+}
+
 TEST(SchedulerTest, TextureAcquisitionCollision) {
   FakeSchedulerClient client;
   scoped_refptr<FakeTimeSource> time_source(new FakeTimeSource());
