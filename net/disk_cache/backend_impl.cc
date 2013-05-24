@@ -299,7 +299,7 @@ int BackendImpl::SyncInit() {
 
   // stats_ and rankings_ may end up calling back to us so we better be enabled.
   disabled_ = false;
-  if (!stats_.Init(this, &data_->header.stats))
+  if (!InitStats())
     return net::ERR_FAILED;
 
   disabled_ = !rankings_.Init(this, new_eviction_);
@@ -329,7 +329,7 @@ void BackendImpl::CleanupCache() {
   timer_.reset();
 
   if (init_) {
-    stats_.Store();
+    StoreStats();
     if (data_)
       data_->header.crash = 0;
 
@@ -1066,7 +1066,7 @@ void BackendImpl::OnStatsTimer() {
 
   // Save stats to disk at 5 min intervals.
   if (time % 10 == 0)
-    stats_.Store();
+    StoreStats();
 }
 
 void BackendImpl::IncrementIoCount() {
@@ -1350,6 +1350,62 @@ void BackendImpl::AdjustMaxCacheSize(int table_len) {
   int current_max_size = MaxStorageSizeForTable(table_len);
   if (max_size_ > current_max_size)
     max_size_= current_max_size;
+}
+
+bool BackendImpl::InitStats() {
+  Addr address(data_->header.stats);
+  int size = stats_.StorageSize();
+
+  if (!address.is_initialized()) {
+    FileType file_type = Addr::RequiredFileType(size);
+    DCHECK_NE(file_type, EXTERNAL);
+    int num_blocks = Addr::RequiredBlocks(size, file_type);
+
+    if (!CreateBlock(file_type, num_blocks, &address))
+      return false;
+    return stats_.Init(NULL, 0, address);
+  }
+
+  if (!address.is_block_file()) {
+    NOTREACHED();
+    return false;
+  }
+
+  // Load the required data.
+  size = address.num_blocks() * address.BlockSize();
+  MappedFile* file = File(address);
+  if (!file)
+    return false;
+
+  scoped_ptr<char[]> data(new char[size]);
+  size_t offset = address.start_block() * address.BlockSize() +
+                  kBlockHeaderSize;
+  if (!file->Read(data.get(), size, offset))
+    return false;
+
+  if (!stats_.Init(data.get(), size, address))
+    return false;
+  if (cache_type_ == net::DISK_CACHE && ShouldReportAgain())
+    stats_.InitSizeHistogram();
+  return true;
+}
+
+void BackendImpl::StoreStats() {
+  int size = stats_.StorageSize();
+  scoped_ptr<char[]> data(new char[size]);
+  Addr address;
+  bool rv = stats_.SerializeStats(data.get(), size, &address);
+  DCHECK(rv);
+  if (!address.is_initialized())
+    return;
+
+  MappedFile* file = File(address);
+  if (!file)
+    return;
+
+  size_t offset = address.start_block() * address.BlockSize() +
+                  kBlockHeaderSize;
+  rv = file->Write(data.get(), size, offset);  // ignore result.
 }
 
 void BackendImpl::RestartCache(bool failure) {

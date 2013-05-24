@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "net/disk_cache/addr.h"
 #include "net/disk_cache/stats_histogram.h"
 
 namespace base {
@@ -16,8 +17,6 @@ class HistogramSamples;
 }  // namespace base
 
 namespace disk_cache {
-
-class BackendImpl;
 
 typedef std::vector<std::pair<std::string, std::string> > StatsItems;
 
@@ -55,7 +54,14 @@ class Stats {
   Stats();
   ~Stats();
 
-  bool Init(BackendImpl* backend, uint32* storage_addr);
+  // Initializes this object with |data| from disk.
+  bool Init(void* data, int num_bytes, Addr address);
+
+  // Generates a size distribution histogram.
+  void InitSizeHistogram();
+
+  // Returns the number of bytes needed to store the stats on disk.
+  int StorageSize();
 
   // Tracks changes to the stoage space used by an entry.
   void ModifyStorageStats(int32 old_size, int32 new_size);
@@ -73,8 +79,8 @@ class Stats {
   // Returns the lower bound of the space used by entries bigger than 512 KB.
   int GetLargeEntriesSize();
 
-  // Saves the stats to disk.
-  void Store();
+  // Writes the stats into |data|, to be stored at the given cache address.
+  bool SerializeStats(void* data, int num_bytes, Addr* address);
 
   // Support for StatsHistograms. Together, these methods allow StatsHistograms
   // to take a snapshot of the data_sizes_ as the histogram data.
@@ -85,8 +91,7 @@ class Stats {
   int GetStatsBucket(int32 size);
   int GetRatio(Counters hit, Counters miss) const;
 
-  BackendImpl* backend_;
-  uint32 storage_addr_;
+  Addr storage_addr_;
   int data_sizes_[kDataSizesLength];
   int64 counters_[MAX_COUNTER];
   StatsHistogram* size_histogram_;

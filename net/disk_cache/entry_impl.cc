@@ -1181,8 +1181,7 @@ bool EntryImpl::CreateBlock(int size, Addr* address) {
     if (!backend_->CreateExternalFile(address))
       return false;
   } else {
-    int num_blocks = (size + Addr::BlockSizeForFileType(file_type) - 1) /
-                     Addr::BlockSizeForFileType(file_type);
+    int num_blocks = Addr::RequiredBlocks(size, file_type);
 
     if (!backend_->CreateBlock(file_type, num_blocks, address))
       return false;

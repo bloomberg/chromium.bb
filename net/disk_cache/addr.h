@@ -127,6 +127,11 @@ class NET_EXPORT_PRIVATE Addr {
       return EXTERNAL;
   }
 
+  static int RequiredBlocks(int size, FileType file_type) {
+    int block_size = BlockSizeForFileType(file_type);
+    return (size + block_size - 1) / block_size;
+  }
+
   // Returns true if this address looks like a valid one.
   bool SanityCheck() const;
   bool SanityCheckForEntry() const;

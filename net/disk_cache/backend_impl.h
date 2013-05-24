@@ -280,6 +280,9 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   bool InitBackingStore(bool* file_created);
   void AdjustMaxCacheSize(int table_len);
 
+  bool InitStats();
+  void StoreStats();
+
   // Deletes the cache and starts again.
   void RestartCache(bool failure);
   void PrepareForRestart();
