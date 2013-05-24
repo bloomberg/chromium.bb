@@ -2236,7 +2236,7 @@ void GLES2Implementation::ReadPixels(
     GLuint offset = ToGLuint(pixels);
     BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
         bound_pixel_pack_transfer_buffer_id_,
-        "glReadPixels", offset, temp_size);
+        "glReadPixels", offset, padded_row_size * height);
     if (buffer && buffer->shm_id() != -1) {
       helper_->ReadPixels(xoffset, yoffset, width, height, format, type,
                           buffer->shm_id(), buffer->shm_offset(),
