@@ -20,7 +20,7 @@ typedef OperationTestBase TouchOperationTest;
 
 TEST_F(TouchOperationTest, TouchFile) {
   TouchOperation operation(blocking_task_runner(),
-                           dummy_observer(),
+                           observer(),
                            scheduler(),
                            metadata());
 
@@ -42,13 +42,7 @@ TEST_F(TouchOperationTest, TouchFile) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   ResourceEntry entry;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner(), FROM_HERE,
-      base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
-                 base::Unretained(metadata()), kTestPath, &entry),
-      base::Bind(google_apis::test_util::CreateCopyResultCallback(&error)));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kTestPath, &entry));
   EXPECT_EQ(base::Time::FromUTCExploded(kLastAccessTime),
             base::Time::FromInternalValue(entry.file_info().last_accessed()));
   EXPECT_EQ(base::Time::FromUTCExploded(kLastModifiedTime),

@@ -15,7 +15,7 @@ typedef OperationTestBase CreateFileOperationTest;
 
 TEST_F(CreateFileOperationTest, CreateFile) {
   CreateFileOperation operation(blocking_task_runner(),
-                                dummy_observer(),
+                                observer(),
                                 scheduler(),
                                 metadata(),
                                 cache());

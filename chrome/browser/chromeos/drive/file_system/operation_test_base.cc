@@ -23,6 +23,17 @@ namespace {
 const int64 kLotsOfSpace = internal::kMinFreeSpace * 10;
 }
 
+OperationTestBase::LoggingObserver::LoggingObserver() {
+}
+
+OperationTestBase::LoggingObserver::~LoggingObserver() {
+}
+
+void OperationTestBase::LoggingObserver::OnDirectoryChangedByOperation(
+    const base::FilePath& path) {
+  changed_paths_.insert(path);
+}
+
 OperationTestBase::OperationTestBase()
     : ui_thread_(content::BrowserThread::UI, &message_loop_) {
 }
@@ -85,6 +96,19 @@ void OperationTestBase::TearDown() {
   profile_.reset();
 
   blocking_task_runner_ = NULL;
+}
+
+FileError OperationTestBase::GetLocalResourceEntry(const base::FilePath& path,
+                                                   ResourceEntry* entry) {
+  FileError error = FILE_ERROR_FAILED;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
+                 base::Unretained(metadata()), path, entry),
+      base::Bind(google_apis::test_util::CreateCopyResultCallback(&error)));
+  google_apis::test_util::RunBlockingPoolTask();
+  return error;
 }
 
 }  // namespace file_system

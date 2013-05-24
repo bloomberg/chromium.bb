@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_TEST_BASE_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_TEST_BASE_H_
 
+#include <set>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "content/public/test/test_browser_thread.h"
@@ -39,10 +42,23 @@ namespace file_system {
 // FakeDriveService for testing.
 class OperationTestBase : public testing::Test {
  protected:
-  class DummyObserver : public OperationObserver {
+  // OperationObserver that records all the events.
+  class LoggingObserver : public OperationObserver {
+   public:
+    LoggingObserver();
+    ~LoggingObserver();
+
+    // OperationObserver overrides.
     virtual void OnDirectoryChangedByOperation(
-        const base::FilePath& path) OVERRIDE {
+        const base::FilePath& path) OVERRIDE;
+
+    // Gets the set of changed paths.
+    const std::set<base::FilePath>& get_changed_paths() {
+      return changed_paths_;
     }
+
+   private:
+    std::set<base::FilePath> changed_paths_;
   };
 
   OperationTestBase();
@@ -52,10 +68,16 @@ class OperationTestBase : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+  // Synchronously gets the resource entry corresponding to the path from local
+  // ResourceMetadta.
+  FileError GetLocalResourceEntry(const base::FilePath& path,
+                                  ResourceEntry* entry);
+
+  // Accessors for the components.
   google_apis::FakeDriveService* fake_service() {
     return fake_drive_service_.get();
   }
-  DummyObserver* dummy_observer() { return &dummy_observer_; }
+  LoggingObserver* observer() { return &observer_; }
   JobScheduler* scheduler() { return scheduler_.get(); }
   base::SequencedTaskRunner* blocking_task_runner() {
     return blocking_task_runner_;
@@ -70,7 +92,7 @@ class OperationTestBase : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   base::ScopedTempDir temp_dir_;
 
-  DummyObserver dummy_observer_;
+  LoggingObserver observer_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
