@@ -751,12 +751,14 @@ body[new-ui] .dialog-header .buttonbar {
 }
 
 body[new-ui] .dialog-header .buttonbar button {
+  -webkit-box-shadow: none;
   -webkit-margin-end: 10px;
   -webkit-margin-start: 0;
+  background-color: transparent;
   background-image: none;
   background-position: center;
   background-repeat: no-repeat;
-  border-style: none;
+  border: 0 none transparent;
   display: block;
   height: 32px;
   min-width: 0;
@@ -765,13 +767,16 @@ body[new-ui] .dialog-header .buttonbar button {
   width: 32px;
 }
 
-body[new-ui] .dialog-header .buttonbar button:not(:active) {
-  -webkit-box-shadow: none;
+body[new-ui] .dialog-header .buttonbar button:active {
+  -webkit-box-shadow:
+    0 1px 0 0 #c2c2c2 inset,
+    0 0 0 1px #dedede inset;
 }
 
-body[new-ui] .dialog-header button:not(:hover):not(focus):not(:active) {
-  background-color: transparent;
-  border-color: transparent;
+body[new-ui] .dialog-header button:hover,
+body[new-ui] .dialog-header button:focus,
+body[new-ui] .dialog-header button:active {
+  background-color: #ededed;
 }
 
 #search-box,
