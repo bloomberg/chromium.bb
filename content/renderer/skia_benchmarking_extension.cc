@@ -4,13 +4,18 @@
 
 #include "content/renderer/skia_benchmarking_extension.h"
 
+#include "base/values.h"
 #include "cc/resources/picture.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBuffer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/gfx/rect_conversions.h"
 #include "v8/include/v8.h"
+
+using WebKit::WebFrame;
 
 namespace {
 
@@ -28,8 +33,8 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
         "};"
         "chrome.skiaBenchmarking.rasterize = function(picture, scale, rect) {"
         "  /* "
-        "     Rasterizes a base64-encoded Picture."
-        "     @param {String} picture Base64-encoded Picture."
+        "     Rasterizes a Picture JSON-encoded by cc::Picture::AsValue()."
+        "     @param {Object} picture A json-encoded cc::Picture."
         "     @param {Number} scale (optional) Rendering scale."
         "     @param [Number, Number, Number, Number] clip_rect (optional)."
         "     @returns { 'width': {Number}, 'height': {Number},"
@@ -54,9 +59,22 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     if (args.Length() < 1)
       return v8::Undefined();
 
-    v8::String::AsciiValue base64_picture(args[0]);
+    WebFrame* web_frame = WebFrame::frameForCurrentContext();
+    if (!web_frame)
+      return v8::Undefined();
+
+    scoped_ptr<content::V8ValueConverter> converter(
+        content::V8ValueConverter::create());
+
+    v8::String::Value v8_picture(args[0]);
+    scoped_ptr<base::Value> picture_value(
+        converter->FromV8Value(
+            args[0], v8::Context::GetCurrent()));
+    if (!picture_value)
+      return v8::Undefined();
+
     scoped_refptr<cc::Picture> picture =
-        cc::Picture::CreateFromBase64String(*base64_picture);
+        cc::Picture::CreateFromValue(picture_value.get());
     if (!picture)
       return v8::Undefined();
 

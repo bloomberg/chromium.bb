@@ -26,18 +26,10 @@ scoped_ptr<base::debug::ConvertableToTraceFormat>
 }
 
 void TracedPicture::AppendAsTraceFormat(std::string* out) const {
-  std::string encoded_picture;
-  picture_->AsBase64String(&encoded_picture);
-  out->append("{");
-  out->append("\"layer_rect\": [");
-  base::StringAppendF(
-      out, "%i,%i,%i,%i",
-      picture_->LayerRect().x(), picture_->LayerRect().y(),
-      picture_->LayerRect().width(), picture_->LayerRect().height());
-  out->append("],");
-  out->append("\"data_b64\": \"");
-  out->append(encoded_picture);
-  out->append("\"}");
+  scoped_ptr<base::Value> value = picture_->AsValue();
+  std::string tmp;
+  base::JSONWriter::Write(value.get(), &tmp);
+  out->append(tmp);
 }
 
 }  // namespace cc

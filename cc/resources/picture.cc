@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/debug/trace_event.h"
 #include "base/values.h"
+#include "cc/base/math_util.h"
 #include "cc/base/util.h"
 #include "cc/debug/rendering_stats.h"
 #include "cc/debug/traced_picture.h"
@@ -31,13 +32,6 @@
 namespace cc {
 
 namespace {
-
-// Version ID; to be used in serialization.
-const int kPictureVersion = 1;
-
-// Minimum size of a decoded stream that we need.
-// 4 bytes for version, 4 * 4 for each of the 2 rects.
-const unsigned int kMinPictureSizeBytes = 36;
 
 SkData* EncodeBitmap(size_t* offset, const SkBitmap& bm) {
   const int kJpegQuality = 80;
@@ -135,11 +129,10 @@ scoped_refptr<Picture> Picture::Create(gfx::Rect layer_rect) {
   return make_scoped_refptr(new Picture(layer_rect));
 }
 
-scoped_refptr<Picture> Picture::CreateFromBase64String(
-    const std::string& encoded_string) {
+scoped_refptr<Picture> Picture::CreateFromValue(const base::Value* value) {
   bool success;
   scoped_refptr<Picture> picture =
-    make_scoped_refptr(new Picture(encoded_string, &success));
+    make_scoped_refptr(new Picture(value, &success));
   if (!success)
     picture = NULL;
   return picture;
@@ -151,40 +144,43 @@ Picture::Picture(gfx::Rect layer_rect)
   // the picture to be recorded in Picture::Record.
 }
 
-Picture::Picture(const std::string& encoded_string, bool* success) {
+Picture::Picture(const base::Value* raw_value, bool* success) {
+  const base::DictionaryValue* value = NULL;
+  if (!raw_value->GetAsDictionary(&value)) {
+    *success = false;
+    return;
+  }
+
   // Decode the picture from base64.
+  std::string encoded;
+  if (!value->GetString("skp64", &encoded)) {
+    *success = false;
+    return;
+  }
+
   std::string decoded;
-  base::Base64Decode(encoded_string, &decoded);
+  base::Base64Decode(encoded, &decoded);
   SkMemoryStream stream(decoded.data(), decoded.size());
 
-  if (decoded.size() < kMinPictureSizeBytes) {
+  const base::Value* layer_rect = NULL;
+  if (!value->Get("params.layer_rect", &layer_rect)) {
+    *success = false;
+    return;
+  }
+  if (!MathUtil::FromValue(layer_rect, &layer_rect_)) {
     *success = false;
     return;
   }
 
-  int version = stream.readS32();
-  if (version != kPictureVersion) {
+  const base::Value* opaque_rect = NULL;
+  if (!value->Get("params.opaque_rect", &opaque_rect)) {
     *success = false;
     return;
   }
-
-  // First, read the layer and opaque rects.
-  int layer_rect_x = stream.readS32();
-  int layer_rect_y = stream.readS32();
-  int layer_rect_width = stream.readS32();
-  int layer_rect_height = stream.readS32();
-  layer_rect_ = gfx::Rect(layer_rect_x,
-                          layer_rect_y,
-                          layer_rect_width,
-                          layer_rect_height);
-  int opaque_rect_x = stream.readS32();
-  int opaque_rect_y = stream.readS32();
-  int opaque_rect_width = stream.readS32();
-  int opaque_rect_height = stream.readS32();
-  opaque_rect_ = gfx::Rect(opaque_rect_x,
-                           opaque_rect_y,
-                           opaque_rect_width,
-                           opaque_rect_height);
+  if (!MathUtil::FromValue(opaque_rect, &opaque_rect_)) {
+    *success = false;
+    return;
+  }
 
   // Read the picture. This creates an empty picture on failure.
   picture_ = skia::AdoptRef(new SkPicture(&stream, success, &DecodeBitmap));
@@ -371,31 +367,25 @@ void Picture::Raster(
                    "num_pixels_rasterized", bounds.width() * bounds.height());
 }
 
-void Picture::AsBase64String(std::string* output) const {
+scoped_ptr<Value> Picture::AsValue() const {
   SkDynamicMemoryWStream stream;
-
-  // First save the version, layer_rect_ and opaque_rect.
-  stream.write32(kPictureVersion);
-
-  stream.write32(layer_rect_.x());
-  stream.write32(layer_rect_.y());
-  stream.write32(layer_rect_.width());
-  stream.write32(layer_rect_.height());
-
-  stream.write32(opaque_rect_.x());
-  stream.write32(opaque_rect_.y());
-  stream.write32(opaque_rect_.width());
-  stream.write32(opaque_rect_.height());
 
   // Serialize the picture.
   picture_->serialize(&stream, &EncodeBitmap);
 
   // Encode the picture as base64.
+  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+  res->Set("params.layer_rect", MathUtil::AsValue(layer_rect_).release());
+  res->Set("params.opaque_rect", MathUtil::AsValue(opaque_rect_).release());
+
   size_t serialized_size = stream.bytesWritten();
   scoped_ptr<char[]> serialized_picture(new char[serialized_size]);
   stream.copyTo(serialized_picture.get());
+  std::string b64_picture;
   base::Base64Encode(std::string(serialized_picture.get(), serialized_size),
-                     output);
+                     &b64_picture);
+  res->SetString("skp64", b64_picture);
+  return res.PassAs<base::Value>();
 }
 
 base::LazyInstance<Picture::PixelRefs>
