@@ -56,17 +56,17 @@ static size_t sizeForImmutableStylePropertySetWithPropertyCount(unsigned count)
     return sizeof(ImmutableStylePropertySet) - sizeof(void*) + sizeof(CSSValue*) * count + sizeof(StylePropertyMetadata) * count;
 }
 
-PassRefPtr<StylePropertySet> StylePropertySet::createImmutable(const CSSProperty* properties, unsigned count, CSSParserMode cssParserMode)
+PassRefPtr<ImmutableStylePropertySet> ImmutableStylePropertySet::create(const CSSProperty* properties, unsigned count, CSSParserMode cssParserMode)
 {
     void* slot = WTF::fastMalloc(sizeForImmutableStylePropertySetWithPropertyCount(count));
     return adoptRef(new (slot) ImmutableStylePropertySet(properties, count, cssParserMode));
 }
 
-PassRefPtr<StylePropertySet> StylePropertySet::immutableCopyIfNeeded() const
+PassRefPtr<ImmutableStylePropertySet> StylePropertySet::immutableCopyIfNeeded() const
 {
     if (!isMutable())
-        return const_cast<StylePropertySet*>(this);
-    return createImmutable(mutablePropertyVector().data(), mutablePropertyVector().size(), cssParserMode());
+        return static_cast<ImmutableStylePropertySet*>(const_cast<StylePropertySet*>(this));
+    return ImmutableStylePropertySet::create(mutablePropertyVector().data(), mutablePropertyVector().size(), cssParserMode());
 }
 
 MutableStylePropertySet::MutableStylePropertySet(const CSSProperty* properties, unsigned length)
