@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
@@ -60,7 +61,17 @@ void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (loaded_ && !IsRefreshing()) {
+  if (IsRefreshing()) {
+    // There is in-flight loading. So keep the callback here, and check for
+    // updates when the in-flight loading is completed.
+    pending_update_check_callback_ = callback;
+    return;
+  }
+
+  if (loaded_) {
+    // We only start to check for updates iff the load is done.
+    // I.e., we ignore checking updates if not loaded to avoid starting the
+    // load without user's explicit interaction (such as opening Drive).
     util::Log("Checking for updates");
     Load(DirectoryFetchInfo(), callback);
   }
@@ -232,6 +243,13 @@ void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
     }
   }
   pending_load_callback_.clear();
+
+  // If there is pending update check, try to load the change from the server
+  // again, because there may exist an update during the completed loading.
+  if (!pending_update_check_callback_.is_null()) {
+    Load(DirectoryFetchInfo(),
+         base::ResetAndReturn(&pending_update_check_callback_));
+  }
 }
 
 void ChangeListLoader::OnDirectoryLoadComplete(

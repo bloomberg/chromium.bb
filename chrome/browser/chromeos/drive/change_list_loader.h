@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -64,6 +64,8 @@ class ChangeListLoader {
 
   // Checks for updates on the server. Does nothing if the change list is now
   // being loaded or refreshed. |callback| must not be null.
+  // Note: |callback| will be called if the check for updates actually
+  // runs, i.e. it may NOT be called if the checking is ignored.
   void CheckForUpdates(const FileOperationCallback& callback);
 
   // Starts the change list loading first from the cache. If loading from the
@@ -265,6 +267,7 @@ class ChangeListLoader {
   typedef std::map<std::string, std::vector<FileOperationCallback> >
       LoadCallbackMap;
   LoadCallbackMap pending_load_callback_;
+  FileOperationCallback pending_update_check_callback_;
 
   // Indicates whether there is a feed refreshing server request is in flight.
   int64 last_known_remote_changestamp_;
