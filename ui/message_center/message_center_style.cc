@@ -47,7 +47,7 @@ gfx::Size GetImageSizeForWidth(int width, const gfx::Size& image_size) {
   gfx::Size size = image_size;
   if (width > 0 && !size.IsEmpty()) {
     double proportion = size.height() / static_cast<double>(size.width());
-    size.SetSize(width, std::max(0.5 + kNotificationWidth * proportion, 1.0));
+    size.SetSize(width, std::max(0.5 + width * proportion, 1.0));
     if (size.height() > kNotificationMaximumImageHeight) {
       int height = kNotificationMaximumImageHeight;
       size.SetSize(std::max(0.5 + height / proportion, 1.0), height);
