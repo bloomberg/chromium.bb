@@ -23,6 +23,9 @@ class SpellcheckAction {
     // select any suggestions. The user cannot take any more actions on the
     // misspelling, because it has been deleted from the web page.
     TYPE_IGNORE,
+    // The misspelling is in user's custom spellcheck dictionary. The user will
+    // not see spellcheck suggestions for this misspelling.
+    TYPE_IN_DICTIONARY,
     // The user manually corrected the word to |value|. The user cannot take
     // more actions on this misspelling.
     TYPE_MANUALLY_CORRECTED,

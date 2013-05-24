@@ -14,6 +14,7 @@ TEST(SpellcheckActionTest, FinalActionsTest) {
   static const SpellcheckAction::SpellcheckActionType kFinalActions[] = {
     SpellcheckAction::TYPE_ADD_TO_DICT,
     SpellcheckAction::TYPE_IGNORE,
+    SpellcheckAction::TYPE_IN_DICTIONARY,
     SpellcheckAction::TYPE_MANUALLY_CORRECTED,
     SpellcheckAction::TYPE_NO_ACTION,
     SpellcheckAction::TYPE_SELECT,
@@ -60,6 +61,9 @@ TEST(SpellcheckActionTest, SerializeTest) {
     { SpellcheckAction(
           SpellcheckAction::TYPE_IGNORE, -1, ASCIIToUTF16("nothing")),
       "{\"actionType\": \"IGNORE\"}" },
+    { SpellcheckAction(
+          SpellcheckAction::TYPE_IN_DICTIONARY, -1, ASCIIToUTF16("nothing")),
+      "{\"actionType\": \"IN_DICTIONARY\"}" },
     { SpellcheckAction(
           SpellcheckAction::TYPE_MANUALLY_CORRECTED, -1, ASCIIToUTF16("hello")),
       "{\"actionTargetValue\": \"hello\","

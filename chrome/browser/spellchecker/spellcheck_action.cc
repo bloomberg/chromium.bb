@@ -19,6 +19,7 @@ SpellcheckAction::~SpellcheckAction() {}
 bool SpellcheckAction::IsFinal() const {
   return type == TYPE_ADD_TO_DICT ||
          type == TYPE_IGNORE ||
+         type == TYPE_IN_DICTIONARY ||
          type == TYPE_MANUALLY_CORRECTED ||
          type == TYPE_NO_ACTION ||
          type == TYPE_SELECT;
@@ -50,6 +51,9 @@ base::DictionaryValue* SpellcheckAction::Serialize() const {
       break;
     case TYPE_IGNORE:
       result->SetString("actionType", "IGNORE");
+      break;
+    case TYPE_IN_DICTIONARY:
+      result->SetString("actionType", "IN_DICTIONARY");
       break;
     case TYPE_NO_ACTION:
       result->SetString("actionType", "NO_ACTION");
