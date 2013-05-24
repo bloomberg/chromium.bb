@@ -12,6 +12,16 @@
 #include "ui/gl/gl_implementation.h"
 
 namespace gpu {
+namespace {
+
+bool IsBroadcom() {
+  const char* vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+  if (vendor)
+    return std::string(vendor).find("Broadcom") != std::string::npos;
+  return false;
+}
+
+}
 
 // We only used threaded uploads when we can:
 // - Create EGLImages out of OpenGL textures (EGL_KHR_gl_texture_2D_image)
@@ -27,7 +37,8 @@ AsyncPixelTransferDelegate* AsyncPixelTransferDelegate::Create(
           context->HasExtension("EGL_KHR_image") &&
           context->HasExtension("EGL_KHR_image_base") &&
           context->HasExtension("EGL_KHR_gl_texture_2D_image") &&
-          context->HasExtension("GL_OES_EGL_image")) {
+          context->HasExtension("GL_OES_EGL_image") &&
+          !IsBroadcom()) {
         return new AsyncPixelTransferDelegateEGL;
       }
       LOG(INFO) << "Async pixel transfers not supported";
