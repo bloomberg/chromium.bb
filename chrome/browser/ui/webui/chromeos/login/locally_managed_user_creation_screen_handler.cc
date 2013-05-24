@@ -60,7 +60,7 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_CONTINUE_BUTTON_TEXT);
   builder->Add("managedUserCreationFlowStartButtonTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_START_BUTTON_TEXT);
-  builder->Add("managedUserCreationFlowPreviousButtonTitle",
+  builder->Add("managedUserCreationFlowPrevButtonTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PREVIOUS_BUTTON_TEXT);
   builder->Add("managedUserCreationFlowNextButtonTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_NEXT_BUTTON_TEXT);
@@ -135,8 +135,9 @@ void LocallyManagedUserCreationScreenHandler::ShowManagerPasswordError() {
   CallJS("login.LocallyManagedUserCreationScreen.showManagerPasswordError");
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowProgressPage() {
-  CallJS("login.LocallyManagedUserCreationScreen.showProgressPage");
+void LocallyManagedUserCreationScreenHandler::ShowProgress(
+    const string16& message) {
+  CallJS("login.LocallyManagedUserCreationScreen.showProgress", message);
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowUsernamePage() {
@@ -207,6 +208,10 @@ void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT));
     return;
   }
+
+  ShowProgress(
+      l10n_util::GetStringUTF16(
+      IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_PROGRESS_MESSAGE));
 
   delegate_->CreateManagedUser(new_user_name, new_user_password);
 }

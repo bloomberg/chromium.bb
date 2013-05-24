@@ -201,7 +201,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       'showManagerPage',
       'showManagerPasswordError',
       'showPasswordError',
-      'showProgressPage',
+      'showProgress',
       'showTutorialPage',
       'showUsernamePage',
     ],
@@ -273,6 +273,70 @@ login.createScreen('LocallyManagedUserCreationScreen',
       });
     },
 
+    buttonIds: [],
+
+    /**
+     * Creates button for adding to controls.
+     * @param {string} buttonId -- id for button, have to be unique within
+     *   screen. Actual id will be prefixed with screen name and appended with
+     *   '-button'. Use getScreenButton(buttonId) to find it later.
+     * @param {string} i18nPrefix -- screen prefix for i18n values.
+     * @param {function} callback -- will be called on button press with
+     *   buttonId parameter.
+     * @param {array} pages -- list of pages where this button should be
+     *   displayed.
+     */
+    makeButton: function(buttonId, i18nPrefix, callback, pages) {
+      var capitalizedId = buttonId.charAt(0).toUpperCase() + buttonId.slice(1);
+      this.buttonIds.push(buttonId);
+      var result = this.ownerDocument.createElement('button');
+      result.id = this.name() + '-' + buttonId + '-button';
+      result.textContent = loadTimeData.
+          getString(i18nPrefix + capitalizedId + 'ButtonTitle');
+      result.addEventListener('click', function(e) {
+        callback(buttonId);
+        e.stopPropagation();
+      });
+      result.pages = pages;
+      return result;
+    },
+
+    /**
+     * Makes element from template.
+     * @param {string} templateId -- template will be looked up within screen
+     * by class with name "template-<templateId>".
+     * @param {string} elementId -- id for result, uinque within screen. Actual
+     *   id will be prefixed with screen name. Uer getScreenElement(id) to find
+     *   it later.
+     */
+    makeFromTemplate: function(templateId, elementId) {
+      var templateClassName = 'template-' + templateId;
+      var templateNode = this.querySelector('.' + templateClassName);
+      var screenPrefix = this.name() + '-';
+      var result = templateNode.cloneNode(true);
+      result.classList.remove(templateClassName);
+      result.id = screenPrefix + elementId;
+      return result;
+    },
+
+    /**
+     * @param {string} buttonId -- id of button to be found,
+     * @return {Element} button created by makeButton with given buttonId.
+     */
+    getScreenButton: function(buttonId) {
+      var fullId = this.name() + '-' + buttonId + '-button';
+      return this.getScreenElement(buttonId + '-button');
+    },
+
+    /**
+     * @param {string} elementId -- id of element to be found,
+     * @return {Element} button created by makeFromTemplate with elementId.
+     */
+    getScreenElement: function(elementId) {
+      var fullId = this.name() + '-' + elementId;
+      return $(fullId);
+    },
+
     /**
      * Screen controls.
      * @type {!Array} Array of Buttons.
@@ -280,58 +344,33 @@ login.createScreen('LocallyManagedUserCreationScreen',
     get buttons() {
       var buttons = [];
 
-      var startButton = this.ownerDocument.createElement('button');
-      startButton.id = 'managed-user-creation-flow-start-button';
+      var progress = this.makeFromTemplate('progress-container', 'progress');
+      buttons.push(progress);
 
-      startButton.textContent = loadTimeData.
-          getString('managedUserCreationFlowStartButtonTitle');
-      startButton.hidden = true;
-      buttons.push(startButton);
 
-      var previousButton = this.ownerDocument.createElement('button');
-      previousButton.id = 'managed-user-creation-flow-prev-button';
+      buttons.push(this.makeButton(
+          'start',
+          'managedUserCreationFlow',
+          this.startButtonPressed_.bind(this),
+          ['intro']));
 
-      previousButton.textContent = loadTimeData.
-          getString('managedUserCreationFlowPreviousButtonTitle');
-      previousButton.hidden = true;
-      buttons.push(previousButton);
+      buttons.push(this.makeButton(
+          'prev',
+          'managedUserCreationFlow',
+          this.prevButtonPressed_.bind(this),
+          ['manager']));
 
-      var nextButton = this.ownerDocument.createElement('button');
-      nextButton.id = 'managed-user-creation-flow-next-button';
+      buttons.push(this.makeButton(
+          'next',
+          'managedUserCreationFlow',
+          this.nextButtonPressed_.bind(this),
+          ['manager', 'username']));
 
-      nextButton.textContent = loadTimeData.
-          getString('managedUserCreationFlowNextButtonTitle');
-      nextButton.hidden = true;
-      buttons.push(nextButton);
-
-      var finishButton = this.ownerDocument.createElement('button');
-      finishButton.id = 'managed-user-creation-flow-finish-button';
-
-      finishButton.textContent = loadTimeData.
-          getString('managedUserCreationFlowFinishButtonTitle');
-      finishButton.hidden = true;
-      buttons.push(finishButton);
-
-      var cancelButton = this.ownerDocument.createElement('button');
-      cancelButton.id = 'managed-user-creation-flow-cancel-button';
-
-      var creationFlowScreen = this;
-      finishButton.addEventListener('click', function(e) {
-        creationFlowScreen.finishButtonPressed_();
-        e.stopPropagation();
-      });
-      startButton.addEventListener('click', function(e) {
-        creationFlowScreen.startButtonPressed_();
-        e.stopPropagation();
-      });
-      nextButton.addEventListener('click', function(e) {
-        creationFlowScreen.nextButtonPressed_();
-        e.stopPropagation();
-      });
-      previousButton.addEventListener('click', function(e) {
-        creationFlowScreen.prevButtonPressed_();
-        e.stopPropagation();
-      });
+      buttons.push(this.makeButton(
+          'finish',
+          'managedUserCreationFlow',
+          this.finishButtonPressed_.bind(this),
+          ['tutorial']));
 
       return buttons;
     },
@@ -530,46 +569,32 @@ login.createScreen('LocallyManagedUserCreationScreen',
     setVisiblePage_: function(visiblePage) {
       this.disabled = false;
       this.updateText_();
-      var screenNames = ['intro',
-                         'manager',
-                         'username',
-                         'progress',
-                         'error',
-                         'tutorial'];
-      for (i in screenNames) {
-        var screenName = screenNames[i];
-        var screen = $('managed-user-creation-flow-' + screenName);
-        screen.hidden = (screenName != visiblePage);
-        if (screenName == visiblePage) {
-          $('step-logo').hidden = screen.classList.contains('step-no-logo');
-        }
+      var pageNames = ['intro',
+                       'manager',
+                       'username',
+                       'error',
+                       'tutorial'];
+      this.hideProgress_();
+      for (i in pageNames) {
+        var pageName = pageNames[i];
+        var page = $('managed-user-creation-flow-' + pageName);
+        page.hidden = (pageName != visiblePage);
+        if (pageName == visiblePage)
+          $('step-logo').hidden = page.classList.contains('step-no-logo');
       }
-      this.currentPage_ = visiblePage;
-    },
 
-    /**
-     * Enables specific control buttons.
-     * @param {List of strings} buttonsList - list of buttons to display.
-     * @private
-     */
-    setVisibleButtons_: function(buttonsList) {
-      var buttonNames = ['start',
-                         'prev',
-                         'next',
-                         'cancel',
-                         'finish'];
-      for (i in buttonNames) {
-        var buttonName = buttonNames[i];
-        var button;
-        if ('cancel' == buttonName)
-          button = $('cancel-add-user-button');
-        else
-          button = $('managed-user-creation-flow-' + buttonName + '-button');
-        if (button) {
-          button.hidden = buttonsList.indexOf(buttonName) < 0;
-          button.disabled = false;
-        }
+      for (i in this.buttonIds) {
+        var button = this.getScreenButton(this.buttonIds[i]);
+        button.hidden = button.pages.indexOf(visiblePage) < 0;
+        button.disabled = false;
       }
+
+      var pagesWithCancel = ['intro', 'manager', 'username', 'error'];
+      var cancelButton = $('cancel-add-user-button');
+      cancelButton.hidden = pagesWithCancel.indexOf(visiblePage) < 0;
+      cancelButton.disabled = false;
+
+      this.currentPage_ = visiblePage;
     },
 
     setButtonDisabledStatus: function(buttonName, status) {
@@ -583,7 +608,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
     startButtonPressed_: function() {
       this.setVisiblePage_('manager');
-      this.setVisibleButtons_(['next', 'prev', 'cancel']);
       this.setButtonDisabledStatus('next', true);
     },
 
@@ -594,14 +618,21 @@ login.createScreen('LocallyManagedUserCreationScreen',
       }
       if (this.currentPage_ == 'username') {
         this.validateAndCreateLocallyManagedUser_();
-        return;
       }
     },
-
     prevButtonPressed_: function() {
       this.setVisiblePage_('intro');
-      this.setVisibleButtons_(['start', 'cancel']);
-      return;
+    },
+
+    showProgress: function(text) {
+      var progress = this.getScreenElement('progress');
+      progress.querySelector('.id-text').textContent = text;
+      progress.hidden = false;
+    },
+
+    hideProgress_: function() {
+      var progress = this.getScreenElement('progress');
+      progress.hidden = true;
     },
 
     /**
@@ -706,34 +737,24 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.nameErrorVisible = false;
 
       this.setVisiblePage_('intro');
-      this.setVisibleButtons_(['start', 'cancel']);
-    },
-
-    showProgressPage: function() {
-      this.setVisiblePage_('progress');
-      this.setVisibleButtons_(['cancel']);
     },
 
     showManagerPage: function() {
       this.setVisiblePage_('manager');
-      this.setVisibleButtons_(['cancel']);
     },
 
     showUsernamePage: function() {
       this.setVisiblePage_('username');
-      this.setVisibleButtons_(['next', 'cancel']);
     },
 
     showTutorialPage: function() {
       this.setVisiblePage_('tutorial');
-      this.setVisibleButtons_(['finish']);
     },
 
     showErrorPage: function(errorText) {
       this.disabled = false;
       $('managed-user-creation-flow-error-value').innerHTML = errorText;
       this.setVisiblePage_('error');
-      this.setVisibleButtons_(['cancel']);
     },
 
     showManagerPasswordError: function() {

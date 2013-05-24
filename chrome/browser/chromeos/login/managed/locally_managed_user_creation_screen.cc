@@ -169,8 +169,10 @@ void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
 }
 
 void LocallyManagedUserCreationScreen::OnManagerCryptohomeAuthenticated() {
-  if (actor_)
-    actor_->ShowProgressPage();
+  if (actor_) {
+    actor_->ShowProgress(l10n_util::GetStringUTF16(
+        IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_AUTH_PROGRESS_MESSAGE));
+  }
 }
 
 void LocallyManagedUserCreationScreen::OnExit() {}

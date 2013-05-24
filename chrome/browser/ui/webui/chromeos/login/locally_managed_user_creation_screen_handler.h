@@ -64,7 +64,7 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   void ShowIntroPage();
   void ShowManagerSelectionPage();
   void ShowUsernamePage();
-  void ShowProgressPage();
+  void ShowProgress(const string16& message);
   void ShowTutorialPage();
 
   void ShowManagerInconsistentStateErrorPage();

@@ -99,6 +99,14 @@
   width: 635px;
 }
 
+#managed-user-creation-flow-progress {
+  margin: 4px 10px;
+}
+
+#managed-user-creation-flow-progress .id-text {
+  margin-top: 2px;
+}
+
 #managed-user-creation-flow-managers-pane .focused {
   background-color: #f0f0f0;
   opacity: 1;
