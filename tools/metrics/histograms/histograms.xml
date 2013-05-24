@@ -7212,12 +7212,181 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.AccelContentPaintDurationMS">
+  <summary>
+    Time spent by WebKit painting the page, in milliseconds, when the GPU
+    acceleration is active, for paints that affect non-root layers.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.AccelContentPaintMegapixPerSecond">
+  <summary>
+    WebKit paint throughput, measured in megapixels per second, when GPU
+    acceleration is active, for paints that affect non-root layers.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.AccelDoDeferredUpdateDelay">
+  <summary>Time between frames when GPU acceleration is active.</summary>
+</histogram>
+
+<histogram name="Renderer4.AccelRootPaintDurationMS">
+  <summary>
+    Time spent by WebKit painting the page, in milliseconds, when the GPU
+    acceleration is active, for paints that affect the root layer.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.AccelRootPaintMegapixPerSecond">
+  <summary>
+    WebKit paint throughput, measured in megapixels per second, when GPU
+    acceleration is active, for paints that affect the root layer.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.AnimationCallbackDelayTime" units="milliseconds">
+  <summary>
+    Time from when the animation callback was posted to when it ran.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.BeginToCommit" units="milliseconds">
+  <summary>
+    Time from &quot;begin&quot; to &quot;commit.&quot;   &quot;Begin&quot;==
+    &quot;request&quot; if user requested, and &quot;start&quot; otherwise.
+    &quot;Request&quot;== time when user requested document. &quot;Start&quot;==
+    time when renderer requested load of document, after any unload of last
+    document. &quot;Commit&quot;== time when renderer got first byte of
+    document.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.BeginToFinish">
   <summary>TBD</summary>
 </histogram>
 
 <histogram name="Renderer4.BeginToFinishDoc">
   <summary>TBD</summary>
+</histogram>
+
+<histogram name="Renderer4.BeginToFirstPaint" units="milliseconds">
+  <summary>
+    Time from &quot;begin&quot; to &quot;first paint.&quot;  &quot;Begin&quot;==
+    &quot;request&quot; if user requested, and &quot;start&quot; otherwise.
+    &quot;Request&quot;== time when user requested document. &quot;Start&quot;==
+    time when renderer requested load of document, after any unload of last
+    document. &quot;First paint&quot;== time when first paint operation was
+    performed.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.BeginToFirstPaintAfterLoad" units="milliseconds">
+  <summary>
+    Time from &quot;big&quot; to &quot;first paint after load.&quot;
+    &quot;Begin&quot;== &quot;request&quot; if user requested, and
+    &quot;start&quot; otherwise.  &quot;Request&quot;== time when user requested
+    document. &quot;Start&quot;== time when renderer requested load of document,
+    after any unload of last document. &quot;First paint after load&quot;== time
+    after onload() when first paint operation is performed.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.CommitToFinish" units="milliseconds">
+  <summary>
+    Time from &quot;commit&quot; to &quot;finish.&quot; &quot;Commit&quot;==
+    time when renderer got first byte of document.  &quot;Finish&quot;==after
+    onload() and all resources are loaded.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.CommitToFinishDoc" units="milliseconds">
+  <summary>
+    Time from &quot;commit&quot; to &quot;finish doc.&quot; &quot;Commit&quot;==
+    time when renderer got first byte of document. &quot;Finish doc&quot; ==
+    main document loaded, before onload(). &quot;Finish&quot;==after onload()
+    and all resources are loaded.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.CommitToFirstPaint" units="milliseconds">
+  <summary>
+    Time from &quot;commit&quot; to &quot;first paint.&quot;
+    &quot;Commit&quot;== time when renderer got first byte of document.
+    &quot;First paint&quot;== time when first paint operation was performed.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.CommitToFirstPaintAfterLoad" units="milliseconds">
+  <summary>
+    Time from &quot;commit&quot; to &quot;first paint after load.&quot;
+    &quot;Commit&quot;== time when renderer got first byte of document.
+    &quot;First paint after load&quot;== time after onload() when first paint
+    operation is performed.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.CompositorThreadImplDrawDelay" units="milliseconds">
+  <summary>
+    Time between frames, as measured on the compositor thread. This is collected
+    once per frame while it is being drawn to the screen in the compositor.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.drawPixelCountCulled" units="NormalizedPixels">
+  <obsolete>
+    Renamed to Renderer4.pixelCountCulled_Draw.
+  </obsolete>
+  <summary>
+    Number of pixels that culling prevented being drawn to the screen,
+    normalized to the viewport size. This is collected once per frame while it
+    is being drawn to the screen in the compositor.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.drawPixelCountOpaque" units="NormalizedPixels">
+  <obsolete>
+    Renamed to Renderer4.pixelCountOpaque_Draw.
+  </obsolete>
+  <summary>
+    Number of pixels drawn to the screen and known opaque, normalized to the
+    viewport size. This is collected once per frame while it is being drawn to
+    the screen in the compositor.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.drawPixelCountTranslucent" units="NormalizedPixels">
+  <obsolete>
+    Renamed to Renderer4.pixelCountTranslucent_Draw.
+  </obsolete>
+  <summary>
+    Number of pixels drawn to the screen and not known opaque, normalized to the
+    viewport size. This is collected once per frame while it is being drawn to
+    the screen in the compositor.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.FinishDocToFinish" units="milliseconds">
+  <summary>
+    Time from &quot;finish doc&quot; to &quot;finish.&quot; &quot;Finish
+    doc&quot;== main document loaded, before onload(). &quot;Finish&quot;==after
+    onload() and all resources are loaded.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.FinishToFirstPaintAfterLoad" units="milliseconds">
+  <summary>
+    Time from &quot;finish &quot; to &quot;first paint after load.&quot;
+    &quot;Finish&quot;==after onload() and all resources are loaded. &quot;First
+    paint after load&quot;== time after onload() when first paint operation is
+    performed.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.LanguageDetection" units="milliseconds">
+  <summary>
+    Time to determine the page language. This is done after the page has been
+    loaded.
+  </summary>
 </histogram>
 
 <histogram name="Renderer4.LCDText.PercentageOfAALayers" units="%">
@@ -7238,6 +7407,52 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.LoadType" enum="LoadType">
+  <summary>
+    Probability distribution for enumerated varieties of page loads.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.pixelCountCulled_Draw" units="NormalizedPixels">
+  <summary>
+    Number of pixels that culling prevented being drawn to the screen, recorded
+    as 10 times the percentage of the viewport that these pixels cover. This is
+    collected once per frame while it is being drawn to the screen in the
+    compositor.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.pixelCountOpaque" units="NormalizedPixels">
+  <summary>
+    Number of pixels known to be opaque, recorded as 10 times the percentage of
+    the viewport that these pixels cover.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.pixelCountPainted" units="NormalizedPixels">
+  <summary>
+    Number of pixels painted by WebKit into main memory, recorded as 10 times
+    the percentage of the viewport that these pixels cover. This is collected
+    once per commit from WebKit to the compositor.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.pixelCountTranslucent" units="NormalizedPixels">
+  <summary>
+    Number of pixels not known to be opaque opaque, recorded as 10 times the
+    percentage of the viewport that these pixels cover.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.renderPassCount">
+  <summary>
+    The number of render passes (or render targets) in the renderer's frame. If
+    the value is more than one, then an intermediate rendering target must be
+    used during the rendering of the frame for each render pass greater than
+    one.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.RequestToFinish" units="milliseconds">
   <summary>
     Time from &quot;request&quot; to &quot;finish.&quot;  &quot;Request&quot;==
@@ -7246,11 +7461,103 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.RequestToStart" units="milliseconds">
+  <summary>
+    Time from &quot;request&quot; to &quot;start.&quot; &quot;Request&quot;==
+    time when user requested document. &quot;Start&quot;== time when renderer
+    requested load of document, after any unload of last document.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.Snapshot">
+  <summary>Time to capture a renderer snapshot.</summary>
+</histogram>
+
+<histogram name="Renderer4.SoftwareDoDeferredUpdateDelay">
+  <summary>Time between frames when the page is not GPU accelerated.</summary>
+</histogram>
+
+<histogram name="Renderer4.SoftwarePaintDurationMS">
+  <summary>
+    Time spent by WebKit painting the page, in milliseconds, when the page is
+    not GPU accelerated.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.SoftwarePaintMegapixPerSecond">
+  <summary>
+    WebKit paint throughput, measured in megapixels per second, when the page is
+    not GPU accelerated.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.StartToCommit" units="milliseconds">
+  <summary>
+    Time from &quot;start&quot; to &quot;commit.&quot; &quot;Start&quot;== time
+    when renderer requested load of document, after any unload of last document.
+    &quot;Commit&quot;== time when renderer got first byte of document.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.StartToFinish" units="milliseconds">
   <summary>
     Time from &quot;start&quot; to &quot;finish.&quot; &quot;Start&quot;== time
     when renderer requested load of document, after any unload of last document.
     &quot;Finish&quot;==after onload() and all resources are loaded.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.TextureGpuUploadTimeUS">
+  <summary>
+    The number of microseconds it took to upload a tile's full texture as
+    measured on the GPU process.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.Thumbnail">
+  <summary>Time to capture a renderer thumbnail.</summary>
+</histogram>
+
+<histogram name="Renderer4.tileCountCulled_Upload" units="NormalizedTiles">
+  <summary>
+    Number of tiles that culling prevented being uploaded to texture memory.
+    This is an approximation and is recorded as a 100 times the percentage of
+    the number of tiles, of default size, needed to cover the viewport. This is
+    collected once per commit from WebKit to the compositor.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.uploadPixelCountCulled" units="NormalizedPixels">
+  <obsolete>
+    Deprecated as of 04/2012, replaced with Renderer4.tileCountCulled_Upload.
+  </obsolete>
+  <summary>
+    Number of pixels that culling prevented being uploaded to texture memory,
+    normalized to the viewport size. This is collected once per commit from
+    WebKit to the compositor.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.uploadPixelCountOpaque" units="NormalizedPixels">
+  <obsolete>
+    Renamed to Renderer4.pixelCountOpaque_Upload.
+  </obsolete>
+  <summary>
+    Number of pixels uploaded to texture memory and known to be opaque,
+    normalized to the viewport size. This is collected once per commit from
+    WebKit to the compositor.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.uploadPixelCountTranslucent"
+    units="NormalizedPixels">
+  <obsolete>
+    Renamed to Renderer4.pixelCountTranslucent_Upload.
+  </obsolete>
+  <summary>
+    Number of pixels uploaded to texture memory and not known opaque, normalized
+    to the viewport size.  This is collected once per commit from WebKit to the
+    compositor.
   </summary>
 </histogram>
 
