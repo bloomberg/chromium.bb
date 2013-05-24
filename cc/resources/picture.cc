@@ -341,6 +341,7 @@ void Picture::GatherPixelRefs(
 
 void Picture::Raster(
     SkCanvas* canvas,
+    SkDrawPictureCallback* callback,
     gfx::Rect content_rect,
     float contents_scale,
     bool enable_lcd_text) {
@@ -349,16 +350,18 @@ void Picture::Raster(
 
   DCHECK(picture_);
 
-  DisableLCDTextFilter disable_lcd_text_filter;
+  skia::RefPtr<DisableLCDTextFilter> disable_lcd_text_filter;
 
   canvas->save();
   canvas->clipRect(gfx::RectToSkRect(content_rect));
   canvas->scale(contents_scale, contents_scale);
   canvas->translate(layer_rect_.x(), layer_rect_.y());
   // Pictures by default have LCD text enabled.
-  if (!enable_lcd_text)
-    canvas->setDrawFilter(&disable_lcd_text_filter);
-  canvas->drawPicture(*picture_);
+  if (!enable_lcd_text) {
+    disable_lcd_text_filter = skia::AdoptRef(new DisableLCDTextFilter);
+    canvas->setDrawFilter(disable_lcd_text_filter.get());
+  }
+  picture_->draw(canvas, callback);
   SkIRect bounds;
   canvas->getClipDeviceBounds(&bounds);
   canvas->restore();

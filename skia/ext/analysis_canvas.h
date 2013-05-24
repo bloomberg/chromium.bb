@@ -7,6 +7,7 @@
 
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 namespace skia {
 
@@ -18,7 +19,7 @@ class AnalysisDevice;
 // To use: create a SkBitmap with kNo_Config, create an AnalysisDevice
 // using that bitmap, and create an AnalysisCanvas using the device.
 // Play a picture into the canvas, and then check result.
-class SK_API AnalysisCanvas : public SkCanvas {
+class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
  public:
   AnalysisCanvas(AnalysisDevice*);
   virtual ~AnalysisCanvas();
@@ -27,6 +28,10 @@ class SK_API AnalysisCanvas : public SkCanvas {
   bool getColorIfSolid(SkColor* color) const;
   bool hasText() const;
 
+  // SkDrawPictureCallback override.
+  virtual bool abortDrawing() OVERRIDE;
+
+  // SkCanvas overrides.
   virtual bool clipRect(const SkRect& rect,
                         SkRegion::Op op = SkRegion::kIntersect_Op,
                         bool doAntiAlias = false) OVERRIDE;

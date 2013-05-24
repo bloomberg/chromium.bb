@@ -69,6 +69,7 @@ class CC_EXPORT Picture
 
   // Apply this contents scale and raster the content rect into the canvas.
   void Raster(SkCanvas* canvas,
+              SkDrawPictureCallback* callback,
               gfx::Rect content_rect,
               float contents_scale,
               bool enable_lcd_text);

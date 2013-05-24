@@ -289,6 +289,11 @@ bool AnalysisCanvas::hasText() const {
   return (static_cast<AnalysisDevice*>(getDevice()))->hasText();
 }
 
+bool AnalysisCanvas::abortDrawing() {
+  // Early out as soon as we have detected that the tile has text.
+  return hasText();
+}
+
 bool AnalysisCanvas::clipRect(const SkRect& rect, SkRegion::Op op,
                         bool doAA) {
   return INHERITED::clipRect(rect, op, doAA);

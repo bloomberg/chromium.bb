@@ -62,6 +62,14 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       float contents_scale,
       RasterStats* raster_stats);
 
+  // Called when analyzing a tile. We can use AnalysisCanvas as
+  // SkDrawPictureCallback, which allows us to early out from analysis.
+  void RasterForAnalysis(
+      skia::AnalysisCanvas* canvas,
+      gfx::Rect canvas_rect,
+      float contents_scale);
+
+
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 
   struct CC_EXPORT Analysis {
@@ -123,6 +131,13 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       const PicturePileImpl* other, unsigned thread_index);
 
   PicturePileImpl(const PicturePileImpl* other, unsigned thread_index);
+
+  void RasterCommon(
+      SkCanvas* canvas,
+      SkDrawPictureCallback* callback,
+      gfx::Rect canvas_rect,
+      float contents_scale,
+      RasterStats* raster_stats);
 
   bool enable_lcd_text_;
 

@@ -79,6 +79,73 @@ void PicturePileImpl::RasterDirect(
     gfx::Rect canvas_rect,
     float contents_scale,
     RasterStats* raster_stats) {
+  RasterCommon(canvas, NULL, canvas_rect, contents_scale, raster_stats);
+}
+
+void PicturePileImpl::RasterForAnalysis(
+    skia::AnalysisCanvas* canvas,
+    gfx::Rect canvas_rect,
+    float contents_scale) {
+  RasterCommon(canvas, canvas, canvas_rect, contents_scale, NULL);
+}
+
+void PicturePileImpl::RasterToBitmap(
+    SkCanvas* canvas,
+    gfx::Rect canvas_rect,
+    float contents_scale,
+    RasterStats* raster_stats) {
+
+  canvas->save();
+  canvas->translate(-canvas_rect.x(), -canvas_rect.y());
+
+  gfx::SizeF total_content_size = gfx::ScaleSize(tiling_.total_size(),
+                                                 contents_scale);
+  gfx::Rect total_content_rect(gfx::ToCeiledSize(total_content_size));
+  gfx::Rect content_rect = total_content_rect;
+  content_rect.Intersect(canvas_rect);
+
+#ifndef NDEBUG
+  // Any non-painted areas will be left in this color.
+  canvas->clear(DebugColors::NonPaintedFillColor());
+#endif  // NDEBUG
+
+  // TODO(enne): this needs to be rolled together with the border clear
+  SkPaint paint;
+  paint.setAntiAlias(false);
+  paint.setXfermodeMode(SkXfermode::kClear_Mode);
+  canvas->drawRect(gfx::RectToSkRect(content_rect), paint);
+
+  // Clear one texel inside the right/bottom edge of the content rect,
+  // as it may only be partially covered by the picture playback.
+  // Also clear one texel outside the right/bottom edge of the content rect,
+  // as it may get blended in by linear filtering when zoomed in.
+  gfx::Rect deflated_content_rect = total_content_rect;
+  deflated_content_rect.Inset(0, 0, 1, 1);
+
+  gfx::Rect canvas_outside_content_rect = canvas_rect;
+  canvas_outside_content_rect.Subtract(deflated_content_rect);
+
+  if (!canvas_outside_content_rect.IsEmpty()) {
+    gfx::Rect inflated_content_rect = total_content_rect;
+    inflated_content_rect.Inset(0, 0, -1, -1);
+    canvas->clipRect(gfx::RectToSkRect(inflated_content_rect),
+                     SkRegion::kReplace_Op);
+    canvas->clipRect(gfx::RectToSkRect(deflated_content_rect),
+                     SkRegion::kDifference_Op);
+    canvas->drawColor(background_color_, SkXfermode::kSrc_Mode);
+  }
+
+  canvas->restore();
+
+  RasterCommon(canvas, NULL, canvas_rect, contents_scale, raster_stats);
+}
+
+void PicturePileImpl::RasterCommon(
+    SkCanvas* canvas,
+    SkDrawPictureCallback* callback,
+    gfx::Rect canvas_rect,
+    float contents_scale,
+    RasterStats* raster_stats) {
   DCHECK(contents_scale >= min_contents_scale_);
 
   canvas->translate(-canvas_rect.x(), -canvas_rect.y());
@@ -141,7 +208,8 @@ void PicturePileImpl::RasterDirect(
         if (raster_stats)
           start_time = base::TimeTicks::HighResNow();
 
-        (*i)->Raster(canvas, content_clip, contents_scale, enable_lcd_text_);
+        (*i)->Raster(
+            canvas, callback, content_clip, contents_scale, enable_lcd_text_);
 
         if (raster_stats) {
           base::TimeDelta duration = base::TimeTicks::HighResNow() - start_time;
@@ -197,57 +265,6 @@ void PicturePileImpl::RasterDirect(
   DCHECK(!unclipped.Contains(content_rect));
 }
 
-void PicturePileImpl::RasterToBitmap(
-    SkCanvas* canvas,
-    gfx::Rect canvas_rect,
-    float contents_scale,
-    RasterStats* raster_stats) {
-
-  canvas->save();
-  canvas->translate(-canvas_rect.x(), -canvas_rect.y());
-
-  gfx::SizeF total_content_size = gfx::ScaleSize(tiling_.total_size(),
-                                                 contents_scale);
-  gfx::Rect total_content_rect(gfx::ToCeiledSize(total_content_size));
-  gfx::Rect content_rect = total_content_rect;
-  content_rect.Intersect(canvas_rect);
-
-#ifndef NDEBUG
-  // Any non-painted areas will be left in this color.
-  canvas->clear(DebugColors::NonPaintedFillColor());
-#endif  // NDEBUG
-
-  // TODO(enne): this needs to be rolled together with the border clear
-  SkPaint paint;
-  paint.setAntiAlias(false);
-  paint.setXfermodeMode(SkXfermode::kClear_Mode);
-  canvas->drawRect(gfx::RectToSkRect(content_rect), paint);
-
-  // Clear one texel inside the right/bottom edge of the content rect,
-  // as it may only be partially covered by the picture playback.
-  // Also clear one texel outside the right/bottom edge of the content rect,
-  // as it may get blended in by linear filtering when zoomed in.
-  gfx::Rect deflated_content_rect = total_content_rect;
-  deflated_content_rect.Inset(0, 0, 1, 1);
-
-  gfx::Rect canvas_outside_content_rect = canvas_rect;
-  canvas_outside_content_rect.Subtract(deflated_content_rect);
-
-  if (!canvas_outside_content_rect.IsEmpty()) {
-    gfx::Rect inflated_content_rect = total_content_rect;
-    inflated_content_rect.Inset(0, 0, -1, -1);
-    canvas->clipRect(gfx::RectToSkRect(inflated_content_rect),
-                     SkRegion::kReplace_Op);
-    canvas->clipRect(gfx::RectToSkRect(deflated_content_rect),
-                     SkRegion::kDifference_Op);
-    canvas->drawColor(background_color_, SkXfermode::kSrc_Mode);
-  }
-
-  canvas->restore();
-
-  RasterDirect(canvas, canvas_rect, contents_scale, raster_stats);
-}
-
 skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   TRACE_EVENT0("cc", "PicturePileImpl::GetFlattenedPicture");
 
@@ -285,7 +302,7 @@ void PicturePileImpl::AnalyzeInRect(gfx::Rect content_rect,
   skia::AnalysisDevice device(empty_bitmap);
   skia::AnalysisCanvas canvas(&device);
 
-  RasterDirect(&canvas, layer_rect, 1.0f, NULL);
+  RasterForAnalysis(&canvas, layer_rect, 1.0f);
 
   analysis->is_solid_color = canvas.getColorIfSolid(&analysis->solid_color);
   analysis->has_text = canvas.hasText();
