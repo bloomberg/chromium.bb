@@ -45,7 +45,9 @@ GpuScheduler::~GpuScheduler() {
 }
 
 void GpuScheduler::PutChanged() {
-  TRACE_EVENT1("gpu", "GpuScheduler:PutChanged", "this", this);
+  TRACE_EVENT1(
+     "gpu", "GpuScheduler:PutChanged",
+     "decoder", decoder_ ? decoder_->GetLogger()->GetLogPrefix() : "None");
 
   CommandBuffer::State state = command_buffer_->GetState();
 
