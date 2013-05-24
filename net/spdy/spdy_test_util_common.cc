@@ -822,6 +822,29 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGet(const char* const extra_headers[],
                                    0);
 }
 
+SpdyFrame* SpdyTestUtil::ConstructSpdyConnect(
+    const char* const extra_headers[],
+    int extra_header_count,
+    int stream_id) const {
+  const bool spdy2 = is_spdy2();
+  const char* const kConnectHeaders[] = {
+    spdy2 ? "method"  : ":method",  "CONNECT",
+    spdy2 ? "url"     : ":path",    "www.google.com:443",
+    spdy2 ? "host"    : ":host",    "www.google.com",
+    spdy2 ? "version" : ":version", "HTTP/1.1",
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   /*compressed*/ false,
+                                   stream_id,
+                                   LOWEST,
+                                   SYN_STREAM,
+                                   CONTROL_FLAG_NONE,
+                                   kConnectHeaders,
+                                   arraysize(kConnectHeaders),
+                                   0);
+}
+
 scoped_ptr<SpdyFramer> SpdyTestUtil::CreateFramer() const {
   return scoped_ptr<SpdyFramer>(new SpdyFramer(spdy_version_));
 }

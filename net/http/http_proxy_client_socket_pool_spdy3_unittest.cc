@@ -247,7 +247,8 @@ TEST_P(HttpProxyClientSocketPoolSpdy3Test, NeedAuth) {
     MockRead(ASYNC, 3, "Content-Length: 10\r\n\r\n"),
     MockRead(ASYNC, 4, "0123456789"),
   };
-  scoped_ptr<SpdyFrame> req(ConstructSpdyConnect(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite spdy_writes[] = {
@@ -345,8 +346,8 @@ TEST_P(HttpProxyClientSocketPoolSpdy3Test, AsyncHaveAuth) {
     MockRead(ASYNC, 1, "HTTP/1.1 200 Connection Established\r\n\r\n"),
   };
 
-  scoped_ptr<SpdyFrame> req(ConstructSpdyConnect(kAuthHeaders,
-                                                       kAuthHeadersSize, 1));
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1));
   MockWrite spdy_writes[] = {
     CreateMockWrite(*req, 0, ASYNC)
   };
@@ -457,8 +458,8 @@ TEST_P(HttpProxyClientSocketPoolSpdy3Test, TunnelUnexpectedClose) {
     MockRead(ASYNC, 1, "HTTP/1.1 200 Conn"),
     MockRead(ASYNC, ERR_CONNECTION_CLOSED, 2),
   };
-  scoped_ptr<SpdyFrame> req(ConstructSpdyConnect(kAuthHeaders,
-                                                       kAuthHeadersSize, 1));
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1));
   MockWrite spdy_writes[] = {
     CreateMockWrite(*req, 0, ASYNC)
   };
@@ -494,8 +495,8 @@ TEST_P(HttpProxyClientSocketPoolSpdy3Test, TunnelSetupError) {
   MockRead reads[] = {
     MockRead(ASYNC, 1, "HTTP/1.1 304 Not Modified\r\n\r\n"),
   };
-  scoped_ptr<SpdyFrame> req(ConstructSpdyConnect(kAuthHeaders,
-                                                       kAuthHeadersSize, 1));
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1));
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite spdy_writes[] = {
@@ -546,7 +547,7 @@ TEST_P(HttpProxyClientSocketPoolSpdy3Test, TunnelSetupRedirect) {
     MockRead(ASYNC, 1, responseText.c_str()),
   };
   scoped_ptr<SpdyFrame> req(
-      ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1));
+      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1));
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
 

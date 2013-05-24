@@ -28,11 +28,6 @@ namespace test_spdy3 {
 // Can't find a function you're looking for?  ttuttle is migrating functions
 // from here into methods in the SpdyTestUtil class in spdy_test_common.h.
 
-// Constructs a standard SPDY SYN_STREAM frame for a CONNECT request.
-SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
-                                int extra_header_count,
-                                int stream_id);
-
 // Constructs a standard SPDY push SYN frame.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.

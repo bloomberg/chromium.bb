@@ -384,6 +384,11 @@ class SpdyTestUtil {
                               RequestPriority request_priority,
                               bool direct) const;
 
+  // Constructs a standard SPDY SYN_STREAM frame for a CONNECT request.
+  SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
+                                  int extra_header_count,
+                                  int stream_id) const;
+
   NextProto protocol() const { return protocol_; }
   SpdyMajorVersion spdy_version() const { return spdy_version_; }
   bool is_spdy2() const { return protocol_ < kProtoSPDY3; }

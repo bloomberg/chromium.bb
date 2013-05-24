@@ -116,27 +116,6 @@ SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
 
 }  // namespace
 
-SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
-                                int extra_header_count,
-                                int stream_id) {
-  const char* const kConnectHeaders[] = {
-    ":method", "CONNECT",
-    ":path", "www.google.com:443",
-    ":host", "www.google.com",
-    ":version", "HTTP/1.1",
-  };
-  return ConstructSpdyControlFrame(extra_headers,
-                                   extra_header_count,
-                                   /*compressed*/ false,
-                                   stream_id,
-                                   LOWEST,
-                                   SYN_STREAM,
-                                   CONTROL_FLAG_NONE,
-                                   kConnectHeaders,
-                                   arraysize(kConnectHeaders),
-                                   0);
-}
-
 SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
                              int extra_header_count,
                              int stream_id,

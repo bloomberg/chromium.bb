@@ -2797,7 +2797,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxySpdyConnectHttps) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
 
   // CONNECT to www.google.com:443 via SPDY
-  scoped_ptr<SpdyFrame> connect(ConstructSpdyConnect(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> connect(spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
   // fetch https://www.google.com/ via HTTP
 
   const char get[] = "GET / HTTP/1.1\r\n"
@@ -2882,7 +2882,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxySpdyConnectSpdy) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
 
   // CONNECT to www.google.com:443 via SPDY
-  scoped_ptr<SpdyFrame> connect(ConstructSpdyConnect(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> connect(spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
   // fetch https://www.google.com/ via SPDY
   const char* const kMyUrl = "https://www.google.com/";
   scoped_ptr<SpdyFrame> get(
@@ -2966,7 +2966,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, HttpsProxySpdyConnectFailure) {
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
 
   // CONNECT to www.google.com:443 via SPDY
-  scoped_ptr<SpdyFrame> connect(ConstructSpdyConnect(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> connect(spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
   scoped_ptr<SpdyFrame> get(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
 
@@ -3028,7 +3028,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   request2.load_flags = 0;
 
   // CONNECT to www.google.com:443 via SPDY.
-  scoped_ptr<SpdyFrame> connect1(ConstructSpdyConnect(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> connect1(spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
   scoped_ptr<SpdyFrame> conn_resp1(ConstructSpdyGetSynReply(NULL, 0, 1));
 
   // Fetch https://www.google.com/ via HTTP.
@@ -3183,7 +3183,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   request2.load_flags = 0;
 
   // CONNECT to www.google.com:443 via SPDY.
-  scoped_ptr<SpdyFrame> connect1(ConstructSpdyConnect(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> connect1(spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
   scoped_ptr<SpdyFrame> conn_resp1(ConstructSpdyGetSynReply(NULL, 0, 1));
 
   // Fetch https://www.google.com/ via HTTP.
@@ -5670,7 +5670,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, RedirectOfHttpsConnectViaSpdyProxy) {
   request.url = GURL("https://www.google.com/");
   request.load_flags = 0;
 
-  scoped_ptr<SpdyFrame> conn(ConstructSpdyConnect(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> conn(spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
   scoped_ptr<SpdyFrame> goaway(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite data_writes[] = {
@@ -5777,7 +5777,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   request.url = GURL("https://www.google.com/");
   request.load_flags = 0;
 
-  scoped_ptr<SpdyFrame> conn(ConstructSpdyConnect(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> conn(spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite data_writes[] = {
@@ -5842,7 +5842,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuthSpdyProxy) {
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Since we have proxy, should try to establish tunnel.
-  scoped_ptr<SpdyFrame> req(ConstructSpdyConnect(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
 
@@ -5851,8 +5851,8 @@ TEST_F(HttpNetworkTransactionSpdy2Test, BasicAuthSpdyProxy) {
   const char* const kAuthCredentials[] = {
       "proxy-authorization", "Basic Zm9vOmJhcg==",
   };
-  scoped_ptr<SpdyFrame> connect2(
-      ConstructSpdyConnect(kAuthCredentials, arraysize(kAuthCredentials)/2, 3));
+  scoped_ptr<SpdyFrame> connect2(spdy_util_.ConstructSpdyConnect(
+      kAuthCredentials, arraysize(kAuthCredentials) / 2, 3));
   // fetch https://www.google.com/ via HTTP
   const char get[] = "GET / HTTP/1.1\r\n"
     "Host: www.google.com\r\n"
@@ -10836,7 +10836,7 @@ TEST_F(HttpNetworkTransactionSpdy2Test, DoNotUseSpdySessionForHttpOverTunnel) {
   const std::string http_url = "http://www.google.com:443/";
 
   // SPDY GET for HTTPS URL (through CONNECT tunnel)
-  scoped_ptr<SpdyFrame> connect(ConstructSpdyConnect(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> connect(spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
   scoped_ptr<SpdyFrame> req1(
       spdy_util_.ConstructSpdyGet(https_url.c_str(), false, 1, LOWEST));
 
