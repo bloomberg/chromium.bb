@@ -135,16 +135,16 @@ void TestFilePathWatcher::StartWatching() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   watcher_.reset(new base::FilePathWatcher);
-  bool ok = watcher_->Watch(
+  failed_ = !watcher_->Watch(
       path_, false /*recursive*/,
       base::Bind(&TestFilePathWatcher::FilePathWatcherCallback,
                  base::Unretained(this)));
-  ASSERT_TRUE(ok);
 
-  // If the condition was already met before FilePathWatcher was launched,
+  // If failed to start the watcher, then quit the message loop immediately.
+  // Also, if the condition was already met before FilePathWatcher was launched,
   // FilePathWatcher won't be able to detect a change, so check the condition
   // here.
-  if (condition_.Run(path_)) {
+  if (failed_ || condition_.Run(path_)) {
     watcher_.reset();
     content::BrowserThread::PostTask(content::BrowserThread::UI,
                                      FROM_HERE,
@@ -276,7 +276,6 @@ class LocalTestVolume : public TestVolume {
   void CreateFile(const std::string& source_file_name,
                   const std::string& target_name,
                   const std::string& modification_time) {
-
     std::string content_data;
     base::FilePath test_file_path =
         google_apis::test_util::GetTestFilePath("chromeos/file_manager").
@@ -633,7 +632,7 @@ void FileManagerBrowserTestBase::CreateTestEntries(
 
 void FileManagerBrowserTestBase::DoTestFileDisplay(TestVolume* volume) {
   ResultCatcher catcher;
-  StartTest("fileDisplay" + volume->GetName());
+  ASSERT_NO_FATAL_FAILURE(StartTest("fileDisplay" + volume->GetName()));
 
   ExtensionTestMessageListener listener("initial check done", true);
   ASSERT_TRUE(listener.WaitUntilSatisfied());
@@ -663,7 +662,7 @@ void FileManagerBrowserTestBase::DoTestKeyboardCopy(TestVolume* volume) {
   ASSERT_FALSE(volume->PathExists(copy_path));
 
   ResultCatcher catcher;
-  StartTest("keyboardCopy" + volume->GetName());
+  ASSERT_NO_FATAL_FAILURE(StartTest("keyboardCopy" + volume->GetName()));
 
   const int64 kKeyboardTestFileSize = 59943;
 
@@ -683,7 +682,7 @@ void FileManagerBrowserTestBase::DoTestKeyboardDelete(TestVolume* volume) {
   ASSERT_TRUE(volume->PathExists(delete_path));
 
   ResultCatcher catcher;
-  StartTest("keyboardDelete" + volume->GetName());
+  ASSERT_NO_FATAL_FAILURE(StartTest("keyboardDelete" + volume->GetName()));
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
   ASSERT_TRUE(volume->WaitUntilFileNotPresent(delete_path));
@@ -784,7 +783,7 @@ INSTANTIATE_TEST_CASE_P(InNonGuestMode,
                         ::testing::Values(false));
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestFileDisplay) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   DoTestFileDisplay(&volume_);
 }
 
@@ -801,107 +800,109 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestGalleryOpen) {
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   DoTestKeyboardCopy(&volume_);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardDelete) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   DoTestKeyboardDelete(&volume_);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  StartTest("openSidebarRecent");
+  ASSERT_NO_FATAL_FAILURE(StartTest("openSidebarRecent"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 // TODO(hirono): Bring back the offline feature. http://crbug.com/238545
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestOpenOffline) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  StartTest("openSidebarOffline");
+  ASSERT_NO_FATAL_FAILURE(StartTest("openSidebarOffline"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenSharedWithMe) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  StartTest("openSidebarSharedWithMe");
+  ASSERT_NO_FATAL_FAILURE(StartTest("openSidebarSharedWithMe"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAutocomplete) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  StartTest("autocomplete");
+  ASSERT_NO_FATAL_FAILURE(StartTest("autocomplete"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromDriveToDownloads) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  StartTest("transferFromDriveToDownloads");
+  ASSERT_NO_FATAL_FAILURE(
+      StartTest("transferFromDriveToDownloads"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromDownloadsToDrive) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  StartTest("transferFromDownloadsToDrive");
+  ASSERT_NO_FATAL_FAILURE(
+      StartTest("transferFromDownloadsToDrive"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromSharedToDownloads) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  StartTest("transferFromSharedToDownloads");
+  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromSharedToDownloads"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromSharedToDrive) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  StartTest("transferFromSharedToDrive");
+  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromSharedToDrive"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromRecentToDownloads) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  StartTest("transferFromRecentToDownloads");
+  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromRecentToDownloads"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        TransferFromRecentToDrive) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  StartTest("transferFromRecentToDrive");
+  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromRecentToDrive"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 // TODO(hirono): Bring back the offline feature. http://crbug.com/238545
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        DISABLED_TransferFromOfflineToDownloads) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  StartTest("transferFromOfflineToDownloads");
+  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromOfflineToDownloads"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 // TODO(hirono): Bring back the offline feature. http://crbug.com/238545
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
                        DISABLED_TransferFromOfflineToDrive) {
-  PrepareVolume();
+  ASSERT_NO_FATAL_FAILURE(PrepareVolume());
   ResultCatcher catcher;
-  StartTest("transferFromOfflineToDrive");
+  ASSERT_NO_FATAL_FAILURE(StartTest("transferFromOfflineToDrive"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
