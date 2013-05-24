@@ -124,6 +124,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(switches::kEnableCssShaders);
     command_line.AppendSwitchASCII(switches::kTouchEvents,
                                    switches::kTouchEventsEnabled);
+    command_line.AppendSwitch(switches::kEnableGestureTapHighlight);
     command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
     if (command_line.HasSwitch(switches::kEnableSoftwareCompositing))
       command_line.AppendSwitch(switches::kEnableSoftwareCompositingGLAdapter);
