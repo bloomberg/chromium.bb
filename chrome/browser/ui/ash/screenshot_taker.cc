@@ -74,6 +74,7 @@ class ScreenshotTakerNotificationDelegate : public NotificationDelegate {
     // TODO(sschmitz): perhaps add similar action for Windows.
 #endif
   }
+  virtual bool HasClickedListener() OVERRIDE { return success_; }
   virtual std::string id() const OVERRIDE {
     return std::string(kNotificationId);
   }
