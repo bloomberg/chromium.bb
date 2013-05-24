@@ -126,6 +126,7 @@ public:
     virtual void setPasswordEchoEnabled(bool);
     virtual void setPerTilePaintingEnabled(bool);
     virtual void setPictographFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON);
+    virtual void setPinchVirtualViewportEnabled(bool);
     virtual void setPluginsEnabled(bool);
     virtual void setPrivilegedWebGLExtensionsEnabled(bool);
     virtual void setRenderVSyncNotificationEnabled(bool);

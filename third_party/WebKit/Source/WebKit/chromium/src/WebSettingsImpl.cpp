@@ -682,4 +682,9 @@ void WebSettingsImpl::setSmartInsertDeleteEnabled(bool enabled)
     m_settings->setSmartInsertDeleteEnabled(enabled);
 }
 
+void WebSettingsImpl::setPinchVirtualViewportEnabled(bool enabled)
+{
+    m_settings->setPinchVirtualViewportEnabled(enabled);
+}
+
 } // namespace WebKit
