@@ -208,7 +208,6 @@ MediaSourcePlayer::MediaSourcePlayer(
       waiting_for_audio_data_(false),
       waiting_for_video_data_(false),
       weak_this_(this) {
-  OnMediaMetadataChanged(duration_, width_, height_, false);
 }
 
 MediaSourcePlayer::~MediaSourcePlayer() {
@@ -221,9 +220,11 @@ void MediaSourcePlayer::SetVideoSurface(jobject surface) {
     return;
   }
 
-  video_decoder_job_.reset(new VideoDecoderJob(
-      base::MessageLoopProxy::current(), video_codec_,
-      gfx::Size(width_, height_), surface));
+  if (HasVideo()) {
+    video_decoder_job_.reset(new VideoDecoderJob(
+        base::MessageLoopProxy::current(), video_codec_,
+        gfx::Size(width_, height_), surface));
+  }
 
   if (pending_play_)
     StartInternal();

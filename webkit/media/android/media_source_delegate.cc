@@ -88,7 +88,26 @@ MediaSourceDelegate::MediaSourceDelegate(
   }
 }
 
-MediaSourceDelegate::~MediaSourceDelegate() {}
+MediaSourceDelegate::~MediaSourceDelegate() {
+  DVLOG(1) << "MediaSourceDelegate::~MediaSourceDelegate() : " << player_id_;
+  DCHECK(!chunk_demuxer_);
+}
+
+void MediaSourceDelegate::Destroy() {
+  DVLOG(1) << "MediaSourceDelegate::Destroy() : " << player_id_;
+  if (!chunk_demuxer_) {
+    delete this;
+    return;
+  }
+
+  update_network_state_cb_.Reset();
+  media_source_.reset();
+  client_ = NULL;
+  proxy_ = NULL;
+
+  chunk_demuxer_->Stop(
+      BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerStopDone));
+}
 
 void MediaSourceDelegate::Initialize(
     WebKit::WebMediaSource* media_source,
@@ -199,6 +218,8 @@ WebMediaPlayer::MediaKeyException MediaSourceDelegate::CancelKeyRequest(
 }
 
 void MediaSourceDelegate::Seek(base::TimeDelta time) {
+  DVLOG(1) << "MediaSourceDelegate::Seek(" << time.InSecondsF() << ") : "
+           << player_id_;
   seeking_ = true;
   DCHECK(chunk_demuxer_);
   if (!chunk_demuxer_)
@@ -227,6 +248,8 @@ void MediaSourceDelegate::SetDuration(base::TimeDelta duration) {
 
 void MediaSourceDelegate::OnReadFromDemuxer(media::DemuxerStream::Type type,
                                             bool seek_done) {
+  DVLOG(1) << "MediaSourceDelegate::OnReadFromDemuxer(" << type
+           << ", " << seek_done << ") : " << player_id_;
   if (seeking_ && !seek_done)
       return;  // Drop the request during seeking.
   seeking_ = false;
@@ -255,6 +278,7 @@ void MediaSourceDelegate::OnBufferReady(
     size_t index,
     DemuxerStream::Status status,
     const scoped_refptr<media::DecoderBuffer>& buffer) {
+  DVLOG(1) << "MediaSourceDelegate::OnBufferReady() : " << player_id_;
   DCHECK(status == DemuxerStream::kAborted ||
          index < params->access_units.size());
   bool is_audio = stream->type() == DemuxerStream::AUDIO;
@@ -342,6 +366,8 @@ void MediaSourceDelegate::OnBufferReady(
 
 void MediaSourceDelegate::OnDemuxerError(
     media::PipelineStatus status) {
+  DVLOG(1) << "MediaSourceDelegate::OnDemuxerError(" << status << ") : "
+           << player_id_;
   if (status != media::PIPELINE_OK) {
     DCHECK(status == media::DEMUXER_ERROR_COULD_NOT_OPEN ||
            status == media::DEMUXER_ERROR_COULD_NOT_PARSE ||
@@ -354,11 +380,19 @@ void MediaSourceDelegate::OnDemuxerError(
 
 void MediaSourceDelegate::OnDemuxerInitDone(
     media::PipelineStatus status) {
+  DVLOG(1) << "MediaSourceDelegate::OnDemuxerInitDone(" << status << ") : "
+           << player_id_;
   if (status != media::PIPELINE_OK) {
     OnDemuxerError(status);
     return;
   }
   NotifyDemuxerReady("");
+}
+
+void MediaSourceDelegate::OnDemuxerStopDone() {
+  DVLOG(1) << "MediaSourceDelegate::OnDemuxerStopDone() : " << player_id_;
+  chunk_demuxer_.reset();
+  delete this;
 }
 
 void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
@@ -399,6 +433,9 @@ void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
 }
 
 void MediaSourceDelegate::OnDemuxerOpened() {
+  if (!media_source_)
+    return;
+
   media_source_->open(new WebMediaSourceClientImpl(
       chunk_demuxer_.get(), base::Bind(&LogMediaSourceError, media_log_)));
 }
@@ -407,6 +444,9 @@ void MediaSourceDelegate::OnKeyError(const std::string& key_system,
                                      const std::string& session_id,
                                      media::Decryptor::KeyError error_code,
                                      int system_code) {
+  if (!client_)
+    return;
+
   client_->keyError(
       WebString::fromUTF8(key_system),
       WebString::fromUTF8(session_id),
@@ -422,6 +462,9 @@ void MediaSourceDelegate::OnKeyMessage(const std::string& key_system,
   DLOG_IF(WARNING, !default_url.empty() && !default_url_gurl.is_valid())
       << "Invalid URL in default_url: " << default_url;
 
+  if (!client_)
+    return;
+
   client_->keyMessage(WebString::fromUTF8(key_system),
                       WebString::fromUTF8(session_id),
                       reinterpret_cast<const uint8*>(message.data()),
@@ -431,7 +474,11 @@ void MediaSourceDelegate::OnKeyMessage(const std::string& key_system,
 
 void MediaSourceDelegate::OnKeyAdded(const std::string& key_system,
                                      const std::string& session_id) {
+  if (!client_)
+    return;
+
   NotifyDemuxerReady(key_system);
+
   client_->keyAdded(WebString::fromUTF8(key_system),
                     WebString::fromUTF8(session_id));
 }
@@ -442,7 +489,7 @@ void MediaSourceDelegate::OnNeedKey(const std::string& key_system,
                                     scoped_ptr<uint8[]> init_data,
                                     int init_data_size) {
   // Do not fire NeedKey event if encrypted media is not enabled.
-  if (!decryptor_)
+  if (!client_ || !decryptor_)
     return;
 
   CHECK(init_data_size >= 0);
