@@ -14,6 +14,7 @@
 
 class RenderView;
 class SpellCheck;
+struct SpellCheckMarker;
 struct SpellCheckResult;
 
 namespace WebKit {
@@ -39,7 +40,8 @@ class SpellCheckProvider
   // checker, which is available on the browser process.
   void RequestTextChecking(
       const WebKit::WebString& text,
-      WebKit::WebTextCheckingCompletion* completion);
+      WebKit::WebTextCheckingCompletion* completion,
+      const std::vector<SpellCheckMarker>& markers);
 
   // The number of ongoing IPC requests.
   size_t pending_text_request_size() const {

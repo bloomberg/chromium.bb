@@ -5,6 +5,7 @@
 // IPC messages for spellcheck.
 // Multiply-included message file, hence no include guard.
 
+#include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_result.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -19,6 +20,12 @@ IPC_STRUCT_TRAITS_BEGIN(SpellCheckResult)
   IPC_STRUCT_TRAITS_MEMBER(location)
   IPC_STRUCT_TRAITS_MEMBER(length)
   IPC_STRUCT_TRAITS_MEMBER(replacement)
+  IPC_STRUCT_TRAITS_MEMBER(hash)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(SpellCheckMarker)
+  IPC_STRUCT_TRAITS_MEMBER(hash)
+  IPC_STRUCT_TRAITS_MEMBER(offset)
 IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
@@ -97,10 +104,11 @@ IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_NotifyChecked,
 // Asks the Spelling service to check text. When the service finishes checking
 // the input text, it sends a SpellingCheckMsg_RespondSpellingService with
 // text-check results.
-IPC_MESSAGE_CONTROL3(SpellCheckHostMsg_CallSpellingService,
+IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_CallSpellingService,
                      int /* route_id for response */,
                      int /* request identifier given by WebKit */,
-                     string16 /* sentence */)
+                     string16 /* sentence */,
+                     std::vector<SpellCheckMarker> /* markers */)
 #endif
 
 #if defined(OS_MACOSX)

@@ -373,7 +373,8 @@ void SpellCheck::CreateTextCheckingResults(
           type,
           word_location + line_offset,
           word_length,
-          spellcheck_results[i].replacement));
+          spellcheck_results[i].replacement,
+          spellcheck_results[i].hash));
     }
   }
   textcheck_results->assign(list);

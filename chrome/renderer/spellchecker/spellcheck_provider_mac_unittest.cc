@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider_test.h"
@@ -51,7 +52,8 @@ TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
   FakeTextCheckingCompletion completion;
 
   provider_.RequestTextChecking(WebKit::WebString("hello "),
-                                &completion);
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(completion.completion_count_, 0U);
   EXPECT_EQ(provider_.messages_.size(), 1U);
   EXPECT_EQ(provider_.pending_text_request_size(), 1U);
@@ -68,10 +70,12 @@ TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
 TEST_F(SpellCheckProviderMacTest, TwoRoundtripSuccess) {
   FakeTextCheckingCompletion completion1;
   provider_.RequestTextChecking(WebKit::WebString("hello "),
-                                &completion1);
+                                &completion1,
+                                std::vector<SpellCheckMarker>());
   FakeTextCheckingCompletion completion2;
   provider_.RequestTextChecking(WebKit::WebString("bye "),
-                                &completion2);
+                                &completion2,
+                                std::vector<SpellCheckMarker>());
 
   EXPECT_EQ(completion1.completion_count_, 0U);
   EXPECT_EQ(completion2.completion_count_, 0U);

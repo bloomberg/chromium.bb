@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "base/stl_util.h"
+#include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,7 +19,8 @@ namespace {
 TEST_F(SpellCheckProviderTest, UsingHunspell) {
   FakeTextCheckingCompletion completion;
   provider_.RequestTextChecking(WebKit::WebString("hello"),
-                                &completion);
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(completion.completion_count_, 1U);
   EXPECT_EQ(provider_.messages_.size(), 0U);
   EXPECT_EQ(provider_.pending_text_request_size(), 0U);
@@ -32,47 +34,56 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
 
   // Verify that the SpellCheckProvider class does not spellcheck empty text.
   provider_.ResetResult();
-  provider_.RequestTextChecking(WebKit::WebString(), &completion);
+  provider_.RequestTextChecking(
+      WebKit::WebString(), &completion, std::vector<SpellCheckMarker>());
   EXPECT_TRUE(provider_.text_.empty());
 
   // Verify that the SpellCheckProvider class does not spellcheck text while we
   // are typing a word.
   provider_.ResetResult();
-  provider_.RequestTextChecking(WebKit::WebString("First"), &completion);
+  provider_.RequestTextChecking(
+      WebKit::WebString("First"), &completion, std::vector<SpellCheckMarker>());
   EXPECT_TRUE(provider_.text_.empty());
 
   // Verify that the SpellCheckProvider class spellcheck the first word when we
   // type a space key, i.e. when we finish typing a word.
   provider_.ResetResult();
-  provider_.RequestTextChecking(WebKit::WebString("First "), &completion);
+  provider_.RequestTextChecking(WebKit::WebString("First "),
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(ASCIIToUTF16("First "), provider_.text_);
 
   // Verify that the SpellCheckProvider class spellcheck the first line when we
   // type a return key, i.e. when we finish typing a line.
   provider_.ResetResult();
   provider_.RequestTextChecking(WebKit::WebString("First Second\n"),
-                                &completion);
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(ASCIIToUTF16("First Second\n"), provider_.text_);
 
   // Verify that the SpellCheckProvider class spellcheck the lines when we
   // finish typing a word "Third" to the second line.
   provider_.ResetResult();
   provider_.RequestTextChecking(WebKit::WebString("First Second\nThird "),
-                                &completion);
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(ASCIIToUTF16("First Second\nThird "), provider_.text_);
 
   // Verify that the SpellCheckProvider class does not send a spellcheck request
   // when a user inserts whitespace characters.
   provider_.ResetResult();
   provider_.RequestTextChecking(WebKit::WebString("First Second\nThird   "),
-                                &completion);
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_TRUE(provider_.text_.empty());
 
   // Verify that the SpellCheckProvider class spellcheck the lines when we type
   // a period.
   provider_.ResetResult();
   provider_.RequestTextChecking(
-      WebKit::WebString("First Second\nThird   Fourth."), &completion);
+      WebKit::WebString("First Second\nThird   Fourth."),
+      &completion,
+      std::vector<SpellCheckMarker>());
   EXPECT_EQ(ASCIIToUTF16("First Second\nThird   Fourth."), provider_.text_);
 }
 
@@ -81,7 +92,8 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
 TEST_F(SpellCheckProviderTest, CancelUnnecessaryRequests) {
   FakeTextCheckingCompletion completion;
   provider_.RequestTextChecking(WebKit::WebString("hello."),
-                                &completion);
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(completion.completion_count_, 1U);
   EXPECT_EQ(completion.cancellation_count_, 0U);
   EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
@@ -89,7 +101,8 @@ TEST_F(SpellCheckProviderTest, CancelUnnecessaryRequests) {
   // Test that the SpellCheckProvider does not send a request with the same text
   // as above.
   provider_.RequestTextChecking(WebKit::WebString("hello."),
-                                &completion);
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(completion.completion_count_, 2U);
   EXPECT_EQ(completion.cancellation_count_, 0U);
   EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
@@ -97,7 +110,8 @@ TEST_F(SpellCheckProviderTest, CancelUnnecessaryRequests) {
   // Test that the SpellCheckProvider class cancels an incoming request that
   // does not include any words.
   provider_.RequestTextChecking(WebKit::WebString(":-)"),
-                                &completion);
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(completion.completion_count_, 3U);
   EXPECT_EQ(completion.cancellation_count_, 1U);
   EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
@@ -106,7 +120,8 @@ TEST_F(SpellCheckProviderTest, CancelUnnecessaryRequests) {
   // Russian word.
   const wchar_t kRussianWord[] = L"\x0431\x0451\x0434\x0440\x0430";
   provider_.RequestTextChecking(WebKit::WebString(WideToUTF16(kRussianWord)),
-                                &completion);
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(completion.completion_count_, 4U);
   EXPECT_EQ(completion.cancellation_count_, 1U);
   EXPECT_EQ(provider_.spelling_service_call_count_, 2U);
@@ -118,18 +133,21 @@ TEST_F(SpellCheckProviderTest, CompleteNecessaryRequests) {
   FakeTextCheckingCompletion completion;
 
   string16 text = ASCIIToUTF16("Icland is an icland ");
-  provider_.RequestTextChecking(WebKit::WebString(text), &completion);
+  provider_.RequestTextChecking(
+      WebKit::WebString(text), &completion, std::vector<SpellCheckMarker>());
   EXPECT_EQ(0U, completion.cancellation_count_) << "Should finish checking \""
                                                 << text << "\"";
 
   const int kSubstringLength = 18;
   string16 substring = text.substr(0, kSubstringLength);
   provider_.RequestTextChecking(WebKit::WebString(substring),
-                                &completion);
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(0U, completion.cancellation_count_) << "Should finish checking \""
                                                 << substring << "\"";
 
-  provider_.RequestTextChecking(WebKit::WebString(text), &completion);
+  provider_.RequestTextChecking(
+      WebKit::WebString(text), &completion, std::vector<SpellCheckMarker>());
   EXPECT_EQ(0U, completion.cancellation_count_) << "Should finish checking \""
                                                 << text << "\"";
 }
@@ -138,17 +156,23 @@ TEST_F(SpellCheckProviderTest, CompleteNecessaryRequests) {
 // a word.
 TEST_F(SpellCheckProviderTest, CancelMidWordRequests) {
   FakeTextCheckingCompletion completion;
-  provider_.RequestTextChecking(WebKit::WebString("hello "), &completion);
+  provider_.RequestTextChecking(WebKit::WebString("hello "),
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(completion.completion_count_, 1U);
   EXPECT_EQ(completion.cancellation_count_, 0U);
   EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
 
-  provider_.RequestTextChecking(WebKit::WebString("hello world"), &completion);
+  provider_.RequestTextChecking(WebKit::WebString("hello world"),
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(completion.completion_count_, 2U);
   EXPECT_EQ(completion.cancellation_count_, 1U);
   EXPECT_EQ(provider_.spelling_service_call_count_, 1U);
 
-  provider_.RequestTextChecking(WebKit::WebString("hello world."), &completion);
+  provider_.RequestTextChecking(WebKit::WebString("hello world."),
+                                &completion,
+                                std::vector<SpellCheckMarker>());
   EXPECT_EQ(completion.completion_count_, 3U);
   EXPECT_EQ(completion.cancellation_count_, 1U);
   EXPECT_EQ(provider_.spelling_service_call_count_, 2U);

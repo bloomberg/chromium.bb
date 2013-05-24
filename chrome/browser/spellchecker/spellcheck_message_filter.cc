@@ -12,6 +12,7 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/url_request/url_fetcher.h"
@@ -109,30 +110,37 @@ void SpellCheckMessageFilter::OnRespondDocumentMarkers(
 void SpellCheckMessageFilter::OnCallSpellingService(
     int route_id,
     int identifier,
-    const string16& text) {
+    const string16& text,
+    const std::vector<SpellCheckMarker>& markers) {
   DCHECK(!text.empty());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  CallSpellingService(text, route_id, identifier);
+  CallSpellingService(text, route_id, identifier, markers);
 }
 
 void SpellCheckMessageFilter::OnTextCheckComplete(
     int route_id,
     int identifier,
+    const std::vector<SpellCheckMarker>& markers,
     bool success,
     const string16& text,
     const std::vector<SpellCheckResult>& results) {
-  Send(new SpellCheckMsg_RespondSpellingService(route_id,
-                                                identifier,
-                                                success,
-                                                text,
-                                                results));
+  SpellcheckService* spellcheck =
+      SpellcheckServiceFactory::GetForRenderProcessId(render_process_id_);
+  DCHECK(spellcheck);
+  std::vector<SpellCheckResult> results_copy = results;
+  spellcheck->GetFeedbackSender()->OnSpellcheckResults(
+      &results_copy, render_process_id_, text, markers);
+  Send(new SpellCheckMsg_RespondSpellingService(
+      route_id, identifier, success, text, results_copy));
 }
 
 // CallSpellingService always executes the callback OnTextCheckComplete.
 // (Which, in turn, sends a SpellCheckMsg_RespondSpellingService)
-void SpellCheckMessageFilter::CallSpellingService(const string16& text,
-                                                  int route_id,
-                                                  int identifier) {
+void SpellCheckMessageFilter::CallSpellingService(
+    const string16& text,
+    int route_id,
+    int identifier,
+    const std::vector<SpellCheckMarker>& markers) {
   Profile* profile = NULL;
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(render_process_id_);
@@ -146,6 +154,7 @@ void SpellCheckMessageFilter::CallSpellingService(const string16& text,
     base::Bind(&SpellCheckMessageFilter::OnTextCheckComplete,
                base::Unretained(this),
                route_id,
-               identifier));
+               identifier,
+               markers));
 }
 #endif

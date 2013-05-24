@@ -433,4 +433,19 @@ TEST_F(FeedbackSenderTest, FeedbackAPI) {
       << "\nActual data:   " << actual_data;
 }
 
+// Duplicate spellcheck results should be matched to the existing markers.
+TEST_F(FeedbackSenderTest, MatchDupliateResultsWithExistingMarkers) {
+  uint32 hash = AddPendingFeedback();
+  std::vector<SpellCheckResult> results(1, SpellCheckResult(
+      SpellCheckResult::SPELLING,
+      kMisspellingStart + 10,
+      kMisspellingLength,
+      ASCIIToUTF16("Hello")));
+  std::vector<SpellCheckMarker> markers(1, SpellCheckMarker(
+      hash, results[0].location));
+  EXPECT_EQ(static_cast<uint32>(0), results[0].hash);
+  feedback_.OnSpellcheckResults(&results, kRendererProcessId, kText, markers);
+  EXPECT_EQ(hash, results[0].hash);
+}
+
 }  // namespace spellcheck

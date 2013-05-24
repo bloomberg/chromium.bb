@@ -5,6 +5,7 @@
 #include "chrome/renderer/spellchecker/spellcheck_provider_test.h"
 
 #include "base/stl_util.h"
+#include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "ipc/ipc_message_macros.h"
@@ -60,7 +61,8 @@ bool TestingSpellCheckProvider::Send(IPC::Message* message)  {
 
 void TestingSpellCheckProvider::OnCallSpellingService(int route_id,
                            int identifier,
-                           const string16& text) {
+                           const string16& text,
+                           const std::vector<SpellCheckMarker>& markers) {
 #if defined (OS_MACOSX)
   NOTREACHED();
 #else

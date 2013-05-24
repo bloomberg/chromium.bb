@@ -6,6 +6,9 @@
 #define CHROME_COMMON_SPELLCHECK_MARKER_H_
 
 struct SpellCheckMarker {
+  // IPC requires a default constructor.
+  SpellCheckMarker() : hash(-1), offset(-1) {}
+
   SpellCheckMarker(uint32 hash, size_t offset) : hash(hash), offset(offset) {}
 
   uint32 hash;

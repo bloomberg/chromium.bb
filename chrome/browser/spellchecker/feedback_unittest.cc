@@ -59,6 +59,17 @@ TEST_F(FeedbackTest, FinalizeRemovedMisspellings) {
   EXPECT_FALSE(remaining_misspelling->action.IsFinal());
 }
 
+// Duplicate misspellings should not be finalized.
+TEST_F(FeedbackTest, DuplicateMisspellingFinalization) {
+  AddMisspelling(kRendererProcessId, kMisspellingHash);
+  AddMisspelling(kRendererProcessId, kMisspellingHash);
+  std::vector<uint32> remaining_markers(1, kMisspellingHash);
+  feedback_.FinalizeRemovedMisspellings(kRendererProcessId, remaining_markers);
+  std::vector<Misspelling> misspellings = feedback_.GetAllMisspellings();
+  EXPECT_EQ(static_cast<size_t>(1), misspellings.size());
+  EXPECT_FALSE(misspellings[0].action.IsFinal());
+}
+
 // Misspellings should be associated with a renderer.
 TEST_F(FeedbackTest, RendererHasMisspellings) {
   EXPECT_FALSE(feedback_.RendererHasMisspellings(kRendererProcessId));

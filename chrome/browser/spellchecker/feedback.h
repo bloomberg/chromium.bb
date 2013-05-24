@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SPELLCHECKER_FEEDBACK_H_
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include "chrome/browser/spellchecker/misspelling.h"
@@ -69,10 +70,13 @@ class Feedback {
  private:
   // A map of hashes that identify document markers to feedback data to be sent
   // to spelling service.
-  std::map<uint32, Misspelling> misspellings_;
+  typedef std::map<uint32, Misspelling> HashMisspellingMap;
+  HashMisspellingMap misspellings_;
 
   // A map of renderer process ID to hashes that identify misspellings.
-  std::map<int, std::vector<uint32> > hashes_;
+  typedef std::set<uint32> HashCollection;
+  typedef std::map<int, HashCollection> RendererHashesMap;
+  RendererHashesMap hashes_;
 
   DISALLOW_COPY_AND_ASSIGN(Feedback);
 };

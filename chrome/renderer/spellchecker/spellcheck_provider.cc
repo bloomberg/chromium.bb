@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
@@ -49,7 +50,8 @@ SpellCheckProvider::~SpellCheckProvider() {
 
 void SpellCheckProvider::RequestTextChecking(
     const WebString& text,
-    WebTextCheckingCompletion* completion) {
+    WebTextCheckingCompletion* completion,
+    const std::vector<SpellCheckMarker>& markers) {
   // Ignore invalid requests.
   if (text.isEmpty() || !HasWordCharacters(text, 0)) {
     completion->didCancelCheckingText();
@@ -78,7 +80,8 @@ void SpellCheckProvider::RequestTextChecking(
   Send(new SpellCheckHostMsg_CallSpellingService(
       routing_id(),
       text_check_completions_.Add(completion),
-      string16(text)));
+      string16(text),
+      markers));
 #endif  // !OS_MACOSX
 }
 
@@ -161,7 +164,12 @@ void SpellCheckProvider::requestCheckingOfText(
     const WebVector<uint32>& markers,
     const WebVector<unsigned>& marker_offsets,
     WebTextCheckingCompletion* completion) {
-  RequestTextChecking(text, completion);
+  std::vector<SpellCheckMarker> spellcheck_markers;
+  for (size_t i = 0; i < markers.size(); ++i) {
+    spellcheck_markers.push_back(
+        SpellCheckMarker(markers[i], marker_offsets[i]));
+  }
+  RequestTextChecking(text, completion, spellcheck_markers);
   UMA_HISTOGRAM_COUNTS("SpellCheck.api.async", text.length());
 }
 
