@@ -138,7 +138,7 @@ message Fingerprint {
 
   // Contains properties relating to more transient computer / browser state.
   message TransientState {
-    // Corresponds to window.innerWidth / innertHeight
+    // Corresponds to window.innerWidth / innerHeight
     optional Dimension inner_window_size = 1;
 
     // Corresponds to window.outerWidth / outerHeight

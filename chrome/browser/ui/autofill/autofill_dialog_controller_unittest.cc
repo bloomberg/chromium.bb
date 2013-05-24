@@ -13,6 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_metrics.h"
+#include "components/autofill/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/browser/test_personal_data_manager.h"
 #include "components/autofill/browser/wallet/full_wallet.h"
 #include "components/autofill/browser/wallet/instrument.h"
@@ -37,9 +38,10 @@ namespace autofill {
 namespace {
 
 const char kFakeEmail[] = "user@example.com";
+const char kFakeFingerprintEncoded[] = "CgVaAwiACA==";
 const char kEditedBillingAddress[] = "123 edited billing address";
-const char* kFieldsFromPage[] = { "email", "cc-number", "billing region",
-  "shipping region" };
+const char* kFieldsFromPage[] =
+    { "email", "cc-number", "billing region", "shipping region" };
 const char kSettingsOrigin[] = "Chrome settings";
 
 using content::BrowserThread;
@@ -54,6 +56,22 @@ void SetOutputValue(const DetailInputs& inputs,
         ASCIIToUTF16(value) :
         input.initial_value;
   }
+}
+
+scoped_ptr<wallet::FullWallet> CreateFullWalletWithVerifyCvv() {
+  base::DictionaryValue dict;
+  scoped_ptr<base::ListValue> list(new base::ListValue());
+  list->AppendString("verify_cvv");
+  dict.Set("required_action", list.release());
+  return wallet::FullWallet::CreateFullWallet(dict);
+}
+
+scoped_ptr<risk::Fingerprint> GetFakeFingerprint() {
+  scoped_ptr<risk::Fingerprint> fingerprint(new risk::Fingerprint());
+  // Add some data to the proto, else the encoded content is empty.
+  fingerprint->mutable_machine_characteristics()->mutable_screen_size()->
+      set_width(1024);
+  return fingerprint.Pass();
 }
 
 class TestAutofillDialogView : public AutofillDialogView {
@@ -227,6 +245,9 @@ class TestAutofillDialogController
     return state[section];
   }
 
+  MOCK_METHOD0(LoadRiskFingerprintData, void());
+  using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
+
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
     return &test_manager_;
@@ -290,7 +311,7 @@ class AutofillDialogControllerTest : public testing::Test {
     base::Callback<void(const FormStructure*, const std::string&)> callback =
         base::Bind(&AutofillDialogControllerTest::FinishedCallback,
                    base::Unretained(this));
-    controller_ = (new TestAutofillDialogController(
+    controller_ = (new testing::NiceMock<TestAutofillDialogController>(
         test_web_contents_.get(),
         form_data,
         GURL(),
@@ -308,14 +329,6 @@ class AutofillDialogControllerTest : public testing::Test {
   }
 
  protected:
-  static scoped_ptr<wallet::FullWallet> CreateFullWalletWithVerifyCvv() {
-    base::DictionaryValue dict;
-    scoped_ptr<base::ListValue> list(new base::ListValue());
-    list->AppendString("verify_cvv");
-    dict.Set("required_action", list.release());
-    return wallet::FullWallet::CreateFullWallet(dict);
-  }
-
   void FillCreditCardInputs() {
     DetailOutputMap cc_outputs;
     const DetailInputs& cc_inputs =
@@ -648,6 +661,7 @@ TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
               AcceptLegalDocuments(_, _, _)).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               GetFullWallet(_)).Times(1);
+  EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(1);
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
@@ -655,6 +669,8 @@ TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
+  controller()->OnDidAcceptLegalDocuments();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 }
 
 // Makes sure the default object IDs are respected.
@@ -1043,6 +1059,7 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 
   EXPECT_TRUE(NotificationsOfType(DialogNotification::REQUIRED_ACTION).empty());
   EXPECT_TRUE(controller()->SectionIsActive(SECTION_SHIPPING));
@@ -1081,6 +1098,7 @@ TEST_F(AutofillDialogControllerTest, ErrorDuringSubmit) {
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 
   EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
@@ -1101,6 +1119,7 @@ TEST_F(AutofillDialogControllerTest, ChangeAccountDuringSubmit) {
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 
   EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
@@ -1121,6 +1140,7 @@ TEST_F(AutofillDialogControllerTest, ErrorDuringVerifyCvv) {
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
   controller()->OnDidGetFullWallet(CreateFullWalletWithVerifyCvv());
 
   ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
@@ -1142,6 +1162,7 @@ TEST_F(AutofillDialogControllerTest, ChangeAccountDuringVerifyCvv) {
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
   controller()->OnDidGetFullWallet(CreateFullWalletWithVerifyCvv());
 
   ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
@@ -1426,6 +1447,51 @@ TEST_F(AutofillDialogControllerTest, UpgradeMinimalAddress) {
   // Shipping section should be in edit mode because of
   // is_minimal_shipping_address.
   ASSERT_TRUE(controller()->IsSectionInEditState(SECTION_SHIPPING));
+}
+
+TEST_F(AutofillDialogControllerTest, RiskNeverLoadsWithPendingLegalDocuments) {
+  EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(0);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnAccept();
+
+  EXPECT_TRUE(controller()->GetRiskData().empty());
+}
+
+TEST_F(AutofillDialogControllerTest, RiskLoadsWithoutPendingLegalDocuments) {
+  EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnAccept();
+
+  EXPECT_TRUE(controller()->GetRiskData().empty());
+
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  EXPECT_EQ(kFakeFingerprintEncoded, controller()->GetRiskData());
+}
+
+TEST_F(AutofillDialogControllerTest, RiskLoadsAfterAcceptingLegalDocuments) {
+  EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(0);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  testing::Mock::VerifyAndClear(controller());
+  EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(1);
+
+  controller()->OnAccept();
+  EXPECT_TRUE(controller()->GetRiskData().empty());
+
+  // Simulate a risk load and verify |GetRiskData()| matches the encoded value.
+  controller()->OnDidAcceptLegalDocuments();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  EXPECT_EQ(kFakeFingerprintEncoded, controller()->GetRiskData());
 }
 
 }  // namespace autofill

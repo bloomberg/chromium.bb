@@ -265,6 +265,12 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Exposed and virtual for testing.
   virtual bool IsFirstRun() const;
 
+  // Asks risk module to asynchronously load fingerprint data. Data will be
+  // returned via |OnDidLoadRiskFingerprintData()|. Exposed for testing.
+  virtual void LoadRiskFingerprintData();
+  virtual void OnDidLoadRiskFingerprintData(
+      scoped_ptr<risk::Fingerprint> fingerprint);
+
   // Opens the given URL in a new foreground tab.
   virtual void OpenTabWithUrl(const GURL& url);
 
@@ -379,11 +385,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Hides |popup_controller_|'s popup view, if it exists.
   void HidePopup();
 
-  // Asks risk module to asynchronously load fingerprint data. Data will be
-  // returned via OnDidLoadRiskFingerprintData.
-  void LoadRiskFingerprintData();
-  void OnDidLoadRiskFingerprintData(scoped_ptr<risk::Fingerprint> fingerprint);
-
   // Whether the user has chosen to enter all new data in |section|. This
   // happens via choosing "Add a new X..." from a section's suggestion menu.
   bool IsManuallyEditingSection(DialogSection section) const;
@@ -417,6 +418,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // or Online Wallet (|is_submitting_|) and update the view.
   void SetIsSubmitting(bool submitting);
 
+  // Whether the user has accepted all the current legal documents' terms.
+  bool AreLegalDocumentsCurrent() const;
+
   // Start the submit proccess to interact with Online Wallet (might do various
   // things like accept documents, save details, update details, respond to
   // required actions, etc.).
@@ -436,6 +440,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Gets a full wallet from Online Wallet so the user can purchase something.
   // This information is decoded to reveal a fronting (proxy) card.
   void GetFullWallet();
+
+  // Calls |GetFullWallet()| if the required members (|risk_data_|,
+  // |active_instrument_id_|, and |active_address_id_|) are populated.
+  void GetFullWalletIfReady();
 
   // Updates the state of the controller and |view_| based on any required
   // actions returned by Save or Update calls to Wallet.
@@ -518,6 +526,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   scoped_ptr<wallet::WalletItems> wallet_items_;
   scoped_ptr<wallet::FullWallet> full_wallet_;
 
+  // Local machine signals to pass along on each request to trigger (or
+  // discourage) risk challenges; sent if the user is up to date on legal docs.
+  std::string risk_data_;
+
   // The text to display when the user is accepting new terms of service, etc.
   string16 legal_documents_text_;
   // The ranges within |legal_documents_text_| to linkify.
@@ -573,6 +585,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Whether this is the first time this profile has seen the Autofill dialog.
   bool is_first_run_;
+
+  // Whether a user accepted legal documents while this dialog is running.
+  bool has_accepted_legal_documents_;
 
   // True after the user first accepts the dialog and presses "Submit". May
   // continue to be true while processing required actions.

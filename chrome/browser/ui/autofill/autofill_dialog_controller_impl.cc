@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
@@ -1532,13 +1533,14 @@ DialogType AutofillDialogControllerImpl::GetDialogType() const {
 }
 
 std::string AutofillDialogControllerImpl::GetRiskData() const {
-  // TODO(dbeam): Implement this.
-  return "risky business";
+  return risk_data_;
 }
 
 void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
-  // TODO(dbeam): Don't send risk params until legal documents are accepted:
-  // http://crbug.com/173505
+  DCHECK(is_submitting_ && IsPayingWithWallet());
+
+  has_accepted_legal_documents_ = true;
+  LoadRiskFingerprintData();
 }
 
 void AutofillDialogControllerImpl::OnDidAuthenticateInstrument(bool success) {
@@ -1613,6 +1615,7 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
     scoped_ptr<wallet::WalletItems> wallet_items) {
   legal_documents_text_.clear();
   legal_document_link_ranges_.clear();
+  has_accepted_legal_documents_ = false;
 
   // TODO(dbeam): verify items support kCartCurrency? http://crbug.com/232952
   wallet_items_ = wallet_items.Pass();
@@ -1626,8 +1629,7 @@ void AutofillDialogControllerImpl::OnDidSaveAddress(
 
   if (required_actions.empty()) {
     active_address_id_ = address_id;
-    if (!active_instrument_id_.empty())
-      GetFullWallet();
+    GetFullWalletIfReady();
   } else {
     HandleSaveOrUpdateRequiredActions(required_actions);
   }
@@ -1640,8 +1642,7 @@ void AutofillDialogControllerImpl::OnDidSaveInstrument(
 
   if (required_actions.empty()) {
     active_instrument_id_ = instrument_id;
-    if (!active_address_id_.empty())
-      GetFullWallet();
+    GetFullWalletIfReady();
   } else {
     HandleSaveOrUpdateRequiredActions(required_actions);
   }
@@ -1652,7 +1653,9 @@ void AutofillDialogControllerImpl::OnDidSaveInstrumentAndAddress(
     const std::string& address_id,
     const std::vector<wallet::RequiredAction>& required_actions) {
   OnDidSaveInstrument(instrument_id, required_actions);
-  OnDidSaveAddress(address_id, required_actions);
+  // |is_submitting_| can change while in |OnDidSaveInstrument()|.
+  if (is_submitting_)
+    OnDidSaveAddress(address_id, required_actions);
 }
 
 void AutofillDialogControllerImpl::OnDidUpdateAddress(
@@ -1763,6 +1766,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       weak_ptr_factory_(this),
       is_first_run_(!profile_->GetPrefs()->HasPrefPath(
           ::prefs::kAutofillDialogPayWithoutWallet)),
+      has_accepted_legal_documents_(false),
       is_submitting_(false),
       wallet_server_validation_error_(false),
       autocheckout_state_(AUTOCHECKOUT_NOT_STARTED),
@@ -1790,6 +1794,53 @@ bool AutofillDialogControllerImpl::IsPayingWithWallet() const {
 
 bool AutofillDialogControllerImpl::IsFirstRun() const {
   return is_first_run_;
+}
+
+void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
+  DCHECK(AreLegalDocumentsCurrent());
+
+  // Clear potential stale data to ensure |GetFullWalletIfReady()| triggers only
+  // when a new fingerprint is loaded.
+  risk_data_.clear();
+
+  uint64 obfuscated_gaia_id = 0;
+  bool success = base::StringToUint64(wallet_items_->obfuscated_gaia_id(),
+                                      &obfuscated_gaia_id);
+  DCHECK(success);
+
+  gfx::Rect window_bounds;
+#if !defined(OS_ANDROID)
+  window_bounds = GetBaseWindowForWebContents(web_contents())->GetBounds();
+#else
+  // TODO(dbeam): figure out the correct browser window size to pass along for
+  // android.
+#endif
+
+  PrefService* user_prefs = profile_->GetPrefs();
+  std::string charset = user_prefs->GetString(::prefs::kDefaultCharset);
+  std::string accept_languages =
+      user_prefs->GetString(::prefs::kAcceptLanguages);
+  base::Time install_time = base::Time::FromTimeT(
+      g_browser_process->local_state()->GetInt64(::prefs::kInstallDate));
+
+  risk::GetFingerprint(
+      obfuscated_gaia_id, window_bounds, *web_contents(),
+      chrome::VersionInfo().Version(), charset, accept_languages, install_time,
+      dialog_type_, g_browser_process->GetApplicationLocale(),
+      base::Bind(&AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData(
+    scoped_ptr<risk::Fingerprint> fingerprint) {
+  DCHECK(AreLegalDocumentsCurrent());
+
+  std::string proto_data;
+  fingerprint->SerializeToString(&proto_data);
+  bool success = base::Base64Encode(proto_data, &risk_data_);
+  DCHECK(success);
+
+  GetFullWalletIfReady();
 }
 
 void AutofillDialogControllerImpl::OpenTabWithUrl(const GURL& url) {
@@ -2146,40 +2197,6 @@ void AutofillDialogControllerImpl::HidePopup() {
   input_showing_popup_ = NULL;
 }
 
-void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
-  // TODO(dbeam): Add a CHECK or otherwise strong guarantee that the ToS have
-  // been accepted prior to calling into this method. Also, ensure that the UI
-  // contains a clear indication to the user as to what data will be collected.
-  // Until then, this code should not be called. http://crbug.com/173505
-
-  uint64 obfuscated_gaia_id = 0;
-  bool success = base::StringToUint64(wallet_items_->obfuscated_gaia_id(),
-                                      &obfuscated_gaia_id);
-  DCHECK(success);
-
-  gfx::Rect window_bounds =
-      GetBaseWindowForWebContents(web_contents())->GetBounds();
-
-  PrefService* user_prefs = profile_->GetPrefs();
-  std::string charset = user_prefs->GetString(::prefs::kDefaultCharset);
-  std::string accept_languages =
-      user_prefs->GetString(::prefs::kAcceptLanguages);
-  base::Time install_time = base::Time::FromTimeT(
-      g_browser_process->local_state()->GetInt64(::prefs::kInstallDate));
-
-  risk::GetFingerprint(
-      obfuscated_gaia_id, window_bounds, *web_contents(),
-      chrome::VersionInfo().Version(), charset, accept_languages, install_time,
-      GetDialogType(), g_browser_process->GetApplicationLocale(),
-      base::Bind(&AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData(
-    scoped_ptr<risk::Fingerprint> fingerprint) {
-  NOTIMPLEMENTED();
-}
-
 bool AutofillDialogControllerImpl::IsManuallyEditingSection(
     DialogSection section) const {
   std::map<DialogSection, bool>::const_iterator it =
@@ -2285,6 +2302,11 @@ void AutofillDialogControllerImpl::SetIsSubmitting(bool submitting) {
   }
 }
 
+bool AutofillDialogControllerImpl::AreLegalDocumentsCurrent() const {
+  return has_accepted_legal_documents_ ||
+      (wallet_items_ && wallet_items_->legal_documents().empty());
+}
+
 void AutofillDialogControllerImpl::SubmitWithWallet() {
   // TODO(dbeam): disallow interacting with the dialog while submitting.
   // http://crbug.com/230932
@@ -2301,6 +2323,9 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
       wallet_items_->legal_documents(),
       wallet_items_->google_transaction_id(),
       source_url_);
+
+  if (AreLegalDocumentsCurrent())
+    LoadRiskFingerprintData();
 
   SuggestionsMenuModel* billing =
       SuggestionsMenuModelForSection(SECTION_CC_BILLING);
@@ -2325,10 +2350,10 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
     DCHECK(!active_address_id_.empty());
   }
 
-  if (!active_instrument_id_.empty() && !active_address_id_.empty()) {
-    GetFullWallet();
+  // If there's neither an address nor instrument to save, |GetFullWallet()|
+  // is called when the risk fingerprint is loaded.
+  if (!active_instrument_id_.empty() && !active_address_id_.empty())
     return;
-  }
 
   scoped_ptr<wallet::Instrument> inputted_instrument =
       CreateTransientInstrument();
@@ -2451,6 +2476,16 @@ void AutofillDialogControllerImpl::GetFullWallet() {
       wallet::Cart(base::IntToString(kCartMax), kCartCurrency),
       wallet_items_->google_transaction_id(),
       capabilities));
+}
+
+void AutofillDialogControllerImpl::GetFullWalletIfReady() {
+  DCHECK(is_submitting_);
+  DCHECK(IsPayingWithWallet());
+
+  if (!active_instrument_id_.empty() && !active_address_id_.empty() &&
+      !risk_data_.empty()) {
+    GetFullWallet();
+  }
 }
 
 void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(
