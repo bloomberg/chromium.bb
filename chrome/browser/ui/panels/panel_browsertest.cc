@@ -672,7 +672,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreButtonClick) {
   EXPECT_FALSE(panel3->IsMinimized());
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoreAllWithTitlebarClick) {
+// http://crbug.com/243891 flaky on Linux
+#if defined(OS_LINUX)
+#define MAYBE_RestoreAllWithTitlebarClick DISABLED_RestoreAllWithTitlebarClick
+#else
+#define MAYBE_RestoreAllWithTitlebarClick RestoreAllWithTitlebarClick
+#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_RestoreAllWithTitlebarClick) {
   // Test with three panels.
   Panel* panel1 = CreatePanel("PanelTest1");
   Panel* panel2 = CreatePanel("PanelTest2");
