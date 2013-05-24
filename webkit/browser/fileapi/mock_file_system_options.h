@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MOCK_FILE_SYSTEM_OPTIONS_H_
-#define WEBKIT_FILEAPI_MOCK_FILE_SYSTEM_OPTIONS_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_OPTIONS_H_
+#define WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_OPTIONS_H_
 
 #include "webkit/fileapi/file_system_options.h"
 
@@ -20,4 +20,4 @@ FileSystemOptions CreateDisallowFileAccessOptions();
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_MOCK_FILE_SYSTEM_OPTIONS_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_OPTIONS_H_

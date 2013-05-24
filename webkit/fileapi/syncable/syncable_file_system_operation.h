@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "webkit/fileapi/local_file_system_operation.h"
+#include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {

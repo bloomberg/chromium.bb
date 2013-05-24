@@ -16,12 +16,12 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/file_system_task_runners.h"
+#include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_permission_policy.h"
 #include "webkit/fileapi/file_system_options.h"
-#include "webkit/fileapi/file_system_task_runners.h"
-#include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace content {

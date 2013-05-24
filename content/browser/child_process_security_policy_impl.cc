@@ -20,7 +20,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
-#include "webkit/fileapi/isolated_context.h"
+#include "webkit/browser/fileapi/isolated_context.h"
 
 namespace content {
 

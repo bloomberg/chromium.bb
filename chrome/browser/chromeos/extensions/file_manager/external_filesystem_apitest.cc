@@ -34,7 +34,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
-#include "webkit/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
 
 // Tests for access to external file systems (as defined in
 // webkit/fileapi/file_system_types.h) from extensions with fileBrowserPrivate

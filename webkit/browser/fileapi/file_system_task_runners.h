@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_TASK_RUNNERS_H_
-#define WEBKIT_FILEAPI_FILE_SYSTEM_TASK_RUNNERS_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_TASK_RUNNERS_H_
+#define WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_TASK_RUNNERS_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -52,4 +52,4 @@ class WEBKIT_STORAGE_EXPORT FileSystemTaskRunners {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_TASK_RUNNERS_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_TASK_RUNNERS_H_

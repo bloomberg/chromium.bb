@@ -9,7 +9,7 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
-#include "webkit/fileapi/isolated_context.h"
+#include "webkit/browser/fileapi/isolated_context.h"
 
 namespace chrome {
 

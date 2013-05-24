@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/browser/fileapi/mock_file_system_options.h"
 
 #include <string>
 #include <vector>

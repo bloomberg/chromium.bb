@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
@@ -175,7 +175,8 @@ bool ExternalMountPoints::CrackVirtualPath(const base::FilePath& virtual_path,
 
   std::vector<base::FilePath::StringType>::iterator component_iter =
       components.begin();
-  std::string maybe_mount_name = base::FilePath(*component_iter++).MaybeAsASCII();
+  std::string maybe_mount_name =
+      base::FilePath(*component_iter++).MaybeAsASCII();
   if (maybe_mount_name.empty())
     return false;
 

@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
-#include "webkit/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace drive_test_util {
 

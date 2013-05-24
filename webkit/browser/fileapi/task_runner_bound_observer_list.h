@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_TASK_RUNNER_BOUND_OBSERVER_LIST_H_
-#define WEBKIT_FILEAPI_TASK_RUNNER_BOUND_OBSERVER_LIST_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_TASK_RUNNER_BOUND_OBSERVER_LIST_H_
+#define WEBKIT_BROWSER_FILEAPI_TASK_RUNNER_BOUND_OBSERVER_LIST_H_
 
 #include <map>
 
@@ -106,4 +106,4 @@ typedef TaskRunnerBoundObserverList<FileUpdateObserver> UpdateObserverList;
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_TASK_RUNNER_BOUND_OBSERVER_LIST_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_TASK_RUNNER_BOUND_OBSERVER_LIST_H_

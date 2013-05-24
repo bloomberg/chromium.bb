@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MOCK_FILE_CHANGE_OBSERVER_H_
-#define WEBKIT_FILEAPI_MOCK_FILE_CHANGE_OBSERVER_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_MOCK_FILE_CHANGE_OBSERVER_H_
+#define WEBKIT_BROWSER_FILEAPI_MOCK_FILE_CHANGE_OBSERVER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "webkit/fileapi/file_observers.h"
+#include "webkit/browser/fileapi/file_observers.h"
+#include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/task_runner_bound_observer_list.h"
 
 namespace fileapi {
 
@@ -100,4 +100,4 @@ class MockFileChangeObserver : public FileChangeObserver {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_MOCK_FILE_CHANGE_OBSERVER_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_MOCK_FILE_CHANGE_OBSERVER_H_

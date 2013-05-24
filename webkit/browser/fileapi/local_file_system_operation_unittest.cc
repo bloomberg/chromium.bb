@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/local_file_system_operation.h"
+#include "webkit/browser/fileapi/local_file_system_operation.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -16,11 +16,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
+#include "webkit/browser/fileapi/mock_file_change_observer.h"
 #include "webkit/fileapi/async_file_test_helper.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/mock_file_change_observer.h"
 #include "webkit/fileapi/sandbox_file_system_test_helper.h"
 #include "webkit/quota/mock_quota_manager.h"
 #include "webkit/quota/quota_manager.h"

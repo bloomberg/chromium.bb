@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/mock_file_system_context.h"
+#include "webkit/browser/fileapi/mock_file_system_context.h"
 
 #include "base/memory/scoped_vector.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
-#include "webkit/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/file_system_task_runners.h"
+#include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_task_runners.h"
-#include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/test_mount_point_provider.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 

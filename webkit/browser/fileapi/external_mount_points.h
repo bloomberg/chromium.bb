@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_EXTERNAL_MOUNT_POINTS_H_
-#define WEBKIT_FILEAPI_EXTERNAL_MOUNT_POINTS_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_EXTERNAL_MOUNT_POINTS_H_
+#define WEBKIT_BROWSER_FILEAPI_EXTERNAL_MOUNT_POINTS_H_
 
 #include <map>
 #include <string>
@@ -11,8 +11,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "webkit/browser/fileapi/mount_points.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/mount_points.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
@@ -165,5 +165,5 @@ class WEBKIT_STORAGE_EXPORT ScopedExternalFileSystem {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_EXTERNAL_MOUNT_POINTS_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_EXTERNAL_MOUNT_POINTS_H_
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MOCK_FILE_SYSTEM_CONTEXT_H_
-#define WEBKIT_FILEAPI_MOCK_FILE_SYSTEM_CONTEXT_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_CONTEXT_H_
+#define WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_CONTEXT_H_
 
 #include "base/files/file_path.h"
 
@@ -22,4 +22,4 @@ FileSystemContext* CreateFileSystemContextForTesting(
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_MOCK_FILE_SYSTEM_CONTEXT_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_CONTEXT_H_

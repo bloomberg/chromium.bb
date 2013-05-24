@@ -9,10 +9,10 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "net/base/escape.h"
-#include "webkit/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/isolated_context.h"
 
 namespace fileapi {
 

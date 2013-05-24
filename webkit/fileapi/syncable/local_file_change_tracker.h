@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "webkit/fileapi/file_observers.h"
+#include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"

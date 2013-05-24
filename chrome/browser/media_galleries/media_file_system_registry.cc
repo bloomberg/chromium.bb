@@ -39,8 +39,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/isolated_context.h"
 
 using content::BrowserThread;
 using content::NavigationController;

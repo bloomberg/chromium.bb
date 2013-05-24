@@ -38,8 +38,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "google/cacheinvalidation/types.pb.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/common/user_agent/user_agent_util.h"
-#include "webkit/fileapi/external_mount_points.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

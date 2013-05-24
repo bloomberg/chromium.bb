@@ -7,8 +7,8 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "net/base/mime_util.h"
+#include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/isolated_context.h"
 
 namespace extensions {
 

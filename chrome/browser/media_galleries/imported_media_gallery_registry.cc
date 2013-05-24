@@ -10,8 +10,8 @@
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_data_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/fileapi/file_system_task_runners.h"
-#include "webkit/fileapi/isolated_context.h"
+#include "webkit/browser/fileapi/file_system_task_runners.h"
+#include "webkit/browser/fileapi/isolated_context.h"
 
 using base::Bind;
 

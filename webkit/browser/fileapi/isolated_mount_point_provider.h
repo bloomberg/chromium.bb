@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
-#define WEBKIT_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
+#define WEBKIT_BROWSER_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
@@ -66,4 +66,4 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_

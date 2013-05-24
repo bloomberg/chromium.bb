@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/mount_points.h"
+#include "webkit/browser/fileapi/mount_points.h"
 
 namespace fileapi {
 
