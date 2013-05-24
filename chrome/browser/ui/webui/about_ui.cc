@@ -157,7 +157,8 @@ class ChromeOSOnlineTermsHandler : public net::URLFetcherDelegate {
       : fetch_callback_(callback) {
     std::string eula_URL = base::StringPrintf(chrome::kOnlineEulaURLPath,
                                               locale.c_str());
-    eula_fetcher_.reset(net::URLFetcher::Create(GURL(eula_URL),
+    eula_fetcher_.reset(net::URLFetcher::Create(0 /* ID used for testing */,
+                                                GURL(eula_URL),
                                                 net::URLFetcher::GET,
                                                 this));
     eula_fetcher_->SetRequestContext(
