@@ -480,7 +480,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest, CrashAndUninstall) {
+// http://crbug.com/243648
+#if defined(OS_WIN)
+#define MAYBE_CrashAndUninstall DISABLED_CrashAndUninstall
+#else
+#define MAYBE_CrashAndUninstall CrashAndUninstall
+#endif
+IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
+                       MAYBE_CrashAndUninstall) {
   const size_t size_before = GetExtensionService()->extensions()->size();
   const size_t crash_size_before =
       GetExtensionService()->terminated_extensions()->size();
