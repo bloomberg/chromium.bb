@@ -289,9 +289,9 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
       pa_stream_connect_playback(
           *stream, NULL, &pa_buffer_attributes,
           static_cast<pa_stream_flags_t>(
-              PA_STREAM_FIX_RATE | PA_STREAM_INTERPOLATE_TIMING |
-              PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE |
-              PA_STREAM_NOT_MONOTONIC | PA_STREAM_START_CORKED),
+              PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY |
+              PA_STREAM_AUTO_TIMING_UPDATE | PA_STREAM_NOT_MONOTONIC |
+              PA_STREAM_START_CORKED),
           NULL, NULL) == 0,
       "pa_stream_connect_playback FAILED ");
 
