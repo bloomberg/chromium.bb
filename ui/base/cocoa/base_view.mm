@@ -140,7 +140,7 @@ const int kTrackingOptions = NSTrackingMouseMoved |
   // Tear down old tracking area and create a new one as workaround.
   if (trackingArea_.get())
     [self removeTrackingArea:trackingArea_.get()];
-  trackingArea_.reset([[CrTrackingArea alloc] initWithRect:[self frame]
+  trackingArea_.reset([[CrTrackingArea alloc] initWithRect:[self bounds]
                                                    options:kTrackingOptions
                                                      owner:self
                                                   userInfo:nil]);
