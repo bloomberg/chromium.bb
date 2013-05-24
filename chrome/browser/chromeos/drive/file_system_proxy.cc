@@ -620,11 +620,18 @@ void FileSystemProxy::TouchFile(
     const FileSystemOperation::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // TODO(kinaba,kochi): crbug.com/144369. Support this operations once we have
-  // migrated to the new Drive API.
-  MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
+  base::FilePath file_path;
+  if (!ValidateUrl(url, &file_path))
+    return;
+
+  CallFileSystemMethodOnUIThread(
+      base::Bind(&FileSystemInterface::TouchFile,
+                 base::Unretained(file_system_),
+                 file_path, last_access_time, last_modified_time,
+                 google_apis::CreateRelayCallback(
+                     base::Bind(&FileSystemProxy::OnStatusCallback,
+                                this,
+                                callback))));
 }
 
 void FileSystemProxy::CreateSnapshotFile(
