@@ -2201,10 +2201,10 @@ scoped_ptr<base::Value> LayerTreeHostImpl::AsValue() const {
 }
 
 scoped_ptr<base::Value> LayerTreeHostImpl::ActivationStateAsValue() const {
-  DCHECK(pending_tree_ && tile_manager_);
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
   state->Set("lthi", TracedValue::CreateIDRef(this).release());
-  state->Set("tile_manager", tile_manager_->BasicStateAsValue().release());
+  if (tile_manager_)
+    state->Set("tile_manager", tile_manager_->BasicStateAsValue().release());
   return state.PassAs<base::Value>();
 }
 
