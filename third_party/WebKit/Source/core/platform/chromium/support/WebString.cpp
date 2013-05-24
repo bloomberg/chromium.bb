@@ -56,8 +56,7 @@ void WebString::assign(const WebString& other)
 
 void WebString::assign(const WebUChar* data, size_t length)
 {
-    assign(static_cast<WebStringPrivate*>(
-        WTF::StringImpl::create(data, length).get()));
+    assign(static_cast<WebStringPrivate*>(StringImpl::create8BitIfPossible(data, length).get()));
 }
 
 size_t WebString::length() const
