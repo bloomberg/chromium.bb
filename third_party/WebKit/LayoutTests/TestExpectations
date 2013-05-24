@@ -1848,6 +1848,11 @@ crbug.com/243649 [ Mac ] transitions/cancel-transition.html [ Failure Pass ]
 crbug.com/243655 [ Win7 ] compositing/iframes/scroll-grandchild-iframe.html [ Timeout ]
 crbug.com/243657 [ Mac Debug ] svg/text/font-size-too-large-crash.svg [ Crash Pass ]
 crbug.com/243658 [ Lion ] fast/writing-mode/vertical-font-vmtx-units-per-em.html [ Crash ]
+crbug.com/243663 [ Win7 ] compositing/animation/animated-composited-inside-hidden.html [ Failure ]
+crbug.com/243663 [ Mac ] compositing/animation/computed-style-during-delay.html [ Timeout ]
+crbug.com/243663 [ Win7 Debug ] compositing/animation/computed-style-during-delay.html [ Failure ]
+crbug.com/243663 [ Win7 Debug ] compositing/reflections/nested-reflection-transition.html [ Failure ]
+crbug.com/243663 [ SnowLeopard Win7 Debug ] compositing/transitions/scale-transition-no-start.html [ Failure ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass ]
