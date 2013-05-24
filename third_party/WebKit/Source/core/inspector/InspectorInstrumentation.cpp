@@ -1112,20 +1112,20 @@ bool collectingHTMLParseErrorsImpl(InstrumentingAgents* instrumentingAgents)
 
 bool canvasAgentEnabled(ScriptExecutionContext* scriptExecutionContext)
 {
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(scriptExecutionContext);
+    InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(scriptExecutionContext);
     return instrumentingAgents && instrumentingAgents->inspectorCanvasAgent();
 }
 
 bool consoleAgentEnabled(ScriptExecutionContext* scriptExecutionContext)
 {
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(scriptExecutionContext);
+    InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(scriptExecutionContext);
     InspectorConsoleAgent* consoleAgent = instrumentingAgents ? instrumentingAgents->inspectorConsoleAgent() : 0;
     return consoleAgent && consoleAgent->enabled();
 }
 
 bool timelineAgentEnabled(ScriptExecutionContext* scriptExecutionContext)
 {
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(scriptExecutionContext);
+    InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(scriptExecutionContext);
     return instrumentingAgents && instrumentingAgents->inspectorTimelineAgent();
 }
 
@@ -1164,7 +1164,7 @@ InstrumentingAgents* instrumentingAgentsForPage(Page* page)
     return instrumentationForPage(page);
 }
 
-InstrumentingAgents* instrumentingAgentsForRenderer(RenderObject* renderer)
+InstrumentingAgents* instrumentingAgentsForRenderObject(RenderObject* renderer)
 {
     return instrumentingAgentsForFrame(renderer->frame());
 }

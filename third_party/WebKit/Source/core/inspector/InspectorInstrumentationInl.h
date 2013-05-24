@@ -274,7 +274,7 @@ inline void didUpdateRegionLayout(Document* document, NamedFlow* namedFlow)
 inline void willSendXMLHttpRequest(ScriptExecutionContext* context, const String& url)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         willSendXMLHttpRequestImpl(instrumentingAgents, url);
 }
 
@@ -288,21 +288,21 @@ inline void didScheduleResourceRequest(Document* document, const String& url)
 inline void didInstallTimer(ScriptExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         didInstallTimerImpl(instrumentingAgents, context, timerId, timeout, singleShot);
 }
 
 inline void didRemoveTimer(ScriptExecutionContext* context, int timerId)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         didRemoveTimerImpl(instrumentingAgents, context, timerId);
 }
 
 inline InspectorInstrumentationCookie willCallFunction(ScriptExecutionContext* context, const String& scriptName, int scriptLine)
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         return willCallFunctionImpl(instrumentingAgents, context, scriptName, scriptLine);
     return InspectorInstrumentationCookie();
 }
@@ -317,7 +317,7 @@ inline void didCallFunction(const InspectorInstrumentationCookie& cookie)
 inline InspectorInstrumentationCookie willDispatchXHRReadyStateChangeEvent(ScriptExecutionContext* context, XMLHttpRequest* request)
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         return willDispatchXHRReadyStateChangeEventImpl(instrumentingAgents, context, request);
     return InspectorInstrumentationCookie();
 }
@@ -347,7 +347,7 @@ inline void didDispatchEvent(const InspectorInstrumentationCookie& cookie)
 inline InspectorInstrumentationCookie willHandleEvent(ScriptExecutionContext* context, Event* event)
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         return willHandleEventImpl(instrumentingAgents, event);
     return InspectorInstrumentationCookie();
 }
@@ -406,7 +406,7 @@ inline void didCreateIsolatedContext(Frame* frame, ScriptState* scriptState, Sec
 inline InspectorInstrumentationCookie willFireTimer(ScriptExecutionContext* context, int timerId)
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         return willFireTimerImpl(instrumentingAgents, context, timerId);
     return InspectorInstrumentationCookie();
 }
@@ -457,7 +457,7 @@ inline void didResizeMainFrame(Page* page)
 inline InspectorInstrumentationCookie willDispatchXHRLoadEvent(ScriptExecutionContext* context, XMLHttpRequest* request)
 {
     FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         return willDispatchXHRLoadEventImpl(instrumentingAgents, context, request);
     return InspectorInstrumentationCookie();
 }
@@ -486,14 +486,14 @@ inline void didScrollLayer(Frame* frame)
 inline void willPaint(RenderObject* renderer)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForRenderer(renderer))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForRenderObject(renderer))
         willPaintImpl(instrumentingAgents, renderer);
 }
 
 inline void didPaint(RenderObject* renderer, GraphicsContext* context, const LayoutRect& rect)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForRenderer(renderer))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForRenderObject(renderer))
         didPaintImpl(instrumentingAgents, renderer, context, rect);
 }
 
@@ -666,61 +666,61 @@ inline void didFailLoading(Frame* frame, unsigned long identifier, DocumentLoade
 
 inline void documentThreadableLoaderStartedLoadingForClient(ScriptExecutionContext* context, unsigned long identifier, ThreadableLoaderClient* client)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         documentThreadableLoaderStartedLoadingForClientImpl(instrumentingAgents, identifier, client);
 }
 
 inline void willLoadXHR(ScriptExecutionContext* context, ThreadableLoaderClient* client, const String& method, const KURL& url, bool async, PassRefPtr<FormData> formData, const HTTPHeaderMap& headers, bool includeCredentials)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         willLoadXHRImpl(instrumentingAgents, client, method, url, async, formData, headers, includeCredentials);
 }
 
 inline void didFailXHRLoading(ScriptExecutionContext* context, ThreadableLoaderClient* client)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         didFailXHRLoadingImpl(instrumentingAgents, client);
 }
 
 inline void didFinishXHRLoading(ScriptExecutionContext* context, ThreadableLoaderClient* client, unsigned long identifier, const String& sourceString, const String& url, const String& sendURL, unsigned sendLineNumber)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         didFinishXHRLoadingImpl(instrumentingAgents, client, identifier, sourceString, url, sendURL, sendLineNumber);
 }
 
 inline void didReceiveXHRResponse(ScriptExecutionContext* context, unsigned long identifier)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         didReceiveXHRResponseImpl(instrumentingAgents, identifier);
 }
 
 inline void willLoadXHRSynchronously(ScriptExecutionContext* context)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         willLoadXHRSynchronouslyImpl(instrumentingAgents);
 }
 
 inline void didLoadXHRSynchronously(ScriptExecutionContext* context)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         didLoadXHRSynchronouslyImpl(instrumentingAgents);
 }
 
 inline void scriptImported(ScriptExecutionContext* context, unsigned long identifier, const String& sourceString)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         scriptImportedImpl(instrumentingAgents, identifier, sourceString);
 }
 
 inline void scriptExecutionBlockedByCSP(ScriptExecutionContext* context, const String& directiveText)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         scriptExecutionBlockedByCSPImpl(instrumentingAgents, directiveText);
 }
 
 inline void didReceiveScriptResponse(ScriptExecutionContext* context, unsigned long identifier)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         didReceiveScriptResponseImpl(instrumentingAgents, identifier);
 }
 
@@ -856,7 +856,7 @@ inline void didDispatchDOMStorageEvent(Page* page, const String& key, const Stri
 
 inline void didStartWorkerContext(ScriptExecutionContext* context, WorkerContextProxy* proxy, const KURL& url)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         didStartWorkerContextImpl(instrumentingAgents, proxy, url);
 }
 
@@ -868,7 +868,7 @@ inline void willEvaluateWorkerScript(WorkerContext* context, int workerThreadSta
 
 inline void workerContextTerminated(ScriptExecutionContext* context, WorkerContextProxy* proxy)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         workerContextTerminatedImpl(instrumentingAgents, proxy);
 }
 

@@ -136,9 +136,9 @@ void unregisterInstrumentingAgents(InstrumentingAgents*);
 
 InstrumentingAgents* instrumentingAgentsForPage(Page*);
 InstrumentingAgents* instrumentingAgentsForFrame(Frame*);
-InstrumentingAgents* instrumentingAgentsForContext(ScriptExecutionContext*);
+InstrumentingAgents* instrumentingAgentsForScriptExecutionContext(ScriptExecutionContext*);
 InstrumentingAgents* instrumentingAgentsForDocument(Document*);
-InstrumentingAgents* instrumentingAgentsForRenderer(RenderObject*);
+InstrumentingAgents* instrumentingAgentsForRenderObject(RenderObject*);
 InstrumentingAgents* instrumentingAgentsForElement(Element*);
 
 InstrumentingAgents* instrumentingAgentsForWorkerContext(WorkerContext*);
@@ -164,7 +164,7 @@ extern const char NodeId[];
 
 namespace InspectorInstrumentation {
 
-inline InstrumentingAgents* instrumentingAgentsForContext(ScriptExecutionContext* context)
+inline InstrumentingAgents* instrumentingAgentsForScriptExecutionContext(ScriptExecutionContext* context)
 {
     if (!context)
         return 0;

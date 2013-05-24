@@ -70,7 +70,7 @@ inline bool shouldApplyScreenHeightOverride(Frame* frame)
 inline bool shouldPauseDedicatedWorkerOnStart(ScriptExecutionContext* context)
 {
     FAST_RETURN_IF_NO_FRONTENDS(false);
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForScriptExecutionContext(context))
         return shouldPauseDedicatedWorkerOnStartImpl(instrumentingAgents);
     return false;
 }
