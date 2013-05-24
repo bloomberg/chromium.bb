@@ -1168,7 +1168,6 @@ void SyncSetupHandler::CloseSyncSetup() {
       if (sync_service) {
         DVLOG(1) << "Sync setup aborted by user action";
         sync_service->OnStopSyncingPermanently();
-        sync_service->SetSetupInProgress(false);
       }
     }
 
@@ -1180,6 +1179,12 @@ void SyncSetupHandler::CloseSyncSetup() {
 
     GetLoginUIService()->LoginUIClosed(this);
   }
+
+  // Alert the sync service anytime the sync setup dialog is closed. This can
+  // happen due to the user clicking the OK or Cancel button, or due to the
+  // dialog being closed by virtue of sync being disabled in the background.
+  if (sync_service)
+    sync_service->SetSetupInProgress(false);
 
 #if !defined(OS_CHROMEOS)
   // Reset the attempted email address and error, otherwise the sync setup
