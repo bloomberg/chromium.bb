@@ -270,11 +270,11 @@ StyleRule::~StyleRule()
 {
 }
 
-StylePropertySet* StyleRule::mutableProperties()
+MutableStylePropertySet* StyleRule::mutableProperties()
 {
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
-    return m_properties.get();
+    return static_cast<MutableStylePropertySet*>(m_properties.get());
 }
 
 void StyleRule::setProperties(PassRefPtr<StylePropertySet> properties)
@@ -298,11 +298,11 @@ StyleRulePage::~StyleRulePage()
 {
 }
 
-StylePropertySet* StyleRulePage::mutableProperties()
+MutableStylePropertySet* StyleRulePage::mutableProperties()
 {
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
-    return m_properties.get();
+    return static_cast<MutableStylePropertySet*>(m_properties.get());
 }
 
 void StyleRulePage::setProperties(PassRefPtr<StylePropertySet> properties)
@@ -332,11 +332,11 @@ StyleRuleFontFace::~StyleRuleFontFace()
 {
 }
 
-StylePropertySet* StyleRuleFontFace::mutableProperties()
+MutableStylePropertySet* StyleRuleFontFace::mutableProperties()
 {
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
-    return m_properties.get();
+    return static_cast<MutableStylePropertySet*>(m_properties.get());
 }
 
 void StyleRuleFontFace::setProperties(PassRefPtr<StylePropertySet> properties)
@@ -451,11 +451,11 @@ StyleRuleViewport::~StyleRuleViewport()
 {
 }
 
-StylePropertySet* StyleRuleViewport::mutableProperties()
+MutableStylePropertySet* StyleRuleViewport::mutableProperties()
 {
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
-    return m_properties.get();
+    return static_cast<MutableStylePropertySet*>(m_properties.get());
 }
 
 void StyleRuleViewport::setProperties(PassRefPtr<StylePropertySet> properties)
@@ -487,11 +487,11 @@ StyleRuleFilter::~StyleRuleFilter()
 {
 }
 
-StylePropertySet* StyleRuleFilter::mutableProperties()
+MutableStylePropertySet* StyleRuleFilter::mutableProperties()
 {
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
-    return m_properties.get();
+    return static_cast<MutableStylePropertySet*>(m_properties.get());
 }
 
 void StyleRuleFilter::setProperties(PassRefPtr<StylePropertySet> properties)

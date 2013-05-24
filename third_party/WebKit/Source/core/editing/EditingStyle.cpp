@@ -616,8 +616,8 @@ void EditingStyle::removeStyleAddedByNode(Node* node)
 {
     if (!node || !node->parentNode())
         return;
-    RefPtr<StylePropertySet> parentStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(node->parentNode()), AllEditingProperties);
-    RefPtr<StylePropertySet> nodeStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(node), AllEditingProperties);
+    RefPtr<MutableStylePropertySet> parentStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(node->parentNode()), AllEditingProperties);
+    RefPtr<MutableStylePropertySet> nodeStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(node), AllEditingProperties);
     nodeStyle->removeEquivalentProperties(parentStyle->ensureCSSStyleDeclaration());
     m_mutableStyle->removeEquivalentProperties(nodeStyle->ensureCSSStyleDeclaration());
 }
@@ -627,8 +627,8 @@ void EditingStyle::removeStyleConflictingWithStyleOfNode(Node* node)
     if (!node || !node->parentNode() || !m_mutableStyle)
         return;
 
-    RefPtr<StylePropertySet> parentStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(node->parentNode()), AllEditingProperties);
-    RefPtr<StylePropertySet> nodeStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(node), AllEditingProperties);
+    RefPtr<MutableStylePropertySet> parentStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(node->parentNode()), AllEditingProperties);
+    RefPtr<MutableStylePropertySet> nodeStyle = editingStyleFromComputedStyle(CSSComputedStyleDeclaration::create(node), AllEditingProperties);
     nodeStyle->removeEquivalentProperties(parentStyle->ensureCSSStyleDeclaration());
 
     unsigned propertyCount = nodeStyle->propertyCount();
@@ -671,7 +671,7 @@ TriState EditingStyle::triStateOfStyle(EditingStyle* style) const
 {
     if (!style || !style->m_mutableStyle)
         return FalseTriState;
-    return triStateOfStyle(style->m_mutableStyle->ensureCSSStyleDeclaration(), DoNotIgnoreTextOnlyProperties);
+    return triStateOfStyle(static_pointer_cast<MutableStylePropertySet>(style->m_mutableStyle)->ensureCSSStyleDeclaration(), DoNotIgnoreTextOnlyProperties);
 }
 
 TriState EditingStyle::triStateOfStyle(CSSStyleDeclaration* styleToCompare, ShouldIgnoreTextOnlyProperties shouldIgnoreTextOnlyProperties) const
@@ -1092,7 +1092,7 @@ void EditingStyle::mergeStyle(const StylePropertySet* style, CSSPropertyOverride
     }
 }
 
-static PassRefPtr<StylePropertySet> styleFromMatchedRulesForElement(Element* element, unsigned rulesToInclude)
+static PassRefPtr<MutableStylePropertySet> styleFromMatchedRulesForElement(Element* element, unsigned rulesToInclude)
 {
     RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     RefPtr<CSSRuleList> matchedRules = element->document()->styleResolver()->styleRulesForElement(element, rulesToInclude);
@@ -1161,7 +1161,7 @@ void EditingStyle::removeStyleFromRulesAndContext(StyledElement* element, Node* 
         return;
 
     // 1. Remove style from matched rules because style remain without repeating it in inline style declaration
-    RefPtr<StylePropertySet> styleFromMatchedRules = styleFromMatchedRulesForElement(element, StyleResolver::AllButEmptyCSSRules);
+    RefPtr<MutableStylePropertySet> styleFromMatchedRules = styleFromMatchedRulesForElement(element, StyleResolver::AllButEmptyCSSRules);
     if (styleFromMatchedRules && !styleFromMatchedRules->isEmpty())
         m_mutableStyle = getPropertiesNotIn(m_mutableStyle.get(), styleFromMatchedRules->ensureCSSStyleDeclaration());
 
@@ -1172,7 +1172,7 @@ void EditingStyle::removeStyleFromRulesAndContext(StyledElement* element, Node* 
             computedStyle->m_mutableStyle->setProperty(CSSPropertyBackgroundColor, CSSValueTransparent);
 
         removePropertiesInStyle(computedStyle->m_mutableStyle.get(), styleFromMatchedRules.get());
-        m_mutableStyle = getPropertiesNotIn(m_mutableStyle.get(), computedStyle->m_mutableStyle->ensureCSSStyleDeclaration());
+        m_mutableStyle = getPropertiesNotIn(m_mutableStyle.get(), static_pointer_cast<MutableStylePropertySet>(computedStyle->m_mutableStyle)->ensureCSSStyleDeclaration());
     }
 
     // 3. If this element is a span and has display: inline or float: none, remove them unless they are overriden by rules.

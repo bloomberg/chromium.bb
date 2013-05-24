@@ -31,7 +31,7 @@
 namespace WebCore {
 
 class CSSStyleDeclaration;
-class StylePropertySet;
+class MutableStylePropertySet;
 
 // Attr can have Text children
 // therefore it has to be a fullblown Node. The plan
@@ -96,7 +96,7 @@ private:
     QualifiedName m_name;
     AtomicString m_standaloneValue;
 
-    RefPtr<StylePropertySet> m_style;
+    RefPtr<MutableStylePropertySet> m_style;
     unsigned m_ignoreChildrenChanged : 31;
     bool m_specified : 1;
 };
