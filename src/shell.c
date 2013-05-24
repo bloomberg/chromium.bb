@@ -3782,10 +3782,6 @@ input_panel_surface_set_toplevel(struct wl_client *client,
 
 	input_panel_surface->output = output_resource->data;
 	input_panel_surface->panel = 0;
-
-	fprintf(stderr, "%s panel: %d, output: %p\n", __FUNCTION__,
-		input_panel_surface->panel,
-		input_panel_surface->output);
 }
 
 static void
