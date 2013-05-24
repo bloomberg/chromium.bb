@@ -456,13 +456,17 @@ public:
     // there is ranged selection.
     virtual bool selectWordAroundCaret() = 0;
 
-    // Select a range of text, as if by drag-selecting from base to extent
-    // with character granularity.
+    // DEPRECATED: Use moveRangeSelection/moveCaretSelection.
     virtual void selectRange(const WebPoint& base, const WebPoint& extent) = 0;
+    virtual void moveCaretSelectionTowardsWindowPoint(const WebPoint&) = 0;
 
     virtual void selectRange(const WebRange&) = 0;
 
-    virtual void moveCaretSelectionTowardsWindowPoint(const WebPoint&) = 0;
+    // Move the current selection to the provided window point/points. If the
+    // current selection is editable, the new selection will be restricted to
+    // the root editable element.
+    virtual void moveRangeSelection(const WebPoint& base, const WebPoint& extent) = 0;
+    virtual void moveCaretSelection(const WebPoint&) = 0;
 
     // Printing ------------------------------------------------------------
 

@@ -31,6 +31,7 @@
 
 namespace WebCore {
 
+class LayoutPoint;
 class Position;
 
 const EAffinity SEL_DEFAULT_AFFINITY = DOWNSTREAM;
@@ -104,6 +105,9 @@ public:
     // Returns a shadow tree node for legacy shadow trees, a child of the
     // ShadowRoot node for new shadow trees, or 0 for non-shadow trees.
     Node* nonBoundaryShadowTreeRootNode() const;
+
+    VisiblePosition visiblePositionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const;
+
 
 #ifndef NDEBUG
     void debugPosition() const;

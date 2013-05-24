@@ -34,6 +34,8 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/platform/graphics/LayoutPoint.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/Assertions.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
@@ -623,6 +625,27 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
     if (baseEditableAncestor != lowestEditableAncestor(m_extent.containerNode()))
         m_extent = m_baseIsFirst ? m_end : m_start;
 }
+
+VisiblePosition VisibleSelection::visiblePositionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const
+{
+    if (!targetNode->renderer())
+        return VisiblePosition();
+
+    LayoutPoint selectionEndPoint = localPoint;
+    Element* editableElement = rootEditableElement();
+
+    if (editableElement && !editableElement->contains(targetNode)) {
+        if (!editableElement->renderer())
+            return VisiblePosition();
+
+        FloatPoint absolutePoint = targetNode->renderer()->localToAbsolute(FloatPoint(selectionEndPoint));
+        selectionEndPoint = roundedLayoutPoint(editableElement->renderer()->absoluteToLocal(absolutePoint));
+        targetNode = editableElement;
+    }
+
+    return targetNode->renderer()->positionForPoint(selectionEndPoint);
+}
+
 
 bool VisibleSelection::isContentEditable() const
 {

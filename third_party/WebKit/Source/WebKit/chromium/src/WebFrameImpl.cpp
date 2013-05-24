@@ -1368,15 +1368,7 @@ bool WebFrameImpl::selectWordAroundCaret()
 
 void WebFrameImpl::selectRange(const WebPoint& base, const WebPoint& extent)
 {
-    IntPoint unscaledBase = base;
-    IntPoint unscaledExtent = extent;
-    unscaledExtent.scale(1 / view()->pageScaleFactor(), 1 / view()->pageScaleFactor());
-    unscaledBase.scale(1 / view()->pageScaleFactor(), 1 / view()->pageScaleFactor());
-    VisiblePosition basePosition = visiblePositionForWindowPoint(unscaledBase);
-    VisiblePosition extentPosition = visiblePositionForWindowPoint(unscaledExtent);
-    VisibleSelection newSelection = VisibleSelection(basePosition, extentPosition);
-    if (frame()->selection()->shouldChangeSelection(newSelection))
-        frame()->selection()->setSelection(newSelection, CharacterGranularity);
+    moveRangeSelection(base, extent);
 }
 
 void WebFrameImpl::selectRange(const WebRange& webRange)
@@ -1387,31 +1379,46 @@ void WebFrameImpl::selectRange(const WebRange& webRange)
 
 void WebFrameImpl::moveCaretSelectionTowardsWindowPoint(const WebPoint& point)
 {
-    IntPoint unscaledPoint(point);
-    unscaledPoint.scale(1 / view()->pageScaleFactor(), 1 / view()->pageScaleFactor());
+    moveCaretSelection(point);
+}
 
+void WebFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent)
+{
+    FrameSelection* selection = frame()->selection();
+    if (!selection)
+        return;
+
+    VisiblePosition basePosition = visiblePositionForWindowPoint(base);
+    VisiblePosition extentPosition = visiblePositionForWindowPoint(extent);
+    VisibleSelection newSelection = VisibleSelection(basePosition, extentPosition);
+    if (frame()->selection()->shouldChangeSelection(newSelection))
+        frame()->selection()->setSelection(newSelection, CharacterGranularity);
+}
+
+void WebFrameImpl::moveCaretSelection(const WebPoint& point)
+{
     Element* editable = frame()->selection()->rootEditableElement();
     if (!editable)
         return;
 
-    IntPoint contentsPoint = frame()->view()->windowToContents(unscaledPoint);
-    LayoutPoint localPoint(editable->convertFromPage(contentsPoint));
-    VisiblePosition position = editable->renderer()->positionForPoint(localPoint);
+    VisiblePosition position = visiblePositionForWindowPoint(point);
     if (frame()->selection()->shouldChangeSelection(position))
         frame()->selection()->moveTo(position, UserTriggered);
 }
 
 VisiblePosition WebFrameImpl::visiblePositionForWindowPoint(const WebPoint& point)
 {
-    HitTestRequest request = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent;
-    HitTestResult result(frame()->view()->windowToContents(IntPoint(point)));
+    FloatPoint unscaledPoint(point);
+    unscaledPoint.scale(1 / view()->pageScaleFactor(), 1 / view()->pageScaleFactor());
 
+    HitTestRequest request = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent;
+    HitTestResult result(frame()->view()->windowToContents(roundedIntPoint(unscaledPoint)));
     frame()->document()->renderView()->layer()->hitTest(request, result);
 
     Node* node = result.targetNode();
     if (!node)
         return VisiblePosition();
-    return node->renderer()->positionForPoint(result.localPoint());
+    return frame()->selection()->selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);
 }
 
 int WebFrameImpl::printBegin(const WebPrintParams& printParams, const WebNode& constrainToNode, bool* useBrowserOverlays)

@@ -189,6 +189,8 @@ public:
     virtual void selectRange(const WebPoint& base, const WebPoint& extent);
     virtual void selectRange(const WebRange&);
     virtual void moveCaretSelectionTowardsWindowPoint(const WebPoint&);
+    virtual void moveRangeSelection(const WebPoint& base, const WebPoint& extent);
+    virtual void moveCaretSelection(const WebPoint&);
     virtual int printBegin(const WebPrintParams&,
                            const WebNode& constrainToNode,
                            bool* useBrowserOverlays);
