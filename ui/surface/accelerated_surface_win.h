@@ -37,6 +37,8 @@ class SURFACE_EXPORT AcceleratedPresenter
 
   explicit AcceleratedPresenter(gfx::PluginWindowHandle window);
 
+  static void SetAdapterLUID(uint64 adapter_luid);
+
   // Returns a thread safe reference to the presenter for the given window or
   // null is no such presenter exists. The thread safe refptr ensures the
   // presenter will not be destroyed. This can be called on any thread.

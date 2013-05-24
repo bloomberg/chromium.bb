@@ -768,9 +768,14 @@ void GpuProcessHost::DeleteImage(int client_id,
   Send(new GpuMsg_DeleteImage(client_id, image_id, sync_point));
 }
 
-void GpuProcessHost::OnInitialized(bool result) {
+void GpuProcessHost::OnInitialized(bool result, const gpu::GPUInfo& gpu_info) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", result);
   initialized_ = result;
+
+#if defined(OS_WIN)
+  if (kind_ == GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED)
+    AcceleratedPresenter::SetAdapterLUID(gpu_info.adapter_luid);
+#endif
 }
 
 void GpuProcessHost::OnChannelEstablished(

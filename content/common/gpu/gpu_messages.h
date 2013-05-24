@@ -134,6 +134,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo)
   IPC_STRUCT_TRAITS_MEMBER(lenovo_dcute)
   IPC_STRUCT_TRAITS_MEMBER(gpu)
   IPC_STRUCT_TRAITS_MEMBER(secondary_gpus)
+  IPC_STRUCT_TRAITS_MEMBER(adapter_luid)
   IPC_STRUCT_TRAITS_MEMBER(driver_vendor)
   IPC_STRUCT_TRAITS_MEMBER(driver_version)
   IPC_STRUCT_TRAITS_MEMBER(driver_date)
@@ -309,8 +310,9 @@ IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_CreateViewCommandBuffer,
                             int32 /* route_id */)
 
 // Response from GPU to a GputMsg_Initialize message.
-IPC_MESSAGE_CONTROL1(GpuHostMsg_Initialized,
-                     bool /* result */)
+IPC_MESSAGE_CONTROL2(GpuHostMsg_Initialized,
+                     bool /* result */,
+                     ::gpu::GPUInfo /* gpu_info */)
 
 // Response from GPU to a GpuHostMsg_EstablishChannel message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_ChannelEstablished,

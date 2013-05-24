@@ -32,6 +32,7 @@ bool LoadD3D9(base::ScopedNativeLibrary* storage);
 // accelerated surface code. Returns true on success.
 SURFACE_EXPORT
 bool CreateDevice(const base::ScopedNativeLibrary& d3d_module,
+                  uint64 adapter_luid,
                   D3DDEVTYPE device_type,
                   uint32 presentation_interval,
                   IDirect3DDevice9Ex** device);

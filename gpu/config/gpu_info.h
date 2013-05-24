@@ -69,6 +69,13 @@ struct GPU_EXPORT GPUInfo {
   // Secondary GPUs, for example, the integrated GPU in a dual GPU machine.
   std::vector<GPUDevice> secondary_gpus;
 
+  // On Windows, the unique identifier of the adapter the GPU process uses.
+  // The default is zero, which makes the browser process create its D3D device
+  // on the primary adapter. Note that the primary adapter can change at any
+  // time so it is better to specify a particular LUID. Note that valid LUIDs
+  // are always non-zero.
+  uint64 adapter_luid;
+
   // The vendor of the graphics driver currently installed.
   std::string driver_vendor;
 

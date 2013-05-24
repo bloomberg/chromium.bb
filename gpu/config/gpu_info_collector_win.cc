@@ -485,6 +485,7 @@ bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   int vertex_shader_minor_version = 0;
   int pixel_shader_major_version = 0;
   int pixel_shader_minor_version = 0;
+  gpu_info->adapter_luid = 0;
   if (RE2::FullMatch(gpu_info->gl_renderer,
                      "ANGLE \\(.*\\)") &&
       RE2::PartialMatch(gpu_info->gl_renderer,
@@ -507,6 +508,16 @@ bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
         base::StringPrintf("%d.%d",
                            pixel_shader_major_version,
                            pixel_shader_minor_version);
+
+    // ANGLE's EGL vendor strings are of the form:
+    // Google, Inc. (adapter LUID: 0123456789ABCDEF)
+    // The LUID is optional and identifies the GPU adapter ANGLE is using.
+    const char* egl_vendor = eglQueryString(
+        gfx::GLSurfaceEGL::GetHardwareDisplay(),
+        EGL_VENDOR);
+    RE2::PartialMatch(egl_vendor,
+                      " \\(adapter LUID: ([0-9A-Fa-f]{16})\\)",
+                      RE2::Hex(&gpu_info->adapter_luid));
 
     // DirectX diagnostics are collected asynchronously because it takes a
     // couple of seconds. Do not mark gpu_info as complete until that is done.
