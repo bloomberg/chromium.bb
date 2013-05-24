@@ -1532,7 +1532,7 @@ crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/device-scale-factor-paint
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-background-dynamic.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-background-repeat-without-size.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-background-repeat.html [ Pass Timeout ]
-crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-border-image-comparison.html [ Pass Timeout ]
+crbug.com/238858 [ Win Debug ] virtual/gpu/fast/hidpi/image-set-border-image-comparison.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-border-image-dynamic.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-border-image-simple.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-in-content-dynamic.html [ Pass Timeout ]
@@ -1572,7 +1572,7 @@ crbug.com/234278 storage/indexeddb/transaction-error.html [ Failure Pass ]
 
 crbug.com/241481 http/tests/w3c/webperf/approved/navigation-timing/html/test_timing_attributes_order.html [ Failure Pass ]
 
-crbug.com/241577 http/tests/inspector/compiler-script-mapping.html [ Failure Pass ]
+crbug.com/241577 http/tests/inspector/compiler-script-mapping.html [ Failure Pass Timeout ]
 
 crbug.com/241665 fast/events/touch/emulate-touch-events.html [ Failure Pass ]
 
@@ -1886,6 +1886,12 @@ crbug.com/243782 [ Win Debug ] fast/js/mozilla/eval/exhaustive-fun-normalcaller-
 crbug.com/243782 [ Win Debug ] fast/js/mozilla/strict/8.12.5.html [ Slow ]
 crbug.com/243782 [ Win Debug ] fast/js/mozilla/strict/8.7.2.html [ Slow ]
 crbug.com/243782 [ Debug ] jquery/deferred.html [ Slow ]
+crbug.com/243782 fullscreen/full-screen-remove-ancestor.html [ Slow ]
+crbug.com/243782 [ Win Debug ] css3/filters/filter-animation-from-none-multi.html [ Slow ]
+crbug.com/243782 [ Win Debug ] css3/filters/filter-animation-multi-hw.html [ Slow ]
+crbug.com/243782 [ Win Debug ] css3/filters/filter-animation-multi.html [ Slow ]
+crbug.com/243782 [ Win Debug ] css3/filters/filter-animation.html [ Slow ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass ]
+crbug.com/243800 [ Linux ]  inspector/profiler/cpu-profiler-agent-crash-on-start.html [ Crash Pass ]
