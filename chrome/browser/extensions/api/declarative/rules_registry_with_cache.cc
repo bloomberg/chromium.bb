@@ -44,6 +44,7 @@ std::vector<linked_ptr<extensions::RulesRegistry::Rule> > RulesFromValue(
   if (!value || !value->GetAsList(&list))
     return rules;
 
+  rules.reserve(list->GetSize());
   for (size_t i = 0; i < list->GetSize(); ++i) {
     const base::DictionaryValue* dict = NULL;
     if (!list->GetDictionary(i, &dict))
@@ -80,7 +81,7 @@ RulesRegistryWithCache::RulesRegistryWithCache(
     bool log_storage_init_delay,
     scoped_ptr<RuleStorageOnUI>* ui_part)
     : RulesRegistry(owner_thread, event_name),
-      weak_ptr_factory_((profile) ? this : NULL),
+      weak_ptr_factory_(this),
       storage_on_ui_((profile
                           ? (new RuleStorageOnUI(profile,
                                                  GetDeclarativeRuleStorageKey(
@@ -90,7 +91,8 @@ RulesRegistryWithCache::RulesRegistryWithCache(
                                                  weak_ptr_factory_.GetWeakPtr(),
                                                  log_storage_init_delay))
                                 ->GetWeakPtr()
-                          : base::WeakPtr<RuleStorageOnUI>())) {
+                          : base::WeakPtr<RuleStorageOnUI>())),
+      process_changed_rules_requested_(false) {
   if (!profile) {
     CHECK(!ui_part);
     return;
@@ -128,7 +130,13 @@ std::string RulesRegistryWithCache::AddRules(
     rules_[key] = *i;
   }
 
-  ProcessChangedRules(extension_id);
+  if (!process_changed_rules_requested_) {
+    process_changed_rules_requested_ = true;
+    ready_.Post(FROM_HERE,
+                base::Bind(&RulesRegistryWithCache::ProcessChangedRules,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           extension_id));
+  }
   return kSuccess;
 }
 
@@ -149,7 +157,13 @@ std::string RulesRegistryWithCache::RemoveRules(
     rules_.erase(lookup_key);
   }
 
-  ProcessChangedRules(extension_id);
+  if (!process_changed_rules_requested_) {
+    process_changed_rules_requested_ = true;
+    ready_.Post(FROM_HERE,
+                base::Bind(&RulesRegistryWithCache::ProcessChangedRules,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           extension_id));
+  }
   return kSuccess;
 }
 
@@ -171,7 +185,13 @@ std::string RulesRegistryWithCache::RemoveAllRules(
       rules_.erase(key);
   }
 
-  ProcessChangedRules(extension_id);
+  if (!process_changed_rules_requested_) {
+    process_changed_rules_requested_ = true;
+    ready_.Post(FROM_HERE,
+                base::Bind(&RulesRegistryWithCache::ProcessChangedRules,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           extension_id));
+  }
   return kSuccess;
 }
 
@@ -238,6 +258,8 @@ void RulesRegistryWithCache::DeserializeAndAddRules(
 void RulesRegistryWithCache::ProcessChangedRules(
     const std::string& extension_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
+
+  process_changed_rules_requested_ = false;
 
   std::vector<linked_ptr<RulesRegistry::Rule> > new_rules;
   std::string error = GetAllRules(extension_id, &new_rules);
