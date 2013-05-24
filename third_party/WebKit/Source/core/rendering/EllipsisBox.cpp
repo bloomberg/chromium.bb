@@ -30,7 +30,6 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
 #include "core/rendering/style/ShadowData.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -56,22 +55,15 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
     const ShadowData* shadow = style->textShadow();
     bool hasShadow = shadow;
     if (hasShadow) {
-        // FIXME: it would be better if we could get the shadows top-to-bottom from the style.
-        Vector<const ShadowData*, 4> shadows;
-        do {
-            shadows.append(shadow);
-        } while ((shadow = shadow->next()));
-
         DrawLooper drawLooper;
-        drawLooper.addUnmodifiedContent();
-        for (int i = shadows.size() - 1; i >= 0; i--) {
-            shadow = shadows[i];
+        do {
             int shadowX = isHorizontal() ? shadow->x() : shadow->y();
             int shadowY = isHorizontal() ? shadow->y() : -shadow->x();
             FloatSize offset(shadowX, shadowY);
             drawLooper.addShadow(offset, shadow->blur(), shadow->color(),
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
-        }
+        } while ((shadow = shadow->next()));
+        drawLooper.addUnmodifiedContent();
         context->setDrawLooper(drawLooper);
     }
 

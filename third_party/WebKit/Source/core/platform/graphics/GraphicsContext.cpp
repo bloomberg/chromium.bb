@@ -198,8 +198,8 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
         shadowTransformMode = DrawLooper::ShadowRespectsTransforms;
 
     DrawLooper drawLooper;
-    drawLooper.addUnmodifiedContent();
     drawLooper.addShadow(offset, blur, color, shadowTransformMode, shadowAlphaMode);
+    drawLooper.addUnmodifiedContent();
     setDrawLooper(drawLooper);
 }
 

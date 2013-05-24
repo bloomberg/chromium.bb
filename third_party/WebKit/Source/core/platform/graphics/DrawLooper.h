@@ -32,12 +32,6 @@
 #define DrawLooper_h
 
 #include "third_party/skia/include/core/SkDrawLooper.h"
-
-// SkPaint and SkPoint are needed before SkLayerDrawLooper.h; they should be #included there.
-// Can be removed once https://codereview.chromium.org/14607015/ is submitted.
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkPoint.h"
-
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 #include "wtf/Noncopyable.h"
