@@ -132,7 +132,9 @@ var DiagnosticEvent = {
   CARDS_PARSE_SUCCESS: 2,
   DISMISS_REQUEST_TOTAL: 3,
   DISMISS_REQUEST_SUCCESS: 4,
-  EVENTS_TOTAL: 5  // EVENTS_TOTAL is not an event; all new events need to be
+  LOCATION_REQUEST: 5,
+  LOCATION_UPDATE: 6,
+  EVENTS_TOTAL: 7  // EVENTS_TOTAL is not an event; all new events need to be
                    // added before it.
 };
 
@@ -350,6 +352,7 @@ function requestNotificationCards(position, callback) {
  */
 function requestLocation() {
   console.log('requestLocation');
+  recordEvent(DiagnosticEvent.LOCATION_REQUEST);
   // TODO(vadimt): Figure out location request options.
   chrome.location.watchLocation(LOCATION_WATCH_NAME, {});
 }
@@ -589,4 +592,7 @@ chrome.notifications.onButtonClicked.addListener(
 
 chrome.notifications.onClosed.addListener(onNotificationClosed);
 
-chrome.location.onLocationUpdate.addListener(updateNotificationsCards);
+chrome.location.onLocationUpdate.addListener(function(position) {
+  recordEvent(DiagnosticEvent.LOCATION_UPDATE);
+  updateNotificationsCards(position);
+});
