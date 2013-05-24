@@ -1538,7 +1538,6 @@ crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-in-content-dyna
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-simple.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Pass Timeout ]
-crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/resize-corner-hidpi.html [ Pass Timeout ]
 
 crbug.com/239077 fast/canvas/webgl/index-validation-with-resized-buffer.html [ Crash ]
 
@@ -1863,6 +1862,8 @@ crbug.com/238858 [ Win Debug ] virtual/gpu/fast/hidpi/focus-rings.html [ Pass Ti
 crbug.com/243736 [ Release ] storage/websql/quota-tracking.html [ Failure Pass ]
 crbug.com/243738 [ Linux Mac ] http/tests/loading/preload-append-scan.php [ Failure Pass ]
 crbug.com/243738 [ Win ] http/tests/loading/preload-append-scan.php [ Timeout Pass ]
+crbug.com/238858 [ Win Linux ] virtual/gpu/fast/hidpi/resize-corner-hidpi.html [ Pass Timeout ]
+
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass ]
