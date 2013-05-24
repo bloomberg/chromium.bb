@@ -95,6 +95,21 @@ bool NotificationUIManagerImpl::CancelById(const std::string& id) {
   return false;
 }
 
+std::set<std::string>
+NotificationUIManagerImpl::GetAllIdsByProfileAndSourceOrigin(
+    Profile* profile,
+    const GURL& source) {
+  std::set<std::string> notification_ids;
+  for (NotificationDeque::iterator iter = show_queue_.begin();
+       iter != show_queue_.end(); iter++) {
+    if ((*iter)->notification().origin_url() == source &&
+        profile->IsSameProfile((*iter)->profile())) {
+      notification_ids.insert((*iter)->notification().notification_id());
+    }
+  }
+  return notification_ids;
+}
+
 bool NotificationUIManagerImpl::CancelAllBySourceOrigin(const GURL& source) {
   // Same pattern as CancelById, but more complicated than the above
   // because there may be multiple notifications from the same source.

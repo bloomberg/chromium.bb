@@ -89,6 +89,20 @@ class NotificationsClearFunction : public NotificationsApiFunction {
   DECLARE_EXTENSION_FUNCTION("notifications.clear", NOTIFICATIONS_CLEAR)
 };
 
+class NotificationsGetAllFunction : public NotificationsApiFunction {
+ public:
+  NotificationsGetAllFunction();
+
+  // UIThreadExtensionFunction:
+  virtual bool RunNotificationsApi() OVERRIDE;
+
+ protected:
+  virtual ~NotificationsGetAllFunction();
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("notifications.getAll", NOTIFICATIONS_GET_ALL)
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_NOTIFICATIONS_NOTIFICATIONS_API_H_

@@ -70,6 +70,25 @@ bool MessageCenterNotificationManager::CancelById(const std::string& id) {
   return true;
 }
 
+std::set<std::string>
+MessageCenterNotificationManager::GetAllIdsByProfileAndSourceOrigin(
+    Profile* profile,
+    const GURL& source) {
+
+  std::set<std::string> notification_ids =
+      NotificationUIManagerImpl::GetAllIdsByProfileAndSourceOrigin(profile,
+                                                                   source);
+
+  for (NotificationMap::iterator iter = profile_notifications_.begin();
+       iter != profile_notifications_.end(); iter++) {
+    if ((*iter).second->notification().origin_url() == source &&
+        profile->IsSameProfile((*iter).second->profile())) {
+      notification_ids.insert(iter->first);
+    }
+  }
+  return notification_ids;
+}
+
 bool MessageCenterNotificationManager::CancelAllBySourceOrigin(
     const GURL& source) {
   // Same pattern as CancelById, but more complicated than the above
@@ -94,7 +113,7 @@ bool MessageCenterNotificationManager::CancelAllByProfile(Profile* profile) {
   for (NotificationMap::iterator loopiter = profile_notifications_.begin();
        loopiter != profile_notifications_.end(); ) {
     NotificationMap::iterator curiter = loopiter++;
-    if ((*curiter).second->profile() == profile) {
+    if (profile->IsSameProfile((*curiter).second->profile())) {
       message_center_->RemoveNotification(curiter->first, /* by_user */ false);
       removed = true;
     }
