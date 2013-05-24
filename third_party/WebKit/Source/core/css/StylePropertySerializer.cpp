@@ -596,6 +596,11 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
                     else
                         yValue = nextValue;
 
+                    // background-repeat-x(y) or mask-repeat-x(y) may be like this : "initial, repeat". We can omit the implicit initial values
+                    // before starting to compare their values.
+                    if (value->isImplicitInitialValue() || yValue->isImplicitInitialValue())
+                        continue;
+
                     int xId = toCSSPrimitiveValue(value.get())->getIdent();
                     int yId = toCSSPrimitiveValue(yValue.get())->getIdent();
                     if (xId != yId) {
