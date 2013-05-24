@@ -7250,14 +7250,6 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content14RenderViewImpl10InitializeEPNS_20RenderViewImplParamsE
 }
 {
-   bug_242950
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10extensions19TestGaiaWebAuthFlow17CreateWebAuthFlowE4GURL
-   fun:_ZN10extensions15GaiaWebAuthFlow18OnUbertokenSuccessERKSs
-   fun:_ZN10extensions19TestGaiaWebAuthFlow5StartEv
-}
-{
    bug_243132
    Memcheck:Leak
    fun:malloc
