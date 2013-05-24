@@ -1557,4 +1557,30 @@ TEST_F(AutofillDialogControllerTest, RiskLoadsAfterAcceptingLegalDocuments) {
   EXPECT_EQ(kFakeFingerprintEncoded, controller()->GetRiskData());
 }
 
+TEST_F(AutofillDialogControllerTest, NoManageMenuItemForNewWalletUsers) {
+  // Make sure the menu model item is created for a returning Wallet user.
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  EXPECT_TRUE(controller()->MenuModelForSection(SECTION_CC_BILLING));
+  // "Same as billing", "123 address", "Add address...", and "Manage addresses".
+  EXPECT_EQ(
+      4, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+
+  // Make sure the menu model item is not created for new Wallet users.
+  base::DictionaryValue dict;
+  scoped_ptr<base::ListValue> required_actions(new base::ListValue);
+  required_actions->AppendString("setup_wallet");
+  dict.Set("required_action", required_actions.release());
+  controller()->OnDidGetWalletItems(
+      wallet::WalletItems::CreateWalletItems(dict).Pass());
+
+  EXPECT_FALSE(controller()->MenuModelForSection(SECTION_CC_BILLING));
+  // "Same as billing" and "Add address...".
+  EXPECT_EQ(
+      2, controller()->MenuModelForSection(SECTION_SHIPPING)->GetItemCount());
+}
+
 }  // namespace autofill
