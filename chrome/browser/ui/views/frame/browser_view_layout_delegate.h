@@ -11,6 +11,7 @@ class BrowserViewLayoutDelegate {
  public:
   virtual ~BrowserViewLayoutDelegate() {}
 
+  virtual views::View* GetWindowSwitcherButton() const = 0;
   virtual bool IsTabStripVisible() const = 0;
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tab_strip) const = 0;
   virtual bool IsToolbarVisible() const = 0;

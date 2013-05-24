@@ -60,9 +60,6 @@ class BrowserViewLayout : public views::LayoutManager {
             ImmersiveModeController* immersive_mode_controller);
 
   // Sets or updates views that are not available when |this| is initialized.
-  void set_window_switcher_button(views::View* button) {
-    window_switcher_button_ = button;
-  }
   void set_tab_strip(TabStrip* tab_strip) {
     tab_strip_ = tab_strip;
   }
@@ -177,7 +174,6 @@ class BrowserViewLayout : public views::LayoutManager {
   views::View* contents_split_;
   ContentsContainer* contents_container_;
   OverlayContainer* overlay_container_;
-  views::View* window_switcher_button_;
   views::View* download_shelf_;
 
   ImmersiveModeController* immersive_mode_controller_;

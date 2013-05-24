@@ -38,6 +38,11 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   }
 
   // BrowserViewLayout::Delegate overrides:
+  virtual views::View* GetWindowSwitcherButton() const OVERRIDE {
+    // TODO(jamescook): Add a test for Windows that exercises the layout for
+    // this button.
+    return NULL;
+  }
   virtual bool IsTabStripVisible() const OVERRIDE {
     return tab_strip_visible_;
   }

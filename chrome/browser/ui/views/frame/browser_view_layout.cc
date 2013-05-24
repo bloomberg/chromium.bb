@@ -128,7 +128,6 @@ BrowserViewLayout::BrowserViewLayout()
       contents_split_(NULL),
       contents_container_(NULL),
       overlay_container_(NULL),
-      window_switcher_button_(NULL),
       download_shelf_(NULL),
       immersive_mode_controller_(NULL),
       dialog_host_(new WebContentsModalDialogHostViews(this)),
@@ -408,7 +407,7 @@ int BrowserViewLayout::LayoutTabStripRegion(views::View* browser_view) {
   // Only visible if there is more than one type of window to switch between.
   // TODO(mad): update this code when more window types than just incognito
   // and regular are available.
-  views::View* switcher_button = window_switcher_button_;
+  views::View* switcher_button = delegate_->GetWindowSwitcherButton();
   if (switcher_button) {
     if (browser()->profile()->HasOffTheRecordProfile() &&
         chrome::FindBrowserWithProfile(

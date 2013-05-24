@@ -268,6 +268,10 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
   virtual ~BrowserViewLayoutDelegateImpl() {}
 
   // BrowserViewLayoutDelegate overrides:
+  virtual views::View* GetWindowSwitcherButton() const OVERRIDE {
+    return browser_view_->window_switcher_button();
+  }
+
   virtual bool DownloadShelfNeedsLayout() const OVERRIDE {
     DownloadShelfView* download_shelf = browser_view_->download_shelf_.get();
     // Re-layout the shelf either if it is visible or if its close animation
@@ -931,7 +935,6 @@ void BrowserView::SetWindowSwitcherButton(views::Button* button) {
   if (window_switcher_button_)
     RemoveChildView(window_switcher_button_);
   window_switcher_button_ = button;
-  GetBrowserViewLayout()->set_window_switcher_button(button);
   AddChildView(button);
 }
 
