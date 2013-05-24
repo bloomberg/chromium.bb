@@ -10,8 +10,8 @@
 #include "chrome/browser/idle_query_x11.h"
 #endif
 
-#if !defined(USE_AURA)
-#include "chrome/browser/screensaver_window_finder_gtk.h"
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/screensaver_window_finder_x11.h"
 #endif
 
 void CalculateIdleTime(IdleTimeCallback notify) {
@@ -24,7 +24,7 @@ void CalculateIdleTime(IdleTimeCallback notify) {
 bool CheckIdleStateIsLocked() {
   // Usually the screensaver is used to lock the screen, so we do not need to
   // check if the workstation is locked.
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
   return false;
 #else
   return ScreensaverWindowFinder::ScreensaverWindowExists();

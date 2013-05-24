@@ -2,24 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/screensaver_window_finder_gtk.h"
+#include "chrome/browser/screensaver_window_finder_x11.h"
 
+#if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
+#endif
 
 #include "base/basictypes.h"
 #include "ui/base/x/x11_util.h"
-
 
 ScreensaverWindowFinder::ScreensaverWindowFinder()
     : exists_(false) {
 }
 
 bool ScreensaverWindowFinder::ScreensaverWindowExists() {
+#if defined(TOOLKIT_GTK)
   gdk_error_trap_push();
+#endif
   ScreensaverWindowFinder finder;
   ui::EnumerateTopLevelWindows(&finder);
-  bool got_error = gdk_error_trap_pop();
+  bool got_error = false;
+#if defined(TOOLKIT_GTK)
+  got_error = gdk_error_trap_pop();
+#endif
   return finder.exists_ && !got_error;
 }
 
