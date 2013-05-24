@@ -179,6 +179,7 @@ class DialRegistry : public DialService::Observer,
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestNoDevicesDiscovered);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestDevicesDiscovered);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestDeviceExpires);
+  FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestExpiredDeviceIsRediscovered);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest,
                            TestRemovingListenerDoesNotClearList);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestNetworkEventConnectionLost);
