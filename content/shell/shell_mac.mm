@@ -164,10 +164,6 @@ void Shell::PlatformCreateWindow(int width, int height) {
                           NSClosableWindowMask |
                           NSMiniaturizableWindowMask |
                           NSResizableWindowMask;
-  if (headless_) {
-    content_rect = NSOffsetRect(initial_window_bounds, -10000, -10000);
-    style_mask = NSBorderlessWindowMask;
-  }
   CrShellWindow* window =
       [[CrShellWindow alloc] initWithContentRect:content_rect
                                        styleMask:style_mask
