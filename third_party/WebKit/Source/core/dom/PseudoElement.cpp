@@ -112,8 +112,8 @@ void PseudoElement::didRecalcStyle(StyleChange)
     // the style propagated downward manually similar to RenderObject::propagateStyleToAnonymousChildren.
     RenderObject* renderer = this->renderer();
     for (RenderObject* child = renderer->nextInPreOrder(renderer); child; child = child->nextInPreOrder(renderer)) {
-        // We only manage the style for the generated content which must be images or text.
-        if (!child->isText() && !child->isImage())
+        // We only manage the style for the generated content items.
+        if (!child->isText() && !child->isQuote() && !child->isImage())
             continue;
 
         // The style for the RenderTextFragment for first letter is managed by an enclosing block, not by us.

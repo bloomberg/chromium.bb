@@ -22,7 +22,7 @@
 #ifndef RenderQuote_h
 #define RenderQuote_h
 
-#include "core/rendering/RenderText.h"
+#include "core/rendering/RenderInline.h"
 #include "core/rendering/style/QuotesData.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"
@@ -31,7 +31,7 @@ namespace WebCore {
 
 class Document;
 
-class RenderQuote FINAL : public RenderText {
+class RenderQuote FINAL : public RenderInline {
 public:
     RenderQuote(Document*, const QuoteType);
     virtual ~RenderQuote();
@@ -43,10 +43,11 @@ private:
     virtual void willBeDestroyed() OVERRIDE;
     virtual const char* renderName() const OVERRIDE { return "RenderQuote"; };
     virtual bool isQuote() const OVERRIDE { return true; };
-    virtual PassRefPtr<StringImpl> originalText() const OVERRIDE;
     virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE;
     virtual void willBeRemovedFromTree() OVERRIDE;
 
+    String computeText() const;
+    void updateText();
     const QuotesData* quotesData() const;
     void updateDepth();
     bool isAttached() { return m_attached; }
@@ -56,6 +57,7 @@ private:
     RenderQuote* m_next;
     RenderQuote* m_previous;
     bool m_attached;
+    String m_text;
 };
 
 inline RenderQuote* toRenderQuote(RenderObject* object)

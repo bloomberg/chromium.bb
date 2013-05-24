@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core/rendering/RenderQuote.h"
 
+#include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/AtomicString.h"
@@ -31,13 +32,14 @@
 namespace WebCore {
 
 RenderQuote::RenderQuote(Document* node, QuoteType quote)
-    : RenderText(node, StringImpl::empty())
+    : RenderInline(0)
     , m_type(quote)
     , m_depth(0)
     , m_next(0)
     , m_previous(0)
     , m_attached(false)
 {
+    setDocumentForAnonymous(node);
 }
 
 RenderQuote::~RenderQuote()
@@ -49,19 +51,19 @@ RenderQuote::~RenderQuote()
 void RenderQuote::willBeDestroyed()
 {
     detachQuote();
-    RenderText::willBeDestroyed();
+    RenderInline::willBeDestroyed();
 }
 
 void RenderQuote::willBeRemovedFromTree()
 {
-    RenderText::willBeRemovedFromTree();
+    RenderInline::willBeRemovedFromTree();
     detachQuote();
 }
 
 void RenderQuote::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
-    RenderText::styleDidChange(diff, oldStyle);
-    setText(originalText());
+    RenderInline::styleDidChange(diff, oldStyle);
+    updateText();
 }
 
 struct Language {
@@ -253,19 +255,35 @@ static const QuotesData* basicQuotesData()
     return staticBasicQuotes;
 }
 
-PassRefPtr<StringImpl> RenderQuote::originalText() const
+void RenderQuote::updateText()
+{
+    String text = computeText();
+    if (m_text == text)
+        return;
+
+    m_text = text;
+
+    while (RenderObject* child = firstChild())
+        child->destroy();
+
+    RenderTextFragment* fragment = new (renderArena()) RenderTextFragment(document(), m_text.impl());
+    fragment->setStyle(style());
+    addChild(fragment);
+}
+
+String RenderQuote::computeText() const
 {
     switch (m_type) {
     case NO_OPEN_QUOTE:
     case NO_CLOSE_QUOTE:
-        return StringImpl::empty();
+        return emptyString();
     case CLOSE_QUOTE:
         return quotesData()->getCloseQuote(m_depth - 1).impl();
     case OPEN_QUOTE:
         return quotesData()->getOpenQuote(m_depth).impl();
     }
     ASSERT_NOT_REACHED();
-    return StringImpl::empty();
+    return emptyString();
 }
 
 const QuotesData* RenderQuote::quotesData() const
@@ -364,7 +382,7 @@ void RenderQuote::updateDepth()
         }
     }
     if (oldDepth != m_depth)
-        setText(originalText());
+        updateText();
 }
 
 } // namespace WebCore
