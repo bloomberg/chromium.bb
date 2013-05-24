@@ -55,11 +55,6 @@ unsigned int ScriptProfile::uid() const
     return m_profile->GetUid();
 }
 
-PassRefPtr<ScriptProfileNode> ScriptProfile::head() const
-{
-    return ScriptProfileNode::create(m_profile->GetTopDownRoot());
-}
-
 double ScriptProfile::idleTime() const
 {
     return m_idleTime;

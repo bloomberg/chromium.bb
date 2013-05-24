@@ -195,7 +195,6 @@ void Console::profileEnd(ScriptState* state, const String& title)
     if (!profile)
         return;
 
-    m_profiles.append(profile);
     RefPtr<ScriptCallStack> callStack(createScriptCallStack(state, 1));
     InspectorInstrumentation::addProfile(page, profile, callStack);
 }

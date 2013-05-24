@@ -32,8 +32,6 @@
 #define ScriptProfile_h
 
 #include "InspectorTypeBuilder.h"
-#include "bindings/v8/ScriptWrappable.h"
-#include "core/inspector/ScriptProfileNode.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -45,7 +43,7 @@ namespace WebCore {
 
 class InspectorObject;
 
-class ScriptProfile : public RefCounted<ScriptProfile>, public ScriptWrappable {
+class ScriptProfile : public RefCounted<ScriptProfile> {
 public:
     static PassRefPtr<ScriptProfile> create(const v8::CpuProfile* profile, double idleTime)
     {
@@ -55,7 +53,6 @@ public:
 
     String title() const;
     unsigned int uid() const;
-    PassRefPtr<ScriptProfileNode> head() const;
     double idleTime() const;
 
     PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectForHead() const;
@@ -66,7 +63,6 @@ private:
         : m_profile(profile)
         , m_idleTime(idleTime)
     {
-        ScriptWrappable::init(this);
     }
 
     const v8::CpuProfile* m_profile;
