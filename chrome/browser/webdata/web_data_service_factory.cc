@@ -42,17 +42,19 @@ void ProfileErrorCallback(sql::InitStatus status) {
 void InitSyncableServicesOnDBThread(
     scoped_refptr<AutofillWebDataService> autofill_web_data,
     const base::FilePath& profile_path,
-    const std::string& app_locale) {
+    const std::string& app_locale,
+    autofill::AutofillWebDataBackend* autofill_backend) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   // Currently only Autocomplete and Autofill profiles use the new Sync API, but
   // all the database data should migrate to this API over time.
-  AutocompleteSyncableService::CreateForWebDataService(autofill_web_data);
+  AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
+      autofill_web_data, autofill_backend);
   AutocompleteSyncableService::FromWebDataService(
       autofill_web_data)->InjectStartSyncFlare(
           sync_start_util::GetFlareForSyncableService(profile_path));
-  AutofillProfileSyncableService::CreateForWebDataService(
-      autofill_web_data, app_locale);
+  AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
+      autofill_web_data, autofill_backend, app_locale);
   AutofillProfileSyncableService::FromWebDataService(
       autofill_web_data)->InjectStartSyncFlare(
           sync_start_util::GetFlareForSyncableService(profile_path));
@@ -99,12 +101,11 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
       web_database_, base::Bind(&ProfileErrorCallback));
   web_data_->Init();
 
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&InitSyncableServicesOnDBThread,
-                 autofill_web_data_,
-                 profile_path,
-                 g_browser_process->GetApplicationLocale()));
+autofill_web_data_->GetAutofillBackend(
+       base::Bind(&InitSyncableServicesOnDBThread,
+                  autofill_web_data_,
+                  profile_path,
+                  g_browser_process->GetApplicationLocale()));
 }
 
 WebDataServiceWrapper::~WebDataServiceWrapper() {

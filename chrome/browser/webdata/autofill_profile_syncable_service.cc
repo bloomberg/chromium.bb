@@ -48,15 +48,15 @@ void* UserDataKey() {
 const char kAutofillProfileTag[] = "google_chrome_autofill_profiles";
 
 AutofillProfileSyncableService::AutofillProfileSyncableService(
-    AutofillWebDataService* web_data_service,
+    autofill::AutofillWebDataBackend* webdata_backend,
     const std::string& app_locale)
-    : web_data_service_(web_data_service),
+    : webdata_backend_(webdata_backend),
       app_locale_(app_locale),
       scoped_observer_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  DCHECK(web_data_service_);
+  DCHECK(webdata_backend_);
 
-  scoped_observer_.Add(web_data_service_);
+  scoped_observer_.Add(webdata_backend_);
 }
 
 AutofillProfileSyncableService::~AutofillProfileSyncableService() {
@@ -64,12 +64,13 @@ AutofillProfileSyncableService::~AutofillProfileSyncableService() {
 }
 
 // static
-void AutofillProfileSyncableService::CreateForWebDataService(
+void AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
     AutofillWebDataService* web_data_service,
+    autofill::AutofillWebDataBackend* webdata_backend,
     const std::string& app_locale) {
   web_data_service->GetDBUserData()->SetUserData(
       UserDataKey(),
-      new AutofillProfileSyncableService(web_data_service, app_locale));
+      new AutofillProfileSyncableService(webdata_backend, app_locale));
 }
 
 // static
@@ -81,7 +82,7 @@ AutofillProfileSyncableService::FromWebDataService(
 }
 
 AutofillProfileSyncableService::AutofillProfileSyncableService()
-    : web_data_service_(NULL),
+    : webdata_backend_(NULL),
       scoped_observer_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
@@ -191,7 +192,8 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
         sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
   }
 
-  AutofillWebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
+  if (webdata_backend_)
+    webdata_backend_->NotifyOfMultipleAutofillChanges();
 
   return merge_result;
 }
@@ -262,7 +264,8 @@ syncer::SyncError AutofillProfileSyncableService::ProcessSyncChanges(
         "Failed to update webdata.");
   }
 
-  AutofillWebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
+  if (webdata_backend_)
+    webdata_backend_->NotifyOfMultipleAutofillChanges();
 
   return syncer::SyncError();
 }
@@ -583,7 +586,7 @@ bool AutofillProfileSyncableService::MergeProfile(
 }
 
 AutofillTable* AutofillProfileSyncableService::GetAutofillTable() const {
-  return AutofillTable::FromWebDatabase(web_data_service_->GetDatabase());
+  return AutofillTable::FromWebDatabase(webdata_backend_->GetDatabase());
 }
 
 void AutofillProfileSyncableService::InjectStartSyncFlare(

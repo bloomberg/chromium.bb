@@ -144,6 +144,32 @@ class WebDatabaseFake : public WebDatabase {
   }
 };
 
+class MockAutofillBackend : public autofill::AutofillWebDataBackend {
+ public:
+  MockAutofillBackend(
+      WebDatabase* web_database,
+      const base::Closure& on_changed)
+      : web_database_(web_database),
+        on_changed_(on_changed) {
+  }
+
+  virtual ~MockAutofillBackend() {}
+  virtual WebDatabase* GetDatabase() OVERRIDE { return web_database_; }
+  virtual void AddObserver(
+      autofill::AutofillWebDataServiceObserverOnDBThread* observer) OVERRIDE {}
+  virtual void RemoveObserver(
+      autofill::AutofillWebDataServiceObserverOnDBThread* observer) OVERRIDE {}
+  virtual void RemoveExpiredFormElements() OVERRIDE {}
+  virtual void NotifyOfMultipleAutofillChanges() OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, on_changed_);
+  }
+
+ private:
+  WebDatabase* web_database_;
+  base::Closure on_changed_;
+};
+
 class ProfileSyncServiceAutofillTest;
 
 template<class AutofillProfile>
@@ -206,9 +232,14 @@ class WebDataServiceFake : public AutofillWebDataService {
   void StartSyncableService() {
     // The |autofill_profile_syncable_service_| must be constructed on the DB
     // thread.
+    const base::Closure& on_changed_callback = base::Bind(
+        &WebDataServiceFake::NotifyAutofillMultipleChangedOnUIThread,
+        AsWeakPtr());
+
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
         base::Bind(&WebDataServiceFake::CreateSyncableService,
-                   base::Unretained(this)));
+                   base::Unretained(this),
+                   on_changed_callback));
     syncable_service_created_or_destroyed_.Wait();
   }
 
@@ -262,11 +293,15 @@ class WebDataServiceFake : public AutofillWebDataService {
  private:
   virtual ~WebDataServiceFake() {}
 
-  void CreateSyncableService() {
+  void CreateSyncableService(const base::Closure& on_changed_callback) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     // These services are deleted in DestroySyncableService().
-    AutocompleteSyncableService::CreateForWebDataService(this);
-    AutofillProfileSyncableService::CreateForWebDataService(this, "en-US");
+    backend_.reset(new MockAutofillBackend(
+        GetDatabase(), on_changed_callback));
+    AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
+        this, backend_.get());
+    AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
+        this, backend_.get(), "en-US");
 
     autocomplete_syncable_service_ =
         AutocompleteSyncableService::FromWebDataService(this);
@@ -281,12 +316,14 @@ class WebDataServiceFake : public AutofillWebDataService {
     AutofillWebDataService::ShutdownOnDBThread();
     autocomplete_syncable_service_ = NULL;
     autofill_profile_syncable_service_ = NULL;
+    backend_.reset();
     syncable_service_created_or_destroyed_.Signal();
   }
 
   WebDatabase* web_database_;
   AutocompleteSyncableService* autocomplete_syncable_service_;
   AutofillProfileSyncableService* autofill_profile_syncable_service_;
+  scoped_ptr<autofill::AutofillWebDataBackend> backend_;
 
   WaitableEvent syncable_service_created_or_destroyed_;
 

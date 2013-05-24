@@ -29,7 +29,7 @@ class AutofillWebDataBackend {
       AutofillWebDataServiceObserverOnDBThread* observer) = 0;
 
   // Remove expired elements from the database and commit if needed.
-  virtual void RemoveExpiredFormElementsWrapper() = 0;
+  virtual void RemoveExpiredFormElements() = 0;
 
   // Notifies listeners on the UI thread that multiple changes have been made to
   // to Autofill records of the database.

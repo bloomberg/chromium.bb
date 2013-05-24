@@ -49,7 +49,6 @@ class AutofillWebData {
   virtual void RemoveFormElementsAddedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) = 0;
 
-  virtual void RemoveExpiredFormElements() = 0;
   virtual void RemoveFormValueForElementName(const base::string16& name,
                                              const base::string16& value) = 0;
 

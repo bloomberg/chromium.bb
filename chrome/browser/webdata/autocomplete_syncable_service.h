@@ -17,6 +17,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "components/autofill/browser/webdata/autofill_change.h"
 #include "components/autofill/browser/webdata/autofill_entry.h"
+#include "components/autofill/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service_observer.h"
 #include "sync/api/sync_change.h"
@@ -48,8 +49,9 @@ class AutocompleteSyncableService
 
   // Creates a new AutocompleteSyncableService and hangs it off of
   // |web_data_service|, which takes ownership.
-  static void CreateForWebDataService(
-      autofill::AutofillWebDataService* web_data_service);
+  static void CreateForWebDataServiceAndBackend(
+      autofill::AutofillWebDataService* web_data_service,
+      autofill::AutofillWebDataBackend* webdata_backend);
 
   // Retrieves the AutocompleteSyncableService stored on |web_data|.
   static AutocompleteSyncableService* FromWebDataService(
@@ -86,7 +88,7 @@ class AutocompleteSyncableService
 
  protected:
   explicit AutocompleteSyncableService(
-      autofill::AutofillWebDataService* web_data_service);
+      autofill::AutofillWebDataBackend* webdata_backend);
 
   // Helper to query WebDatabase for the current autocomplete state.
   // Made virtual for ease of mocking in the unit-test.
@@ -152,10 +154,10 @@ class AutocompleteSyncableService
   }
 
   // Lifetime of AutocompleteSyncableService object is shorter than
-  // |web_data_service_| passed to it.
-  autofill::AutofillWebDataService* web_data_service_;
+  // |autofill_webdata_backend_| passed to it.
+  autofill::AutofillWebDataBackend* webdata_backend_;
 
-  ScopedObserver<autofill::AutofillWebDataService, AutocompleteSyncableService>
+  ScopedObserver<autofill::AutofillWebDataBackend, AutocompleteSyncableService>
       scoped_observer_;
 
   // We receive ownership of |sync_processor_| in MergeDataAndStartSyncing() and

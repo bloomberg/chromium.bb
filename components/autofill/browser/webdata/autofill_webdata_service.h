@@ -48,14 +48,6 @@ class AutofillWebDataService : public AutofillWebData,
   static scoped_refptr<AutofillWebDataService> FromBrowserContext(
       content::BrowserContext* context);
 
-  // Notifies listeners on the UI thread that multiple changes have been made to
-  // to Autofill records of the database.
-  // NOTE: This method is intended to be called from the DB thread.  It
-  // it asynchronously notifies listeners on the UI thread.
-  // |web_data_service| may be NULL for testing purposes.
-  static void NotifyOfMultipleAutofillChanges(
-      AutofillWebDataService* web_data_service);
-
   // WebDataServiceBase implementation.
   virtual void ShutdownOnUIThread() OVERRIDE;
 
@@ -72,7 +64,6 @@ class AutofillWebDataService : public AutofillWebData,
       WebDataServiceConsumer* consumer) OVERRIDE;
   virtual void RemoveFormElementsAddedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
-  virtual void RemoveExpiredFormElements() OVERRIDE;
   virtual void RemoveFormValueForElementName(
       const base::string16& name,
       const base::string16& value) OVERRIDE;
@@ -112,7 +103,13 @@ class AutofillWebDataService : public AutofillWebData,
  protected:
   virtual ~AutofillWebDataService();
 
+  virtual void NotifyAutofillMultipleChangedOnUIThread();
+
   virtual void ShutdownOnDBThread();
+
+  base::WeakPtr<AutofillWebDataService> AsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
  private:
   // This makes the destructor public, and thus allows us to aggregate
@@ -126,8 +123,6 @@ class AutofillWebDataService : public AutofillWebData,
    private:
     DISALLOW_COPY_AND_ASSIGN(SupportsUserDataAggregatable);
   };
-
-  void NotifyAutofillMultipleChangedOnUIThread();
 
   // Storage for user data to be accessed only on the DB thread. May
   // be used e.g. for SyncableService subclasses that need to be owned

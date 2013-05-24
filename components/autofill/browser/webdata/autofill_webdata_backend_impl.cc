@@ -50,9 +50,10 @@ WebDatabase* AutofillWebDataBackendImpl::GetDatabase() {
   return web_database_backend_->database();
 }
 
-void AutofillWebDataBackendImpl::RemoveExpiredFormElementsWrapper() {
+void AutofillWebDataBackendImpl::RemoveExpiredFormElements() {
   web_database_backend_->ExecuteWriteTask(
-      Bind(&AutofillWebDataBackendImpl::RemoveExpiredFormElements, this));
+      Bind(&AutofillWebDataBackendImpl::RemoveExpiredFormElementsImpl,
+           this));
 }
 
 void AutofillWebDataBackendImpl::NotifyOfMultipleAutofillChanges() {
@@ -112,25 +113,6 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveFormElementsAddedBetween(
 
   if (AutofillTable::FromWebDatabase(db)->RemoveFormElementsAddedBetween(
           delete_begin, delete_end, &changes)) {
-    if (!changes.empty()) {
-      // Post the notifications including the list of affected keys.
-      // This is sent here so that work resulting from this notification
-      // will be done on the DB thread, and not the UI thread.
-      FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
-                        db_observer_list_,
-                        AutofillEntriesChanged(changes));
-    }
-    return WebDatabase::COMMIT_NEEDED;
-  }
-  return WebDatabase::COMMIT_NOT_NEEDED;
-}
-
-WebDatabase::State AutofillWebDataBackendImpl::RemoveExpiredFormElements(
-    WebDatabase* db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  AutofillChangeList changes;
-
-  if (AutofillTable::FromWebDatabase(db)->RemoveExpiredFormElements(&changes)) {
     if (!changes.empty()) {
       // Post the notifications including the list of affected keys.
       // This is sent here so that work resulting from this notification
@@ -344,6 +326,25 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveOriginURLsModifiedBetween(
     }
     // Note: It is the caller's responsibility to post notifications for any
     // changes, e.g. by calling the Refresh() method of PersonalDataManager.
+    return WebDatabase::COMMIT_NEEDED;
+  }
+  return WebDatabase::COMMIT_NOT_NEEDED;
+}
+
+WebDatabase::State AutofillWebDataBackendImpl::RemoveExpiredFormElementsImpl(
+    WebDatabase* db) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  AutofillChangeList changes;
+
+  if (AutofillTable::FromWebDatabase(db)->RemoveExpiredFormElements(&changes)) {
+    if (!changes.empty()) {
+      // Post the notifications including the list of affected keys.
+      // This is sent here so that work resulting from this notification
+      // will be done on the DB thread, and not the UI thread.
+      FOR_EACH_OBSERVER(AutofillWebDataServiceObserverOnDBThread,
+                        db_observer_list_,
+                        AutofillEntriesChanged(changes));
+    }
     return WebDatabase::COMMIT_NEEDED;
   }
   return WebDatabase::COMMIT_NOT_NEEDED;
