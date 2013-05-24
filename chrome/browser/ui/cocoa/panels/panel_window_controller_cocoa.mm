@@ -132,7 +132,7 @@ const double kWidthOfMouseResizeArea = 4.0;
 
 namespace {
 NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
-    return WebCursor(WebKit::WebCursorInfo(type)).GetNativeCursor();
+    return WebCursor(WebCursor::CursorInfo(type)).GetNativeCursor();
 }
 }
 

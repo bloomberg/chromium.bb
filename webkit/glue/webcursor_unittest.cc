@@ -172,16 +172,16 @@ TEST(WebCursorTest, ClampHotspot) {
   ASSERT_TRUE(custom_cursor.Deserialize(&iter));
 
   // Convert to WebCursorInfo, make sure the hotspot got clamped.
-  WebCursorInfo info;
+  WebCursor::CursorInfo info;
   custom_cursor.GetCursorInfo(&info);
-  EXPECT_EQ(gfx::Point(1, 1), gfx::Point(info.hotSpot));
+  EXPECT_EQ(gfx::Point(1, 1), info.hotspot);
 
   // Set hotspot to an invalid point again, pipe back through WebCursor,
   // and make sure the hotspot got clamped again.
-  info.hotSpot = gfx::Point(-1, -1);
+  info.hotspot = gfx::Point(-1, -1);
   custom_cursor.InitFromCursorInfo(info);
   custom_cursor.GetCursorInfo(&info);
-  EXPECT_EQ(gfx::Point(0, 0), gfx::Point(info.hotSpot));
+  EXPECT_EQ(gfx::Point(0, 0), info.hotspot);
 }
 
 TEST(WebCursorTest, EmptyImage) {

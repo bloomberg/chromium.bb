@@ -254,8 +254,9 @@ void WebPluginDelegateImpl::WindowedUpdateGeometry(
   }
 }
 
-bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
-                                             WebCursorInfo* cursor_info) {
+bool WebPluginDelegateImpl::HandleInputEvent(
+    const WebInputEvent& event,
+    WebCursor::CursorInfo* cursor_info) {
   DCHECK(windowless_) << "events should only be received in windowless mode";
 
   bool pop_user_gesture = false;

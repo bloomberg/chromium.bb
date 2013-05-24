@@ -35,6 +35,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "webkit/glue/cursor_utils.h"
 #include "webkit/plugins/sad_plugin.h"
 
 #if defined (OS_WIN)
@@ -1487,7 +1488,7 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
                                                 instance_id_,
                                                 plugin_rect_,
                                                 modified_event));
-  cursor_.GetCursorInfo(&cursor_info);
+  webkit_glue::GetWebKitCursorInfo(cursor_, &cursor_info);
   return true;
 }
 

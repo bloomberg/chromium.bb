@@ -40,7 +40,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebDragData.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -49,6 +48,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
+#include "webkit/glue/webcursor.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/plugin_constants.h"
@@ -765,7 +765,7 @@ void WebPluginDelegateProxy::SetFocus(bool focused) {
 
 bool WebPluginDelegateProxy::HandleInputEvent(
     const WebInputEvent& event,
-    WebCursorInfo* cursor_info) {
+    WebCursor::CursorInfo* cursor_info) {
   bool handled;
   WebCursor cursor;
   // A windowless plugin can enter a modal loop in the context of a
@@ -776,7 +776,6 @@ bool WebPluginDelegateProxy::HandleInputEvent(
       instance_id_, &event, &handled, &cursor);
   message->set_pump_messages_event(modal_loop_pump_messages_event_.get());
   Send(message);
-  cursor.GetCursorInfo(cursor_info);
   return handled;
 }
 

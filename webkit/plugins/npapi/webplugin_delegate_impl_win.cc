@@ -24,6 +24,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/win/hwnd_util.h"
+#include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
@@ -34,7 +35,6 @@
 #include "webkit/plugins/npapi/webplugin_ime_win.h"
 #include "webkit/plugins/plugin_constants.h"
 
-using WebKit::WebCursorInfo;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
@@ -1272,7 +1272,7 @@ static bool NPEventFromWebInputEvent(const WebInputEvent& event,
 }
 
 bool WebPluginDelegateImpl::PlatformHandleInputEvent(
-    const WebInputEvent& event, WebCursorInfo* cursor_info) {
+    const WebInputEvent& event, WebCursor::CursorInfo* cursor_info) {
   DCHECK(cursor_info != NULL);
 
   NPEvent np_event;

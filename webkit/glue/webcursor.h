@@ -6,6 +6,7 @@
 #define WEBKIT_GLUE_WEBCURSOR_H_
 
 #include "base/basictypes.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
@@ -30,28 +31,49 @@ class NSCursor;
 class Pickle;
 class PickleIterator;
 
-namespace WebKit {
-class WebImage;
-struct WebCursorInfo;
-}
-
 // This class encapsulates a cross-platform description of a cursor.  Platform
 // specific methods are provided to translate the cross-platform cursor into a
 // platform specific cursor.  It is also possible to serialize / de-serialize a
 // WebCursor.
 class WEBKIT_GLUE_EXPORT WebCursor {
  public:
+  struct CursorInfo {
+    explicit CursorInfo(WebKit::WebCursorInfo::Type cursor_type)
+        : type(cursor_type),
+          image_scale_factor(1) {
+#if defined(OS_WIN)
+      external_handle = NULL;
+#endif
+    }
+
+    CursorInfo()
+        : type(WebKit::WebCursorInfo::TypePointer),
+          image_scale_factor(1) {
+#if defined(OS_WIN)
+      external_handle = NULL;
+#endif
+    }
+
+    WebKit::WebCursorInfo::Type type;
+    gfx::Point hotspot;
+    float image_scale_factor;
+    SkBitmap custom_image;
+#if defined(OS_WIN)
+    HCURSOR external_handle;
+#endif
+  };
+
   WebCursor();
-  explicit WebCursor(const WebKit::WebCursorInfo& cursor_info);
+  explicit WebCursor(const CursorInfo& cursor_info);
   ~WebCursor();
 
   // Copy constructor/assignment operator combine.
   WebCursor(const WebCursor& other);
   const WebCursor& operator=(const WebCursor& other);
 
-  // Conversion from/to WebCursorInfo.
-  void InitFromCursorInfo(const WebKit::WebCursorInfo& cursor_info);
-  void GetCursorInfo(WebKit::WebCursorInfo* cursor_info) const;
+  // Conversion from/to CursorInfo.
+  void InitFromCursorInfo(const CursorInfo& cursor_info);
+  void GetCursorInfo(CursorInfo* cursor_info) const;
 
   // Serialization / De-serialization
   bool Deserialize(PickleIterator* iter);
@@ -125,8 +147,8 @@ class WEBKIT_GLUE_EXPORT WebCursor {
   // Platform specific cleanup.
   void CleanupPlatformData();
 
-  void SetCustomData(const WebKit::WebImage& image);
-  void ImageFromCustomData(WebKit::WebImage* image) const;
+  void SetCustomData(const SkBitmap& image);
+  void ImageFromCustomData(SkBitmap* image) const;
 
   // Clamp the hotspot to the custom image's bounds, if this is a custom cursor.
   void ClampHotspot();

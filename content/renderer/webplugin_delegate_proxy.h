@@ -73,7 +73,7 @@ class WebPluginDelegateProxy
                                        int notify_id) OVERRIDE;
   virtual void SetFocus(bool focused) OVERRIDE;
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
-                                WebKit::WebCursorInfo* cursor) OVERRIDE;
+                                WebCursor::CursorInfo* cursor) OVERRIDE;
   virtual int GetProcessId() OVERRIDE;
 
   // Informs the plugin that its containing content view has gained or lost

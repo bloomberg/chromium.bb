@@ -13,6 +13,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCanvas.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/native_widget_types.h"
+#include "webkit/glue/webcursor.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 class GURL;
@@ -20,7 +21,6 @@ struct NPObject;
 
 namespace WebKit {
 class WebInputEvent;
-struct WebCursorInfo;
 }
 
 namespace gfx {
@@ -78,7 +78,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegate {
   // Returns whether the event was handled. This is only called in windowsless
   // mode. See NPAPI NPP_HandleEvent for more information.
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
-                                WebKit::WebCursorInfo* cursor) = 0;
+                                WebCursor::CursorInfo* cursor) = 0;
 
   // Gets the NPObject associated with the plugin for scripting.
   virtual NPObject* GetPluginScriptableObject() = 0;

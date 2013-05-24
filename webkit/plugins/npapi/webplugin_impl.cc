@@ -402,7 +402,16 @@ bool WebPluginImpl::handleInputEvent(
   if (event.type == WebInputEvent::ContextMenu)
     return true;
 
-  return delegate_->HandleInputEvent(event, &cursor_info);
+  WebCursor::CursorInfo web_cursor_info;
+  bool ret = delegate_->HandleInputEvent(event, &web_cursor_info);
+  cursor_info.type = web_cursor_info.type;
+  cursor_info.hotSpot = web_cursor_info.hotspot;
+  cursor_info.customImage = web_cursor_info.custom_image;
+  cursor_info.imageScaleFactor = web_cursor_info.image_scale_factor;
+#if defined(OS_WIN)
+  cursor_info.externalHandle = web_cursor_info.external_handle;
+#endif
+  return ret;
 }
 
 void WebPluginImpl::didReceiveResponse(const WebURLResponse& response) {

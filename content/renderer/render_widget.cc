@@ -55,6 +55,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/surface/transport_dib.h"
+#include "webkit/glue/cursor_utils.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -1587,8 +1588,8 @@ void RenderWidget::scheduleAnimation() {
 
 void RenderWidget::didChangeCursor(const WebCursorInfo& cursor_info) {
   // TODO(darin): Eliminate this temporary.
-  WebCursor cursor(cursor_info);
-
+  WebCursor cursor;
+  webkit_glue::InitializeCursorFromWebKitCursorInfo(&cursor, cursor_info);
   // Only send a SetCursor message if we need to make a change.
   if (!current_cursor_.IsEqual(cursor)) {
     current_cursor_ = cursor;

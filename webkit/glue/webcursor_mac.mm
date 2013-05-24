@@ -342,7 +342,7 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
 }
 
 void WebCursor::InitFromNSCursor(NSCursor* cursor) {
-  WebKit::WebCursorInfo cursor_info;
+  CursorInfo cursor_info;
 
   if ([cursor isEqual:[NSCursor arrowCursor]]) {
     cursor_info.type = WebCursorInfo::TypePointer;
@@ -393,8 +393,8 @@ void WebCursor::InitFromNSCursor(NSCursor* cursor) {
     if (cg_image) {
       cursor_info.type = WebCursorInfo::TypeCustom;
       NSPoint hot_spot = [cursor hotSpot];
-      cursor_info.hotSpot = WebKit::WebPoint(hot_spot.x, hot_spot.y);
-      cursor_info.customImage = gfx::CGImageToSkBitmap(cg_image);
+      cursor_info.hotspot = gfx::Point(hot_spot.x, hot_spot.y);
+      cursor_info.custom_image = gfx::CGImageToSkBitmap(cg_image);
     } else {
       cursor_info.type = WebCursorInfo::TypePointer;
     }

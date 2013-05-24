@@ -4,9 +4,9 @@
 
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
+#include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 
-using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
 
 namespace webkit {
@@ -60,7 +60,7 @@ bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
 }
 
 bool WebPluginDelegateImpl::PlatformHandleInputEvent(
-    const WebInputEvent& event, WebCursorInfo* cursor_info) {
+    const WebInputEvent& event, WebCursor::CursorInfo* cursor_info) {
   return false;
 }
 

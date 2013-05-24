@@ -7,10 +7,8 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebImage.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 
 using WebKit::WebCursorInfo;
-using WebKit::WebImage;
 
 static const int kMaxCursorDimension = 1024;
 
@@ -23,7 +21,7 @@ WebCursor::WebCursor()
   InitPlatformData();
 }
 
-WebCursor::WebCursor(const WebCursorInfo& cursor_info)
+WebCursor::WebCursor(const CursorInfo& cursor_info)
     : type_(WebCursorInfo::TypePointer) {
 #if defined(OS_WIN)
   external_cursor_ = NULL;
@@ -50,33 +48,33 @@ const WebCursor& WebCursor::operator=(const WebCursor& other) {
   return *this;
 }
 
-void WebCursor::InitFromCursorInfo(const WebCursorInfo& cursor_info) {
+void WebCursor::InitFromCursorInfo(const CursorInfo& cursor_info) {
   Clear();
 
 #if defined(OS_WIN)
-  if (cursor_info.externalHandle) {
-    InitFromExternalCursor(cursor_info.externalHandle);
+  if (cursor_info.external_handle) {
+    InitFromExternalCursor(cursor_info.external_handle);
     return;
   }
 #endif
 
   type_ = cursor_info.type;
-  hotspot_ = cursor_info.hotSpot;
+  hotspot_ = cursor_info.hotspot;
   if (IsCustom())
-    SetCustomData(cursor_info.customImage);
-  custom_scale_ = cursor_info.imageScaleFactor;
+    SetCustomData(cursor_info.custom_image);
+  custom_scale_ = cursor_info.image_scale_factor;
   CHECK(custom_scale_ > 0);
   ClampHotspot();
 }
 
-void WebCursor::GetCursorInfo(WebCursorInfo* cursor_info) const {
+void WebCursor::GetCursorInfo(CursorInfo* cursor_info) const {
   cursor_info->type = static_cast<WebCursorInfo::Type>(type_);
-  cursor_info->hotSpot = hotspot_;
-  ImageFromCustomData(&cursor_info->customImage);
-  cursor_info->imageScaleFactor = custom_scale_;
+  cursor_info->hotspot = hotspot_;
+  ImageFromCustomData(&cursor_info->custom_image);
+  cursor_info->image_scale_factor = custom_scale_;
 
 #if defined(OS_WIN)
-  cursor_info->externalHandle = external_cursor_;
+  cursor_info->external_handle = external_cursor_;
 #endif
 }
 
@@ -198,7 +196,7 @@ static WebCursorInfo::Type ToCursorType(HCURSOR cursor) {
 void WebCursor::InitFromExternalCursor(HCURSOR cursor) {
   WebCursorInfo::Type cursor_type = ToCursorType(cursor);
 
-  InitFromCursorInfo(WebCursorInfo(cursor_type));
+  InitFromCursorInfo(CursorInfo(cursor_type));
 
   if (cursor_type == WebCursorInfo::TypeCustom)
     external_cursor_ = cursor;
@@ -226,12 +224,11 @@ void WebCursor::Copy(const WebCursor& other) {
   CopyPlatformData(other);
 }
 
-void WebCursor::SetCustomData(const WebImage& image) {
-  if (image.isNull())
+void WebCursor::SetCustomData(const SkBitmap& bitmap) {
+  if (bitmap.empty())
     return;
 
   // Fill custom_data_ directly with the NativeImage pixels.
-  const SkBitmap& bitmap = image.getSkBitmap();
   SkAutoLockPixels bitmap_lock(bitmap);
   custom_data_.resize(bitmap.getSize());
   if (!custom_data_.empty())
@@ -240,19 +237,16 @@ void WebCursor::SetCustomData(const WebImage& image) {
   custom_size_.set_height(bitmap.height());
 }
 
-void WebCursor::ImageFromCustomData(WebImage* image) const {
+void WebCursor::ImageFromCustomData(SkBitmap* image) const {
   if (custom_data_.empty())
     return;
 
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+  image->setConfig(SkBitmap::kARGB_8888_Config,
                    custom_size_.width(),
                    custom_size_.height());
-  if (!bitmap.allocPixels())
+  if (!image->allocPixels())
     return;
-  memcpy(bitmap.getPixels(), &custom_data_[0], custom_data_.size());
-
-  image->assign(bitmap);
+  memcpy(image->getPixels(), &custom_data_[0], custom_data_.size());
 }
 
 void WebCursor::ClampHotspot() {

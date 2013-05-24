@@ -110,7 +110,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
   virtual void SetFocus(bool focused) OVERRIDE;
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
-                                WebKit::WebCursorInfo* cursor_info) OVERRIDE;
+                                WebCursor::CursorInfo* cursor_info) OVERRIDE;
   virtual NPObject* GetPluginScriptableObject() OVERRIDE;
   virtual bool GetFormValue(base::string16* value) OVERRIDE;
   virtual void DidFinishLoadWithReason(const GURL& url,
@@ -286,7 +286,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   // Does platform-specific event handling. Arguments and return are identical
   // to HandleInputEvent.
   bool PlatformHandleInputEvent(const WebKit::WebInputEvent& event,
-                                WebKit::WebCursorInfo* cursor_info);
+                                WebCursor::CursorInfo* cursor_info);
 
   // Closes down and destroys our plugin instance.
   void DestroyInstance();

@@ -194,6 +194,8 @@
         'cpp_bound_class.h',
         'cpp_variant.cc',
         'cpp_variant.h',
+        'cursor_utils.cc',
+        'cursor_utils.h',
         'fling_curve_configuration.cc',
         'fling_curve_configuration.h',
         'fling_animator_impl_android.cc',
