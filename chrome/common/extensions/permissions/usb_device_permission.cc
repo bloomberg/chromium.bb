@@ -37,32 +37,31 @@ PermissionMessages UsbDevicePermission::GetMessages() const {
   // device.gyp:device_usb is not available when extensions are disabled.
   for (std::set<UsbDevicePermissionData>::const_iterator i =
       data_set_.begin(); i != data_set_.end(); ++i) {
-
     const char* vendor = device::UsbIds::GetVendorName(i->vendor_id());
-    string16 vendor_name;
+
     if (vendor) {
-      vendor_name = ASCIIToUTF16(vendor);
+      const char* product =
+          device::UsbIds::GetProductName(i->vendor_id(), i->product_id());
+      if (product) {
+        result.push_back(PermissionMessage(
+            PermissionMessage::kUsbDevice,
+            l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE,
+                ASCIIToUTF16(product),
+                ASCIIToUTF16(vendor))));
+      } else {
+        result.push_back(PermissionMessage(
+            PermissionMessage::kUsbDevice,
+            l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_PRODUCT,
+                ASCIIToUTF16(vendor))));
+      }
     } else {
-      vendor_name = l10n_util::GetStringUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_UNKNOWN_USB_VENDOR);
-    }
-
-    const char* product =
-        device::UsbIds::GetProductName(i->vendor_id(), i->product_id());
-    string16 product_name;
-    if (product) {
-      product_name = ASCIIToUTF16(product);
-    } else {
-      product_name = l10n_util::GetStringUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_UNKNOWN_USB_PRODUCT);
-    }
-
-    result.push_back(PermissionMessage(
+      result.push_back(PermissionMessage(
           PermissionMessage::kUsbDevice,
-          l10n_util::GetStringFUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE,
-              product_name,
-              vendor_name)));
+          l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_VENDOR)));
+    }
   }
 #else
   NOTREACHED();

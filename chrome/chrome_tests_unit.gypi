@@ -1634,6 +1634,7 @@
         'common/extensions/permissions/permission_set_unittest.cc',
         'common/extensions/permissions/permissions_data_unittest.cc',
         'common/extensions/permissions/socket_permission_unittest.cc',
+        'common/extensions/permissions/usb_device_permission_unittest.cc',
         'common/extensions/unpacker_unittest.cc',
         'common/extensions/update_manifest_unittest.cc',
         'common/extensions/user_script_unittest.cc',

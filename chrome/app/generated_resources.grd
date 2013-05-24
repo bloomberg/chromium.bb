@@ -5088,14 +5088,14 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICE" desc="Permission string for access to a specific Bluetooth device.">
         Access the Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Galaxy Nexus</ex></ph>".
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_UNKNOWN_USB_VENDOR" desc="Description used within IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE when a vendor cannot be established for a USB device.">
-        Unknown Company
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_UNKNOWN_USB_PRODUCT" desc="Description used within IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE when a product cannot be established for a USB device.">
-        Unknown Device
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE" desc="Permission string for access to a specific USB device.">
-        Access the USB device "<ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> (<ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>)".
+        Access the USB device <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_VENDOR" desc="Permission string for access to a specific USB device when a vendor name cannot be established for a USB device.">
+        Access the USB device.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_PRODUCT" desc="Permission string for access to a specific USB device when a product name cannot be established for a USB device.">
+        Access the USB device from <ph name="VENDOR_NAME">$1<ex>Griffin Technology</ex></ph>.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE" desc="Permission string for access to audio capture devices.">
         Use your microphone
