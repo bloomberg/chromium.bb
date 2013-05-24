@@ -5,11 +5,12 @@
 #include "content/renderer/memory_benchmarking_extension.h"
 
 #include "base/string_util.h"
-#include "content/public/renderer/render_thread.h"
+#include "content/common/memory_benchmark_messages.h"
+#include "content/renderer/render_thread_impl.h"
 
-#if !defined(NO_TCMALLOC) && defined(OS_LINUX)
+#if defined(USE_TCMALLOC) && (defined(OS_LINUX) || defined(OS_ANDROID))
+
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
-#endif  // !defined(NO_TCMALLOC) && defined(OS_LINUX)
 
 namespace {
 
@@ -33,9 +34,10 @@ class MemoryBenchmarkingWrapper : public v8::Extension {
         "  native function IsHeapProfilerRunning();"
         "  return IsHeapProfilerRunning();"
         "};"
-        "chrome.memoryBenchmarking.heapProfilerDump = function(reason) {"
+        "chrome.memoryBenchmarking.heapProfilerDump = "
+        "      function(process_type, reason) {"
         "  native function HeapProfilerDump();"
-        "  HeapProfilerDump(reason);"
+        "  HeapProfilerDump(process_type, reason);"
         "};"
         ) {}
 
@@ -51,20 +53,22 @@ class MemoryBenchmarkingWrapper : public v8::Extension {
 
   static v8::Handle<v8::Value> IsHeapProfilerRunning(
       const v8::Arguments& args) {
-#if !defined(NO_TCMALLOC) && defined(OS_LINUX)
     return v8::Boolean::New(::IsHeapProfilerRunning());
-#else
-    return v8::Boolean::New(false);
-#endif  // !defined(NO_TCMALLOC) && defined(OS_LINUX)
   }
 
   static v8::Handle<v8::Value> HeapProfilerDump(const v8::Arguments& args) {
-#if !defined(NO_TCMALLOC) && defined(OS_LINUX)
-    std::string reason("benchmarking_extension");
+    std::string process_type;
     if (args.Length() && args[0]->IsString())
-      reason = *v8::String::AsciiValue(args[0]);
-    ::HeapProfilerDump(reason.c_str());
-#endif  // !defined(NO_TCMALLOC) && defined(OS_LINUX)
+      process_type = *v8::String::AsciiValue(args[0]);
+    std::string reason("benchmarking_extension");
+    if (args.Length() > 1 && args[1]->IsString())
+      reason = *v8::String::AsciiValue(args[1]);
+    if (process_type == "browser") {
+      content::RenderThreadImpl::current()->Send(
+          new MemoryBenchmarkHostMsg_HeapProfilerDump(reason));
+    } else {
+      ::HeapProfilerDump(reason.c_str());
+    }
     return v8::Undefined();
   }
 };
@@ -78,3 +82,5 @@ v8::Extension* MemoryBenchmarkingExtension::Get() {
 }
 
 }  // namespace content
+
+#endif  // defined(USE_TCMALLOC) && (defined(OS_LINUX) || defined(OS_ANDROID))

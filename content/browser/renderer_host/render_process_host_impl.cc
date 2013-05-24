@@ -75,6 +75,7 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
+#include "content/browser/renderer_host/memory_benchmark_message_filter.h"
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/renderer_host/quota_dispatcher_host.h"
@@ -696,6 +697,11 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new HyphenatorMessageFilter(this));
 #if defined(ENABLE_WEBRTC)
   channel_->AddFilter(new WebRtcLoggingHandlerHost());
+#endif
+#if defined(USE_TCMALLOC) && (defined(OS_LINUX) || defined(OS_ANDROID))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableMemoryBenchmarking))
+    channel_->AddFilter(new MemoryBenchmarkMessageFilter());
 #endif
 }
 

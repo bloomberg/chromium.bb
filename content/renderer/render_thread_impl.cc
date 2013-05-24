@@ -399,8 +399,10 @@ void RenderThreadImpl::Init() {
   if (command_line.HasSwitch(switches::kEnableGpuBenchmarking))
       RegisterExtension(GpuBenchmarkingExtension::Get());
 
+#if defined(USE_TCMALLOC) && (defined(OS_LINUX) || defined(OS_ANDROID))
   if (command_line.HasSwitch(switches::kEnableMemoryBenchmarking))
     RegisterExtension(MemoryBenchmarkingExtension::Get());
+#endif  // USE_TCMALLOC
 
   if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking)) {
     LOG(WARNING) << "Enabling unsafe Skia benchmarking extension.";
