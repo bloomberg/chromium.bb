@@ -1642,6 +1642,7 @@
         'browser/ui/webui/options/options_ui_browsertest.cc',
         'browser/ui/webui/options/options_ui_browsertest.h',
         'browser/ui/webui/options/password_manager_browsertest.js',
+        'browser/ui/webui/options/profile_settings_reset_browsertest.js',
         'browser/ui/webui/options/preferences_browsertest.cc',
         'browser/ui/webui/options/preferences_browsertest.h',
         'browser/ui/webui/options/search_engine_manager_browsertest.js',

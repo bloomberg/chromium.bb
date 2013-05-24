@@ -285,6 +285,11 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "proxiesLabelExtension", IDS_OPTIONS_EXTENSION_PROXIES_LABEL },
     { "proxiesLabelSystem", IDS_OPTIONS_SYSTEM_PROXIES_LABEL,
       IDS_PRODUCT_NAME },
+    { "resetProfileSettings", IDS_RESET_PROFILE_SETTINGS_BUTTON },
+    { "resetProfileSettingsDescription",
+      IDS_RESET_PROFILE_SETTINGS_DESCRIPTION },
+    { "resetProfileSettingsSectionTitle",
+      IDS_RESET_PROFILE_SETTINGS_SECTION_TITLE },
     { "safeBrowsingEnableProtection",
       IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION },
     { "sectionTitleAppearance", IDS_APPEARANCE_GROUP_NAME },
@@ -510,6 +515,10 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       "gpuEnabledAtStart",
       g_browser_process->gpu_mode_manager()->initial_gpu_mode_pref());
 #endif
+
+  values->SetBoolean("enableResetProfileSettingsSection",
+                     CommandLine::ForCurrentProcess()->HasSwitch(
+                         switches::kEnableResetProfileSettings));
 }
 
 void BrowserOptionsHandler::RegisterCloudPrintValues(DictionaryValue* values) {

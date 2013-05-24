@@ -1461,6 +1461,13 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kEnableDraggableMenuButton)
   },
+  {
+    "enable-reset-profile-settings",
+    IDS_FLAGS_ENABLE_RESET_PROFILE_SETTINGS_NAME,
+    IDS_FLAGS_ENABLE_RESET_PROFILE_SETTINGS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableResetProfileSettings)
+  },
 };
 
 const Experiment* experiments = kExperiments;

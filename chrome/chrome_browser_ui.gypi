@@ -2219,6 +2219,8 @@
         'browser/ui/webui/options/password_manager_handler.h',
         'browser/ui/webui/options/pepper_flash_content_settings_utils.cc',
         'browser/ui/webui/options/pepper_flash_content_settings_utils.h',
+        'browser/ui/webui/options/reset_profile_settings_handler.cc',
+        'browser/ui/webui/options/reset_profile_settings_handler.h',
         'browser/ui/webui/options/search_engine_manager_handler.cc',
         'browser/ui/webui/options/search_engine_manager_handler.h',
         'browser/ui/webui/options/startup_pages_handler.cc',

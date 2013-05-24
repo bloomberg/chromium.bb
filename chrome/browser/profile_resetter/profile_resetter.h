@@ -52,6 +52,8 @@ class ProfileResetter : public base::NonThreadSafe {
              ExtensionHandling extension_handling,
              const base::Closure& callback);
 
+  bool IsActive() const;
+
  private:
   // Marks |resettable| as done and triggers |callback_| if all pending jobs
   // have completed.

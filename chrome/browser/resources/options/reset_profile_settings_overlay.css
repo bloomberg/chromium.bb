@@ -1,0 +1,18 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#reset-profile-settings-overlay {
+  min-width: 500px;
+}
+
+#reset-profile-settings-checkboxes {
+  -webkit-padding-start: 8px;
+  margin: 5px 0;
+}
+
+#reset-profile-settings-throbber {
+  margin: 4px 10px;
+  vertical-align: middle;
+  visibility: hidden;
+}

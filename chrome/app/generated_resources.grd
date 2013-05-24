@@ -6818,6 +6818,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_WEBP_IN_ACCEPT_HEADER_DESCRIPTION" desc="Description for the flag to enable 'image/webp' in accept header.">
         Enables 'image/webp' accept header in HTTP requests for images, to denote WebP image support.
       </message>
+      <message name="IDS_FLAGS_ENABLE_RESET_PROFILE_SETTINGS_NAME" desc="Title for the flag to enable a feature to reset profile settings that are often modified by malware.">
+        Enable reset profile settings
+      </message>
+      <message name="IDS_FLAGS_ENABLE_RESET_PROFILE_SETTINGS_DESCRIPTION" desc="Description for the flag to enable a feature to reset profile settings that are often modified by malware.">
+        Enables the option in chrome://settings to reset settings in your profile that are often modified by malware.
+      </message>
 
       <message name="IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC" desc="Generic 'Automatic' experiment choice option name.">
         Automatic
@@ -15265,6 +15271,47 @@ First, create a limited user in Chrome on this device. You can then configure th
     </message>
     <message name="IDS_PASSWORD_GENERATION_BUTTON_TEXT" desc="The text on the button that users click to accept the generated password">
       Try it
+    </message>
+
+    <!-- Reset Profile Settings strings -->
+    <message name="IDS_RESET_PROFILE_SETTINGS_SECTION_TITLE" desc="The title of the section in chrome://settings that allows resetting some settings in a profile">
+      Reset
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_DESCRIPTION" desc="A label describing the purpose of the 'reset profile settings' feature">
+      Things got out of control? Revert your Chrome profile to a clean, post install state.
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_BUTTON" desc="The text on the button in chrome://settings that allows resetting some settings in a profile">
+      Reset profile settings...
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_TITLE" desc="Dialog title">
+      Reset profile settings
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_LABEL" desc="Label at the top of the client area of the dialog">
+      What would you like to reset?
+    </message>
+    <message name="IDS_RESET_PROFILE_DEFAULT_SEARCH_ENGINE_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
+      Default Search Engine
+    </message>
+    <message name="IDS_RESET_PROFILE_HOMEPAGE_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
+      Homepage
+    </message>
+    <message name="IDS_RESET_PROFILE_CONTENT_SETTINGS_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
+      Content settings
+    </message>
+    <message name="IDS_RESET_PROFILE_COOKIES_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
+      Cookies and site data
+    </message>
+    <message name="IDS_RESET_PROFILE_EXTENSIONS_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
+      Extensions, new tab page and themes
+    </message>
+    <message name="IDS_RESET_PROFILE_EXTENSIONS_DISABLE" desc="Listbox item of the Reset Profile Settings dialog, indicating how to handle extensions">
+      Disable
+    </message>
+    <message name="IDS_RESET_PROFILE_EXTENSIONS_UNINSTALL" desc="Listbox item of the Reset Profile Settings dialog, indicating how to handle extensions">
+      Uninstall
+    </message>
+    <message name="IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON" desc="Checkbox of the Reset Profile Settings dialog">
+      Reset
     </message>
 
     </messages>

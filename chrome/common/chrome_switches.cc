@@ -631,6 +631,10 @@ const char kEnableProfiling[]               = "enable-profiling";
 // Enables support for the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[]                    = "enable-quic";
 
+// Enables support in chrome://settings to reset settings in your profile
+// that are often touched by malware.
+const char kEnableResetProfileSettings[]    = "enable-reset-profile-settings";
+
 // Enables content settings based on host *and* plug-in in the user
 // preferences.
 const char kEnableResourceContentSettings[] =

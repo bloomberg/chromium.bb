@@ -68,6 +68,11 @@ void ProfileResetter::Reset(ProfileResetter::ResettableFlags resettable_flags,
   DCHECK_EQ(resettable_flags, reset_triggered_for_flags);
 }
 
+bool ProfileResetter::IsActive() const {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  return pending_reset_flags_ != 0;
+}
+
 void ProfileResetter::MarkAsDone(Resettable resettable) {
   DCHECK(CalledOnValidThread());
 
