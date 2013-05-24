@@ -65,7 +65,6 @@
       This can also be overridden by a -n or --no-overwrite flag
 
     - All files are converted to work in WebKit:
-         1. .xht extensions are changed to .xhtml to make new-run-webkit-tests happy
          2. Paths to testharness.js files are modified point to Webkit's copy of them in
             LayoutTests/resources, using the correct relative path from the new location
          3. All CSS properties requiring the -webkit-vendor prefix are prefixed - this current
@@ -302,9 +301,6 @@ class TestImporter(object):
                     continue
 
                 new_filepath = os.path.join(new_path, file_to_copy['dest'])
-
-                # FIXME: we should just support '.xht' directly.
-                new_filepath = new_filepath.replace('.xht', '.xhtml')
 
                 if not(os.path.exists(os.path.dirname(new_filepath))):
                     os.makedirs(os.path.dirname(new_filepath))
