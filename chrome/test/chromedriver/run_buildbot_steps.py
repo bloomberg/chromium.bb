@@ -159,9 +159,10 @@ def WaitForLatestSnapshot(revision):
     snapshot_revision = archive.GetLatestRevision(archive.Site.SNAPSHOT)
     if snapshot_revision >= revision:
       break
-    print 'Waiting for snapshot >= %s, found %s' % (revision, snapshot_revision)
+    util.PrintAndFlush('Waiting for snapshot >= %s, found %s' %
+                       (revision, snapshot_revision))
     time.sleep(60)
-  print 'Got snapshot revision', snapshot_revision
+  util.PrintAndFlush('Got snapshot revision %s' % snapshot_revision)
 
 
 def main():

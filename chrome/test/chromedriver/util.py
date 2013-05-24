@@ -166,3 +166,8 @@ def MarkBuildStepError():
 def AddBuildStepText(text):
   print '@@@STEP_TEXT@%s@@@' % text
   sys.stdout.flush()
+
+
+def PrintAndFlush(text):
+  print text
+  sys.stdout.flush()
