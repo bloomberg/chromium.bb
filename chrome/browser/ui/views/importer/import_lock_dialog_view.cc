@@ -36,7 +36,8 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
 // static
 void ImportLockDialogView::Show(gfx::NativeWindow parent,
                                 const base::Callback<void(bool)>& callback) {
-  views::Widget::CreateWindow(new ImportLockDialogView(callback))->Show();
+  views::DialogDelegate::CreateDialogWidget(
+      new ImportLockDialogView(callback), NULL, NULL)->Show();
 }
 
 ImportLockDialogView::ImportLockDialogView(
