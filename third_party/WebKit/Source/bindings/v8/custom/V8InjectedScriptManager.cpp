@@ -46,14 +46,6 @@
 
 namespace WebCore {
 
-template<>
-void WeakHandleListener<InjectedScriptManager, InjectedScriptHost>::callback(v8::Isolate* isolate, v8::Persistent<v8::Value> object, InjectedScriptHost* host)
-{
-    host->deref();
-    object.Dispose(isolate);
-    object.Clear();
-}
-
 static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHost* host, v8::Isolate* isolate)
 {
     v8::Local<v8::Function> function = V8InjectedScriptHost::GetTemplate(isolate, MainWorld)->GetFunction();
@@ -71,7 +63,7 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHos
     // InspectorBackend when the wrapper is garbage collected.
     host->ref();
     v8::Persistent<v8::Object> weakHandle(isolate, instance);
-    WeakHandleListener<InjectedScriptManager, InjectedScriptHost>::makeWeak(isolate, weakHandle, host);
+    weakHandle.MakeWeak(isolate, host, &InjectedScriptManager::makeWeakCallback);
     return instance;
 }
 
@@ -127,6 +119,12 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
 
     v8::Context::Scope contextScope(context);
     return BindingSecurity::shouldAllowAccessToFrame(frame, DoNotReportSecurityError);
+}
+
+void InjectedScriptManager::makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* object, InjectedScriptHost* host)
+{
+    host->deref();
+    object->Dispose(isolate);
 }
 
 } // namespace WebCore

@@ -40,7 +40,6 @@
 namespace WebCore {
 
 class ScriptWrappable : public MemoryReporterTag {
-    friend class WeakHandleListener<ScriptWrappable>;
 public:
     ScriptWrappable() : m_wrapperOrTypeInfo(0) { }
 
@@ -66,7 +65,7 @@ public:
         }
         v8::Persistent<v8::Object> persistent(isolate, wrapper);
         configuration.configureWrapper(persistent, isolate);
-        WeakHandleListener<ScriptWrappable>::makeWeak(isolate, persistent, this);
+        persistent.MakeWeak(isolate, this, &makeWeakCallback);
         m_wrapperOrTypeInfo = reinterpret_cast<uintptr_t>(*persistent) | 1;
         ASSERT(containsWrapper());
     }
@@ -173,26 +172,23 @@ private:
     //   If the bottom bit it set, then this contains a pointer to a wrapper object in the remainging bits.
     //   If the bottom bit is clear, then this contains a pointer to the wrapper type info in the remaining bits.
     uintptr_t m_wrapperOrTypeInfo;
+
+    static void makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* wrapper, ScriptWrappable* key)
+    {
+        ASSERT(key->unsafePersistent().handle() == *wrapper);
+
+        // Note: |object| might not be equal to |key|, e.g., if ScriptWrappable isn't a left-most base class.
+        void* object = toNative(*wrapper);
+        WrapperTypeInfo* info = toWrapperTypeInfo(*wrapper);
+        ASSERT(info->derefObjectFunction);
+
+        key->disposeWrapper(*wrapper, isolate, info);
+        // FIXME: I noticed that 50%~ of minor GC cycle times can be consumed
+        // inside key->deref(), which causes Node destructions. We should
+        // make Node destructions incremental.
+        info->derefObject(object);
+    }
 };
-
-template<>
-inline void WeakHandleListener<ScriptWrappable>::callback(v8::Isolate* isolate, v8::Persistent<v8::Value> value, ScriptWrappable* key)
-{
-    ASSERT(value->IsObject());
-    v8::Persistent<v8::Object> wrapper = v8::Persistent<v8::Object>::Cast(value);
-    ASSERT(key->unsafePersistent().handle() == wrapper);
-
-    // Note: |object| might not be equal to |key|, e.g., if ScriptWrappable isn't a left-most base class.
-    void* object = toNative(wrapper);
-    WrapperTypeInfo* info = toWrapperTypeInfo(wrapper);
-    ASSERT(info->derefObjectFunction);
-
-    key->disposeWrapper(value, isolate, info);
-    // FIXME: I noticed that 50%~ of minor GC cycle times can be consumed
-    // inside key->deref(), which causes Node destructions. We should
-    // make Node destructions incremental.
-    info->derefObject(object);
-}
 
 } // namespace WebCore
 

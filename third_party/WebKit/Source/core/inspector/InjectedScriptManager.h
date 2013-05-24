@@ -65,6 +65,7 @@ public:
     typedef bool (*InspectedStateAccessCheck)(ScriptState*);
     InspectedStateAccessCheck inspectedStateAccessCheck() const { return m_inspectedStateAccessCheck; }
 
+    static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Object>*, InjectedScriptHost*);
 private:
     explicit InjectedScriptManager(InspectedStateAccessCheck);
 

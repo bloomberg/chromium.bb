@@ -46,12 +46,6 @@
 
 namespace WebCore {
 
-template<>
-void WeakHandleListener<V8AbstractEventListener>::callback(v8::Isolate*, v8::Persistent<v8::Value>, V8AbstractEventListener* listener)
-{
-    listener->m_listener.clear();
-}
-
 V8AbstractEventListener::V8AbstractEventListener(bool isAttribute, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
     : EventListener(JSEventListenerType)
     , m_isAttribute(isAttribute)
@@ -102,7 +96,7 @@ void V8AbstractEventListener::handleEvent(ScriptExecutionContext* context, Event
 void V8AbstractEventListener::setListenerObject(v8::Handle<v8::Object> listener)
 {
     m_listener.set(listener);
-    WeakHandleListener<V8AbstractEventListener>::makeWeak(m_isolate, m_listener.get(), this);
+    m_listener.get().MakeWeak(m_isolate, this, &makeWeakCallback);
 }
 
 void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context, Event* event, v8::Local<v8::Value> jsEvent)
@@ -189,6 +183,11 @@ v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(ScriptExecution
     if (value.IsEmpty())
         return v8::Local<v8::Object>();
     return v8::Local<v8::Object>::New(v8::Handle<v8::Object>::Cast(value));
+}
+
+void V8AbstractEventListener::makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Object>*, V8AbstractEventListener* listener)
+{
+    listener->m_listener.clear();
 }
 
 } // namespace WebCore

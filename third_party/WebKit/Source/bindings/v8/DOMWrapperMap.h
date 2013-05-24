@@ -62,7 +62,7 @@ public:
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);
         v8::Persistent<v8::Object> persistent(m_isolate, wrapper);
         configuration.configureWrapper(persistent, m_isolate);
-        WeakHandleListener<DOMWrapperMap<KeyType> >::makeWeak(m_isolate, persistent, this);
+        persistent.MakeWeak(m_isolate, this, &makeWeakCallback);
         m_map.set(key, UnsafePersistent<v8::Object>(persistent));
     }
 
@@ -97,9 +97,21 @@ public:
     }
 
 private:
+    static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Object>* wrapper, DOMWrapperMap<KeyType>*);
+
     v8::Isolate* m_isolate;
     MapType m_map;
 };
+
+template<>
+inline void DOMWrapperMap<void>::makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* wrapper, DOMWrapperMap<void>* map)
+{
+    WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
+    ASSERT(type->derefObjectFunction);
+    void* key = static_cast<void*>(toNative(*wrapper));
+    map->removeAndDispose(key, *wrapper, isolate);
+    type->derefObject(key);
+}
 
 } // namespace WebCore
 

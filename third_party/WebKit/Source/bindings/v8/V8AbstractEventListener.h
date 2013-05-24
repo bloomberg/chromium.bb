@@ -52,7 +52,6 @@ namespace WebCore {
     // WebKit does not allow duplicated HTML event handlers of the same type,
     // but ALLOWs duplicated non-HTML event handlers.
     class V8AbstractEventListener : public EventListener {
-        friend class WeakHandleListener<V8AbstractEventListener>;
     public:
         virtual ~V8AbstractEventListener();
 
@@ -125,14 +124,14 @@ namespace WebCore {
         v8::Local<v8::Object> getReceiverObject(ScriptExecutionContext*, Event*);
 
     private:
-        static void weakEventListenerCallback(v8::Isolate*, v8::Persistent<v8::Value>, void* parameter);
-
         // Implementation of EventListener function.
         virtual bool virtualisAttribute() const { return m_isAttribute; }
 
         virtual v8::Local<v8::Value> callListenerFunction(ScriptExecutionContext*, v8::Handle<v8::Value> jsevent, Event*) = 0;
 
         virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);
+
+        static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Object>*, V8AbstractEventListener*);
 
         ScopedPersistent<v8::Object> m_listener;
 
