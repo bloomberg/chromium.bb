@@ -909,25 +909,13 @@ handle_seat_created(struct wl_listener *listener,
 static void
 text_backend_configuration(struct text_backend *text_backend)
 {
-	int config_fd;
-	char *path = NULL;
+	struct weston_config_section *section;
 
-	struct config_key input_method_keys[] = {
-		{ "path", CONFIG_KEY_STRING, &path }
-	};
-
-	struct config_section cs[] = {
-		{ "input-method", input_method_keys, ARRAY_LENGTH(input_method_keys), NULL }
-	};
-
-	config_fd = open_config_file("weston.ini");
-	parse_config_file(config_fd, cs, ARRAY_LENGTH(cs), text_backend);
-        close(config_fd);
-
-	if (path)
-		text_backend->input_method.path = path;
-	else
-		text_backend->input_method.path = strdup(LIBEXECDIR "/weston-keyboard");
+	section = weston_config_get_section(text_backend->compositor->config,
+					    "input-method", NULL, NULL);
+	weston_config_section_get_string(section, "path",
+					 &text_backend->input_method.path,
+					 LIBEXECDIR "/weston-keyboard");
 }
 
 static void
