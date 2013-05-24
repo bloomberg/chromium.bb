@@ -4,57 +4,32 @@
 
 #include "chrome/browser/first_run/first_run.h"
 
-#include <windows.h>
 #include <shellapi.h>
-#include <shlobj.h>
 
+#include "base/base_paths.h"
 #include "base/callback.h"
-#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "base/process.h"
 #include "base/process_util.h"
-#include "base/stringprintf.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
-#include "base/win/object_watcher.h"
-#include "base/win/windows_version.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run_internal.h"
-#include "chrome/browser/importer/importer_host.h"
-#include "chrome/browser/importer/importer_list.h"
-#include "chrome/browser/process_singleton.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/worker_thread_ticker.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
-#include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/user_metrics.h"
 #include "google_update/google_update_idl.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/base/win/shell.h"
 
 namespace {
@@ -172,226 +147,6 @@ bool CreateEULASentinel() {
           file_util::WriteFile(eula_sentinel, "", 0) != -1);
 }
 
-// This class is used by first_run::ImportSettings to determine when the import
-// process has ended and what was the result of the operation as reported by
-// the process exit code. This class executes in the context of the main chrome
-// process.
-class ImportProcessRunner : public base::win::ObjectWatcher::Delegate {
- public:
-  // The constructor takes the importer process to watch and then it does a
-  // message loop blocking wait until the process ends. This object now owns
-  // the import_process handle.
-  explicit ImportProcessRunner(base::ProcessHandle import_process)
-      : import_process_(import_process),
-        exit_code_(content::RESULT_CODE_NORMAL_EXIT) {
-    watcher_.StartWatching(import_process, this);
-    MessageLoop::current()->Run();
-  }
-  virtual ~ImportProcessRunner() {
-    ::CloseHandle(import_process_);
-  }
-  // Returns the child process exit code. There are 2 expected values:
-  // NORMAL_EXIT, or IMPORTER_HUNG.
-  int exit_code() const { return exit_code_; }
-
-  // The child process has terminated. Find the exit code and quit the loop.
-  virtual void OnObjectSignaled(HANDLE object) OVERRIDE {
-    DCHECK(object == import_process_);
-    if (!::GetExitCodeProcess(import_process_, &exit_code_)) {
-      NOTREACHED();
-    }
-    MessageLoop::current()->Quit();
-  }
-
- private:
-  base::win::ObjectWatcher watcher_;
-  base::ProcessHandle import_process_;
-  DWORD exit_code_;
-};
-
-// Check every 3 seconds if the importer UI has hung.
-const int kPollHangFrequency = 3000;
-
-// This class specializes on finding hung 'owned' windows. Unfortunately, the
-// HungWindowDetector class cannot be used here because it assumes child
-// windows and not owned top-level windows.
-// This code is executed in the context of the main browser process and will
-// terminate the importer process if it is hung.
-class HungImporterMonitor : public WorkerThreadTicker::Callback {
- public:
-  // The ctor takes the owner popup window and the process handle of the
-  // process to kill in case the popup or its owned active popup become
-  // unresponsive.
-  HungImporterMonitor(HWND owner_window, base::ProcessHandle import_process)
-      : owner_window_(owner_window),
-        import_process_(import_process),
-        ticker_(kPollHangFrequency) {
-    ticker_.RegisterTickHandler(this);
-    ticker_.Start();
-  }
-  virtual ~HungImporterMonitor() {
-    ticker_.Stop();
-    ticker_.UnregisterTickHandler(this);
-  }
-
- private:
-  virtual void OnTick() OVERRIDE {
-    if (!import_process_)
-      return;
-    // We find the top active popup that we own, this will be either the
-    // owner_window_ itself or the dialog window of the other process. In
-    // both cases it is worth hung testing because both windows share the
-    // same message queue and at some point the other window could be gone
-    // while the other process still not pumping messages.
-    HWND active_window = ::GetLastActivePopup(owner_window_);
-    if (::IsHungAppWindow(active_window) || ::IsHungAppWindow(owner_window_)) {
-      ::TerminateProcess(import_process_, chrome::RESULT_CODE_IMPORTER_HUNG);
-      import_process_ = NULL;
-    }
-  }
-
-  HWND owner_window_;
-  base::ProcessHandle import_process_;
-  WorkerThreadTicker ticker_;
-  DISALLOW_COPY_AND_ASSIGN(HungImporterMonitor);
-};
-
-std::string EncodeImportParams(int importer_type,
-                               int options,
-                               bool skip_first_run_ui) {
-  return base::StringPrintf("%d@%d@%d", importer_type, options,
-                            skip_first_run_ui ? 1 : 0);
-}
-
-bool DecodeImportParams(const std::string& encoded,
-                        int* importer_type,
-                        int* options,
-                        bool* skip_first_run_ui) {
-  std::vector<std::string> parts;
-  base::SplitString(encoded, '@', &parts);
-  int skip_first_run_ui_int;
-  if ((parts.size() != 3) || !base::StringToInt(parts[0], importer_type) ||
-      !base::StringToInt(parts[1], options) ||
-      !base::StringToInt(parts[2], &skip_first_run_ui_int))
-    return false;
-  *skip_first_run_ui = !!skip_first_run_ui_int;
-  return true;
-}
-
-#if !defined(USE_AURA)
-// Imports browser items in this process. The browser and the items to
-// import are encoded in the command line.
-int ImportFromBrowser(Profile* profile,
-                      const CommandLine& cmdline) {
-  std::string import_info = cmdline.GetSwitchValueASCII(switches::kImport);
-  if (import_info.empty()) {
-    NOTREACHED();
-    return false;
-  }
-  int importer_type = 0;
-  int items_to_import = 0;
-  bool skip_first_run_ui = false;
-  if (!DecodeImportParams(import_info, &importer_type, &items_to_import,
-                          &skip_first_run_ui)) {
-    NOTREACHED();
-    return false;
-  }
-
-  // Deletes itself.
-  ImporterHost* importer_host = new ImporterHost;
-
-  scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
-  importer_list->DetectSourceProfilesHack();
-
-  // If |skip_first_run_ui|, we run in headless mode.  This means that if
-  // there is user action required the import is automatically canceled.
-  if (skip_first_run_ui)
-    importer_host->set_headless();
-
-  first_run::internal::ImportEndedObserver observer;
-  importer_host->SetObserver(&observer);
-  importer_host->StartImportSettings(
-      importer_list->GetSourceProfileForImporterType(importer_type), profile,
-      static_cast<uint16>(items_to_import), new ProfileWriter(profile));
-  // If the import process has not errored out, block on it.
-  if (!observer.ended()) {
-    observer.set_should_quit_message_loop();
-    MessageLoop::current()->Run();
-  }
-  // TODO(gab): This method will be go away as part of http://crbug.com/219419/,
-  // so it is fine to hardcode |RESULT_CODE_NORMAL_EXIT| here for now.
-  return content::RESULT_CODE_NORMAL_EXIT;
-}
-#endif  // !defined(USE_AURA)
-
-bool ImportSettingsWin(Profile* profile,
-                       int importer_type,
-                       int items_to_import,
-                       const base::FilePath& import_bookmarks_path,
-                       bool skip_first_run_ui) {
-  if (!items_to_import && import_bookmarks_path.empty()) {
-    return true;
-  }
-
-  const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
-  base::FilePath chrome_exe(cmdline.GetProgram());
-  // |chrome_exe| cannot be a relative path as chrome.exe already changed its
-  // CWD in LoadChromeWithDirectory(), making the relative path used on the
-  // command-line invalid. The base name is sufficient given chrome.exe is in
-  // the CWD.
-  if (!chrome_exe.IsAbsolute())
-    chrome_exe = chrome_exe.BaseName();
-  CommandLine import_cmd(chrome_exe);
-
-  const char* kSwitchNames[] = {
-    switches::kUserDataDir,
-    switches::kChromeFrame,
-    switches::kCountry,
-  };
-  import_cmd.CopySwitchesFrom(cmdline, kSwitchNames, arraysize(kSwitchNames));
-
-  // Allow tests to introduce additional switches.
-  import_cmd.AppendArguments(first_run::GetExtraArgumentsForImportProcess(),
-                             false);
-
-  // Since ImportSettings is called before the local state is stored on disk
-  // we pass the language as an argument.  GetApplicationLocale checks the
-  // current command line as fallback.
-  import_cmd.AppendSwitchASCII(switches::kLang,
-                               g_browser_process->GetApplicationLocale());
-
-  if (items_to_import) {
-    import_cmd.AppendSwitchASCII(switches::kImport,
-        EncodeImportParams(importer_type, items_to_import, skip_first_run_ui));
-  }
-
-  if (!import_bookmarks_path.empty()) {
-    import_cmd.AppendSwitchPath(switches::kImportFromFile,
-                                import_bookmarks_path);
-  }
-
-  // The importer doesn't need to do any background networking tasks so disable
-  // them.
-  import_cmd.CommandLine::AppendSwitch(switches::kDisableBackgroundNetworking);
-
-  // Time to launch the process that is going to do the import.
-  base::ProcessHandle import_process;
-  if (!base::LaunchProcess(import_cmd, base::LaunchOptions(), &import_process))
-    return false;
-
-  // We block inside the import_runner ctor, pumping messages until the
-  // importer process ends. This can happen either by completing the import
-  // or by hang_monitor killing it.
-  ImportProcessRunner import_runner(import_process);
-
-  // Import process finished. Reload the prefs, because importer may set
-  // the pref value.
-  if (profile)
-    profile->GetPrefs()->ReloadPersistentPrefs();
-
-  return (import_runner.exit_code() == content::RESULT_CODE_NORMAL_EXIT);
-}
-
 }  // namespace
 
 namespace first_run {
@@ -415,57 +170,8 @@ void DoPostImportPlatformSpecificTasks(Profile* /* profile */) {
   }
 }
 
-bool ImportSettings(Profile* profile,
-                    ImporterHost* importer_host,
-                    scoped_refptr<ImporterList> importer_list,
-                    int items_to_import) {
-  return ImportSettingsWin(
-      profile,
-      importer_list->GetSourceProfileAt(0).importer_type,
-      items_to_import,
-      base::FilePath(),
-      false);
-}
-
 bool GetFirstRunSentinelFilePath(base::FilePath* path) {
   return GetSentinelFilePath(chrome::kFirstRunSentinel, path);
-}
-
-void SetImportPreferencesAndLaunchImport(
-    MasterPrefs* out_prefs,
-    installer::MasterPreferences* install_prefs) {
-  std::string import_bookmarks_path;
-  install_prefs->GetString(
-      installer::master_preferences::kDistroImportBookmarksFromFilePref,
-      &import_bookmarks_path);
-
-  if (!IsOrganicFirstRun()) {
-    // If search engines aren't explicitly imported, don't import.
-    if (!(out_prefs->do_import_items & importer::SEARCH_ENGINES)) {
-      out_prefs->dont_import_items |= importer::SEARCH_ENGINES;
-    }
-    // If home page isn't explicitly imported, don't import.
-    if (!(out_prefs->do_import_items & importer::HOME_PAGE)) {
-      out_prefs->dont_import_items |= importer::HOME_PAGE;
-    }
-    // If history isn't explicitly forbidden, do import.
-    if (!(out_prefs->dont_import_items & importer::HISTORY)) {
-      out_prefs->do_import_items |= importer::HISTORY;
-    }
-  }
-
-  if (out_prefs->do_import_items || !import_bookmarks_path.empty()) {
-    // There is something to import from the default browser. This launches
-    // the importer process and blocks until done or until it fails.
-    scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
-    importer_list->DetectSourceProfilesHack();
-    if (!ImportSettingsWin(
-        NULL, importer_list->GetSourceProfileAt(0).importer_type,
-        out_prefs->do_import_items, base::FilePath::FromWStringHack(UTF8ToWide(
-                                        import_bookmarks_path)), true)) {
-      LOG(WARNING) << "silent import failed";
-    }
-  }
 }
 
 bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
@@ -508,18 +214,4 @@ base::FilePath MasterPrefsPath() {
 }
 
 }  // namespace internal
-}  // namespace first_run
-
-namespace first_run {
-
-int ImportNow(Profile* profile, const CommandLine& cmdline) {
-  int return_code = internal::ImportBookmarkFromFileIfNeeded(profile, cmdline);
-#if !defined(USE_AURA)
-  if (cmdline.HasSwitch(switches::kImport)) {
-    return_code = ImportFromBrowser(profile, cmdline);
-  }
-#endif
-  return return_code;
-}
-
 }  // namespace first_run

@@ -226,11 +226,8 @@ UserPolicySigninService::UserPolicySigninService(
     Profile* profile)
     : profile_(profile),
       weak_factory_(this) {
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin) ||
-      ProfileManager::IsImportProcess(*cmd_line)) {
+  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin))
     return;
-  }
 
   // Initialize/shutdown the UserCloudPolicyManager when the user signs out.
   registrar_.Add(this,

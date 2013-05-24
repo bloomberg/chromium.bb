@@ -410,7 +410,6 @@ ExtensionService::ExtensionService(Profile* profile,
                                       g_browser_process->local_state()));
 
   if (extensions_enabled_) {
-    CHECK(!ProfileManager::IsImportProcess(*command_line));
     extensions::ExternalProviderImpl::CreateExternalProviders(
         this, profile_, &external_extension_providers_);
   }
@@ -566,9 +565,6 @@ void ExtensionService::Init() {
   DCHECK_EQ(extensions_.size(), 0u);
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-
-  CHECK(!ProfileManager::IsImportProcess(*cmd_line));
-
   if (cmd_line->HasSwitch(switches::kInstallFromWebstore) ||
       cmd_line->HasSwitch(switches::kLimitedInstallFromWebstore)) {
     // The sole purpose of this launch is to install a new extension from CWS
