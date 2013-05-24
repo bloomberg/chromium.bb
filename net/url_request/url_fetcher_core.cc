@@ -431,9 +431,7 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
     InformDelegateDownloadProgress();
     InformDelegateDownloadDataIfNecessary(bytes_read);
 
-    const int result = response_writer_->Write(
-        buffer_, bytes_read,
-        base::Bind(&URLFetcherCore::DidWriteBuffer, this));
+    const int result = WriteBuffer(new DrainableIOBuffer(buffer_, bytes_read));
     if (result < 0) {
       // Write failed or waiting for write completion.
       if (result == ERR_IO_PENDING)
@@ -822,14 +820,35 @@ void URLFetcherCore::CompleteAddingUploadDataChunk(
                                 is_last_chunk);
 }
 
-void URLFetcherCore::DidWriteBuffer(int result) {
-  if (result < 0) {
+int URLFetcherCore::WriteBuffer(scoped_refptr<DrainableIOBuffer> data) {
+  while (data->BytesRemaining() > 0) {
+    const int result = response_writer_->Write(
+        data, data->BytesRemaining(),
+        base::Bind(&URLFetcherCore::DidWriteBuffer, this, data));
+    if (result < 0)
+      return result;
+    data->DidConsume(result);
+  }
+  return OK;
+}
+
+void URLFetcherCore::DidWriteBuffer(scoped_refptr<DrainableIOBuffer> data,
+                                    int result) {
+  if (result >= 0) {  // Continue writing.
+    data->DidConsume(result);
+    result = WriteBuffer(data);
+    if (result == ERR_IO_PENDING)
+      return;
+  }
+
+  if (result < 0) {  // Handle errors.
     delegate_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&URLFetcherCore::InformDelegateFetchIsComplete, this));
     return;
   }
   // Finished writing buffer_. Read some more.
+  DCHECK_EQ(0, data->BytesRemaining());
   ReadResponse();
 }
 

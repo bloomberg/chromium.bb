@@ -84,11 +84,8 @@ class URLFetcherFileWriter : public URLFetcherResponseWriter {
                     const CompletionCallback& callback) OVERRIDE;
   virtual int Finish(const CompletionCallback& callback) OVERRIDE;
 
-  // Called when a write has been done.  Continues writing if there are more
-  // bytes to write.  Otherwise, runs |callback|.
-  void ContinueWrite(scoped_refptr<DrainableIOBuffer> buffer,
-                     const CompletionCallback& callback,
-                     int result);
+  // Called when a write has been done.
+  void DidWrite(const CompletionCallback& callback, int result);
 
   // Drops ownership of the file at |file_path_|.
   // This class will not delete it or write to it again.

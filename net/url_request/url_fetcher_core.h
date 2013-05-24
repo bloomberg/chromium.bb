@@ -28,6 +28,7 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace net {
+class DrainableIOBuffer;
 class HttpResponseHeaders;
 class IOBuffer;
 class URLFetcherDelegate;
@@ -193,8 +194,13 @@ class URLFetcherCore
   void CompleteAddingUploadDataChunk(const std::string& data,
                                      bool is_last_chunk);
 
-  // Handles the result of WriteBuffer.
-  void DidWriteBuffer(int result);
+  // Writes all bytes stored in |data| with |response_writer_|.
+  // Returns OK if all bytes in |data| get written synchronously. Otherwise,
+  // returns ERR_IO_PENDING or a network error code.
+  int WriteBuffer(scoped_refptr<DrainableIOBuffer> data);
+
+  // Used to implement WriteBuffer().
+  void DidWriteBuffer(scoped_refptr<DrainableIOBuffer> data, int result);
 
   // Read response bytes from the request.
   void ReadResponse();
