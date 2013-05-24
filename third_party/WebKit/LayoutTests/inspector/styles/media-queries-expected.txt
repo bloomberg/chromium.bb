@@ -21,7 +21,7 @@ border: 1px solid black;
 [expanded] 
 media="screen" (media-queries.html)
 @media not print (media-queries.html:5)
-#main  { (media-queries.html:6 -> media-queries.html:6:1)
+#main  { (media-queries.html:6 -> media-queries.html:6:5)
 background: blue;
 
 [expanded] 

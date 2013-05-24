@@ -32,7 +32,7 @@ element.style  { ()
 ======== Matched CSS Rules ========
 [expanded] 
 media="screen" (inject-stylesheet.html)
-#main  { (inject-stylesheet.html:5 -> inject-stylesheet.html:5:1)
+#main  { (inject-stylesheet.html:5 -> inject-stylesheet.html:5:3)
 background: blue;
     background-image: initial;
     background-position-x: initial;
@@ -109,7 +109,7 @@ background: red;
 
 [expanded] 
 media="screen" (inject-stylesheet-iframe-data.html)
-body  { (inject-stylesheet-iframe-data.html:4 -> inject-stylesheet-iframe-data.html:4:1)
+body  { (inject-stylesheet-iframe-data.html:4 -> inject-stylesheet-iframe-data.html:4:3)
 background: green;
     /-- overloaded --/ background-image: initial;
     /-- overloaded --/ background-position-x: initial;

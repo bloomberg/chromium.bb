@@ -1272,7 +1272,9 @@ PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObje
         .setSourceURL(url())
         .setTitle(styleSheet->title())
         .setFrameId(m_pageAgent->frameId(frame))
-        .setIsInline(styleSheet->isInline() && !startsAtZero());
+        .setIsInline(styleSheet->isInline() && !startsAtZero())
+        .setStartLine(styleSheet->startPositionInSource().m_line.zeroBasedInt())
+        .setStartColumn(styleSheet->startPositionInSource().m_column.zeroBasedInt());
 
     if (hasSourceURL())
         result->setHasSourceURL(true);
@@ -1338,7 +1340,6 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRule(CS
 
     RefPtr<TypeBuilder::CSS::CSSRule> result = TypeBuilder::CSS::CSSRule::create()
         .setSelectorList(buildObjectForSelectorList(rule))
-        .setSourceLine(rule->styleRule()->sourceLine())
         .setOrigin(m_origin)
         .setStyle(buildObjectForStyle(rule->style()));
 

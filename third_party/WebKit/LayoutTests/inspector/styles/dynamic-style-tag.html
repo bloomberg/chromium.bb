@@ -1,10 +1,9 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/debugger-test.js"></script>
-<script src="../../http/tests/inspector/workspace-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
 <style>
-.inline-style-added-by-parser {
+/* comment */.inline-style-added-by-parser {
    color: red;
 }
 </style>
@@ -39,6 +38,12 @@ var test = function()
 
     function step1()
     {
+        InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
+    }
+    
+    function step2()
+    {
+        InspectorTest.dumpSelectedElementStyles(true, false, true);
         InspectorTest.completeTest();
     }
     
@@ -66,5 +71,8 @@ var test = function()
 </head>
 <body onload="runTest()">
 <p>Tests that different types of inline styles are correctly disambiguated and their sourceURL is correct.
+<div id="inspected" style="color:red" class="inline-style-added-by-parser inline-style-added-by-parser-with-source-url inline-style-added-by-parser-in-document-write inline-style-added-by-document-write-with-source-url inline-style-created-by-script inline-style-created-by-script-with-source-url"></div>
 </body>
 </html>
+
+

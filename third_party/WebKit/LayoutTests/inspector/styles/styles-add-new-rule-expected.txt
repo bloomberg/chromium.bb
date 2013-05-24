@@ -24,7 +24,7 @@ color: red;
 
 ======== Matched CSS Rules ========
 [expanded] 
-#other  { (inspector-stylesheet:1 -> inspector-stylesheet:1)
+#other  { (inspector-stylesheet:4 -> inspector-stylesheet:4)
 
 [expanded] 
 div  { (user agent stylesheet)

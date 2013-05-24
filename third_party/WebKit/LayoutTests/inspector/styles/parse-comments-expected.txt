@@ -13,7 +13,7 @@ color/* Comment: value */:/* Comment: value */ green/* Comment: value */;
 
 [expanded] 
 @media not print (parse-comments.html:7)
-#main  { (parse-comments.html:9 -> parse-comments.html:9:1)
+#main  { (parse-comments.html:9 -> parse-comments.html:9:25)
 /-- overloaded --/ /-- disabled --/ Comment: value;
 background /* Comment: value */ :/* Comment: value */blue/* Comment: value */;
 /-- overloaded --/ /-- disabled --/ Comment: value;

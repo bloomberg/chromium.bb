@@ -12,7 +12,7 @@ element.style  { ()
 [expanded] 
 media="screen" (override-screen-size.html)
 @media (max-device-height: 960px) and (max-device-width: 480px) (override-screen-size.html:9)
-#main  { (override-screen-size.html:10 -> override-screen-size.html:10:1)
+#main  { (override-screen-size.html:10 -> override-screen-size.html:10:5)
 background: green;
 
 [expanded] 
