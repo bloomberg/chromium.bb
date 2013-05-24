@@ -215,7 +215,7 @@ bool V8DOMWindowShell::initializeIfNeeded()
             setInjectedScriptContextDebugId(context, m_frame->script()->contextDebugId(mainWindow->context()));
     }
 
-    m_perContextData = V8PerContextData::create(m_context.get());
+    m_perContextData = V8PerContextData::create(context);
     if (!m_perContextData->init()) {
         disposeContext();
         return false;
