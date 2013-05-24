@@ -180,7 +180,7 @@ void ToastContentsView::SetBoundsWithAnimation(gfx::Rect new_bounds) {
   animated_bounds_end_ = new_bounds;
 
   if (collection_)
-      collection_->IncrementDeferCounter();
+    collection_->IncrementDeferCounter();
 
   if (bounds_animation_.get())
     bounds_animation_->Stop();
@@ -201,10 +201,10 @@ void ToastContentsView::StartFadeIn() {
   fade_animation_->Show();
 }
 
-  void ToastContentsView::StartFadeOut() {
-    // The decrement is done in OnBoundsAnimationEndedOrCancelled callback.
-    if (collection_)
-      collection_->IncrementDeferCounter();
+void ToastContentsView::StartFadeOut() {
+  // The decrement is done in OnBoundsAnimationEndedOrCancelled callback.
+  if (collection_)
+    collection_->IncrementDeferCounter();
   fade_animation_->Stop();
 
   closing_animation_ = (is_closing_ ? fade_animation_.get() : NULL);
@@ -214,8 +214,18 @@ void ToastContentsView::StartFadeIn() {
 
 void ToastContentsView::OnBoundsAnimationEndedOrCancelled(
     const ui::Animation* animation) {
-  if (is_closing_ && closing_animation_ == animation && GetWidget())
-    GetWidget()->Close();
+  if (is_closing_ && closing_animation_ == animation && GetWidget()) {
+    views::Widget* widget = GetWidget();
+#if defined(OS_WIN) && defined(USE_AURA)
+    // TODO(dewittj): This is a workaround to prevent a nasty bug where
+    // closing a transparent widget doesn't actually remove the window,
+    // causing entire areas of the screen to become unresponsive to clicks.
+    // See crbug.com/243469
+    widget->Hide();
+    widget->SetOpacity(0xFF);
+#endif
+    widget->Close();
+  }
 
   // This cannot be called before GetWidget()->Close(). Decrementing defer count
   // will invoke update, which may invoke another close animation with
