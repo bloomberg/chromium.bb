@@ -743,4 +743,35 @@ TEST_F(NetworkPortalDetectorImplTest, RequestTimeouts) {
   ASSERT_TRUE(is_state_idle());
 }
 
+TEST_F(NetworkPortalDetectorImplTest, StartDetectionIfIdle) {
+  ASSERT_TRUE(is_state_idle());
+  set_min_time_between_attempts(base::TimeDelta());
+  SetConnected(kStubWireless1);
+
+  // First portal detection attempt for wifi1 uses 5sec timeout.
+  CheckRequestTimeoutAndCompleteAttempt(1, 5, net::ERR_CONNECTION_CLOSED,
+                                        net::URLFetcher::RESPONSE_CODE_INVALID);
+  ASSERT_TRUE(is_state_portal_detection_pending());
+  MessageLoop::current()->RunUntilIdle();
+
+  // Second portal detection attempt for wifi1 uses 10sec timeout.
+  CheckRequestTimeoutAndCompleteAttempt(2, 10, net::ERR_CONNECTION_CLOSED,
+                                        net::URLFetcher::RESPONSE_CODE_INVALID);
+  ASSERT_TRUE(is_state_portal_detection_pending());
+  MessageLoop::current()->RunUntilIdle();
+
+  // Second portal detection attempt for wifi1 uses 15sec timeout.
+  CheckRequestTimeoutAndCompleteAttempt(3, 15, net::ERR_CONNECTION_CLOSED,
+                                        net::URLFetcher::RESPONSE_CODE_INVALID);
+  ASSERT_TRUE(is_state_idle());
+  start_detection_if_idle();
+
+  ASSERT_TRUE(is_state_portal_detection_pending());
+
+  // First portal detection attempt for wifi1 uses 5sec timeout.
+  MessageLoop::current()->RunUntilIdle();
+  CheckRequestTimeoutAndCompleteAttempt(1, 5, net::OK, 204);
+  ASSERT_TRUE(is_state_idle());
+}
+
 }  // namespace chromeos

@@ -67,6 +67,9 @@ std::string CaptivePortalStatusString(
 
 }  // namespace
 
+////////////////////////////////////////////////////////////////////////////////
+// NetworkPortalDetectorImpl, public:
+
 NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
     : test_url_(CaptivePortalDetector::kDefaultURL),
@@ -157,6 +160,7 @@ void NetworkPortalDetectorImpl::Enable(bool start_detection) {
   if (!default_network)
     return;
   portal_state_map_.erase(default_network->path());
+  DCHECK(CanPerformDetection());
   DetectCaptivePortal(base::TimeDelta());
 }
 
@@ -175,6 +179,9 @@ NetworkPortalDetectorImpl::GetCaptivePortalState(const NetworkState* network) {
 bool NetworkPortalDetectorImpl::StartDetectionIfIdle() {
   if (IsPortalCheckPending() || IsCheckingForPortal())
     return false;
+  if (!CanPerformDetection())
+    attempt_count_ = 0;
+  DCHECK(CanPerformDetection());
   DetectCaptivePortal(base::TimeDelta());
   return true;
 }
@@ -216,9 +223,8 @@ void NetworkPortalDetectorImpl::NetworkManagerChanged() {
     CancelPortalDetection();
   }
 
-  if (!IsCheckingForPortal() && !IsPortalCheckPending() &&
-      NetworkState::StateIsConnected(default_connection_state_) &&
-      (attempt_count_ < kMaxRequestAttempts || lazy_detection_enabled())) {
+  if (CanPerformDetection() &&
+      NetworkState::StateIsConnected(default_connection_state_)) {
     // Initiate Captive Portal detection if network's captive
     // portal state is unknown (e.g. for freshly created networks),
     // offline or if network connection state was changed.
@@ -236,11 +242,18 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
   NetworkManagerChanged();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// NetworkPortalDetectorImpl, private:
+
+bool NetworkPortalDetectorImpl::CanPerformDetection() const {
+  if (IsPortalCheckPending() || IsCheckingForPortal())
+    return false;
+  return attempt_count_ < kMaxRequestAttempts || lazy_detection_enabled();
+}
+
 void NetworkPortalDetectorImpl::DetectCaptivePortal(
     const base::TimeDelta& delay) {
-  DCHECK(!IsPortalCheckPending());
-  DCHECK(!IsCheckingForPortal());
-  DCHECK(attempt_count_ < kMaxRequestAttempts || lazy_detection_enabled());
+  DCHECK(CanPerformDetection());
 
   if (!IsEnabled())
     return;
@@ -371,6 +384,7 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
         }
         SetCaptivePortalState(default_network, state);
       } else {
+        DCHECK(CanPerformDetection());
         DetectCaptivePortal(results.retry_after_delta);
       }
       break;
@@ -390,10 +404,8 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
 }
 
 void NetworkPortalDetectorImpl::TryLazyDetection() {
-  if (!IsPortalCheckPending() && !IsCheckingForPortal() &&
-      lazy_detection_enabled()) {
+  if (lazy_detection_enabled() && CanPerformDetection())
     DetectCaptivePortal(base::TimeDelta());
-  }
 }
 
 void NetworkPortalDetectorImpl::Observe(
@@ -408,6 +420,7 @@ void NetworkPortalDetectorImpl::Observe(
     if (IsPortalCheckPending())
       return;
     CancelPortalDetection();
+    DCHECK(CanPerformDetection());
     DetectCaptivePortal(base::TimeDelta::FromSeconds(kProxyChangeDelaySec));
   }
 }
@@ -457,8 +470,7 @@ void NetworkPortalDetectorImpl::NotifyPortalDetectionCompleted(
 base::TimeTicks NetworkPortalDetectorImpl::GetCurrentTimeTicks() const {
   if (time_ticks_for_testing_.is_null())
     return base::TimeTicks::Now();
-  else
-    return time_ticks_for_testing_;
+  return time_ticks_for_testing_;
 }
 
 bool NetworkPortalDetectorImpl::DetectionTimeoutIsCancelledForTesting() const {

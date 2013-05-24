@@ -69,6 +69,7 @@ class NetworkPortalDetectorImpl
 
   typedef std::string NetworkId;
   typedef base::hash_map<NetworkId, CaptivePortalState> CaptivePortalStateMap;
+
   enum State {
     // No portal check is running.
     STATE_IDLE = 0,
@@ -84,7 +85,12 @@ class NetworkPortalDetectorImpl
   // Single detection attempt timeout in lazy mode.
   static const int kLazyRequestTimeoutSec = 15;
 
+  // Internal predicate which describes set of states from which
+  // DetectCaptivePortal() can be called.
+  bool CanPerformDetection() const;
+
   // Initiates Captive Portal detection after |delay|.
+  // CanPerformDetection() *must* be kept before call to this method.
   void DetectCaptivePortal(const base::TimeDelta& delay);
 
   void DetectCaptivePortalTask();
