@@ -14,8 +14,6 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
