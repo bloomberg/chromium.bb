@@ -61,7 +61,7 @@ DocumentWriter::DocumentWriter(Frame* frame)
 {
 }
 
-// This is only called by ScriptController::executeIfJavaScriptURL
+// This is only called by ScriptController::executeScriptIfJavaScriptURL
 // and always contains the result of evaluating a javascript: url.
 // This is the <iframe src="javascript:'html'"> case.
 void DocumentWriter::replaceDocument(const String& source, Document* ownerDocument)

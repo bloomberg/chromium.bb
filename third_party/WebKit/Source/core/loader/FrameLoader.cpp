@@ -266,7 +266,7 @@ void FrameLoader::urlSelected(const FrameLoadRequest& passedRequest, PassRefPtr<
     RefPtr<Frame> protect(m_frame);
     FrameLoadRequest frameRequest(passedRequest);
 
-    if (m_frame->script()->executeIfJavaScriptURL(frameRequest.resourceRequest().url()))
+    if (m_frame->script()->executeScriptIfJavaScriptURL(frameRequest.resourceRequest().url()))
         return;
 
     if (frameRequest.frameName().isEmpty())
@@ -305,7 +305,7 @@ void FrameLoader::submitForm(PassRefPtr<FormSubmission> submission)
     if (protocolIsJavaScript(submission->action())) {
         if (!m_frame->document()->contentSecurityPolicy()->allowFormAction(KURL(submission->action())))
             return;
-        m_frame->script()->executeIfJavaScriptURL(submission->action());
+        m_frame->script()->executeScriptIfJavaScriptURL(submission->action());
         return;
     }
 

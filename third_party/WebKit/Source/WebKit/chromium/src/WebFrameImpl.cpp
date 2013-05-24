@@ -805,7 +805,7 @@ void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSour
         sources.append(ScriptSourceCode(sourcesIn[i].code, sourcesIn[i].url, position));
     }
 
-    frame()->script()->evaluateInIsolatedWorld(worldID, sources, extensionGroup, 0);
+    frame()->script()->executeScriptInIsolatedWorld(worldID, sources, extensionGroup, 0);
 }
 
 void WebFrameImpl::setIsolatedWorldSecurityOrigin(int worldID, const WebSecurityOrigin& securityOrigin)
@@ -889,13 +889,13 @@ void WebFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSour
 
     if (results) {
         Vector<ScriptValue> scriptResults;
-        frame()->script()->evaluateInIsolatedWorld(worldID, sources, extensionGroup, &scriptResults);
+        frame()->script()->executeScriptInIsolatedWorld(worldID, sources, extensionGroup, &scriptResults);
         WebVector<v8::Local<v8::Value> > v8Results(scriptResults.size());
         for (unsigned i = 0; i < scriptResults.size(); i++)
             v8Results[i] = v8::Local<v8::Value>::New(scriptResults[i].v8Value());
         results->swap(v8Results);
     } else
-        frame()->script()->evaluateInIsolatedWorld(worldID, sources, extensionGroup, 0);
+        frame()->script()->executeScriptInIsolatedWorld(worldID, sources, extensionGroup, 0);
 }
 
 v8::Handle<v8::Value> WebFrameImpl::callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> argv[])
@@ -2463,7 +2463,7 @@ void WebFrameImpl::invalidateIfNecessary()
 
 void WebFrameImpl::loadJavaScriptURL(const KURL& url)
 {
-    // This is copied from ScriptController::executeIfJavaScriptURL.
+    // This is copied from ScriptController::executeScriptIfJavaScriptURL.
     // Unfortunately, we cannot just use that method since it is private, and
     // it also doesn't quite behave as we require it to for bookmarklets.  The
     // key difference is that we need to suppress loading the string result

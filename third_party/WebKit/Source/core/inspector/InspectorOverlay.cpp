@@ -509,7 +509,7 @@ void InspectorOverlay::evaluateInOverlay(const String& method, const String& arg
     RefPtr<InspectorArray> command = InspectorArray::create();
     command->pushString(method);
     command->pushString(argument);
-    overlayPage()->mainFrame()->script()->evaluate(ScriptSourceCode("dispatch(" + command->toJSONString() + ")"));
+    overlayPage()->mainFrame()->script()->executeScriptInMainWorld(ScriptSourceCode("dispatch(" + command->toJSONString() + ")"));
 }
 
 void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<InspectorValue> argument)
@@ -517,7 +517,7 @@ void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<Inspec
     RefPtr<InspectorArray> command = InspectorArray::create();
     command->pushString(method);
     command->pushValue(argument);
-    overlayPage()->mainFrame()->script()->evaluate(ScriptSourceCode("dispatch(" + command->toJSONString() + ")"));
+    overlayPage()->mainFrame()->script()->executeScriptInMainWorld(ScriptSourceCode("dispatch(" + command->toJSONString() + ")"));
 }
 
 void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)

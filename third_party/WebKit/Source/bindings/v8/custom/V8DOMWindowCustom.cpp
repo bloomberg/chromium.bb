@@ -561,7 +561,7 @@ v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationCon
     if (!frame)
         return v8Undefined();
 
-    // Special case: Because of evaluateInIsolatedWorld() one DOMWindow can have
+    // Special case: Because of executeScriptInIsolatedWorld() one DOMWindow can have
     // multiple contexts and multiple global objects associated with it. When
     // code running in one of those contexts accesses the window object, we
     // want to return the global object associated with that context, not
