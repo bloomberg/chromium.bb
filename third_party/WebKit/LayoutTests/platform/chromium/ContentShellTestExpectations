@@ -205,4 +205,3 @@ crbug.com/239769 [ Win ] virtual/softwarecompositing/color-matching/image-color-
 # To be rebaselined
 # -----------------------------------------------------------------
 crbug.com/111316 fast/dom/call-a-constructor-as-a-function.html [ Failure ]
-crbug.com/111316 fast/js/constructor-length.html [ Failure ]

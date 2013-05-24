@@ -1772,7 +1772,6 @@ crbug.com/239769 [ Win ] virtual/gpu/compositedscrolling/scrollbars/listbox-scro
 crbug.com/239769 [ Win ] virtual/gpu/compositedscrolling/scrollbars/overflow-scrollbar-combinations.html [ ImageOnlyFailure ]
 crbug.com/239769 [ Win ] virtual/softwarecompositing/color-matching/image-color-matching.html [ ImageOnlyFailure ]
 crbug.com/111316 fast/dom/call-a-constructor-as-a-function.html [ Failure ]
-crbug.com/111316 fast/js/constructor-length.html [ Failure ]
 crbug.com/243285 virtual/softwarecompositing/layer-creation/animation-overlap-with-children.html [ Failure ]
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-color.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-hue.html [ Crash ]
