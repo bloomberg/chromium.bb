@@ -122,4 +122,20 @@ v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::
     return result;
 }
 
+v8::Local<v8::Value> V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function> function, v8::Local<v8::Context> context, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[], v8::Isolate* isolate)
+{
+    TRACE_EVENT0("v8", "v8.callFunction");
+    v8::Local<v8::Value> result;
+    if (context.IsEmpty())
+        context = v8::Context::New(isolate);
+    if (context.IsEmpty())
+        return result;
+
+    v8::Context::Scope scope(context);
+    V8RecursionScope::MicrotaskSuppression recursionScope;
+    result = function->Call(receiver, argc, args);
+    crashIfV8IsDead();
+    return result;
+}
+
 } // namespace WebCore

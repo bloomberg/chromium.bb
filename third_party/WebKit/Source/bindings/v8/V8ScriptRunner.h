@@ -42,6 +42,7 @@ public:
     static v8::Local<v8::Script> compileScript(v8::Handle<v8::String>, const String&, const TextPosition&, v8::ScriptData*, v8::Isolate*);
     static v8::Local<v8::Value> runCompiledScript(v8::Handle<v8::Script>, ScriptExecutionContext*);
     static v8::Local<v8::Value> compileAndRunInternalScript(v8::Handle<v8::String>, v8::Isolate*, v8::Local<v8::Context> = v8::Local<v8::Context>(), const String& = String(), const TextPosition& = TextPosition(), v8::ScriptData* = 0);
+    static v8::Local<v8::Value> callInternalFunction(v8::Handle<v8::Function>, v8::Local<v8::Context>, v8::Handle<v8::Object>, int argc, v8::Handle<v8::Value> args[], v8::Isolate*);
 };
 
 } // namespace WebCore

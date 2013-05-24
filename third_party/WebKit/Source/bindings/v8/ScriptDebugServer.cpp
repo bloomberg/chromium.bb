@@ -62,25 +62,26 @@ private:
 v8::Local<v8::Value> ScriptDebugServer::callDebuggerMethod(const char* functionName, int argc, v8::Handle<v8::Value> argv[])
 {
     v8::Handle<v8::Function> function = v8::Local<v8::Function>::Cast(m_debuggerScript.get()->Get(v8::String::NewSymbol(functionName)));
-    V8RecursionScope::MicrotaskSuppression recursionScope;
-    return function->Call(m_debuggerScript.get(), argc, argv);
+    ASSERT(v8::Context::InContext());
+    return V8ScriptRunner::callInternalFunction(function, v8::Context::GetCurrent(), m_debuggerScript.get(), argc, argv, m_isolate);
 }
 
 class ScriptDebugServer::ScriptPreprocessor {
     WTF_MAKE_NONCOPYABLE(ScriptPreprocessor);
 public:
-    explicit ScriptPreprocessor(const String& preprocessorScript, v8::Isolate* isolate)
+    ScriptPreprocessor(const String& preprocessorScript, v8::Isolate* isolate)
+        : m_isolate(isolate)
     {
-        v8::HandleScope scope(isolate);
+        v8::HandleScope scope(m_isolate);
 
-        v8::Local<v8::Context> context = v8::Context::New(isolate);
+        v8::Local<v8::Context> context = v8::Context::New(m_isolate);
         if (context.IsEmpty())
             return;
 
         String wrappedScript = "(" + preprocessorScript + ")";
         v8::Handle<v8::String> preprocessor = v8::String::New(wrappedScript.utf8().data(), wrappedScript.utf8().length());
 
-        v8::Local<v8::Value> preprocessorFunction = V8ScriptRunner::compileAndRunInternalScript(preprocessor, isolate, context);
+        v8::Local<v8::Value> preprocessorFunction = V8ScriptRunner::compileAndRunInternalScript(preprocessor, m_isolate, context);
         if (preprocessorFunction.IsEmpty() || !preprocessorFunction->IsFunction())
             return;
 
@@ -90,8 +91,7 @@ public:
 
     String preprocessSourceCode(const String& sourceCode, const String& sourceName)
     {
-        v8::Isolate* isolate = v8::Isolate::GetCurrent();
-        v8::HandleScope handleScope(isolate);
+        v8::HandleScope handleScope(m_isolate);
 
         if (m_preprocessorFunction.isEmpty())
             return sourceCode;
@@ -106,7 +106,7 @@ public:
 
         v8::TryCatch tryCatch;
         V8RecursionScope::MicrotaskSuppression recursionScope;
-        v8::Handle<v8::Value> resultValue = m_preprocessorFunction.newLocal(isolate)->Call(context->Global(), 2, argv);
+        v8::Handle<v8::Value> resultValue = m_preprocessorFunction.newLocal(m_isolate)->Call(context->Global(), 2, argv);
 
         if (tryCatch.HasCaught())
             return sourceCode;
@@ -127,6 +127,7 @@ private:
     ScopedPersistent<v8::Context> m_utilityContext;
     String m_preprocessorBody;
     ScopedPersistent<v8::Function> m_preprocessorFunction;
+    v8::Isolate* m_isolate;
 };
 
 ScriptDebugServer::ScriptDebugServer(v8::Isolate* isolate)
@@ -226,11 +227,10 @@ void ScriptDebugServer::setPauseOnNextStatement(bool pause)
 {
     if (isPaused())
         return;
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (pause)
-        v8::Debug::DebugBreak(isolate);
+        v8::Debug::DebugBreak(m_isolate);
     else
-        v8::Debug::CancelDebugBreak(isolate);
+        v8::Debug::CancelDebugBreak(m_isolate);
 }
 
 void ScriptDebugServer::breakProgram()
@@ -505,9 +505,8 @@ void ScriptDebugServer::ensureDebuggerScriptCompiled()
         return;
 
     v8::HandleScope scope;
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::Handle<v8::String> source = v8String(String(reinterpret_cast<const char*>(DebuggerScriptSource_js), sizeof(DebuggerScriptSource_js)), isolate);
-    v8::Local<v8::Value> value = V8ScriptRunner::compileAndRunInternalScript(source, isolate, v8::Debug::GetDebugContext());
+    v8::Handle<v8::String> source = v8String(String(reinterpret_cast<const char*>(DebuggerScriptSource_js), sizeof(DebuggerScriptSource_js)), m_isolate);
+    v8::Local<v8::Value> value = V8ScriptRunner::compileAndRunInternalScript(source, m_isolate, v8::Debug::GetDebugContext());
     ASSERT(!value.IsEmpty());
     ASSERT(value->IsObject());
     m_debuggerScript.set(v8::Handle<v8::Object>::Cast(value));
