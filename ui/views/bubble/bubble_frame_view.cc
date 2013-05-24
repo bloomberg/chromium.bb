@@ -14,6 +14,7 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
 
 namespace {
@@ -53,8 +54,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
       content_margins_(content_margins),
       title_(NULL),
       close_(NULL),
-      titlebar_extra_view_(NULL),
-      can_drag_(false) {
+      titlebar_extra_view_(NULL) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_ = new Label(string16(), rb.GetFont(ui::ResourceBundle::MediumFont));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -89,11 +89,18 @@ gfx::Rect BubbleFrameView::GetWindowBoundsForClientBounds(
 }
 
 int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
+  if (!bounds().Contains(point))
+    return HTNOWHERE;
   if (close_->visible() && close_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
-  if (can_drag_ && point.y() < GetInsets().top())
+  if (!GetWidget()->widget_delegate()->CanResize())
+    return GetWidget()->client_view()->NonClientHitTest(point);
+
+  const int size = bubble_border_->GetBorderThickness() + 4;
+  const int hit = GetHTComponentForFrame(point, size, size, size, size, true);
+  if (hit == HTNOWHERE && point.y() < title_->bounds().bottom())
     return HTCAPTION;
-  return GetWidget()->client_view()->NonClientHitTest(point);
+  return hit;
 }
 
 void BubbleFrameView::GetWindowMask(const gfx::Size& size,

@@ -56,8 +56,6 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   void SetShowCloseButton(bool show);
   void SetTitlebarExtraView(View* view);
 
-  void set_can_drag(bool can_drag) { can_drag_ = can_drag; }
-
   // Given the size of the contents and the rect to point at, returns the bounds
   // of the bubble window. The bubble's arrow location may change if the bubble
   // does not fit on the monitor and |adjust_if_offscreen| is true.
@@ -97,9 +95,6 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // When supplied, this view is placed in the titlebar between the title and
   // (x) close button.
   View* titlebar_extra_view_;
-
-  // A flag controlling the ability to drag this frame.
-  bool can_drag_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleFrameView);
 };

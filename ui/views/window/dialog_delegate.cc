@@ -188,7 +188,6 @@ NonClientFrameView* DialogDelegate::CreateNewStyleFrameView(
       frame->SetTitlebarExtraView(titlebar_view);
   }
   frame->SetShowCloseButton(widget->widget_delegate()->ShouldShowCloseButton());
-  frame->set_can_drag(true);
   if (force_opaque_border)
     widget->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   return frame;
