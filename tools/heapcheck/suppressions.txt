@@ -1861,3 +1861,9 @@
    Heapcheck:Leak
    fun:fileapi::SandboxMountPointProviderTest::GetRootPath
 }
+{
+   bug_243757
+   Heapcheck:Leak
+   ...
+   fun:base::WeakPtrDeathTest_NonOwnerThreadDeletesWeakPtrAfterReference_Test::TestBody
+}

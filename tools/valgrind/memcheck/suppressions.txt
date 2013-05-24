@@ -7282,3 +7282,10 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_Znw*
    fun:_ZN7fileapi29SandboxMountPointProviderTest11GetRootPathERK4GURLNS_14FileSystemTypeEbPN4base8FilePathE
 }
+{
+   bug_243757
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN4base64WeakPtrDeathTest_NonOwnerThreadDeletesWeakPtrAfterReference_Test8TestBodyEv
+}
