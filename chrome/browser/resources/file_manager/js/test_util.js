@@ -27,7 +27,7 @@ test.util.TESTING_EXTENSION_ID = 'oobinhbdbiehknkpbpejbbpdbkdjmoco';
  *     App ID.
  */
 test.util.openMainWindow = function(path, callback) {
-  var appId = launchFileManager({defaultPath: path});
+  var appId;
   function helper() {
     if (appWindows[appId]) {
       var contentWindow = appWindows[appId].contentWindow;
@@ -39,7 +39,13 @@ test.util.openMainWindow = function(path, callback) {
     }
     window.setTimeout(helper, 50);
   }
-  helper();
+  launchFileManager({defaultPath: path},
+                    undefined,  // opt_type
+                    undefined,  // opt_id
+                    function(id) {
+                      appId = id;
+                      helper();
+                    });
 };
 
 /**

@@ -282,69 +282,82 @@ function createFileManagerOptions() {
  * @param {Object=} opt_appState App state.
  * @param {number=} opt_id Window id.
  * @param {LaunchType=} opt_type Launch type. Default: ALWAYS_CREATE.
- * @return {string} The window's App ID.
+ * @param {function(string)=} opt_callback Completion callback with the App ID.
  */
-function launchFileManager(opt_appState, opt_id, opt_type) {
+function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
   var type = opt_type || LaunchType.ALWAYS_CREATE;
 
-  // Check if there is already a window with the same path. If so, then
-  // reuse it instead of opening a new one.
-  if (type == LaunchType.FOCUS_SAME_OR_CREATE ||
-      type == LaunchType.FOCUS_ANY_OR_CREATE) {
-    if (opt_appState && opt_appState.defaultPath) {
-      for (var key in appWindows) {
-        var contentWindow = appWindows[key].contentWindow;
-        if (contentWindow.appState &&
-            opt_appState.defaultPath == contentWindow.appState.defaultPath) {
-          appWindows[key].focus();
-          return key;
+  // Wait until all windows are created.
+  queue.run(function(onTaskCompleted) {
+    // Check if there is already a window with the same path. If so, then
+    // reuse it instead of opening a new one.
+    if (type == LaunchType.FOCUS_SAME_OR_CREATE ||
+        type == LaunchType.FOCUS_ANY_OR_CREATE) {
+      if (opt_appState && opt_appState.defaultPath) {
+        for (var key in appWindows) {
+          var contentWindow = appWindows[key].contentWindow;
+          if (contentWindow.appState &&
+              opt_appState.defaultPath == contentWindow.appState.defaultPath) {
+            appWindows[key].focus();
+            if (opt_callback)
+              opt_callback(key);
+            onTaskCompleted();
+            return;
+          }
         }
       }
     }
-  }
 
-  // Focus any window if none is focused. Try restored first.
-  if (type == LaunchType.FOCUS_ANY_OR_CREATE) {
-    // If there is already a focused window, then finish.
-    for (var key in appWindows) {
-      // The isFocused() method should always be available, but in case
-      // Files.app's failed on some error, wrap it with try catch.
-      try {
-        if (appWindows[key].contentWindow.isFocused())
-          return key;
-      } catch (e) {
-        console.error(e.message);
+    // Focus any window if none is focused. Try restored first.
+    if (type == LaunchType.FOCUS_ANY_OR_CREATE) {
+      // If there is already a focused window, then finish.
+      for (var key in appWindows) {
+        // The isFocused() method should always be available, but in case
+        // Files.app's failed on some error, wrap it with try catch.
+        try {
+          if (appWindows[key].contentWindow.isFocused())
+            return key;
+        } catch (e) {
+          console.error(e.message);
+        }
       }
-    }
-    // Try to focus the first non-minimized window.
-    for (var key in appWindows) {
-      if (!appWindows[key].isMinimized()) {
+      // Try to focus the first non-minimized window.
+      for (var key in appWindows) {
+        if (!appWindows[key].isMinimized()) {
+          appWindows[key].focus();
+          if (opt_callback)
+            opt_callback(key);
+          onTaskCompleted();
+          return;
+        }
+      }
+      // Restore and focus any window.
+      for (var key in appWindows) {
         appWindows[key].focus();
-        return key;
+        if (opt_callback)
+          opt_callback(key);
+        onTaskCompleted();
+        return;
       }
     }
-    // Restore and focus any window.
-    for (var key in appWindows) {
-      appWindows[key].focus();
-      return key;
-    }
-  }
 
-  // Create a new instance in case of ALWAYS_CREATE type, or as a fallback
-  // for other types.
+    // Create a new instance in case of ALWAYS_CREATE type, or as a fallback
+    // for other types.
 
-  var id = opt_id || nextFileManagerWindowID;
-  nextFileManagerWindowID = Math.max(nextFileManagerWindowID, id + 1);
-  var appId = FILES_ID_PREFIX + id;
+    var id = opt_id || nextFileManagerWindowID;
+    nextFileManagerWindowID = Math.max(nextFileManagerWindowID, id + 1);
+    var appId = FILES_ID_PREFIX + id;
 
-  var appWindow = new AppWindowWrapper(
-      queue,
-      util.platform.newUI() ? 'main_new_ui.html' : 'main.html',
-      appId,
-      createFileManagerOptions);
-  appWindow.enqueueLaunch(opt_appState || {});
-
-  return appId;
+    var appWindow = new AppWindowWrapper(
+        queue,
+        util.platform.newUI() ? 'main_new_ui.html' : 'main.html',
+        appId,
+        createFileManagerOptions);
+    appWindow.enqueueLaunch(opt_appState || {});
+    if (opt_callback)
+      opt_callback(appId);
+    onTaskCompleted();
+  });
 }
 
 /**
