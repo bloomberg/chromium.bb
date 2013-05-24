@@ -97,7 +97,7 @@ class CompositorOutputSurface
   scoped_refptr<IPC::SyncMessageFilter> message_sender_;
   int routing_id_;
   bool prefers_smoothness_;
-  base::PlatformThreadId main_thread_id_;
+  base::PlatformThreadHandle main_thread_handle_;
 };
 
 }  // namespace content

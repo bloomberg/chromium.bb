@@ -752,6 +752,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     } else {
       compositor_thread_.reset(new base::Thread("Compositor"));
       compositor_thread_->Start();
+#if defined(OS_ANDROID)
+      compositor_thread_->SetPriority(base::kThreadPriority_Display);
+#endif
       compositor_message_loop_proxy_ =
           compositor_thread_->message_loop_proxy();
       compositor_message_loop_proxy_->PostTask(

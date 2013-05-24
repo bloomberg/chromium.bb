@@ -18,8 +18,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/debug/debugger.h"
-// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-#include <sys/resource.h>
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
@@ -29,16 +27,6 @@ static void SigUSR1Handler(int signal) { }
 namespace content {
 // The singleton instance for this process.
 ChildProcess* child_process = NULL;
-
-#if defined(OS_ANDROID)
-// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-namespace {
-void SetHighThreadPriority() {
-  int nice_value = -6; // High priority.
-  setpriority(PRIO_PROCESS, base::PlatformThread::CurrentId(), nice_value);
-}
-}
-#endif
 
 ChildProcess::ChildProcess()
     : ref_count_(0),
@@ -54,9 +42,7 @@ ChildProcess::ChildProcess()
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
 #if defined(OS_ANDROID)
-  // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-  io_thread_.message_loop()->PostTask(FROM_HERE,
-                                      base::Bind(&SetHighThreadPriority));
+  io_thread_.SetPriority(base::kThreadPriority_Display);
 #endif
 }
 

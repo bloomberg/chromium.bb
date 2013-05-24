@@ -11,24 +11,9 @@
 #include "content/renderer/gpu/input_handler_wrapper.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebActiveWheelFlingParameters.h"
 
-#if defined(OS_ANDROID)
-// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-#include <sys/resource.h>
-#endif
-
 using WebKit::WebInputEvent;
 
 namespace content {
-
-#if defined(OS_ANDROID)
-// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-namespace {
-void SetHighThreadPriority() {
-  int nice_value = -6; // High priority.
-  setpriority(PRIO_PROCESS, base::PlatformThread::CurrentId(), nice_value);
-}
-}
-#endif
 
 InputHandlerManager::InputHandlerManager(
     IPC::Listener* main_listener,
@@ -39,10 +24,6 @@ InputHandlerManager::InputHandlerManager(
                            message_loop_proxy,
                            base::Bind(&InputHandlerManager::HandleInputEvent,
                                       base::Unretained(this)));
-#if defined(OS_ANDROID)
-// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-  message_loop_proxy->PostTask(FROM_HERE, base::Bind(&SetHighThreadPriority));
-#endif
 }
 
 InputHandlerManager::~InputHandlerManager() {

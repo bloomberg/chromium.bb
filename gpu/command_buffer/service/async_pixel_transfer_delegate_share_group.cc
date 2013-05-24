@@ -4,11 +4,6 @@
 
 #include "gpu/command_buffer/service/async_pixel_transfer_delegate_share_group.h"
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-#include <sys/resource.h>
-#endif
-
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
@@ -29,9 +24,6 @@ namespace gpu {
 
 namespace {
 
-const int kDefaultNiceValue = 0;  // Default priority.
-const int kIdleNiceValue = 10;    // Idle priority.
-
 const char kAsyncTransferThreadName[] = "AsyncTransferThread";
 
 // TODO(backer): Factor out common thread scheduling logic from the EGL and
@@ -42,19 +34,14 @@ class TransferThread : public base::Thread {
       : base::Thread(kAsyncTransferThreadName),
         initialized_(false) {
     Start();
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+    SetPriority(base::kThreadPriority_Background);
+#endif
   }
 
   virtual ~TransferThread() {
     // The only instance of this class was declared leaky.
     NOTREACHED();
-  }
-
-  virtual void Init() OVERRIDE {
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-    // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-    setpriority(
-        PRIO_PROCESS, base::PlatformThread::CurrentId(), kIdleNiceValue);
-#endif
   }
 
   void InitializeOnMainThread(gfx::GLContext* parent_context) {
@@ -408,20 +395,14 @@ void AsyncPixelTransferDelegateShareGroup::WaitForTransferCompletion(
 
   if (state->TransferIsInProgress()) {
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-    // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-    setpriority(PRIO_PROCESS,
-                g_transfer_thread.Pointer()->thread_id(),
-                kDefaultNiceValue);
+    g_transfer_thread.Pointer()->SetPriority(base::kThreadPriority_Normal);
 #endif
 
     state->WaitForTransferCompletion();
     DCHECK(!state->TransferIsInProgress());
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-    // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-    setpriority(PRIO_PROCESS,
-                g_transfer_thread.Pointer()->thread_id(),
-                kIdleNiceValue);
+    g_transfer_thread.Pointer()->SetPriority(base::kThreadPriority_Background);
 #endif
   }
 }

@@ -4,11 +4,6 @@
 
 #include "cc/base/worker_pool.h"
 
-#if defined(OS_ANDROID)
-// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-#include <sys/resource.h>
-#endif
-
 #include <algorithm>
 
 #include "base/bind.h"
@@ -245,9 +240,9 @@ void WorkerPool::Inner::OnIdleOnOriginThread() {
 
 void WorkerPool::Inner::Run() {
 #if defined(OS_ANDROID)
-  // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-  int nice_value = 10;  // Idle priority.
-  setpriority(PRIO_PROCESS, base::PlatformThread::CurrentId(), nice_value);
+  base::PlatformThread::SetThreadPriority(
+      base::PlatformThread::CurrentHandle(),
+      base::kThreadPriority_Background);
 #endif
 
   base::AutoLock lock(lock_);

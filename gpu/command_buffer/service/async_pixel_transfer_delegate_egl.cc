@@ -18,11 +18,6 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/scoped_binders.h"
 
-#if defined(OS_ANDROID)
-// TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-#include <sys/resource.h>
-#endif
-
 namespace gpu {
 
 namespace {
@@ -85,6 +80,9 @@ class TransferThread : public base::Thread {
  public:
   TransferThread() : base::Thread(kAsyncTransferThreadName) {
     Start();
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+    SetPriority(base::kThreadPriority_Background);
+#endif
   }
   virtual ~TransferThread() {
     Stop();
@@ -100,13 +98,6 @@ class TransferThread : public base::Thread {
                                                gfx::PreferDiscreteGpu);
     bool is_current = context_->MakeCurrent(surface_);
     DCHECK(is_current);
-
-#if defined(OS_ANDROID)
-    // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-    int nice_value = 10; // Idle priority.
-    setpriority(PRIO_PROCESS, base::PlatformThread::CurrentId(), nice_value);
-#endif
-
   }
 
   virtual void CleanUp() OVERRIDE {
@@ -506,23 +497,15 @@ void AsyncPixelTransferDelegateEGL::WaitForTransferCompletion(
   DCHECK(state->texture_id_);
 
   if (state->TransferIsInProgress()) {
-#if defined(OS_ANDROID)
-    // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-    int default_nice_value = 0;  // Default priority.
-    int idle_nice_value    = 10; // Idle priority.
-    setpriority(PRIO_PROCESS,
-                g_transfer_thread.Pointer()->thread_id(),
-                default_nice_value);
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+    g_transfer_thread.Pointer()->SetPriority(base::kThreadPriority_Normal);
 #endif
 
     state->WaitForTransferCompletion();
     DCHECK(!state->TransferIsInProgress());
 
-#if defined(OS_ANDROID)
-    // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-    setpriority(PRIO_PROCESS,
-                g_transfer_thread.Pointer()->thread_id(),
-                idle_nice_value);
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+    g_transfer_thread.Pointer()->SetPriority(base::kThreadPriority_Background);
 #endif
   }
 }
