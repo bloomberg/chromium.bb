@@ -23,10 +23,11 @@ class ProfileResetter : public base::NonThreadSafe {
     CONTENT_SETTINGS = 1 << 2,
     COOKIES_AND_SITE_DATA = 1 << 3,
     EXTENSIONS = 1 << 4,
+    STARTUP_PAGE = 1 << 5,
     // Update ALL if you add new values and check whether the type of
     // ResettableFlags needs to be enlarged.
     ALL = DEFAULT_SEARCH_ENGINE | HOMEPAGE | CONTENT_SETTINGS |
-          COOKIES_AND_SITE_DATA | EXTENSIONS
+          COOKIES_AND_SITE_DATA | EXTENSIONS | STARTUP_PAGE
   };
 
   // How to handle extensions that shall be reset.
@@ -61,6 +62,7 @@ class ProfileResetter : public base::NonThreadSafe {
   void ResetContentSettings();
   void ResetCookiesAndSiteData();
   void ResetExtensions(ExtensionHandling extension_handling);
+  void ResetStartPage();
 
   Profile* profile_;
 

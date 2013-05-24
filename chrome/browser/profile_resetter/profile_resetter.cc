@@ -4,7 +4,9 @@
 
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 ProfileResetter::ProfileResetter(Profile* profile)
@@ -58,6 +60,11 @@ void ProfileResetter::Reset(ProfileResetter::ResettableFlags resettable_flags,
     ResetExtensions(extension_handling);
   }
 
+  if (resettable_flags & STARTUP_PAGE) {
+    reset_triggered_for_flags |= STARTUP_PAGE;
+    ResetStartPage();
+  }
+
   DCHECK_EQ(resettable_flags, reset_triggered_for_flags);
 }
 
@@ -70,7 +77,8 @@ void ProfileResetter::MarkAsDone(Resettable resettable) {
   pending_reset_flags_ &= ~resettable;
 
   if (!pending_reset_flags_)
-    callback_.Run();
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     callback_);
 }
 
 void ProfileResetter::ResetDefaultSearchEngine() {
@@ -82,8 +90,11 @@ void ProfileResetter::ResetDefaultSearchEngine() {
 
 void ProfileResetter::ResetHomepage() {
   DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
-  // TODO(battre/vabr): Implement
+  PrefService* prefs = profile_->GetPrefs();
+  DCHECK(prefs);
+  prefs->ClearPref(prefs::kHomePageIsNewTabPage);
+  prefs->ClearPref(prefs::kHomePage);
+  prefs->ClearPref(prefs::kShowHomeButton);
   MarkAsDone(HOMEPAGE);
 }
 
@@ -106,4 +117,14 @@ void ProfileResetter::ResetExtensions(ExtensionHandling extension_handling) {
   NOTIMPLEMENTED();
   // TODO(battre/vabr): Implement
   MarkAsDone(EXTENSIONS);
+}
+
+void ProfileResetter::ResetStartPage() {
+  DCHECK(CalledOnValidThread());
+  PrefService* prefs = profile_->GetPrefs();
+  DCHECK(prefs);
+  prefs->ClearPref(prefs::kRestoreOnStartup);
+  prefs->ClearPref(prefs::kURLsToRestoreOnStartup);
+  prefs->SetBoolean(prefs::kRestoreOnStartupMigrated, true);
+  MarkAsDone(STARTUP_PAGE);
 }
