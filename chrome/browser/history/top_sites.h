@@ -28,7 +28,6 @@ class RefCountedMemory;
 namespace history {
 
 class TopSitesCache;
-class TopSitesTest;
 
 // Interface for TopSites, which stores the data for the top "most visited"
 // sites. This includes a cache of the most visited data from history, as well
