@@ -522,7 +522,7 @@ bool PortableDeviceWatcherWin::GetMTPStorageInfoFromDeviceId(
     return false;
 
   MTPDeviceMap::const_iterator device_iter =
-      device_map_.find(storage_map_iter->second.location);
+      device_map_.find(storage_map_iter->second.location());
   if (device_iter == device_map_.end())
     return false;
   const StorageObjects& storage_objects = device_iter->second;
@@ -530,7 +530,7 @@ bool PortableDeviceWatcherWin::GetMTPStorageInfoFromDeviceId(
        storage_objects.begin(); storage_object_iter != storage_objects.end();
        ++storage_object_iter) {
     if (storage_device_id == storage_object_iter->object_persistent_id) {
-      *device_location = storage_map_iter->second.location;
+      *device_location = storage_map_iter->second.location();
       *storage_object_id = storage_object_iter->object_temporary_id;
       return true;
     }
@@ -626,7 +626,7 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
                      string16(), string16(), string16(), 0);
     storage_map_[storage_id] = info;
     if (storage_notifications_) {
-      info.location = GetStoragePathFromStorageId(storage_id);
+      info.set_location(GetStoragePathFromStorageId(storage_id));
       storage_notifications_->ProcessAttach(info);
     }
   }
@@ -647,8 +647,10 @@ void PortableDeviceWatcherWin::HandleDeviceDetachEvent(
     std::string storage_id = storage_object_iter->object_persistent_id;
     MTPStorageMap::iterator storage_map_iter = storage_map_.find(storage_id);
     DCHECK(storage_map_iter != storage_map_.end());
-    if (storage_notifications_)
-      storage_notifications_->ProcessDetach(storage_map_iter->second.device_id);
+    if (storage_notifications_) {
+      storage_notifications_->ProcessDetach(
+          storage_map_iter->second.device_id());
+    }
     storage_map_.erase(storage_map_iter);
   }
   device_map_.erase(device_iter);

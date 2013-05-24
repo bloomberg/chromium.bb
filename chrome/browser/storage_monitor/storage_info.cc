@@ -21,7 +21,7 @@ const char kPicasaPrefix[] = "picasa:";
 
 }  // namespace
 
-StorageInfo::StorageInfo() : total_size_in_bytes(0) {
+StorageInfo::StorageInfo() : total_size_in_bytes_(0) {
 }
 
 StorageInfo::StorageInfo(const std::string& device_id_in,
@@ -31,13 +31,13 @@ StorageInfo::StorageInfo(const std::string& device_id_in,
                          const string16& vendor,
                          const string16& model,
                          uint64 size_in_bytes)
-    : device_id(device_id_in),
-      name(device_name),
-      location(device_location),
-      storage_label(label),
-      vendor_name(vendor),
-      model_name(model),
-      total_size_in_bytes(size_in_bytes) {
+    : device_id_(device_id_in),
+      name_(device_name),
+      location_(device_location),
+      storage_label_(label),
+      vendor_name_(vendor),
+      model_name_(model),
+      total_size_in_bytes_(size_in_bytes) {
 }
 
 StorageInfo::~StorageInfo() {

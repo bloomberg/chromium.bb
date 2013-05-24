@@ -44,26 +44,24 @@ bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
 
   // Truncate to root path.
   base::FilePath path(device_path);
-  if (device_path.value().length() > 3) {
+  if (device_path.value().length() > 3)
     path = base::FilePath(device_path.value().substr(0, 3));
-  }
-  if (path.value()[0] < L'A' || path.value()[0] > L'Z') {
+  if (path.value()[0] < L'A' || path.value()[0] > L'Z')
     return false;
+
+  StorageInfo::Type type = StorageInfo::FIXED_MASS_STORAGE;
+  if (path.value() != ASCIIToUTF16("N:\\") &&
+      path.value() != ASCIIToUTF16("C:\\")) {
+    type = StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM;
   }
-
-  info->location = path.value();
-  info->total_size_in_bytes = 1000000;
-
   std::string unique_id =
       "\\\\?\\Volume{00000000-0000-0000-0000-000000000000}\\";
   unique_id[11] = device_path.value()[0];
-  chrome::StorageInfo::Type type = chrome::StorageInfo::FIXED_MASS_STORAGE;
-  if (path.value() != ASCIIToUTF16("N:\\") &&
-      path.value() != ASCIIToUTF16("C:\\")) {
-    type = chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM;
-  }
-  info->device_id = chrome::StorageInfo::MakeDeviceId(type, unique_id);
-  info->storage_label = path.Append(L" Drive").LossyDisplayName();
+  std::string device_id = StorageInfo::MakeDeviceId(type, unique_id);
+  string16 storage_label = path.Append(L" Drive").LossyDisplayName();
+  *info = StorageInfo(device_id, string16(), path.value(), storage_label,
+                      string16(), string16(), 1000000);
+
   return true;
 }
 
@@ -82,11 +80,8 @@ void TestVolumeMountWatcherWin::AddDeviceForTesting(
     const std::string& device_id,
     const string16& device_name,
     uint64 total_size_in_bytes) {
-  StorageInfo info;
-  info.device_id = device_id;
-  info.location = device_path.value();
-  info.name = device_name;
-  info.total_size_in_bytes = total_size_in_bytes;
+  StorageInfo info(device_id, device_name, device_path.value(),
+                   string16(), string16(), string16(), total_size_in_bytes);
   HandleDeviceAttachEventOnUIThread(device_path, info);
 }
 
@@ -120,7 +115,7 @@ bool TestVolumeMountWatcherWin::GetDeviceRemovable(
     bool* removable) const {
   StorageInfo info;
   bool success = GetMassStorageDeviceDetails(device_path, &info);
-  *removable = StorageInfo::IsRemovableDevice(info.device_id);
+  *removable = StorageInfo::IsRemovableDevice(info.device_id());
   return success;
 }
 

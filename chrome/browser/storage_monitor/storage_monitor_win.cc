@@ -86,7 +86,7 @@ bool StorageMonitorWin::GetStorageInfoForPath(const base::FilePath& path,
   size_t best_length = 0;
   for (size_t i = 0; i < attached_devices.size(); i++) {
     base::FilePath relative;
-    if (base::FilePath(attached_devices[i].location).AppendRelativePath(
+    if (base::FilePath(attached_devices[i].location()).AppendRelativePath(
             path, &relative)) {
       // Note: the relative path is longer for shorter shared path between
       // the path and the device mount point, so we want the shortest

@@ -250,7 +250,7 @@ class StorageMonitorLinuxTest : public testing::Test {
     if (!notifier()->GetStorageInfoForPath(path, &info))
       return 0;
 
-    return info.total_size_in_bytes;
+    return info.total_size_in_bytes();
   }
 
  private:
@@ -334,16 +334,15 @@ TEST_F(StorageMonitorLinuxTest, BasicAttachDetach) {
 
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
-  EXPECT_EQ(GetDeviceId(kDeviceDCIM2), observer().last_attached().device_id);
-  EXPECT_EQ(string16(), observer().last_attached().name);
-  EXPECT_EQ(test_path.value(),
-            observer().last_attached().location);
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM2), observer().last_attached().device_id());
+  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(test_path.value(), observer().last_attached().location());
 
   // |kDeviceDCIM2| should be detached here.
   WriteEmptyMtabAndRunLoop();
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
-  EXPECT_EQ(GetDeviceId(kDeviceDCIM2), observer().last_detached().device_id);
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM2), observer().last_detached().device_id());
 }
 
 // Only removable devices are recognized.
@@ -358,10 +357,9 @@ TEST_F(StorageMonitorLinuxTest, Removable) {
 
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
-  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), observer().last_attached().device_id);
-  EXPECT_EQ(string16(), observer().last_attached().name);
-  EXPECT_EQ(test_path_a.value(),
-            observer().last_attached().location);
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), observer().last_attached().device_id());
+  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(test_path_a.value(), observer().last_attached().location());
 
   // This should do nothing, since |kDeviceFixed| is not removable.
   base::FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
@@ -377,7 +375,7 @@ TEST_F(StorageMonitorLinuxTest, Removable) {
   WriteEmptyMtabAndRunLoop();
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
-  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), observer().last_detached().device_id);
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), observer().last_detached().device_id());
 
   // |kDeviceNoDCIM| should be attached as expected.
   MtabTestData test_data3[] = {
@@ -386,16 +384,15 @@ TEST_F(StorageMonitorLinuxTest, Removable) {
   AppendToMtabAndRunLoop(test_data3, arraysize(test_data3));
   EXPECT_EQ(2, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
-  EXPECT_EQ(GetDeviceId(kDeviceNoDCIM), observer().last_attached().device_id);
-  EXPECT_EQ(string16(), observer().last_attached().name);
-  EXPECT_EQ(test_path_b.value(),
-            observer().last_attached().location);
+  EXPECT_EQ(GetDeviceId(kDeviceNoDCIM), observer().last_attached().device_id());
+  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(test_path_b.value(), observer().last_attached().location());
 
   // |kDeviceNoDCIM| should be detached as expected.
   WriteEmptyMtabAndRunLoop();
   EXPECT_EQ(2, observer().attach_calls());
   EXPECT_EQ(2, observer().detach_calls());
-  EXPECT_EQ(GetDeviceId(kDeviceNoDCIM), observer().last_detached().device_id);
+  EXPECT_EQ(GetDeviceId(kDeviceNoDCIM), observer().last_detached().device_id());
 }
 
 // More complicated test case with multiple devices on multiple mount points.
@@ -613,23 +610,23 @@ TEST_F(StorageMonitorLinuxTest, DeviceLookUp) {
 
   StorageInfo device_info;
   EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_a, &device_info));
-  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id);
-  EXPECT_EQ(test_path_a.value(), device_info.location);
-  EXPECT_EQ(string16(), device_info.name);
-  EXPECT_EQ(88788ULL, device_info.total_size_in_bytes);
-  EXPECT_EQ(ASCIIToUTF16("volume label"), device_info.storage_label);
-  EXPECT_EQ(ASCIIToUTF16("vendor name"), device_info.vendor_name);
-  EXPECT_EQ(ASCIIToUTF16("model name"), device_info.model_name);
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id());
+  EXPECT_EQ(test_path_a.value(), device_info.location());
+  EXPECT_EQ(string16(), device_info.name());
+  EXPECT_EQ(88788ULL, device_info.total_size_in_bytes());
+  EXPECT_EQ(ASCIIToUTF16("volume label"), device_info.storage_label());
+  EXPECT_EQ(ASCIIToUTF16("vendor name"), device_info.vendor_name());
+  EXPECT_EQ(ASCIIToUTF16("model name"), device_info.model_name());
 
   EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_b, &device_info));
-  EXPECT_EQ(GetDeviceId(kDeviceNoDCIM), device_info.device_id);
-  EXPECT_EQ(test_path_b.value(), device_info.location);
-  EXPECT_EQ(string16(), device_info.name);
+  EXPECT_EQ(GetDeviceId(kDeviceNoDCIM), device_info.device_id());
+  EXPECT_EQ(test_path_b.value(), device_info.location());
+  EXPECT_EQ(string16(), device_info.name());
 
   EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_c, &device_info));
-  EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id);
-  EXPECT_EQ(test_path_c.value(), device_info.location);
-  EXPECT_EQ(string16(), device_info.name);
+  EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id());
+  EXPECT_EQ(test_path_c.value(), device_info.location());
+  EXPECT_EQ(string16(), device_info.name());
 
   // An invalid path.
   EXPECT_FALSE(notifier()->GetStorageInfoForPath(base::FilePath(kInvalidPath),
@@ -639,9 +636,9 @@ TEST_F(StorageMonitorLinuxTest, DeviceLookUp) {
   EXPECT_TRUE(
       notifier()->GetStorageInfoForPath(test_path_a.Append("some/other/path"),
       &device_info));
-  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id);
-  EXPECT_EQ(test_path_a.value(), device_info.location);
-  EXPECT_EQ(string16(), device_info.name);
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id());
+  EXPECT_EQ(test_path_a.value(), device_info.location());
+  EXPECT_EQ(string16(), device_info.name());
 
   // One device attached at multiple points.
   // kDeviceDCIM1 -> kMountPointA *
@@ -655,13 +652,13 @@ TEST_F(StorageMonitorLinuxTest, DeviceLookUp) {
   AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
   EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_a, &device_info));
-  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id);
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id());
 
   EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_b, &device_info));
-  EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id);
+  EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id());
 
   EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_c, &device_info));
-  EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id);
+  EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id());
 
   EXPECT_EQ(2, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());

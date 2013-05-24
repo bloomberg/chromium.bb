@@ -36,7 +36,7 @@ bool IsAttachedDevice(const std::string& device_id) {
   std::vector<StorageInfo> removable_storages =
       StorageMonitor::GetInstance()->GetAttachedStorage();
   for (size_t i = 0; i < removable_storages.size(); ++i) {
-    if (removable_storages[i].device_id == device_id)
+    if (removable_storages[i].device_id() == device_id)
       return true;
   }
   return false;
@@ -379,12 +379,12 @@ void MediaGalleriesDialogController::FileSelected(const base::FilePath& path,
 
 void MediaGalleriesDialogController::OnRemovableStorageAttached(
     const StorageInfo& info) {
-  UpdateGalleriesOnDeviceEvent(info.device_id);
+  UpdateGalleriesOnDeviceEvent(info.device_id());
 }
 
 void MediaGalleriesDialogController::OnRemovableStorageDetached(
     const StorageInfo& info) {
-  UpdateGalleriesOnDeviceEvent(info.device_id);
+  UpdateGalleriesOnDeviceEvent(info.device_id());
 }
 
 void MediaGalleriesDialogController::OnGalleryChanged(

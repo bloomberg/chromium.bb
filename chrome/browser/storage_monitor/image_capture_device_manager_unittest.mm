@@ -289,7 +289,7 @@ TEST_F(ImageCaptureDeviceManagerTest, TestAttachDetach) {
   std::vector<chrome::StorageInfo> devices = monitor_.GetAttachedStorage();
 
   ASSERT_EQ(1U, devices.size());
-  EXPECT_EQ(std::string("ic:") + kDeviceId, devices[0].device_id);
+  EXPECT_EQ(std::string("ic:") + kDeviceId, devices[0].device_id());
 
   DetachDevice(&manager, device);
   devices = monitor_.GetAttachedStorage();

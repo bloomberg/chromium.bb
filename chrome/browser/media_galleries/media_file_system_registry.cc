@@ -475,21 +475,21 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
     return preferences;
   std::vector<StorageInfo> existing_devices = monitor->GetAttachedStorage();
   for (size_t i = 0; i < existing_devices.size(); i++) {
-    if (!StorageInfo::IsMediaDevice(existing_devices[i].device_id))
+    if (!StorageInfo::IsMediaDevice(existing_devices[i].device_id()))
       continue;
-    if (!existing_devices[i].name.empty()) {
-      preferences->AddGalleryWithName(existing_devices[i].device_id,
-                                      existing_devices[i].name,
+    if (!existing_devices[i].name().empty()) {
+      preferences->AddGalleryWithName(existing_devices[i].device_id(),
+                                      existing_devices[i].name(),
                                       base::FilePath(),
                                       false /*not user added*/);
     } else {
-      preferences->AddGallery(existing_devices[i].device_id,
+      preferences->AddGallery(existing_devices[i].device_id(),
                               base::FilePath(),
                               false,
-                              existing_devices[i].storage_label,
-                              existing_devices[i].vendor_name,
-                              existing_devices[i].model_name,
-                              existing_devices[i].total_size_in_bytes,
+                              existing_devices[i].storage_label(),
+                              existing_devices[i].vendor_name(),
+                              existing_devices[i].model_name(),
+                              existing_devices[i].total_size_in_bytes(),
                               base::Time::Now());
     }
   }
@@ -514,7 +514,7 @@ void MediaFileSystemRegistry::OnRemovableStorageDetached(
     MediaGalleriesPreferences* preferences = GetPreferences(profile_it->first);
     InvalidatedGalleriesInfo invalid_galleries_in_profile;
     invalid_galleries_in_profile.pref_ids =
-        preferences->LookUpGalleriesByDeviceId(info.device_id);
+        preferences->LookUpGalleriesByDeviceId(info.device_id());
 
     for (ExtensionHostMap::const_iterator extension_host_it =
              profile_it->second.begin();

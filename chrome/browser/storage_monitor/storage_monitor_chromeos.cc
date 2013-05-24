@@ -70,12 +70,15 @@ bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
   chrome::StorageInfo::Type type = has_dcim ?
       chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM :
       chrome::StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM;
-  info->device_id = chrome::StorageInfo::MakeDeviceId(type, unique_id);
-  info->location = mount_info.mount_path;
-  info->vendor_name = UTF8ToUTF16(disk->vendor_name());
-  info->model_name = UTF8ToUTF16(disk->product_name());
-  info->storage_label = device_label;
-  info->total_size_in_bytes = disk->total_size_in_bytes();
+
+  *info = chrome::StorageInfo(
+      chrome::StorageInfo::MakeDeviceId(type, unique_id),
+      string16(),
+      mount_info.mount_path,
+      device_label,
+      UTF8ToUTF16(disk->vendor_name()),
+      UTF8ToUTF16(disk->product_name()),
+      disk->total_size_in_bytes());
   return true;
 }
 
@@ -191,7 +194,7 @@ void StorageMonitorCros::OnMountEvent(
       MountMap::iterator it = mount_map_.find(mount_info.mount_path);
       if (it == mount_map_.end())
         return;
-      receiver()->ProcessDetach(it->second.device_id);
+      receiver()->ProcessDetach(it->second.device_id());
       mount_map_.erase(it);
       break;
     }
@@ -255,7 +258,7 @@ void StorageMonitorCros::EjectDevice(
   std::string mount_path;
   for (MountMap::const_iterator info_it = mount_map_.begin();
        info_it != mount_map_.end(); ++info_it) {
-    if (info_it->second.device_id == device_id)
+    if (info_it->second.device_id() == device_id)
       mount_path = info_it->first;
   }
 
@@ -295,7 +298,7 @@ void StorageMonitorCros::AddMountedPath(
   if (!GetDeviceInfo(mount_info, has_dcim, &info))
     return;
 
-  if (info.device_id.empty())
+  if (info.device_id().empty())
     return;
 
   mount_map_.insert(std::make_pair(mount_info.mount_path, info));

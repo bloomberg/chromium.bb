@@ -345,7 +345,7 @@ void StorageMonitorLinux::EjectDevice(
   base::FilePath device;
   for (MountMap::iterator mount_info = mount_info_map_.begin();
        mount_info != mount_info_map_.end(); ++mount_info) {
-    if (mount_info->second.storage_info.device_id == device_id) {
+    if (mount_info->second.storage_info.device_id() == device_id) {
       path = mount_info->first;
       device = mount_info->second.mount_device;
       mount_info_map_.erase(mount_info);
@@ -392,10 +392,10 @@ void StorageMonitorLinux::UpdateMtab(const MountPointDeviceMap& new_mtab) {
       ReferencedMountPoint::const_iterator has_priority =
           priority->second.find(mount_point);
       if (StorageInfo::IsRemovableDevice(
-              old_iter->second.storage_info.device_id)) {
+              old_iter->second.storage_info.device_id())) {
         DCHECK(has_priority != priority->second.end());
         if (has_priority->second) {
-          receiver()->ProcessDetach(old_iter->second.storage_info.device_id);
+          receiver()->ProcessDetach(old_iter->second.storage_info.device_id());
         }
         if (priority->second.size() > 1)
           multiple_mounted_devices_needing_reattachment.push_back(mount_device);
@@ -431,7 +431,7 @@ void StorageMonitorLinux::UpdateMtab(const MountPointDeviceMap& new_mtab) {
 
     const StorageInfo& mount_info =
         mount_info_map_.find(mount_point)->second.storage_info;
-    DCHECK(StorageInfo::IsRemovableDevice(mount_info.device_id));
+    DCHECK(StorageInfo::IsRemovableDevice(mount_info.device_id()));
     receiver()->ProcessAttach(mount_info);
   }
 
@@ -497,10 +497,10 @@ void StorageMonitorLinux::AddNewMount(const base::FilePath& mount_device,
   if (!storage_info)
     return;
 
-  DCHECK(!storage_info->device_id.empty());
+  DCHECK(!storage_info->device_id().empty());
 
-  bool removable = StorageInfo::IsRemovableDevice(storage_info->device_id);
-  const base::FilePath mount_point(storage_info->location);
+  bool removable = StorageInfo::IsRemovableDevice(storage_info->device_id());
+  const base::FilePath mount_point(storage_info->location());
 
   MountPointInfo mount_point_info;
   mount_point_info.mount_device = mount_device;

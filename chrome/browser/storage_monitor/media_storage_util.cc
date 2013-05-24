@@ -53,7 +53,7 @@ bool IsRemovableStorageAttached(const std::string& id) {
   StorageInfoList devices = StorageMonitor::GetInstance()->GetAttachedStorage();
   for (StorageInfoList::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
-    if (it->device_id == id)
+    if (it->device_id() == id)
       return true;
   }
   return false;
@@ -64,8 +64,8 @@ base::FilePath::StringType FindRemovableStorageLocationById(
   StorageInfoList devices = StorageMonitor::GetInstance()->GetAttachedStorage();
   for (StorageInfoList::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
-    if (it->device_id == device_id)
-      return it->location;
+    if (it->device_id() == device_id)
+      return it->location();
   }
   return base::FilePath::StringType();
 }
@@ -163,9 +163,9 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
   StorageMonitor* monitor = StorageMonitor::GetInstance();
   bool found_device = monitor->GetStorageInfoForPath(path, &info);
 
-  if (found_device && StorageInfo::IsRemovableDevice(info.device_id)) {
+  if (found_device && StorageInfo::IsRemovableDevice(info.device_id())) {
     base::FilePath sub_folder_path;
-    base::FilePath device_path(info.location);
+    base::FilePath device_path(info.location());
     if (path != device_path) {
       bool success = device_path.AppendRelativePath(path, &sub_folder_path);
       DCHECK(success);
@@ -189,8 +189,9 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
   // good values from StorageMonitor.
   // TODO(gbillock): Make sure return values from that class are definitive,
   // and don't do this here.
-  info.device_id = StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE,
-                                             path.AsUTF8Unsafe());
+  info.set_device_id(
+      StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE,
+                                path.AsUTF8Unsafe()));
   *device_info = info;
   *relative_path = base::FilePath();
   return true;

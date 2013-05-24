@@ -66,33 +66,48 @@ struct StorageInfo {
 
   static bool IsPicasaDevice(const std::string& device_id);
 
+  const std::string& device_id() const { return device_id_; }
+  const string16& name() const { return name_; }
+  const base::FilePath::StringType& location() const { return location_; }
+  const string16& storage_label() const { return storage_label_; }
+  const string16& vendor_name() const { return vendor_name_; }
+  const string16& model_name() const { return model_name_; }
+  uint64 total_size_in_bytes() const { return total_size_in_bytes_; }
+
+  void set_device_id(const std::string& device_id) { device_id_ = device_id; }
+  void set_name(const string16& name) { name_ = name; }
+  void set_location(const base::FilePath::StringType& location) {
+    location_ = location;
+  }
+
+ private:
   // Unique device id - persists between device attachments.
   // This is the string that should be used as the label for a particular
   // storage device when interacting with the API. Clients should treat
   // this as an opaque string.
-  std::string device_id;
+  std::string device_id_;
 
   // Human readable removable storage device name.
-  string16 name;
+  string16 name_;
 
   // Current attached removable storage device location.
-  base::FilePath::StringType location;
+  base::FilePath::StringType location_;
 
   // Label given to this storage device by the user.
   // May be empty if not found or the device is unlabeled.
-  string16 storage_label;
+  string16 storage_label_;
 
   // Vendor name for the removable device. (Human readable)
   // May be empty if not collected.
-  string16 vendor_name;
+  string16 vendor_name_;
 
   // Model name for the removable device. (Human readable)
   // May be empty if not collected.
-  string16 model_name;
+  string16 model_name_;
 
   // Size of the removable device in bytes.
   // Zero if not collected or unknown.
-  uint64 total_size_in_bytes;
+  uint64 total_size_in_bytes_;
 };
 
 }  // namespace chrome

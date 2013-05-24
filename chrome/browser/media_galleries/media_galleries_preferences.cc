@@ -267,7 +267,7 @@ void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
     StorageInfo info;
     if (MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path)) {
       // TODO(gbillock): Add in the volume metadata here when available.
-      AddGalleryWithName(info.device_id, info.name, relative_path,
+      AddGalleryWithName(info.device_id(), info.name(), relative_path,
                          false /*user added*/);
     }
   }
@@ -331,20 +331,21 @@ void MediaGalleriesPreferences::RemoveGalleryChangeObserver(
 
 void MediaGalleriesPreferences::OnRemovableStorageAttached(
     const StorageInfo& info) {
-  if (!StorageInfo::IsMediaDevice(info.device_id))
+  if (!StorageInfo::IsMediaDevice(info.device_id()))
     return;
 
-  if (info.name.empty()) {
-    AddGallery(info.device_id, base::FilePath(),
+  if (info.name().empty()) {
+    AddGallery(info.device_id(),
+               base::FilePath(),
                false /*not user added*/,
-               info.storage_label,
-               info.vendor_name,
-               info.model_name,
-               info.total_size_in_bytes,
+               info.storage_label(),
+               info.vendor_name(),
+               info.model_name(),
+               info.total_size_in_bytes(),
                base::Time::Now());
   } else {
     // TODO(gbillock): get rid of this code path.
-    AddGalleryWithName(info.device_id, info.name, base::FilePath(), false);
+    AddGalleryWithName(info.device_id(), info.name(), base::FilePath(), false);
   }
 }
 
@@ -361,7 +362,7 @@ bool MediaGalleriesPreferences::LookUpGalleryByPath(
 
   relative_path = relative_path.NormalizePathSeparators();
   MediaGalleryPrefIdSet galleries_on_device =
-      LookUpGalleriesByDeviceId(info.device_id);
+      LookUpGalleriesByDeviceId(info.device_id());
   for (MediaGalleryPrefIdSet::const_iterator it = galleries_on_device.begin();
        it != galleries_on_device.end();
        ++it) {
@@ -383,8 +384,8 @@ bool MediaGalleriesPreferences::LookUpGalleryByPath(
   // conflate LookUp.
   if (gallery_info) {
     gallery_info->pref_id = kInvalidMediaGalleryPrefId;
-    gallery_info->display_name = info.name;
-    gallery_info->device_id = info.device_id;
+    gallery_info->display_name = info.name();
+    gallery_info->device_id = info.device_id();
     gallery_info->path = relative_path;
     gallery_info->type = MediaGalleryPrefInfo::kUserAdded;
     // TODO(gbillock): Need to add volume metadata here from |info|.

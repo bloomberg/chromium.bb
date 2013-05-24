@@ -88,8 +88,8 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
     return;
 
   DeviceAttachmentDetails details;
-  details.device_name = UTF16ToUTF8(info.name);
-  details.device_id = GetTransientIdForDeviceId(info.device_id);
+  details.device_name = UTF16ToUTF8(info.name());
+  details.device_id = GetTransientIdForDeviceId(info.device_id());
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(details.ToValue().release());
@@ -105,7 +105,7 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
     return;
 
   DeviceDetachmentDetails details;
-  details.device_id = GetTransientIdForDeviceId(info.device_id);
+  details.device_id = GetTransientIdForDeviceId(info.device_id());
 
   scoped_ptr<base::ListValue> args(new ListValue());
   args->Append(details.ToValue().release());

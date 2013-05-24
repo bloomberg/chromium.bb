@@ -47,11 +47,11 @@ bool TestStorageMonitor::GetStorageInfoForPath(
   if (!path.IsAbsolute())
     return false;
 
-  device_info->device_id = StorageInfo::MakeDeviceId(
+  std::string device_id = StorageInfo::MakeDeviceId(
       StorageInfo::FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
-  device_info->name = path.BaseName().LossyDisplayName();
-  device_info->location = path.value();
-  device_info->total_size_in_bytes = 0;
+  *device_info =
+      StorageInfo(device_id, path.BaseName().LossyDisplayName(), path.value(),
+                  string16(), string16(), string16(), 0);
   return true;
 }
 

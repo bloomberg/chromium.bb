@@ -142,16 +142,16 @@ void StorageMonitor::MarkInitialized() {
 void StorageMonitor::ProcessAttach(const StorageInfo& info) {
   {
     base::AutoLock lock(storage_lock_);
-    if (ContainsKey(storage_map_, info.device_id)) {
+    if (ContainsKey(storage_map_, info.device_id())) {
       // This can happen if our unique id scheme fails. Ignore the incoming
       // non-unique attachment.
       return;
     }
-    storage_map_.insert(std::make_pair(info.device_id, info));
+    storage_map_.insert(std::make_pair(info.device_id(), info));
   }
 
-  DVLOG(1) << "RemovableStorageAttached with name " << UTF16ToUTF8(info.name)
-           << " and id " << info.device_id;
+  DVLOG(1) << "RemovableStorageAttached with name " << UTF16ToUTF8(info.name())
+           << " and id " << info.device_id();
   observer_list_->Notify(
       &RemovableStorageObserver::OnRemovableStorageAttached, info);
 }

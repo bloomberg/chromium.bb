@@ -210,7 +210,7 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
         storage_map_.find(GetDeviceLocationFromStorageName(storage_name));
     if (it == storage_map_.end())
       return;
-    notifications_->ProcessDetach(it->second.device_id);
+    notifications_->ProcessDetach(it->second.device_id());
     storage_map_.erase(it);
   }
 }

@@ -131,16 +131,16 @@ TEST_F(MediaTransferProtocolDeviceObserverLinuxTest, BasicAttachDetach) {
 
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
-  EXPECT_EQ(device_id, observer().last_attached().device_id);
-  EXPECT_EQ(ASCIIToUTF16(kStorageLabel), observer().last_attached().name);
-  EXPECT_EQ(kStorageLocation, observer().last_attached().location);
+  EXPECT_EQ(device_id, observer().last_attached().device_id());
+  EXPECT_EQ(ASCIIToUTF16(kStorageLabel), observer().last_attached().name());
+  EXPECT_EQ(kStorageLocation, observer().last_attached().location());
 
   // Detach the attached storage.
   mtp_device_observer()->MtpStorageDetached(kStorageWithValidInfo);
 
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
-  EXPECT_EQ(device_id, observer().last_detached().device_id);
+  EXPECT_EQ(device_id, observer().last_detached().device_id());
 }
 
 // When a mtp storage device with invalid storage label and id is

@@ -225,7 +225,7 @@ uint64 StorageMonitorCrosTest::GetDeviceStorageSize(
   if (!monitor_->GetStorageInfoForPath(base::FilePath(device_location), &info))
     return 0;
 
-  return info.total_size_in_bytes;
+  return info.total_size_in_bytes();
 }
 
 base::FilePath StorageMonitorCrosTest::CreateMountPoint(
@@ -270,14 +270,16 @@ TEST_F(StorageMonitorCrosTest, BasicAttachDetach) {
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
-  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_attached().device_id);
-  EXPECT_EQ(string16(), observer().last_attached().name);
-  EXPECT_EQ(mount_path1.value(), observer().last_attached().location);
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1),
+            observer().last_attached().device_id());
+  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(mount_path1.value(), observer().last_attached().location());
 
   UnmountDevice(MOUNT_ERROR_NONE, mount_info);
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
-  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_detached().device_id);
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1),
+            observer().last_detached().device_id());
 
   base::FilePath mount_path2 = CreateMountPoint(kMountPointB, true);
   ASSERT_FALSE(mount_path2.empty());
@@ -289,14 +291,16 @@ TEST_F(StorageMonitorCrosTest, BasicAttachDetach) {
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice2SizeInBytes);
   EXPECT_EQ(2, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
-  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_attached().device_id);
-  EXPECT_EQ(string16(), observer().last_attached().name);
-  EXPECT_EQ(mount_path2.value(), observer().last_attached().location);
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2),
+            observer().last_attached().device_id());
+  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(mount_path2.value(), observer().last_attached().location());
 
   UnmountDevice(MOUNT_ERROR_NONE, mount_info2);
   EXPECT_EQ(2, observer().attach_calls());
   EXPECT_EQ(2, observer().detach_calls());
-  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_detached().device_id);
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2),
+            observer().last_detached().device_id());
 }
 
 // Removable mass storage devices with no dcim folder are also recognized.
@@ -316,9 +320,9 @@ TEST_F(StorageMonitorCrosTest, NoDCIM) {
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
-  EXPECT_EQ(device_id, observer().last_attached().device_id);
-  EXPECT_EQ(string16(), observer().last_attached().name);
-  EXPECT_EQ(mount_path.value(), observer().last_attached().location);
+  EXPECT_EQ(device_id, observer().last_attached().device_id());
+  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(mount_path.value(), observer().last_attached().location());
 }
 
 // Non device mounts and mount errors are ignored.
@@ -365,14 +369,16 @@ TEST_F(StorageMonitorCrosTest, SDCardAttachDetach) {
               kVendorName, kProductName, DEVICE_TYPE_SD, kSDCardSizeInBytes);
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
-  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_attached().device_id);
-  EXPECT_EQ(string16(), observer().last_attached().name);
-  EXPECT_EQ(mount_path1.value(), observer().last_attached().location);
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2),
+            observer().last_attached().device_id());
+  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(mount_path1.value(), observer().last_attached().location());
 
   UnmountDevice(MOUNT_ERROR_NONE, mount_info1);
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
-  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_detached().device_id);
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2),
+            observer().last_detached().device_id());
 
   base::FilePath mount_path2 = CreateMountPoint(kSDCardMountPoint2, true);
   ASSERT_FALSE(mount_path2.empty());
@@ -384,14 +390,16 @@ TEST_F(StorageMonitorCrosTest, SDCardAttachDetach) {
               kVendorName, kProductName, DEVICE_TYPE_SD, kSDCardSizeInBytes);
   EXPECT_EQ(2, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
-  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_attached().device_id);
-  EXPECT_EQ(string16(), observer().last_attached().name);
-  EXPECT_EQ(mount_path2.value(), observer().last_attached().location);
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2),
+            observer().last_attached().device_id());
+  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(mount_path2.value(), observer().last_attached().location());
 
   UnmountDevice(MOUNT_ERROR_NONE, mount_info2);
   EXPECT_EQ(2, observer().attach_calls());
   EXPECT_EQ(2, observer().detach_calls());
-  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_detached().device_id);
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId2),
+            observer().last_detached().device_id());
 }
 
 TEST_F(StorageMonitorCrosTest, AttachDeviceWithEmptyLabel) {
@@ -405,14 +413,16 @@ TEST_F(StorageMonitorCrosTest, AttachDeviceWithEmptyLabel) {
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
-  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_attached().device_id);
-  EXPECT_EQ(string16(), observer().last_attached().name);
-  EXPECT_EQ(mount_path1.value(), observer().last_attached().location);
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1),
+            observer().last_attached().device_id());
+  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(mount_path1.value(), observer().last_attached().location());
 
   UnmountDevice(MOUNT_ERROR_NONE, mount_info);
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
-  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_detached().device_id);
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1),
+            observer().last_detached().device_id());
 }
 
 TEST_F(StorageMonitorCrosTest, GetStorageSize) {
@@ -426,15 +436,17 @@ TEST_F(StorageMonitorCrosTest, GetStorageSize) {
               kVendorName, kProductName, DEVICE_TYPE_USB, kDevice1SizeInBytes);
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
-  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_attached().device_id);
-  EXPECT_EQ(string16(), observer().last_attached().name);
-  EXPECT_EQ(mount_path1.value(), observer().last_attached().location);
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1),
+            observer().last_attached().device_id());
+  EXPECT_EQ(string16(), observer().last_attached().name());
+  EXPECT_EQ(mount_path1.value(), observer().last_attached().location());
 
   EXPECT_EQ(kDevice1SizeInBytes, GetDeviceStorageSize(mount_path1.value()));
   UnmountDevice(MOUNT_ERROR_NONE, mount_info);
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
-  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_detached().device_id);
+  EXPECT_EQ(GetDCIMDeviceId(kUniqueId1),
+            observer().last_detached().device_id());
 }
 
 void UnmountFake(const std::string& location,
@@ -458,8 +470,8 @@ TEST_F(StorageMonitorCrosTest, EjectTest) {
   ON_CALL(*disk_mount_manager_mock_, UnmountPath(_, _, _))
       .WillByDefault(testing::Invoke(&UnmountFake));
   EXPECT_CALL(*disk_mount_manager_mock_,
-              UnmountPath(observer().last_attached().location, _, _));
-  monitor_->EjectDevice(observer().last_attached().device_id,
+              UnmountPath(observer().last_attached().location(), _, _));
+  monitor_->EjectDevice(observer().last_attached().device_id(),
                         base::Bind(&StorageMonitorCrosTest::EjectNotify,
                                    base::Unretained(this)));
   ui_loop_.RunUntilIdle();
