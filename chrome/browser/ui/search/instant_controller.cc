@@ -1861,7 +1861,7 @@ void InstantController::PopulateInstantAutocompleteResultFromMatch(
     InstantAutocompleteResult* result) {
   DCHECK(result);
   result->provider = UTF8ToUTF16(match.provider->GetName());
-  result->type = UTF8ToUTF16(AutocompleteMatchType::ToString(match.type));
+  result->type = match.type;
   result->description = match.description;
   result->destination_url = UTF8ToUTF16(match.destination_url.spec());
 
@@ -1874,7 +1874,8 @@ void InstantController::PopulateInstantAutocompleteResultFromMatch(
   result->relevance = match.relevance;
   result->autocomplete_match_index = autocomplete_match_index;
 
-  DVLOG(1) << "    " << result->relevance << " " << result->type << " "
+  DVLOG(1) << "    " << result->relevance << " "
+      << UTF8ToUTF16(AutocompleteMatchType::ToString(result->type)) << " "
       << result->provider << " " << result->destination_url << " '"
       << result->description << "' '" << result->search_query << "' "
       << result->transition <<  " " << result->autocomplete_match_index;

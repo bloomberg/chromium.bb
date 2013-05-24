@@ -1721,8 +1721,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, RestrictedItemReadback) {
     InstantAutocompleteResult res;
     res.provider = ASCIIToUTF16(AutocompleteProvider::TypeToString(
         AutocompleteProvider::TYPE_BUILTIN));
-    res.type = ASCIIToUTF16(AutocompleteMatchType::ToString(
-        AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED)),
+    res.type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
     res.description = ASCIIToUTF16(description);
     res.destination_url = ASCIIToUTF16(url);
     res.transition = content::PAGE_TRANSITION_TYPED;

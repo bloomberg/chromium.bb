@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/string16.h"
+#include "chrome/common/autocomplete_match_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
@@ -82,8 +83,8 @@ struct InstantAutocompleteResult {
   // The provider name, as returned by AutocompleteProvider::GetName().
   string16 provider;
 
-  // The type of the result, as returned by AutocompleteMatch::TypeToString().
-  string16 type;
+  // The type of the result.
+  AutocompleteMatchType::Type type;
 
   // The description (title), same as AutocompleteMatch::description.
   string16 description;

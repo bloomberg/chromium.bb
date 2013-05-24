@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/autocomplete_match_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/url_constants.h"
@@ -143,7 +144,8 @@ v8::Handle<v8::Object> GenerateNativeSuggestion(
     const InstantAutocompleteResult& result) {
   v8::Handle<v8::Object> obj = v8::Object::New();
   obj->Set(v8::String::New("provider"), UTF16ToV8String(result.provider));
-  obj->Set(v8::String::New("type"), UTF16ToV8String(result.type));
+  obj->Set(v8::String::New("type"),
+           UTF8ToV8String(AutocompleteMatchType::ToString(result.type)));
   obj->Set(v8::String::New("description"), UTF16ToV8String(result.description));
   obj->Set(v8::String::New("destination_url"),
            UTF16ToV8String(result.destination_url));
