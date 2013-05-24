@@ -100,3 +100,10 @@ IndexedDBBrowserTestWithVersion123456Schema.DestroyTest
 IndexedDBBrowserTestWithVersion987654SSVData.DestroyTest
 IndexedDBLayoutTest.*
 BlobLayoutTest.XhrResponseBlob
+
+# http://crbug.com/243843
+MediaSourceTest.ConfigChangeVideo
+MediaSourceTest.Playback_AudioOnly_WebM
+MediaSourceTest.Playback_Type_Error
+MediaSourceTest.Playback_VideoAudio_WebM
+MediaSourceTest.Playback_VideoOnly_WebM
