@@ -619,9 +619,6 @@ void NotificationView::ButtonPressed(views::Button* sender,
     }
   }
 
-  // Let the superclass handled anything other than action buttons.
-  MessageView::ButtonPressed(sender, event);
-
   // Adjust notification subviews for expansion.
   if (sender == expand_button()) {
     if (message_view_ && item_views_.size())
@@ -633,7 +630,14 @@ void NotificationView::ButtonPressed(views::Button* sender,
     expand_button()->SetVisible(false);
     PreferredSizeChanged();
     SchedulePaint();
+
+    return;
   }
+
+  // Let the superclass handled anything other than action buttons.
+  // Warning: This may cause the NotificationView itself to be deleted,
+  // so don't do anything afterwards.
+  MessageView::ButtonPressed(sender, event);
 }
 
 bool NotificationView::IsExpansionNeeded(int width) {
