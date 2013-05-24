@@ -176,7 +176,7 @@
     ]
   },
   "identity": {
-    "channel": "trunk",
+    "channel": "dev",
     "extension_types": ["extension", "platform_app"]
   },
   "enterprise.platformKeysPrivate": {
