@@ -10,44 +10,30 @@ if (window.testRunner) {
 function test()
 {
     InspectorTest.sendCommand("Profiler.start", {}, didStartFrontendProfile);
-    function checkExpectation(fail, name, messageObject)
-    {
-        if (fail === !!messageObject.error) {
-            InspectorTest.log("PASS: " + name);
-            return true;
-        }
-
-        InspectorTest.log("FAIL: " + name + ": " + JSON.stringify(messageObject));
-        InspectorTest.completeTest();
-        return false;
-    }
-    var pass = checkExpectation.bind(null, false);
-    var fail = checkExpectation.bind(null, true);
-
     function didStartFrontendProfile(messageObject)
     {
-        if (!pass("startFrontendProfile", messageObject))
+        if (!InspectorTest.expectedSuccess("startFrontendProfile", messageObject))
             return;
         InspectorTest.sendCommand("Runtime.evaluate", {expression: "console.profile('org.webkit.profiles.user-initiated.1');"}, didStartConsoleProfile);
     }
 
     function didStartConsoleProfile(messageObject)
     {
-        if (!pass("startConsoleProfile", messageObject))
+        if (!InspectorTest.expectedSuccess("startConsoleProfile", messageObject))
             return;
         InspectorTest.sendCommand("Runtime.evaluate", {expression: "console.profileEnd('org.webkit.profiles.user-initiated.1');"}, didStopConsoleProfile);
     }
 
     function didStopConsoleProfile(messageObject)
     {
-        if (!pass("stopConsoleProfile", messageObject))
+        if (!InspectorTest.expectedSuccess("stopConsoleProfile", messageObject))
             return;
         InspectorTest.sendCommand("Profiler.stop", {}, didStopFrontendProfile);
     }
 
     function didStopFrontendProfile(messageObject)
     {
-        if (!fail("failToStopFrontendProfile", messageObject))
+        if (!InspectorTest.expectedError("failToStopFrontendProfile", messageObject))
             return;
         InspectorTest.log("Error message was: " + JSON.stringify(messageObject.error));
         InspectorTest.sendCommand("Profiler.start", {}, didStartFrontendProfile2);
@@ -55,14 +41,14 @@ function test()
 
     function didStartFrontendProfile2(messageObject)
     {
-        if (!pass("startFrontendProfileSecondTime", messageObject))
+        if (!InspectorTest.expectedSuccess("startFrontendProfileSecondTime", messageObject))
             return;
         InspectorTest.sendCommand("Profiler.stop", {}, didStopFrontendProfile2);
     }
 
     function didStopFrontendProfile2(messageObject)
     {
-        pass("stopFrontendProfileSecondTime", messageObject)
+        InspectorTest.expectedSuccess("stopFrontendProfileSecondTime", messageObject)
         InspectorTest.completeTest();
     }
 }

@@ -89,6 +89,19 @@ InspectorTest.completeTest = function()
     this.sendCommand("Runtime.evaluate", { "expression": "closeTest();"} );
 }
 
+InspectorTest.checkExpectation = function(fail, name, messageObject)
+{
+    if (fail === !!messageObject.error) {
+        InspectorTest.log("PASS: " + name);
+        return true;
+    }
+
+    InspectorTest.log("FAIL: " + name + ": " + JSON.stringify(messageObject));
+    InspectorTest.completeTest();
+    return false;
+}
+InspectorTest.expectedSuccess = InspectorTest.checkExpectation.bind(null, false);
+InspectorTest.expectedError = InspectorTest.checkExpectation.bind(null, true);
 
 /**
  * @param {string} scriptName

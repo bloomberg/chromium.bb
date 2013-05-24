@@ -311,8 +311,11 @@ void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::
 
 PassRefPtr<TypeBuilder::Profiler::ProfileHeader> InspectorProfilerAgent::stop(ErrorString* errorString)
 {
-    if (!m_recordingCPUProfile)
+    if (!m_recordingCPUProfile) {
+        if (errorString)
+            *errorString = "No recording profiles found";
         return 0;
+    }
     m_recordingCPUProfile = false;
     String title = getCurrentUserInitiatedProfileName();
     RefPtr<ScriptProfile> profile = stopProfiling(title);
