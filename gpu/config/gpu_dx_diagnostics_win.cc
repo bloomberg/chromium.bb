@@ -14,9 +14,6 @@
 #include "base/win/scoped_com_initializer.h"
 #include "gpu/config/gpu_info_collector.h"
 
-// Functions in this file depend on functions exported from dxguid.dll.
-#pragma comment(lib, "dxguid.lib")
-
 namespace gpu {
 
 namespace {

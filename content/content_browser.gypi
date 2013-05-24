@@ -1148,6 +1148,7 @@
           '-lcomctl32.lib',
           '-ldinput8.lib',
           '-ldwmapi.lib',
+          '-ldxguid.lib',
           '-llocationapi.lib',
           '-lsensorsapi.lib',
           '-lportabledeviceguids.lib',

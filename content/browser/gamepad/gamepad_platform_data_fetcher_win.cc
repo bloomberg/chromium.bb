@@ -19,9 +19,6 @@
 #define DIDFT_OPTIONAL 0x80000000
 #endif
 
-// Functions in this file depend on functions exported from dxguid.dll.
-#pragma comment(lib, "dxguid.lib")
-
 namespace content {
 
 using namespace WebKit;

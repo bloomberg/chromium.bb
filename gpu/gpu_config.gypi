@@ -49,6 +49,7 @@
       ],
       'link_settings': {
         'libraries': [
+          '-ldxguid.lib',
           '-lsetupapi.lib',
         ],
       },
