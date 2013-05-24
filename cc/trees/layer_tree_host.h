@@ -255,6 +255,10 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 
+  void IncrementLCDTextMetrics(
+      bool update_total_num_cc_layers_can_use_lcd_text,
+      bool update_total_num_cc_layers_will_use_lcd_text);
+
  protected:
   LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSettings& settings);
   bool Initialize(scoped_ptr<Thread> impl_thread);
@@ -345,6 +349,21 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   bool in_paint_layer_contents_;
 
   LatencyInfo latency_info_;
+
+  static const int kTotalFramesToUseForLCDTextMetrics = 50;
+  int total_frames_used_for_lcd_text_metrics_;
+
+  struct LCDTextMetrics {
+    LCDTextMetrics()
+        : total_num_cc_layers(0),
+          total_num_cc_layers_can_use_lcd_text(0),
+          total_num_cc_layers_will_use_lcd_text(0) {}
+
+    int64 total_num_cc_layers;
+    int64 total_num_cc_layers_can_use_lcd_text;
+    int64 total_num_cc_layers_will_use_lcd_text;
+  };
+  LCDTextMetrics lcd_text_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };

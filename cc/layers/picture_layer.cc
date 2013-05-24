@@ -102,4 +102,8 @@ void PictureLayer::SetIsMask(bool is_mask) {
   is_mask_ = is_mask;
 }
 
+bool PictureLayer::SupportsLCDText() const {
+  return true;
+}
+
 }  // namespace cc

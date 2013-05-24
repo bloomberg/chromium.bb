@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "cc/animation/animation_registrar.h"
@@ -97,7 +98,8 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       background_color_(SK_ColorWHITE),
       has_transparent_background_(false),
       partial_texture_update_requests_(0),
-      in_paint_layer_contents_(false) {
+      in_paint_layer_contents_(false),
+      total_frames_used_for_lcd_text_metrics_(0) {
   if (settings_.accelerated_animation_enabled)
     animation_registrar_ = AnimationRegistrar::Create();
   s_num_layer_tree_instances++;
@@ -672,6 +674,42 @@ static Layer* FindFirstScrollableLayer(Layer* layer) {
   return NULL;
 }
 
+class CalculateLCDTextMetricsFunctor {
+ public:
+  void operator()(Layer* layer) {
+    LayerTreeHost* layer_tree_host = layer->layer_tree_host();
+    if (!layer_tree_host)
+      return;
+
+    if (!layer->SupportsLCDText())
+      return;
+
+    bool update_total_num_cc_layers_can_use_lcd_text = false;
+    bool update_total_num_cc_layers_will_use_lcd_text = false;
+    if (layer->draw_properties().can_use_lcd_text) {
+      update_total_num_cc_layers_can_use_lcd_text = true;
+      if (layer->contents_opaque())
+        update_total_num_cc_layers_will_use_lcd_text = true;
+    }
+
+    layer_tree_host->IncrementLCDTextMetrics(
+        update_total_num_cc_layers_can_use_lcd_text,
+        update_total_num_cc_layers_will_use_lcd_text);
+  }
+};
+
+void LayerTreeHost::IncrementLCDTextMetrics(
+    bool update_total_num_cc_layers_can_use_lcd_text,
+    bool update_total_num_cc_layers_will_use_lcd_text) {
+  lcd_text_metrics_.total_num_cc_layers++;
+  if (update_total_num_cc_layers_can_use_lcd_text)
+    lcd_text_metrics_.total_num_cc_layers_can_use_lcd_text++;
+  if (update_total_num_cc_layers_will_use_lcd_text) {
+    DCHECK(update_total_num_cc_layers_can_use_lcd_text);
+    lcd_text_metrics_.total_num_cc_layers_will_use_lcd_text++;
+  }
+}
+
 void LayerTreeHost::UpdateLayers(Layer* root_layer,
                                  ResourceUpdateQueue* queue) {
   TRACE_EVENT1("cc", "LayerTreeHost::UpdateLayers",
@@ -694,6 +732,27 @@ void LayerTreeHost::UpdateLayers(Layer* root_layer,
         settings_.can_use_lcd_text,
         settings_.layer_transforms_should_scale_layer_contents,
         &update_list);
+
+    if (total_frames_used_for_lcd_text_metrics_ <=
+        kTotalFramesToUseForLCDTextMetrics) {
+      LayerTreeHostCommon::CallFunctionForSubtree<
+          CalculateLCDTextMetricsFunctor, Layer>(root_layer);
+      total_frames_used_for_lcd_text_metrics_++;
+    }
+
+    if (total_frames_used_for_lcd_text_metrics_ ==
+        kTotalFramesToUseForLCDTextMetrics) {
+      total_frames_used_for_lcd_text_metrics_++;
+
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Renderer4.LCDText.PercentageOfCandidateLayers",
+          lcd_text_metrics_.total_num_cc_layers_can_use_lcd_text * 100.0 /
+          lcd_text_metrics_.total_num_cc_layers);
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Renderer4.LCDText.PercentageOfAALayers",
+          lcd_text_metrics_.total_num_cc_layers_will_use_lcd_text * 100.0 /
+          lcd_text_metrics_.total_num_cc_layers_can_use_lcd_text);
+    }
   }
 
   // Reset partial texture update requests.

@@ -50,6 +50,8 @@ class CC_EXPORT ContentLayer : public TiledLayer {
 
   virtual void SetContentsOpaque(bool contents_opaque) OVERRIDE;
 
+  virtual bool SupportsLCDText() const OVERRIDE;
+
  protected:
   explicit ContentLayer(ContentLayerClient* client);
   virtual ~ContentLayer();

@@ -132,4 +132,8 @@ void ContentLayer::UpdateCanUseLCDText() {
     client_->DidChangeLayerCanUseLCDText();
 }
 
+bool ContentLayer::SupportsLCDText() const {
+  return true;
+}
+
 }  // namespace cc

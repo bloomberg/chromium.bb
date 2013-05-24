@@ -7220,6 +7220,24 @@ other types of suffix sets.
   <summary>TBD</summary>
 </histogram>
 
+<histogram name="Renderer4.LCDText.PercentageOfAALayers" units="%">
+  <summary>
+    The ratio of LCDText CC Layers / candidate LCDText layers. Recorded in
+    LayerTreeHost, after LayerTreeHostCommon::CalculateDrawProperties() has
+    computed the properties we need. Only recorded for the first 50 frames of
+    every page.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.LCDText.PercentageOfCandidateLayers" units="%">
+  <summary>
+    The ratio of CC Layers which are candidates for LCDText AA / total picture
+    or content Layers.  Recorded in LayerTreeHost, after
+    LayerTreeHostCommon::CalculateDrawProperties() has computed the properties
+    we need. Only recorded for the first 50 frames of every page.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.RequestToFinish" units="milliseconds">
   <summary>
     Time from &quot;request&quot; to &quot;finish.&quot;  &quot;Request&quot;==

@@ -372,6 +372,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   float raster_scale() const { return raster_scale_; }
   bool raster_scale_is_unknown() const { return raster_scale_ == 0.f; }
 
+  virtual bool SupportsLCDText() const;
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;

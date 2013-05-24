@@ -35,6 +35,7 @@ class CC_EXPORT PictureLayer : public ContentsScalingLayer {
       const OcclusionTracker* occlusion,
       RenderingStats* stats) OVERRIDE;
   virtual void SetIsMask(bool is_mask) OVERRIDE;
+  virtual bool SupportsLCDText() const OVERRIDE;
 
  protected:
   explicit PictureLayer(ContentLayerClient* client);
