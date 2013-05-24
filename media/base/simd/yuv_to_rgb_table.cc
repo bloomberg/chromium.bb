@@ -43,7 +43,7 @@ extern "C" {
 // These tables are aligned and kept adjacent to optimize for
 // SIMD and cacheing.
 
-SIMD_ALIGNED(int16 kCoefficientsRgbY[256 * 4][4]) = {
+SIMD_ALIGNED(const int16 kCoefficientsRgbY[256 * 4][4]) = {
   RGBY(0x00), RGBY(0x01), RGBY(0x02), RGBY(0x03),
   RGBY(0x04), RGBY(0x05), RGBY(0x06), RGBY(0x07),
   RGBY(0x08), RGBY(0x09), RGBY(0x0A), RGBY(0x0B),

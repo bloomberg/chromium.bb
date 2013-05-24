@@ -10,46 +10,50 @@
 
 namespace media {
 
-// Converts an ARGB image to a YV12 image. This function calls ASM functions
-// implemented in "convert_rgb_to_yuv_ssse3.asm" to convert the specified ARGB
-// image to a YV12 image.
-void ConvertRGB32ToYUV_SSSE3(const uint8* rgbframe,
-                             uint8* yplane,
-                             uint8* uplane,
-                             uint8* vplane,
-                             int width,
-                             int height,
-                             int rgbstride,
-                             int ystride,
-                             int uvstride);
+// These methods are exported for testing purposes only.  Library users should
+// only call the methods listed in yuv_convert.h.
 
-// Converts an RGB image to a YV12 image. This function is almost same as
-// ConvertRGB32ToYUV_SSSE3 except its first argument is a pointer to RGB pixels.
-void ConvertRGB24ToYUV_SSSE3(const uint8* rgbframe,
-                             uint8* yplane,
-                             uint8* uplane,
-                             uint8* vplane,
-                             int width,
-                             int height,
-                             int rgbstride,
-                             int ystride,
-                             int uvstride);
+MEDIA_EXPORT void ConvertRGB32ToYUV_SSSE3(const uint8* rgbframe,
+                                          uint8* yplane,
+                                          uint8* uplane,
+                                          uint8* vplane,
+                                          int width,
+                                          int height,
+                                          int rgbstride,
+                                          int ystride,
+                                          int uvstride);
 
-// SSE2 version of converting RGBA to YV12.
-void ConvertRGB32ToYUV_SSE2(const uint8* rgbframe,
-                            uint8* yplane,
-                            uint8* uplane,
-                            uint8* vplane,
-                            int width,
-                            int height,
-                            int rgbstride,
-                            int ystride,
-                            int uvstride);
+MEDIA_EXPORT void ConvertRGB24ToYUV_SSSE3(const uint8* rgbframe,
+                                          uint8* yplane,
+                                          uint8* uplane,
+                                          uint8* vplane,
+                                          int width,
+                                          int height,
+                                          int rgbstride,
+                                          int ystride,
+                                          int uvstride);
 
-// This is a C reference implementation of the above routine.
-// This method should only be used in unit test.
-// TODO(hclam): Should use this as the C version of RGB to YUV.
-void ConvertRGB32ToYUV_SSE2_Reference(const uint8* rgbframe,
+MEDIA_EXPORT void ConvertRGB32ToYUV_SSE2(const uint8* rgbframe,
+                                         uint8* yplane,
+                                         uint8* uplane,
+                                         uint8* vplane,
+                                         int width,
+                                         int height,
+                                         int rgbstride,
+                                         int ystride,
+                                         int uvstride);
+
+MEDIA_EXPORT void ConvertRGB32ToYUV_SSE2_Reference(const uint8* rgbframe,
+                                                   uint8* yplane,
+                                                   uint8* uplane,
+                                                   uint8* vplane,
+                                                   int width,
+                                                   int height,
+                                                   int rgbstride,
+                                                   int ystride,
+                                                   int uvstride);
+
+MEDIA_EXPORT void ConvertRGB32ToYUV_C(const uint8* rgbframe,
                                       uint8* yplane,
                                       uint8* uplane,
                                       uint8* vplane,
@@ -59,27 +63,15 @@ void ConvertRGB32ToYUV_SSE2_Reference(const uint8* rgbframe,
                                       int ystride,
                                       int uvstride);
 
-// C version of converting RGBA to YV12.
-void ConvertRGB32ToYUV_C(const uint8* rgbframe,
-                         uint8* yplane,
-                         uint8* uplane,
-                         uint8* vplane,
-                         int width,
-                         int height,
-                         int rgbstride,
-                         int ystride,
-                         int uvstride);
-
-// C version of converting RGB24 to YV12.
-void ConvertRGB24ToYUV_C(const uint8* rgbframe,
-                         uint8* yplane,
-                         uint8* uplane,
-                         uint8* vplane,
-                         int width,
-                         int height,
-                         int rgbstride,
-                         int ystride,
-                         int uvstride);
+MEDIA_EXPORT void ConvertRGB24ToYUV_C(const uint8* rgbframe,
+                                      uint8* yplane,
+                                      uint8* uplane,
+                                      uint8* vplane,
+                                      int width,
+                                      int height,
+                                      int rgbstride,
+                                      int ystride,
+                                      int uvstride);
 
 }  // namespace media
 

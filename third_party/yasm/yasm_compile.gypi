@@ -6,9 +6,11 @@
 #
 # Files to be compiled with YASM should have an extension of .asm.
 #
-# There are two variables for this include:
+# There are three variables for this include:
 # yasm_flags : Pass additional flags into YASM.
 # yasm_output_path : Output directory for the compiled object files.
+# yasm_includes : Includes used by .asm code.  Changes to which should force
+#                 recompilation.
 #
 # Sample usage:
 # 'sources': [
@@ -19,6 +21,7 @@
 #     '-I', 'assembly_include',
 #   ],
 #   'yasm_output_path': '<(SHARED_INTERMEDIATE_DIR)/project',
+#   'yasm_includes': ['ultra_optimized_awesome.inc']
 # },
 # 'includes': [
 #   'third_party/yasm/yasm_compile.gypi'
@@ -27,6 +30,7 @@
 {
   'variables': {
     'yasm_flags': [],
+    'yasm_includes': [],
 
     'conditions': [
       [ 'use_system_yasm==0', {
@@ -98,7 +102,7 @@
     {
       'rule_name': 'assemble',
       'extension': 'asm',
-      'inputs': [ '<(yasm_path)', ],
+      'inputs': [ '<(yasm_path)', '<@(yasm_includes)'],
       'outputs': [
         '<(yasm_output_path)/<(RULE_INPUT_ROOT).<(asm_obj_extension)',
       ],

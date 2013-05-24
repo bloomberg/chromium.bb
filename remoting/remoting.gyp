@@ -2261,7 +2261,6 @@
         '../third_party/speex/speex.gyp:libspeex',
         '../media/media.gyp:media',
         '../media/media.gyp:shared_memory_support',
-        '../media/media.gyp:yuv_convert',
         'remoting_jingle_glue',
         'remoting_resources',
         'proto/chromotocol.gyp:chromotocol_proto_lib',

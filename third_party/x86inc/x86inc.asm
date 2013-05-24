@@ -33,8 +33,8 @@
 ; as this feature might be useful for others as well.  Send patches or ideas
 ; to x264-devel@videolan.org .
 
-%ifndef MEDIA_BASE_SIMD_X86INC_ASM_
-%define MEDIA_BASE_SIMD_X86INC_ASM_
+%ifndef THIRD_PARTY_X86INC_X86INC_ASM_
+%define THIRD_PARTY_X86INC_X86INC_ASM_
 
 ; TODO(wolenetz): Consider either updating this customized version to base from
 ; a more recent original, or switching to using third_party/ffmpeg's version of
@@ -999,20 +999,6 @@ AVX_INSTR pfmul, 1, 0
 %endif
 %endmacro
 
-;
-; PRIVATE
-; A flag representing the specified symbol is a private symbol. This define adds
-; a hidden flag on Linux and a private_extern flag on Mac. (We can use this
-; private_extern flag only on the latest yasm.)
-;
-%ifdef MACHO
-%define PRIVATE :private_extern
-%elifdef ELF
-%define PRIVATE :hidden
-%else
-%define PRIVATE
-%endif
-
 %endif  ; CHROMIUM
 
-%endif  ; MEDIA_BASE_SIMD_X86INC_ASM_
+%endif  ; THIRD_PARTY_X86INC_X86INC_ASM_

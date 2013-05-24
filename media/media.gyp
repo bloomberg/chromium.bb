@@ -12,12 +12,12 @@
     # detection of ABI mismatches and prevents silent errors.
     'linux_link_pulseaudio%': 0,
     'conditions': [
-      ['OS == "android" or OS == "ios"', {
+      ['OS=="android" or OS=="ios"', {
         # Android and iOS don't use ffmpeg.
         'media_use_ffmpeg%': 0,
         # Android and iOS don't use libvpx.
         'media_use_libvpx%': 0,
-      }, {  # 'OS != "android" and OS != "ios"'
+      }, {  # 'OS!="android" and OS!="ios"'
         'media_use_ffmpeg%': 1,
         'media_use_libvpx%': 1,
       }],
@@ -33,7 +33,7 @@
       }, {
         'use_alsa%': 0,
       }],
-      ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android" and chromeos != 1', {
+      ['os_posix==1 and OS!="mac" and OS!="ios" and OS!="android" and chromeos!=1', {
         'use_pulseaudio%': 1,
       }, {
         'use_pulseaudio%': 0,
@@ -282,6 +282,14 @@
         'base/seekable_buffer.h',
         'base/serial_runner.cc',
         'base/serial_runner.h',
+        'base/simd/convert_rgb_to_yuv.h',
+        'base/simd/convert_rgb_to_yuv_c.cc',
+        'base/simd/convert_yuv_to_rgb.h',
+        'base/simd/convert_yuv_to_rgb_c.cc',
+        'base/simd/filter_yuv.h',
+        'base/simd/filter_yuv_c.cc',
+        'base/simd/yuv_to_rgb_table.cc',
+        'base/simd/yuv_to_rgb_table.h',
         'base/sinc_resampler.cc',
         'base/sinc_resampler.h',
         'base/stream_parser.cc',
@@ -299,6 +307,8 @@
         'base/video_renderer.h',
         'base/video_util.cc',
         'base/video_util.h',
+        'base/yuv_convert.cc',
+        'base/yuv_convert.h',
         'crypto/aes_decryptor.cc',
         'crypto/aes_decryptor.h',
         'ffmpeg/ffmpeg_common.cc',
@@ -454,28 +464,27 @@
         ],
       },
       'conditions': [
-        ['arm_neon == 1', {
+        ['arm_neon==1', {
           'defines': [
             'USE_NEON'
           ],
         }],
-        ['OS != "linux" or use_x11 == 1', {
+        ['OS!="linux" or use_x11==1', {
           'sources!': [
             'video/capture/screen/screen_capturer_null.cc',
           ]
         }],
-        ['OS != "ios"', {
+        ['OS!="ios"', {
           'dependencies': [
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             'shared_memory_support',
-            'yuv_convert',
           ],
         }],
-        ['media_use_ffmpeg == 1', {
+        ['media_use_ffmpeg==1', {
           'dependencies': [
             '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
           ],
-        }, {  # media_use_ffmpeg == 0
+        }, {  # media_use_ffmpeg==0
           # Exclude the sources that depend on ffmpeg.
           'sources!': [
             'base/media_posix.cc',
@@ -497,11 +506,11 @@
             'filters/ffmpeg_video_decoder.h',
           ],
         }],
-        ['media_use_libvpx == 1', {
+        ['media_use_libvpx==1', {
           'dependencies': [
             '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
           ],
-        }, {  # media_use_libvpx == 0
+        }, {  # media_use_libvpx==0
           'direct_dependent_settings': {
             'defines': [
               'MEDIA_DISABLE_LIBVPX',
@@ -513,7 +522,7 @@
             'filters/vpx_video_decoder.h',
           ],
         }],
-        ['OS == "ios"', {
+        ['OS=="ios"', {
           'includes': [
             # For shared_memory_support_sources variable.
             'shared_memory_support.gypi',
@@ -555,7 +564,7 @@
             ],
           },
         }],
-        ['OS == "android"', {
+        ['OS=="android"', {
           'link_settings': {
             'libraries': [
               '-lOpenSLES',
@@ -574,7 +583,7 @@
             'base/media.h',
           ],
           'conditions': [
-            ['android_webview_build == 0', {
+            ['android_webview_build==0', {
               'dependencies': [
                 'media_java',
               ],
@@ -615,8 +624,8 @@
             ],
           },
         }, { # use_alsa==0
-          'sources/': [ ['exclude', '/alsa_' ],
-                      ['exclude', '/audio_manager_linux' ] ],
+          'sources/': [ ['exclude', '/alsa_'],
+                      ['exclude', '/audio_manager_linux'] ],
         }],
         ['OS!="openbsd"', {
           'sources!': [
@@ -635,7 +644,7 @@
             ],
           },
           'conditions': [
-            ['use_x11 == 1', {
+            ['use_x11==1', {
               'link_settings': {
                 'libraries': [
                   '-lX11',
@@ -645,7 +654,7 @@
                 ],
               },
             }],
-            ['use_cras == 1', {
+            ['use_cras==1', {
               'cflags': [
                 '<!@(<(pkg-config) --cflags libcras)',
               ],
@@ -657,7 +666,7 @@
               'defines': [
                 'USE_CRAS',
               ],
-            }, {  # else: use_cras == 0
+            }, {  # else: use_cras==0
               'sources!': [
                 'audio/cras/audio_manager_cras.cc',
                 'audio/cras/audio_manager_cras.h',
@@ -732,7 +741,7 @@
               ],
               'conditions': [
                 # Linux/Solaris need libdl for dlopen() and friends.
-                ['OS == "linux" or OS == "solaris"', {
+                ['OS=="linux" or OS=="solaris"', {
                   'link_settings': {
                     'libraries': [
                       '-ldl',
@@ -765,7 +774,7 @@
             'audio/pulse/pulse_util.h',
           ],
         }],
-        ['os_posix == 1', {
+        ['os_posix==1', {
           'sources!': [
             'video/capture/video_capture_device_dummy.cc',
             'video/capture/video_capture_device_dummy.h',
@@ -821,7 +830,7 @@
           # TODO(wolenetz): Fix size_t to int truncations in win64. See
           # http://crbug.com/171009
           'conditions': [
-            ['target_arch == "x64"', {
+            ['target_arch=="x64"', {
               'msvs_disabled_warnings': [ 4267, ],
             }],
           ],
@@ -848,7 +857,7 @@
             'mp4/track_run_iterator.h',
           ],
         }],
-        [ 'screen_capture_supported==1', {
+        ['screen_capture_supported==1', {
           'dependencies': [
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
           ],
@@ -857,30 +866,31 @@
             ['exclude', '^video/capture/screen/'],
           ],
         }],
-        [ 'screen_capture_supported==1 and (target_arch=="ia32" or target_arch=="x64")', {
-          'dependencies': [
-            'differ_block_sse2',
-          ],
-        }],
         ['toolkit_uses_gtk==1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
         }],
         # ios check is necessary due to http://crbug.com/172682.
-        ['OS != "ios" and (target_arch == "ia32" or target_arch == "x64")', {
+        ['OS!="ios" and (target_arch=="ia32" or target_arch=="x64")', {
           'dependencies': [
+            'media_asm',
+            'media_mmx',
             'media_sse',
+            'media_sse2',
+          ],
+          'sources': [
+            'base/simd/convert_yuv_to_rgb_x86.cc',
           ],
         }],
-        ['google_tv == 1', {
+        ['google_tv==1', {
           'defines': [
             'ENABLE_EAC3_PLAYBACK',
           ],
         }],
       ],
       'target_conditions': [
-        ['OS == "ios"', {
+        ['OS=="ios"', {
           'sources/': [
             # Pull in specific Mac files for iOS (which have been filtered out
             # by file name rules).
@@ -1009,18 +1019,17 @@
         'webm/webm_webvtt_parser_unittest.cc',
       ],
       'conditions': [
-        ['arm_neon == 1', {
+        ['arm_neon==1', {
           'defines': [
             'USE_NEON'
           ],
         }],
-        ['OS != "ios"', {
+        ['OS!="ios"', {
           'dependencies': [
             'shared_memory_support',
-            'yuv_convert',
           ],
         }],
-        ['media_use_ffmpeg == 1', {
+        ['media_use_ffmpeg==1', {
           'dependencies': [
             '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
           ],
@@ -1034,7 +1043,7 @@
             }],
           ],
         }],
-        ['OS == "ios"', {
+        ['OS=="ios"', {
           'sources/': [
             ['exclude', '.*'],
             ['include', '^audio/audio_input_controller_unittest\\.cc$'],
@@ -1065,7 +1074,7 @@
             'webm/webm_cluster_parser_unittest.cc',
           ],
           'conditions': [
-            ['gtest_target_type == "shared_library"', {
+            ['gtest_target_type=="shared_library"', {
               'dependencies': [
                 '../testing/android/native_test.gyp:native_test_native_code',
                 'player_android',
@@ -1073,9 +1082,9 @@
             }],
           ],
         }],
-        ['OS == "linux"', {
+        ['OS=="linux"', {
           'conditions': [
-            ['use_cras == 1', {
+            ['use_cras==1', {
               'sources': [
                 'audio/cras/cras_input_unittest.cc',
                 'audio/cras/cras_unified_unittest.cc',
@@ -1092,12 +1101,9 @@
             'audio/audio_low_latency_input_output_unittest.cc',
           ],
         }],
-        ['OS != "ios" and (target_arch=="ia32" or target_arch=="x64")', {
+        ['OS!="ios" and (target_arch=="ia32" or target_arch=="x64")', {
           'sources': [
             'base/simd/convert_rgb_to_yuv_unittest.cc',
-          ],
-          'dependencies': [
-            'media_sse',
           ],
         }],
         ['screen_capture_supported==1', {
@@ -1159,7 +1165,7 @@
         'video/capture/screen/screen_capturer_mock_objects.h',
       ],
       'conditions': [
-        [ 'screen_capture_supported == 1', {
+        ['screen_capture_supported==1', {
           'dependencies': [
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
           ],
@@ -1172,75 +1178,39 @@
     },
   ],
   'conditions': [
-    ['OS != "ios" and target_arch != "arm"', {
+    ['OS!="ios" and target_arch!="arm"', {
       'targets': [
-        {
-          'target_name': 'yuv_convert_simd_x86',
+       {
+          'target_name': 'media_asm',
           'type': 'static_library',
-          'include_dirs': [
-            '..',
-          ],
           'sources': [
-            'base/simd/convert_rgb_to_yuv_c.cc',
-            'base/simd/convert_rgb_to_yuv_sse2.cc',
             'base/simd/convert_rgb_to_yuv_ssse3.asm',
-            'base/simd/convert_rgb_to_yuv_ssse3.cc',
-            'base/simd/convert_rgb_to_yuv_ssse3.inc',
-            'base/simd/convert_yuv_to_rgb_c.cc',
             'base/simd/convert_yuv_to_rgb_mmx.asm',
-            'base/simd/convert_yuv_to_rgb_mmx.inc',
             'base/simd/convert_yuv_to_rgb_sse.asm',
-            'base/simd/convert_yuv_to_rgb_x86.cc',
             'base/simd/convert_yuva_to_argb_mmx.asm',
-            'base/simd/convert_yuva_to_argb_mmx.inc',
             'base/simd/empty_register_state_mmx.asm',
-            'base/simd/filter_yuv.h',
-            'base/simd/filter_yuv_c.cc',
-            'base/simd/filter_yuv_sse2.cc',
             'base/simd/linear_scale_yuv_to_rgb_mmx.asm',
-            'base/simd/linear_scale_yuv_to_rgb_mmx.inc',
             'base/simd/linear_scale_yuv_to_rgb_sse.asm',
             'base/simd/scale_yuv_to_rgb_mmx.asm',
-            'base/simd/scale_yuv_to_rgb_mmx.inc',
             'base/simd/scale_yuv_to_rgb_sse.asm',
-            'base/simd/yuv_to_rgb_table.cc',
-            'base/simd/yuv_to_rgb_table.h',
           ],
           'conditions': [
-            # TODO(jschuh): Get MMX enabled on Win64. crbug.com/179657
-            [ 'OS!="win" or target_arch=="ia32"', {
-              'sources': [
-                'base/simd/filter_yuv_mmx.cc',
-              ],
+            ['component=="shared_library"', {
+              'variables': {
+                'yasm_flags': ['-DEXPORT_SYMBOLS'],
+              },
             }],
-            [ 'target_arch == "x64"', {
+            ['target_arch=="x64"', {
               # Source files optimized for X64 systems.
               'sources': [
                 'base/simd/linear_scale_yuv_to_rgb_mmx_x64.asm',
                 'base/simd/scale_yuv_to_rgb_sse2_x64.asm',
               ],
               'variables': {
-                'yasm_flags': [
-                  '-DARCH_X86_64',
-                ],
+                'yasm_flags': ['-DARCH_X86_64'],
               },
             }],
-            [ 'os_posix == 1 and OS != "mac" and OS != "android"', {
-              'cflags': [
-                '-msse2',
-              ],
-            }],
-            [ 'OS == "mac"', {
-              'configurations': {
-                'Debug': {
-                  'xcode_settings': {
-                    # gcc on the mac builds horribly unoptimized sse code in
-                    # debug mode. Since this is rarely going to be debugged,
-                    # run with full optimizations in Debug as well as Release.
-                    'GCC_OPTIMIZATION_LEVEL': '3',  # -O3
-                   },
-                 },
-              },
+            ['OS=="mac"', {
               'variables': {
                 'yasm_flags': [
                   '-DPREFIX',
@@ -1248,10 +1218,10 @@
                 ],
               },
             }],
-            [ 'os_posix==1 and OS!="mac"', {
+            ['os_posix==1 and OS!="mac"', {
               'variables': {
                 'conditions': [
-                  [ 'target_arch=="ia32"', {
+                  ['target_arch=="ia32"', {
                     'yasm_flags': [
                       '-DX86_32',
                       '-DELF',
@@ -1274,15 +1244,97 @@
               # search path be relative to src/ per Chromium policy.
               '-I..',
             ],
+            'yasm_includes': [
+              '../third_party/x86inc/x86inc.asm',
+              'base/simd/convert_rgb_to_yuv_ssse3.inc',
+              'base/simd/convert_yuv_to_rgb_mmx.inc',
+              'base/simd/convert_yuva_to_argb_mmx.inc',
+              'base/simd/linear_scale_yuv_to_rgb_mmx.inc',
+              'base/simd/media_export.asm',
+              'base/simd/scale_yuv_to_rgb_mmx.inc',
+            ],
           },
           'msvs_2010_disable_uldi_when_referenced': 1,
           'includes': [
             '../third_party/yasm/yasm_compile.gypi',
           ],
         },
+        {
+          'target_name': 'media_mmx',
+          'type': 'static_library',
+          'cflags': [
+            '-mmmx',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'defines': [
+            'MEDIA_IMPLEMENTATION',
+          ],
+          'conditions': [
+            # TODO(jschuh): Get MMX enabled on Win64. crbug.com/179657
+            ['OS!="win" or target_arch=="ia32"', {
+              'sources': [
+                'base/simd/filter_yuv_mmx.cc',
+              ],
+            }],
+          ],
+        },
+        {
+          'target_name': 'media_sse',
+          'type': 'static_library',
+          'cflags': [
+            '-msse',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'defines': [
+            'MEDIA_IMPLEMENTATION',
+          ],
+          'sources': [
+            'base/simd/sinc_resampler_sse.cc',
+          ],
+        },
+        {
+          'target_name': 'media_sse2',
+          'type': 'static_library',
+          'cflags': [
+            '-msse2',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'defines': [
+            'MEDIA_IMPLEMENTATION',
+          ],
+          'sources': [
+            'base/simd/convert_rgb_to_yuv_sse2.cc',
+            'base/simd/convert_rgb_to_yuv_ssse3.cc',
+            'base/simd/filter_yuv_sse2.cc',
+            'video/capture/screen/differ_block_sse2.cc',
+            'video/capture/screen/differ_block_sse2.h',
+          ],
+        },
+        {
+          'target_name': 'shared_memory_support_sse',
+          'type': 'static_library',
+          'cflags': [
+            '-msse',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'defines': [
+            'MEDIA_IMPLEMENTATION',
+          ],
+          'sources': [
+            'base/simd/vector_math_sse.cc',
+          ],
+        },
       ], # targets
     }],
-    ['OS != "ios"', {
+    ['OS!="ios"', {
       'targets': [
         {
           # Minimal target for NaCl and other renderer side media clients which
@@ -1306,56 +1358,16 @@
             '<@(shared_memory_support_sources)',
           ],
           'conditions': [
-            [ 'target_arch == "ia32" or target_arch == "x64"', {
-              'dependencies': [
-                'media_sse',
-              ],
-            }],
-            ['arm_neon == 1', {
+            ['arm_neon==1', {
               'defines': [
                 'USE_NEON'
               ],
             }],
-          ],
-        },
-        {
-          'target_name': 'yuv_convert',
-          'type': 'static_library',
-          'include_dirs': [
-            '..',
-          ],
-          'conditions': [
-            [ 'target_arch == "ia32" or target_arch == "x64"', {
+            ['target_arch=="ia32" or target_arch=="x64"', {
               'dependencies': [
-                'yuv_convert_simd_x86',
+                'shared_memory_support_sse'
               ],
             }],
-            [ 'target_arch == "arm" or target_arch == "mipsel"', {
-              'dependencies': [
-                'yuv_convert_simd_c',
-              ],
-            }],
-          ],
-          'sources': [
-            'base/yuv_convert.cc',
-            'base/yuv_convert.h',
-          ],
-        },
-        {
-          'target_name': 'yuv_convert_simd_c',
-          'type': 'static_library',
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'base/simd/convert_rgb_to_yuv.h',
-            'base/simd/convert_rgb_to_yuv_c.cc',
-            'base/simd/convert_yuv_to_rgb.h',
-            'base/simd/convert_yuv_to_rgb_c.cc',
-            'base/simd/filter_yuv.h',
-            'base/simd/filter_yuv_c.cc',
-            'base/simd/yuv_to_rgb_table.cc',
-            'base/simd/yuv_to_rgb_table.h',
           ],
         },
         {
@@ -1384,14 +1396,13 @@
         },
       ],
     }],
-    ['(OS == "win" or toolkit_uses_gtk == 1) and use_aura != 1', {
+    ['(OS=="win" or toolkit_uses_gtk==1) and use_aura!=1', {
       'targets': [
         {
           'target_name': 'shader_bench',
           'type': 'executable',
           'dependencies': [
             'media',
-            'yuv_convert',
             '../base/base.gyp:base',
             '../ui/gl/gl.gyp:gl',
             '../ui/ui.gyp:ui',
@@ -1410,7 +1421,7 @@
             'tools/shader_bench/window.h',
           ],
           'conditions': [
-            ['toolkit_uses_gtk == 1', {
+            ['toolkit_uses_gtk==1', {
               'dependencies': [
                 '../build/linux/system.gyp:gtk',
               ],
@@ -1439,14 +1450,13 @@
         },
       ],
     }],
-    ['use_x11 == 1', {
+    ['use_x11==1', {
       'targets': [
         {
           'target_name': 'player_x11',
           'type': 'executable',
           'dependencies': [
             'media',
-            'yuv_convert',
             '../base/base.gyp:base',
             '../ui/gl/gl.gyp:gl',
             '../ui/ui.gyp:ui',
@@ -1473,7 +1483,7 @@
     }],
     # Special target to wrap a gtest_target_type==shared_library
     # media_unittests into an android apk for execution.
-    ['OS == "android" and gtest_target_type == "shared_library"', {
+    ['OS=="android" and gtest_target_type=="shared_library"', {
       'targets': [
         {
           'target_name': 'media_unittests_apk',
@@ -1486,11 +1496,11 @@
             'test_suite_name': 'media_unittests',
             'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)media_unittests<(SHARED_LIB_SUFFIX)',
           },
-          'includes': [ '../build/apk_test.gypi' ],
+          'includes': ['../build/apk_test.gypi'],
         },
       ],
     }],
-    ['OS == "android"', {
+    ['OS=="android"', {
       'targets': [
         {
           'target_name': 'media_player_jni_headers',
@@ -1499,7 +1509,7 @@
             'jni_gen_package': 'media',
             'input_java_class': 'android/media/MediaPlayer.class',
           },
-          'includes': [ '../build/jar_file_jni_generator.gypi' ],
+          'includes': ['../build/jar_file_jni_generator.gypi'],
         },
         {
           'target_name': 'media_android_jni_headers',
@@ -1517,7 +1527,7 @@
           'variables': {
             'jni_gen_package': 'media',
           },
-          'includes': [ '../build/jni_generator.gypi' ],
+          'includes': ['../build/jni_generator.gypi'],
         },
         {
           'target_name': 'video_capture_android_jni_headers',
@@ -1528,7 +1538,7 @@
           'variables': {
             'jni_gen_package': 'media',
           },
-          'includes': [ '../build/jni_generator.gypi' ],
+          'includes': ['../build/jni_generator.gypi'],
         },
         {
           'target_name': 'media_format_jni_headers',
@@ -1537,7 +1547,7 @@
             'jni_gen_package': 'media',
             'input_java_class': 'android/media/MediaFormat.class',
           },
-          'includes': [ '../build/jar_file_jni_generator.gypi' ],
+          'includes': ['../build/jar_file_jni_generator.gypi'],
         },
         {
           'target_name': 'player_android',
@@ -1580,12 +1590,12 @@
           'variables': {
             'java_in_dir': 'base/android/java',
           },
-          'includes': [ '../build/java.gypi' ],
+          'includes': ['../build/java.gypi'],
         },
 
       ],
     }],
-    ['media_use_ffmpeg == 1', {
+    ['media_use_ffmpeg==1', {
       'targets': [
         {
           'target_name': 'ffmpeg_unittests',
@@ -1604,7 +1614,7 @@
             'ffmpeg/ffmpeg_unittest.cc',
           ],
           'conditions': [
-            ['toolkit_uses_gtk == 1', {
+            ['toolkit_uses_gtk==1', {
               'dependencies': [
                 # Needed for the following #include chain:
                 #   base/run_all_unittests.cc
@@ -1679,50 +1689,6 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         },
-      ],
-    }],
-    [ 'screen_capture_supported==1 and (target_arch=="ia32" or target_arch=="x64")', {
-      'targets': [
-        {
-          'target_name': 'differ_block_sse2',
-          'type': 'static_library',
-          'conditions': [
-            [ 'os_posix == 1 and OS != "mac"', {
-              'cflags': [
-                '-msse2',
-              ],
-            }],
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'video/capture/screen/differ_block_sse2.cc',
-            'video/capture/screen/differ_block_sse2.h',
-          ],
-        }, # end of target differ_block_sse2
-      ],
-    }],
-    # ios check is necessary due to http://crbug.com/172682.
-    ['OS != "ios" and (target_arch=="ia32" or target_arch=="x64")', {
-      'targets': [
-        {
-          'target_name': 'media_sse',
-          'type': 'static_library',
-          'cflags': [
-            '-msse',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'defines': [
-            'MEDIA_IMPLEMENTATION',
-          ],
-          'sources': [
-            'base/simd/sinc_resampler_sse.cc',
-            'base/simd/vector_math_sse.cc',
-          ],
-        }, # end of target media_sse
       ],
     }],
   ],

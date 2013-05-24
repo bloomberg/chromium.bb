@@ -76,6 +76,8 @@ static void ReadYUY2Data(scoped_ptr<uint8[]>* data) {
   ReadData(FILE_PATH_LITERAL("bali_640x360_YUY2.yuv"), kYUY2Size, data);
 }
 
+namespace media {
+
 TEST(YUVConvertTest, YV12) {
   // Allocate all surfaces.
   scoped_ptr<uint8[]> yuv_bytes;
@@ -939,3 +941,5 @@ TEST(YUVConvertTest, LinearScaleYUVToRGB32Row_MMX_X64) {
 #endif  // defined(ARCH_CPU_X86_64)
 
 #endif  // defined(ARCH_CPU_X86_FAMILY)
+
+}  // namespace media

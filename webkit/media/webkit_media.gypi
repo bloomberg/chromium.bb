@@ -32,7 +32,6 @@
         '<(DEPTH)/cc/cc.gyp:cc',
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/media/media.gyp:shared_memory_support',
-        '<(DEPTH)/media/media.gyp:yuv_convert',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',

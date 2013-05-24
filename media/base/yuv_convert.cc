@@ -40,6 +40,52 @@ void EmptyRegisterState_MMX();
 
 namespace media {
 
+typedef void (*FilterYUVRowsProc)(uint8*, const uint8*, const uint8*, int, int);
+
+typedef void (*ConvertYUVToRGB32Proc)(const uint8*,
+                                      const uint8*,
+                                      const uint8*,
+                                      uint8*,
+                                      int,
+                                      int,
+                                      int,
+                                      int,
+                                      int,
+                                      YUVType);
+
+typedef void (*ConvertYUVAToARGBProc)(const uint8*,
+                                      const uint8*,
+                                      const uint8*,
+                                      const uint8*,
+                                      uint8*,
+                                      int,
+                                      int,
+                                      int,
+                                      int,
+                                      int,
+                                      int,
+                                      YUVType);
+
+typedef void (*ConvertYUVToRGB32RowProc)(const uint8*,
+                                         const uint8*,
+                                         const uint8*,
+                                         uint8*,
+                                         ptrdiff_t);
+
+typedef void (*ConvertYUVAToARGBRowProc)(const uint8*,
+                                         const uint8*,
+                                         const uint8*,
+                                         const uint8*,
+                                         uint8*,
+                                         ptrdiff_t);
+
+typedef void (*ScaleYUVToRGB32RowProc)(const uint8*,
+                                       const uint8*,
+                                       const uint8*,
+                                       uint8*,
+                                       ptrdiff_t,
+                                       ptrdiff_t);
+
 static FilterYUVRowsProc ChooseFilterYUVRowsProc() {
 #if defined(ARCH_CPU_X86_FAMILY)
   base::CPU cpu;
@@ -66,32 +112,42 @@ static ConvertYUVToRGB32RowProc ChooseConvertYUVToRGB32RowProc() {
 }
 
 static ScaleYUVToRGB32RowProc ChooseScaleYUVToRGB32RowProc() {
+#if defined(ARCH_CPU_X86_FAMILY)
+  base::CPU cpu;
 #if defined(ARCH_CPU_X86_64)
   // Use 64-bits version if possible.
-  return &ScaleYUVToRGB32Row_SSE2_X64;
-#elif defined(ARCH_CPU_X86_FAMILY)
-  base::CPU cpu;
+  // TODO(dalecurtis): Fix this to directly return X64 version.  All x64 procs
+  // have SSE2, this is a hack to prevent MSVC from optimizing exports out in
+  // the shared library build which are used by unittests.
+  if (cpu.has_sse2())
+    return &ScaleYUVToRGB32Row_SSE2_X64;
+#endif  // defined(ARCH_CPU_X86_64)
   // Choose the best one on 32-bits system.
   if (cpu.has_sse())
     return &ScaleYUVToRGB32Row_SSE;
   if (cpu.has_mmx())
     return &ScaleYUVToRGB32Row_MMX;
-#endif  // defined(ARCH_CPU_X86_64)
+#endif  // defined(ARCH_CPU_X86_FAMILY)
   return &ScaleYUVToRGB32Row_C;
 }
 
 static ScaleYUVToRGB32RowProc ChooseLinearScaleYUVToRGB32RowProc() {
+#if defined(ARCH_CPU_X86_FAMILY)
+  base::CPU cpu;
 #if defined(ARCH_CPU_X86_64)
   // Use 64-bits version if possible.
-  return &LinearScaleYUVToRGB32Row_MMX_X64;
-#elif defined(ARCH_CPU_X86_FAMILY)
-  base::CPU cpu;
+  // TODO(dalecurtis): Fix this to directly return X64 version.  All x64 procs
+  // have SSE2, this is a hack to prevent MSVC from optimizing exports out in
+  // the shared library build which are used by unittests.
+  if (cpu.has_sse2())
+    return &LinearScaleYUVToRGB32Row_MMX_X64;
+#endif  // defined(ARCH_CPU_X86_64)
   // 32-bits system.
   if (cpu.has_sse())
     return &LinearScaleYUVToRGB32Row_SSE;
   if (cpu.has_mmx())
     return &LinearScaleYUVToRGB32Row_MMX;
-#endif  // defined(ARCH_CPU_X86_64)
+#endif  // defined(ARCH_CPU_X86_FAMILY)
   return &LinearScaleYUVToRGB32Row_C;
 }
 

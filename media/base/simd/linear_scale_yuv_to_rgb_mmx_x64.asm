@@ -2,6 +2,7 @@
 ; Use of this source code is governed by a BSD-style license that can be
 ; found in the LICENSE file.
 
+%include "media/base/simd/media_export.asm"
 %include "third_party/x86inc/x86inc.asm"
 
 ;
@@ -17,7 +18,7 @@
 ;                                      ptrdiff_t width,
 ;                                      ptrdiff_t source_dx);
 %define SYMBOL LinearScaleYUVToRGB32Row_MMX_X64
-  global    mangle(SYMBOL) PRIVATE
+  EXPORT    SYMBOL
   align     function_align
 
 mangle(SYMBOL):

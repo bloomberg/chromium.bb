@@ -5,6 +5,8 @@
 #include "media/base/simd/convert_yuv_to_rgb.h"
 #include "media/base/simd/yuv_to_rgb_table.h"
 
+namespace media {
+
 #define packuswb(x) ((x) < 0 ? 0 : ((x) > 255 ? 255 : (x)))
 #define paddsw(x, y) (((x) + (y)) < -32768 ? -32768 : \
     (((x) + (y)) > 32767 ? 32767 : ((x) + (y))))
@@ -66,8 +68,6 @@ static inline void ConvertYUVAToARGB_C(uint8 y,
 
   *reinterpret_cast<uint32*>(rgb_buf) = b | (g << 8) | (r << 16) | (a << 24);
 }
-
-extern "C" {
 
 void ConvertYUVToRGB32Row_C(const uint8* y_buf,
                             const uint8* u_buf,
@@ -180,10 +180,6 @@ void LinearScaleYUVToRGB32RowWithRange_C(const uint8* y_buf,
     rgb_buf += 8;
   }
 }
-
-}
-
-namespace media {
 
 void ConvertYUVToRGB32_C(const uint8* yplane,
                          const uint8* uplane,
