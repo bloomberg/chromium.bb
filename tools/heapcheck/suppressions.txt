@@ -1856,3 +1856,8 @@
    fun:GURL::GURL
    fun:TestBody
 }
+{
+   bug_243753
+   Heapcheck:Leak
+   fun:fileapi::SandboxMountPointProviderTest::GetRootPath
+}

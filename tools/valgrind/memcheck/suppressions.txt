@@ -7276,3 +7276,9 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7WebCore7Element6attachEv
    fun:_ZN7WebCore22HTMLPlugInImageElement6attachEv
 }
+{
+   bug_243753
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7fileapi29SandboxMountPointProviderTest11GetRootPathERK4GURLNS_14FileSystemTypeEbPN4base8FilePathE
+}
