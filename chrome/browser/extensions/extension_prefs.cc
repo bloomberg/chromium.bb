@@ -128,10 +128,6 @@ const char kPrefAllowFileAccess[] = "newAllowFileAccess";
 // the old flag and possibly go back to that name.
 // const char kPrefAllowFileAccessOld[] = "allowFileAccess";
 
-// A preference set by the web store to indicate login information for
-// purchased apps.
-const char kWebStoreLogin[] = "extensions.webstore_login";
-
 // A preference set by the the NTP to persist the desired launch container type
 // used for apps.
 const char kPrefLaunchType[] = "launchType";
@@ -1488,18 +1484,6 @@ scoped_ptr<ExtensionPrefs::ExtensionsInfo> ExtensionPrefs::
   return extensions_info.Pass();
 }
 
-bool ExtensionPrefs::GetWebStoreLogin(std::string* result) {
-  if (prefs_->HasPrefPath(kWebStoreLogin)) {
-    *result = prefs_->GetString(kWebStoreLogin);
-    return true;
-  }
-  return false;
-}
-
-void ExtensionPrefs::SetWebStoreLogin(const std::string& login) {
-  prefs_->SetString(kWebStoreLogin, login);
-}
-
 bool ExtensionPrefs::WasAppDraggedByUser(const std::string& extension_id) {
   return ReadPrefAsBooleanAndReturn(extension_id, kPrefUserDraggedApp);
 }
@@ -1926,10 +1910,6 @@ void ExtensionPrefs::RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kExtensionAllowedTypes,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      kWebStoreLogin,
-      std::string(),  // default value
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
       prefs::kExtensionBlacklistUpdateVersion,
       "0",  // default value

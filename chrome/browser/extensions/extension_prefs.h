@@ -417,14 +417,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // information.
   scoped_ptr<ExtensionsInfo> GetAllDelayedInstallInfo() const;
 
-  // We allow the web store to set a string containing login information when a
-  // purchase is made, so that when a user logs into sync with a different
-  // account we can recognize the situation. The Get function returns true if
-  // there was previously stored data (placing it in |result|), or false
-  // otherwise. The Set will overwrite any previous login.
-  bool GetWebStoreLogin(std::string* result);
-  void SetWebStoreLogin(const std::string& login);
-
   // Returns true if the user repositioned the app on the app launcher via drag
   // and drop.
   bool WasAppDraggedByUser(const std::string& extension_id);

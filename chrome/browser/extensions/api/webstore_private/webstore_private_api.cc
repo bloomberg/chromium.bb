@@ -98,6 +98,10 @@ const char kLocalizedNameKey[] = "localizedName";
 const char kLoginKey[] = "login";
 const char kManifestKey[] = "manifest";
 
+// A preference set by the web store to indicate login information for
+// purchased apps.
+const char kWebstoreLogin[] = "extensions.webstore_login";
+
 const char kCannotSpecifyIconDataAndUrlError[] =
     "You cannot specify both icon data and an icon url";
 const char kInvalidIconUrlError[] = "Invalid icon url";
@@ -129,6 +133,21 @@ void EnableAppLauncher(base::Callback<void(bool)> callback) {
 #endif
 }
 
+// We allow the web store to set a string containing login information when a
+// purchase is made, so that when a user logs into sync with a different
+// account we can recognize the situation. The Get function returns the login if
+// there was previously stored data, or an empty string otherwise. The Set will
+// overwrite any previous login.
+std::string GetWebstoreLogin(Profile* profile) {
+  if (profile->GetPrefs()->HasPrefPath(kWebstoreLogin))
+    return profile->GetPrefs()->GetString(kWebstoreLogin);
+  return std::string();
+}
+
+void SetWebstoreLogin(Profile* profile, const std::string& login) {
+  profile->GetPrefs()->SetString(kWebstoreLogin, login);
+}
+
 }  // namespace
 
 // static
@@ -139,8 +158,8 @@ void WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(
 
 // static
 scoped_ptr<WebstoreInstaller::Approval>
-    WebstorePrivateApi::PopApprovalForTesting(
-        Profile* profile, const std::string& extension_id) {
+WebstorePrivateApi::PopApprovalForTesting(
+    Profile* profile, const std::string& extension_id) {
   return g_pending_approvals.Get().PopApproval(profile, extension_id);
 }
 
@@ -589,25 +608,14 @@ bool GetBrowserLoginFunction::RunImpl() {
 }
 
 bool GetStoreLoginFunction::RunImpl() {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  ExtensionPrefs* prefs = service->extension_prefs();
-  std::string login;
-  if (prefs->GetWebStoreLogin(&login)) {
-    SetResult(Value::CreateStringValue(login));
-  } else {
-    SetResult(Value::CreateStringValue(std::string()));
-  }
+  SetResult(Value::CreateStringValue(GetWebstoreLogin(profile_)));
   return true;
 }
 
 bool SetStoreLoginFunction::RunImpl() {
   std::string login;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &login));
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  ExtensionPrefs* prefs = service->extension_prefs();
-  prefs->SetWebStoreLogin(login);
+  SetWebstoreLogin(profile_, login);
   return true;
 }
 
