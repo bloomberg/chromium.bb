@@ -7,12 +7,17 @@
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/browser/view_type_utils.h"
+#include "extensions/common/constants.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -41,11 +46,30 @@ ui::InputMethod* AshKeyboardControllerProxy::GetInputMethod() {
   return root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
 }
 
+void AshKeyboardControllerProxy::RequestAudioInput(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) {
+  const extensions::Extension* extension = NULL;
+  GURL origin(request.security_origin);
+  if (origin.SchemeIs(extensions::kExtensionScheme)) {
+    ExtensionService* extensions_service =
+        extensions::ExtensionSystem::Get(ProfileManager::GetDefaultProfile())->
+            extension_service();
+    extension = extensions_service->extensions()->GetByID(origin.host());
+    DCHECK(extension);
+  }
+
+  MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
+      web_contents, request, callback, extension);
+}
+
 void AshKeyboardControllerProxy::SetupWebContents(
     content::WebContents* contents) {
   extension_function_dispatcher_.reset(
       new ExtensionFunctionDispatcher(ProfileManager::GetDefaultProfile(),
                                       this));
+  extensions::SetViewType(contents, extensions::VIEW_TYPE_VIRTUAL_KEYBOARD);
   Observe(contents);
 }
 

@@ -549,7 +549,8 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
   // Right now the extension popup closes and dismisses immediately on user
   // click.
   if (view_type == extensions::VIEW_TYPE_TAB_CONTENTS ||
-      view_type == extensions::VIEW_TYPE_APP_SHELL) {
+      view_type == extensions::VIEW_TYPE_APP_SHELL ||
+      view_type == extensions::VIEW_TYPE_VIRTUAL_KEYBOARD) {
     // If it is a tab, we can show the speech input bubble or ask for
     // permission.
 

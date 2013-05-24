@@ -70,6 +70,9 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
   virtual ui::InputMethod* GetInputMethod() OVERRIDE {
     return input_method_.get();
   }
+  virtual void RequestAudioInput(content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) OVERRIDE { return; }
 
  private:
   scoped_ptr<aura::Window> window_;

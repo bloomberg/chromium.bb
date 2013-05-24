@@ -25,6 +25,7 @@ enum ViewType {
   VIEW_TYPE_NOTIFICATION,
   VIEW_TYPE_PANEL,
   VIEW_TYPE_TAB_CONTENTS,
+  VIEW_TYPE_VIRTUAL_KEYBOARD,
 };
 
 // Constant strings corresponding to the Type enumeration values.  Used

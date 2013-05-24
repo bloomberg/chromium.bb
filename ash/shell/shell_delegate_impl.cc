@@ -40,6 +40,12 @@ class DummyKeyboardControllerProxy : public keyboard::KeyboardControllerProxy {
     return Shell::GetInstance()->input_method_filter()->input_method();
   }
 
+  virtual void RequestAudioInput(content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) OVERRIDE {
+    return;
+  }
+
   DISALLOW_COPY_AND_ASSIGN(DummyKeyboardControllerProxy);
 };
 

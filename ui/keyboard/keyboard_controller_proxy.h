@@ -6,6 +6,7 @@
 #define UI_KEYBOARD_KEYBOARD_CONTROLLER_PROXY_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "content/public/common/media_stream_request.h"
 #include "ui/keyboard/keyboard_export.h"
 
 namespace aura {
@@ -39,6 +40,11 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // Gets the InputMethod that will provide notifications about changes in the
   // text input context.
   virtual ui::InputMethod* GetInputMethod() = 0;
+
+  // Requests the audio input from microphone for speech input.
+  virtual void RequestAudioInput(content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) = 0;
 
   // Shows the container window of the keyboard. The default implementation
   // simply shows the container. An overridden implementation can set up

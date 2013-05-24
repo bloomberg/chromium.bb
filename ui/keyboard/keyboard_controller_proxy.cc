@@ -19,7 +19,8 @@ namespace {
 class KeyboardContentsDelegate : public content::WebContentsDelegate,
                                  public content::WebContentsObserver {
  public:
-  KeyboardContentsDelegate() {}
+  KeyboardContentsDelegate(keyboard::KeyboardControllerProxy* proxy)
+      : proxy_(proxy) {}
   virtual ~KeyboardContentsDelegate() {}
 
  private:
@@ -33,10 +34,20 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
     return source;
   }
 
+  // Overridden from content::WebContentsDelegate:
+  virtual void RequestMediaAccessPermission(content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) OVERRIDE {
+    proxy_->RequestAudioInput(web_contents, request, callback);
+  }
+
+
   // Overridden from content::WebContentsObserver:
   virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE {
     delete this;
   }
+
+  keyboard::KeyboardControllerProxy* proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardContentsDelegate);
 };
@@ -58,7 +69,7 @@ aura::Window* KeyboardControllerProxy::GetKeyboardWindow() {
     keyboard_contents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(context,
             content::SiteInstance::CreateForURL(context, url))));
-    keyboard_contents_->SetDelegate(new KeyboardContentsDelegate);
+    keyboard_contents_->SetDelegate(new KeyboardContentsDelegate(this));
     SetupWebContents(keyboard_contents_.get());
 
     content::OpenURLParams params(url,
