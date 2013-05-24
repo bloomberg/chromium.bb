@@ -150,7 +150,9 @@ bool DialRegistry::PruneExpiredDevices() {
     linked_ptr<DialDeviceData> device = i->second;
     if (IsDeviceExpired(*device)) {
       DVLOG(1) << "Device " << device->label() << " expired, removing";
-      DCHECK(device_by_id_map_.erase(device->device_id()) == 1);
+      const size_t num_erased_by_id =
+          device_by_id_map_.erase(device->device_id());
+      DCHECK_EQ(num_erased_by_id, 1u);
       device_by_label_map_.erase(i++);
       pruned_device = true;
     } else {
