@@ -120,7 +120,7 @@ def generate_constructor_attribute_list(interface_name, extended_attributes):
         constructor_name = re.sub(r'\(.*', '', named_constructor)
         # Note the reduplicated 'ConstructorConstructor'
         attribute_string = 'attribute %sConstructorConstructor %s' % (interface_name, constructor_name)
-        attributes_list.append(attribute_string)
+        attributes_list.append(extended_string + attribute_string)
 
     return attributes_list
 
