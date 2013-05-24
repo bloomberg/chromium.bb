@@ -548,8 +548,9 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
     validators_.render_buffer_format.AddValue(GL_DEPTH_COMPONENT24);
   }
 
-  if (extensions.Contains("GL_OES_standard_derivatives") ||
-      gfx::HasDesktopGLFeatures()) {
+  if (!workarounds_.disable_oes_standard_derivatives &&
+      (extensions.Contains("GL_OES_standard_derivatives") ||
+       gfx::HasDesktopGLFeatures())) {
     AddExtensionString("GL_OES_standard_derivatives");
     feature_flags_.oes_standard_derivatives = true;
     validators_.hint_target.AddValue(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES);

@@ -85,7 +85,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "2.0",
+  "version": "2.1",
   "entries": [
     {
       "id": 1,
@@ -342,6 +342,19 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "unbind_fbo_on_context_switch"
+      ]
+    },
+    {
+      "id": 23,
+      "cr_bugs": [243038],
+      "description": "Disable OES_standard_derivative on Intel Pineview M Gallium drivers.",
+      "os": {
+        "type": "chromeos"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0xa011", "0xa012"],
+      "features": [
+        "disable_oes_standard_derivatives"
       ]
     }
   ]

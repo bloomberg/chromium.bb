@@ -22,6 +22,8 @@
          disable_ext_draw_buffers)                    \
   GPU_OP(DISABLE_EXT_OCCLUSION_QUERY,                 \
          disable_ext_occlusion_query)                 \
+  GPU_OP(DISABLE_OES_STANDARD_DERIVATIVES,            \
+         disable_oes_standard_derivatives)            \
   GPU_OP(ENABLE_CHROMIUM_FAST_NPOT_MO8_TEXTURES,      \
          enable_chromium_fast_npot_mo8_textures)      \
   GPU_OP(EXIT_ON_CONTEXT_LOST,                        \
