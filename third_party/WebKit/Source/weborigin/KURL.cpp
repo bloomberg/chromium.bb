@@ -399,19 +399,20 @@ bool KURL::setProtocol(const String& protocol)
 {
     // Firefox and IE remove everything after the first ':'.
     int separatorPosition = protocol.find(':');
-    StringUTF8Adaptor newProtocol(protocol.substring(0, separatorPosition));
+    String newProtocol = protocol.substring(0, separatorPosition);
+    StringUTF8Adaptor newProtocolUTF8(newProtocol);
 
     // If KURL is given an invalid scheme, it returns failure without modifying
     // the URL at all. This is in contrast to most other setters which modify
     // the URL and set "m_isValid."
     url_canon::RawCanonOutputT<char> canonProtocol;
     url_parse::Component protocolComponent;
-    if (!url_canon::CanonicalizeScheme(newProtocol.data(), url_parse::Component(0, newProtocol.length()), &canonProtocol, &protocolComponent)
+    if (!url_canon::CanonicalizeScheme(newProtocolUTF8.data(), url_parse::Component(0, newProtocolUTF8.length()), &canonProtocol, &protocolComponent)
         || !protocolComponent.is_nonempty())
         return false;
 
     url_canon::Replacements<char> replacements;
-    replacements.SetScheme(charactersOrEmpty(newProtocol), url_parse::Component(0, newProtocol.length()));
+    replacements.SetScheme(charactersOrEmpty(newProtocolUTF8), url_parse::Component(0, newProtocolUTF8.length()));
     replaceComponents(replacements);
 
     // isValid could be false but we still return true here. This is because
