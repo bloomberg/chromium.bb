@@ -7199,6 +7199,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SYNC_DIRECTORY_OPERATION_DESCRIPTION" desc="Description of the flag to enable syncfs directory support.">
         Enables directory support for sync filesystem.
       </message>
+      <message name="IDS_FLAGS_ENABLE_DRAGGABLE_MENU_BUTTON_NAME" desc="Title for the flag to enable draggable menu button.">
+        Enable draggable menu button.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DRAGGABLE_MENU_BUTTON_DESCRIPTION" desc="Description for the flag to enable draggable menu button.">
+        Make the menu button touch-draggable so that users can execute a menu item (e.g., New Tab, Settings,...) by a single touch.
+        If the popup list is too long to display at once, touch-dragging at the top or the bottom scrolls the list.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
