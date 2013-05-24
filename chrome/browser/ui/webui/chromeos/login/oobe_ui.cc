@@ -226,8 +226,6 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   kiosk_app_menu_handler_ = new KioskAppMenuHandler;
   web_ui->AddMessageHandler(kiosk_app_menu_handler_);
 
-  network_state_informer_->SetDelegate(signin_screen_handler_);
-
   base::DictionaryValue localized_strings;
   GetLocalizedStrings(&localized_strings);
 

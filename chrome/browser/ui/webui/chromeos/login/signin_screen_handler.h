@@ -160,7 +160,6 @@ class SigninScreenHandler
       public LoginDisplayWebUIHandler,
       public SystemKeyEventListener::CapsLockObserver,
       public content::NotificationObserver,
-      public NetworkStateInformerDelegate,
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
   SigninScreenHandler(
@@ -181,10 +180,9 @@ class SigninScreenHandler
 
   void SetNativeWindowDelegate(NativeWindowDelegate* native_window_delegate);
 
-  // NetworkStateInformerDelegate implementation:
+  // NetworkStateInformer::NetworkStateInformerObserver implementation:
   virtual void OnNetworkReady() OVERRIDE;
 
-  // NetworkStateInformer::NetworkStateInformerObserver implementation:
   virtual void UpdateState(NetworkStateInformer::State state,
                            ErrorScreenActor::ErrorReason reason) OVERRIDE;
 

@@ -24,15 +24,6 @@ namespace chromeos {
 
 class NetworkState;
 
-class NetworkStateInformerDelegate {
- public:
-  NetworkStateInformerDelegate() {}
-  virtual ~NetworkStateInformerDelegate() {}
-
-  // Called when network is connected.
-  virtual void OnNetworkReady() = 0;
-};
-
 // Class which observes network state changes and calls registered callbacks.
 // State is considered changed if connection or the active network has been
 // changed. Also, it answers to the requests about current network state.
@@ -59,13 +50,12 @@ class NetworkStateInformer
 
     virtual void UpdateState(State state,
                              ErrorScreenActor::ErrorReason reason) = 0;
+    virtual void OnNetworkReady() {}
   };
 
   NetworkStateInformer();
 
   void Init();
-
-  void SetDelegate(NetworkStateInformerDelegate* delegate);
 
   // Adds observer to be notified when network state has been changed.
   void AddObserver(NetworkStateInformerObserver* observer);
@@ -134,7 +124,6 @@ class NetworkStateInformer
 
   content::NotificationRegistrar registrar_;
   State state_;
-  NetworkStateInformerDelegate* delegate_;
   ObserverList<NetworkStateInformerObserver> observers_;
   std::string last_online_service_path_;
   std::string last_connected_service_path_;

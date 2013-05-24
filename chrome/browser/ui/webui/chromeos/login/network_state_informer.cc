@@ -24,8 +24,7 @@ const int kNetworkStateCheckDelaySec = 3;
 namespace chromeos {
 
 NetworkStateInformer::NetworkStateInformer()
-    : state_(OFFLINE),
-      delegate_(NULL) {
+    : state_(OFFLINE) {
 }
 
 NetworkStateInformer::~NetworkStateInformer() {
@@ -51,10 +50,6 @@ void NetworkStateInformer::Init() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());
-}
-
-void NetworkStateInformer::SetDelegate(NetworkStateInformerDelegate* delegate) {
-  delegate_ = delegate;
 }
 
 void NetworkStateInformer::AddObserver(NetworkStateInformerObserver* observer) {
@@ -147,8 +142,10 @@ bool NetworkStateInformer::UpdateState() {
   if (state_ != OFFLINE)
     last_connected_service_path_ = last_network_service_path_;
 
-  if (updated && state_ == ONLINE && delegate_)
-    delegate_->OnNetworkReady();
+  if (updated && state_ == ONLINE) {
+    FOR_EACH_OBSERVER(NetworkStateInformerObserver, observers_,
+                      OnNetworkReady());
+  }
 
   return updated;
 }
