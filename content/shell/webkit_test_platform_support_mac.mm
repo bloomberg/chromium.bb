@@ -40,6 +40,10 @@ void SetDefaultsToLayoutTestValues(void) {
 
 }  // namespace
 
+bool CheckLayoutSystemDeps() {
+  return true;
+}
+
 bool WebKitTestPlatformInitialize() {
 
   SetDefaultsToLayoutTestValues();

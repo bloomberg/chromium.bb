@@ -6,6 +6,10 @@
 
 namespace content {
 
+bool CheckLayoutSystemDeps() {
+  return true;
+}
+
 bool WebKitTestPlatformInitialize() {
   return true;
 }

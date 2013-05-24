@@ -104,6 +104,13 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
   InitLogging();
   CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)) {
+    if (!CheckLayoutSystemDeps()) {
+      if (exit_code)
+        *exit_code = 1;
+      return true;
+    }
+  }
   if (command_line.HasSwitch(switches::kDumpRenderTree)) {
     command_line.AppendSwitch(switches::kProcessPerTab);
     command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);

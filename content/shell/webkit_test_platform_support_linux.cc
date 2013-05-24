@@ -137,6 +137,10 @@ bool SetupFontConfig() {
 
 }  // namespace
 
+bool CheckLayoutSystemDeps() {
+  return true;
+}
+
 bool WebKitTestPlatformInitialize() {
   return SetupFontConfig();
 }

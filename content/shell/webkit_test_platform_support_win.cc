@@ -54,7 +54,9 @@ bool SetupFonts() {
   return true;
 }
 
-bool CheckLayoutTestSystemDependencies() {
+}  // namespace
+
+bool CheckLayoutSystemDeps() {
   std::list<std::string> errors;
 
   // This metric will be 17 when font size is "Normal".
@@ -103,10 +105,8 @@ bool CheckLayoutTestSystemDependencies() {
   return errors.empty();
 }
 
-}  // namespace
-
 bool WebKitTestPlatformInitialize() {
-  return CheckLayoutTestSystemDependencies() && SetupFonts();
+  return SetupFonts();
 }
 
 }  // namespace content
