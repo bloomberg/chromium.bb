@@ -67,6 +67,7 @@ TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
   ASSERT_TRUE(result.get());
   EXPECT_EQ(WebRequestConditionAttribute::CONDITION_RESOURCE_TYPE,
             result->GetType());
+  EXPECT_EQ(std::string(keys::kResourceTypeKey), result->GetName());
 }
 
 TEST(WebRequestConditionAttributeTest, ResourceType) {
@@ -84,6 +85,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
           keys::kResourceTypeKey, &resource_types, &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute.get());
+  EXPECT_EQ(std::string(keys::kResourceTypeKey), attribute->GetName());
 
   net::TestURLRequestContext context;
   net::TestURLRequest url_request_ok(
@@ -135,6 +137,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_TRUE(attribute_include->IsFulfilled(
       WebRequestData(&url_request, ON_HEADERS_RECEIVED,
                      url_request.response_headers())));
+  EXPECT_EQ(std::string(keys::kContentTypeKey), attribute_include->GetName());
 
   scoped_refptr<const WebRequestConditionAttribute> attribute_exclude =
       WebRequestConditionAttribute::Create(
@@ -164,6 +167,8 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_TRUE(attribute_unexcluded->IsFulfilled(
       WebRequestData(&url_request, ON_HEADERS_RECEIVED,
                      url_request.response_headers())));
+  EXPECT_EQ(std::string(keys::kExcludeContentTypeKey),
+            attribute_unexcluded->GetName());
 }
 
 // Testing WebRequestConditionAttributeThirdParty.
@@ -180,6 +185,8 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
                                            &error);
   ASSERT_EQ("", error);
   ASSERT_TRUE(third_party_attribute.get());
+  EXPECT_EQ(std::string(keys::kThirdPartyKey),
+            third_party_attribute->GetName());
   const FundamentalValue value_false(false);
   // This attribute matches only first party requests.
   scoped_refptr<const WebRequestConditionAttribute> first_party_attribute =
@@ -188,6 +195,8 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
                                            &error);
   ASSERT_EQ("", error);
   ASSERT_TRUE(first_party_attribute.get());
+  EXPECT_EQ(std::string(keys::kThirdPartyKey),
+            first_party_attribute->GetName());
 
   const GURL url_empty;
   const GURL url_a("http://a.com");
@@ -252,6 +261,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
                                            &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(empty_attribute.get());
+  EXPECT_EQ(std::string(keys::kStagesKey), empty_attribute->GetName());
 
   // Create an attribute with all possible applicable stages.
   ListValue all_stages;
@@ -263,6 +273,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
                                            &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_with_all.get());
+  EXPECT_EQ(std::string(keys::kStagesKey), attribute_with_all->GetName());
 
   // Create one attribute for each single stage, to be applicable in that stage.
   std::vector<scoped_refptr<const WebRequestConditionAttribute> >
@@ -386,6 +397,7 @@ void MatchAndCheck(const std::vector< std::vector<const std::string*> >& tests,
       WebRequestConditionAttribute::Create(key, &contains_headers, &error);
   ASSERT_EQ("", error);
   ASSERT_TRUE(attribute.get());
+  EXPECT_EQ(key, attribute->GetName());
 
   *result = attribute->IsFulfilled(WebRequestData(
       url_request, stage, url_request->response_headers()));

@@ -63,6 +63,7 @@ class WebRequestConditionAttribute
       const WebRequestData& request_data) const = 0;
 
   virtual Type GetType() const = 0;
+  virtual std::string GetName() const = 0;
 
   // Compares the Type of two WebRequestConditionAttributes, needs to be
   // overridden for parameterized types.
@@ -99,6 +100,7 @@ class WebRequestConditionAttributeResourceType
   virtual bool IsFulfilled(
       const WebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
 
  private:
@@ -128,6 +130,7 @@ class WebRequestConditionAttributeContentType
   virtual bool IsFulfilled(
       const WebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
 
  private:
@@ -162,6 +165,7 @@ class WebRequestConditionAttributeRequestHeaders
   virtual bool IsFulfilled(
       const WebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
 
  private:
@@ -195,6 +199,7 @@ class WebRequestConditionAttributeResponseHeaders
   virtual bool IsFulfilled(
       const WebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
 
  private:
@@ -224,6 +229,7 @@ class WebRequestConditionAttributeThirdParty
   virtual bool IsFulfilled(
       const WebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
 
  private:
@@ -252,6 +258,7 @@ class WebRequestConditionAttributeStages
   virtual bool IsFulfilled(
       const WebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
+  virtual std::string GetName() const OVERRIDE;
   virtual bool Equals(const WebRequestConditionAttribute* other) const OVERRIDE;
 
  private:

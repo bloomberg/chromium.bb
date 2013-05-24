@@ -189,6 +189,10 @@ WebRequestConditionAttributeResourceType::GetType() const {
   return CONDITION_RESOURCE_TYPE;
 }
 
+std::string WebRequestConditionAttributeResourceType::GetName() const {
+  return keys::kResourceTypeKey;
+}
+
 bool WebRequestConditionAttributeResourceType::Equals(
     const WebRequestConditionAttribute* other) const {
   if (!WebRequestConditionAttribute::Equals(other))
@@ -271,6 +275,10 @@ bool WebRequestConditionAttributeContentType::IsFulfilled(
 WebRequestConditionAttribute::Type
 WebRequestConditionAttributeContentType::GetType() const {
   return CONDITION_CONTENT_TYPE;
+}
+
+std::string WebRequestConditionAttributeContentType::GetName() const {
+  return (inclusive_ ? keys::kContentTypeKey : keys::kExcludeContentTypeKey);
 }
 
 bool WebRequestConditionAttributeContentType::Equals(
@@ -613,6 +621,11 @@ WebRequestConditionAttributeRequestHeaders::GetType() const {
   return CONDITION_REQUEST_HEADERS;
 }
 
+std::string WebRequestConditionAttributeRequestHeaders::GetName() const {
+  return (positive_ ? keys::kRequestHeadersKey
+                    : keys::kExcludeRequestHeadersKey);
+}
+
 bool WebRequestConditionAttributeRequestHeaders::Equals(
     const WebRequestConditionAttribute* other) const {
   // Comparing headers is too heavy, so we skip it entirely.
@@ -686,6 +699,11 @@ WebRequestConditionAttributeResponseHeaders::GetType() const {
   return CONDITION_RESPONSE_HEADERS;
 }
 
+std::string WebRequestConditionAttributeResponseHeaders::GetName() const {
+  return (positive_ ? keys::kResponseHeadersKey
+                    : keys::kExcludeResponseHeadersKey);
+}
+
 bool WebRequestConditionAttributeResponseHeaders::Equals(
     const WebRequestConditionAttribute* other) const {
   return false;
@@ -747,6 +765,10 @@ bool WebRequestConditionAttributeThirdParty::IsFulfilled(
 WebRequestConditionAttribute::Type
 WebRequestConditionAttributeThirdParty::GetType() const {
   return CONDITION_THIRD_PARTY;
+}
+
+std::string WebRequestConditionAttributeThirdParty::GetName() const {
+  return keys::kThirdPartyKey;
 }
 
 bool WebRequestConditionAttributeThirdParty::Equals(
@@ -836,6 +858,10 @@ bool WebRequestConditionAttributeStages::IsFulfilled(
 WebRequestConditionAttribute::Type
 WebRequestConditionAttributeStages::GetType() const {
   return CONDITION_STAGES;
+}
+
+std::string WebRequestConditionAttributeStages::GetName() const {
+  return keys::kStagesKey;
 }
 
 bool WebRequestConditionAttributeStages::Equals(
