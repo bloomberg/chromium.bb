@@ -458,7 +458,11 @@ function getPropertyValue(property, elementId, iframeId)
         computedValue = window.getComputedStyle(element)[property.split(".")[0]];
     } else {
         var computedStyle = window.getComputedStyle(element).getPropertyCSSValue(property);
-        computedValue = computedStyle.getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
+        try {
+            computedValue = computedStyle.getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
+        } catch (e) {
+            computedValue = computedStyle.getStringValue();
+        }
     }
 
     return computedValue;
