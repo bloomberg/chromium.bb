@@ -26,6 +26,7 @@
 #include "V8DOMStringList.h"
 #include "V8Document.h"
 #include "V8Float32Array.h"
+#include "V8MessagePort.h"
 #include "V8Node.h"
 #include "V8SVGDocument.h"
 #include "V8SVGPoint.h"
@@ -1449,6 +1450,30 @@ static void doubleArrayAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Valu
 static void doubleArrayAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     TestObjV8Internal::doubleArrayAttrSetter(name, value, info);
+}
+
+static v8::Handle<v8::Value> messagePortArrayAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    return v8Array(imp->messagePortArray(), info.GetIsolate());
+}
+
+static v8::Handle<v8::Value> messagePortArrayAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    return TestObjV8Internal::messagePortArrayAttrGetter(name, info);
+}
+
+static void messagePortArrayAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_VOID(Vector<RefPtr<MessagePort> >, v, (toRefPtrNativeArray<MessagePort, V8MessagePort>(value, info.GetIsolate())));
+    imp->setMessagePortArray(v);
+    return;
+}
+
+static void messagePortArrayAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    TestObjV8Internal::messagePortArrayAttrSetter(name, value, info);
 }
 
 static v8::Handle<v8::Value> contentDocumentAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
@@ -4068,6 +4093,8 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjectAttrs[] = {
     {"floatArray", TestObjV8Internal::floatArrayAttrGetterCallback, TestObjV8Internal::floatArrayAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'doubleArray' (Type: 'attribute' ExtAttr: '')
     {"doubleArray", TestObjV8Internal::doubleArrayAttrGetterCallback, TestObjV8Internal::doubleArrayAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    // Attribute 'messagePortArray' (Type: 'attribute' ExtAttr: '')
+    {"messagePortArray", TestObjV8Internal::messagePortArrayAttrGetterCallback, TestObjV8Internal::messagePortArrayAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'contentDocument' (Type: 'attribute' ExtAttr: 'CheckSecurityForNode')
     {"contentDocument", TestObjV8Internal::contentDocumentAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'mutablePoint' (Type: 'attribute' ExtAttr: '')

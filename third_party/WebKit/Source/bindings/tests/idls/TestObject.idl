@@ -216,6 +216,7 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
 
     attribute float[]                   floatArray;
     attribute double[]                  doubleArray;
+    attribute MessagePort[]             messagePortArray;
 
     void methodWithUnsignedLongSequence(sequence<unsigned long> unsignedLongSequence);
     [RaisesException] DOMString[] stringArrayFunction(DOMString[] values);
