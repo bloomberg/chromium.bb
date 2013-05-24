@@ -98,6 +98,7 @@ class TooltipController::Tooltip : public views::WidgetObserver {
                                            kTooltipBorder));
     }
     label_.set_owned_by_client();
+    label_.SetMultiLine(true);
   }
 
   virtual ~Tooltip() {
@@ -119,7 +120,7 @@ class TooltipController::Tooltip : public views::WidgetObserver {
     label_.SetText(trimmed_text);
 
     int width = max_width + 2 * kTooltipHorizontalPadding;
-    int height = label_.GetPreferredSize().height() +
+    int height = label_.GetHeightForWidth(max_width) +
         2 * kTooltipVerticalPadding;
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoDropShadows)) {
       width += 2 * kTooltipBorderWidth;
