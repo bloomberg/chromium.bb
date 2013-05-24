@@ -128,8 +128,8 @@ TextfieldController* Textfield::GetController() const {
 }
 
 void Textfield::SetReadOnly(bool read_only) {
+  // Update read-only without changing the focusable state (or active, etc.).
   read_only_ = read_only;
-  set_focusable(!read_only);
   if (native_wrapper_) {
     native_wrapper_->UpdateReadOnly();
     native_wrapper_->UpdateTextColor();

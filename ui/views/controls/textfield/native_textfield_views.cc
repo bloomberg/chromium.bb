@@ -1168,39 +1168,40 @@ bool NativeTextfieldViews::HandleKeyEvent(const ui::KeyEvent& key_event) {
       return false;
 
     OnBeforeUserAction();
-    bool editable = !textfield_->read_only();
-    bool readable = !textfield_->IsObscured();
-    bool shift = key_event.IsShiftDown();
-    bool control = key_event.IsControlDown();
+    const bool editable = !textfield_->read_only();
+    const bool readable = !textfield_->IsObscured();
+    const bool shift = key_event.IsShiftDown();
+    const bool control = key_event.IsControlDown();
+    const bool alt = key_event.IsAltDown();
     bool text_changed = false;
     bool cursor_changed = false;
     switch (key_code) {
       case ui::VKEY_Z:
-        if (control && !shift && editable)
+        if (control && !shift && !alt && editable)
           cursor_changed = text_changed = model_->Undo();
-        else if (control && shift && editable)
+        else if (control && shift && !alt && editable)
           cursor_changed = text_changed = model_->Redo();
         break;
       case ui::VKEY_Y:
-        if (control && editable)
+        if (control && !alt && editable)
           cursor_changed = text_changed = model_->Redo();
         break;
       case ui::VKEY_A:
-        if (control) {
+        if (control && !alt) {
           model_->SelectAll(false);
           cursor_changed = true;
         }
         break;
       case ui::VKEY_X:
-        if (control && editable && readable)
+        if (control && !alt && editable && readable)
           cursor_changed = text_changed = Cut();
         break;
       case ui::VKEY_C:
-        if (control && readable)
+        if (control && !alt && readable)
           Copy();
         break;
       case ui::VKEY_V:
-        if (control && editable)
+        if (control && !alt && editable)
           cursor_changed = text_changed = Paste();
         break;
       case ui::VKEY_RIGHT:
@@ -1208,7 +1209,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const ui::KeyEvent& key_event) {
         // We should ignore the alt-left/right keys because alt key doesn't make
         // any special effects for them and they can be shortcut keys such like
         // forward/back of the browser history.
-        if (key_event.IsAltDown())
+        if (alt)
           break;
         size_t cursor_position = model_->GetCursorPosition();
         model_->MoveCursor(
@@ -1258,9 +1259,9 @@ bool NativeTextfieldViews::HandleKeyEvent(const ui::KeyEvent& key_event) {
         text_changed = true;
         break;
       case ui::VKEY_INSERT:
-        if (control && !shift)
+        if (control && !shift && readable)
           Copy();
-        else if (shift && !control)
+        else if (shift && !control && editable)
           cursor_changed = text_changed = Paste();
         break;
       default:
@@ -1363,7 +1364,7 @@ void NativeTextfieldViews::OnAfterUserAction() {
 }
 
 bool NativeTextfieldViews::Cut() {
-  if (model_->Cut()) {
+  if (!textfield_->read_only() && !textfield_->IsObscured() && model_->Cut()) {
     TextfieldController* controller = textfield_->GetController();
     if (controller)
       controller->OnAfterCutOrCopy();
@@ -1373,7 +1374,7 @@ bool NativeTextfieldViews::Cut() {
 }
 
 bool NativeTextfieldViews::Copy() {
-  if (model_->Copy()) {
+  if (!textfield_->IsObscured() && model_->Copy()) {
     TextfieldController* controller = textfield_->GetController();
     if (controller)
       controller->OnAfterCutOrCopy();
@@ -1383,6 +1384,9 @@ bool NativeTextfieldViews::Copy() {
 }
 
 bool NativeTextfieldViews::Paste() {
+  if (textfield_->read_only())
+    return false;
+
   const string16 original_text = GetText();
   const bool success = model_->Paste();
 

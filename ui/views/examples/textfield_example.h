@@ -46,6 +46,7 @@ class TextfieldExample : public ExampleBase,
   // Textfields for name and password.
   Textfield* name_;
   Textfield* password_;
+  Textfield* read_only_;
 
   // Various buttons to control textfield.
   LabelButton* show_password_;

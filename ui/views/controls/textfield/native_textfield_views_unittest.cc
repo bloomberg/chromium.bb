@@ -143,7 +143,9 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   // TextfieldController:
   virtual void ContentsChanged(Textfield* sender,
                                const string16& new_contents) OVERRIDE {
-    ASSERT_NE(last_contents_, new_contents);
+    // Paste calls TextfieldController::ContentsChanged() explicitly even if the
+    // paste action did not change the content. So |new_contents| may match
+    // |last_contents_|. For more info, see http://crbug.com/79002
     last_contents_ = new_contents;
   }
 
@@ -215,18 +217,20 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
  protected:
   void SendKeyEvent(ui::KeyboardCode key_code,
+                    bool alt,
                     bool shift,
                     bool control,
                     bool caps_lock) {
-    int flags = (shift ? ui::EF_SHIFT_DOWN : 0) |
-        (control ? ui::EF_CONTROL_DOWN : 0) |
-        (caps_lock ? ui::EF_CAPS_LOCK_DOWN : 0);
+    int flags = (alt ? ui::EF_ALT_DOWN : 0) |
+                (shift ? ui::EF_SHIFT_DOWN : 0) |
+                (control ? ui::EF_CONTROL_DOWN : 0) |
+                (caps_lock ? ui::EF_CAPS_LOCK_DOWN : 0);
     ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags, false);
     input_method_->DispatchKeyEvent(event);
   }
 
   void SendKeyEvent(ui::KeyboardCode key_code, bool shift, bool control) {
-    SendKeyEvent(key_code, shift, control, false);
+    SendKeyEvent(key_code, false, shift, control, false);
   }
 
   void SendKeyEvent(ui::KeyboardCode key_code) {
@@ -452,23 +456,16 @@ TEST_F(NativeTextfieldViewsTest, ModelChangesTestLowerCaseWithLocale) {
 
 TEST_F(NativeTextfieldViewsTest, KeyTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
-  SendKeyEvent(ui::VKEY_C, true, false);
-  EXPECT_STR_EQ("C", textfield_->text());
-  EXPECT_STR_EQ("C", last_contents_);
-  last_contents_.clear();
-
-  SendKeyEvent(ui::VKEY_R, false, false);
-  EXPECT_STR_EQ("Cr", textfield_->text());
-  EXPECT_STR_EQ("Cr", last_contents_);
-
-  textfield_->SetText(string16());
-  SendKeyEvent(ui::VKEY_C, true, false, true);
-  SendKeyEvent(ui::VKEY_C, false, false, true);
-  SendKeyEvent(ui::VKEY_1, false, false, true);
-  SendKeyEvent(ui::VKEY_1, true, false, true);
-  SendKeyEvent(ui::VKEY_1, true, false, false);
-  EXPECT_STR_EQ("cC1!!", textfield_->text());
-  EXPECT_STR_EQ("cC1!!", last_contents_);
+  // Event flags:  key,    alt,   shift, ctrl,  caps-lock.
+  SendKeyEvent(ui::VKEY_T, false, true,  false, false);
+  SendKeyEvent(ui::VKEY_E, false, false, false, false);
+  SendKeyEvent(ui::VKEY_X, false, true,  false, true);
+  SendKeyEvent(ui::VKEY_T, false, false, false, true);
+  SendKeyEvent(ui::VKEY_1, false, true,  false, false);
+  SendKeyEvent(ui::VKEY_1, false, false, false, false);
+  SendKeyEvent(ui::VKEY_1, false, true,  false, true);
+  SendKeyEvent(ui::VKEY_1, false, false, false, true);
+  EXPECT_STR_EQ("TexT!1!1", textfield_->text());
 }
 
 TEST_F(NativeTextfieldViewsTest, ControlAndSelectTest) {
@@ -545,13 +542,13 @@ TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
   // Delete the previous word from cursor.
   textfield_->SetText(ASCIIToUTF16("one two three four"));
   SendKeyEvent(ui::VKEY_END);
-  SendKeyEvent(ui::VKEY_BACK, false, true, false);
+  SendKeyEvent(ui::VKEY_BACK, false, false, true, false);
   EXPECT_STR_EQ("one two three ", textfield_->text());
 
   // Delete upto the beginning of the buffer from cursor in chromeos, do nothing
   // in windows.
-  SendKeyEvent(ui::VKEY_LEFT, false, true, false);
-  SendKeyEvent(ui::VKEY_BACK, true, true, false);
+  SendKeyEvent(ui::VKEY_LEFT, false, false, true, false);
+  SendKeyEvent(ui::VKEY_BACK, false, true, true, false);
 #if defined(OS_WIN)
   EXPECT_STR_EQ("one two three ", textfield_->text());
 #else
@@ -561,13 +558,13 @@ TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
   // Delete the next word from cursor.
   textfield_->SetText(ASCIIToUTF16("one two three four"));
   SendKeyEvent(ui::VKEY_HOME);
-  SendKeyEvent(ui::VKEY_DELETE, false, true, false);
+  SendKeyEvent(ui::VKEY_DELETE, false, false, true, false);
   EXPECT_STR_EQ(" two three four", textfield_->text());
 
   // Delete upto the end of the buffer from cursor in chromeos, do nothing
   // in windows.
-  SendKeyEvent(ui::VKEY_RIGHT, false, true, false);
-  SendKeyEvent(ui::VKEY_DELETE, true, true, false);
+  SendKeyEvent(ui::VKEY_RIGHT, false, false, true, false);
+  SendKeyEvent(ui::VKEY_DELETE, false, true, true, false);
 #if defined(OS_WIN)
   EXPECT_STR_EQ(" two three four", textfield_->text());
 #else
@@ -577,29 +574,36 @@ TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
 
 TEST_F(NativeTextfieldViewsTest, PasswordTest) {
   InitTextfield(Textfield::STYLE_OBSCURED);
-
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
+  EXPECT_TRUE(textfield_->enabled());
+  EXPECT_TRUE(textfield_->focusable());
 
   last_contents_.clear();
-  textfield_->SetText(ASCIIToUTF16("my password"));
-  // Just to make sure the text() and callback returns
-  // the actual text instead of "*".
-  EXPECT_STR_EQ("my password", textfield_->text());
+  textfield_->SetText(ASCIIToUTF16("password"));
+  // Ensure text() and the callback returns the actual text instead of "*".
+  EXPECT_STR_EQ("password", textfield_->text());
   EXPECT_TRUE(last_contents_.empty());
-
-  // Cut and copy should be disabled in the context menu.
   model_->SelectAll(false);
-  EXPECT_FALSE(IsCommandIdEnabled(IDS_APP_CUT));
-  EXPECT_FALSE(IsCommandIdEnabled(IDS_APP_COPY));
-
-  // Cut and copy keyboard shortcuts and menu commands should do nothing.
   SetClipboardText("foo");
-  SendKeyEvent(ui::VKEY_C, false, true);
+
+  // Cut and copy should be disabled.
+  EXPECT_FALSE(textfield_view_->IsCommandIdEnabled(IDS_APP_CUT));
+  textfield_view_->ExecuteCommand(IDS_APP_CUT, 0);
   SendKeyEvent(ui::VKEY_X, false, true);
-  ExecuteCommand(IDS_APP_COPY, 0);
-  ExecuteCommand(IDS_APP_CUT, 0);
+  EXPECT_FALSE(textfield_view_->IsCommandIdEnabled(IDS_APP_COPY));
+  textfield_view_->ExecuteCommand(IDS_APP_COPY, 0);
+  SendKeyEvent(ui::VKEY_C, false, true);
+  SendKeyEvent(ui::VKEY_INSERT, false, true);
   EXPECT_STR_EQ("foo", string16(GetClipboardText()));
-  EXPECT_STR_EQ("my password", textfield_->text());
+  EXPECT_STR_EQ("password", textfield_->text());
+
+  // Paste should work normally.
+  EXPECT_TRUE(textfield_view_->IsCommandIdEnabled(IDS_APP_PASTE));
+  textfield_view_->ExecuteCommand(IDS_APP_PASTE, 0);
+  SendKeyEvent(ui::VKEY_V, false, true);
+  SendKeyEvent(ui::VKEY_INSERT, true, false);
+  EXPECT_STR_EQ("foo", string16(GetClipboardText()));
+  EXPECT_STR_EQ("foofoofoo", textfield_->text());
 }
 
 TEST_F(NativeTextfieldViewsTest, InputTypeSetsObscured) {
@@ -1146,47 +1150,56 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_Canceled) {
 
 TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
-  textfield_->SetText(ASCIIToUTF16(" one two three "));
+  textfield_->SetText(ASCIIToUTF16("read only"));
   textfield_->SetReadOnly(true);
+  EXPECT_TRUE(textfield_->enabled());
+  EXPECT_TRUE(textfield_->focusable());
+
   SendKeyEvent(ui::VKEY_HOME);
   EXPECT_EQ(0U, textfield_->GetCursorPosition());
-
   SendKeyEvent(ui::VKEY_END);
-  EXPECT_EQ(15U, textfield_->GetCursorPosition());
-
-  SendKeyEvent(ui::VKEY_LEFT, false, false);
-  EXPECT_EQ(14U, textfield_->GetCursorPosition());
-
-  SendKeyEvent(ui::VKEY_LEFT, false, true);
   EXPECT_EQ(9U, textfield_->GetCursorPosition());
 
-  SendKeyEvent(ui::VKEY_LEFT, true, true);
+  SendKeyEvent(ui::VKEY_LEFT, false, false);
+  EXPECT_EQ(8U, textfield_->GetCursorPosition());
+  SendKeyEvent(ui::VKEY_LEFT, false, true);
   EXPECT_EQ(5U, textfield_->GetCursorPosition());
-  EXPECT_STR_EQ("two ", textfield_->GetSelectedText());
-
+  SendKeyEvent(ui::VKEY_LEFT, true, true);
+  EXPECT_EQ(0U, textfield_->GetCursorPosition());
+  EXPECT_STR_EQ("read ", textfield_->GetSelectedText());
   textfield_->SelectAll(false);
-  EXPECT_STR_EQ(" one two three ", textfield_->GetSelectedText());
+  EXPECT_STR_EQ("read only", textfield_->GetSelectedText());
 
-  // CUT&PASTE does not work, but COPY works
+  // Cut should be disabled.
   SetClipboardText("Test");
+  EXPECT_FALSE(textfield_view_->IsCommandIdEnabled(IDS_APP_CUT));
+  textfield_view_->ExecuteCommand(IDS_APP_CUT, 0);
   SendKeyEvent(ui::VKEY_X, false, true);
-  EXPECT_STR_EQ(" one two three ", textfield_->GetSelectedText());
-  string16 str(GetClipboardText());
-  EXPECT_STR_NE(" one two three ", str);
+  EXPECT_STR_EQ("Test", string16(GetClipboardText()));
+  EXPECT_STR_EQ("read only", textfield_->text());
 
+  // Paste should be disabled.
+  EXPECT_FALSE(textfield_view_->IsCommandIdEnabled(IDS_APP_PASTE));
+  textfield_view_->ExecuteCommand(IDS_APP_PASTE, 0);
+  SendKeyEvent(ui::VKEY_V, false, true);
+  SendKeyEvent(ui::VKEY_INSERT, true, false);
+  EXPECT_STR_EQ("read only", textfield_->text());
+
+  // Copy should work normally.
+  SetClipboardText("Test");
+  EXPECT_TRUE(textfield_view_->IsCommandIdEnabled(IDS_APP_COPY));
+  textfield_view_->ExecuteCommand(IDS_APP_COPY, 0);
+  EXPECT_STR_EQ("read only", string16(GetClipboardText()));
+  SetClipboardText("Test");
   SendKeyEvent(ui::VKEY_C, false, true);
-  ui::Clipboard::GetForCurrentThread()->
-      ReadText(ui::Clipboard::BUFFER_STANDARD, &str);
-  EXPECT_STR_EQ(" one two three ", str);
+  EXPECT_STR_EQ("read only", string16(GetClipboardText()));
+  SetClipboardText("Test");
+  SendKeyEvent(ui::VKEY_INSERT, false, true);
+  EXPECT_STR_EQ("read only", string16(GetClipboardText()));
 
   // SetText should work even in read only mode.
   textfield_->SetText(ASCIIToUTF16(" four five six "));
   EXPECT_STR_EQ(" four five six ", textfield_->text());
-
-  // Paste shouldn't work.
-  SendKeyEvent(ui::VKEY_V, false, true);
-  EXPECT_STR_EQ(" four five six ", textfield_->text());
-  EXPECT_TRUE(textfield_->GetSelectedText().empty());
 
   textfield_->SelectAll(false);
   EXPECT_STR_EQ(" four five six ", textfield_->GetSelectedText());
@@ -1400,30 +1413,68 @@ TEST_F(NativeTextfieldViewsTest, UndoRedoTest) {
   EXPECT_STR_EQ("", textfield_->text());
 }
 
-TEST_F(NativeTextfieldViewsTest, CopyPasteShortcuts) {
+TEST_F(NativeTextfieldViewsTest, CutCopyPaste) {
   InitTextfield(Textfield::STYLE_DEFAULT);
-  // Ensure [Ctrl]+[c] copies and [Ctrl]+[v] pastes.
-  textfield_->SetText(ASCIIToUTF16("abc"));
-  textfield_->SelectAll(false);
-  SendKeyEvent(ui::VKEY_C, false, true);
-  EXPECT_STR_EQ("abc", string16(GetClipboardText()));
-  SendKeyEvent(ui::VKEY_HOME);
-  SendKeyEvent(ui::VKEY_V, false, true);
-  EXPECT_STR_EQ("abcabc", textfield_->text());
 
-  // Ensure [Ctrl]+[Insert] copies and [Shift]+[Insert] pastes.
+  // Ensure IDS_APP_CUT cuts.
   textfield_->SetText(ASCIIToUTF16("123"));
   textfield_->SelectAll(false);
-  SendKeyEvent(ui::VKEY_INSERT, false, true);
+  EXPECT_TRUE(textfield_view_->IsCommandIdEnabled(IDS_APP_CUT));
+  textfield_view_->ExecuteCommand(IDS_APP_CUT, 0);
   EXPECT_STR_EQ("123", string16(GetClipboardText()));
-  SendKeyEvent(ui::VKEY_HOME);
+  EXPECT_STR_EQ("", textfield_->text());
+
+  // Ensure [Ctrl]+[x] cuts and [Ctrl]+[Alt][x] does nothing.
+  textfield_->SetText(ASCIIToUTF16("456"));
+  textfield_->SelectAll(false);
+  SendKeyEvent(ui::VKEY_X, true, false, true, false);
+  EXPECT_STR_EQ("123", string16(GetClipboardText()));
+  EXPECT_STR_EQ("456", textfield_->text());
+  SendKeyEvent(ui::VKEY_X, false, true);
+  EXPECT_STR_EQ("456", string16(GetClipboardText()));
+  EXPECT_STR_EQ("", textfield_->text());
+
+  // Ensure IDS_APP_COPY copies.
+  textfield_->SetText(ASCIIToUTF16("789"));
+  textfield_->SelectAll(false);
+  EXPECT_TRUE(textfield_view_->IsCommandIdEnabled(IDS_APP_COPY));
+  textfield_view_->ExecuteCommand(IDS_APP_COPY, 0);
+  EXPECT_STR_EQ("789", string16(GetClipboardText()));
+
+  // Ensure [Ctrl]+[c] copies and [Ctrl]+[Alt][c] does nothing.
+  textfield_->SetText(ASCIIToUTF16("012"));
+  textfield_->SelectAll(false);
+  SendKeyEvent(ui::VKEY_C, true, false, true, false);
+  EXPECT_STR_EQ("789", string16(GetClipboardText()));
+  SendKeyEvent(ui::VKEY_C, false, true);
+  EXPECT_STR_EQ("012", string16(GetClipboardText()));
+
+  // Ensure [Ctrl]+[Insert] copies.
+  textfield_->SetText(ASCIIToUTF16("345"));
+  textfield_->SelectAll(false);
+  SendKeyEvent(ui::VKEY_INSERT, false, true);
+  EXPECT_STR_EQ("345", string16(GetClipboardText()));
+  EXPECT_STR_EQ("345", textfield_->text());
+
+  // Ensure IDS_APP_PASTE, [Ctrl]+[V], and [Shift]+[Insert] pastes;
+  // also ensure that [Ctrl]+[Alt]+[V] does nothing.
+  SetClipboardText("abc");
+  textfield_->SetText(string16());
+  EXPECT_TRUE(textfield_view_->IsCommandIdEnabled(IDS_APP_PASTE));
+  textfield_view_->ExecuteCommand(IDS_APP_PASTE, 0);
+  EXPECT_STR_EQ("abc", textfield_->text());
+  SendKeyEvent(ui::VKEY_V, false, true);
+  EXPECT_STR_EQ("abcabc", textfield_->text());
   SendKeyEvent(ui::VKEY_INSERT, true, false);
-  EXPECT_STR_EQ("123123", textfield_->text());
+  EXPECT_STR_EQ("abcabcabc", textfield_->text());
+  SendKeyEvent(ui::VKEY_V, true, false, true, false);
+  EXPECT_STR_EQ("abcabcabc", textfield_->text());
+
   // Ensure [Ctrl]+[Shift]+[Insert] is a no-op.
   textfield_->SelectAll(false);
   SendKeyEvent(ui::VKEY_INSERT, true, true);
-  EXPECT_STR_EQ("123", string16(GetClipboardText()));
-  EXPECT_STR_EQ("123123", textfield_->text());
+  EXPECT_STR_EQ("abc", string16(GetClipboardText()));
+  EXPECT_STR_EQ("abcabcabc", textfield_->text());
 }
 
 TEST_F(NativeTextfieldViewsTest, OvertypeMode) {
