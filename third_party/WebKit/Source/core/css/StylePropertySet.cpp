@@ -286,10 +286,8 @@ bool StylePropertySet::setProperty(CSSPropertyID propertyID, int identifier, boo
     return true;
 }
 
-void StylePropertySet::parseDeclaration(const String& styleDeclaration, StyleSheetContents* contextStyleSheet)
+void MutableStylePropertySet::parseDeclaration(const String& styleDeclaration, StyleSheetContents* contextStyleSheet)
 {
-    ASSERT(isMutable());
-
     mutablePropertyVector().clear();
 
     CSSParserContext context(cssParserMode());
@@ -391,9 +389,8 @@ static const Vector<CSSPropertyID>& blockProperties()
     return properties;
 }
 
-void StylePropertySet::clear()
+void MutableStylePropertySet::clear()
 {
-    ASSERT(isMutable());
     mutablePropertyVector().clear();
 }
 

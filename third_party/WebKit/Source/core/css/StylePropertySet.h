@@ -120,12 +120,9 @@ public:
     bool removeProperty(CSSPropertyID, String* returnText = 0);
     void removePrefixedOrUnprefixedProperty(CSSPropertyID);
 
-    void parseDeclaration(const String& styleDeclaration, StyleSheetContents* contextStyleSheet);
-
     void addParsedProperties(const Vector<CSSProperty>&);
     void addParsedProperty(const CSSProperty&);
 
-    void clear();
     PassRefPtr<StylePropertySet> copyBlockProperties() const;
     void removeBlockProperties();
     bool removePropertiesInSet(const CSSPropertyID* set, unsigned length);
@@ -225,6 +222,9 @@ public:
     static PassRefPtr<MutableStylePropertySet> create(const CSSProperty* properties, unsigned count);
 
     MutableStylePropertySet(const StylePropertySet&);
+
+    void clear();
+    void parseDeclaration(const String& styleDeclaration, StyleSheetContents* contextStyleSheet);
 
     CSSStyleDeclaration* ensureCSSStyleDeclaration();
     CSSStyleDeclaration* ensureInlineCSSStyleDeclaration(const StyledElement* parentElement);
