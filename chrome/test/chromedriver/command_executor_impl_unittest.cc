@@ -8,12 +8,14 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/command_executor_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(CommandExecutorImplTest, UnknownCommand) {
-  CommandExecutorImpl executor;
+  Logger log;
+  CommandExecutorImpl executor(&log);
   base::DictionaryValue empty_dict;
   StatusCode status;
   scoped_ptr<base::Value> value;
@@ -48,7 +50,8 @@ Status ExecuteSimpleCommand(
 }  // namespace
 
 TEST(CommandExecutorImplTest, SimpleCommand) {
-  CommandExecutorImpl executor;
+  Logger log;
+  CommandExecutorImpl executor(&log);
   base::DictionaryValue params;
   std::string session_id("some id");
   executor.command_map_.Set("simpleCommand",
@@ -80,7 +83,8 @@ Status ExecuteSimpleCommand2(
 }  // namespace
 
 TEST(CommandExecutorImplTest, CommandThatDoesntSetValueOrSessionId) {
-  CommandExecutorImpl executor;
+  Logger log;
+  CommandExecutorImpl executor(&log);
   executor.command_map_.Set(
       "simpleCommand",
       base::Bind(&ExecuteSimpleCommand2));
@@ -110,7 +114,8 @@ Status ExecuteSimpleCommand3(
 }  // namespace
 
 TEST(CommandExecutorImplTest, CommandThatReturnsError) {
-  CommandExecutorImpl executor;
+  Logger log;
+  CommandExecutorImpl executor(&log);
   executor.command_map_.Set("simpleCommand",
                             base::Bind(&ExecuteSimpleCommand3));
 

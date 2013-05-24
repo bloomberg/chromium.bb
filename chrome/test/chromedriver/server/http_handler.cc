@@ -8,8 +8,10 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/command_executor.h"
 #include "chrome/test/chromedriver/command_names.h"
@@ -248,10 +250,12 @@ scoped_ptr<HttpHandler::CommandMap> HttpHandler::CreateCommandMap() {
       new CommandMap(commands, commands + arraysize(commands)));
 }
 
-HttpHandler::HttpHandler(scoped_ptr<CommandExecutor> executor,
+HttpHandler::HttpHandler(Log* log,
+                         scoped_ptr<CommandExecutor> executor,
                          scoped_ptr<CommandMap> command_map,
                          const std::string& url_base)
-    : executor_(executor.Pass()),
+    : log_(log),
+      executor_(executor.Pass()),
       command_map_(command_map.Pass()),
       url_base_(url_base) {
   executor_->Init();
@@ -261,6 +265,33 @@ HttpHandler::~HttpHandler() {}
 
 void HttpHandler::Handle(const HttpRequest& request,
                          HttpResponse* response) {
+  const char* method = "GET";
+  if (request.method == kPost)
+    method = "POST";
+  else if (request.method == kDelete)
+    method = "DELETE";
+  log_->AddEntry(
+      Log::kLog,
+      base::StringPrintf("received WebDriver request: %s %s %s",
+                         method,
+                         request.path.c_str(),
+                         request.body.c_str()));
+
+  HandleInternal(request, response);
+
+  log_->AddEntry(
+      Log::kLog,
+      base::StringPrintf("sending WebDriver response: %d %s",
+                         response->status(),
+                         response->body().c_str()));
+}
+
+bool HttpHandler::ShouldShutdown(const HttpRequest& request) {
+  return request.path == url_base_ + kShutdownPath;
+}
+
+void HttpHandler::HandleInternal(const HttpRequest& request,
+                                 HttpResponse* response) {
   std::string path = request.path;
   if (!StartsWithASCII(path, url_base_, true)) {
     *response = HttpResponse(HttpResponse::kBadRequest);
@@ -275,10 +306,6 @@ void HttpHandler::Handle(const HttpRequest& request,
     response->set_body("unknown command: " + path);
     return;
   }
-}
-
-bool HttpHandler::ShouldShutdown(const HttpRequest& request) {
-  return request.path == url_base_ + kShutdownPath;
 }
 
 bool HttpHandler::HandleWebDriverCommand(

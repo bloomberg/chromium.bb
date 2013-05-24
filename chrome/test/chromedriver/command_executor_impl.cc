@@ -33,8 +33,8 @@ const char kSessionStorage[] = "sessionStorage";
 
 }  // namespace
 
-CommandExecutorImpl::CommandExecutorImpl()
-    : io_thread_("ChromeDriver IO") {}
+CommandExecutorImpl::CommandExecutorImpl(Log* log)
+    : log_(log), io_thread_("ChromeDriver IO") {}
 
 CommandExecutorImpl::~CommandExecutorImpl() {}
 
@@ -254,8 +254,9 @@ void CommandExecutorImpl::Init() {
   command_map_.Set(CommandNames::kStatus, base::Bind(&ExecuteGetStatus));
   command_map_.Set(
       CommandNames::kNewSession,
-      base::Bind(&ExecuteNewSession, &session_map_, context_getter_,
-                 socket_factory_));
+      base::Bind(&ExecuteNewSession,
+                 NewSessionParams(
+                     log_, &session_map_, context_getter_, socket_factory_)));
   command_map_.Set(
       CommandNames::kQuitAll,
       base::Bind(&ExecuteQuitAll,

@@ -18,7 +18,8 @@ class ChromeAndroidImpl : public ChromeImpl {
       scoped_ptr<DevToolsHttpClient> client,
       const std::string& version,
       int build_no,
-      ScopedVector<DevToolsEventListener>& devtools_event_listeners);
+      ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+      Log* log);
   virtual ~ChromeAndroidImpl();
 
   // Overridden from Chrome:

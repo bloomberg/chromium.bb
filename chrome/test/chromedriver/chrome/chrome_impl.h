@@ -18,6 +18,7 @@ class AutomationExtension;
 class DevToolsEventListener;
 class DevToolsHttpClient;
 class JavaScriptDialogManager;
+class Log;
 class Status;
 class WebView;
 class WebViewImpl;
@@ -46,9 +47,11 @@ class ChromeImpl : public Chrome {
       scoped_ptr<DevToolsHttpClient> client,
       const std::string& version,
       int build_no,
-      ScopedVector<DevToolsEventListener>& devtools_event_listeners);
+      ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+      Log* log);
 
   scoped_ptr<DevToolsHttpClient> devtools_http_client_;
+  Log* log_;
 
  private:
   typedef std::list<linked_ptr<WebViewImpl> > WebViewList;

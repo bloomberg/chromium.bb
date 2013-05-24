@@ -18,6 +18,7 @@
 #include "chrome/test/chromedriver/chrome/geolocation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/js.h"
+#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/navigation_tracker.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
@@ -83,7 +84,8 @@ const char* GetAsString(KeyEventType type) {
 }  // namespace
 
 WebViewImpl::WebViewImpl(const std::string& id,
-                         scoped_ptr<DevToolsClient> client)
+                         scoped_ptr<DevToolsClient> client,
+                         Log* log)
     : id_(id),
       dom_tracker_(new DomTracker(client.get())),
       frame_tracker_(new FrameTracker(client.get())),
@@ -91,7 +93,8 @@ WebViewImpl::WebViewImpl(const std::string& id,
       dialog_manager_(new JavaScriptDialogManager(client.get())),
       geolocation_override_manager_(
           new GeolocationOverrideManager(client.get())),
-      client_(client.release()) {}
+      client_(client.release()),
+      log_(log) {}
 
 WebViewImpl::~WebViewImpl() {}
 
@@ -253,9 +256,12 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id) {
     if (status.IsError())
       return status;
   }
-  return client_->HandleEventsUntil(
+  log_->AddEntry(Log::kLog, "waiting for pending navigations");
+  Status status = client_->HandleEventsUntil(
       base::Bind(&WebViewImpl::IsNotPendingNavigation, base::Unretained(this),
                  full_frame_id));
+  log_->AddEntry(Log::kLog, "done waiting for pending navigations");
+  return status;
 }
 
 Status WebViewImpl::IsPendingNavigation(const std::string& frame_id,

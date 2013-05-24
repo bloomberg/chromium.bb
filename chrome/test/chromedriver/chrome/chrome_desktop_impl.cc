@@ -64,10 +64,15 @@ ChromeDesktopImpl::ChromeDesktopImpl(
     const std::string& version,
     int build_no,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+    Log* log,
     base::ProcessHandle process,
     base::ScopedTempDir* user_data_dir,
     base::ScopedTempDir* extension_dir)
-    : ChromeImpl(client.Pass(), version, build_no, devtools_event_listeners),
+    : ChromeImpl(client.Pass(),
+                 version,
+                 build_no,
+                 devtools_event_listeners,
+                 log),
       process_(process),
       quit_(false) {
   if (user_data_dir->IsValid())
@@ -112,7 +117,7 @@ Status ChromeDesktopImpl::GetAutomationExtension(
       return Status(kUnknownError, "automation extension cannot be found");
 
     scoped_ptr<WebView> web_view(new WebViewImpl(
-        id, devtools_http_client_->CreateClient(id)));
+        id, devtools_http_client_->CreateClient(id), log_));
     Status status = web_view->ConnectIfNecessary();
     if (status.IsError())
       return status;

@@ -23,6 +23,7 @@ class ChromeDesktopImpl : public ChromeImpl {
       const std::string& version,
       int build_no,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+      Log* log,
       base::ProcessHandle process,
       base::ScopedTempDir* user_data_dir,
       base::ScopedTempDir* extension_dir);

@@ -45,10 +45,20 @@ Status ExecuteGetStatus(
   return Status(kOk);
 }
 
-Status ExecuteNewSession(
+NewSessionParams::NewSessionParams(
+    Log* log,
     SessionMap* session_map,
     scoped_refptr<URLRequestContextGetter> context_getter,
-    const SyncWebSocketFactory& socket_factory,
+    const SyncWebSocketFactory& socket_factory)
+    : log(log),
+      session_map(session_map),
+      context_getter(context_getter),
+      socket_factory(socket_factory) {}
+
+NewSessionParams::~NewSessionParams() {}
+
+Status ExecuteNewSession(
+    const NewSessionParams& bound_params,
     const base::DictionaryValue& params,
     const std::string& session_id,
     scoped_ptr<base::Value>* out_value,
@@ -75,8 +85,13 @@ Status ExecuteNewSession(
     return status;
 
   scoped_ptr<Chrome> chrome;
-  status = LaunchChrome(context_getter, port, socket_factory,
-                        capabilities, devtools_event_listeners, &chrome);
+  status = LaunchChrome(bound_params.context_getter,
+                        port,
+                        bound_params.socket_factory,
+                        bound_params.log,
+                        capabilities,
+                        devtools_event_listeners,
+                        &chrome);
   if (status.IsError())
     return status;
 
@@ -105,7 +120,7 @@ Status ExecuteNewSession(
 
   scoped_refptr<SessionAccessor> accessor(
       new SessionAccessorImpl(session.Pass()));
-  session_map->Set(new_id, accessor);
+  bound_params.session_map->Set(new_id, accessor);
 
   return Status(kOk);
 }

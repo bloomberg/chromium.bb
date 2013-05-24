@@ -26,11 +26,12 @@ class Value;
 }
 
 class ChromeLauncherImpl;
+class Log;
 class URLRequestContextGetter;
 
 class CommandExecutorImpl : public CommandExecutor {
  public:
-  CommandExecutorImpl();
+  explicit CommandExecutorImpl(Log* log);
   virtual ~CommandExecutorImpl();
 
   // Overridden from CommandExecutor:
@@ -48,6 +49,7 @@ class CommandExecutorImpl : public CommandExecutor {
       CommandExecutorImplTest, CommandThatDoesntSetValueOrSessionId);
   FRIEND_TEST_ALL_PREFIXES(CommandExecutorImplTest, CommandThatReturnsError);
 
+  Log* log_;
   base::Thread io_thread_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
   SyncWebSocketFactory socket_factory_;

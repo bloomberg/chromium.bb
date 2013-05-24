@@ -7,6 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/command_executor.h"
 #include "chrome/test/chromedriver/command_names.h"
@@ -41,7 +42,9 @@ class DummyExecutor : public CommandExecutor {
 }  // namespace
 
 TEST(HttpHandlerTest, HandleOutsideOfBaseUrl) {
+  Logger log;
   HttpHandler handler(
+      &log,
       scoped_ptr<CommandExecutor>(new DummyExecutor()),
       scoped_ptr<HttpHandler::CommandMap>(new HttpHandler::CommandMap()),
       "base/url/");
@@ -52,7 +55,9 @@ TEST(HttpHandlerTest, HandleOutsideOfBaseUrl) {
 }
 
 TEST(HttpHandlerTest, HandleUnknownCommand) {
+  Logger log;
   HttpHandler handler(
+      &log,
       scoped_ptr<CommandExecutor>(new DummyExecutor()),
       scoped_ptr<HttpHandler::CommandMap>(new HttpHandler::CommandMap()),
       "/");
@@ -65,7 +70,9 @@ TEST(HttpHandlerTest, HandleUnknownCommand) {
 TEST(HttpHandlerTest, HandleNewSession) {
   scoped_ptr<HttpHandler::CommandMap> map(new HttpHandler::CommandMap());
   map->push_back(CommandMapping(kPost, "session", CommandNames::kNewSession));
+  Logger log;
   HttpHandler handler(
+      &log,
       scoped_ptr<CommandExecutor>(new DummyExecutor()),
       map.Pass(), "/base/");
   HttpRequest request(kPost, "/base/session", std::string());
@@ -81,7 +88,9 @@ TEST(HttpHandlerTest, HandleNewSession) {
 TEST(HttpHandlerTest, HandleInvalidPost) {
   scoped_ptr<HttpHandler::CommandMap> map(new HttpHandler::CommandMap());
   map->push_back(CommandMapping(kPost, "path", "cmd"));
+  Logger log;
   HttpHandler handler(
+      &log,
       scoped_ptr<CommandExecutor>(new DummyExecutor()),
       map.Pass(), "/");
   HttpRequest request(kPost, "/path", "should be a dictionary");
@@ -93,7 +102,9 @@ TEST(HttpHandlerTest, HandleInvalidPost) {
 TEST(HttpHandlerTest, HandleUnimplementedCommand) {
   scoped_ptr<HttpHandler::CommandMap> map(new HttpHandler::CommandMap());
   map->push_back(CommandMapping(kPost, "path", "cmd"));
+  Logger log;
   HttpHandler handler(
+      &log,
       scoped_ptr<CommandExecutor>(new DummyExecutor(kUnknownCommand)),
       map.Pass(), "/");
   HttpRequest request(kPost, "/path", std::string());
@@ -105,7 +116,9 @@ TEST(HttpHandlerTest, HandleUnimplementedCommand) {
 TEST(HttpHandlerTest, HandleCommand) {
   scoped_ptr<HttpHandler::CommandMap> map(new HttpHandler::CommandMap());
   map->push_back(CommandMapping(kPost, "path", "cmd"));
+  Logger log;
   HttpHandler handler(
+      &log,
       scoped_ptr<CommandExecutor>(new DummyExecutor()),
       map.Pass(), "/");
   HttpRequest request(kPost, "/path", std::string());

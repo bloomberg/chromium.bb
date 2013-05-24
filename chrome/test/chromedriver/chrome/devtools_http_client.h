@@ -13,6 +13,7 @@
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
 class DevToolsClient;
+class Log;
 class Status;
 class URLRequestContextGetter;
 
@@ -55,7 +56,8 @@ class DevToolsHttpClient {
   DevToolsHttpClient(
       int port,
       scoped_refptr<URLRequestContextGetter> context_getter,
-      const SyncWebSocketFactory& socket_factory);
+      const SyncWebSocketFactory& socket_factory,
+      Log* log);
   ~DevToolsHttpClient();
 
   Status GetVersion(std::string* version);
@@ -68,9 +70,13 @@ class DevToolsHttpClient {
 
  private:
   Status CloseFrontends(const std::string& for_client_id);
+  bool FetchUrlAndLog(const std::string& url,
+                      URLRequestContextGetter* getter,
+                      std::string* response);
 
   scoped_refptr<URLRequestContextGetter> context_getter_;
   SyncWebSocketFactory socket_factory_;
+  Log* log_;
   std::string server_url_;
   std::string web_socket_url_prefix_;
 

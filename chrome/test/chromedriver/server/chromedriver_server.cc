@@ -2,23 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cstdio>
-#include <iostream>
+#include <stdio.h>
 #include <string>
 #include <vector>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/command_executor_impl.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/server/http_response.h"
 #include "third_party/mongoose/mongoose.h"
+
+#if defined(OS_POSIX)
+#include <fcntl.h>
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -73,13 +79,8 @@ void* ProcessHttpRequest(mg_event event_raised,
     ReadRequestBody(request_info, connection, &body);
 
   HttpRequest request(method, request_info->uri, body);
-  LOG(INFO) << "Handling request: "
-            << std::string(request_info->uri) << " " << body;
-
   HttpResponse response;
   user_data->handler->Handle(request, &response);
-  LOG(INFO) << "Done handling request: "
-            << response.status() << " " << response.body();
 
   // Don't allow HTTP keep alive.
   response.AddHeader("connection", "close");
@@ -132,23 +133,20 @@ int main(int argc, char *argv[]) {
   }
   if (cmd_line->HasSwitch("log-path")) {
     log_path = cmd_line->GetSwitchValuePath("log-path");
-  } else {
-    base::FilePath::StringType log_name(FILE_PATH_LITERAL("chromedriver.log"));
-    log_path = base::FilePath(log_name);
-    file_util::ScopedFILE file(file_util::OpenFile(log_path, "w"));
-    base::FilePath temp_dir;
-    if (!file.get() && file_util::GetTempDir(&temp_dir))
-      log_path = temp_dir.Append(log_name);
+#if defined(OS_WIN)
+    FILE* redir_stderr = _wfreopen(log_path.value().c_str(), L"w", stderr);
+#else
+    FILE* redir_stderr = freopen(log_path.value().c_str(), "w", stderr);
+#endif
+    if (!redir_stderr) {
+      printf("Failed to redirect stderr to log file. Exiting...\n");
+      return 1;
+    }
   }
 
-  if (!log_path.IsAbsolute()) {
-    base::FilePath cwd;
-    if (file_util::GetCurrentDirectory(&cwd))
-      log_path = cwd.Append(log_path);
-  }
   bool success = InitLogging(
-      log_path.value().c_str(),
-      logging::LOG_ONLY_TO_FILE,
+      NULL,
+      logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
       logging::DONT_LOCK_LOG_FILE,
       logging::DELETE_OLD_LOG_FILE,
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
@@ -157,15 +155,16 @@ int main(int argc, char *argv[]) {
   }
   logging::SetLogItems(false,  // enable_process_id
                        false,  // enable_thread_id
-                       true,   // enable_timestamp
+                       false,  // enable_timestamp
                        false); // enable_tickcount
-  if (cmd_line->HasSwitch("verbose")) {
-    logging::SetMinLogLevel(logging::LOG_VERBOSE);
-  }
+  Log::Level level = Log::kLog;
+  if (cmd_line->HasSwitch("verbose"))
+    level = Log::kDebug;
 
-  scoped_ptr<CommandExecutor> executor(new CommandExecutorImpl());
-  HttpHandler handler(executor.Pass(), HttpHandler::CreateCommandMap(),
-                      url_base);
+  scoped_ptr<Log> log(new Logger(level));
+  scoped_ptr<CommandExecutor> executor(new CommandExecutorImpl(log.get()));
+  HttpHandler handler(
+      log.get(), executor.Pass(), HttpHandler::CreateCommandMap(), url_base);
   base::WaitableEvent shutdown_event(false, false);
   MongooseUserData user_data = { &handler, &shutdown_event };
 
@@ -186,15 +185,17 @@ int main(int argc, char *argv[]) {
   }
 
   if (!cmd_line->HasSwitch("silent")) {
-    std::cout << "Started ChromeDriver" << std::endl
-              << "port=" << port << std::endl
-              << "version=" << std::string(kChromeDriverVersion) << std::endl
-              << "log=" << log_path.value() << std::endl;
+    printf("Started ChromeDriver (v%s) on port %s\n",
+           kChromeDriverVersion,
+           port.c_str());
   }
+
+#if defined(OS_POSIX)
   if (!cmd_line->HasSwitch("verbose")) {
-    fclose(stdout);
-    fclose(stderr);
+    // Close stderr on exec, so that Chrome log spew doesn't confuse users.
+    fcntl(STDERR_FILENO, F_SETFD, FD_CLOEXEC);
   }
+#endif
 
   // Run until we receive command to shutdown.
   shutdown_event.Wait();

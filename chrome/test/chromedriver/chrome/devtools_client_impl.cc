@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
+#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/net/sync_websocket.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
@@ -63,11 +64,13 @@ DevToolsClientImpl::DevToolsClientImpl(
     const SyncWebSocketFactory& factory,
     const std::string& url,
     const std::string& id,
-    const FrontendCloserFunc& frontend_closer_func)
+    const FrontendCloserFunc& frontend_closer_func,
+    Log* log)
     : socket_(factory.Run().Pass()),
       url_(url),
       id_(id),
       frontend_closer_func_(frontend_closer_func),
+      log_(log),
       parser_func_(base::Bind(&internal::ParseInspectorMessage)),
       unnotified_event_(NULL),
       next_id_(1),
@@ -78,11 +81,13 @@ DevToolsClientImpl::DevToolsClientImpl(
     const std::string& url,
     const std::string& id,
     const FrontendCloserFunc& frontend_closer_func,
+    Log* log,
     const ParserFunc& parser_func)
     : socket_(factory.Run().Pass()),
       url_(url),
       id_(id),
       frontend_closer_func_(frontend_closer_func),
+      log_(log),
       parser_func_(parser_func),
       unnotified_event_(NULL),
       next_id_(1),
@@ -191,6 +196,7 @@ Status DevToolsClientImpl::SendCommandInternal(
   command.Set("params", params.DeepCopy());
   std::string message;
   base::JSONWriter::Write(&command, &message);
+  log_->AddEntry(Log::kDebug, "sending Inspector command " + message);
   if (!socket_->Send(message))
     return Status(kDisconnected, "unable to send message to renderer");
 
@@ -234,6 +240,7 @@ Status DevToolsClientImpl::ProcessNextMessage(int expected_id) {
   std::string message;
   if (!socket_->ReceiveNextMessage(&message))
     return Status(kDisconnected, "unable to receive message from renderer");
+  log_->AddEntry(Log::kDebug, "received Inspector response " + message);
 
   internal::InspectorMessageType type;
   internal::InspectorEvent event;

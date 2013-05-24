@@ -16,6 +16,7 @@ class DictionaryValue;
 
 class CommandExecutor;
 class HttpResponse;
+class Log;
 
 enum HttpMethod {
   kGet = 0,
@@ -50,7 +51,8 @@ class HttpHandler {
   typedef std::vector<CommandMapping> CommandMap;
   static scoped_ptr<CommandMap> CreateCommandMap();
 
-  HttpHandler(scoped_ptr<CommandExecutor> executor,
+  HttpHandler(Log* log,
+              scoped_ptr<CommandExecutor> executor,
               scoped_ptr<std::vector<CommandMapping> > commands,
               const std::string& url_base);
   ~HttpHandler();
@@ -61,11 +63,14 @@ class HttpHandler {
   bool ShouldShutdown(const HttpRequest& request);
 
  private:
+  void HandleInternal(const HttpRequest& request,
+                      HttpResponse* response);
   bool HandleWebDriverCommand(
       const HttpRequest& request,
       const std::string& trimmed_path,
       HttpResponse* response);
 
+  Log* log_;
   scoped_ptr<CommandExecutor> executor_;
   scoped_ptr<CommandMap> command_map_;
   std::string url_base_;

@@ -12,6 +12,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
+#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
@@ -64,9 +65,11 @@ const WebViewInfo* WebViewsInfo::GetForId(const std::string& id) const {
 DevToolsHttpClient::DevToolsHttpClient(
     int port,
     scoped_refptr<URLRequestContextGetter> context_getter,
-    const SyncWebSocketFactory& socket_factory)
+    const SyncWebSocketFactory& socket_factory,
+    Log* log)
     : context_getter_(context_getter),
       socket_factory_(socket_factory),
+      log_(log),
       server_url_(base::StringPrintf("http://127.0.0.1:%d", port)),
       web_socket_url_prefix_(
           base::StringPrintf("ws://127.0.0.1:%d/devtools/page/", port)) {}
@@ -75,7 +78,7 @@ DevToolsHttpClient::~DevToolsHttpClient() {}
 
 Status DevToolsHttpClient::GetVersion(std::string* version) {
   std::string data;
-  if (!FetchUrl(server_url_ + "/json/version", context_getter_, &data))
+  if (!FetchUrlAndLog(server_url_ + "/json/version", context_getter_, &data))
     return Status(kChromeNotReachable);
 
   return internal::ParseVersionInfo(data, version);
@@ -83,7 +86,7 @@ Status DevToolsHttpClient::GetVersion(std::string* version) {
 
 Status DevToolsHttpClient::GetWebViewsInfo(WebViewsInfo* views_info) {
   std::string data;
-  if (!FetchUrl(server_url_ + "/json", context_getter_, &data))
+  if (!FetchUrlAndLog(server_url_ + "/json", context_getter_, &data))
     return Status(kChromeNotReachable);
 
   return internal::ParseWebViewsInfo(data, views_info);
@@ -96,13 +99,16 @@ scoped_ptr<DevToolsClient> DevToolsHttpClient::CreateClient(
       web_socket_url_prefix_ + id,
       id,
       base::Bind(
-          &DevToolsHttpClient::CloseFrontends, base::Unretained(this), id)));
+          &DevToolsHttpClient::CloseFrontends, base::Unretained(this), id),
+      log_));
 }
 
 Status DevToolsHttpClient::CloseWebView(const std::string& id) {
   std::string data;
-  if (!FetchUrl(server_url_ + "/json/close/" + id, context_getter_, &data))
+  if (!FetchUrlAndLog(
+          server_url_ + "/json/close/" + id, context_getter_, &data)) {
     return Status(kOk);  // Closing the last web view leads chrome to quit.
+  }
 
   // Wait for the target window to be completely closed.
   base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
@@ -160,8 +166,9 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
         socket_factory_,
         web_socket_url_prefix_ + *it,
         *it,
-        base::Bind(&FakeCloseFrontends)));
-    scoped_ptr<WebViewImpl> web_view(new WebViewImpl(*it, client.Pass()));
+        base::Bind(&FakeCloseFrontends),
+        log_));
+    scoped_ptr<WebViewImpl> web_view(new WebViewImpl(*it, client.Pass(), log_));
 
     status = web_view->ConnectIfNecessary();
     // Ignore disconnected error, because the debugger might have closed when
@@ -197,6 +204,18 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }
   return Status(kUnknownError, "failed to close UI debuggers");
+}
+
+bool DevToolsHttpClient::FetchUrlAndLog(const std::string& url,
+                                        URLRequestContextGetter* getter,
+                                        std::string* response) {
+  log_->AddEntry(Log::kDebug, "devtools request: " + url);
+  bool ok = FetchUrl(url, getter, response);
+  if (ok)
+    log_->AddEntry(Log::kDebug, "devtools response: " + *response);
+  else
+    log_->AddEntry(Log::kDebug, "devtools request failed");
+  return ok;
 }
 
 namespace internal {

@@ -23,6 +23,7 @@ class FilePath;
 }
 
 class Chrome;
+class Log;
 class Status;
 class URLRequestContextGetter;
 
@@ -30,6 +31,7 @@ Status LaunchChrome(
     URLRequestContextGetter* context_getter,
     int port,
     const SyncWebSocketFactory& socket_factory,
+    Log* log,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     scoped_ptr<Chrome>* chrome);

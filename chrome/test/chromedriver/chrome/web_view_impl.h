@@ -24,6 +24,7 @@ class DomTracker;
 class FrameTracker;
 class GeolocationOverrideManager;
 struct KeyEvent;
+class Log;
 struct MouseEvent;
 class NavigationTracker;
 class Status;
@@ -31,7 +32,8 @@ class Status;
 class WebViewImpl : public WebView {
  public:
   WebViewImpl(const std::string& id,
-              scoped_ptr<DevToolsClient> client);
+              scoped_ptr<DevToolsClient> client,
+              Log* log);
   virtual ~WebViewImpl();
 
   // Overridden from WebView:
@@ -96,6 +98,7 @@ class WebViewImpl : public WebView {
   scoped_ptr<JavaScriptDialogManager> dialog_manager_;
   scoped_ptr<GeolocationOverrideManager> geolocation_override_manager_;
   scoped_ptr<DevToolsClient> client_;
+  Log* log_;
 };
 
 namespace internal {

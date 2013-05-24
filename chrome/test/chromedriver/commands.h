@@ -19,6 +19,7 @@ class DictionaryValue;
 class Value;
 }
 
+class Log;
 class Status;
 class URLRequestContextGetter;
 
@@ -29,11 +30,22 @@ Status ExecuteGetStatus(
     scoped_ptr<base::Value>* out_value,
     std::string* out_session_id);
 
+struct NewSessionParams {
+  NewSessionParams(Log* log,
+                   SessionMap* session_map,
+                   scoped_refptr<URLRequestContextGetter> context_getter,
+                   const SyncWebSocketFactory& socket_factory);
+  ~NewSessionParams();
+
+  Log* log;
+  SessionMap* session_map;
+  scoped_refptr<URLRequestContextGetter> context_getter;
+  SyncWebSocketFactory socket_factory;
+};
+
 // Creates a new session.
 Status ExecuteNewSession(
-    SessionMap* session_map,
-    scoped_refptr<URLRequestContextGetter> context_getter,
-    const SyncWebSocketFactory& socket_factory,
+    const NewSessionParams& bound_params,
     const base::DictionaryValue& params,
     const std::string& session_id,
     scoped_ptr<base::Value>* out_value,
