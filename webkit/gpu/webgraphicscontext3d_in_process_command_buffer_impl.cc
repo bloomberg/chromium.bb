@@ -158,6 +158,8 @@ class GLInProcessContext {
 
   ::gpu::gles2::GLES2Decoder* GetDecoder();
 
+  void OnResizeView(gfx::Size size);
+
  private:
   explicit GLInProcessContext(bool share_resources);
 
@@ -487,6 +489,11 @@ CommandBufferService* GLInProcessContext::GetCommandBufferService() {
   return decoder_.get();
 }
 
+void GLInProcessContext::OnResizeView(gfx::Size size) {
+  DCHECK(!surface_->IsOffscreen());
+  surface_->Resize(size);
+}
+
 // TODO(gman): Remove This
 void GLInProcessContext::DisableShaderTranslation() {
   NOTREACHED();
@@ -651,7 +658,7 @@ bool GLInProcessContext::Initialize(
     disallowed_features.gpu_memory_manager = true;
     if (!decoder_->Initialize(surface_,
                               context_,
-                              true,
+                              is_offscreen,
                               size,
                               disallowed_features,
                               allowed_extensions,
@@ -659,6 +666,11 @@ bool GLInProcessContext::Initialize(
       LOG(ERROR) << "Could not initialize decoder.";
       Destroy();
       return false;
+    }
+
+    if (!is_offscreen) {
+      decoder_->SetResizeCallback(base::Bind(&GLInProcessContext::OnResizeView,
+                                             base::Unretained(this)));
     }
   }
 
@@ -780,6 +792,8 @@ WebGraphicsContext3DInProcessCommandBufferImpl*
 WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
     const WebKit::WebGraphicsContext3D::Attributes& attributes,
     gfx::AcceleratedWidget window) {
+  if (!gfx::GLSurface::InitializeOneOff())
+    return NULL;
   return new WebGraphicsContext3DInProcessCommandBufferImpl(
       attributes, false, window);
 }
