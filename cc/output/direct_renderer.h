@@ -112,11 +112,9 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual void EnsureScissorTestEnabled() = 0;
   virtual void EnsureScissorTestDisabled() = 0;
 
-  typedef base::Callback<void(scoped_ptr<SkBitmap>)>
-      CopyRenderPassCallback;
   virtual void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
-      const CopyRenderPassCallback& callback) = 0;
+      scoped_ptr<CopyOutputRequest> request) = 0;
 
   ScopedPtrHashMap<RenderPass::Id, CachedResource> render_pass_textures_;
   ResourceProvider* resource_provider_;

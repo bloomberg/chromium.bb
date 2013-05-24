@@ -62,7 +62,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   virtual void EnsureScissorTestDisabled() OVERRIDE;
   virtual void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
-      const CopyRenderPassCallback& callback) OVERRIDE;
+      scoped_ptr<CopyOutputRequest> request) OVERRIDE;
 
  private:
   SoftwareRenderer(

@@ -15,6 +15,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/scrollbar_layer.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/output/output_surface.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/prioritized_resource_manager.h"
@@ -2611,9 +2612,9 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
     int frame = layer_tree_host()->commit_number();
     switch (frame) {
       case 1:
-        child->RequestCopyAsBitmap(base::Bind(
-            &LayerTreeHostTestAsyncReadback::BitmapCallback,
-            base::Unretained(this)));
+        child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+            base::Bind(&LayerTreeHostTestAsyncReadback::BitmapCallback,
+                       base::Unretained(this))));
         EXPECT_EQ(0u, callbacks_.size());
         break;
       case 2:
@@ -2624,15 +2625,15 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
         EXPECT_EQ(1u, callbacks_.size());
         EXPECT_EQ(gfx::Size(10, 10).ToString(), callbacks_[0].ToString());
 
-        child->RequestCopyAsBitmap(base::Bind(
-            &LayerTreeHostTestAsyncReadback::BitmapCallback,
-            base::Unretained(this)));
-        root->RequestCopyAsBitmap(base::Bind(
-            &LayerTreeHostTestAsyncReadback::BitmapCallback,
-            base::Unretained(this)));
-        child->RequestCopyAsBitmap(base::Bind(
-            &LayerTreeHostTestAsyncReadback::BitmapCallback,
-            base::Unretained(this)));
+        child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+            base::Bind(&LayerTreeHostTestAsyncReadback::BitmapCallback,
+                       base::Unretained(this))));
+        root->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+            base::Bind(&LayerTreeHostTestAsyncReadback::BitmapCallback,
+                       base::Unretained(this))));
+        child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+            base::Bind(&LayerTreeHostTestAsyncReadback::BitmapCallback,
+                       base::Unretained(this))));
         EXPECT_EQ(1u, callbacks_.size());
         break;
       case 3:
@@ -2737,12 +2738,14 @@ class LayerTreeHostTestAsyncReadbackLayerDestroyed : public LayerTreeHostTest {
     int frame = layer_tree_host()->commit_number();
     switch (frame) {
       case 1:
-        main_destroyed_->RequestCopyAsBitmap(base::Bind(
-            &LayerTreeHostTestAsyncReadbackLayerDestroyed::BitmapCallback,
-            base::Unretained(this)));
-        impl_destroyed_->RequestCopyAsBitmap(base::Bind(
-            &LayerTreeHostTestAsyncReadbackLayerDestroyed::BitmapCallback,
-            base::Unretained(this)));
+        main_destroyed_->RequestCopyOfOutput(
+            CopyOutputRequest::CreateBitmapRequest(base::Bind(
+                &LayerTreeHostTestAsyncReadbackLayerDestroyed::BitmapCallback,
+                base::Unretained(this))));
+        impl_destroyed_->RequestCopyOfOutput(
+            CopyOutputRequest::CreateBitmapRequest(base::Bind(
+                &LayerTreeHostTestAsyncReadbackLayerDestroyed::BitmapCallback,
+                base::Unretained(this))));
         EXPECT_EQ(0, callback_count_);
 
         // Destroy the main thread layer right away.

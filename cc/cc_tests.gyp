@@ -16,6 +16,7 @@
       'base/hash_pair_unittest.cc',
       'base/math_util_unittest.cc',
       'base/region_unittest.cc',
+      'base/scoped_ptr_vector_unittest.cc',
       'base/tiling_data_unittest.cc',
       'base/util_unittest.cc',
       'base/worker_pool_unittest.cc',

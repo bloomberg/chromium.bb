@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "cc/output/compositor_frame_metadata.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_renderer.h"
@@ -74,10 +75,10 @@ bool PixelTest::RunPixelTestWithReadbackTarget(
     const PixelComparator& comparator) {
   base::RunLoop run_loop;
 
-  target->copy_callbacks.push_back(
+  target->copy_requests.push_back(CopyOutputRequest::CreateBitmapRequest(
       base::Bind(&PixelTest::ReadbackResult,
                  base::Unretained(this),
-                 run_loop.QuitClosure()));
+                 run_loop.QuitClosure())));
 
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
   renderer_->DrawFrame(pass_list);

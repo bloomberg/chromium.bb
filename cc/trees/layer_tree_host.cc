@@ -876,8 +876,7 @@ bool LayerTreeHost::PaintLayerContents(
            LayerIteratorType::Begin(&render_surface_layer_list);
        it != end;
        ++it) {
-    bool prevent_occlusion =
-        it.target_render_surface_layer()->HasRequestCopyCallback();
+    bool prevent_occlusion = it.target_render_surface_layer()->HasCopyRequest();
     occlusion_tracker.EnterLayer(it, prevent_occlusion);
 
     if (it.represents_target_render_surface()) {

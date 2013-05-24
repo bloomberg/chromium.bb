@@ -6,7 +6,6 @@
 #define CC_QUADS_RENDER_PASS_H_
 
 #include <utility>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -26,6 +25,7 @@
 namespace cc {
 
 class DrawQuad;
+class CopyOutputRequest;
 class SharedQuadState;
 
 // A list of DrawQuad objects, sorted internally in front-to-back order.
@@ -103,9 +103,7 @@ class CC_EXPORT RenderPass {
   // contents as a bitmap, and give a copy of the bitmap to each callback in
   // this list. This property should not be serialized between compositors, as
   // it only makes sense in the root compositor.
-  typedef base::Callback<void(scoped_ptr<SkBitmap>)>
-      RequestCopyAsBitmapCallback;
-  std::vector<RequestCopyAsBitmapCallback> copy_callbacks;
+  ScopedPtrVector<CopyOutputRequest> copy_requests;
 
   QuadList quad_list;
   SharedQuadStateList shared_quad_state_list;

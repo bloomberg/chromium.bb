@@ -16,6 +16,7 @@
 #include "cc/input/layer_scroll_offset_delegate.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/layers/scrollbar_layer_impl.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -72,9 +73,6 @@ LayerImpl::~LayerImpl() {
   DCHECK(!between_will_draw_and_did_draw_);
 #endif
 
-  for (size_t i = 0; i < request_copy_callbacks_.size(); ++i)
-    request_copy_callbacks_[i].Run(scoped_ptr<SkBitmap>());
-
   layer_tree_impl_->UnregisterLayer(this);
   layer_animation_controller_->RemoveValueObserver(this);
 }
@@ -108,28 +106,22 @@ void LayerImpl::ClearChildList() {
   layer_tree_impl()->set_needs_update_draw_properties();
 }
 
-void LayerImpl::PassRequestCopyCallbacks(
-    std::vector<RenderPass::RequestCopyAsBitmapCallback>* callbacks) {
-  if (callbacks->empty())
+void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
+  if (requests->empty())
     return;
 
-  request_copy_callbacks_.insert(request_copy_callbacks_.end(),
-                                 callbacks->begin(),
-                                 callbacks->end());
-  callbacks->clear();
+  copy_requests_.insert_and_take(copy_requests_.end(), *requests);
+  requests->clear();
 
   NoteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::TakeRequestCopyCallbacks(
-    std::vector<RenderPass::RequestCopyAsBitmapCallback>* callbacks) {
-  if (request_copy_callbacks_.empty())
+void LayerImpl::TakeCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
+  if (copy_requests_.empty())
     return;
 
-  callbacks->insert(callbacks->end(),
-                    request_copy_callbacks_.begin(),
-                    request_copy_callbacks_.end());
-  request_copy_callbacks_.clear();
+  requests->insert_and_take(requests->end(), copy_requests_);
+  copy_requests_.clear();
 }
 
 void LayerImpl::CreateRenderSurface() {
@@ -389,7 +381,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollOffset(scroll_offset_);
   layer->SetMaxScrollOffset(max_scroll_offset_);
 
-  layer->PassRequestCopyCallbacks(&request_copy_callbacks_);
+  layer->PassCopyRequests(&copy_requests_);
 
   // If the main thread commits multiple times before the impl thread actually
   // draws, then damage tracking will become incorrect if we simply clobber the

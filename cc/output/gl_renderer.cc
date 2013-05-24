@@ -20,6 +20,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/context_provider.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/output/geometry_binding.h"
 #include "cc/output/gl_frame_data.h"
 #include "cc/output/output_surface.h"
@@ -94,7 +95,7 @@ const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
 struct GLRenderer::PendingAsyncReadPixels {
   PendingAsyncReadPixels() : buffer(0) {}
 
-  CopyRenderPassCallback copy_callback;
+  scoped_ptr<CopyOutputRequest> copy_request;
   base::CancelableClosure finished_read_pixels_callback;
   unsigned buffer;
 
@@ -227,9 +228,8 @@ void GLRenderer::InitializeGrContext() {
 
 GLRenderer::~GLRenderer() {
   while (!pending_async_read_pixels_.empty()) {
-    pending_async_read_pixels_.back()->finished_read_pixels_callback.Cancel();
-    pending_async_read_pixels_.back()->copy_callback.Run(
-        scoped_ptr<SkBitmap>());
+    PendingAsyncReadPixels* pending_read = pending_async_read_pixels_.back();
+    pending_read->finished_read_pixels_callback.Cancel();
     pending_async_read_pixels_.pop_back();
   }
 
@@ -1873,10 +1873,10 @@ void GLRenderer::EnsureScissorTestDisabled() {
 
 void GLRenderer::CopyCurrentRenderPassToBitmap(
     DrawingFrame* frame,
-    const CopyRenderPassCallback& callback) {
+    scoped_ptr<CopyOutputRequest> request) {
   GetFramebufferPixelsAsync(frame->current_render_pass->output_rect,
                             frame->flipped_y,
-                            callback);
+                            request.Pass());
 }
 
 void GLRenderer::ToGLMatrix(float* gl_matrix, const gfx::Transform& transform) {
@@ -2095,15 +2095,13 @@ void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
                          AsyncGetFramebufferPixelsCleanupCallback());
 }
 
-void GLRenderer::GetFramebufferPixelsAsync(gfx::Rect rect,
-                                           bool flipped_y,
-                                           CopyRenderPassCallback callback) {
-  if (callback.is_null())
+void GLRenderer::GetFramebufferPixelsAsync(
+    gfx::Rect rect, bool flipped_y, scoped_ptr<CopyOutputRequest> request) {
+  DCHECK(!request->IsEmpty());
+  if (request->IsEmpty())
     return;
-  if (rect.IsEmpty()) {
-    callback.Run(scoped_ptr<SkBitmap>());
+  if (rect.IsEmpty())
     return;
-  }
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
   bitmap->setConfig(SkBitmap::kARGB_8888_Config, rect.width(), rect.height());
@@ -2118,11 +2116,10 @@ void GLRenderer::GetFramebufferPixelsAsync(gfx::Rect rect,
       &GLRenderer::PassOnSkBitmap,
       base::Unretained(this),
       base::Passed(&bitmap),
-      base::Passed(&lock),
-      callback);
+      base::Passed(&lock));
 
   scoped_ptr<PendingAsyncReadPixels> pending_read(new PendingAsyncReadPixels);
-  pending_read->copy_callback = callback;
+  pending_read->copy_request = request.Pass();
   pending_async_read_pixels_.insert(pending_async_read_pixels_.begin(),
                                     pending_read.Pass());
 
@@ -2257,7 +2254,10 @@ void GLRenderer::FinishedReadback(
     gfx::Size size,
     bool flipped_y) {
   DCHECK(!pending_async_read_pixels_.empty());
-  DCHECK_EQ(source_buffer, pending_async_read_pixels_.back()->buffer);
+
+  PendingAsyncReadPixels* current_read = pending_async_read_pixels_.back();
+  // Make sure we service the readbacks in order.
+  DCHECK_EQ(source_buffer, current_read->buffer);
 
   uint8* src_pixels = NULL;
 
@@ -2296,7 +2296,7 @@ void GLRenderer::FinishedReadback(
   // TODO(danakj): This can go away when synchronous readback is no more and its
   // contents can just move here.
   if (!cleanup_callback.is_null())
-    cleanup_callback.Run(src_pixels != NULL);
+    cleanup_callback.Run(current_read->copy_request.Pass(), src_pixels != NULL);
 
   pending_async_read_pixels_.pop_back();
 }
@@ -2304,15 +2304,13 @@ void GLRenderer::FinishedReadback(
 void GLRenderer::PassOnSkBitmap(
     scoped_ptr<SkBitmap> bitmap,
     scoped_ptr<SkAutoLockPixels> lock,
-    const CopyRenderPassCallback& callback,
+    scoped_ptr<CopyOutputRequest> request,
     bool success) {
-  DCHECK(callback.Equals(pending_async_read_pixels_.back()->copy_callback));
+  DCHECK(request->HasBitmapRequest());
 
   lock.reset();
   if (success)
-    callback.Run(bitmap.Pass());
-  else
-    callback.Run(scoped_ptr<SkBitmap>());
+    request->SendBitmapResult(bitmap.Pass());
 }
 
 bool GLRenderer::GetFramebufferTexture(ScopedResource* texture,

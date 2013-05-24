@@ -6,7 +6,6 @@
 #define CC_LAYERS_LAYER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -15,6 +14,7 @@
 #include "cc/animation/layer_animation_value_observer.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
+#include "cc/base/scoped_ptr_vector.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/layer_position_constraint.h"
@@ -38,6 +38,7 @@ namespace cc {
 
 class Animation;
 struct AnimationEvent;
+class CopyOutputRequest;
 class LayerAnimationDelegate;
 class LayerAnimationEventObserver;
 class LayerImpl;
@@ -76,16 +77,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   const LayerList& children() const { return children_; }
   Layer* child_at(size_t index) { return children_[index].get(); }
 
-  typedef base::Callback<void(scoped_ptr<SkBitmap>)>
-      RequestCopyAsBitmapCallback;
-
-  // This requests the layer and its subtree be rendered into an SkBitmap and
-  // call the given callback when the SkBitmap has been produced. If the copy
-  // is unable to be produced (the layer is destroyed first), then the callback
-  // is called with a NULL bitmap.
-  void RequestCopyAsBitmap(RequestCopyAsBitmapCallback callback);
-  bool HasRequestCopyCallback() const {
-    return !request_copy_callbacks_.empty();
+  // This requests the layer and its subtree be rendered and given to the
+  // callback. If the copy is unable to be produced (the layer is destroyed
+  // first), then the callback is called with a NULL/empty result.
+  void RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> request);
+  bool HasCopyRequest() const {
+    return !copy_requests_.empty();
   }
 
   void SetAnchorPoint(gfx::PointF anchor_point);
@@ -477,7 +474,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // Transient properties.
   float raster_scale_;
 
-  std::vector<RequestCopyAsBitmapCallback> request_copy_callbacks_;
+  ScopedPtrVector<CopyOutputRequest> copy_requests_;
 
   WebKit::WebLayerScrollClient* layer_scroll_client_;
 

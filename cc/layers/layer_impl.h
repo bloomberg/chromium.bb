@@ -6,7 +6,6 @@
 #define CC_LAYERS_LAYER_IMPL_H_
 
 #include <string>
-#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -76,13 +75,9 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   // Warning: This does not preserve tree structure invariants.
   void ClearChildList();
 
-  void PassRequestCopyCallbacks(
-      std::vector<RenderPass::RequestCopyAsBitmapCallback>* callbacks);
-  void TakeRequestCopyCallbacks(
-      std::vector<RenderPass::RequestCopyAsBitmapCallback>* callbacks);
-  bool HasRequestCopyCallback() const {
-    return !request_copy_callbacks_.empty();
-  }
+  void PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests);
+  void TakeCopyRequests(ScopedPtrVector<CopyOutputRequest>* request);
+  bool HasCopyRequest() const { return !copy_requests_.empty(); }
 
   void SetMaskLayer(scoped_ptr<LayerImpl> mask_layer);
   LayerImpl* mask_layer() { return mask_layer_.get(); }
@@ -545,7 +540,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   ScrollbarLayerImpl* horizontal_scrollbar_layer_;
   ScrollbarLayerImpl* vertical_scrollbar_layer_;
 
-  std::vector<RenderPass::RequestCopyAsBitmapCallback> request_copy_callbacks_;
+  ScopedPtrVector<CopyOutputRequest> copy_requests_;
 
   // Group of properties that need to be computed based on the layer tree
   // hierarchy before layers can be drawn.

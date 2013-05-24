@@ -97,7 +97,7 @@ class CC_EXPORT GLRenderer
 
   void GetFramebufferPixelsAsync(gfx::Rect rect,
                                  bool flipped_y,
-                                 CopyRenderPassCallback callback);
+                                 scoped_ptr<CopyOutputRequest> request);
   bool GetFramebufferTexture(ScopedResource* resource, gfx::Rect device_rect);
   void ReleaseRenderPassTextures();
 
@@ -116,7 +116,7 @@ class CC_EXPORT GLRenderer
   virtual void EnsureScissorTestDisabled() OVERRIDE;
   virtual void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
-      const CopyRenderPassCallback& callback) OVERRIDE;
+      scoped_ptr<CopyOutputRequest> request) OVERRIDE;
   virtual void FinishDrawingQuadList() OVERRIDE;
 
  private:
@@ -193,7 +193,8 @@ class CC_EXPORT GLRenderer
   bool InitializeSharedObjects();
   void CleanupSharedObjects();
 
-  typedef base::Callback<void(bool success)>
+  typedef base::Callback<void(scoped_ptr<CopyOutputRequest> copy_request,
+                              bool success)>
       AsyncGetFramebufferPixelsCleanupCallback;
   void DoGetFramebufferPixels(
       uint8* pixels,
@@ -209,7 +210,7 @@ class CC_EXPORT GLRenderer
   void PassOnSkBitmap(
       scoped_ptr<SkBitmap> bitmap,
       scoped_ptr<SkAutoLockPixels> lock,
-      const CopyRenderPassCallback& callback,
+      scoped_ptr<CopyOutputRequest> request,
       bool success);
 
   void ReinitializeGrCanvas();

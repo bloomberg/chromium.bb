@@ -376,7 +376,7 @@ static bool SubtreeShouldRenderToSeparateSurface(
     return true;
 
   // If we'll make a copy of the layer's contents.
-  if (layer->HasRequestCopyCallback())
+  if (layer->HasCopyRequest())
     return true;
 
   return false;

@@ -603,8 +603,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     RenderPass* target_render_pass =
         frame->render_passes_by_id[target_render_pass_id];
 
-    bool prevent_occlusion =
-        it.target_render_surface_layer()->HasRequestCopyCallback();
+    bool prevent_occlusion = it.target_render_surface_layer()->HasCopyRequest();
     occlusion_tracker.EnterLayer(it, prevent_occlusion);
 
     AppendQuadsData append_quads_data(target_render_pass->id);
@@ -612,9 +611,9 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       append_quads_data.allow_tile_draw_quads = false;
 
     if (it.represents_target_render_surface()) {
-      if (it->HasRequestCopyCallback()) {
+      if (it->HasCopyRequest()) {
         have_copy_request = true;
-        it->TakeRequestCopyCallbacks(&target_render_pass->copy_callbacks);
+        it->TakeCopyRequests(&target_render_pass->copy_requests);
       }
     } else if (it.represents_contributing_render_surface()) {
       RenderPass::Id contributing_render_pass_id =

@@ -11,6 +11,7 @@
 #include "base/hash_tables.h"
 #include "base/metrics/histogram.h"
 #include "cc/base/math_util.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/quads/draw_quad.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -200,16 +201,19 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order) {
 
   BeginDrawingFrame(&frame);
   for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i) {
-    DrawRenderPass(&frame, render_passes_in_draw_order->at(i));
+    RenderPass* pass = render_passes_in_draw_order->at(i);
+    DrawRenderPass(&frame, pass);
 
-    const RenderPass* pass = frame.current_render_pass;
-    for (size_t i = 0; i < pass->copy_callbacks.size(); ++i) {
+    for (ScopedPtrVector<CopyOutputRequest>::iterator it =
+             pass->copy_requests.begin();
+         it != pass->copy_requests.end();
+         ++it) {
       if (i > 0) {
         // Doing a readback is destructive of our state on Mac, so make sure
         // we restore the state between readbacks. http://crbug.com/99393.
         UseRenderPass(&frame, pass);
       }
-      CopyCurrentRenderPassToBitmap(&frame, pass->copy_callbacks[i]);
+      CopyCurrentRenderPassToBitmap(&frame, pass->copy_requests.take(it));
     }
   }
   FinishDrawingFrame(&frame);

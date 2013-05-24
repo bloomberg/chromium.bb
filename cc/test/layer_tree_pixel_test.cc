@@ -5,6 +5,7 @@
 #include "cc/test/layer_tree_pixel_test.h"
 
 #include "base/path_service.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/test/paths.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
@@ -65,9 +66,9 @@ void LayerTreePixelTest::ReadbackResult(scoped_ptr<SkBitmap> bitmap) {
 void LayerTreePixelTest::BeginTest() {
   Layer* target = readback_target_ ? readback_target_
                                    : layer_tree_host()->root_layer();
-  target->RequestCopyAsBitmap(
+  target->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
       base::Bind(&LayerTreePixelTest::ReadbackResult,
-                 base::Unretained(this)));
+                 base::Unretained(this))));
   PostSetNeedsCommitToMainThread();
 }
 

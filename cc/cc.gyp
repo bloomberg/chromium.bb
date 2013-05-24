@@ -164,6 +164,8 @@
       'output/compositor_frame_metadata.cc',
       'output/compositor_frame_metadata.h',
       'output/context_provider.h',
+      'output/copy_output_request.cc',
+      'output/copy_output_request.h',
       'output/delegated_frame_data.h',
       'output/delegated_frame_data.cc',
       'output/delegating_renderer.cc',

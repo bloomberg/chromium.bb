@@ -9,6 +9,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/compositor_frame_metadata.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -435,7 +436,7 @@ void SoftwareRenderer::DrawUnsupportedQuad(const DrawingFrame* frame,
 
 void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
     DrawingFrame* frame,
-    const CopyRenderPassCallback& callback) {
+    scoped_ptr<CopyOutputRequest> request) {
   gfx::Size render_pass_size = frame->current_render_pass->output_rect.size();
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
@@ -444,7 +445,7 @@ void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
                     render_pass_size.height());
   current_canvas_->readPixels(bitmap.get(), 0, 0);
 
-  callback.Run(bitmap.Pass());
+  request->SendBitmapResult(bitmap.Pass());
 }
 
 void SoftwareRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
