@@ -65,13 +65,13 @@
       This can also be overridden by a -n or --no-overwrite flag
 
     - All files are converted to work in WebKit:
-         2. Paths to testharness.js files are modified point to Webkit's copy of them in
+         1. Paths to testharness.js files are modified point to Webkit's copy of them in
             LayoutTests/resources, using the correct relative path from the new location
-         3. All CSS properties requiring the -webkit-vendor prefix are prefixed - this current
+         2. All CSS properties requiring the -webkit-vendor prefix are prefixed - this current
             list of what needs prefixes is read from Source/WebCore/CSS/CSSProperties.in
-         4. Each reftest has its own copy of its reference file following the naming conventions
+         3. Each reftest has its own copy of its reference file following the naming conventions
             new-run-webkit-tests expects
-         5. If a reference files lives outside the directory of the test that uses it, it is checked
+         4. If a reference files lives outside the directory of the test that uses it, it is checked
             for paths to support files as it will be imported into a different relative position to the
             test file (in the same directory)
 

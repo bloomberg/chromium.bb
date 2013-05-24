@@ -101,7 +101,7 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests.
 #
-TOTAL_TESTS = 100
+TOTAL_TESTS = 102
 TOTAL_SKIPS = 25
 TOTAL_RETRIES = 14
 
