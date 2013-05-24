@@ -123,7 +123,6 @@ FFMPEG_TEST_CASE(Cr110849, "security/110849.mkv",
 FFMPEG_TEST_CASE(Cr112384, "security/112384.webm",
                  DEMUXER_ERROR_COULD_NOT_PARSE, DEMUXER_ERROR_COULD_NOT_PARSE,
                  kNullVideoHash, kNullAudioHash);
-
 FFMPEG_TEST_CASE(Cr117912, "security/117912.webm", DEMUXER_ERROR_COULD_NOT_OPEN,
                  DEMUXER_ERROR_COULD_NOT_OPEN, kNullVideoHash, kNullAudioHash);
 FFMPEG_TEST_CASE(Cr123481, "security/123481.ogv", PIPELINE_OK,
@@ -150,6 +149,9 @@ FFMPEG_TEST_CASE(Cr234630a, "security/234630a.mov", PIPELINE_OK,
                  "-15.52,-18.90,-15.33,-16.68,-14.41,-15.89,");
 FFMPEG_TEST_CASE(Cr234630b, "security/234630b.mov", PIPELINE_ERROR_DECODE,
                  PIPELINE_ERROR_DECODE, kNullVideoHash, kNullAudioHash);
+FFMPEG_TEST_CASE(Cr242786, "security/242786.webm", PIPELINE_OK,
+                 PIPELINE_OK, kNullVideoHash,
+                 "-1.72,-0.83,0.84,1.70,1.23,-0.53,");
 
 // General MP4 test cases.
 FFMPEG_TEST_CASE(MP4_0, "security/aac.10419.mp4", DEMUXER_ERROR_COULD_NOT_OPEN,
