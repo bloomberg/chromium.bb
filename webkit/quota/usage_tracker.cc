@@ -254,7 +254,7 @@ ClientUsageTracker* UsageTracker::GetClientTracker(QuotaClient::ID client_id) {
 void UsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
   if (client_tracker_map_.size() == 0) {
     // No clients registered.
-    callback.Run(type_, 0, 0);
+    callback.Run(0, 0);
     return;
   }
   if (global_usage_callbacks_.Add(callback)) {
@@ -289,7 +289,7 @@ void UsageTracker::GetHostUsage(
          ++iter) {
       iter->second->GetHostUsage(host,
           base::Bind(&UsageTracker::DidGetClientHostUsage,
-                     weak_factory_.GetWeakPtr(), host, type_));
+                     weak_factory_.GetWeakPtr(), host));
     }
   }
 }
@@ -329,10 +329,8 @@ void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,
   client_tracker->SetUsageCacheEnabled(origin, enabled);
 }
 
-void UsageTracker::DidGetClientGlobalUsage(StorageType type,
-                                           int64 usage,
+void UsageTracker::DidGetClientGlobalUsage(int64 usage,
                                            int64 unlimited_usage) {
-  DCHECK_EQ(type, type_);
   global_usage_.usage += usage;
   global_usage_.unlimited_usage += unlimited_usage;
   if (--global_usage_.pending_clients == 0) {
@@ -349,15 +347,12 @@ void UsageTracker::DidGetClientGlobalUsage(StorageType type,
     // All the clients have returned their usage data.  Dispatches the
     // pending callbacks.
     global_usage_callbacks_.Run(
-        MakeTuple(type, global_usage_.usage,
-                  global_usage_.unlimited_usage));
+        MakeTuple(global_usage_.usage, global_usage_.unlimited_usage));
   }
 }
 
 void UsageTracker::DidGetClientHostUsage(const std::string& host,
-                                         StorageType type,
                                          int64 usage) {
-  DCHECK_EQ(type, type_);
   TrackingInfo& info = outstanding_host_usage_[host];
   info.usage += usage;
   if (--info.pending_clients == 0) {
@@ -397,7 +392,7 @@ ClientUsageTracker::~ClientUsageTracker() {
 
 void ClientUsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
   if (global_usage_retrieved_ && non_cached_origins_by_host_.empty()) {
-    callback.Run(type_, global_usage_, GetCachedGlobalUnlimitedUsage());
+    callback.Run(global_usage_, GetCachedGlobalUnlimitedUsage());
     return;
   }
   DCHECK(!global_usage_callback_.HasCallbacks());
@@ -555,7 +550,7 @@ void ClientUsageTracker::GatherGlobalUsageComplete(
 
   DCHECK(global_usage_callback_.HasCallbacks());
   global_usage_callback_.Run(
-      MakeTuple(type_, global_usage,
+      MakeTuple(global_usage,
                 GetCachedGlobalUnlimitedUsage() + non_cached_global_usage));
 
   for (HostUsageCallbackMap::iterator iter = host_usage_callbacks_.Begin();

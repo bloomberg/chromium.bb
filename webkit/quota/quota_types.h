@@ -37,8 +37,7 @@ struct UsageInfo;
 typedef std::vector<UsageInfo> UsageInfoEntries;
 
 // Common callback types that are used throughout in the quota module.
-typedef base::Callback<void(StorageType status,
-                            int64 usage,
+typedef base::Callback<void(int64 usage,
                             int64 unlimited_usage)> GlobalUsageCallback;
 typedef base::Callback<void(QuotaStatusCode status, int64 quota)> QuotaCallback;
 typedef base::Callback<void(int64 usage)> UsageCallback;
@@ -82,7 +81,7 @@ class CallbackQueue {
 };
 
 typedef CallbackQueue<GlobalUsageCallback,
-                      Tuple3<StorageType, int64, int64> >
+                      Tuple2<int64, int64> >
     GlobalUsageCallbackQueue;
 typedef CallbackQueue<AvailableSpaceCallback,
                       Tuple2<QuotaStatusCode, int64> >

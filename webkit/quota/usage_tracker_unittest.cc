@@ -14,15 +14,12 @@ namespace quota {
 namespace {
 
 void DidGetGlobalUsage(bool* done,
-                       StorageType* type_out,
                        int64* usage_out,
                        int64* unlimited_usage_out,
-                       StorageType type,
                        int64 usage,
                        int64 unlimited_usage) {
   EXPECT_FALSE(*done);
   *done = true;
-  *type_out = type;
   *usage_out = usage;
   *unlimited_usage_out = unlimited_usage;
 }
@@ -141,14 +138,12 @@ class UsageTrackerTest : public testing::Test {
 
   void GetGlobalUsage(int64* usage, int64* unlimited_usage) {
     bool done = false;
-    StorageType type = kStorageTypeUnknown;
     usage_tracker_.GetGlobalUsage(base::Bind(
         &DidGetGlobalUsage,
-        &done, &type, usage, unlimited_usage));
+        &done, usage, unlimited_usage));
     message_loop_.RunUntilIdle();
 
     EXPECT_TRUE(done);
-    EXPECT_EQ(kStorageTypeTemporary, type);
   }
 
   void GetHostUsage(const std::string& host, int64* usage) {

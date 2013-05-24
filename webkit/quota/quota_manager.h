@@ -327,11 +327,9 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
   void DidOriginDataEvicted(QuotaStatusCode status);
 
   void ReportHistogram();
-  void DidGetTemporaryGlobalUsageForHistogram(StorageType type,
-                                              int64 usage,
+  void DidGetTemporaryGlobalUsageForHistogram(int64 usage,
                                               int64 unlimited_usage);
-  void DidGetPersistentGlobalUsageForHistogram(StorageType type,
-                                               int64 usage,
+  void DidGetPersistentGlobalUsageForHistogram(int64 usage,
                                                int64 unlimited_usage);
 
   // QuotaEvictionHandler.

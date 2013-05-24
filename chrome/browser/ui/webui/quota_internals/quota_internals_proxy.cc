@@ -43,17 +43,20 @@ void QuotaInternalsProxy::RequestInfo(
   quota_manager_->GetGlobalUsage(
       quota::kStorageTypeTemporary,
       base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(),
+                 quota::kStorageTypeTemporary));
 
   quota_manager_->GetGlobalUsage(
       quota::kStorageTypePersistent,
       base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(),
+                 quota::kStorageTypePersistent));
 
   quota_manager_->GetGlobalUsage(
       quota::kStorageTypeSyncable,
       base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(),
+                 quota::kStorageTypeSyncable));
 
   quota_manager_->DumpQuotaTable(
       base::Bind(&QuotaInternalsProxy::DidDumpQuotaTable,

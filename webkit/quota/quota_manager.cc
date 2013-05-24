@@ -398,8 +398,7 @@ class UsageAndQuotaCallbackDispatcher
     CheckCompleted();
   }
 
-  void DidGetGlobalUsage(StorageType type,
-                         int64 usage,
+  void DidGetGlobalUsage(int64 usage,
                          int64 unlimited_usage) {
     if (status_ == kQuotaStatusUnknown)
       status_ = kQuotaStatusOk;
@@ -487,13 +486,16 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
     // This will populate cached hosts and usage info.
     manager()->GetUsageTracker(kStorageTypeTemporary)->GetGlobalUsage(
         base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr(),
+                   kStorageTypeTemporary));
     manager()->GetUsageTracker(kStorageTypePersistent)->GetGlobalUsage(
         base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr(),
+                   kStorageTypePersistent));
     manager()->GetUsageTracker(kStorageTypeSyncable)->GetGlobalUsage(
         base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr(),
+                   kStorageTypeSyncable));
   }
 
   virtual void Completed() OVERRIDE {
@@ -1346,13 +1348,12 @@ void QuotaManager::ReportHistogram() {
 }
 
 void QuotaManager::DidGetTemporaryGlobalUsageForHistogram(
-    StorageType type,
     int64 usage,
     int64 unlimited_usage) {
   UMA_HISTOGRAM_MBYTES("Quota.GlobalUsageOfTemporaryStorage", usage);
 
   std::set<GURL> origins;
-  GetCachedOrigins(type, &origins);
+  GetCachedOrigins(kStorageTypeTemporary, &origins);
 
   size_t num_origins = origins.size();
   size_t protected_origins = 0;
@@ -1369,13 +1370,12 @@ void QuotaManager::DidGetTemporaryGlobalUsageForHistogram(
 }
 
 void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
-    StorageType type,
     int64 usage,
     int64 unlimited_usage) {
   UMA_HISTOGRAM_MBYTES("Quota.GlobalUsageOfPersistentStorage", usage);
 
   std::set<GURL> origins;
-  GetCachedOrigins(type, &origins);
+  GetCachedOrigins(kStorageTypePersistent, &origins);
 
   size_t num_origins = origins.size();
   size_t protected_origins = 0;
