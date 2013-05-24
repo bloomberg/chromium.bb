@@ -711,7 +711,6 @@ class TestExpectationSerializationTests(unittest.TestCase):
 
     def test_string_roundtrip(self):
         self.assert_round_trip('')
-        self.assert_round_trip('FOO')
         self.assert_round_trip('[')
         self.assert_round_trip('FOO [')
         self.assert_round_trip('FOO ] bar')

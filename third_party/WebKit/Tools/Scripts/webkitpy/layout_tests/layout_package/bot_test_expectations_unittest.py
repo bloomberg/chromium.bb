@@ -41,10 +41,10 @@ class BotTestExpectationsTest(unittest.TestCase):
     # on left: "PFF", means it just passed after 2 failures.
 
     def _assert_is_flaky(self, results_string, should_be_flaky):
-        expectations = bot_test_expectations.BotTestExpectations(only_ignore_very_flaky=True)
-        expectations._failure_map = self.FAILURE_MAP
+        results_json = self._results_json_from_test_data({})
+        expectations = bot_test_expectations.BotTestExpectations(results_json)
         length_encoded = self._results_from_string(results_string)['results']
-        num_actual_results = len(expectations._actual_results_for_test(length_encoded))
+        num_actual_results = len(expectations._flaky_types_in_results(length_encoded, only_ignore_very_flaky=True))
         if should_be_flaky:
             self.assertGreater(num_actual_results, 1)
         else:
@@ -61,6 +61,13 @@ class BotTestExpectationsTest(unittest.TestCase):
         # self._assert_is_flaky('PFFFP', False)
         # self._assert_is_flaky('PFFFFP', False)
 
+    def _results_json_from_test_data(self, test_data):
+        json_dict = {
+            'builder': test_data,
+            bot_test_expectations.ResultsJSON.FAILURE_MAP_KEY: self.FAILURE_MAP,
+        }
+        return bot_test_expectations.ResultsJSON('builder', json_dict)
+
     def _results_from_string(self, results_string):
         results_list = []
         last_char = None
@@ -71,9 +78,10 @@ class BotTestExpectationsTest(unittest.TestCase):
                 results_list[0][0] += 1
         return {'results': results_list}
 
-    def _assert_expectations(self, expectations, test_data, expectations_string):
-        output = expectations._generate_expectations(test_data, self.FAILURE_MAP)
-        self.assertEqual(output, expectations_string)
+    def _assert_expectations(self, test_data, expectations_string, only_ignore_very_flaky):
+        results_json = self._results_json_from_test_data(test_data)
+        expectations = bot_test_expectations.BotTestExpectations(results_json)
+        self.assertEqual(expectations.flakes_by_path(only_ignore_very_flaky), expectations_string)
 
     def test_basic(self):
         test_data = {
@@ -86,19 +94,16 @@ class BotTestExpectationsTest(unittest.TestCase):
                 }
             }
         }
-        expectations = bot_test_expectations.BotTestExpectations(only_ignore_very_flaky=True)
-        self._assert_expectations(expectations, test_data, {
+        self._assert_expectations(test_data, {
             'foo/veryflaky.html': sorted(["TEXT", "PASS"]),
-        })
+        }, only_ignore_very_flaky=True)
 
-        expectations = bot_test_expectations.BotTestExpectations(only_ignore_very_flaky=False)
-        self._assert_expectations(expectations, test_data, {
+        self._assert_expectations(test_data, {
             'foo/veryflaky.html': sorted(["TEXT", "PASS"]),
             'foo/maybeflaky.html': sorted(["TEXT", "PASS"]),
-        })
+        }, only_ignore_very_flaky=False)
 
     def test_all_failure_types(self):
-        expectations = bot_test_expectations.BotTestExpectations(only_ignore_very_flaky=True)
         test_data = {
             'tests': {
                 'foo': {
@@ -107,7 +112,7 @@ class BotTestExpectationsTest(unittest.TestCase):
                 }
             }
         }
-        self._assert_expectations(expectations, test_data, {
+        self._assert_expectations(test_data, {
             'foo/imageplustextflake.html': sorted(["IMAGE+TEXT", "PASS"]),
             'foo/allfailures.html': sorted(["TEXT", "PASS", "IMAGE+TEXT", "TIMEOUT", "CRASH", "IMAGE", "MISSING"]),
-        })
+        }, only_ignore_very_flaky=True)

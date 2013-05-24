@@ -54,7 +54,7 @@ from webkitpy.common.system import path
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.webkit_finder import WebKitFinder
-from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectations
+from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpecationsFactory
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
 from webkitpy.layout_tests.port import config as port_config
 from webkitpy.layout_tests.port import driver
@@ -1031,7 +1031,11 @@ class Port(object):
 
         full_port_name = self.determine_full_port_name(self.host, self._options, self.port_name)
         ignore_only_very_flaky = self.get_option('ignore_flaky_tests') == 'very-flaky'
-        return BotTestExpectations(ignore_only_very_flaky).expectations(full_port_name)
+        factory = BotTestExpecationsFactory()
+        expectations = factory.expectations_for_port(full_port_name)
+        if not expectations:
+            return {}
+        return expectations.flakes_by_path(ignore_only_very_flaky)
 
     def _port_specific_expectations_files(self):
         # Unlike baseline_search_path, we only want to search [WK2-PORT, PORT-VERSION, PORT] and any directories
