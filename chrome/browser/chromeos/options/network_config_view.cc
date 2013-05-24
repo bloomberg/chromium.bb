@@ -178,6 +178,11 @@ views::View* NetworkConfigView::GetInitiallyFocusedView() {
   return child_config_view_->GetInitiallyFocusedView();
 }
 
+string16 NetworkConfigView::GetWindowTitle() const {
+  DCHECK(!child_config_view_->GetTitle().empty());
+  return child_config_view_->GetTitle();
+}
+
 ui::ModalType NetworkConfigView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
@@ -247,9 +252,8 @@ void NetworkConfigView::ShowDialog(gfx::NativeWindow parent) {
     parent = GetDialogParent();
   // Failed connections may result in a pop-up with no natural parent window,
   // so provide a fallback context on the active display.
-  Widget* window = parent ?
-      Widget::CreateWindowWithParent(this, parent) :
-      Widget::CreateWindowWithContext(this, ash::Shell::GetActiveRootWindow());
+  gfx::NativeWindow context = parent ? NULL : ash::Shell::GetActiveRootWindow();
+  Widget* window = DialogDelegate::CreateDialogWidget(this, context, parent);
   window->SetAlwaysOnTop(true);
   window->Show();
 }

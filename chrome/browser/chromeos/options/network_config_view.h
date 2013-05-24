@@ -61,6 +61,7 @@ class NetworkConfigView : public views::DialogDelegateView,
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
 
   // views::WidgetDelegate methods.
+  virtual string16 GetWindowTitle() const OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
 
   // views::View overrides.
@@ -116,6 +117,9 @@ class ChildNetworkConfigView : public views::View {
   explicit ChildNetworkConfigView(NetworkConfigView* parent)
       : parent_(parent) {}
   virtual ~ChildNetworkConfigView() {}
+
+  // Get the title to show for the dialog.
+  virtual string16 GetTitle() const = 0;
 
   // Returns view that should be focused on dialog activation.
   virtual views::View* GetInitiallyFocusedView() = 0;

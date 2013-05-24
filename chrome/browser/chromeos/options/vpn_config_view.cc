@@ -195,17 +195,24 @@ string16 VpnUserCertComboboxModel::GetItemAt(int index) {
 }  // namespace internal
 
 VPNConfigView::VPNConfigView(NetworkConfigView* parent, VirtualNetwork* vpn)
-    : ChildNetworkConfigView(parent, vpn) {
+    : ChildNetworkConfigView(parent, vpn),
+      title_(0) {
   Init(vpn);
 }
 
 VPNConfigView::VPNConfigView(NetworkConfigView* parent)
-    : ChildNetworkConfigView(parent) {
+    : ChildNetworkConfigView(parent),
+      title_(0) {
   Init(NULL);
 }
 
 VPNConfigView::~VPNConfigView() {
   CertLibrary::Get()->RemoveObserver(this);
+}
+
+string16 VPNConfigView::GetTitle() const {
+  DCHECK_NE(title_, 0);
+  return l10n_util::GetStringUTF16(title_);
 }
 
 views::View* VPNConfigView::GetInitiallyFocusedView() {
@@ -505,14 +512,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     enable_group_name_ = true;
   }
 
-  // Title
-  layout->StartRow(0, column_view_set_id);
-  views::Label* title = new views::Label(l10n_util::GetStringUTF16(
-      vpn ? IDS_OPTIONS_SETTINGS_JOIN_VPN : IDS_OPTIONS_SETTINGS_ADD_VPN));
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  title->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
-  layout->AddView(title, 5, 1);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  // Initialize the title string ID used for the dialog.
+  title_ = vpn ? IDS_OPTIONS_SETTINGS_JOIN_VPN : IDS_OPTIONS_SETTINGS_ADD_VPN;
 
   // Server label and input.
   // Only provide Server name when configuring a new VPN.

@@ -377,6 +377,10 @@ WifiConfigView::~WifiConfigView() {
   CertLibrary::Get()->RemoveObserver(this);
 }
 
+string16 WifiConfigView::GetTitle() const {
+  return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS);
+}
+
 views::View* WifiConfigView::GetInitiallyFocusedView() {
   // Return a reasonable widget for initial focus,
   // depending on what we're showing.
@@ -888,15 +892,6 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
   // Password visible button / policy indicator.
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, kPasswordVisibleWidth);
-
-  // Title
-  layout->StartRow(0, column_view_set_id);
-  views::Label* title = new views::Label(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS));
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  title->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
-  layout->AddView(title, 5, 1);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   // SSID input
   layout->StartRow(0, column_view_set_id);

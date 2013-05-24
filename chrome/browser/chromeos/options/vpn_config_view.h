@@ -59,6 +59,7 @@ class VPNConfigView : public ChildNetworkConfigView,
   virtual void OnCertificatesLoaded(bool initial_load) OVERRIDE;
 
   // ChildNetworkConfigView:
+  virtual string16 GetTitle() const OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool CanLogin() OVERRIDE;
   virtual bool Login() OVERRIDE;
@@ -137,6 +138,8 @@ class VPNConfigView : public ChildNetworkConfigView,
   NetworkPropertyUIData user_passphrase_ui_data_;
   NetworkPropertyUIData group_name_ui_data_;
   NetworkPropertyUIData save_credentials_ui_data_;
+
+  int title_;
 
   views::Textfield* server_textfield_;
   views::Label* service_text_;

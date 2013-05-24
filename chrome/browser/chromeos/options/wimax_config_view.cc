@@ -49,6 +49,10 @@ WimaxConfigView::WimaxConfigView(NetworkConfigView* parent, WimaxNetwork* wimax)
 WimaxConfigView::~WimaxConfigView() {
 }
 
+string16 WimaxConfigView::GetTitle() const {
+  return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_JOIN_WIMAX_NETWORKS);
+}
+
 views::View* WimaxConfigView::GetInitiallyFocusedView() {
   if (identity_textfield_ && identity_textfield_->enabled())
     return identity_textfield_;
@@ -208,16 +212,7 @@ void WimaxConfigView::Init(WimaxNetwork* wimax) {
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, kPasswordVisibleWidth);
 
-  // Title
-  layout->StartRow(0, column_view_set_id);
-  views::Label* title = new views::Label(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_JOIN_WIMAX_NETWORKS));
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  title->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
-  layout->AddView(title, 5, 1);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
-
-  // Netowrk name
+  // Network name
   layout->StartRow(0, column_view_set_id);
   layout->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK)));
