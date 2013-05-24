@@ -96,31 +96,25 @@ void DeleteChannel(IPC::Channel* channel) {
   delete channel;
 }
 
-int TranslatePepperFileOpenFlags(int32_t pp_open_flags) {
+// Translates Pepper's read/write open flags into NaCl's ones. The other open
+// flags are discarded. If neither of the read/write flags is specified, just
+// returns NACL_ABI_O_RDONLY as a safe fallback.
+int TranslatePepperFileReadWriteOpenFlags(int32_t pp_open_flags) {
   int nacl_open_flag;
-  switch (pp_open_flags & (PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE)) {
-    case PP_FILEOPENFLAG_READ:
-      nacl_open_flag = NACL_ABI_O_RDONLY;
-      break;
-    case PP_FILEOPENFLAG_WRITE:
-      nacl_open_flag = NACL_ABI_O_WRONLY;
-      break;
-    case PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE:
-      nacl_open_flag = NACL_ABI_O_RDWR;
-      break;
-    default:
-      // NACL_ABI_O_RDONLY == 0, so make this ambiguous case readonly as a safe
-      // fallback.
-      nacl_open_flag = NACL_ABI_O_RDONLY;
-      break;
+  if ((pp_open_flags & (PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE)) ==
+      (PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE)) {
+    nacl_open_flag = NACL_ABI_O_RDWR;
+  } else if (pp_open_flags & PP_FILEOPENFLAG_READ) {
+    nacl_open_flag = NACL_ABI_O_RDONLY;
+  } else if (pp_open_flags & PP_FILEOPENFLAG_WRITE) {
+    nacl_open_flag = NACL_ABI_O_WRONLY;
+  } else {
+    DLOG(WARNING) << "PP_FILEOPENFLAG_READ and/or PP_FILEOPENFLAG_WRITE "
+                  << "should be specified.";
+    // NACL_ABI_O_RDONLY == 0, so make this ambiguous case readonly as a safe
+    // fallback.
+    nacl_open_flag = NACL_ABI_O_RDONLY;
   }
-
-  if (pp_open_flags & PP_FILEOPENFLAG_CREATE)
-    nacl_open_flag |= NACL_ABI_O_CREAT;
-  if (pp_open_flags & PP_FILEOPENFLAG_TRUNCATE)
-    nacl_open_flag |= NACL_ABI_O_TRUNC;
-  if (pp_open_flags & PP_FILEOPENFLAG_EXCLUSIVE)
-    nacl_open_flag |= NACL_ABI_O_EXCL;
   return nacl_open_flag;
 }
 
@@ -445,7 +439,7 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
 #else
               iter->descriptor().fd,
 #endif
-              TranslatePepperFileOpenFlags(iter->open_flag()))));
+              TranslatePepperFileReadWriteOpenFlags(iter->open_flag()))));
           break;
         case ppapi::proxy::SerializedHandle::INVALID: {
           // Nothing to do. TODO(dmichael): Should we log this? Or is it
@@ -583,4 +577,8 @@ void NaClIPCAdapter::SaveMessage(const IPC::Message& msg,
 
   rewritten_msg->SetData(header, msg.payload(), msg.payload_size());
   locked_data_.to_be_received_.push(rewritten_msg);
+}
+
+int TranslatePepperFileReadWriteOpenFlagsForTesting(int32_t pp_open_flags) {
+  return TranslatePepperFileReadWriteOpenFlags(pp_open_flags);
 }

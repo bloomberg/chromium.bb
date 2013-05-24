@@ -13,6 +13,8 @@
 #include "base/threading/simple_thread.h"
 #include "ipc/ipc_test_sink.h"
 #include "native_client/src/trusted/desc/nacl_desc_custom.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "ppapi/c/ppb_file_io.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -306,3 +308,37 @@ TEST_F(NaClIPCAdapterTest, ReadWithChannelError) {
   thread.Join();
 }
 
+// Tests that TranslatePepperFileOpenFlags translates pepper read/write open
+// flags into NaCl open flags correctly.
+TEST_F(NaClIPCAdapterTest, TranslatePepperFileReadWriteOpenFlags) {
+  EXPECT_EQ(NACL_ABI_O_RDONLY,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(PP_FILEOPENFLAG_READ));
+  EXPECT_EQ(NACL_ABI_O_WRONLY,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(PP_FILEOPENFLAG_WRITE));
+  EXPECT_EQ(NACL_ABI_O_RDWR,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(
+          PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE));
+
+  // The flags other than PP_FILEOPENFLAG_READ and PP_FILEOPENFLAG_WRITE are
+  // discared.
+  EXPECT_EQ(NACL_ABI_O_WRONLY,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(
+          PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_CREATE));
+  EXPECT_EQ(NACL_ABI_O_WRONLY,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(
+          PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_TRUNCATE));
+  EXPECT_EQ(NACL_ABI_O_WRONLY,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(
+          PP_FILEOPENFLAG_WRITE | PP_FILEOPENFLAG_EXCLUSIVE));
+
+  // If neither of PP_FILEOPENFLAG_READ and PP_FILEOPENFLAG_WRITE is set, falls
+  // back NACL_ABI_O_READONLY
+  EXPECT_EQ(NACL_ABI_O_RDONLY,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(PP_FILEOPENFLAG_CREATE));
+  EXPECT_EQ(NACL_ABI_O_RDONLY,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(
+          PP_FILEOPENFLAG_TRUNCATE));
+  EXPECT_EQ(NACL_ABI_O_RDONLY,
+      TranslatePepperFileReadWriteOpenFlagsForTesting(
+          PP_FILEOPENFLAG_EXCLUSIVE));
+}

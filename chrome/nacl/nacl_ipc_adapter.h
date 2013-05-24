@@ -20,6 +20,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "ipc/ipc_listener.h"
+#include "ppapi/c/pp_stdint.h"
 #include "ppapi/proxy/handle_converter.h"
 
 struct NaClDesc;
@@ -184,5 +185,8 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
 
   DISALLOW_COPY_AND_ASSIGN(NaClIPCAdapter);
 };
+
+// Export TranslatePepperFileReadWriteOpenFlags for testing.
+int TranslatePepperFileReadWriteOpenFlagsForTesting(int32_t pp_open_flags);
 
 #endif  // CHROME_NACL_NACL_IPC_ADAPTER_H_
