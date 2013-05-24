@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_STARTUP_SESSION_CRASHED_PROMPT_H_
 #define CHROME_BROWSER_UI_STARTUP_SESSION_CRASHED_PROMPT_H_
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -21,6 +22,9 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
   static void Create(Browser* browser);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SessionCrashedInfoBarDelegateUnitTest,
+                           DetachingTabWithCrashedInfoBar);
+
   SessionCrashedInfoBarDelegate(InfoBarService* infobar_service,
                                 Browser* browser);
   virtual ~SessionCrashedInfoBarDelegate();

@@ -1485,6 +1485,7 @@
         'browser/ui/search/instant_controller_unittest.cc',
         'browser/ui/search/instant_page_unittest.cc',
         'browser/ui/search/search_delegate_unittest.cc',
+        'browser/ui/startup/session_crashed_infobar_delegate_unittest.cc',
         'browser/ui/sync/one_click_signin_helper_unittest.cc',
         'browser/ui/sync/profile_signin_confirmation_helper_unittest.cc',
         'browser/ui/tab_contents/tab_contents_iterator_unittest.cc',
@@ -2033,6 +2034,7 @@
         ['enable_session_service!=1', {
           'sources!': [
             'browser/sessions/session_service_unittest.cc',
+            'browser/ui/startup/session_crashed_infobar_delegate_unittest.cc',
           ],
         }],
         ['chromeos==1', {
