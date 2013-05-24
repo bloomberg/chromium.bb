@@ -1859,6 +1859,7 @@ crbug.com/146756 [ Win Linux ] virtual/gpu/fast/hidpi/broken-image-with-size-hid
 crbug.com/243713 virtual/gpu/fast/canvas/webgl/context-release-upon-reload.html [ Timeout Pass ]
 crbug.com/243713 [ Win Linux ] virtual/gpu/fast/hidpi/clip-text-in-hidpi.html [ Timeout Pass ]
 crbug.com/243725 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure Pass ]
+crbug.com/243730 [ Mac ] fast/dom/HTMLMeterElement/meter-optimums.html [ Timeout ImageOnlyFailure Missing Pass ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass ]
