@@ -147,7 +147,7 @@ void ExtensionUninstallDialogViews::Show() {
   }
 
   view_ = new ExtensionUninstallDialogDelegateView(this, extension_, &icon_);
-  views::Widget::CreateWindowWithParent(view_, parent)->Show();
+  views::DialogDelegate::CreateDialogWidget(view_, NULL, parent)->Show();
 }
 
 void ExtensionUninstallDialogViews::ExtensionUninstallAccepted() {
