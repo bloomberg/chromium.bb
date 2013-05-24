@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/win/message_window.h"
+#include "base/win/message_window.h"
 
 #include "base/logging.h"
 #include "base/process_util.h"
@@ -10,9 +10,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 
-const char kClassNameFormat[] = "Chromoting_MessageWindow_%p";
+const char kClassNameFormat[] = "Chrome_MessageWindow_%p";
 
-namespace remoting {
+namespace base {
 namespace win {
 
 MessageWindow::MessageWindow()
@@ -22,13 +22,6 @@ MessageWindow::MessageWindow()
   class_name_ = base::StringPrintf(kClassNameFormat, this);
   instance_ = base::GetModuleFromAddress(static_cast<WNDPROC>(
       &base::win::WrappedWindowProc<WindowProc>));
-}
-
-MessageWindow::MessageWindow(const std::string& class_name, HINSTANCE instance)
-    : atom_(0),
-      class_name_(class_name),
-      instance_(instance),
-      window_(NULL) {
 }
 
 MessageWindow::~MessageWindow() {
@@ -115,4 +108,4 @@ LRESULT CALLBACK MessageWindow::WindowProc(HWND hwnd,
 }
 
 }  // namespace win
-}  // namespace remoting
+}  // namespace base

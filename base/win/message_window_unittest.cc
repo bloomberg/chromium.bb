@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/win/message_window.h"
+#include "base/win/message_window.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace remoting {
+namespace base {
 
 namespace {
 
@@ -58,4 +58,4 @@ TEST(MessageWindowTest, SendMessage) {
   EXPECT_EQ(SendMessage(window.hwnd(), WM_USER, 100, 0), 100);
 }
 
-}  // namespace remoting
+}  // namespace base
