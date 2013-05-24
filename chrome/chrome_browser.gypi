@@ -2242,6 +2242,8 @@
         'browser/upgrade_detector_impl.h',
         'browser/usb/usb_device.cc',
         'browser/usb/usb_device.h',
+        'browser/usb/usb_interface.cc',
+        'browser/usb/usb_interface.h',
         'browser/usb/usb_service.cc',
         'browser/usb/usb_service.h',
         'browser/usb/usb_service_factory.cc',

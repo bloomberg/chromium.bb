@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_USB_USB_DEVICE_H_
 
 #include <map>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/usb/usb_interface.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 
@@ -39,13 +41,6 @@ enum UsbTransferStatus {
   USB_TRANSFER_LENGTH_SHORT,
 };
 
-enum UsbTransferType {
-  USB_TRANSFER_CONTROL = 0,
-  USB_TRANSFER_BULK,
-  USB_TRANSFER_INTERRUPT,
-  USB_TRANSFER_ISOCHRONOUS,
-};
-
 typedef base::Callback<void(UsbTransferStatus, scoped_refptr<net::IOBuffer>,
     size_t)> UsbTransferCallback;
 typedef base::Callback<void(bool)> UsbInterfaceCallback;
@@ -55,7 +50,6 @@ typedef base::Callback<void(bool)> UsbInterfaceCallback;
 // standard USB operations.
 class UsbDevice : public base::RefCounted<UsbDevice> {
  public:
-  enum TransferDirection { INBOUND, OUTBOUND };
   enum TransferRequestType { STANDARD, CLASS, VENDOR, RESERVED };
   enum TransferRecipient { DEVICE, INTERFACE, ENDPOINT, OTHER };
 
@@ -70,6 +64,9 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
   // is invoked after the device has been closed.
   virtual void Close(const base::Callback<void()>& callback);
 
+  virtual void ListInterfaces(UsbConfigDescriptor* config,
+                              const UsbInterfaceCallback& callback);
+
   virtual void ClaimInterface(const int interface_number,
                               const UsbInterfaceCallback& callback);
 
@@ -81,7 +78,7 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
       const int alternate_setting,
       const UsbInterfaceCallback& callback);
 
-  virtual void ControlTransfer(const TransferDirection direction,
+  virtual void ControlTransfer(const UsbEndpointDirection direction,
                                const TransferRequestType request_type,
                                const TransferRecipient recipient,
                                const uint8 request,
@@ -92,21 +89,21 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
                                const unsigned int timeout,
                                const UsbTransferCallback& callback);
 
-  virtual void BulkTransfer(const TransferDirection direction,
+  virtual void BulkTransfer(const UsbEndpointDirection direction,
                             const uint8 endpoint,
                             net::IOBuffer* buffer,
                             const size_t length,
                             const unsigned int timeout,
                             const UsbTransferCallback& callback);
 
-  virtual void InterruptTransfer(const TransferDirection direction,
+  virtual void InterruptTransfer(const UsbEndpointDirection direction,
                                  const uint8 endpoint,
                                  net::IOBuffer* buffer,
                                  const size_t length,
                                  const unsigned int timeout,
                                  const UsbTransferCallback& callback);
 
-  virtual void IsochronousTransfer(const TransferDirection direction,
+  virtual void IsochronousTransfer(const UsbEndpointDirection direction,
                                    const uint8 endpoint,
                                    net::IOBuffer* buffer,
                                    const size_t length,

@@ -4,26 +4,30 @@
 
 #include "chrome/browser/usb/usb_device.h"
 
+#include <vector>
+
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/usb/usb_interface.h"
 #include "chrome/browser/usb/usb_service.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
 namespace {
 
 static uint8 ConvertTransferDirection(
-    const UsbDevice::TransferDirection direction) {
+    const UsbEndpointDirection direction) {
   switch (direction) {
-    case UsbDevice::INBOUND:
+    case USB_DIRECTION_INBOUND:
       return LIBUSB_ENDPOINT_IN;
-    case UsbDevice::OUTBOUND:
+    case USB_DIRECTION_OUTBOUND:
       return LIBUSB_ENDPOINT_OUT;
+    default:
+      NOTREACHED();
+      return LIBUSB_ENDPOINT_IN;
   }
-  NOTREACHED();
-  return LIBUSB_ENDPOINT_OUT;
 }
 
-static uint8 CreateRequestType(const UsbDevice::TransferDirection direction,
+static uint8 CreateRequestType(const UsbEndpointDirection direction,
     const UsbDevice::TransferRequestType request_type,
     const UsbDevice::TransferRecipient recipient) {
   uint8 result = ConvertTransferDirection(direction);
@@ -78,9 +82,10 @@ static UsbTransferStatus ConvertTransferStatus(
       return USB_TRANSFER_OVERFLOW;
     case LIBUSB_TRANSFER_CANCELLED:
       return USB_TRANSFER_CANCELLED;
+    default:
+      NOTREACHED();
+      return USB_TRANSFER_ERROR;
   }
-  NOTREACHED();
-  return USB_TRANSFER_ERROR;
 }
 
 static void LIBUSB_CALL HandleTransferCompletion(
@@ -191,6 +196,21 @@ void UsbDevice::TransferComplete(PlatformUsbTransferHandle handle) {
   libusb_free_transfer(handle);
 }
 
+void UsbDevice::ListInterfaces(UsbConfigDescriptor* config,
+                               const UsbInterfaceCallback& callback) {
+  CheckDevice();
+
+  PlatformUsbDevice device = libusb_get_device(handle_);
+
+  PlatformUsbConfigDescriptor platform_config;
+  const int list_result = libusb_get_active_config_descriptor(device,
+      &platform_config);
+  if (list_result == 0) {
+    config->Reset(platform_config);
+  }
+  callback.Run(list_result == 0);
+}
+
 void UsbDevice::ClaimInterface(const int interface_number,
                                const UsbInterfaceCallback& callback) {
   CheckDevice();
@@ -220,7 +240,7 @@ void UsbDevice::SetInterfaceAlternateSetting(
   callback.Run(setting_result == 0);
 }
 
-void UsbDevice::ControlTransfer(const TransferDirection direction,
+void UsbDevice::ControlTransfer(const UsbEndpointDirection direction,
     const TransferRequestType request_type, const TransferRecipient recipient,
     const uint8 request, const uint16 value, const uint16 index,
     net::IOBuffer* buffer, const size_t length, const unsigned int timeout,
@@ -244,7 +264,7 @@ void UsbDevice::ControlTransfer(const TransferDirection direction,
                  callback);
 }
 
-void UsbDevice::BulkTransfer(const TransferDirection direction,
+void UsbDevice::BulkTransfer(const UsbEndpointDirection direction,
     const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
     const unsigned int timeout, const UsbTransferCallback& callback) {
   CheckDevice();
@@ -257,7 +277,7 @@ void UsbDevice::BulkTransfer(const TransferDirection direction,
   SubmitTransfer(transfer, USB_TRANSFER_BULK, buffer, length, callback);
 }
 
-void UsbDevice::InterruptTransfer(const TransferDirection direction,
+void UsbDevice::InterruptTransfer(const UsbEndpointDirection direction,
     const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
     const unsigned int timeout, const UsbTransferCallback& callback) {
   CheckDevice();
@@ -270,7 +290,7 @@ void UsbDevice::InterruptTransfer(const TransferDirection direction,
   SubmitTransfer(transfer, USB_TRANSFER_INTERRUPT, buffer, length, callback);
 }
 
-void UsbDevice::IsochronousTransfer(const TransferDirection direction,
+void UsbDevice::IsochronousTransfer(const UsbEndpointDirection direction,
     const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
     const unsigned int packets, const unsigned int packet_length,
     const unsigned int timeout, const UsbTransferCallback& callback) {

@@ -44,9 +44,9 @@ class UsbAsyncApiTransferFunction : public UsbAsyncApiFunction {
   virtual ~UsbAsyncApiTransferFunction();
 
   bool ConvertDirectionSafely(const extensions::api::usb::Direction& input,
-                              UsbDevice::TransferDirection* output);
+                              UsbEndpointDirection* output);
   bool ConvertRequestTypeSafely(const extensions::api::usb::RequestType& input,
-                                UsbDevice::TransferRequestType* output);
+                              UsbDevice::TransferRequestType* output);
   bool ConvertRecipientSafely(const extensions::api::usb::Recipient& input,
                               UsbDevice::TransferRecipient* output);
 
@@ -75,6 +75,36 @@ class UsbFindDevicesFunction : public UsbAsyncApiFunction {
   scoped_ptr<base::ListValue> result_;
   std::vector<scoped_refptr<UsbDevice> > devices_;
   scoped_ptr<extensions::api::usb::FindDevices::Params> parameters_;
+};
+
+class UsbListInterfacesFunction : public UsbAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("usb.listInterfaces", USB_LISTINTERFACES)
+
+  UsbListInterfacesFunction();
+
+ protected:
+  virtual ~UsbListInterfacesFunction();
+
+  virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
+
+ private:
+  void OnCompleted(bool success);
+
+  bool ConvertDirectionSafely(const UsbEndpointDirection& input,
+                              extensions::api::usb::Direction* output);
+  bool ConvertSynchronizationTypeSafely(
+      const UsbSynchronizationType& input,
+      extensions::api::usb::SynchronizationType* output);
+  bool ConvertTransferTypeSafely(const UsbTransferType& input,
+                              extensions::api::usb::TransferType* output);
+  bool ConvertUsageTypeSafely(const UsbUsageType& input,
+                              extensions::api::usb::UsageType* output);
+
+  scoped_ptr<base::ListValue> result_;
+  scoped_refptr<UsbConfigDescriptor> config_;
+  scoped_ptr<extensions::api::usb::ListInterfaces::Params> parameters_;
 };
 
 class UsbCloseDeviceFunction : public UsbAsyncApiFunction {

@@ -45,26 +45,29 @@ class MockUsbDevice : public UsbDevice {
 
   MOCK_METHOD1(Close, void(const base::Callback<void()>& callback));
 
-  MOCK_METHOD10(ControlTransfer, void(const TransferDirection direction,
+  MOCK_METHOD10(ControlTransfer, void(const UsbEndpointDirection direction,
       const TransferRequestType request_type, const TransferRecipient recipient,
       const uint8 request, const uint16 value, const uint16 index,
       net::IOBuffer* buffer, const size_t length, const unsigned int timeout,
       const UsbTransferCallback& callback));
 
-  MOCK_METHOD6(BulkTransfer, void(const TransferDirection direction,
+  MOCK_METHOD6(BulkTransfer, void(const UsbEndpointDirection direction,
       const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
       const unsigned int timeout, const UsbTransferCallback& callback));
 
-  MOCK_METHOD6(InterruptTransfer, void(const TransferDirection direction,
+  MOCK_METHOD6(InterruptTransfer, void(const UsbEndpointDirection direction,
       const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
       const unsigned int timeout, const UsbTransferCallback& callback));
 
-  MOCK_METHOD8(IsochronousTransfer, void(const TransferDirection direction,
+  MOCK_METHOD8(IsochronousTransfer, void(const UsbEndpointDirection direction,
       const uint8 endpoint, net::IOBuffer* buffer, const size_t length,
       const unsigned int packets, const unsigned int packet_length,
       const unsigned int timeout, const UsbTransferCallback& callback));
 
   MOCK_METHOD1(ResetDevice, void(const base::Callback<void(bool)>& callback));
+
+  MOCK_METHOD2(ListInterfaces, void(UsbConfigDescriptor* config,
+      const UsbInterfaceCallback& callback));
 
  protected:
   virtual ~MockUsbDevice() {}
@@ -98,24 +101,31 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, DeviceHandling) {
     .WillOnce(InvokeUsbResultCallback<0>(true))
     .WillOnce(InvokeUsbResultCallback<0>(false));
   EXPECT_CALL(*mock_device_,
-              InterruptTransfer(UsbDevice::OUTBOUND, 2, _, 1, _, _))
+              InterruptTransfer(USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
     .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED));
   ASSERT_TRUE(RunExtensionTest("usb/device_handling"));
 }
 
+IN_PROC_BROWSER_TEST_F(UsbApiTest, ListInterfaces) {
+  EXPECT_CALL(*mock_device_, ListInterfaces(_, _))
+    .WillOnce(InvokeUsbResultCallback<1>(false));
+  EXPECT_CALL(*mock_device_, Close(_)).Times(AnyNumber());
+  ASSERT_TRUE(RunExtensionTest("usb/list_interfaces"));
+}
+
 IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
   EXPECT_CALL(*mock_device_,
-      ControlTransfer(UsbDevice::OUTBOUND, UsbDevice::STANDARD,
+      ControlTransfer(USB_DIRECTION_OUTBOUND, UsbDevice::STANDARD,
           UsbDevice::DEVICE, 1, 2, 3, _, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<9>(USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_,
-      BulkTransfer(UsbDevice::OUTBOUND, 1, _, 1, _, _))
+      BulkTransfer(USB_DIRECTION_OUTBOUND, 1, _, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_,
-      InterruptTransfer(UsbDevice::OUTBOUND, 2, _, 1, _, _))
+      InterruptTransfer(USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_,
-      IsochronousTransfer(UsbDevice::OUTBOUND, 3, _, 1, 1, 1, _, _))
+      IsochronousTransfer(USB_DIRECTION_OUTBOUND, 3, _, 1, 1, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<7>(USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_, Close(_)).Times(AnyNumber());
   ASSERT_TRUE(RunExtensionTest("usb/transfer_event"));

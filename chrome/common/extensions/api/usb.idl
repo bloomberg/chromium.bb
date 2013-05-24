@@ -4,11 +4,17 @@
 
 namespace usb {
 
-  // Direction, Recipient and RequestType all map to their namesakes within the
-  // USB specification.
+  // Direction, Recipient, RequestType, and TransferType all map to their
+  // namesakes within the USB specification.
   enum Direction {in, out};
   enum Recipient {device, _interface, endpoint, other};
   enum RequestType {standard, class, vendor, reserved};
+  enum TransferType {control, interrupt, isochronous, bulk};
+
+  // For isochronous mode, SynchronizationType and UsageType map to their
+  // namesakes within the USB specification.
+  enum SynchronizationType {asynchronous, adaptive, synchronous};
+  enum UsageType {data, feedback, explicitFeedback};
 
   // A Device encapsulates everything that is needed to communicate with a USB
   // device. They are returned by findDevice calls and have all of their
@@ -17,6 +23,30 @@ namespace usb {
     long handle;
     long vendorId;
     long productId;
+  };
+
+  dictionary EndpointDescriptor {
+    long address;
+    TransferType type;
+    Direction direction;
+    long maximumPacketSize;
+
+    // Used for isochronous mode.
+    SynchronizationType? synchronization;
+    UsageType? usage;
+
+    // If this is an interrupt endpoint, this will be 1-255
+    long? pollingInterval;
+  };
+
+  dictionary InterfaceDescriptor {
+    long interfaceNumber;
+    long alternateSetting;
+    long interfaceClass;
+    long interfaceSubclass;
+    long interfaceProtocol;
+    DOMString? description;
+    EndpointDescriptor[] endpoints;
   };
 
   // ControlTransferInfo represents that parameters to a single USB control
@@ -97,6 +127,7 @@ namespace usb {
 
   callback VoidCallback = void ();
   callback FindDevicesCallback = void (Device[] device);
+  callback ListInterfacesCallback = void (InterfaceDescriptor[] descriptors);
   callback CloseDeviceCallback = void ();
   callback TransferCallback = void (TransferResultInfo info);
   callback ResetDeviceCallback = void(boolean result);
@@ -117,6 +148,12 @@ namespace usb {
     // |callback|: The callback to invoke once the device is closed.
     static void closeDevice(Device device,
         optional CloseDeviceCallback callback);
+
+    // Lists all the interfaces on the USB device.
+    // |device|: The device from which the interfaces should be listed.
+    // |callback|: The callback to invoke when the interfaces are enumerated.
+    static void listInterfaces(Device device,
+        ListInterfacesCallback callback);
 
     // Claims an interface on the specified USB device.
     // |device|: The device on which the interface is to be claimed.
