@@ -1128,6 +1128,7 @@ webkit.org/b/91445 [ XP ] plugins/embed-attributes-style.html [ Pass Timeout ]
 
 webkit.org/b/92019 [ Debug ] fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ ImageOnlyFailure Pass ]
 webkit.org/b/92022 [ Debug ] svg/W3C-SVG-1.1/struct-dom-06-b.svg [ Failure Pass ]
+crbug.com/243711 [ Lion Release ] svg/W3C-SVG-1.1/struct-dom-06-b.svg [ Failure ]
 
 webkit.org/b/92027 fast/performance/performance-now-timestamps.html [ Failure Pass ]
 webkit.org/b/99333 [ Lion Debug ] plugins/update-widgets-crash.html [ Pass Timeout ]
