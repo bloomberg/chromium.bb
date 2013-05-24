@@ -13,10 +13,15 @@ if env.Bit('skip_nonstable_bitcode'):
 
 # Add a build ID to the nexe in the cases where this works.
 # TODO(mseaborn): Make "--build-id" work with the other toolchains.
-#  * In the x86 nacl-gcc toolchain, "--build-id" produces a nexe that
-#    sel_ldr won't load.
-#  * pnacl-ld rejects "--build-id".
-if env.Bit('build_arm') and not env.Bit('bitcode'):
+# In the x86 nacl-gcc toolchain, "--build-id" produces a nexe that
+# sel_ldr won't load.
+if env.Bit('bitcode'):
+  env.Append(LINKFLAGS=['--pnacl-allow-nexe-build-id'])
+  if env.Bit('pnacl_generate_pexe'):
+    env.Append(TRANSLATEFLAGS=['--build-id'])
+  else:
+    env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wn,--build-id'])
+elif env.Bit('build_arm'):
   env.Append(LINKFLAGS=['-Wl,--build-id'])
 
 nexe = env.ComponentProgram('minidump_test', 'minidump_test.c',
@@ -31,5 +36,9 @@ node = env.CommandSelLdrTestNacl(
     sel_ldr_flags=['-e', # Enable exception handling for catching crash
                    '-a', # Enable file access for writing minidump file
                    ])
-env.AddNodeToTestSuite(node, ['small_tests', 'exception_tests'],
-                       'run_minidump_test')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'exception_tests', 'nonpexe_tests'],
+                       'run_minidump_test',
+                       # Nexe build IDs are not available under the
+                       # sandboxed PNaCl translator.
+                       is_broken=env.Bit('use_sandboxed_translator'))

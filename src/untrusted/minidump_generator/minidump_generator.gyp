@@ -21,7 +21,7 @@
         'include_dirs': ['<(DEPTH)/breakpad/src'],
       },
       'sources': [
-        'build_id.c',
+        'build_id.cc',
         'minidump_generator.cc',
       ],
       'dependencies': [

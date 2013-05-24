@@ -16,7 +16,7 @@ const char *g_minidump_filename;
 
 
 /* TODO(mseaborn): Make build IDs work in the other toolchains. */
-#if defined(__arm__)
+#if defined(__pnacl__) || defined(__arm__)
 # define BUILD_ID_WORKS 1
 #else
 # define BUILD_ID_WORKS 0
