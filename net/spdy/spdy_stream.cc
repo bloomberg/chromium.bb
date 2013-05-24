@@ -141,6 +141,8 @@ void SpdyStream::PushedStreamReplayData() {
 
   continue_buffering_data_ = false;
 
+  // TODO(akalin): This call may delete this object. Figure out what
+  // to do in that case.
   int rv = delegate_->OnResponseReceived(*response_, response_time_, OK);
   if (rv == ERR_INCOMPLETE_SPDY_HEADERS) {
     // We don't have complete headers.  Assume we're waiting for another
@@ -389,7 +391,7 @@ int SpdyStream::OnResponseReceived(const SpdyHeaderBlock& response) {
   if (!pushed_ && io_state_ != STATE_WAITING_FOR_RESPONSE)
     return ERR_SPDY_PROTOCOL_ERROR;
   if (pushed_)
-    CHECK(io_state_ == STATE_NONE);
+    CHECK_EQ(io_state_, STATE_NONE);
   io_state_ = STATE_OPEN;
 
   // Append all the headers into the response header block.
@@ -409,8 +411,10 @@ int SpdyStream::OnResponseReceived(const SpdyHeaderBlock& response) {
     return ERR_SPDY_PROTOCOL_ERROR;
   }
 
-  if (delegate_)
+  if (delegate_) {
+    // May delete this object.
     rv = delegate_->OnResponseReceived(*response_, response_time_, rv);
+  }
   // If delegate_ is not yet attached, we'll call OnResponseReceived after the
   // delegate gets attached to the stream.
 
@@ -448,6 +452,7 @@ int SpdyStream::OnHeaders(const SpdyHeaderBlock& headers) {
 
   int rv = OK;
   if (delegate_) {
+    // May delete this object.
     rv = delegate_->OnResponseReceived(*response_, response_time_, rv);
     // ERR_INCOMPLETE_SPDY_HEADERS means that we are waiting for more
     // headers before the response header block is complete.
@@ -828,6 +833,35 @@ int SpdyStream::DoSendBody() {
 }
 
 int SpdyStream::DoSendBodyComplete(int result) {
+  result = ProcessJustCompletedFrame(result, STATE_SEND_BODY_COMPLETE);
+
+  if (result != OK)
+    return result;
+
+  SpdySendStatus send_status = delegate_->OnSendBodyComplete();
+
+  io_state_ =
+      (send_status == MORE_DATA_TO_SEND) ?
+      STATE_SEND_BODY : STATE_WAITING_FOR_RESPONSE;
+
+  return OK;
+}
+
+int SpdyStream::DoOpen() {
+  int result = ProcessJustCompletedFrame(OK, STATE_OPEN);
+
+  if (result != OK)
+    return result;
+
+  // Set |io_state_| first as |delegate_| may check it.
+  io_state_ = STATE_OPEN;
+
+  delegate_->OnDataSent();
+
+  return OK;
+}
+
+int SpdyStream::ProcessJustCompletedFrame(int result, State io_pending_state) {
   if (result != OK)
     return result;
 
@@ -852,7 +886,7 @@ int SpdyStream::DoSendBodyComplete(int result) {
 
   pending_send_data_->DidConsume(frame_payload_size);
   if (pending_send_data_->BytesRemaining() > 0) {
-    io_state_ = STATE_SEND_BODY_COMPLETE;
+    io_state_ = io_pending_state;
     QueueNextDataFrame();
     return ERR_IO_PENDING;
   }
@@ -863,57 +897,6 @@ int SpdyStream::DoSendBodyComplete(int result) {
   if (!delegate_) {
     NOTREACHED();
     return ERR_UNEXPECTED;
-  }
-
-  io_state_ =
-      (delegate_->OnSendBodyComplete() == MORE_DATA_TO_SEND) ?
-      STATE_SEND_BODY : STATE_WAITING_FOR_RESPONSE;
-
-  return OK;
-}
-
-int SpdyStream::DoOpen() {
-  io_state_ = STATE_OPEN;
-
-  switch (just_completed_frame_type_) {
-    case DATA: {
-      if (just_completed_frame_size_ < session_->GetDataFrameMinimumSize()) {
-        NOTREACHED();
-        return ERR_UNEXPECTED;
-      }
-
-      size_t frame_payload_size =
-          just_completed_frame_size_ - session_->GetDataFrameMinimumSize();
-      if (frame_payload_size > session_->GetDataFrameMaximumPayload()) {
-        NOTREACHED();
-        return ERR_UNEXPECTED;
-      }
-
-      send_bytes_ += frame_payload_size;
-
-      pending_send_data_->DidConsume(frame_payload_size);
-      if (pending_send_data_->BytesRemaining() > 0) {
-        QueueNextDataFrame();
-        return ERR_IO_PENDING;
-      }
-
-      pending_send_data_ = NULL;
-      pending_send_flags_ = DATA_FLAG_NONE;
-
-      if (delegate_)
-        delegate_->OnDataSent();
-
-      break;
-    }
-
-    case HEADERS:
-      if (delegate_)
-        delegate_->OnHeadersSent();
-      break;
-
-    default:
-      NOTREACHED();
-      return ERR_UNEXPECTED;
   }
 
   return OK;

@@ -478,11 +478,6 @@ int SpdyProxyClientSocket::OnResponseReceived(
   return OK;
 }
 
-void SpdyProxyClientSocket::OnHeadersSent() {
-  // Proxy client sockets don't send any HEADERS frame.
-  NOTREACHED();
-}
-
 // Called when data is received or on EOF (if |buffer| is NULL).
 int SpdyProxyClientSocket::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   if (buffer) {

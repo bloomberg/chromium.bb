@@ -38,8 +38,6 @@ int ClosingDelegate::OnResponseReceived(const SpdyHeaderBlock& response,
   return OK;
 }
 
-void ClosingDelegate::OnHeadersSent() {}
-
 int ClosingDelegate::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   return OK;
 }
@@ -76,8 +74,6 @@ int StreamDelegateBase::OnResponseReceived(const SpdyHeaderBlock& response,
   response_ = response;
   return status;
 }
-
-void StreamDelegateBase::OnHeadersSent() {}
 
 int StreamDelegateBase::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   if (buffer)

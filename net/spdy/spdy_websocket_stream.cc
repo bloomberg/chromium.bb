@@ -105,11 +105,6 @@ int SpdyWebSocketStream::OnResponseReceived(
   return delegate_->OnReceivedSpdyResponseHeader(response, status);
 }
 
-void SpdyWebSocketStream::OnHeadersSent() {
-  // This will be called when WebSocket over SPDY supports new framing.
-  NOTREACHED();
-}
-
 int SpdyWebSocketStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   DCHECK(delegate_);
   delegate_->OnReceivedSpdyData(buffer.Pass());

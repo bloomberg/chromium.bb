@@ -368,11 +368,6 @@ int SpdyHttpStream::OnResponseReceived(const SpdyHeaderBlock& response,
   return status;
 }
 
-void SpdyHttpStream::OnHeadersSent() {
-  // For HTTP streams, no HEADERS frame is sent from the client.
-  NOTREACHED();
-}
-
 int SpdyHttpStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   // SpdyStream won't call us with data if the header block didn't contain a
   // valid set of headers.  So we don't expect to not have headers received

@@ -83,9 +83,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
                                    base::Time response_time,
                                    int status) = 0;
 
-    // Called when a HEADERS frame is sent.
-    virtual void OnHeadersSent() = 0;
-
     // Called when data is received. |buffer| may be NULL, which
     // signals EOF.  Must return OK if the data was received
     // successfully, or a network error code otherwise.
@@ -376,6 +373,13 @@ class NET_EXPORT_PRIVATE SpdyStream {
   int DoReadHeaders();
   int DoReadHeadersComplete(int result);
   int DoOpen();
+
+  // Does the bookkeeping necessary after a frame has just been
+  // sent. If there's more data to be sent, |state_| is set to
+  // |io_pending_state|, the next frame is queued up, and
+  // ERR_IO_PENDING is returned. Otherwise, returns OK if successful
+  // or an error if not.
+  int ProcessJustCompletedFrame(int result, State io_pending_state);
 
   // Update the histograms.  Can safely be called repeatedly, but should only
   // be called after the stream has completed.
