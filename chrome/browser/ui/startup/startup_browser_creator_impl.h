@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/browser/ui/startup/startup_types.h"
 #include "googleurl/src/gurl.h"
@@ -58,13 +59,15 @@ class StartupBrowserCreatorImpl {
   // already running and the user wants to launch another instance.
   bool Launch(Profile* profile,
               const std::vector<GURL>& urls_to_open,
-              bool process_startup);
+              bool process_startup,
+              chrome::HostDesktopType desktop_type);
 
   // Convenience for OpenTabsInBrowser that converts |urls| into a set of
   // Tabs.
   Browser* OpenURLsInBrowser(Browser* browser,
                              bool process_startup,
-                             const std::vector<GURL>& urls);
+                             const std::vector<GURL>& urls,
+                             chrome::HostDesktopType desktop_type);
 
   // Creates a tab for each of the Tabs in |tabs|. If browser is non-null
   // and a tabbed browser, the tabs are added to it. Otherwise a new tabbed
@@ -73,7 +76,8 @@ class StartupBrowserCreatorImpl {
   // browser.
   Browser* OpenTabsInBrowser(Browser* browser,
                              bool process_startup,
-                             const StartupTabs& tabs);
+                             const StartupTabs& tabs,
+                             chrome::HostDesktopType desktop_type);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, RestorePinnedTabs);
@@ -105,7 +109,8 @@ class StartupBrowserCreatorImpl {
   //   or invoke ProcessSpecifiedURLs.
   // . Open the urls directly.
   void ProcessLaunchURLs(bool process_startup,
-                         const std::vector<GURL>& urls_to_open);
+                         const std::vector<GURL>& urls_to_open,
+                         chrome::HostDesktopType desktop_type);
 
   // Does the following:
   // . If the user's startup pref is to restore the last session (or the
@@ -114,7 +119,8 @@ class StartupBrowserCreatorImpl {
   // . Otherwise invoke ProcessSpecifiedURLs
   // If a browser was created, true is returned.  Otherwise returns false and
   // the caller must create a new browser.
-  bool ProcessStartupURLs(const std::vector<GURL>& urls_to_open);
+  bool ProcessStartupURLs(const std::vector<GURL>& urls_to_open,
+                          chrome::HostDesktopType desktop_type);
 
   // Invoked from either ProcessLaunchURLs or ProcessStartupURLs to handle
   // processing of URLs where the behavior is common between process startup
@@ -127,7 +133,8 @@ class StartupBrowserCreatorImpl {
   //
   // If any tabs were opened, the Browser which was created is returned.
   // Otherwise null is returned and the caller must create a new browser.
-  Browser* ProcessSpecifiedURLs(const std::vector<GURL>& urls_to_open);
+  Browser* ProcessSpecifiedURLs(const std::vector<GURL>& urls_to_open,
+                                chrome::HostDesktopType desktop_type);
 
   // Adds a Tab to |tabs| for each url in |urls| that doesn't already exist
   // in |tabs|.

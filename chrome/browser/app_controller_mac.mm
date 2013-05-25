@@ -1122,7 +1122,7 @@ void RecordLastRunAppBundlePath() {
   chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
-  launch.OpenURLsInBrowser(browser, false, urls);
+  launch.OpenURLsInBrowser(browser, false, urls, browser->host_desktop_type());
 }
 
 - (void)getUrl:(NSAppleEventDescriptor*)event

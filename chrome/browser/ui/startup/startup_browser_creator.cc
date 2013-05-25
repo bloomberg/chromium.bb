@@ -279,7 +279,8 @@ bool StartupBrowserCreator::LaunchBrowser(
     const std::vector<GURL> urls_to_launch =
         GetURLsFromCommandLine(command_line, cur_dir, profile);
     const bool launched = lwp.Launch(profile, urls_to_launch,
-                               in_synchronous_profile_launch_);
+                               in_synchronous_profile_launch_,
+                               chrome::HOST_DESKTOP_TYPE_NATIVE);
     in_synchronous_profile_launch_ = false;
     if (!launched) {
       LOG(ERROR) << "launch error";

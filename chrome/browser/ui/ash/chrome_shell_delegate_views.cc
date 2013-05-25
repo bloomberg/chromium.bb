@@ -4,11 +4,18 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
+#include "base/command_line.h"
 #include "ash/magnifier/magnifier_constants.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/caps_lock_delegate_views.h"
 #include "chrome/browser/ui/ash/window_positioner.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
@@ -110,9 +117,34 @@ void ChromeShellDelegate::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_ASH_SESSION_STARTED:
-      GetTargetBrowser()->window()->Show();
+    case chrome::NOTIFICATION_ASH_SESSION_STARTED: {
+      // If Chrome ASH is launched when no browser is open in the desktop,
+      // we should execute the startup code.
+      // If there are browsers open in the desktop, we create a browser window
+      // and open a new tab page, if session restore is not on.
+      BrowserList* desktop_list = BrowserList::GetInstance(
+          chrome::HOST_DESKTOP_TYPE_NATIVE);
+      if (desktop_list->empty()) {
+        // We pass a dummy command line here, because the browser is launched in
+        // silent-mode by the metro viewer process, which causes the
+        // StartupBrowserCreatorImpl class to not create any browsers which is
+        // not the behavior we want.
+        CommandLine dummy(CommandLine::NO_PROGRAM);
+        StartupBrowserCreatorImpl startup_impl(
+            base::FilePath(),
+            dummy,
+            chrome::startup::IS_NOT_FIRST_RUN);
+        startup_impl.Launch(ProfileManager::GetDefaultProfileOrOffTheRecord(),
+                            std::vector<GURL>(),
+                            true,
+                            chrome::HOST_DESKTOP_TYPE_ASH);
+      } else {
+        Browser* browser = GetTargetBrowser();
+        chrome::AddBlankTabAt(browser, -1, true);
+        browser->window()->Show();
+      }
       break;
+    }
     case chrome::NOTIFICATION_ASH_SESSION_ENDED:
       break;
     default:
