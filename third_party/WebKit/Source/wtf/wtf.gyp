@@ -77,11 +77,15 @@
       'type': 'static_library',
       'include_dirs': [
         '..',
+        '../Platform/chromium'
       ],
       'dependencies': [
           'wtf_config',
           '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
           '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+      ],
+      'defines': [
+          'WEBKIT_IMPLEMENTATION=1',
       ],
       'sources': [
         '<@(wtf_files)',

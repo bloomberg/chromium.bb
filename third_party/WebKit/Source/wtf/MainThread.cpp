@@ -1,10 +1,10 @@
 /*
 * Copyright (C) 2009 Google Inc. All rights reserved.
-* 
+*
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are
 * met:
-* 
+*
 *     * Redistributions of source code must retain the above copyright
 * notice, this list of conditions and the following disclaimer.
 *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
 *     * Neither the name of Google Inc. nor the names of its
 * contributors may be used to endorse or promote products derived from
 * this software without specific prior written permission.
-* 
+*
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -28,17 +28,49 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef ChromiumThreading_h
-#define ChromiumThreading_h
+#include "config.h"
+#include "wtf/MainThread.h"
+
+#include "wtf/Assertions.h"
+#include "wtf/Functional.h"
+#include "wtf/Threading.h"
+#include <public/Platform.h>
 
 namespace WTF {
 
-// An interface to the embedding layer, which provides threading support.
-class ChromiumThreading {
-public:
-    static void callOnMainThread(void (*func)(void*), void* context);
-};
+static ThreadIdentifier mainThreadIdentifier;
+
+void initializeMainThread()
+{
+    static bool initializedMainThread;
+    if (initializedMainThread)
+        return;
+    initializedMainThread = true;
+
+    mainThreadIdentifier = currentThread();
+}
+
+void callOnMainThread(MainThreadFunction* function, void* context)
+{
+    WebKit::Platform::current()->callOnMainThread(function, context);
+}
+
+static void callFunctionObject(void* context)
+{
+    Function<void()>* function = static_cast<Function<void()>*>(context);
+    (*function)();
+    delete function;
+}
+
+void callOnMainThread(const Function<void()>& function)
+{
+    callOnMainThread(callFunctionObject, new Function<void()>(function));
+}
+
+bool isMainThread()
+{
+    return currentThread() == mainThreadIdentifier;
+}
 
 } // namespace WTF
 
-#endif // ChromiumThreading_h
