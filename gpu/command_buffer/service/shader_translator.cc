@@ -16,20 +16,23 @@ namespace {
 
 using gpu::gles2::ShaderTranslator;
 
+static bool g_shader_initalized = false;
+
 void FinalizeShaderTranslator(void* /* dummy */) {
   TRACE_EVENT0("gpu", "ShFinalize");
   ShFinalize();
+  DCHECK(g_shader_initalized);
+  g_shader_initalized = false;
 }
 
 bool InitializeShaderTranslator() {
-  static bool initialized = false;
-  if (!initialized) {
+  if (!g_shader_initalized) {
     TRACE_EVENT0("gpu", "ShInitialize");
     CHECK(ShInitialize());
     base::AtExitManager::RegisterCallback(&FinalizeShaderTranslator, NULL);
-    initialized = true;
+    g_shader_initalized = true;
   }
-  return initialized;
+  return g_shader_initalized;
 }
 
 #if !defined(ANGLE_SH_VERSION) || ANGLE_SH_VERSION < 108
