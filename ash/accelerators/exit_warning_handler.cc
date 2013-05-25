@@ -12,6 +12,7 @@
 #include "base/timer.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -56,6 +57,8 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
  public:
   ExitWarningWidgetDelegateView() : text_width_(0), width_(0), height_(0) {
     text_ = l10n_util::GetStringUTF16(IDS_ASH_EXIT_WARNING_POPUP_TEXT);
+    accessible_name_ =
+        l10n_util::GetStringUTF16(IDS_ASH_EXIT_WARNING_POPUP_TEXT_ACCESSIBLE);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     font_ = rb.GetFont(ui::ResourceBundle::LargeFont);
     text_width_ = font_.GetStringWidth(text_);
@@ -81,8 +84,14 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     views::WidgetDelegateView::OnPaint(canvas);
   }
 
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+    state->name = accessible_name_;
+    state->role = ui::AccessibilityTypes::ROLE_ALERT;
+  }
+
  private:
   base::string16 text_;
+  base::string16 accessible_name_;
   gfx::Font font_;
   int text_width_;
   int width_;
@@ -172,6 +181,8 @@ void ExitWarningHandler::Show() {
   widget_->SetContentsView(delegate);
   widget_->GetNativeView()->SetName("ExitWarningWindow");
   widget_->Show();
+
+  delegate->NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
 }
 
 void ExitWarningHandler::Hide() {
