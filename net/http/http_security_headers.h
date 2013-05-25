@@ -19,23 +19,20 @@ namespace net {
 const int64 kMaxHSTSAgeSecs = 86400 * 365;  // 1 year
 
 // Parses |value| as a Strict-Transport-Security header value. If successful,
-// returns true and sets |*expiry| and |*include_subdomains|.
+// returns true and sets |*max_age| and |*include_subdomains|.
 // Otherwise returns false and leaves the output parameters unchanged.
-// Interprets the max-age directive relative to |now|.
 //
 // value is the right-hand side of:
 //
 // "Strict-Transport-Security" ":"
 //     [ directive ]  *( ";" [ directive ] )
-bool NET_EXPORT_PRIVATE ParseHSTSHeader(const base::Time& now,
-                                        const std::string& value,
-                                        base::Time* expiry,
+bool NET_EXPORT_PRIVATE ParseHSTSHeader(const std::string& value,
+                                        base::TimeDelta* max_age,
                                         bool* include_subdomains);
 
 // Parses |value| as a Public-Key-Pins header value. If successful,
-// returns true and populates the expiry and hashes values.
+// returns true and populates the |*max_age| and hashes values.
 // Otherwise returns false and leaves the output parameters unchanged.
-// Interprets the max-age directive relative to |now|.
 //
 // value is the right-hand side of:
 //
@@ -49,10 +46,9 @@ bool NET_EXPORT_PRIVATE ParseHSTSHeader(const base::Time& now,
 // (as specified by the chain_hashes) parameter.  In addition, there MUST
 // be at least one key hash which does NOT match the site's SSL certificate
 // chain (this is the "backup pin").
-bool NET_EXPORT_PRIVATE ParseHPKPHeader(const base::Time& now,
-                                        const std::string& value,
+bool NET_EXPORT_PRIVATE ParseHPKPHeader(const std::string& value,
                                         const HashValueVector& chain_hashes,
-                                        base::Time* expiry,
+                                        base::TimeDelta* max_age,
                                         HashValueVector* hashes);
 
 }  // namespace net

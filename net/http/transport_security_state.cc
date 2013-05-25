@@ -614,15 +614,16 @@ static const struct HSTSPreload* GetHSTSPreload(
 bool TransportSecurityState::AddHSTSHeader(const std::string& host,
                                            const std::string& value) {
   base::Time now = base::Time::Now();
+  base::TimeDelta max_age;
   TransportSecurityState::DomainState domain_state;
-  if (ParseHSTSHeader(now, value, &domain_state.upgrade_expiry,
-                      &domain_state.include_subdomains)) {
+  if (ParseHSTSHeader(value, &max_age, &domain_state.include_subdomains)) {
     // Handle max-age == 0
-    if (now == domain_state.upgrade_expiry)
+    if (max_age.InSeconds() == 0)
       domain_state.upgrade_mode = DomainState::MODE_DEFAULT;
     else
       domain_state.upgrade_mode = DomainState::MODE_FORCE_HTTPS;
     domain_state.created = now;
+    domain_state.upgrade_expiry = now + max_age;
     EnableHost(host, domain_state);
     return true;
   }
@@ -633,11 +634,14 @@ bool TransportSecurityState::AddHPKPHeader(const std::string& host,
                                            const std::string& value,
                                            const SSLInfo& ssl_info) {
   base::Time now = base::Time::Now();
+  base::TimeDelta max_age;
   TransportSecurityState::DomainState domain_state;
-  if (ParseHPKPHeader(now, value, ssl_info.public_key_hashes,
-                      &domain_state.dynamic_spki_hashes_expiry,
-                      &domain_state.dynamic_spki_hashes)) {
+  if (ParseHPKPHeader(value, ssl_info.public_key_hashes,
+                      &max_age, &domain_state.dynamic_spki_hashes)) {
+    // TODO(palmer): http://crbug.com/243865 handle max-age == 0
+    // and includeSubdomains.
     domain_state.created = now;
+    domain_state.dynamic_spki_hashes_expiry = now + max_age;
     EnableHost(host, domain_state);
     return true;
   }
