@@ -12,6 +12,7 @@
 
 namespace gfx {
 class Rect;
+class Transform;
 }
 
 namespace aura {
@@ -30,8 +31,13 @@ class TestScreen : public gfx::Screen,
   RootWindow* CreateRootWindowForPrimaryDisplay();
 
   void SetDeviceScaleFactor(float device_scale_fator);
+  void SetDisplayRotation(gfx::Display::Rotation rotation);
+  void SetUIScale(float ui_scale);
 
  protected:
+  gfx::Transform GetRotationTransform() const;
+  gfx::Transform GetUIScaleTransform() const;
+
   // WindowObserver overrides:
   virtual void OnWindowBoundsChanged(Window* window,
                                      const gfx::Rect& old_bounds,
@@ -59,6 +65,8 @@ class TestScreen : public gfx::Screen,
   aura::RootWindow* root_window_;
 
   gfx::Display display_;
+
+  float ui_scale_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScreen);
 };

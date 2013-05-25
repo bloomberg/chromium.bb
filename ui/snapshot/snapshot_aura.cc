@@ -6,13 +6,20 @@
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/rect_f.h"
+#include "ui/gfx/screen.h"
+#include "ui/gfx/skbitmap_operations.h"
+#include "ui/gfx/transform.h"
 
 namespace ui {
 
@@ -27,17 +34,17 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
                         const gfx::Rect& snapshot_bounds) {
   ui::Compositor* compositor = window->layer()->GetCompositor();
 
-  gfx::Rect read_pixels_bounds = snapshot_bounds;
+  gfx::RectF read_pixels_bounds = snapshot_bounds;
 
   // We must take into account the window's position on the desktop.
-  gfx::Point origin = window->bounds().origin();
-  const aura::Window* root_window = window->GetRootWindow();
+  read_pixels_bounds.Offset(
+      window->GetBoundsInRootWindow().origin().OffsetFromOrigin());
+  aura::RootWindow* root_window = window->GetRootWindow();
   if (root_window)
-    aura::Window::ConvertPointToTarget(window, root_window, &origin);
+    root_window->GetRootTransform().TransformRect(&read_pixels_bounds);
 
-  read_pixels_bounds.Offset(origin.OffsetFromOrigin());
   gfx::Rect read_pixels_bounds_in_pixel =
-      ui::ConvertRectToPixel(window->layer(), read_pixels_bounds);
+      gfx::ToEnclosingRect(read_pixels_bounds);
 
   // Sometimes (i.e. when using Aero on Windows) the compositor's size is
   // smaller than the window bounds. So trim appropriately.
@@ -50,10 +57,29 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   if (!compositor->ReadPixels(&bitmap, read_pixels_bounds_in_pixel))
     return false;
 
-  unsigned char* pixels = reinterpret_cast<unsigned char*>(bitmap.getPixels());
+  gfx::Display display =
+      gfx::Screen::GetScreenFor(window)->GetDisplayNearestWindow(window);
+  switch (display.rotation()) {
+    case gfx::Display::ROTATE_0:
+      break;
+    case gfx::Display::ROTATE_90:
+      bitmap = SkBitmapOperations::Rotate(
+          bitmap, SkBitmapOperations::ROTATION_270_CW);
+      break;
+    case gfx::Display::ROTATE_180:
+      bitmap = SkBitmapOperations::Rotate(
+          bitmap, SkBitmapOperations::ROTATION_180_CW);
+      break;
+    case gfx::Display::ROTATE_270:
+      bitmap = SkBitmapOperations::Rotate(
+          bitmap, SkBitmapOperations::ROTATION_90_CW);
+      break;
+  }
 
+  unsigned char* pixels = reinterpret_cast<unsigned char*>(
+      bitmap.pixelRef()->pixels());
   gfx::PNGCodec::Encode(pixels, gfx::PNGCodec::FORMAT_BGRA,
-                        read_pixels_bounds_in_pixel.size(),
+                        gfx::Size(bitmap.width(), bitmap.height()),
                         bitmap.rowBytes(), true,
                         std::vector<gfx::PNGCodec::Comment>(),
                         png_representation);
