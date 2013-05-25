@@ -746,8 +746,9 @@ ScopedTestNSSDB::ScopedTestNSSDB()
 }
 
 ScopedTestNSSDB::~ScopedTestNSSDB() {
-  if (NSS_VersionCheck("3.14"))
-    g_nss_singleton.Get().CloseTestNSSDB();
+  // TODO(mattm): Close the dababase once NSS 3.14 is required,
+  // which fixes https://bugzilla.mozilla.org/show_bug.cgi?id=588269
+  // Resource leaks are suppressed. http://crbug.com/156433 .
 }
 
 base::Lock* GetNSSWriteLock() {

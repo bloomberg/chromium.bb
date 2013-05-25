@@ -12,7 +12,6 @@
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_test_utils.h"
@@ -81,10 +80,6 @@ class ONCCertificateImporterTest : public testing::Test {
   void AddCertificatesFromFile(
       std::string filename,
       CertificateImporter::ParseResult expected_parse_result) {
-    // This 1 second sleep is necessary because NSS has a caching bug. This
-    // can be removed once http://crbug.com/238654 is fixed.
-    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
-
     scoped_ptr<base::DictionaryValue> onc =
         test_utils::ReadTestDictionary(filename);
     base::Value* certificates_value = NULL;

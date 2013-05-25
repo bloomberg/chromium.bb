@@ -76,30 +76,6 @@ class TestClientInitializer : public testing::EmptyTestEventListener {
   DISALLOW_COPY_AND_ASSIGN(TestClientInitializer);
 };
 
-// This class forces the destruction of all Singletons and LazyInstances
-// between tests. Deleting singletons between each test prevents state from
-// being shared amongst tests, which can lead to subtle bugs in tests.
-class SingletonDestructor : public testing::EmptyTestEventListener {
- public:
-  SingletonDestructor() {}
-  virtual ~SingletonDestructor() {}
-
-  // testing::EmptyTestEventListener:
-  virtual void OnTestStart(
-      const testing::TestInfo& test_info) OVERRIDE {
-    at_exit_manager_.reset(new base::ShadowingAtExitManager);
-  }
-
-  virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
-    at_exit_manager_.reset();
-  }
-
- private:
-  scoped_ptr<base::ShadowingAtExitManager> at_exit_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingletonDestructor);
-};
-
 }  // namespace
 
 TestSuite::TestSuite(int argc, char** argv) : initialized_command_line_(false) {
@@ -275,12 +251,6 @@ void TestSuite::Initialize() {
 
   CatchMaybeTests();
   ResetCommandLine();
-
-  // Add a listener to destroy all Singletons and LazyInstances between each
-  // test. See SingletonDestructor for more information.
-  testing::TestEventListeners& listeners =
-      testing::UnitTest::GetInstance()->listeners();
-  listeners.Append(new SingletonDestructor);
 
   TestTimeouts::Initialize();
 }
