@@ -6317,13 +6317,15 @@ other types of suffix sets.
 
 <histogram name="Power.BacklightLevelOnAC" units="%">
   <summary>
-    The level of the backlight as a percentage when the user is on AC.
+    The level of the backlight as a percentage when the user is on AC. Sampled
+    every 30 seconds.
   </summary>
 </histogram>
 
 <histogram name="Power.BacklightLevelOnBattery" units="%">
   <summary>
     The level of the backlight as a percentage when the user is on battery.
+    Sampled every 30 seconds.
   </summary>
 </histogram>
 
@@ -6334,10 +6336,20 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryDischargeRate">
+<histogram name="Power.BatteryDischargeRate" units="mW">
   <summary>
-    Chrome OS battery discharge rate in mW sampled when the device runs on
-    battery.
+    Chrome OS battery discharge rate in mW sampled every 30 seconds while the
+    device runs on battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.BatteryDischargeRateWhileSuspended" units="mW">
+  <summary>
+    Chrome OS battery discharge rate in mW while the system was suspended,
+    sampled at resume. Only reported if the system was on battery power both
+    before suspending and after resuming, if the energy level didn't increase
+    while suspended (which would indicate that an AC adapter was connected), and
+    if the system was suspended for at least a minute.
   </summary>
 </histogram>
 
@@ -6422,6 +6434,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Power.BrightnessAdjustOnAC" enum="PowerBrightnessAdjust">
+  <obsolete>
+    Deprecated as of 5/2013. See Accel_BrightnessDown_F6 and
+    Accel_BrightnessUp_F7 user actions instead.
+  </obsolete>
   <summary>
     Number of times the user has adjusted brightness up and down while running
     on battery power.
@@ -6429,6 +6445,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Power.BrightnessAdjustOnBattery" enum="PowerBrightnessAdjust">
+  <obsolete>
+    Deprecated as of 5/2013. See Accel_BrightnessDown_F6 and
+    Accel_BrightnessUp_F7 user actions instead.
+  </obsolete>
   <summary>
     Number of times the user has adjusted brightness up and down while running
     on AC power.
@@ -6516,6 +6536,13 @@ other types of suffix sets.
   <summary>
     The time that the kernel took to suspend-to-RAM the Chrome OS device when
     running on battery.
+  </summary>
+</histogram>
+
+<histogram name="Power.KeyboardBacklightLevel" units="%">
+  <summary>
+    The level of the keyboard backlight as a percentage. Sampled every 30
+    seconds.
   </summary>
 </histogram>
 
