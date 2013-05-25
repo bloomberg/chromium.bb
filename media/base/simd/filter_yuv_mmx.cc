@@ -6,7 +6,6 @@
 #include <intrin.h>
 #else
 #include <mmintrin.h>
-#include <emmintrin.h>
 #endif
 
 #include "build/build_config.h"
