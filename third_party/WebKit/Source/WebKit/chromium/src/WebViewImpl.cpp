@@ -32,11 +32,9 @@
 #include "WebViewImpl.h"
 
 #include <public/Platform.h>
-#include <public/WebCompositorOutputSurface.h>
-#include <public/WebCompositorSupport.h>
 #include <public/WebDragData.h>
 #include <public/WebFloatPoint.h>
-#include <public/WebGraphicsContext3D.h>
+#include <public/WebGestureCurve.h>
 #include <public/WebImage.h>
 #include <public/WebLayer.h>
 #include <public/WebLayerTreeView.h>
@@ -70,7 +68,6 @@
 #include "WebAccessibilityObject.h"
 #include "WebActiveWheelFlingParameters.h"
 #include "WebAutofillClient.h"
-#include "WebCompositorInputHandlerImpl.h"
 #include "WebDevToolsAgentImpl.h"
 #include "WebDevToolsAgentPrivate.h"
 #include "WebFrameImpl.h"
@@ -415,7 +412,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_layerTreeViewCommitsDeferred(false)
     , m_compositorCreationFailed(false)
     , m_recreatingGraphicsContext(false)
-    , m_inputHandlerIdentifier(-1)
 #if ENABLE(INPUT_SPEECH)
     , m_speechInputClient(SpeechInputClientImpl::create(client))
 #endif
@@ -3946,7 +3942,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         m_isAcceleratedCompositingActive = true;
         updateLayerTreeViewport();
 
-        m_client->didActivateCompositor(m_inputHandlerIdentifier);
+        m_client->didActivateCompositor(0);
     } else {
         TRACE_EVENT0("webkit", "WebViewImpl::setIsAcceleratedCompositingActive(true)");
 
@@ -3965,7 +3961,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), minimumPageScaleFactor(), maximumPageScaleFactor());
             m_layerTreeView->setHasTransparentBackground(isTransparent());
             updateLayerTreeViewport();
-            m_client->didActivateCompositor(m_inputHandlerIdentifier);
+            m_client->didActivateCompositor(0);
             m_isAcceleratedCompositingActive = true;
             m_compositorCreationFailed = false;
             if (m_pageOverlays)
@@ -3983,13 +3979,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
     }
     if (page())
         page()->mainFrame()->view()->setClipsRepaints(!m_isAcceleratedCompositingActive);
-}
-
-WebInputHandler* WebViewImpl::createInputHandler()
-{
-    WebCompositorInputHandlerImpl* handler = new WebCompositorInputHandlerImpl();
-    m_inputHandlerIdentifier = handler->identifier();
-    return handler;
 }
 
 void WebViewImpl::updateMainFrameScrollPosition(const IntPoint& scrollPosition, bool programmaticScroll)

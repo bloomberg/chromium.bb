@@ -152,7 +152,6 @@ public:
     virtual bool handleInputEvent(const WebInputEvent&);
     virtual void setCursorVisibilityState(bool isVisible);
     virtual bool hasTouchEventHandlersAt(const WebPoint&);
-    virtual WebInputHandler* createInputHandler() OVERRIDE;
     virtual void applyScrollAndScale(const WebSize&, float);
     virtual void mouseCaptureLost();
     virtual void setFocus(bool enable);
@@ -820,7 +819,6 @@ private:
     bool m_compositorCreationFailed;
     // If true, the graphics context is being restored.
     bool m_recreatingGraphicsContext;
-    int m_inputHandlerIdentifier;
     static const WebInputEvent* m_currentInputEvent;
 
 #if ENABLE(INPUT_SPEECH)

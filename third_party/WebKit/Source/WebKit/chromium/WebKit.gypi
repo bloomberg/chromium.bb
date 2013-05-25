@@ -89,7 +89,6 @@
             'tests/TreeTestHelpers.h',
             'tests/URLTestHelpers.cpp',
             'tests/URLTestHelpers.h',
-            'tests/WebCompositorInputHandlerImplTest.cpp',
             'tests/WebFrameTest.cpp',
             'tests/WebImageTest.cpp',
             'tests/WebInputEventConversionTest.cpp',
