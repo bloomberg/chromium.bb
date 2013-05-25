@@ -1227,6 +1227,9 @@ const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 const char kDefaultManagedModeFilteringBehavior[] =
     "profile.managed.default_filtering_behavior";
 
+// List pref containing the users managed by this user.
+const char kManagedUsers[] = "profile.managed_users";
+
 // List pref containing the extension ids which are not allowed to send
 // notifications to the message center.
 const char kMessageCenterDisabledExtensionIds[] =

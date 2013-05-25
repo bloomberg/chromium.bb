@@ -23,14 +23,13 @@ ManagedUserRegistrationServiceFactory::GetInstance() {
 // static
 BrowserContextKeyedService*
 ManagedUserRegistrationServiceFactory::BuildInstanceFor(Profile* profile) {
-  return new ManagedUserRegistrationService();
+  return new ManagedUserRegistrationService(profile->GetPrefs());
 }
 
 ManagedUserRegistrationServiceFactory::ManagedUserRegistrationServiceFactory()
     : BrowserContextKeyedServiceFactory(
-        "ManagedUserRegistrationService",
-        BrowserContextDependencyManager::GetInstance()) {
-}
+          "ManagedUserRegistrationService",
+          BrowserContextDependencyManager::GetInstance()) {}
 
 ManagedUserRegistrationServiceFactory::
     ~ManagedUserRegistrationServiceFactory() {}
