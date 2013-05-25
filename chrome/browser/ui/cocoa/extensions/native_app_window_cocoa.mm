@@ -77,7 +77,7 @@ enum {
     appWindow_->WindowDidDeminiaturize();
 }
 
-- (BOOL)windowShouldZoom:(NSWindow *)window
+- (BOOL)windowShouldZoom:(NSWindow*)window
                  toFrame:(NSRect)newFrame {
   if (appWindow_)
     appWindow_->WindowWillZoom();
