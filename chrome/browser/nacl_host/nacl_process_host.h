@@ -146,11 +146,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Message handlers for validation caching.
   void OnQueryKnownToValidate(const std::string& signature, bool* result);
   void OnSetKnownToValidate(const std::string& signature);
-  void OnResolveFileToken(uint64 file_token_lo, uint64 file_token_hi,
-                          IPC::Message* reply_msg);
-  void FileResolved(base::PlatformFile* file, const base::FilePath& file_path,
-                    IPC::Message* reply_msg);
-
 #if defined(OS_WIN)
   // Message handler for Windows hardware exception handling.
   void OnAttachDebugExceptionHandler(const std::string& info,

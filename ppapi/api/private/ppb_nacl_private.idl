@@ -34,6 +34,12 @@ enum PP_NaClError {
   PP_NACL_MANIFEST_MISSING_ARCH = 0
 };
 
+struct PP_NaClExecutableMetadata {
+  /** File path of NaCl executable. This is created by the OpenNaClExecutableFd
+   *  function. It is the caller's responsiblity to release it. */
+  PP_Var file_path;
+};
+
 /* PPB_NaCl_Private */
 interface PPB_NaCl_Private {
   /* Launches NaCl's sel_ldr process.  Returns PP_NACL_OK on success and
@@ -123,6 +129,5 @@ interface PPB_NaCl_Private {
    */
   PP_FileHandle OpenNaClExecutable([in] PP_Instance instance,
                                    [in] str_t file_url,
-                                   [out] uint64_t file_token_lo,
-                                   [out] uint64_t file_token_hi);
+                                   [out] PP_NaClExecutableMetadata metadata);
 };

@@ -10,7 +10,6 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/callback_source.h"
-#include "native_client/src/trusted/validator/nacl_file_info.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
@@ -86,16 +85,14 @@ class FileDownloader {
                   StreamCallbackSource* stream_callback_source);
 
   // Bypasses downloading and takes a handle to the open file. To get the fd,
-  // call GetFileInfo().
-  void OpenFast(const nacl::string& url, PP_FileHandle file_handle,
-                uint64_t file_token_lo, uint64_t file_token_hi);
+  // call GetPOSIXFileDescriptor().
+  void OpenFast(const nacl::string& url, PP_FileHandle file_handle);
 
-  // Return a structure describing the file opened, including a file desc.
   // If downloading and opening succeeded, this returns a valid read-only
   // POSIX file descriptor.  On failure, the return value is an invalid
   // descriptor.  The file descriptor is owned by this instance, so the
   // delegate does not have to close it.
-  struct NaClFileInfo GetFileInfo();
+  int32_t GetPOSIXFileDescriptor();
 
   // Returns the time delta between the call to Open() and this function.
   int64_t TimeSinceOpenMilliseconds() const;
@@ -163,7 +160,6 @@ class FileDownloader {
   pp::CompletionCallback file_open_notify_callback_;
   pp::FileIO file_reader_;
   PP_FileHandle file_handle_;
-  struct NaClFileToken file_token_;
   const PPB_FileIOTrusted* file_io_trusted_interface_;
   const PPB_URLLoaderTrusted* url_loader_trusted_interface_;
   pp::URLLoader url_loader_;

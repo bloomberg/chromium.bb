@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_NACL_HOST_NACL_BROWSER_H_
 
 #include "base/bind.h"
-#include "base/containers/mru_cache.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -15,15 +14,6 @@
 
 class URLPattern;
 class GURL;
-
-namespace nacl {
-
-// Open an immutable executable file that can be mmapped.
-// This function should only be called on a thread that can perform file IO.
-void OpenNaClExecutableImpl(const base::FilePath& file_path,
-                            base::PlatformFile* file);
-
-}
 
 // Represents shared state for all NaClProcessHost objects in the browser.
 class NaClBrowser {
@@ -80,32 +70,6 @@ class NaClBrowser {
     return validation_cache_.GetValidationCacheKey();
   }
 
-  // The NaCl singleton keeps information about NaCl executable files opened via
-  // PPAPI.  This allows the NaCl process to get trusted information about the
-  // file directly from the browser process.  In theory, a compromised renderer
-  // could provide a writable file handle or lie about the file's path.  If we
-  // trusted the handle was read only but it was not, an mmapped file could be
-  // modified after validation, allowing an escape from the NaCl sandbox.
-  // Similarly, if we trusted the file path corresponded to the file handle but
-  // it did not, the validation cache could be tricked into bypassing validation
-  // for bad code.
-  // Instead of allowing these attacks, the NaCl process only trusts information
-  // it gets directly from the browser process.  Because the information is
-  // stored in a cache of bounded size, it is not guaranteed the browser process
-  // will be able to provide the requested information.  In these cases, the
-  // NaCl process must make conservative assumptions about the origin of the
-  // file.
-  // In theory, a compromised renderer could guess file tokens in an attempt to
-  // read files it normally doesn't have access to.  This would not compromise
-  // the NaCl sandbox, however, and only has a 1 in ~2**120 chance of success
-  // per guess.
-  // TODO(ncbray): move the cache onto NaClProcessHost so that we don't need to
-  // rely on tokens being unguessable by another process.
-  void PutFilePath(const base::FilePath& path, uint64* file_token_lo,
-                   uint64* file_token_hi);
-  bool GetFilePath(uint64 file_token_lo, uint64 file_token_hi,
-                   base::FilePath* path);
-
   bool QueryKnownToValidate(const std::string& signature, bool off_the_record);
   void SetKnownToValidate(const std::string& signature, bool off_the_record);
   void ClearValidationCache(const base::Closure& callback);
@@ -158,9 +122,6 @@ class NaClBrowser {
   bool validation_cache_is_modified_;
   NaClResourceState validation_cache_state_;
   base::Callback<void(int)> debug_stub_port_listener_;
-
-  typedef base::HashingMRUCache<std::string, base::FilePath> PathCacheType;
-  PathCacheType path_cache_;
 
   bool ok_;
 

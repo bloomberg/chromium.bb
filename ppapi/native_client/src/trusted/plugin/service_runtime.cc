@@ -46,10 +46,11 @@
 #include "native_client/src/trusted/plugin/pnacl_resources.h"
 #include "native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
 #include "native_client/src/trusted/plugin/srpc_client.h"
+
+#include "native_client/src/trusted/weak_ref/call_on_main_thread.h"
+
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
-#include "native_client/src/trusted/validator/nacl_file_info.h"
-#include "native_client/src/trusted/weak_ref/call_on_main_thread.h"
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
@@ -171,15 +172,11 @@ bool PluginReverseInterface::EnumerateManifestKeys(
 // and invoke StreamAsFile with a completion callback that invokes
 // GetPOSIXFileDesc.
 bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
-                                               struct NaClFileInfo* info) {
+                                               int32_t* out_desc) {
   ErrorInfo error_info;
   bool op_complete = false;  // NB: mu_ and cv_ also controls access to this!
-  // The to_open object is owned by the weak ref callback. Because this function
-  // waits for the callback to finish, the to_open object will be deallocated on
-  // the main thread before this function can return. The pointers it contains
-  // to stack variables will not leak.
   OpenManifestEntryResource* to_open =
-      new OpenManifestEntryResource(url_key, info,
+      new OpenManifestEntryResource(url_key, out_desc,
                                     &error_info, &op_complete);
   CHECK(to_open != NULL);
   NaClLog(4, "PluginReverseInterface::OpenManifestEntry: %s\n",
@@ -231,8 +228,8 @@ bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
   NaClLog(4,
           "PluginReverseInterface::OpenManifestEntry:"
           " *out_desc = %d\n",
-          info->desc);
-  if (info->desc == -1) {
+          *out_desc);
+  if (*out_desc == -1) {
     // TODO(bsy,ncbray): what else should we do with the error?  This
     // is a runtime error that may simply be a programming error in
     // the untrusted code, or it may be something else wrong w/ the
@@ -270,7 +267,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     // up requesting thread -- we are done.
     nacl::MutexLocker take(&mu_);
     *p->op_complete_ptr = true;  // done...
-    p->file_info->desc = -1;  // but failed.
+    *p->out_desc = -1;       // but failed.
     NaClXCondVarBroadcast(&cv_);
     return;
   }
@@ -297,7 +294,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
                 "StreamAsFile failed\n");
         nacl::MutexLocker take(&mu_);
         *p->op_complete_ptr = true;  // done...
-        p->file_info->desc = -1;       // but failed.
+        *p->out_desc = -1;       // but failed.
         p->error_info->SetReport(ERROR_MANIFEST_OPEN,
                                  "ServiceRuntime: StreamAsFile failed");
         NaClXCondVarBroadcast(&cv_);
@@ -324,9 +321,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
       }
       nacl::MutexLocker take(&mu_);
       *p->op_complete_ptr = true;  // done!
-      // TODO(ncbray): enable the fast loading and validation paths for this
-      // type of file.
-      p->file_info->desc = fd;
+      *p->out_desc = fd;
       NaClXCondVarBroadcast(&cv_);
       NaClLog(4,
               "OpenManifestEntry_MainThreadContinuation: GetPnaclFd okay\n");
@@ -352,7 +347,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     } else {
       nacl::MutexLocker take(&mu_);
       *p->op_complete_ptr = true;  // done...
-      p->file_info->desc = -1;  // but failed.
+      *p->out_desc = -1;       // but failed.
       p->error_info->SetReport(ERROR_PNACL_NOT_ENABLED,
                                "ServiceRuntime: GetPnaclFd failed -- pnacl not "
                                "enabled with --enable-pnacl.");
@@ -371,17 +366,16 @@ void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
 
   nacl::MutexLocker take(&mu_);
   if (result == PP_OK) {
-    NaClLog(4, "StreamAsFile_MainThreadContinuation: GetFileInfo(%s)\n",
+    NaClLog(4, "StreamAsFile_MainThreadContinuation: GetPOSIXFileDesc(%s)\n",
             p->url.c_str());
-    *p->file_info = plugin_->GetFileInfo(p->url);
-
+    *p->out_desc = plugin_->GetPOSIXFileDesc(p->url);
     NaClLog(4,
             "StreamAsFile_MainThreadContinuation: PP_OK, desc %d\n",
-            p->file_info->desc);
+            *p->out_desc);
   } else {
     NaClLog(4,
             "StreamAsFile_MainThreadContinuation: !PP_OK, setting desc -1\n");
-    p->file_info->desc = -1;
+    *p->out_desc = -1;
     p->error_info->SetReport(ERROR_MANIFEST_OPEN,
                              "Plugin StreamAsFile failed at callback");
   }
@@ -403,16 +397,16 @@ void PluginReverseInterface::BitcodeTranslate_MainThreadContinuation(
     // accepts NaClDescs we can avoid this downcast.
     NaClDesc* desc = pnacl_coordinator_->ReleaseTranslatedFD()->desc();
     struct NaClDescIoDesc* ndiodp = (struct NaClDescIoDesc*)desc;
-    p->file_info->desc = ndiodp->hd->d;
+    *p->out_desc = ndiodp->hd->d;
     pnacl_coordinator_.reset(NULL);
     NaClLog(4,
             "BitcodeTranslate_MainThreadContinuation: PP_OK, desc %d\n",
-            p->file_info->desc);
+            *p->out_desc);
   } else {
     NaClLog(4,
             "BitcodeTranslate_MainThreadContinuation: !PP_OK, "
             "setting desc -1\n");
-    p->file_info->desc = -1;
+    *p->out_desc = -1;
     // Error should have been reported by pnacl coordinator.
     NaClLog(LOG_ERROR, "PluginReverseInterface::BitcodeTranslate error.\n");
   }

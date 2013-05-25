@@ -27,8 +27,6 @@
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/cpp/completion_callback.h"
 
-struct NaClFileInfo;
-
 namespace nacl {
 class DescWrapper;
 }  // namespace
@@ -65,15 +63,15 @@ struct PostMessageResource {
 struct OpenManifestEntryResource {
  public:
   OpenManifestEntryResource(const std::string& target_url,
-                            struct NaClFileInfo* finfo,
+                            int32_t* descp,
                             ErrorInfo* infop,
                             bool* op_complete)
       : url(target_url),
-        file_info(finfo),
+        out_desc(descp),
         error_info(infop),
         op_complete_ptr(op_complete) {}
   std::string url;
-  struct NaClFileInfo* file_info;
+  int32_t* out_desc;
   ErrorInfo* error_info;
   bool* op_complete_ptr;
 };
@@ -154,8 +152,7 @@ class PluginReverseInterface: public nacl::ReverseInterface {
 
   virtual bool EnumerateManifestKeys(std::set<nacl::string>* out_keys);
 
-  virtual bool OpenManifestEntry(nacl::string url_key,
-                                 struct NaClFileInfo *info);
+  virtual bool OpenManifestEntry(nacl::string url_key, int32_t* out_desc);
 
   virtual bool CloseManifestEntry(int32_t desc);
 

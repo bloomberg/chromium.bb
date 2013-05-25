@@ -12,7 +12,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
@@ -129,29 +128,6 @@ void DoCreateTemporaryFile(
   chrome_render_message_filter->Send(reply_msg);
 }
 
-void DoRegisterOpenedNaClExecutableFile(
-    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
-    base::PlatformFile file,
-    base::FilePath file_path,
-    IPC::Message* reply_msg) {
-  // IO thread owns the NaClBrowser singleton.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
-  uint64_t file_token_lo = 0;
-  uint64_t file_token_hi = 0;
-  nacl_browser->PutFilePath(file_path, &file_token_lo, &file_token_hi);
-
-  IPC::PlatformFileForTransit file_desc = IPC::GetFileHandleForProcess(
-      file,
-      chrome_render_message_filter->peer_handle(),
-      true /* close_source */);
-
-  ChromeViewHostMsg_OpenNaClExecutable::WriteReplyParams(
-      reply_msg, file_desc, file_token_lo, file_token_hi);
-  chrome_render_message_filter->Send(reply_msg);
-}
-
 // Convert the file URL into a file path in the extension directory.
 // This function is security sensitive.  Be sure to check with a security
 // person before you modify it.
@@ -218,21 +194,39 @@ void DoOpenNaClExecutableOnThreadPool(
     return;
   }
 
-  base::PlatformFile file;
-  nacl::OpenNaClExecutableImpl(file_path, &file);
-  if (file != base::kInvalidPlatformFileValue) {
-    // This function is running on the blocking pool, but the path needs to be
-    // registered in a structure owned by the IO thread.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &DoRegisterOpenedNaClExecutableFile,
-            chrome_render_message_filter,
-            file, file_path, reply_msg));
-  } else {
+  // Get a file descriptor. On Windows, we need 'GENERIC_EXECUTE' in order to
+  // memory map the executable.
+  // IMPORTANT: This file descriptor must not have write access - that could
+  // allow a sandbox escape.
+  base::PlatformFileError error_code;
+  base::PlatformFile file = base::CreatePlatformFile(
+      file_path,
+      base::PLATFORM_FILE_OPEN |
+          base::PLATFORM_FILE_READ |
+          base::PLATFORM_FILE_EXECUTE,  // Windows only flag.
+      NULL,
+      &error_code);
+  if (error_code != base::PLATFORM_FILE_OK) {
     NotifyRendererOfError(chrome_render_message_filter, reply_msg);
     return;
   }
+  // Check that the file does not reference a directory. Returning a descriptor
+  // to an extension directory could allow a sandbox escape.
+  base::PlatformFileInfo file_info;
+  if (!base::GetPlatformFileInfo(file, &file_info) || file_info.is_directory)
+  {
+    NotifyRendererOfError(chrome_render_message_filter, reply_msg);
+    return;
+  }
+
+  IPC::PlatformFileForTransit file_desc = IPC::GetFileHandleForProcess(
+      file,
+      chrome_render_message_filter->peer_handle(),
+      true /* close_source */);
+
+  ChromeViewHostMsg_OpenNaClExecutable::WriteReplyParams(
+      reply_msg, file_path, file_desc);
+  chrome_render_message_filter->Send(reply_msg);
 }
 
 }  // namespace

@@ -9,7 +9,6 @@
 #include "chrome/common/nacl_types.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_platform_file.h"
 
 #define IPC_MESSAGE_START NaClMsgStart
 
@@ -78,15 +77,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(NaClProcessMsg_QueryKnownToValidate,
 // database in the browser.
 IPC_MESSAGE_CONTROL1(NaClProcessMsg_SetKnownToValidate,
                      std::string /* A validation signature */)
-
-// Used by the NaCl process to acquire trusted information about a file directly
-// from the browser, including the file's path as well as a fresh version of the
-// file handle.
-IPC_SYNC_MESSAGE_CONTROL2_2(NaClProcessMsg_ResolveFileToken,
-                            uint64, /* file_token_lo */
-                            uint64, /* file_token_hi */
-                            IPC::PlatformFileForTransit, /* fd */
-                            base::FilePath /* Path opened to get fd */)
 
 // Notify the browser process that the server side of the PPAPI channel was
 // created successfully.

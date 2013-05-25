@@ -619,8 +619,6 @@ bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
                         OnQueryKnownToValidate)
     IPC_MESSAGE_HANDLER(NaClProcessMsg_SetKnownToValidate,
                         OnSetKnownToValidate)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClProcessMsg_ResolveFileToken,
-                                    OnResolveFileToken)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClProcessMsg_AttachDebugExceptionHandler,
                                     OnAttachDebugExceptionHandler)
@@ -759,6 +757,7 @@ bool NaClProcessHost::StartNaClExecution() {
   if (params.uses_irt) {
     base::PlatformFile irt_file = nacl_browser->IrtFile();
     CHECK_NE(irt_file, base::kInvalidPlatformFileValue);
+
     // Send over the IRT file handle.  We don't close our own copy!
     if (!ShareHandleToSelLdr(data.handle, irt_file, false, &params.handles))
       return false;
@@ -925,86 +924,6 @@ void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
 
 void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
   NaClBrowser::GetInstance()->SetKnownToValidate(signature, off_the_record_);
-}
-
-void NaClProcessHost::FileResolved(
-    base::PlatformFile* file,
-    const base::FilePath& file_path,
-    IPC::Message* reply_msg) {
-  if (*file != base::kInvalidPlatformFileValue) {
-    IPC::PlatformFileForTransit handle = IPC::GetFileHandleForProcess(
-        *file,
-        process_->GetData().handle,
-        true /* close_source */);
-    NaClProcessMsg_ResolveFileToken::WriteReplyParams(
-        reply_msg,
-        handle,
-        file_path);
-  } else {
-    NaClProcessMsg_ResolveFileToken::WriteReplyParams(
-        reply_msg,
-        IPC::InvalidPlatformFileForTransit(),
-        base::FilePath(FILE_PATH_LITERAL("")));
-  }
-  Send(reply_msg);
-}
-
-void NaClProcessHost::OnResolveFileToken(uint64 file_token_lo,
-                                         uint64 file_token_hi,
-                                         IPC::Message* reply_msg) {
-  // Was the file registered?
-  //
-  // Note that the file path cache is of bounded size, and old entries can get
-  // evicted.  If a large number of NaCl modules are being launched at once,
-  // resolving the file_token may fail because the path cache was thrashed
-  // while the file_token was in flight.  In this case the query fails, and we
-  // need to fall back to the slower path.
-  //
-  // However: each NaCl process will consume 2-3 entries as it starts up, this
-  // means that eviction will not happen unless you start up 33+ NaCl processes
-  // at the same time, and this still requires worst-case timing.  As a
-  // practical matter, no entries should be evicted prematurely.
-  // The cache itself should take ~ (150 characters * 2 bytes/char + ~60 bytes
-  // data structure overhead) * 100 = 35k when full, so making it bigger should
-  // not be a problem, if needed.
-  //
-  // Each NaCl process will consume 2-3 entries because the manifest and main
-  // nexe are currently not resolved.  Shared libraries will be resolved.  They
-  // will be loaded sequentially, so they will only consume a single entry
-  // while the load is in flight.
-  //
-  // TODO(ncbray): track behavior with UMA. If entries are getting evicted or
-  // bogus keys are getting queried, this would be good to know.
-  base::FilePath file_path;
-  if (!NaClBrowser::GetInstance()->GetFilePath(file_token_lo, file_token_hi,
-                                               &file_path)) {
-    NaClProcessMsg_ResolveFileToken::WriteReplyParams(
-        reply_msg,
-        IPC::InvalidPlatformFileForTransit(),
-        base::FilePath(FILE_PATH_LITERAL("")));
-    Send(reply_msg);
-    return;
-  }
-
-  // Scratch space to share between the callbacks.
-  base::PlatformFile* data = new base::PlatformFile();
-
-  // Open the file.
-  if (!content::BrowserThread::PostBlockingPoolTaskAndReply(
-          FROM_HERE,
-          base::Bind(nacl::OpenNaClExecutableImpl,
-                     file_path, data),
-          base::Bind(&NaClProcessHost::FileResolved,
-                     weak_factory_.GetWeakPtr(),
-                     base::Owned(data),
-                     file_path,
-                     reply_msg))) {
-     NaClProcessMsg_ResolveFileToken::WriteReplyParams(
-         reply_msg,
-         IPC::InvalidPlatformFileForTransit(),
-         base::FilePath(FILE_PATH_LITERAL("")));
-     Send(reply_msg);
-  }
 }
 
 #if defined(OS_WIN)
