@@ -1157,3 +1157,26 @@
   fun:base::MessageLoop::MessageLoop
   fun:remoting::AutoThread::ThreadMain
 }
+{
+  bug_243963
+  ThreadSanitizer:Race
+  fun:base::subtle::RefCountedBase::AddRef
+  fun:base::RefCounted::AddRef
+  fun:scoped_refptr::scoped_refptr
+  fun:base::internal::InvokeHelper::MakeItSo
+  fun:base::internal::Invoker::Run
+  fun:base::Callback::Run
+  fun:base::MessageLoop::RunTask
+  fun:base::MessageLoop::DeferOrRunPendingTask
+  fun:base::MessageLoop::DoWork
+  fun:base::MessagePumpLibevent::Run
+  fun:base::MessageLoop::RunInternal
+  fun:base::MessageLoop::RunHandler
+  fun:base::RunLoop::Run
+  fun:base::MessageLoop::Run
+  fun:base::Thread::Run
+  fun:content::BrowserThreadImpl::FileThreadRun
+  fun:content::BrowserThreadImpl::Run
+  fun:base::Thread::ThreadMain
+  fun:base::::ThreadFunc
+}
