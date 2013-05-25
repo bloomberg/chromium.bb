@@ -18,10 +18,6 @@ namespace gpu {
 // Common interface for CommandBuffer implementations.
 class GPU_EXPORT CommandBuffer {
  public:
-  enum {
-    kMaxCommandBufferSize = 4 * 1024 * 1024
-  };
-
   struct State {
     State()
         : num_entries(0),
