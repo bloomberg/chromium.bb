@@ -9,7 +9,9 @@
 #include <windows.h>
 #endif
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 #include "net/disk_cache/stress_support.h"
 
 // Change this value to 1 to enable tracing on a release build. By default,
@@ -31,6 +33,7 @@ const int kNumberOfEntries = 5000;  // 240 KB on 32bit, 480 KB on 64bit
 #endif
 
 bool s_trace_enabled = false;
+base::LazyInstance<base::Lock>::Leaky s_lock = LAZY_INSTANCE_INITIALIZER;
 
 struct TraceBuffer {
   int num_traces;
@@ -59,6 +62,8 @@ static TraceObject* s_trace_object = NULL;
 
 // Static.
 TraceObject* TraceObject::GetTraceObject() {
+  base::AutoLock lock(s_lock.Get());
+
   if (s_trace_object)
     return s_trace_object;
 
@@ -75,6 +80,7 @@ TraceObject::~TraceObject() {
 }
 
 void TraceObject::EnableTracing(bool enable) {
+  base::AutoLock lock(s_lock.Get());
   s_trace_enabled = enable;
 }
 
@@ -92,6 +98,8 @@ void InitTrace(void) {
 }
 
 void DestroyTrace(void) {
+  base::AutoLock lock(s_lock.Get());
+
   delete s_trace_buffer;
   s_trace_buffer = NULL;
   s_trace_object = NULL;
@@ -103,28 +111,33 @@ void Trace(const char* format, ...) {
 
   va_list ap;
   va_start(ap, format);
+  char line[kEntrySize + 2];
 
 #if defined(OS_WIN)
-  vsprintf_s(s_trace_buffer->buffer[s_trace_buffer->current], format, ap);
+  vsprintf_s(line, format, ap);
 #else
-  vsnprintf(s_trace_buffer->buffer[s_trace_buffer->current],
-            sizeof(s_trace_buffer->buffer[s_trace_buffer->current]), format,
-            ap);
+  vsnprintf(line, kEntrySize, format, ap);
 #endif
 
 #if defined(DISK_CACHE_TRACE_TO_LOG)
-  char line[kEntrySize + 2];
-  memcpy(line, s_trace_buffer->buffer[s_trace_buffer->current], kEntrySize);
   line[kEntrySize] = '\0';
   LOG(INFO) << line;
 #endif
 
-  s_trace_buffer->num_traces++;
-  s_trace_buffer->current++;
-  if (s_trace_buffer->current == kNumberOfEntries)
-    s_trace_buffer->current = 0;
-
   va_end(ap);
+
+  {
+    base::AutoLock lock(s_lock.Get());
+    if (!s_trace_buffer || !s_trace_enabled)
+      return;
+
+    memcpy(s_trace_buffer->buffer[s_trace_buffer->current], line, kEntrySize);
+
+    s_trace_buffer->num_traces++;
+    s_trace_buffer->current++;
+    if (s_trace_buffer->current == kNumberOfEntries)
+      s_trace_buffer->current = 0;
+  }
 }
 
 // Writes the last num_traces to the debugger output.
