@@ -18,7 +18,3 @@
 
 ; http://crbug.com/11269
 (allow file-read* (subpath "@USER_HOMEDIR_AS_LITERAL@/Library/Fonts"))  ; 10.6
-
-; Bits of Adobe Flash wish to open /dev/urandom directly rather than
-; using our cached file descriptor.
-(allow file-read-data (literal "/dev/urandom"))

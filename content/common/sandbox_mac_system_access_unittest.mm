@@ -69,7 +69,7 @@ TEST_F(MacSandboxTest, ClipboardAccess) {
 
   std::string pasteboard_name = base::SysNSStringToUTF8([pb name]);
   EXPECT_TRUE(RunTestInAllSandboxTypes("MacSandboxedClipboardTestCase",
-                  pasteboard_name.c_str()));
+                                       pasteboard_name.c_str()));
 
   // After executing the test, the clipboard should still be empty.
   EXPECT_EQ([[pb types] count], 0U);
@@ -95,7 +95,7 @@ TEST_F(MacSandboxTest, FileAccess) {
 }
 
 //--------------------- /dev/urandom Sandboxing ----------------------
-// /dev/urandom is available to ppapi sandbox only.
+// /dev/urandom is available to any sandboxed process.
 class MacSandboxedUrandomTestCase : public MacSandboxTestCase {
  public:
   virtual bool SandboxedTest() OVERRIDE;
@@ -107,32 +107,17 @@ bool MacSandboxedUrandomTestCase::SandboxedTest() {
   int fdes = open("/dev/urandom", O_RDONLY);
   file_util::ScopedFD file_closer(&fdes);
 
-  // Open succeeds under ppapi sandbox, else it is not permitted.
-  if (test_data_ == "ppapi") {
-    if (fdes == -1)
-      return false;
+  // Opening /dev/urandom succeeds under the sandbox.
+  if (fdes == -1)
+    return false;
 
-    char buf[16];
-    int rc = read(fdes, buf, sizeof(buf));
-    return rc == sizeof(buf);
-  } else {
-    return fdes == -1 && errno == EPERM;
-  }
+  char buf[16];
+  int rc = read(fdes, buf, sizeof(buf));
+  return rc == sizeof(buf);
 }
 
 TEST_F(MacSandboxTest, UrandomAccess) {
-  // Similar to RunTestInAllSandboxTypes(), except changing
-  // |test_data| for the ppapi case.  Passing "" in the non-ppapi case
-  // to overwrite the test data (NULL means not to change it).
-  for (SandboxType i = SANDBOX_TYPE_FIRST_TYPE;
-       i < SANDBOX_TYPE_AFTER_LAST_TYPE; ++i) {
-    if (i == SANDBOX_TYPE_PPAPI) {
-      EXPECT_TRUE(RunTestInSandbox(i, "MacSandboxedUrandomTestCase", "ppapi"));
-    } else {
-      EXPECT_TRUE(RunTestInSandbox(i, "MacSandboxedUrandomTestCase", ""))
-          << "for sandbox type " << i;
-    }
-  }
+  EXPECT_TRUE(RunTestInAllSandboxTypes("MacSandboxedUrandomTestCase", NULL));
 }
 
 }  // namespace content
