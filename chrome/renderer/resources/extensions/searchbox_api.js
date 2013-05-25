@@ -137,7 +137,6 @@ if (!chrome.embeddedSearch) {
                 '<span class=chrome_title>' +
                 escapeHTML(result.description) + '</span>';
           }
-          result.combinedNode = SafeWrapSuggestion(combinedElement);
           result.destination_url = null;
           result.contents = null;
           result.description = null;
@@ -329,10 +328,6 @@ if (!chrome.embeddedSearch) {
         for (var i = 0, item; item = mostVisitedItems[i]; ++i) {
           var title = escapeHTML(item.title);
           var domain = escapeHTML(item.domain);
-          // TODO(jered): Delete these Shadow DOM elements once the
-          // Google-provided NTP no longer depends on them.
-          item.titleElement = SafeWrapMostVisited(title, 140, item.direction);
-          item.domainElement = SafeWrapMostVisited(domain, 123);
           // These properties are private data and should not be returned to
           // the page. They are only accessible via getMostVisitedItemData().
           item.url = null;
