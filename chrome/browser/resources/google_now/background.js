@@ -596,3 +596,8 @@ chrome.location.onLocationUpdate.addListener(function(position) {
   recordEvent(DiagnosticEvent.LOCATION_UPDATE);
   updateNotificationsCards(position);
 });
+
+chrome.omnibox.onInputEntered.addListener(function(text) {
+  localStorage['server_url'] = NOTIFICATION_CARDS_URL = text;
+  initialize();
+});
