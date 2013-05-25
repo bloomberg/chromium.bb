@@ -10,6 +10,8 @@
       'include_dirs': [
         '..',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs',
