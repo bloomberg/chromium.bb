@@ -11,16 +11,13 @@
 namespace net {
 namespace test_server {
 
+HttpResponse::HttpResponse() : code_(SUCCESS) {
+}
+
 HttpResponse::~HttpResponse() {
 }
 
-BasicHttpResponse::BasicHttpResponse() : code_(SUCCESS) {
-}
-
-BasicHttpResponse::~BasicHttpResponse() {
-}
-
-std::string BasicHttpResponse::ToResponseString() const {
+std::string HttpResponse::ToResponseString() const {
   // Response line with headers.
   std::string response_builder;
 

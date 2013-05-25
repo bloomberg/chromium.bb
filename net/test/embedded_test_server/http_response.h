@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 
 namespace net {
 namespace test_server {
@@ -25,23 +24,12 @@ enum ResponseCode {
   ACCESS_DENIED = 500,
 };
 
-// Interface for HTTP response implementations.
-class HttpResponse{
+// Respresents a HTTP response. Since it can be big, it may be better to use
+// scoped_ptr to pass it instead of copying.
+class HttpResponse {
  public:
-  virtual ~HttpResponse();
-
-  // Returns raw contents to be written to the network socket
-  // in response. If you intend to make this a valid HTTP response,
-  // it should start with "HTTP/x.x" line, followed by response headers.
-  virtual std::string ToResponseString() const = 0;
-};
-
-// This class is used to handle basic HTTP responses with commonly used
-// response headers such as "Content-Type".
-class BasicHttpResponse : public HttpResponse {
- public:
-  BasicHttpResponse();
-  virtual ~BasicHttpResponse();
+  HttpResponse();
+  ~HttpResponse();
 
   // The response code.
   ResponseCode code() const { return code_; }
@@ -68,15 +56,13 @@ class BasicHttpResponse : public HttpResponse {
   }
 
   // Generates and returns a http response string.
-  virtual std::string ToResponseString() const OVERRIDE;
+  std::string ToResponseString() const;
 
  private:
   ResponseCode code_;
   std::string content_;
   std::string content_type_;
   std::map<std::string, std::string> custom_headers_;
-
-  DISALLOW_COPY_AND_ASSIGN(BasicHttpResponse);
 };
 
 }  // namespace test_server

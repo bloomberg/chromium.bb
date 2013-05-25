@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/path_service.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -11,14 +10,13 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 
 namespace content {
 
@@ -61,33 +59,30 @@ class RenderViewHostTestWebContentsObserver : public WebContentsObserver {
 };
 
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(test_server()->Start());
   RenderViewHostTestWebContentsObserver observer(shell()->web_contents());
 
-  GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
+  GURL test_url = test_server()->GetURL("files/simple_page.html");
   NavigateToURL(shell(), test_url);
 
-  EXPECT_EQ(net::HostPortPair::FromURL(
-                embedded_test_server()->base_url()).ToString(),
+  EXPECT_EQ(test_server()->host_port_pair().ToString(),
             observer.observed_socket_address().ToString());
   EXPECT_EQ(1, observer.navigation_count());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(test_server()->Start());
   RenderViewHostTestWebContentsObserver observer(shell()->web_contents());
 
   // Base URL is not set if it is the same as the URL.
-  GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
+  GURL test_url = test_server()->GetURL("files/simple_page.tml");
   NavigateToURL(shell(), test_url);
   EXPECT_TRUE(observer.base_url().is_empty());
   EXPECT_EQ(1, observer.navigation_count());
 
   // But should be set to the original page when reading MHTML.
-  base::FilePath content_test_data_dir;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &content_test_data_dir));
-  test_url = net::FilePathToFileURL(
-      content_test_data_dir.AppendASCII("google.mht"));
+  test_url = net::FilePathToFileURL(test_server()->document_root().Append(
+      FILE_PATH_LITERAL("google.mht")));
   NavigateToURL(shell(), test_url);
   EXPECT_EQ("http://www.google.com/", observer.base_url().spec());
 }

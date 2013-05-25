@@ -21,7 +21,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 
 using content::BrowserThread;
-using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
 using net::test_server::EmbeddedTestServer;
@@ -94,7 +93,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
 
  private:
   scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
-    scoped_ptr<BasicHttpResponse> response(new BasicHttpResponse);
+    scoped_ptr<HttpResponse> response(new HttpResponse);
 
     if (request.relative_url.find("/jsonsearch?") != std::string::npos) {
       if (mock_server_response_ == "404") {
@@ -107,7 +106,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
       }
     }
 
-    return response.PassAs<HttpResponse>();
+    return response.Pass();
   }
 
   void OnSearchResultsFetched() {

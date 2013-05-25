@@ -77,8 +77,8 @@ class HttpListenSocket : public TCPListenSocket {
 //
 class EmbeddedTestServer : public StreamListenSocket::Delegate {
  public:
-  typedef base::Callback<scoped_ptr<HttpResponse>(
-      const HttpRequest& request)> HandleRequestCallback;
+  typedef base::Callback<scoped_ptr<HttpResponse>(const HttpRequest& request)>
+      HandleRequestCallback;
 
   // Creates a http test server. |io_thread| is a task runner
   // with IO message loop, used as a backend thread.

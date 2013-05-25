@@ -12,7 +12,7 @@
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -48,12 +48,12 @@ class MHTMLGenerationTest : public ContentBrowserTest {
 // test is to ensure we were successfull in creating the MHTML data from the
 // renderer.
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_TRUE(test_server()->Start());
 
   base::FilePath path(temp_dir_.path());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/simple_page.html"));
+  NavigateToURL(shell(), test_server()->GetURL("files/simple_page.html"));
 
   shell()->web_contents()->GenerateMHTML(
       path, base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this));

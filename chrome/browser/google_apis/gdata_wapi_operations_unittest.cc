@@ -109,10 +109,8 @@ class GDataWapiOperationsTest : public testing::Test {
       // This is a request for copying a document.
       // TODO(satorux): we should generate valid JSON data for the newly
       // copied document but for now, just return "file_entry.json"
-      scoped_ptr<net::test_server::BasicHttpResponse> result(
-          test_util::CreateHttpResponseFromFile(
-              test_util::GetTestFilePath("chromeos/gdata/file_entry.json")));
-      return result.PassAs<net::test_server::HttpResponse>();
+      return test_util::CreateHttpResponseFromFile(
+          test_util::GetTestFilePath("chromeos/gdata/file_entry.json"));
     }
 
     if (!test_util::RemovePrefix(absolute_url.path(),
@@ -123,29 +121,22 @@ class GDataWapiOperationsTest : public testing::Test {
 
     if (remaining_path.empty()) {
       // Process the default feed.
-      scoped_ptr<net::test_server::BasicHttpResponse> result(
-          test_util::CreateHttpResponseFromFile(
-              test_util::GetTestFilePath("chromeos/gdata/root_feed.json")));
-      return result.PassAs<net::test_server::HttpResponse>();
+      return test_util::CreateHttpResponseFromFile(
+          test_util::GetTestFilePath("chromeos/gdata/root_feed.json"));
     } else {
       // Process a feed for a single resource ID.
       const std::string resource_id = net::UnescapeURLComponent(
           remaining_path.substr(1), net::UnescapeRule::URL_SPECIAL_CHARS);
       if (resource_id == "file:2_file_resource_id") {
-        scoped_ptr<net::test_server::BasicHttpResponse> result(
-            test_util::CreateHttpResponseFromFile(
-                test_util::GetTestFilePath("chromeos/gdata/file_entry.json")));
-        return result.PassAs<net::test_server::HttpResponse>();
+        return test_util::CreateHttpResponseFromFile(
+            test_util::GetTestFilePath("chromeos/gdata/file_entry.json"));
       } else if (resource_id == "folder:root/contents" &&
                  request.method == net::test_server::METHOD_POST) {
         // This is a request for creating a directory in the root directory.
         // TODO(satorux): we should generate valid JSON data for the newly
         // created directory but for now, just return "directory_entry.json"
-        scoped_ptr<net::test_server::BasicHttpResponse> result(
-            test_util::CreateHttpResponseFromFile(
-                test_util::GetTestFilePath(
-                    "chromeos/gdata/directory_entry.json")));
-        return result.PassAs<net::test_server::HttpResponse>();
+        return test_util::CreateHttpResponseFromFile(
+            test_util::GetTestFilePath("chromeos/gdata/directory_entry.json"));
       } else if (resource_id ==
                  "folder:root/contents/file:2_file_resource_id" &&
                  request.method == net::test_server::METHOD_DELETE) {
@@ -153,19 +144,15 @@ class GDataWapiOperationsTest : public testing::Test {
         // TODO(satorux): Investigate what's returned from the server, and
         // copy it. For now, just return a random file, as the contents don't
         // matter.
-        scoped_ptr<net::test_server::BasicHttpResponse> result(
-            test_util::CreateHttpResponseFromFile(
-                test_util::GetTestFilePath("chromeos/gdata/testfile.txt")));
-        return result.PassAs<net::test_server::HttpResponse>();
+        return test_util::CreateHttpResponseFromFile(
+            test_util::GetTestFilePath("chromeos/gdata/testfile.txt"));
       } else if (resource_id == "invalid_resource_id") {
         // Check if this is an authorization request for an app.
         // This emulates to return invalid formatted result from the server.
         if (request.method == net::test_server::METHOD_PUT &&
             request.content.find("<docs:authorizedApp>") != std::string::npos) {
-          scoped_ptr<net::test_server::BasicHttpResponse> result(
-              test_util::CreateHttpResponseFromFile(
-                  test_util::GetTestFilePath("chromeos/gdata/testfile.txt")));
-          return result.PassAs<net::test_server::HttpResponse>();
+          return test_util::CreateHttpResponseFromFile(
+              test_util::GetTestFilePath("chromeos/gdata/testfile.txt"));
         }
       }
     }
@@ -182,7 +169,7 @@ class GDataWapiOperationsTest : public testing::Test {
     if (absolute_url.path() != "/feeds/metadata/default")
       return scoped_ptr<net::test_server::HttpResponse>();
 
-    scoped_ptr<net::test_server::BasicHttpResponse> result(
+    scoped_ptr<net::test_server::HttpResponse> result(
         test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath(
                 "chromeos/gdata/account_metadata.json")));
@@ -204,7 +191,7 @@ class GDataWapiOperationsTest : public testing::Test {
       result->set_content(content);
     }
 
-    return result.PassAs<net::test_server::HttpResponse>();
+    return result.Pass();
   }
 
   // Handles a request for creating a session for uploading.
@@ -217,8 +204,8 @@ class GDataWapiOperationsTest : public testing::Test {
                         "/feeds/upload/create-session/default/private/full",
                         true)) {  // case sensitive
       // This is an initiating upload URL.
-      scoped_ptr<net::test_server::BasicHttpResponse> http_response(
-          new net::test_server::BasicHttpResponse);
+      scoped_ptr<net::test_server::HttpResponse> http_response(
+          new net::test_server::HttpResponse);
 
       // Check an ETag.
       std::map<std::string, std::string>::const_iterator found =
@@ -227,7 +214,7 @@ class GDataWapiOperationsTest : public testing::Test {
           found->second != "*" &&
           found->second != kTestETag) {
         http_response->set_code(net::test_server::PRECONDITION);
-        return http_response.PassAs<net::test_server::HttpResponse>();
+        return http_response.Pass();
       }
 
       // Check if the X-Upload-Content-Length is present. If yes, store the
@@ -250,7 +237,7 @@ class GDataWapiOperationsTest : public testing::Test {
         return scoped_ptr<net::test_server::HttpResponse>();
       }
       http_response->AddCustomHeader("Location", upload_url.spec());
-      return http_response.PassAs<net::test_server::HttpResponse>();
+      return http_response.Pass();
     }
 
     return scoped_ptr<net::test_server::HttpResponse>();
@@ -269,7 +256,7 @@ class GDataWapiOperationsTest : public testing::Test {
 
     // TODO(satorux): We should create a correct JSON data for the uploaded
     // file, but for now, just return file_entry.json.
-    scoped_ptr<net::test_server::BasicHttpResponse> response =
+    scoped_ptr<net::test_server::HttpResponse> response =
         test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("chromeos/gdata/file_entry.json"));
     // response.code() is set to SUCCESS. Change it to CREATED if it's a new
@@ -312,7 +299,7 @@ class GDataWapiOperationsTest : public testing::Test {
     if (received_bytes_ < content_length_)
       response->set_code(net::test_server::RESUME_INCOMPLETE);
 
-    return response.PassAs<net::test_server::HttpResponse>();
+    return response.Pass();
   }
 
   MessageLoopForUI message_loop_;

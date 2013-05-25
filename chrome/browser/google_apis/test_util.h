@@ -26,9 +26,8 @@ class Value;
 
 namespace net {
 namespace test_server {
-class BasicHttpResponse;
-class HttpResponse;
 struct HttpRequest;
+class HttpResponse;
 }
 }
 
@@ -90,7 +89,7 @@ bool CreateFileOfSpecifiedSize(const base::FilePath& temp_dir,
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 
 // Returns a HttpResponse created from the given file path.
-scoped_ptr<net::test_server::BasicHttpResponse> CreateHttpResponseFromFile(
+scoped_ptr<net::test_server::HttpResponse> CreateHttpResponseFromFile(
     const base::FilePath& file_path);
 
 // Handles a request for downloading a file. Reads a file from the test

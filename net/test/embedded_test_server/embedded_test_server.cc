@@ -25,20 +25,25 @@ namespace test_server {
 
 namespace {
 
+// Callback to handle requests with default predefined response for requests
+// matching the address |url|.
+scoped_ptr<HttpResponse> HandleDefaultRequest(const GURL& url,
+                                              const HttpResponse& response,
+                                              const HttpRequest& request) {
+  const GURL request_url = url.Resolve(request.relative_url);
+  if (url.path() != request_url.path())
+    return scoped_ptr<HttpResponse>(NULL);
+  return scoped_ptr<HttpResponse>(new HttpResponse(response));
+}
+
 // Handles |request| by serving a file from under |server_root|.
-scoped_ptr<HttpResponse> HandleFileRequest(
-    const base::FilePath& server_root,
-    const HttpRequest& request) {
+scoped_ptr<HttpResponse> HandleFileRequest(const base::FilePath& server_root,
+                                           const HttpRequest& request) {
   // This is a test-only server. Ignore I/O thread restrictions.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   // Trim the first byte ('/').
   std::string request_path(request.relative_url.substr(1));
-
-  // Remove the query string if present.
-  size_t query_pos = request_path.find('?');
-  if (query_pos != std::string::npos)
-    request_path = request_path.substr(0, query_pos);
 
   std::string file_contents;
   if (!file_util::ReadFileToString(
@@ -46,10 +51,10 @@ scoped_ptr<HttpResponse> HandleFileRequest(
     return scoped_ptr<HttpResponse>(NULL);
   }
 
-  scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
+  scoped_ptr<HttpResponse> http_response(new HttpResponse);
   http_response->set_code(net::test_server::SUCCESS);
   http_response->set_content(file_contents);
-  return http_response.PassAs<HttpResponse>();
+  return http_response.Pass();
 }
 
 }  // namespace
@@ -152,26 +157,20 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
                                scoped_ptr<HttpRequest> request) {
   DCHECK(io_thread_->BelongsToCurrentThread());
 
-  bool request_handled = false;
-
   for (size_t i = 0; i < request_handlers_.size(); ++i) {
     scoped_ptr<HttpResponse> response =
         request_handlers_[i].Run(*request.get());
     if (response.get()) {
       connection->SendResponse(response.Pass());
-      request_handled = true;
-      break;
+      return;
     }
   }
 
-  if (!request_handled) {
-    LOG(WARNING) << "Request not handled. Returning 404: "
-                 << request->relative_url;
-    scoped_ptr<BasicHttpResponse> not_found_response(new BasicHttpResponse);
-    not_found_response->set_code(NOT_FOUND);
-    connection->SendResponse(
-        not_found_response.PassAs<HttpResponse>());
-  }
+  LOG(WARNING) << "Request not handled. Returning 404: "
+               << request->relative_url;
+  scoped_ptr<HttpResponse> not_found_response(new HttpResponse());
+  not_found_response->set_code(NOT_FOUND);
+  connection->SendResponse(not_found_response.Pass());
 
   // Drop the connection, since we do not support multiple requests per
   // connection.

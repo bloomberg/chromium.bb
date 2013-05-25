@@ -91,11 +91,11 @@ class EmbeddedTestServerTest : public testing::Test,
 
     GURL absolute_url = server_->GetURL(request.relative_url);
     if (absolute_url.path() == path) {
-      scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
+      scoped_ptr<HttpResponse> http_response(new HttpResponse);
       http_response->set_code(code);
       http_response->set_content(content);
       http_response->set_content_type(content_type);
-      return http_response.PassAs<HttpResponse>();
+      return http_response.Pass();
     }
 
     return scoped_ptr<HttpResponse>();
