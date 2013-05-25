@@ -26,12 +26,6 @@ namespace chromeos {
 class DBusThreadManagerObserver;
 
 // Style Note: Clients are sorted by names.
-class BluetoothAdapterClient;
-class BluetoothDeviceClient;
-class BluetoothInputClient;
-class BluetoothManagerClient;
-class BluetoothNodeClient;
-class BluetoothOutOfBandClient;
 class CrasAudioClient;
 class CrosDisksClient;
 class CryptohomeClient;
@@ -126,12 +120,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
 
   // All returned objects are owned by DBusThreadManager.  Do not cache these
   // pointers and use them after DBusThreadManager has been shut down.
-  virtual BluetoothAdapterClient* GetBluetoothAdapterClient() = 0;
-  virtual BluetoothDeviceClient* GetBluetoothDeviceClient() = 0;
-  virtual BluetoothInputClient* GetBluetoothInputClient() = 0;
-  virtual BluetoothManagerClient* GetBluetoothManagerClient() = 0;
-  virtual BluetoothNodeClient* GetBluetoothNodeClient() = 0;
-  virtual BluetoothOutOfBandClient* GetBluetoothOutOfBandClient() = 0;
   virtual CrasAudioClient* GetCrasAudioClient() = 0;
   virtual CrosDisksClient* GetCrosDisksClient() = 0;
   virtual CryptohomeClient* GetCryptohomeClient() = 0;

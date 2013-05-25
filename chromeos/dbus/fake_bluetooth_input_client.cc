@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chromeos/dbus/bluetooth_property.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

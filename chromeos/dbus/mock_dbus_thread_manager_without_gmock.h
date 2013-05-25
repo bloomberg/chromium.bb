@@ -27,9 +27,6 @@ class FakeBluetoothProfileManagerClient;
 class FakeCrosDisksClient;
 class FakeCryptohomeClient;
 class FakeGsmSMSClient;
-class FakeOldBluetoothAdapterClient;
-class FakeOldBluetoothDeviceClient;
-class FakeOldBluetoothManagerClient;
 class FakePowerManagerClient;
 class FakeImageBurnerClient;
 class FakeSessionManagerClient;
@@ -60,11 +57,6 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   virtual dbus::Bus* GetSystemBus() OVERRIDE;
   virtual dbus::Bus* GetIBusBus() OVERRIDE;
 
-  virtual BluetoothAdapterClient* GetBluetoothAdapterClient() OVERRIDE;
-  virtual BluetoothDeviceClient* GetBluetoothDeviceClient() OVERRIDE;
-  virtual BluetoothInputClient* GetBluetoothInputClient() OVERRIDE;
-  virtual BluetoothManagerClient* GetBluetoothManagerClient() OVERRIDE;
-  virtual BluetoothNodeClient* GetBluetoothNodeClient() OVERRIDE;
   virtual CrasAudioClient* GetCrasAudioClient() OVERRIDE;
   virtual CrosDisksClient* GetCrosDisksClient() OVERRIDE;
   virtual CryptohomeClient* GetCryptohomeClient() OVERRIDE;
@@ -95,7 +87,6 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   virtual SMSClient* GetSMSClient() OVERRIDE;
   virtual SystemClockClient* GetSystemClockClient() OVERRIDE;
   virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE;
-  virtual BluetoothOutOfBandClient* GetBluetoothOutOfBandClient() OVERRIDE;
   virtual IBusClient* GetIBusClient() OVERRIDE;
   virtual IBusConfigClient* GetIBusConfigClient() OVERRIDE;
   virtual IBusInputContextClient* GetIBusInputContextClient() OVERRIDE;
@@ -212,12 +203,6 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   scoped_ptr<FakeSystemClockClient> fake_system_clock_client_;
   scoped_ptr<FakePowerManagerClient> fake_power_manager_client_;
   scoped_ptr<FakeUpdateEngineClient> fake_update_engine_client_;
-
-  // These fake_old_bluetooth_*_client_ are for old Bluetooth*Client.
-  // Will be removed once http://crbug.com/221813 is resolved.
-  scoped_ptr<FakeOldBluetoothManagerClient> fake_old_bluetooth_manager_client_;
-  scoped_ptr<FakeOldBluetoothAdapterClient> fake_old_bluetooth_adapter_client_;
-  scoped_ptr<FakeOldBluetoothDeviceClient> fake_old_bluetooth_device_client_;
 
   scoped_ptr<MockIBusClient> mock_ibus_client_;
   scoped_ptr<MockIBusConfigClient> mock_ibus_config_client_;

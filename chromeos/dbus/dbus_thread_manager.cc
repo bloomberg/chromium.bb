@@ -11,12 +11,6 @@
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/bluetooth_adapter_client.h"
-#include "chromeos/dbus/bluetooth_device_client.h"
-#include "chromeos/dbus/bluetooth_input_client.h"
-#include "chromeos/dbus/bluetooth_manager_client.h"
-#include "chromeos/dbus/bluetooth_node_client.h"
-#include "chromeos/dbus/bluetooth_out_of_band_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -89,18 +83,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   // NOTE: Clients that access other clients in their constructor must be
   // construced in the correct order.
   void InitializeClients() {
-    bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
-        client_type_, system_bus_.get()));
-    bluetooth_adapter_client_.reset(BluetoothAdapterClient::Create(
-        client_type_, system_bus_.get(), bluetooth_manager_client_.get()));
-    bluetooth_device_client_.reset(BluetoothDeviceClient::Create(
-        client_type_, system_bus_.get(), bluetooth_adapter_client_.get()));
-    bluetooth_input_client_.reset(BluetoothInputClient::Create(
-        client_type_, system_bus_.get(), bluetooth_adapter_client_.get()));
-    bluetooth_node_client_.reset(BluetoothNodeClient::Create(
-        client_type_, system_bus_.get(), bluetooth_device_client_.get()));
-    bluetooth_out_of_band_client_.reset(BluetoothOutOfBandClient::Create(
-        client_type_, system_bus_.get()));
     cras_audio_client_.reset(CrasAudioClient::Create(
         client_type_, system_bus_.get()));
     cros_disks_client_.reset(
@@ -243,30 +225,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
   virtual dbus::Bus* GetIBusBus() OVERRIDE {
     return ibus_bus_.get();
-  }
-
-  virtual BluetoothAdapterClient* GetBluetoothAdapterClient() OVERRIDE {
-    return bluetooth_adapter_client_.get();
-  }
-
-  virtual BluetoothDeviceClient* GetBluetoothDeviceClient() OVERRIDE {
-    return bluetooth_device_client_.get();
-  }
-
-  virtual BluetoothInputClient* GetBluetoothInputClient() OVERRIDE {
-    return bluetooth_input_client_.get();
-  }
-
-  virtual BluetoothManagerClient* GetBluetoothManagerClient() OVERRIDE {
-    return bluetooth_manager_client_.get();
-  }
-
-  virtual BluetoothNodeClient* GetBluetoothNodeClient() OVERRIDE {
-    return bluetooth_node_client_.get();
-  }
-
-  virtual BluetoothOutOfBandClient* GetBluetoothOutOfBandClient() OVERRIDE {
-    return bluetooth_out_of_band_client_.get();
   }
 
   virtual CrasAudioClient* GetCrasAudioClient() OVERRIDE {
@@ -429,12 +387,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
   scoped_refptr<dbus::Bus> ibus_bus_;
-  scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
-  scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
-  scoped_ptr<BluetoothInputClient> bluetooth_input_client_;
-  scoped_ptr<BluetoothManagerClient> bluetooth_manager_client_;
-  scoped_ptr<BluetoothNodeClient> bluetooth_node_client_;
-  scoped_ptr<BluetoothOutOfBandClient> bluetooth_out_of_band_client_;
   scoped_ptr<CrasAudioClient> cras_audio_client_;
   scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<CryptohomeClient> cryptohome_client_;

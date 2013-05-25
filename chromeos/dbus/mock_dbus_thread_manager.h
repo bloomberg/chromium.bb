@@ -25,12 +25,6 @@ class FakeBluetoothAgentManagerClient;
 class FakeBluetoothDeviceClient;
 class FakeBluetoothInputClient;
 class FakeBluetoothProfileManagerClient;
-class MockBluetoothAdapterClient;
-class MockBluetoothDeviceClient;
-class MockBluetoothInputClient;
-class MockBluetoothManagerClient;
-class MockBluetoothNodeClient;
-class MockBluetoothOutOfBandClient;
 class MockCryptohomeClient;
 class MockShillDeviceClient;
 class MockShillIPConfigClient;
@@ -57,12 +51,6 @@ class MockDBusThreadManager : public DBusThreadManager {
                                  const base::Closure& closure));
   MOCK_METHOD0(GetSystemBus, dbus::Bus*(void));
   MOCK_METHOD0(GetIBusBus, dbus::Bus*(void));
-  MOCK_METHOD0(GetBluetoothAdapterClient, BluetoothAdapterClient*(void));
-  MOCK_METHOD0(GetBluetoothDeviceClient, BluetoothDeviceClient*(void));
-  MOCK_METHOD0(GetBluetoothInputClient, BluetoothInputClient*(void));
-  MOCK_METHOD0(GetBluetoothManagerClient, BluetoothManagerClient*(void));
-  MOCK_METHOD0(GetBluetoothNodeClient, BluetoothNodeClient*(void));
-  MOCK_METHOD0(GetBluetoothOutOfBandClient, BluetoothOutOfBandClient*(void));
   MOCK_METHOD0(GetCrasAudioClient, CrasAudioClient*(void));
   MOCK_METHOD0(GetCrosDisksClient, CrosDisksClient*(void));
   MOCK_METHOD0(GetCryptohomeClient, CryptohomeClient*(void));
@@ -118,24 +106,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   FakeBluetoothProfileManagerClient* fake_bluetooth_profile_manager_client() {
     return fake_bluetooth_profile_manager_client_.get();
   }
-  MockBluetoothAdapterClient* mock_bluetooth_adapter_client() {
-    return mock_bluetooth_adapter_client_.get();
-  }
-  MockBluetoothDeviceClient* mock_bluetooth_device_client() {
-    return mock_bluetooth_device_client_.get();
-  }
-  MockBluetoothInputClient* mock_bluetooth_input_client() {
-    return mock_bluetooth_input_client_.get();
-  }
-  MockBluetoothManagerClient* mock_bluetooth_manager_client() {
-    return mock_bluetooth_manager_client_.get();
-  }
-  MockBluetoothNodeClient* mock_bluetooth_node_client() {
-    return mock_bluetooth_node_client_.get();
-  }
-  MockBluetoothOutOfBandClient* mock_bluetooth_out_of_band_client() {
-    return mock_bluetooth_out_of_band_client_.get();
-  }
   MockCryptohomeClient* mock_cryptohome_client() {
     return mock_cryptohome_client_.get();
   }
@@ -173,12 +143,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<FakeBluetoothInputClient> fake_bluetooth_input_client_;
   scoped_ptr<FakeBluetoothProfileManagerClient>
       fake_bluetooth_profile_manager_client_;
-  scoped_ptr<MockBluetoothAdapterClient> mock_bluetooth_adapter_client_;
-  scoped_ptr<MockBluetoothDeviceClient> mock_bluetooth_device_client_;
-  scoped_ptr<MockBluetoothInputClient> mock_bluetooth_input_client_;
-  scoped_ptr<MockBluetoothManagerClient> mock_bluetooth_manager_client_;
-  scoped_ptr<MockBluetoothNodeClient> mock_bluetooth_node_client_;
-  scoped_ptr<MockBluetoothOutOfBandClient> mock_bluetooth_out_of_band_client_;
   scoped_ptr<MockCryptohomeClient> mock_cryptohome_client_;
   scoped_ptr<MockShillDeviceClient> mock_shill_device_client_;
   scoped_ptr<MockShillIPConfigClient> mock_shill_ipconfig_client_;
