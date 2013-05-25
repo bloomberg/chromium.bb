@@ -78,15 +78,6 @@ include_rules = [
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   "-chrome/browser/ui/views",
-  # TODO(tfarina): Remove all these. crbug.com/125846.
-  # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
-  "!chrome/browser/ui/views/extensions/extension_view_views.h",
-  "!chrome/browser/ui/views/location_bar/location_bar_view.h",
-  "!chrome/browser/ui/views/location_bar/location_icon_view.h",
-  "!chrome/browser/ui/views/notifications/balloon_view_host.h",
-  "!chrome/browser/ui/views/reload_button.h",
-  "!chrome/browser/ui/views/select_file_dialog_extension.h",
-  # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   # Other libraries.
   "+chrome/third_party/mozilla_security_manager",
