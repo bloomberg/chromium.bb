@@ -76,7 +76,6 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual IntranetRedirectDetector* intranet_redirect_detector() OVERRIDE;
   virtual AutomationProviderList* GetAutomationProviderList() OVERRIDE;
   virtual void CreateDevToolsHttpProtocolHandler(
-      Profile* profile,
       chrome::HostDesktopType host_desktop_type,
       const std::string& ip,
       int port,

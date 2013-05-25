@@ -145,7 +145,6 @@ class BrowserProcess {
   virtual AutomationProviderList* GetAutomationProviderList() = 0;
 
   virtual void CreateDevToolsHttpProtocolHandler(
-      Profile* profile,
       chrome::HostDesktopType host_desktop_type,
       const std::string& ip,
       int port,

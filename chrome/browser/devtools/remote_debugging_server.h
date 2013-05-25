@@ -10,16 +10,13 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/host_desktop.h"
 
-class Profile;
-
 namespace content {
 class DevToolsHttpHandler;
 }
 
 class RemoteDebuggingServer {
  public:
-  RemoteDebuggingServer(Profile* profile,
-                        chrome::HostDesktopType host_desktop_type,
+  RemoteDebuggingServer(chrome::HostDesktopType host_desktop_type,
                         const std::string& ip,
                         int port,
                         const std::string& frontend_url);

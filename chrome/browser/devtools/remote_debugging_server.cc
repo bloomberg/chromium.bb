@@ -10,7 +10,6 @@
 #include "net/socket/tcp_listen_socket.h"
 
 RemoteDebuggingServer::RemoteDebuggingServer(
-    Profile* profile,
     chrome::HostDesktopType host_desktop_type,
     const std::string& ip,
     int port,
@@ -18,7 +17,7 @@ RemoteDebuggingServer::RemoteDebuggingServer(
   devtools_http_handler_ = content::DevToolsHttpHandler::Start(
       new net::TCPListenSocketFactory(ip, port),
       frontend_url,
-      new BrowserListTabContentsProvider(profile, host_desktop_type));
+      new BrowserListTabContentsProvider(host_desktop_type));
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {

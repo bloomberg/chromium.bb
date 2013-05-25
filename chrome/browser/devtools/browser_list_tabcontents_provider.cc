@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -32,9 +31,8 @@ using content::DevToolsHttpHandlerDelegate;
 using content::RenderViewHost;
 
 BrowserListTabContentsProvider::BrowserListTabContentsProvider(
-    Profile* profile,
     chrome::HostDesktopType host_desktop_type)
-    : profile_(profile), host_desktop_type_(host_desktop_type) {
+    : host_desktop_type_(host_desktop_type) {
 }
 
 BrowserListTabContentsProvider::~BrowserListTabContentsProvider() {
@@ -93,7 +91,8 @@ RenderViewHost* BrowserListTabContentsProvider::CreateNewTarget() {
       BrowserList::GetInstance(host_desktop_type_);
 
   if (browser_list->empty()) {
-    chrome::NewEmptyWindow(profile_, host_desktop_type_);
+    chrome::NewEmptyWindow(ProfileManager::GetLastUsedProfile(),
+        host_desktop_type_);
     return browser_list->empty() ? NULL :
            browser_list->get(0)->tab_strip_model()->GetActiveWebContents()->
                GetRenderViewHost();

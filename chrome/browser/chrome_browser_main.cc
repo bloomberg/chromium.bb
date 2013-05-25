@@ -471,8 +471,7 @@ bool ProcessSingletonNotificationCallback(
   return true;
 }
 
-void LaunchDevToolsHandlerIfNeeded(Profile* profile,
-                                   const CommandLine& command_line) {
+void LaunchDevToolsHandlerIfNeeded(const CommandLine& command_line) {
   if (command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
     std::string port_str =
         command_line.GetSwitchValueASCII(::switches::kRemoteDebuggingPort);
@@ -484,7 +483,6 @@ void LaunchDevToolsHandlerIfNeeded(Profile* profile,
             ::switches::kRemoteDebuggingFrontend);
       }
       g_browser_process->CreateDevToolsHttpProtocolHandler(
-          profile,
           chrome::HOST_DESKTOP_TYPE_NATIVE,
           "127.0.0.1",
           port,
@@ -1037,7 +1035,7 @@ void ChromeBrowserMainParts::PreProfileInit() {
 
 void ChromeBrowserMainParts::PostProfileInit() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostProfileInit");
-  LaunchDevToolsHandlerIfNeeded(profile(), parsed_command_line());
+  LaunchDevToolsHandlerIfNeeded(parsed_command_line());
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostProfileInit();
 }
