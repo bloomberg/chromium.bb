@@ -32,8 +32,6 @@ WebPreferences::WebPreferences()
       minimum_font_size(0),
       minimum_logical_font_size(6),
       default_encoding("ISO-8859-1"),
-      apply_default_device_scale_factor_in_compositor(false),
-      apply_page_scale_factor_in_compositor(false),
       javascript_enabled(true),
       web_security_enabled(true),
       javascript_can_open_windows_automatically(true),
@@ -273,10 +271,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setMinimumFontSize(prefs.minimum_font_size);
   settings->setMinimumLogicalFontSize(prefs.minimum_logical_font_size);
   settings->setDefaultTextEncodingName(ASCIIToUTF16(prefs.default_encoding));
-  settings->setApplyDefaultDeviceScaleFactorInCompositor(
-      prefs.apply_default_device_scale_factor_in_compositor);
-  settings->setApplyPageScaleFactorInCompositor(
-      prefs.apply_page_scale_factor_in_compositor);
   settings->setJavaScriptEnabled(prefs.javascript_enabled);
   settings->setWebSecurityEnabled(prefs.web_security_enabled);
   settings->setJavaScriptCanOpenWindowsAutomatically(
@@ -326,11 +320,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
       prefs.allow_universal_access_from_file_urls);
   settings->setAllowFileAccessFromFileURLs(
       prefs.allow_file_access_from_file_urls);
-
-  // We prevent WebKit from checking if it needs to add a "text direction"
-  // submenu to a context menu. it is not only because we don't need the result
-  // but also because it cause a possible crash in Editor::hasBidiSelection().
-  settings->setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
 
   // Enable the web audio API if requested on the command line.
   settings->setWebAudioEnabled(prefs.webaudio_enabled);

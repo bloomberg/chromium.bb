@@ -603,9 +603,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.accelerated_2d_canvas_enabled = false;
   }
 
-  prefs.apply_default_device_scale_factor_in_compositor = true;
-  prefs.apply_page_scale_factor_in_compositor = true;
-
   prefs.fixed_position_creates_stacking_context = !command_line.HasSwitch(
       switches::kDisableFixedPositionCreatesStackingContext);
 

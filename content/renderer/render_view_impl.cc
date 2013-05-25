@@ -3344,7 +3344,6 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
       command_line.HasSwitch(switches::kEnableFixedLayout);
 
   webview()->enableFixedLayoutMode(enable_fixed_layout || enable_viewport);
-  webview()->settings()->setFixedElementsLayoutRelativeToFrame(true);
 
   // If viewport tag is enabled, then the WebKit side will take care
   // of setting the fixed layout size and page scale limits.
