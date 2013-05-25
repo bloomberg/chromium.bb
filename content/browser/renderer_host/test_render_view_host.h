@@ -164,6 +164,10 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 #endif
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
+#if defined(OS_WIN) && defined(USE_AURA)
+  virtual void SetParentNativeViewAccessible(
+      gfx::NativeViewAccessible accessible_parent) OVERRIDE;
+#endif
 
   bool is_showing() const { return is_showing_; }
 

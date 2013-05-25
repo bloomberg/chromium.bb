@@ -2316,6 +2316,12 @@ void RenderWidgetHostImpl::FatalAccessibilityTreeError() {
 }
 
 #if defined(OS_WIN) && defined(USE_AURA)
+void RenderWidgetHostImpl::SetParentNativeViewAccessible(
+    gfx::NativeViewAccessible accessible_parent) {
+  if (view_)
+    view_->SetParentNativeViewAccessible(accessible_parent);
+}
+
 gfx::NativeViewAccessible
 RenderWidgetHostImpl::GetParentNativeViewAccessible() const {
   return delegate_->GetParentNativeViewAccessible();

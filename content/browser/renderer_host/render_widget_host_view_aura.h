@@ -237,6 +237,10 @@ class RenderWidgetHostViewAura
   virtual void UnlockMouse() OVERRIDE;
   virtual void OnSwapCompositorFrame(
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
+#if defined(OS_WIN)
+  virtual void SetParentNativeViewAccessible(
+      gfx::NativeViewAccessible accessible_parent) OVERRIDE;
+#endif
 
   // Overridden from ui::TextInputClient:
   virtual void SetCompositionText(

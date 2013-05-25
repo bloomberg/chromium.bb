@@ -382,6 +382,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void FatalAccessibilityTreeError();
 
 #if defined(OS_WIN) && defined(USE_AURA)
+  void SetParentNativeViewAccessible(
+      gfx::NativeViewAccessible accessible_parent);
   gfx::NativeViewAccessible GetParentNativeViewAccessible() const;
 #endif
 

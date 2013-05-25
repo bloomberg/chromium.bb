@@ -53,6 +53,12 @@ AccessibilityNodeData BrowserAccessibilityManagerWin::GetEmptyDocument() {
   return empty_document;
 }
 
+void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(DWORD event,
+                                                             LONG child_id) {
+  if (parent_iaccessible())
+    ::NotifyWinEvent(event, parent_hwnd(), OBJID_CLIENT, child_id);
+}
+
 void BrowserAccessibilityManagerWin::AddNodeToMap(BrowserAccessibility* node) {
   BrowserAccessibilityManager::AddNodeToMap(node);
   LONG unique_id_win = node->ToBrowserAccessibilityWin()->unique_id_win();
@@ -151,14 +157,14 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
       break;
   }
 
-  // Pass the node's unique id in the |child_id| argument to NotifyWinEvent;
-  // the AT client will then call get_accChild on the HWND's accessibility
-  // object and pass it that same id, which we can use to retrieve the
-  // IAccessible for this node.
-  LONG child_id = node->ToBrowserAccessibilityWin()->unique_id_win();
-
-  if (event_id != EVENT_MIN)
-    NotifyWinEvent(event_id, parent_hwnd(), OBJID_CLIENT, child_id);
+  if (event_id != EVENT_MIN) {
+    // Pass the node's unique id in the |child_id| argument to NotifyWinEvent;
+    // the AT client will then call get_accChild on the HWND's accessibility
+    // object and pass it that same id, which we can use to retrieve the
+    // IAccessible for this node.
+    LONG child_id = node->ToBrowserAccessibilityWin()->unique_id_win();
+    MaybeCallNotifyWinEvent(event_id, child_id);
+  }
 
   // If this is a layout complete notification (sent when a container scrolls)
   // and there is a descendant tracked object, send a notification on it.
@@ -166,10 +172,8 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   if (type == AccessibilityNotificationLayoutComplete &&
       tracked_scroll_object_ &&
       tracked_scroll_object_->IsDescendantOf(node)) {
-    NotifyWinEvent(
+    MaybeCallNotifyWinEvent(
         IA2_EVENT_VISIBLE_DATA_CHANGED,
-        parent_hwnd(),
-        OBJID_CLIENT,
         tracked_scroll_object_->ToBrowserAccessibilityWin()->unique_id_win());
     tracked_scroll_object_->Release();
     tracked_scroll_object_ = NULL;

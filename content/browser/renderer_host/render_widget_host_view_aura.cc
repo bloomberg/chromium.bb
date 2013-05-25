@@ -862,9 +862,12 @@ RenderWidgetHostViewAura::GetOrCreateBrowserAccessibilityManager() {
     return NULL;
   HWND hwnd = root_window->GetAcceleratedWidget();
 
+  // The accessible_parent may be NULL at this point. The WebContents will pass
+  // it down to this instance (by way of the RenderViewHost and
+  // RenderWidgetHost) when it is known. This instance will then set it on its
+  // BrowserAccessibilityManager.
   gfx::NativeViewAccessible accessible_parent =
       host_->GetParentNativeViewAccessible();
-  DCHECK(accessible_parent);
 
   manager = new BrowserAccessibilityManagerWin(
       hwnd, accessible_parent,
@@ -1570,6 +1573,16 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   BuffersSwapped(
       frame->gl_frame_data->size, mailbox_name, ack_callback);
 }
+
+#if defined(OS_WIN)
+void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
+    gfx::NativeViewAccessible accessible_parent) {
+  if (GetBrowserAccessibilityManager()) {
+    GetBrowserAccessibilityManager()->ToBrowserAccessibilityManagerWin()
+        ->set_parent_iaccessible(accessible_parent);
+  }
+}
+#endif
 
 void RenderWidgetHostViewAura::BuffersSwapped(
     const gfx::Size& size,

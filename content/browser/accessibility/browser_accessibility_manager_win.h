@@ -37,6 +37,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
     parent_iaccessible_ = parent_iaccessible;
   }
 
+  // Calls NotifyWinEvent if the parent window's IAccessible pointer is known.
+  void MaybeCallNotifyWinEvent(DWORD event, LONG child_id);
+
   // BrowserAccessibilityManager methods
   virtual void AddNodeToMap(BrowserAccessibility* node);
   virtual void RemoveNode(BrowserAccessibility* node) OVERRIDE;

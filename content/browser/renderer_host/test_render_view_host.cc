@@ -229,6 +229,12 @@ bool TestRenderWidgetHostView::LockMouse() {
 void TestRenderWidgetHostView::UnlockMouse() {
 }
 
+#if defined(OS_WIN) && defined(USE_AURA)
+void TestRenderWidgetHostView::SetParentNativeViewAccessible(
+    gfx::NativeViewAccessible accessible_parent) {
+}
+#endif
+
 TestRenderViewHost::TestRenderViewHost(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,

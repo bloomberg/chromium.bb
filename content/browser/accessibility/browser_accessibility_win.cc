@@ -491,6 +491,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_accParent(IDispatch** disp_parent) {
     // This happens if we're the root of the tree;
     // return the IAccessible for the window.
     parent = manager_->ToBrowserAccessibilityManagerWin()->parent_iaccessible();
+    // |parent| can only be NULL if the manager was created before the parent
+    // IAccessible was known and it wasn't subsequently set before a client
+    // requested it. Crash hard if this happens so that we get crash reports.
+    CHECK(parent);
   }
 
   parent->AddRef();
@@ -2941,10 +2945,11 @@ void BrowserAccessibilityWin::PostInitialize() {
     previous_text_ = text;
   }
 
-  HWND hwnd = manager_->ToBrowserAccessibilityManagerWin()->parent_hwnd();
-
   // Fire events if the state has changed.
   if (!first_time_ && ia_state_ != old_ia_state_) {
+    BrowserAccessibilityManagerWin* manager =
+        manager_->ToBrowserAccessibilityManagerWin();
+
     // Normally focus events are handled elsewhere, however
     // focus for managed descendants is platform-specific.
     // Fire a focus event if the focused descendant in a multi-select
@@ -2954,18 +2959,17 @@ void BrowserAccessibilityWin::PostInitialize() {
         (ia_state_ & STATE_SYSTEM_SELECTABLE) &&
         (ia_state_ & STATE_SYSTEM_FOCUSED) &&
         !(old_ia_state_ & STATE_SYSTEM_FOCUSED)) {
-      ::NotifyWinEvent(EVENT_OBJECT_FOCUS, hwnd,
-                       OBJID_CLIENT, unique_id_win());
+      manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_FOCUS, unique_id_win());
     }
 
     if ((ia_state_ & STATE_SYSTEM_SELECTED) &&
         !(old_ia_state_ & STATE_SYSTEM_SELECTED)) {
-      ::NotifyWinEvent(EVENT_OBJECT_SELECTIONADD, hwnd,
-                       OBJID_CLIENT, unique_id_win());
+      manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_SELECTIONADD,
+                                       unique_id_win());
     } else if (!(ia_state_ & STATE_SYSTEM_SELECTED) &&
                (old_ia_state_ & STATE_SYSTEM_SELECTED)) {
-      ::NotifyWinEvent(EVENT_OBJECT_SELECTIONREMOVE, hwnd,
-                       OBJID_CLIENT, unique_id_win());
+      manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_SELECTIONREMOVE,
+                                       unique_id_win());
     }
 
     old_ia_state_ = ia_state_;
@@ -2988,9 +2992,8 @@ bool BrowserAccessibilityWin::IsNative() const {
 
 void BrowserAccessibilityWin::SetLocation(const gfx::Rect& new_location) {
   BrowserAccessibility::SetLocation(new_location);
-  HWND hwnd = manager_->ToBrowserAccessibilityManagerWin()->parent_hwnd();
-  ::NotifyWinEvent(EVENT_OBJECT_LOCATIONCHANGE, hwnd,
-                   OBJID_CLIENT, unique_id_win());
+  manager_->ToBrowserAccessibilityManagerWin()->MaybeCallNotifyWinEvent(
+      EVENT_OBJECT_LOCATIONCHANGE, unique_id_win());
 }
 
 BrowserAccessibilityWin* BrowserAccessibilityWin::NewReference() {

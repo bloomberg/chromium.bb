@@ -175,6 +175,11 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual void WillWmDestroy() OVERRIDE;
 #endif  // defined(OS_WIN) && !defined(USE_AURA)
 
+#if defined(OS_WIN) && defined(USE_AURA)
+  virtual void SetParentNativeViewAccessible(
+      gfx::NativeViewAccessible accessible_parent) OVERRIDE;
+#endif
+
   // Overridden from ui::GestureEventHelper.
   virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual bool DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;

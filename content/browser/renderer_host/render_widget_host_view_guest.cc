@@ -439,6 +439,12 @@ void RenderWidgetHostViewGuest::WillWmDestroy() {
 }
 #endif
 
+#if defined(OS_WIN) && defined(USE_AURA)
+void RenderWidgetHostViewGuest::SetParentNativeViewAccessible(
+    gfx::NativeViewAccessible accessible_parent) {
+}
+#endif
+
 void RenderWidgetHostViewGuest::DestroyGuestView() {
   host_ = NULL;
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);

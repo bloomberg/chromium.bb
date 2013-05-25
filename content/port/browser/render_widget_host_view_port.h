@@ -314,6 +314,11 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
 #if defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() = 0;
 #endif
+
+#if defined(OS_WIN) && defined(USE_AURA)
+  virtual void SetParentNativeViewAccessible(
+      gfx::NativeViewAccessible accessible_parent) = 0;
+#endif
 };
 
 }  // namespace content
