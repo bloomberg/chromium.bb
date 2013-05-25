@@ -592,7 +592,7 @@ String decodeURLEscapeSequences(const String& string, const WTF::TextEncoding& e
     StringUTF8Adaptor stringUTF8(string);
     url_canon::RawCanonOutputT<url_parse::UTF16Char> unescaped;
     url_util::DecodeURLEscapeSequences(stringUTF8.data(), stringUTF8.length(), &unescaped);
-    return String(reinterpret_cast<UChar*>(unescaped.data()), unescaped.length());
+    return StringImpl::create8BitIfPossible(reinterpret_cast<UChar*>(unescaped.data()), unescaped.length());
 }
 
 String encodeWithURLEscapeSequences(const String& notEncodedString)

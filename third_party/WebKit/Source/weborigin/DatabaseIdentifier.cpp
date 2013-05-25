@@ -93,27 +93,20 @@ static inline bool shouldEscapeUChar(UChar c)
 }
 
 // FIXME: Move this function to another compilation unit.
-static String encodeForFileName(const String& inputStr)
+static String encodeForFileName(const String& string)
 {
-    unsigned length = inputStr.length();
-    Vector<UChar, 512> buffer(length * 3 + 1);
-    UChar* p = buffer.data();
-
-    const UChar* str = inputStr.characters();
-    const UChar* strEnd = str + length;
-
-    while (str < strEnd) {
-        UChar c = *str++;
+    StringBuilder result;
+    const StringImpl* stringImpl = string.impl();
+    unsigned length = string.length();
+    for (unsigned i = 0; i < length; ++i) {
+        UChar c = (*stringImpl)[i];
         if (shouldEscapeUChar(c)) {
-            *p++ = '%';
-            placeByteAsHex(c, p);
+            result.append('%');
+            appendByteAsHex(c, result);
         } else
-            *p++ = c;
+            result.append(c);
     }
-
-    ASSERT(p - buffer.data() <= static_cast<int>(buffer.size()));
-
-    return String(buffer.data(), p - buffer.data());
+    return result.toString();
 }
 
 PassRefPtr<SecurityOrigin> createSecurityOriginFromDatabaseIdentifier(const String& databaseIdentifier)
