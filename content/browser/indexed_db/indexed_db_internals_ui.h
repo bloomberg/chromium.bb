@@ -13,9 +13,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "net/base/net_errors.h"
 
-namespace base {
-class ListValue;
-}
+namespace base { class ListValue; }
 
 namespace content {
 

@@ -66,8 +66,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
       OVERRIDE;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
-  void ConnectionOpened(const GURL& origin_url, WebKit::WebIDBDatabase* db);
-  void ConnectionClosed(const GURL& origin_url, WebKit::WebIDBDatabase* db);
+  void ConnectionOpened(const GURL& origin_url, WebKit::WebIDBDatabase*);
+  void ConnectionClosed(const GURL& origin_url, WebKit::WebIDBDatabase*);
   void TransactionComplete(const GURL& origin_url);
   bool WouldBeOverQuota(const GURL& origin_url, int64 additional_bytes);
   bool IsOverQuota(const GURL& origin_url);

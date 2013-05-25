@@ -4,8 +4,6 @@
 
 #include "content/common/indexed_db/indexed_db_param_traits.h"
 
-#include <string>
-#include <vector>
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
@@ -21,7 +19,7 @@ using WebKit::WebIDBKeyPath;
 namespace IPC {
 
 void ParamTraits<IndexedDBKey>::Write(Message* m, const param_type& p) {
-  WriteParam(m, static_cast<int>(p.type()));
+  WriteParam(m, int(p.type()));
   switch (p.type()) {
     case WebIDBKey::ArrayType:
       WriteParam(m, p.array());
@@ -38,7 +36,8 @@ void ParamTraits<IndexedDBKey>::Write(Message* m, const param_type& p) {
     case WebIDBKey::InvalidType:
     case WebIDBKey::NullType:
       return;
-    case WebIDBKey::MinType:
+    default:
+      // This is a placeholder for WebKit::WebIDBKey::MinType
       NOTREACHED();
       return;
   }
@@ -79,17 +78,16 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
     case WebIDBKey::NullType:
       *r = IndexedDBKey(web_type);
       return true;
-    case WebIDBKey::MinType:
+    default:
+      // This is a placeholder for WebKit::WebIDBKey::MinType
       NOTREACHED();
       return false;
   }
-  NOTREACHED();
-  return false;
 }
 
 void ParamTraits<IndexedDBKey>::Log(const param_type& p, std::string* l) {
   l->append("<IndexedDBKey>(");
-  LogParam(static_cast<int>(p.type()), l);
+  LogParam(int(p.type()), l);
   l->append(", ");
   l->append("[");
   std::vector<IndexedDBKey>::const_iterator it = p.array().begin();
@@ -109,7 +107,7 @@ void ParamTraits<IndexedDBKey>::Log(const param_type& p, std::string* l) {
 }
 
 void ParamTraits<IndexedDBKeyPath>::Write(Message* m, const param_type& p) {
-  WriteParam(m, static_cast<int>(p.type()));
+  WriteParam(m, int(p.type()));
   switch (p.type()) {
     case WebIDBKeyPath::ArrayType:
       WriteParam(m, p.array());
@@ -155,7 +153,7 @@ bool ParamTraits<IndexedDBKeyPath>::Read(const Message* m,
 
 void ParamTraits<IndexedDBKeyPath>::Log(const param_type& p, std::string* l) {
   l->append("<IndexedDBKeyPath>(");
-  LogParam(static_cast<int>(p.type()), l);
+  LogParam(int(p.type()), l);
   l->append(", ");
   LogParam(p.string(), l);
   l->append(", ");
