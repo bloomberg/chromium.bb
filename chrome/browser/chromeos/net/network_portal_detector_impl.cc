@@ -195,7 +195,8 @@ void NetworkPortalDetectorImpl::EnableLazyDetection() {
 }
 
 void NetworkPortalDetectorImpl::DisableLazyDetection() {
-  CHECK(lazy_detection_enabled());
+  if (!lazy_detection_enabled())
+    return;
   lazy_detection_enabled_ = false;
   VLOG(1) << "Lazy detection mode disabled.";
 }
