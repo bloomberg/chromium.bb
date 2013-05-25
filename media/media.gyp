@@ -240,6 +240,8 @@
         'base/channel_mixer.h',
         'base/clock.cc',
         'base/clock.h',
+        'base/container_names.cc',
+        'base/container_names.h',
         'base/data_buffer.cc',
         'base/data_buffer.h',
         'base/data_source.cc',
@@ -487,6 +489,8 @@
         }, {  # media_use_ffmpeg==0
           # Exclude the sources that depend on ffmpeg.
           'sources!': [
+            'base/container_names.cc',
+            'base/container_names.h',
             'base/media_posix.cc',
             'ffmpeg/ffmpeg_common.cc',
             'ffmpeg/ffmpeg_common.h',
@@ -956,6 +960,7 @@
         'base/bit_reader_unittest.cc',
         'base/channel_mixer_unittest.cc',
         'base/clock_unittest.cc',
+        'base/container_names_unittest.cc',
         'base/data_buffer_unittest.cc',
         'base/decoder_buffer_queue_unittest.cc',
         'base/decoder_buffer_unittest.cc',
@@ -1057,6 +1062,7 @@
         ['OS=="android"', {
           'sources!': [
             'audio/audio_input_volume_unittest.cc',
+            'base/container_names_unittest.cc',
             'base/test_data_util.cc',
             'base/test_data_util.h',
             'ffmpeg/ffmpeg_common_unittest.cc',

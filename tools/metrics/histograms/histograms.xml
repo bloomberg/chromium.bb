@@ -2201,6 +2201,10 @@ other types of suffix sets.
   <summary>Audio codec used in HTML5 media.</summary>
 </histogram>
 
+<histogram name="Media.DetectedContainer" enum="MediaContainers">
+  <summary>Container used for HTML5 media.</summary>
+</histogram>
+
 <histogram name="Media.DetectedVideoCodec" enum="FFmpegCodecs">
   <summary>Video codec used in HTML5 media.</summary>
 </histogram>
@@ -12418,6 +12422,47 @@ other types of suffix sets.
     Allow stale data (avoid doing a re-post)
   </int>
   <int value="9" label="PRERENDER_LOAD">Speculative prerendering of a page</int>
+</enum>
+
+<enum name="MediaContainers" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="AAC (Advanced Audio Coding)"/>
+  <int value="2" label="AC-3"/>
+  <int value="3" label="AIFF (Audio Interchange File Format)"/>
+  <int value="4" label="AMR (Adaptive Multi-Rate Audio)"/>
+  <int value="5" label="APE (Monkey's Audio)"/>
+  <int value="6" label="ASF (Advanced / Active Streaming Format)"/>
+  <int value="7" label="SSA (SubStation Alpha) subtitle"/>
+  <int value="8" label="AVI (Audio Video Interleaved)"/>
+  <int value="9" label="Bink"/>
+  <int value="10" label="CAF (Apple Core Audio Format)"/>
+  <int value="11" label="DTS"/>
+  <int value="12" label="DTS-HD"/>
+  <int value="13" label="DV (Digital Video)"/>
+  <int value="14" label="DXA"/>
+  <int value="15" label="Enhanced AC-3"/>
+  <int value="16" label="FLAC (Free Lossless Audio Codec)"/>
+  <int value="17" label="FLV (Flash Video)"/>
+  <int value="18" label="GSM (Global System for Mobile Audio)"/>
+  <int value="19" label="H.261"/>
+  <int value="20" label="H.263"/>
+  <int value="21" label="H.264"/>
+  <int value="22" label="HLS (Apple HTTP Live Streaming PlayList)"/>
+  <int value="23" label="Berkeley/IRCAM/CARL Sound Format"/>
+  <int value="24" label="MJPEG video"/>
+  <int value="25" label="QuickTime / MOV / MPEG4"/>
+  <int value="26" label="MP3 (MPEG audio layer 2/3)"/>
+  <int value="27" label="MPEG-2 Program Stream"/>
+  <int value="28" label="MPEG-2 Transport Stream"/>
+  <int value="29" label="MPEG-4 Bitstream"/>
+  <int value="30" label="Ogg"/>
+  <int value="31" label="RM (RealMedia)"/>
+  <int value="32" label="SRT (SubRip subtitle)"/>
+  <int value="33" label="SWF (ShockWave Flash)"/>
+  <int value="34" label="VC-1"/>
+  <int value="35" label="WAV / WAVE (Waveform Audio)"/>
+  <int value="36" label="Matroska / WebM"/>
+  <int value="37" label="WTV (Windows Television)"/>
 </enum>
 
 <enum name="MouseEventFollowedByClick" type="int">

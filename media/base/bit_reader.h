@@ -37,6 +37,12 @@ class MEDIA_EXPORT BitReader {
     return ret;
   }
 
+  // Skip |num_bits| next bits from stream. Return false if the given number of
+  // bits cannot be skipped (not enough bits in the stream), true otherwise.
+  // When return false, the stream will enter a state where further ReadBits/
+  // SkipBits operations will always return false unless |num_bits| is 0.
+  bool SkipBits(int num_bits);
+
   // Returns the number of bits available for reading.
   int bits_available() const;
 

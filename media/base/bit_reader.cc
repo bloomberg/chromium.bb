@@ -15,6 +15,31 @@ BitReader::BitReader(const uint8* data, off_t size)
 
 BitReader::~BitReader() {}
 
+bool BitReader::SkipBits(int num_bits) {
+  DCHECK_GE(num_bits, 0);
+  DLOG_IF(INFO, num_bits > 100)
+      << "BitReader::SkipBits inefficient for large skips";
+
+  // Skip any bits in the current byte waiting to be processed, then
+  // process full bytes until less than 8 bits remaining.
+  while (num_bits > 0 && num_bits > num_remaining_bits_in_curr_byte_) {
+    num_bits -= num_remaining_bits_in_curr_byte_;
+    num_remaining_bits_in_curr_byte_ = 0;
+    UpdateCurrByte();
+
+    // If there is no more data remaining, only return true if we
+    // skipped all that were requested.
+    if (num_remaining_bits_in_curr_byte_ == 0)
+      return (num_bits == 0);
+  }
+
+  // Less than 8 bits remaining to skip. Use ReadBitsInternal to verify
+  // that the remaining bits we need exist, and adjust them as necessary
+  // for subsequent operations.
+  uint64 not_needed;
+  return ReadBitsInternal(num_bits, &not_needed);
+}
+
 int BitReader::bits_available() const {
   return 8 * bytes_left_ + num_remaining_bits_in_curr_byte_;
 }

@@ -6,7 +6,9 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/synchronization/lock.h"
+#include "media/base/container_names.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
 namespace media {
@@ -154,6 +156,22 @@ bool FFmpegGlue::OpenContext() {
   // If avformat_open_input() is called we have to take a slightly different
   // destruction path to avoid double frees.
   open_called_ = true;
+
+  // Attempt to recognize the container by looking at the first few bytes of the
+  // stream. The stream position is left unchanged.
+  scoped_ptr<std::vector<uint8> > buffer(new std::vector<uint8>(8192));
+
+  int64 pos = AVIOSeekOperation(avio_context_.get()->opaque, 0, SEEK_CUR);
+  AVIOSeekOperation(avio_context_.get()->opaque, 0, SEEK_SET);
+  int numRead = AVIOReadOperation(
+      avio_context_.get()->opaque, buffer.get()->data(), buffer.get()->size());
+  AVIOSeekOperation(avio_context_.get()->opaque, pos, SEEK_SET);
+  if (numRead > 0) {
+    // < 0 means Read failed
+    container_names::MediaContainerName container =
+        container_names::DetermineContainer(buffer.get()->data(), numRead);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedContainer", container);
+  }
 
   // By passing NULL for the filename (second parameter) we are telling FFmpeg
   // to use the AVIO context we setup from the AVFormatContext structure.
