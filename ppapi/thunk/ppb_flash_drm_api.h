@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/ref_counted.h"
+#include "ppapi/c/private/ppb_flash_drm.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
@@ -11,9 +12,9 @@ class TrackedCallback;
 
 namespace thunk {
 
-class PPAPI_THUNK_EXPORT PPB_Flash_DeviceID_API {
+class PPAPI_THUNK_EXPORT PPB_Flash_DRM_API {
  public:
-  virtual ~PPB_Flash_DeviceID_API() {}
+  virtual ~PPB_Flash_DRM_API() {}
 
   virtual int32_t GetDeviceID(PP_Var* id,
                               scoped_refptr<TrackedCallback> callback) = 0;

@@ -90,7 +90,7 @@ PP_Resource ResourceCreationImpl::CreateFileRef(
   return serialized.resource.host_resource();
 }
 
-PP_Resource ResourceCreationImpl::CreateFlashDeviceID(PP_Instance instance) {
+PP_Resource ResourceCreationImpl::CreateFlashDRM(PP_Instance instance) {
   return 0;  // Not supported in-process.
 }
 

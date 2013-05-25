@@ -43,7 +43,7 @@ class WEBKIT_PLUGINS_EXPORT ResourceCreationImpl
                                     const char* path) OVERRIDE;
   virtual PP_Resource CreateFileRef(
       const ::ppapi::PPB_FileRef_CreateInfo& serialized) OVERRIDE;
-  virtual PP_Resource CreateFlashDeviceID(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateFlashDRM(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateFlashFontFile(
       PP_Instance instance,
       const PP_BrowserFont_Trusted_Description* description,

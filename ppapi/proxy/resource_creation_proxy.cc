@@ -14,7 +14,7 @@
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/file_io_resource.h"
 #include "ppapi/proxy/file_system_resource.h"
-#include "ppapi/proxy/flash_device_id_resource.h"
+#include "ppapi/proxy/flash_drm_resource.h"
 #include "ppapi/proxy/flash_font_file_resource.h"
 #include "ppapi/proxy/flash_menu_resource.h"
 #include "ppapi/proxy/graphics_2d_resource.h"
@@ -346,8 +346,8 @@ PP_Resource ResourceCreationProxy::CreateBuffer(PP_Instance instance,
   return PPB_Buffer_Proxy::CreateProxyResource(instance, size);
 }
 
-PP_Resource ResourceCreationProxy::CreateFlashDeviceID(PP_Instance instance) {
-  return (new FlashDeviceIDResource(GetConnection(), instance))->GetReference();
+PP_Resource ResourceCreationProxy::CreateFlashDRM(PP_Instance instance) {
+  return (new FlashDRMResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateFlashFontFile(

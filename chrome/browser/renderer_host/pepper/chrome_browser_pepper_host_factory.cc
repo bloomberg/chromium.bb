@@ -9,7 +9,7 @@
 #include "chrome/browser/renderer_host/pepper/pepper_extensions_common_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h"
-#include "chrome/browser/renderer_host/pepper/pepper_flash_device_id_host.h"
+#include "chrome/browser/renderer_host/pepper/pepper_flash_drm_host.h"
 #include "chrome/browser/renderer_host/pepper/pepper_talk_host.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/message_filter_host.h"
@@ -98,8 +98,8 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
             host_->GetPpapiHost(), instance, params.pp_resource(),
             clipboard_filter));
       }
-      case PpapiHostMsg_FlashDeviceID_Create::ID:
-        return scoped_ptr<ResourceHost>(new PepperFlashDeviceIDHost(
+      case PpapiHostMsg_FlashDRM_Create::ID:
+        return scoped_ptr<ResourceHost>(new PepperFlashDRMHost(
             host_, instance, params.pp_resource()));
     }
   }
