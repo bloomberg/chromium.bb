@@ -26,46 +26,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// @fileoverview Base JS file for pages that want to parse the results JSON
-// from the testing bots. This deals with generic utility functions, visible
-// history, popups and appending the script elements for the JSON files.
-
-
-//////////////////////////////////////////////////////////////////////////////
-// CONSTANTS
-//////////////////////////////////////////////////////////////////////////////
-var GTEST_EXPECTATIONS_MAP_ = {
-    'P': 'PASS',
-    'F': 'FAIL',
-    'N': 'NO DATA',
-    'X': 'SKIPPED'
-};
-
-var LAYOUT_TEST_EXPECTATIONS_MAP_ = {
-    'P': 'PASS',
-    'N': 'NO DATA',
-    'X': 'SKIP',
-    'T': 'TIMEOUT',
-    'F': 'TEXT',
-    'C': 'CRASH',
-    'I': 'IMAGE',
-    'Z': 'IMAGE+TEXT',
-    // We used to glob a bunch of expectations into "O" as OTHER. Expectations
-    // are more precise now though and it just means MISSING.
-    'O': 'MISSING'
-};
-
-
 // Keys in the JSON files.
-var FIXABLE_COUNTS_KEY = 'fixableCounts';
-var FIXABLE_DESCRIPTION = 'All tests for this release';
-var FIXABLE_COUNT_KEY = 'fixableCount';
-var ALL_FIXABLE_COUNT_KEY = 'allFixableCount';
+var FAILURES_BY_TYPE_KEY = 'num_failures_by_type';
+var FAILURE_MAP_KEY = 'failure_map';
 var CHROME_REVISIONS_KEY = 'chromeRevision';
 var BLINK_REVISIONS_KEY = 'blinkRevision';
 var TIMESTAMPS_KEY = 'secondsSinceEpoch';
 var BUILD_NUMBERS_KEY = 'buildNumbers';
 var TESTS_KEY = 'tests';
+
+// Failure types.
+var PASS = 'PASS';
+var NO_DATA = 'NO DATA';
+var SKIP = 'SKIP';
+var NOTRUN = 'NOTRUN';
+
 var ONE_DAY_SECONDS = 60 * 60 * 24;
 var ONE_WEEK_SECONDS = ONE_DAY_SECONDS * 7;
 
@@ -118,9 +93,11 @@ var RLE = {
     VALUE: 1
 }
 
-function isFailingResult(value)
+var _NON_FAILURE_TYPES = [PASS, NO_DATA, SKIP, NOTRUN];
+
+function isFailingResult(failureMap, failureType)
 {
-    return 'FSTOCIZ'.indexOf(value) != -1;
+    return _NON_FAILURE_TYPES.indexOf(failureMap[failureType]) == -1;
 }
 
 // Generic utility functions.
@@ -172,12 +149,6 @@ function isTipOfTreeWebKitBuilder()
 }
 
 var g_resultsByBuilder = {};
-var g_expectationsByPlatform = {};
-
-function isFlakinessDashboard()
-{
-    return string.endsWith(window.location.pathname, 'flakiness_dashboard.html');
-}
 
 // Create a new function with some of its arguements
 // pre-filled.
@@ -198,8 +169,23 @@ function partial(fn, var_args)
     };
 };
 
-// Returns the appropriate expectations map for the current testType.
-function expectationsMap()
+function getTotalTestCounts(failuresByType)
 {
-    return g_history.isLayoutTestResults() ? LAYOUT_TEST_EXPECTATIONS_MAP_ : GTEST_EXPECTATIONS_MAP_;
+    var countData;
+    for (var failureType in failuresByType) {
+        var failures = failuresByType[failureType];
+        if (countData) {
+            failures.forEach(function(count, index) {
+                countData.totalTests[index] += count;
+                if (failureType != PASS)
+                    countData.totalFailingTests[index] += count;
+            });
+        } else {
+            countData = {
+                totalTests: failures.slice(),
+                totalFailingTests: failures.slice(),
+            };
+        }
+    }
+    return countData;
 }

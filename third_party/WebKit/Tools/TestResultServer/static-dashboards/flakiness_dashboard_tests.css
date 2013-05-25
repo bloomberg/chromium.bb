@@ -103,35 +103,38 @@
     float: left;
     border: 1px solid grey;
 }
-.P {
+.PASS {
     background-color: #3f3;
 }
-.N {
+.NODATA, .NOTRUN {
     background-color: #fff;
 }
-.X {
+.SKIP {
     background-color: lightgray;
 }
-.C {
+.CRASH {
     background-color: #c90;
 }
-.T {
+.TIMEOUT {
     background-color: #fffc6c;
 }
-.I {
+.IMAGE {
     background-color: #69f;
 }
-.S {
-    background-color: #c6c;
-}
-.F {
+.TEXT {
     background-color: #e98080;
 }
-.O {
+.MISSING {
     background-color: #8a7700;
 }
-.Z {
+.IMAGETEXT {
     background-color: #96f;
+}
+.AUDIO {
+    background-color: lightblue;
+}
+.FLAKY {
+    background-color: turquoise;
 }
 .separator {
     border: 1px solid lightgray;

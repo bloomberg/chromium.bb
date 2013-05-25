@@ -45,10 +45,12 @@ var DB_SPECIFIC_INVALIDATING_PARAMETERS = {
 
 function generatePage(historyInstance)
 {
-    g_buildIndicesByTimestamp = {};
     var results = g_resultsByBuilder[historyInstance.dashboardSpecificState.builder || currentBuilderGroup().defaultBuilder()];
 
-    for (var i = 0; i < results[FIXABLE_COUNTS_KEY].length; i++) {
+    g_totalFailureCount = getTotalTestCounts(results[FAILURES_BY_TYPE_KEY]).totalFailingTests;
+
+    g_buildIndicesByTimestamp = {};
+    for (var i = 0; i < g_totalFailureCount.length; i++) {
         var buildDate = new Date(results[TIMESTAMPS_KEY][i] * 1000);
         g_buildIndicesByTimestamp[buildDate.getTime()] = i;
     }
@@ -106,9 +108,7 @@ g_history.parseCrossDashboardParameters();
 
 function initCurrentBuilderTestResults()
 {
-    var startTime = Date.now();
     g_currentBuilderTestResults = _decompressResults(g_resultsByBuilder[g_history.dashboardSpecificState.builder || currentBuilderGroup().defaultBuilder()]);
-    console.log( 'Time to get test results by build: ' + (Date.now() - startTime));
 }
 
 function shouldShowBlinkRevisionsOnly()
@@ -125,11 +125,11 @@ function updateTimelineForBuilder()
     var annotations = [];
 
     // Dygraph prefers to be handed data in chronological order.
-    for (var i = results[FIXABLE_COUNTS_KEY].length - 1; i >= 0; i--) {
+    for (var i = g_totalFailureCount.length - 1; i >= 0; i--) {
         var buildDate = new Date(results[TIMESTAMPS_KEY][i] * 1000);
         // FIXME: Find a better way to exclude outliers. This is just so we
         // exclude runs where every test failed.
-        var failureCount = Math.min(results[FIXABLE_COUNT_KEY][i], 10000);
+        var failureCount = Math.min(g_totalFailureCount[i], 10000);
 
         if (g_history.dashboardSpecificState.ignoreFlakyTests)
             failureCount -= g_currentBuilderTestResults.flakyDeltasByBuild[i].total || 0;
@@ -254,22 +254,23 @@ function updateBuildInspector(results, builder, dygraph, index)
         addRow(label, currentValue + deltaText);
     }
 
-    var expectations = expectationsMap();
     var flakyDeltasByBuild = g_currentBuilderTestResults.flakyDeltasByBuild;
-    for (var expectationKey in expectations) {
-        if (expectationKey in results[FIXABLE_COUNTS_KEY][index]) {
-            var currentCount = results[FIXABLE_COUNTS_KEY][index][expectationKey];
-            var previousCount = results[FIXABLE_COUNTS_KEY][index + 1][expectationKey];
-            if (g_history.dashboardSpecificState.ignoreFlakyTests) {
-                currentCount -= flakyDeltasByBuild[index][expectationKey] || 0;
-                previousCount -= flakyDeltasByBuild[index + 1][expectationKey] || 0;
-            }
-            addNumberRow(expectations[expectationKey], currentCount, previousCount);
+    var failures_by_type = results[FAILURES_BY_TYPE_KEY];
+    for (var failureType in failures_by_type) {
+        var failureCount = failures_by_type[failureType];
+        var currentCount = failureCount[index];
+        var previousCount = failureCount[index + 1];
+        if (!currentCount && !previousCount)
+            continue;
+        if (g_history.dashboardSpecificState.ignoreFlakyTests) {
+            currentCount -= flakyDeltasByBuild[index][failureType] || 0;
+            previousCount -= flakyDeltasByBuild[index + 1][failureType] || 0;
         }
+        addNumberRow(failureType, currentCount, previousCount);
     }
 
-    var currentTotal = results[FIXABLE_COUNT_KEY][index];
-    var previousTotal = results[FIXABLE_COUNT_KEY][index + 1];
+    var currentTotal = g_totalFailureCount[index];
+    var previousTotal = g_totalFailureCount[index + 1];
     if (g_history.dashboardSpecificState.ignoreFlakyTests) {
         currentTotal -= flakyDeltasByBuild[index].total || 0;
         previousTotal -= flakyDeltasByBuild[index + 1].total || 0;
@@ -306,7 +307,7 @@ function showResultsDelta(index, buildNumber, buildUrl, resultsUrl)
     var currentResults = g_currentBuilderTestResults.resultsByBuild[index];
     var testNames = g_currentBuilderTestResults.testNames;
     var previousResults = g_currentBuilderTestResults.resultsByBuild[index + 1];
-    var expectations = expectationsMap();
+    var expectations = g_currentBuilderTestResults.failureMap;
 
     var deltas = {};
     function addDelta(category, testIndex)
@@ -363,14 +364,6 @@ function showResultsDelta(index, buildNumber, buildUrl, resultsUrl)
     deltaWindow.document.write(html);
 }
 
-var _FAILURE_EXPECTATIONS = {
-    'T': 1,
-    'F': 1,
-    'C': 1,
-    'I': 1,
-    'Z': 1
-};
-
 // "Decompresses" the RLE-encoding of test results so that we can query it
 // by build index and test name.
 //
@@ -383,7 +376,7 @@ var _FAILURE_EXPECTATIONS = {
 function _decompressResults(builderResults)
 {
     var builderTestResults = builderResults[TESTS_KEY];
-    var buildCount = builderResults[FIXABLE_COUNTS_KEY].length;
+    var buildCount = g_totalFailureCount.length;
     var resultsByBuild = new Array(buildCount);
     var flakyDeltasByBuild = new Array(buildCount);
 
@@ -403,6 +396,8 @@ function _decompressResults(builderResults)
     var testNames = new Array(testCount);
     var flakyTests = new Array(testCount);
 
+    var failureMap = builderResults[FAILURE_MAP_KEY];
+
     // Decompress and "invert" test results (by build instead of by test) and
     // determine which are flaky.
     for (var testName in builderTestResults) {
@@ -414,7 +409,7 @@ function _decompressResults(builderResults)
             var count = rleResult[RLE.LENGTH];
             var value = rleResult[RLE.VALUE];
 
-            if (count == 1 && value in _FAILURE_EXPECTATIONS)
+            if (count == 1 && isFailingResult(failureMap, value))
                 oneBuildFailureCount++;
 
             for (var j = 0; j < count; j++) {
@@ -451,7 +446,7 @@ function _decompressResults(builderResults)
                     buildTestResults[key]++;
                 }
                 addFlakyDelta(value);
-                if (value != 'P' && value != 'N')
+                if (isFailingResult(failureMap, value))
                     addFlakyDelta('total');
                 if (currentBuildIndex == buildCount)
                     break;
@@ -463,7 +458,8 @@ function _decompressResults(builderResults)
         testNames: testNames,
         resultsByBuild: resultsByBuild,
         flakyTests: flakyTests,
-        flakyDeltasByBuild: flakyDeltasByBuild
+        flakyDeltasByBuild: flakyDeltasByBuild,
+        failureMap: failureMap
     };
 }
 

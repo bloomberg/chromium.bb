@@ -54,6 +54,9 @@ function resetGlobals()
     return historyInstance;
 }
 
+var FAILURE_MAP = {"A": "AUDIO", "C": "CRASH", "F": "TEXT", "I": "IMAGE", "O": "MISSING",
+    "N": "NO DATA", "P": "PASS", "T": "TIMEOUT", "Y": "NOTRUN", "X": "SKIP", "Z": "IMAGE+TEXT"}
+
 test('substringList', 2, function() {
     var historyInstance = new history.History(flakinessConfig);
     // FIXME(jparent): Remove this once global isn't used.
@@ -120,7 +123,7 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
     loadBuildersList('@ToT - chromium.org', 'layout-tests');
 
     var builderName = 'WebKit Linux';
-    g_resultsByBuilder[builderName] = {buildNumbers: [2, 1], blinkRevision: [1234, 1233]};
+    g_resultsByBuilder[builderName] = {buildNumbers: [2, 1], blinkRevision: [1234, 1233], failure_map: FAILURE_MAP};
 
     var test = 'dummytest.html';
     var resultsObject = createResultsObjectForTest(test, builderName);
@@ -142,8 +145,8 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
                 '<td class=options-container>' +
                     '<div><a href="http://crbug.com/1234">crbug.com/1234</a></div>' +
                     '<div><a href="http://webkit.org/5678">webkit.org/5678</a></div>' +
-                '<td class=options-container><td><td title="TEXT. Click for more info." class="results F" onclick=\'showPopupForBuild(event, "WebKit Linux",0,"dummytest.html")\'>&nbsp;' +
-                '<td title="NO DATA. Click for more info." class="results N" onclick=\'showPopupForBuild(event, "WebKit Linux",1,"dummytest.html")\'>&nbsp;' +
+                '<td class=options-container><td><td title="TEXT. Click for more info." class="results TEXT" onclick=\'showPopupForBuild(event, "WebKit Linux",0,"dummytest.html")\'>&nbsp;' +
+                '<td title="NO DATA. Click for more info." class="results NODATA" onclick=\'showPopupForBuild(event, "WebKit Linux",1,"dummytest.html")\'>&nbsp;' +
             '</tbody>' +
         '</table>' +
         '<div>The following builders either don\'t run this test (e.g. it\'s skipped) or all runs passed:</div>' +
@@ -219,7 +222,7 @@ test('htmlForSingleTestRow', 1, function() {
     BUILDER_TO_MASTER[builder] = CHROMIUM_WEBKIT_BUILDER_MASTER;
     var test = createResultsObjectForTest('foo/exists.html', builder);
     historyInstance.dashboardSpecificState.showNonFlaky = true;
-    g_resultsByBuilder[builder] = {buildNumbers: [2, 1], blinkRevision: [1234, 1233]};
+    g_resultsByBuilder[builder] = {buildNumbers: [2, 1], blinkRevision: [1234, 1233], failure_map: FAILURE_MAP};
     test.rawResults = [[1, 'F'], [2, 'I']];
     test.rawTimes = [[1, 0], [2, 5]];
     var expected = '<tr>' +
@@ -227,8 +230,8 @@ test('htmlForSingleTestRow', 1, function() {
         '<td class=options-container><a href="https://code.google.com/p/chromium/issues/entry?template=Layout%20Test%20Failure&summary=Layout%20Test%20foo%2Fexists.html%20is%20failing&comment=The%20following%20layout%20test%20is%20failing%20on%20%5Binsert%20platform%5D%0A%0Afoo%2Fexists.html%0A%0AProbable%20cause%3A%0A%0A%5Binsert%20probable%20cause%5D">File new bug</a>' +
         '<td class=options-container>' +
         '<td>' +
-        '<td title="TEXT. Click for more info." class="results F" onclick=\'showPopupForBuild(event, "dummyBuilder",0,"foo/exists.html")\'>&nbsp;' +
-        '<td title="IMAGE. Click for more info." class="results I" onclick=\'showPopupForBuild(event, "dummyBuilder",1,"foo/exists.html")\'>5';
+        '<td title="TEXT. Click for more info." class="results TEXT" onclick=\'showPopupForBuild(event, "dummyBuilder",0,"foo/exists.html")\'>&nbsp;' +
+        '<td title="IMAGE. Click for more info." class="results IMAGE" onclick=\'showPopupForBuild(event, "dummyBuilder",1,"foo/exists.html")\'>5';
     equal(htmlForSingleTestRow(test), expected);
 });
 

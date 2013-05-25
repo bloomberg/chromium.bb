@@ -37,7 +37,10 @@
 function generatePage(historyInstance)
 {
     var html = ui.html.testTypeSwitcher(true);
-    html += ui.html.checkbox('rawValues', 'Show raw values', g_history.dashboardSpecificState.rawValues);
+    html += '<div>' +
+        ui.html.checkbox('rawValues', 'Show raw values', g_history.dashboardSpecificState.rawValues) +
+        ui.html.checkbox('showOutliers', 'Show outliers', g_history.dashboardSpecificState.showOutliers) +
+    '</div>';
     for (var builder in currentBuilders())
         html += htmlForBuilder(builder);
     document.body.innerHTML = html;
@@ -47,6 +50,7 @@ function handleValidHashParameter(historyInstance, key, value)
 {
     switch(key) {
     case 'rawValues':
+    case 'showOutliers':
         historyInstance.dashboardSpecificState[key] = value == 'true';
         return true;
 
@@ -56,9 +60,9 @@ function handleValidHashParameter(historyInstance, key, value)
 }
 
 var defaultDashboardSpecificStateValues = {
-    rawValues: false
+    rawValues: false,
+    showOutliers: true
 };
-
 
 var aggregateResultsConfig = {
     defaultStateValues: defaultDashboardSpecificStateValues,
@@ -70,43 +74,44 @@ var aggregateResultsConfig = {
 var g_history = new history.History(aggregateResultsConfig);
 g_history.parseCrossDashboardParameters();
 
+g_totalFailureCounts = {};
+
+function totalFailureCountFor(builder)
+{
+    if (!g_totalFailureCounts[builder])
+        g_totalFailureCounts[builder] = getTotalTestCounts(g_resultsByBuilder[builder][FAILURES_BY_TYPE_KEY]);
+    return g_totalFailureCounts[builder];
+}
+
 function htmlForBuilder(builder)
 {
-    var results = g_resultsByBuilder[builder];
-    // Some keys were added later than others, so they don't have as many
-    // builds. Use the shortest.
-    // FIXME: Once 500 runs have finished, we can get rid of passing this
-    // around and just assume all keys have the same number of builders for a
-    // given builder.
-    var numColumns = results[ALL_FIXABLE_COUNT_KEY].length;
     var html = '<div class=container><h2>' + builder + '</h2>';
 
     if (g_history.dashboardSpecificState.rawValues) {
-        html += htmlForSummaryTable(results, numColumns) +
-            htmlForTestType(results, FIXABLE_COUNTS_KEY, FIXABLE_DESCRIPTION, numColumns);
+        html += htmlForTestType(builder);
     } else {
         html += '<a href="timeline_explorer.html' + (location.hash ? location.hash + '&' : '#') + 'builder=' + builder + '">' +
-            chartHTML(results, numColumns) + '</a>';
+            chartHTML(builder) + '</a>';
     }
 
-    html += '</div>';
-    return html;
+    return html + '</div>';
 }
 
-function chartHTML(results, numColumns)
+function chartHTML(builder)
 {
+    var results = g_resultsByBuilder[builder];
+    var totalFailingTests = totalFailureCountFor(builder).totalFailingTests;
     var shouldShowBlinkRevisions = isTipOfTreeWebKitBuilder();
     var revisionKey = shouldShowBlinkRevisions ? BLINK_REVISIONS_KEY : CHROME_REVISIONS_KEY;
-    var startRevision = results[revisionKey][numColumns - 1];
+    var startRevision = results[revisionKey][totalFailingTests.length - 1];
     var endRevision = results[revisionKey][0];
     var revisionLabel = shouldShowBlinkRevisions ? "Blink Revision" : "Chromium Revision";
 
-    var fixable = results[FIXABLE_COUNT_KEY].slice(0, numColumns);
-    var html = chart("Total failing", {"": fixable}, revisionLabel, startRevision, endRevision);
+    var html = chart("Total failing", {"": totalFailingTests}, revisionLabel, startRevision, endRevision);
 
-    var values = valuesPerExpectation(results[FIXABLE_COUNTS_KEY], numColumns);
+    var values = results[FAILURES_BY_TYPE_KEY];
     // Don't care about number of passes for the charts.
-    delete(values['P']);
+    delete(values[PASS]);
 
     return html + chart("Detailed breakdown", values, revisionLabel, startRevision, endRevision);
 }
@@ -115,19 +120,20 @@ var LABEL_COLORS = ['FF0000', '00FF00', '0000FF', '000000', 'FF6EB4', 'FFA812', 
 
 // FIXME: Find a better way to exclude outliers. This is just so we exclude
 // runs where every test failed.
-var MAX_VALUE = 10000;
+var MAX_VALUE = 2000;
 
 function filteredValues(values, desiredNumberOfPoints)
 {
     // Filter out values to make the graph a bit more readable and to keep URLs
     // from exceeding the browsers max length restriction.
     var filterAmount = Math.floor(values.length / desiredNumberOfPoints);
-    if (filterAmount < 1)
-        return values;
-
     return values.filter(function(element, index, array) {
-        // Include the most recent and oldest values and exclude outliers.
-        return (index % filterAmount == 0 || index == array.length - 1) && (array[index] < MAX_VALUE && array[index] != 0);
+        if (!g_history.dashboardSpecificState.showOutliers && element > MAX_VALUE)
+            return false;
+        if (filterAmount <= 1)
+            return true;
+        // Include the most recent and oldest values.
+        return index % filterAmount == 0 || index == array.length - 1;
     });
 }
 
@@ -141,15 +147,13 @@ function chartUrl(title, values, revisionLabel, startRevision, endRevision, desi
     var labels = '';
     var numLabels = 0;
 
-    var first = true;
     for (var expectation in values) {
-        chartData += (first ? 'e:' : ',') + extendedEncode(filteredValues(values[expectation], desiredNumberOfPoints).reverse(), maxValue);
+        chartData += (chartData ? ',' : 'e:') + extendedEncode(filteredValues(values[expectation], desiredNumberOfPoints).reverse(), maxValue);
 
         if (expectation) {
             numLabels++;
-            labels += (first ? '' : '|') + expectationsMap()[expectation];
+            labels += (labels ? '|' : '') + expectation;
         }
-        first = false;
     }
 
     var url = "http://chart.apis.google.com/chart?cht=lc&chs=600x400&chd=" +
@@ -182,52 +186,31 @@ function htmlForRevisionRows(results, numColumns)
         htmlForTableRow('Chrome Revision', results[CHROME_REVISIONS_KEY].slice(0, numColumns));
 }
 
-function wrapHTMLInTable(description, html)
+function htmlForTestType(builder)
 {
-    return '<h3>' + description + '</h3><table><tbody>' + html + '</tbody></table>';
-}
+    var counts = totalFailureCountFor(builder);
+    var totalFailing = counts.totalFailingTests;
+    var totalTests = counts.totalTests;
 
-function htmlForSummaryTable(results, numColumns)
-{
     var percent = [];
-    var fixable = results[FIXABLE_COUNT_KEY].slice(0, numColumns);
-    var allFixable = results[ALL_FIXABLE_COUNT_KEY].slice(0, numColumns);
-    for (var i = 0; i < numColumns; i++) {
-        var percentage = 100 * (allFixable[i] - fixable[i]) / allFixable[i];
+    for (var i = 0; i < totalTests.length; i++) {
+        var percentage = 100 * (totalTests[i] - totalFailing[i]) / totalTests[i];
         // Round to the nearest tenth of a percent.
         percent.push(Math.round(percentage * 10) / 10 + '%');
     }
-    var html = htmlForRevisionRows(results, numColumns) +
+
+    var results = g_resultsByBuilder[builder];
+    html = '<table><tbody>' +
+        htmlForRevisionRows(results, totalTests.length) +
         htmlForTableRow('Percent passed', percent) +
-        htmlForTableRow('Failures', fixable) +
-        htmlForTableRow('Total Tests', allFixable);
-    return wrapHTMLInTable('Summary', html);
-}
+        htmlForTableRow('Failures', totalFailing) +
+        htmlForTableRow('Total Tests', totalTests);
 
-function valuesPerExpectation(counts, numColumns)
-{
-    var values = {};
-    for (var i = 0; i < numColumns; i++) {
-        for (var expectation in expectationsMap()) {
-            if (expectation in counts[i]) {
-                var count = counts[i][expectation];
-                if (!values[expectation])
-                    values[expectation] = [];
-                values[expectation].push(count);
-            }
-        }
-    }
-    return values;
-}
-
-function htmlForTestType(results, key, description, numColumns)
-{
-    var counts = results[key];
-    var html = htmlForRevisionRows(results, numColumns);
-    var values = valuesPerExpectation(counts, numColumns);
+    var values = results[FAILURES_BY_TYPE_KEY];
     for (var expectation in values)
-        html += htmlForTableRow(expectationsMap()[expectation], values[expectation]);
-    return wrapHTMLInTable(description, html);
+        html += htmlForTableRow(expectation, values[expectation]);
+
+    return html + '</tbody></table>';
 }
 
 function htmlForTableRow(columnName, values)

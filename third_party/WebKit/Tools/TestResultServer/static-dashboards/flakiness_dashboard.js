@@ -74,22 +74,11 @@ function generatePage(historyInstance)
 function handleValidHashParameter(historyInstance, key, value)
 {
     switch(key) {
+    case 'result':
     case 'tests':
         history.validateParameter(historyInstance.dashboardSpecificState, key, value,
             function() {
                 return string.isValidName(value);
-            });
-        return true;
-
-    case 'result':
-        value = value.toUpperCase();
-        history.validateParameter(historyInstance.dashboardSpecificState, key, value,
-            function() {
-                for (var result in LAYOUT_TEST_EXPECTATIONS_MAP_) {
-                    if (value == LAYOUT_TEST_EXPECTATIONS_MAP_[result])
-                        return true;
-                }
-                return false;
             });
         return true;
 
@@ -224,7 +213,6 @@ function createResultsObjectForTest(test, builder)
         html: '',
         flips: 0,
         slowestTime: 0,
-        slowestNonTimeoutCrashTime: 0,
         isFlaky: false,
         bugs: [],
         expectations : '',
@@ -232,19 +220,6 @@ function createResultsObjectForTest(test, builder)
         // List of all the results the test actually has.
         actualResults: []
     };
-}
-
-// Returns the expectation string for the given single character result.
-// This string should match the expectations that are put into
-// test_expectations.py.
-//
-// For example, if we start explicitly listing IMAGE result failures,
-// this function should start returning 'IMAGE'.
-function expectationsFileStringForResult(result)
-{
-    if (result == 'N')
-        return '';
-    return expectationsMap()[result];
 }
 
 var TestTrie = function(builders, resultsByBuilder)
@@ -382,7 +357,7 @@ function allTestsWithResult(result)
 
     getAllTestsTrie().forEach(function(triePath) {
         for (var i = 0; i < g_testToResultsMap[triePath].length; i++) {
-            if (g_testToResultsMap[triePath][i].actualResults.indexOf(result) != -1) {
+            if (g_testToResultsMap[triePath][i].actualResults.indexOf(result.toUpperCase()) != -1) {
                 retVal.push(triePath);
                 break;
             }
@@ -448,16 +423,10 @@ function processTestRunsForBuilder(builderName)
             if (rawResults && rawResults[resultsIndex])
                 currentResult = rawResults[resultsIndex][RLE.VALUE];
 
-            var time = times[i][RLE.VALUE]
-
-            // Ignore times for crashing/timeout runs for the sake of seeing if
-            // a test should be marked slow.
-            if (currentResult != 'C' && currentResult != 'T')
-                resultsForTest.slowestNonTimeoutCrashTime = Math.max(resultsForTest.slowestNonTimeoutCrashTime, time);
-            resultsForTest.slowestTime = Math.max(resultsForTest.slowestTime, time);
+            resultsForTest.slowestTime = Math.max(resultsForTest.slowestTime, times[i][RLE.VALUE]);
         }
 
-        determineFlakiness(resultsForTest);
+        determineFlakiness(g_resultsByBuilder[builderName][FAILURE_MAP_KEY], resultsForTest);
         failures.push(resultsForTest);
 
         if (!g_testToResultsMap[test])
@@ -468,7 +437,7 @@ function processTestRunsForBuilder(builderName)
     g_perBuilderFailures[builderName] = failures;
 }
 
-function determineFlakiness(resultsForTest)
+function determineFlakiness(failureMap, resultsForTest)
 {
     // Heuristic for determining whether expectations apply to a given test:
     // -If a test result happens < MIN_RUNS_FOR_FLAKE, then consider it a flaky
@@ -507,7 +476,7 @@ function determineFlakiness(resultsForTest)
             continue;
         }
 
-        var expectation = expectationsFileStringForResult(result);
+        var expectation = failureMap[result];
         resultsMap[expectation] = true;
         numRealResults++;
     }
@@ -528,10 +497,11 @@ function isFailure(builder, testName, index)
 {
     var currentIndex = 0;
     var rawResults = g_resultsByBuilder[builder].tests[testName].results;
+    var failureMap = g_resultsByBuilder[builder][FAILURE_MAP_KEY];
     for (var i = 0; i < rawResults.length; i++) {
         currentIndex += rawResults[i][RLE.LENGTH];
         if (currentIndex > index)
-            return isFailingResult(rawResults[i][RLE.VALUE]);
+            return isFailingResult(failureMap, rawResults[i][RLE.VALUE]);
     }
     console.error('Index exceeds number of results: ' + index);
 }
@@ -541,11 +511,12 @@ function indexesForFailures(builder, testName)
 {
     var rawResults = g_resultsByBuilder[builder].tests[testName].results;
     var buildNumbers = g_resultsByBuilder[builder].buildNumbers;
+    var failureMap = g_resultsByBuilder[builder][FAILURE_MAP_KEY];
     var index = 0;
     var failures = [];
     for (var i = 0; i < rawResults.length; i++) {
         var numResults = rawResults[i][RLE.LENGTH];
-        if (isFailingResult(rawResults[i][RLE.VALUE])) {
+        if (isFailingResult(failureMap, rawResults[i][RLE.VALUE])) {
             for (var j = 0; j < numResults; j++)
                 failures.push(index + j);
         }
@@ -594,6 +565,11 @@ function showPopupForBuild(e, builder, index, opt_testName)
     ui.popup.show(e.target, html);
 }
 
+function classNameForFailureString(failure)
+{
+    return failure.replace(/(\+|\ )/, '');
+}
+
 function htmlForTestResults(test)
 {
     var html = '';
@@ -605,18 +581,18 @@ function htmlForTestResults(test)
 
     var indexToReplaceCurrentResult = -1;
     var indexToReplaceCurrentTime = -1;
-    var currentResultArray, currentTimeArray, currentResult, innerHTML, resultString;
     for (var i = 0; i < buildNumbers.length; i++) {
+        var currentResultArray, currentTimeArray, innerHTML, resultString;
+
         if (i > indexToReplaceCurrentResult) {
             currentResultArray = results.shift();
             if (currentResultArray) {
-                currentResult = currentResultArray[RLE.VALUE];
+                resultString = g_resultsByBuilder[builder][FAILURE_MAP_KEY][currentResultArray[RLE.VALUE]];
                 indexToReplaceCurrentResult += currentResultArray[RLE.LENGTH];
             } else {
-                currentResult = 'N';
+                resultString = NO_DATA;
                 indexToReplaceCurrentResult += buildNumbers.length;
             }
-            resultString = expectationsFileStringForResult(currentResult);
         }
 
         if (i > indexToReplaceCurrentTime) {
@@ -631,7 +607,7 @@ function htmlForTestResults(test)
             innerHTML = currentTime || '&nbsp;';
         }
 
-        html += '<td title="' + (resultString || 'NO DATA') + '. Click for more info." class="results ' + currentResult +
+        html += '<td title="' + resultString + '. Click for more info." class="results ' + classNameForFailureString(resultString) +
           '" onclick=\'showPopupForBuild(event, "' + builder + '",' + i + ',"' + test.test + '")\'>' + innerHTML;
     }
     return html;
@@ -1526,12 +1502,18 @@ function showLegend()
 
     var html = '<div id=legend-toggle onclick="hideLegend()">Hide ' +
         'legend [type esc]</div><div id=legend-contents>';
-    for (var expectation in expectationsMap())
-        html += '<div class=' + expectation + '>' + expectationsMap()[expectation] + '</div>';
+
+    // Just grab the first failureMap. Technically, different builders can have different maps if they
+    // haven't all cycled after the map was changed, but meh.
+    var failureMap = g_resultsByBuilder[Object.keys(g_resultsByBuilder)[0]][FAILURE_MAP_KEY];
+    for (var expectation in failureMap) {
+        var failureString = failureMap[expectation];
+        html += '<div class=' + classNameForFailureString(failureString) + '>' + failureString + '</div>';
+    }
 
     if (g_history.isLayoutTestResults()) {
       html += '</div><br style="clear:both">' +
-          '</div><h3>Test expectatons fallback order.</h3>';
+          '</div><h3>Test expectations fallback order.</h3>';
 
       for (var platform in g_fallbacksMap)
           html += '<div class=fallback-header>' + platform + '</div>' + htmlForFallbackHelp(g_fallbacksMap[platform]);

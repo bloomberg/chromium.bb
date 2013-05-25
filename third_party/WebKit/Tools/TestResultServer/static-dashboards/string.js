@@ -53,7 +53,7 @@ string.endsWith = function(a, b)
 
 string.isValidName = function(str)
 {
-    return str.match(/[A-Za-z0-9\-\_,]/);
+    return str.match(/[A-Za-z0-9\-\_,\+]/);
 }
 
 string.trimString = function(str)
