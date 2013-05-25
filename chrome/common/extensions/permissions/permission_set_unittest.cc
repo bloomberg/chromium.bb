@@ -689,7 +689,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kEnterprisePlatformKeysPrivate);
   skip.insert(APIPermission::kFileBrowserHandlerInternal);
   skip.insert(APIPermission::kFileBrowserPrivate);
-  skip.insert(APIPermission::kIdentityPrivate);
   skip.insert(APIPermission::kInputMethodPrivate);
   skip.insert(APIPermission::kManagedModePrivate);
   skip.insert(APIPermission::kMediaGalleriesPrivate);

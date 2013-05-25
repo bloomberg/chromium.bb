@@ -62,7 +62,6 @@
           'history.json',
           'i18n.json',
           'identity.idl',
-          'identity_private.idl',
           'idle.json',
           'managed_mode_private.json',
           'management.json',
