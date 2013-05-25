@@ -44,5 +44,7 @@ float -1.0e-1
 integer 00
 integer 01
 integer 0123
+integer 123
+integer 0x123
 
 identifier blah
