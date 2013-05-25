@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/default_theme_provider.h"
+#include "ui/base/default_theme_provider.h"
 
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
@@ -11,7 +11,7 @@
 #include "ui/base/win/shell.h"
 #endif
 
-namespace views {
+namespace ui {
 
 DefaultThemeProvider::DefaultThemeProvider() {}
 
@@ -48,4 +48,10 @@ base::RefCountedMemory* DefaultThemeProvider::GetRawData(
   return NULL;
 }
 
-}  // namespace views
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(TOOLKIT_VIEWS) && !defined(OS_ANDROID)
+GdkPixbuf* DefaultThemeProvider::GetRTLEnabledPixbufNamed(int id) const {
+  return NULL;
+}
+#endif
+
+}  // namespace ui

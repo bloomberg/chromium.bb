@@ -342,8 +342,6 @@
         'widget/aero_tooltip_manager.h',
         'widget/child_window_message_processor.cc',
         'widget/child_window_message_processor.h',
-        'widget/default_theme_provider.cc',
-        'widget/default_theme_provider.h',
         'widget/desktop_aura/desktop_activation_client.cc',
         'widget/desktop_aura/desktop_activation_client.h',
         'widget/desktop_aura/desktop_capture_client.cc',

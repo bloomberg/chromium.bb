@@ -43,6 +43,7 @@ class Rect;
 namespace ui {
 class Accelerator;
 class Compositor;
+class DefaultThemeProvider;
 class Layer;
 class NativeTheme;
 class OSExchangeData;
@@ -51,7 +52,6 @@ class ThemeProvider;
 
 namespace views {
 
-class DefaultThemeProvider;
 class DesktopRootWindowHost;
 class InputMethod;
 class NativeWidget;
@@ -760,7 +760,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   scoped_ptr<FocusManager> focus_manager_;
 
   // A theme provider to use when no other theme provider is specified.
-  scoped_ptr<DefaultThemeProvider> default_theme_provider_;
+  scoped_ptr<ui::DefaultThemeProvider> default_theme_provider_;
 
   // Valid for the lifetime of RunShellDrag(), indicates the view the drag
   // started from.

@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DEFAULT_THEME_PROVIDER_H_
-#define UI_VIEWS_WIDGET_DEFAULT_THEME_PROVIDER_H_
+#ifndef UI_BASE_DEFAULT_THEME_PROVIDER_H_
+#define UI_BASE_DEFAULT_THEME_PROVIDER_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/base/theme_provider.h"
-#include "ui/views/views_export.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
 class ResourceBundle;
 }
-using ui::ResourceBundle;
 
-namespace views {
+namespace ui {
 
-class VIEWS_EXPORT DefaultThemeProvider : public ui::ThemeProvider {
+class UI_EXPORT DefaultThemeProvider : public ThemeProvider {
  public:
   DefaultThemeProvider();
   virtual ~DefaultThemeProvider();
@@ -34,10 +33,21 @@ class VIEWS_EXPORT DefaultThemeProvider : public ui::ThemeProvider {
       int id,
       ui::ScaleFactor scale_factor) const OVERRIDE;
 
+#if defined(OS_MACOSX) && !defined(TOOLKIT_VIEWS)
+  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const OVERRIDE;
+  virtual NSColor* GetNSImageColorNamed(int id,
+                                        bool allow_default) const OVERRIDE;
+  virtual NSColor* GetNSColor(int id, bool allow_default) const OVERRIDE;
+  virtual NSColor* GetNSColorTint(int id, bool allow_default) const OVERRIDE;
+  virtual NSGradient* GetNSGradient(int id) const OVERRIDE;
+#elif defined(OS_POSIX) && !defined(TOOLKIT_VIEWS) && !defined(OS_ANDROID)
+  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const OVERRIDE;
+#endif
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultThemeProvider);
 };
 
-}  // namespace views
+}  // namespace ui
 
-#endif  // UI_VIEWS_WIDGET_DEFAULT_THEME_PROVIDER_H_
+#endif  // UI_BASE_DEFAULT_THEME_PROVIDER_H_
