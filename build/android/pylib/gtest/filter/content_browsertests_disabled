@@ -69,6 +69,10 @@ PasswordFormConversionUtilsTest.InvalidWebFormElementToPasswordForm
 RenderViewHostManagerTest.*
 
 # http://crbug.com/215894
+DownloadContentTest.CancelInterruptedDownload
+DownloadContentTest.CancelResumingDownload
+DownloadContentTest.RemoveDownload
+DownloadContentTest.RemoveResumingDownload
 DownloadContentTest.ResumeInterruptedDownload
 DownloadContentTest.ResumeInterruptedDownloadNoRange
 DownloadContentTest.ResumeInterruptedDownloadNoVerifiers
