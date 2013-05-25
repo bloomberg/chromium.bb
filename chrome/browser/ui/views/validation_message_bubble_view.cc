@@ -41,7 +41,7 @@ ValidationMessageBubbleImpl::ValidationMessageBubbleImpl(
   delegate_ = new ValidationMessageBubbleDelegate(
       anchor_in_screen, main_text, sub_text, this);
   views::BubbleDelegateView::CreateBubble(delegate_);
-  delegate_->GetWidget()->Show();
+  delegate_->GetWidget()->ShowInactive();
 }
 
 }  // namespace
