@@ -373,31 +373,17 @@ def main(argv):
                     not env.getbool('ALLOW_NEXE_BUILD_ID'))
 
     preopt_passes = []
-    if not env.getbool('ALLOW_CXX_EXCEPTIONS'):
+    if abi_simplify:
+      preopt_passes += ['-pnacl-abi-simplify-preopt']
+    elif not env.getbool('ALLOW_CXX_EXCEPTIONS'):
       # '-lowerinvoke' prevents use of C++ exception handling, which
       # is not yet supported in the PNaCl ABI.  '-simplifycfg' removes
       # landingpad blocks made unreachable by '-lowerinvoke'.
       #
-      # We must run this even if abi_simplify is False in order to
-      # remove 'resume' instructions, otherwise these are translated
-      # to calls to _Unwind_Resume(), which will not be available at
-      # native link time.
+      # We run this in order to remove 'resume' instructions,
+      # otherwise these are translated to calls to _Unwind_Resume(),
+      # which will not be available at native link time.
       preopt_passes += ['-lowerinvoke', '-simplifycfg']
-    if abi_simplify:
-      # TODO(mseaborn): Replace this list with
-      # '-pnacl-abi-simplify-preopt' when it is added on the LLVM side.
-      preopt_passes += [
-          '-expand-varargs',
-          '-nacl-expand-ctors',
-          '-resolve-aliases',
-          '-nacl-expand-tls',
-          # Global cleanup needs to run after expand-tls because
-          # __tls_template_start etc are extern_weak before expansion
-          '-nacl-global-cleanup',
-          # Strip dead prototytes to appease the intrinsic ABI checks
-          # (expand-varargs leaves around var-arg intrinsics).
-          '-strip-dead-prototypes',
-          ]
     elif env.getbool('STATIC'):
       # On x86-64, the native linker's TLS templates are not
       # compatible with src/untrusted/nacl/tls.c because tls.c expects
@@ -415,22 +401,7 @@ def main(argv):
       chain.add(DoStrip, 'stripped.' + bitcode_type)
 
     if abi_simplify:
-      # We should not place arbitrary passes after
-      # '-expand-constant-expr' because they might reintroduce
-      # ConstantExprs.  However, '-expand-getelementptr' must follow
-      # '-expand-constant-expr' to expand the getelementptr
-      # instructions it creates.
-      # We place '-strip-metadata' after optimization passes since
-      # optimizations depend on the metadata.
-      # TODO(mseaborn): Replace this list with
-      # '-pnacl-abi-simplify-postopt' when it is added on the LLVM side.
-      postopt_passes = [
-          '-expand-byval',
-          '-strip-metadata',
-          '-flatten-globals',
-          '-expand-constant-expr',
-          '-expand-getelementptr',
-          ]
+      postopt_passes = ['-pnacl-abi-simplify-postopt']
       if not env.getbool('DISABLE_ABI_CHECK'):
         postopt_passes += [
             '-verify-pnaclabi-module',
