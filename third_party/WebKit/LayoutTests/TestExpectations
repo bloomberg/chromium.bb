@@ -150,11 +150,6 @@ webkit.org/b/60830 editing/pasteboard/smart-paste-in-text-control.html [ Crash F
 # We expect V8 to crash in an orderly fashion instead of throwing a JavaScript out-of-memory error.
 webkit.org/b/103348 fast/js/string-replacement-outofmemory.html [ Crash ]
 
-# These tests are based on the JSC JavaScript profiler. The V8 JavaScript
-# profiler is in development and will use a different approach than JSC and
-# most likely these tests will always be JSC specific.
-crbug.com/226949 fast/profiler [ Skip ]
-
 # test_shell does not support shared workers
 crbug.com/233066 fast/filesystem/workers/file-writer-events-shared-worker.html [ Skip ]
 crbug.com/233066 fast/workers/shared-worker-context-gc.html [ Skip ]
