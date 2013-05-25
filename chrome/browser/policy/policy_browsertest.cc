@@ -32,6 +32,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
@@ -153,6 +154,10 @@ const char kHostedAppCrxId[] = "kbmnembihfiondgfjekmnmcbddelicoi";
 
 const base::FilePath::CharType kGoodCrxManifestName[] =
     FILE_PATH_LITERAL("good_update_manifest.xml");
+const base::FilePath::CharType kGoodUnpackedExt[] =
+    FILE_PATH_LITERAL("good_unpacked");
+const base::FilePath::CharType kAppUnpackedExt[] =
+    FILE_PATH_LITERAL("app");
 
 // Filters requests to the hosts in |urls| and redirects them to the test data
 // dir through URLRequestMockHTTPJobs.
@@ -429,6 +434,7 @@ class PolicyTest : public InProcessBrowserTest {
   virtual ~PolicyTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch("noerrdialogs");
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     EXPECT_CALL(provider_, RegisterPolicyDomain(_)).Times(AnyNumber());
@@ -546,6 +552,20 @@ class PolicyTest : public InProcessBrowserTest {
     observer.Wait();
     content::Details<const extensions::Extension> details = observer.details();
     return details.ptr();
+  }
+
+  void LoadUnpackedExtension(
+      const base::FilePath::StringType& name, bool expect_success) {
+    base::FilePath extension_path(ui_test_utils::GetTestFilePath(
+        base::FilePath(kTestExtensionsDir), base::FilePath(name)));
+    scoped_refptr<extensions::UnpackedInstaller> installer =
+        extensions::UnpackedInstaller::Create(extension_service());
+    content::WindowedNotificationObserver observer(
+        expect_success ? chrome::NOTIFICATION_EXTENSION_LOADED
+                       : chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
+        content::NotificationService::AllSources());
+    installer->Load(extension_path);
+    observer.Wait();
   }
 
   void UninstallExtension(const std::string& id, bool expect_success) {
@@ -1309,6 +1329,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
 
   // The user is not allowed to uninstall force-installed extensions.
   UninstallExtension(kGoodCrxId, false);
+
+  // The user is not allowed to load an unpacked extension with the
+  // same ID as a force-installed extension.
+  LoadUnpackedExtension(kGoodUnpackedExt, false);
+
+  // Loading other unpacked extensions are not blocked.
+  LoadUnpackedExtension(kAppUnpackedExt, true);
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {

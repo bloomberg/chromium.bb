@@ -60,6 +60,12 @@ bool UserMayLoad(const base::ListValue* blacklist,
   if (extension->location() == Manifest::COMPONENT)
     return true;
 
+  // Forced installed extensions cannot be overwritten manually.
+  if (extension->location() != Manifest::EXTERNAL_POLICY_DOWNLOAD &&
+      forcelist && forcelist->HasKey(extension->id())) {
+    return ReturnLoadError(extension, error);
+  }
+
   // Early exit for the common case of no policy restrictions.
   if ((!blacklist || blacklist->empty()) && (!allowed_types))
     return true;
