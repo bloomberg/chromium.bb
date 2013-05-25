@@ -167,6 +167,9 @@ namespace extension_misc {
   // The extension id of the Youtube application.
   extern const char kYoutubeAppId[];
 
+  // The extension id of the Identity API UI application.
+  extern const char kIdentityApiUiAppId[];
+
   // The extension id of the in-app payments support application.
   extern const char kInAppPaymentsSupportAppId[];
 

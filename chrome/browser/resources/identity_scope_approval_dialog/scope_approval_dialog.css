@@ -1,0 +1,31 @@
+/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.titlebar {
+  -webkit-app-region: drag;
+  background-color: white;
+  border-bottom: 1px solid #e5e5e5;
+  height: 26px;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.titlebar-close-button {
+  -webkit-app-region: no-drag;
+  height: 14px;
+  margin: 6px;
+  position: absolute;
+  right: 0;
+  width: 14px;
+}
+
+.content {
+  height: auto;
+  width: 100%;
+}
