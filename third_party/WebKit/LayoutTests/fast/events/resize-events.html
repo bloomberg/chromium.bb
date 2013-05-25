@@ -27,16 +27,16 @@
             testRunner.dumpAsText();
             testRunner.waitUntilDone();
         }
-
-        var blockcount = 0;
+        function test() {
+            setTimeout(addBlock, 20);
+        }
         function addBlock() {
-            var el = document.createElement('div');
-            el.setAttribute('class','block');
-            document.getElementById('expandingblock').appendChild(el);
-            if (++blockcount < 10)
-                setTimeout(addBlock, 20);
-            else
-                finish();
+            for (var i = 0; i < 10; i++) {
+                var el = document.createElement('div');
+                el.setAttribute('class','block');
+                document.getElementById('expandingblock').appendChild(el);
+            }
+            setTimeout(finish, 20);
         }
         function finish() {
             var result;
@@ -50,6 +50,6 @@
             if (window.testRunner)
                 testRunner.notifyDone();
         }
-        onload = addBlock;
+        onload = test;
     </script>
 </body>
