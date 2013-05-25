@@ -16,6 +16,10 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/display.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/display/output_configurator.h"
+#endif
+
 namespace gfx {
 class Display;
 class Insets;
@@ -35,7 +39,11 @@ namespace internal {
 // This is exported for unittest.
 //
 // TODO(oshima): Make this non internal.
-class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
+class ASH_EXPORT DisplayManager :
+#if defined(OS_CHROMEOS)
+      public chromeos::OutputConfigurator::SoftwareMirroringController,
+#endif
+      public aura::RootWindowObserver {
  public:
   DisplayManager();
   virtual ~DisplayManager();
@@ -173,8 +181,12 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   virtual void OnRootWindowResized(const aura::RootWindow* root,
                                    const gfx::Size& new_size) OVERRIDE;
 
-  // TODO(oshima): This will be SoftwareMirroringController override:
+  // SoftwareMirroringController override:
+#if defined(OS_CHROMEOS)
+  virtual void SetSoftwareMirroring(bool enabled) OVERRIDE;
+#else
   void SetSoftwareMirroring(bool enabled);
+#endif
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);

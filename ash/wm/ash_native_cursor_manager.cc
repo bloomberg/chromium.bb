@@ -4,6 +4,7 @@
 
 #include "ash/wm/ash_native_cursor_manager.h"
 
+#include "ash/display/mirror_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/image_cursors.h"
 #include "base/logging.h"
@@ -11,35 +12,42 @@
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor.h"
 
+namespace ash {
 namespace  {
 
 void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
-  ash::Shell::RootWindowList root_windows =
-      ash::Shell::GetInstance()->GetAllRootWindows();
-  for (ash::Shell::RootWindowList::iterator iter = root_windows.begin();
+  Shell::RootWindowList root_windows =
+      Shell::GetInstance()->GetAllRootWindows();
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter)
     (*iter)->SetCursor(cursor);
+#if defined(OS_CHROMEOS)
+  Shell::GetInstance()->mirror_window_controller()->SetMirroredCursor(cursor);
+#endif
 }
 
 void NotifyCursorVisibilityChange(bool visible) {
-  ash::Shell::RootWindowList root_windows =
-      ash::Shell::GetInstance()->GetAllRootWindows();
-  for (ash::Shell::RootWindowList::iterator iter = root_windows.begin();
+  Shell::RootWindowList root_windows =
+      Shell::GetInstance()->GetAllRootWindows();
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter)
     (*iter)->OnCursorVisibilityChanged(visible);
+#if defined(OS_CHROMEOS)
+  Shell::GetInstance()->mirror_window_controller()->
+      SetMirroredCursorVisibility(visible);
+#endif
 }
 
 void NotifyMouseEventsEnableStateChange(bool enabled) {
-  ash::Shell::RootWindowList root_windows =
-      ash::Shell::GetInstance()->GetAllRootWindows();
-  for (ash::Shell::RootWindowList::iterator iter = root_windows.begin();
+  Shell::RootWindowList root_windows =
+      Shell::GetInstance()->GetAllRootWindows();
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter)
     (*iter)->OnMouseEventsEnableStateChanged(enabled);
+  // Mirror window never process events.
 }
 
 }  // namespace
-
-namespace ash {
 
 AshNativeCursorManager::AshNativeCursorManager()
     : image_cursors_(new ImageCursors) {

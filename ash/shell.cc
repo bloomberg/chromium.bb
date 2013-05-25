@@ -425,6 +425,8 @@ bool Shell::IsForcedMaximizeMode() {
 }
 
 void Shell::Init() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
   delegate_->PreInit();
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   output_configurator_animation_.reset(
@@ -438,6 +440,8 @@ void Shell::Init() {
     display_error_observer_.reset(new internal::DisplayErrorObserver());
     output_configurator_->AddObserver(display_error_observer_.get());
     output_configurator_->set_state_controller(display_change_observer_.get());
+    if (command_line->HasSwitch(ash::switches::kAshEnableSoftwareMirroring))
+      output_configurator_->set_mirroring_controller(display_manager_.get());
     output_configurator_->Start();
     display_change_observer_->OnDisplayModeChanged();
   }
@@ -525,8 +529,6 @@ void Shell::Init() {
   root_window_controller->CreateContainers();
   root_window_controller->CreateSystemBackground(
       delegate_->IsFirstRunAfterBoot());
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(ash::switches::kAshDisableNewLockAnimations))
     session_state_controller_.reset(new SessionStateControllerImpl);

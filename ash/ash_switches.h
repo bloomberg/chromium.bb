@@ -37,6 +37,9 @@ ASH_EXPORT extern const char kAshDragAndDropAppListToLauncher[];
 ASH_EXPORT extern const char kAshEnableAudioDeviceMenu[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
+#if defined(OS_CHROMEOS)
+ASH_EXPORT extern const char kAshEnableSoftwareMirroring[];
+#endif
 #if defined(OS_LINUX)
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif

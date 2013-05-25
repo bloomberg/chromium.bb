@@ -165,6 +165,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
   root_window_->ShowRootWindow();
 
   cursor_window_ = new aura::Window(cursor_window_delegate_.get());
+  cursor_window_->SetTransparent(true);
   cursor_window_->Init(ui::LAYER_TEXTURED);
   root_window_->AddChild(cursor_window_);
   cursor_window_->Show();

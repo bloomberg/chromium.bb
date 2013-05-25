@@ -5,6 +5,7 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/display/mirror_window_controller.h"
 #include "ash/display/shared_display_edge_indicator.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
@@ -78,6 +79,7 @@ void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
       event->type() != ui::ET_MOUSE_DRAGGED) {
       return;
   }
+  Shell::GetInstance()->mirror_window_controller()->UpdateCursorLocation();
 
   gfx::Point point_in_screen(event->location());
   aura::Window* target = static_cast<aura::Window*>(event->target());

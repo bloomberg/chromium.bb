@@ -84,6 +84,11 @@ const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
 // Enable immersive fullscreen mode, regardless of default setting.
 const char kAshEnableImmersiveFullscreen[] = "ash-enable-immersive-fullscreen";
 
+#if defined(OS_CHROMEOS)
+// Enable compositor based mirroring.
+const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
+#endif
+
 #if defined(OS_LINUX)
 // Enable memory monitoring.
 const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
