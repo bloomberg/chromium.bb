@@ -84,9 +84,9 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   virtual void Drain(HttpNetworkSession* session) OVERRIDE;
 
   // SpdyStream::Delegate implementation.
-  virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
+  virtual SpdySendStatus OnSendRequestHeadersComplete() OVERRIDE;
   virtual void OnSendBody() OVERRIDE;
-  virtual SpdySendStatus OnSendBodyComplete() OVERRIDE;
+  virtual void OnSendBodyComplete() OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
                                  int status) OVERRIDE;

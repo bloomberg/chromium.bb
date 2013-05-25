@@ -56,22 +56,33 @@ class NET_EXPORT_PRIVATE SpdyStream {
    public:
     Delegate() {}
 
-    // Called when SYN frame has been sent.  Must return whether
-    // there's body data to send.
-    virtual SpdySendStatus OnSendHeadersComplete() = 0;
+    // Called when the request headers have been sent.  Must return
+    // whether there's body data to send.
+    //
+    // There's some redundancy in SendRequestHeaders() taking a
+    // SpdySendStatus and this function returning one, but it's
+    // necessary. Bidirectional streams always pass in
+    // MORE_DATA_TO_SEND to SendRequestHeaders() but must return
+    // NO_MORE_DATA_TO_SEND from OnSendRequestHeadersComplete(), while
+    // request/response streams always return the same value from
+    // OnSendRequestHeadersComplete() as the one they pass into
+    // SendRequestHeaders().
+    //
+    // TODO(akalin): Have a less subtle way of differentiating
+    // request/response streams from bidirectional ones.
+    virtual SpdySendStatus OnSendRequestHeadersComplete() = 0;
 
     // Called when the stream is ready to send body data.  The
     // delegate must call SendStreamData() on the stream, either
     // immediately or asynchronously (e.g., if the data to be send has
     // to be read asynchronously).
     //
-    // Called only when OnSendHeadersComplete() or
+    // Called only when OnSendRequestHeadersComplete() or
     // OnSendBodyComplete() returns MORE_DATA_TO_SEND.
     virtual void OnSendBody() = 0;
 
-    // Called when body data has been sent. Must return whether
-    // there's more body data to send.
-    virtual SpdySendStatus OnSendBodyComplete() = 0;
+    // Called when body data has been sent.
+    virtual void OnSendBodyComplete() = 0;
 
     // Called when the SYN_STREAM, SYN_REPLY, or HEADERS frames are received.
     // Normal streams will receive a SYN_REPLY and optional HEADERS frames.
@@ -287,19 +298,16 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // TODO(akalin): Mandate that only one send can be in flight at one
   // time.
 
-  // Sends the request.
+  // Sends the request headers.
   // For non push stream, it will send SYN_STREAM frame.
-  int SendRequest(scoped_ptr<SpdyHeaderBlock> headers, bool has_upload_data);
+  int SendRequestHeaders(scoped_ptr<SpdyHeaderBlock> headers,
+                         SpdySendStatus send_status);
 
   // Sends a DATA frame. The delegate will be notified via
   // OnSendBodyComplete() (if the response hasn't been received yet)
   // or OnDataSent() (if the response has been received) when the send
   // is complete. Only one data send can be in flight at one time.
-  //
-  // |flags| must be DATA_FLAG_NONE except for the last piece of data
-  // for a request in a request/response stream, where it should be
-  // DATA_FLAG_FIN.
-  void SendStreamData(IOBuffer* data, int length, SpdyDataFlags flags);
+  void SendStreamData(IOBuffer* data, int length, SpdySendStatus send_status);
 
   // Fills SSL info in |ssl_info| and returns true when SSL is in use.
   bool GetSSLInfo(SSLInfo* ssl_info,
@@ -345,8 +353,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
     STATE_GET_DOMAIN_BOUND_CERT_COMPLETE,
     STATE_SEND_DOMAIN_BOUND_CERT,
     STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE,
-    STATE_SEND_HEADERS,
-    STATE_SEND_HEADERS_COMPLETE,
+    STATE_SEND_REQUEST_HEADERS,
+    STATE_SEND_REQUEST_HEADERS_COMPLETE,
     STATE_SEND_BODY,
     STATE_SEND_BODY_COMPLETE,
     STATE_WAITING_FOR_RESPONSE,
@@ -364,8 +372,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
   int DoGetDomainBoundCertComplete(int result);
   int DoSendDomainBoundCert();
   int DoSendDomainBoundCertComplete(int result);
-  int DoSendHeaders();
-  int DoSendHeadersComplete();
+  int DoSendRequestHeaders();
+  int DoSendRequestHeadersComplete();
   int DoSendBody();
   int DoSendBodyComplete(int result);
   int DoReadHeaders();
@@ -432,12 +440,14 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // The transaction should own the delegate.
   SpdyStream::Delegate* delegate_;
 
-  // The request to send.
+  // Whether or not we have more data to send on this stream.
+  SpdySendStatus send_status_;
+
+  // The headers for the request to send.
   scoped_ptr<SpdyHeaderBlock> request_;
 
   // The data waiting to be sent.
   scoped_refptr<DrainableIOBuffer> pending_send_data_;
-  SpdyDataFlags pending_send_flags_;
 
   // The time at which the request was made that resulted in this response.
   // For cached responses, this time could be "far" in the past.
@@ -451,8 +461,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // Since we buffer the response, we also buffer the response status.
   // Not valid until the stream is closed.
   int response_status_;
-
-  bool has_upload_data_;
 
   BoundNetLog net_log_;
 

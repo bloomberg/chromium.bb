@@ -263,7 +263,10 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   stream_->net_log().AddEvent(
       NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS,
       base::Bind(&SpdyHeaderBlockNetLogCallback, headers.get()));
-  result = stream_->SendRequest(headers.Pass(), has_upload_data_);
+  result =
+      stream_->SendRequestHeaders(
+          headers.Pass(),
+          has_upload_data_ ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
   if (result == ERR_IO_PENDING) {
     CHECK(callback_.is_null());
     callback_ = callback;
@@ -279,7 +282,7 @@ void SpdyHttpStream::Cancel() {
   }
 }
 
-SpdySendStatus SpdyHttpStream::OnSendHeadersComplete() {
+SpdySendStatus SpdyHttpStream::OnSendRequestHeadersComplete() {
   if (!callback_.is_null())
     DoCallback(OK);
   return has_upload_data_ ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND;
@@ -296,14 +299,10 @@ void SpdyHttpStream::OnSendBody() {
   }
 }
 
-SpdySendStatus SpdyHttpStream::OnSendBodyComplete() {
+void SpdyHttpStream::OnSendBodyComplete() {
   // |status| is the number of bytes written to the SPDY stream.
   CHECK(request_info_ && request_info_->upload_data_stream);
   raw_request_body_buf_size_ = 0;
-
-  // Check for more data to send.
-  return request_info_->upload_data_stream->IsEOF() ?
-      NO_MORE_DATA_TO_SEND : MORE_DATA_TO_SEND;
 }
 
 int SpdyHttpStream::OnResponseReceived(const SpdyHeaderBlock& response,
@@ -456,7 +455,7 @@ void SpdyHttpStream::SendRequestBodyData() {
   }
   stream_->SendStreamData(raw_request_body_buf_,
                           raw_request_body_buf_size_,
-                          eof ? DATA_FLAG_FIN : DATA_FLAG_NONE);
+                          eof ? NO_MORE_DATA_TO_SEND : MORE_DATA_TO_SEND);
 }
 
 void SpdyHttpStream::ScheduleBufferedReadCallback() {

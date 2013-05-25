@@ -226,7 +226,7 @@ int SpdyProxyClientSocket::Write(IOBuffer* buf, int buf_len,
     return ERR_SOCKET_NOT_CONNECTED;
 
   DCHECK(spdy_stream_);
-  spdy_stream_->SendStreamData(buf, buf_len, DATA_FLAG_NONE);
+  spdy_stream_->SendStreamData(buf, buf_len, MORE_DATA_TO_SEND);
   net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT,
                                 buf_len, buf->data());
   write_callback_ = callback;
@@ -369,7 +369,7 @@ int SpdyProxyClientSocket::DoSendRequest() {
     headers->erase("scheme");
   }
 
-  return spdy_stream_->SendRequest(headers.Pass(), true);
+  return spdy_stream_->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND);
 }
 
 int SpdyProxyClientSocket::DoSendRequestComplete(int result) {
@@ -435,7 +435,7 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
 // SpdyStream::Delegate methods:
 // Called when SYN frame has been sent.
 // Returns true if no more data to be sent after SYN frame.
-SpdySendStatus SpdyProxyClientSocket::OnSendHeadersComplete() {
+SpdySendStatus SpdyProxyClientSocket::OnSendRequestHeadersComplete() {
   DCHECK_EQ(next_state_, STATE_SEND_REQUEST_COMPLETE);
 
   OnIOComplete(OK);
@@ -451,11 +451,10 @@ void SpdyProxyClientSocket::OnSendBody() {
   CHECK(false);
 }
 
-SpdySendStatus SpdyProxyClientSocket::OnSendBodyComplete() {
+void SpdyProxyClientSocket::OnSendBodyComplete() {
   // Because we use |spdy_stream_| via STATE_OPEN (ala WebSockets)
   // OnSendBodyComplete() must never be called.
   CHECK(false);
-  return NO_MORE_DATA_TO_SEND;
 }
 
 int SpdyProxyClientSocket::OnResponseReceived(

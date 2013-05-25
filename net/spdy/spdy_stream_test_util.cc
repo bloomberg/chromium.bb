@@ -20,7 +20,7 @@ ClosingDelegate::ClosingDelegate(
 
 ClosingDelegate::~ClosingDelegate() {}
 
-SpdySendStatus ClosingDelegate::OnSendHeadersComplete() {
+SpdySendStatus ClosingDelegate::OnSendRequestHeadersComplete() {
   return NO_MORE_DATA_TO_SEND;
 }
 
@@ -28,9 +28,7 @@ void ClosingDelegate::OnSendBody() {
   ADD_FAILURE() << "OnSendBody should not be called";
 }
 
-SpdySendStatus ClosingDelegate::OnSendBodyComplete() {
-  return NO_MORE_DATA_TO_SEND;
-}
+void ClosingDelegate::OnSendBodyComplete() {}
 
 int ClosingDelegate::OnResponseReceived(const SpdyHeaderBlock& response,
                                         base::Time response_time,
@@ -60,7 +58,7 @@ StreamDelegateBase::StreamDelegateBase(
 StreamDelegateBase::~StreamDelegateBase() {
 }
 
-SpdySendStatus StreamDelegateBase::OnSendHeadersComplete() {
+SpdySendStatus StreamDelegateBase::OnSendRequestHeadersComplete() {
   stream_id_ = stream_->stream_id();
   EXPECT_NE(stream_id_, 0u);
   send_headers_completed_ = true;
@@ -125,9 +123,7 @@ void StreamDelegateDoNothing::OnSendBody() {
   ADD_FAILURE() << "OnSendBody should not be called";
 }
 
-SpdySendStatus StreamDelegateDoNothing::OnSendBodyComplete() {
-  return NO_MORE_DATA_TO_SEND;
-}
+void StreamDelegateDoNothing::OnSendBodyComplete() {}
 
 StreamDelegateSendImmediate::StreamDelegateSendImmediate(
     const base::WeakPtr<SpdyStream>& stream,
@@ -142,9 +138,8 @@ void StreamDelegateSendImmediate::OnSendBody() {
   ADD_FAILURE() << "OnSendBody should not be called";
 }
 
-SpdySendStatus StreamDelegateSendImmediate::OnSendBodyComplete() {
+void StreamDelegateSendImmediate::OnSendBodyComplete() {
   ADD_FAILURE() << "OnSendBodyComplete should not be called";
-  return NO_MORE_DATA_TO_SEND;
 }
 
 int StreamDelegateSendImmediate::OnResponseReceived(
@@ -155,7 +150,7 @@ int StreamDelegateSendImmediate::OnResponseReceived(
       StreamDelegateBase::OnResponseReceived(response, response_time, status);
   if (data_.data()) {
     scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(data_.as_string()));
-    stream()->SendStreamData(buf, buf->size(), DATA_FLAG_NONE);
+    stream()->SendStreamData(buf, buf->size(), MORE_DATA_TO_SEND);
   }
   return status;
 }
@@ -169,18 +164,16 @@ StreamDelegateWithBody::StreamDelegateWithBody(
 StreamDelegateWithBody::~StreamDelegateWithBody() {
 }
 
-SpdySendStatus StreamDelegateWithBody::OnSendHeadersComplete() {
-  StreamDelegateBase::OnSendHeadersComplete();
+SpdySendStatus StreamDelegateWithBody::OnSendRequestHeadersComplete() {
+  StreamDelegateBase::OnSendRequestHeadersComplete();
   return MORE_DATA_TO_SEND;
 }
 
 void StreamDelegateWithBody::OnSendBody() {
-  stream()->SendStreamData(buf_.get(), buf_->size(), DATA_FLAG_NONE);
+  stream()->SendStreamData(buf_.get(), buf_->size(), NO_MORE_DATA_TO_SEND);
 }
 
-SpdySendStatus StreamDelegateWithBody::OnSendBodyComplete() {
-  return NO_MORE_DATA_TO_SEND;
-}
+void StreamDelegateWithBody::OnSendBodyComplete() {}
 
 } // namespace test
 

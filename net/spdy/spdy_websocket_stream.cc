@@ -56,7 +56,7 @@ int SpdyWebSocketStream::SendRequest(scoped_ptr<SpdyHeaderBlock> headers) {
     NOTREACHED();
     return ERR_UNEXPECTED;
   }
-  int result = stream_->SendRequest(headers.Pass(), true);
+  int result = stream_->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND);
   if (result < OK && result != ERR_IO_PENDING)
     Close();
   return result;
@@ -71,7 +71,7 @@ int SpdyWebSocketStream::SendData(const char* data, int length) {
   pending_send_data_length_ = static_cast<size_t>(length);
   scoped_refptr<IOBuffer> buf(new IOBuffer(length));
   memcpy(buf->data(), data, length);
-  stream_->SendStreamData(buf.get(), length, DATA_FLAG_NONE);
+  stream_->SendStreamData(buf.get(), length, MORE_DATA_TO_SEND);
   return ERR_IO_PENDING;
 }
 
@@ -82,7 +82,7 @@ void SpdyWebSocketStream::Close() {
   }
 }
 
-SpdySendStatus SpdyWebSocketStream::OnSendHeadersComplete() {
+SpdySendStatus SpdyWebSocketStream::OnSendRequestHeadersComplete() {
   DCHECK(delegate_);
   delegate_->OnSentSpdyHeaders();
   return NO_MORE_DATA_TO_SEND;
@@ -92,9 +92,8 @@ void SpdyWebSocketStream::OnSendBody() {
   CHECK(false);
 }
 
-SpdySendStatus SpdyWebSocketStream::OnSendBodyComplete() {
+void SpdyWebSocketStream::OnSendBodyComplete() {
   CHECK(false);
-  return NO_MORE_DATA_TO_SEND;
 }
 
 int SpdyWebSocketStream::OnResponseReceived(

@@ -137,7 +137,8 @@ TEST_F(SpdyStreamSpdy3Test, SendDataAfterOpen) {
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
@@ -252,7 +253,8 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
@@ -297,11 +299,14 @@ TEST_F(SpdyStreamSpdy3Test, SendLargeDataAfterOpenRequestResponse) {
   scoped_ptr<SpdyFrame> chunk(
       ConstructSpdyBodyFrame(
           1, chunk_data.data(), chunk_data.length(), false));
+  scoped_ptr<SpdyFrame> last_chunk(
+      ConstructSpdyBodyFrame(
+          1, chunk_data.data(), chunk_data.length(), true));
   MockWrite writes[] = {
     CreateMockWrite(*req, 0),
     CreateMockWrite(*chunk, 1),
     CreateMockWrite(*chunk, 2),
-    CreateMockWrite(*chunk, 3),
+    CreateMockWrite(*last_chunk, 3),
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructSpdyPostSynReply(NULL, 0));
@@ -332,7 +337,8 @@ TEST_F(SpdyStreamSpdy3Test, SendLargeDataAfterOpenRequestResponse) {
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
@@ -394,7 +400,8 @@ TEST_F(SpdyStreamSpdy3Test, SendLargeDataAfterOpenBidirectional) {
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
@@ -451,7 +458,8 @@ TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
@@ -511,7 +519,7 @@ void SpdyStreamSpdy3Test::RunResumeAfterUnstallRequestResponseTest(
   scoped_ptr<SpdyFrame> req(
       ConstructSpdyPost(kStreamUrl, 1, kPostBodyLength, LOWEST, NULL, 0));
   scoped_ptr<SpdyFrame> body(
-      ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, false));
+      ConstructSpdyBodyFrame(1, kPostBody, kPostBodyLength, true));
   MockWrite writes[] = {
     CreateMockWrite(*req, 0),
     CreateMockWrite(*body, 1),
@@ -546,7 +554,8 @@ void SpdyStreamSpdy3Test::RunResumeAfterUnstallRequestResponseTest(
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 
@@ -631,7 +640,8 @@ void SpdyStreamSpdy3Test::RunResumeAfterUnstallBidirectionalTest(
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kPostBodyLength));
-  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(headers.Pass(), true));
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrl());
   EXPECT_EQ(kStreamUrl, stream->GetUrl().spec());
 

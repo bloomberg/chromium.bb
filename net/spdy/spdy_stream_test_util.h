@@ -26,9 +26,9 @@ class ClosingDelegate : public SpdyStream::Delegate {
   virtual ~ClosingDelegate();
 
   // SpdyStream::Delegate implementation.
-  virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
+  virtual SpdySendStatus OnSendRequestHeadersComplete() OVERRIDE;
   virtual void OnSendBody() OVERRIDE;
-  virtual SpdySendStatus OnSendBodyComplete() OVERRIDE;
+  virtual void OnSendBodyComplete() OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
                                  int status) OVERRIDE;
@@ -50,9 +50,9 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   explicit StreamDelegateBase(const base::WeakPtr<SpdyStream>& stream);
   virtual ~StreamDelegateBase();
 
-  virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
+  virtual SpdySendStatus OnSendRequestHeadersComplete() OVERRIDE;
   virtual void OnSendBody() = 0;
-  virtual SpdySendStatus OnSendBodyComplete() = 0;
+  virtual void OnSendBodyComplete() = 0;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
                                  int status) OVERRIDE;
@@ -98,7 +98,7 @@ class StreamDelegateDoNothing : public StreamDelegateBase {
   virtual ~StreamDelegateDoNothing();
 
   virtual void OnSendBody() OVERRIDE;
-  virtual SpdySendStatus OnSendBodyComplete() OVERRIDE;
+  virtual void OnSendBodyComplete() OVERRIDE;
 };
 
 // Test delegate that sends data immediately in OnResponseReceived().
@@ -110,7 +110,7 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
   virtual ~StreamDelegateSendImmediate();
 
   virtual void OnSendBody() OVERRIDE;
-  virtual SpdySendStatus OnSendBodyComplete() OVERRIDE;
+  virtual void OnSendBodyComplete() OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
                                  base::Time response_time,
                                  int status) OVERRIDE;
@@ -126,9 +126,9 @@ class StreamDelegateWithBody : public StreamDelegateBase {
                          base::StringPiece data);
   virtual ~StreamDelegateWithBody();
 
-  virtual SpdySendStatus OnSendHeadersComplete() OVERRIDE;
+  virtual SpdySendStatus OnSendRequestHeadersComplete() OVERRIDE;
   virtual void OnSendBody() OVERRIDE;
-  virtual SpdySendStatus OnSendBodyComplete() OVERRIDE;
+  virtual void OnSendBodyComplete() OVERRIDE;
 
  private:
   scoped_refptr<StringIOBuffer> buf_;

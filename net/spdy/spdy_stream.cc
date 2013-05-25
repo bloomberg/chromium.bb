@@ -100,12 +100,11 @@ SpdyStream::SpdyStream(SpdySession* session,
       response_received_(false),
       session_(session),
       delegate_(NULL),
-      pending_send_flags_(DATA_FLAG_NONE),
+      send_status_(MORE_DATA_TO_SEND),
       request_time_(base::Time::Now()),
       response_(new SpdyHeaderBlock),
       io_state_(STATE_NONE),
       response_status_(OK),
-      has_upload_data_(false),
       net_log_(net_log),
       send_bytes_(0),
       recv_bytes_(0),
@@ -175,12 +174,13 @@ void SpdyStream::PushedStreamReplayData() {
 }
 
 scoped_ptr<SpdyFrame> SpdyStream::ProduceSynStreamFrame() {
-  CHECK_EQ(io_state_, STATE_SEND_HEADERS_COMPLETE);
+  CHECK_EQ(io_state_, STATE_SEND_REQUEST_HEADERS_COMPLETE);
   CHECK(request_.get());
   CHECK_GT(stream_id_, 0u);
 
   SpdyControlFlags flags =
-      has_upload_data_ ? CONTROL_FLAG_NONE : CONTROL_FLAG_FIN;
+      (send_status_ == NO_MORE_DATA_TO_SEND) ?
+      CONTROL_FLAG_FIN : CONTROL_FLAG_NONE;
   scoped_ptr<SpdyFrame> frame(session_->CreateSynStream(
       stream_id_, priority_, slot_, flags, *request_));
   send_time_ = base::TimeTicks::Now();
@@ -561,18 +561,18 @@ void SpdyStream::Close() {
   }
 }
 
-int SpdyStream::SendRequest(scoped_ptr<SpdyHeaderBlock> headers,
-                            bool has_upload_data) {
-  DCHECK(!request_);
+int SpdyStream::SendRequestHeaders(scoped_ptr<SpdyHeaderBlock> headers,
+                                   SpdySendStatus send_status) {
+  CHECK_EQ(send_status_, MORE_DATA_TO_SEND);
+  CHECK(!request_);
   request_ = headers.Pass();
-
   // Pushed streams do not send any data, and should always be
   // idle. However, we still want to return IO_PENDING to mimic
   // non-push behavior.
-  has_upload_data_ = has_upload_data;
+  send_status_ = send_status;
   if (pushed_) {
     DCHECK(is_idle());
-    DCHECK(!has_upload_data_);
+    DCHECK_EQ(send_status_, NO_MORE_DATA_TO_SEND);
     DCHECK(response_received());
     send_time_ = base::TimeTicks::Now();
     return ERR_IO_PENDING;
@@ -584,10 +584,11 @@ int SpdyStream::SendRequest(scoped_ptr<SpdyHeaderBlock> headers,
 
 void SpdyStream::SendStreamData(IOBuffer* data,
                                 int length,
-                                SpdyDataFlags flags) {
+                                SpdySendStatus send_status) {
+  CHECK_EQ(send_status_, MORE_DATA_TO_SEND);
   CHECK(!pending_send_data_);
   pending_send_data_ = new DrainableIOBuffer(data, length);
-  pending_send_flags_ = flags;
+  send_status_ = send_status;
   QueueNextDataFrame();
 }
 
@@ -660,13 +661,13 @@ int SpdyStream::DoLoop(int result) {
       case STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE:
         result = DoSendDomainBoundCertComplete(result);
         break;
-      case STATE_SEND_HEADERS:
+      case STATE_SEND_REQUEST_HEADERS:
         CHECK_EQ(result, OK);
-        result = DoSendHeaders();
+        result = DoSendRequestHeaders();
         break;
-      case STATE_SEND_HEADERS_COMPLETE:
+      case STATE_SEND_REQUEST_HEADERS_COMPLETE:
         CHECK_EQ(result, OK);
-        result = DoSendHeadersComplete();
+        result = DoSendRequestHeadersComplete();
         break;
       case STATE_SEND_BODY:
         CHECK_EQ(result, OK);
@@ -720,15 +721,15 @@ int SpdyStream::DoGetDomainBoundCert() {
   CHECK(request_.get());
   GURL url = GetUrl();
   if (!session_->NeedsCredentials() || pushed_ || !url.SchemeIs("https")) {
-    // Proceed directly to sending headers
-    io_state_ = STATE_SEND_HEADERS;
+    // Proceed directly to sending the request headers
+    io_state_ = STATE_SEND_REQUEST_HEADERS;
     return OK;
   }
 
   slot_ = session_->credential_state()->FindCredentialSlot(GetUrl());
   if (slot_ != SpdyCredentialState::kNoEntry) {
-    // Proceed directly to sending headers
-    io_state_ = STATE_SEND_HEADERS;
+    // Proceed directly to sending the request headers
+    io_state_ = STATE_SEND_REQUEST_HEADERS;
     return OK;
   }
 
@@ -791,12 +792,12 @@ int SpdyStream::DoSendDomainBoundCertComplete(int result) {
     return result;
 
   DCHECK_EQ(just_completed_frame_type_, CREDENTIAL);
-  io_state_ = STATE_SEND_HEADERS;
+  io_state_ = STATE_SEND_REQUEST_HEADERS;
   return OK;
 }
 
-int SpdyStream::DoSendHeaders() {
-  io_state_ = STATE_SEND_HEADERS_COMPLETE;
+int SpdyStream::DoSendRequestHeaders() {
+  io_state_ = STATE_SEND_REQUEST_HEADERS_COMPLETE;
 
   session_->EnqueueStreamWrite(
       GetWeakPtr(), SYN_STREAM,
@@ -805,14 +806,18 @@ int SpdyStream::DoSendHeaders() {
   return ERR_IO_PENDING;
 }
 
-int SpdyStream::DoSendHeadersComplete() {
+int SpdyStream::DoSendRequestHeadersComplete() {
   DCHECK_EQ(just_completed_frame_type_, SYN_STREAM);
   DCHECK_NE(stream_id_, 0u);
   if (!delegate_)
     return ERR_UNEXPECTED;
 
+  // We don't store the return value in |send_status_|; see comments
+  // in spdy_stream.h for OnSendRequestHeadersComplete().
+  SpdySendStatus send_status = delegate_->OnSendRequestHeadersComplete();
+
   io_state_ =
-      (delegate_->OnSendHeadersComplete() == MORE_DATA_TO_SEND) ?
+      (send_status == MORE_DATA_TO_SEND) ?
       STATE_SEND_BODY : STATE_WAITING_FOR_RESPONSE;
 
   return OK;
@@ -833,10 +838,10 @@ int SpdyStream::DoSendBodyComplete(int result) {
   if (result != OK)
     return result;
 
-  SpdySendStatus send_status = delegate_->OnSendBodyComplete();
+  delegate_->OnSendBodyComplete();
 
   io_state_ =
-      (send_status == MORE_DATA_TO_SEND) ?
+      (send_status_ == MORE_DATA_TO_SEND) ?
       STATE_SEND_BODY : STATE_WAITING_FOR_RESPONSE;
 
   return OK;
@@ -887,7 +892,6 @@ int SpdyStream::ProcessJustCompletedFrame(int result, State io_pending_state) {
   }
 
   pending_send_data_ = NULL;
-  pending_send_flags_ = DATA_FLAG_NONE;
 
   if (!delegate_) {
     NOTREACHED();
@@ -915,17 +919,20 @@ void SpdyStream::UpdateHistograms() {
 }
 
 void SpdyStream::QueueNextDataFrame() {
-  // Until the headers have been completely sent, we can not be sure
+  // Until the request has been completely sent, we cannot be sure
   // that our stream_id is correct.
-  DCHECK_GT(io_state_, STATE_SEND_HEADERS_COMPLETE);
+  DCHECK_GT(io_state_, STATE_SEND_REQUEST_HEADERS_COMPLETE);
   CHECK_GT(stream_id_, 0u);
   CHECK(pending_send_data_);
   CHECK_GT(pending_send_data_->BytesRemaining(), 0);
 
+  SpdyDataFlags flags =
+      (send_status_ == NO_MORE_DATA_TO_SEND) ?
+      DATA_FLAG_FIN : DATA_FLAG_NONE;
   scoped_ptr<SpdyBuffer> data_buffer(session_->CreateDataBuffer(
       stream_id_,
       pending_send_data_, pending_send_data_->BytesRemaining(),
-      pending_send_flags_));
+      flags));
   // We'll get called again by PossiblyResumeIfSendStalled().
   if (!data_buffer)
     return;
