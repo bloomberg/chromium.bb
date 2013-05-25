@@ -361,6 +361,10 @@ class AutofillDialogControllerTest : public testing::Test {
         TestAccountChooserModel::kActiveWalletItemId);
   }
 
+  void UseBillingForShipping() {
+    controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(0);
+  }
+
   TestAutofillDialogController* controller() { return controller_; }
 
   TestingProfile* profile() { return &profile_; }
@@ -705,11 +709,9 @@ TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   controller()->GetTestingManager()->AddTestingProfile(&full_profile2);
   controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
-  ui::MenuModel* shipping_model =
-      controller()->MenuModelForSection(SECTION_SHIPPING);
 
   // Test after setting use billing for shipping.
-  shipping_model->ActivatedAt(0);
+  UseBillingForShipping();
 
   controller()->OnAccept();
   ASSERT_EQ(4U, form_structure()->field_count());
@@ -819,6 +821,12 @@ TEST_F(AutofillDialogControllerTest, SaveAddress) {
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
+  // If there is no shipping address in wallet, it will default to
+  // "same-as-billing" instead of "add-new-item". "same-as-billing" is covered
+  // by the following tests. The last item in the menu is "add-new-item".
+  ui::MenuModel* shipping_model =
+      controller()->MenuModelForSection(SECTION_SHIPPING);
+  shipping_model->ActivatedAt(shipping_model->GetItemCount() - 1);
   controller()->OnAccept();
 }
 
@@ -909,6 +917,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentUpdateAddress) {
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
+
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
   controller()->EditClickedForSection(SECTION_SHIPPING);
@@ -917,6 +926,63 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentUpdateAddress) {
 
 MATCHER(UsesLocalBillingAddress, "uses the local billing address") {
   return arg.address_line_1() == ASCIIToUTF16(kEditedBillingAddress);
+}
+
+// Tests that when using billing address for shipping, and there is no exact
+// matched shipping address, then a shipping address should be added.
+TEST_F(AutofillDialogControllerTest, BillingForShipping) {
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              SaveAddress(_, _)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  // Select "Same as billing" in the address menu.
+  UseBillingForShipping();
+
+  controller()->OnAccept();
+}
+
+// Tests that when using billing address for shipping, and there is an exact
+// matched shipping address, then a shipping address should not be added.
+TEST_F(AutofillDialogControllerTest, BillingForShippingHasMatch) {
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              SaveAddress(_, _)).Times(0);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems::MaskedInstrument> instrument =
+      wallet::GetTestMaskedInstrument();
+  // Copy billing address as shipping address, and assign an id to it.
+  scoped_ptr<wallet::Address> shipping_address(
+      new wallet::Address(instrument->address()));
+  shipping_address->set_object_id("shipping_address_id");
+  wallet_items->AddAddress(shipping_address.Pass());
+  wallet_items->AddInstrument(instrument.Pass());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  // Select "Same as billing" in the address menu.
+  UseBillingForShipping();
+
+  controller()->OnAccept();
+}
+
+// Tests that adding new instrument and also using billing address for shipping,
+// then a shipping address should not be added.
+TEST_F(AutofillDialogControllerTest, BillingForShippingNewInstrument) {
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              SaveInstrumentAndAddress(_, _, _, _)).Times(1);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  // Select "Same as billing" in the address menu.
+  UseBillingForShipping();
+
+  controller()->OnAccept();
 }
 
 // Test that the local view contents is used when saving a new instrument and

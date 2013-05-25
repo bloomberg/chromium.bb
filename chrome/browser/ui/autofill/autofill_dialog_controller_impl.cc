@@ -310,6 +310,18 @@ bool HasCompleteAndVerifiedData(const AutofillDataModel& data_model,
   return true;
 }
 
+// Loops through |addresses_| comparing to |address| ignoring ID. If a match
+// is not found, NULL is returned.
+const wallet::Address* FindDuplicateAddress(
+    const std::vector<wallet::Address*>& addresses,
+    const wallet::Address& address) {
+  for (size_t i = 0; i < addresses.size(); ++i) {
+    if (addresses[i]->EqualsIgnoreID(address))
+      return addresses[i];
+  }
+  return NULL;
+}
+
 }  // namespace
 
 AutofillDialogController::~AutofillDialogController() {}
@@ -2386,16 +2398,11 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
   base::StringToInt(shipping->GetItemKeyForCheckedItem(), &address_index);
 
   if (!IsManuallyEditingSection(SECTION_SHIPPING) &&
-      shipping->GetItemKeyForCheckedItem() != kSameAsBillingKey) {
+      !ShouldUseBillingForShipping()) {
     active_address_id_ =
         wallet_items_->addresses()[address_index]->object_id();
     DCHECK(!active_address_id_.empty());
   }
-
-  // If there's neither an address nor instrument to save, |GetFullWallet()|
-  // is called when the risk fingerprint is loaded.
-  if (!active_instrument_id_.empty() && !active_address_id_.empty())
-    return;
 
   scoped_ptr<wallet::Instrument> inputted_instrument =
       CreateTransientInstrument();
@@ -2408,10 +2415,20 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
   scoped_ptr<wallet::Address> inputted_address;
   if (active_address_id_.empty()) {
     if (ShouldUseBillingForShipping()) {
-      inputted_address.reset(new wallet::Address(inputted_instrument ?
+      const wallet::Address& address = inputted_instrument ?
           inputted_instrument->address() :
-          wallet_items_->instruments()[instrument_index]->address()));
-      DCHECK(inputted_address->object_id().empty());
+          wallet_items_->instruments()[instrument_index]->address();
+      // Try to find an exact matched shipping address and use it for shipping,
+      // otherwise save it as a new shipping address. http://crbug.com/225442
+      const wallet::Address* duplicated_address =
+          FindDuplicateAddress(wallet_items_->addresses(), address);
+      if (duplicated_address) {
+        active_address_id_ = duplicated_address->object_id();
+        DCHECK(!active_address_id_.empty());
+      } else {
+        inputted_address.reset(new wallet::Address(address));
+        DCHECK(inputted_address->object_id().empty());
+      }
     } else {
       inputted_address = CreateTransientAddress();
       if (section_editing_state_[SECTION_SHIPPING]) {
@@ -2421,6 +2438,11 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
       }
     }
   }
+
+  // If there's neither an address nor instrument to save, |GetFullWallet()|
+  // is called when the risk fingerprint is loaded.
+  if (!active_instrument_id_.empty() && !active_address_id_.empty())
+    return;
 
   // If instrument and address aren't based off of any existing data, save both.
   if (inputted_instrument && inputted_address && !update_request &&

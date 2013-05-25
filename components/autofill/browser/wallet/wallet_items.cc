@@ -222,13 +222,6 @@ bool WalletItems::MaskedInstrument::operator!=(
   return !(*this == other);
 }
 
-bool WalletItems::HasRequiredAction(RequiredAction action) const {
-  DCHECK(ActionAppliesToWalletItems(action));
-  return std::find(required_actions_.begin(),
-                   required_actions_.end(),
-                   action) != required_actions_.end();
-}
-
 const WalletItems::MaskedInstrument* WalletItems::GetInstrumentById(
     const std::string& object_id) const {
   if (object_id.empty())
@@ -240,6 +233,13 @@ const WalletItems::MaskedInstrument* WalletItems::GetInstrumentById(
   }
 
   return NULL;
+}
+
+bool WalletItems::HasRequiredAction(RequiredAction action) const {
+  DCHECK(ActionAppliesToWalletItems(action));
+  return std::find(required_actions_.begin(),
+                   required_actions_.end(),
+                   action) != required_actions_.end();
 }
 
 base::string16 WalletItems::MaskedInstrument::DisplayName() const {

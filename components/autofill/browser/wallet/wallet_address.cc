@@ -291,7 +291,7 @@ string16 Address::GetInfo(AutofillFieldType type,
   }
 }
 
-bool Address::operator==(const Address& other) const {
+bool Address::EqualsIgnoreID(const Address& other) const {
   return country_name_code_ == other.country_name_code_ &&
          recipient_name_ == other.recipient_name_ &&
          address_line_1_ == other.address_line_1_ &&
@@ -300,8 +300,11 @@ bool Address::operator==(const Address& other) const {
          administrative_area_name_ == other.administrative_area_name_ &&
          postal_code_number_ == other.postal_code_number_ &&
          phone_number_ == other.phone_number_ &&
-         object_id_ == other.object_id_ &&
          is_complete_address_ == other.is_complete_address_;
+}
+
+bool Address::operator==(const Address& other) const {
+  return object_id_ == other.object_id_ && EqualsIgnoreID(other);
 }
 
 bool Address::operator!=(const Address& other) const {

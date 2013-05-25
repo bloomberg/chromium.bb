@@ -143,6 +143,10 @@ class Address {
     is_complete_address_ = is_complete_address;
   }
 
+  // Tests if this address exact matches |other|. |object_id| is ignored.
+  bool EqualsIgnoreID(const Address& other) const;
+
+  // Tests if this address exact matches |other| including |object_id|.
   bool operator==(const Address& other) const;
   bool operator!=(const Address& other) const;
 
