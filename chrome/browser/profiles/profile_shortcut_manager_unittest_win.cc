@@ -91,26 +91,22 @@ class ProfileShortcutManagerTest : public testing::Test {
   }
 
   void SetupDefaultProfileShortcut(const tracked_objects::Location& location) {
-    ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_1_name_))
-        << location.ToString();
-    // A non-badged shortcut for chrome is automatically created with the
-    // first profile (for the case when the user deletes their only profile).
-    profile_info_cache_->AddProfileToCache(profile_1_path_, profile_1_name_,
-                                           string16(), 0, false);
-    RunPendingTasks();
-    // We now have 1 profile, so we expect a new shortcut with no profile
-    // information.
-    ValidateNonProfileShortcut(location);
-  }
-
-  void SetupAndCreateTwoShortcuts(const tracked_objects::Location& location) {
     ASSERT_EQ(0, profile_info_cache_->GetNumberOfProfiles())
         << location.ToString();
     ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_1_name_))
         << location.ToString();
-
     profile_info_cache_->AddProfileToCache(profile_1_path_, profile_1_name_,
                                            string16(), 0, false);
+    // Also create a non-badged shortcut for Chrome, which is conveniently done
+    // by |CreateProfileShortcut()| since there is only one profile.
+    profile_shortcut_manager_->CreateProfileShortcut(profile_1_path_);
+    RunPendingTasks();
+    // Verify that there's now a shortcut with no profile information.
+    ValidateNonProfileShortcut(location);
+  }
+
+  void SetupAndCreateTwoShortcuts(const tracked_objects::Location& location) {
+    SetupDefaultProfileShortcut(location);
     CreateProfileWithShortcut(location, profile_2_name_, profile_2_path_);
     ValidateProfileShortcut(location, profile_1_name_, profile_1_path_);
   }

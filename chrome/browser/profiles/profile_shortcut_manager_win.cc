@@ -602,13 +602,9 @@ void ProfileShortcutManagerWin::HasProfileShortcuts(
 
 void ProfileShortcutManagerWin::OnProfileAdded(
     const base::FilePath& profile_path) {
-  const size_t profile_count =
-      profile_manager_->GetProfileInfoCache().GetNumberOfProfiles();
-  if (profile_count == 1) {
-    CreateOrUpdateShortcutsForProfileAtPath(profile_path,
-                                            CREATE_WHEN_NONE_FOUND,
-                                            UPDATE_NON_PROFILE_SHORTCUTS);
-  } else if (profile_count == 2) {
+  if (profile_manager_->GetProfileInfoCache().GetNumberOfProfiles() == 2) {
+    // When the second profile is added, make existing non-profile shortcuts
+    // point to the first profile and be badged/named appropriately.
     CreateOrUpdateShortcutsForProfileAtPath(GetOtherProfilePath(profile_path),
                                             UPDATE_EXISTING_ONLY,
                                             UPDATE_NON_PROFILE_SHORTCUTS);
