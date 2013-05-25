@@ -896,7 +896,7 @@ class ChromiumAndroidDriver(driver.Driver):
         self._forwarder_process.start()
 
         self._android_commands.run(['logcat', '-c'])
-        self._android_commands.run(['shell', 'echo'] + self._cmd_line + ['>', self._driver_details.command_line_file()])
+        self._android_commands.run(['shell', 'echo'] + self._android_driver_cmd_line(pixel_tests, per_test_args) + ['>', self._driver_details.command_line_file()])
         start_result = self._android_commands.run(['shell', 'am', 'start', '-e', 'RunInSubThread', '-n', self._driver_details.activity_name()])
         if start_result.find('Exception') != -1:
             self._log_error('Failed to start the content_shell application. Exception:\n' + start_result)
