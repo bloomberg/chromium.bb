@@ -506,7 +506,7 @@ void InputType::dispatchSimulatedClickIfActive(KeyboardEvent* event) const
 Chrome* InputType::chrome() const
 {
     if (Page* page = element()->document()->page())
-        return page->chrome();
+        return &page->chrome();
     return 0;
 }
 

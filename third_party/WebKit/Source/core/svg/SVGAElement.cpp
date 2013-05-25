@@ -229,7 +229,7 @@ bool SVGAElement::isKeyboardFocusable(KeyboardEvent*) const
     if (!page)
         return false;
     
-    return page->chrome()->client()->tabsToLinks();
+    return page->chrome().client()->tabsToLinks();
 }
 
 bool SVGAElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

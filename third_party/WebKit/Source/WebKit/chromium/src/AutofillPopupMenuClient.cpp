@@ -339,7 +339,7 @@ WebViewImpl* AutofillPopupMenuClient::getWebView() const
     if (!page)
         return 0;
 
-    return static_cast<WebViewImpl*>(page->chrome()->client()->webView());
+    return static_cast<WebViewImpl*>(page->chrome().client()->webView());
 }
 
 RenderStyle* AutofillPopupMenuClient::textFieldStyle() const

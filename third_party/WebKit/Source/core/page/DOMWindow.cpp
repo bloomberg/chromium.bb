@@ -319,7 +319,7 @@ FloatRect DOMWindow::adjustWindowRect(Page* page, const FloatRect& pendingChange
     ASSERT(page);
 
     FloatRect screen = screenAvailableRect(page->mainFrame()->view());
-    FloatRect window = page->chrome()->windowRect();
+    FloatRect window = page->chrome().windowRect();
 
     // Make sure we're in a valid state before adjusting dimensions.
     ASSERT(std::isfinite(screen.x()));
@@ -341,7 +341,7 @@ FloatRect DOMWindow::adjustWindowRect(Page* page, const FloatRect& pendingChange
     if (!std::isnan(pendingChanges.height()))
         window.setHeight(pendingChanges.height());
 
-    FloatSize minimumSize = page->chrome()->client()->minimumWindowSize();
+    FloatSize minimumSize = page->chrome().client()->minimumWindowSize();
     // Let size 0 pass through, since that indicates default size, not minimum size.
     if (window.width())
         window.setWidth(min(max(minimumSize.width(), window.width()), screen.width()));
@@ -378,7 +378,7 @@ bool DOMWindow::canShowModalDialog(const Frame* frame)
     Page* page = frame->page();
     if (!page)
         return false;
-    return page->chrome()->canRunModal();
+    return page->chrome().canRunModal();
 }
 
 bool DOMWindow::canShowModalDialogNow(const Frame* frame)
@@ -388,7 +388,7 @@ bool DOMWindow::canShowModalDialogNow(const Frame* frame)
     Page* page = frame->page();
     if (!page)
         return false;
-    return page->chrome()->canRunModalNow();
+    return page->chrome().canRunModalNow();
 }
 
 DOMWindow::DOMWindow(Document* document)
@@ -867,7 +867,7 @@ void DOMWindow::focus(ScriptExecutionContext* context)
 
     // If we're a top level window, bring the window to the front.
     if (m_frame == page->mainFrame() && allowFocus)
-        page->chrome()->focus();
+        page->chrome().focus();
 
     if (!m_frame)
         return;
@@ -915,7 +915,7 @@ void DOMWindow::close(ScriptExecutionContext* context)
     if (!m_frame->loader()->shouldClose())
         return;
 
-    page->chrome()->closeWindowSoon();
+    page->chrome().closeWindowSoon();
 }
 
 void DOMWindow::print()
@@ -932,7 +932,7 @@ void DOMWindow::print()
         return;
     }
     m_shouldPrintWhenFinishedLoading = false;
-    page->chrome()->print(m_frame);
+    page->chrome().print(m_frame);
 }
 
 void DOMWindow::stop()
@@ -956,7 +956,7 @@ void DOMWindow::alert(const String& message)
     if (!page)
         return;
 
-    page->chrome()->runJavaScriptAlert(m_frame, message);
+    page->chrome().runJavaScriptAlert(m_frame, message);
 }
 
 bool DOMWindow::confirm(const String& message)
@@ -970,7 +970,7 @@ bool DOMWindow::confirm(const String& message)
     if (!page)
         return false;
 
-    return page->chrome()->runJavaScriptConfirm(m_frame, message);
+    return page->chrome().runJavaScriptConfirm(m_frame, message);
 }
 
 String DOMWindow::prompt(const String& message, const String& defaultValue)
@@ -985,7 +985,7 @@ String DOMWindow::prompt(const String& message, const String& defaultValue)
         return String();
 
     String returnValue;
-    if (page->chrome()->runJavaScriptPrompt(m_frame, message, defaultValue, returnValue))
+    if (page->chrome().runJavaScriptPrompt(m_frame, message, defaultValue, returnValue))
         return returnValue;
 
     return String();
@@ -1046,7 +1046,7 @@ int DOMWindow::outerHeight() const
     if (!page)
         return 0;
 
-    return static_cast<int>(page->chrome()->windowRect().height());
+    return static_cast<int>(page->chrome().windowRect().height());
 }
 
 int DOMWindow::outerWidth() const
@@ -1058,7 +1058,7 @@ int DOMWindow::outerWidth() const
     if (!page)
         return 0;
 
-    return static_cast<int>(page->chrome()->windowRect().width());
+    return static_cast<int>(page->chrome().windowRect().width());
 }
 
 int DOMWindow::innerHeight() const
@@ -1098,7 +1098,7 @@ int DOMWindow::screenX() const
     if (!page)
         return 0;
 
-    return static_cast<int>(page->chrome()->windowRect().x());
+    return static_cast<int>(page->chrome().windowRect().x());
 }
 
 int DOMWindow::screenY() const
@@ -1110,7 +1110,7 @@ int DOMWindow::screenY() const
     if (!page)
         return 0;
 
-    return static_cast<int>(page->chrome()->windowRect().y());
+    return static_cast<int>(page->chrome().windowRect().y());
 }
 
 int DOMWindow::scrollX() const
@@ -1183,7 +1183,7 @@ void DOMWindow::setStatus(const String& string)
         return;
 
     ASSERT(m_frame->document()); // Client calls shouldn't be made when the frame is in inconsistent state.
-    page->chrome()->setStatusbarText(m_frame, m_status);
+    page->chrome().setStatusbarText(m_frame, m_status);
 }
 
 void DOMWindow::setDefaultStatus(const String& string)
@@ -1198,7 +1198,7 @@ void DOMWindow::setDefaultStatus(const String& string)
         return;
 
     ASSERT(m_frame->document()); // Client calls shouldn't be made when the frame is in inconsistent state.
-    page->chrome()->setStatusbarText(m_frame, m_defaultStatus);
+    page->chrome().setStatusbarText(m_frame, m_defaultStatus);
 }
 
 DOMWindow* DOMWindow::self() const
@@ -1371,11 +1371,11 @@ void DOMWindow::moveBy(float x, float y) const
     if (m_frame != page->mainFrame())
         return;
 
-    FloatRect fr = page->chrome()->windowRect();
+    FloatRect fr = page->chrome().windowRect();
     FloatRect update = fr;
     update.move(x, y);
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    page->chrome()->setWindowRect(adjustWindowRect(page, update));
+    page->chrome().setWindowRect(adjustWindowRect(page, update));
 }
 
 void DOMWindow::moveTo(float x, float y) const
@@ -1390,13 +1390,13 @@ void DOMWindow::moveTo(float x, float y) const
     if (m_frame != page->mainFrame())
         return;
 
-    FloatRect fr = page->chrome()->windowRect();
+    FloatRect fr = page->chrome().windowRect();
     FloatRect sr = screenAvailableRect(page->mainFrame()->view());
     fr.setLocation(sr.location());
     FloatRect update = fr;
     update.move(x, y);
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    page->chrome()->setWindowRect(adjustWindowRect(page, update));
+    page->chrome().setWindowRect(adjustWindowRect(page, update));
 }
 
 void DOMWindow::resizeBy(float x, float y) const
@@ -1411,10 +1411,10 @@ void DOMWindow::resizeBy(float x, float y) const
     if (m_frame != page->mainFrame())
         return;
 
-    FloatRect fr = page->chrome()->windowRect();
+    FloatRect fr = page->chrome().windowRect();
     FloatSize dest = fr.size() + FloatSize(x, y);
     FloatRect update(fr.location(), dest);
-    page->chrome()->setWindowRect(adjustWindowRect(page, update));
+    page->chrome().setWindowRect(adjustWindowRect(page, update));
 }
 
 void DOMWindow::resizeTo(float width, float height) const
@@ -1429,10 +1429,10 @@ void DOMWindow::resizeTo(float width, float height) const
     if (m_frame != page->mainFrame())
         return;
 
-    FloatRect fr = page->chrome()->windowRect();
+    FloatRect fr = page->chrome().windowRect();
     FloatSize dest = FloatSize(width, height);
     FloatRect update(fr.location(), dest);
-    page->chrome()->setWindowRect(adjustWindowRect(page, update));
+    page->chrome().setWindowRect(adjustWindowRect(page, update));
 }
 
 int DOMWindow::setTimeout(PassOwnPtr<ScheduledAction> action, int timeout, ExceptionCode& ec)
@@ -1866,7 +1866,7 @@ void DOMWindow::showModalDialog(const String& urlString, const String& dialogFea
     if (!dialogFrame)
         return;
     UserGestureIndicatorDisabler disabler;
-    dialogFrame->page()->chrome()->runModal();
+    dialogFrame->page()->chrome().runModal();
 }
 
 DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index)

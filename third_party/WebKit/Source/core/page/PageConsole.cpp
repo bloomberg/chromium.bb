@@ -103,7 +103,7 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
     if (source == CSSMessageSource)
         return;
 
-    page->chrome()->client()->addMessageToConsole(source, level, message, lineNumber, url);
+    page->chrome().client()->addMessageToConsole(source, level, message, lineNumber, url);
 }
 
 // static

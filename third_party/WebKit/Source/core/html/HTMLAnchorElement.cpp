@@ -147,7 +147,7 @@ bool HTMLAnchorElement::isKeyboardFocusable(KeyboardEvent* event) const
     if (!page)
         return false;
 
-    if (!page->chrome()->client()->tabsToLinks())
+    if (!page->chrome().client()->tabsToLinks())
         return false;
 
     if (isInCanvasSubtree())

@@ -66,7 +66,7 @@ void PointerLockController::requestPointerLock(Element* target)
         }
         enqueueEvent(eventNames().webkitpointerlockchangeEvent, target);
         m_element = target;
-    } else if (m_page->chrome()->client()->requestPointerLock()) {
+    } else if (m_page->chrome().client()->requestPointerLock()) {
         m_lockPending = true;
         m_element = target;
     } else {
@@ -76,7 +76,7 @@ void PointerLockController::requestPointerLock(Element* target)
 
 void PointerLockController::requestPointerUnlock()
 {
-    return m_page->chrome()->client()->requestPointerUnlock();
+    return m_page->chrome().client()->requestPointerUnlock();
 }
 
 void PointerLockController::elementRemoved(Element* element)

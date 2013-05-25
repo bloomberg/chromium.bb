@@ -259,8 +259,8 @@ void Settings::setUseWideViewport(bool useWideViewport)
         return;
 
     m_useWideViewport = useWideViewport;
-    if (m_page->chrome() && m_page->mainFrame())
-        m_page->chrome()->dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportArguments());
+    if (m_page->mainFrame())
+        m_page->chrome().dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportArguments());
 }
 
 void Settings::setLoadWithOverviewMode(bool loadWithOverviewMode)
@@ -269,8 +269,8 @@ void Settings::setLoadWithOverviewMode(bool loadWithOverviewMode)
         return;
 
     m_loadWithOverviewMode = loadWithOverviewMode;
-    if (m_page->chrome() && m_page->mainFrame())
-        m_page->chrome()->dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportArguments());
+    if (m_page->mainFrame())
+        m_page->chrome().dispatchViewportPropertiesDidChange(m_page->mainFrame()->document()->viewportArguments());
 }
 
 void Settings::setTextAutosizingFontScaleFactor(float fontScaleFactor)

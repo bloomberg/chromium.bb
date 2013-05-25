@@ -279,7 +279,7 @@ private:
 
     SubstituteData defaultSubstituteDataForURL(const KURL&);
     
-    bool fireBeforeUnloadEvent(Chrome*);
+    bool fireBeforeUnloadEvent(Chrome&);
 
     void checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState>);
     void checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction&);

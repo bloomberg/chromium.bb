@@ -369,7 +369,7 @@ bool PopupContainer::isInterestedInEventForKey(int keyCode)
 
 ChromeClient* PopupContainer::chromeClient()
 {
-    return m_frameView->frame()->page()->chrome()->client();
+    return m_frameView->frame()->page()->chrome().client();
 }
 
 void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize& controlSize, FrameView* v, int index)

@@ -296,7 +296,7 @@ void Frame::setDocument(PassRefPtr<Document> newDoc)
     if (m_page && m_page->mainFrame() == this) {
         notifyChromeClientWheelEventHandlerCountChanged();
         if (m_doc && m_doc->hasTouchEventHandlers())
-            m_page->chrome()->client()->needTouchEvents(true);
+            m_page->chrome().client()->needTouchEvents(true);
     }
 }
 
@@ -651,7 +651,7 @@ void Frame::deviceOrPageScaleFactorChanged()
     for (RefPtr<Frame> child = tree()->firstChild(); child; child = child->tree()->nextSibling())
         child->deviceOrPageScaleFactorChanged();
 
-    m_page->chrome()->client()->deviceOrPageScaleFactorChanged();
+    m_page->chrome().client()->deviceOrPageScaleFactorChanged();
 }
 
 void Frame::notifyChromeClientWheelEventHandlerCountChanged() const
@@ -665,7 +665,7 @@ void Frame::notifyChromeClientWheelEventHandlerCountChanged() const
             count += frame->document()->wheelEventHandlerCount();
     }
 
-    m_page->chrome()->client()->numWheelEventHandlersChanged(count);
+    m_page->chrome().client()->numWheelEventHandlersChanged(count);
 }
 
 bool Frame::isURLAllowed(const KURL& url) const

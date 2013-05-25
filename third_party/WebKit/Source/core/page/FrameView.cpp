@@ -540,7 +540,7 @@ void FrameView::setContentsSize(const IntSize& size)
 
     updateScrollableAreaSet();
 
-    page->chrome()->contentsSizeChanged(frame(), size); //notify only
+    page->chrome().contentsSizeChanged(frame(), size); // Notify only.
 
     m_deferSetNeedsLayouts--;
     
@@ -1123,7 +1123,7 @@ void FrameView::layout(bool allowSubtree)
     if (!page)
         return;
 
-    page->chrome()->client()->layoutUpdated(frame());
+    page->chrome().client()->layoutUpdated(frame());
 }
 
 void FrameView::layoutLazyBlocks()
@@ -1572,7 +1572,7 @@ void FrameView::setScrollPosition(const IntPoint& scrollPoint)
         return;
 
     if (Page* page = m_frame->page())
-        page->chrome()->client()->didProgrammaticallyScroll(m_frame.get(), newScrollPosition);
+        page->chrome().client()->didProgrammaticallyScroll(m_frame.get(), newScrollPosition);
 
     if (requestScrollPositionUpdate(newScrollPosition))
         return;
@@ -1631,7 +1631,7 @@ bool FrameView::shouldRubberBandInDirection(ScrollDirection direction) const
     Page* page = frame() ? frame()->page() : 0;
     if (!page)
         return ScrollView::shouldRubberBandInDirection(direction);
-    return page->chrome()->client()->shouldRubberBandInDirection(direction);
+    return page->chrome().client()->shouldRubberBandInDirection(direction);
 }
 
 bool FrameView::isRubberBandInProgress() const
@@ -1657,7 +1657,7 @@ HostWindow* FrameView::hostWindow() const
     Page* page = frame() ? frame()->page() : 0;
     if (!page)
         return 0;
-    return page->chrome();
+    return &page->chrome();
 }
 
 const unsigned cRepaintRectUnionThreshold = 25;
@@ -2527,7 +2527,7 @@ IntRect FrameView::windowResizerRect() const
     Page* page = frame() ? frame()->page() : 0;
     if (!page)
         return IntRect();
-    return page->chrome()->windowResizerRect();
+    return page->chrome().windowResizerRect();
 }
 
 void FrameView::setVisibleContentScaleFactor(float visibleContentScaleFactor)
@@ -2687,7 +2687,7 @@ void FrameView::updateAnnotatedRegions()
     Page* page = m_frame->page();
     if (!page)
         return;
-    page->chrome()->client()->annotatedRegionsChanged();
+    page->chrome().client()->annotatedRegionsChanged();
 }
 
 void FrameView::updateScrollCorner()
@@ -2991,7 +2991,7 @@ void FrameView::paintOverhangAreas(GraphicsContext* context, const IntRect& hori
 
     Page* page = m_frame->page();
     if (page->mainFrame() == m_frame) {
-        if (page->chrome()->client()->paintCustomOverhangArea(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect))
+        if (page->chrome().client()->paintCustomOverhangArea(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect))
             return;
     }
 

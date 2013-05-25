@@ -959,7 +959,7 @@ void AXObjectCache::postPlatformNotification(AccessibilityObject* obj, AXNotific
     if (!obj || !obj->document() || !obj->documentFrameView() || !obj->documentFrameView()->frame() || !obj->documentFrameView()->frame()->page())
         return;
 
-    ChromeClient* client = obj->documentFrameView()->frame()->page()->chrome()->client();
+    ChromeClient* client = obj->documentFrameView()->frame()->page()->chrome().client();
     if (!client)
         return;
 

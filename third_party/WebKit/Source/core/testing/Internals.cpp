@@ -202,8 +202,7 @@ void Internals::resetToConsistentState(Page* page)
     WebCore::Settings::setUsesOverlayScrollbars(false);
     delete s_pagePopupDriver;
     s_pagePopupDriver = 0;
-    if (page->chrome())
-        page->chrome()->client()->resetPagePopupDriver();
+    page->chrome().client()->resetPagePopupDriver();
     if (page->inspectorController())
         page->inspectorController()->setProfilerEnabled(false);
     page->group().captionPreferences()->setTestingMode(false);
@@ -734,16 +733,16 @@ void Internals::enableMockSpeechSynthesizer()
 void Internals::setEnableMockPagePopup(bool enabled, ExceptionCode& ec)
 {
     Document* document = contextDocument();
-    if (!document || !document->page() || !document->page()->chrome())
+    if (!document || !document->page())
         return;
     Page* page = document->page();
     if (!enabled) {
-        page->chrome()->client()->resetPagePopupDriver();
+        page->chrome().client()->resetPagePopupDriver();
         return;
     }
     if (!s_pagePopupDriver)
         s_pagePopupDriver = MockPagePopupDriver::create(page->mainFrame()).leakPtr();
-    page->chrome()->client()->setPagePopupDriver(s_pagePopupDriver);
+    page->chrome().client()->setPagePopupDriver(s_pagePopupDriver);
 }
 
 PassRefPtr<PagePopupController> Internals::pagePopupController()

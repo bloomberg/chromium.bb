@@ -759,14 +759,14 @@ Frame* FrameLoaderClientImpl::dispatchCreatePage(const NavigationAction& action)
 
     // Store the disposition on the opener ChromeClientImpl so that we can pass
     // it to WebViewClient::createView.
-    ChromeClientImpl* chromeClient = static_cast<ChromeClientImpl*>(m_webFrame->frame()->page()->chrome()->client());
+    ChromeClientImpl* chromeClient = static_cast<ChromeClientImpl*>(m_webFrame->frame()->page()->chrome().client());
     chromeClient->setNewWindowNavigationPolicy(policy);
 
     if (m_webFrame->frame()->settings() && !m_webFrame->frame()->settings()->supportsMultipleWindows())
         return m_webFrame->frame();
 
     struct WindowFeatures features;
-    Page* newPage = m_webFrame->frame()->page()->chrome()->createWindow(
+    Page* newPage = m_webFrame->frame()->page()->chrome().createWindow(
         m_webFrame->frame(), FrameLoadRequest(m_webFrame->frame()->document()->securityOrigin()),
         features, action);
 
@@ -805,7 +805,7 @@ PolicyAction FrameLoaderClientImpl::policyForNewWindowAction(
 
     // Store the disposition on the opener ChromeClientImpl so that we can pass
     // it to WebViewClient::createView.
-    ChromeClientImpl* chromeClient = static_cast<ChromeClientImpl*>(m_webFrame->frame()->page()->chrome()->client());
+    ChromeClientImpl* chromeClient = static_cast<ChromeClientImpl*>(m_webFrame->frame()->page()->chrome().client());
     chromeClient->setNewWindowNavigationPolicy(navigationPolicy);
 
     return PolicyUse;

@@ -2796,7 +2796,7 @@ void Document::updateViewportArguments()
 #ifndef NDEBUG
         m_didDispatchViewportPropertiesChanged = true;
 #endif
-        page()->chrome()->dispatchViewportPropertiesDidChange(m_viewportArguments);
+        page()->chrome().dispatchViewportPropertiesDidChange(m_viewportArguments);
     }
 }
 
@@ -3257,7 +3257,7 @@ bool Document::setFocusedNode(PassRefPtr<Node> prpNewFocusedNode, FocusDirection
     }
 
     if (!focusChangeBlocked)
-        page()->chrome()->focusedNodeChanged(m_focusedNode.get());
+        page()->chrome().focusedNodeChanged(m_focusedNode.get());
 
 SetFocusedNodeDone:
     updateStyleIfNeeded();
@@ -4737,7 +4737,7 @@ void Document::requestFullScreenForElement(Element* element, unsigned short flag
         // 5. Return, and run the remaining steps asynchronously.
         // 6. Optionally, perform some animation.
         m_areKeysEnabledInFullScreen = flags & Element::ALLOW_KEYBOARD_INPUT;
-        page()->chrome()->client()->enterFullScreenForElement(element);
+        page()->chrome().client()->enterFullScreenForElement(element);
 
         // 7. Optionally, display a message indicating how the user can exit displaying the context object fullscreen.
         return;
@@ -4828,12 +4828,12 @@ void Document::webkitExitFullscreen()
     // Only exit out of full screen window mode if there are no remaining elements in the
     // full screen stack.
     if (!newTop) {
-        page()->chrome()->client()->exitFullScreenForElement(m_fullScreenElement.get());
+        page()->chrome().client()->exitFullScreenForElement(m_fullScreenElement.get());
         return;
     }
 
     // Otherwise, notify the chrome of the new full screen element.
-    page()->chrome()->client()->enterFullScreenForElement(newTop);
+    page()->chrome().client()->enterFullScreenForElement(newTop);
 }
 
 bool Document::webkitFullscreenEnabled() const
@@ -5211,7 +5211,7 @@ void Document::didAddTouchEventHandler(Node* handler)
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
             scrollingCoordinator->touchEventTargetRectsDidChange(this);
         if (m_touchEventTargets->size() == 1)
-            page->chrome()->client()->needTouchEvents(true);
+            page->chrome().client()->needTouchEvents(true);
     }
 }
 
@@ -5237,7 +5237,7 @@ void Document::didRemoveTouchEventHandler(Node* handler)
         if (frame->document() && frame->document()->hasTouchEventHandlers())
             return;
     }
-    page->chrome()->client()->needTouchEvents(false);
+    page->chrome().client()->needTouchEvents(false);
 }
 
 void Document::didRemoveEventTargetNode(Node* handler)
@@ -5623,7 +5623,7 @@ void Document::didAssociateFormControlsTimerFired(Timer<Document>* timer)
     Vector<RefPtr<Element> > associatedFormControls;
     copyToVector(m_associatedFormControls, associatedFormControls);
 
-    frame()->page()->chrome()->client()->didAssociateFormControls(associatedFormControls);
+    frame()->page()->chrome().client()->didAssociateFormControls(associatedFormControls);
     m_associatedFormControls.clear();
 }
 

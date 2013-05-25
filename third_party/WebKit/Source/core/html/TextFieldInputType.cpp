@@ -231,7 +231,7 @@ void TextFieldInputType::createShadowSubtree()
     ASSERT(!m_innerSpinButton);
 
     Document* document = element()->document();
-    ChromeClient* chromeClient = document->page() ? document->page()->chrome()->client() : 0;
+    ChromeClient* chromeClient = document->page() ? document->page()->chrome().client() : 0;
     bool shouldAddDecorations = chromeClient && chromeClient->willAddTextFieldDecorationsTo(element());
     bool shouldHaveSpinButton = this->shouldHaveSpinButton();
     bool createsContainer = shouldHaveSpinButton || needsContainer() || shouldAddDecorations;

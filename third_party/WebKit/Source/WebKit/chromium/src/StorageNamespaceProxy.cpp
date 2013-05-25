@@ -48,7 +48,7 @@ PassRefPtr<StorageNamespace> StorageNamespace::localStorageNamespace(unsigned qu
 
 PassRefPtr<StorageNamespace> StorageNamespace::sessionStorageNamespace(Page* page, unsigned quota)
 {
-    WebKit::WebViewClient* webViewClient = static_cast<WebKit::WebViewImpl*>(page->chrome()->client()->webView())->client();
+    WebKit::WebViewClient* webViewClient = static_cast<WebKit::WebViewImpl*>(page->chrome().client()->webView())->client();
     return adoptRef(new StorageNamespaceProxy(webViewClient->createSessionStorageNamespace(quota), SessionStorage));
 }
 

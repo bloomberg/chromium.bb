@@ -320,7 +320,7 @@ void RenderMenuList::showPopup()
     if (m_popupIsVisible)
         return;
 
-    if (document()->page()->chrome()->hasOpenedPopup())
+    if (document()->page()->chrome().hasOpenedPopup())
         return;
 
     // Create m_innerBlock here so it ends up as the first child.
@@ -328,7 +328,7 @@ void RenderMenuList::showPopup()
     // inside the showPopup call and it would fail.
     createInnerBlock();
     if (!m_popup)
-        m_popup = document()->page()->chrome()->createPopupMenu(*document()->frame(), this);
+        m_popup = document()->page()->chrome().createPopupMenu(*document()->frame(), this);
     m_popupIsVisible = true;
 
     FloatQuad quad(localToAbsoluteQuad(FloatQuad(borderBoundingBox())));
