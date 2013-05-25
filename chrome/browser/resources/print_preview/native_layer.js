@@ -157,7 +157,7 @@ cr.define('print_preview', function() {
         'landscape': printTicketStore.isLandscapeEnabled(),
         'color': printTicketStore.color.getValue() ?
             NativeLayer.ColorMode_.COLOR : NativeLayer.ColorMode_.GRAY,
-        'headerFooterEnabled': printTicketStore.isHeaderFooterEnabled(),
+        'headerFooterEnabled': printTicketStore.headerFooter.getValue(),
         'marginsType': printTicketStore.marginsType.getValue(),
         'isFirstRequest': requestId == 0,
         'requestID': requestId,
@@ -229,7 +229,7 @@ cr.define('print_preview', function() {
         'landscape': printTicketStore.isLandscapeEnabled(),
         'color': printTicketStore.color.getValue() ?
             NativeLayer.ColorMode_.COLOR : NativeLayer.ColorMode_.GRAY,
-        'headerFooterEnabled': printTicketStore.isHeaderFooterEnabled(),
+        'headerFooterEnabled': printTicketStore.headerFooter.getValue(),
         'marginsType': printTicketStore.marginsType.getValue(),
         'generateDraftData': true, // TODO(rltoscano): What should this be?
         'duplex': printTicketStore.duplex.getValue() ?

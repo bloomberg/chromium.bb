@@ -8,6 +8,8 @@ cr.define('print_preview.ticket_items', function() {
   /**
    * Header-footer ticket item whose value is a {@code boolean} that indicates
    * whether the document should be printed with headers and footers.
+   * @param {!print_preview.AppState} appState App state used to persist whether
+   *     header-footer is enabled.
    * @param {!print_preview.DocumentInfo} documentInfo Information about the
    *     document to print.
    * @param {!print_preview.ticket_items.MarginsType} marginsType Ticket item
@@ -17,15 +19,13 @@ cr.define('print_preview.ticket_items', function() {
    * @constructor
    * @extends {print_preview.ticket_items.TicketItem}
    */
-  function HeaderFooter(documentInfo, marginsType, customMargins) {
-    print_preview.ticket_items.TicketItem.call(this);
-
-    /**
-     * Information about the document to print.
-     * @type {!print_preview.DocumentInfo}
-     * @private
-     */
-    this.documentInfo_ = documentInfo;
+  function HeaderFooter(appState, documentInfo, marginsType, customMargins) {
+    print_preview.ticket_items.TicketItem.call(
+        this,
+        appState,
+        print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED,
+        null /*destinationStore*/,
+        documentInfo);
 
     /**
      * Ticket item that stores which predefined margins to print with.
@@ -40,6 +40,8 @@ cr.define('print_preview.ticket_items', function() {
      * @private
      */
     this.customMargins_ = customMargins;
+
+    this.addEventListeners_();
   };
 
   HeaderFooter.prototype = {
@@ -52,7 +54,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      if (!this.documentInfo_.isModifiable) {
+      if (!this.getDocumentInfoInternal().isModifiable) {
         return false;
       } else if (this.marginsType_.getValue() ==
           print_preview.ticket_items.MarginsType.Value.NO_MARGINS) {
@@ -69,7 +71,7 @@ cr.define('print_preview.ticket_items', function() {
         }
         margins = this.customMargins_.getValue();
       } else {
-        margins = this.documentInfo_.margins;
+        margins = this.getDocumentInfoInternal().margins;
       }
       var orientEnum = print_preview.ticket_items.CustomMargins.Orientation;
       return margins == null ||
@@ -85,6 +87,21 @@ cr.define('print_preview.ticket_items', function() {
     /** @override */
     getCapabilityNotAvailableValueInternal: function() {
       return false;
+    },
+
+    /**
+     * Adds CHANGE listeners to dependent ticket items.
+     * @private
+     */
+    addEventListeners_: function() {
+      this.getTrackerInternal().add(
+          this.marginsType_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.dispatchChangeEventInternal.bind(this));
+      this.getTrackerInternal().add(
+          this.customMargins_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.dispatchChangeEventInternal.bind(this));
     }
   };
 

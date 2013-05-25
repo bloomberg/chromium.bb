@@ -148,7 +148,11 @@ cr.define('print_preview', function() {
      * @private
      */
     this.otherOptionsSettings_ = new print_preview.OtherOptionsSettings(
-        this.printTicketStore_);
+        this.printTicketStore_.duplex,
+        this.printTicketStore_.fitToPage,
+        this.printTicketStore_.cssBackground,
+        this.printTicketStore_.selectionOnly,
+        this.printTicketStore_.headerFooter);
     this.addChild(this.otherOptionsSettings_);
 
     /**

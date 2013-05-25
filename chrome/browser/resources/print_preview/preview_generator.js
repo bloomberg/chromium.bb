@@ -165,7 +165,7 @@ cr.define('print_preview', function() {
       }
       this.isLandscapeEnabled_ = this.printTicketStore_.isLandscapeEnabled();
       this.isHeaderFooterEnabled_ =
-          this.printTicketStore_.isHeaderFooterEnabled();
+          this.printTicketStore_.headerFooter.getValue();
       this.colorValue_ = this.printTicketStore_.color.getValue();
       this.isFitToPageEnabled_ = this.printTicketStore_.fitToPage.getValue();
       this.pageRanges_ = this.printTicketStore_.pageRange.getPageRanges();
@@ -267,7 +267,7 @@ cr.define('print_preview', function() {
       var ticketStore = this.printTicketStore_;
       return this.inFlightRequestId_ == -1 ||
           ticketStore.isLandscapeEnabled() != this.isLandscapeEnabled_ ||
-          ticketStore.isHeaderFooterEnabled() != this.isHeaderFooterEnabled_ ||
+          !ticketStore.headerFooter.isValueEqual(this.isHeaderFooterEnabled_) ||
           !ticketStore.color.isValueEqual(this.colorValue_) ||
           !ticketStore.fitToPage.isValueEqual(this.isFitToPageEnabled_) ||
           this.pageRanges_ == null ||

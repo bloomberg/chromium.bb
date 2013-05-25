@@ -131,7 +131,8 @@ cr.define('print_preview', function() {
      * @private
      */
     this.headerFooter_ = new print_preview.ticket_items.HeaderFooter(
-        this.documentInfo_, this.marginsType_, this.customMargins_);
+        this.appState_, this.documentInfo_, this.marginsType_,
+        this.customMargins_);
 
     /**
      * Fit-to-page ticket item.
@@ -224,6 +225,10 @@ cr.define('print_preview', function() {
       return this.fitToPage_;
     },
 
+    get headerFooter() {
+      return this.headerFooter_;
+    },
+
     get marginsType() {
       return this.marginsType_;
     },
@@ -279,7 +284,11 @@ cr.define('print_preview', function() {
         this.duplex_.updateValue(this.appState_.getField(
             print_preview.AppState.Field.IS_DUPLEX_ENABLED));
       }
-      this.headerFooter_.updateValue(this.appState_.isHeaderFooterEnabled);
+      if (this.appState_.hasField(
+          print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED)) {
+        this.headerFooter_.updateValue(this.appState_.getField(
+            print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED));
+      }
       this.landscape_.updateValue(this.appState_.isLandscapeEnabled);
       if (this.appState_.hasField(
           print_preview.AppState.Field.IS_COLLATE_ENABLED)) {
@@ -290,30 +299,6 @@ cr.define('print_preview', function() {
           print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED)) {
         this.cssBackground_.updateValue(this.appState_.getField(
             print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED));
-      }
-    },
-
-    /** @return {boolean} Whether the header-footer capability is available. */
-    hasHeaderFooterCapability: function() {
-      return this.headerFooter_.isCapabilityAvailable();
-    },
-
-    /** @return {boolean} Whether the header-footer setting is enabled. */
-    isHeaderFooterEnabled: function() {
-      return this.headerFooter_.getValue();
-    },
-
-    /**
-     * Updates the whether the header-footer setting is enabled. Dispatches a
-     * TICKET_CHANGE event if the setting changed.
-     * @param {boolean} isHeaderFooterEnabled Whether the header-footer setting
-     *     is enabled.
-     */
-    updateHeaderFooter: function(isHeaderFooterEnabled) {
-      if (this.headerFooter_.getValue() != isHeaderFooterEnabled) {
-        this.headerFooter_.updateValue(isHeaderFooterEnabled);
-        this.appState_.persistIsHeaderFooterEnabled(isHeaderFooterEnabled);
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },
 
@@ -386,10 +371,6 @@ cr.define('print_preview', function() {
           this.documentInfo_,
           print_preview.DocumentInfo.EventType.CHANGE,
           this.onDocumentInfoChange_.bind(this));
-      this.tracker_.add(
-          this.customMargins_,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.dispatchTicketChangeEvent_.bind(this));
     },
 
     /**
@@ -425,15 +406,6 @@ cr.define('print_preview', function() {
     onDocumentInfoChange_: function() {
       cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.DOCUMENT_CHANGE);
     },
-
-    /**
-     * Temporary method used to dispatch ticket change event. Remove this when
-     * all ticket items are refactored out.
-     * @private
-     */
-    dispatchTicketChangeEvent_: function() {
-      cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
-    }
   };
 
   // Export

@@ -81,11 +81,6 @@ cr.define('print_preview', function() {
       return this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED];
     },
 
-    /** @return {?boolean} Whether the header-footer option is enabled. */
-    get isHeaderFooterEnabled() {
-      return this.state_[AppState.Field.IS_HEADER_FOOTER_ENABLED];
-    },
-
     /** @return {?boolean} Whether landscape page orientation is selected. */
     get isLandscapeEnabled() {
       return this.state_[AppState.Field.IS_LANDSCAPE_ENABLED];
@@ -164,23 +159,13 @@ cr.define('print_preview', function() {
       this.persist_();
     },
 
-   /**
-    * Persists whether the GCP promotion has been dismissed.
-    * @param {boolean} isGcpPromoDismissed Whether the GCP promotion has been
-    *     dismissed.
-    */
-   persistIsGcpPromoDismissed: function(isGcpPromoDismissed) {
-     this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED] = isGcpPromoDismissed;
-     this.persist_();
-   },
-
     /**
-     * Persists whether header-footer is enabled.
-     * @param {?boolean} Whether header-footer is enabled.
+     * Persists whether the GCP promotion has been dismissed.
+     * @param {boolean} isGcpPromoDismissed Whether the GCP promotion has been
+     *     dismissed.
      */
-    persistIsHeaderFooterEnabled: function(isHeaderFooterEnabled) {
-      this.state_[AppState.Field.IS_HEADER_FOOTER_ENABLED] =
-          isHeaderFooterEnabled;
+    persistIsGcpPromoDismissed: function(isGcpPromoDismissed) {
+      this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED] = isGcpPromoDismissed;
       this.persist_();
     },
 

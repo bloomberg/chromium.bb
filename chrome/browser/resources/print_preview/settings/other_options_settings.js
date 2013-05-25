@@ -7,14 +7,20 @@ cr.define('print_preview', function() {
 
   /**
    * UI component that renders checkboxes for various print options.
-   * @param {!print_preview.PrintTicketStore} printTicketStore Used to monitor
-   *     the state of the print ticket.
+   * @param {!print_preview.ticket_items.Duplex} duplex Duplex ticket item.
+   * @param {!print_preview.ticket_items.FitToPage} fitToPage Fit-to-page ticket
+   *     item.
+   * @param {!print_preview.ticket_items.CssBackground} cssBackground CSS
+   *     background ticket item.
+   * @param {!print_preview.ticket_items.SelectionOnly} selectionOnly Selection
+   *     only ticket item.
+   * @param {!print_preview.ticket_items.HeaderFooter} headerFooter Header
+   *     footer ticket item.
    * @constructor
    * @extends {print_preview.Component}
    */
-  // TODO(rltoscano): Replace dependency on print ticket store once all deps
-  // have been pulled out of the print ticket store.
-  function OtherOptionsSettings(printTicketStore) {
+  function OtherOptionsSettings(
+      duplex, fitToPage, cssBackground, selectionOnly, headerFooter) {
     print_preview.Component.call(this);
 
     /**
@@ -22,35 +28,35 @@ cr.define('print_preview', function() {
      * @type {!print_preview.ticket_items.Duplex}
      * @private
      */
-    this.duplexTicketItem_ = printTicketStore.duplex;
+    this.duplexTicketItem_ = duplex;
 
     /**
      * Fit-to-page ticket item, used to read/write the fit-to-page selection.
      * @type {!print_preview.ticket_items.FitToPage}
      * @private
      */
-    this.fitToPageTicketItem_ = printTicketStore.fitToPage;
+    this.fitToPageTicketItem_ = fitToPage;
 
     /**
      * Enable CSS backgrounds ticket item, used to read/write.
      * @type {!print_preview.ticket_items.CssBackground}
      * @private
      */
-    this.cssBackgroundTicketItem_ = printTicketStore.cssBackground;
+    this.cssBackgroundTicketItem_ = cssBackground;
 
     /**
      * Print selection only ticket item, used to read/write.
      * @type {!print_preview.ticket_items.SelectionOnly}
      * @private
      */
-    this.selectionOnlyTicketItem_ = printTicketStore.selectionOnly;
+    this.selectionOnlyTicketItem_ = selectionOnly;
 
     /**
-     * Used to monitor the state of the print ticket.
-     * @type {!print_preview.PrintTicketStore}
+     * Header-footer ticket item, used to read/write.
+     * @type {!print_preview.ticket_items.HeaderFooter}
      * @private
      */
-    this.printTicketStore_ = printTicketStore;
+    this.headerFooterTicketItem_ = headerFooter;
 
     /**
      * Header footer container element.
@@ -158,22 +164,6 @@ cr.define('print_preview', function() {
           'click',
           this.onSelectionOnlyCheckboxClick_.bind(this));
       this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.INITIALIZE,
-          this.onPrintTicketStoreChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.DOCUMENT_CHANGE,
-          this.onPrintTicketStoreChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.CAPABILITIES_CHANGE,
-          this.onPrintTicketStoreChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.TICKET_CHANGE,
-          this.onPrintTicketStoreChange_.bind(this));
-      this.tracker.add(
           this.duplexTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onDuplexChange_.bind(this));
@@ -189,6 +179,10 @@ cr.define('print_preview', function() {
           this.selectionOnlyTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onSelectionOnlyChange_.bind(this));
+      this.tracker.add(
+          this.headerFooterTicketItem_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onHeaderFooterChange_.bind(this));
     },
 
     /** @override */
@@ -235,7 +229,7 @@ cr.define('print_preview', function() {
      * @private
      */
     updateContainerState_: function() {
-      if (this.printTicketStore_.hasHeaderFooterCapability() ||
+      if (this.headerFooterTicketItem_.isCapabilityAvailable() ||
           this.fitToPageTicketItem_.isCapabilityAvailable() ||
           this.duplexTicketItem_.isCapabilityAvailable() ||
           this.cssBackgroundTicketItem_.isCapabilityAvailable() ||
@@ -252,7 +246,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onHeaderFooterCheckboxClick_: function() {
-      this.printTicketStore_.updateHeaderFooter(
+      this.headerFooterTicketItem_.updateValue(
           this.headerFooterCheckbox_.checked);
     },
 
@@ -291,20 +285,6 @@ cr.define('print_preview', function() {
     onSelectionOnlyCheckboxClick_: function() {
       this.selectionOnlyTicketItem_.updateValue(
           this.selectionOnlyCheckbox_.checked);
-    },
-
-    /**
-     * Called when the print ticket store has changed. Hides or shows the
-     * settings.
-     * @private
-     */
-    onPrintTicketStoreChange_: function() {
-      setIsVisible(this.headerFooterContainer_,
-                   this.printTicketStore_.hasHeaderFooterCapability());
-      this.headerFooterCheckbox_.checked =
-          this.printTicketStore_.isHeaderFooterEnabled();
-
-      this.updateContainerState_();
     },
 
     /**
@@ -354,6 +334,19 @@ cr.define('print_preview', function() {
                    this.selectionOnlyTicketItem_.isCapabilityAvailable());
       this.selectionOnlyCheckbox_.checked =
           this.selectionOnlyTicketItem_.getValue();
+      this.updateContainerState_();
+    },
+
+    /**
+     * Called when the header-footer ticket item has changed. Updates the
+     * header-footer checkbox.
+     * @private
+     */
+    onHeaderFooterChange_: function() {
+      setIsVisible(this.headerFooterContainer_,
+                   this.headerFooterTicketItem_.isCapabilityAvailable());
+      this.headerFooterCheckbox_.checked =
+          this.headerFooterTicketItem_.getValue();
       this.updateContainerState_();
     }
   };
