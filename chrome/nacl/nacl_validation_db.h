@@ -9,6 +9,8 @@
 
 #include "base/basictypes.h"
 
+struct NaClFileToken;
+
 class NaClValidationDB {
  public:
   NaClValidationDB() {}
@@ -16,6 +18,8 @@ class NaClValidationDB {
 
   virtual bool QueryKnownToValidate(const std::string& signature) = 0;
   virtual void SetKnownToValidate(const std::string& signature) = 0;
+  virtual bool ResolveFileToken(struct NaClFileToken* file_token,
+                                int32* fd, std::string* path) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NaClValidationDB);

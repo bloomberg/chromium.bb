@@ -24,6 +24,7 @@
 #include "native_client/src/trusted/plugin/pnacl_coordinator.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
 #include "native_client/src/trusted/plugin/utility.h"
+#include "native_client/src/trusted/validator/nacl_file_info.h"
 
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/private/var_private.h"
@@ -252,9 +253,11 @@ class Plugin : public pp::InstancePrivate {
   // corresponding to the url body is recorded for further lookup.
   bool StreamAsFile(const nacl::string& url,
                     PP_CompletionCallback pp_callback);
-  // Returns an open POSIX file descriptor retrieved by StreamAsFile()
-  // or NACL_NO_FILE_DESC. The caller must take ownership of the descriptor.
-  int32_t GetPOSIXFileDesc(const nacl::string& url);
+
+  // Returns rich information for a file retrieved by StreamAsFile(). This info
+  // contains a file descriptor. The caller must take ownership of this
+  // descriptor.
+  struct NaClFileInfo GetFileInfo(const nacl::string& url);
 
   // A helper function that gets the scheme type for |url|. Uses URLUtil_Dev
   // interface which this class has as a member.
@@ -475,7 +478,7 @@ class Plugin : public pp::InstancePrivate {
   std::set<FileDownloader*> url_downloaders_;
   // Keep track of file descriptors opened by StreamAsFile().
   // These are owned by the browser.
-  std::map<nacl::string, int32_t> url_fd_map_;
+  std::map<nacl::string, struct NaClFileInfo> url_file_info_map_;
 
   // Pending progress events.
   std::queue<ProgressEvent*> progress_events_;

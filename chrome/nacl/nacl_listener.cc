@@ -21,6 +21,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "native_client/src/trusted/service_runtime/sel_main_chrome.h"
+#include "native_client/src/trusted/validator/nacl_file_info.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -128,6 +129,38 @@ class BrowserValidationDBProxy : public NaClValidationDB {
     if (!listener_->Send(new NaClProcessMsg_SetKnownToValidate(signature))) {
       LOG(ERROR) << "Failed to update NaCl validation cache.";
     }
+  }
+
+  virtual bool ResolveFileToken(struct NaClFileToken* file_token,
+                                int32* fd, std::string* path) OVERRIDE {
+    *fd = -1;
+    *path = "";
+    if (file_token->lo == 0 && file_token->hi == 0) {
+      return false;
+    }
+    IPC::PlatformFileForTransit ipc_fd;
+    base::FilePath ipc_path;
+    if (!listener_->Send(new NaClProcessMsg_ResolveFileToken(file_token->lo,
+                                                             file_token->hi,
+                                                             &ipc_fd,
+                                                             &ipc_path))) {
+      return false;
+    }
+    if (ipc_fd == IPC::InvalidPlatformFileForTransit()) {
+      return false;
+    }
+    base::PlatformFile handle =
+        IPC::PlatformFileForTransitToPlatformFile(ipc_fd);
+#if defined(OS_WIN)
+    // On Windows, valid handles are 32 bit unsigned integers so this is safe.
+    *fd = reinterpret_cast<uintptr_t>(handle);
+#else
+    *fd = handle;
+#endif
+    // It doesn't matter if the path is invalid UTF8 as long as it's consistent
+    // and unforgeable.
+    *path = ipc_path.AsUTF8Unsafe();
+    return true;
   }
 
  private:
