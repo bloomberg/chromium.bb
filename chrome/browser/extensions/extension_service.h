@@ -67,11 +67,6 @@ class ExtensionSystem;
 class ExtensionUpdater;
 class PendingExtensionManager;
 class SettingsFrontend;
-
-namespace app_file_handler_util {
-struct SavedFileEntry;
-}
-
 }
 
 namespace syncer {
@@ -801,10 +796,7 @@ class ExtensionService
 
   // Dispatches a restart event to the platform app associated with
   // |extension_host|.
-  static void RestartApplication(
-      std::vector<extensions::app_file_handler_util::SavedFileEntry>
-          file_entries,
-      extensions::ExtensionHost* extension_host);
+  static void RestartApplication(extensions::ExtensionHost* extension_host);
 
   // Helper to inspect an ExtensionHost after it has been loaded.
   void InspectExtensionHost(extensions::ExtensionHost* host);
@@ -927,13 +919,6 @@ class ExtensionService
   // Maps extension ids to a bitmask that indicates which events should be
   // dispatched to the extension when it is loaded.
   std::map<std::string, int> on_load_events_;
-
-  // Maps extension ids to vectors of saved file entries that the extension
-  // should be given access to on restart.
-  typedef std::map<std::string,
-      std::vector<extensions::app_file_handler_util::SavedFileEntry> >
-          SavedFileEntryMap;
-  SavedFileEntryMap on_restart_file_entries_;
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;

@@ -25,7 +25,9 @@ chrome.app.runtime.onLaunched.addListener(function() {
       function(win) {
     var fs = win.contentWindow.chrome.fileSystem;
     fs.chooseEntry({type: 'openFile'}, function(entry) {
+      chrome.fileSystem.retainEntry(entry);
       fs.getWritableEntry(entry, function(writableEntry) {
+        chrome.fileSystem.retainEntry(writableEntry);
         truncateAndWriteToFile(writableEntry, function() {
           chrome.test.sendMessage('fileWritten');
           win.close();

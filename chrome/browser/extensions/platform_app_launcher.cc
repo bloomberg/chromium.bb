@@ -50,7 +50,6 @@ using extensions::app_file_handler_util::FileHandlerCanHandleFile;
 using extensions::app_file_handler_util::FirstFileHandlerForFile;
 using extensions::app_file_handler_util::CreateFileEntry;
 using extensions::app_file_handler_util::GrantedFileEntry;
-using extensions::app_file_handler_util::SavedFileEntry;
 
 namespace extensions {
 
@@ -279,79 +278,6 @@ class PlatformAppPathLauncher
   DISALLOW_COPY_AND_ASSIGN(PlatformAppPathLauncher);
 };
 
-class SavedFileEntryLauncher
-    : public base::RefCountedThreadSafe<SavedFileEntryLauncher> {
- public:
-  SavedFileEntryLauncher(
-      Profile* profile,
-      const Extension* extension,
-      const std::vector<SavedFileEntry>& file_entries)
-      : profile_(profile),
-        extension_(extension),
-        file_entries_(file_entries) {}
-
-  void Launch() {
-    // Access needs to be granted to the file or filesystem for the process
-    // associated with the extension. To do this the ExtensionHost is needed.
-    // This might not be available, or it might be in the process of being
-    // unloaded, in which case the lazy background task queue is used to load
-    // he extension and then call back to us.
-    extensions::LazyBackgroundTaskQueue* queue =
-        ExtensionSystem::Get(profile_)->lazy_background_task_queue();
-    if (queue->ShouldEnqueueTask(profile_, extension_)) {
-      queue->AddPendingTask(profile_, extension_->id(), base::Bind(
-              &SavedFileEntryLauncher::GrantAccessToFilesAndLaunch,
-              this));
-      return;
-    }
-    ExtensionProcessManager* process_manager =
-        ExtensionSystem::Get(profile_)->process_manager();
-    extensions::ExtensionHost* host =
-        process_manager->GetBackgroundHostForExtension(extension_->id());
-    DCHECK(host);
-    GrantAccessToFilesAndLaunch(host);
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<SavedFileEntryLauncher>;
-  ~SavedFileEntryLauncher() {}
-
-  void GrantAccessToFilesAndLaunch(ExtensionHost* host) {
-    // If there was an error loading the app page, |host| will be NULL.
-    if (!host) {
-      LOG(ERROR) << "Could not load app page for " << extension_->id();
-      return;
-    }
-
-    int renderer_id = host->render_process_host()->GetID();
-    std::vector<GrantedFileEntry> granted_file_entries;
-    for (std::vector<SavedFileEntry>::const_iterator it =
-         file_entries_.begin(); it != file_entries_.end(); ++it) {
-      GrantedFileEntry file_entry = CreateFileEntry(
-          profile_, extension_->id(), renderer_id, it->path, it->writable);
-      file_entry.id = it->id;
-      granted_file_entries.push_back(file_entry);
-
-      // Record that we have granted this file permission.
-      app_file_handler_util::AddSavedFileEntry(
-          ExtensionPrefs::Get(profile_),
-          host->extension()->id(),
-          it->id,
-          it->path,
-          it->writable);
-    }
-    extensions::AppEventRouter::DispatchOnRestartedEvent(
-        profile_, extension_, granted_file_entries);
-  }
-
-  // The profile the app should be run in.
-  Profile* profile_;
-  // The extension providing the app.
-  const Extension* extension_;
-
-  std::vector<SavedFileEntry> file_entries_;
-};
-
 }  // namespace
 
 void LaunchPlatformApp(Profile* profile,
@@ -400,19 +326,14 @@ void LaunchPlatformAppWithFileHandler(Profile* profile,
   launcher->LaunchWithHandler(handler_id);
 }
 
-void RestartPlatformAppWithFileEntries(
-    Profile* profile,
-    const Extension* extension,
-    const std::vector<SavedFileEntry>& file_entries) {
+void RestartPlatformApp(Profile* profile, const Extension* extension) {
   extensions::EventRouter* event_router =
       ExtensionSystem::Get(profile)->event_router();
   bool listening_to_restart = event_router->
       ExtensionHasEventListener(extension->id(), event_names::kOnRestarted);
 
   if (listening_to_restart) {
-    scoped_refptr<SavedFileEntryLauncher> launcher = new SavedFileEntryLauncher(
-        profile, extension, file_entries);
-    launcher->Launch();
+    extensions::AppEventRouter::DispatchOnRestartedEvent(profile, extension);
     return;
   }
 

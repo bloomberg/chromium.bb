@@ -28,10 +28,8 @@ class AppEventRouter {
   // data.
   static void DispatchOnLaunchedEvent(Profile* profile,
                                       const Extension* extension);
-  static void DispatchOnRestartedEvent(
-      Profile* profile,
-      const Extension* extension,
-      const std::vector<app_file_handler_util::GrantedFileEntry>& file_entries);
+  static void DispatchOnRestartedEvent(Profile* profile,
+                                       const Extension* extension);
 
   // TODO(benwells): Update this comment, it is out of date.
   // Dispatches the onLaunched event to the given app, providing launch data of

@@ -47,22 +47,6 @@ bool FileHandlerCanHandleFile(
     const std::string& mime_type,
     const base::FilePath& path);
 
-// Represents a file entry that a user has given an extension permission to
-// access. Intended to be persisted to disk (in the Preferences file), so should
-// remain serializable.
-struct SavedFileEntry {
-  SavedFileEntry(const std::string& id,
-                 const base::FilePath& path,
-                 bool writable)
-      : id(id),
-        path(path),
-        writable(writable) {}
-
-  std::string id;
-  base::FilePath path;
-  bool writable;
-};
-
 // Refers to a file entry that a renderer has been given access to.
 struct GrantedFileEntry {
   std::string id;
@@ -78,19 +62,6 @@ GrantedFileEntry CreateFileEntry(
     int renderer_id,
     const base::FilePath& path,
     bool writable);
-
-// Methods to adjust the file entry preferences for a given extension.
-void AddSavedFileEntry(ExtensionPrefs* prefs,
-                       const std::string& extension_id,
-                       const std::string& file_entry_id,
-                       const base::FilePath& file_path,
-                       bool writable);
-void GetSavedFileEntries(
-    const ExtensionPrefs* prefs,
-    const std::string& extension_id,
-    std::vector<app_file_handler_util::SavedFileEntry>* out);
-void ClearSavedFileEntries(ExtensionPrefs* prefs,
-                           const std::string& extension_id);
 
 }  // namespace app_file_handler_util
 

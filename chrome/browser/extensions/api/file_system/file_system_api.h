@@ -44,6 +44,16 @@ class FileSystemEntryFunction : public AsyncExtensionFunction {
   void RegisterFileSystemAndSendResponse(const base::FilePath& path,
                                          EntryType entry_type);
 
+  // This will finish the choose file process. This is either called directly
+  // from FileSelected, or from CreateFileIfNecessary. It is called on the UI
+  // thread. |id_override| specifies the id to send in the response instead of
+  // the generated id. This can be useful for creating a file entry with an id
+  // matching another file entry, e.g. for restoreEntry.
+  void RegisterFileSystemAndSendResponseWithIdOverride(
+      const base::FilePath& path,
+      EntryType entry_type,
+      const std::string& id_override);
+
   // called on the UI thread if there is a problem checking a writable file.
   void HandleWritableFileError();
 };
@@ -113,6 +123,38 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
   void FileSelectionCanceled();
 
   base::FilePath initial_path_;
+};
+
+class FileSystemRetainEntryFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileSystem.retainEntry", FILESYSTEM_RETAINENTRY)
+
+ protected:
+  virtual ~FileSystemRetainEntryFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Retains the file entry referenced by |entry_id| in apps::SavedFilesService.
+  // |entry_id| must refer to an entry in an isolated file system.
+  bool RetainFileEntry(const std::string& entry_id);
+};
+
+class FileSystemIsRestorableFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileSystem.isRestorable", FILESYSTEM_ISRESTORABLE)
+
+ protected:
+  virtual ~FileSystemIsRestorableFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class FileSystemRestoreEntryFunction : public FileSystemEntryFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileSystem.restoreEntry", FILESYSTEM_RESTOREENTRY)
+
+ protected:
+  virtual ~FileSystemRestoreEntryFunction() {}
+  virtual bool RunImpl() OVERRIDE;
 };
 
 }  // namespace extensions

@@ -1,7 +1,7 @@
 {
-  "name": "chrome.fileSystem.getEntryId test",
+  "name": "chrome.fileSystem.restoreEntry test",
   "version": "0.1",
-  "description": "Test for chrome.fileSystem.getEntryId",
+  "description": "Test for chrome.fileSystem.restoreEntry",
   "app": {
     "background": {
       "scripts": ["background.js"]

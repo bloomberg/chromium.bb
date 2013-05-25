@@ -52,28 +52,10 @@ void AppEventRouter::DispatchOnLaunchedEvent(
   DispatchOnLaunchedEventImpl(extension->id(), arguments.Pass(), profile);
 }
 
-DictionaryValue* DictionaryFromSavedFileEntry(
-    const app_file_handler_util::GrantedFileEntry& file_entry) {
-  DictionaryValue* result = new DictionaryValue();
-  result->SetString("id", file_entry.id);
-  result->SetString("fileSystemId", file_entry.filesystem_id);
-  result->SetString("baseName", file_entry.registered_name);
-  return result;
-}
-
 // static.
-void AppEventRouter::DispatchOnRestartedEvent(
-    Profile* profile,
-    const Extension* extension,
-    const std::vector<app_file_handler_util::GrantedFileEntry>& file_entries) {
-  ListValue* file_entries_list = new ListValue();
-  for (std::vector<extensions::app_file_handler_util::GrantedFileEntry>
-       ::const_iterator it = file_entries.begin(); it != file_entries.end();
-       ++it) {
-    file_entries_list->Append(DictionaryFromSavedFileEntry(*it));
-  }
+void AppEventRouter::DispatchOnRestartedEvent(Profile* profile,
+                                              const Extension* extension) {
   scoped_ptr<ListValue> arguments(new ListValue());
-  arguments->Append(file_entries_list);
   scoped_ptr<Event> event(new Event(kOnRestarted, arguments.Pass()));
   event->restrict_to_profile = profile;
   extensions::ExtensionSystem::Get(profile)->event_router()->

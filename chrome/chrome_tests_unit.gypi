@@ -463,6 +463,7 @@
       },
       'sources': [
         '../apps/app_shim/app_shim_host_mac_unittest.cc',
+        '../apps/saved_files_service_unittest.cc',
         '../apps/shell_window_geometry_cache_unittest.cc',
         '../extensions/browser/file_reader_unittest.cc',
         '../extensions/common/event_filter_unittest.cc',

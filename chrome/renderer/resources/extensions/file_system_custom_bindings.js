@@ -10,6 +10,7 @@ var fileSystemNatives = requireNative('file_system_natives');
 var forEach = require('utils').forEach;
 var GetIsolatedFileSystem = fileSystemNatives.GetIsolatedFileSystem;
 var lastError = require('lastError');
+var sendRequest = require('sendRequest').sendRequest;
 var GetModuleSystem = requireNative('v8_context').GetModuleSystem;
 // TODO(sammc): Don't require extension. See http://crbug.com/235689.
 var GetExtensionViews = requireNative('extension').GetExtensionViews;
@@ -81,16 +82,46 @@ binding.registerCustomHook(function(bindingsAPI) {
   forEach(['getDisplayPath', 'getWritableEntry', 'isWritableEntry'],
           bindFileEntryFunction);
 
-  forEach(['getWritableEntry', 'chooseEntry'], function(i, functionName) {
+  forEach(['getWritableEntry', 'chooseEntry', 'restoreEntry'],
+      function(i, functionName) {
     bindFileEntryCallback(functionName, apiFunctions);
   });
 
-  apiFunctions.setHandleRequest('getEntryId', function(fileEntry) {
-    return entryIdManager.getEntryId(fileEntry);
+  apiFunctions.setHandleRequest('retainEntry', function(fileEntry) {
+    var id = entryIdManager.getEntryId(fileEntry);
+    if (!id)
+      return '';
+    var fileSystemName = fileEntry.filesystem.name;
+    var relativePath = fileEntry.fullPath.slice(1);
+
+    sendRequest(this.name, [id, fileSystemName, relativePath],
+      this.definition.parameters, {});
+    return id;
   });
 
-  apiFunctions.setHandleRequest('getEntryById', function(id) {
-    return entryIdManager.getEntryById(id);
+  apiFunctions.setHandleRequest('isRestorable',
+      function(id, callback) {
+    var savedEntry = entryIdManager.getEntryById(id);
+    if (savedEntry) {
+      callback(true);
+    } else {
+      sendRequest(this.name, [id, callback], this.definition.parameters, {});
+    }
+  });
+
+  apiFunctions.setUpdateArgumentsPostValidate('restoreEntry',
+      function(id, callback) {
+    var savedEntry = entryIdManager.getEntryById(id);
+    if (savedEntry) {
+      // We already have a file entry for this id so pass it to the callback and
+      // send a request to the browser to move it to the back of the LRU.
+      callback(savedEntry);
+      return [id, false, null];
+    } else {
+      // Ask the browser process for a new file entry for this id, to be passed
+      // to |callback|.
+      return [id, true, callback];
+    }
   });
 
   // TODO(benwells): Remove these deprecated versions of the functions.

@@ -4,8 +4,8 @@
 
 #include "apps/app_restore_service.h"
 
+#include "apps/saved_files_service.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
-#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -70,13 +70,16 @@ void AppRestoreService::HandleStartup(bool should_restore_apps) {
       it != extensions->end(); ++it) {
     const Extension* extension = *it;
     if (extension_prefs->IsExtensionRunning(extension->id())) {
-      std::vector<SavedFileEntry> file_entries;
-      extensions::app_file_handler_util::GetSavedFileEntries(extension_prefs,
-                                                             extension->id(),
-                                                             &file_entries);
       RecordAppStop(extension->id());
-      if (should_restore_apps)
-        RestoreApp(*it, file_entries);
+      // If we are not restoring apps (e.g., because it is a clean restart), and
+      // the app does not have retain permission, explicitly clear the retained
+      // entries queue.
+      if (should_restore_apps) {
+        RestoreApp(*it);
+      } else {
+        SavedFilesService::Get(profile_)->ClearQueueIfNoRetainPermission(
+            extension);
+      }
     }
   }
 }
@@ -138,8 +141,6 @@ void AppRestoreService::RecordAppStop(const std::string& extension_id) {
   ExtensionPrefs* extension_prefs =
       ExtensionSystem::Get(profile_)->extension_service()->extension_prefs();
   extension_prefs->SetExtensionRunning(extension_id, false);
-  extensions::app_file_handler_util::ClearSavedFileEntries(
-      extension_prefs, extension_id);
 }
 
 void AppRestoreService::RecordIfAppHasWindows(
@@ -162,12 +163,8 @@ void AppRestoreService::RecordIfAppHasWindows(
   extension_prefs->SetHasWindows(id, has_windows);
 }
 
-void AppRestoreService::RestoreApp(
-    const Extension* extension,
-    const std::vector<SavedFileEntry>& file_entries) {
-  extensions::RestartPlatformAppWithFileEntries(profile_,
-                                                extension,
-                                                file_entries);
+void AppRestoreService::RestoreApp(const Extension* extension) {
+  extensions::RestartPlatformApp(profile_, extension);
 }
 
 void AppRestoreService::StartObservingShellWindows() {

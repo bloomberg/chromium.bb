@@ -18,6 +18,7 @@ class FileSystemNatives : public ObjectBackedNativeHandler {
  private:
   v8::Handle<v8::Value> GetFileEntry(const v8::Arguments& args);
   v8::Handle<v8::Value> GetIsolatedFileSystem(const v8::Arguments& args);
+  v8::Handle<v8::Value> CrackIsolatedFileSystemName(const v8::Arguments& args);
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemNatives);
 };

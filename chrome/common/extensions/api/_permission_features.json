@@ -208,6 +208,10 @@
     "extension_types": ["extension"],
     "whitelist": [ "2FC374607C2DF285634B67C64A2E356C607091C3" ]
   }],
+  "fileSystem.retainFiles": [{
+    "channel": "trunk",
+    "extension_types": ["platform_app"]
+  }],
   "fileSystem.write": [{
     "channel": "stable",
     "extension_types": ["platform_app"]

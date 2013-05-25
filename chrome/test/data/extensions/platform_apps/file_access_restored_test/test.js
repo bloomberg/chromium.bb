@@ -26,7 +26,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
     var fs = win.contentWindow.chrome.fileSystem;
     fs.chooseEntry({type: 'openFile'}, function(entry) {
       fs.getWritableEntry(entry, function(writableEntry) {
-        var id = fs.getEntryId(entry);
+        var id = fs.retainEntry(entry);
         chrome.storage.local.set({id:id}, function() {
           truncateAndWriteToFile(writableEntry, function() {
             chrome.test.sendMessage('fileWritten');
@@ -40,35 +40,36 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 chrome.app.runtime.onRestarted.addListener(function() {
   chrome.storage.local.get(null, function(data) {
-    var entry = chrome.fileSystem.getEntryById(data.id);
-    if (!entry) {
-      console.error("couldn't get file entry " + data.id);
-      return;
-    }
-    entry.file(function(file) {
-      var fr = new FileReader();
-      fr.onload = function(e) {
-        if (e.target.result != expectedText) {
-          console.error(
-              "expected '" + expectedText + "', got '" + e.target.result + "'");
-          return;
-        }
-        entry.createWriter(function(fileWriter) {
-          fileWriter.onwriteend = function(e) {
-            chrome.test.sendMessage('restartedFileAccessOK');
-            win.close();
-          };
-          fileWriter.onerror = function(e) {
-            console.error('Write failed: ' + e.toString());
-          };
-          var blob = new Blob(["doesn't matter"], {type: 'text/plain'});
-          fileWriter.write(blob);
-        });
-      };
-      fr.onerror = function(e) {
-        chrome.test.fail("error reading file");
-      };
-      fr.readAsText(file);
+    chrome.fileSystem.restoreEntry(data.id, function(entry) {
+      if (!entry) {
+        console.error("couldn't get file entry " + data.id);
+        return;
+      }
+      entry.file(function(file) {
+        var fr = new FileReader();
+        fr.onload = function(e) {
+          if (e.target.result != expectedText) {
+            console.error("expected '" + expectedText + "', got '" +
+              e.target.result + "'");
+            return;
+          }
+          entry.createWriter(function(fileWriter) {
+            fileWriter.onwriteend = function(e) {
+              chrome.test.sendMessage('restartedFileAccessOK');
+              win.close();
+            };
+            fileWriter.onerror = function(e) {
+              console.error('Write failed: ' + e.toString());
+            };
+            var blob = new Blob(["doesn't matter"], {type: 'text/plain'});
+            fileWriter.write(blob);
+          });
+        };
+        fr.onerror = function(e) {
+          chrome.test.fail("error reading file");
+        };
+        fr.readAsText(file);
+      });
     });
   });
 });

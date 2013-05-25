@@ -709,6 +709,7 @@ TEST(PermissionsTest, PermissionMessages) {
 
   // Platform apps.
   skip.insert(APIPermission::kFileSystem);
+  skip.insert(APIPermission::kFileSystemRetainFiles);
   skip.insert(APIPermission::kSocket);
   skip.insert(APIPermission::kUsbDevice);
 

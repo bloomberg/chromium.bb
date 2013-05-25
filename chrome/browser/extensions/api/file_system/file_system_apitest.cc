@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "apps/saved_files_service.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
@@ -18,11 +19,11 @@ namespace {
 
 class AppInstallObserver : public content::NotificationObserver {
  public:
-  AppInstallObserver(const base::FilePath& choose_entry_directory,
-                     extensions::ExtensionPrefs* prefs)
-      : path_(choose_entry_directory),
-        prefs_(prefs) {
-    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+  AppInstallObserver(
+      base::Callback<void(const extensions::Extension*)> callback)
+      : callback_(callback) {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_LOADED,
                    content::NotificationService::AllSources());
   }
 
@@ -30,17 +31,27 @@ class AppInstallObserver : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     EXPECT_EQ(chrome::NOTIFICATION_EXTENSION_LOADED, type);
-    std::string extension_id = content::Details<const extensions::Extension>(
-        details).ptr()->id();
-    prefs_->SetLastChooseEntryDirectory(extension_id, path_);
+    callback_.Run(content::Details<const extensions::Extension>(details).ptr());
   }
 
  private:
   content::NotificationRegistrar registrar_;
-  const base::FilePath path_;
-  extensions::ExtensionPrefs* prefs_;
+  base::Callback<void(const extensions::Extension*)> callback_;
   DISALLOW_COPY_AND_ASSIGN(AppInstallObserver);
 };
+
+void SetLastChooseEntryDirectory(const base::FilePath& choose_entry_directory,
+                                 extensions::ExtensionPrefs* prefs,
+                                 const extensions::Extension* extension) {
+  prefs->SetLastChooseEntryDirectory(extension->id(), choose_entry_directory);
+}
+
+void AddSavedEntry(const base::FilePath& path_to_save,
+                   apps::SavedFilesService* service,
+                   const extensions::Extension* extension) {
+  service->RegisterFileEntry(
+      extension->id(), "magic id", path_to_save, /* writable */ true);
+}
 
 }  // namespace
 
@@ -161,9 +172,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
       SkipPickerAndSelectSuggestedPathForTest();
   {
     AppInstallObserver observer(
-        test_file.DirName(),
-        extensions::ExtensionSystem::Get(
-            profile())->extension_service()->extension_prefs());
+        base::Bind(SetLastChooseEntryDirectory,
+                   test_file.DirName(),
+                   extensions::ExtensionSystem::Get(
+                       profile())->extension_service()->extension_prefs()));
     ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
         << message_;
   }
@@ -179,11 +191,12 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   FileSystemChooseEntryFunction::
       SkipPickerAndSelectSuggestedPathForTest();
   {
-    AppInstallObserver observer(
-        test_file.DirName().Append(base::FilePath::FromUTF8Unsafe(
-            "fake_directory_does_not_exist")),
+    AppInstallObserver observer(base::Bind(
+        SetLastChooseEntryDirectory,
+        test_file.DirName().Append(
+            base::FilePath::FromUTF8Unsafe("fake_directory_does_not_exist")),
         extensions::ExtensionSystem::Get(
-            profile())->extension_service()->extension_prefs());
+            profile())->extension_service()->extension_prefs()));
     ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
         << message_;
   }
@@ -340,11 +353,30 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiIsWritableTest) {
       "api_test/file_system/is_writable_file_entry")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetEntryId) {
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRetainEntry) {
   base::FilePath test_file = TempFilePath("writable.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
   ASSERT_TRUE(RunPlatformAppTest(
-      "api_test/file_system/get_entry_id")) << message_;
+      "api_test/file_system/retain_entry")) << message_;
+  std::vector<apps::SavedFileEntry> file_entries = apps::SavedFilesService::Get(
+      profile())->GetAllFileEntries(GetSingleLoadedExtension()->id());
+  ASSERT_EQ(1u, file_entries.size());
+  EXPECT_EQ(test_file, file_entries[0].path);
+  EXPECT_EQ(1, file_entries[0].sequence_number);
+  EXPECT_FALSE(file_entries[0].writable);
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreEntry) {
+  base::FilePath test_file = TempFilePath("writable.txt", true);
+  ASSERT_FALSE(test_file.empty());
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_file);
+  {
+    AppInstallObserver observer(base::Bind(
+        AddSavedEntry, test_file, apps::SavedFilesService::Get(profile())));
+    ASSERT_TRUE(RunPlatformAppTest(
+        "api_test/file_system/restore_entry")) << message_;
+  }
 }

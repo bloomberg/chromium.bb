@@ -15,16 +15,9 @@
 
 namespace extensions {
 class Extension;
-
-namespace app_file_handler_util {
-struct SavedFileEntry;
-}
-
 }
 
 class Profile;
-
-using extensions::app_file_handler_util::SavedFileEntry;
 
 namespace apps {
 
@@ -61,9 +54,7 @@ class AppRestoreService : public BrowserContextKeyedService,
   void RecordAppStop(const std::string& extension_id);
   void RecordIfAppHasWindows(const std::string& id);
 
-  void RestoreApp(
-      const extensions::Extension* extension,
-      const std::vector<SavedFileEntry>& file_entries);
+  void RestoreApp(const extensions::Extension* extension);
 
   void StartObservingShellWindows();
   void StopObservingShellWindows();

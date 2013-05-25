@@ -55,6 +55,7 @@ namespace fileSystem {
   callback GetDisplayPathCallback = void (DOMString displayPath);
   callback FileEntryCallback = void ([instanceOf=FileEntry] object fileEntry);
   callback IsWritableCallback = void (boolean isWritable);
+  callback IsRestorableCallback = void (boolean isRestorable);
 
   interface Functions {
     // Get the display path of a FileEntry object. The display path is based on
@@ -76,14 +77,17 @@ namespace fileSystem {
     static void chooseEntry(optional ChooseEntryOptions options,
                             FileEntryCallback callback);
 
-    // Returns the file entry with the given id.
-    [nocompile] static FileEntry getEntryById(DOMString id);
+    // Returns the file entry with the given id if it can be restored. This call
+    // will fail otherwise.
+    static void restoreEntry(DOMString id, FileEntryCallback callback);
 
-    // Returns the id of the given file entry. This can be used to retrieve file
-    // entries with getEntryById(). When an app is restarted (ie: it is sent the
-    // onRestarted event) it can regain access to the file entries it had by
-    // remembering their ids and calling getEntryById().
-    [nocompile] static DOMString getEntryId(
-        [instanceOf=FileEntry] object fileEntry);
+    // Returns whether a file entry for the given id can be restored, i.e.
+    // whether restoreEntry would succeed with this id now.
+    static void isRestorable(DOMString id, IsRestorableCallback callback);
+
+    // Returns an id that can be passed to restoreEntry to regain access to a
+    // given file entry. Only the 500 most recently used entries are retained,
+    // where calls to retainEntry and restoreEntry count as use.
+    static DOMString retainEntry([instanceOf=FileEntry] object fileEntry);
   };
 };
