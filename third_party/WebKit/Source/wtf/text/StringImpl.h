@@ -1092,6 +1092,15 @@ inline size_t StringImpl::find(UChar character, unsigned start)
     return WTF::find(characters16(), m_length, character, start);
 }
 
+inline unsigned lengthOfNullTerminatedString(const UChar* string)
+{
+    size_t length = 0;
+    while (string[length] != UChar(0))
+        ++length;
+    RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max());
+    return static_cast<unsigned>(length);
+}
+
 template<size_t inlineCapacity>
 bool equalIgnoringNullity(const Vector<UChar, inlineCapacity>& a, StringImpl* b)
 {

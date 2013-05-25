@@ -329,8 +329,11 @@ SQLValue SQLiteStatement::getColumnValue(int col)
         case SQLITE_FLOAT:
             return SQLValue(sqlite3_value_double(value));
         case SQLITE_BLOB:       // SQLValue and JS don't represent blobs, so use TEXT -case
-        case SQLITE_TEXT:
-            return SQLValue(String(reinterpret_cast<const UChar*>(sqlite3_value_text16(value))));
+        case SQLITE_TEXT: {
+            const UChar* string = reinterpret_cast<const UChar*>(sqlite3_value_text16(value));
+            unsigned length = WTF::lengthOfNullTerminatedString(string);
+            return SQLValue(StringImpl::create8BitIfPossible(string, length));
+        }
         case SQLITE_NULL:
             return SQLValue();
         default:

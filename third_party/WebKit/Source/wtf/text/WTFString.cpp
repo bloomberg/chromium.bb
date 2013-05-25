@@ -54,14 +54,7 @@ String::String(const UChar* str)
 {
     if (!str)
         return;
-        
-    size_t len = 0;
-    while (str[len] != UChar(0))
-        ++len;
-
-    RELEASE_ASSERT(len <= numeric_limits<unsigned>::max());
-    
-    m_impl = StringImpl::create(str, len);
+    m_impl = StringImpl::create(str, lengthOfNullTerminatedString(str));
 }
 
 // Construct a string with latin1 data.
