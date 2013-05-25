@@ -440,13 +440,15 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end,
         return true;
     }
 
-    String nonce;
-    if (!parseNonce(begin, end, nonce))
-        return false;
+    if (m_policy->experimentalFeaturesEnabled()) {
+        String nonce;
+        if (!parseNonce(begin, end, nonce))
+            return false;
 
-    if (!nonce.isNull()) {
-        addSourceNonce(nonce);
-        return true;
+        if (!nonce.isNull()) {
+            addSourceNonce(nonce);
+            return true;
+        }
     }
 
     const UChar* position = begin;
