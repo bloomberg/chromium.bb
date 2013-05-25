@@ -21,7 +21,10 @@ window.addEventListener('DOMContentLoaded', function() {
     if (data.thumbnailUrl) {
       var image = new Image();
       image.onload = function() {
+        var shadow = document.createElement('span');
+        shadow.classList.add('shadow');
         var link = createMostVisitedLink(params, data.url, data.title);
+        link.appendChild(shadow);
         link.appendChild(image);
         document.body.appendChild(link);
       };

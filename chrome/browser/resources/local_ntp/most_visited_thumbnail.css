@@ -23,7 +23,14 @@ div {
   width: 90%;
 }
 
-img {
+img,
+.shadow {
+  border-radius: 2px;
   height: 100%;
   width: 100%;
+}
+
+.shadow {
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.09);
+  position: absolute;
 }
