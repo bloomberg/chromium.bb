@@ -82,6 +82,7 @@
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
 #endif
 
 using content::BrowserThread;
@@ -231,6 +232,36 @@ class ContainerWindow : public ATL::CWindowImpl<ContainerWindow,
 
   DISALLOW_COPY_AND_ASSIGN(ContainerWindow);
 };
+
+// A specialization of DesktopRootWindowHost for an external tab container that
+// saves and restores focus as the ETC is blurred and focused. DRWHW ordinarily
+// does this during window activation and deactivation. Since the ETC is a child
+// window, it does not receive activation messages.
+class ExternalTabRootWindowHost : public views::DesktopRootWindowHostWin {
+ public:
+  ExternalTabRootWindowHost(
+      views::internal::NativeWidgetDelegate* native_widget_delegate,
+      views::DesktopNativeWidgetAura* desktop_native_widget_aura,
+      const gfx::Rect& initial_bounds)
+      : views::DesktopRootWindowHostWin(native_widget_delegate,
+                                        desktop_native_widget_aura,
+                                        initial_bounds) {}
+
+ protected:
+  // HWNDMessageHandlerDelegate methods:
+  virtual void HandleNativeFocus(HWND last_focused_window) OVERRIDE {
+    views::DesktopRootWindowHostWin::HandleNativeFocus(last_focused_window);
+    RestoreFocusOnActivate();
+  }
+
+  virtual void HandleNativeBlur(HWND focused_window) OVERRIDE {
+    SaveFocusOnDeactivate();
+    views::DesktopRootWindowHostWin::HandleNativeBlur(focused_window);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExternalTabRootWindowHost);
+};
 #endif
 
 base::LazyInstance<ExternalTabContainerWin::PendingTabs>
@@ -305,7 +336,11 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   tab_container_window_ =
       (new ContainerWindow(HWND_DESKTOP, params.bounds))->AsWeakPtr();
 
-  params.native_widget = new views::DesktopNativeWidgetAura(widget_);
+  views::DesktopNativeWidgetAura* native_widget =
+      new views::DesktopNativeWidgetAura(widget_);
+  params.native_widget = native_widget;
+  params.desktop_root_window_host =
+      new ExternalTabRootWindowHost(widget_, native_widget, params.bounds);
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
 #endif
   widget_->Init(params);
@@ -758,6 +793,12 @@ bool ExternalTabContainerWin::TakeFocus(content::WebContents* source,
   }
 
   return true;
+}
+
+void ExternalTabContainerWin::WebContentsFocused(
+    content::WebContents* contents) {
+  DCHECK_EQ(tab_contents_container_->GetWebContents(), contents);
+  tab_contents_container_->OnWebContentsFocused(contents);
 }
 
 void ExternalTabContainerWin::CanDownload(

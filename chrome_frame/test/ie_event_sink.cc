@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_piece.h"
+#include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
@@ -317,7 +318,8 @@ void IEEventSink::SetFocusToRenderer() {
 
 void IEEventSink::SendKeys(const char* input_string) {
   HWND window = GetRendererWindow();
-  const base::TimeDelta kMessageSleep = base::TimeDelta::FromMilliseconds(50);
+  simulate_input::SetKeyboardFocusToWindow(window);
+  const base::TimeDelta kMessageSleep = TestTimeouts::tiny_timeout();
   const base::StringPiece codes(input_string);
   for (size_t i = 0; i < codes.length(); ++i) {
     char character = codes[i];

@@ -7,8 +7,10 @@
       function OnClick() {
         // Open popup to the url from the given query string.
         var url = window.location.search.substring(1);
-        new_window = window.open(url, "_blank",
-                                 "left=10, top=10, height=250, width=250");
+        if (!new_window) {
+          new_window = window.open(url, "_blank",
+                                   "left=10, top=10, height=250, width=250");
+        }
       }
 
       function OnKeyPress() {

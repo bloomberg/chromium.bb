@@ -7,6 +7,8 @@
 #include <atlbase.h>
 #include <atlwin.h>
 
+#include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "chrome_frame/utils.h"
 
 namespace simulate_input {
@@ -191,6 +193,7 @@ void SetKeyboardFocusToWindow(HWND window) {
 }
 
 void SendMouseClick(int x, int y, MouseButton button) {
+  const base::TimeDelta kMessageTimeout = TestTimeouts::tiny_timeout();
   // TODO(joshia): Fix this. GetSystemMetrics(SM_CXSCREEN) will
   // retrieve screen size of the primarary monitor only. And monitors
   // arrangement could be pretty arbitrary.
@@ -208,16 +211,15 @@ void SendMouseClick(int x, int y, MouseButton button) {
   input_info.mi.dx = static_cast<LONG>(location_x);
   input_info.mi.dy = static_cast<LONG>(location_y);
   ::SendInput(1, &input_info, sizeof(INPUT));
-
-  Sleep(10);
+  base::PlatformThread::Sleep(kMessageTimeout);
 
   input_info.mi.dwFlags = button_flag | MOUSEEVENTF_ABSOLUTE;
   ::SendInput(1, &input_info, sizeof(INPUT));
-
-  Sleep(10);
+  base::PlatformThread::Sleep(kMessageTimeout);
 
   input_info.mi.dwFlags = (button_flag << 1) | MOUSEEVENTF_ABSOLUTE;
   ::SendInput(1, &input_info, sizeof(INPUT));
+  base::PlatformThread::Sleep(kMessageTimeout);
 }
 
 void SendMouseClick(HWND window, int x, int y, MouseButton button) {
