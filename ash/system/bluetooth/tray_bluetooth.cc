@@ -24,14 +24,45 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
-namespace {
-const int kDeviceListHeight = 276;
-}
-
 namespace ash {
 namespace internal {
 
 namespace tray {
+
+namespace {
+
+// Updates bluetooth device |device| in the |list|. If it is new, append to the
+// end of the |list|; otherwise, keep it at the same place, but update the data
+// with new device info provided by |device|.
+void UpdateBluetoothDeviceList(BluetoothDeviceList* list,
+                               const BluetoothDeviceInfo& device) {
+  for (BluetoothDeviceList::iterator it = list->begin(); it != list->end();
+       ++it) {
+    if ((*it).address == device.address) {
+      *it = device;
+      return;
+    }
+  }
+
+  list->push_back(device);
+}
+
+// Removes the obsolete BluetoothDevices from |list|, if they are not in the
+// |new_list|.
+void RemoveObsoleteBluetoothDevicesFromList(
+    BluetoothDeviceList* list,
+    const std::set<std::string>& new_list) {
+  for (BluetoothDeviceList::iterator it = list->begin(); it != list->end();
+       ++it) {
+    if (new_list.find((*it).address) == new_list.end()) {
+      it = list->erase(it);
+      if (it == list->end())
+        return;
+    }
+  }
+}
+
+}  // namespace
 
 class BluetoothDefaultView : public TrayItemMore {
  public:
@@ -127,10 +158,11 @@ class BluetoothDetailedView : public TrayDetailsView,
   }
 
   void UpdateBlueToothDeviceList() {
-    connected_devices_.clear();
-    connecting_devices_.clear();
-    paired_not_connected_devices_.clear();
-    discovered_not_paired_devices_.clear();
+    std::set<std::string> new_connecting_devices;
+    std::set<std::string> new_connected_devices;
+    std::set<std::string> new_paired_not_connected_devices;
+    std::set<std::string> new_discovered_not_paired_devices;
+
     BluetoothDeviceList list;
     Shell::GetInstance()->system_tray_delegate()->
         GetAvailableBluetoothDevices(&list);
@@ -138,15 +170,27 @@ class BluetoothDetailedView : public TrayDetailsView,
       if (list[i].connecting) {
         list[i].display_name = l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTING, list[i].display_name);
-        connecting_devices_.push_back(list[i]);
+        new_connecting_devices.insert(list[i].address);
+        UpdateBluetoothDeviceList(&connecting_devices_, list[i]);
       } else if (list[i].connected) {
-        connected_devices_.push_back(list[i]);
+        new_connected_devices.insert(list[i].address);
+        UpdateBluetoothDeviceList(&connected_devices_, list[i]);
       } else if (list[i].paired) {
-        paired_not_connected_devices_.push_back(list[i]);
+        new_paired_not_connected_devices.insert(list[i].address);
+        UpdateBluetoothDeviceList(&paired_not_connected_devices_, list[i]);
       } else {
-        discovered_not_paired_devices_.push_back(list[i]);
+        new_discovered_not_paired_devices.insert(list[i].address);
+        UpdateBluetoothDeviceList(&discovered_not_paired_devices_, list[i]);
       }
     }
+    RemoveObsoleteBluetoothDevicesFromList(&connecting_devices_,
+                                           new_connecting_devices);
+    RemoveObsoleteBluetoothDevicesFromList(&connected_devices_,
+                                           new_connected_devices);
+    RemoveObsoleteBluetoothDevicesFromList(&paired_not_connected_devices_,
+                                           new_paired_not_connected_devices);
+    RemoveObsoleteBluetoothDevicesFromList(&discovered_not_paired_devices_,
+                                           new_discovered_not_paired_devices);
   }
 
   void AppendHeaderEntry() {
