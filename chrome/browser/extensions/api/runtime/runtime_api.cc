@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -14,10 +15,14 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/api/runtime.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
+#include "extensions/common/error_utils.h"
 #include "googleurl/src/gurl.h"
 
 namespace GetPlatformInfo = extensions::api::runtime::GetPlatformInfo;
@@ -38,6 +43,7 @@ const char kInstallReasonChromeUpdate[] = "chrome_update";
 const char kInstallReasonUpdate[] = "update";
 const char kInstallReasonInstall[] = "install";
 const char kInstallPreviousVersion[] = "previousVersion";
+const char kInvalidUrlError[] = "Invalid URL.";
 const char kUpdatesDisabledError[] = "Autoupdate is not enabled.";
 const char kUpdateFound[] = "update_available";
 const char kUpdateNotFound[] = "no_update";
@@ -157,6 +163,31 @@ void RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
   system->event_router()->BroadcastEvent(event.Pass());
 }
 
+// static
+void RuntimeEventRouter::OnExtensionUninstalled(
+    Profile *profile,
+    const std::string& extension_id) {
+#if defined(ENABLE_EXTENSIONS)
+  GURL uninstall_url(profile->GetExtensionService()->extension_prefs()->
+      GetUninstallUrl(extension_id));
+
+  if (uninstall_url.is_empty())
+    return;
+
+  Browser* browser = chrome::FindLastActiveWithProfile(profile,
+      chrome::GetActiveDesktop());
+  if (!browser)
+    browser = new Browser(Browser::CreateParams(profile,
+                                                chrome::GetActiveDesktop()));
+
+  chrome::NavigateParams params(browser, uninstall_url,
+                                content::PAGE_TRANSITION_CLIENT_REDIRECT);
+  params.disposition = NEW_FOREGROUND_TAB;
+  params.user_gesture = false;
+  chrome::Navigate(&params);
+#endif  // defined(ENABLE_EXTENSIONS)
+}
+
 bool RuntimeGetBackgroundPageFunction::RunImpl() {
   ExtensionSystem* system = ExtensionSystem::Get(profile());
   ExtensionHost* host = system->process_manager()->
@@ -183,6 +214,21 @@ void RuntimeGetBackgroundPageFunction::OnPageLoaded(ExtensionHost* host) {
     error_ = kPageLoadError;
     SendResponse(false);
   }
+}
+
+bool RuntimeSetUninstallUrlFunction::RunImpl() {
+  std::string url_string;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url_string));
+
+  GURL url(url_string);
+  if (!url.is_valid()) {
+    error_ = ErrorUtils::FormatErrorMessage(kInvalidUrlError, url_string);
+    return false;
+  }
+
+  profile()->GetExtensionService()->extension_prefs()->
+      SetUninstallUrl(extension_id(), url_string);
+  return true;
 }
 
 bool RuntimeReloadFunction::RunImpl() {

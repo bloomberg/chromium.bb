@@ -110,6 +110,19 @@
         }
       },
       {
+        "name": "setUninstallUrl",
+        "type": "function",
+        "unpriviledged": true,
+        "description": "Sets the URL to be visited upon uninstallation. This may be used to clean up server-side data, do analytics, and implement surveys. Maximum 255 characters.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "url",
+            "maxLength": 255
+          }
+        ]
+      },
+      {
         "name": "reload",
         "description": "Reloads the app or extension.",
         "type": "function",

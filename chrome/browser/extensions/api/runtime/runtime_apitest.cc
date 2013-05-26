@@ -25,6 +25,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUnprivileged) {
   EXPECT_TRUE(catcher.GetNextResult()) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUninstallUrl) {
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("runtime").AppendASCII("uninstall_url").
+          AppendASCII("sets_uninstall_url")));
+  ASSERT_TRUE(RunExtensionTest("runtime/uninstall_url")) << message_;
+}
+
 namespace extensions {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeGetPlatformInfo) {

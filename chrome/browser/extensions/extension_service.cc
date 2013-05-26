@@ -1904,6 +1904,11 @@ void ExtensionService::UnloadExtension(
     return;
   }
 
+  // If uninstalling let RuntimeEventRouter know.
+  if (reason == extension_misc::UNLOAD_REASON_UNINSTALL)
+    extensions::RuntimeEventRouter::OnExtensionUninstalled(
+        profile_, extension_id);
+
   // Keep information about the extension so that we can reload it later
   // even if it's not permanently installed.
   unloaded_extension_paths_[extension->id()] = extension->path();

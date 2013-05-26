@@ -39,6 +39,10 @@ class RuntimeEventRouter {
 
   // Dispatches the onBrowserUpdateAvailable event to all extensions.
   static void DispatchOnBrowserUpdateAvailableEvent(Profile* profile);
+
+  // Does any work needed at extension uninstall (e.g. load uninstall url).
+  static void OnExtensionUninstalled(Profile* profile,
+                                     const std::string& extension_id);
 };
 
 class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {
@@ -52,6 +56,16 @@ class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {
 
  private:
   void OnPageLoaded(ExtensionHost*);
+};
+
+class RuntimeSetUninstallUrlFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("runtime.setUninstallUrl",
+                             RUNTIME_SETUNINSTALLURL)
+
+ protected:
+  virtual ~RuntimeSetUninstallUrlFunction() {}
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class RuntimeReloadFunction : public SyncExtensionFunction {
