@@ -395,7 +395,7 @@ void AsyncPixelTransferDelegateShareGroup::WaitForTransferCompletion(
 
   if (state->TransferIsInProgress()) {
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-    g_transfer_thread.Pointer()->SetPriority(base::kThreadPriority_Normal);
+    g_transfer_thread.Pointer()->SetPriority(base::kThreadPriority_Display);
 #endif
 
     state->WaitForTransferCompletion();
