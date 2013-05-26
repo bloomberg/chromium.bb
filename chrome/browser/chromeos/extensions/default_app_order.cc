@@ -103,7 +103,8 @@ ExternalLoader::~ExternalLoader() {
 }
 
 const std::vector<std::string>& ExternalLoader::GetAppIds() {
-  CHECK(loaded_.IsSignaled());
+  if (!loaded_.IsSignaled())
+    LOG(ERROR) << "GetAppIds() called before loaded.";
   return app_ids_;
 }
 

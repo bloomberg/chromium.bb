@@ -50,8 +50,8 @@ ExtensionSorting::ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs,
                                    PrefService* pref_service)
     : extension_scoped_prefs_(extension_scoped_prefs),
       pref_service_(pref_service),
-      extension_service_(NULL) {
-  CreateDefaultOrdinals();
+      extension_service_(NULL),
+      default_ordinals_created_(false) {
 }
 
 ExtensionSorting::~ExtensionSorting() {
@@ -547,6 +547,10 @@ void ExtensionSorting::SyncIfNeeded(const std::string& extension_id) {
 }
 
 void ExtensionSorting::CreateDefaultOrdinals() {
+  if (default_ordinals_created_)
+    return;
+  default_ordinals_created_ = true;
+
   // The following defines the default order of apps.
 #if defined(OS_CHROMEOS)
   std::vector<std::string> app_ids;
@@ -573,7 +577,8 @@ void ExtensionSorting::CreateDefaultOrdinals() {
 bool ExtensionSorting::GetDefaultOrdinals(
     const std::string& extension_id,
     syncer::StringOrdinal* page_ordinal,
-    syncer::StringOrdinal* app_launch_ordinal) const {
+    syncer::StringOrdinal* app_launch_ordinal) {
+  CreateDefaultOrdinals();
   AppOrdinalsMap::const_iterator it = default_ordinals_.find(extension_id);
   if (it == default_ordinals_.end())
     return false;
