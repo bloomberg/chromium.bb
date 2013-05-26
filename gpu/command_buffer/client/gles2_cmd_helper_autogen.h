@@ -1777,11 +1777,11 @@
     }
   }
 
-  void ResizeCHROMIUM(GLuint width, GLuint height) {
+  void ResizeCHROMIUM(GLuint width, GLuint height, GLfloat scale_factor) {
     gles2::cmds::ResizeCHROMIUM* c =
         GetCmdSpace<gles2::cmds::ResizeCHROMIUM>();
     if (c) {
-      c->Init(width, height);
+      c->Init(width, height, scale_factor);
     }
   }
 

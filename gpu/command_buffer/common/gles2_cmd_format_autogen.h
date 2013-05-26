@@ -9449,30 +9449,34 @@ struct ResizeCHROMIUM {
     header.SetCmd<ValueType>();
   }
 
-  void Init(GLuint _width, GLuint _height) {
+  void Init(GLuint _width, GLuint _height, GLfloat _scale_factor) {
     SetHeader();
     width = _width;
     height = _height;
+    scale_factor = _scale_factor;
   }
 
-  void* Set(void* cmd, GLuint _width, GLuint _height) {
-    static_cast<ValueType*>(cmd)->Init(_width, _height);
+  void* Set(void* cmd, GLuint _width, GLuint _height, GLfloat _scale_factor) {
+    static_cast<ValueType*>(cmd)->Init(_width, _height, _scale_factor);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32 width;
   uint32 height;
+  float scale_factor;
 };
 
-COMPILE_ASSERT(sizeof(ResizeCHROMIUM) == 12,
-               Sizeof_ResizeCHROMIUM_is_not_12);
+COMPILE_ASSERT(sizeof(ResizeCHROMIUM) == 16,
+               Sizeof_ResizeCHROMIUM_is_not_16);
 COMPILE_ASSERT(offsetof(ResizeCHROMIUM, header) == 0,
                OffsetOf_ResizeCHROMIUM_header_not_0);
 COMPILE_ASSERT(offsetof(ResizeCHROMIUM, width) == 4,
                OffsetOf_ResizeCHROMIUM_width_not_4);
 COMPILE_ASSERT(offsetof(ResizeCHROMIUM, height) == 8,
                OffsetOf_ResizeCHROMIUM_height_not_8);
+COMPILE_ASSERT(offsetof(ResizeCHROMIUM, scale_factor) == 12,
+               OffsetOf_ResizeCHROMIUM_scale_factor_not_12);
 
 struct GetRequestableExtensionsCHROMIUM {
   typedef GetRequestableExtensionsCHROMIUM ValueType;

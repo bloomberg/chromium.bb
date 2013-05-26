@@ -191,8 +191,8 @@ void ImageTransportHelper::OnResizeViewACK() {
   surface_->OnResizeViewACK();
 }
 
-void ImageTransportHelper::Resize(gfx::Size size) {
-  surface_->OnResize(size);
+void ImageTransportHelper::Resize(gfx::Size size, float scale_factor) {
+  surface_->OnResize(size, scale_factor);
 
 #if defined(OS_ANDROID)
   manager_->gpu_memory_manager()->ScheduleManage(
@@ -326,7 +326,8 @@ void PassThroughImageTransportSurface::OnResizeViewACK() {
   helper_->SetScheduled(true);
 }
 
-void PassThroughImageTransportSurface::OnResize(gfx::Size size) {
+void PassThroughImageTransportSurface::OnResize(gfx::Size size,
+                                                float scale_factor) {
   new_size_ = size;
 
   if (transport_) {

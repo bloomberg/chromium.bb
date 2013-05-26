@@ -575,7 +575,7 @@ void WebGraphicsContext3DCommandBufferImpl::reshapeWithScaleFactor(
   cached_width_ = width;
   cached_height_ = height;
 
-  gl_->ResizeCHROMIUM(width, height);
+  gl_->ResizeCHROMIUM(width, height, scale_factor);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::FlipVertically(

@@ -47,7 +47,7 @@ class PbufferImageTransportSurface
   virtual void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
-  virtual void OnResize(gfx::Size size) OVERRIDE;
+  virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void SetLatencyInfo(const cc::LatencyInfo&) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
 
@@ -219,7 +219,8 @@ void PbufferImageTransportSurface::OnResizeViewACK() {
   NOTREACHED();
 }
 
-void PbufferImageTransportSurface::OnResize(gfx::Size size) {
+void PbufferImageTransportSurface::OnResize(gfx::Size size,
+                                            float scale_factor) {
   DCHECK(backbuffer_suggested_allocation_);
   DCHECK(frontbuffer_suggested_allocation_);
   Resize(size);

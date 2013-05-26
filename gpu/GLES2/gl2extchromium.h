@@ -575,7 +575,8 @@ typedef void (GL_APIENTRYP PFNGLDRAWBUFFERSEXTPROC) (
 #ifndef GL_CHROMIUM_resize
 #define GL_CHROMIUM_resize 1
 #ifdef GL_GLEXT_PROTOTYPES
-GL_APICALL void GL_APIENTRY glResizeCHROMIUM(GLuint width, GLuint height);
+GL_APICALL void GL_APIENTRY glResizeCHROMIUM(
+    GLuint width, GLuint height, GLfloat scale_factor);
 #endif
 typedef void (GL_APIENTRYP PFNGLRESIZECHROMIUMPROC) (
     GLuint width, GLuint height);

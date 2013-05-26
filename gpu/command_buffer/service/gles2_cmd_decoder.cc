@@ -561,7 +561,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual void PerformIdleWork() OVERRIDE;
 
   virtual void SetResizeCallback(
-      const base::Callback<void(gfx::Size)>& callback) OVERRIDE;
+      const base::Callback<void(gfx::Size, float)>& callback) OVERRIDE;
 
   virtual Logger* GetLogger() OVERRIDE;
   virtual ErrorState* GetErrorState() OVERRIDE;
@@ -1626,7 +1626,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   scoped_ptr<VertexArrayManager> vertex_array_manager_;
 
-  base::Callback<void(gfx::Size)> resize_callback_;
+  base::Callback<void(gfx::Size, float)> resize_callback_;
 
   WaitSyncPointCallback wait_sync_point_callback_;
 
@@ -3025,7 +3025,7 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
 }
 
 void GLES2DecoderImpl::SetResizeCallback(
-    const base::Callback<void(gfx::Size)>& callback) {
+    const base::Callback<void(gfx::Size, float)>& callback) {
   resize_callback_ = callback;
 }
 
@@ -3430,6 +3430,7 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
 
   GLuint width = static_cast<GLuint>(c.width);
   GLuint height = static_cast<GLuint>(c.height);
+  GLfloat scale_factor = c.scale_factor;
   TRACE_EVENT2("gpu", "glResizeChromium", "width", width, "height", height);
 
   width = std::max(1U, width);
@@ -3450,7 +3451,7 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
   }
 
   if (!resize_callback_.is_null()) {
-    resize_callback_.Run(gfx::Size(width, height));
+    resize_callback_.Run(gfx::Size(width, height), scale_factor);
     DCHECK(context_->IsCurrent(surface_.get()));
     if (!context_->IsCurrent(surface_.get())) {
       LOG(ERROR) << "GLES2DecoderImpl: Context lost because context no longer "

@@ -1013,9 +1013,10 @@ void GLES2TraceImplementation::UnmapTexSubImage2DCHROMIUM(const void* mem) {
   gl_->UnmapTexSubImage2DCHROMIUM(mem);
 }
 
-void GLES2TraceImplementation::ResizeCHROMIUM(GLuint width, GLuint height) {
+void GLES2TraceImplementation::ResizeCHROMIUM(
+    GLuint width, GLuint height, GLfloat scale_factor) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ResizeCHROMIUM");
-  gl_->ResizeCHROMIUM(width, height);
+  gl_->ResizeCHROMIUM(width, height, scale_factor);
 }
 
 const GLchar* GLES2TraceImplementation::GetRequestableExtensionsCHROMIUM() {

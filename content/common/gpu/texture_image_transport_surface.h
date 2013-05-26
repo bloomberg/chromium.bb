@@ -54,7 +54,7 @@ class TextureImageTransportSurface
   virtual void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
-  virtual void OnResize(gfx::Size size) OVERRIDE;
+  virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void SetLatencyInfo(
       const cc::LatencyInfo& latency_info) OVERRIDE;
 
@@ -93,6 +93,7 @@ class TextureImageTransportSurface
   // The current size of the GLSurface. Used to disambiguate from the current
   // texture size which might be outdated (since we use two buffers).
   gfx::Size current_size_;
+  float scale_factor_;
 
   // Whether or not the command buffer stub has been destroyed.
   bool stub_destroyed_;

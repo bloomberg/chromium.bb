@@ -1748,7 +1748,8 @@ typedef void  (GL_APIENTRYP PFNGLUNMAPTEXSUBIMAGE2DCHROMIUM) (const void* mem);
 #ifdef GL_GLEXT_PROTOTYPES
 #define glResizeCHROMIUM GLES2_GET_FUN(ResizeCHROMIUM)
 #if !defined(GLES2_USE_CPP_BINDINGS)
-GL_APICALL void GL_APIENTRY glResizeCHROMIUM (GLuint width, GLuint height);
+GL_APICALL void GL_APIENTRY glResizeCHROMIUM (
+    GLuint width, GLuint height, GLfloat scale_factor);
 #endif
 #else
 typedef void (GL_APIENTRYP PFNGLRESIZECHROMIUM) (GLuint width, GLuint height);

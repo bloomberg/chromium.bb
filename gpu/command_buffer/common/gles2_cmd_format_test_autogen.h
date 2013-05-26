@@ -3706,12 +3706,14 @@ TEST_F(GLES2FormatTest, ResizeCHROMIUM) {
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
-      static_cast<GLuint>(12));
+      static_cast<GLuint>(12),
+      static_cast<GLfloat>(13));
   EXPECT_EQ(static_cast<uint32>(cmds::ResizeCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.width);
   EXPECT_EQ(static_cast<GLuint>(12), cmd.height);
+  EXPECT_EQ(static_cast<GLfloat>(13), cmd.scale_factor);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd));
 }

@@ -453,7 +453,8 @@ virtual void* MapTexSubImage2DCHROMIUM(
 
 virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) OVERRIDE;
 
-virtual void ResizeCHROMIUM(GLuint width, GLuint height) OVERRIDE;
+virtual void ResizeCHROMIUM(
+    GLuint width, GLuint height, GLfloat scale_factor) OVERRIDE;
 
 virtual const GLchar* GetRequestableExtensionsCHROMIUM() OVERRIDE;
 

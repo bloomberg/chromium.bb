@@ -31,6 +31,7 @@ TextureImageTransportSurface::TextureImageTransportSurface(
     const gfx::GLSurfaceHandle& handle)
       : fbo_id_(0),
         backbuffer_(CreateTextureDefinition(gfx::Size(), 0)),
+        scale_factor_(1.f),
         stub_destroyed_(false),
         backbuffer_suggested_allocation_(true),
         frontbuffer_suggested_allocation_(true),
@@ -168,8 +169,10 @@ void* TextureImageTransportSurface::GetConfig() {
   return surface_.get() ? surface_->GetConfig() : NULL;
 }
 
-void TextureImageTransportSurface::OnResize(gfx::Size size) {
+void TextureImageTransportSurface::OnResize(gfx::Size size,
+                                            float scale_factor) {
   current_size_ = size;
+  scale_factor_ = scale_factor;
   CreateBackTexture();
 }
 

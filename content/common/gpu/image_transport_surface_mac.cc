@@ -59,7 +59,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   virtual void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
-  virtual void OnResize(gfx::Size size) OVERRIDE;
+  virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void SetLatencyInfo(const cc::LatencyInfo&) OVERRIDE;
 
  private:
@@ -86,6 +86,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
 
   gfx::Size size_;
   gfx::Size rounded_size_;
+  float scale_factor_;
 
   // Whether or not we've successfully made the surface current once.
   bool made_current_;
@@ -129,6 +130,7 @@ IOSurfaceImageTransportSurface::IOSurfaceImageTransportSurface(
       texture_id_(0),
       io_surface_handle_(0),
       context_(NULL),
+      scale_factor_(1),
       made_current_(false),
       is_swap_buffers_pending_(false),
       did_unschedule_(false) {
@@ -184,7 +186,7 @@ bool IOSurfaceImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   if (made_current_)
     return true;
 
-  OnResize(gfx::Size(1, 1));
+  OnResize(gfx::Size(1, 1), 1.f);
 
   made_current_ = true;
   return true;
@@ -289,7 +291,8 @@ void IOSurfaceImageTransportSurface::OnResizeViewACK() {
   NOTREACHED();
 }
 
-void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
+void IOSurfaceImageTransportSurface::OnResize(gfx::Size size,
+                                              float scale_factor) {
   // This trace event is used in gpu_feature_browsertest.cc - the test will need
   // to be updated if this event is changed or moved.
   TRACE_EVENT2("gpu", "IOSurfaceImageTransportSurface::OnResize",
@@ -298,6 +301,7 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
   DCHECK(context_->IsCurrent(this));
 
   size_ = size;
+  scale_factor_ = scale_factor;
 
   CreateIOSurface();
 }

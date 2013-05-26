@@ -260,7 +260,8 @@ virtual void* MapTexSubImage2DCHROMIUM(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
     GLsizei height, GLenum format, GLenum type, GLenum access) = 0;
 virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) = 0;
-virtual void ResizeCHROMIUM(GLuint width, GLuint height) = 0;
+virtual void ResizeCHROMIUM(GLuint width, GLuint height, GLfloat scale_factor) =
+    0;
 virtual const GLchar* GetRequestableExtensionsCHROMIUM() = 0;
 virtual void RequestExtensionCHROMIUM(const char* extension) = 0;
 virtual void RateLimitOffscreenContextCHROMIUM() = 0;

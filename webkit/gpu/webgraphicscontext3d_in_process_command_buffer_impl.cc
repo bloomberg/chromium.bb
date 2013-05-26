@@ -158,7 +158,7 @@ class GLInProcessContext {
 
   ::gpu::gles2::GLES2Decoder* GetDecoder();
 
-  void OnResizeView(gfx::Size size);
+  void OnResizeView(gfx::Size size, float scale_factor);
 
  private:
   explicit GLInProcessContext(bool share_resources);
@@ -489,7 +489,7 @@ CommandBufferService* GLInProcessContext::GetCommandBufferService() {
   return decoder_.get();
 }
 
-void GLInProcessContext::OnResizeView(gfx::Size size) {
+void GLInProcessContext::OnResizeView(gfx::Size size, float scale_factor) {
   DCHECK(!surface_->IsOffscreen());
   surface_->Resize(size);
 }
@@ -972,7 +972,7 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::reshapeWithScaleFactor(
   // TODO(gmam): See if we can comment this in.
   // ClearContext();
 
-  gl_->ResizeCHROMIUM(width, height);
+  gl_->ResizeCHROMIUM(width, height, scale_factor);
 }
 
 WebGLId WebGraphicsContext3DInProcessCommandBufferImpl::createCompositorTexture(

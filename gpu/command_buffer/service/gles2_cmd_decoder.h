@@ -173,7 +173,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Sets a callback which is called when a glResizeCHROMIUM command
   // is processed.
   virtual void SetResizeCallback(
-      const base::Callback<void(gfx::Size)>& callback) = 0;
+      const base::Callback<void(gfx::Size, float)>& callback) = 0;
 
   virtual void SetStreamTextureManager(StreamTextureManager* manager) = 0;
 

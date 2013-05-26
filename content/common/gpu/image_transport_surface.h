@@ -63,7 +63,7 @@ class ImageTransportSurface {
   virtual void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) = 0;
   virtual void OnResizeViewACK() = 0;
-  virtual void OnResize(gfx::Size size) = 0;
+  virtual void OnResize(gfx::Size size, float scale_factor) = 0;
   virtual void SetLatencyInfo(
       const cc::LatencyInfo& latency_info) = 0;
 
@@ -158,7 +158,7 @@ class ImageTransportHelper
   void OnResizeViewACK();
 
   // Backbuffer resize callback.
-  void Resize(gfx::Size size);
+  void Resize(gfx::Size size, float scale_factor);
 
   void SetLatencyInfo(const cc::LatencyInfo& latency_info);
 
@@ -196,7 +196,7 @@ class PassThroughImageTransportSurface
   virtual void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
-  virtual void OnResize(gfx::Size size) OVERRIDE;
+  virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void SetLatencyInfo(
       const cc::LatencyInfo& latency_info) OVERRIDE;

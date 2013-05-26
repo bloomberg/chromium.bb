@@ -1643,9 +1643,9 @@ TEST_F(GLES2ImplementationTest, ResizeCHROMIUM) {
     cmds::ResizeCHROMIUM cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1, 2);
+  expected.cmd.Init(1, 2, 3);
 
-  gl_->ResizeCHROMIUM(1, 2);
+  gl_->ResizeCHROMIUM(1, 2, 3);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 // TODO: Implement unit test for GetRequestableExtensionsCHROMIUM
