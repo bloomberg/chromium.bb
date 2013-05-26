@@ -96,7 +96,7 @@ bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
   // Galaxy Nexus     112MB
   // Nexus 4/10       256MB
   // Xoom              88MB
-  size_t dalvik_limit = 0;
+  static size_t dalvik_limit = 0;
   if (!dalvik_limit) {
     size_t heap_size   = static_cast<size_t>(base::SysInfo::DalvikHeapSizeMB());
     size_t heap_growth = static_cast<size_t>(
