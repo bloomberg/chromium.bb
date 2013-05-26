@@ -11,7 +11,6 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "content/common/content_export.h"
-#include "content/public/common/page_state.h"
 #include "content/public/common/ssl_status.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
@@ -88,8 +87,9 @@ struct CONTENT_EXPORT ContextMenuParams {
   // This is the ID of the subframe that the context menu was invoked on.
   int64 frame_id;
 
-  // This is the page state of the frame on which the context menu was invoked.
-  PageState frame_page_state;
+  // This is the history item state of the subframe that the context menu was
+  // invoked on.
+  std::string frame_content_state;
 
   // These are the parameters for the media element that the context menu
   // was invoked on.

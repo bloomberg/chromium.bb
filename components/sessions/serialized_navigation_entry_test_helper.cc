@@ -21,7 +21,7 @@ void SerializedNavigationEntryTestHelper::ExpectNavigationEquals(
   EXPECT_EQ(expected.referrer_.policy, actual.referrer_.policy);
   EXPECT_EQ(expected.virtual_url_, actual.virtual_url_);
   EXPECT_EQ(expected.title_, actual.title_);
-  EXPECT_EQ(expected.page_state_, actual.page_state_);
+  EXPECT_EQ(expected.content_state_, actual.content_state_);
   EXPECT_EQ(expected.transition_type_, actual.transition_type_);
   EXPECT_EQ(expected.has_post_data_, actual.has_post_data_);
   EXPECT_EQ(expected.original_request_url_, actual.original_request_url_);
@@ -40,17 +40,16 @@ SerializedNavigationEntry SerializedNavigationEntryTestHelper::CreateNavigation(
                         WebKit::WebReferrerPolicyDefault);
   navigation.virtual_url_ = GURL(virtual_url);
   navigation.title_ = UTF8ToUTF16(title);
-  navigation.page_state_ =
-      content::PageState::CreateFromEncodedData("fake_state");
+  navigation.content_state_ = "fake_state";
   navigation.timestamp_ = base::Time::Now();
   return navigation;
 }
 
 // static
-void SerializedNavigationEntryTestHelper::SetPageState(
-    const content::PageState& page_state,
+void SerializedNavigationEntryTestHelper::SetContentState(
+    const std::string& content_state,
     SerializedNavigationEntry* navigation) {
-  navigation->page_state_ = page_state;
+  navigation->content_state_ = content_state;
 }
 
 // static

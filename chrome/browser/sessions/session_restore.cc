@@ -49,6 +49,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/base/network_change_notifier.h"
+#include "webkit/glue/glue_serialize.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -1039,10 +1040,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
         base::PLATFORM_FILE_READ |
         base::PLATFORM_FILE_EXCLUSIVE_READ |
         base::PLATFORM_FILE_ASYNC;
-    const content::PageState& page_state =
-        tab.navigations.at(selected_index).page_state();
+    const std::string& state =
+        tab.navigations.at(selected_index).content_state();
     const std::vector<base::FilePath>& file_paths =
-        page_state.GetReferencedFiles();
+        webkit_glue::FilePathsFromHistoryState(state);
     for (std::vector<base::FilePath>::const_iterator file = file_paths.begin();
          file != file_paths.end(); ++file) {
       content::ChildProcessSecurityPolicy::GetInstance()->

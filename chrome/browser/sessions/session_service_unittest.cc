@@ -27,11 +27,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/page_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebHTTPBody.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
+#include "webkit/glue/glue_serialize.h"
 
 using content::NavigationEntry;
 using sessions::SerializedNavigationEntry;
@@ -781,24 +781,30 @@ TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
   SessionID tab_id;
   ASSERT_NE(window_id.id(), tab_id.id());
 
-  // Create a page state representing a HTTP body without posted passwords.
-  content::PageState page_state =
-      content::PageState::CreateForTesting(GURL(), false, "data", NULL);
+  // Create a content state representing a HTTP body without posted passwords.
+  WebKit::WebHTTPBody http_body;
+  http_body.initialize();
+  const char char_data[] = "data";
+  http_body.appendData(WebKit::WebData(char_data, sizeof(char_data)-1));
+  WebKit::WebHistoryItem history_item;
+  history_item.initialize();
+  history_item.setHTTPBody(http_body);
+  std::string content_state = webkit_glue::HistoryItemToString(history_item);
 
-  // Create a TabNavigation containing page_state and representing a POST
+  // Create a TabNavigation containing content_state and representing a POST
   // request.
   SerializedNavigationEntry nav1 =
       SerializedNavigationEntryTestHelper::CreateNavigation(
           "http://google.com", "title");
-  SerializedNavigationEntryTestHelper::SetPageState(page_state, &nav1);
+  SerializedNavigationEntryTestHelper::SetContentState(content_state, &nav1);
   SerializedNavigationEntryTestHelper::SetHasPostData(true, &nav1);
 
-  // Create a TabNavigation containing page_state and representing a normal
+  // Create a TabNavigation containing content_state and representing a normal
   // request.
   SerializedNavigationEntry nav2 =
       SerializedNavigationEntryTestHelper::CreateNavigation(
           "http://google.com/nopost", "title");
-  SerializedNavigationEntryTestHelper::SetPageState(page_state, &nav2);
+  SerializedNavigationEntryTestHelper::SetContentState(content_state, &nav2);
   nav2.set_index(1);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
@@ -810,7 +816,7 @@ TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
 
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 2);
 
-  // Expected: the page state of both navigations was saved and restored.
+  // Expected: the content state of both navigations was saved and restored.
   ASSERT_EQ(2u, windows[0]->tabs[0]->navigations.size());
   helper_.AssertNavigationEquals(nav1, windows[0]->tabs[0]->navigations[0]);
   helper_.AssertNavigationEquals(nav2, windows[0]->tabs[0]->navigations[1]);
@@ -820,16 +826,23 @@ TEST_F(SessionServiceTest, RemovePostDataWithPasswords) {
   SessionID tab_id;
   ASSERT_NE(window_id.id(), tab_id.id());
 
-  // Create a page state representing a HTTP body with posted passwords.
-  content::PageState page_state =
-      content::PageState::CreateForTesting(GURL(), true, "data", NULL);
+  // Create a content state representing a HTTP body with posted passwords.
+  WebKit::WebHTTPBody http_body;
+  http_body.initialize();
+  const char char_data[] = "data";
+  http_body.appendData(WebKit::WebData(char_data, sizeof(char_data)-1));
+  http_body.setContainsPasswordData(true);
+  WebKit::WebHistoryItem history_item;
+  history_item.initialize();
+  history_item.setHTTPBody(http_body);
+  std::string content_state = webkit_glue::HistoryItemToString(history_item);
 
-  // Create a TabNavigation containing page_state and representing a POST
+  // Create a TabNavigation containing content_state and representing a POST
   // request with passwords.
   SerializedNavigationEntry nav1 =
       SerializedNavigationEntryTestHelper::CreateNavigation(
           "http://google.com", "title");
-  SerializedNavigationEntryTestHelper::SetPageState(page_state, &nav1);
+  SerializedNavigationEntryTestHelper::SetContentState(content_state, &nav1);
   SerializedNavigationEntryTestHelper::SetHasPostData(true, &nav1);
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
@@ -839,9 +852,9 @@ TEST_F(SessionServiceTest, RemovePostDataWithPasswords) {
 
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
 
-  // Expected: the HTTP body was removed from the page state of the POST
+  // Expected: the HTTP body was removed from the content state of the POST
   // navigation with passwords.
-  EXPECT_NE(page_state, windows[0]->tabs[0]->navigations[0].page_state());
+  EXPECT_NE(content_state, windows[0]->tabs[0]->navigations[0].content_state());
 }
 
 // This test is only applicable to chromeos.

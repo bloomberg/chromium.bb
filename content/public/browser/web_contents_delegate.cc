@@ -96,7 +96,7 @@ void WebContentsDelegate::ViewSourceForTab(WebContents* source,
 
 void WebContentsDelegate::ViewSourceForFrame(WebContents* source,
                                              const GURL& frame_url,
-                                             const PageState& page_state) {
+                                             const std::string& content_state) {
   // Same as ViewSourceForTab, but for given subframe.
   GURL url = GURL(chrome::kViewSourceScheme + std::string(":") +
                       frame_url.spec());

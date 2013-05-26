@@ -19,7 +19,6 @@ class GURL;
 
 namespace content {
 
-class PageState;
 struct FaviconStatus;
 struct SSLStatus;
 
@@ -76,7 +75,6 @@ class NavigationEntry {
   virtual void SetTitle(const string16& title) = 0;
   virtual const string16& GetTitle() const = 0;
 
-  // XXX
   // Content state is an opaque blob created by WebKit that represents the
   // state of the page. This includes form entries and scroll position for each
   // frame. We store it so that we can supply it back to WebKit to restore form
@@ -85,8 +83,8 @@ class NavigationEntry {
   // WARNING: This state is saved to the file and used to restore previous
   // states. If the format is modified in the future, we should still be able to
   // deal with older versions.
-  virtual void SetPageState(const PageState& state) = 0;
-  virtual const PageState& GetPageState() const = 0;
+  virtual void SetContentState(const std::string& state) = 0;
+  virtual const std::string& GetContentState() const = 0;
 
   // Describes the current page that the tab represents. This is the ID that the
   // renderer generated for the page and is how we can tell new versus

@@ -135,12 +135,12 @@ const string16& NavigationEntryImpl::GetTitle() const {
   return title_;
 }
 
-void NavigationEntryImpl::SetPageState(const PageState& state) {
-  page_state_ = state;
+void NavigationEntryImpl::SetContentState(const std::string& state) {
+  content_state_ = state;
 }
 
-const PageState& NavigationEntryImpl::GetPageState() const {
-  return page_state_;
+const std::string& NavigationEntryImpl::GetContentState() const {
+  return content_state_;
 }
 
 void NavigationEntryImpl::SetPageID(int page_id) {

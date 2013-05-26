@@ -5,7 +5,6 @@
 #include "content/public/common/common_param_traits.h"
 
 #include "content/public/common/content_constants.h"
-#include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
 #include "net/base/host_port_pair.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -105,27 +104,6 @@ bool ParamTraits<net::HostPortPair>::Read(const Message* m,
 
 void ParamTraits<net::HostPortPair>::Log(const param_type& p, std::string* l) {
   l->append(p.ToString());
-}
-
-void ParamTraits<content::PageState>::Write(
-    Message* m, const param_type& p) {
-  WriteParam(m, p.ToEncodedData());
-}
-
-bool ParamTraits<content::PageState>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
-  std::string data;
-  if (!ReadParam(m, iter, &data))
-    return false;
-  *r = content::PageState::CreateFromEncodedData(data);
-  return true;
-}
-
-void ParamTraits<content::PageState>::Log(
-    const param_type& p, std::string* l) {
-  l->append("(");
-  LogParam(p.ToEncodedData(), l);
-  l->append(")");
 }
 
 void ParamTraits<content::Referrer>::Write(

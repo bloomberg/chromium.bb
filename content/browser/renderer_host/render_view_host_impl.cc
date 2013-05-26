@@ -68,6 +68,7 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "ui/snapshot/snapshot.h"
 #include "webkit/browser/fileapi/isolated_context.h"
+#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -1234,7 +1235,7 @@ void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
 
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
-  if (!CanAccessFilesOfPageState(validated_params.page_state)) {
+  if (!CanAccessFilesOfSerializedState(validated_params.content_state)) {
     GetProcess()->ReceivedBadMessage();
     return;
   }
@@ -1242,10 +1243,11 @@ void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
   delegate_->DidNavigate(this, validated_params);
 }
 
-void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
+void RenderViewHostImpl::OnUpdateState(int32 page_id,
+                                       const std::string& state) {
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
-  if (!CanAccessFilesOfPageState(state)) {
+  if (!CanAccessFilesOfSerializedState(state)) {
     GetProcess()->ReceivedBadMessage();
     return;
   }
@@ -2072,12 +2074,12 @@ void RenderViewHostImpl::ClearPowerSaveBlockers() {
   STLDeleteValues(&power_save_blockers_);
 }
 
-bool RenderViewHostImpl::CanAccessFilesOfPageState(
-    const PageState& state) const {
+bool RenderViewHostImpl::CanAccessFilesOfSerializedState(
+    const std::string& state) const {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-
-  const std::vector<base::FilePath>& file_paths = state.GetReferencedFiles();
+  const std::vector<base::FilePath>& file_paths =
+      webkit_glue::FilePathsFromHistoryState(state);
   for (std::vector<base::FilePath>::const_iterator file = file_paths.begin();
        file != file_paths.end(); ++file) {
     if (!policy->CanReadFile(GetProcess()->GetID(), *file))

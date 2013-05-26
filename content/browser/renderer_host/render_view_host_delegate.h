@@ -47,7 +47,6 @@ class Size;
 namespace content {
 
 class BrowserContext;
-class PageState;
 class RenderViewHost;
 class RenderViewHostDelegateView;
 class SessionStorageNamespace;
@@ -171,7 +170,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The state for the page changed and should be updated.
   virtual void UpdateState(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const PageState& state) {}
+                           const std::string& state) {}
 
   // The page's title was changed and should be updated.
   virtual void UpdateTitle(RenderViewHost* render_view_host,

@@ -13,7 +13,6 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/document_state.h"
-#include "content/public/renderer/history_item_serialization.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_view_impl.h"
@@ -32,6 +31,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/web_io_operators.h"
 
 #if defined(OS_LINUX) && !defined(USE_AURA)
@@ -301,9 +301,9 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   EXPECT_TRUE(host_nav_params.a.is_post);
 
   // Check post data sent to browser matches
-  EXPECT_TRUE(host_nav_params.a.page_state.IsValid());
-  const WebKit::WebHistoryItem item = PageStateToHistoryItem(
-      host_nav_params.a.page_state);
+  EXPECT_FALSE(host_nav_params.a.content_state.empty());
+  const WebKit::WebHistoryItem item = webkit_glue::HistoryItemFromString(
+      host_nav_params.a.content_state);
   WebKit::WebHTTPBody body = item.httpBody();
   WebKit::WebHTTPBody::Element element;
   bool successful = body.elementAt(0, element);
@@ -487,7 +487,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
   int page_id_A;
-  PageState state_A;
+  std::string state_A;
   ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
@@ -500,7 +500,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   params_A.current_history_list_offset = 1;
   params_A.pending_history_list_offset = 0;
   params_A.page_id = 1;
-  params_A.page_state = state_A;
+  params_A.state = state_A;
   view()->OnNavigate(params_A);
   ProcessPendingMessages();
 
@@ -519,7 +519,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   render_thread_->sink().ClearMessages();
 
   // It is possible to get a reload request at this point, containing the
-  // params.page_state of the initial page (e.g., if the new page fails the
+  // params.state of the initial page (e.g., if the new page fails the
   // provisional load in the renderer process, after we unload the old page).
   // Ensure the old page gets reloaded, not swappedout://.
   ViewMsg_Navigate_Params nav_params;
@@ -530,7 +530,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   nav_params.current_history_list_offset = 0;
   nav_params.pending_history_list_offset = 0;
   nav_params.page_id = 1;
-  nav_params.page_state = state_A;
+  nav_params.state = state_A;
   view()->OnNavigate(nav_params);
   ProcessPendingMessages();
 
@@ -563,7 +563,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
   int page_id_A;
-  PageState state_A;
+  std::string state_A;
   ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
@@ -577,7 +577,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_B);
   int page_id_B;
-  PageState state_B;
+  std::string state_B;
   ViewHostMsg_UpdateState::Read(msg_B, &page_id_B, &state_B);
   EXPECT_EQ(2, page_id_B);
   EXPECT_NE(state_A, state_B);
@@ -592,7 +592,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_C);
   int page_id_C;
-  PageState state_C;
+  std::string state_C;
   ViewHostMsg_UpdateState::Read(msg_C, &page_id_C, &state_C);
   EXPECT_EQ(3, page_id_C);
   EXPECT_NE(state_B, state_C);
@@ -606,7 +606,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   params_C.current_history_list_offset = 3;
   params_C.pending_history_list_offset = 2;
   params_C.page_id = 3;
-  params_C.page_state = state_C;
+  params_C.state = state_C;
   view()->OnNavigate(params_C);
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();
@@ -623,7 +623,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   params_B.current_history_list_offset = 2;
   params_B.pending_history_list_offset = 1;
   params_B.page_id = 2;
-  params_B.page_state = state_B;
+  params_B.state = state_B;
   view()->OnNavigate(params_B);
 
   // Back to page A (page_id 1) and commit.
@@ -634,7 +634,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   params_B.current_history_list_offset = 2;
   params_B.pending_history_list_offset = 0;
   params.page_id = 1;
-  params.page_state = state_A;
+  params.state = state_A;
   view()->OnNavigate(params);
   ProcessPendingMessages();
 
@@ -644,7 +644,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg);
   int page_id;
-  PageState state;
+  std::string state;
   ViewHostMsg_UpdateState::Read(msg, &page_id, &state);
   EXPECT_EQ(page_id_C, page_id);
   EXPECT_NE(state_A, state);
@@ -674,7 +674,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
   int page_id_A;
-  PageState state_A;
+  std::string state_A;
   ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
@@ -687,7 +687,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   params_A.current_history_list_offset = 1;
   params_A.pending_history_list_offset = 0;
   params_A.page_id = 1;
-  params_A.page_state = state_A;
+  params_A.state = state_A;
   view()->OnNavigate(params_A);
   ProcessPendingMessages();
 
@@ -705,7 +705,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   params_B.current_history_list_offset = 0;
   params_B.pending_history_list_offset = 1;
   params_B.page_id = 2;
-  params_B.page_state = state_A;  // Doesn't matter, just has to be present.
+  params_B.state = state_A;  // Doesn't matter, just has to be present.
   view()->OnNavigate(params_B);
 
   // State should be unchanged.
@@ -739,7 +739,7 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
   int page_id_A;
-  PageState state_A;
+  std::string state_A;
   ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
@@ -756,7 +756,7 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_B);
   int page_id_B;
-  PageState state_B;
+  std::string state_B;
   ViewHostMsg_UpdateState::Read(msg_B, &page_id_B, &state_B);
   EXPECT_EQ(2, page_id_B);
   render_thread_->sink().ClearMessages();
@@ -771,7 +771,7 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
   params_B.current_history_list_offset = 1;
   params_B.pending_history_list_offset = 0;
   params_B.page_id = 2;
-  params_B.page_state = state_B;
+  params_B.state = state_B;
   view()->OnNavigate(params_B);
   ProcessPendingMessages();
 

@@ -27,6 +27,7 @@
 #include "content/test/test_content_client.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/glue/glue_serialize.h"
 
 namespace content {
 namespace {
@@ -725,7 +726,7 @@ TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
   params.gesture = NavigationGestureAuto;
   params.was_within_same_page = false;
   params.is_post = false;
-  params.page_state = PageState::CreateFromURL(kUrl2);
+  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(kUrl2));
   contents()->DidNavigate(evil_rvh, params);
 
   // That should have cancelled the pending RVH, and the evil RVH should be the

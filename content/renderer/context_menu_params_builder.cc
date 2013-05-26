@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/renderer/history_item_serialization.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "webkit/glue/glue_serialize.h"
 
 namespace content {
 
@@ -50,8 +50,10 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   for (size_t i = 0; i < data.customItems.size(); ++i)
     params.custom_items.push_back(WebMenuItem(data.customItems[i]));
 
-  if (!data.frameHistoryItem.isNull())
-    params.frame_page_state = HistoryItemToPageState(data.frameHistoryItem);
+  if (!data.frameHistoryItem.isNull()) {
+    params.frame_content_state =
+        webkit_glue::HistoryItemToString(data.frameHistoryItem);
+  }
 
   if (!params.link_url.is_empty()) {
     WebKit::WebNode selectedNode = data.node;
