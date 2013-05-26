@@ -110,9 +110,13 @@ bool PrefServiceSyncable::IsSyncing() {
   return pref_sync_associator_.models_associated();
 }
 
-
 bool PrefServiceSyncable::IsPrioritySyncing() {
   return priority_pref_sync_associator_.models_associated();
+}
+
+bool PrefServiceSyncable::IsPrefSynced(const std::string& name) const {
+  return pref_sync_associator_.IsPrefSynced(name) ||
+         priority_pref_sync_associator_.IsPrefSynced(name);
 }
 
 void PrefServiceSyncable::AddObserver(PrefServiceSyncableObserver* observer) {

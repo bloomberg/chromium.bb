@@ -93,6 +93,10 @@ class PrefModelAssociator
       const sync_pb::PreferenceSpecifics& specifics,
       std::string* name);
 
+  // Returns true if the pref under the given name is pulled down from sync.
+  // Note this does not refer to SYNCABLE_PREF.
+  bool IsPrefSynced(const std::string& name) const;
+
  protected:
   friend class ProfileSyncServicePreferenceTest;
 

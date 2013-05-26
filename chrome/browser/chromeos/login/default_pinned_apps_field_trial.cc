@@ -13,10 +13,15 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 
 namespace chromeos {
 namespace default_pinned_apps_field_trial {
@@ -56,6 +61,12 @@ void AddUserToExperiment(const std::string& username) {
   users->AppendString(username);
 }
 
+// Removes user from the experiment user list.
+void RemoveUserFromExperiment(const std::string& username) {
+  ListPrefUpdate users(g_browser_process->local_state(), kExperimentUsers);
+  users->Remove(base::StringValue(username), NULL);
+}
+
 // Gets click target type for given app id. Returns false if the app id is
 // not interesting.
 bool GetClickTargetForApp(const std::string& app_id,
@@ -86,6 +97,24 @@ bool GetClickTargetForApp(const std::string& app_id,
   }
 
   return false;
+}
+
+// Check if the current user has default pinned apps pulled from sync. If that
+// is the case, kick the user out of the trial and returns true.
+bool ProcessIfUserHasSyncedAppPins() {
+  static bool has_synced_pref = false;
+  if (has_synced_pref)
+    return true;
+
+  Profile* user_profile = ProfileManager::GetDefaultProfile();
+  has_synced_pref = PrefServiceSyncable::FromProfile(user_profile)
+      ->IsPrefSynced(prefs::kPinnedLauncherApps);
+  if (has_synced_pref) {
+    const std::string username = UserManager::Get()->GetActiveUser()->email();
+    RemoveUserFromExperiment(username);
+  }
+
+  return has_synced_pref;
 }
 
 }  // namespace
@@ -153,6 +182,9 @@ void RecordShelfClick(ClickTarget click_target) {
   // The experiment does not include certain user types, such as public account,
   // retail mode user, local user and ephemeral user.
   if (!trial_configured)
+    return;
+
+  if (ProcessIfUserHasSyncedAppPins())
     return;
 
   UMA_HISTOGRAM_ENUMERATION("Cros.ClickOnShelf",

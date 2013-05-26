@@ -417,6 +417,10 @@ Value* PrefModelAssociator::ReadPreferenceSpecifics(
   return value.release();
 }
 
+bool PrefModelAssociator::IsPrefSynced(const std::string& name) const {
+  return synced_preferences_.find(name) != synced_preferences_.end();
+}
+
 std::set<std::string> PrefModelAssociator::registered_preferences() const {
   return registered_preferences_;
 }
