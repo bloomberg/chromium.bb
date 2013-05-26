@@ -1076,6 +1076,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual gfx::Vector2d CalculateOffsetToAncestorWithLayer(
       ui::Layer** layer_parent);
 
+  // Updates the view's layer's parent. Called when a view is added to a view
+  // hierarchy, responsible for parenting the view's layer to the enclosing
+  // layer in the hierarchy.
+  virtual void UpdateParentLayer();
+
   // If this view has a layer, the layer is reparented to |parent_layer| and its
   // bounds is set based on |point|. If this view does not have a layer, then
   // recurses through all children. This is used when adding a layer to an
@@ -1316,11 +1321,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Parents all un-parented layers within this view's hierarchy to this view's
   // layer.
   void UpdateParentLayers();
-
-  // Updates the view's layer's parent. Called when a view is added to a view
-  // hierarchy, responsible for parenting the view's layer to the enclosing
-  // layer in the hierarchy.
-  void UpdateParentLayer();
 
   // Parents this view's layer to |parent_layer|, and sets its bounds and other
   // properties in accordance to |offset|, the view's offset from the

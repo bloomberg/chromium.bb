@@ -590,8 +590,9 @@ void RootView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = widget_->widget_delegate()->GetAccessibleWindowRole();
 }
 
-void RootView::ReorderChildLayers(ui::Layer* parent_layer) {
-  View::ReorderChildLayers(parent_layer);
+void RootView::UpdateParentLayer() {
+  if (layer())
+    ReparentLayer(gfx::Vector2d(GetMirroredX(), y()), widget_->GetLayer());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -631,8 +632,8 @@ void RootView::OnPaint(gfx::Canvas* canvas) {
 gfx::Vector2d RootView::CalculateOffsetToAncestorWithLayer(
     ui::Layer** layer_parent) {
   gfx::Vector2d offset(View::CalculateOffsetToAncestorWithLayer(layer_parent));
-  if (!layer())
-    offset += widget_->CalculateOffsetToAncestorWithLayer(layer_parent);
+  if (!layer() && layer_parent)
+    *layer_parent = widget_->GetLayer();
   return offset;
 }
 

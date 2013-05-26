@@ -157,9 +157,8 @@ ui::Compositor* NativeWidgetWin::GetCompositor() {
   return NULL;
 }
 
-gfx::Vector2d NativeWidgetWin::CalculateOffsetToAncestorWithLayer(
-    ui::Layer** layer_parent) {
-  return gfx::Vector2d();
+ui::Layer* NativeWidgetWin::GetLayer() {
+  return NULL;
 }
 
 void NativeWidgetWin::ViewRemoved(View* view) {

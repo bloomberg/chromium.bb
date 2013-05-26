@@ -1374,6 +1374,19 @@ gfx::Vector2d View::CalculateOffsetToAncestorWithLayer(
       parent_->CalculateOffsetToAncestorWithLayer(layer_parent);
 }
 
+void View::UpdateParentLayer() {
+  if (!layer())
+    return;
+
+  ui::Layer* parent_layer = NULL;
+  gfx::Vector2d offset(GetMirroredX(), y());
+
+  if (parent_)
+    offset += parent_->CalculateOffsetToAncestorWithLayer(&parent_layer);
+
+  ReparentLayer(offset, parent_layer);
+}
+
 void View::MoveLayerToParent(ui::Layer* parent_layer,
                              const gfx::Point& point) {
   gfx::Point local_point(point);
@@ -1439,20 +1452,20 @@ void View::ReorderLayers() {
   while (v && !v->layer())
     v = v->parent();
 
-  // Forward to widget in case we're in a NativeWidgetAura.
   if (!v) {
-    if (GetWidget())
-      GetWidget()->ReorderLayers();
+    Widget* widget = GetWidget();
+    if (widget) {
+      ui::Layer* layer = widget->GetLayer();
+      if (layer)
+        widget->GetRootView()->ReorderChildLayers(layer);
+    }
   } else {
-    for (Views::const_iterator i(v->children_.begin());
-         i != v->children_.end();
-         ++i)
-      (*i)->ReorderChildLayers(v->layer());
+    v->ReorderChildLayers(v->layer());
   }
 }
 
 void View::ReorderChildLayers(ui::Layer* parent_layer) {
-  if (layer()) {
+  if (layer() && layer() != parent_layer) {
     DCHECK_EQ(parent_layer, layer()->parent());
     parent_layer->StackAtTop(layer());
   } else {
@@ -2018,24 +2031,6 @@ void View::UpdateParentLayers() {
     for (int i = 0, count = child_count(); i < count; ++i)
       child_at(i)->UpdateParentLayers();
   }
-}
-
-void View::UpdateParentLayer() {
-  if (!layer())
-    return;
-
-  ui::Layer* parent_layer = NULL;
-  gfx::Vector2d offset(GetMirroredX(), y());
-
-  // TODO(sad): The NULL check here for parent_ essentially is to check if this
-  // is the RootView. Instead of doing this, this function should be made
-  // virtual and overridden from the RootView.
-  if (parent_)
-    offset += parent_->CalculateOffsetToAncestorWithLayer(&parent_layer);
-  else if (!parent_ && GetWidget())
-    offset += GetWidget()->CalculateOffsetToAncestorWithLayer(&parent_layer);
-
-  ReparentLayer(offset, parent_layer);
 }
 
 void View::OrphanLayers() {

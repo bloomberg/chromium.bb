@@ -570,12 +570,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   const ui::Compositor* GetCompositor() const;
   ui::Compositor* GetCompositor();
 
-  // Invokes method of same name on the NativeWidget.
-  gfx::Vector2d CalculateOffsetToAncestorWithLayer(
-      ui::Layer** layer_parent);
-
-  // Invokes method of same name on the NativeWidget.
-  void ReorderLayers();
+  // Returns the widget's layer, if any.
+  ui::Layer* GetLayer();
 
   // Schedules an update to the root layers. The actual processing occurs when
   // GetRootLayers() is invoked.

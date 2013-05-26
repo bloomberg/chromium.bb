@@ -219,11 +219,8 @@ ui::Compositor* NativeWidgetAura::GetCompositor() {
   return window_->layer()->GetCompositor();
 }
 
-gfx::Vector2d NativeWidgetAura::CalculateOffsetToAncestorWithLayer(
-    ui::Layer** layer_parent) {
-  if (layer_parent)
-    *layer_parent = window_->layer();
-  return gfx::Vector2d();
+ui::Layer* NativeWidgetAura::GetLayer() {
+  return window_->layer();
 }
 
 void NativeWidgetAura::ViewRemoved(View* view) {
