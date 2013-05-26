@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_API_H_
 
 #include <map>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -199,6 +201,7 @@ class IdentityTokenCacheValue {
   CacheValueStatus status() const;
   const IssueAdviceInfo& issue_advice() const;
   const std::string& token() const;
+  const base::Time& expiration_time() const;
 
  private:
   bool is_expired() const;
@@ -213,6 +216,17 @@ class IdentityAPI : public ProfileKeyedAPI,
                     public SigninGlobalError::AuthStatusProvider,
                     public content::NotificationObserver {
  public:
+  struct TokenCacheKey {
+    TokenCacheKey(const std::string& extension_id,
+                  const std::set<std::string> scopes);
+    ~TokenCacheKey();
+    bool operator<(const TokenCacheKey& rhs) const;
+    std::string extension_id;
+    std::set<std::string> scopes;
+  };
+
+  typedef std::map<TokenCacheKey, IdentityTokenCacheValue> CachedTokens;
+
   explicit IdentityAPI(Profile* profile);
   virtual ~IdentityAPI();
   void Initialize();
@@ -229,6 +243,8 @@ class IdentityAPI : public ProfileKeyedAPI,
   void EraseAllCachedTokens();
   const IdentityTokenCacheValue& GetCachedToken(
       const std::string& extension_id, const std::vector<std::string> scopes);
+
+  const CachedTokens& GetAllCachedTokens();
 
   void ReportAuthError(const GoogleServiceAuthError& error);
 
@@ -247,15 +263,6 @@ class IdentityAPI : public ProfileKeyedAPI,
  private:
   friend class ProfileKeyedAPIFactory<IdentityAPI>;
 
-  struct TokenCacheKey {
-    TokenCacheKey(const std::string& extension_id,
-                  const std::set<std::string> scopes);
-    ~TokenCacheKey();
-    bool operator<(const TokenCacheKey& rhs) const;
-    std::string extension_id;
-    std::set<std::string> scopes;
-  };
-
   // ProfileKeyedAPI implementation.
   static const char* service_name() {
     return "IdentityAPI";
@@ -268,7 +275,7 @@ class IdentityAPI : public ProfileKeyedAPI,
   // Used to listen to notifications from the TokenService.
   content::NotificationRegistrar registrar_;
   IdentityMintRequestQueue mint_queue_;
-  std::map<TokenCacheKey, IdentityTokenCacheValue> token_cache_;
+  CachedTokens token_cache_;
 };
 
 template <>

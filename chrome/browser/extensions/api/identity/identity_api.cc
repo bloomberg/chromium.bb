@@ -6,6 +6,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
@@ -558,6 +559,10 @@ bool IdentityTokenCacheValue::is_expired() const {
       expiration_time_ < base::Time::Now();
 }
 
+const base::Time& IdentityTokenCacheValue::expiration_time() const {
+  return expiration_time_;
+}
+
 IdentityAPI::IdentityAPI(Profile* profile)
     : profile_(profile),
       signin_manager_(NULL),
@@ -587,8 +592,7 @@ void IdentityAPI::SetCachedToken(const std::string& extension_id,
   std::set<std::string> scopeset(scopes.begin(), scopes.end());
   TokenCacheKey key(extension_id, scopeset);
 
-  std::map<TokenCacheKey, IdentityTokenCacheValue>::iterator it =
-      token_cache_.find(key);
+  CachedTokens::iterator it = token_cache_.find(key);
   if (it != token_cache_.end() && it->second.status() <= token_data.status())
     token_cache_.erase(it);
 
@@ -597,7 +601,7 @@ void IdentityAPI::SetCachedToken(const std::string& extension_id,
 
 void IdentityAPI::EraseCachedToken(const std::string& extension_id,
                                    const std::string& token) {
-  std::map<TokenCacheKey, IdentityTokenCacheValue>::iterator it;
+  CachedTokens::iterator it;
   for (it = token_cache_.begin(); it != token_cache_.end(); ++it) {
     if (it->first.extension_id == extension_id &&
         it->second.status() == IdentityTokenCacheValue::CACHE_STATUS_TOKEN &&
@@ -617,6 +621,10 @@ const IdentityTokenCacheValue& IdentityAPI::GetCachedToken(
   std::set<std::string> scopeset(scopes.begin(), scopes.end());
   TokenCacheKey key(extension_id, scopeset);
   return token_cache_[key];
+}
+
+const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
+  return token_cache_;
 }
 
 void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
