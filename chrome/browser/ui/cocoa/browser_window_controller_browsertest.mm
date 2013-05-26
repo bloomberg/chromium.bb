@@ -389,23 +389,22 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffset) {
   OverlayableContentsController* overlay =
       [controller() overlayableContentsController];
   // Just toolbar.
-  EXPECT_EQ(bookmarks::kBookmarkBarOverlap,
-            [overlay activeContainerOffset]);
+  EXPECT_EQ(1, [overlay activeContainerOffset]);
 
   // Plus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(GetViewHeight(VIEW_ID_BOOKMARK_BAR),
-            [overlay activeContainerOffset]);
+  CGFloat bookmark_bar_offset =
+      GetViewHeight(VIEW_ID_BOOKMARK_BAR) - bookmarks::kBookmarkBarOverlap + 1;
+  EXPECT_EQ(bookmark_bar_offset, [overlay activeContainerOffset]);
 
   // Plus info bar.
   ShowInfoBar();
-  EXPECT_EQ(GetViewHeight(VIEW_ID_BOOKMARK_BAR) +
-            GetViewHeight(VIEW_ID_INFO_BAR),
+  EXPECT_EQ(bookmark_bar_offset + GetViewHeight(VIEW_ID_INFO_BAR),
             [overlay activeContainerOffset]);
 
   // Minus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR) + bookmarks::kBookmarkBarOverlap,
+  EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR) + 1,
             [overlay activeContainerOffset]);
 }
 
@@ -468,23 +467,22 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffsetInstantNTP) {
       [controller() overlayableContentsController];
 
   // Just toolbar.
-  EXPECT_EQ(bookmarks::kBookmarkBarOverlap,
-            [overlay activeContainerOffset]);
+  EXPECT_EQ(1, [overlay activeContainerOffset]);
 
   // Plus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(GetViewHeight(VIEW_ID_BOOKMARK_BAR),
-            [overlay activeContainerOffset]);
+  CGFloat bookmark_bar_offset =
+      GetViewHeight(VIEW_ID_BOOKMARK_BAR) - bookmarks::kBookmarkBarOverlap + 1;
+  EXPECT_EQ(bookmark_bar_offset, [overlay activeContainerOffset]);
 
   // Plus info bar.
   ShowInfoBar();
-  EXPECT_EQ(GetViewHeight(VIEW_ID_BOOKMARK_BAR) +
-            GetViewHeight(VIEW_ID_INFO_BAR),
+  EXPECT_EQ(bookmark_bar_offset + GetViewHeight(VIEW_ID_INFO_BAR),
             [overlay activeContainerOffset]);
 
   // Minus bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR) + bookmarks::kBookmarkBarOverlap,
+  EXPECT_EQ(GetViewHeight(VIEW_ID_INFO_BAR) + 1,
             [overlay activeContainerOffset]);
 }
 
@@ -495,9 +493,10 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, FindBarOffsetInstant) {
   browser()->window()->ToggleBookmarkBar();
   browser()->GetFindBarController();
 
+  CGFloat line_width = [GetViewWithID(VIEW_ID_FIND_BAR) cr_lineWidth];
   NSRect bookmark_bar_frame = [GetViewWithID(VIEW_ID_BOOKMARK_BAR) frame];
   NSRect find_bar_frame = [GetViewWithID(VIEW_ID_FIND_BAR) frame];
-  EXPECT_EQ(NSMinY(bookmark_bar_frame), NSMaxY(find_bar_frame) - 1);
+  EXPECT_EQ(NSMinY(bookmark_bar_frame), NSMaxY(find_bar_frame) - line_width);
 
   // Show instant and add a find bar to it.
   ShowInstantResults();
@@ -505,7 +504,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, FindBarOffsetInstant) {
 
   NSRect toolbar_bar_frame = [GetViewWithID(VIEW_ID_TOOLBAR) frame];
   find_bar_frame = [GetViewWithID(VIEW_ID_FIND_BAR) frame];
-  EXPECT_EQ(NSMinY(toolbar_bar_frame) - 1, NSMaxY(find_bar_frame));
+  EXPECT_EQ(NSMinY(toolbar_bar_frame) - bookmarks::kBookmarkBarOverlap + 1 -
+            line_width,
+            NSMaxY(find_bar_frame));
 }
 
 // Verify that if bookmark bar is underneath Instant search results then

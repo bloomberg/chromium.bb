@@ -257,7 +257,7 @@ void CheckViewPositions(BrowserWindowController* controller) {
   EXPECT_EQ(NSMaxY(download), NSMinY(contentArea));
 
   CGFloat min_toolbar_height = [[controller toolbarController]
-      desiredHeightForCompression:bookmarks::kBookmarkBarOverlap];
+      desiredHeightForCompression:1];
   EXPECT_EQ(NSMaxY(contentArea), NSMaxY(toolbar) - min_toolbar_height);
 
   // Bookmark bar frame is random memory when hidden.

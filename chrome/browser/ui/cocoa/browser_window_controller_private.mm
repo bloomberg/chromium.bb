@@ -266,8 +266,8 @@ willPositionSheet:(NSWindow*)sheet
     // The tabContentArea view starts below the omnibox.
     CGFloat minToolbarHeight = 0;
     if ([self hasToolbar]) {
-      minToolbarHeight = [toolbarController_
-          desiredHeightForCompression:bookmarks::kBookmarkBarOverlap];
+      // 1 to account for the toolbar separator.
+      minToolbarHeight = [toolbarController_ desiredHeightForCompression:1];
     }
     contentAreaTop = toolbarTopY - minToolbarHeight;
     // This is the space between the bottom of the omnibox and the bottom of the
