@@ -215,7 +215,7 @@
    ...
    fun:gfx::GLContextOSMesa::MakeCurrent
    ...
-   fun:webkit::gpu::GLInProcessContext::PumpCommands
+   fun:webkit::gpu::GLInProcessContext::*
 }
 {
    bug_148477_b
