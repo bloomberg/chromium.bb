@@ -1929,6 +1929,8 @@
           'sources': [
             'browser/ui/app_list/apps_model_builder_unittest.cc',
             'browser/ui/app_list/search/app_search_provider_unittest.cc',
+            'browser/ui/app_list/search/history_unittest.cc',
+            'browser/ui/app_list/search/history_data_store_unittest.cc',
             'browser/ui/app_list/search/mixer_unittest.cc',
             'browser/ui/app_list/search/term_break_iterator_unittest.cc',
             'browser/ui/app_list/search/tokenized_string_char_iterator_unittest.cc',

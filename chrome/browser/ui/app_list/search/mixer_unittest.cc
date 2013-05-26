@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/history_types.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,7 +97,7 @@ class MixerTest : public testing::Test {
       providers_[i]->Stop();
     }
 
-    mixer_->MixAndPublish();
+    mixer_->MixAndPublish(KnownResults());
   }
 
   std::string GetResults() const {

@@ -39,11 +39,10 @@ AppSearchProvider::AppSearchProvider(
     AppListControllerDelegate* list_controller)
     : profile_(profile),
       list_controller_(list_controller) {
-  DCHECK(!profile_->IsOffTheRecord());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(profile_));
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile_));
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
   RefreshApps();
 }
 

@@ -11,8 +11,12 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/history.h"
+#include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore_provider.h"
@@ -33,7 +37,8 @@ SearchController::SearchController(Profile* profile,
     search_box_(search_box),
     list_controller_(list_controller),
     dispatching_query_(false),
-    mixer_(new Mixer(results)) {
+    mixer_(new Mixer(results)),
+    history_(HistoryFactory::GetForBrowserContext(profile)) {
   Init();
 }
 
@@ -93,8 +98,14 @@ void SearchController::OpenResult(SearchResult* result, int event_flags) {
   // Count AppList.Search here because it is composed of search + action.
   content::RecordAction(content::UserMetricsAction("AppList_Search"));
 
-  // TODO(xiyuan): Hook up with user learning.
-  static_cast<app_list::ChromeSearchResult*>(result)->Open(event_flags);
+  ChromeSearchResult* chrome_result =
+      static_cast<app_list::ChromeSearchResult*>(result);
+  chrome_result->Open(event_flags);
+
+  if (history_ && history_->IsReady()) {
+    history_->AddLaunchEvent(UTF16ToUTF8(search_box_->text()),
+                             chrome_result->id());
+  }
 }
 
 void SearchController::InvokeResultAction(SearchResult* result,
@@ -118,7 +129,13 @@ void SearchController::OnResultsChanged() {
   if (dispatching_query_)
     return;
 
-  mixer_->MixAndPublish();
+  KnownResults known_results;
+  if (history_ && history_->IsReady()) {
+    history_->GetKnownResults(UTF16ToUTF8(search_box_->text()))
+        ->swap(known_results);
+  }
+
+  mixer_->MixAndPublish(known_results);
 }
 
 }  // namespace app_list

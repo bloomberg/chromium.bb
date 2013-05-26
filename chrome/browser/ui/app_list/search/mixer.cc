@@ -106,7 +106,7 @@ class Mixer::Group {
     providers_.push_back(provider);
   }
 
-  void FetchResults() {
+  void FetchResults(const KnownResults& known_results) {
     results_.clear();
 
     for (Providers::const_iterator provider_it = providers_.begin();
@@ -120,8 +120,31 @@ class Mixer::Group {
         DCHECK_LE((*result_it)->relevance(), 1.0);
         DCHECK(!(*result_it)->id().empty());
 
+        double boost = boost_;
+        KnownResults::const_iterator known_it =
+            known_results.find((*result_it)->id());
+        if (known_it != known_results.end()) {
+          switch (known_it->second) {
+            case PERFECT_PRIMARY:
+              boost = 4.0;
+              break;
+            case PREFIX_PRIMARY:
+              boost = 3.75;
+              break;
+            case PERFECT_SECONDARY:
+              boost = 3.25;
+              break;
+            case PREFIX_SECONDARY:
+              boost = 3.0;
+              break;
+            case UNKNOWN_RESULT:
+              NOTREACHED() << "Unknown result in KnownResults?";
+              break;
+          }
+        }
+
         results_.push_back(
-            SortData(*result_it, (*result_it)->relevance() + boost_));
+            SortData(*result_it, (*result_it)->relevance() + boost));
       }
     }
 
@@ -158,8 +181,8 @@ void Mixer::AddProviderToGroup(GroupId group, SearchProvider* provider) {
   groups_[group_index]->AddProvider(provider);
 }
 
-void Mixer::MixAndPublish() {
-  FetchResults();
+void Mixer::MixAndPublish(const KnownResults& known_results) {
+  FetchResults(known_results);
 
   SortedResults results;
   results.reserve(kMaxResults);
@@ -197,11 +220,11 @@ void Mixer::MixAndPublish() {
   Publish(results, ui_results_);
 }
 
-void Mixer::FetchResults() {
+void Mixer::FetchResults(const KnownResults& known_results) {
   for (Groups::iterator group_it = groups_.begin();
        group_it != groups_.end();
        ++group_it) {
-    (*group_it)->FetchResults();
+    (*group_it)->FetchResults(known_results);
   }
 }
 

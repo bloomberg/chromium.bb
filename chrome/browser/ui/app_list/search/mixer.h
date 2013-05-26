@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
+#include "chrome/browser/ui/app_list/search/history_types.h"
 #include "ui/app_list/app_list_model.h"
 
 namespace app_list {
@@ -39,13 +40,13 @@ class Mixer {
   void AddProviderToGroup(GroupId group, SearchProvider* provider);
 
   // Collects the results, sorts and publishes them.
-  void MixAndPublish();
+  void MixAndPublish(const KnownResults& known_results);
 
  private:
   class Group;
   typedef ScopedVector<Group> Groups;
 
-  void FetchResults();
+  void FetchResults(const KnownResults& known_results);
 
   AppListModel::SearchResults* ui_results_;  // Not owned.
   Groups groups_;
