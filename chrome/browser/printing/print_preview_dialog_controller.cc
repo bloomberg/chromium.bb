@@ -126,11 +126,13 @@ void PrintPreviewDialogDelegate::GetWebUIMessageHandlers(
 void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
   DCHECK(size);
   const gfx::Size kMinDialogSize(800, 480);
-  const int kBorder = 50;
+  const int kBorder = 25;
+  const int kConstrainedWindowOverlap = 3;
   gfx::Rect rect;
   initiator_tab_->GetView()->GetContainerBounds(&rect);
-  size->set_width(std::max(rect.width(), kMinDialogSize.width()) - kBorder);
-  size->set_height(std::max(rect.height(), kMinDialogSize.height()) - kBorder);
+  size->set_width(std::max(rect.width(), kMinDialogSize.width()) - 2 * kBorder);
+  size->set_height(std::max(rect.height(), kMinDialogSize.height()) - kBorder +
+                   kConstrainedWindowOverlap);
 
 #if defined(OS_MACOSX)
   // Limit the maximum size on MacOS X.
