@@ -25,7 +25,7 @@ def UrlOpen(url):
   return url_opener.open(request)
 
 
-def MakeProgressFunction(file_size=0):
+def MakeProgressFunction(file_size):
   # An inner function can only read nonlocal variables, not assign them. We can
   # work around this by using a list of one element.
   dots = [0]
@@ -33,12 +33,12 @@ def MakeProgressFunction(file_size=0):
     '''Returns a progress function based on a known file size'''
     if progress == 0:
       sys.stdout.write('|%s|\n' % ('=' * 48))
+    elif progress == -1:
+      sys.stdout.write('\n')
     else:
       new_dots = progress * 50 / file_size - dots[0]
       sys.stdout.write('.' * new_dots)
       dots[0] += new_dots
-      if progress == file_size:
-        sys.stdout.write('\n')
     sys.stdout.flush()
 
   return ShowKnownProgress
@@ -53,8 +53,9 @@ def DownloadAndComputeHash(from_stream, to_stream=None, progress_func=None):
                    provided.
     progress_func: [optional] A function used to report download progress. If
                    provided, progress_func is called with progress=0 at the
-                   beginning of the download, periodically with progress=1
-                   during the download, and progress=100 at the end.
+                   beginning of the download, periodically with progress>0
+                   (== number of bytes read do far) during the download, and
+                   progress=-1 at the end or if the download was aborted.
 
   Return
     A tuple (sha1, size) where sha1 is a sha1-hash for the archive data and
@@ -67,16 +68,17 @@ def DownloadAndComputeHash(from_stream, to_stream=None, progress_func=None):
 
   sha1_hash = hashlib.sha1()
   size = 0
-  progress_func(progress=0)
-  while(1):
-    data = from_stream.read(32768)
-    if not data:
-      break
-    sha1_hash.update(data)
-    size += len(data)
-    if to_stream:
-      to_stream.write(data)
-    progress_func(size)
-
-  progress_func(progress=100)
+  try:
+    progress_func(progress=0)
+    while True:
+      data = from_stream.read(32768)
+      if not data:
+        break
+      sha1_hash.update(data)
+      size += len(data)
+      if to_stream:
+        to_stream.write(data)
+      progress_func(size)
+  finally:
+    progress_func(progress=-1)
   return sha1_hash.hexdigest(), size

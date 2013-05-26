@@ -635,6 +635,12 @@ def main(argv):
   if len(args) < 1:
     raise Error('No nexe files specified.  See --help for more info')
 
+  for filename in args:
+    if not os.path.exists(filename):
+      raise Error('Input file not found: %s' % filename)
+    if not os.path.isfile(filename):
+      raise Error('Input is not a file: %s' % filename)
+
   canonicalized = ParseExtraFiles(options.extra_files, sys.stderr)
   if canonicalized is None:
     parser.error('Bad --extra-files (-x) argument syntax')
@@ -683,5 +689,8 @@ if __name__ == '__main__':
     rtn = main(sys.argv[1:])
   except Error, e:
     sys.stderr.write('%s: %s\n' % (os.path.basename(__file__), e))
+    rtn = 1
+  except KeyboardInterrupt:
+    sys.stderr.write('%s: interrupted\n' % os.path.basename(__file__))
     rtn = 1
   sys.exit(rtn)

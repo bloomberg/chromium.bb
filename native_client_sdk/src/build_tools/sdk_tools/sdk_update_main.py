@@ -425,3 +425,6 @@ if __name__ == '__main__':
   except Error as e:
     logging.error(str(e))
     sys.exit(1)
+  except KeyboardInterrupt:
+    sys.stderr.write('naclsdk: interrupted\n')
+    sys.exit(1)

@@ -95,4 +95,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  try:
+    sys.exit(main(sys.argv))
+  except KeyboardInterrupt:
+    buildbot_common.ErrorExit('test_sdk: interrupted')

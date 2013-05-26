@@ -525,12 +525,17 @@ def main(args):
     print 'No command specified'
     print 'Available commands: %s' % ' '.join(FuncMap)
     return 1
-  func = FuncMap.get(args[0])
+  func_name = args[0]
+  func = FuncMap.get(func_name)
   if not func:
-    print 'Do not recognize command: ' + args[0]
+    print 'Do not recognize command: %s' % func_name
     print 'Available commands: %s' % ' '.join(FuncMap)
     return 1
-  return func(args[1:])
+  try:
+    return func(args[1:])
+  except KeyboardInterrupt:
+    print '%s: interrupted' % func_name
+    return 1
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))

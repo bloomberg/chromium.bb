@@ -82,7 +82,6 @@ class TestZip(unittest.TestCase):
   def GetZipInfo(self, path):
     return self.zipfile.getinfo(oshelpers.OSMakeZipPath(path))
 
-
   def testNothingToDo(self):
     self.assertRaises(subprocess.CalledProcessError, self.RunZip,
         self.zipname, 'nonexistent_file')
