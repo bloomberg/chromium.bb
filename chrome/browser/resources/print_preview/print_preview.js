@@ -120,8 +120,8 @@ cr.define('print_preview', function() {
      * @type {!print_preview.LayoutSettings}
      * @private
      */
-    this.layoutSettings_ = new print_preview.LayoutSettings(
-        this.printTicketStore_);
+    this.layoutSettings_ =
+        new print_preview.LayoutSettings(this.printTicketStore_.landscape);
     this.addChild(this.layoutSettings_);
 
     /**

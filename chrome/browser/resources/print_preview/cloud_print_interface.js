@@ -300,9 +300,10 @@ cr.define('cloudprint', function() {
         cjt.print.duplex =
             {type: pts.duplex.getValue() ? 'LONG_EDGE' : 'NO_DUPLEX'};
       }
-      if (pts.hasOrientationCapability()) {
+      if (pts.landscape.isCapabilityAvailable() &&
+          pts.landscape.isUserEdited()) {
         cjt.print.page_orientation =
-          {type: pts.isLandscapeEnabled() ? 'LANDSCAPE' : 'PORTRAIT'};
+            {type: pts.landscape.getValue() ? 'LANDSCAPE' : 'PORTRAIT'};
       }
       return JSON.stringify(cjt);
     },

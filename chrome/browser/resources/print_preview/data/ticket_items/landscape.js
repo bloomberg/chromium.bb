@@ -8,31 +8,42 @@ cr.define('print_preview.ticket_items', function() {
   /**
    * Landscape ticket item whose value is a {@code boolean} that indicates
    * whether the document should be printed in landscape orientation.
-   * @param {!print_preview.CapabilitiesHolder} capabilitiesHolder Capabilities
-   *     holder used to determine the default landscape value and if landscape
+   * @param {!print_preview.AppState} appState App state object used to persist
+   *     ticket item values.
+   * @param {!print_preview.DestinationStore} destinationStore Destination store
+   *     used to determine the default landscape value and if landscape
    *     printing is available.
    * @param {!print_preview.DocumentInfo} documentInfo Information about the
    *     document to print.
+   * @param {!print_preview.ticket_items.MarginsType} marginsType Reset when
+   *     landscape value changes.
+   * @param {!print_preview.ticket_items.CustomMargins} customMargins Reset when
+   *     landscape value changes.
    * @constructor
    * @extends {print_preview.ticket_items.TicketItem}
    */
-  function Landscape(capabilitiesHolder, documentInfo) {
-    print_preview.ticket_items.TicketItem.call(this);
+  function Landscape(appState, destinationStore, documentInfo, marginsType,
+                     customMargins) {
+    print_preview.ticket_items.TicketItem.call(
+        this,
+        appState,
+        print_preview.AppState.Field.IS_LANDSCAPE_ENABLED,
+        destinationStore,
+        documentInfo);
 
     /**
-     * Capabilities holder used to determine the default landscape value and if
-     * landscape printing is available.
-     * @type {!print_preview.CapabilitiesHolder}
+     * Margins ticket item. Reset when landscape ticket item changes.
+     * @type {!print_preview.ticket_items.MarginsType}
      * @private
      */
-    this.capabilitiesHolder_ = capabilitiesHolder;
+    this.marginsType_ = marginsType;
 
     /**
-     * Information about the document to print.
-     * @type {!print_preview.DocumentInfo}
+     * Custom margins ticket item. Reset when landscape ticket item changes.
+     * @type {!print_preview.ticket_items.CustomMargins}
      * @private
      */
-    this.documentInfo_ = documentInfo;
+    this.customMargins_ = customMargins;
   };
 
   Landscape.prototype = {
@@ -45,44 +56,67 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      var cdd = this.capabilitiesHolder_.get();
+      var cap = this.getPageOrientationCapability_();
+      if (!cap) {
+        return false;
+      }
       var hasAutoOrPortraitOption = false;
       var hasLandscapeOption = false;
-      if (cdd && cdd.printer && cdd.printer.page_orientation) {
-        cdd.printer.page_orientation.option.forEach(function(option) {
-          hasAutoOrPortraitOption = hasAutoOrPortraitOption ||
-              option.type == 'AUTO' ||
-              option.type == 'PORTRAIT';
-          hasLandscapeOption = hasLandscapeOption || option.type == 'LANDSCAPE';
-        });
-      }
+      cap.option.forEach(function(option) {
+        hasAutoOrPortraitOption = hasAutoOrPortraitOption ||
+            option.type == 'AUTO' ||
+            option.type == 'PORTRAIT';
+        hasLandscapeOption = hasLandscapeOption || option.type == 'LANDSCAPE';
+      });
       // TODO(rltoscano): Technically, the print destination can still change
       // the orientation of the print out (at least for cloud printers) if the
       // document is not modifiable. But the preview wouldn't update in this
       // case so it would be a bad user experience.
-      return this.documentInfo_.isModifiable &&
-          !this.documentInfo_.hasCssMediaStyles &&
+      return this.getDocumentInfoInternal().isModifiable &&
+          !this.getDocumentInfoInternal().hasCssMediaStyles &&
           hasAutoOrPortraitOption &&
           hasLandscapeOption;
     },
 
     /** @override */
     getDefaultValueInternal: function() {
-      var cdd = this.capabilitiesHolder_.get();
-      var defaultOptions =
-          cdd.printer.page_orientation.option.filter(function(option) {
-            return option.is_default;
-          });
-      return defaultOptions.length == 0 ?
-          false : defaultOptions[0].type == 'LANDSCAPE';
+      var cap = this.getPageOrientationCapability_();
+      var defaultOptions = cap.option.filter(function(option) {
+        return option.is_default;
+      });
+      return defaultOptions.length == 0 ? false :
+                                          defaultOptions[0].type == 'LANDSCAPE';
     },
 
     /** @override */
     getCapabilityNotAvailableValueInternal: function() {
-      return this.documentInfo_.hasCssMediaStyles ?
-          (this.documentInfo_.pageSize.width >
-              this.documentInfo_.pageSize.height) :
+      var doc = this.getDocumentInfoInternal();
+      return doc.hasCssMediaStyles ?
+          (doc.pageSize.width > doc.pageSize.height) :
           false;
+    },
+
+    /** @override */
+    updateValueInternal: function(value) {
+      print_preview.ticket_items.TicketItem.prototype.updateValueInternal.call(
+          this, value);
+      // Reset the user set margins when page orientation changes.
+      this.marginsType_.updateValue(
+          print_preview.ticket_items.MarginsType.Value.DEFAULT);
+      this.customMargins_.updateValue(null);
+    },
+
+    /**
+     * @return {Object} Page orientation capability of the selected destination.
+     * @private
+     */
+    getPageOrientationCapability_: function() {
+      var dest = this.getSelectedDestInternal();
+      return (dest &&
+              dest.capabilities &&
+              dest.capabilities.printer &&
+              dest.capabilities.printer.page_orientation) ||
+             null;
     }
   };
 

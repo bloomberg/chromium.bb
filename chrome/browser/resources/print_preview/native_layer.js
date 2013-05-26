@@ -154,7 +154,7 @@ cr.define('print_preview', function() {
 
       var ticket = {
         'pageRange': printTicketStore.pageRange.getDocumentPageRanges(),
-        'landscape': printTicketStore.isLandscapeEnabled(),
+        'landscape': printTicketStore.landscape.getValue(),
         'color': printTicketStore.color.getValue() ?
             NativeLayer.ColorMode_.COLOR : NativeLayer.ColorMode_.GRAY,
         'headerFooterEnabled': printTicketStore.headerFooter.getValue(),
@@ -226,7 +226,7 @@ cr.define('print_preview', function() {
       var ticket = {
         'pageRange': printTicketStore.pageRange.getDocumentPageRanges(),
         'pageCount': printTicketStore.pageRange.getPageNumberSet().size,
-        'landscape': printTicketStore.isLandscapeEnabled(),
+        'landscape': printTicketStore.landscape.getValue(),
         'color': printTicketStore.color.getValue() ?
             NativeLayer.ColorMode_.COLOR : NativeLayer.ColorMode_.GRAY,
         'headerFooterEnabled': printTicketStore.headerFooter.getValue(),

@@ -163,7 +163,7 @@ cr.define('print_preview', function() {
         this.marginsType_ = this.printTicketStore_.marginsType.getValue();
         return false;
       }
-      this.isLandscapeEnabled_ = this.printTicketStore_.isLandscapeEnabled();
+      this.isLandscapeEnabled_ = this.printTicketStore_.landscape.getValue();
       this.isHeaderFooterEnabled_ =
           this.printTicketStore_.headerFooter.getValue();
       this.colorValue_ = this.printTicketStore_.color.getValue();
@@ -266,7 +266,7 @@ cr.define('print_preview', function() {
     hasPreviewChanged_: function() {
       var ticketStore = this.printTicketStore_;
       return this.inFlightRequestId_ == -1 ||
-          ticketStore.isLandscapeEnabled() != this.isLandscapeEnabled_ ||
+          !ticketStore.landscape.isValueEqual(this.isLandscapeEnabled_) ||
           !ticketStore.headerFooter.isValueEqual(this.isHeaderFooterEnabled_) ||
           !ticketStore.color.isValueEqual(this.colorValue_) ||
           !ticketStore.fitToPage.isValueEqual(this.isFitToPageEnabled_) ||

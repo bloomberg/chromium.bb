@@ -8,20 +8,20 @@ cr.define('print_preview', function() {
   /**
    * Creates a LayoutSettings object. This object encapsulates all settings and
    * logic related to layout mode (portrait/landscape).
-   * @param {!print_preview.PrintTicketStore} printTicketStore Used to get the
-   *     layout written to the print ticket.
+   * @param {!print_preview.ticket_items.Landscape} landscapeTicketItem Used to
+   *     get the layout written to the print ticket.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function LayoutSettings(printTicketStore) {
+  function LayoutSettings(landscapeTicketItem) {
     print_preview.Component.call(this);
 
     /**
      * Used to get the layout written to the print ticket.
-     * @type {!print_preview.PrintTicketStore}
+     * @type {!print_preview.ticket_items.Landscape}
      * @private
      */
-    this.printTicketStore_ = printTicketStore;
+    this.landscapeTicketItem_ = landscapeTicketItem;
   };
 
   /**
@@ -55,21 +55,9 @@ cr.define('print_preview', function() {
           'click',
           this.onLayoutButtonClick_.bind(this));
       this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.DOCUMENT_CHANGE,
-          this.onPrintTicketStoreChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.CAPABILITIES_CHANGE,
-          this.onPrintTicketStoreChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.TICKET_CHANGE,
-          this.onPrintTicketStoreChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.INITIALIZE,
-          this.onPrintTicketStoreChange_.bind(this));
+          this.landscapeTicketItem_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onLandscapeTicketItemChange_.bind(this));
     },
 
     /**
@@ -96,8 +84,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onLayoutButtonClick_: function() {
-      this.printTicketStore_.updateOrientation(
-          this.landscapeRadioButton_.checked);
+      this.landscapeTicketItem_.updateValue(this.landscapeRadioButton_.checked);
     },
 
     /**
@@ -105,9 +92,9 @@ cr.define('print_preview', function() {
      * the radio buttons and hides the setting if necessary.
      * @private
      */
-    onPrintTicketStoreChange_: function() {
-      if (this.printTicketStore_.hasOrientationCapability()) {
-        var isLandscapeEnabled = this.printTicketStore_.isLandscapeEnabled();
+    onLandscapeTicketItemChange_: function() {
+      if (this.landscapeTicketItem_.isCapabilityAvailable()) {
+        var isLandscapeEnabled = this.landscapeTicketItem_.getValue();
         this.portraitRadioButton_.checked = !isLandscapeEnabled;
         this.landscapeRadioButton_.checked = isLandscapeEnabled;
         fadeInOption(this.getElement());

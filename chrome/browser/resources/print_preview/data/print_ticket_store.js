@@ -94,14 +94,6 @@ cr.define('print_preview', function() {
         this.appState_, this.destinationStore_);
 
     /**
-     * Landscape ticket item.
-     * @type {!print_preview.ticket_items.Landscape}
-     * @private
-     */
-    this.landscape_ = new print_preview.ticket_items.Landscape(
-        this.capabilitiesHolder_, this.documentInfo_);
-
-    /**
      * Page range ticket item.
      * @type {!print_preview.ticket_items.PageRange}
      * @private
@@ -124,6 +116,15 @@ cr.define('print_preview', function() {
      */
     this.marginsType_ = new print_preview.ticket_items.MarginsType(
         this.appState_, this.documentInfo_, this.customMargins_);
+
+    /**
+     * Landscape ticket item.
+     * @type {!print_preview.ticket_items.Landscape}
+     * @private
+     */
+    this.landscape_ = new print_preview.ticket_items.Landscape(
+        this.appState_, this.destinationStore_, this.documentInfo_,
+        this.marginsType_, this.customMargins_);
 
     /**
      * Header-footer ticket item.
@@ -229,6 +230,10 @@ cr.define('print_preview', function() {
       return this.headerFooter_;
     },
 
+    get landscape() {
+      return this.landscape_;
+    },
+
     get marginsType() {
       return this.marginsType_;
     },
@@ -289,7 +294,11 @@ cr.define('print_preview', function() {
         this.headerFooter_.updateValue(this.appState_.getField(
             print_preview.AppState.Field.IS_HEADER_FOOTER_ENABLED));
       }
-      this.landscape_.updateValue(this.appState_.isLandscapeEnabled);
+      if (this.appState_.hasField(
+          print_preview.AppState.Field.IS_LANDSCAPE_ENABLED)) {
+        this.landscape_.updateValue(this.appState_.getField(
+            print_preview.AppState.Field.IS_LANDSCAPE_ENABLED));
+      }
       if (this.appState_.hasField(
           print_preview.AppState.Field.IS_COLLATE_ENABLED)) {
         this.collate_.updateValue(this.appState_.getField(
@@ -299,38 +308,6 @@ cr.define('print_preview', function() {
           print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED)) {
         this.cssBackground_.updateValue(this.appState_.getField(
             print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED));
-      }
-    },
-
-    /**
-     * @return {boolean} Whether the page orientation capability is available.
-     */
-    hasOrientationCapability: function() {
-      return this.landscape_.isCapabilityAvailable();
-    },
-
-    /**
-     * @return {boolean} Whether the document should be printed in landscape.
-     */
-    isLandscapeEnabled: function() {
-      return this.landscape_.getValue();
-    },
-
-    /**
-     * Updates whether the document should be printed in landscape. Dispatches
-     * a TICKET_CHANGE event if the setting changes.
-     * @param {boolean} isLandscapeEnabled Whether the document should be
-     *     printed in landscape.
-     */
-    updateOrientation: function(isLandscapeEnabled) {
-      if (this.landscape_.getValue() != isLandscapeEnabled) {
-        this.landscape_.updateValue(isLandscapeEnabled);
-        // Reset the user set margins.
-        this.marginsType_.updateValue(
-            print_preview.ticket_items.MarginsType.Value.DEFAULT);
-        this.customMargins_.updateValue(null);
-        this.appState_.persistIsLandscapeEnabled(isLandscapeEnabled);
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },
 

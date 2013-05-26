@@ -81,11 +81,6 @@ cr.define('print_preview', function() {
       return this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED];
     },
 
-    /** @return {?boolean} Whether landscape page orientation is selected. */
-    get isLandscapeEnabled() {
-      return this.state_[AppState.Field.IS_LANDSCAPE_ENABLED];
-    },
-
     /**
      * @param {!print_preview.AppState.Field} field App state field to check if
      *     set.
@@ -166,15 +161,6 @@ cr.define('print_preview', function() {
      */
     persistIsGcpPromoDismissed: function(isGcpPromoDismissed) {
       this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED] = isGcpPromoDismissed;
-      this.persist_();
-    },
-
-    /**
-     * Persists whether landscape printing is enabled.
-     * @param {?boolean} isLandscapeEnabled landscape printing is enabled.
-     */
-    persistIsLandscapeEnabled: function(isLandscapeEnabled) {
-      this.state_[AppState.Field.IS_LANDSCAPE_ENABLED] = isLandscapeEnabled;
       this.persist_();
     },
 
