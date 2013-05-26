@@ -207,10 +207,6 @@ class RulesRegistryWithCache : public RulesRegistry {
   // safe. The registry only ever associates with one RuleStorageOnUI instance.
   const base::WeakPtr<RuleStorageOnUI> storage_on_ui_;
 
-  // If true then a task to call ProcessChangedRules is scheduled for execution
-  // in the future.
-  bool process_changed_rules_requested_;
-
   DISALLOW_COPY_AND_ASSIGN(RulesRegistryWithCache);
 };
 
