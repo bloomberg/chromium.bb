@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_IMPL_H_
-#define WEBKIT_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_IMPL_H_
+#ifndef WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_IMPL_H_
+#define WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_IMPL_H_
 
 #include <list>
 #include <set>
@@ -15,7 +15,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
 #include "ui/gfx/native_widget_types.h"
-#include "webkit/gpu/webkit_gpu_export.h"
+#include "webkit/common/gpu/webkit_gpu_export.h"
 
 namespace gfx {
 class GLContext;
@@ -574,4 +574,4 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessImpl :
 }  // namespace gpu
 }  // namespace webkit
 
-#endif  // WEBKIT_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_IMPL_H_
+#endif  // WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_IMPL_H_

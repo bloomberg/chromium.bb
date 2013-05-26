@@ -171,7 +171,7 @@
             '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
             '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
             '../ui/surface/surface.gyp:surface',
-            '../webkit/gpu/webkit_gpu.gyp:webkit_gpu',
+            '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
             '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
             '../webkit/support/webkit_support.gyp:webkit_storage',
             '../webkit/support/webkit_support.gyp:webkit_support_common',

@@ -24,7 +24,7 @@
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:shell_dialogs',
         '<(DEPTH)/ui/ui.gyp:ui',
-        '<(DEPTH)/webkit/gpu/webkit_gpu.gyp:webkit_gpu',
+        '<(DEPTH)/webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_bindings',
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         'glue',

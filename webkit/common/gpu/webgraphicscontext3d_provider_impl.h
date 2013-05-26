@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GPU_WEBGRAPHICSCONTEXT3D_PROVIDER_IMPL_H_
-#define WEBKIT_GPU_WEBGRAPHICSCONTEXT3D_PROVIDER_IMPL_H_
+#ifndef WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_PROVIDER_IMPL_H_
+#define WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_PROVIDER_IMPL_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3DProvider.h"
-#include "webkit/gpu/webkit_gpu_export.h"
+#include "webkit/common/gpu/webkit_gpu_export.h"
 
 namespace cc { class ContextProvider; }
 
@@ -33,4 +33,4 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DProviderImpl
 }  // namespace gpu
 }  // namespace webkit
 
-#endif  // WEBKIT_GPU_WEBGRAPHICSCONTEXT3D_PROVIDER_IMPL_H_
+#endif  // WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_PROVIDER_IMPL_H_

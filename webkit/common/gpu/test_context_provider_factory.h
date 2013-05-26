@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GPU_TEST_CONTEXT_PROVIDER_FACTORY_H_
-#define WEBKIT_GPU_TEST_CONTEXT_PROVIDER_FACTORY_H_
+#ifndef WEBKIT_COMMON_GPU_TEST_CONTEXT_PROVIDER_FACTORY_H_
+#define WEBKIT_COMMON_GPU_TEST_CONTEXT_PROVIDER_FACTORY_H_
 
 #include "base/memory/ref_counted.h"
-#include "webkit/gpu/webkit_gpu_export.h"
+#include "webkit/common/gpu/webkit_gpu_export.h"
 
 namespace cc {
 class ContextProvider;
@@ -38,4 +38,4 @@ class WEBKIT_GPU_EXPORT TestContextProviderFactory {
 }  // namespace gpu
 }  // namespace webkit
 
-#endif  // WEBKIT_GPU_TEST_WEBKIT_CONTEXT_PROVIDER_FACTORY_H_
+#endif  // WEBKIT_COMMON_GPU_TEST_CONTEXT_PROVIDER_FACTORY_H_

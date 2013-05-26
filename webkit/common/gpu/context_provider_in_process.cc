@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/gpu/context_provider_in_process.h"
+#include "webkit/common/gpu/context_provider_in_process.h"
 
-#include "webkit/gpu/grcontext_for_webgraphicscontext3d.h"
+#include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 
 namespace webkit {
 namespace gpu {

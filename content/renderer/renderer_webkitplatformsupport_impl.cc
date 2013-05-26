@@ -49,11 +49,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "webkit/base/file_path_string_conversions.h"
+#include "webkit/common/gpu/webgraphicscontext3d_provider_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/gpu/webgraphicscontext3d_provider_impl.h"
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"

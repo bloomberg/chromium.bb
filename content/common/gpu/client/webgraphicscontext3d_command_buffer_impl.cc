@@ -14,16 +14,16 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
-#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -37,7 +37,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/command_buffer_proxy.h"
 #include "third_party/skia/include/core/SkTypes.h"
-#include "webkit/gpu/gl_bindings_skia_cmd_buffer.h"
+#include "webkit/common/gpu/gl_bindings_skia_cmd_buffer.h"
 
 namespace content {
 static base::LazyInstance<base::Lock>::Leaky

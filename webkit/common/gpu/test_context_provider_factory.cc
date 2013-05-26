@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/gpu/test_context_provider_factory.h"
+#include "webkit/common/gpu/test_context_provider_factory.h"
 
 #include "base/logging.h"
 #include "cc/output/context_provider.h"
-#include "webkit/gpu/context_provider_in_process.h"
+#include "webkit/common/gpu/context_provider_in_process.h"
 
 namespace webkit {
 namespace gpu {

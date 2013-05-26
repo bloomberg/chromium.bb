@@ -31,8 +31,8 @@
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gl/gl_surface.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
+#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "webkit/common/gpu/webgraphicscontext3d_in_process_impl.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"

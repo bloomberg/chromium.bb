@@ -17,6 +17,4 @@ include_rules = [
   "+third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h",
   "+third_party/WebKit/Source/Platform/chromium/public/WebGraphicsMemoryAllocation.h",
   "+third_party/WebKit/Source/Platform/chromium/public/WebLayerScrollClient.h",
-  # TODO(jamesr): Remove once cc depends on GLES2Interface instead of WGC3D
-  "+webkit/gpu",
 ]

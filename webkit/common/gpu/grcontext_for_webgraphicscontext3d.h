@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GPU_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_
-#define WEBKIT_GPU_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_
+#ifndef WEBKIT_COMMON_GPU_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_
+#define WEBKIT_COMMON_GPU_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_
 
 #include "base/basictypes.h"
 #include "skia/ext/refptr.h"
-#include "webkit/gpu/webkit_gpu_export.h"
+#include "webkit/common/gpu/webkit_gpu_export.h"
 
 class GrContext;
 namespace WebKit { class WebGraphicsContext3D; }
@@ -37,4 +37,4 @@ class WEBKIT_GPU_EXPORT GrContextForWebGraphicsContext3D {
 }  // namespace gpu
 }  // namespace webkit
 
-#endif  // WEBKIT_GPU_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_
+#endif  // WEBKIT_COMMON_GPU_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_

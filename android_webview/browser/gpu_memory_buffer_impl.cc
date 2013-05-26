@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer.h"
 #include "ui/gfx/size.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace android_webview {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GPU_GL_BINDINGS_SKIA_CMD_BUFFER_H_
-#define WEBKIT_GPU_GL_BINDINGS_SKIA_CMD_BUFFER_H_
+#ifndef WEBKIT_COMMON_GPU_GL_BINDINGS_SKIA_CMD_BUFFER_H_
+#define WEBKIT_COMMON_GPU_GL_BINDINGS_SKIA_CMD_BUFFER_H_
 
-#include "webkit/gpu/webkit_gpu_export.h"
+#include "webkit/common/gpu/webkit_gpu_export.h"
 
 struct GrGLInterface;
 
@@ -19,4 +19,4 @@ WEBKIT_GPU_EXPORT GrGLInterface* CreateCommandBufferSkiaGLBinding();
 }  // namespace gpu
 }  // namespace webkit
 
-#endif  // WEBKIT_GLUE_GL_BINDINGS_SKIA_CMD_BUFFER_H_
+#endif  // WEBKIT_COMMON_GPU_GL_BINDINGS_SKIA_CMD_BUFFER_H_

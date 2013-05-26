@@ -23,7 +23,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
-#include "webkit/gpu/test_context_provider_factory.h"
+#include "webkit/common/gpu/test_context_provider_factory.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 #include "webkit/support/test_webkit_platform_support.h"
 

@@ -65,7 +65,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/ui/ui.gyp:ui',
-        '<(DEPTH)/webkit/gpu/webkit_gpu.gyp:webkit_gpu',
+        '<(DEPTH)/webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
       ],
       'sources': [
         '<@(webkit_compositor_bindings_sources)',

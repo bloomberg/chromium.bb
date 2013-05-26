@@ -4,7 +4,7 @@
 
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 
-#include "webkit/gpu/grcontext_for_webgraphicscontext3d.h"
+#include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 
 namespace content {
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
-#define WEBKIT_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
+#ifndef WEBKIT_COMMON_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
+#define WEBKIT_COMMON_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
-#include "webkit/gpu/webkit_gpu_export.h"
+#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "webkit/common/gpu/webkit_gpu_export.h"
 
 namespace webkit {
 namespace gpu {
@@ -61,4 +61,4 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
 }  // namespace gpu
 }  // namespace webkit
 
-#endif  // WEBKIT_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
+#endif  // WEBKIT_COMMON_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_

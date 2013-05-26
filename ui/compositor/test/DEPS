@@ -1,0 +1,4 @@
+include_rules = [
+  "+third_party/WebKit/Source/WebKit/chromium/public",
+  "+webkit/glue",
+]

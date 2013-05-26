@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 #include <GLES2/gl2.h>
 #ifndef GL_GLEXT_PROTOTYPES
@@ -40,7 +40,7 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
-#include "webkit/gpu/gl_bindings_skia_cmd_buffer.h"
+#include "webkit/common/gpu/gl_bindings_skia_cmd_buffer.h"
 
 using gpu::Buffer;
 using gpu::CommandBuffer;

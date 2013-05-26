@@ -33,8 +33,8 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "webkit/common/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/glue/webthread_impl.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 namespace gfx {
 class JavaBitmap;

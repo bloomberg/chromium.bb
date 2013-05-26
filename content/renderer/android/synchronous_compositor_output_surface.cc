@@ -22,7 +22,7 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 

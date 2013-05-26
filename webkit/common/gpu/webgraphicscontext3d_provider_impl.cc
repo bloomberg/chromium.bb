@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/gpu/webgraphicscontext3d_provider_impl.h"
+#include "webkit/common/gpu/webgraphicscontext3d_provider_impl.h"
 
 #include "cc/output/context_provider.h"
 
