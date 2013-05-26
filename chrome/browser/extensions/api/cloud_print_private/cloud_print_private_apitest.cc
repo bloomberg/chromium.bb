@@ -85,14 +85,7 @@ MATCHER(IsExpectedUserSettings, "") {
          settings.printers[1]->connect;
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_CloudPrintHosted DISABLED_CloudPrintHosted
-#else
-#define MAYBE_CloudPrintHosted CloudPrintHosted
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionCloudPrintPrivateApiTest,
-                       MAYBE_CloudPrintHosted) {
+IN_PROC_BROWSER_TEST_F(ExtensionCloudPrintPrivateApiTest, CloudPrintHosted) {
   CloudPrintTestsDelegateMock cloud_print_mock;
 
   EXPECT_CALL(cloud_print_mock,

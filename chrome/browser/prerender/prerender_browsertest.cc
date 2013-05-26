@@ -2699,14 +2699,7 @@ class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
   }
 };
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_WebNavigation DISABLED_WebNavigation
-#else
-#define MAYBE_WebNavigation WebNavigation
-#endif
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions,
-                       MAYBE_WebNavigation) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
   ASSERT_TRUE(StartTestServer());
   extensions::FrameNavigationState::set_allow_extension_scheme(true);
 

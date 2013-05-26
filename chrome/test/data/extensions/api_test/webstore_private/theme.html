@@ -14,7 +14,7 @@ runTests([
       assertEq(info.id, themeId);
     });
 
-    var manifest = getManifest("../../theme/manifest.json");
+    var manifest = getManifest("../../../theme/manifest.json");
     chrome.webstorePrivate.beginInstallWithManifest3(
         {id: themeId, manifest: manifest},
         callbackPass(function(result) {
