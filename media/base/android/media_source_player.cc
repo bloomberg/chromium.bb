@@ -167,7 +167,7 @@ VideoDecoderJob::VideoDecoderJob(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const VideoCodec video_codec, const gfx::Size& size, jobject surface)
     : MediaDecoderJob(false, message_loop) {
-  scoped_ptr<VideoCodecBridge> codec(new VideoCodecBridge(video_codec));
+  scoped_ptr<VideoCodecBridge> codec(VideoCodecBridge::Create(video_codec));
   codec->Start(video_codec, size, surface);
   media_codec_bridge_.reset(codec.release());
   thread_.reset(new base::Thread("MediaSource_VideoDecoderThread"));
@@ -181,7 +181,7 @@ AudioDecoderJob::AudioDecoderJob(
     const uint8* extra_data,
     size_t extra_data_size)
     : MediaDecoderJob(true, message_loop) {
-  scoped_ptr<AudioCodecBridge> codec(new AudioCodecBridge(audio_codec));
+  scoped_ptr<AudioCodecBridge> codec(AudioCodecBridge::Create(audio_codec));
   codec->Start(audio_codec, sample_rate, channel_count, extra_data,
                extra_data_size, true);
   media_codec_bridge_.reset(codec.release());

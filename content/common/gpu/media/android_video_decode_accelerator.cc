@@ -104,7 +104,10 @@ bool AndroidVideoDecodeAccelerator::Initialize(
 
   surface_texture_ = new gfx::SurfaceTextureBridge(surface_texture_id_);
 
-  ConfigureMediaCodec();
+  if (!ConfigureMediaCodec()) {
+    LOG(ERROR) << "Failed to create MediaCodec instance.";
+    return false;
+  }
 
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &AndroidVideoDecodeAccelerator::NotifyInitializeDone,
@@ -376,10 +379,12 @@ void AndroidVideoDecodeAccelerator::Flush() {
   Decode(media::BitstreamBuffer(-1, base::SharedMemoryHandle(), 0));
 }
 
-void AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
+bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   DCHECK(surface_texture_.get());
+  media_codec_.reset(media::VideoCodecBridge::Create(codec_));
 
-  media_codec_.reset(new media::VideoCodecBridge(codec_));
+  if (!media_codec_)
+    return false;
 
   gfx::ScopedJavaSurface surface(surface_texture_.get());
   // VDA does not pass the container indicated resolution in the initialization
@@ -388,6 +393,7 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   media_codec_->Start(
       codec_, gfx::Size(1280, 720), surface.j_surface().obj());
   media_codec_->GetOutputBuffers();
+  return true;
 }
 
 void AndroidVideoDecodeAccelerator::Reset() {

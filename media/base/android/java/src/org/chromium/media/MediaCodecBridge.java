@@ -111,8 +111,13 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private MediaFormat getOutputFormat() {
-        return mMediaCodec.getOutputFormat();
+    private int getOutputHeight() {
+        return mMediaCodec.getOutputFormat().getInteger(MediaFormat.KEY_HEIGHT);
+    }
+
+    @CalledByNative
+    private int getOutputWidth() {
+        return mMediaCodec.getOutputFormat().getInteger(MediaFormat.KEY_WIDTH);
     }
 
     @CalledByNative
@@ -153,6 +158,29 @@ class MediaCodecBridge {
     private void configureVideo(MediaFormat format, Surface surface, MediaCrypto crypto,
             int flags) {
         mMediaCodec.configure(format, surface, crypto, flags);
+    }
+
+    @CalledByNative
+    private static MediaFormat createAudioFormat(String mime, int SampleRate, int ChannelCount) {
+        return MediaFormat.createAudioFormat(mime, SampleRate, ChannelCount);
+    }
+
+    @CalledByNative
+    private static MediaFormat createVideoFormat(String mime, int width, int height) {
+        return MediaFormat.createVideoFormat(mime, width, height);
+    }
+
+    @CalledByNative
+    private static void setCodecSpecificData(MediaFormat format, int index, ByteBuffer bytes) {
+        String name = null;
+        if (index == 0) {
+            name = "csd-0";
+        } else if (index == 1) {
+            name = "csd-1";
+        }
+        if (name != null) {
+            format.setByteBuffer(name, bytes);
+        }
     }
 
     @CalledByNative

@@ -25,7 +25,6 @@ class SurfaceTextureBridge;
 }
 
 namespace content {
-
 // A VideoDecodeAccelerator implementation for Android.
 // This class decodes the input encoded stream by using Android's MediaCodec
 // class. http://developer.android.com/reference/android/media/MediaCodec.html
@@ -59,7 +58,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator :
   virtual ~AndroidVideoDecodeAccelerator();
 
   // Configures |media_codec_| with the given codec parameters from the client.
-  void ConfigureMediaCodec();
+  bool ConfigureMediaCodec();
 
   // Sends the current picture on the surface to the client.
   void SendCurrentSurfaceToClient(int32 bitstream_id);
@@ -163,6 +162,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator :
 
   // Used for copy the texture from |surface_texture_| to picture buffers.
   scoped_ptr<gpu::CopyTextureCHROMIUMResourceManager> copier_;
+
+  friend class AndroidVideoDecodeAcceleratorTest;
 };
 
 }  // namespace content

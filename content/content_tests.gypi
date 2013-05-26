@@ -988,13 +988,11 @@
         },
       ],
     }],
-    ['chromeos==1 or OS=="win"', {
-      # TODO(felipeg): Make video_decode_accelerator_unittest work on Android.
-      # http://crbug.com/178647
+    ['chromeos==1 or OS=="win" or OS=="android"', {
       'targets': [
           {
             'target_name': 'video_decode_accelerator_unittest',
-            'type': 'executable',
+            'type': '<(gtest_target_type)',
             'dependencies': [
               'content',
               '../base/base.gyp:base',
@@ -1007,11 +1005,28 @@
               '<(DEPTH)/third_party/khronos',
             ],
             'sources': [
+              'common/gpu/media/android_video_decode_accelerator_unittest.cc',
               'common/gpu/media/rendering_helper.h',
               'common/gpu/media/rendering_helper_gl.cc',
               'common/gpu/media/video_decode_accelerator_unittest.cc',
             ],
             'conditions': [
+              ['OS=="android"', {
+                'sources/': [
+                  ['exclude', '^common/gpu/media/rendering_helper.h'],
+                  ['exclude', '^common/gpu/media/rendering_helper_gl.cc'],
+                  ['exclude', '^common/gpu/media/video_decode_accelerator_unittest.cc'],
+                ],
+                'dependencies': [
+                  '../testing/gmock.gyp:gmock',
+                  '../testing/android/native_test.gyp:native_test_native_code',
+                  '../gpu/gpu.gyp:gpu_unittest_utils',
+                ],
+              }, { # OS!="android"
+                'sources/': [
+                  ['exclude', '^common/gpu/media/android_video_decode_accelerator_unittest.cc'],
+                ],
+              }],
               ['target_arch=="arm"', {
                 'include_dirs': [
                   '<(DEPTH)/third_party/openmax/il',
@@ -1100,6 +1115,18 @@
             'asset_location': '<(ant_build_out)/content_shell/assets',
           },
           'includes': [ '../build/java_apk.gypi' ],
+        },
+        {
+          'target_name': 'video_decode_accelerator_unittest_apk',
+          'type': 'none',
+          'dependencies': [
+            'video_decode_accelerator_unittest',
+          ],
+          'variables': {
+            'test_suite_name': 'video_decode_accelerator_unittest',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)content_unittests<(SHARED_LIB_SUFFIX)',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
         },
       ],
     }],

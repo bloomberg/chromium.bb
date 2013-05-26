@@ -1584,7 +1584,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             'media_android_jni_headers',
-            'media_format_jni_headers',
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/media',

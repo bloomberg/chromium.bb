@@ -97,7 +97,7 @@ TEST(MediaCodecBridgeTest, Initialize) {
     return;
 
   scoped_ptr<media::MediaCodecBridge> media_codec;
-  media_codec.reset(new VideoCodecBridge(kCodecH264));
+  media_codec.reset(VideoCodecBridge::Create(kCodecH264));
 }
 
 TEST(MediaCodecBridgeTest, DoNormal) {
@@ -105,7 +105,7 @@ TEST(MediaCodecBridgeTest, DoNormal) {
     return;
 
   scoped_ptr<media::AudioCodecBridge> media_codec;
-  media_codec.reset(new AudioCodecBridge(kCodecMP3));
+  media_codec.reset(AudioCodecBridge::Create(kCodecMP3));
 
   media_codec->Start(kCodecMP3, 44100, 2, NULL, 0, false);
 
@@ -162,7 +162,7 @@ TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
     return;
 
   scoped_ptr<media::AudioCodecBridge> media_codec;
-  media_codec.reset(new AudioCodecBridge(kCodecVorbis));
+  media_codec.reset(AudioCodecBridge::Create(kCodecVorbis));
 
   // The first byte of the header is not 0x02.
   uint8 invalid_first_byte[] = { 0x00, 0xff, 0xff, 0xff, 0xff };
@@ -185,6 +185,11 @@ TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
   EXPECT_FALSE(media_codec->Start(
       kCodecVorbis, 44100, 2, very_large_header, 0x80000000, false));
   delete[] very_large_header;
+}
+
+TEST(MediaCodecBridgeTest, CreateUnsupportedCodec) {
+  EXPECT_EQ(NULL, AudioCodecBridge::Create(kUnknownAudioCodec));
+  EXPECT_EQ(NULL, VideoCodecBridge::Create(kUnknownVideoCodec));
 }
 
 }  // namespace media

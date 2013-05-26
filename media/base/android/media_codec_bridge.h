@@ -85,6 +85,8 @@ class MEDIA_EXPORT MediaCodecBridge {
   // To access them, use DequeueOutputBuffer().
   void GetOutputBuffers();
 
+  static bool RegisterMediaCodecBridge(JNIEnv* env);
+
  protected:
   explicit MediaCodecBridge(const char* mime);
 
@@ -103,7 +105,9 @@ class MEDIA_EXPORT MediaCodecBridge {
 
 class AudioCodecBridge : public MediaCodecBridge {
  public:
-  explicit AudioCodecBridge(const AudioCodec codec);
+  // Returns an AudioCodecBridge instance if |codec| is supported, or a NULL
+  // pointer otherwise.
+  static AudioCodecBridge* Create(const AudioCodec codec);
 
   // Start the audio codec bridge.
   bool Start(const AudioCodec codec, int sample_rate, int channel_count,
@@ -113,16 +117,24 @@ class AudioCodecBridge : public MediaCodecBridge {
   // Play the output buffer. This call must be called after
   // DequeueOutputBuffer() and before ReleaseOutputBuffer.
   void PlayOutputBuffer(int index, size_t size);
+
+ private:
+  explicit AudioCodecBridge(const char* mime);
 };
 
 class VideoCodecBridge : public MediaCodecBridge {
  public:
-  explicit VideoCodecBridge(const VideoCodec codec);
+  // Returns an VideoCodecBridge instance if |codec| is supported, or a NULL
+  // pointer otherwise.
+  static VideoCodecBridge* Create(const VideoCodec codec);
 
   // Start the video codec bridge.
   // TODO(qinmin): Pass codec specific data if available.
   bool Start(
       const VideoCodec codec, const gfx::Size& size, jobject surface);
+
+ private:
+  explicit VideoCodecBridge(const char* mime);
 };
 
 }  // namespace media
