@@ -2353,3 +2353,12 @@
    fun:_ZN9file_util14FileEnumerator4NextEv
    fun:_ZN10disk_cache11SimpleIndex15RestoreFromDiskERKN4base8FilePathE
 }
+{
+   bug_244102
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN5media12_GLOBAL__N_117ScreenCapturerMac10GlBlitFastERKN6webrtc12DesktopFrameERKNS2_13DesktopRegionE
+   fun:_ZN5media12_GLOBAL__N_117ScreenCapturerMac7CaptureERKN6webrtc13DesktopRegionE
+   fun:_ZN5media19ScreenCaptureDevice4Core9DoCaptureEv
+   fun:_ZN5media19ScreenCaptureDevice4Core7DoStartEv
+}
