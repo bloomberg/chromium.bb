@@ -1,14 +1,8 @@
 <html>
 <head>
-<style>
-#inspected
-{
-  color: green;
-}
-</style>
-<link rel="stylesheet" href="resources/selector-line.css" />
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/elements-test.js"></script>
+<link rel="stylesheet" href="resources/selector-line-sourcemap-header.php" />
+<script src="../inspector-test.js"></script>
+<script src="../elements-test.js"></script>
 <script>
 
 function test()
@@ -34,7 +28,7 @@ function test()
 
 <body onload="runTest()">
 <p>
-Tests that selector line is computed correctly regardless of its start column. <a href="https://bugs.webkit.org/show_bug.cgi?id=110732">Bug 110732</a>.
+Tests that sourcemap is applied correctly when specified by the respective HTTP header.
 </p>
 
 <div id="container">

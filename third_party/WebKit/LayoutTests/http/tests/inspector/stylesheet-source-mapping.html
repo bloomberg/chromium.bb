@@ -8,23 +8,32 @@
 
 function test()
 {
+    WebInspector.experimentsSettings.sass.isEnabled = function() { return true; }
     InspectorTest.createWorkspace();
     var cssModel = new WebInspector.CSSStyleModel(InspectorTest.testWorkspace);
-    var mapping = new WebInspector.SASSSourceMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceProvider);
-    var stylesSourceMapping = new WebInspector.StylesSourceMapping(cssModel, InspectorTest.testWorkspace);
+    var mapping = new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceProvider);
 
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
-    InspectorTest.addMockUISourceCodeToWorkspace("http://localhost:8000/inspector/resources/example.css", WebInspector.resourceTypes.Stylesheet, "");
-    var resource = createMockStyleSheetResource("http://localhost:8000/inspector/resources/example.css", "text/css",
-        "/* Comment */\n" +
-        "a {\n" +
-        "  foo: bar;\n" +
-        "  /* SOME COMMENT */\n" +
-        "  font-size: 12px; }\n\n" +
-        "/*@ sourceMappingURL=example.css.map */");
-    stylesSourceMapping.addResource(resource);
-    mapping.addResource(resource);
+    const styleSheetURL = "http://localhost:8000/inspector/resources/example.css";
+    const sourceMapURL = "example.css.map";
+    InspectorTest.addMockUISourceCodeToWorkspace(styleSheetURL, WebInspector.resourceTypes.Stylesheet, "");
+
+    cssModel._styleSheetAdded(createMockStyleSheetHeader(styleSheetURL, sourceMapURL));
     afterStyleSheetAdded();
+
+    function createMockStyleSheetHeader(url, sourceMapURL)
+    {
+        const frame = WebInspector.resourceTreeModel.mainFrame;
+        return {
+            styleSheetId: "1000",
+            frameId: frame.id,
+            sourceURL: url,
+            sourceMapURL: sourceMapURL,
+            origin: "regular",
+            title: "",
+            disabled: false
+        };
+    }
 
     function createMockStyleSheetResource(url, mimeType, content)
     {
@@ -48,7 +57,7 @@ function test()
     {
     }
 
-    function rawLocationToUILocation(line, column, url)
+    function rawLocationToUILocation(line, column)
     {
         return cssModel.rawLocationToUILocation(new WebInspector.CSSLocation("http://localhost:8000/inspector/resources/example.css", line, column));
     }
