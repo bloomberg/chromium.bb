@@ -154,7 +154,7 @@ class PostEventDispatchHandler : public ui::EventHandler {
 ViewsDelegate* ViewsDelegate::views_delegate = NULL;
 
 // static
-const char View::kViewClassName[] = "views/View";
+const char View::kViewClassName[] = "View";
 
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:

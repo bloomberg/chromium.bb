@@ -18,7 +18,7 @@
 namespace views {
 
 // static
-const char Combobox::kViewClassName[] = "views/Combobox";
+const char Combobox::kViewClassName[] = "Combobox";
 
 ////////////////////////////////////////////////////////////////////////////////
 // Combobox, public:

@@ -12,7 +12,7 @@
 namespace views {
 
 // static
-const char Checkbox::kViewClassName[] = "views/Checkbox";
+const char Checkbox::kViewClassName[] = "Checkbox";
 
 Checkbox::Checkbox(const string16& label)
     : LabelButton(NULL, label),

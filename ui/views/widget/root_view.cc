@@ -47,7 +47,7 @@ class MouseEnterExitEvent : public ui::MouseEvent {
 }  // namespace
 
 // static
-const char RootView::kViewClassName[] = "views/RootView";
+const char RootView::kViewClassName[] = "RootView";
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, public:

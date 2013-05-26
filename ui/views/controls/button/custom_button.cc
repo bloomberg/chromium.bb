@@ -17,7 +17,7 @@ namespace views {
 static const int kHoverFadeDurationMs = 150;
 
 // static
-const char CustomButton::kViewClassName[] = "views/CustomButton";
+const char CustomButton::kViewClassName[] = "CustomButton";
 
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, public:

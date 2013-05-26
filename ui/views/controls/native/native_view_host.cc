@@ -12,7 +12,7 @@
 namespace views {
 
 // static
-const char NativeViewHost::kViewClassName[] = "views/NativeViewHost";
+const char NativeViewHost::kViewClassName[] = "NativeViewHost";
 
 #if defined(USE_AURA)
 // Views implmenetatxion draws the focus.

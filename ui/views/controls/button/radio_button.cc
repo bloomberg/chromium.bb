@@ -13,7 +13,7 @@
 namespace views {
 
 // static
-const char RadioButton::kViewClassName[] = "views/RadioButton";
+const char RadioButton::kViewClassName[] = "RadioButton";
 
 RadioButton::RadioButton(const string16& label, int group_id)
     : Checkbox(label) {

@@ -31,7 +31,7 @@ const int kHoverAnimationDurationMs = 170;
 namespace views {
 
 // static
-const char LabelButton::kViewClassName[] = "views/LabelButton";
+const char LabelButton::kViewClassName[] = "LabelButton";
 
 LabelButton::LabelButton(ButtonListener* listener, const string16& text)
     : CustomButton(listener),

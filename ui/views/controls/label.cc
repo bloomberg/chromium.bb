@@ -36,7 +36,7 @@ const int kCachedSizeLimit = 10;
 namespace views {
 
 // static
-const char Label::kViewClassName[] = "views/Label";
+const char Label::kViewClassName[] = "Label";
 
 Label::Label() {
   Init(string16(), GetDefaultFont());

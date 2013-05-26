@@ -47,7 +47,7 @@ namespace views {
 // Textfield
 
 // static
-const char Textfield::kViewClassName[] = "views/Textfield";
+const char Textfield::kViewClassName[] = "Textfield";
 
 // static
 bool Textfield::IsViewsTextfieldEnabled() {

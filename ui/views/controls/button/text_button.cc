@@ -61,9 +61,9 @@ const int kPushedImages[] = IMAGE_GRID(IDR_TEXTBUTTON_PRESSED);
 }  // namespace
 
 // static
-const char TextButtonBase::kViewClassName[] = "views/TextButtonBase";
+const char TextButtonBase::kViewClassName[] = "TextButtonBase";
 // static
-const char TextButton::kViewClassName[] = "views/TextButton";
+const char TextButton::kViewClassName[] = "TextButton";
 
 ////////////////////////////////////////////////////////////////////////////////
 //
