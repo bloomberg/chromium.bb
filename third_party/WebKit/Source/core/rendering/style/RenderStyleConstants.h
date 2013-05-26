@@ -495,6 +495,8 @@ enum GridAutoFlow { AutoFlowNone, AutoFlowColumn, AutoFlowRow };
 
 enum DraggableRegionMode { DraggableRegionNone, DraggableRegionDrag, DraggableRegionNoDrag };
 
+enum TouchAction { TouchActionAuto, TouchActionNone };
+
 // Reasonable maximum to prevent insane font sizes from causing crashes on some platforms (such as Windows).
 static const float maximumAllowedFontSize = 1000000.0f;
 

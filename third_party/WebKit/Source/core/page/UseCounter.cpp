@@ -490,6 +490,7 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitGridAutoColumns: return 418;
     case CSSPropertyBackgroundBlendMode: return 419;
     case CSSPropertyMixBlendMode: return 420;
+    case CSSPropertyTouchAction: return 421;
 
     // Add new features above this line (don't change the assigned numbers of the existing
     // items) and update maximumCSSSampleId() with the new maximum value.
@@ -504,7 +505,7 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 420; }
+static int maximumCSSSampleId() { return 421; }
 
 UseCounter::UseCounter()
 {

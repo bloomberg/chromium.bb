@@ -720,6 +720,10 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if ((valueID >= CSSValueCapitalize && valueID <= CSSValueLowercase) || valueID == CSSValueNone)
             return true;
         break;
+    case CSSPropertyTouchAction: // auto | none
+        if (RuntimeEnabledFeatures::cssTouchActionEnabled() && (valueID == CSSValueAuto || valueID == CSSValueNone))
+            return true;
+        break;
     case CSSPropertyVisibility: // visible | hidden | collapse | inherit
         if (valueID == CSSValueVisible || valueID == CSSValueHidden || valueID == CSSValueCollapse)
             return true;
@@ -982,6 +986,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyTextTransform:
     case CSSPropertyTextUnderlineMode:
     case CSSPropertyTextUnderlineStyle:
+    case CSSPropertyTouchAction:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:
     case CSSPropertyWebkitBackfaceVisibility:
@@ -2781,6 +2786,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyTextTransform:
     case CSSPropertyTextUnderlineMode:
     case CSSPropertyTextUnderlineStyle:
+    case CSSPropertyTouchAction:
     case CSSPropertyVariable:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:

@@ -1,0 +1,33 @@
+Test the parsing and application of the touch-action property.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Test case: default
+PASS style.touchAction is "auto"
+
+Test case: stylesheet-none
+PASS style.touchAction is "none"
+
+Test case: explicit-auto
+PASS style.touchAction is "auto"
+
+Test case: explicit-none
+PASS style.touchAction is "none"
+
+Test case: explicit-invalid
+PASS style.touchAction is "auto"
+
+Test case: not-inherited
+PASS style.touchAction is "auto"
+
+Test case: inherit
+PASS style.touchAction is "none"
+
+Test case: initial
+PASS style.touchAction is "auto"
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

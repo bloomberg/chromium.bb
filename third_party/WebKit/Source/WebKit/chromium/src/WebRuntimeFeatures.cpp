@@ -107,6 +107,16 @@ bool WebRuntimeFeatures::isCSSRegionsEnabled()
     return RuntimeEnabledFeatures::cssRegionsEnabled();
 }
 
+void WebRuntimeFeatures::enableCSSTouchAction(bool enable)
+{
+    RuntimeEnabledFeatures::setCSSTouchActionEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isCSSTouchActionEnabled()
+{
+    return RuntimeEnabledFeatures::cssTouchActionEnabled();
+}
+
 void WebRuntimeFeatures::enableCustomDOMElements(bool enable)
 {
     RuntimeEnabledFeatures::setCustomDOMElementsEnabled(enable);

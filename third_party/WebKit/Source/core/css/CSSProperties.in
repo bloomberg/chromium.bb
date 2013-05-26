@@ -47,6 +47,7 @@ tab-size typename=unsigned
 text-overflow typename=TextOverflow
 text-transform
 top applytype=length, initial=initialOffset, useauto
+touch-action typename=TouchAction, initial=initialTouchAction
 unicode-bidi
 visibility
 white-space

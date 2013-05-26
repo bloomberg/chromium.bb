@@ -4499,6 +4499,33 @@ template<> inline CSSPrimitiveValue::operator EMaskType() const
     return MT_LUMINANCE;
 }
 
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TouchAction t)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_IDENT;
+    switch (t) {
+    case TouchActionNone:
+        m_value.ident = CSSValueNone;
+        break;
+    case TouchActionAuto:
+        m_value.ident = CSSValueAuto;
+        break;
+    }
+}
+
+template<> inline CSSPrimitiveValue::operator TouchAction() const
+{
+    switch (m_value.ident) {
+    case CSSValueNone:
+        return TouchActionNone;
+    case CSSValueAuto:
+        return TouchActionAuto;
+    }
+
+    ASSERT_NOT_REACHED();
+    return TouchActionNone;
+}
+
 }
 
 #endif

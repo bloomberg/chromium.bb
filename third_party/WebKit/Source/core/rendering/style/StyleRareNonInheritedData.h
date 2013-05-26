@@ -182,6 +182,8 @@ public:
 
     unsigned m_effectiveBlendMode: 5; // EBlendMode
 
+    unsigned m_touchAction : 1; // TouchAction
+
 private:
     StyleRareNonInheritedData();
     StyleRareNonInheritedData(const StyleRareNonInheritedData&);

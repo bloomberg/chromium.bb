@@ -64,6 +64,9 @@ public:
     WEBKIT_EXPORT static void enableCSSRegions(bool);
     WEBKIT_EXPORT static bool isCSSRegionsEnabled();
 
+    WEBKIT_EXPORT static void enableCSSTouchAction(bool);
+    WEBKIT_EXPORT static bool isCSSTouchActionEnabled();
+
     WEBKIT_EXPORT static void enableCustomDOMElements(bool);
     WEBKIT_EXPORT static bool isCustomDOMElementsEnabled();
 

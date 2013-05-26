@@ -912,6 +912,8 @@ public:
 
     bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const { return !isLeftToRightDirection() && isHorizontalWritingMode(); }
 
+    TouchAction touchAction() const { return static_cast<TouchAction>(rareNonInheritedData->m_touchAction); }
+
 // attribute setter methods
 
     void setDisplay(EDisplay v) { noninherited_flags._effectiveDisplay = v; }
@@ -1322,6 +1324,7 @@ public:
     void setUseTouchOverflowScrolling(bool v) { SET_VAR(rareInheritedData, useTouchOverflowScrolling, v); }
 #endif
     void setTextSecurity(ETextSecurity aTextSecurity) { SET_VAR(rareInheritedData, textSecurity, aTextSecurity); }
+    void setTouchAction(TouchAction t) { SET_VAR(rareNonInheritedData, m_touchAction, t); }
 
     const SVGRenderStyle* svgStyle() const { return m_svgStyle.get(); }
     SVGRenderStyle* accessSVGStyle() { return m_svgStyle.access(); }
@@ -1603,6 +1606,7 @@ public:
     static StyleImage* initialBorderImageSource() { return 0; }
     static StyleImage* initialMaskBoxImageSource() { return 0; }
     static PrintColorAdjust initialPrintColorAdjust() { return PrintColorAdjustEconomy; }
+    static TouchAction initialTouchAction() { return TouchActionAuto; }
 
     // The initial value is 'none' for grid tracks.
     static Vector<GridTrackSize> initialGridColumns() { return Vector<GridTrackSize>(); }

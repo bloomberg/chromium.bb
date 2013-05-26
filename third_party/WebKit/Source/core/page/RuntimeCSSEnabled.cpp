@@ -67,6 +67,7 @@ static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
 
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyBackgroundBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMixBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
+    RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyTouchAction, RuntimeEnabledFeatures::cssTouchActionEnabled());
 }
 
 static BoolVector& propertySwitches()

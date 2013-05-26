@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+<style>
+/* 
+   Give some rules below something to override in order to test
+   that they really are being parsed
+*/ 
+.defnone {
+  touch-action: none;
+}
+</style>
+</head>
+<body>
+<p id="description"></p>
+<div class="test" id="default" expected="auto"></div>
+<div class="test defnone" id="stylesheet-none" expected="none"></div>
+<div class="test defnone" id="explicit-auto" style="touch-action: auto;" expected="auto"></div>
+<div class="test" id="explicit-none" style="touch-action: none;" expected="none"></div>
+<div class="test" id="explicit-invalid" style="touch-action: bogus;" expected="auto"></div>
+<div style="touch-action: none;">
+  <div class="test" id="not-inherited" expected="auto"></div>
+  <div class="test" id="inherit" style="touch-action: inherit;" expected="none"></div>
+</div>
+<div class="test defnone" id="initial" style="touch-action: initial;" expected="auto"></div>
+
+<div id="console"></div>
+<script>
+description("Test the parsing and application of the touch-action property.");
+
+var tests = document.querySelectorAll('.test');
+var style;
+for (var i = 0; i < tests.length; i++) {
+  debug('Test case: ' + tests[i].id);
+  style = window.getComputedStyle(tests[i]);
+  shouldBeEqualToString('style.touchAction', tests[i].attributes.expected.value);
+  debug('');
+}
+
+successfullyParsed = true;
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

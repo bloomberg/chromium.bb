@@ -19,6 +19,7 @@ CanvasPath status=test
 CSSCompositing status=experimental
 CSSExclusions status=experimental
 CSSRegions status=experimental
+CSSTouchAction status=test
 CustomDOMElements status=experimental
 Database status=stable
 DataListElement status=stable

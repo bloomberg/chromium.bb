@@ -485,6 +485,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyTextUnderlineStyle:
     case CSSPropertyTextUnderlineWidth:
     case CSSPropertyTop:
+    case CSSPropertyTouchAction:
     case CSSPropertyTransition:
     case CSSPropertyTransitionDelay:
     case CSSPropertyTransitionDuration:

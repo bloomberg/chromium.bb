@@ -3166,6 +3166,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyTextRendering:
     case CSSPropertyTextTransform:
     case CSSPropertyTop:
+    case CSSPropertyTouchAction:
     case CSSPropertyUnicodeBidi:
     case CSSPropertyVariable:
     case CSSPropertyVerticalAlign:
