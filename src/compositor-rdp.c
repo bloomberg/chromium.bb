@@ -93,12 +93,9 @@ struct rdp_output {
 
 struct rdp_peer_context {
 	rdpContext _p;
+
 	struct rdp_compositor *rdpCompositor;
-
-	/* file descriptors and associated events */
-	int fds[MAX_FREERDP_FDS];
 	struct wl_event_source *events[MAX_FREERDP_FDS];
-
 	RFX_CONTEXT *rfx_context;
 	wStream *encode_stream;
 	RFX_RECT *rfx_rects;
@@ -599,7 +596,7 @@ rdp_peer_context_free(freerdp_peer* client, RdpPeerContext* context)
 
 	wl_list_remove(&context->item.link);
 	for(i = 0; i < MAX_FREERDP_FDS; i++) {
-		if(context->fds[i] != -1)
+		if (context->events[i])
 			wl_event_source_remove(context->events[i]);
 	}
 
@@ -946,14 +943,11 @@ rdp_peer_init(freerdp_peer *client, struct rdp_compositor *c)
 	for(i = 0; i < rcount; i++) {
 		fd = (int)(long)(rfds[i]);
 
-		peerCtx->fds[i] = fd;
 		peerCtx->events[i] = wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
 				rdp_client_activity, client);
 	}
-	for( ; i < MAX_FREERDP_FDS; i++) {
-		peerCtx->fds[i] = -1;
+	for ( ; i < MAX_FREERDP_FDS; i++)
 		peerCtx->events[i] = 0;
-	}
 
 	wl_list_insert(&c->output->peers, &peerCtx->item.link);
 	return 0;
