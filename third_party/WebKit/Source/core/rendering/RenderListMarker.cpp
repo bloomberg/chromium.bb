@@ -1170,14 +1170,13 @@ void RenderListMarker::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
     EListStyleType type = style()->listStyleType();
     switch (type) {
         case Disc:
-            context->drawEllipse(marker);
+            context->fillEllipse(marker);
             return;
         case Circle:
-            context->setFillColor(Color::transparent, ColorSpaceDeviceRGB);
-            context->drawEllipse(marker);
+            context->strokeEllipse(marker);
             return;
         case Square:
-            context->drawRect(marker);
+            context->fillRect(marker);
             return;
         case NoneListStyle:
             return;
