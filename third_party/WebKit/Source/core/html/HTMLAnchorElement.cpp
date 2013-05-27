@@ -24,6 +24,9 @@
 #include "config.h"
 #include "core/html/HTMLAnchorElement.h"
 
+#include <public/Platform.h>
+#include <public/WebPrescientNetworking.h>
+#include <public/WebURL.h>
 #include <wtf/text/StringBuilder.h>
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"
@@ -53,17 +56,30 @@
 
 namespace WebCore {
 
+namespace {
+
+void preconnectToURL(const KURL& url, WebKit::WebPreconnectMotivation motivation)
+{
+    WebKit::WebPrescientNetworking* prescientNetworking = WebKit::Platform::current()->prescientNetworking();
+    if (!prescientNetworking)
+        return;
+
+    prescientNetworking->preconnect(url, motivation);
+}
+
+}
+
 class HTMLAnchorElement::PrefetchEventHandler {
 public:
-    static PassOwnPtr<PrefetchEventHandler> create()
+    static PassOwnPtr<PrefetchEventHandler> create(HTMLAnchorElement* anchorElement)
     {
-        return adoptPtr(new HTMLAnchorElement::PrefetchEventHandler());
+        return adoptPtr(new HTMLAnchorElement::PrefetchEventHandler(anchorElement));
     }
 
     void handleEvent(Event* e);
 
 private:
-    PrefetchEventHandler();
+    explicit PrefetchEventHandler(HTMLAnchorElement*);
 
     void reset();
 
@@ -74,10 +90,15 @@ private:
     void handleGestureTapDown(Event*);
     void handleClick(Event* event);
 
+    bool shouldPrefetch(const KURL&);
+    void prefetch(WebKit::WebPreconnectMotivation);
+
+    HTMLAnchorElement* m_anchorElement;
     double m_mouseOverTimestamp;
     double m_mouseDownTimestamp;
     double m_tapDownTimestamp;
     bool m_hadTapUnconfirmed;
+    bool m_hasIssuedPreconnect;
 };
 
 using namespace HTMLNames;
@@ -648,13 +669,16 @@ void HTMLAnchorElement::setRootEditableElementForSelectionOnMouseDown(Element* e
 HTMLAnchorElement::PrefetchEventHandler* HTMLAnchorElement::prefetchEventHandler()
 {
     if (!m_prefetchEventHandler)
-        m_prefetchEventHandler = PrefetchEventHandler::create();
+        m_prefetchEventHandler = PrefetchEventHandler::create(this);
 
     return m_prefetchEventHandler.get();
 }
 
-HTMLAnchorElement::PrefetchEventHandler::PrefetchEventHandler()
+HTMLAnchorElement::PrefetchEventHandler::PrefetchEventHandler(HTMLAnchorElement* anchorElement)
+    : m_anchorElement(anchorElement)
 {
+    ASSERT(m_anchorElement);
+
     reset();
 }
 
@@ -664,10 +688,14 @@ void HTMLAnchorElement::PrefetchEventHandler::reset()
     m_mouseDownTimestamp = 0;
     m_hadTapUnconfirmed = false;
     m_tapDownTimestamp = 0;
+    m_hasIssuedPreconnect = false;
 }
 
 void HTMLAnchorElement::PrefetchEventHandler::handleEvent(Event* event)
 {
+    if (!shouldPrefetch(m_anchorElement->href()))
+        return;
+
     if (event->type() == eventNames().mouseoverEvent)
         handleMouseOver(event);
     else if (event->type() == eventNames().mouseoutEvent)
@@ -688,6 +716,8 @@ void HTMLAnchorElement::PrefetchEventHandler::handleMouseOver(Event* event)
         m_mouseOverTimestamp = event->timeStamp();
 
         HistogramSupport::histogramEnumeration("MouseEventPrefetch.MouseOvers", 0, 2);
+
+        prefetch(WebKit::WebPreconnectMotivationLinkMouseOver);
     }
 }
 
@@ -706,6 +736,8 @@ void HTMLAnchorElement::PrefetchEventHandler::handleLeftMouseDown(Event* event)
     m_mouseDownTimestamp = event->timeStamp();
 
     HistogramSupport::histogramEnumeration("MouseEventPrefetch.MouseDowns", 0, 2);
+
+    prefetch(WebKit::WebPreconnectMotivationLinkMouseDown);
 }
 
 void HTMLAnchorElement::PrefetchEventHandler::handleGestureTapUnconfirmed(Event* event)
@@ -713,6 +745,8 @@ void HTMLAnchorElement::PrefetchEventHandler::handleGestureTapUnconfirmed(Event*
     m_hadTapUnconfirmed = true;
 
     HistogramSupport::histogramEnumeration("MouseEventPrefetch.TapUnconfirmeds", 0, 2);
+
+    prefetch(WebKit::WebPreconnectMotivationLinkTapUnconfirmed);
 }
 
 void HTMLAnchorElement::PrefetchEventHandler::handleGestureTapDown(Event* event)
@@ -720,6 +754,8 @@ void HTMLAnchorElement::PrefetchEventHandler::handleGestureTapDown(Event* event)
     m_tapDownTimestamp = event->timeStamp();
 
     HistogramSupport::histogramEnumeration("MouseEventPrefetch.TapDowns", 0, 2);
+
+    prefetch(WebKit::WebPreconnectMotivationLinkTapDown);
 }
 
 void HTMLAnchorElement::PrefetchEventHandler::handleClick(Event* event)
@@ -751,6 +787,39 @@ void HTMLAnchorElement::PrefetchEventHandler::handleClick(Event* event)
     HistogramSupport::histogramEnumeration("MouseEventPrefetch.PreTapEventsFollowedByClick", flags, 4);
 
     reset();
+}
+
+bool HTMLAnchorElement::PrefetchEventHandler::shouldPrefetch(const KURL& url)
+{
+    Document* document = m_anchorElement->document();
+    if (!document)
+        return false;
+
+    if (!document->securityOrigin()->canDisplay(url))
+        return false;
+
+    if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(document->url(), url))
+        return false;
+
+    Frame* frame = document->frame();
+    if (!frame)
+        return false;
+
+    // Links which create new window/tab are avoided because they may require user approval interaction.
+    if (!m_anchorElement->target().isEmpty())
+        return false;
+
+    return true;
+}
+
+void HTMLAnchorElement::PrefetchEventHandler::prefetch(WebKit::WebPreconnectMotivation motivation)
+{
+    const KURL& url = m_anchorElement->href();
+
+    if (!shouldPrefetch(url))
+        return;
+
+    preconnectToURL(url, motivation);
 }
 
 }
