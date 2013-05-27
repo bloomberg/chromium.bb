@@ -18,7 +18,7 @@
  *
  */
 
-/* This prefix file should contain only: 
+/* This prefix file is for use on Mac OS X only. This prefix file should contain only:
  *    1) files to precompile for faster builds
  *    2) in one case at least: OS-X-specific performance bug workarounds
  *    3) the special trick to catch us using new or delete without including "config.h"
@@ -27,52 +27,17 @@
 
 /* Things that need to be defined globally should go into "config.h". */
 
-#include <wtf/Platform.h>
-
-#if defined(__APPLE__)
 #ifdef __cplusplus
 #define NULL __null
 #else
 #define NULL ((void *)0)
 #endif
-#endif
-
-#if OS(WINDOWS)
-
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0502
-#endif
-
-#ifndef WINVER
-#define WINVER 0x0502
-#endif
-
-#ifndef _WINSOCKAPI_
-#define _WINSOCKAPI_ // Prevent inclusion of winsock.h in windows.h
-#endif
-
-// If we don't define these, they get defined in windef.h. 
-// We want to use std::min and std::max
-#ifdef __cplusplus
-#define max max
-#define min min
-#endif
-
-#else
 
 #include <pthread.h>
-
-#endif // OS(WINDOWS)
-
 #include <sys/types.h>
 #include <fcntl.h>
-#if defined(__APPLE__)
 #include <regex.h>
-#endif
-
-
 #include <setjmp.h>
-
 #include <signal.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -80,13 +45,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#if defined(__APPLE__)
 #include <unistd.h>
-#endif
 
 #ifdef __cplusplus
-
-
 #include <ciso646>
 
 #if defined(_LIBCPP_VERSION)
@@ -97,7 +58,7 @@
 #include <type_traits>
 
 namespace WebCore {
-    class TimerHeapReference;
+class TimerHeapReference;
 }
 
 _LIBCPP_BEGIN_NAMESPACE_STD
@@ -116,24 +77,14 @@ _LIBCPP_END_NAMESPACE_STD
 #include <cstddef>
 #include <new>
 
-#endif
+#endif // __cplusplus
 
-#if defined(__APPLE__)
 #include <sys/param.h>
-#endif
 #include <sys/stat.h>
-#if defined(__APPLE__)
 #include <sys/time.h>
 #include <sys/resource.h>
-#endif
-
 #include <CoreFoundation/CoreFoundation.h>
-
-#if OS(WINDOWS)
-#include <windows.h>
-#else
 #include <CoreServices/CoreServices.h>
-#endif // OS(WINDOWS)
 
 #ifdef __OBJC__
 #import <Cocoa/Cocoa.h>
@@ -152,4 +103,3 @@ _LIBCPP_END_NAMESPACE_STD
 #undef try
 #undef catch
 #endif
-

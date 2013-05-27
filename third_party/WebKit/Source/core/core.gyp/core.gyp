@@ -372,7 +372,7 @@
           # Some Mac-specific parts of WebKit won't compile without having this
           # prefix header injected.
           # FIXME: make this a first-class setting.
-          'GCC_PREFIX_HEADER': '../WebCorePrefix.h',
+          'GCC_PREFIX_HEADER': '../WebCorePrefixMac.h',
         },
       },
       'conditions': [
