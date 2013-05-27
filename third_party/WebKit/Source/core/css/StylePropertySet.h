@@ -44,8 +44,6 @@ class StyleSheetContents;
 class StylePropertySet : public RefCounted<StylePropertySet> {
     friend class PropertyReference;
 public:
-    ~StylePropertySet();
-
     // Override RefCounted's deref() to ensure operator delete is called on
     // the appropriate subclass type.
     void deref();
@@ -106,8 +104,6 @@ public:
     PassRefPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
     
     String asText() const;
-
-    PropertySetCSSStyleDeclaration* cssStyleDeclaration();
 
     bool isMutable() const { return m_isMutable; }
     bool hasCSSOMWrapper() const { return m_ownsCSSOMWrapper; }
@@ -178,12 +174,15 @@ inline const StylePropertyMetadata* ImmutableStylePropertySet::metadataArray() c
 
 class MutableStylePropertySet : public StylePropertySet {
 public:
+    ~MutableStylePropertySet();
+
     static PassRefPtr<MutableStylePropertySet> create(CSSParserMode = CSSQuirksMode);
     static PassRefPtr<MutableStylePropertySet> create(const CSSProperty* properties, unsigned count);
 
     MutableStylePropertySet(const StylePropertySet&);
 
     unsigned propertyCount() const { return m_propertyVector.size(); }
+    PropertySetCSSStyleDeclaration* cssStyleDeclaration();
 
     void addParsedProperties(const Vector<CSSProperty>&);
     void addParsedProperty(const CSSProperty&);
@@ -211,7 +210,7 @@ public:
     void parseDeclaration(const String& styleDeclaration, StyleSheetContents* contextStyleSheet);
 
     CSSStyleDeclaration* ensureCSSStyleDeclaration();
-    CSSStyleDeclaration* ensureInlineCSSStyleDeclaration(const StyledElement* parentElement);
+    CSSStyleDeclaration* ensureInlineCSSStyleDeclaration(StyledElement* parentElement);
 
     Vector<CSSProperty, 4> m_propertyVector;
 
