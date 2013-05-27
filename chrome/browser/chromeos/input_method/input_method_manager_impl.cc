@@ -284,17 +284,6 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
   if (state_ == STATE_TERMINATING)
     return false;
 
-  if (!component_extension_ime_manager_->IsInitialized() ||
-      (!InputMethodUtil::IsKeyboardLayout(input_method_id) &&
-       !IsIBusConnectionAlive())) {
-    // We can't change input method before the initialization of component
-    // extension ime manager or before connection to ibus-daemon is not
-    // established. ChangeInputMethod will be called with
-    // |pending_input_method_| when the both initialization is done.
-    pending_input_method_ = input_method_id;
-    return false;
-  }
-
   std::string input_method_id_to_switch = input_method_id;
 
   // Sanity check.
@@ -307,6 +296,17 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
                << input_method_id << " since the engine is not enabled. "
                << "Switch to " << input_method_id_to_switch << " instead.";
     }
+  }
+
+  if (!component_extension_ime_manager_->IsInitialized() ||
+      (!InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch) &&
+       !IsIBusConnectionAlive())) {
+    // We can't change input method before the initialization of component
+    // extension ime manager or before connection to ibus-daemon is not
+    // established. ChangeInputMethod will be called with
+    // |pending_input_method_| when the both initialization is done.
+    pending_input_method_ = input_method_id_to_switch;
+    return false;
   }
 
   IBusInputContextClient* input_context =
