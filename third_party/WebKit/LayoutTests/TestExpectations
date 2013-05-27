@@ -1932,3 +1932,6 @@ crbug.com/244179 fast/js/date-parse-test.html [ Failure Pass ]
 
 # Makes the following test crash
 crbug.com/244225 inspector-protocol/input/dispatchKeyEvent.html [ Skip ]
+
+# Uses setTimeout trying to catch a specific frame.
+crbug.com/244276 [ Mac ] fast/images/gif-loop-count.html [ ImageOnlyFailure Pass ]
