@@ -22,6 +22,9 @@ static const int kMaxOutputStreams = 10;
 static const int kAudioModeNormal = 0x00000000;
 static const int kAudioModeInCommunication = 0x00000003;
 
+static const int kDefaultInputBufferSize = 1024;
+static const int kDefaultOutputBufferSize = 2048;
+
 AudioManager* CreateAudioManager() {
   return new AudioManagerAndroid();
 }
@@ -56,13 +59,13 @@ void AudioManagerAndroid::GetAudioInputDeviceNames(
 
 AudioParameters AudioManagerAndroid::GetInputStreamParameters(
     const std::string& device_id) {
-  // TODO(leozwang): Android defines the minimal buffer size requirment
-  // we should use it.
-  static const int kDefaultBufferSize = 1024;
-  // TODO(xians): query the native channel layout for the specific device.
+  int buffer_size = Java_AudioManagerAndroid_getMinInputFrameSize(
+      base::android::AttachCurrentThread(), GetNativeOutputSampleRate(), 2);
+
   return AudioParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
-      GetNativeOutputSampleRate(), 16, kDefaultBufferSize);
+      GetNativeOutputSampleRate(), 16,
+      buffer_size <= 0 ? kDefaultInputBufferSize : buffer_size);
 }
 
 AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
@@ -119,15 +122,27 @@ AudioInputStream* AudioManagerAndroid::MakeLowLatencyInputStream(
   return new OpenSLESInputStream(this, params);
 }
 
+int AudioManagerAndroid::GetOptimalOutputFrameSize(int sample_rate,
+                                                   int channels) {
+  if (IsAudioLowLatencySupported()) {
+    int frame_size = GetAudioLowLatencyOutputFrameSize();
+    // Return the optimal size as a multiple of the low latency frame
+    // size that is close to the target frame size.
+    return ((kDefaultOutputBufferSize + frame_size / 2) / frame_size) *
+      frame_size;
+  } else {
+    return std::max(kDefaultOutputBufferSize,
+                    Java_AudioManagerAndroid_getMinOutputFrameSize(
+                        base::android::AttachCurrentThread(),
+                        sample_rate, channels));
+  }
+}
+
 AudioParameters AudioManagerAndroid::GetPreferredOutputStreamParameters(
     const AudioParameters& input_params) {
-  // TODO(leozwang): Android defines the minimal buffer size requirment
-  // we should use it.
-  static const int kDefaultBufferSize = 2048;
-
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = GetNativeOutputSampleRate();
-  int buffer_size = kDefaultBufferSize;
+  int buffer_size = GetOptimalOutputFrameSize(sample_rate, 2);
   int bits_per_sample = 16;
   int input_channels = 0;
   if (input_params.IsValid()) {
@@ -136,8 +151,7 @@ AudioParameters AudioManagerAndroid::GetPreferredOutputStreamParameters(
     bits_per_sample = input_params.bits_per_sample();
     channel_layout = input_params.channel_layout();
     input_channels = input_params.input_channels();
-
-    buffer_size = std::min(buffer_size, input_params.frames_per_buffer());
+    buffer_size = GetOptimalOutputFrameSize(sample_rate, channel_layout);
   }
 
   int user_buffer_size = GetUserBufferSize();
@@ -174,6 +188,18 @@ void AudioManagerAndroid::UnregisterHeadsetReceiver() {
 
 int AudioManagerAndroid::GetNativeOutputSampleRate() {
   return Java_AudioManagerAndroid_getNativeOutputSampleRate(
+      base::android::AttachCurrentThread(),
+      j_audio_manager_.obj());
+}
+
+bool AudioManagerAndroid::IsAudioLowLatencySupported() {
+  return Java_AudioManagerAndroid_isAudioLowLatencySupported(
+      base::android::AttachCurrentThread(),
+      j_audio_manager_.obj());
+}
+
+int AudioManagerAndroid::GetAudioLowLatencyOutputFrameSize() {
+  return Java_AudioManagerAndroid_getAudioLowLatencyOutputFrameSize(
       base::android::AttachCurrentThread(),
       j_audio_manager_.obj());
 }

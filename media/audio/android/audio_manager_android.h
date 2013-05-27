@@ -53,6 +53,9 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   void RegisterHeadsetReceiver();
   void UnregisterHeadsetReceiver();
   int GetNativeOutputSampleRate();
+  bool IsAudioLowLatencySupported();
+  int GetAudioLowLatencyOutputFrameSize();
+  int GetOptimalOutputFrameSize(int sample_rate, int channels);
 
   // Java AudioManager instance.
   base::android::ScopedJavaGlobalRef<jobject> j_audio_manager_;
