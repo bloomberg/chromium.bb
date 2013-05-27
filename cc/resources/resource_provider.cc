@@ -981,6 +981,8 @@ uint8_t* ResourceProvider::MapPixelBuffer(ResourceId id) {
         context3d->mapBufferCHROMIUM(
             GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, GL_WRITE_ONLY));
     context3d->bindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, 0);
+    // Buffer is required to be 4-byte aligned.
+    CHECK(!(reinterpret_cast<intptr_t>(image) & 3));
     return image;
   }
 

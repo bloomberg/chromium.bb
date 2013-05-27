@@ -17,7 +17,7 @@ class FakeTileManager : public TileManager {
 
   protected:
   // Do nothing
-  virtual void DispatchMoreTasks() OVERRIDE { }
+  virtual void ScheduleTasks() OVERRIDE { }
 };
 
 }  // namespace cc
