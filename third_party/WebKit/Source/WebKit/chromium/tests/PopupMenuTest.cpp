@@ -30,7 +30,8 @@
 
 #include "config.h"
 
-#include <gtest/gtest.h>
+#include "PopupContainer.h"
+#include "PopupMenuChromium.h"
 #include "URLTestHelpers.h"
 #include "WebDocument.h"
 #include "WebElement.h"
@@ -53,10 +54,9 @@
 #include "core/platform/PopupMenu.h"
 #include "core/platform/PopupMenuClient.h"
 #include "core/platform/chromium/KeyboardCodes.h"
-#include "core/platform/chromium/PopupContainer.h"
-#include "core/platform/chromium/PopupMenuChromium.h"
 #include "core/platform/graphics/Color.h"
 #include "v8.h"
+#include <gtest/gtest.h>
 #include <public/Platform.h>
 #include <public/WebString.h>
 #include <public/WebUnitTestSupport.h>

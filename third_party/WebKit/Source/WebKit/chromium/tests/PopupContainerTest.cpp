@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/chromium/PopupContainer.h"
+#include "PopupContainer.h"
 
 #include <gtest/gtest.h>
 

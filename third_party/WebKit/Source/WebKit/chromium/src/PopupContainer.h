@@ -31,9 +31,9 @@
 #ifndef PopupContainer_h
 #define PopupContainer_h
 
+#include "PopupListBox.h"
 #include "core/platform/PopupMenuStyle.h"
 #include "core/platform/chromium/FramelessScrollView.h"
-#include "core/platform/chromium/PopupListBox.h"
 #include "core/platform/graphics/FloatQuad.h"
 
 namespace WebCore {

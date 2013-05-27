@@ -29,8 +29,9 @@
  */
 
 #include "config.h"
-#include "core/platform/chromium/PopupContainer.h"
+#include "PopupContainer.h"
 
+#include "PopupListBox.h"
 #include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/page/Chrome.h"
@@ -47,7 +48,6 @@
 #include "core/platform/PopupMenuClient.h"
 #include "core/platform/chromium/FramelessScrollView.h"
 #include "core/platform/chromium/FramelessScrollViewClient.h"
-#include "core/platform/chromium/PopupListBox.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
 #include <limits>

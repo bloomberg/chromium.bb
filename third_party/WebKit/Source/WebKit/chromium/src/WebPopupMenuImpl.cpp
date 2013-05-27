@@ -31,7 +31,8 @@
 #include "config.h"
 #include "WebPopupMenuImpl.h"
 
-#include <skia/ext/platform_canvas.h>
+#include "PopupContainer.h"
+#include "PopupMenuChromium.h"
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
 #include "WebRange.h"
@@ -45,12 +46,11 @@
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/chromium/FramelessScrollView.h"
-#include "core/platform/chromium/PopupContainer.h"
-#include "core/platform/chromium/PopupMenuChromium.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include <public/WebRect.h>
+#include <skia/ext/platform_canvas.h>
 
 using namespace WebCore;
 
