@@ -9353,6 +9353,31 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebHistory.LocalResultMissingOnServer" units="%">
+  <summary>
+    Percentage of results that are present locally but are not returned by the
+    web history API call. Recorded every time a signed-in user visits the
+    chrome://history page and the results from the web history are received.
+  </summary>
+</histogram>
+
+<histogram name="WebHistory.QueryCompletion" enum="WebHistoryStatus">
+  <summary>
+    Whether the web history API call was successful. Every time a signed-in user
+    visits the chrome://history page this query is executed to get the user's
+    synced web history. If successful, the local and remote results are merged
+    and shown in the history page.
+  </summary>
+</histogram>
+
+<histogram name="WebHistory.ResponseTime" units="milliseconds">
+  <summary>
+    Time it took for the web history to reply. Recorded when the web history API
+    call triggered by visiting chrome://history receives the data, measuring how
+    much time it took for the server to reply.
+  </summary>
+</histogram>
+
 <histogram name="WinTimeTicks.FailedToChangeCores" enum="WindowsVersion">
   <summary>
     Incremented each time the TimeTicks field trial runs on a machine with
@@ -14261,6 +14286,12 @@ other types of suffix sets.
   <int value="9" label="Verify CVV"/>
   <int value="10" label="Invalid form field"/>
   <int value="11" label="Require phone number"/>
+</enum>
+
+<enum name="WebHistoryStatus" type="int">
+  <int value="0" label="WEB_HISTORY_QUERY_FAILED">Failed</int>
+  <int value="1" label="WEB_HISTORY_QUERY_SUCCEEDED">Succeeded</int>
+  <int value="2" label="WEB_HISTORY_QUERY_TIMED_OUT">Timed out</int>
 </enum>
 
 <enum name="WebSocketHandshakeResult" type="int">
