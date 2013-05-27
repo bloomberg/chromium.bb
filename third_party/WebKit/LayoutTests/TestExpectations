@@ -1056,7 +1056,8 @@ webkit.org/b/86909 [ Win ] http/tests/inspector/network/network-content-replacem
 webkit.org/b/87175 [ Win Linux ] fast/regions/floats-basic-in-variable-width-regions.html [ ImageOnlyFailure ]
 webkit.org/b/87175 [ Win Linux MountainLion ] fast/regions/overflow-in-uniform-regions.html [ ImageOnlyFailure ]
 
-webkit.org/b/87321 fast/history/history-subframe-with-name.html [ Failure Pass Timeout ]
+# See http://crbug.com/244285 for the crash instance.
+webkit.org/b/87321 fast/history/history-subframe-with-name.html [ Failure Pass Timeout Crash ]
 webkit.org/b/87321 [ Win Debug ] fast/history/history-traversal-is-asynchronous.html [ Pass Timeout ]
 
 # Shadow DOM for replaced elements is not rendered correctly yet.
