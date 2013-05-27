@@ -8,7 +8,8 @@
 #include <queue>
 
 #include "base/bind.h"
-#include "base/string_util.h"
+#include "base/i18n/string_search.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,7 +22,7 @@ namespace internal {
 
 namespace {
 
-// Used to sort the result canididates per the last accessed/modified time. The
+// Used to sort the result candidates per the last accessed/modified time. The
 // recently accessed/modified files come first.
 bool CompareByTimestamp(const ResourceEntry& a, const ResourceEntry& b) {
   const PlatformFileInfoProto& a_file_info = a.file_info();
@@ -136,7 +137,7 @@ void MaybeAddEntryToResult(
 
   // Add |entry| to the result if the entry is eligible for the given
   // |options| and matches the query. The base name of the entry must
-  // contains |query| to match the query.
+  // contain |query| to match the query.
   std::string highlighted;
   if (!IsEligibleEntry(entry, cache, options) ||
       !FindAndHighlight(entry.base_name(), query, &highlighted))
@@ -219,36 +220,22 @@ bool FindAndHighlight(const std::string& text,
   if (query.empty())
     return true;
 
-  // TODO(satorux): Should support non-ASCII characters.
-  std::string lower_text = StringToLowerASCII(text);
-  std::string lower_query = StringToLowerASCII(query);
-
-  int num_matches = 0;
-  std::string::size_type cursor = 0;
-
-  while (cursor < text.size()) {
-    std::string::size_type matched_position =
-        lower_text.find(lower_query, cursor);
-    if (matched_position == std::string::npos)
-      break;
-    ++num_matches;
-
-    std::string skipped_piece =
-        net::EscapeForHTML(text.substr(cursor, matched_position - cursor));
-    std::string matched_piece =
-        net::EscapeForHTML(text.substr(matched_position, query.size()));
-
-    highlighted_text->append(skipped_piece);
-    highlighted_text->append("<b>" + matched_piece + "</b>");
-
-    cursor = matched_position + query.size();
-  }
-  if (num_matches == 0)
+  string16 text16 = base::UTF8ToUTF16(text);
+  string16 query16 = base::UTF8ToUTF16(query);
+  size_t match_start = 0;
+  size_t match_length = 0;
+  if (!base::i18n::StringSearchIgnoringCaseAndAccents(
+      query16, text16, &match_start, &match_length)) {
     return false;
-
-  std::string remaining_piece = text.substr(cursor);
-  highlighted_text->append(net::EscapeForHTML(remaining_piece));
-
+  }
+  string16 pre = text16.substr(0, match_start);
+  string16 match = text16.substr(match_start, match_length);
+  string16 post = text16.substr(match_start + match_length);
+  highlighted_text->append(net::EscapeForHTML(UTF16ToUTF8(pre)));
+  highlighted_text->append("<b>");
+  highlighted_text->append(net::EscapeForHTML(UTF16ToUTF8(match)));
+  highlighted_text->append("</b>");
+  highlighted_text->append(net::EscapeForHTML(UTF16ToUTF8(post)));
   return true;
 }
 

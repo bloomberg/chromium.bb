@@ -42,7 +42,7 @@ class MetadataInfoGenerator {
   }
 
   // Obtains the fake last accessed time that is sequential number following
-  // |last_accessed_base| specified at the construcor.
+  // |last_accessed_base| specified at the constructor.
   int64 GetLastAccessed() const {
     return last_accessed_counter_;
   }
@@ -574,13 +574,36 @@ TEST(SearchMetadataSimpleTest, FindAndHighlight_InTheMiddle) {
 TEST(SearchMetadataSimpleTest, FindAndHighlight_MultipeMatches) {
   std::string highlighted_text;
   EXPECT_TRUE(FindAndHighlight("yoyoyoyoy", "yoy", &highlighted_text));
-  EXPECT_EQ("<b>yoy</b>o<b>yoy</b>oy", highlighted_text);
+  // Only the first match is highlighted.
+  EXPECT_EQ("<b>yoy</b>oyoyoy", highlighted_text);
 }
 
 TEST(SearchMetadataSimpleTest, FindAndHighlight_IgnoreCase) {
   std::string highlighted_text;
   EXPECT_TRUE(FindAndHighlight("HeLLo", "hello", &highlighted_text));
   EXPECT_EQ("<b>HeLLo</b>", highlighted_text);
+}
+
+TEST(SearchMetadataSimpleTest, FindAndHighlight_IgnoreCaseNonASCII) {
+  std::string highlighted_text;
+
+  // Case and accent ignorance in Greek. Find "socra" in "Socra'tes".
+  EXPECT_TRUE(FindAndHighlight(
+      "\xCE\xA3\xCF\x89\xCE\xBA\xCF\x81\xCE\xAC\xCF\x84\xCE\xB7\xCF\x82",
+      "\xCF\x83\xCF\x89\xCE\xBA\xCF\x81\xCE\xB1", &highlighted_text));
+  EXPECT_EQ(
+      "<b>\xCE\xA3\xCF\x89\xCE\xBA\xCF\x81\xCE\xAC</b>\xCF\x84\xCE\xB7\xCF\x82",
+      highlighted_text);
+
+  // In Japanese characters.
+  // Find Hiragana "pi" + "(small)ya" in Katakana "hi" + semi-voiced-mark + "ya"
+  EXPECT_TRUE(FindAndHighlight(
+      "\xE3\x81\xB2\xE3\x82\x9A\xE3\x82\x83\xE3\x83\xBC",
+      "\xE3\x83\x94\xE3\x83\xA4",
+      &highlighted_text));
+  EXPECT_EQ(
+      "<b>\xE3\x81\xB2\xE3\x82\x9A\xE3\x82\x83</b>\xE3\x83\xBC",
+      highlighted_text);
 }
 
 TEST(SearchMetadataSimpleTest, FindAndHighlight_MetaChars) {
