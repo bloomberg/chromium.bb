@@ -19,211 +19,25 @@ namespace quota {
 
 namespace {
 
-bool SortByHost(const GURL& lhs, const GURL& rhs) {
-  return net::GetHostOrSpecFromURL(lhs) > net::GetHostOrSpecFromURL(rhs);
+typedef ClientUsageTracker::OriginUsageAccumulator OriginUsageAccumulator;
+
+void DidGetOriginUsage(const OriginUsageAccumulator& accumulator,
+                       const GURL& origin,
+                       int64 usage) {
+  accumulator.Run(origin, usage);
 }
 
+void DidGetHostUsage(const UsageCallback& callback,
+                     int64 cached_usage,
+                     int64 non_cached_usage) {
+  DCHECK_GE(cached_usage, 0);
+  DCHECK_GE(non_cached_usage, 0);
+  callback.Run(cached_usage + non_cached_usage);
+}
+
+void NoopHostUsageCallback(int64 usage) {}
+
 }  // namespace
-
-// A task class for getting the total amount of data used for a collection of
-// origins.  This class is self-destructed.
-class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
- public:
-  GatherUsageTaskBase(
-      UsageTracker* tracker,
-      QuotaClient* client)
-      : QuotaTask(tracker),
-        client_(client),
-        tracker_(tracker),
-        current_gathered_usage_(0),
-        weak_factory_(this) {
-    DCHECK(tracker_);
-    DCHECK(client_);
-    client_tracker_ = base::AsWeakPtr(
-        tracker_->GetClientTracker(client_->id()));
-    DCHECK(client_tracker_.get());
-  }
-  virtual ~GatherUsageTaskBase() {}
-
-  // Get total usage for the given |origins|.
-  void GetUsageForOrigins(const std::set<GURL>& origins, StorageType type) {
-    DCHECK(original_task_runner()->BelongsToCurrentThread());
-    if (!client_tracker()) {
-      DeleteSoon();
-      return;
-    }
-    // We do not get usage for origins for which we have valid usage cache.
-    std::vector<GURL> origins_not_in_cache;
-    current_gathered_usage_ = client_tracker()->GetCachedOriginsUsage(
-        origins, &origins_not_in_cache);
-    if (origins_not_in_cache.empty()) {
-      CallCompleted();
-      DeleteSoon();
-      return;
-    }
-
-    // Sort them so we can detect when we've gathered all info for a particular
-    // host in DidGetUsage.
-    std::sort(origins_not_in_cache.begin(),
-              origins_not_in_cache.end(), SortByHost);
-
-    // First, fully populate the pending queue because GetOriginUsage may call
-    // the completion callback immediately.
-    for (std::vector<GURL>::const_iterator iter = origins_not_in_cache.begin();
-         iter != origins_not_in_cache.end(); iter++)
-      pending_origins_.push_back(*iter);
-
-    for (std::vector<GURL>::const_iterator iter = origins_not_in_cache.begin();
-         iter != origins_not_in_cache.end(); iter++)
-      client_->GetOriginUsage(
-          *iter,
-          tracker_->type(),
-          base::Bind(&GatherUsageTaskBase::DidGetUsage,
-                     weak_factory_.GetWeakPtr()));
-  }
-
- protected:
-  virtual void DidGetOriginUsage(const GURL& origin, int64 usage) {}
-
-  virtual void Aborted() OVERRIDE {
-    DeleteSoon();
-  }
-
-  UsageTracker* tracker() const { return tracker_; }
-  ClientUsageTracker* client_tracker() const { return client_tracker_.get(); }
-
-  int64 current_gathered_usage() const { return current_gathered_usage_; }
-
- private:
-  void DidGetUsage(int64 usage) {
-    if (!client_tracker()) {
-      DeleteSoon();
-      return;
-    }
-
-    DCHECK(original_task_runner()->BelongsToCurrentThread());
-    DCHECK(!pending_origins_.empty());
-
-    // Defend against confusing inputs from QuotaClients.
-    DCHECK_GE(usage, 0);
-    if (usage < 0)
-      usage = 0;
-    current_gathered_usage_ += usage;
-
-    // This code assumes DidGetUsage callbacks are called in the same
-    // order as we dispatched GetOriginUsage calls.
-    const GURL& origin = pending_origins_.front();
-    std::string host = net::GetHostOrSpecFromURL(origin);
-    client_tracker_->AddCachedOrigin(origin, usage);
-
-    DidGetOriginUsage(origin, usage);
-
-    pending_origins_.pop_front();
-    if (pending_origins_.empty() ||
-        host != net::GetHostOrSpecFromURL(pending_origins_.front())) {
-      client_tracker_->AddCachedHost(host);
-    }
-
-    if (pending_origins_.empty()) {
-      // We're done.
-      CallCompleted();
-      DeleteSoon();
-    }
-  }
-
-  QuotaClient* client_;
-  UsageTracker* tracker_;
-  base::WeakPtr<ClientUsageTracker> client_tracker_;
-  std::deque<GURL> pending_origins_;
-  std::map<GURL, int64> origin_usage_map_;
-  int64 current_gathered_usage_;
-  base::WeakPtrFactory<GatherUsageTaskBase> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(GatherUsageTaskBase);
-};
-
-// A task class for getting the total amount of data used for a given storage
-// type.  This class is self-destructed.
-class ClientUsageTracker::GatherGlobalUsageTask
-    : public GatherUsageTaskBase {
- public:
-  GatherGlobalUsageTask(
-      UsageTracker* tracker,
-      QuotaClient* client)
-      : GatherUsageTaskBase(tracker, client),
-        client_(client),
-        non_cached_global_usage_(0),
-        weak_factory_(this) {
-    DCHECK(tracker);
-    DCHECK(client);
-  }
-  virtual ~GatherGlobalUsageTask() {}
-
- protected:
-  virtual void Run() OVERRIDE {
-    client_->GetOriginsForType(tracker()->type(),
-        base::Bind(&GatherUsageTaskBase::GetUsageForOrigins,
-                   weak_factory_.GetWeakPtr()));
-  }
-
-  virtual void DidGetOriginUsage(const GURL& origin, int64 usage) OVERRIDE {
-    if (!client_tracker()->IsUsageCacheEnabledForOrigin(origin)) {
-      std::string host = net::GetHostOrSpecFromURL(origin);
-      non_cached_usage_by_host_[host] += usage;
-      non_cached_global_usage_ += usage;
-    }
-  }
-
-  virtual void Completed() OVERRIDE {
-    client_tracker()->GatherGlobalUsageComplete(current_gathered_usage(),
-                                                non_cached_global_usage_,
-                                                non_cached_usage_by_host_);
-  }
-
- private:
-  QuotaClient* client_;
-  int64 non_cached_global_usage_;
-  std::map<std::string, int64> non_cached_usage_by_host_;
-  base::WeakPtrFactory<GatherUsageTaskBase> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(GatherGlobalUsageTask);
-};
-
-// A task class for getting the total amount of data used for a given host.
-// This class is self-destructed.
-class ClientUsageTracker::GatherHostUsageTask
-    : public GatherUsageTaskBase {
- public:
-  GatherHostUsageTask(
-      UsageTracker* tracker,
-      QuotaClient* client,
-      const std::string& host)
-      : GatherUsageTaskBase(tracker, client),
-        client_(client),
-        host_(host),
-        weak_factory_(this) {
-    DCHECK(client_);
-  }
-  virtual ~GatherHostUsageTask() {}
-
- protected:
-  virtual void Run() OVERRIDE {
-    client_->GetOriginsForHost(tracker()->type(), host_,
-        base::Bind(&GatherUsageTaskBase::GetUsageForOrigins,
-                   weak_factory_.GetWeakPtr()));
-  }
-
-  virtual void Completed() OVERRIDE {
-    client_tracker()->GatherHostUsageComplete(host_, current_gathered_usage());
-  }
-
- private:
-  QuotaClient* client_;
-  std::string host_;
-  base::WeakPtrFactory<GatherUsageTaskBase> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(GatherHostUsageTask);
-};
 
 // UsageTracker ----------------------------------------------------------
 
@@ -255,7 +69,7 @@ void UsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
   if (!global_usage_callbacks_.Add(callback))
     return;
 
-  TrackingInfo* info = new TrackingInfo;
+  AccumulateInfo* info = new AccumulateInfo;
   // Calling GetGlobalUsage(accumulator) may synchronously
   // return if the usage is cached, which may in turn dispatch
   // the completion callback before we finish looping over
@@ -265,7 +79,7 @@ void UsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
   // and fire the sentinel callback at the end.
   info->pending_clients = client_tracker_map_.size() + 1;
   GlobalUsageCallback accumulator = base::Bind(
-      &UsageTracker::DidGetClientGlobalUsage, weak_factory_.GetWeakPtr(),
+      &UsageTracker::AccumulateClientGlobalUsage, weak_factory_.GetWeakPtr(),
       base::Owned(info));
 
   for (ClientTrackerMap::iterator iter = client_tracker_map_.begin();
@@ -282,7 +96,7 @@ void UsageTracker::GetHostUsage(const std::string& host,
   if (!host_usage_callbacks_.Add(host, callback))
     return;
 
-  TrackingInfo* info = new TrackingInfo;
+  AccumulateInfo* info = new AccumulateInfo;
   // Calling GetHostUsage(accumulator) may synchronously
   // return if the usage is cached, which may in turn dispatch
   // the completion callback before we finish looping over
@@ -292,7 +106,7 @@ void UsageTracker::GetHostUsage(const std::string& host,
   // and fire the sentinel callback at the end.
   info->pending_clients = client_tracker_map_.size() + 1;
   UsageCallback accumulator = base::Bind(
-      &UsageTracker::DidGetClientHostUsage, weak_factory_.GetWeakPtr(),
+      &UsageTracker::AccumulateClientHostUsage, weak_factory_.GetWeakPtr(),
       base::Owned(info), host);
 
   for (ClientTrackerMap::iterator iter = client_tracker_map_.begin();
@@ -339,9 +153,9 @@ void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,
   client_tracker->SetUsageCacheEnabled(origin, enabled);
 }
 
-void UsageTracker::DidGetClientGlobalUsage(TrackingInfo* info,
-                                           int64 usage,
-                                           int64 unlimited_usage) {
+void UsageTracker::AccumulateClientGlobalUsage(AccumulateInfo* info,
+                                               int64 usage,
+                                               int64 unlimited_usage) {
   info->usage += usage;
   info->unlimited_usage += unlimited_usage;
 
@@ -364,9 +178,9 @@ void UsageTracker::DidGetClientGlobalUsage(TrackingInfo* info,
   global_usage_callbacks_.Run(MakeTuple(info->usage, info->unlimited_usage));
 }
 
-void UsageTracker::DidGetClientHostUsage(TrackingInfo* info,
-                                         const std::string& host,
-                                         int64 usage) {
+void UsageTracker::AccumulateClientHostUsage(AccumulateInfo* info,
+                                             const std::string& host,
+                                             int64 usage) {
   info->usage += usage;
   if (--info->pending_clients)
     return;
@@ -391,7 +205,6 @@ ClientUsageTracker::ClientUsageTracker(
       global_usage_(0),
       global_unlimited_usage_(0),
       global_usage_retrieved_(false),
-      global_usage_task_(NULL),
       special_storage_policy_(special_storage_policy) {
   DCHECK(tracker_);
   DCHECK(client_);
@@ -406,13 +219,13 @@ ClientUsageTracker::~ClientUsageTracker() {
 
 void ClientUsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
   if (global_usage_retrieved_ && non_cached_origins_by_host_.empty()) {
-    callback.Run(global_usage_, GetCachedGlobalUnlimitedUsage());
+    callback.Run(global_usage_, global_unlimited_usage_);
     return;
   }
-  DCHECK(!global_usage_callback_.HasCallbacks());
-  global_usage_callback_.Add(callback);
-  global_usage_task_ = new GatherGlobalUsageTask(tracker_, client_);
-  global_usage_task_->Start();
+
+  client_->GetOriginsForType(type_, base::Bind(
+      &ClientUsageTracker::DidGetOriginsForGlobalUsage, AsWeakPtr(),
+      callback));
 }
 
 void ClientUsageTracker::GetHostUsage(
@@ -423,11 +236,12 @@ void ClientUsageTracker::GetHostUsage(
     callback.Run(GetCachedHostUsage(host));
     return;
   }
-  if (!host_usage_callbacks_.Add(host, callback) || global_usage_task_)
+
+  if (!host_usage_accumulators_.Add(host, base::Bind(
+          &DidGetHostUsage, callback)))
     return;
-  GatherHostUsageTask* task = new GatherHostUsageTask(tracker_, client_, host);
-  host_usage_tasks_[host] = task;
-  task->Start();
+  client_->GetOriginsForHost(type_, host, base::Bind(
+      &ClientUsageTracker::DidGetOriginsForHostUsage, AsWeakPtr(), host));
 }
 
 void ClientUsageTracker::UpdateUsageCache(
@@ -447,9 +261,7 @@ void ClientUsageTracker::UpdateUsageCache(
   }
 
   // We don't know about this host yet, so populate our cache for it.
-  GetHostUsage(host,
-               base::Bind(&ClientUsageTracker::NoopHostUsageCallback,
-                          base::Unretained(this)));
+  GetHostUsage(host, base::Bind(&NoopHostUsageCallback));
 }
 
 void ClientUsageTracker::GetCachedHostsUsage(
@@ -457,8 +269,8 @@ void ClientUsageTracker::GetCachedHostsUsage(
   DCHECK(host_usage);
   for (HostUsageMap::const_iterator host_iter = cached_usage_by_host_.begin();
        host_iter != cached_usage_by_host_.end(); host_iter++) {
-    host_usage->operator[](host_iter->first) +=
-        GetCachedHostUsage(host_iter->first);
+    const std::string& host = host_iter->first;
+    (*host_usage)[host] += GetCachedHostUsage(host);
   }
 }
 
@@ -472,23 +284,6 @@ void ClientUsageTracker::GetCachedOrigins(std::set<GURL>* origins) const {
       origins->insert(origin_iter->first);
     }
   }
-}
-
-int64 ClientUsageTracker::GetCachedOriginsUsage(
-    const std::set<GURL>& origins,
-    std::vector<GURL>* origins_not_in_cache) {
-  DCHECK(origins_not_in_cache);
-
-  int64 usage = 0;
-  for (std::set<GURL>::const_iterator itr = origins.begin();
-       itr != origins.end(); ++itr) {
-    int64 origin_usage = 0;
-    if (GetCachedOriginUsage(*itr, &origin_usage))
-      usage += origin_usage;
-    else
-      origins_not_in_cache->push_back(*itr);
-  }
-  return usage;
 }
 
 void ClientUsageTracker::SetUsageCacheEnabled(const GURL& origin,
@@ -529,6 +324,118 @@ void ClientUsageTracker::SetUsageCacheEnabled(const GURL& origin,
   }
 }
 
+void ClientUsageTracker::DidGetOriginsForGlobalUsage(
+    const GlobalUsageCallback& callback,
+    const std::set<GURL>& origins, StorageType type) {
+  OriginSetByHost origins_by_host;
+  for (std::set<GURL>::const_iterator itr = origins.begin();
+       itr != origins.end(); ++itr)
+    origins_by_host[net::GetHostOrSpecFromURL(*itr)].insert(*itr);
+
+  AccumulateInfo* info = new AccumulateInfo;
+  // Getting host usage may synchronously return the result if the usage is
+  // cached, which may in turn dispatch the completion callback before we finish
+  // looping over all hosts (because info->pending_jobs may reach 0 during the
+  // loop).  To avoid this, we add one more pending host as a sentinel and
+  // fire the sentinel callback at the end.
+  info->pending_jobs = origins_by_host.size() + 1;
+  HostUsageAccumulator accumulator =
+      base::Bind(&ClientUsageTracker::AccumulateHostUsage, AsWeakPtr(),
+                 base::Owned(info), callback);
+
+  for (OriginSetByHost::iterator itr = origins_by_host.begin();
+       itr != origins_by_host.end(); ++itr) {
+    if (host_usage_accumulators_.Add(itr->first, accumulator))
+      GetUsageForOrigins(itr->first, itr->second);
+  }
+
+  // Fire the sentinel as we've now called GetUsageForOrigins for all clients.
+  accumulator.Run(0, 0);
+}
+
+void ClientUsageTracker::AccumulateHostUsage(
+    AccumulateInfo* info,
+    const GlobalUsageCallback& callback,
+    int64 cached_usage,
+    int64 non_cached_usage) {
+  info->cached_usage += cached_usage;
+  info->non_cached_usage += non_cached_usage;
+  if (--info->pending_jobs)
+    return;
+
+  int64 total_usage = info->cached_usage + info->non_cached_usage;
+  int64 unlimited_usage = global_unlimited_usage_ + info->non_cached_usage;
+
+  DCHECK_GE(total_usage, 0);
+  DCHECK_GE(unlimited_usage, 0);
+  if (unlimited_usage > total_usage)
+    unlimited_usage = total_usage;
+
+  global_usage_retrieved_ = true;
+  callback.Run(total_usage, unlimited_usage);
+}
+
+void ClientUsageTracker::DidGetOriginsForHostUsage(
+    const std::string& host,
+    const std::set<GURL>& origins,
+    StorageType type) {
+  GetUsageForOrigins(host, origins);
+}
+
+void ClientUsageTracker::GetUsageForOrigins(
+    const std::string& host,
+    const std::set<GURL>& origins) {
+  AccumulateInfo* info = new AccumulateInfo;
+  // Getting origin usage may synchronously return the result if the usage is
+  // cached, which may in turn dispatch the completion callback before we finish
+  // looping over all origins (because info->pending_jobs may reach 0 during the
+  // loop).  To avoid this, we add one more pending origin as a sentinel and
+  // fire the sentinel callback at the end.
+  info->pending_jobs = origins.size() + 1;
+  OriginUsageAccumulator accumulator =
+      base::Bind(&ClientUsageTracker::AccumulateOriginUsage, AsWeakPtr(),
+                 base::Owned(info), host);
+
+  for (std::set<GURL>::const_iterator itr = origins.begin();
+       itr != origins.end(); ++itr) {
+    DCHECK_EQ(host, net::GetHostOrSpecFromURL(*itr));
+
+    int64 origin_usage = 0;
+    if (GetCachedOriginUsage(*itr, &origin_usage)) {
+      accumulator.Run(*itr, origin_usage);
+    } else {
+      client_->GetOriginUsage(*itr, type_, base::Bind(
+          &DidGetOriginUsage, accumulator, *itr));
+    }
+  }
+
+  // Fire the sentinel as we've now called GetOriginUsage for all clients.
+  accumulator.Run(GURL(), 0);
+}
+
+void ClientUsageTracker::AccumulateOriginUsage(AccumulateInfo* info,
+                                               const std::string& host,
+                                               const GURL& origin,
+                                               int64 usage) {
+  if (!origin.is_empty()) {
+    if (usage < 0)
+      usage = 0;
+
+    if (IsUsageCacheEnabledForOrigin(origin)) {
+      info->cached_usage += usage;
+      AddCachedOrigin(origin, usage);
+    } else {
+      info->non_cached_usage += usage;
+    }
+  }
+  if (--info->pending_jobs)
+    return;
+
+  AddCachedHost(host);
+  host_usage_accumulators_.Run(
+      host, MakeTuple(info->cached_usage, info->non_cached_usage));
+}
+
 void ClientUsageTracker::AddCachedOrigin(
     const GURL& origin, int64 usage) {
   if (!IsUsageCacheEnabledForOrigin(origin))
@@ -553,39 +460,6 @@ void ClientUsageTracker::AddCachedHost(const std::string& host) {
   cached_hosts_.insert(host);
 }
 
-void ClientUsageTracker::GatherGlobalUsageComplete(
-    int64 global_usage,
-    int64 non_cached_global_usage,
-    const std::map<std::string, int64>& non_cached_host_usage) {
-  DCHECK(global_usage_task_ != NULL);
-  global_usage_task_ = NULL;
-  // TODO(kinuko): Record when it has retrieved the global usage.
-  global_usage_retrieved_ = true;
-
-  DCHECK(global_usage_callback_.HasCallbacks());
-  global_usage_callback_.Run(
-      MakeTuple(global_usage,
-                GetCachedGlobalUnlimitedUsage() + non_cached_global_usage));
-
-  for (HostUsageCallbackMap::iterator iter = host_usage_callbacks_.Begin();
-       iter != host_usage_callbacks_.End(); ++iter) {
-    int64 host_usage = GetCachedHostUsage(iter->first);
-    std::map<std::string, int64>::const_iterator found =
-        non_cached_host_usage.find(iter->first);
-    if (found != non_cached_host_usage.end())
-      host_usage += found->second;
-    iter->second.Run(MakeTuple(host_usage));
-  }
-  host_usage_callbacks_.Clear();
-}
-
-void ClientUsageTracker::GatherHostUsageComplete(const std::string& host,
-                                                 int64 usage) {
-  DCHECK(host_usage_tasks_.find(host) != host_usage_tasks_.end());
-  host_usage_tasks_.erase(host);
-  host_usage_callbacks_.Run(host, MakeTuple(usage));
-}
-
 int64 ClientUsageTracker::GetCachedHostUsage(const std::string& host) const {
   HostUsageMap::const_iterator found = cached_usage_by_host_.find(host);
   if (found == cached_usage_by_host_.end())
@@ -600,10 +474,6 @@ int64 ClientUsageTracker::GetCachedHostUsage(const std::string& host) const {
   return usage;
 }
 
-int64 ClientUsageTracker::GetCachedGlobalUnlimitedUsage() {
-  return global_unlimited_usage_;
-}
-
 bool ClientUsageTracker::GetCachedOriginUsage(
     const GURL& origin,
     int64* usage) const {
@@ -616,6 +486,7 @@ bool ClientUsageTracker::GetCachedOriginUsage(
   if (found == found_host->second.end())
     return false;
 
+  DCHECK(IsUsageCacheEnabledForOrigin(origin));
   *usage = found->second;
   return true;
 }
@@ -653,8 +524,6 @@ void ClientUsageTracker::OnCleared() {
   DCHECK(CalledOnValidThread());
   global_unlimited_usage_ = 0;
 }
-
-void ClientUsageTracker::NoopHostUsageCallback(int64 usage) {}
 
 bool ClientUsageTracker::IsStorageUnlimited(const GURL& origin) const {
   if (type_ == kStorageTypeSyncable)
