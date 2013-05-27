@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/page/animation/AnimationBase.h"
 
-#include <algorithm>
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
@@ -37,36 +36,16 @@
 #include "core/page/animation/CSSPropertyAnimation.h"
 #include "core/page/animation/CompositeAnimation.h"
 #include "core/platform/FloatConversion.h"
-#include "core/platform/graphics/UnitBezier.h"
+#include "core/platform/animation/AnimationUtilities.h"
+#include "core/platform/animation/TimingFunction.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/style/RenderStyle.h"
-#include <wtf/CurrentTime.h>
+#include "wtf/CurrentTime.h"
+#include <algorithm>
 
 using namespace std;
 
 namespace WebCore {
-
-// The epsilon value we pass to UnitBezier::solve given that the animation is going to run over |dur| seconds. The longer the
-// animation, the more precision we need in the timing function result to avoid ugly discontinuities.
-static inline double solveEpsilon(double duration)
-{
-    return 1.0 / (200.0 * duration);
-}
-
-static inline double solveCubicBezierFunction(double p1x, double p1y, double p2x, double p2y, double t, double duration)
-{
-    // Convert from input time to parametric value in curve, then from
-    // that to output time.
-    UnitBezier bezier(p1x, p1y, p2x, p2y);
-    return bezier.solve(t, solveEpsilon(duration));
-}
-
-static inline double solveStepsFunction(int numSteps, bool stepAtStart, double t)
-{
-    if (stepAtStart)
-        return min(1.0, (floor(numSteps * t) + 1) / numSteps);
-    return floor(numSteps * t) / numSteps;
-}
 
 AnimationBase::AnimationBase(const CSSAnimationData* transition, RenderObject* renderer, CompositeAnimation* compAnim)
     : m_animState(AnimationStateNew)
@@ -506,7 +485,7 @@ double AnimationBase::fractionalTime(double scale, double elapsedTime, double of
     return fractionalTime;
 }
 
-double AnimationBase::progress(double scale, double offset, const TimingFunction* tf) const
+double AnimationBase::progress(double scale, double offset, const TimingFunction* timingFunction) const
 {
     if (preActive())
         return 0;
@@ -527,21 +506,10 @@ double AnimationBase::progress(double scale, double offset, const TimingFunction
 
     const double fractionalTime = this->fractionalTime(scale, elapsedTime, offset);
 
-    if (!tf)
-        tf = m_animation->timingFunction().get();
+    if (!timingFunction)
+        timingFunction = m_animation->timingFunction().get();
 
-    if (tf->isCubicBezierTimingFunction()) {
-        const CubicBezierTimingFunction* ctf = static_cast<const CubicBezierTimingFunction*>(tf);
-        return solveCubicBezierFunction(ctf->x1(),
-                                        ctf->y1(),
-                                        ctf->x2(),
-                                        ctf->y2(),
-                                        fractionalTime, m_animation->duration());
-    } else if (tf->isStepsTimingFunction()) {
-        const StepsTimingFunction* stf = static_cast<const StepsTimingFunction*>(tf);
-        return solveStepsFunction(stf->numberOfSteps(), stf->stepAtStart(), fractionalTime);
-    } else
-        return fractionalTime;
+    return timingFunction->evaluate(fractionalTime, accuracyForDuration(m_animation->duration()));
 }
 
 void AnimationBase::getTimeToNextEvent(double& time, bool& isLooping) const

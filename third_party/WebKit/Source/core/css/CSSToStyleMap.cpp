@@ -466,16 +466,16 @@ void CSSToStyleMap::mapAnimationTimingFunction(CSSAnimationData* animation, CSSV
             animation->setTimingFunction(LinearTimingFunction::create());
             break;
         case CSSValueEase:
-            animation->setTimingFunction(CubicBezierTimingFunction::create());
+            animation->setTimingFunction(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease));
             break;
         case CSSValueEaseIn:
-            animation->setTimingFunction(CubicBezierTimingFunction::create(CubicBezierTimingFunction::EaseIn));
+            animation->setTimingFunction(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
             break;
         case CSSValueEaseOut:
-            animation->setTimingFunction(CubicBezierTimingFunction::create(CubicBezierTimingFunction::EaseOut));
+            animation->setTimingFunction(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut));
             break;
         case CSSValueEaseInOut:
-            animation->setTimingFunction(CubicBezierTimingFunction::create(CubicBezierTimingFunction::EaseInOut));
+            animation->setTimingFunction(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut));
             break;
         case CSSValueStepStart:
             animation->setTimingFunction(StepsTimingFunction::create(1, true));

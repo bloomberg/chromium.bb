@@ -105,6 +105,8 @@ namespace WebCore {
             return t2;
         }
 
+        // Evaluates y at the given x. The epsilon parameter provides a hint as to the required
+        // accuracy and is not guaranteed.
         double solve(double x, double epsilon)
         {
             return sampleCurveY(solveCurveX(x, epsilon));

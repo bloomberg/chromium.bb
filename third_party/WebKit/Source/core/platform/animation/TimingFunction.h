@@ -25,8 +25,10 @@
 #ifndef TimingFunction_h
 #define TimingFunction_h
 
+#include "core/platform/graphics/UnitBezier.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include <algorithm>
 
 namespace WebCore {
 
@@ -40,12 +42,15 @@ public:
     virtual ~TimingFunction() { }
 
     TimingFunctionType type() const { return m_type; }
-    
+
     bool isLinearTimingFunction() const { return m_type == LinearFunction; }
     bool isCubicBezierTimingFunction() const { return m_type == CubicBezierFunction; }
     bool isStepsTimingFunction() const { return m_type == StepsFunction; }
     
-    virtual bool operator==(const TimingFunction& other) = 0;
+    // Evaluates the timing function at the given fraction. The accuracy parameter provides a hint as to the required
+    // accuracy and is not guaranteed.
+    virtual double evaluate(double fraction, double accuracy) const = 0;
+    virtual bool operator==(const TimingFunction& other) const = 0;
 
 protected:
     TimingFunction(TimingFunctionType type)
@@ -65,7 +70,12 @@ public:
     
     ~LinearTimingFunction() { }
     
-    virtual bool operator==(const TimingFunction& other)
+    virtual double evaluate(double fraction, double) const
+    {
+        return fraction;
+    }
+
+    virtual bool operator==(const TimingFunction& other) const
     {
         return other.isLinearTimingFunction();
     }
@@ -92,22 +102,29 @@ public:
         return adoptRef(new CubicBezierTimingFunction(Custom, x1, y1, x2, y2));
     }
 
-    static PassRefPtr<CubicBezierTimingFunction> create()
+    static CubicBezierTimingFunction* preset(TimingFunctionPreset type)
     {
-        return adoptRef(new CubicBezierTimingFunction());
-    }
-    
-    static PassRefPtr<CubicBezierTimingFunction> create(TimingFunctionPreset preset)
-    {
-        switch (preset) {
+        switch (type) {
         case Ease:
-            return adoptRef(new CubicBezierTimingFunction());
+            {
+                static CubicBezierTimingFunction* ease = adoptRef(new CubicBezierTimingFunction(Ease, 0.25, 0.1, 0.25, 1.0)).leakRef();
+                return ease;
+            }
         case EaseIn:
-            return adoptRef(new CubicBezierTimingFunction(EaseIn, 0.42, 0.0, 1.0, 1.0));
+            {
+                static CubicBezierTimingFunction* easeIn = adoptRef(new CubicBezierTimingFunction(EaseIn, 0.42, 0.0, 1.0, 1.0)).leakRef();
+                return easeIn;
+            }
         case EaseOut:
-            return adoptRef(new CubicBezierTimingFunction(EaseOut, 0.0, 0.0, 0.58, 1.0));
+            {
+                static CubicBezierTimingFunction* easeOut = adoptRef(new CubicBezierTimingFunction(EaseOut, 0.0, 0.0, 0.58, 1.0)).leakRef();
+                return easeOut;
+            }
         case EaseInOut:
-            return adoptRef(new CubicBezierTimingFunction(EaseInOut, 0.42, 0.0, 0.58, 1.0));
+            {
+                static CubicBezierTimingFunction* easeInOut = adoptRef(new CubicBezierTimingFunction(EaseInOut, 0.42, 0.0, 0.58, 1.0)).leakRef();
+                return easeInOut;
+            }
         default:
             ASSERT_NOT_REACHED();
             return 0;
@@ -115,8 +132,13 @@ public:
     }
 
     ~CubicBezierTimingFunction() { }
-    
-    virtual bool operator==(const TimingFunction& other)
+
+    virtual double evaluate(double fraction, double accuracy) const
+    {
+        return UnitBezier(m_x1, m_y1, m_x2, m_y2).solve(fraction, accuracy);
+    }
+
+    virtual bool operator==(const TimingFunction& other) const
     {
         if (other.isCubicBezierTimingFunction()) {
             const CubicBezierTimingFunction* ctf = static_cast<const CubicBezierTimingFunction*>(&other);
@@ -132,11 +154,11 @@ public:
     double y1() const { return m_y1; }
     double x2() const { return m_x2; }
     double y2() const { return m_y2; }
-    
+
     TimingFunctionPreset timingFunctionPreset() const { return m_timingFunctionPreset; }
 
 private:
-    explicit CubicBezierTimingFunction(TimingFunctionPreset preset = Ease, double x1 = 0.25, double y1 = 0.1, double x2 = 0.25, double y2 = 1.0)
+    explicit CubicBezierTimingFunction(TimingFunctionPreset preset, double x1, double y1, double x2, double y2)
         : TimingFunction(CubicBezierFunction)
         , m_x1(x1)
         , m_y1(y1)
@@ -161,8 +183,13 @@ public:
     }
     
     ~StepsTimingFunction() { }
-    
-    virtual bool operator==(const TimingFunction& other)
+
+    virtual double evaluate(double fraction, double) const
+    {
+        return std::min(1.0, (floor(m_steps * fraction) + m_stepAtStart) / m_steps);
+    }
+
+    virtual bool operator==(const TimingFunction& other) const
     {
         if (other.isStepsTimingFunction()) {
             const StepsTimingFunction* stf = static_cast<const StepsTimingFunction*>(&other);

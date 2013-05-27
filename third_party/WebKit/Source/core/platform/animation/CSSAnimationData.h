@@ -183,7 +183,7 @@ public:
     static const String& initialAnimationName();
     static EAnimPlayState initialAnimationPlayState() { return AnimPlayStatePlaying; }
     static CSSPropertyID initialAnimationProperty() { return CSSPropertyInvalid; }
-    static const PassRefPtr<TimingFunction> initialAnimationTimingFunction() { return CubicBezierTimingFunction::create(); }
+    static const PassRefPtr<TimingFunction> initialAnimationTimingFunction() { return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease); }
 };
 
 } // namespace WebCore
