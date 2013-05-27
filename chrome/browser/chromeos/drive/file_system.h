@@ -169,13 +169,6 @@ class FileSystem : public FileSystemInterface,
  private:
   friend class DriveFileSystemTest;
 
-  // Defines set of parameters passed to an intermediate callback
-  // OnGetFileCompleteForOpen, during execution of OpenFile() method.
-  struct GetFileCompleteForOpenParams;
-
-  // Defines set of parameters for GetResolvedFileByPath().
-  struct GetResolvedFileParams;
-
   // Used to implement Reload().
   void ReloadAfterReset(FileError error);
 
@@ -203,23 +196,20 @@ class FileSystem : public FileSystemInterface,
                                         FileError error,
                                         scoped_ptr<ResourceEntry> entry);
 
-  // Invoked upon completion of GetResourceEntryByPath initiated by
-  // GetFileByPath. It then continues to invoke GetResolvedFileByPath.
-  // |callback| must not be null.
-  void OnGetResourceEntryCompleteForGetFileByPath(
-      const base::FilePath& file_path,
-      const GetFileCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> file_info);
-
-  // Invoked upon completion of GetResourceEntryByPath initiated by OpenFile.
-  // It then continues to invoke GetResolvedFileByPath and proceeds to
-  // OnGetFileCompleteForOpenFile.
-  void OnGetResourceEntryCompleteForOpenFile(
+  // Part of OpenFile(). Called after the file downloading is completed.
+  void OpenFileAfterFileDownloaded(
       const base::FilePath& file_path,
       const OpenFileCallback& callback,
       FileError error,
-      scoped_ptr<ResourceEntry> file_info);
+      const base::FilePath& local_file_path,
+      scoped_ptr<ResourceEntry> entry);
+
+  // Part of OpenFile(). Called after the cache file is marked dirty.
+  void OpenFileAfterMarkDirty(
+      const std::string& resource_id,
+      const std::string& md5,
+      const OpenFileCallback& callback,
+      FileError error);
 
   // Invoked at the last step of OpenFile. It removes |file_path| from the
   // current set of opened files if |result| is an error, and then invokes the
@@ -242,20 +232,6 @@ class FileSystem : public FileSystemInterface,
   void CloseFileFinalize(const base::FilePath& file_path,
                          const FileOperationCallback& callback,
                          FileError result);
-
-  // Invoked upon completion of GetFileByPath initiated by OpenFile. If
-  // GetFileByPath is successful, calls MarkDirtyInCache to mark the cache
-  // file as dirty for the file identified by |file_info.resource_id| and
-  // |file_info.md5|.
-  void OnGetFileCompleteForOpenFile(const GetFileCompleteForOpenParams& params,
-                                    FileError error,
-                                    const base::FilePath& file_path,
-                                    scoped_ptr<ResourceEntry> entry);
-
-  // Invoked upon completion of MarkDirtyInCache initiated by OpenFile.
-  void OnMarkDirtyInCacheCompleteForOpenFile(
-      const GetFileCompleteForOpenParams& params,
-      FileError error);
 
   // Callback for handling about resource fetch.
   void OnGetAboutResource(
@@ -315,55 +291,6 @@ class FileSystem : public FileSystemInterface,
       FileError error,
       scoped_ptr<ResourceEntryVector> entries);
 
-  // Gets the file at |file_path| from the cache (if found in the cache),
-  // or the server (if not found in the cache) after the file info is
-  // already resolved with GetResourceEntryByPath() or GetResourceEntryById().
-  void GetResolvedFileByPath(scoped_ptr<GetResolvedFileParams> params);
-  void GetResolvedFileByPathAfterCreateDocumentJsonFile(
-      scoped_ptr<GetResolvedFileParams> params,
-      const base::FilePath* file_path,
-      FileError error);
-  void GetResolvedFileByPathAfterGetFileFromCache(
-      scoped_ptr<GetResolvedFileParams> params,
-      FileError error,
-      const base::FilePath& cache_file_path);
-  void GetResolvedFileByPathAfterGetResourceEntry(
-      scoped_ptr<GetResolvedFileParams> params,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceEntry> entry);
-  void GetResolvedFileByPathAfterRefreshEntry(
-      scoped_ptr<GetResolvedFileParams> params,
-      const GURL& download_url,
-      FileError error,
-      const base::FilePath& drive_file_path,
-      scoped_ptr<ResourceEntry> entry);
-  void GetResolvedFileByPathAfterFreeDiskSpace(
-      scoped_ptr<GetResolvedFileParams> params,
-      const GURL& download_url,
-      bool has_enough_space);
-  void GetResolveFileByPathAfterCreateTemporaryFile(
-      scoped_ptr<GetResolvedFileParams> params,
-      const GURL& download_url,
-      base::FilePath* temp_file,
-      bool success);
-  void GetResolvedFileByPathAfterDownloadFile(
-      scoped_ptr<GetResolvedFileParams> params,
-      google_apis::GDataErrorCode status,
-      const base::FilePath& downloaded_file_path);
-  void GetResolvedFileByPathAfterGetCacheEntryForCancel(
-      const std::string& resource_id,
-      const std::string& md5,
-      bool success,
-      const FileCacheEntry& cache_entry);
-  void GetResolvedFileByPathAfterStore(
-      scoped_ptr<GetResolvedFileParams> params,
-      const base::FilePath& downloaded_file_path,
-      FileError error);
-  void GetResolvedFileByPathAfterGetFile(
-      scoped_ptr<GetResolvedFileParams> params,
-      FileError error,
-      const base::FilePath& cache_file);
-
   // Part of GetResourceEntryById(). Called after
   // ResourceMetadata::GetResourceEntryById() is complete.
   // |callback| must not be null.
@@ -383,18 +310,6 @@ class FileSystem : public FileSystemInterface,
       const google_apis::GetContentCallback& get_content_callback,
       FileError error,
       const base::FilePath& file_path,
-      scoped_ptr<ResourceEntry> entry);
-
-  // Part of GetFileContentByPath(). Called after
-  // ResourceMetadata::GetResourceEntryByPath() is complete.
-  // |initialized_callback|, |get_content_callback| and |completion_callback|
-  // must not be null.
-  void GetFileContentByPathAfterGetEntry(
-      const base::FilePath& file_path,
-      const GetFileContentInitializedCallback& initialized_callback,
-      const google_apis::GetContentCallback& get_content_callback,
-      const FileOperationCallback& completion_callback,
-      FileError error,
       scoped_ptr<ResourceEntry> entry);
 
   // Part of RefreshDirectory(). Called after
@@ -433,9 +348,6 @@ class FileSystem : public FileSystemInterface,
       const OpenFileCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
-
-  // Cancels the job with |id| in the scheduler.
-  void CancelJobInScheduler(JobID id);
 
   // The profile hosts the FileSystem via DriveIntegrationService.
   Profile* profile_;

@@ -148,20 +148,36 @@ class FileCache {
   // TODO(hashimoto): Stop using callbacks for this method. crbug.com/242818
   void Iterate(const CacheIterateCallback& iteration_callback);
 
-  // Frees up disk space to store the given number of bytes, while keeping
-  // kMinFreeSpace bytes on the disk, if needed.
-  // Runs |callback| with true when we successfully manage to have enough space.
+
+  // Runs FreeDiskSpaceIfNeededFor() on |blocking_task_runner_|, and calls
+  // |callback| with the result asynchronously.
+  // |callback| must not be null.
   // Must be called on the UI thread.
   void FreeDiskSpaceIfNeededForOnUIThread(
       int64 num_bytes,
       const InitializeCacheCallback& callback);
 
-  // Checks if file corresponding to |resource_id| and |md5| exists in cache.
+  // Frees up disk space to store a file with |num_bytes| size content, while
+  // keeping kMinFreeSpace bytes on the disk, if needed.
+  // Returns true if we successfully manage to have enough space, otherwise
+  // false.
+  bool FreeDiskSpaceIfNeededFor(int64 num_bytes);
+
+  // Runs GetFile() on |blocking_task_runner_|, and calls |callback| with
+  // the result asynchronously.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void GetFileOnUIThread(const std::string& resource_id,
                          const std::string& md5,
                          const GetFileFromCacheCallback& callback);
+
+  // Checks if file corresponding to |resource_id| and |md5| exists in cache,
+  // and returns FILE_ERROR_OK with |cache_file_path| storing the path to
+  // the file.
+  // |cache_file_path| must not be null.
+  FileError GetFile(const std::string& resource_id,
+                    const std::string& md5,
+                    base::FilePath* cache_file_path);
 
   // Runs Store() on |blocking_task_runner_|, and calls |callback| with
   // the result asynchronously.
@@ -201,14 +217,18 @@ class FileCache {
                      const std::string& md5,
                      const FileOperationCallback& callback);
 
-  // Modifies cache state, which involves the following:
-  // - moves |source_path| to |dest_path| in tmp dir if file is not dirty
-  // - deletes symlink from pinned dir
+  // Runs Unpin() on |blocking_task_runner_|, and calls |callback| with the
+  // result asynchronously.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void UnpinOnUIThread(const std::string& resource_id,
                        const std::string& md5,
                        const FileOperationCallback& callback);
+
+  // Modifies cache state, which involves the following:
+  // - moves the local file from pinned directory to unpinned directory.
+  // - update cache metadata.
+  FileError Unpin(const std::string& resource_id, const std::string& md5);
 
   // Sets the state of the cache entry corresponding to |resource_id| and |md5|
   // as mounted.
@@ -336,14 +356,6 @@ class FileCache {
   // Destroys the cache on the blocking pool.
   void DestroyOnBlockingPool();
 
-  // Used to implement FreeDiskSpaceIfNeededForOnUIThread().
-  bool FreeDiskSpaceIfNeededFor(int64 num_bytes);
-
-  // Used to implement GetFileOnUIThread.
-  FileError GetFile(const std::string& resource_id,
-                    const std::string& md5,
-                    base::FilePath* cache_file_path);
-
   // Used to implement Store and StoreLocallyModifiedOnUIThread.
   // TODO(hidehiko): Merge this method with Store(), after
   // StoreLocallyModifiedOnUIThread is removed.
@@ -356,10 +368,6 @@ class FileCache {
   // Used to implement PinOnUIThread.
   FileError Pin(const std::string& resource_id,
                 const std::string& md5);
-
-  // Used to implement UnpinOnUIThread.
-  FileError Unpin(const std::string& resource_id,
-                  const std::string& md5);
 
   // Used to implement MarkAsMountedOnUIThread.
   FileError MarkAsMounted(const std::string& resource_id,

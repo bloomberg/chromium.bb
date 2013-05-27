@@ -32,6 +32,7 @@ namespace file_system {
 class CopyOperation;
 class CreateDirectoryOperation;
 class CreateFileOperation;
+class DownloadOperation;
 class MoveOperation;
 class OperationObserver;
 class RemoveOperation;
@@ -119,6 +120,15 @@ class Operations {
                  const base::Time& last_modified_time,
                  const FileOperationCallback& callback);
 
+  // Wrapper function for download_operation_.
+  // |completion_callback| must not be null.
+  void EnsureFileDownloaded(
+      const base::FilePath& file_path,
+      DriveClientContext context,
+      const GetFileContentInitializedCallback& initialized_callback,
+      const google_apis::GetContentCallback& get_content_callback,
+      const GetFileCallback& completion_callback);
+
   // Wrapper function for update_operation_.
   // |callback| must not be null.
   void UpdateFileByResourceId(const std::string& resource_id,
@@ -138,6 +148,7 @@ class Operations {
   scoped_ptr<MoveOperation> move_operation_;
   scoped_ptr<RemoveOperation> remove_operation_;
   scoped_ptr<TouchOperation> touch_operation_;
+  scoped_ptr<DownloadOperation> download_operation_;
   scoped_ptr<UpdateOperation> update_operation_;
   scoped_ptr<SearchOperation> search_operation_;
 };

@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/create_directory_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/search_operation.h"
@@ -60,6 +61,8 @@ void Operations::Init(OperationObserver* observer,
       new RemoveOperation(observer, scheduler, metadata, cache));
   touch_operation_.reset(
       new TouchOperation(blocking_task_runner, observer, scheduler, metadata));
+  download_operation_.reset(new DownloadOperation(
+      blocking_task_runner, observer, scheduler, metadata, cache));
   update_operation_.reset(
       new UpdateOperation(observer, scheduler, metadata, cache));
   search_operation_.reset(
@@ -148,6 +151,20 @@ void Operations::TouchFile(const base::FilePath& file_path,
 
   touch_operation_->TouchFile(
       file_path, last_access_time, last_modified_time, callback);
+}
+
+void Operations::EnsureFileDownloaded(
+    const base::FilePath& file_path,
+    DriveClientContext context,
+    const GetFileContentInitializedCallback& initialized_callback,
+    const google_apis::GetContentCallback& get_content_callback,
+    const GetFileCallback& completion_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!completion_callback.is_null());
+
+  download_operation_->EnsureFileDownloaded(
+      file_path, context, initialized_callback, get_content_callback,
+      completion_callback);
 }
 
 void Operations::UpdateFileByResourceId(
