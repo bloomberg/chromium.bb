@@ -1647,28 +1647,25 @@ void RenderWidgetHostImpl::OnPaintAtSizeAck(int tag, const gfx::Size& size) {
 }
 
 void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
-      int32 surface_id,
-      uint64 surface_handle,
-      int32 route_id,
-      const gfx::Size& size,
-      int32 gpu_process_host_id) {
+      const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params) {
   TRACE_EVENT0("renderer_host",
                "RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped");
   if (!view_) {
     AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
     ack_params.sync_point = 0;
-    RenderWidgetHostImpl::AcknowledgeBufferPresent(route_id,
-                                                   gpu_process_host_id,
+    RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id,
+                                                   params.gpu_process_host_id,
                                                    ack_params);
     return;
   }
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params gpu_params;
-  gpu_params.surface_id = surface_id;
-  gpu_params.surface_handle = surface_handle;
-  gpu_params.route_id = route_id;
-  gpu_params.size = size;
+  gpu_params.surface_id = params.surface_id;
+  gpu_params.surface_handle = params.surface_handle;
+  gpu_params.route_id = params.route_id;
+  gpu_params.size = params.size;
+  gpu_params.scale_factor = params.scale_factor;
   view_->AcceleratedSurfaceBuffersSwapped(gpu_params,
-                                          gpu_process_host_id);
+                                          params.gpu_process_host_id);
 }
 
 bool RenderWidgetHostImpl::OnSwapCompositorFrame(

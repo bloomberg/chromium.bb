@@ -36,6 +36,7 @@
 
 class WebCursor;
 struct AcceleratedSurfaceMsg_BufferPresented_Params;
+struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
 struct ViewHostMsg_UpdateRect_Params;
 struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_BeginSmoothScroll_Params;
@@ -609,11 +610,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnSetTooltipText(const string16& tooltip_text,
                         WebKit::WebTextDirection text_direction_hint);
   void OnPaintAtSizeAck(int tag, const gfx::Size& size);
-  void OnCompositorSurfaceBuffersSwapped(int32 surface_id,
-                                         uint64 surface_handle,
-                                         int32 route_id,
-                                         const gfx::Size& size,
-                                         int32 gpu_process_host_id);
+  void OnCompositorSurfaceBuffersSwapped(
+      const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params);
   bool OnSwapCompositorFrame(const IPC::Message& message);
   void OnOverscrolled(gfx::Vector2dF accumulated_overscroll,
                       gfx::Vector2dF current_fling_velocity);

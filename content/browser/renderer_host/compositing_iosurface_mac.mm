@@ -335,13 +335,6 @@ void CompositingIOSurfaceMac::SwitchToContextOnNewWindow(
   context_ = new_context;
 }
 
-void CompositingIOSurfaceMac::SetDeviceScaleFactor(float scale_factor) {
-  // TODO: After a resolution change, the DPI-ness of the view and the
-  // IOSurface might not be in sync.
-  io_surface_size_ = gfx::ToFlooredSize(
-      gfx::ScaleSize(pixel_io_surface_size_, 1.0 / scale_factor));
-}
-
 bool CompositingIOSurfaceMac::is_vsync_disabled() const {
   return context_->is_vsync_disabled();
 }
@@ -366,8 +359,11 @@ CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
 }
 
 void CompositingIOSurfaceMac::SetIOSurface(uint64 io_surface_handle,
-                                           const gfx::Size& size) {
+                                           const gfx::Size& size,
+                                           float scale_factor) {
   pixel_io_surface_size_ = size;
+  dip_io_surface_size_ = gfx::ToFlooredSize(
+      gfx::ScaleSize(pixel_io_surface_size_, 1.0 / scale_factor));
   CGLSetCurrentContext(context_->cgl_context());
   MapIOSurfaceToTexture(io_surface_handle);
   CGLSetCurrentContext(0);
@@ -407,17 +403,15 @@ void CompositingIOSurfaceMac::DrawIOSurface(
       gfx::ScaleSize(window_size, scale_factor));
   glViewport(0, 0, pixel_window_size.width(), pixel_window_size.height());
 
-  SetDeviceScaleFactor(scale_factor);
-
   SurfaceQuad quad;
-  quad.set_size(io_surface_size_, pixel_io_surface_size_);
+  quad.set_size(dip_io_surface_size_, pixel_io_surface_size_);
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
   // Note that the projection keeps things in view units, so the use of
-  // window_size / io_surface_size_ (as opposed to the pixel_ variants) below is
-  // correct.
+  // window_size / dip_io_surface_size_ (as opposed to the pixel_ variants)
+  // below is correct.
   glOrtho(0, window_size.width(), window_size.height(), 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -435,20 +429,21 @@ void CompositingIOSurfaceMac::DrawIOSurface(
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_GL_ERROR();
 
     // Fill the resize gutters with white.
-    if (window_size.width() > io_surface_size_.width() ||
-        window_size.height() > io_surface_size_.height()) {
+    if (window_size.width() > dip_io_surface_size_.width() ||
+        window_size.height() > dip_io_surface_size_.height()) {
       context_->shader_program_cache()->UseSolidWhiteProgram();
       SurfaceQuad filler_quad;
-      if (window_size.width() > io_surface_size_.width()) {
+      if (window_size.width() > dip_io_surface_size_.width()) {
         // Draw right-side gutter down to the bottom of the window.
-        filler_quad.set_rect(io_surface_size_.width(), 0.0f,
+        filler_quad.set_rect(dip_io_surface_size_.width(), 0.0f,
                              window_size.width(), window_size.height());
         DrawQuad(filler_quad);
       }
-      if (window_size.height() > io_surface_size_.height()) {
+      if (window_size.height() > dip_io_surface_size_.height()) {
         // Draw bottom gutter to the width of the IOSurface.
-        filler_quad.set_rect(0.0f, io_surface_size_.height(),
-                             io_surface_size_.width(), window_size.height());
+        filler_quad.set_rect(
+            0.0f, dip_io_surface_size_.height(),
+            dip_io_surface_size_.width(), window_size.height());
         DrawQuad(filler_quad);
       }
     }
@@ -500,7 +495,7 @@ void CompositingIOSurfaceMac::DrawIOSurface(
     RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
     if (frame_subscriber->ShouldCaptureFrame(present_time, &frame, &callback)) {
       copy_done_callback = CopyToVideoFrameWithinContext(
-          gfx::Rect(pixel_io_surface_size_), scale_factor, true, frame,
+          gfx::Rect(pixel_io_surface_size_), true, frame,
           base::Bind(callback, present_time));
     }
   }
@@ -530,7 +525,6 @@ void CompositingIOSurfaceMac::DrawIOSurface(
 
 void CompositingIOSurfaceMac::CopyTo(
       const gfx::Rect& src_pixel_subrect,
-      float src_scale_factor,
       const gfx::Size& dst_pixel_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback) {
   scoped_ptr<SkBitmap> output(new SkBitmap());
@@ -547,7 +541,7 @@ void CompositingIOSurfaceMac::CopyTo(
 
   CGLSetCurrentContext(context_->cgl_context());
   const base::Closure copy_done_callback = CopyToSelectedOutputWithinContext(
-      src_pixel_subrect, src_scale_factor, gfx::Rect(dst_pixel_size), false,
+      src_pixel_subrect, gfx::Rect(dst_pixel_size), false,
       output.get(), NULL,
       base::Bind(&ReverseArgumentOrder, callback, base::Passed(&output)));
   CGLSetCurrentContext(0);
@@ -557,12 +551,11 @@ void CompositingIOSurfaceMac::CopyTo(
 
 void CompositingIOSurfaceMac::CopyToVideoFrame(
     const gfx::Rect& src_pixel_subrect,
-    float src_scale_factor,
     const scoped_refptr<media::VideoFrame>& target,
     const base::Callback<void(bool)>& callback) {
   CGLSetCurrentContext(context_->cgl_context());
   const base::Closure copy_done_callback = CopyToVideoFrameWithinContext(
-      src_pixel_subrect, src_scale_factor, false, target, callback);
+      src_pixel_subrect, false, target, callback);
   CGLSetCurrentContext(0);
   if (!copy_done_callback.is_null())
     copy_done_callback.Run();
@@ -570,7 +563,6 @@ void CompositingIOSurfaceMac::CopyToVideoFrame(
 
 base::Closure CompositingIOSurfaceMac::CopyToVideoFrameWithinContext(
     const gfx::Rect& src_pixel_subrect,
-    float src_scale_factor,
     bool called_within_draw,
     const scoped_refptr<media::VideoFrame>& target,
     const base::Callback<void(bool)>& callback) {
@@ -588,7 +580,7 @@ base::Closure CompositingIOSurfaceMac::CopyToVideoFrameWithinContext(
   DCHECK_LE(region_in_frame.bottom(), target->coded_size().height());
 
   return CopyToSelectedOutputWithinContext(
-      src_pixel_subrect, src_scale_factor, region_in_frame, called_within_draw,
+      src_pixel_subrect, region_in_frame, called_within_draw,
       NULL, target, callback);
 }
 
@@ -616,10 +608,6 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
   gfx::Size rounded_size(
       io_surface_support_->IOSurfaceGetWidth(io_surface_),
       io_surface_support_->IOSurfaceGetHeight(io_surface_));
-
-  // TODO(thakis): Keep track of the view size over IPC. At the moment,
-  // the correct view units are computed on first paint.
-  io_surface_size_ = pixel_io_surface_size_;
 
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
   glGenTextures(1, &texture_);
@@ -782,7 +770,6 @@ bool CompositingIOSurfaceMac::IsAsynchronousReadbackSupported() {
 
 base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
     const gfx::Rect& src_pixel_subrect,
-    float src_scale_factor,
     const gfx::Rect& dst_pixel_rect,
     bool called_within_draw,
     const SkBitmap* bitmap_output,
@@ -819,8 +806,7 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
     return base::Bind(done_callback, false);
 
   // Send transform commands to the GPU.
-  const gfx::Rect src_rect = IntersectWithIOSurface(src_pixel_subrect,
-                                                    src_scale_factor);
+  const gfx::Rect src_rect = IntersectWithIOSurface(src_pixel_subrect);
   copy_context->num_outputs = 0;
   if (bitmap_output) {
     if (copy_context->transformer->ResizeBilinear(
@@ -1074,10 +1060,9 @@ void CompositingIOSurfaceMac::DestroyAllCopyContextsWithinContext() {
 }
 
 gfx::Rect CompositingIOSurfaceMac::IntersectWithIOSurface(
-    const gfx::Rect& rect, float scale_factor) const {
+    const gfx::Rect& rect) const {
   return gfx::IntersectRects(rect,
-      gfx::ToEnclosingRect(gfx::ScaleRect(gfx::Rect(io_surface_size_),
-                                          scale_factor)));
+      gfx::ToEnclosingRect(gfx::Rect(pixel_io_surface_size_)));
 }
 
 }  // namespace content

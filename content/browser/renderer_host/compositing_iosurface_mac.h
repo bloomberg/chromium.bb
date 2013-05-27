@@ -59,7 +59,8 @@ class CompositingIOSurfaceMac {
 
   // Set IOSurface that will be drawn on the next NSView drawRect.
   void SetIOSurface(uint64 io_surface_handle,
-                    const gfx::Size& size);
+                    const gfx::Size& size,
+                    float scale_factor);
 
   // Get the CGL renderer ID currently associated with this context.
   int GetRendererID();
@@ -84,7 +85,6 @@ class CompositingIOSurfaceMac {
   // |callback| is invoked when the operation is completed or failed.
   // Do no call this method again before |callback| is invoked.
   void CopyTo(const gfx::Rect& src_pixel_subrect,
-              float src_scale_factor,
               const gfx::Size& dst_pixel_size,
               const base::Callback<void(bool, const SkBitmap&)>& callback);
 
@@ -92,7 +92,6 @@ class CompositingIOSurfaceMac {
   // VideoFrame, and invoke a callback to indicate success or failure.
   void CopyToVideoFrame(
       const gfx::Rect& src_subrect,
-      float src_scale_factor,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback);
 
@@ -113,9 +112,7 @@ class CompositingIOSurfaceMac {
     return pixel_io_surface_size_;
   }
   // In cocoa view units / DIPs.
-  const gfx::Size& io_surface_size() const { return io_surface_size_; }
-
-  void SetDeviceScaleFactor(float scale_factor);
+  const gfx::Size& dip_io_surface_size() const { return dip_io_surface_size_; }
 
   bool is_vsync_disabled() const;
 
@@ -265,7 +262,6 @@ class CompositingIOSurfaceMac {
   // operations. This allow certain optimizations.
   base::Closure CopyToVideoFrameWithinContext(
       const gfx::Rect& src_subrect,
-      float src_scale_factor,
       bool called_within_draw,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback);
@@ -275,7 +271,6 @@ class CompositingIOSurfaceMac {
   // |bitmap_output| or letter-boxed YV12 is written to |video_frame_output|.
   base::Closure CopyToSelectedOutputWithinContext(
       const gfx::Rect& src_pixel_subrect,
-      float src_scale_factor,
       const gfx::Rect& dst_pixel_rect,
       bool called_within_draw,
       const SkBitmap* bitmap_output,
@@ -304,8 +299,7 @@ class CompositingIOSurfaceMac {
   void FailAllCopies();
   void DestroyAllCopyContextsWithinContext();
 
-  gfx::Rect IntersectWithIOSurface(const gfx::Rect& rect,
-                                   float scale_factor) const;
+  gfx::Rect IntersectWithIOSurface(const gfx::Rect& rect) const;
 
   // Cached pointer to IOSurfaceSupport Singleton.
   IOSurfaceSupport* io_surface_support_;
@@ -320,7 +314,7 @@ class CompositingIOSurfaceMac {
 
   // The width and height of the io surface.
   gfx::Size pixel_io_surface_size_;  // In pixels.
-  gfx::Size io_surface_size_;  // In view units.
+  gfx::Size dip_io_surface_size_;  // In view / density independent pixels.
 
   // The "live" OpenGL texture referring to this IOSurfaceRef. Note
   // that per the CGLTexImageIOSurface2D API we do not need to

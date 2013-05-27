@@ -20,6 +20,7 @@
 #include "ui/surface/transport_dib.h"
 
 class CommandLine;
+struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
 
 namespace base {
 class MessageLoop;
@@ -215,11 +216,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnSavedPageAsMHTML(int job_id, int64 mhtml_file_size);
 
   // CompositorSurfaceBuffersSwapped handler when there's no RWH.
-  void OnCompositorSurfaceBuffersSwappedNoHost(int32 surface_id,
-                                               uint64 surface_handle,
-                                               int32 route_id,
-                                               const gfx::Size& size,
-                                               int32 gpu_process_host_id);
+  void OnCompositorSurfaceBuffersSwappedNoHost(
+      const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params);
 
   // Generates a command line to be used to spawn a renderer and appends the
   // results to |*command_line|.

@@ -214,6 +214,7 @@ bool TextureImageTransportSurface::SwapBuffers() {
   DCHECK(backbuffer_size() == current_size_);
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.size = backbuffer_size();
+  params.scale_factor = scale_factor_;
   params.mailbox_name.assign(
       reinterpret_cast<const char*>(&mailbox_name_), sizeof(mailbox_name_));
 
@@ -252,6 +253,7 @@ bool TextureImageTransportSurface::PostSubBuffer(
   DCHECK(current_size_ == backbuffer_size());
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
   params.surface_size = backbuffer_size();
+  params.surface_scale_factor = scale_factor_;
   params.x = x;
   params.y = y;
   params.width = width;

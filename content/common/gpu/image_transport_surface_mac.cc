@@ -130,7 +130,7 @@ IOSurfaceImageTransportSurface::IOSurfaceImageTransportSurface(
       texture_id_(0),
       io_surface_handle_(0),
       context_(NULL),
-      scale_factor_(1),
+      scale_factor_(1.f),
       made_current_(false),
       is_swap_buffers_pending_(false),
       did_unschedule_(false) {
@@ -233,6 +233,7 @@ bool IOSurfaceImageTransportSurface::SwapBuffers() {
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.surface_handle = io_surface_handle_;
   params.size = GetSize();
+  params.scale_factor = scale_factor_;
   params.latency_info = latency_info_;
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
@@ -255,6 +256,7 @@ bool IOSurfaceImageTransportSurface::PostSubBuffer(
   params.width = width;
   params.height = height;
   params.surface_size = GetSize();
+  params.surface_scale_factor = scale_factor_;
   params.latency_info = latency_info_;
   helper_->SendAcceleratedSurfacePostSubBuffer(params);
 

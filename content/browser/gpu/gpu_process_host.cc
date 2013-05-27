@@ -930,13 +930,17 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
   // will forward to the RenderWidgetHostView via RenderProcessHostImpl and
   // RenderWidgetHostImpl.
   scoped_completion_runner.Release();
+
+  ViewHostMsg_CompositorSurfaceBuffersSwapped_Params view_params;
+  view_params.surface_id = params.surface_id;
+  view_params.surface_handle = params.surface_handle;
+  view_params.route_id = params.route_id;
+  view_params.size = params.size;
+  view_params.scale_factor = params.scale_factor;
+  view_params.gpu_process_host_id = host_id_;
   helper->DidReceiveBackingStoreMsg(ViewHostMsg_CompositorSurfaceBuffersSwapped(
       render_widget_id,
-      params.surface_id,
-      params.surface_handle,
-      params.route_id,
-      params.size,
-      host_id_));
+      view_params));
 }
 #endif  // OS_MACOSX
 

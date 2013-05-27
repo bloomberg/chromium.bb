@@ -325,7 +325,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Call setNeedsDisplay on the cocoa_view_. The IOSurface will be drawn during
   // the next drawRect. Return true if the Ack should be sent, false if it
   // should be deferred until drawRect.
-  bool CompositorSwapBuffers(uint64 surface_handle, const gfx::Size& size);
+  bool CompositorSwapBuffers(
+      uint64 surface_handle, const gfx::Size& size, float scale_factor);
   // Ack pending SwapBuffers requests, if any, to unblock the GPU process. Has
   // no effect if there are no pending requests.
   void AckPendingSwapBuffers();
