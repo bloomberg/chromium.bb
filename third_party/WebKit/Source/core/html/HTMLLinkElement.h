@@ -123,7 +123,7 @@ public:
     // the icon size string as parsed from the HTML attribute
     String iconSizes() const;
 
-    CSSStyleSheet* sheet() const { return m_link->sheet(); }
+    CSSStyleSheet* sheet() const { return m_link ? m_link->sheet() : 0; }
 
     bool styleSheetIsLoading() const;
 
