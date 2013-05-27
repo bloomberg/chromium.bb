@@ -456,20 +456,24 @@ bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, 
 
 String RenderTheme::extraDefaultStyleSheet()
 {
-    if (!RuntimeEnabledFeatures::dataListElementEnabled())
+    if (!RuntimeEnabledFeatures::dataListElementEnabled() && !RuntimeEnabledFeatures::dialogElementEnabled())
         return String();
-    DEFINE_STATIC_LOCAL(String, dataListElementCSS, (ASCIILiteral("datalist {display: none ;}")));
+    StringBuilder runtimeCSS;
 
+    if (RuntimeEnabledFeatures::dataListElementEnabled()) {
+        runtimeCSS.appendLiteral("datalist {display: none ;}");
 #if ENABLE(INPUT_TYPE_COLOR)
-    StringBuilder inputTypeCSS;
-    inputTypeCSS.appendLiteral("input[type=\"color\"][list] { -webkit-appearance: menulist; width: 88px; height: 23px;}");
-    inputTypeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch-wrapper { padding-left: 8px; padding-right: 24px;}");
-    inputTypeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch { border-color: #000000;}");
-    inputTypeCSS.append(dataListElementCSS);
-    return inputTypeCSS.toString();
+        runtimeCSS.appendLiteral("input[type=\"color\"][list] { -webkit-appearance: menulist; width: 88px; height: 23px;}");
+        runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch-wrapper { padding-left: 8px; padding-right: 24px;}");
+        runtimeCSS.appendLiteral("input[type=\"color\"][list]::-webkit-color-swatch { border-color: #000000;}");
 #endif
+    }
+    if (RuntimeEnabledFeatures::dialogElementEnabled()) {
+        runtimeCSS.appendLiteral("dialog:not([open]) { display: none; }");
+        runtimeCSS.appendLiteral("dialog { position: absolute; left: 0; right: 0; margin: auto; border: solid; padding: 1em; background: white; color: black;}");
+    }
 
-    return dataListElementCSS;
+    return runtimeCSS.toString();
 }
 
 String RenderTheme::formatMediaControlsTime(float time) const
