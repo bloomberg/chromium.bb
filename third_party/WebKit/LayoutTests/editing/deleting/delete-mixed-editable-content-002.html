@@ -1,0 +1,40 @@
+<script src="../../resources/dump-as-markup.js"></script>
+<link rel="stylesheet" type="text/css" href="../editingStyle.css">
+<body>
+<div id="test" contenteditable=true>
+  <span>Start</span><div contenteditable=false>
+    Start Not Editable
+    <div contenteditable=true>Editable</div>
+    End Not Editable
+  </div><span>End</span>
+</div>
+</body>
+<script>
+Markup.description('Test case for bug http://crbug.com/238000 Forward and backward delete nested content editable');
+function $(id) { return document.getElementById(id); }
+
+function doIt(element, command, index, collapseToStart) {
+    var sel = getSelection();
+    if (index < 0)
+        index = element.children.length + index;
+    var node = element.children[index];
+    var label = document.createTextNode('(' + command + ')');
+    if (collapseToStart)
+        node.insertBefore(label, node.firstChild);
+    else
+        node.appendChild(label);
+    var range = document.createRange();
+    range.selectNode(node);
+    range.collapse(collapseToStart);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    element.focus();
+    document.execCommand(command);
+    Markup.dump(element);
+}
+
+var forBackspace = $('test');
+var forDelete = document.body.appendChild($('test').cloneNode(true));
+doIt(forBackspace, 'delete', -1, true);
+doIt(forDelete, 'forwardDelete', 0, false);
+</script>

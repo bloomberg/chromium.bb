@@ -66,7 +66,18 @@ using namespace HTMLNames;
 // purposes of editing.
 bool isAtomicNode(const Node *node)
 {
-    return node && (!node->hasChildNodes() || editingIgnoresContent(node));
+    if (!node)
+        return false;
+    if (!node->hasChildNodes() || editingIgnoresContent(node))
+        return true;
+    RenderObject* renderer = node->renderer();
+    if (!renderer)
+        return false;
+    // For compatibility with IE, we allow to move caret into table cell event
+    // if TABLE and TR are uneditable.
+    if (renderer->isTable() || renderer->isTableRow())
+        return false;
+    return renderer->style()->userModify() == READ_ONLY && lowestEditableAncestor(node);
 }
 
 // Compare two positions, taking into account the possibility that one or both
@@ -128,7 +139,7 @@ Node* highestEditableRoot(const Position& position, EditableType editableType)
     return highestRoot;
 }
 
-Node* lowestEditableAncestor(Node* node)
+Node* lowestEditableAncestor(const Node* node)
 {
     if (!node)
         return 0;
