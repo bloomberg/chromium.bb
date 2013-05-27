@@ -437,17 +437,16 @@ PluginInstance::PluginInstance(
       selection_anchor_(0),
       pending_user_gesture_(0.0),
       document_loader_(NULL),
-      nacl_document_load_(false) {
+      nacl_document_load_(false),
+      npp_(new NPP_t) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
   DCHECK(delegate);
   module_->InstanceCreated(this);
   delegate_->InstanceCreated(this);
-  message_channel_.reset(new MessageChannel(this));
 
   view_data_.is_page_visible = delegate->IsPageVisible();
-
   resource_creation_ = delegate_->CreateResourceCreationAPI(this);
 
   // TODO(bbudge) remove this when the trusted NaCl plugin has been removed.
@@ -634,6 +633,8 @@ static void SetGPUHistogram(const ::ppapi::Preferences& prefs,
 bool PluginInstance::Initialize(const std::vector<std::string>& arg_names,
                                 const std::vector<std::string>& arg_values,
                                 bool full_frame) {
+  message_channel_.reset(new MessageChannel(this));
+
   full_frame_ = full_frame;
 
   UpdateTouchEventRequest();
@@ -2543,6 +2544,10 @@ bool PluginInstance::IsValidInstanceOf(PluginModule* module) {
   DCHECK(module);
   return module == module_.get() ||
          module == original_module_.get();
+}
+
+NPP PluginInstance::instanceNPP() {
+  return npp_.get();
 }
 
 void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {
