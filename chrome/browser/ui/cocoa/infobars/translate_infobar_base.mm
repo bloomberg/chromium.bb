@@ -269,8 +269,11 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
                 i != [self delegate]->original_language_index(),
                 i == [self delegate]->target_language_index());
   }
-  [fromLanguagePopUp_
-      selectItemAtIndex:([self delegate]->original_language_index())];
+  if ([self delegate]->original_language_index() !=
+      TranslateInfoBarDelegate::kNoIndex) {
+    [fromLanguagePopUp_
+        selectItemAtIndex:([self delegate]->original_language_index())];
+  }
   [toLanguagePopUp_
       selectItemAtIndex:([self delegate]->target_language_index())];
 }

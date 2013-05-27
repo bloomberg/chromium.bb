@@ -13,17 +13,16 @@ using InfoBarUtilities::VerifyControlOrderAndSpacing;
 @implementation AfterTranslateInfobarController
 
 - (void)loadLabelText {
+  autodeterminedSourceLanguage_ = ([self delegate]->original_language_index() ==
+                        TranslateInfoBarDelegate::kNoIndex);
   std::vector<string16> strings;
   TranslateInfoBarDelegate::GetAfterTranslateStrings(
-      &strings, &swappedLanugageButtons_, false);
-  DCHECK(strings.size() == 3U);
-  NSString* string1 = base::SysUTF16ToNSString(strings[0]);
-  NSString* string2 = base::SysUTF16ToNSString(strings[1]);
-  NSString* string3 = base::SysUTF16ToNSString(strings[2]);
-
-  [label1_ setStringValue:string1];
-  [label2_ setStringValue:string2];
-  [label3_ setStringValue:string3];
+      &strings, &swappedLanugageButtons_, autodeterminedSourceLanguage_);
+  DCHECK_EQ(autodeterminedSourceLanguage_ ? 2U : 3U, strings.size());
+  [label1_ setStringValue:base::SysUTF16ToNSString(strings[0])];
+  [label2_ setStringValue:base::SysUTF16ToNSString(strings[1])];
+  if (strings.size() == 3U)
+    [label3_ setStringValue:base::SysUTF16ToNSString(strings[2])];
 }
 
 - (void)layout {
@@ -31,23 +30,32 @@ using InfoBarUtilities::VerifyControlOrderAndSpacing;
   [optionsPopUp_ setHidden:NO];
   NSView* firstPopup = fromLanguagePopUp_;
   NSView* lastPopup = toLanguagePopUp_;
-  if (swappedLanugageButtons_) {
+  if (swappedLanugageButtons_ || autodeterminedSourceLanguage_) {
     firstPopup = toLanguagePopUp_;
     lastPopup = fromLanguagePopUp_;
   }
   NSView* lastControl = lastPopup;
 
   MoveControl(label1_, firstPopup, spaceBetweenControls_ / 2, true);
-  MoveControl(firstPopup, label2_, spaceBetweenControls_ / 2, true);
-  MoveControl(label2_, lastPopup, spaceBetweenControls_ / 2, true);
-  MoveControl(lastPopup, label3_, 0, true);
-  lastControl = label3_;
+  if (autodeterminedSourceLanguage_) {
+    MoveControl(firstPopup, label2_, 0, true);
+    lastControl = label2_;
+  } else {
+    MoveControl(firstPopup, label2_, spaceBetweenControls_ / 2, true);
+    MoveControl(label2_, lastPopup, spaceBetweenControls_ / 2, true);
+    MoveControl(lastPopup, label3_, 0, true);
+    lastControl = label3_;
+  }
 
   MoveControl(lastControl, showOriginalButton_, spaceBetweenControls_ * 2,
       true);
 }
 
 - (NSArray*)visibleControls {
+  if (autodeterminedSourceLanguage_) {
+    return [NSArray arrayWithObjects:label1_.get(), toLanguagePopUp_.get(),
+        label2_.get(), showOriginalButton_.get(), nil];
+  }
   return [NSArray arrayWithObjects:label1_.get(), fromLanguagePopUp_.get(),
       label2_.get(), toLanguagePopUp_.get(), label3_.get(),
       showOriginalButton_.get(), nil];
