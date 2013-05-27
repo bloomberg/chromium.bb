@@ -965,7 +965,7 @@ rdp_incoming_peer(freerdp_listener *instance, freerdp_peer *client)
 static struct weston_compositor *
 rdp_compositor_create(struct wl_display *display,
 		struct rdp_compositor_config *config,
-		int *argc, char *argv[], struct weston_config *config)
+		int *argc, char *argv[], struct weston_config *wconfig)
 {
 	struct rdp_compositor *c;
 	char *fd_str;
@@ -977,7 +977,7 @@ rdp_compositor_create(struct wl_display *display,
 
 	memset(c, 0, sizeof *c);
 
-	if (weston_compositor_init(&c->base, display, argc, argv, config) < 0)
+	if (weston_compositor_init(&c->base, display, argc, argv, wconfig) < 0)
 		goto err_free;
 
 	c->base.destroy = rdp_destroy;
@@ -1046,7 +1046,7 @@ err_free:
 
 WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
-	     struct weston_config *config)
+	     struct weston_config *wconfig)
 {
 	struct rdp_compositor_config config;
 	rdp_compositor_config_init(&config);
@@ -1069,5 +1069,5 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	};
 
 	parse_options(rdp_options, ARRAY_LENGTH(rdp_options), argc, argv);
-	return rdp_compositor_create(display, &config, argc, argv, config);
+	return rdp_compositor_create(display, &config, argc, argv, wconfig);
 }
