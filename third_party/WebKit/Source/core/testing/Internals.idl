@@ -192,7 +192,6 @@
     DOMWindow openDummyInspectorFrontend(DOMString url);
     void closeDummyInspectorFrontend();
     [RaisesException] void setInspectorResourcesDataSizeLimits(long maximumResourcesContentSize, long maximumSingleResourceContentSize);
-    [RaisesException] void setJavaScriptProfilingEnabled(boolean creates);
 
     DOMString counterValue(Element element);
     long pageNumber(Element element, optional float pageWidth, optional float pageHeight);

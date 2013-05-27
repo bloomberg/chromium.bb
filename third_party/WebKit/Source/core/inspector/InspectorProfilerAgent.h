@@ -71,9 +71,7 @@ public:
     virtual void start(ErrorString* = 0);
     virtual void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::ProfileHeader>& header);
 
-    void disable();
-    void enable(bool skipRecompile);
-    bool enabled() { return m_enabled; }
+    bool enabled();
     String getCurrentUserInitiatedProfileName(bool incrementProfileNumber = false);
     virtual void getProfileHeaders(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::ProfileHeader> >&);
     virtual void getCPUProfile(ErrorString*, int uid, RefPtr<TypeBuilder::Profiler::CPUProfile>&);
@@ -99,7 +97,6 @@ private:
     typedef HashMap<unsigned int, RefPtr<ScriptProfile> > ProfilesMap;
 
     void resetFrontendProfiles();
-    void restoreEnablement();
     PassRefPtr<TypeBuilder::Profiler::ProfileHeader> stop(ErrorString* = 0);
 
     PassRefPtr<TypeBuilder::Profiler::ProfileHeader> createProfileHeader(const ScriptProfile&);
@@ -107,7 +104,6 @@ private:
     InspectorConsoleAgent* m_consoleAgent;
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Profiler* m_frontend;
-    bool m_enabled;
     bool m_recordingCPUProfile;
     int m_currentUserInitiatedProfileNumber;
     unsigned m_nextUserInitiatedProfileNumber;

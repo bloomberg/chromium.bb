@@ -203,8 +203,6 @@ void Internals::resetToConsistentState(Page* page)
     delete s_pagePopupDriver;
     s_pagePopupDriver = 0;
     page->chrome().client()->resetPagePopupDriver();
-    if (page->inspectorController())
-        page->inspectorController()->setProfilerEnabled(false);
     page->group().captionPreferences()->setTestingMode(false);
     if (!page->mainFrame()->editor()->isContinuousSpellCheckingEnabled())
         page->mainFrame()->editor()->toggleContinuousSpellChecking();
@@ -1437,17 +1435,6 @@ void Internals::setInspectorResourcesDataSizeLimits(int maximumResourcesContentS
         return;
     }
     page->inspectorController()->setResourcesDataSizeLimitsFromInternals(maximumResourcesContentSize, maximumSingleResourceContentSize);
-}
-
-void Internals::setJavaScriptProfilingEnabled(bool enabled, ExceptionCode& ec)
-{
-    Page* page = contextDocument()->frame()->page();
-    if (!page || !page->inspectorController()) {
-        ec = INVALID_ACCESS_ERR;
-        return;
-    }
-
-    page->inspectorController()->setProfilerEnabled(enabled);
 }
 
 bool Internals::hasGrammarMarker(Document* document, int from, int length, ExceptionCode&)

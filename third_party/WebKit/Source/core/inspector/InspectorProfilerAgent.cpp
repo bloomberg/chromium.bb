@@ -120,7 +120,6 @@ InspectorProfilerAgent::InspectorProfilerAgent(InstrumentingAgents* instrumentin
     , m_consoleAgent(consoleAgent)
     , m_injectedScriptManager(injectedScriptManager)
     , m_frontend(0)
-    , m_enabled(false)
     , m_recordingCPUProfile(false)
     , m_currentUserInitiatedProfileNumber(-1)
     , m_nextUserInitiatedProfileNumber(1)
@@ -171,31 +170,18 @@ PassRefPtr<TypeBuilder::Profiler::ProfileHeader> InspectorProfilerAgent::createP
 
 void InspectorProfilerAgent::enable(ErrorString*)
 {
-    if (enabled())
-        return;
     m_state->setBoolean(ProfilerAgentState::profilerEnabled, true);
-    enable(false);
 }
 
 void InspectorProfilerAgent::disable(ErrorString*)
 {
     m_state->setBoolean(ProfilerAgentState::profilerEnabled, false);
-    disable();
-}
-
-void InspectorProfilerAgent::disable()
-{
-    if (!m_enabled)
-        return;
-    m_enabled = false;
     m_state->setBoolean(ProfilerAgentState::profileHeadersRequested, false);
 }
 
-void InspectorProfilerAgent::enable(bool skipRecompile)
+bool InspectorProfilerAgent::enabled()
 {
-    if (m_enabled)
-        return;
-    m_enabled = true;
+    return m_state->getBoolean(ProfilerAgentState::profilerEnabled);
 }
 
 String InspectorProfilerAgent::getCurrentUserInitiatedProfileName(bool incrementProfileNumber)
@@ -274,19 +260,9 @@ void InspectorProfilerAgent::clearFrontend()
 
 void InspectorProfilerAgent::restore()
 {
-    // Need to restore enablement state here as in setFrontend m_state wasn't loaded yet.
-    restoreEnablement();
     resetFrontendProfiles();
     if (m_state->getBoolean(ProfilerAgentState::userInitiatedProfiling))
         start();
-}
-
-void InspectorProfilerAgent::restoreEnablement()
-{
-    if (m_state->getBoolean(ProfilerAgentState::profilerEnabled)) {
-        ErrorString error;
-        enable(&error);
-    }
 }
 
 void InspectorProfilerAgent::start(ErrorString*)
@@ -294,7 +270,8 @@ void InspectorProfilerAgent::start(ErrorString*)
     if (m_recordingCPUProfile)
         return;
     if (!enabled()) {
-        enable(true);
+        ErrorString error;
+        enable(&error);
     }
     m_recordingCPUProfile = true;
     String title = getCurrentUserInitiatedProfileName(true);

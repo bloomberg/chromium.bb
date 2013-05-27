@@ -108,7 +108,6 @@ public:
     void evaluateForTestInFrontend(long callId, const String& script);
 
     bool profilerEnabled();
-    void setProfilerEnabled(bool);
 
     void resume();
 

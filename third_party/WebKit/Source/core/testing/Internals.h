@@ -235,7 +235,6 @@ public:
     PassRefPtr<DOMWindow> openDummyInspectorFrontend(const String& url);
     void closeDummyInspectorFrontend();
     void setInspectorResourcesDataSizeLimits(int maximumResourcesContentSize, int maximumSingleResourceContentSize, ExceptionCode&);
-    void setJavaScriptProfilingEnabled(bool enabled, ExceptionCode&);
 
     String counterValue(Element*);
 

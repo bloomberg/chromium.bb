@@ -351,15 +351,6 @@ bool InspectorController::profilerEnabled()
     return m_profilerAgent->enabled();
 }
 
-void InspectorController::setProfilerEnabled(bool enable)
-{
-    ErrorString error;
-    if (enable)
-        m_profilerAgent->enable(&error);
-    else
-        m_profilerAgent->disable(&error);
-}
-
 void InspectorController::resume()
 {
     if (m_debuggerAgent) {
