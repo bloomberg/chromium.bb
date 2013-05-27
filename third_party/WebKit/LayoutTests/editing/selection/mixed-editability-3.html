@@ -1,32 +1,20 @@
-<script src="../../fast/js/resources/js-test-pre.js"></script>
-<script src="./resources/js-test-selection-shared.js"></script>
+<script>
+if (window.testRunner)
+     testRunner.dumpEditingCallbacks();
+</script>
+<p>This tests moving the caret forward through content of mixed editability.  The caret should move down one line from the editable piece to the editable piece that's embedded in a non-editable piece.</p>
 
 <div contenteditable="true" id="test">
-<span id="e1">1 editable</span>
+editable
 <table border="1" contenteditable="false"><tr><td contenteditable="true">editable</td></tr></table>
-<span id="e2">2 editable</span>
+editable
 </div>
 
 <script>
-description('This tests moving the caret forward through content of mixed editability.  The caret should not be in non-editable piece.');
+var e = document.getElementById("test");
+var s = window.getSelection();
 
-testCaretMotion({
-    'direction': 'both',
-    'granularity': 'line',
-    'origin': 'e1',
-    'target': 'e2',
-});
+s.setPosition(e, 0);
 
-testCaretMotion({
-    'direction': 'both',
-    'granularity': 'line',
-    'origin': 'e1',
-    'originOffset': -1,
-    'target': 'e2',
-    'targetOffset': -1,
-});
-
-if (window.testRunner)
-    $('test').outerHTML = '';
+s.modify("move", "forward", "line");
 </script>
-<script src="../../fast/js/resources/js-test-post.js"></script>
