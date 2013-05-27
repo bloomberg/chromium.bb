@@ -28,6 +28,9 @@ class FileSystemURL;
 
 namespace file_handler_util {
 
+// Tasks are stored as a vector in order of priorities.
+typedef std::vector<const FileBrowserHandler*> FileBrowserHandlerList;
+
 // Specifies the task type for a task id that represents some file action, Drive
 // action, or Web Intent action.
 extern const char kTaskFile[];
@@ -74,13 +77,13 @@ bool CrackTaskID(const std::string& task_id,
 // prefs) from the |common_tasks|.
 void FindDefaultTasks(Profile* profile,
                       const std::vector<base::FilePath>& files_list,
-                      const std::set<const FileBrowserHandler*>& common_tasks,
-                      std::set<const FileBrowserHandler*>* default_tasks);
+                      const FileBrowserHandlerList& common_tasks,
+                      FileBrowserHandlerList* default_tasks);
 
 // This generates list of tasks common for all files in |file_list|.
 bool FindCommonTasks(Profile* profile,
                      const std::vector<GURL>& files_list,
-                     std::set<const FileBrowserHandler*>* common_tasks);
+                     FileBrowserHandlerList* common_tasks);
 
 // Finds a task for a file whose URL is |url| and whose path is |path|.
 // Returns default task if one is defined (The default task is the task that is

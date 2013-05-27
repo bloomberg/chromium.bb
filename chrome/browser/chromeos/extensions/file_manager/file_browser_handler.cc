@@ -182,12 +182,11 @@ FileBrowserHandler* LoadFileBrowserHandler(
   }
 
   // Initialize file filters (mandatory, unless "create" access is specified,
-  // in which case is ignored).
+  // in which case is ignored). The list can be empty.
   if (!result->HasCreateAccessPermission()) {
     const ListValue* file_filters = NULL;
     if (!file_browser_handler->HasKey(keys::kFileFilters) ||
-        !file_browser_handler->GetList(keys::kFileFilters, &file_filters) ||
-        file_filters->empty()) {
+        !file_browser_handler->GetList(keys::kFileFilters, &file_filters)) {
       *error = ASCIIToUTF16(errors::kInvalidFileFiltersList);
       return NULL;
     }

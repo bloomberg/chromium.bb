@@ -65,8 +65,6 @@ const char kDriveTaskExtensionPrefix[] = "drive-app:";
 const size_t kDriveTaskExtensionPrefixLength =
     arraysize(kDriveTaskExtensionPrefix) - 1;
 
-typedef std::set<const FileBrowserHandler*> FileBrowserHandlerSet;
-
 const int kReadWriteFilePermissions = base::PLATFORM_FILE_OPEN |
                                       base::PLATFORM_FILE_CREATE |
                                       base::PLATFORM_FILE_OPEN_ALWAYS |
@@ -100,24 +98,14 @@ int ExtractProcessFromExtensionId(Profile* profile,
   return process->GetID();
 }
 
-bool IsBuiltinTask(const FileBrowserHandler* task) {
+// Returns true if the task should be used as a fallback. Such tasks are
+// Files.app's internal handlers as well as quick office extensions.
+bool IsFallbackTask(const FileBrowserHandler* task) {
   return (task->extension_id() == kFileBrowserDomain ||
           task->extension_id() ==
               extension_misc::kQuickOfficeComponentExtensionId ||
           task->extension_id() == extension_misc::kQuickOfficeDevExtensionId ||
           task->extension_id() == extension_misc::kQuickOfficeExtensionId);
-}
-
-bool MatchesAllURLs(const FileBrowserHandler* handler) {
-  const std::set<URLPattern>& patterns =
-      handler->file_url_patterns().patterns();
-  for (std::set<URLPattern>::const_iterator it = patterns.begin();
-       it != patterns.end();
-       ++it) {
-    if (it->match_all_urls())
-      return true;
-  }
-  return false;
 }
 
 const FileBrowserHandler* FindFileBrowserHandler(const Extension* extension,
@@ -160,7 +148,7 @@ std::string EscapedUtf8ToLower(const std::string& str) {
 
 bool GetFileBrowserHandlers(Profile* profile,
                             const GURL& selected_file_url,
-                            FileBrowserHandlerSet* results) {
+                            FileBrowserHandlerList* results) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service)
@@ -190,7 +178,7 @@ bool GetFileBrowserHandlers(Profile* profile,
       if (!action->MatchesURL(lowercase_url))
         continue;
 
-      results->insert(action_iter->get());
+      results->push_back(action_iter->get());
     }
   }
   return true;
@@ -330,15 +318,15 @@ bool CrackTaskID(const std::string& task_id,
 }
 
 // Find a specific handler in the handler list.
-FileBrowserHandlerSet::iterator FindHandler(
-    FileBrowserHandlerSet* handler_set,
+FileBrowserHandlerList::iterator FindHandler(
+    FileBrowserHandlerList* handler_list,
     const std::string& extension_id,
     const std::string& id) {
-  FileBrowserHandlerSet::iterator iter = handler_set->begin();
-  while (iter != handler_set->end() &&
+  FileBrowserHandlerList::iterator iter = handler_list->begin();
+  while (iter != handler_list->end() &&
          !((*iter)->extension_id() == extension_id &&
            (*iter)->id() == id)) {
-    iter++;
+    ++iter;
   }
   return iter;
 }
@@ -347,8 +335,8 @@ FileBrowserHandlerSet::iterator FindHandler(
 // that are shared between them.
 void FindDefaultTasks(Profile* profile,
                       const std::vector<base::FilePath>& files_list,
-                      const FileBrowserHandlerSet& common_tasks,
-                      FileBrowserHandlerSet* default_tasks) {
+                      const FileBrowserHandlerList& common_tasks,
+                      FileBrowserHandlerList* default_tasks) {
   DCHECK(default_tasks);
   default_tasks->clear();
 
@@ -361,46 +349,42 @@ void FindDefaultTasks(Profile* profile,
       default_ids.insert(task_id);
   }
 
-  const FileBrowserHandler* builtin_task = NULL;
+  const FileBrowserHandler* fallback_task = NULL;
   // Convert the default task IDs collected above to one of the handler pointers
   // from common_tasks.
-  for (FileBrowserHandlerSet::const_iterator task_iter = common_tasks.begin();
+  for (FileBrowserHandlerList::const_iterator task_iter = common_tasks.begin();
        task_iter != common_tasks.end(); ++task_iter) {
     std::string task_id = MakeTaskID((*task_iter)->extension_id(), kTaskFile,
                                      (*task_iter)->id());
     std::set<std::string>::iterator default_iter = default_ids.find(task_id);
     if (default_iter != default_ids.end()) {
-      default_tasks->insert(*task_iter);
+      default_tasks->push_back(*task_iter);
       continue;
     }
 
-    // If it's a built in task, remember it. If there are no default tasks among
-    // common tasks, builtin task will be used as a fallback.
-    // Note that builtin tasks are not overlapping, so there can be at most one
-    // builtin tasks for each set of files.
-    if (IsBuiltinTask(*task_iter))
-      builtin_task = *task_iter;
+    // Remember the first fallback task.
+    if (!fallback_task && IsFallbackTask(*task_iter))
+      fallback_task = *task_iter;
   }
 
-  // If there are no default tasks found, use builtin task (if found) as a
-  // default.
-  if (builtin_task && default_tasks->empty())
-    default_tasks->insert(builtin_task);
+  // If there are no default tasks found, use fallback as default.
+  if (fallback_task && default_tasks->empty())
+    default_tasks->push_back(fallback_task);
 }
 
 // Given the list of selected files, returns array of context menu tasks
 // that are shared
 bool FindCommonTasks(Profile* profile,
                      const std::vector<GURL>& files_list,
-                     FileBrowserHandlerSet* common_tasks) {
+                     FileBrowserHandlerList* common_tasks) {
   DCHECK(common_tasks);
   common_tasks->clear();
 
-  FileBrowserHandlerSet common_task_set;
+  FileBrowserHandlerList common_task_list;
   std::set<std::string> default_task_ids;
   for (std::vector<GURL>::const_iterator it = files_list.begin();
        it != files_list.end(); ++it) {
-    FileBrowserHandlerSet file_actions;
+    FileBrowserHandlerList file_actions;
     if (!GetFileBrowserHandlers(profile, *it, &file_actions))
       return false;
     // If there is nothing to do for one file, the intersection of tasks for all
@@ -410,38 +394,37 @@ bool FindCommonTasks(Profile* profile,
 
     // For the very first file, just copy all the elements.
     if (it == files_list.begin()) {
-      common_task_set = file_actions;
+      common_task_list = file_actions;
     } else {
       // For all additional files, find intersection between the accumulated and
       // file specific set.
-      FileBrowserHandlerSet intersection;
-      std::set_intersection(common_task_set.begin(), common_task_set.end(),
+      FileBrowserHandlerList intersection;
+      std::set_intersection(common_task_list.begin(), common_task_list.end(),
                             file_actions.begin(), file_actions.end(),
-                            std::inserter(intersection,
-                                          intersection.begin()));
-      common_task_set = intersection;
-      if (common_task_set.empty())
+                            std::back_inserter(intersection));
+      common_task_list = intersection;
+      if (common_task_list.empty())
         return true;
     }
   }
 
-  FileBrowserHandlerSet::iterator watch_iter = FindHandler(
-      &common_task_set, kFileBrowserDomain, kFileBrowserWatchTaskId);
-  FileBrowserHandlerSet::iterator gallery_iter = FindHandler(
-      &common_task_set, kFileBrowserDomain, kFileBrowserGalleryTaskId);
-  if (watch_iter != common_task_set.end() &&
-      gallery_iter != common_task_set.end()) {
+  FileBrowserHandlerList::iterator watch_iter = FindHandler(
+      &common_task_list, kFileBrowserDomain, kFileBrowserWatchTaskId);
+  FileBrowserHandlerList::iterator gallery_iter = FindHandler(
+      &common_task_list, kFileBrowserDomain, kFileBrowserGalleryTaskId);
+  if (watch_iter != common_task_list.end() &&
+      gallery_iter != common_task_list.end()) {
     // Both "watch" and "gallery" actions are applicable which means that the
     // selection is all videos. Showing them both is confusing, so we only keep
     // the one that makes more sense ("watch" for single selection, "gallery"
     // for multiple selection).
     if (files_list.size() == 1)
-      common_task_set.erase(gallery_iter);
+      common_task_list.erase(gallery_iter);
     else
-      common_task_set.erase(watch_iter);
+      common_task_list.erase(watch_iter);
   }
 
-  common_tasks->swap(common_task_set);
+  common_tasks->swap(common_task_list);
   return true;
 }
 
@@ -452,8 +435,8 @@ bool GetTaskForURLAndPath(Profile* profile,
   std::vector<GURL> file_urls;
   file_urls.push_back(url);
 
-  FileBrowserHandlerSet default_tasks;
-  FileBrowserHandlerSet common_tasks;
+  FileBrowserHandlerList default_tasks;
+  FileBrowserHandlerList common_tasks;
   if (!FindCommonTasks(profile, file_urls, &common_tasks))
     return false;
 
