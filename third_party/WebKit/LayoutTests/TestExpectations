@@ -2086,7 +2086,14 @@ crbug.com/243894 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
 crbug.com/244003 [ Win ] svg/css/font-face-crash.html [ Crash Timeout Pass ]
 crbug.com/244004 [ Win ] virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-crash.html [ Pass Timeout ]
 crbug.com/244005 fast/dom/gc-acid3.html [ Pass Failure Timeout ]
+crbug.com/244111 svg/filters/feMorphology-crash.html [ Pass Timeout ]
+crbug.com/244112 [ Win Mac Debug ] fast/dom/gc-11.html [ Pass Timeout ]
+crbug.com/244112 [ Linux ] fast/dom/gc-11.html [ Pass Failure ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass ]
 crbug.com/243800 [ Linux ]  inspector/profiler/cpu-profiler-agent-crash-on-start.html [ Crash Pass ]
+crbug.com/244114 [ Win Release ] svg/css/font-face-variant-crash.html [ Crash Pass ]
+
+crbug.com/244114 [ Win Debug ] svg/css/font-face-variant-crash.html [ Pass Timeout ]
+crbug.com/244116 [ Win Release ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Crash Pass ]
