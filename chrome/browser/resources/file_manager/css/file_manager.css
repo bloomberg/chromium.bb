@@ -517,19 +517,18 @@ body[new-ui] .dialog-header {
 }
 
 body[new-ui] .search-box-wrapper {
+  -webkit-align-items: center;
   -webkit-box-flex: 1;
-  display: -webkit-box;
+  display: -webkit-flex;
   height: 100%;
 }
 
 body[new-ui] .dialog-header #search-box,
 body[new-ui] .dialog-header #autocomplete-list,
+body[new-ui] .dialog-header #search-icon,
+body[new-ui] .dialog-header #search-clear-button,
 body[new-ui] .dialog-header .buttonbar button {
   -webkit-app-region: no-drag;
-}
-
-body[new-ui] .dialog-header #autocomplete-list {
-  max-width: 240px;
 }
 
 body[new-ui] .dialog-header #gear-button {
@@ -810,44 +809,41 @@ body[new-ui] .dialog-header button:active {
 
 body[new-ui] #search-box {
   -webkit-margin-end: 0;
-  -webkit-padding-after: 0;
-  -webkit-padding-before: 0;
-  -webkit-padding-end: 52px;
-  -webkit-padding-start: 46px;
-  background: -webkit-image-set(
-    url('../images/files/ui/new-ui/search_icon_inactive.png') 1x,
-    url('../images/files/ui/new-ui/2x/search_icon_inactive.png') 2x);
-  background-position: 13px center;
-  background-repeat: no-repeat;
+  background-image: none;
   border-style: none;
   display: block;
   height: 48px;
   line-height: 1em;
-  max-width: none;
+  max-width: 100%;
+  outline: none;
+  padding: 0;
+  pointer-events: none;
   position: relative;
   transition: width 0;
-  width: 58px;
+  width: 0; /* Overrided by script */
+}
+
+body[new-ui] #search-box:focus,
+body[new-ui] #search-box:active,
+body[new-ui] .has-text #search-box {
+  pointer-events: auto;
 }
 
 body #search-box[hidden] {
   display: none;  /* Required, since overriden by #search-box. */
 }
 
-html[dir='rtl'] #search-box {
+html[dir='rtl'] body:not([new-ui]) #search-box {
   background-position: right 4px top 5.5px;
 }
 
-html[dir='rtl'] body[new-ui] #search-box {
-  background-position: right 13px center;
-}
-
-#search-box:hover {
+body:not([new-ui]) #search-box:hover {
   border: 1px solid #b9b9b9;
   border-top: 1px solid #a0a0a0;
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
-#search-box:focus {
+body:not([new-ui]) #search-box:focus {
   border: 1px solid rgb(77, 144, 254);
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
   max-width: 240px;
@@ -855,32 +851,8 @@ html[dir='rtl'] body[new-ui] #search-box {
   width: 100%;
 }
 
-body[new-ui] #search-box.has-text,
-body[new-ui] #search-box:focus {
-  max-width: none;
-  width: 100%;
-}
-
-body[new-ui] #search-box:hover,
-body[new-ui] #search-box:focus {
-  background: -webkit-image-set(
-    url('../images/files/ui/new-ui/search_icon_active.png') 1x,
-    url('../images/files/ui/new-ui/2x/search_icon_active.png') 2x);
-  background-position: 13px center;
-  background-repeat: no-repeat;
-  border-style: none;
-  box-shadow: none;
-}
-
 #search-box::-webkit-search-cancel-button {
   -webkit-appearance: none;
-  background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/search_clear.png') 1x,
-    url('../images/files/ui/new-ui/2x/search_clear.png') 2x);
-  height: 12px;
-  position: absolute;
-  top: 18px;
-  width: 12px;
 }
 
 body:not([new-ui]) #search-box::-webkit-search-cancel-button {
@@ -888,20 +860,9 @@ body:not([new-ui]) #search-box::-webkit-search-cancel-button {
     url('../images/files/ui/search_clear.png') 1x,
     url('../images/files/ui/2x/search_clear.png') 2x);
   height: 16px;
+  position: absolute;
   top: 6px;
   width: 16px;
-}
-
-html:not([dir='rtl']) #search-box::-webkit-search-cancel-button {
-  right: 30px;
-}
-
-html[dir='rtl'] #search-box::-webkit-search-cancel-button {
-  left: 30px;
-}
-
-html[dir='rtl'] body:not([new-ui]) #search-box::-webkit-search-cancel-button {
-  left: 2px;
 }
 
 html:not([dir='rtl']) body:not([new-ui])
@@ -909,10 +870,8 @@ html:not([dir='rtl']) body:not([new-ui])
   right: 2px;
 }
 
-#search-box::-webkit-search-cancel-button:hover {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/search_clear_hover.png') 1x,
-    url('../images/files/ui/new-ui/2x/search_clear_hover.png') 2x);
+html[dir='rtl'] body:not([new-ui]) #search-box::-webkit-search-cancel-button {
+  left: 2px;
 }
 
 body:not([new-ui]) #search-box::-webkit-search-cancel-button:hover {
@@ -921,16 +880,62 @@ body:not([new-ui]) #search-box::-webkit-search-cancel-button:hover {
     url('../images/files/ui/2x/search_clear_hover.png') 2x);
 }
 
-#search-box::-webkit-search-cancel-button:active {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/search_clear_pressed.png') 1x,
-    url('../images/files/ui/new-ui/2x/search_clear_pressed.png') 2x);
-}
-
 body:not([new-ui]) #search-box::-webkit-search-cancel-button:active {
   background-image: -webkit-image-set(
     url('../images/files/ui/search_clear_pressed.png') 1x,
     url('../images/files/ui/2x/search_clear_pressed.png') 2x);
+}
+
+body[new-ui] #search-icon {
+  -webkit-flex-shrink: 0;
+  -webkit-margin-end: 3px;
+  -webkit-margin-start: 10px;
+  -webkit-order: -1;
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/search_icon_inactive.png') 1x,
+    url('../images/files/ui/new-ui/2x/search_icon_inactive.png') 2x);
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 32px;
+  width: 32px;
+}
+
+body[new-ui] #search-icon:hover,
+body[new-ui] #search-box:active + #search-icon,
+body[new-ui] #search-box:focus + #search-icon,
+body[new-ui] .has-text #search-icon {
+  background: -webkit-image-set(
+    url('../images/files/ui/new-ui/search_icon_active.png') 1x,
+    url('../images/files/ui/new-ui/2x/search_icon_active.png') 2x);
+}
+
+body[new-ui] #search-clear-button {
+  -webkit-margin-end: 30px;
+  -webkit-margin-start: 10px;
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/search_clear.png') 1x,
+    url('../images/files/ui/new-ui/2x/search_clear.png') 2x);
+  background-position: center;
+  background-repeat: no-repeat;
+  display: none;
+  height: 12px;
+  width: 12px;
+}
+
+body[new-ui] .search-box-wrapper.has-text + #search-clear-button {
+  display: block;
+}
+
+body[new-ui] #search-clear-button:hover {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/search_clear_hover.png') 1x,
+    url('../images/files/ui/new-ui/2x/search_clear_hover.png') 2x);
+}
+
+body[new-ui] #search-clear-button:active {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/search_clear_pressed.png') 1x,
+    url('../images/files/ui/new-ui/2x/search_clear_pressed.png') 2x);
 }
 
 body:not([new-ui]) button#detail-view::before {
@@ -2253,7 +2258,8 @@ body:not([new-ui]) list.autocomplete-suggestions {
 }
 
 body[new-ui] list.autocomplete-suggestions {
-  -webkit-margin-start: 10px;
+  -webkit-margin-before: -7px;
+  -webkit-margin-start: -38px;
   background-color: rgb(250, 250, 250);
   border: 1px solid rgb(255, 255, 255);
   border-radius: 3px;
@@ -2263,6 +2269,7 @@ body[new-ui] list.autocomplete-suggestions {
   overflow: hidden;
   padding: 5px 0;
   position: fixed;
+  width: 300px !important; /* This overrides the value specified by script. */
   z-index: 3;
 }
 

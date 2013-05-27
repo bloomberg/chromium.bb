@@ -78,6 +78,50 @@ var DialogType = {
 };
 
 /**
+ * TextMeasure constructor.
+ *
+ * TextMeasure is a measure for text that returns the width of text.  This
+ * class has a dummy span element. When measuring the width of text, it sets
+ * the text to the element and obtains the element's size by
+ * getBoundingClientRect.
+ *
+ * @constructor
+ * @param {HTMLElement} element Element that has styles of measured text. The
+ *     width of text is mesures like as it is rendered in this element.
+ */
+var TextMeasure = function(element) {
+  var doc = element.ownerDocument;
+  this.dummySpan_ = doc.createElement('span');
+  this.dummySpan_ = doc.getElementsByTagName('body')[0].
+                        appendChild(this.dummySpan_);
+  this.dummySpan_.style.position = 'absolute';
+  this.dummySpan_.style.visibility = 'hidden';
+  var styles = window.getComputedStyle(element, '');
+  var stylesToBeCopied = [
+    'fontSize',
+    'fontStyle',
+    'fontWeight',
+    'fontFamily',
+    'letterSpacing'
+  ];
+  for (var i = 0; i < stylesToBeCopied.length; i++) {
+    this.dummySpan_.style[stylesToBeCopied[i]] = styles[stylesToBeCopied[i]];
+  }
+};
+
+/**
+ * Measures the widht of text.
+ *
+ * @param {string} text Text that is measured the width.
+ * @return {number} Width of the specified text.
+ */
+TextMeasure.prototype.getWidth = function(text) {
+  this.dummySpan_.innerText = text;
+  var rect = this.dummySpan_.getBoundingClientRect();
+  return rect ? rect.width : 0;
+};
+
+/**
  * @param {string} type Dialog type.
  * @return {boolean} Whether the type is modal.
  */
@@ -1005,6 +1049,21 @@ DialogType.isModal = function(type) {
     this.searchBox_ = this.dialogDom_.querySelector('#search-box');
     this.searchBox_.addEventListener(
         'input', this.onSearchBoxUpdate_.bind(this));
+    this.searchTextMeasure_ = new TextMeasure(this.searchBox_);
+    if (util.platform.newUI()) {
+      this.searchIcon_ = this.dialogDom_.querySelector('#search-icon');
+      this.searchIcon_.addEventListener(
+          'click',
+          function() { this.searchBox_.focus(); }.bind(this));
+      this.searchClearButton_ =
+          this.dialogDom_.querySelector('#search-clear-button');
+      this.searchClearButton_.addEventListener(
+          'click',
+          function() {
+            this.searchBox_.value = '';
+            this.onSearchBoxUpdate_();
+          }.bind(this));
+    }
     this.lastSearchQuery_ = '';
 
     var autocompleteList = new cr.ui.AutocompleteList();
@@ -2369,7 +2428,7 @@ DialogType.isModal = function(type) {
   FileManager.prototype.updateSearchBoxOnDirChange_ = function() {
     if (!this.searchBox_.disabled) {
       this.searchBox_.value = '';
-      this.updateSearchBoxClass_();
+      this.updateSearchBoxStyles_();
     }
   };
 
@@ -3445,7 +3504,7 @@ DialogType.isModal = function(type) {
   FileManager.prototype.onSearchBoxUpdate_ = function(event) {
     var searchString = this.searchBox_.value;
 
-    this.updateSearchBoxClass_();
+    this.updateSearchBoxStyles_();
     if (this.isOnDrive()) {
       // When the search text is changed, finishes the search and showes back
       // the last directory by passing an empty string to
@@ -3469,8 +3528,15 @@ DialogType.isModal = function(type) {
    *
    * @private
    */
-  FileManager.prototype.updateSearchBoxClass_ = function() {
-    this.searchBox_.classList.toggle('has-text', !!this.searchBox_.value);
+  FileManager.prototype.updateSearchBoxStyles_ = function() {
+    if (!util.platform.newUI())
+      return;
+    var TEXT_BOX_PADDING = 16; // in px.
+    this.searchBoxWrapper_.classList.toggle('has-text',
+                                            !!this.searchBox_.value);
+    var width = this.searchTextMeasure_.getWidth(this.searchBox_.value) +
+                TEXT_BOX_PADDING;
+    this.searchBox_.style.width = width + 'px';
   };
 
   /**
