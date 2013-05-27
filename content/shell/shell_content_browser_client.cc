@@ -91,6 +91,9 @@ void ShellContentBrowserClient::RenderProcessHostCreated(
   registrar_.Add(this,
                  NOTIFICATION_RENDERER_PROCESS_CREATED,
                  Source<RenderProcessHost>(host));
+  registrar_.Add(this,
+                 NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 Source<RenderProcessHost>(host));
 }
 
 net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
@@ -212,12 +215,25 @@ void ShellContentBrowserClient::Observe(int type,
       registrar_.Remove(this,
                         NOTIFICATION_RENDERER_PROCESS_CREATED,
                         source);
+      registrar_.Remove(this,
+                        NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                        source);
       if (hyphen_dictionary_file_ != base::kInvalidPlatformFileValue) {
         RenderProcessHost* host = Source<RenderProcessHost>(source).ptr();
         IPC::PlatformFileForTransit file = IPC::GetFileHandleForProcess(
             hyphen_dictionary_file_, host->GetHandle(), false);
         host->Send(new ShellViewMsg_LoadHyphenDictionary(file));
       }
+      break;
+    }
+
+    case NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
+      registrar_.Remove(this,
+                        NOTIFICATION_RENDERER_PROCESS_CREATED,
+                        source);
+      registrar_.Remove(this,
+                        NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                        source);
       break;
     }
 
