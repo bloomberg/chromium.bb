@@ -288,7 +288,7 @@ cr.define('options.internet', function() {
       // stored) is not accessible from the login screen.
       // TODO(pneubeck): Remove this once i18n of the proxy dialog on the login
       // page is fixed. http://crbug.com/242865
-      if (loadTimeData.data) {
+      if (loadTimeData.data_) {
         $('google-dns-label').innerHTML =
           loadTimeData.getString('googleNameServers');
       }
@@ -405,7 +405,7 @@ cr.define('options.internet', function() {
      */
     updateProxyBannerVisibility_: function() {
       var bannerDiv = $('network-proxy-info-banner');
-      if (!loadTimeData.data) {
+      if (!loadTimeData.data_) {
         // TODO(pneubeck): This temporarily prevents an exception below until
         // i18n of the proxy dialog on the login page is
         // fixed. http://crbug.com/242865
