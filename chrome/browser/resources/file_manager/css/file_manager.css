@@ -2233,6 +2233,11 @@ body[new-ui] #list-container .table-header-cell:hover {
   background-color: inherit;
 }
 
+body[new-ui] #list-container .table-header-cell:first-child {
+  -webkit-box-sizing: border-box;
+  -webkit-padding-start: 8px;
+}
+
 button:focus {
   outline-color: rgb(77, 144, 254);
 }
