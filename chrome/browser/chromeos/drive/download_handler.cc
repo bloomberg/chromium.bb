@@ -147,8 +147,8 @@ void DownloadHandler::SubstituteDriveDownloadPath(
     //     OnCreateDirectory calls SubstituteDriveDownloadPathInternal
     const base::FilePath drive_dir_path =
         util::ExtractDrivePath(drive_path.DirName());
-    // Ensure the directory exists. This also forces FileSystem to
-    // initialize DriveRootDirectory.
+    // Check if the directory exists, and create it if the directory does not
+    // exist.
     file_system_->GetResourceEntryByPath(
         drive_dir_path,
         base::Bind(&DownloadHandler::OnEntryFound,
@@ -188,7 +188,7 @@ base::FilePath DownloadHandler::GetTargetPath(
 
 bool DownloadHandler::IsDriveDownload(const DownloadItem* download) {
   // We use the existence of the DriveUserData object in download as a
-  // signal that this is a DriveDownload.
+  // signal that this is a download to Drive.
   return GetDriveUserData(download) != NULL;
 }
 

@@ -51,7 +51,7 @@ struct SearchResultPair {
 
 // Callback to FileSystem::Search used in ContentSearch tests.
 // Verifies returned vector of results and next feed url.
-void DriveSearchCallback(
+void VerifySearchResult(
     MessageLoop* message_loop,
     const SearchResultPair* expected_results,
     size_t expected_results_size,
@@ -111,9 +111,9 @@ void AppendContent(std::vector<std::string>* buffer,
 
 }  // namespace
 
-class DriveFileSystemTest : public testing::Test {
+class FileSystemTest : public testing::Test {
  protected:
-  DriveFileSystemTest()
+  FileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         // |root_feed_changestamp_| should be set to the largest changestamp in
         // about resource feed. But we fake it by some non-zero positive
@@ -451,7 +451,7 @@ class DriveFileSystemTest : public testing::Test {
   int root_feed_changestamp_;
 };
 
-TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
+TEST_F(FileSystemTest, DuplicatedAsyncInitialization) {
   // "Fast fetch" will fire an OnirectoryChanged event.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
@@ -475,7 +475,7 @@ TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
   EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
 }
 
-TEST_F(DriveFileSystemTest, GetGrandRootEntry) {
+TEST_F(FileSystemTest, GetGrandRootEntry) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath);
   ASSERT_TRUE(entry);
@@ -486,7 +486,7 @@ TEST_F(DriveFileSystemTest, GetGrandRootEntry) {
   EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
 }
 
-TEST_F(DriveFileSystemTest, GetOtherDirEntry) {
+TEST_F(FileSystemTest, GetOtherDirEntry) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/other"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath);
   ASSERT_TRUE(entry);
@@ -498,7 +498,7 @@ TEST_F(DriveFileSystemTest, GetOtherDirEntry) {
   EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
 }
 
-TEST_F(DriveFileSystemTest, GetMyDriveRoot) {
+TEST_F(FileSystemTest, GetMyDriveRoot) {
   // "Fast fetch" will fire an OnirectoryChanged event.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
@@ -521,7 +521,7 @@ TEST_F(DriveFileSystemTest, GetMyDriveRoot) {
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
 }
 
-TEST_F(DriveFileSystemTest, GetExistingFile) {
+TEST_F(FileSystemTest, GetExistingFile) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath);
   ASSERT_TRUE(entry);
@@ -531,7 +531,7 @@ TEST_F(DriveFileSystemTest, GetExistingFile) {
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
 }
 
-TEST_F(DriveFileSystemTest, GetExistingDocument) {
+TEST_F(FileSystemTest, GetExistingDocument) {
   const base::FilePath kFilePath(
       FILE_PATH_LITERAL("drive/root/Document 1 excludeDir-test.gdoc"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath);
@@ -539,14 +539,14 @@ TEST_F(DriveFileSystemTest, GetExistingDocument) {
   EXPECT_EQ("document:5_document_resource_id", entry->resource_id());
 }
 
-TEST_F(DriveFileSystemTest, GetNonExistingFile) {
+TEST_F(FileSystemTest, GetNonExistingFile) {
   const base::FilePath kFilePath(
       FILE_PATH_LITERAL("drive/root/nonexisting.file"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath);
   EXPECT_FALSE(entry);
 }
 
-TEST_F(DriveFileSystemTest, GetEncodedFileNames) {
+TEST_F(FileSystemTest, GetEncodedFileNames) {
   const base::FilePath kFilePath1(
       FILE_PATH_LITERAL("drive/root/Slash / in file 1.txt"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath1);
@@ -565,7 +565,7 @@ TEST_F(DriveFileSystemTest, GetEncodedFileNames) {
   EXPECT_EQ("file:slash_subdir_file", entry->resource_id());
 }
 
-TEST_F(DriveFileSystemTest, GetDuplicateNames) {
+TEST_F(FileSystemTest, GetDuplicateNames) {
   const base::FilePath kFilePath1(
       FILE_PATH_LITERAL("drive/root/Duplicate Name.txt"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath1);
@@ -588,7 +588,7 @@ TEST_F(DriveFileSystemTest, GetDuplicateNames) {
               file4_resource_id == resource_id2);
 }
 
-TEST_F(DriveFileSystemTest, GetExistingDirectory) {
+TEST_F(FileSystemTest, GetExistingDirectory) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/Directory 1"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath);
   ASSERT_TRUE(entry);
@@ -599,7 +599,7 @@ TEST_F(DriveFileSystemTest, GetExistingDirectory) {
             entry->directory_specific_info().changestamp());
 }
 
-TEST_F(DriveFileSystemTest, GetInSubSubdir) {
+TEST_F(FileSystemTest, GetInSubSubdir) {
   const base::FilePath kFilePath(
       FILE_PATH_LITERAL("drive/root/Directory 1/Sub Directory Folder/"
                         "Sub Sub Directory Folder"));
@@ -608,7 +608,7 @@ TEST_F(DriveFileSystemTest, GetInSubSubdir) {
   ASSERT_EQ("folder:sub_sub_directory_folder_id", entry->resource_id());
 }
 
-TEST_F(DriveFileSystemTest, GetOrphanFile) {
+TEST_F(FileSystemTest, GetOrphanFile) {
   const base::FilePath kFilePath(
       FILE_PATH_LITERAL("drive/other/Orphan File 1.txt"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntryByPathSync(kFilePath);
@@ -616,7 +616,7 @@ TEST_F(DriveFileSystemTest, GetOrphanFile) {
   EXPECT_EQ("file:1_orphanfile_resource_id", entry->resource_id());
 }
 
-TEST_F(DriveFileSystemTest, ReadDirectoryByPath_Root) {
+TEST_F(FileSystemTest, ReadDirectoryByPath_Root) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
@@ -644,7 +644,7 @@ TEST_F(DriveFileSystemTest, ReadDirectoryByPath_Root) {
   EXPECT_TRUE(found_my_drive);
 }
 
-TEST_F(DriveFileSystemTest, ReadDirectoryByPath_NonRootDirectory) {
+TEST_F(FileSystemTest, ReadDirectoryByPath_NonRootDirectory) {
   // ReadDirectoryByPath() should kick off the resource list loading.
   scoped_ptr<ResourceEntryVector> entries(
       ReadDirectoryByPathSync(
@@ -656,7 +656,7 @@ TEST_F(DriveFileSystemTest, ReadDirectoryByPath_NonRootDirectory) {
   EXPECT_EQ(3U, entries->size());
 }
 
-TEST_F(DriveFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
+TEST_F(FileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -671,7 +671,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
       base::FilePath(FILE_PATH_LITERAL("drive/root/Added file.gdoc"))));
 }
 
-TEST_F(DriveFileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
+TEST_F(FileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_TRUE(
@@ -700,7 +700,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
       FILE_PATH_LITERAL("drive/root/Directory 1/Added file.gdoc"))));
 }
 
-TEST_F(DriveFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
+TEST_F(FileSystemTest, ChangeFeed_AddFileToNewDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
   // Add file to a new directory.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -719,7 +719,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
       FILE_PATH_LITERAL("drive/root/New Directory/File in new dir.gdoc"))));
 }
 
-TEST_F(DriveFileSystemTest, ChangeFeed_AddFileToNewButDeletedDirectory) {
+TEST_F(FileSystemTest, ChangeFeed_AddFileToNewButDeletedDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   // This feed contains the following updates:
@@ -730,7 +730,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_AddFileToNewButDeletedDirectory) {
       "chromeos/gdata/delta_file_added_in_new_but_deleted_directory.json"));
 }
 
-TEST_F(DriveFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
+TEST_F(FileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
@@ -778,7 +778,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
       "Sub Sub Directory Folder"))));
 }
 
-TEST_F(DriveFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
+TEST_F(FileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
@@ -812,7 +812,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
       "drive/root/SubDirectory File 1.txt"))));
 }
 
-TEST_F(DriveFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
+TEST_F(FileSystemTest, ChangeFeed_FileRenamedInDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
@@ -836,7 +836,7 @@ TEST_F(DriveFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
       "drive/root/Directory 1/New SubDirectory File 1.txt"))));
 }
 
-TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
+TEST_F(FileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
   ASSERT_TRUE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
 
   // Kicks loading of cached file system and query for server update.
@@ -855,7 +855,7 @@ TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
   EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
 }
 
-TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
+TEST_F(FileSystemTest, OfflineCachedFeedLoading) {
   ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
 
   // Make GetResourceList fail for simulating offline situation. This will leave
@@ -894,7 +894,7 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
   EXPECT_EQ(1, fake_drive_service_->change_list_load_count());
 }
 
-TEST_F(DriveFileSystemTest, ReadDirectoryWhileRefreshing) {
+TEST_F(FileSystemTest, ReadDirectoryWhileRefreshing) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(_))
       .Times(AtLeast(1));
 
@@ -908,7 +908,7 @@ TEST_F(DriveFileSystemTest, ReadDirectoryWhileRefreshing) {
   EXPECT_EQ(1, fake_drive_service_->directory_load_count());
 }
 
-TEST_F(DriveFileSystemTest, GetResourceEntryExistingWhileRefreshing) {
+TEST_F(FileSystemTest, GetResourceEntryExistingWhileRefreshing) {
   // Enter the "refreshing" state.
   ASSERT_TRUE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
   file_system_->CheckForUpdates();
@@ -919,7 +919,7 @@ TEST_F(DriveFileSystemTest, GetResourceEntryExistingWhileRefreshing) {
   EXPECT_EQ(0, fake_drive_service_->directory_load_count());
 }
 
-TEST_F(DriveFileSystemTest, GetResourceEntryNonExistentWhileRefreshing) {
+TEST_F(FileSystemTest, GetResourceEntryNonExistentWhileRefreshing) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(_))
       .Times(AtLeast(1));
 
@@ -933,7 +933,7 @@ TEST_F(DriveFileSystemTest, GetResourceEntryNonExistentWhileRefreshing) {
   EXPECT_EQ(1, fake_drive_service_->directory_load_count());
 }
 
-TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
+TEST_F(FileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   ASSERT_TRUE(LoadRootFeedDocument());
@@ -978,7 +978,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
   EXPECT_TRUE(EntryExists(remote_dest_file_path));
 }
 
-TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
+TEST_F(FileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   // Prepare a local file, which is a json file of a hosted document, which
@@ -1021,7 +1021,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
   EXPECT_TRUE(EntryExists(remote_dest_file_path));
 }
 
-TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
+TEST_F(FileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   // The transfered file is cached and the change of "offline available"
@@ -1073,7 +1073,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   EXPECT_EQ(kExpectedContent, local_dest_file_data);
 }
 
-TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
+TEST_F(FileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::ScopedTempDir temp_dir;
@@ -1097,7 +1097,7 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
   VerifyHostedDocumentJSONFile(*entry, local_dest_file_path);
 }
 
-TEST_F(DriveFileSystemTest, CopyNotExistingFile) {
+TEST_F(FileSystemTest, CopyNotExistingFile) {
   base::FilePath src_file_path(FILE_PATH_LITERAL("drive/root/Dummy file.txt"));
   base::FilePath dest_file_path(FILE_PATH_LITERAL("drive/root/Test.log"));
 
@@ -1117,7 +1117,7 @@ TEST_F(DriveFileSystemTest, CopyNotExistingFile) {
   EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
-TEST_F(DriveFileSystemTest, CopyFileToNonExistingDirectory) {
+TEST_F(FileSystemTest, CopyFileToNonExistingDirectory) {
   base::FilePath src_file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   base::FilePath dest_parent_path(FILE_PATH_LITERAL("drive/root/Dummy"));
   base::FilePath dest_file_path(FILE_PATH_LITERAL("drive/root/Dummy/Test.log"));
@@ -1147,7 +1147,7 @@ TEST_F(DriveFileSystemTest, CopyFileToNonExistingDirectory) {
 
 // Test the case where the parent of |dest_file_path| is an existing file,
 // not a directory.
-TEST_F(DriveFileSystemTest, CopyFileToInvalidPath) {
+TEST_F(FileSystemTest, CopyFileToInvalidPath) {
   base::FilePath src_file_path(FILE_PATH_LITERAL(
       "drive/root/Document 1 excludeDir-test.gdoc"));
   base::FilePath dest_parent_path(
@@ -1183,7 +1183,7 @@ TEST_F(DriveFileSystemTest, CopyFileToInvalidPath) {
   EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
-TEST_F(DriveFileSystemTest, RemoveEntries) {
+TEST_F(FileSystemTest, RemoveEntries) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::FilePath nonexisting_file(
@@ -1238,7 +1238,7 @@ TEST_F(DriveFileSystemTest, RemoveEntries) {
   google_apis::test_util::RunBlockingPoolTask();
 }
 
-TEST_F(DriveFileSystemTest, CreateDirectory) {
+TEST_F(FileSystemTest, CreateDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -1262,7 +1262,7 @@ TEST_F(DriveFileSystemTest, CreateDirectory) {
   EXPECT_TRUE(EntryExists(subdir_path));
 }
 
-TEST_F(DriveFileSystemTest, CreateDirectoryByImplicitLoad) {
+TEST_F(FileSystemTest, CreateDirectoryByImplicitLoad) {
   // Intentionally *not* calling LoadRootFeedDocument(), for testing that
   // CreateDirectory ensures feed loading before it runs.
 
@@ -1280,7 +1280,7 @@ TEST_F(DriveFileSystemTest, CreateDirectoryByImplicitLoad) {
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
 }
 
-TEST_F(DriveFileSystemTest, PinAndUnpin) {
+TEST_F(FileSystemTest, PinAndUnpin) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::FilePath file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
@@ -1310,7 +1310,7 @@ TEST_F(DriveFileSystemTest, PinAndUnpin) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 }
 
-TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
+TEST_F(FileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   // The transfered file is cached and the change of "offline available"
@@ -1347,7 +1347,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
             file_util::FILE_PERMISSION_READ_BY_OTHERS, permission);
 }
 
-TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
+TEST_F(FileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
@@ -1366,7 +1366,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   EXPECT_EQ(FILE_ERROR_NO_SPACE, error);
 }
 
-TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
+TEST_F(FileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   // The transfered file is cached and the change of "offline available"
@@ -1421,7 +1421,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   ASSERT_FALSE(CacheEntryExists("<resource_id>", "<md5>"));
 }
 
-TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
+TEST_F(FileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
@@ -1450,7 +1450,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   EXPECT_EQ(FILE_ERROR_NO_SPACE, error);
 }
 
-TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
+TEST_F(FileSystemTest, GetFileByPath_FromCache) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   ASSERT_TRUE(LoadRootFeedDocument());
@@ -1481,7 +1481,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
   EXPECT_FALSE(entry->file_specific_info().is_hosted_document());
 }
 
-TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
+TEST_F(FileSystemTest, GetFileByPath_HostedDocument) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   base::FilePath file_in_root(FILE_PATH_LITERAL(
@@ -1507,7 +1507,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
   VerifyHostedDocumentJSONFile(*src_entry, file_path);
 }
 
-TEST_F(DriveFileSystemTest, GetFileByResourceId) {
+TEST_F(FileSystemTest, GetFileByResourceId) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   // The transfered file is cached and the change of "offline available"
@@ -1537,7 +1537,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId) {
   EXPECT_FALSE(entry->file_specific_info().is_hosted_document());
 }
 
-TEST_F(DriveFileSystemTest, GetFileContentByPath) {
+TEST_F(FileSystemTest, GetFileContentByPath) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   // The transfered file is cached and the change of "offline available"
@@ -1616,7 +1616,7 @@ TEST_F(DriveFileSystemTest, GetFileContentByPath) {
   }
 }
 
-TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
+TEST_F(FileSystemTest, GetFileByResourceId_FromCache) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   ASSERT_TRUE(LoadRootFeedDocument());
@@ -1655,7 +1655,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
   EXPECT_FALSE(entry->file_specific_info().is_hosted_document());
 }
 
-TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
+TEST_F(FileSystemTest, UpdateFileByResourceId_PersistentFile) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   ASSERT_TRUE(LoadRootFeedDocument());
@@ -1727,7 +1727,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   EXPECT_EQ(num_files_in_root, CountFiles(*root_directory_entries));
 }
 
-TEST_F(DriveFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
+TEST_F(FileSystemTest, UpdateFileByResourceId_NonexistentFile) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   // This is nonexistent in root_feed.json.
@@ -1747,7 +1747,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 }
 
-TEST_F(DriveFileSystemTest, ContentSearch) {
+TEST_F(FileSystemTest, ContentSearch) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const SearchResultPair kExpectedResults[] = {
@@ -1760,7 +1760,7 @@ TEST_F(DriveFileSystemTest, ContentSearch) {
   };
 
   SearchCallback callback = base::Bind(
-      &DriveSearchCallback,
+      &VerifySearchResult,
       &message_loop_,
       kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults),
       GURL());
@@ -1769,7 +1769,7 @@ TEST_F(DriveFileSystemTest, ContentSearch) {
   google_apis::test_util::RunBlockingPoolTask();
 }
 
-TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
+TEST_F(FileSystemTest, ContentSearchWithNewEntry) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   // Create a new directory in the drive service.
@@ -1791,7 +1791,7 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   };
 
   SearchCallback callback = base::Bind(
-      &DriveSearchCallback,
+      &VerifySearchResult,
       &message_loop_,
       kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults),
       GURL());
@@ -1800,13 +1800,13 @@ TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   google_apis::test_util::RunBlockingPoolTask();
 }
 
-TEST_F(DriveFileSystemTest, ContentSearchEmptyResult) {
+TEST_F(FileSystemTest, ContentSearchEmptyResult) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   const SearchResultPair* expected_results = NULL;
 
   SearchCallback callback = base::Bind(
-      &DriveSearchCallback,
+      &VerifySearchResult,
       &message_loop_,
       expected_results,
       0u,
@@ -1816,7 +1816,7 @@ TEST_F(DriveFileSystemTest, ContentSearchEmptyResult) {
   google_apis::test_util::RunBlockingPoolTask();
 }
 
-TEST_F(DriveFileSystemTest, GetAvailableSpace) {
+TEST_F(FileSystemTest, GetAvailableSpace) {
   FileError error = FILE_ERROR_OK;
   int64 bytes_total;
   int64 bytes_used;
@@ -1828,7 +1828,7 @@ TEST_F(DriveFileSystemTest, GetAvailableSpace) {
   EXPECT_EQ(GG_LONGLONG(9876543210), bytes_total);
 }
 
-TEST_F(DriveFileSystemTest, RefreshDirectory) {
+TEST_F(FileSystemTest, RefreshDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   // We'll notify the directory change to the observer.
@@ -1843,7 +1843,7 @@ TEST_F(DriveFileSystemTest, RefreshDirectory) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 }
 
-TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
+TEST_F(FileSystemTest, OpenAndCloseFile) {
   ASSERT_TRUE(LoadRootFeedDocument());
 
   // The transfered file is cached and the change of "offline available"
@@ -1934,7 +1934,7 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 }
 
-TEST_F(DriveFileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
+TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
   ASSERT_TRUE(LoadRootFeedDocument());
 

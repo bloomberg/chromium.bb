@@ -19,7 +19,8 @@ class ResourceEntry;
 
 typedef std::vector<ResourceEntry> ResourceEntryVector;
 
-// Implementation of File API's remote file system proxy for Drive file system.
+// Implementation of File API's remote file system proxy for Drive-backed
+// file system.
 class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
  public:
   using fileapi::RemoteFileSystemProxyInterface::OpenFileCallback;
@@ -104,7 +105,7 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   static bool ValidateUrl(const fileapi::FileSystemURL& url,
                           base::FilePath* file_path);
 
-  // Helper method to call methods of DriveFilesSystem. This method aborts
+  // Helper method to call methods of FileSystem. This method aborts
   // method calls in case DetachFromFileSystem() has been called.
   void CallFileSystemMethodOnUIThread(const base::Closure& method_call);
 

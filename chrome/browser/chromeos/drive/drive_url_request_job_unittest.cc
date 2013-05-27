@@ -30,7 +30,7 @@ using content::BrowserThread;
 namespace drive {
 namespace {
 
-// A simple URLRequestJobFactory implementation to create DriveURLReuqestJob.
+// A simple URLRequestJobFactory implementation to create DriveURLRequestJob.
 class TestURLRequestJobFactory : public net::URLRequestJobFactory {
  public:
   TestURLRequestJobFactory(

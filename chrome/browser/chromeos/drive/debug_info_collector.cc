@@ -38,9 +38,9 @@ void DebugInfoCollector::GetMetadata(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // Currently, this is just a proxy to the DriveFileSystem.
+  // Currently, this is just a proxy to the FileSystem.
   // TODO(hidehiko): Move the implementation to here to simplify the
-  // DriveFileSystem's implementation. crbug.com/237088
+  // FileSystem's implementation. crbug.com/237088
   file_system_->GetMetadata(callback);
 }
 

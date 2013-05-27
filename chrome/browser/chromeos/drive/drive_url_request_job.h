@@ -32,7 +32,7 @@ class DriveFileStreamReader;
 class FileSystemInterface;
 class ResourceEntry;
 
-// DriveURLRequesetJob is the gateway between network-level drive:...
+// DriveURLRequestJob is the gateway between network-level drive:...
 // requests for drive resources and DriveFileSytem.  It exposes content URLs
 // formatted as drive:<drive-file-path>.
 // The methods should be run on IO thread, and the operations to communicate
