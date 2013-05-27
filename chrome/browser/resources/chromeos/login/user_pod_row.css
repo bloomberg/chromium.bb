@@ -274,16 +274,17 @@ html[dir=rtl] .action-box-area {
   -webkit-box-pack: center;
   color: #b4b4b4;
   display: -webkit-box;
-  min-height: 46px;
   padding: 7px 20px;
 }
 
 .action-box-menu-title-name {
   display: -webkit-box;
+  min-height: 23px;
 }
 
 .action-box-menu-title-email {
   display: block;
+  min-height: 23px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

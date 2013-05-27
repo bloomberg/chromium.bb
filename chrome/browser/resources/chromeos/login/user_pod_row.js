@@ -319,6 +319,9 @@ cr.define('login', function() {
           loadTimeData.getStringF('ownerUserPattern', this.user_.displayName) :
           this.user_.displayName;
       this.actionBoxMenuTitleEmailElement.textContent = this.user_.emailAddress;
+      this.actionBoxMenuTitleEmailElement.hidden =
+          this.user_.locallyManagedUser;
+
       this.actionBoxMenuCommandElement.textContent =
           loadTimeData.getString('removeUser');
       this.passwordElement.setAttribute('aria-label', loadTimeData.getStringF(
