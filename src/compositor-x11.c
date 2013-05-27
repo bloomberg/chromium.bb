@@ -56,22 +56,9 @@
 
 #define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
 
-static char *output_name;
-static char *output_mode;
-static char *output_transform;
-static char *output_scale;
 static int option_width;
 static int option_height;
 static int option_count;
-static struct wl_list configured_output_list;
-
-struct x11_configured_output {
-	char *name;
-	int width, height;
-	uint32_t transform;
-	unsigned int scale;
-	struct wl_list link;
-};
 
 struct x11_compositor {
 	struct weston_compositor	 base;
@@ -1476,20 +1463,9 @@ x11_restore(struct weston_compositor *ec)
 }
 
 static void
-x11_free_configured_output(struct x11_configured_output *output)
-{
-	free(output->name);
-	free(output);
-}
-
-static void
 x11_destroy(struct weston_compositor *ec)
 {
 	struct x11_compositor *compositor = (struct x11_compositor *)ec;
-	struct x11_configured_output *o, *n;
-
-	wl_list_for_each_safe(o, n, &configured_output_list, link)
-		x11_free_configured_output(o);
 
 	wl_event_source_remove(compositor->xcb_source);
 	x11_input_destroy(compositor);
@@ -1502,6 +1478,31 @@ x11_destroy(struct weston_compositor *ec)
 	free(ec);
 }
 
+static uint32_t
+parse_transform(const char *transform, const char *output_name)
+{
+	static const struct { const char *name; uint32_t token; } names[] = {
+		{ "normal",	WL_OUTPUT_TRANSFORM_NORMAL },
+		{ "90",		WL_OUTPUT_TRANSFORM_90 },
+		{ "180",	WL_OUTPUT_TRANSFORM_180 },
+		{ "270",	WL_OUTPUT_TRANSFORM_270 },
+		{ "flipped",	WL_OUTPUT_TRANSFORM_FLIPPED },
+		{ "flipped-90",	WL_OUTPUT_TRANSFORM_FLIPPED_90 },
+		{ "flipped-180", WL_OUTPUT_TRANSFORM_FLIPPED_180 },
+		{ "flipped-270", WL_OUTPUT_TRANSFORM_FLIPPED_270 },
+	};
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_LENGTH(names); i++)
+		if (strcmp(names[i].name, transform) == 0)
+			return names[i].token;
+
+	weston_log("Invalid transform \"%s\" for output %s\n",
+		   transform, output_name);
+
+	return WL_OUTPUT_TRANSFORM_NORMAL;
+}
+
 static struct weston_compositor *
 x11_compositor_create(struct wl_display *display,
 		      int fullscreen,
@@ -1510,11 +1511,14 @@ x11_compositor_create(struct wl_display *display,
 		      int *argc, char *argv[], int config_fd)
 {
 	struct x11_compositor *c;
-	struct x11_configured_output *o;
 	struct x11_output *output;
+	struct weston_config_section *section;
 	xcb_screen_iterator_t s;
 	int i, x = 0, output_count = 0;
-	int width, height, count;
+	int width, height, count, scale;
+	const char *section_name;
+	char *name, *t, *mode;
+	uint32_t transform;
 
 	weston_log("initializing x11 backend\n");
 
@@ -1574,14 +1578,41 @@ x11_compositor_create(struct wl_display *display,
 	height = option_height ? option_height : 640;
 	count = option_count ? option_count : 1;
 
-	wl_list_for_each(o, &configured_output_list, link) {
+	section = NULL;
+	while (weston_config_next_section(c->base.config,
+					  &section, &section_name)) {
+		if (strcmp(section_name, "output") != 0)
+			continue;
+		weston_config_section_get_string(section, "name", &name, NULL);
+		if (name == NULL || name[0] != 'X')
+			continue;
+
+		weston_config_section_get_string(section,
+						 "mode", &mode, "1024x600");
+		if (sscanf(mode, "%dx%d", &width, &height) != 2) {
+			weston_log("Invalid mode \"%s\" for output %s\n",
+				   mode, name);
+			width = 1024;
+			height = 600;
+		}
+		free(mode);
+
+		if (option_width)
+			width = option_width;
+		if (option_height)
+			height = option_height;
+
+		weston_config_section_get_int(section, "scale", &scale, 1);
+		weston_config_section_get_string(section,
+						 "transform", &t, "normal");
+		transform = parse_transform(t, name);
+		free(t);
+
 		output = x11_compositor_create_output(c, x, 0,
-						      option_width ? width :
-						      o->width,
-						      option_height ? height :
-						      o->height,
+						      width, height,
 						      fullscreen, no_input,
-						      o->name, o->transform, o->scale);
+						      name, transform, scale);
+		free(name);
 		if (output == NULL)
 			goto err_x11_input;
 
@@ -1621,92 +1652,6 @@ err_free:
 	return NULL;
 }
 
-static void
-x11_output_set_transform(struct x11_configured_output *output)
-{
-	if (!output_transform) {
-		output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
-		return;
-	}
-
-	if (!strcmp(output_transform, "normal"))
-		output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
-	else if (!strcmp(output_transform, "90"))
-		output->transform = WL_OUTPUT_TRANSFORM_90;
-	else if (!strcmp(output_transform, "180"))
-		output->transform = WL_OUTPUT_TRANSFORM_180;
-	else if (!strcmp(output_transform, "270"))
-		output->transform = WL_OUTPUT_TRANSFORM_270;
-	else if (!strcmp(output_transform, "flipped"))
-		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED;
-	else if (!strcmp(output_transform, "flipped-90"))
-		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED_90;
-	else if (!strcmp(output_transform, "flipped-180"))
-		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED_180;
-	else if (!strcmp(output_transform, "flipped-270"))
-		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED_270;
-	else {
-		weston_log("Invalid transform \"%s\" for output %s\n",
-						output_transform, output_name);
-		output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
-	}
-}
-
-static void
-output_section_done(void *data)
-{
-	struct x11_configured_output *output;
-
-	output = malloc(sizeof *output);
-
-	if (!output || !output_name || (output_name[0] != 'X') ||
-				(!output_mode && !output_transform && !output_scale)) {
-		if (output_name)
-			free(output_name);
-		output_name = NULL;
-		free(output);
-		goto err_free;
-	}
-
-	output->name = output_name;
-
-	if (output_mode) {
-		if (sscanf(output_mode, "%dx%d", &output->width,
-						&output->height) != 2) {
-			weston_log("Invalid mode \"%s\" for output %s\n",
-							output_mode, output_name);
-			x11_free_configured_output(output);
-			goto err_free;
-		}
-	} else {
-		output->width = 1024;
-		output->height = 640;
-	}
-
-	output->scale = 1;
-	if (output_scale) {
-		if (sscanf(output_scale, "%d", &output->scale) != 1) {
-			weston_log("Invalid scale \"%s\" for output %s\n",
-				   output_scale, output_name);
-			x11_free_configured_output(output);
-			goto err_free;
-		}
-	}
-
-	x11_output_set_transform(output);
-
-	wl_list_insert(configured_output_list.prev, &output->link);
-
-err_free:
-	if (output_mode)
-		free(output_mode);
-	if (output_transform)
-		free(output_transform);
-	output_mode = NULL;
-	output_transform = NULL;
-	output_scale = NULL;
-}
-
 WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
 	     int config_fd)
@@ -1725,23 +1670,6 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	};
 
 	parse_options(x11_options, ARRAY_LENGTH(x11_options), argc, argv);
-
-	wl_list_init(&configured_output_list);
-
-	const struct config_key x11_config_keys[] = {
-		{ "name", CONFIG_KEY_STRING, &output_name },
-		{ "mode", CONFIG_KEY_STRING, &output_mode },
-		{ "transform", CONFIG_KEY_STRING, &output_transform },
-		{ "scale", CONFIG_KEY_STRING, &output_scale },
-	};
-
-	const struct config_section config_section[] = {
-		{ "output", x11_config_keys,
-		ARRAY_LENGTH(x11_config_keys), output_section_done },
-	};
-
-	parse_config_file(config_fd, config_section,
-				ARRAY_LENGTH(config_section), NULL);
 
 	return x11_compositor_create(display,
 				     fullscreen,
