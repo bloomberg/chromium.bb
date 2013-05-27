@@ -75,6 +75,10 @@ static const char t1[] =
 	"color=red\n"
 	"contents=sand\n";
 
+static const char *section_names[] = {
+	"foo", "bar", "stuff", "bucket", "bucket"
+};
+
 static const char t2[] =
 	"# invalid section...\n"
 	"[this bracket isn't closed\n";
@@ -93,8 +97,9 @@ int main(int argc, char *argv[])
 {
 	struct weston_config *config;
 	struct weston_config_section *section;
+	const char *name;
 	char *s;
-	int r, b;
+	int r, b, i;
 	int32_t n;
 	uint32_t u;
 
@@ -169,6 +174,12 @@ int main(int argc, char *argv[])
 	r = weston_config_section_get_string(section, "contents", &s, "eels");
 	assert(r == -1 && errno == ENOENT && strcmp(s, "eels") == 0);
 	free(s);
+
+	section = NULL;
+	i = 0;
+	while (weston_config_next_section(config, &section, &name))
+		assert(strcmp(section_names[i++], name) == 0);
+	assert(i == 5);
 
 	weston_config_destroy(config);
 

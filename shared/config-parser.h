@@ -102,6 +102,11 @@ weston_config_parse(int fd);
 void
 weston_config_destroy(struct weston_config *config);
 
+int weston_config_next_section(struct weston_config *config,
+			       struct weston_config_section **section,
+			       const char **name);
+
+
 #ifdef  __cplusplus
 }
 #endif

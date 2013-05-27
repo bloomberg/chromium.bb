@@ -36,6 +36,10 @@
 #include <wayland-util.h>
 #include "config-parser.h"
 
+#define container_of(ptr, type, member) ({				\
+	const __typeof__( ((type *)0)->member ) *__mptr = (ptr);	\
+	(type *)( (char *)__mptr - offsetof(type,member) );})
+
 static int
 handle_key(const struct config_key *key, const char *value)
 {
@@ -470,6 +474,26 @@ weston_config_parse(int fd)
 	fclose(fp);
 
 	return config;
+}
+
+int
+weston_config_next_section(struct weston_config *config,
+			   struct weston_config_section **section,
+			   const char **name)
+{
+	if (*section == NULL)
+		*section = container_of(config->section_list.next,
+					struct weston_config_section, link);
+	else
+		*section = container_of((*section)->link.next,
+					struct weston_config_section, link);
+
+	if (&(*section)->link == &config->section_list)
+		return 0;
+
+	*name = (*section)->name;
+
+	return 1;
 }
 
 void
