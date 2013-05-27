@@ -164,6 +164,10 @@ bool FakeLayerAnimationValueObserver::IsActive() const {
   return true;
 }
 
+bool FakeInactiveLayerAnimationValueObserver::IsActive() const {
+  return false;
+}
+
 scoped_ptr<cc::AnimationCurve> FakeFloatTransition::Clone() const {
   return make_scoped_ptr(
       new FakeFloatTransition(*this)).PassAs<cc::AnimationCurve>();

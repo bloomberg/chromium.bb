@@ -79,6 +79,12 @@ class FakeLayerAnimationValueObserver : public LayerAnimationValueObserver {
   gfx::Transform transform_;
 };
 
+class FakeInactiveLayerAnimationValueObserver
+    : public FakeLayerAnimationValueObserver {
+ public:
+  virtual bool IsActive() const OVERRIDE;
+};
+
 int AddOpacityTransitionToController(LayerAnimationController* controller,
                                      double duration,
                                      float start_opacity,

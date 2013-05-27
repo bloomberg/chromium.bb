@@ -142,7 +142,7 @@ void LayerAnimationController::TransferAnimationsTo(
 }
 
 void LayerAnimationController::Animate(double monotonic_time) {
-  if (!HasActiveValueObserver())
+  if (!HasValueObserver())
     return;
 
   StartAnimationsWaitingForNextTick(monotonic_time);
@@ -714,6 +714,15 @@ void LayerAnimationController::NotifyObserversTransformAnimated(
   FOR_EACH_OBSERVER(LayerAnimationValueObserver,
                     value_observers_,
                     OnTransformAnimated(transform));
+}
+
+bool LayerAnimationController::HasValueObserver() {
+  if (value_observers_.might_have_observers()) {
+    ObserverListBase<LayerAnimationValueObserver>::Iterator it(
+        value_observers_);
+    return it.GetNext() != NULL;
+  }
+  return false;
 }
 
 bool LayerAnimationController::HasActiveValueObserver() {

@@ -151,6 +151,7 @@ class CC_EXPORT LayerAnimationController
   void NotifyObserversOpacityAnimated(float opacity);
   void NotifyObserversTransformAnimated(const gfx::Transform& transform);
 
+  bool HasValueObserver();
   bool HasActiveValueObserver();
 
   // If this is true, we force a sync to the impl thread.
