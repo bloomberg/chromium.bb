@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/location.h"
+#include "base/logging.h"
 #include "chrome/browser/google_apis/event_logger.h"
 
 namespace sync_file_system {
@@ -15,9 +17,16 @@ namespace sync_file_system {
 // base/logging.h, and breaks DCHECK() and friends.
 namespace util {
 
+// Resets the log.
+void ClearLog();
+
 // Logs a message using printf format.
 // This function can be called from any thread.
-void Log(const char* format, ...) PRINTF_FORMAT(1, 2);
+void Log(logging::LogSeverity level,
+         const tracked_objects::Location& location,
+         const char* format,
+         ...)
+    PRINTF_FORMAT(3, 4);
 
 // Returns the log history.
 // This function can be called from any thread.

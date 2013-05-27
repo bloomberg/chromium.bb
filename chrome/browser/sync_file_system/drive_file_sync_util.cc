@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/browser/sync_file_system/logger.h"
 
 namespace sync_file_system {
 
@@ -77,7 +78,10 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
   if (error == -1)
     return SYNC_STATUS_NETWORK_ERROR;
 
-  LOG(WARNING) << "Got unexpected error: " << error;
+  util::Log(logging::LOG_WARNING,
+            FROM_HERE,
+            "Got unexpected error: %d",
+            static_cast<int>(error));
   return SYNC_STATUS_FAILED;
 }
 

@@ -19,6 +19,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
+#include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/common/extensions/extension.h"
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
@@ -368,8 +369,10 @@ void APIUtil::DidEnsureUniquenessForCreateDirectory(
 
   if (!entry->is_folder()) {
     // TODO(kinuko): Fix this. http://crbug.com/237090
-    LOG(ERROR) << "A file is left for CreateDirectory due to "
-               << "file-folder conflict!";
+    util::Log(
+        logging::LOG_ERROR,
+        FROM_HERE,
+        "A file is left for CreateDirectory due to file-folder conflict!");
     callback.Run(google_apis::HTTP_CONFLICT, std::string());
     return;
   }

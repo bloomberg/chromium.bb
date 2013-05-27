@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
+#include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -198,7 +199,9 @@ SyncStatusCode InitializeDBOnFileThread(DriveMetadataDB* db,
   if (!created) {
     status = db->MigrateDatabaseIfNeeded();
     if (status != SYNC_STATUS_OK) {
-      LOG(WARNING) << "Failed to migrate DriveMetadataStore to latest version.";
+      util::Log(logging::LOG_WARNING,
+                FROM_HERE,
+                "Failed to migrate DriveMetadataStore to latest version.");
       return status;
     }
   }
@@ -677,7 +680,10 @@ void DriveMetadataStore::UpdateDBStatus(SyncStatusCode status) {
       db_status_ != SYNC_DATABASE_ERROR_NOT_FOUND) {
     // TODO(tzik): Handle database corruption. http://crbug.com/153709
     db_status_ = status;
-    LOG(WARNING) << "DriveMetadataStore turned to wrong state: " << status;
+    util::Log(logging::LOG_WARNING,
+              FROM_HERE,
+              "DriveMetadataStore turned to wrong state: %s",
+              SyncStatusCodeToString(status).c_str());
     return;
   }
   db_status_ = SYNC_STATUS_OK;

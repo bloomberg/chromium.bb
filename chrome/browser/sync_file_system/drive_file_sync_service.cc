@@ -1476,7 +1476,9 @@ void DriveFileSyncService::MaybeStartFetchChanges() {
 }
 
 void DriveFileSyncService::OnNotificationReceived() {
-  util::Log("Notification received to check for Google Drive updates");
+  util::Log(logging::LOG_INFO,
+            FROM_HERE,
+            "Notification received to check for Google Drive updates");
   // TODO(calvinlo): Try to eliminate may_have_unfetched_changes_ variable.
   may_have_unfetched_changes_ = true;
   MaybeStartFetchChanges();
@@ -1484,7 +1486,9 @@ void DriveFileSyncService::OnNotificationReceived() {
 
 void DriveFileSyncService::OnPushNotificationEnabled(bool enabled) {
   const char* status = (enabled ? "enabled" : "disabled");
-  util::Log("XMPP Push notification is %s", status);
+  util::Log(logging::LOG_INFO,
+            FROM_HERE,
+            "XMPP Push notification is %s", status);
 }
 
 void DriveFileSyncService::MaybeScheduleNextTask() {
@@ -1606,12 +1610,17 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
   }
 
   if (reset_sync_root) {
-    LOG(WARNING) << "Detected unexpected SyncRoot deletion.";
+    util::Log(logging::LOG_WARNING,
+              FROM_HERE,
+              "Detected unexpected SyncRoot deletion.");
     metadata_store_->SetSyncRootDirectory(std::string());
   }
   for (std::set<GURL>::iterator itr = reset_origins.begin();
        itr != reset_origins.end(); ++itr) {
-    LOG(WARNING) << "Detected unexpected OriginRoot deletion:" << itr->spec();
+    util::Log(logging::LOG_WARNING,
+              FROM_HERE,
+              "Detected unexpected OriginRoot deletion: %s",
+              itr->spec().c_str());
     pending_batch_sync_origins_.erase(*itr);
     metadata_store_->SetOriginRootDirectory(*itr, std::string());
   }

@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
+#include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -67,12 +68,16 @@ void DidHandleOriginForExtensionUnloadedEvent(
       code != SYNC_STATUS_UNKNOWN_ORIGIN) {
     switch (reason) {
       case extension_misc::UNLOAD_REASON_DISABLE:
-        LOG(WARNING) << "Disabling origin for UNLOAD(DISABLE) failed: "
-                     << origin.spec();
+        util::Log(logging::LOG_WARNING,
+                  FROM_HERE,
+                  "Disabling origin for UNLOAD(DISABLE) failed: %s",
+                  origin.spec().c_str());
         break;
       case extension_misc::UNLOAD_REASON_UNINSTALL:
-        LOG(WARNING) << "Uninstall origin for UNLOAD(UNINSTALL) failed: "
-                     << origin.spec();
+        util::Log(logging::LOG_WARNING,
+                  FROM_HERE,
+                  "Uninstall origin for UNLOAD(UNINSTALL) failed: %s",
+                  origin.spec().c_str());
         break;
       default:
         break;
@@ -86,7 +91,10 @@ void DidHandleOriginForExtensionEnabledEvent(
     SyncStatusCode code) {
   DCHECK(chrome::NOTIFICATION_EXTENSION_ENABLED == type);
   if (code != SYNC_STATUS_OK)
-    LOG(WARNING) << "Enabling origin for ENABLED failed: " << origin.spec();
+    util::Log(logging::LOG_WARNING,
+              FROM_HERE,
+              "Enabling origin for ENABLED failed: %s",
+              origin.spec().c_str());
 }
 
 }  // namespace

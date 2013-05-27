@@ -1235,6 +1235,7 @@
         'browser/sync_file_system/fake_remote_change_processor.h',
         'browser/sync_file_system/local_file_sync_service_unittest.cc',
         'browser/sync_file_system/local_sync_operation_resolver_unittest.cc',
+        'browser/sync_file_system/logger_unittest.cc',
         'browser/sync_file_system/mock_local_change_processor.cc',
         'browser/sync_file_system/mock_local_change_processor.h',
         'browser/sync_file_system/mock_remote_change_processor.cc',

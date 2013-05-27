@@ -1,0 +1,71 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/sync_file_system/logger.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using google_apis::EventLogger;
+
+namespace sync_file_system {
+
+namespace {
+
+// Logs one event at each supported LogSeverity level.
+void LogSampleEvents() {
+  util::Log(logging::LOG_INFO, FROM_HERE, "Info test message");
+  util::Log(logging::LOG_WARNING, FROM_HERE, "Warning test message");
+  util::Log(logging::LOG_ERROR, FROM_HERE, "Error test message");
+}
+
+bool ContainsString(std::string contains_string, EventLogger::Event event) {
+  return event.what.find(contains_string) != std::string::npos;
+}
+
+}  // namespace
+
+class LoggerTest : public testing::Test {
+ public:
+  LoggerTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    logging::SetMinLogLevel(logging::LOG_INFO);
+    util::ClearLog();
+  }
+
+ protected:
+  DISALLOW_COPY_AND_ASSIGN(LoggerTest);
+};
+
+TEST_F(LoggerTest, TestLogSeverityLevels) {
+  // Check that all messages are logged when log LogSeverity is set to INFO.
+  logging::SetMinLogLevel(logging::LOG_INFO);
+  LogSampleEvents();
+
+  const std::vector<EventLogger::Event> log = util::GetLogHistory();
+  ASSERT_EQ(3u, log.size());
+  EXPECT_TRUE(ContainsString("Info test message", log[0]));
+  EXPECT_TRUE(ContainsString("Warning test message", log[1]));
+  EXPECT_TRUE(ContainsString("Error test message", log[2]));
+}
+
+TEST_F(LoggerTest, TestMinSeverityLevel) {
+  // Check that all messages are logged when log LogSeverity is set to ERROR.
+  logging::SetMinLogLevel(logging::LOG_ERROR);
+  LogSampleEvents();
+
+  const std::vector<EventLogger::Event> log = util::GetLogHistory();
+  ASSERT_EQ(1u, log.size());
+  EXPECT_TRUE(ContainsString("Error test message", log[0]));
+}
+
+TEST_F(LoggerTest, TestClearLog) {
+  LogSampleEvents();
+  EXPECT_EQ(3u, util::GetLogHistory().size());
+
+  util::ClearLog();
+  EXPECT_EQ(0u, util::GetLogHistory().size());
+}
+
+
+}  // namespace sync_file_system
