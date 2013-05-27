@@ -46,6 +46,8 @@ cms_output_created(struct cms_static *cms, struct weston_output *o)
 
 	weston_log("cms-static: output %i [%s] created\n", o->id, o->name);
 
+	if (o->name == NULL)
+		return;
 	s = weston_config_get_section(cms->ec->config,
 				      "output", "name", o->name);
 	if (s == NULL)
