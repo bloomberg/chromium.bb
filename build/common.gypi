@@ -3132,6 +3132,8 @@
                 ],
                 'ldflags': [
                   '-fsanitize=address',
+                  # http://crbug.com/234010.
+                  '-lrt',
                 ],
                 'defines': [
                   'ADDRESS_SANITIZER',
