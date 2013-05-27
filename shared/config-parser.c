@@ -505,6 +505,9 @@ weston_config_destroy(struct weston_config *config)
 	struct weston_config_section *s, *next_s;
 	struct weston_config_entry *e, *next_e;
 
+	if (config == NULL)
+		return;
+
 	wl_list_for_each_safe(s, next_s, &config->section_list, link) {
 		wl_list_for_each_safe(e, next_e, &s->entry_list, link) {
 			free(e->key);
