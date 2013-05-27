@@ -1418,7 +1418,7 @@ void UserManagerImpl::RollbackLocallyManagedUserCreationTransaction() {
   RemoveNonCryptohomeData(user_id);
 
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      user_id, base::Callback<void(bool, cryptohome::MountError)>());
+      user_id, base::Bind(&OnRemoveUserComplete, user_id));
 
   prefs->ClearPref(kLocallyManagedUserCreationTransactionDisplayName);
   prefs->ClearPref(kLocallyManagedUserCreationTransactionUserId);
