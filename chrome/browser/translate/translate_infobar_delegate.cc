@@ -25,7 +25,11 @@ using content::NavigationEntry;
 
 namespace {
 
-const char kTranslateShowErrorInfobar[] = "Translate.ShowErrorInfobar";
+const char kDeclineTranslate[] = "Translate.DeclineTranslate";
+const char kCloseInfobar[] = "Translate.DeclineTranslateCloseInfobar";
+const char kRevertTranslation[] = "Translate.RevertTranslation";
+const char kShowErrorInfobar[] = "Translate.ShowErrorInfobar";
+const char kPerformTranslate[] = "Translate.Translate";
 
 }  // namespace
 
@@ -87,12 +91,14 @@ void TranslateInfoBarDelegate::Translate() {
                                                  original_language_code(),
                                                  target_language_code());
 
-  UMA_HISTOGRAM_COUNTS("Translate.Translate", 1);
+  UMA_HISTOGRAM_COUNTS(kPerformTranslate, 1);
 }
 
 void TranslateInfoBarDelegate::RevertTranslation() {
   TranslateManager::GetInstance()->RevertTranslation(web_contents());
   RemoveSelf();
+
+  UMA_HISTOGRAM_COUNTS(kRevertTranslation, 1);
 }
 
 void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
@@ -115,7 +121,7 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
       TranslateTabHelper::FromWebContents(web_contents());
   translate_tab_helper->language_state().set_translation_declined(true);
 
-  UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
+  UMA_HISTOGRAM_COUNTS(kDeclineTranslate, 1);
 }
 
 bool TranslateInfoBarDelegate::InTranslateNavigation() {
@@ -194,7 +200,7 @@ string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
   }
 
   DCHECK_EQ(TRANSLATION_ERROR, infobar_type_);
-  UMA_HISTOGRAM_ENUMERATION(kTranslateShowErrorInfobar,
+  UMA_HISTOGRAM_ENUMERATION(kShowErrorInfobar,
                             error_type_,
                             TranslateErrors::TRANSLATE_ERROR_MAX);
   switch (error_type_) {
@@ -387,7 +393,7 @@ void TranslateInfoBarDelegate::InfoBarDismissed() {
 
   // The user closed the infobar without clicking the translate button.
   TranslationDeclined();
-  UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslateCloseInfobar", 1);
+  UMA_HISTOGRAM_COUNTS(kCloseInfobar, 1);
 }
 
 int TranslateInfoBarDelegate::GetIconID() const {

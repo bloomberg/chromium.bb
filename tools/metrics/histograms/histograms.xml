@@ -8977,6 +8977,13 @@ other types of suffix sets.
   <summary>Counts translation target page schemes.</summary>
 </histogram>
 
+<histogram name="Translate.RevertTranslation">
+  <summary>
+    The number of times the show original button was clicked in the translate
+    infobar.
+  </summary>
+</histogram>
+
 <histogram name="Translate.ShowErrorInfobar" enum="TranslateError">
   <summary>
     Chrome Translate shows an error infobar when an error happens on translation
