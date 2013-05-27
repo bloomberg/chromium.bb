@@ -2771,15 +2771,13 @@ WL_EXPORT int
 weston_compositor_init(struct weston_compositor *ec,
 		       struct wl_display *display,
 		       int *argc, char *argv[],
-		       int config_fd)
+		       struct weston_config *config)
 {
 	struct wl_event_loop *loop;
 	struct xkb_rule_names xkb_names;
 	struct weston_config_section *s;
 
-	ec->config_fd = config_fd;
-	ec->config = weston_config_parse(config_fd);
-
+	ec->config = config;
 	ec->wl_display = display;
 	wl_signal_init(&ec->destroy_signal);
 	wl_signal_init(&ec->activate_signal);
@@ -2876,7 +2874,7 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 
 	wl_event_loop_destroy(ec->input_loop);
 
-	close(ec->config_fd);
+	weston_config_destroy(ec->config);
 }
 
 WL_EXPORT void
@@ -3208,24 +3206,18 @@ int main(int argc, char *argv[])
 	struct wl_event_loop *loop;
 	struct weston_compositor
 		*(*backend_init)(struct wl_display *display,
-				 int *argc, char *argv[], int config_fd);
+				 int *argc, char *argv[],
+				 struct weston_config *config);
 	int i, config_fd;
 	char *backend = NULL;
-	const char *modules = "desktop-shell.so", *option_modules = NULL;
+	char *modules, *option_modules = NULL;
 	char *log = NULL;
 	int32_t idle_time = 300;
 	int32_t help = 0;
 	char *socket_name = "wayland-0";
 	int32_t version = 0;
-
-	const struct config_key core_config_keys[] = {
-		{ "modules", CONFIG_KEY_STRING, &modules },
-	};
-
-	const struct config_section cs[] = {
-		{ "core",
-		  core_config_keys, ARRAY_LENGTH(core_config_keys) },
-	};
+	struct weston_config *config;
+	struct weston_config_section *section;
 
 	const struct weston_option core_options[] = {
 		{ WESTON_OPTION_STRING, "backend", 'B', &backend },
@@ -3283,13 +3275,18 @@ int main(int argc, char *argv[])
 	}
 
 	config_fd = open_config_file("weston.ini");
-	parse_config_file(config_fd, cs, ARRAY_LENGTH(cs), NULL);
+	config = weston_config_parse(config_fd);
+	close(config_fd);
+
+	section = weston_config_get_section(config, "core", NULL, NULL);
+	weston_config_section_get_string(section, "modules",
+					 &modules, "desktop-shell.so");
 
 	backend_init = load_module(backend, "backend_init");
 	if (!backend_init)
 		exit(EXIT_FAILURE);
 
-	ec = backend_init(display, &argc, argv, config_fd);
+	ec = backend_init(display, &argc, argv, config);
 	if (ec == NULL) {
 		weston_log("fatal: failed to create compositor\n");
 		exit(EXIT_FAILURE);

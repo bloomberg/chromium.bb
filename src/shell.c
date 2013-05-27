@@ -379,7 +379,7 @@ get_animation_type(char *animation)
 }
 
 static void
-shell_configuration(struct desktop_shell *shell, int config_fd)
+shell_configuration(struct desktop_shell *shell)
 {
 	struct weston_config_section *section;
 	int duration;
@@ -4418,7 +4418,7 @@ module_init(struct weston_compositor *ec,
 	wl_array_init(&shell->workspaces.array);
 	wl_list_init(&shell->workspaces.client_list);
 
-	shell_configuration(shell, ec->config_fd);
+	shell_configuration(shell);
 
 	for (i = 0; i < shell->workspaces.num; i++) {
 		pws = wl_array_add(&shell->workspaces.array, sizeof *pws);

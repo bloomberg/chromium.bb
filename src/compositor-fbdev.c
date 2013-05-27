@@ -836,7 +836,8 @@ switch_vt_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *d
 
 static struct weston_compositor *
 fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
-                        int config_fd, struct fbdev_parameters *param)
+                        struct weston_config *config,
+			struct fbdev_parameters *param)
 {
 	struct fbdev_compositor *compositor;
 	const char *seat = default_seat;
@@ -849,7 +850,7 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 		return NULL;
 
 	if (weston_compositor_init(&compositor->base, display, argc, argv,
-	                           config_fd) < 0)
+	                           config) < 0)
 		goto out_free;
 
 	compositor->udev = udev_new();
@@ -907,7 +908,7 @@ out_free:
 
 WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
-	     int config_fd)
+	     struct weston_config *config)
 {
 	/* TODO: Ideally, available frame buffers should be enumerated using
 	 * udev, rather than passing a device node in as a parameter. */
@@ -923,6 +924,5 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 
 	parse_options(fbdev_options, ARRAY_LENGTH(fbdev_options), argc, argv);
 
-	return fbdev_compositor_create(display, argc, argv, config_fd,
-	                               &param);
+	return fbdev_compositor_create(display, argc, argv, config, &param);
 }

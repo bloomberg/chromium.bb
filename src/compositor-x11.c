@@ -1508,7 +1508,8 @@ x11_compositor_create(struct wl_display *display,
 		      int fullscreen,
 		      int no_input,
 		      int use_pixman,
-		      int *argc, char *argv[], int config_fd)
+		      int *argc, char *argv[],
+		      struct weston_config *config)
 {
 	struct x11_compositor *c;
 	struct x11_output *output;
@@ -1528,8 +1529,7 @@ x11_compositor_create(struct wl_display *display,
 
 	memset(c, 0, sizeof *c);
 
-	if (weston_compositor_init(&c->base, display, argc, argv,
-				   config_fd) < 0)
+	if (weston_compositor_init(&c->base, display, argc, argv, config) < 0)
 		goto err_free;
 
 	c->dpy = XOpenDisplay(NULL);
@@ -1654,7 +1654,7 @@ err_free:
 
 WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int *argc, char *argv[],
-	     int config_fd)
+	     struct weston_config *config)
 {
 	int fullscreen = 0;
 	int no_input = 0;
@@ -1675,5 +1675,5 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 				     fullscreen,
 				     no_input,
 				     use_pixman,
-				     argc, argv, config_fd);
+				     argc, argv, config);
 }
