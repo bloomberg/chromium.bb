@@ -186,7 +186,7 @@ class WebDragSourceAura : public base::MessageLoopForUI::Observer,
         rvh = contents_->GetRenderViewHost();
         if (rvh) {
           gfx::Point screen_loc_in_pixel = ui::EventLocationFromNative(event);
-          gfx::Point screen_loc = ConvertPointToDIP(rvh->GetView(),
+          gfx::Point screen_loc = ConvertViewPointToDIP(rvh->GetView(),
               screen_loc_in_pixel);
           gfx::Point client_loc = screen_loc;
           aura::Window* window = rvh->GetView()->GetNativeView();

@@ -24,18 +24,20 @@ CONTENT_EXPORT ui::ScaleFactor GetScaleFactorForView(
 
 // Utility functions that convert point/size/rect between DIP and pixel
 // coordinate system.
-CONTENT_EXPORT gfx::Point ConvertPointToDIP(const RenderWidgetHostView* view,
-                                            const gfx::Point& point_in_pixel);
-CONTENT_EXPORT gfx::Size ConvertSizeToDIP(const RenderWidgetHostView* view,
-                                          const gfx::Size& size_in_pixel);
-CONTENT_EXPORT gfx::Rect ConvertRectToDIP(const RenderWidgetHostView* view,
-                                          const gfx::Rect& rect_in_pixel);
-CONTENT_EXPORT gfx::Point ConvertPointToPixel(const RenderWidgetHostView* view,
-                                              const gfx::Point& point_in_dip);
-CONTENT_EXPORT gfx::Size ConvertSizeToPixel(const RenderWidgetHostView* view,
-                                            const gfx::Size& size_in_dip);
-CONTENT_EXPORT gfx::Rect ConvertRectToPixel(const RenderWidgetHostView* view,
-                                            const gfx::Rect& rect_in_dip);
+CONTENT_EXPORT gfx::Point ConvertViewPointToDIP(
+    const RenderWidgetHostView* view, const gfx::Point& point_in_pixel);
+CONTENT_EXPORT gfx::Size ConvertViewSizeToPixel(
+    const RenderWidgetHostView* view, const gfx::Size& size_in_dip);
+CONTENT_EXPORT gfx::Rect ConvertViewRectToPixel(
+    const RenderWidgetHostView* view, const gfx::Rect& rect_in_dip);
+
+CONTENT_EXPORT gfx::Size ConvertSizeToDIP(
+    float scale_factor, const gfx::Size& size_in_pixel);
+CONTENT_EXPORT gfx::Rect ConvertRectToDIP(
+    float scale_factor, const gfx::Rect& rect_in_pixel);
+CONTENT_EXPORT gfx::Rect ConvertRectToPixel(
+    float scale_factor, const gfx::Rect& rect_in_dip);
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_DIP_UTIL_H_

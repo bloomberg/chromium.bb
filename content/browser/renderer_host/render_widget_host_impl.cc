@@ -1347,7 +1347,7 @@ void RenderWidgetHostImpl::GetSnapshotFromRenderer(
   gfx::Rect copy_rect = src_subrect.IsEmpty() ?
       gfx::Rect(view_->GetViewBounds().size()) : src_subrect;
 
-  gfx::Rect copy_rect_in_pixel = ConvertRectToPixel(view_, copy_rect);
+  gfx::Rect copy_rect_in_pixel = ConvertViewRectToPixel(view_, copy_rect);
   Send(new ViewMsg_Snapshot(GetRoutingID(), copy_rect_in_pixel));
 }
 

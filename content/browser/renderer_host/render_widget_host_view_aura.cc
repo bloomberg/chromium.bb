@@ -632,6 +632,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
       has_composition_text_(false),
+      last_swapped_surface_scale_factor_(1.f),
       paint_canvas_(NULL),
       synthetic_move_sent_(false),
       accelerated_compositing_state_changed_(false),
@@ -1198,7 +1199,9 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHelper(
   gfx::Rect src_subrect_in_gl = src_subrect;
   src_subrect_in_gl.set_y(GetViewBounds().height() - src_subrect.bottom());
 
-  gfx::Rect src_subrect_in_pixel = ConvertRectToPixel(this, src_subrect_in_gl);
+  gfx::Rect src_subrect_in_pixel =
+      ConvertRectToPixel(current_surface_->device_scale_factor(),
+                         src_subrect_in_gl);
   gl_helper->CropScaleReadbackAndCleanTexture(
       current_surface_->PrepareTexture(),
       current_surface_->size(),
@@ -1218,7 +1221,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
   }
 
   CopyFromCompositingSurfaceHelper(src_subrect,
-                                   ConvertSizeToPixel(this, dst_size),
+                                   ConvertViewSizeToPixel(this, dst_size),
                                    callback);
 }
 
@@ -1319,11 +1322,13 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
   bool is_compositing_active = host_->is_accelerated_compositing_active();
   if (is_compositing_active && current_surface_) {
     window_->SetExternalTexture(current_surface_.get());
-    current_frame_size_ = ConvertSizeToDIP(this, current_surface_->size());
+    current_frame_size_ = ConvertSizeToDIP(
+        current_surface_->device_scale_factor(), current_surface_->size());
     CheckResizeLock();
   } else if (is_compositing_active && current_dib_) {
     window_->SetExternalTexture(NULL);
-    current_frame_size_ = ConvertSizeToDIP(this, last_swapped_surface_size_);
+    current_frame_size_ = ConvertSizeToDIP(last_swapped_surface_scale_factor_,
+                                           last_swapped_surface_size_);
     CheckResizeLock();
   } else {
     window_->SetExternalTexture(NULL);
@@ -1334,6 +1339,7 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
 
 bool RenderWidgetHostViewAura::SwapBuffersPrepare(
     const gfx::Rect& surface_rect,
+    float surface_scale_factor,
     const gfx::Rect& damage_rect,
     const std::string& mailbox_name,
     const BufferPresentedCallback& ack_callback) {
@@ -1343,9 +1349,11 @@ bool RenderWidgetHostViewAura::SwapBuffersPrepare(
     DLOG_IF(ERROR, damage_rect != surface_rect) << "Expected full damage rect";
     skipped_damage_.setEmpty();
     last_swapped_surface_size_ = surface_rect.size();
+    last_swapped_surface_scale_factor_ = surface_scale_factor;
   }
 
-  if (ShouldSkipFrame(ConvertSizeToDIP(this, surface_rect.size())) ||
+  if (ShouldSkipFrame(ConvertSizeToDIP(surface_scale_factor,
+                                       surface_rect.size())) ||
       mailbox_name.empty()) {
     skipped_damage_.op(RectToSkIRect(damage_rect), SkRegion::kUnion_Op);
     ack_callback.Run(true, scoped_refptr<ui::Texture>());
@@ -1354,7 +1362,7 @@ bool RenderWidgetHostViewAura::SwapBuffersPrepare(
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   current_surface_ =
-      factory->CreateTransportClient(current_device_scale_factor_);
+      factory->CreateTransportClient(surface_scale_factor);
   if (!current_surface_) {
     LOG(ERROR) << "Failed to create ImageTransport texture";
     ack_callback.Run(true, scoped_refptr<ui::Texture>());
@@ -1380,7 +1388,8 @@ void RenderWidgetHostViewAura::SwapBuffersCompleted(
     if (frame_subscriber()->ShouldCaptureFrame(present_time,
                                                &frame, &callback)) {
       CopyFromCompositingSurfaceToVideoFrame(
-          gfx::Rect(ConvertSizeToDIP(this, current_surface_->size())),
+          gfx::Rect(ConvertSizeToDIP(current_surface_->device_scale_factor(),
+                                     current_surface_->size())),
           frame,
           base::Bind(callback, present_time));
     }
@@ -1432,7 +1441,8 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       gpu_host_id,
       params_in_pixel.mailbox_name);
   BuffersSwapped(
-      params_in_pixel.size, params_in_pixel.mailbox_name, ack_callback);
+      params_in_pixel.size, params_in_pixel.scale_factor,
+      params_in_pixel.mailbox_name, ack_callback);
 }
 
 void RenderWidgetHostViewAura::SwapDelegatedFrame(
@@ -1500,6 +1510,7 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   current_dib_.reset(dib.release());
   current_dib_id_ = dib_id;
   last_swapped_surface_size_ = frame_size;
+  last_swapped_surface_scale_factor_ = frame_device_scale_factor;
 
   ui::Compositor* compositor = GetCompositor();
   if (!compositor) {
@@ -1507,8 +1518,8 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
     return;
   }
 
-  gfx::Size frame_size_in_dip = gfx::ToFlooredSize(
-      gfx::ScaleSize(frame_size, 1.0f / frame_device_scale_factor));
+  gfx::Size frame_size_in_dip =
+      ConvertSizeToDIP(frame_device_scale_factor, frame_size);
   if (ShouldSkipFrame(frame_size_in_dip)) {
     can_lock_compositor_ = NO_PENDING_COMMIT;
     SendSoftwareFrameAck(last_dib_id);
@@ -1522,7 +1533,8 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   CheckResizeLock();
   released_front_lock_ = NULL;
   window_->SetExternalTexture(NULL);
-  window_->SchedulePaintInRect(ConvertRectToDIP(this, damage_rect));
+  window_->SchedulePaintInRect(
+      ConvertRectToDIP(frame_device_scale_factor, damage_rect));
 
   if (paint_observer_)
     paint_observer_->OnUpdateCompositorContent();
@@ -1571,7 +1583,8 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
       reinterpret_cast<const char*>(frame->gl_frame_data->mailbox.name),
       sizeof(frame->gl_frame_data->mailbox.name));
   BuffersSwapped(
-      frame->gl_frame_data->size, mailbox_name, ack_callback);
+      frame->gl_frame_data->size, frame->metadata.device_scale_factor,
+      mailbox_name, ack_callback);
 }
 
 #if defined(OS_WIN)
@@ -1586,12 +1599,13 @@ void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
 
 void RenderWidgetHostViewAura::BuffersSwapped(
     const gfx::Size& size,
+    float surface_scale_factor,
     const std::string& mailbox_name,
     const BufferPresentedCallback& ack_callback) {
   scoped_refptr<ui::Texture> texture_to_return(current_surface_);
   const gfx::Rect surface_rect = gfx::Rect(size);
-  if (!SwapBuffersPrepare(
-      surface_rect, surface_rect, mailbox_name, ack_callback)) {
+  if (!SwapBuffersPrepare(surface_rect, surface_scale_factor, surface_rect,
+                          mailbox_name, ack_callback)) {
     return;
   }
 
@@ -1600,7 +1614,7 @@ void RenderWidgetHostViewAura::BuffersSwapped(
 
   ui::Compositor* compositor = GetCompositor();
   if (compositor) {
-    gfx::Size surface_size = ConvertSizeToDIP(this, size);
+    gfx::Size surface_size = ConvertSizeToDIP(surface_scale_factor, size);
     window_->SchedulePaintInRect(gfx::Rect(surface_size));
   }
 
@@ -1625,7 +1639,8 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
       params_in_pixel.mailbox_name);
 
   if (!SwapBuffersPrepare(
-      surface_rect, damage_rect, params_in_pixel.mailbox_name, ack_callback)) {
+      surface_rect, params_in_pixel.surface_scale_factor, damage_rect,
+      params_in_pixel.mailbox_name, ack_callback)) {
     return;
   }
 
@@ -1659,12 +1674,13 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
   if (compositor) {
     // Co-ordinates come in OpenGL co-ordinate space.
     // We need to convert to layer space.
-    gfx::Rect rect_to_paint = ConvertRectToDIP(this, gfx::Rect(
-        params_in_pixel.x,
-        surface_size_in_pixel.height() - params_in_pixel.y -
-        params_in_pixel.height,
-        params_in_pixel.width,
-        params_in_pixel.height));
+    gfx::Rect rect_to_paint = ConvertRectToDIP(
+        params_in_pixel.surface_scale_factor,
+        gfx::Rect(params_in_pixel.x,
+                  surface_size_in_pixel.height() - params_in_pixel.y -
+                      params_in_pixel.height,
+                  params_in_pixel.width,
+                  params_in_pixel.height));
 
     // Damage may not have been DIP aligned, so inflate damage to compensate
     // for any round-off error.
@@ -2241,7 +2257,8 @@ scoped_refptr<ui::Texture> RenderWidgetHostViewAura::CopyTexture() {
 
   return scoped_refptr<ui::Texture>(
       factory->CreateOwnedTexture(
-          current_surface_->size(), current_device_scale_factor_, texture_id));
+          current_surface_->size(),
+          current_surface_->device_scale_factor(), texture_id));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

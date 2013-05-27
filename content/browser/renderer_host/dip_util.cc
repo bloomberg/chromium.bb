@@ -27,40 +27,40 @@ ui::ScaleFactor GetScaleFactorForView(const RenderWidgetHostView* view) {
   return ui::GetScaleFactorForNativeView(view ? view->GetNativeView() : NULL);
 }
 
-gfx::Point ConvertPointToDIP(const RenderWidgetHostView* view,
-                             const gfx::Point& point_in_pixel) {
+gfx::Point ConvertViewPointToDIP(const RenderWidgetHostView* view,
+                                 const gfx::Point& point_in_pixel) {
   return gfx::ToFlooredPoint(
       gfx::ScalePoint(point_in_pixel, 1.0f / GetScaleForView(view)));
 }
 
-gfx::Size ConvertSizeToDIP(const RenderWidgetHostView* view,
-                           const gfx::Size& size_in_pixel) {
-  return gfx::ToFlooredSize(
-      gfx::ScaleSize(size_in_pixel, 1.0f / GetScaleForView(view)));
-}
-
-gfx::Rect ConvertRectToDIP(const RenderWidgetHostView* view,
-                           const gfx::Rect& rect_in_pixel) {
-  float scale = 1.0f / GetScaleForView(view);
-  return gfx::ToFlooredRectDeprecated(gfx::ScaleRect(rect_in_pixel, scale));
-}
-
-gfx::Point ConvertPointToPixel(const RenderWidgetHostView* view,
-                               const gfx::Point& point_in_dip) {
-  return gfx::ToFlooredPoint(
-      gfx::ScalePoint(point_in_dip, GetScaleForView(view)));
-}
-
-gfx::Size ConvertSizeToPixel(const RenderWidgetHostView* view,
-                             const gfx::Size& size_in_dip) {
+gfx::Size ConvertViewSizeToPixel(const RenderWidgetHostView* view,
+                                 const gfx::Size& size_in_dip) {
   return gfx::ToFlooredSize(
       gfx::ScaleSize(size_in_dip, GetScaleForView(view)));
 }
 
-gfx::Rect ConvertRectToPixel(const RenderWidgetHostView* view,
+gfx::Rect ConvertViewRectToPixel(const RenderWidgetHostView* view,
+                                 const gfx::Rect& rect_in_dip) {
+    return ConvertRectToPixel(GetScaleForView(view), rect_in_dip);
+}
+
+gfx::Size ConvertSizeToDIP(float scale_factor,
+                           const gfx::Size& size_in_pixel) {
+  return gfx::ToFlooredSize(
+      gfx::ScaleSize(size_in_pixel, 1.0f / scale_factor));
+}
+
+gfx::Rect ConvertRectToDIP(float scale_factor,
+                           const gfx::Rect& rect_in_pixel) {
+  return gfx::ToFlooredRectDeprecated(
+      gfx::ScaleRect(rect_in_pixel, 1.0f / scale_factor));
+}
+
+
+gfx::Rect ConvertRectToPixel(float scale_factor,
                              const gfx::Rect& rect_in_dip) {
-    float scale = GetScaleForView(view);
-    return gfx::ToFlooredRectDeprecated(gfx::ScaleRect(rect_in_dip, scale));
+    return gfx::ToFlooredRectDeprecated(
+        gfx::ScaleRect(rect_in_dip, scale_factor));
 }
 
 }  // namespace content
