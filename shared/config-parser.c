@@ -481,6 +481,9 @@ weston_config_next_section(struct weston_config *config,
 			   struct weston_config_section **section,
 			   const char **name)
 {
+	if (config == NULL)
+		return 0;
+
 	if (*section == NULL)
 		*section = container_of(config->section_list.next,
 					struct weston_config_section, link);
