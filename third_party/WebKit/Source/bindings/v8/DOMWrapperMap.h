@@ -56,12 +56,17 @@ public:
         return m_map.get(key).handle();
     }
 
+    v8::Handle<v8::Object> getNewLocal(v8::Isolate* isolate, KeyType* key)
+    {
+        return m_map.get(key).newLocal(isolate);
+    }
+
     void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperConfiguration& configuration)
     {
         ASSERT(!m_map.contains(key));
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);
         v8::Persistent<v8::Object> persistent(m_isolate, wrapper);
-        configuration.configureWrapper(persistent, m_isolate);
+        configuration.configureWrapper(&persistent, m_isolate);
         persistent.MakeWeak(m_isolate, this, &makeWeakCallback);
         m_map.set(key, UnsafePersistent<v8::Object>(persistent));
     }
@@ -85,15 +90,12 @@ public:
         info.addMember(m_map, "map");
     }
 
-    void removeAndDispose(KeyType* key, v8::Handle<v8::Object> value, v8::Isolate* isolate)
+    void removeAndDispose(KeyType* key)
     {
-        v8::Persistent<v8::Object> wrapper(*value);
         typename MapType::iterator it = m_map.find(key);
         ASSERT(it != m_map.end());
-        ASSERT(it->value.handle() == wrapper);
+        it->value.dispose();
         m_map.remove(it);
-        wrapper.Dispose(isolate);
-        value.Clear();
     }
 
 private:
@@ -109,7 +111,8 @@ inline void DOMWrapperMap<void>::makeWeakCallback(v8::Isolate* isolate, v8::Pers
     WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
     ASSERT(type->derefObjectFunction);
     void* key = static_cast<void*>(toNative(*wrapper));
-    map->removeAndDispose(key, *wrapper, isolate);
+    ASSERT(map->get(key) == *wrapper);
+    map->removeAndDispose(key);
     type->derefObject(key);
 }
 

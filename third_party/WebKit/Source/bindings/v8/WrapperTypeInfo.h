@@ -162,11 +162,11 @@ namespace WebCore {
             Dependent, Independent
         };
 
-        void configureWrapper(v8::Persistent<v8::Object> wrapper, v8::Isolate* isolate) const
+        void configureWrapper(v8::Persistent<v8::Object>* wrapper, v8::Isolate* isolate) const
         {
-            wrapper.SetWrapperClassId(isolate, classId);
+            wrapper->SetWrapperClassId(isolate, classId);
             if (lifetime == Independent)
-                wrapper.MarkIndependent(isolate);
+                wrapper->MarkIndependent(isolate);
         }
 
         const uint16_t classId;

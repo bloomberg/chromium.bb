@@ -400,7 +400,7 @@ inline void DOMWrapperMap<NPObject>::makeWeakCallback(v8::Isolate* isolate, v8::
 
     // Must remove from our map before calling _NPN_ReleaseObject(). _NPN_ReleaseObject can
     // call forgetV8ObjectForNPObject, which uses the table as well.
-    staticNPObjectMap().removeAndDispose(npObject, *wrapper, isolate);
+    staticNPObjectMap().removeAndDispose(npObject);
 
     if (_NPN_IsAlive(npObject))
         _NPN_ReleaseObject(npObject);
@@ -458,11 +458,12 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root
 
 void forgetV8ObjectForNPObject(NPObject* object)
 {
-    v8::Handle<v8::Object> wrapper = staticNPObjectMap().get(object);
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::Handle<v8::Object> wrapper = staticNPObjectMap().getNewLocal(isolate, object);
     if (!wrapper.IsEmpty()) {
-        v8::HandleScope scope;
         V8DOMWrapper::clearNativeInfo(wrapper, npObjectTypeInfo());
-        staticNPObjectMap().removeAndDispose(object, wrapper, v8::Isolate::GetCurrent());
+        staticNPObjectMap().removeAndDispose(object);
         _NPN_ReleaseObject(object);
     }
 }
