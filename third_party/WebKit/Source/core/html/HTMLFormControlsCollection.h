@@ -43,7 +43,7 @@ public:
     virtual ~HTMLFormControlsCollection();
 
     virtual Node* namedItem(const AtomicString& name) const;
-    void namedGetter(const AtomicString& name, RefPtr<RadioNodeList>&, RefPtr<Node>&);
+    void namedGetter(const AtomicString& name, bool&, RefPtr<RadioNodeList>&, bool&, RefPtr<Node>&);
 
 private:
     HTMLFormControlsCollection(Node*);

@@ -708,7 +708,7 @@ void HTMLFormElement::copyNonAttributePropertiesFromElement(const Element& sourc
     HTMLElement::copyNonAttributePropertiesFromElement(source);
 }
 
-void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, RefPtr<NodeList>& returnValue1, RefPtr<Node>& returnValue2)
+void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Node>& returnValue1)
 {
     // Call getNamedElements twice, first time check if it has a value
     // and let HTMLFormElement update its cache.
@@ -727,11 +727,13 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, RefPtr<Node
     ASSERT(!elements.isEmpty());
 
     if (elements.size() == 1) {
-        returnValue2 = elements.at(0);
+        returnValue1Enabled = true;
+        returnValue1 = elements.at(0);
         return;
     }
 
-    returnValue1 = NamedNodesCollection::create(elements);
+    returnValue0Enabled = true;
+    returnValue0 = NamedNodesCollection::create(elements);
 }
 
 } // namespace

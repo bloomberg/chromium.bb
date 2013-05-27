@@ -123,7 +123,7 @@ public:
     const Vector<HTMLImageElement*>& imageElements() const { return m_imageElements; }
 
     void getTextFieldValues(StringPairVector& fieldNamesAndValues) const;
-    void anonymousNamedGetter(const AtomicString& name, RefPtr<NodeList>&, RefPtr<Node>&);
+    void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<NodeList>&, bool&, RefPtr<Node>&);
 
 private:
     HTMLFormElement(const QualifiedName&, Document*);

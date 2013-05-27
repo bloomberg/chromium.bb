@@ -3030,8 +3030,10 @@ sub GenerateIsNullExpression
     }
     if (IsRefPtrType($type)) {
         return "!${variableName}";
-    } else {
+    } elsif ($type eq "DOMString") {
         return "${variableName}.isNull()";
+    } else {
+        return "";
     }
 }
 
@@ -3197,7 +3199,10 @@ sub GenerateMethodCall
             my $unionMemberType = $returnType->unionMemberTypes->[$i];
             my $nativeType = GetNativeType($unionMemberType);
             my $unionMemberVariable = $returnName . $i;
+            my $unionMemberEnabledVariable = $returnName . $i . "Enabled";
+            $code .= "    bool ${unionMemberEnabledVariable} = false;\n";
             $code .= "    ${nativeType} ${unionMemberVariable};\n";
+            push @extraArguments, $unionMemberEnabledVariable;
             push @extraArguments, $unionMemberVariable;
         }
         push @arguments, @extraArguments;
@@ -4721,12 +4726,14 @@ sub NativeToJSValue
             my $unionMemberType = $types->[$i];
             my $unionMemberNumber = $i + 1;
             my $unionMemberVariable = $nativeValue . $i;
+            my $unionMemberEnabledVariable = $nativeValue . $i . "Enabled";
             my $unionMemberNativeValue = $unionMemberVariable;
             $unionMemberNativeValue .= ".release()" if (IsRefPtrType($unionMemberType));
             my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getCreationContext, $getIsolate, $getHolderContainer, $getScriptWrappable, $returnHandleType, $forMainWorldSuffix);
-            my $isNotNull = "!" . GenerateIsNullExpression($unionMemberType, $unionMemberVariable);
+            my $isNotNull = GenerateIsNullExpression($unionMemberType, $unionMemberVariable);
+            $isNotNull = " && !" . $isNotNull if $isNotNull;
             my $code = "";
-            $code .= "${indent}if (${isNotNull})\n";
+            $code .= "${indent}if (${unionMemberEnabledVariable}${isNotNull})\n";
             $code .= "${returnJSValueCode}";
             push @codes, $code;
         }

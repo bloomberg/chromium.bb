@@ -64,7 +64,7 @@ Node* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigned i
     return 0;
 }
 
-void HTMLAllCollection::anonymousNamedGetter(const AtomicString& name, RefPtr<NodeList>& returnValue1, RefPtr<Node>& returnValue2)
+void HTMLAllCollection::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Node>& returnValue1)
 {
     Vector<RefPtr<Node> > namedItems;
     this->namedItems(name, namedItems);
@@ -73,13 +73,15 @@ void HTMLAllCollection::anonymousNamedGetter(const AtomicString& name, RefPtr<No
         return;
 
     if (namedItems.size() == 1) {
-        returnValue2 = namedItems.at(0);
+        returnValue1Enabled = true;
+        returnValue1 = namedItems.at(0);
         return;
     }
 
     // FIXME: HTML5 specification says this should be a HTMLCollection.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-    returnValue1 = NamedNodesCollection::create(namedItems);
+    returnValue0Enabled = true;
+    returnValue0 = NamedNodesCollection::create(namedItems);
 }
 
 } // namespace WebCore
