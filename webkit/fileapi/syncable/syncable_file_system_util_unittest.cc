@@ -9,6 +9,7 @@
 #include "base/message_loop_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 
@@ -144,6 +145,33 @@ TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
   sync_context->ShutdownOnUIThread();
   sync_context = NULL;
   base::MessageLoop::current()->RunUntilIdle();
+}
+
+TEST(SyncableFileSystemUtilTest, SyncableFileSystemURL_IsParent) {
+  ScopedExternalFileSystem scoped1("foo", fileapi::kFileSystemTypeSyncable,
+                                   base::FilePath());
+  ScopedExternalFileSystem scoped2("bar", fileapi::kFileSystemTypeSyncable,
+                                   base::FilePath());
+
+  const std::string root1 = sync_file_system::GetSyncableFileSystemRootURI(
+      GURL("http://example.com"), "foo").spec();
+  const std::string root2 = sync_file_system::GetSyncableFileSystemRootURI(
+      GURL("http://example.com"), "bar").spec();
+
+  const std::string parent("dir");
+  const std::string child("dir/child");
+
+  // True case.
+  EXPECT_TRUE(CreateFileSystemURL(root1 + parent).IsParent(
+      CreateFileSystemURL(root1 + child)));
+  EXPECT_TRUE(CreateFileSystemURL(root2 + parent).IsParent(
+      CreateFileSystemURL(root2 + child)));
+
+  // False case: different filesystem ID.
+  EXPECT_FALSE(CreateFileSystemURL(root1 + parent).IsParent(
+      CreateFileSystemURL(root2 + child)));
+  EXPECT_FALSE(CreateFileSystemURL(root2 + parent).IsParent(
+      CreateFileSystemURL(root1 + child)));
 }
 
 }  // namespace sync_file_system

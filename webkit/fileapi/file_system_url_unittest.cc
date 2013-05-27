@@ -7,8 +7,6 @@
 #include "base/files/file_path.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
-#include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
@@ -27,23 +25,9 @@ namespace {
 
 FileSystemURL CreateFileSystemURL(const std::string& url_string) {
   FileSystemURL url = FileSystemURL::CreateForTest(GURL(url_string));
-  switch (url.type()) {
-    case kFileSystemTypeExternal:
-      return ExternalMountPoints::GetSystemInstance()->
-          CreateCrackedFileSystemURL(url.origin(), url.type(), url.path());
-    case kFileSystemTypeIsolated:
-      return IsolatedContext::GetInstance()->CreateCrackedFileSystemURL(
-          url.origin(), url.type(), url.path());
-    default:
-      return url;
-  }
-}
-
-FileSystemURL CreateExternalFileSystemURL(const GURL& origin,
-                                          FileSystemType type,
-                                          const base::FilePath& path) {
-  return ExternalMountPoints::GetSystemInstance()->CreateCrackedFileSystemURL(
-      origin, type, path);
+  EXPECT_TRUE(url.type() != kFileSystemTypeExternal &&
+              url.type() != kFileSystemTypeIsolated);
+  return url;
 }
 
 std::string NormalizedUTF8Path(const base::FilePath& path) {
@@ -139,18 +123,11 @@ TEST(FileSystemURLTest, CompareURLs) {
 }
 
 TEST(FileSystemURLTest, IsParent) {
-  ScopedExternalFileSystem scoped1("foo", kFileSystemTypeSyncable,
-                                   base::FilePath());
-  ScopedExternalFileSystem scoped2("bar", kFileSystemTypeSyncable,
-                                   base::FilePath());
-
   const std::string root1 = GetFileSystemRootURI(
       GURL("http://example.com"), kFileSystemTypeTemporary).spec();
-  const std::string root2 = sync_file_system::GetSyncableFileSystemRootURI(
-      GURL("http://example.com"), "foo").spec();
-  const std::string root3 = sync_file_system::GetSyncableFileSystemRootURI(
-      GURL("http://example.com"), "bar").spec();
-  const std::string root4 = GetFileSystemRootURI(
+  const std::string root2 = GetFileSystemRootURI(
+      GURL("http://example.com"), kFileSystemTypePersistent).spec();
+  const std::string root3 = GetFileSystemRootURI(
       GURL("http://chromium.org"), kFileSystemTypeTemporary).spec();
 
   const std::string parent("dir");
@@ -175,13 +152,9 @@ TEST(FileSystemURLTest, IsParent) {
   EXPECT_FALSE(CreateFileSystemURL(root1 + parent).IsParent(
       CreateFileSystemURL(root2 + child)));
 
-  // False case: different filesystem ID.
-  EXPECT_FALSE(CreateFileSystemURL(root1 + parent).IsParent(
-      CreateFileSystemURL(root3 + child)));
-
   // False case: different origins.
   EXPECT_FALSE(CreateFileSystemURL(root1 + parent).IsParent(
-      CreateFileSystemURL(root4 + child)));
+      CreateFileSystemURL(root3 + child)));
 }
 
 TEST(FileSystemURLTest, DebugString) {
@@ -193,20 +166,6 @@ TEST(FileSystemURLTest, DebugString) {
   EXPECT_EQ("filesystem:http://example.com/temporary/" +
             NormalizedUTF8Path(kPath),
             kURL1.DebugString());
-
-  const base::FilePath kRoot(DRIVE FPL("/root"));
-  ScopedExternalFileSystem scoped_fs("foo",
-                                     kFileSystemTypeNativeLocal,
-                                     kRoot.NormalizePathSeparators());
-  const FileSystemURL kURL2(CreateExternalFileSystemURL(
-      kOrigin,
-      kFileSystemTypeExternal,
-      scoped_fs.GetVirtualRootPath().Append(kPath)));
-  EXPECT_EQ("filesystem:http://example.com/external/" +
-            NormalizedUTF8Path(scoped_fs.GetVirtualRootPath().Append(kPath)) +
-            " (NativeLocal@foo:" +
-            NormalizedUTF8Path(kRoot.Append(kPath)) + ")",
-            kURL2.DebugString());
 }
 
 }  // namespace fileapi
