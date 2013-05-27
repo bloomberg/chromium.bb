@@ -58,9 +58,7 @@
 #ifdef __APPLE__
 #define WTF_OS_DARWIN 1
 
-#include <Availability.h>
 #include <AvailabilityMacros.h>
-#include <TargetConditionals.h>
 #endif
 
 /* OS(FREEBSD) - FreeBSD */
