@@ -2057,6 +2057,21 @@ TEST_F(WindowTest, RecreateLayer) {
   EXPECT_TRUE(layer->GetMasksToBounds());
 }
 
+// Verify that RecreateLayer() stacks the old layer above the newly creatd
+// layer.
+TEST_F(WindowTest, RecreateLayerZOrder) {
+  scoped_ptr<Window> w(
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(0, 0, 100, 100),
+                       root_window()));
+  scoped_ptr<ui::Layer> old_layer(w->RecreateLayer());
+
+  const std::vector<ui::Layer*>& child_layers =
+      root_window()->layer()->children();
+  ASSERT_EQ(2u, child_layers.size());
+  EXPECT_EQ(w->layer(), child_layers[0]);
+  EXPECT_EQ(old_layer.get(), child_layers[1]);
+}
+
 // Ensure that acquiring a layer then recreating a layer does not crash
 // and that RecreateLayer returns null.
 TEST_F(WindowTest, AcquireThenRecreateLayer) {

@@ -163,10 +163,10 @@ ui::Layer* Window::RecreateLayer() {
 
   UpdateLayerName(name_);
   layer_->SetFillsBoundsOpaquely(!transparent_);
-  // Install new layer as a sibling of the old layer, stacked on top of it.
+  // Install new layer as a sibling of the old layer, stacked below it.
   if (old_layer->parent()) {
     old_layer->parent()->Add(layer_);
-    old_layer->parent()->StackAbove(layer_, old_layer);
+    old_layer->parent()->StackBelow(layer_, old_layer);
   }
   // Migrate all the child layers over to the new layer. Copy the list because
   // the items are removed during iteration.

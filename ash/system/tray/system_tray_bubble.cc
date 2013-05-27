@@ -167,9 +167,6 @@ void SystemTrayBubble::UpdateView(
     // When transitioning from detailed view to default view, animate the
     // existing view (slide out towards the right).
     if (bubble_type == BUBBLE_TYPE_DEFAULT) {
-      // Make sure the old view is visibile over the new view during the
-      // animation.
-      layer->parent()->StackAbove(layer, bubble_view_->layer());
       ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
       settings.AddObserver(
           new AnimationObserverDeleteLayer(scoped_layer.release()));
@@ -230,6 +227,11 @@ void SystemTrayBubble::UpdateView(
     // view (slide in from the right).
     if (bubble_type == BUBBLE_TYPE_DETAILED) {
       ui::Layer* new_layer = bubble_view_->layer();
+
+      // Make sure the new layer is stacked above the old layer during the
+      // animation.
+      new_layer->parent()->StackAbove(new_layer, scoped_layer.get());
+
       gfx::Rect bounds = new_layer->bounds();
       gfx::Transform transform;
       transform.Translate(bounds.width(), 0.0);

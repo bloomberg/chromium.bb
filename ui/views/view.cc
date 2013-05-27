@@ -535,6 +535,12 @@ ui::Layer* View::RecreateLayer() {
     return NULL;
 
   CreateLayer();
+
+  // TODO(pkotwicz): Remove this once ReorderLayers() stacks layers not attached
+  // to a view above layers attached to a view.
+  if (layer->parent())
+    layer->parent()->StackAtTop(layer);
+
   layer_->set_scale_content(layer->scale_content());
   return layer;
 }
