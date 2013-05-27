@@ -133,6 +133,11 @@ class IBusInputContextClientTest : public testing::Test {
         ibus::input_context::kUpdatePreeditTextSignal, _, _))
         .WillRepeatedly(
             Invoke(this, &IBusInputContextClientTest::OnConnectToSignal));
+    EXPECT_CALL(*mock_proxy_, ConnectToSignal(
+        ibus::input_context::kServiceInterface,
+        ibus::input_context::kDeleteSurroundingTextSignal, _, _))
+        .WillRepeatedly(
+            Invoke(this, &IBusInputContextClientTest::OnConnectToSignal));
 
     // Call Initialize to create object proxy and connect signals.
     client_->Initialize(mock_bus_.get(), dbus::ObjectPath(kObjectPath));

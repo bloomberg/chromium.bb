@@ -351,6 +351,14 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&IBusInputContextClientImpl::OnSignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    proxy_->ConnectToSignal(
+        ibus::input_context::kServiceInterface,
+        ibus::input_context::kDeleteSurroundingTextSignal,
+        base::Bind(&IBusInputContextClientImpl::OnDeleteSurroundingText,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&IBusInputContextClientImpl::OnSignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Handles the result of signal connection setup.

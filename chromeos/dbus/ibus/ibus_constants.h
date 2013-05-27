@@ -36,6 +36,7 @@ const char kForwardKeyEventSignal[] = "ForwardKeyEvent";
 const char kHidePreeditTextSignal[] = "HidePreeditText";
 const char kShowPreeditTextSignal[] = "ShowPreeditText";
 const char kUpdatePreeditTextSignal[] = "UpdatePreeditText";
+const char kDeleteSurroundingTextSignal[] = "DeleteSurroundingText";
 const char kFocusInMethod[] = "FocusIn";
 const char kFocusOutMethod[] = "FocusOut";
 const char kResetMethod[] = "Reset";
