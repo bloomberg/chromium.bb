@@ -298,8 +298,7 @@ PP_Var PluginObject::Create(PluginInstance* instance,
   // WrapperClass_Allocated function which will have created an object wrapper
   // appropriate for this class (derived from NPObject).
   NPObjectWrapper* wrapper = static_cast<NPObjectWrapper*>(
-      WebBindings::createObject(instance->instanceNPP(),
-      const_cast<NPClass*>(&wrapper_class)));
+      WebBindings::createObject(NULL, const_cast<NPClass*>(&wrapper_class)));
 
   // This object will register itself both with the NPObject and with the
   // PluginModule. The NPObject will normally handle its lifetime, and it

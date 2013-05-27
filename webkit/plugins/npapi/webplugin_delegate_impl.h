@@ -112,7 +112,6 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
                                 WebCursor::CursorInfo* cursor_info) OVERRIDE;
   virtual NPObject* GetPluginScriptableObject() OVERRIDE;
-  virtual NPP GetPluginNPP() OVERRIDE;
   virtual bool GetFormValue(base::string16* value) OVERRIDE;
   virtual void DidFinishLoadWithReason(const GURL& url,
                                        NPReason reason,

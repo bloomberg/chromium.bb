@@ -324,8 +324,7 @@ MessageChannel::MessageChannel(PluginInstance* instance)
       early_message_queue_state_(QUEUE_MESSAGES) {
   // Now create an NPObject for receiving calls to postMessage. This sets the
   // reference count to 1.  We release it in the destructor.
-  NPObject* obj = WebBindings::createObject(instance_->instanceNPP(),
-                                            &message_channel_class);
+  NPObject* obj = WebBindings::createObject(NULL, &message_channel_class);
   DCHECK(obj);
   np_object_ = static_cast<MessageChannel::MessageChannelNPObject*>(obj);
   np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();

@@ -68,7 +68,6 @@ class WebPluginDelegateProxy
                               const gfx::Rect& clip_rect) OVERRIDE;
   virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
   virtual NPObject* GetPluginScriptableObject() OVERRIDE;
-  virtual struct _NPP* GetPluginNPP() OVERRIDE;
   virtual bool GetFormValue(string16* value) OVERRIDE;
   virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
                                        int notify_id) OVERRIDE;
@@ -266,9 +265,6 @@ class WebPluginDelegateProxy
 
   NPObject* npobject_;
   base::WeakPtr<NPObjectStub> window_script_object_;
-
-  // Dummy NPP used to uniquely identify this plugin.
-  scoped_ptr<NPP_t> npp_;
 
   // Event passed in by the plugin process and is used to decide if messages
   // need to be pumped in the NPP_HandleEvent sync call.

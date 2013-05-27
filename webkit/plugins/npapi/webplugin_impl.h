@@ -75,7 +75,6 @@ class WEBKIT_PLUGINS_EXPORT WebPluginImpl :
       WebKit::WebPluginContainer* container);
   virtual void destroy();
   virtual NPObject* scriptableObject();
-  virtual struct _NPP* pluginNPP();
   virtual bool getFormValue(WebKit::WebString& value);
   virtual void paint(
       WebKit::WebCanvas* canvas, const WebKit::WebRect& paint_rect);
@@ -292,9 +291,6 @@ class WEBKIT_PLUGINS_EXPORT WebPluginImpl :
 
   // This is just a weak reference.
   WebKit::WebPluginContainer* container_;
-
-  // Unique identifier for this plugin, used to track script objects.
-  struct _NPP* npp_;
 
   typedef std::map<WebPluginResourceClient*,
                    webkit_glue::MultipartResponseDelegate*>

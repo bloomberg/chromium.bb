@@ -114,10 +114,6 @@ NPObject* WebViewPlugin::scriptableObject() {
   return NULL;
 }
 
-struct _NPP* WebViewPlugin::pluginNPP() {
-  return NULL;
-}
-
 bool WebViewPlugin::getFormValue(WebString& value) {
   return false;
 }

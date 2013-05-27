@@ -93,9 +93,6 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!instance_)
     return false;
 
-  // Enable script objects for this plugin.
-  container->allowScriptObjects();
-
   bool success = instance_->Initialize(init_data_->arg_names,
                                        init_data_->arg_values,
                                        full_frame_);
@@ -119,9 +116,6 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 }
 
 void WebPluginImpl::destroy() {
-  // Tell |container_| to clear references to this plugin's script objects.
-  container_->clearScriptObjects();
-
   if (instance_) {
     ::ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(instance_object_);
     instance_object_ = PP_MakeUndefined();
@@ -152,10 +146,6 @@ NPObject* WebPluginImpl::scriptableObject() {
   // The object is expected to be retained before it is returned.
   WebKit::WebBindings::retainObject(message_channel_np_object);
   return message_channel_np_object;
-}
-
-NPP WebPluginImpl::pluginNPP() {
-  return instance_->instanceNPP();
 }
 
 bool WebPluginImpl::getFormValue(WebString& value) {

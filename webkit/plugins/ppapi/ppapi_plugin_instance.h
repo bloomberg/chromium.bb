@@ -58,7 +58,6 @@
 #include "webkit/plugins/webkit_plugins_export.h"
 
 struct PP_Point;
-struct _NPP;
 
 class SkBitmap;
 class TransportDIB;
@@ -503,10 +502,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // the given module.
   bool IsValidInstanceOf(PluginModule* module);
 
-  // Returns the plugin NPP identifier that this plugin will use to identify
-  // itself when making NPObject scripting calls to WebBindings.
-  struct _NPP* instanceNPP();
-
  private:
   friend class PpapiUnittest;
 
@@ -838,10 +833,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // The ContentDecryptorDelegate forwards PPP_ContentDecryptor_Private
   // calls and handles PPB_ContentDecryptor_Private calls.
   scoped_ptr<ContentDecryptorDelegate> content_decryptor_delegate_;
-
-  // Dummy NPP value used when calling in to WebBindings, to allow the bindings
-  // to correctly track NPObjects belonging to this plugin instance.
-  scoped_ptr<struct _NPP> npp_;
 
   friend class PpapiPluginInstanceTest;
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);

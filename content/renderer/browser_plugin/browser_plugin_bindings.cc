@@ -817,8 +817,7 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
       np_object_(NULL),
       weak_ptr_factory_(this) {
   NPObject* obj =
-      WebBindings::createObject(instance->pluginNPP(),
-                                &browser_plugin_message_class);
+      WebBindings::createObject(NULL, &browser_plugin_message_class);
   np_object_ = static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(obj);
   np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();
 

@@ -212,7 +212,6 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
       mime_type_(mime_type),
       instance_id_(MSG_ROUTING_NONE),
       npobject_(NULL),
-      npp_(new NPP_t),
       sad_plugin_(NULL),
       invalidate_pending_(false),
       transparent_(false),
@@ -742,11 +741,6 @@ NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
       channel_host_.get(), route_id, 0, page_url_);
 
   return WebBindings::retainObject(npobject_);
-}
-
-NPP WebPluginDelegateProxy::GetPluginNPP() {
-  // Return a dummy NPP for WebKit to use to identify this plugin.
-  return npp_.get();
 }
 
 bool WebPluginDelegateProxy::GetFormValue(string16* value) {

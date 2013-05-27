@@ -174,7 +174,6 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual bool initialize(WebKit::WebPluginContainer* container) OVERRIDE;
   virtual void destroy() OVERRIDE;
   virtual NPObject* scriptableObject() OVERRIDE;
-  virtual struct _NPP* pluginNPP() OVERRIDE;
   virtual bool supportsKeyboardFocus() const OVERRIDE;
   virtual bool canProcessDrag() const OVERRIDE;
   virtual void paint(
@@ -441,9 +440,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Used for HW compositing.
   bool compositing_enabled_;
   scoped_refptr<BrowserPluginCompositingHelper> compositing_helper_;
-
-  // Used to identify the plugin to WebBindings.
-  scoped_ptr<struct _NPP> npp_;
 
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might
   // get called after BrowserPlugin has been destroyed.
