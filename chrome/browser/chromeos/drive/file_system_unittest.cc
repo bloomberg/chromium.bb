@@ -102,13 +102,6 @@ void AsyncInitializationCallback(
     message_loop->Quit();
 }
 
-void AppendContent(std::vector<std::string>* buffer,
-                   google_apis::GDataErrorCode error,
-                   scoped_ptr<std::string> content) {
-  DCHECK_EQ(error, google_apis::HTTP_SUCCESS);
-  buffer->push_back(*content);
-}
-
 }  // namespace
 
 class FileSystemTest : public testing::Test {
@@ -1554,8 +1547,7 @@ TEST_F(FileSystemTest, GetFileContentByPath) {
     scoped_ptr<ResourceEntry> entry;
     base::FilePath local_path;
     base::Closure cancel_download;
-
-    std::vector<std::string> content_buffer;
+    google_apis::test_util::TestGetContentCallback get_content_callback;
 
     FileError completion_error = FILE_ERROR_FAILED;
 
@@ -1563,7 +1555,7 @@ TEST_F(FileSystemTest, GetFileContentByPath) {
         file_in_root,
         google_apis::test_util::CreateCopyResultCallback(
             &initialized_error, &entry, &local_path, &cancel_download),
-        base::Bind(&AppendContent, &content_buffer),
+        get_content_callback.callback(),
         google_apis::test_util::CreateCopyResultCallback(&completion_error));
     google_apis::test_util::RunBlockingPoolTask();
 
@@ -1573,13 +1565,9 @@ TEST_F(FileSystemTest, GetFileContentByPath) {
     ASSERT_TRUE(entry);
     ASSERT_TRUE(local_path.empty());
     EXPECT_TRUE(!cancel_download.is_null());
-    // Content is available through the second callback arguemnt.
-    size_t content_size = 0;
-    for (size_t i = 0; i < content_buffer.size(); ++i) {
-      content_size += content_buffer[i].size();
-    }
+    // Content is available through the second callback argument.
     EXPECT_EQ(static_cast<size_t>(entry->file_info().size()),
-              content_size);
+              get_content_callback.GetConcatenatedData().size());
     EXPECT_EQ(FILE_ERROR_OK, completion_error);
   }
 
@@ -1588,8 +1576,7 @@ TEST_F(FileSystemTest, GetFileContentByPath) {
     scoped_ptr<ResourceEntry> entry;
     base::FilePath local_path;
     base::Closure cancel_download;
-
-    std::vector<std::string> content_buffer;
+    google_apis::test_util::TestGetContentCallback get_content_callback;
 
     FileError completion_error = FILE_ERROR_FAILED;
 
@@ -1597,7 +1584,7 @@ TEST_F(FileSystemTest, GetFileContentByPath) {
         file_in_root,
         google_apis::test_util::CreateCopyResultCallback(
             &initialized_error, &entry, &local_path, &cancel_download),
-        base::Bind(&AppendContent, &content_buffer),
+        get_content_callback.callback(),
         google_apis::test_util::CreateCopyResultCallback(&completion_error));
     google_apis::test_util::RunBlockingPoolTask();
 
@@ -1608,7 +1595,7 @@ TEST_F(FileSystemTest, GetFileContentByPath) {
     ASSERT_TRUE(!local_path.empty());
     EXPECT_TRUE(cancel_download.is_null());
     // The content is available from the cache file.
-    EXPECT_TRUE(content_buffer.empty());
+    EXPECT_TRUE(get_content_callback.data().empty());
     int64 local_file_size = 0;
     file_util::GetFileSize(local_path, &local_file_size);
     EXPECT_EQ(entry->file_info().size(), local_file_size);

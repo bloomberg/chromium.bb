@@ -320,8 +320,6 @@ void CopyOperation::CopyAfterGetResourceEntryPair(
     return;
   }
 
-  // TODO(kochi): Reimplement this once the server API supports
-  // copying of regular files directly on the server side. crbug.com/138273
   const base::FilePath& src_file_path = result->first.path;
   file_system_->GetFileByPath(
       src_file_path,

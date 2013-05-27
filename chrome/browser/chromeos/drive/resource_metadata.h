@@ -256,11 +256,6 @@ class ResourceMetadata {
   // |entry_map|. The changestamp of the directory will be updated per
   // |directory_fetch_info|. |callback| is called with the directory path.
   // |callback| must not be null.
-  //
-  // TODO(satorux): For "fast fetch" crbug.com/178348, this function should
-  // be able to update child directories too. The existing directories should
-  // remain as-is, but the new directories should be added with changestamp
-  // set to zero, which will be fast fetched.
   // Must be called on the UI thread.
   void RefreshDirectoryOnUIThread(
       const DirectoryFetchInfo& directory_fetch_info,

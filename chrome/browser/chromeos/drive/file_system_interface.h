@@ -15,10 +15,6 @@
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
 
-namespace google_apis {
-class ResourceEntry;
-}
-
 namespace drive {
 
 class FileSystemObserver;
@@ -291,7 +287,7 @@ class FileSystemInterface {
                           bool is_exclusive,
                           const FileOperationCallback& callback) = 0;
 
-  // Touchs the file at |file_path| by updating the timestamp to
+  // Touches the file at |file_path| by updating the timestamp to
   // |last_access_time| and |last_modified_time|.
   // Upon completion, invokes |callback|.
   // Note that, differently from unix touch command, this doesn't create a file

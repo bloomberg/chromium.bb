@@ -25,7 +25,6 @@ class ResourceEntry;
 
 namespace internal {
 
-
 // The implementation of webkit_blob::FileStreamReader for drive file system.
 // webkit_blob::FileStreamReader does not provide a way for explicit
 // initialization, hence the initialization of this class will be done lazily.

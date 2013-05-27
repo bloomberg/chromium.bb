@@ -287,7 +287,7 @@ void AppendProgressCallbackResult(std::vector<ProgressInfo>* progress_values,
                                   int64 progress,
                                   int64 total);
 
-// Helpeer utility for recording the content via GetContentCallback.
+// Helper utility for recording the content via GetContentCallback.
 class TestGetContentCallback {
  public:
   TestGetContentCallback();

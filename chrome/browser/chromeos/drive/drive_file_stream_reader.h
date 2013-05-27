@@ -209,9 +209,6 @@ class DriveFileStreamReader {
   DISALLOW_COPY_AND_ASSIGN(DriveFileStreamReader);
 };
 
-// TODO(hidehiko): Add thin wrapper class inheriting
-// webkit_blob::FileStreamReader for the DriveFileStreamReader.
-
 }  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_STREAM_READER_H_

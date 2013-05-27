@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
@@ -29,15 +28,11 @@
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
-#include "google/cacheinvalidation/types.pb.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
@@ -46,8 +41,6 @@ using content::BrowserThread;
 
 namespace drive {
 namespace {
-
-static const size_t kEventLogHistorySize = 100;
 
 // Returns true if Drive is enabled for the given Profile.
 bool IsDriveEnabledForProfile(Profile* profile) {
