@@ -1717,6 +1717,10 @@ body[new-ui] #list-container li.table-row {
   height: 30px;
 }
 
+body[new-ui] #default-actions-list li {
+  border-style: none;
+}
+
 /* The icon in the name column. See file_types.css for specific icons. */
 .detail-icon {
   height: 24px;
