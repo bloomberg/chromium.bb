@@ -312,6 +312,12 @@ void ChromeShellDelegate::RecordUserMetricsAction(
     case ash::UMA_ACCEL_PREVWINDOW_TAB:
       content::RecordAction(content::UserMetricsAction("Accel_PrevWindow_Tab"));
       break;
+    case ash::UMA_ACCEL_EXIT_FIRST_Q:
+      content::RecordAction(content::UserMetricsAction("Accel_Exit_First_Q"));
+      break;
+    case ash::UMA_ACCEL_EXIT_SECOND_Q:
+      content::RecordAction(content::UserMetricsAction("Accel_Exit_Second_Q"));
+      break;
     case ash::UMA_ACCEL_SEARCH_LWIN:
       content::RecordAction(content::UserMetricsAction("Accel_Search_LWin"));
       break;

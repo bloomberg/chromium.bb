@@ -48,6 +48,8 @@
 0x651680cc43f0574d	Accel_Back_Left
 0x9d53a3047a707543	Accel_BrightnessDown_F6
 0xb05e783429d6cfac	Accel_BrightnessUp_F7
+0x2fa7197377421869	Accel_Exit_First_Q
+0x75c842188f8d6864	Accel_Exit_Second_Q
 0x7f2c75700d286c16	Accel_FocusLocation_D
 0xe566241731cecfbb	Accel_FocusLocation_L
 0xb4f736d60280d914	Accel_FocusSearch_E

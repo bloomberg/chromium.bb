@@ -582,6 +582,7 @@ bool AcceleratorController::PerformAction(int action,
       ash::Shell::GetInstance()->delegate()->OpenFeedbackPage();
       return true;
     case EXIT:
+      // UMA metrics are recorded in the handler.
       exit_warning_handler_.HandleAccelerator();
       return true;
     case NEW_INCOGNITO_WINDOW:

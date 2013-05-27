@@ -114,17 +114,20 @@ ExitWarningHandler::~ExitWarningHandler() {
 }
 
 void ExitWarningHandler::HandleAccelerator() {
+  ShellDelegate* shell_delegate = Shell::GetInstance()->delegate();
   switch (state_) {
     case IDLE:
       state_ = WAIT_FOR_DOUBLE_PRESS;
       Show();
       StartTimer();
+      shell_delegate->RecordUserMetricsAction(UMA_ACCEL_EXIT_FIRST_Q);
       break;
     case WAIT_FOR_DOUBLE_PRESS:
       state_ = EXITING;
       CancelTimer();
       Hide();
-      Shell::GetInstance()->delegate()->Exit();
+      shell_delegate->RecordUserMetricsAction(UMA_ACCEL_EXIT_SECOND_Q);
+      shell_delegate->Exit();
       break;
     case EXITING:
       break;
