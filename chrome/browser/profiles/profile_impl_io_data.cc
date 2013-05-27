@@ -44,6 +44,10 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "webkit/quota/special_storage_policy.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/app/android/chrome_data_reduction_proxy_android.h"
+#endif
+
 namespace {
 
 net::BackendType ChooseCacheBackendType() {
@@ -416,6 +420,10 @@ void ProfileImplIOData::InitializeInternal(
   net::HttpCache* main_cache = new net::HttpCache(
       network_session_params, main_backend);
   main_cache->InitializeInfiniteCache(lazy_params_->infinite_cache_path);
+
+#if defined(OS_ANDROID)
+  ChromeDataReductionProxyAndroid::Init(main_cache->GetSession());
+#endif
 
   if (record_mode || playback_mode) {
     main_cache->set_mode(

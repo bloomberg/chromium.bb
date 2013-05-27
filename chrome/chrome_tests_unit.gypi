@@ -2368,6 +2368,7 @@
             ['gtest_target_type == "shared_library"', {
               'dependencies': [
                 '../testing/android/native_test.gyp:native_test_native_code',
+                'chrome.gyp:chrome_android_auxiliary',
               ],
             }],
           ],

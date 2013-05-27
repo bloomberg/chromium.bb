@@ -408,6 +408,7 @@
 
       'spdy_proxy_auth_origin%' : '',
       'spdy_proxy_auth_property%' : '',
+      'spdy_proxy_auth_value%' : '',
 
       'conditions': [
         # A flag for POSIX platforms
@@ -817,6 +818,7 @@
     'enable_managed_users%': '<(enable_managed_users)',
     'spdy_proxy_auth_origin%': '<(spdy_proxy_auth_origin)',
     'spdy_proxy_auth_property%': '<(spdy_proxy_auth_property)',
+    'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
 
     # Use system mesa instead of bundled one.
     'use_system_mesa%': 0,
@@ -2194,6 +2196,9 @@
       }],
       ['spdy_proxy_auth_property != ""', {
         'defines': ['SPDY_PROXY_AUTH_PROPERTY="<(spdy_proxy_auth_property)"'],
+      }],
+      ['spdy_proxy_auth_value != ""', {
+        'defines': ['SPDY_PROXY_AUTH_VALUE="<(spdy_proxy_auth_value)"'],
       }],
       ['enable_mdns==1', {
         'defines': ['ENABLE_MDNS=1'],
