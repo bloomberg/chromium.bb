@@ -37,24 +37,24 @@ class StyleBuilderWriter(in_generator.Writer):
     class_name = 'StyleBuilder'
 
     valid_values = {
-        'applytype': ['default', 'length'],
-        'usenone': [True, False],
-        'useintrinsic': [True, False],
-        'useauto': [True, False],
+        'apply_type': ['default', 'length'],
+        'use_none': [True, False],
+        'use_intrinsic': [True, False],
+        'use_auto': [True, False],
     }
     defaults = {
         'condition': None,
-        'applytype': 'default',
-        'nameformethods': None,
+        'apply_type': 'default',
+        'name_for_methods': None,
 # These depend on property name by default
-        'typename': None,
+        'type_name': None,
         'getter': None,
         'setter': None,
         'initial': None,
 # For the length apply type
-        'usenone': False,
-        'useintrinsic': False,
-        'useauto': False,
+        'use_none': False,
+        'use_intrinsic': False,
+        'use_auto': False,
     }
 
     def __init__(self, in_files, enabled_conditions):
@@ -67,9 +67,9 @@ class StyleBuilderWriter(in_generator.Writer):
 
         for property in self._properties:
             cc = self._camelcase_property_name(property["name"])
-            property["propertyid"] = "CSSProperty" + cc
-            cc = property["nameformethods"] or cc.replace("Webkit", "")
-            set_if_none(property, "typename", "E" + cc)
+            property["property_id"] = "CSSProperty" + cc
+            cc = property["name_for_methods"] or cc.replace("Webkit", "")
+            set_if_none(property, "type_name", "E" + cc)
             set_if_none(property, "getter", self._lower_first(cc))
             set_if_none(property, "setter", "set" + cc)
             set_if_none(property, "initial", "initial" + cc)
