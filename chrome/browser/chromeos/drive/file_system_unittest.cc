@@ -44,36 +44,6 @@ namespace {
 
 const int64 kLotsOfSpace = internal::kMinFreeSpace * 10;
 
-struct SearchResultPair {
-  const char* path;
-  const bool is_directory;
-};
-
-// Callback to FileSystem::Search used in ContentSearch tests.
-// Verifies returned vector of results and next feed url.
-void VerifySearchResult(
-    MessageLoop* message_loop,
-    const SearchResultPair* expected_results,
-    size_t expected_results_size,
-    const GURL& expected_next_feed,
-    FileError error,
-    const GURL& next_feed,
-    scoped_ptr<std::vector<SearchResultInfo> > results) {
-  ASSERT_TRUE(results);
-  ASSERT_EQ(expected_results_size, results->size());
-
-  for (size_t i = 0; i < results->size(); i++) {
-    EXPECT_EQ(base::FilePath(expected_results[i].path),
-              results->at(i).path);
-    EXPECT_EQ(expected_results[i].is_directory,
-              results->at(i).entry.file_info().is_directory());
-  }
-
-  EXPECT_EQ(expected_next_feed, next_feed);
-
-  message_loop->Quit();
-}
-
 // Counts the number of invocation, and if it increased up to |expected_counter|
 // quits the current message loop.
 void AsyncInitializationCallback(
@@ -1630,75 +1600,6 @@ TEST_F(FileSystemTest, GetFileByResourceId_FromCache) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
   EXPECT_FALSE(entry->file_specific_info().is_hosted_document());
-}
-
-TEST_F(FileSystemTest, ContentSearch) {
-  ASSERT_TRUE(LoadRootFeedDocument());
-
-  const SearchResultPair kExpectedResults[] = {
-    { "drive/root/Directory 1/Sub Directory Folder/Sub Sub Directory Folder",
-      true },
-    { "drive/root/Directory 1/Sub Directory Folder", true },
-    { "drive/root/Directory 1/SubDirectory File 1.txt", false },
-    { "drive/root/Directory 1", true },
-    { "drive/root/Directory 2 excludeDir-test", true },
-  };
-
-  SearchCallback callback = base::Bind(
-      &VerifySearchResult,
-      &message_loop_,
-      kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults),
-      GURL());
-
-  file_system_->Search("Directory", GURL(), callback);
-  google_apis::test_util::RunBlockingPoolTask();
-}
-
-TEST_F(FileSystemTest, ContentSearchWithNewEntry) {
-  ASSERT_TRUE(LoadRootFeedDocument());
-
-  // Create a new directory in the drive service.
-  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<google_apis::ResourceEntry> resource_entry;
-  fake_drive_service_->AddNewDirectory(
-      fake_drive_service_->GetRootResourceId(),  // Add to the root directory.
-      "New Directory 1!",
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &resource_entry));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  // As the result of the first Search(), only entries in the current file
-  // system snapshot are expected to be returned (i.e. "New Directory 1!"
-  // shouldn't be included in the search result even though it matches
-  // "Directory 1".
-  const SearchResultPair kExpectedResults[] = {
-      { "drive/root/Directory 1", true }
-  };
-
-  SearchCallback callback = base::Bind(
-      &VerifySearchResult,
-      &message_loop_,
-      kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults),
-      GURL());
-
-  file_system_->Search("\"Directory 1\"", GURL(), callback);
-  google_apis::test_util::RunBlockingPoolTask();
-}
-
-TEST_F(FileSystemTest, ContentSearchEmptyResult) {
-  ASSERT_TRUE(LoadRootFeedDocument());
-
-  const SearchResultPair* expected_results = NULL;
-
-  SearchCallback callback = base::Bind(
-      &VerifySearchResult,
-      &message_loop_,
-      expected_results,
-      0u,
-      GURL());
-
-  file_system_->Search("\"no-match query\"", GURL(), callback);
-  google_apis::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(FileSystemTest, GetAvailableSpace) {
