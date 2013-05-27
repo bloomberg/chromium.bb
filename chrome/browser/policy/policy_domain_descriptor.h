@@ -20,7 +20,8 @@ class PolicySchema;
 
 // For each policy domain, this class keeps the complete list of valid
 // components for that domain, and the PolicySchema for each component.
-class PolicyDomainDescriptor : public base::RefCounted<PolicyDomainDescriptor> {
+class PolicyDomainDescriptor
+    : public base::RefCountedThreadSafe<PolicyDomainDescriptor> {
  public:
   typedef std::map<std::string, const PolicySchema*> SchemaMap;
 
@@ -40,7 +41,7 @@ class PolicyDomainDescriptor : public base::RefCounted<PolicyDomainDescriptor> {
   void FilterBundle(PolicyBundle* bundle) const;
 
  private:
-  friend class base::RefCounted<PolicyDomainDescriptor>;
+  friend class base::RefCountedThreadSafe<PolicyDomainDescriptor>;
   ~PolicyDomainDescriptor();
 
   PolicyDomain domain_;
