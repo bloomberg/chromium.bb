@@ -63,7 +63,8 @@ int ProducerToInt(scoped_ptr<SpdyBufferProducer> producer) {
 // be there.
 SpdyStream* MakeTestStream(RequestPriority priority) {
   return new SpdyStream(
-      NULL, std::string(), priority, 0, 0, false, BoundNetLog());
+      SPDY_BIDIRECTIONAL_STREAM, NULL, std::string(), priority,
+      0, 0, BoundNetLog());
 }
 
 // Add some frame producers of different priority. The producers

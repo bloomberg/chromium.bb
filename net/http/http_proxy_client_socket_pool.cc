@@ -322,8 +322,8 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
 
   next_state_ = STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE;
   return spdy_stream_request_.StartRequest(
-      spdy_session, params_->request_url(), params_->destination().priority(),
-      spdy_session->net_log(), callback_);
+      SPDY_BIDIRECTIONAL_STREAM, spdy_session, params_->request_url(),
+      params_->destination().priority(), spdy_session->net_log(), callback_);
 }
 
 int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {

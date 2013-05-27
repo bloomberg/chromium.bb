@@ -78,14 +78,15 @@ class SpdyStream::SynStreamBufferProducer : public SpdyBufferProducer {
   const base::WeakPtr<SpdyStream> stream_;
 };
 
-SpdyStream::SpdyStream(SpdySession* session,
+SpdyStream::SpdyStream(SpdyStreamType type,
+                       SpdySession* session,
                        const std::string& path,
                        RequestPriority priority,
                        int32 initial_send_window_size,
                        int32 initial_recv_window_size,
-                       bool pushed,
                        const BoundNetLog& net_log)
-    : weak_ptr_factory_(this),
+    : type_(type),
+      weak_ptr_factory_(this),
       in_do_loop_(false),
       continue_buffering_data_(true),
       stream_id_(0),
@@ -96,11 +97,12 @@ SpdyStream::SpdyStream(SpdySession* session,
       send_window_size_(initial_send_window_size),
       recv_window_size_(initial_recv_window_size),
       unacked_recv_window_bytes_(0),
-      pushed_(pushed),
       response_received_(false),
       session_(session),
       delegate_(NULL),
-      send_status_(MORE_DATA_TO_SEND),
+      send_status_(
+          (type_ == SPDY_PUSH_STREAM) ?
+          NO_MORE_DATA_TO_SEND : MORE_DATA_TO_SEND),
       request_time_(base::Time::Now()),
       response_(new SpdyHeaderBlock),
       io_state_(STATE_NONE),
@@ -122,7 +124,7 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
   CHECK(delegate);
   delegate_ = delegate;
 
-  if (pushed_) {
+  if (type_ == SPDY_PUSH_STREAM) {
     CHECK(response_received());
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -379,9 +381,9 @@ int SpdyStream::OnResponseReceived(const SpdyHeaderBlock& response) {
 
   // If we receive a response before we are in STATE_WAITING_FOR_RESPONSE, then
   // the server has sent the SYN_REPLY too early.
-  if (!pushed_ && io_state_ != STATE_WAITING_FOR_RESPONSE)
+  if (type_ != SPDY_PUSH_STREAM && io_state_ != STATE_WAITING_FOR_RESPONSE)
     return ERR_SPDY_PROTOCOL_ERROR;
-  if (pushed_)
+  if (type_ == SPDY_PUSH_STREAM)
     CHECK_EQ(io_state_, STATE_NONE);
   io_state_ = STATE_OPEN;
 
@@ -563,21 +565,13 @@ void SpdyStream::Close() {
 
 int SpdyStream::SendRequestHeaders(scoped_ptr<SpdyHeaderBlock> headers,
                                    SpdySendStatus send_status) {
+  CHECK_NE(type_, SPDY_PUSH_STREAM);
   CHECK_EQ(send_status_, MORE_DATA_TO_SEND);
   CHECK(!request_);
+  CHECK(!pending_send_data_);
+  CHECK_EQ(io_state_, STATE_NONE);
   request_ = headers.Pass();
-  // Pushed streams do not send any data, and should always be
-  // idle. However, we still want to return IO_PENDING to mimic
-  // non-push behavior.
   send_status_ = send_status;
-  if (pushed_) {
-    DCHECK(is_idle());
-    DCHECK_EQ(send_status_, NO_MORE_DATA_TO_SEND);
-    DCHECK(response_received());
-    send_time_ = base::TimeTicks::Now();
-    return ERR_IO_PENDING;
-  }
-  CHECK_EQ(STATE_NONE, io_state_);
   io_state_ = STATE_GET_DOMAIN_BOUND_CERT;
   return DoLoop(OK);
 }
@@ -585,7 +579,9 @@ int SpdyStream::SendRequestHeaders(scoped_ptr<SpdyHeaderBlock> headers,
 void SpdyStream::SendStreamData(IOBuffer* data,
                                 int length,
                                 SpdySendStatus send_status) {
+  CHECK_NE(type_, SPDY_PUSH_STREAM);
   CHECK_EQ(send_status_, MORE_DATA_TO_SEND);
+  CHECK_GE(io_state_, STATE_SEND_BODY);
   CHECK(!pending_send_data_);
   pending_send_data_ = new DrainableIOBuffer(data, length);
   send_status_ = send_status;
@@ -621,7 +617,7 @@ base::WeakPtr<SpdyStream> SpdyStream::GetWeakPtr() {
 }
 
 bool SpdyStream::HasUrl() const {
-  if (pushed_)
+  if (type_ == SPDY_PUSH_STREAM)
     return response_received();
   return request_.get() != NULL;
 }
@@ -629,12 +625,14 @@ bool SpdyStream::HasUrl() const {
 GURL SpdyStream::GetUrl() const {
   DCHECK(HasUrl());
 
-  const SpdyHeaderBlock& headers = (pushed_) ? *response_ : *request_;
-  return GetUrlFromHeaderBlock(headers, GetProtocolVersion(), pushed_);
+  const SpdyHeaderBlock& headers =
+      (type_ == SPDY_PUSH_STREAM) ? *response_ : *request_;
+  return GetUrlFromHeaderBlock(headers, GetProtocolVersion(),
+                               type_ == SPDY_PUSH_STREAM);
 }
 
 void SpdyStream::OnGetDomainBoundCertComplete(int result) {
-  DCHECK_EQ(STATE_GET_DOMAIN_BOUND_CERT_COMPLETE, io_state_);
+  DCHECK_EQ(io_state_, STATE_GET_DOMAIN_BOUND_CERT_COMPLETE);
   DoLoop(result);
 }
 
@@ -719,8 +717,9 @@ int SpdyStream::DoLoop(int result) {
 
 int SpdyStream::DoGetDomainBoundCert() {
   CHECK(request_.get());
+  DCHECK_NE(type_, SPDY_PUSH_STREAM);
   GURL url = GetUrl();
-  if (!session_->NeedsCredentials() || pushed_ || !url.SchemeIs("https")) {
+  if (!session_->NeedsCredentials() || !url.SchemeIs("https")) {
     // Proceed directly to sending the request headers
     io_state_ = STATE_SEND_REQUEST_HEADERS;
     return OK;
@@ -747,6 +746,7 @@ int SpdyStream::DoGetDomainBoundCert() {
 }
 
 int SpdyStream::DoGetDomainBoundCertComplete(int result) {
+  DCHECK_NE(type_, SPDY_PUSH_STREAM);
   if (result != OK)
     return result;
 
@@ -756,8 +756,9 @@ int SpdyStream::DoGetDomainBoundCertComplete(int result) {
 }
 
 int SpdyStream::DoSendDomainBoundCert() {
-  io_state_ = STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE;
   CHECK(request_.get());
+  DCHECK_NE(type_, SPDY_PUSH_STREAM);
+  io_state_ = STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE;
 
   std::string origin = GetUrl().GetOrigin().spec();
   DCHECK(origin[origin.length() - 1] == '/');
@@ -788,6 +789,7 @@ int SpdyStream::DoSendDomainBoundCert() {
 }
 
 int SpdyStream::DoSendDomainBoundCertComplete(int result) {
+  DCHECK_NE(type_, SPDY_PUSH_STREAM);
   if (result != OK)
     return result;
 
@@ -797,6 +799,7 @@ int SpdyStream::DoSendDomainBoundCertComplete(int result) {
 }
 
 int SpdyStream::DoSendRequestHeaders() {
+  DCHECK_NE(type_, SPDY_PUSH_STREAM);
   io_state_ = STATE_SEND_REQUEST_HEADERS_COMPLETE;
 
   session_->EnqueueStreamWrite(
@@ -807,18 +810,32 @@ int SpdyStream::DoSendRequestHeaders() {
 }
 
 int SpdyStream::DoSendRequestHeadersComplete() {
+  DCHECK_NE(type_, SPDY_PUSH_STREAM);
   DCHECK_EQ(just_completed_frame_type_, SYN_STREAM);
   DCHECK_NE(stream_id_, 0u);
   if (!delegate_)
     return ERR_UNEXPECTED;
 
-  // We don't store the return value in |send_status_|; see comments
-  // in spdy_stream.h for OnSendRequestHeadersComplete().
-  SpdySendStatus send_status = delegate_->OnSendRequestHeadersComplete();
+  delegate_->OnSendRequestHeadersComplete();
 
-  io_state_ =
-      (send_status == MORE_DATA_TO_SEND) ?
-      STATE_SEND_BODY : STATE_WAITING_FOR_RESPONSE;
+  switch (type_) {
+    case SPDY_BIDIRECTIONAL_STREAM:
+      DCHECK_EQ(send_status_, MORE_DATA_TO_SEND);
+      io_state_ = STATE_WAITING_FOR_RESPONSE;
+      break;
+
+    case SPDY_REQUEST_RESPONSE_STREAM:
+      io_state_ =
+          (send_status_ == MORE_DATA_TO_SEND) ?
+          STATE_SEND_BODY : STATE_WAITING_FOR_RESPONSE;
+      break;
+
+    case SPDY_PUSH_STREAM:
+      // Fall through.
+    default:
+      NOTREACHED();
+      return ERR_UNEXPECTED;
+  }
 
   return OK;
 }
@@ -826,6 +843,7 @@ int SpdyStream::DoSendRequestHeadersComplete() {
 // DoSendBody is called to send the optional body for the request.  This call
 // will also be called as each write of a chunk of the body completes.
 int SpdyStream::DoSendBody() {
+  DCHECK_NE(type_, SPDY_PUSH_STREAM);
   io_state_ = STATE_SEND_BODY_COMPLETE;
   CHECK(delegate_);
   delegate_->OnSendBody();
@@ -833,6 +851,7 @@ int SpdyStream::DoSendBody() {
 }
 
 int SpdyStream::DoSendBodyComplete(int result) {
+  DCHECK_NE(type_, SPDY_PUSH_STREAM);
   result = ProcessJustCompletedFrame(result, STATE_SEND_BODY_COMPLETE);
 
   if (result != OK)
@@ -902,17 +921,30 @@ int SpdyStream::ProcessJustCompletedFrame(int result, State io_pending_state) {
 }
 
 void SpdyStream::UpdateHistograms() {
-  // We need all timers to be filled in, otherwise metrics can be bogus.
-  if (send_time_.is_null() || recv_first_byte_time_.is_null() ||
-      recv_last_byte_time_.is_null())
+  // We need at least the receive timers to be filled in, as otherwise
+  // metrics can be bogus.
+  if (recv_first_byte_time_.is_null() || recv_last_byte_time_.is_null())
     return;
 
+  base::TimeTicks effective_send_time;
+  if (type_ == SPDY_PUSH_STREAM) {
+    // Push streams shouldn't have |send_time_| filled in.
+    DCHECK(send_time_.is_null());
+    effective_send_time = recv_first_byte_time_;
+  } else {
+    // For non-push streams, we also need |send_time_| to be filled
+    // in.
+    if (send_time_.is_null())
+      return;
+    effective_send_time = send_time_;
+  }
+
   UMA_HISTOGRAM_TIMES("Net.SpdyStreamTimeToFirstByte",
-      recv_first_byte_time_ - send_time_);
+                      recv_first_byte_time_ - effective_send_time);
   UMA_HISTOGRAM_TIMES("Net.SpdyStreamDownloadTime",
-      recv_last_byte_time_ - recv_first_byte_time_);
+                      recv_last_byte_time_ - recv_first_byte_time_);
   UMA_HISTOGRAM_TIMES("Net.SpdyStreamTime",
-      recv_last_byte_time_ - send_time_);
+                      recv_last_byte_time_ - effective_send_time);
 
   UMA_HISTOGRAM_COUNTS("Net.SpdySendBytes", send_bytes_);
   UMA_HISTOGRAM_COUNTS("Net.SpdyRecvBytes", recv_bytes_);

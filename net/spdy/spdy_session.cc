@@ -238,6 +238,7 @@ SpdyStreamRequest::~SpdyStreamRequest() {
 }
 
 int SpdyStreamRequest::StartRequest(
+    SpdyStreamType type,
     const scoped_refptr<SpdySession>& session,
     const GURL& url,
     RequestPriority priority,
@@ -248,6 +249,7 @@ int SpdyStreamRequest::StartRequest(
   DCHECK(!stream_);
   DCHECK(callback_.is_null());
 
+  type_ = type;
   session_ = session;
   url_ = url;
   priority_ = priority;
@@ -300,6 +302,7 @@ void SpdyStreamRequest::OnRequestCompleteFailure(int rv) {
 }
 
 void SpdyStreamRequest::Reset() {
+  type_ = SPDY_BIDIRECTIONAL_STREAM;
   session_ = NULL;
   stream_.reset();
   url_ = GURL();
@@ -584,10 +587,10 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
 
   const std::string& path = request.url().PathForRequest();
   scoped_ptr<SpdyStream> new_stream(
-      new SpdyStream(this, path, request.priority(),
+      new SpdyStream(request.type(), this, path, request.priority(),
                      stream_initial_send_window_size_,
                      stream_initial_recv_window_size_,
-                     false, request.net_log()));
+                     request.net_log()));
   *stream = new_stream->GetWeakPtr();
   InsertCreatedStream(new_stream.Pass());
 
@@ -1697,10 +1700,11 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   }
 
   scoped_ptr<SpdyStream> stream(
-      new SpdyStream(this, gurl.PathForRequest(), request_priority,
+      new SpdyStream(SPDY_PUSH_STREAM, this, gurl.PathForRequest(),
+                     request_priority,
                      stream_initial_send_window_size_,
                      stream_initial_recv_window_size_,
-                     true, net_log_));
+                     net_log_));
   stream->set_stream_id(stream_id);
 
   DeleteExpiredPushedStreams();

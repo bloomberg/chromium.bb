@@ -74,7 +74,7 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
   void Close();
 
   // SpdyStream::Delegate
-  virtual SpdySendStatus OnSendRequestHeadersComplete() OVERRIDE;
+  virtual void OnSendRequestHeadersComplete() OVERRIDE;
   virtual void OnSendBody() OVERRIDE;
   virtual void OnSendBodyComplete() OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,

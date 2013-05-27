@@ -32,6 +32,7 @@
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session_pool.h"
+#include "net/spdy/spdy_stream.h"
 #include "net/spdy/spdy_write_queue.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/ssl/ssl_config_service.h"
@@ -129,7 +130,8 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   // returned, must not be called again without CancelRequest() or
   // ReleaseStream() being called first. Otherwise, in case of an
   // immediate error, this may be called again.
-  int StartRequest(const scoped_refptr<SpdySession>& session,
+  int StartRequest(SpdyStreamType type,
+                   const scoped_refptr<SpdySession>& session,
                    const GURL& url,
                    RequestPriority priority,
                    const BoundNetLog& net_log,
@@ -158,12 +160,14 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   void OnRequestCompleteFailure(int rv);
 
   // Accessors called by |session_|.
+  SpdyStreamType type() const { return type_; }
   const GURL& url() const { return url_; }
   RequestPriority priority() const { return priority_; }
   const BoundNetLog& net_log() const { return net_log_; }
 
   void Reset();
 
+  SpdyStreamType type_;
   scoped_refptr<SpdySession> session_;
   base::WeakPtr<SpdyStream> stream_;
   GURL url_;

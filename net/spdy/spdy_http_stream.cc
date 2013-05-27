@@ -30,7 +30,6 @@ SpdyHttpStream::SpdyHttpStream(SpdySession* spdy_session,
     : weak_factory_(this),
       spdy_session_(spdy_session),
       stream_closed_(false),
-      closed_stream_pushed_(false),
       closed_stream_status_(ERR_FAILED),
       closed_stream_id_(0),
       request_info_(NULL),
@@ -74,14 +73,15 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
 
     // |stream_| may be NULL even if OK was returned.
     if (stream_) {
+      DCHECK_EQ(stream_->type(), SPDY_PUSH_STREAM);
       stream_->SetDelegate(this);
       return OK;
     }
   }
 
   int rv = stream_request_.StartRequest(
-      spdy_session_, request_info_->url, priority,
-      stream_net_log,
+      SPDY_REQUEST_RESPONSE_STREAM, spdy_session_, request_info_->url,
+      priority, stream_net_log,
       base::Bind(&SpdyHttpStream::OnStreamCreated,
                  weak_factory_.GetWeakPtr(), callback));
 
@@ -203,7 +203,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
                                 HttpResponseInfo* response,
                                 const CompletionCallback& callback) {
   if (stream_closed_) {
-    if (stream_->pushed())
+    if (stream_->type() == SPDY_PUSH_STREAM)
       return closed_stream_status_;
 
     return (closed_stream_status_ == OK) ? ERR_FAILED : closed_stream_status_;
@@ -256,17 +256,27 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     return result;
   response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
 
-  scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
-  CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
-                                   headers.get(), stream_->GetProtocolVersion(),
-                                   direct_);
-  stream_->net_log().AddEvent(
-      NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS,
-      base::Bind(&SpdyHeaderBlockNetLogCallback, headers.get()));
-  result =
-      stream_->SendRequestHeaders(
-          headers.Pass(),
-          has_upload_data_ ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
+  if (stream_->type() == SPDY_PUSH_STREAM) {
+    // Pushed streams do not send any data, and should always be
+    // idle. However, we still want to return ERR_IO_PENDING to mimic
+    // non-push behavior. The callback will be called when the
+    // response is received.
+    result = ERR_IO_PENDING;
+  } else {
+    scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
+    CreateSpdyHeadersFromHttpRequest(
+        *request_info_, request_headers,
+        headers.get(), stream_->GetProtocolVersion(),
+        direct_);
+    stream_->net_log().AddEvent(
+        NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS,
+        base::Bind(&SpdyHeaderBlockNetLogCallback, headers.get()));
+    result =
+        stream_->SendRequestHeaders(
+            headers.Pass(),
+            has_upload_data_ ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
+  }
+
   if (result == ERR_IO_PENDING) {
     CHECK(callback_.is_null());
     callback_ = callback;
@@ -282,10 +292,9 @@ void SpdyHttpStream::Cancel() {
   }
 }
 
-SpdySendStatus SpdyHttpStream::OnSendRequestHeadersComplete() {
+void SpdyHttpStream::OnSendRequestHeadersComplete() {
   if (!callback_.is_null())
     DoCallback(OK);
-  return has_upload_data_ ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND;
 }
 
 void SpdyHttpStream::OnSendBody() {
@@ -309,7 +318,7 @@ int SpdyHttpStream::OnResponseReceived(const SpdyHeaderBlock& response,
                                        base::Time response_time,
                                        int status) {
   if (!response_info_) {
-    DCHECK(stream_->pushed());
+    DCHECK_EQ(stream_->type(), SPDY_PUSH_STREAM);
     push_response_info_.reset(new HttpResponseInfo);
     response_info_ = push_response_info_.get();
   }
@@ -376,7 +385,7 @@ int SpdyHttpStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   // ReadResponseBody(), therefore user_buffer_ may be NULL.  This may often
   // happen for server initiated streams.
   DCHECK(stream_.get());
-  DCHECK(!stream_->closed() || stream_->pushed());
+  DCHECK(!stream_->closed() || stream_->type() == SPDY_PUSH_STREAM);
   if (buffer) {
     response_body_queue_.Enqueue(buffer.Pass());
 
@@ -398,7 +407,6 @@ void SpdyHttpStream::OnDataSent() {
 void SpdyHttpStream::OnClose(int status) {
   if (stream_) {
     stream_closed_ = true;
-    closed_stream_pushed_ = stream_->pushed();
     closed_stream_status_ = status;
     closed_stream_id_ = stream_->stream_id();
   }

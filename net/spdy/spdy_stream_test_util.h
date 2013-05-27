@@ -26,7 +26,7 @@ class ClosingDelegate : public SpdyStream::Delegate {
   virtual ~ClosingDelegate();
 
   // SpdyStream::Delegate implementation.
-  virtual SpdySendStatus OnSendRequestHeadersComplete() OVERRIDE;
+  virtual void OnSendRequestHeadersComplete() OVERRIDE;
   virtual void OnSendBody() OVERRIDE;
   virtual void OnSendBodyComplete() OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
@@ -50,7 +50,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   explicit StreamDelegateBase(const base::WeakPtr<SpdyStream>& stream);
   virtual ~StreamDelegateBase();
 
-  virtual SpdySendStatus OnSendRequestHeadersComplete() OVERRIDE;
+  virtual void OnSendRequestHeadersComplete() OVERRIDE;
   virtual void OnSendBody() = 0;
   virtual void OnSendBodyComplete() = 0;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
@@ -126,7 +126,6 @@ class StreamDelegateWithBody : public StreamDelegateBase {
                          base::StringPiece data);
   virtual ~StreamDelegateWithBody();
 
-  virtual SpdySendStatus OnSendRequestHeadersComplete() OVERRIDE;
   virtual void OnSendBody() OVERRIDE;
   virtual void OnSendBodyComplete() OVERRIDE;
 

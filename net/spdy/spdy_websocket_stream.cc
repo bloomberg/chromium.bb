@@ -39,7 +39,7 @@ int SpdyWebSocketStream::InitializeStream(const GURL& url,
     return ERR_SOCKET_NOT_CONNECTED;
 
   int rv = stream_request_.StartRequest(
-      spdy_session_, url, request_priority, net_log,
+      SPDY_BIDIRECTIONAL_STREAM, spdy_session_, url, request_priority, net_log,
       base::Bind(&SpdyWebSocketStream::OnSpdyStreamCreated,
                  weak_ptr_factory_.GetWeakPtr()));
 
@@ -82,10 +82,9 @@ void SpdyWebSocketStream::Close() {
   }
 }
 
-SpdySendStatus SpdyWebSocketStream::OnSendRequestHeadersComplete() {
+void SpdyWebSocketStream::OnSendRequestHeadersComplete() {
   DCHECK(delegate_);
   delegate_->OnSentSpdyHeaders();
-  return NO_MORE_DATA_TO_SEND;
 }
 
 void SpdyWebSocketStream::OnSendBody() {

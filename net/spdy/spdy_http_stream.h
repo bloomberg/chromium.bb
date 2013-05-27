@@ -14,6 +14,7 @@
 #include "net/base/net_log.h"
 #include "net/http/http_stream.h"
 #include "net/spdy/spdy_read_queue.h"
+#include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_stream.h"
 
 namespace net {
@@ -84,7 +85,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   virtual void Drain(HttpNetworkSession* session) OVERRIDE;
 
   // SpdyStream::Delegate implementation.
-  virtual SpdySendStatus OnSendRequestHeadersComplete() OVERRIDE;
+  virtual void OnSendRequestHeadersComplete() OVERRIDE;
   virtual void OnSendBody() OVERRIDE;
   virtual void OnSendBodyComplete() OVERRIDE;
   virtual int OnResponseReceived(const SpdyHeaderBlock& response,
@@ -127,7 +128,6 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   bool stream_closed_;
 
   // Set only when |stream_closed_| is true.
-  bool closed_stream_pushed_;
   int closed_stream_status_;
   SpdyStreamId closed_stream_id_;
 

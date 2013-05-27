@@ -435,14 +435,10 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
 // SpdyStream::Delegate methods:
 // Called when SYN frame has been sent.
 // Returns true if no more data to be sent after SYN frame.
-SpdySendStatus SpdyProxyClientSocket::OnSendRequestHeadersComplete() {
+void SpdyProxyClientSocket::OnSendRequestHeadersComplete() {
   DCHECK_EQ(next_state_, STATE_SEND_REQUEST_COMPLETE);
 
   OnIOComplete(OK);
-
-  // We return true here so that we send |spdy_stream_| into
-  // STATE_OPEN (ala WebSockets).
-  return NO_MORE_DATA_TO_SEND;
 }
 
 void SpdyProxyClientSocket::OnSendBody() {

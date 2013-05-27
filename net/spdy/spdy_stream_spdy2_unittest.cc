@@ -118,7 +118,8 @@ TEST_F(SpdyStreamSpdy2Test, SendDataAfterOpen) {
   InitializeSpdySession(session, host_port_pair_);
 
   base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
+      CreateStreamSynchronously(
+          SPDY_BIDIRECTIONAL_STREAM, session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
 
   StreamDelegateSendImmediate delegate(stream, kPostBodyStringPiece);
@@ -161,12 +162,12 @@ TEST_F(SpdyStreamSpdy2Test, PushedStream) {
   BoundNetLog net_log;
 
   // Conjure up a stream.
-  SpdyStream stream(spdy_session,
+  SpdyStream stream(SPDY_PUSH_STREAM,
+                    spdy_session,
                     std::string(),
                     DEFAULT_PRIORITY,
                     kSpdyStreamInitialWindowSize,
                     kSpdyStreamInitialWindowSize,
-                    true,
                     net_log);
   stream.set_stream_id(2);
   EXPECT_FALSE(stream.response_received());
@@ -231,7 +232,8 @@ TEST_F(SpdyStreamSpdy2Test, StreamError) {
   InitializeSpdySession(session, host_port_pair_);
 
   base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(session, url, LOWEST, log.bound());
+      CreateStreamSynchronously(
+          SPDY_BIDIRECTIONAL_STREAM, session, url, LOWEST, log.bound());
   ASSERT_TRUE(stream.get() != NULL);
 
   StreamDelegateSendImmediate delegate(stream, kPostBodyStringPiece);
@@ -314,7 +316,8 @@ TEST_F(SpdyStreamSpdy2Test, SendLargeDataAfterOpenRequestResponse) {
   InitializeSpdySession(session, host_port_pair_);
 
   base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
+      CreateStreamSynchronously(
+          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
 
   std::string body_data(3 * kMaxSpdyFrameChunkSize, 'x');
@@ -377,7 +380,8 @@ TEST_F(SpdyStreamSpdy2Test, SendLargeDataAfterOpenBidirectional) {
   InitializeSpdySession(session, host_port_pair_);
 
   base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(session, url, LOWEST, BoundNetLog());
+      CreateStreamSynchronously(
+          SPDY_BIDIRECTIONAL_STREAM, session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != NULL);
 
   std::string body_data(3 * kMaxSpdyFrameChunkSize, 'x');

@@ -207,7 +207,8 @@ void SpdyProxyClientSocketTest::Initialize(MockRead* reads,
   // Create the SPDY Stream.
   base::WeakPtr<SpdyStream> spdy_stream(
       CreateStreamSynchronously(
-          spdy_session_, url_, LOWEST, net_log_.bound()));
+          SPDY_BIDIRECTIONAL_STREAM, spdy_session_, url_, LOWEST,
+          net_log_.bound()));
   ASSERT_TRUE(spdy_stream.get() != NULL);
 
   // Create the SpdyProxyClientSocket.

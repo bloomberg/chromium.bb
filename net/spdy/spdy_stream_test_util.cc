@@ -20,9 +20,7 @@ ClosingDelegate::ClosingDelegate(
 
 ClosingDelegate::~ClosingDelegate() {}
 
-SpdySendStatus ClosingDelegate::OnSendRequestHeadersComplete() {
-  return NO_MORE_DATA_TO_SEND;
-}
+void ClosingDelegate::OnSendRequestHeadersComplete() {}
 
 void ClosingDelegate::OnSendBody() {
   ADD_FAILURE() << "OnSendBody should not be called";
@@ -58,11 +56,10 @@ StreamDelegateBase::StreamDelegateBase(
 StreamDelegateBase::~StreamDelegateBase() {
 }
 
-SpdySendStatus StreamDelegateBase::OnSendRequestHeadersComplete() {
+void StreamDelegateBase::OnSendRequestHeadersComplete() {
   stream_id_ = stream_->stream_id();
   EXPECT_NE(stream_id_, 0u);
   send_headers_completed_ = true;
-  return NO_MORE_DATA_TO_SEND;
 }
 
 int StreamDelegateBase::OnResponseReceived(const SpdyHeaderBlock& response,
@@ -162,11 +159,6 @@ StreamDelegateWithBody::StreamDelegateWithBody(
       buf_(new StringIOBuffer(data.as_string())) {}
 
 StreamDelegateWithBody::~StreamDelegateWithBody() {
-}
-
-SpdySendStatus StreamDelegateWithBody::OnSendRequestHeadersComplete() {
-  StreamDelegateBase::OnSendRequestHeadersComplete();
-  return MORE_DATA_TO_SEND;
 }
 
 void StreamDelegateWithBody::OnSendBody() {

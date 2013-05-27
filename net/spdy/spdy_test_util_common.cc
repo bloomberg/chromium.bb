@@ -280,12 +280,13 @@ bool GetSpdyPriority(SpdyMajorVersion version,
 }
 
 base::WeakPtr<SpdyStream> CreateStreamSynchronously(
+    SpdyStreamType type,
     const scoped_refptr<SpdySession>& session,
     const GURL& url,
     RequestPriority priority,
     const BoundNetLog& net_log) {
   SpdyStreamRequest stream_request;
-  int rv = stream_request.StartRequest(session, url, priority, net_log,
+  int rv = stream_request.StartRequest(type, session, url, priority, net_log,
                                        CompletionCallback());
   return
       (rv == OK) ? stream_request.ReleaseStream() : base::WeakPtr<SpdyStream>();

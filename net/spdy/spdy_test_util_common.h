@@ -132,6 +132,7 @@ bool GetSpdyPriority(SpdyMajorVersion version,
 // Tries to create a stream in |session| synchronously. Returns NULL
 // on failure.
 base::WeakPtr<SpdyStream> CreateStreamSynchronously(
+    SpdyStreamType type,
     const scoped_refptr<SpdySession>& session,
     const GURL& url,
     RequestPriority priority,
