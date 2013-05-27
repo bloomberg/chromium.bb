@@ -1016,6 +1016,13 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePinch, switches::kDisablePinch),
   },
   {
+    "enable-pinch-virtual-viewport",
+    IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_NAME,
+    IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_DESCRIPTION,
+    kOsLinux | kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(cc::switches::kEnablePinchVirtualViewport),
+  },
+  {
     "forced-maximize-mode",
     IDS_FLAGS_FORCE_MAXIMIZE_MODE_NAME,
     IDS_FLAGS_FORCE_MAXIMIZE_MODE_DESCRIPTION,

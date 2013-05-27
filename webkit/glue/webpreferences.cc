@@ -130,6 +130,7 @@ WebPreferences::WebPreferences()
 #endif
       spatial_navigation_enabled(false),
       experimental_websocket_enabled(false),
+      pinch_virtual_viewport_enabled(false),
       cookie_enabled(true)
 #if defined(OS_ANDROID)
       ,
@@ -480,6 +481,8 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   WebNetworkStateNotifier::setOnLine(prefs.is_online);
   settings->setExperimentalWebSocketEnabled(
       prefs.experimental_websocket_enabled);
+  settings->setPinchVirtualViewportEnabled(
+      prefs.pinch_virtual_viewport_enabled);
 }
 
 #define COMPILE_ASSERT_MATCHING_ENUMS(webkit_glue_name, webkit_name)         \

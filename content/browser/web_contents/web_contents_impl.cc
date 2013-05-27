@@ -538,6 +538,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisableThreadedHTMLParser);
   prefs.experimental_websocket_enabled =
       command_line.HasSwitch(switches::kEnableExperimentalWebSocket);
+  prefs.pinch_virtual_viewport_enabled =
+      command_line.HasSwitch(cc::switches::kEnablePinchVirtualViewport);
 
 #if defined(OS_ANDROID)
   prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(
