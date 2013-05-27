@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_controller.h"
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/task_runner_util.h"
@@ -27,6 +28,10 @@ namespace {
 
 bool StoreManagedUserFiles(const std::string& token,
                            const base::FilePath& base_path) {
+  if (!base::chromeos::IsRunningOnChromeOS()) {
+    // If running on desktop, cryptohome stub does not create home directory.
+    file_util::CreateDirectory(base_path);
+  }
   base::FilePath token_file = base_path.Append(kManagedUserTokenFilename);
   int bytes = file_util::WriteFile(token_file, token.c_str(), token.length());
   return bytes >= 0;
