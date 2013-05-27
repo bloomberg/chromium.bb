@@ -2108,3 +2108,6 @@ crbug.com/244114 [ Win Release ] svg/css/font-face-variant-crash.html [ Crash Pa
 
 crbug.com/244114 [ Win Debug ] svg/css/font-face-variant-crash.html [ Pass Timeout ]
 crbug.com/244116 [ Win Release ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Crash Pass ]
+
+# Test depends on timezone.
+crbug.com/244179 fast/js/date-parse-test.html [ Failure Pass ]
