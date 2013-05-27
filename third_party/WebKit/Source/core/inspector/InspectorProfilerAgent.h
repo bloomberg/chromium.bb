@@ -57,8 +57,7 @@ typedef String ErrorString;
 class InspectorProfilerAgent : public InspectorBaseAgent<InspectorProfilerAgent>, public InspectorBackendDispatcher::ProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorConsoleAgent*, Page*, InspectorCompositeState*, InjectedScriptManager*);
-    static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorConsoleAgent*, WorkerContext*, InspectorCompositeState*, InjectedScriptManager*);
+    static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*);
     virtual ~InspectorProfilerAgent();
 
     void addProfile(PassRefPtr<ScriptProfile> prpProfile, unsigned lineNumber, const String& sourceURL);
@@ -88,13 +87,8 @@ public:
     void willProcessTask();
     void didProcessTask();
 
-protected:
-    InspectorProfilerAgent(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*);
-    virtual void startProfiling(const String& title) = 0;
-    virtual PassRefPtr<ScriptProfile> stopProfiling(const String& title) = 0;
-
 private:
-    typedef HashMap<unsigned int, RefPtr<ScriptProfile> > ProfilesMap;
+    InspectorProfilerAgent(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*);
 
     void resetFrontendProfiles();
     PassRefPtr<TypeBuilder::Profiler::ProfileHeader> stop(ErrorString* = 0);
@@ -107,6 +101,7 @@ private:
     bool m_recordingCPUProfile;
     int m_currentUserInitiatedProfileNumber;
     unsigned m_nextUserInitiatedProfileNumber;
+    typedef HashMap<unsigned, RefPtr<ScriptProfile> > ProfilesMap;
     ProfilesMap m_profiles;
 
     typedef HashMap<String, double> ProfileNameIdleTimeMap;

@@ -70,12 +70,8 @@ public:
     static void collectGarbage();
     static ScriptObject objectByHeapObjectId(unsigned id);
     static unsigned getHeapObjectId(const ScriptValue&);
-    static void start(ScriptState* state, const String& title);
-    static void startForPage(Page*, const String& title);
-    static void startForWorkerContext(WorkerContext*, const String& title);
-    static PassRefPtr<ScriptProfile> stop(ScriptState* state, const String& title);
-    static PassRefPtr<ScriptProfile> stopForPage(Page*, const String& title);
-    static PassRefPtr<ScriptProfile> stopForWorkerContext(WorkerContext*, const String& title);
+    static void start(const String& title);
+    static PassRefPtr<ScriptProfile> stop(const String& title);
     static PassRefPtr<ScriptHeapSnapshot> takeHeapSnapshot(const String& title, HeapSnapshotProgress*);
     static void startTrackingHeapObjects();
     static void stopTrackingHeapObjects();

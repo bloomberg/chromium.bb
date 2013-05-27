@@ -64,55 +64,9 @@ static const char profileHeadersRequested[] = "profileHeadersRequested";
 static const char* const userInitiatedProfileName = "org.webkit.profiles.user-initiated";
 static const char* const CPUProfileType = "CPU";
 
-
-class PageProfilerAgent : public InspectorProfilerAgent {
-public:
-    PageProfilerAgent(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, Page* inspectedPage, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager)
-        : InspectorProfilerAgent(instrumentingAgents, consoleAgent, state, injectedScriptManager), m_inspectedPage(inspectedPage) { }
-    virtual ~PageProfilerAgent() { }
-
-private:
-    virtual void startProfiling(const String& title)
-    {
-        ScriptProfiler::startForPage(m_inspectedPage, title);
-    }
-
-    virtual PassRefPtr<ScriptProfile> stopProfiling(const String& title)
-    {
-        return ScriptProfiler::stopForPage(m_inspectedPage, title);
-    }
-
-    Page* m_inspectedPage;
-};
-
-PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, Page* inspectedPage, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager)
+PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager)
 {
-    return adoptPtr(new PageProfilerAgent(instrumentingAgents, consoleAgent, inspectedPage, inspectorState, injectedScriptManager));
-}
-
-class WorkerProfilerAgent : public InspectorProfilerAgent {
-public:
-    WorkerProfilerAgent(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, WorkerContext* workerContext, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager)
-        : InspectorProfilerAgent(instrumentingAgents, consoleAgent, state, injectedScriptManager), m_workerContext(workerContext) { }
-    virtual ~WorkerProfilerAgent() { }
-
-private:
-    virtual void startProfiling(const String& title)
-    {
-        ScriptProfiler::startForWorkerContext(m_workerContext, title);
-    }
-
-    virtual PassRefPtr<ScriptProfile> stopProfiling(const String& title)
-    {
-        return ScriptProfiler::stopForWorkerContext(m_workerContext, title);
-    }
-
-    WorkerContext* m_workerContext;
-};
-
-PassOwnPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, WorkerContext* workerContext, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager)
-{
-    return adoptPtr(new WorkerProfilerAgent(instrumentingAgents, consoleAgent, workerContext, inspectorState, injectedScriptManager));
+    return adoptPtr(new InspectorProfilerAgent(instrumentingAgents, consoleAgent, inspectorState, injectedScriptManager));
 }
 
 InspectorProfilerAgent::InspectorProfilerAgent(InstrumentingAgents* instrumentingAgents, InspectorConsoleAgent* consoleAgent, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager)
@@ -275,7 +229,7 @@ void InspectorProfilerAgent::start(ErrorString*)
     }
     m_recordingCPUProfile = true;
     String title = getCurrentUserInitiatedProfileName(true);
-    startProfiling(title);
+    ScriptProfiler::start(title);
     addStartProfilingMessageToConsole(title, 0, String());
     toggleRecordButton(true);
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
@@ -295,7 +249,7 @@ PassRefPtr<TypeBuilder::Profiler::ProfileHeader> InspectorProfilerAgent::stop(Er
     }
     m_recordingCPUProfile = false;
     String title = getCurrentUserInitiatedProfileName();
-    RefPtr<ScriptProfile> profile = stopProfiling(title);
+    RefPtr<ScriptProfile> profile = ScriptProfiler::stop(title);
     RefPtr<TypeBuilder::Profiler::ProfileHeader> profileHeader;
     if (profile) {
         addProfile(profile, 0, String());

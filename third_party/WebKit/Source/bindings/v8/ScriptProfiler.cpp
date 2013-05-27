@@ -52,14 +52,14 @@ namespace WebCore {
 
 typedef HashMap<String, double> ProfileNameIdleTimeMap;
 
-void ScriptProfiler::start(ScriptState* state, const String& title)
+void ScriptProfiler::start(const String& title)
 {
     ProfileNameIdleTimeMap* profileNameIdleTimeMap = ScriptProfiler::currentProfileNameIdleTimeMap();
     if (profileNameIdleTimeMap->contains(title))
         return;
     profileNameIdleTimeMap->add(title, 0);
 
-    v8::Isolate* isolate = state ? state->isolate() : v8::Isolate::GetCurrent();
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::CpuProfiler* profiler = isolate->GetCpuProfiler();
     if (!profiler)
         return;
@@ -67,27 +67,14 @@ void ScriptProfiler::start(ScriptState* state, const String& title)
     profiler->StartCpuProfiling(v8String(title, isolate), true);
 }
 
-void ScriptProfiler::startForPage(Page*, const String& title)
+PassRefPtr<ScriptProfile> ScriptProfiler::stop(const String& title)
 {
-    return start(0, title);
-}
-
-void ScriptProfiler::startForWorkerContext(WorkerContext*, const String& title)
-{
-    return start(0, title);
-}
-
-PassRefPtr<ScriptProfile> ScriptProfiler::stop(ScriptState* state, const String& title)
-{
-    v8::Isolate* isolate = state ? state->isolate() : v8::Isolate::GetCurrent();
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::CpuProfiler* profiler = isolate->GetCpuProfiler();
     if (!profiler)
         return 0;
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Value> securityToken;
-    if (state)
-        securityToken = state->context()->GetSecurityToken();
-    const v8::CpuProfile* profile = profiler->StopCpuProfiling(v8String(title, isolate), securityToken);
+    const v8::CpuProfile* profile = profiler->StopCpuProfiling(v8String(title, isolate));
     if (!profile)
         return 0;
 
@@ -101,18 +88,6 @@ PassRefPtr<ScriptProfile> ScriptProfiler::stop(ScriptState* state, const String&
     }
 
     return ScriptProfile::create(profile, idleTime);
-}
-
-PassRefPtr<ScriptProfile> ScriptProfiler::stopForPage(Page*, const String& title)
-{
-    // Use null script state to avoid filtering by context security token.
-    // All functions from all iframes should be visible from Inspector UI.
-    return stop(0, title);
-}
-
-PassRefPtr<ScriptProfile> ScriptProfiler::stopForWorkerContext(WorkerContext*, const String& title)
-{
-    return stop(0, title);
 }
 
 void ScriptProfiler::collectGarbage()

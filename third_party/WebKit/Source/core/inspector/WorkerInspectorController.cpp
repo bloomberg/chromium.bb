@@ -106,7 +106,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerContext* workerContex
     m_runtimeAgent->setScriptDebugServer(&debuggerAgent->scriptDebugServer());
     m_agents.append(debuggerAgent.release());
 
-    m_agents.append(InspectorProfilerAgent::create(m_instrumentingAgents.get(), consoleAgent.get(), workerContext, m_state.get(), m_injectedScriptManager.get()));
+    m_agents.append(InspectorProfilerAgent::create(m_instrumentingAgents.get(), consoleAgent.get(), m_state.get(), m_injectedScriptManager.get()));
     m_agents.append(InspectorHeapProfilerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get()));
     m_agents.append(InspectorTimelineAgent::create(m_instrumentingAgents.get(), 0, 0, 0, m_state.get(), InspectorTimelineAgent::WorkerInspector, 0));
     m_agents.append(consoleAgent.release());

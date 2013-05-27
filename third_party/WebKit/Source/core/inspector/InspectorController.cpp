@@ -143,7 +143,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     m_domDebuggerAgent = domDebuggerAgentPtr.get();
     m_agents.append(domDebuggerAgentPtr.release());
 
-    OwnPtr<InspectorProfilerAgent> profilerAgentPtr(InspectorProfilerAgent::create(m_instrumentingAgents.get(), consoleAgent, page, m_state.get(), m_injectedScriptManager.get()));
+    OwnPtr<InspectorProfilerAgent> profilerAgentPtr(InspectorProfilerAgent::create(m_instrumentingAgents.get(), consoleAgent, m_state.get(), m_injectedScriptManager.get()));
     m_profilerAgent = profilerAgentPtr.get();
     m_agents.append(profilerAgentPtr.release());
 

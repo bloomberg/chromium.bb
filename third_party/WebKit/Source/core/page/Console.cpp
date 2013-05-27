@@ -175,7 +175,7 @@ void Console::profile(ScriptState* state, const String& title)
     if (title.isNull()) // no title so give it the next user initiated profile title.
         resolvedTitle = InspectorInstrumentation::getCurrentUserInitiatedProfileName(page, true);
 
-    ScriptProfiler::start(state, resolvedTitle);
+    ScriptProfiler::start(resolvedTitle);
 
     RefPtr<ScriptCallStack> callStack(createScriptCallStack(state, 1));
     const ScriptCallFrame& lastCaller = callStack->at(0);
@@ -191,7 +191,7 @@ void Console::profileEnd(ScriptState* state, const String& title)
     if (!InspectorInstrumentation::profilerEnabled(page))
         return;
 
-    RefPtr<ScriptProfile> profile = ScriptProfiler::stop(state, title);
+    RefPtr<ScriptProfile> profile = ScriptProfiler::stop(title);
     if (!profile)
         return;
 
