@@ -1849,7 +1849,6 @@ crbug.com/243599 [ Release ] fast/loader/stateobjects/replacestate-in-onunload.h
 crbug.com/243599 http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/243649 [ Mac ] transitions/cancel-transition.html [ Failure Pass ]
 crbug.com/243655 [ Win7 ] compositing/iframes/scroll-grandchild-iframe.html [ Timeout ]
-crbug.com/243657 [ Mac Debug ] svg/text/font-size-too-large-crash.svg [ Crash Pass ]
 crbug.com/243658 [ Lion ] fast/writing-mode/vertical-font-vmtx-units-per-em.html [ Crash ]
 crbug.com/243663 [ Win7 ] compositing/animation/animated-composited-inside-hidden.html [ Failure ]
 crbug.com/243663 [ Mac ] compositing/animation/computed-style-during-delay.html [ Timeout ]
@@ -1935,3 +1934,10 @@ crbug.com/244225 inspector-protocol/input/dispatchKeyEvent.html [ Skip ]
 
 # Uses setTimeout trying to catch a specific frame.
 crbug.com/244276 [ Mac ] fast/images/gif-loop-count.html [ ImageOnlyFailure Pass ]
+
+# DCHECK in SkFixed.h
+crbug.com/243309 [ Mac Debug ] accessibility/content-changed-notification-causes-crash.html [ Crash Pass ]
+crbug.com/243309 [ Mac Debug ] fast/css/font-size-nan.svg [ Crash Pass ]
+crbug.com/243309 [ Mac Debug ] fast/css/large-font-size-crash.html [ Crash Pass ]
+crbug.com/243309 [ Mac Debug ] fast/text/international/spaces-combined-in-vertical-text.html [ Crash Pass ]
+crbug.com/243309 [ Mac Debug ] svg/text/font-size-too-large-crash.svg [ Crash Pass ]
