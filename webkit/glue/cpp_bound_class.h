@@ -133,9 +133,11 @@ class WEBKIT_GLUE_EXPORT CppBoundClass {
   // reference to this object, and it is released on deletion.
   CppVariant self_variant_;
 
-  // True if our np_object has been bound to a WebFrame, in which case it must
-  // be unregistered with V8 when we delete it.
+  // TODO(wez): Remove once crrev.com/14019005 lands.
   bool bound_to_frame_;
+
+  // Dummy NPP to use to register as owner for NPObjects.
+  scoped_ptr<NPP_t> npp_;
 
   DISALLOW_COPY_AND_ASSIGN(CppBoundClass);
 };

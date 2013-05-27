@@ -1138,6 +1138,10 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
   if (!GetContentClient()->renderer()->AllowBrowserPlugin(container))
     return false;
 
+  // Tell |container| to allow this plugin to use script objects.
+  npp_.reset(new NPP_t);
+  container->allowScriptObjects();
+
   bindings_.reset(new BrowserPluginBindings(this));
   container_ = container;
   container_->setWantsWheelEvents(true);
@@ -1181,6 +1185,12 @@ void BrowserPlugin::EnableCompositing(bool enable) {
 }
 
 void BrowserPlugin::destroy() {
+  // If the plugin was initialized then it has a valid |npp_| identifier, and
+  // the |container_| must clear references to the plugin's script objects.
+  DCHECK(!npp_ || container_);
+  if (container_)
+    container_->clearScriptObjects();
+
   // The BrowserPlugin's WebPluginContainer is deleted immediately after this
   // call returns, so let's not keep a reference to it around.
   g_plugin_container_map.Get().erase(container_);
@@ -1201,6 +1211,10 @@ NPObject* BrowserPlugin::scriptableObject() {
   // The object is expected to be retained before it is returned.
   WebKit::WebBindings::retainObject(browser_plugin_np_object);
   return browser_plugin_np_object;
+}
+
+NPP BrowserPlugin::pluginNPP() {
+  return npp_.get();
 }
 
 bool BrowserPlugin::supportsKeyboardFocus() const {

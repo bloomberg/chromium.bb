@@ -177,16 +177,18 @@ NPClass CppNPObject::np_class_ = {
   return obj->bound_class->SetProperty(ident, value);
 }
 
-CppBoundClass::CppBoundClass()
-    : bound_to_frame_(false) {
+CppBoundClass::CppBoundClass() : bound_to_frame_(false), npp_(new NPP_t) {
+  WebBindings::registerObjectOwner(npp_.get());
 }
 
 CppBoundClass::~CppBoundClass() {
   STLDeleteValues(&properties_);
 
-  // Unregister ourselves if we were bound to a frame.
+  // TODO(wez): Remove once crrev.com/14019005 lands.
   if (bound_to_frame_)
     WebBindings::unregisterObject(NPVARIANT_TO_OBJECT(self_variant_));
+
+  WebBindings::unregisterObjectOwner(npp_.get());
 }
 
 bool CppBoundClass::HasMethod(NPIdentifier ident) const {
@@ -300,10 +302,10 @@ bool CppBoundClass::IsMethodRegistered(const std::string& name) const {
 
 CppVariant* CppBoundClass::GetAsCppVariant() {
   if (!self_variant_.isObject()) {
-    // Create an NPObject using our static NPClass.  The first argument (a
-    // plugin's instance handle) is passed through to the allocate function
-    // directly, and we don't use it, so it's ok to be 0.
-    NPObject* np_obj = WebBindings::createObject(0, &CppNPObject::np_class_);
+    // Create an NPObject using our static NPClass.  The first argument has type
+    // NPP, but is only used to track object ownership, so passing this is fine.
+    NPObject* np_obj = WebBindings::createObject(
+        npp_.get(), &CppNPObject::np_class_);
     CppNPObject* obj = reinterpret_cast<CppNPObject*>(np_obj);
     obj->bound_class = this;
     self_variant_.Set(np_obj);
@@ -316,8 +318,9 @@ CppVariant* CppBoundClass::GetAsCppVariant() {
 void CppBoundClass::BindToJavascript(WebFrame* frame,
                                      const std::string& classname) {
   // BindToWindowObject will take its own reference to the NPObject, and clean
-  // up after itself.  It will also (indirectly) register the object with V8,
-  // so we must remember this so we can unregister it when we're destroyed.
+  // up after itself. It will also (indirectly) register the object with V8,
+  // against an owner pointer we supply, so we must register that as an owner,
+  // and unregister when we teardown.
   frame->bindToWindowObject(ASCIIToUTF16(classname),
                             NPVARIANT_TO_OBJECT(*GetAsCppVariant()));
   bound_to_frame_ = true;
