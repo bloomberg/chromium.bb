@@ -286,6 +286,32 @@ void DispatchGesture(ui::EventType gesture_type, gfx::Point location) {
   Shell::GetPrimaryRootWindow()->DispatchGestureEvent(&gesture_event);
 }
 
+bool IsGestureEventType(ui::EventType type) {
+  switch (type) {
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP_CANCEL:
+    case ui::ET_GESTURE_TAP_DOWN:
+    case ui::ET_GESTURE_BEGIN:
+    case ui::ET_GESTURE_END:
+    case ui::ET_GESTURE_TWO_FINGER_TAP:
+    case ui::ET_GESTURE_PINCH_BEGIN:
+    case ui::ET_GESTURE_PINCH_END:
+    case ui::ET_GESTURE_PINCH_UPDATE:
+    case ui::ET_GESTURE_LONG_PRESS:
+    case ui::ET_GESTURE_LONG_TAP:
+    case ui::ET_GESTURE_MULTIFINGER_SWIPE:
+    case ui::ET_SCROLL_FLING_CANCEL:
+    case ui::ET_SCROLL_FLING_START:
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 }  // namespace
 
 class DragDropControllerTest : public AshTestBase {
@@ -1148,7 +1174,29 @@ TEST_F(DragDropControllerTest,
     gesture_location.Offset(1, 0);
     handler.Reset();
     DispatchGesture(ui::ET_GESTURE_SCROLL_UPDATE, gesture_location);
-    EXPECT_TRUE(handler.handled_event_received());
+    EXPECT_FALSE(handler.handled_event_received());
+    EXPECT_FALSE(handler.unhandled_event_received());
+
+    // Execute any scheduled draws to process deferred mouse events.
+    RunAllPendingInMessageLoop();
+  }
+
+  // Handler should not receive any other gestures that DragDropController
+  // does not care about.
+  std::set<ui::EventType> drag_drop_gestures;
+  drag_drop_gestures.insert(ui::ET_GESTURE_SCROLL_UPDATE);
+  drag_drop_gestures.insert(ui::ET_GESTURE_SCROLL_END);
+  drag_drop_gestures.insert(ui::ET_GESTURE_LONG_TAP);
+  drag_drop_gestures.insert(ui::ET_SCROLL_FLING_START);
+  for (ui::EventType type = ui::ET_UNKNOWN; type < ui::ET_LAST;
+      type = static_cast<ui::EventType>(type + 1)) {
+    if (!IsGestureEventType(type) ||
+        drag_drop_gestures.find(type) != drag_drop_gestures.end())
+      continue;
+
+    handler.Reset();
+    DispatchGesture(ui::ET_GESTURE_SCROLL_UPDATE, gesture_location);
+    EXPECT_FALSE(handler.handled_event_received());
     EXPECT_FALSE(handler.unhandled_event_received());
 
     // Execute any scheduled draws to process deferred mouse events.

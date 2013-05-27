@@ -406,13 +406,17 @@ void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
   if (!IsDragDropInProgress())
     return;
 
-  // If current drag session was not started by touch, dont process this touch
-  // event, but consume it so it does not interfere with current drag session.
-  if (current_drag_event_source_ !=
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
-    event->StopPropagation();
+  // No one else should handle gesture events when in drag drop. Note that it is
+  // not enough to just set ER_HANDLED because the dispatcher only stops
+  // dispatching when the event has ER_CONSUMED. If we just set ER_HANDLED, the
+  // event will still be dispatched to other handlers and we depend on
+  // individual handlers' kindness to not touch events marked ER_HANDLED (not
+  // all handlers are so kind and may cause bugs like crbug.com/236493).
+  event->StopPropagation();
+
+  // If current drag session was not started by touch, dont process this event.
+  if (current_drag_event_source_ != ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)
     return;
-  }
 
   // Apply kTouchDragImageVerticalOffset to the location.
   ui::GestureEvent touch_offset_event(*event,
