@@ -306,6 +306,16 @@
     "channel": "dev",
     "extension_types": ["extension"]
   },
+  "storage": {
+    "channel": "dev",
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "min_manifest_version": 2
+  },
+  "storage.managed_schema": {
+    "channel": "dev",
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "min_manifest_version": 2
+  },
   "system_indicator": {
     "channel": "dev",
     "extension_types": ["extension", "packaged_app", "platform_app"]

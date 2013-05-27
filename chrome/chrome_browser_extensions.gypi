@@ -389,6 +389,8 @@
         'browser/extensions/api/storage/settings_sync_util.h',
         'browser/extensions/api/storage/storage_api.cc',
         'browser/extensions/api/storage/storage_api.h',
+        'browser/extensions/api/storage/storage_schema_manifest_handler.cc',
+        'browser/extensions/api/storage/storage_schema_manifest_handler.h',
         'browser/extensions/api/storage/sync_or_local_value_store_cache.cc',
         'browser/extensions/api/storage/sync_or_local_value_store_cache.h',
         'browser/extensions/api/storage/syncable_settings_storage.cc',

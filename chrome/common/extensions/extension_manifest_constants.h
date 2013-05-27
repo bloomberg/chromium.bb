@@ -131,6 +131,7 @@ namespace extension_manifest_keys {
   extern const char kSpellcheckDictionaryLanguage[];
   extern const char kSpellcheckDictionaryLocale[];
   extern const char kSpellcheckDictionaryPath[];
+  extern const char kStorageManagedSchema[];
   extern const char kSuggestedKey[];
   extern const char kSystemIndicator[];
   extern const char kTheme[];

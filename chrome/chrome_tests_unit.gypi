@@ -758,6 +758,7 @@
         'browser/extensions/api/storage/settings_sync_unittest.cc',
         'browser/extensions/api/storage/settings_test_util.cc',
         'browser/extensions/api/storage/settings_test_util.h',
+        'browser/extensions/api/storage/storage_schema_manifest_handler_unittest.cc',
         'browser/extensions/api/streams_private/streams_private_manifest_unittest.cc',
         'browser/extensions/api/system_info_cpu/cpu_info_provider_unittest.cc',
         'browser/extensions/api/system_info_memory/memory_info_provider_unittest.cc',

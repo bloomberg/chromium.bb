@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
+#include "chrome/browser/extensions/api/storage/storage_schema_manifest_handler.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -24,7 +25,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/value_store/value_store_change.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -33,6 +36,13 @@
 using content::BrowserThread;
 
 namespace extensions {
+
+namespace {
+
+const char kLoadSchemasBackgroundTaskTokenName[] =
+    "load_managed_storage_schemas_token";
+
+}  // namespace
 
 // This helper observes initialization of all the installed extensions and
 // subsequent loads and unloads, and keeps the PolicyService of the Profile
@@ -51,14 +61,23 @@ class ManagedValueStoreCache::ExtensionTracker
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  // Loads the schemas of the |extensions| and passes a PolicyDomainDescriptor
+  // to RegisterDomain().
+  static void LoadSchemas(scoped_ptr<ExtensionSet> extensions,
+                          base::WeakPtr<ExtensionTracker> self);
+  void RegisterDomain(
+      scoped_refptr<const policy::PolicyDomainDescriptor> descriptor);
+
   Profile* profile_;
   content::NotificationRegistrar registrar_;
+  base::WeakPtrFactory<ExtensionTracker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTracker);
 };
 
 ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      weak_factory_(this) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
@@ -74,22 +93,69 @@ void ManagedValueStoreCache::ExtensionTracker::Observe(
   if (!ExtensionSystem::Get(profile_)->ready().is_signaled())
     return;
 
-  // TODO(joaodasilva): this currently only registers extensions that use
-  // the storage API, but that still includes a lot of extensions that don't
-  // use the storage.managed namespace. Use the presence of a schema for the
-  // managed namespace in the manifest as a better signal, once available.
   scoped_refptr<policy::PolicyDomainDescriptor> descriptor(
       new policy::PolicyDomainDescriptor(policy::POLICY_DOMAIN_EXTENSIONS));
   const ExtensionSet* set =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
+  scoped_ptr<ExtensionSet> managed_extensions(new ExtensionSet());
   for (ExtensionSet::const_iterator it = set->begin(); it != set->end(); ++it) {
-    // TODO(joaodasilva): pass the parsed schema here, once available.
-    if ((*it)->HasAPIPermission(APIPermission::kStorage)) {
-      descriptor->RegisterComponent((*it)->id(),
-                                    scoped_ptr<policy::PolicySchema>());
+    if ((*it)->manifest()->HasPath(
+            extension_manifest_keys::kStorageManagedSchema)) {
+      managed_extensions->Insert(*it);
     }
+
+    // TODO(joaodasilva): also load extensions that use the storage API for now,
+    // to support the Legacy Browser Support extension. Remove this for M30.
+    // http://crbug.com/240704
+    if ((*it)->HasAPIPermission(APIPermission::kStorage))
+      managed_extensions->Insert(*it);
   }
 
+  // Load the schema files in a background thread.
+  BrowserThread::PostBlockingPoolSequencedTask(
+      kLoadSchemasBackgroundTaskTokenName, FROM_HERE,
+      base::Bind(&ExtensionTracker::LoadSchemas,
+                 base::Passed(&managed_extensions),
+                 weak_factory_.GetWeakPtr()));
+}
+
+// static
+void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
+    scoped_ptr<ExtensionSet> extensions,
+    base::WeakPtr<ExtensionTracker> self) {
+  scoped_refptr<policy::PolicyDomainDescriptor> descriptor =
+      new policy::PolicyDomainDescriptor(policy::POLICY_DOMAIN_EXTENSIONS);
+
+  for (ExtensionSet::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
+    std::string schema_file;
+    if (!(*it)->manifest()->GetString(
+            extension_manifest_keys::kStorageManagedSchema, &schema_file)) {
+      // TODO(joaodasilva): Remove this for M30. http://crbug.com/240704
+      if ((*it)->HasAPIPermission(APIPermission::kStorage)) {
+        descriptor->RegisterComponent((*it)->id(),
+                                      scoped_ptr<policy::PolicySchema>());
+      } else {
+        NOTREACHED();
+      }
+      continue;
+    }
+    // The extension should have been validated, so assume the schema exists
+    // and is valid.
+    std::string error;
+    scoped_ptr<policy::PolicySchema> schema =
+        StorageSchemaManifestHandler::GetSchema(*it, &error);
+    CHECK(schema) << error;
+    descriptor->RegisterComponent((*it)->id(), schema.Pass());
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&ExtensionTracker::RegisterDomain, self, descriptor));
+}
+
+void ManagedValueStoreCache::ExtensionTracker::RegisterDomain(
+    scoped_refptr<const policy::PolicyDomainDescriptor> descriptor) {
   policy::ProfilePolicyConnector* connector =
       policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
   connector->policy_service()->RegisterPolicyDomain(descriptor);
@@ -115,6 +181,8 @@ ManagedValueStoreCache::ManagedValueStoreCache(
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
   extension_tracker_.reset(new ExtensionTracker(profile_));
+
+  (new StorageSchemaManifestHandler)->Register();
 }
 
 ManagedValueStoreCache::~ManagedValueStoreCache() {

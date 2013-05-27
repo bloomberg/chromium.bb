@@ -119,6 +119,7 @@ const char kSpellcheckDictionaryFormat[] = "dictionary_format";
 const char kSpellcheckDictionaryLanguage[] = "dictionary_language";
 const char kSpellcheckDictionaryLocale[] = "dictionary_locale";
 const char kSpellcheckDictionaryPath[] = "dictionary_path";
+const char kStorageManagedSchema[] = "storage.managed_schema";
 const char kSuggestedKey[] = "suggested_key";
 const char kSystemIndicator[] = "system_indicator";
 const char kSystemInfoDisplay[] = "systemInfo.display";
