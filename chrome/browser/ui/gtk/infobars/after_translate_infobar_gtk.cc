@@ -35,10 +35,7 @@ void AfterTranslateInfoBar::InitWidgets() {
   std::vector<string16> strings;
   TranslateInfoBarDelegate::GetAfterTranslateStrings(
         &strings, &swapped_language_combos, autodetermined_source_language);
-  if (autodetermined_source_language)
-    DCHECK(strings.size() == 2U);
-  else
-    DCHECK(strings.size() == 3U);
+  DCHECK_EQ(autodetermined_source_language ? 2U : 3U, strings.size());
 
   GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_util::CenterWidgetInHBox(hbox_, hbox, false, 0);
@@ -65,11 +62,11 @@ void AfterTranslateInfoBar::InitWidgets() {
 
   gtk_box_pack_start(GTK_BOX(hbox), CreateLabel(UTF16ToUTF8(strings[0])),
                      FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox),
-                     (swapped_language_combos ||
-                      autodetermined_source_language) ? target_lang_combo :
-                                                        original_lang_combo,
-                     FALSE, FALSE, 0);
+  gtk_box_pack_start(
+      GTK_BOX(hbox),
+      (swapped_language_combos || autodetermined_source_language) ?
+          target_lang_combo : original_lang_combo,
+      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), CreateLabel(UTF16ToUTF8(strings[1])),
                      FALSE, FALSE, 0);
   if (!autodetermined_source_language) {
