@@ -41,6 +41,7 @@
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/net/net_error_helper.h"
+#include "chrome/renderer/net/prescient_networking_dispatcher.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/net_benchmarking_extension.h"
 #include "chrome/renderer/one_click_signin_agent.h"
@@ -213,6 +214,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   extension_dispatcher_.reset(new extensions::Dispatcher());
   permissions_policy_delegate_.reset(
       new extensions::RendererPermissionsPolicyDelegate());
+  prescient_networking_dispatcher_.reset(new PrescientNetworkingDispatcher());
   net_predictor_.reset(new RendererNetPredictor());
   spellcheck_.reset(new SpellCheck());
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave());
@@ -1009,6 +1011,11 @@ bool ChromeContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
 void ChromeContentRendererClient::PrefetchHostName(const char* hostname,
                                                    size_t length) {
   net_predictor_->Resolve(hostname, length);
+}
+
+WebKit::WebPrescientNetworking*
+ChromeContentRendererClient::GetPrescientNetworking() {
+  return prescient_networking_dispatcher_.get();
 }
 
 bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(

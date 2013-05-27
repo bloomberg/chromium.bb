@@ -127,6 +127,11 @@ bool ContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
   return false;
 }
 
+WebKit::WebPrescientNetworking*
+ContentRendererClient::GetPrescientNetworking() {
+  return NULL;
+}
+
 bool ContentRendererClient::ShouldOverridePageVisibilityState(
     const RenderView* render_view,
     WebKit::WebPageVisibilityState* override_state) const {

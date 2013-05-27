@@ -275,20 +275,25 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
 
 void Predictor::PreconnectUrlAndSubresources(const GURL& url,
     const GURL& first_party_for_cookies) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!predictor_enabled_)
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!predictor_enabled_ || !preconnect_enabled() ||
+      !url.is_valid() || !url.has_host())
     return;
-  if (!url.is_valid() || !url.has_host())
-    return;
-  if (preconnect_enabled()) {
-    std::string host = url.HostNoBrackets();
-    UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
-    const int kConnectionsNeeded = 1;
+
+  std::string host = url.HostNoBrackets();
+  UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
+  const int kConnectionsNeeded = 1;
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     PreconnectOnUIThread(CanonicalizeUrl(url), first_party_for_cookies,
                          motivation, kConnectionsNeeded,
                          url_request_context_getter_);
-    PredictFrameSubresources(url.GetWithEmptyPath(), first_party_for_cookies);
+  } else {
+    PreconnectOnIOThread(CanonicalizeUrl(url), first_party_for_cookies,
+                         motivation, kConnectionsNeeded,
+                         url_request_context_getter_);
   }
+  PredictFrameSubresources(url.GetWithEmptyPath(), first_party_for_cookies);
 }
 
 UrlList Predictor::GetPredictedUrlListAtStartup(

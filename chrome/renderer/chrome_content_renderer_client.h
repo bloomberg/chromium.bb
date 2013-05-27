@@ -15,6 +15,7 @@
 
 class ChromeRenderProcessObserver;
 class ExtensionSet;
+class PrescientNetworkingDispatcher;
 class RendererNetPredictor;
 class SpellCheck;
 class SpellCheckProvider;
@@ -106,6 +107,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                              size_t length) OVERRIDE;
   virtual bool IsLinkVisited(unsigned long long link_hash) OVERRIDE;
   virtual void PrefetchHostName(const char* hostname, size_t length) OVERRIDE;
+  virtual WebKit::WebPrescientNetworking* GetPrescientNetworking() OVERRIDE;
   virtual bool ShouldOverridePageVisibilityState(
       const content::RenderView* render_view,
       WebKit::WebPageVisibilityState* override_state) const OVERRIDE;
@@ -175,6 +177,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<extensions::Dispatcher> extension_dispatcher_;
   scoped_ptr<extensions::RendererPermissionsPolicyDelegate>
       permissions_policy_delegate_;
+  scoped_ptr<PrescientNetworkingDispatcher> prescient_networking_dispatcher_;
   scoped_ptr<RendererNetPredictor> net_predictor_;
   scoped_ptr<SpellCheck> spellcheck_;
   scoped_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;

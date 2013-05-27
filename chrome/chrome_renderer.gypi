@@ -148,6 +148,8 @@
         'renderer/net/net_error_helper.h',
         'renderer/net/predictor_queue.cc',
         'renderer/net/predictor_queue.h',
+	'renderer/net/prescient_networking_dispatcher.cc',
+	'renderer/net/prescient_networking_dispatcher.h',
         'renderer/net/renderer_net_predictor.cc',
         'renderer/net/renderer_net_predictor.h',
         'renderer/net_benchmarking_extension.cc',

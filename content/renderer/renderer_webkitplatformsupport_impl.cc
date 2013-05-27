@@ -295,6 +295,11 @@ void RendererWebKitPlatformSupportImpl::prefetchHostName(
       hostname_utf8.data(), hostname_utf8.length());
 }
 
+WebKit::WebPrescientNetworking*
+RendererWebKitPlatformSupportImpl::prescientNetworking() {
+  return GetContentClient()->renderer()->GetPrescientNetworking();
+}
+
 bool
 RendererWebKitPlatformSupportImpl::CheckPreparsedJsCachingEnabled() const {
   static bool checked = false;

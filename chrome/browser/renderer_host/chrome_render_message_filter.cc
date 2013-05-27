@@ -179,6 +179,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                     OnOpenNaClExecutable)
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DnsPrefetch, OnDnsPrefetch)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_Preconnect, OnPreconnect)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ResourceTypeStats,
                         OnResourceTypeStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
@@ -322,6 +323,11 @@ void ChromeRenderMessageFilter::OnDnsPrefetch(
     const std::vector<std::string>& hostnames) {
   if (profile_->GetNetworkPredictor())
     profile_->GetNetworkPredictor()->DnsPrefetchList(hostnames);
+}
+
+void ChromeRenderMessageFilter::OnPreconnect(const GURL& url) {
+  if (profile_->GetNetworkPredictor())
+    profile_->GetNetworkPredictor()->PreconnectUrlAndSubresources(url, GURL());
 }
 
 void ChromeRenderMessageFilter::OnResourceTypeStats(

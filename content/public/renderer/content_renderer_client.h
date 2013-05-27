@@ -35,6 +35,7 @@ class WebMediaStreamCenterClient;
 class WebMimeRegistry;
 class WebPlugin;
 class WebPluginContainer;
+class WebPrescientNetworking;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSpeechSynthesizer;
@@ -213,6 +214,7 @@ class CONTENT_EXPORT ContentRendererClient {
                                              size_t length);
   virtual bool IsLinkVisited(unsigned long long link_hash);
   virtual void PrefetchHostName(const char* hostname, size_t length) {}
+  virtual WebKit::WebPrescientNetworking* GetPrescientNetworking();
   virtual bool ShouldOverridePageVisibilityState(
       const RenderView* render_view,
       WebKit::WebPageVisibilityState* override_state) const;

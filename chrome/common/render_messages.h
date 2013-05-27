@@ -644,6 +644,10 @@ IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_V8HeapStats,
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_DnsPrefetch,
                      std::vector<std::string> /* hostnames */)
 
+// Request for preconnect to host providing resource specified by URL
+IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_Preconnect,
+                     GURL /* preconnect target url */)
+
 // Notifies when a plugin couldn't be loaded because it's outdated.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,
                     int /* placeholder ID */,
