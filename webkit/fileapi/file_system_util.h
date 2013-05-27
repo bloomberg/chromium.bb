@@ -20,8 +20,6 @@ class GURL;
 
 namespace fileapi {
 
-class FileSystemURL;
-
 extern const char kPersistentDir[];
 extern const char kTemporaryDir[];
 extern const char kExternalDir[];
@@ -144,12 +142,6 @@ WEBKIT_STORAGE_EXPORT std::string GetIsolatedFileSystemRootURIString(
     const GURL& origin_url,
     const std::string& filesystem_id,
     const std::string& optional_root_name);
-
-// Returns true if |url1| and |url2| belong to the same filesystem
-// (i.e. url1.origin() == url2.origin() && url1.type() == url2.type())
-WEBKIT_STORAGE_EXPORT bool AreSameFileSystem(
-    const FileSystemURL& url1,
-    const FileSystemURL& url2);
 
 }  // namespace fileapi
 

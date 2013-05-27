@@ -155,10 +155,14 @@ std::string FileSystemURL::DebugString() const {
 }
 
 bool FileSystemURL::IsParent(const FileSystemURL& child) const {
-  return origin() == child.origin() &&
-         type() == child.type() &&
-         filesystem_id() == child.filesystem_id() &&
+  return IsInSameFileSystem(child) &&
          path().IsParent(child.path());
+}
+
+bool FileSystemURL::IsInSameFileSystem(const FileSystemURL& other) const {
+  return origin() == other.origin() &&
+         type() == other.type() &&
+         filesystem_id() == other.filesystem_id();
 }
 
 bool FileSystemURL::operator==(const FileSystemURL& that) const {

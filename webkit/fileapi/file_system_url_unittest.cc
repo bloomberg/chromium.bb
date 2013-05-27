@@ -168,4 +168,28 @@ TEST(FileSystemURLTest, DebugString) {
             kURL1.DebugString());
 }
 
+TEST(FileSystemURLTest, IsInSameFileSystem) {
+  FileSystemURL url_foo_temp_a = FileSystemURL::CreateForTest(
+      GURL("http://foo"), kFileSystemTypeTemporary,
+      base::FilePath::FromUTF8Unsafe("a"));
+  FileSystemURL url_foo_temp_b = FileSystemURL::CreateForTest(
+      GURL("http://foo"), kFileSystemTypeTemporary,
+      base::FilePath::FromUTF8Unsafe("b"));
+  FileSystemURL url_foo_perm_a = FileSystemURL::CreateForTest(
+      GURL("http://foo"), kFileSystemTypePersistent,
+      base::FilePath::FromUTF8Unsafe("a"));
+  FileSystemURL url_bar_temp_a = FileSystemURL::CreateForTest(
+      GURL("http://bar"), kFileSystemTypeTemporary,
+      base::FilePath::FromUTF8Unsafe("a"));
+  FileSystemURL url_bar_perm_a = FileSystemURL::CreateForTest(
+      GURL("http://bar"), kFileSystemTypePersistent,
+      base::FilePath::FromUTF8Unsafe("a"));
+
+  EXPECT_TRUE(url_foo_temp_a.IsInSameFileSystem(url_foo_temp_a));
+  EXPECT_TRUE(url_foo_temp_a.IsInSameFileSystem(url_foo_temp_b));
+  EXPECT_FALSE(url_foo_temp_a.IsInSameFileSystem(url_foo_perm_a));
+  EXPECT_FALSE(url_foo_temp_a.IsInSameFileSystem(url_bar_temp_a));
+  EXPECT_FALSE(url_foo_temp_a.IsInSameFileSystem(url_bar_perm_a));
+}
+
 }  // namespace fileapi

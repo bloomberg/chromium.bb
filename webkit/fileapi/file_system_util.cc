@@ -16,7 +16,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/base/origin_url_conversions.h"
-#include "webkit/fileapi/file_system_url.h"
 
 namespace fileapi {
 
@@ -357,10 +356,6 @@ std::string GetIsolatedFileSystemRootURIString(
     root.append("/");
   }
   return root;
-}
-
-bool AreSameFileSystem(const FileSystemURL& url1, const FileSystemURL& url2) {
-  return url1.origin() == url2.origin() && url1.type() == url2.type();
 }
 
 }  // namespace fileapi

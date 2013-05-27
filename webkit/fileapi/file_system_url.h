@@ -122,6 +122,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
   // Returns true if this URL is a strict parent of the |child|.
   bool IsParent(const FileSystemURL& child) const;
 
+  bool IsInSameFileSystem(const FileSystemURL& other) const;
+
   bool operator==(const FileSystemURL& that) const;
 
   struct WEBKIT_STORAGE_EXPORT Comparator {

@@ -30,7 +30,7 @@ CrossOperationDelegate::CrossOperationDelegate(
       operation_type_(operation_type),
       callback_(callback),
       src_root_operation_(src_root_operation.Pass()) {
-  same_file_system_ = AreSameFileSystem(src_root_, dest_root_);
+  same_file_system_ = src_root_.IsInSameFileSystem(dest_root_);
 }
 
 CrossOperationDelegate::~CrossOperationDelegate() {
