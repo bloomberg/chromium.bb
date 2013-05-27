@@ -66,7 +66,6 @@ Thread::Thread(const char* name)
 
 Thread::~Thread() {
   Stop();
-  ThreadIdNameManager::GetInstance()->RemoveName(thread_id_);
 }
 
 bool Thread::Start() {

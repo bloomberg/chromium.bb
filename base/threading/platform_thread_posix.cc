@@ -73,7 +73,15 @@ void* ThreadFunc(void* params) {
                                                   PlatformThread::CurrentId());
   thread_params->handle_set.Signal();
 
+  ThreadIdNameManager::GetInstance()->RegisterThread(
+      PlatformThread::CurrentHandle().platform_handle(),
+      PlatformThread::CurrentId());
+
   delegate->ThreadMain();
+
+  ThreadIdNameManager::GetInstance()->RemoveName(
+      PlatformThread::CurrentHandle().platform_handle(),
+      PlatformThread::CurrentId());
 
   base::TerminateOnThread();
   return NULL;

@@ -53,8 +53,29 @@ DWORD __stdcall ThreadFunc(void* params) {
   PlatformThread::Delegate* delegate = thread_params->delegate;
   if (!thread_params->joinable)
     base::ThreadRestrictions::SetSingletonAllowed(false);
+
+  /* Retrieve a copy of the thread handle to use as the key in the
+   * thread name mapping. */
+  PlatformThreadHandle::Handle platform_handle;
+  DuplicateHandle(
+      GetCurrentProcess(),
+      GetCurrentThread(),
+      GetCurrentProcess(),
+      &platform_handle,
+      0,
+      FALSE,
+      DUPLICATE_SAME_ACCESS);
+
+  ThreadIdNameManager::GetInstance()->RegisterThread(
+      platform_handle,
+      PlatformThread::CurrentId());
+
   delete thread_params;
   delegate->ThreadMain();
+
+  ThreadIdNameManager::GetInstance()->RemoveName(
+      platform_handle,
+      PlatformThread::CurrentId());
   return NULL;
 }
 

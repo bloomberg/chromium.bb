@@ -41,9 +41,10 @@ TEST_F(ThreadIdNameManagerTest, RemoveThreads) {
     thread_b.Start();
     thread_b.Stop();
   }
-  thread_a.Stop();
-
   EXPECT_STREQ(kAThread, manager->GetName(thread_a.thread_id()));
+
+  thread_a.Stop();
+  EXPECT_STREQ("", manager->GetName(thread_a.thread_id()));
 }
 
 TEST_F(ThreadIdNameManagerTest, RestartThread) {
@@ -52,12 +53,13 @@ TEST_F(ThreadIdNameManagerTest, RestartThread) {
 
   thread_a.Start();
   base::PlatformThreadId a_id = thread_a.thread_id();
-  thread_a.Stop();
   EXPECT_STREQ(kAThread, manager->GetName(a_id));
+  thread_a.Stop();
 
   thread_a.Start();
+  EXPECT_STREQ("", manager->GetName(a_id));
+  EXPECT_STREQ(kAThread, manager->GetName(thread_a.thread_id()));
   thread_a.Stop();
-  EXPECT_STREQ(kAThread, manager->GetName(a_id));
 }
 
 TEST_F(ThreadIdNameManagerTest, ThreadNameInterning) {
