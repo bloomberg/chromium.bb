@@ -49,7 +49,9 @@ class ShellBrowserMainParts : public BrowserMainParts {
   bool run_message_loop_;
 
   ShellDevToolsDelegate* devtools_delegate_;
+#if defined(ENABLE_PLUGINS)
   scoped_ptr<ShellPluginServiceFilter> plugin_service_filter_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

@@ -80,8 +80,12 @@ ShellBrowserMainParts::ShellBrowserMainParts(
     : BrowserMainParts(),
       parameters_(parameters),
       run_message_loop_(true),
-      devtools_delegate_(NULL),
-      plugin_service_filter_(NULL) {
+      devtools_delegate_(NULL)
+#if defined(ENABLE_PLUGINS)
+      ,
+      plugin_service_filter_(NULL)
+#endif
+{
 }
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
