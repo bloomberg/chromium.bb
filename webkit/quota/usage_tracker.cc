@@ -20,6 +20,7 @@ namespace quota {
 namespace {
 
 typedef ClientUsageTracker::OriginUsageAccumulator OriginUsageAccumulator;
+typedef ClientUsageTracker::OriginSetByHost OriginSetByHost;
 
 void DidGetOriginUsage(const OriginUsageAccumulator& accumulator,
                        const GURL& origin,
@@ -36,6 +37,28 @@ void DidGetHostUsage(const UsageCallback& callback,
 }
 
 void NoopHostUsageCallback(int64 usage) {}
+
+bool EraseOriginFromOriginSet(OriginSetByHost* origins_by_host,
+                              const std::string& host,
+                              const GURL& origin) {
+  OriginSetByHost::iterator found = origins_by_host->find(host);
+  if (found == origins_by_host->end())
+    return false;
+
+  if (!found->second.erase(origin))
+    return false;
+
+  if (found->second.empty())
+    origins_by_host->erase(host);
+  return true;
+}
+
+bool OriginSetContainsOrigin(const OriginSetByHost& origins,
+                             const std::string& host,
+                             const GURL& origin) {
+  OriginSetByHost::const_iterator itr = origins.find(host);
+  return itr != origins.end() && ContainsKey(itr->second, origin);
+}
 
 }  // namespace
 
@@ -202,7 +225,7 @@ ClientUsageTracker::ClientUsageTracker(
     : tracker_(tracker),
       client_(client),
       type_(type),
-      global_usage_(0),
+      global_limited_usage_(0),
       global_unlimited_usage_(0),
       global_usage_retrieved_(false),
       special_storage_policy_(special_storage_policy) {
@@ -218,8 +241,11 @@ ClientUsageTracker::~ClientUsageTracker() {
 }
 
 void ClientUsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
-  if (global_usage_retrieved_ && non_cached_origins_by_host_.empty()) {
-    callback.Run(global_usage_, global_unlimited_usage_);
+  if (global_usage_retrieved_ &&
+      non_cached_limited_origins_by_host_.empty() &&
+      non_cached_unlimited_origins_by_host_.empty()) {
+    callback.Run(global_limited_usage_ + global_unlimited_usage_,
+                 global_unlimited_usage_);
     return;
   }
 
@@ -231,7 +257,8 @@ void ClientUsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
 void ClientUsageTracker::GetHostUsage(
     const std::string& host, const UsageCallback& callback) {
   if (ContainsKey(cached_hosts_, host) &&
-      !ContainsKey(non_cached_origins_by_host_, host)) {
+      !ContainsKey(non_cached_limited_origins_by_host_, host) &&
+      !ContainsKey(non_cached_unlimited_origins_by_host_, host)) {
     // TODO(kinuko): Drop host_usage_map_ cache periodically.
     callback.Run(GetCachedHostUsage(host));
     return;
@@ -252,11 +279,12 @@ void ClientUsageTracker::UpdateUsageCache(
       return;
 
     cached_usage_by_host_[host][origin] += delta;
-    global_usage_ += delta;
     if (IsStorageUnlimited(origin))
       global_unlimited_usage_ += delta;
+    else
+      global_limited_usage_ += delta;
     DCHECK_GE(cached_usage_by_host_[host][origin], 0);
-    DCHECK_GE(global_usage_, 0);
+    DCHECK_GE(global_limited_usage_, 0);
     return;
   }
 
@@ -307,17 +335,17 @@ void ClientUsageTracker::SetUsageCacheEnabled(const GURL& origin,
       }
     }
 
-    non_cached_origins_by_host_[host].insert(origin);
+    if (IsStorageUnlimited(origin))
+      non_cached_unlimited_origins_by_host_[host].insert(origin);
+    else
+      non_cached_limited_origins_by_host_[host].insert(origin);
   } else {
     // Erase |origin| from |non_cached_origins_| and invalidate the usage cache
     // for the host.
-    OriginSetByHost::iterator found = non_cached_origins_by_host_.find(host);
-    if (found == non_cached_origins_by_host_.end())
-      return;
-
-    found->second.erase(origin);
-    if (found->second.empty()) {
-      non_cached_origins_by_host_.erase(found);
+    if (EraseOriginFromOriginSet(&non_cached_limited_origins_by_host_,
+                                 host, origin) ||
+        EraseOriginFromOriginSet(&non_cached_unlimited_origins_by_host_,
+                                 host, origin)) {
       cached_hosts_.erase(host);
       global_usage_retrieved_ = false;
     }
@@ -437,23 +465,22 @@ void ClientUsageTracker::AccumulateOriginUsage(AccumulateInfo* info,
 }
 
 void ClientUsageTracker::AddCachedOrigin(
-    const GURL& origin, int64 usage) {
+    const GURL& origin, int64 new_usage) {
   if (!IsUsageCacheEnabledForOrigin(origin))
     return;
 
   std::string host = net::GetHostOrSpecFromURL(origin);
-  UsageMap::iterator iter = cached_usage_by_host_[host].
-      insert(UsageMap::value_type(origin, 0)).first;
-  int64 old_usage = iter->second;
-  iter->second = usage;
-  int64 delta = usage - old_usage;
+  int64* usage = &cached_usage_by_host_[host][origin];
+  int64 delta = new_usage - *usage;
+  *usage = new_usage;
   if (delta) {
-    global_usage_ += delta;
     if (IsStorageUnlimited(origin))
       global_unlimited_usage_ += delta;
+    else
+      global_limited_usage_ += delta;
   }
-  DCHECK_GE(iter->second, 0);
-  DCHECK_GE(global_usage_, 0);
+  DCHECK_GE(*usage, 0);
+  DCHECK_GE(global_limited_usage_, 0);
 }
 
 void ClientUsageTracker::AddCachedHost(const std::string& host) {
@@ -494,10 +521,10 @@ bool ClientUsageTracker::GetCachedOriginUsage(
 bool ClientUsageTracker::IsUsageCacheEnabledForOrigin(
     const GURL& origin) const {
   std::string host = net::GetHostOrSpecFromURL(origin);
-  OriginSetByHost::const_iterator found =
-      non_cached_origins_by_host_.find(host);
-  return found == non_cached_origins_by_host_.end() ||
-      !ContainsKey(found->second, origin);
+  return !OriginSetContainsOrigin(non_cached_limited_origins_by_host_,
+                                  host, origin) &&
+      !OriginSetContainsOrigin(non_cached_unlimited_origins_by_host_,
+                               host, origin);
 }
 
 void ClientUsageTracker::OnGranted(const GURL& origin,
@@ -505,8 +532,15 @@ void ClientUsageTracker::OnGranted(const GURL& origin,
   DCHECK(CalledOnValidThread());
   if (change_flags & SpecialStoragePolicy::STORAGE_UNLIMITED) {
     int64 usage = 0;
-    if (GetCachedOriginUsage(origin, &usage))
+    if (GetCachedOriginUsage(origin, &usage)) {
       global_unlimited_usage_ += usage;
+      global_limited_usage_ -= usage;
+    }
+
+    std::string host = net::GetHostOrSpecFromURL(origin);
+    if (EraseOriginFromOriginSet(&non_cached_limited_origins_by_host_,
+                                 host, origin))
+      non_cached_unlimited_origins_by_host_[host].insert(origin);
   }
 }
 
@@ -515,14 +549,33 @@ void ClientUsageTracker::OnRevoked(const GURL& origin,
   DCHECK(CalledOnValidThread());
   if (change_flags & SpecialStoragePolicy::STORAGE_UNLIMITED) {
     int64 usage = 0;
-    if (GetCachedOriginUsage(origin, &usage))
+    if (GetCachedOriginUsage(origin, &usage)) {
       global_unlimited_usage_ -= usage;
+      global_limited_usage_ += usage;
+    }
+
+    std::string host = net::GetHostOrSpecFromURL(origin);
+    if (EraseOriginFromOriginSet(&non_cached_unlimited_origins_by_host_,
+                                 host, origin))
+      non_cached_limited_origins_by_host_[host].insert(origin);
   }
 }
 
 void ClientUsageTracker::OnCleared() {
   DCHECK(CalledOnValidThread());
+  global_limited_usage_ += global_unlimited_usage_;
   global_unlimited_usage_ = 0;
+
+  for (OriginSetByHost::const_iterator host_itr =
+           non_cached_unlimited_origins_by_host_.begin();
+       host_itr != non_cached_unlimited_origins_by_host_.end();
+       ++host_itr) {
+    for (std::set<GURL>::const_iterator origin_itr = host_itr->second.begin();
+         origin_itr != host_itr->second.end();
+         ++origin_itr)
+      non_cached_limited_origins_by_host_[host_itr->first].insert(*origin_itr);
+  }
+  non_cached_unlimited_origins_by_host_.clear();
 }
 
 bool ClientUsageTracker::IsStorageUnlimited(const GURL& origin) const {

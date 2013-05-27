@@ -90,6 +90,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
                               int64 non_cached_usage)> HostUsageAccumulator;
   typedef base::Callback<void(const GURL& origin,
                               int64 usage)> OriginUsageAccumulator;
+  typedef std::map<std::string, std::set<GURL> > OriginSetByHost;
 
   ClientUsageTracker(UsageTracker* tracker,
                      QuotaClient* client,
@@ -114,7 +115,6 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   typedef std::set<std::string> HostSet;
   typedef std::map<GURL, int64> UsageMap;
   typedef std::map<std::string, UsageMap> HostUsageMap;
-  typedef std::map<std::string, std::set<GURL> > OriginSetByHost;
 
   struct AccumulateInfo {
     int pending_jobs;
@@ -163,13 +163,14 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   QuotaClient* client_;
   const StorageType type_;
 
-  int64 global_usage_;
+  int64 global_limited_usage_;
   int64 global_unlimited_usage_;
   bool global_usage_retrieved_;
   HostSet cached_hosts_;
   HostUsageMap cached_usage_by_host_;
 
-  OriginSetByHost non_cached_origins_by_host_;
+  OriginSetByHost non_cached_limited_origins_by_host_;
+  OriginSetByHost non_cached_unlimited_origins_by_host_;
 
   GlobalUsageCallbackQueue global_usage_callback_;
   HostUsageAccumulatorMap host_usage_accumulators_;
