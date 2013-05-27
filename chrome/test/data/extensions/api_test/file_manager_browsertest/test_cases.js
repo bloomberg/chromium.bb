@@ -469,9 +469,12 @@ testcase.intermediate.copyBetweenVolumes = function(targetFile,
           break;
         }
       }
-      // File size can not be obtained on drive_shared_with_me volume.
+      // File size can not be obtained on drive_shared_with_me volume and
+      // drive_offline.
       var ignoreSize = srcName == 'drive_shared_with_me' ||
-                       dstName == 'drive_shared_with_me';
+                       dstName == 'drive_shared_with_me' ||
+                       srcName == 'drive_offline' ||
+                       dstName == 'drive_offline';
       for (var i = 0; i < actualFilesAfter.length; i++) {
         if (actualFilesAfter[i][0] == copiedItem[0] &&
             (ignoreSize || actualFilesAfter[i][1] == copiedItem[1]) &&

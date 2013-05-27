@@ -796,8 +796,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// TODO(hirono): Bring back the offline feature. http://crbug.com/238545
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestOpenOffline) {
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenOffline) {
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("openSidebarOffline"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -857,17 +856,15 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// TODO(hirono): Bring back the offline feature. http://crbug.com/238545
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
-                       DISABLED_TransferFromOfflineToDownloads) {
+                       TransferFromOfflineToDownloads) {
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("transferFromOfflineToDownloads"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// TODO(hirono): Bring back the offline feature. http://crbug.com/238545
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
-                       DISABLED_TransferFromOfflineToDrive) {
+                       TransferFromOfflineToDrive) {
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("transferFromOfflineToDrive"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();

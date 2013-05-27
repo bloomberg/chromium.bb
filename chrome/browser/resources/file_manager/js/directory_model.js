@@ -108,15 +108,15 @@ DirectoryModel.fakeDriveRecentEntry_ = {
 
 /**
  * List of fake entries for special searches.
- * TODO(haruki): Add the entry for "Recent".
- * TODO(hirono): Bring back the entry for "Offline". http://crbug.com/238545
  *
  * @type {Array.<Object>}
  * @const
  */
-DirectoryModel.FAKE_DRIVE_SPECIAL_SEARCH_ENTRIES =
-    [DirectoryModel.fakeDriveSharedWithMeEntry_,
-     DirectoryModel.fakeDriveRecentEntry_];
+DirectoryModel.FAKE_DRIVE_SPECIAL_SEARCH_ENTRIES = [
+  DirectoryModel.fakeDriveSharedWithMeEntry_,
+  DirectoryModel.fakeDriveRecentEntry_,
+  DirectoryModel.fakeDriveOfflineEntry_
+];
 
 /**
  * DirectoryModel extends cr.EventTarget.
