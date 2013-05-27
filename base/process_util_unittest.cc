@@ -1069,12 +1069,13 @@ MULTIPROCESS_TEST_MAIN(process_util_test_die_immediately) {
 // Android doesn't implement set_new_handler, so we can't use the
 // OutOfMemoryTest cases.
 // OpenBSD does not support these tests either.
-// AddressSanitizer defines the malloc()/free()/etc. functions so that they
-// don't crash if the program is out of memory, so the OOM tests aren't supposed
-// to work.
+// AddressSanitizer and ThreadSanitizer define the malloc()/free()/etc.
+// functions so that they don't crash if the program is out of memory, so the
+// OOM tests aren't supposed to work.
 // TODO(vandebo) make this work on Windows too.
 #if !defined(OS_ANDROID) && !defined(OS_OPENBSD) && \
-    !defined(OS_WIN) && !defined(ADDRESS_SANITIZER)
+    !defined(OS_WIN) && \
+    !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER)
 
 #if defined(USE_TCMALLOC)
 extern "C" {
