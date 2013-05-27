@@ -409,6 +409,20 @@ chrome.test.getConfig(function(config) {
       });
       webview.setAttribute('src', 'data:text/html,trigger navigation');
       document.body.appendChild(webview);
+    },
+
+    function webViewWebRequestAPI() {
+      var webview = document.createElement('webview');
+      webview.setAttribute('src', 'data:text/html,trigger navigation');
+      var firstLoad = function() {
+        webview.removeEventListener('loadstop', firstLoad);
+        webview.onBeforeRequest.addListener(function(e) {
+          chrome.test.succeed();
+        }, { urls: ['<all_urls>']}, ['blocking']) ;
+        webview.src = windowOpenGuestURL;
+      };
+      webview.addEventListener('loadstop', firstLoad);
+      document.body.appendChild(webview);
     }
   ]);
 });

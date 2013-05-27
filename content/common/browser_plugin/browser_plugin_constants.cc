@@ -13,6 +13,7 @@ const char kMethodBack[] = "back";
 const char kMethodCanGoBack[] = "canGoBack";
 const char kMethodCanGoForward[] = "canGoForward";
 const char kMethodForward[] = "forward";
+const char kMethodGetInstanceId[] = "getInstanceId";
 const char kMethodGetProcessId[] = "getProcessId";
 const char kMethodGetRouteId[] = "getRouteId";
 const char kMethodGo[] = "go";

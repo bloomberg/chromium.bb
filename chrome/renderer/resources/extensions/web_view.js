@@ -129,6 +129,7 @@ function WebView(node) {
     });
   }, this);
 
+
   // We cannot use {writable: true} property descriptor because we want dynamic
   // getter value.
   Object.defineProperty(this.node_, 'contentWindow', {
@@ -150,6 +151,7 @@ function WebView(node) {
   this.maybeSetupNewWindowEvent_();
   this.maybeSetupPermissionEvent_();
   this.maybeSetupExecuteCodeAPI_();
+  this.maybeSetupWebRequestEvents_();
 }
 
 /**
@@ -223,5 +225,11 @@ WebView.prototype.maybeSetupPermissionEvent_ = function() {};
  * @private
  */
 WebView.prototype.maybeSetupExecuteScript_ = function() {};
+
+/**
+ * Implemented when experimental permission is available.
+ * @private
+ */
+WebView.prototype.maybeSetupWebRequestEvents_ = function() {};
 
 exports.WebView = WebView;

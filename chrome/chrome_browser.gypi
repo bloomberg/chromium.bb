@@ -2307,6 +2307,8 @@
         'browser/webdata/web_data_service_win.cc',
         'browser/webdata/web_intents_table.cc',
         'browser/webdata/web_intents_table.h',
+        'browser/webview/webview_guest.cc',
+        'browser/webview/webview_guest.h',
         # These files are needed by page_cycler.cc
         'test/base/test_switches.cc',
         'test/base/test_switches.h',

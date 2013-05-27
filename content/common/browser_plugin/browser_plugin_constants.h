@@ -14,6 +14,7 @@ extern const char kMethodBack[];
 extern const char kMethodCanGoBack[];
 extern const char kMethodCanGoForward[];
 extern const char kMethodForward[];
+extern const char kMethodGetInstanceId[];
 extern const char kMethodGetProcessId[];
 extern const char kMethodGetRouteId[];
 extern const char kMethodGo[];

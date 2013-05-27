@@ -245,8 +245,8 @@ class ExtensionWebRequestEventRouter
       const std::string& sub_event_name,
       const RequestFilter& filter,
       int extra_info_spec,
-      int target_process_id,
-      int target_route_id,
+      int embedder_process_id,
+      int web_view_instance_id,
       base::WeakPtr<IPC::Sender> ipc_sender);
 
   // Removes the listener for the given sub-event.
@@ -254,6 +254,13 @@ class ExtensionWebRequestEventRouter
       void* profile,
       const std::string& extension_id,
       const std::string& sub_event_name);
+
+  // Removes the listeners for a given <webview>.
+  void RemoveWebViewEventListeners(
+      void* profile,
+      const std::string& extension_id,
+      int embedder_process_id,
+      int web_view_instance_id);
 
   // Called when an incognito profile is created or destroyed.
   void OnOTRProfileCreated(void* original_profile,

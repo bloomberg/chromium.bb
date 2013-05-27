@@ -25,20 +25,21 @@ var webRequestInternal = require('webRequestInternal').binding;
 //       callback, {urls: 'http://*.google.com/*'});
 //   ^ callback will only be called for onBeforeRequests matching the filter.
 function WebRequestEvent(eventName, opt_argSchemas, opt_extraArgSchemas,
-                         opt_eventOptions) {
+                         opt_eventOptions, opt_webViewInstanceId) {
   if (typeof eventName != 'string')
     throw new Error('chrome.WebRequestEvent requires an event name.');
 
   this.eventName_ = eventName;
   this.argSchemas_ = opt_argSchemas;
   this.extraArgSchemas_ = opt_extraArgSchemas;
+  this.webViewInstanceId_ = opt_webViewInstanceId ? opt_webViewInstanceId : 0;
   this.subEvents_ = [];
   this.eventOptions_ = chromeHidden.parseEventOptions(opt_eventOptions);
   if (this.eventOptions_.supportsRules) {
     this.eventForRules_ =
         new chrome.Event(eventName, opt_argSchemas, opt_eventOptions);
   }
-};
+}
 
 // Test if the given callback is registered for this event.
 WebRequestEvent.prototype.hasListener = function(cb) {
@@ -70,7 +71,8 @@ WebRequestEvent.prototype.addListener =
   // subEvent listener.
   validate(Array.prototype.slice.call(arguments, 1), this.extraArgSchemas_);
   webRequestInternal.addEventListener(
-      cb, opt_filter, opt_extraInfo, this.eventName_, subEventName);
+      cb, opt_filter, opt_extraInfo, this.eventName_, subEventName,
+      this.webViewInstanceId_);
 
   var subEvent = new chrome.Event(subEventName, this.argSchemas_);
   var subEventCallback = cb;
@@ -165,3 +167,4 @@ binding.registerCustomHook(function(api) {
 });
 
 exports.binding = binding.generate();
+exports.WebRequestEvent = WebRequestEvent;

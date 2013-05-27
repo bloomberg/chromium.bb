@@ -29,7 +29,8 @@
             }
           },
           {"type": "string", "name": "eventName"},
-          {"type": "string", "name": "subEventName"}
+          {"type": "string", "name": "subEventName"},
+          {"type": "integer", "name": "webViewInstanceId"}
         ]
       },
       {

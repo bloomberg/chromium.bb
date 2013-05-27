@@ -249,6 +249,11 @@ class EventRouter : public content::NotificationObserver,
   void IncrementInFlightEvents(Profile* profile,
                                const Extension* extension);
 
+  // static
+  static void IncrementInFlightEventsOnUI(
+      void* profile_id,
+      const std::string& extension_id);
+
   void DispatchPendingEvent(const linked_ptr<Event>& event,
                             ExtensionHost* host);
 

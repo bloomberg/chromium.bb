@@ -84,6 +84,7 @@
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
 #include "chrome/browser/validation_message_message_filter.h"
+#include "chrome/browser/webview/webview_guest.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -699,6 +700,7 @@ void ChromeContentBrowserClient::GuestWebContentsCreated(
   // TODO(fsamuel): This should be replaced with WebViewGuest or AdViewGuest
   // once they are ready.
   extensions::TabHelper::CreateForWebContents(guest_web_contents);
+  new WebViewGuest(guest_web_contents, embedder_web_contents, extension->id());
 }
 
 void ChromeContentBrowserClient::RenderProcessHostCreated(

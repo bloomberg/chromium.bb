@@ -12,7 +12,9 @@
 // CHANNEL_CANARY.
 
 var WebView = require('webView').WebView;
-
+var GetExtensionAPIDefinitions =
+      requireNative('apiDefinitions').GetExtensionAPIDefinitions;
+var WebRequestEvent = require('webRequest').WebRequestEvent;
 var forEach = require('utils').forEach;
 
 /** @type {Array.<string>} */
@@ -186,4 +188,34 @@ WebView.prototype.maybeSetupNewWindowEvent_ = function() {
       console.warn('<webview>: A new window was blocked.');
     }
   });
+}
+
+/**
+ * @private
+ */
+WebView.prototype.maybeSetupWebRequestEvents_ = function() {
+  var self = this;
+  // Populate the WebRequest events from the API definition.
+  var webRequestDefinition = GetExtensionAPIDefinitions().filter(function(api) {
+    return api.namespace == 'webRequest';
+  })[0];
+  for (var i = 0; i < webRequestDefinition.events.length; ++i) {
+    Object.defineProperty(self.node_, webRequestDefinition.events[i].name, {
+      get: function(webRequestEvent) {
+        return function() {
+          if (!self[webRequestEvent.name + '_']) {
+            self[webRequestEvent.name + '_'] =
+                new WebRequestEvent(
+                    'webview.' + webRequestEvent.name,
+                    webRequestEvent.parameters,
+                    webRequestEvent.extraParameters, null,
+                    self.objectNode_.getInstanceId());
+          }
+          return self[webRequestEvent.name + '_'];
+        }
+      }(webRequestDefinition.events[i]),
+      // No setter.
+      enumerable: true
+    });
+  }
 };

@@ -172,6 +172,13 @@ void EventRouter::DispatchEvent(IPC::Sender* ipc_sender,
                                 const EventFilteringInfo& info) {
   DispatchExtensionMessage(ipc_sender, profile_id, extension_id, event_name,
                            event_args.get(), event_url, user_gesture, info);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&EventRouter::IncrementInFlightEventsOnUI,
+                  profile_id,
+                  extension_id));
 }
 
 EventRouter::EventRouter(Profile* profile, ExtensionPrefs* extension_prefs)
@@ -659,6 +666,25 @@ bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
   }
 
   return false;
+}
+
+// static
+void EventRouter::IncrementInFlightEventsOnUI(
+    void* profile_id,
+    const std::string& extension_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Profile* profile = reinterpret_cast<Profile*>(profile_id);
+  extensions::EventRouter* event_router =
+      extensions::ExtensionSystem::Get(profile)->event_router();
+  if (!event_router)
+    return;
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  const Extension* extension =
+      extension_service->extensions()->GetByID(extension_id);
+  if (!extension)
+    return;
+  event_router->IncrementInFlightEvents(profile, extension);
 }
 
 void EventRouter::IncrementInFlightEvents(Profile* profile,
