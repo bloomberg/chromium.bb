@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,15 +33,19 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
     manifest_.SetString("version", "1.2.3.4");
     manifest_.SetInteger("manifest_version", 2);
 
+    storage_schema_manifest_handler_ = new StorageSchemaManifestHandler();
+    storage_schema_manifest_handler_->Register();
     // This is used to invoke the private virtual methods.
-    handler_ = &storage_schema_manifest_handler_;
+    handler_ = storage_schema_manifest_handler_;
   }
 
   scoped_refptr<Extension> CreateExtension(const std::string& schema) {
-    ExtensionBuilder builder;
-    builder.SetPath(temp_dir_.path());
-    builder.SetManifest(make_scoped_ptr(manifest_.DeepCopy()));
-
+    std::string error;
+    scoped_refptr<Extension> extension = Extension::Create(
+        temp_dir_.path(), Manifest::UNPACKED, manifest_,
+        Extension::NO_FLAGS, "", &error);
+    if (!extension)
+      return NULL;
     base::FilePath schema_path = temp_dir_.path().AppendASCII("schema.json");
     if (schema.empty()) {
       file_util::Delete(schema_path, false);
@@ -52,8 +55,7 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
         return NULL;
       }
     }
-
-    return builder.Build();
+    return extension;
   }
 
   testing::AssertionResult Validates(const std::string& schema) {
@@ -70,7 +72,7 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   Feature::ScopedCurrentChannel scoped_channel_;
   ManifestHandler* handler_;
-  StorageSchemaManifestHandler storage_schema_manifest_handler_;
+  StorageSchemaManifestHandler* storage_schema_manifest_handler_;
   base::DictionaryValue manifest_;
 };
 
@@ -85,8 +87,7 @@ TEST_F(StorageSchemaManifestHandlerTest, Parse) {
   // Not a string.
   manifest_.SetInteger("storage.managed_schema", 123);
   extension = CreateExtension("");
-  ASSERT_TRUE(extension);
-  EXPECT_FALSE(handler_->Parse(extension.get(), &error));
+  EXPECT_FALSE(extension);
 
   // All good now.
   manifest_.SetString("storage.managed_schema", "schema.json");
