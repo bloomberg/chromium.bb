@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,29 +29,29 @@
  */
 
 #include "config.h"
-#include "V8NodeList.h" 
-
-#include "V8Node.h"
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8GCController.h"
-#include "core/dom/LiveNodeList.h"
 #include "core/dom/NodeList.h"
 
-#include "wtf/RefPtr.h"
-#include "wtf/StdLibExtras.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 
-void* V8NodeList::opaqueRootForGC(void* object, v8::Persistent<v8::Object> wrapper, v8::Isolate* isolate)
+void NodeList::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<Node>& returnValue0, bool& returnValue1Enabled, unsigned& returnValue1)
 {
-    ASSERT(V8NodeList::HasInstanceInAnyWorld(wrapper, isolate));
-    NodeList* impl = static_cast<NodeList*>(object);
-    if (!impl->isLiveNodeList())
-        return object;
-    Node* owner = static_cast<LiveNodeList*>(impl)->ownerNode();
-    if (!owner)
-        return object;
-    return V8GCController::opaqueRootForGC(owner, isolate);
+    // Length property cannot be overridden.
+    DEFINE_STATIC_LOCAL(const AtomicString, length, ("length", AtomicString::ConstructFromLiteral));
+    if (name == length) {
+        returnValue1Enabled = true;
+        returnValue1 = this->length();
+        return;
+    }
+
+    Node* result = namedItem(name);
+    if (!result)
+        return;
+
+    returnValue0Enabled = true;
+    returnValue0 = result;
 }
+
 
 } // namespace WebCore
