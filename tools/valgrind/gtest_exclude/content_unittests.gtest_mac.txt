@@ -32,3 +32,6 @@ RenderViewHostTest.*
 # Speculative disable of hanging tests. http://crbug.com/241919
 VideoCaptureControllerTest.*
 VideoCaptureHostTest.*
+
+# Hangs under Valgrind, see http://crbug.com/244257
+SmoothScrollGestureControllerTest.Tick
