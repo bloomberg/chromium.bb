@@ -259,8 +259,11 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
 
   // It is necessary to stop the |renderer_| before going away.
   if (renderer_) {
-    renderer_->Stop();
-    renderer_ = NULL;
+    // Grab a local reference while we call Stop(), which will trigger a call to
+    // RemoveAudioRenderer that clears our reference to the audio renderer.
+    scoped_refptr<WebRtcAudioRenderer> local_renderer(renderer_);
+    local_renderer->Stop();
+    DCHECK(!renderer_);
   }
 
   if (capturer_) {
