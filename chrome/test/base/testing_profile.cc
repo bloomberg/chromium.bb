@@ -172,7 +172,7 @@ TestingProfile::TestingProfile()
       incognito_(false),
       original_profile_(NULL),
       last_session_exited_cleanly_(true),
-      profile_dependency_manager_(
+      browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
       delegate_(NULL) {
   CreateTempProfileDir();
@@ -189,7 +189,7 @@ TestingProfile::TestingProfile(const base::FilePath& path)
       original_profile_(NULL),
       last_session_exited_cleanly_(true),
       profile_path_(path),
-      profile_dependency_manager_(
+      browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
       delegate_(NULL) {
   Init();
@@ -204,7 +204,7 @@ TestingProfile::TestingProfile(const base::FilePath& path,
       original_profile_(NULL),
       last_session_exited_cleanly_(true),
       profile_path_(path),
-      profile_dependency_manager_(
+      browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
       delegate_(delegate) {
   Init();
@@ -230,7 +230,7 @@ TestingProfile::TestingProfile(
       last_session_exited_cleanly_(true),
       extension_special_storage_policy_(extension_policy),
       profile_path_(path),
-      profile_dependency_manager_(
+      browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
       delegate_(delegate) {
 
@@ -303,7 +303,7 @@ void TestingProfile::Init() {
   extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
       this, extensions::TestExtensionSystem::Build);
 
-  profile_dependency_manager_->CreateBrowserContextServices(this, true);
+  browser_context_dependency_manager_->CreateBrowserContextServices(this, true);
 
 #if defined(ENABLE_NOTIFICATIONS)
   // Install profile keyed service factory hooks for dummy/test services
@@ -326,7 +326,7 @@ void TestingProfile::FinishInit() {
 TestingProfile::~TestingProfile() {
   MaybeSendDestroyedNotification();
 
-  profile_dependency_manager_->DestroyBrowserContextServices(this);
+  browser_context_dependency_manager_->DestroyBrowserContextServices(this);
 
   if (host_content_settings_map_)
     host_content_settings_map_->ShutdownOnUIThread();

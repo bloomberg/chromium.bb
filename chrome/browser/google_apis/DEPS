@@ -5,9 +5,6 @@ include_rules = [
 
   # Temporarily needed, see http://crbug.com/146989
   "!chrome/browser/profiles/profile.h",
-  "!chrome/browser/profiles/profile_dependency_manager.h",
-  "!chrome/browser/profiles/profile_keyed_service_factory.h",
-  "!chrome/browser/profiles/profile_keyed_service.h",
   "!chrome/browser/signin/token_service_factory.h",
   "!chrome/browser/signin/token_service.h",
   "!chrome/browser/sync/profile_sync_service_factory.h",
