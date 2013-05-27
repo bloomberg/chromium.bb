@@ -56,6 +56,9 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
   // True if the target language comes before the original one.
   bool swapped_language_buttons_;
 
+  // True if the source language is expected to be determined by a server.
+  bool autodetermined_source_language_;
+
   DISALLOW_COPY_AND_ASSIGN(AfterTranslateInfoBar);
 };
 
