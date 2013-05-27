@@ -163,11 +163,11 @@ using content::WebContents;
       [[NSView alloc] initWithFrame:containerRect]);
   [devToolsContainerView addSubview:devToolsView];
   [splitView_ addSubview:devToolsContainerView];
-  [self updateDevToolsViewFrame];
 
   BOOL isVertical = devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT;
   [splitView_ setVertical:isVertical];
   [self updateDevToolsSplitPosition];
+  [self updateDevToolsViewFrame];
 }
 
 - (void)hideDevToolsContainer {
