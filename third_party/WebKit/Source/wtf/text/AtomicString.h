@@ -21,8 +21,9 @@
 #ifndef AtomicString_h
 #define AtomicString_h
 
-#include <wtf/text/AtomicStringImpl.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/WTFExport.h"
+#include "wtf/text/AtomicStringImpl.h"
+#include "wtf/text/WTFString.h"
 
 // Define 'NO_IMPLICIT_ATOMICSTRING' before including this header,
 // to disallow (expensive) implicit String-->AtomicString conversions.
@@ -37,7 +38,7 @@ namespace WTF {
 struct AtomicStringHash;
 class MemoryObjectInfo;
 
-class AtomicString {
+class WTF_EXPORT AtomicString {
 public:
     static void init();
 
@@ -191,7 +192,7 @@ private:
 };
 
 inline bool operator==(const AtomicString& a, const AtomicString& b) { return a.impl() == b.impl(); }
-bool operator==(const AtomicString&, const LChar*);
+WTF_EXPORT bool operator==(const AtomicString&, const LChar*);
 inline bool operator==(const AtomicString& a, const char* b) { return WTF::equal(a.impl(), reinterpret_cast<const LChar*>(b)); }
 inline bool operator==(const AtomicString& a, const Vector<UChar>& b) { return a.impl() && equal(a.impl(), b.data(), b.size()); }    
 inline bool operator==(const AtomicString& a, const String& b) { return equal(a.impl(), b.impl()); }
@@ -219,14 +220,14 @@ inline bool equalIgnoringCase(const String& a, const AtomicString& b) { return e
 // Define external global variables for the commonly used atomic strings.
 // These are only usable from the main thread.
 #ifndef ATOMICSTRING_HIDE_GLOBALS
-extern const AtomicString nullAtom;
-extern const AtomicString emptyAtom;
-extern const AtomicString textAtom;
-extern const AtomicString commentAtom;
-extern const AtomicString starAtom;
-extern const AtomicString xmlAtom;
-extern const AtomicString xmlnsAtom;
-extern const AtomicString xlinkAtom;
+WTF_EXPORT extern const AtomicString nullAtom;
+WTF_EXPORT extern const AtomicString emptyAtom;
+WTF_EXPORT extern const AtomicString textAtom;
+WTF_EXPORT extern const AtomicString commentAtom;
+WTF_EXPORT extern const AtomicString starAtom;
+WTF_EXPORT extern const AtomicString xmlAtom;
+WTF_EXPORT extern const AtomicString xmlnsAtom;
+WTF_EXPORT extern const AtomicString xlinkAtom;
 
 inline AtomicString AtomicString::fromUTF8(const char* characters, size_t length)
 {

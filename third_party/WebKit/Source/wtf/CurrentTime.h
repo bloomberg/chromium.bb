@@ -34,12 +34,14 @@
 
 #include <time.h>
 
+#include "wtf/WTFExport.h"
+
 namespace WTF {
 
 // Returns the current UTC time in seconds, counted from January 1, 1970.
 // Precision varies depending on platform but is usually as good or better
 // than a millisecond.
-double currentTime();
+WTF_EXPORT double currentTime();
 
 // Same thing, in milliseconds.
 inline double currentTimeMS()
@@ -49,7 +51,12 @@ inline double currentTimeMS()
 
 // Provides a monotonically increasing time in seconds since an arbitrary point in the past.
 // On unsupported platforms, this function only guarantees the result will be non-decreasing.
-double monotonicallyIncreasingTime();
+WTF_EXPORT double monotonicallyIncreasingTime();
+
+typedef double(*TimeFunction)(void);
+void setCurrentTimeFunction(TimeFunction);
+void setMonotonicallyIncreasingTimeFunction(TimeFunction);
+
 
 } // namespace WTF
 

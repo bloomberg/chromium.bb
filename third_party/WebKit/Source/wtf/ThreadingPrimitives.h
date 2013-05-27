@@ -33,10 +33,11 @@
 
 #include <wtf/Platform.h>
 
-#include <wtf/Assertions.h>
-#include <wtf/FastAllocBase.h>
-#include <wtf/Locker.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/Assertions.h"
+#include "wtf/FastAllocBase.h"
+#include "wtf/Locker.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/WTFExport.h"
 
 #if OS(WINDOWS)
 #include <windows.h>
@@ -72,7 +73,7 @@ typedef void* PlatformMutex;
 typedef void* PlatformCondition;
 #endif
     
-class Mutex {
+class WTF_EXPORT Mutex {
     WTF_MAKE_NONCOPYABLE(Mutex); WTF_MAKE_FAST_ALLOCATED;
 public:
     Mutex();
@@ -107,7 +108,7 @@ private:
     bool m_locked;
 };
 
-class ThreadCondition {
+class WTF_EXPORT ThreadCondition {
     WTF_MAKE_NONCOPYABLE(ThreadCondition);
 public:
     ThreadCondition();

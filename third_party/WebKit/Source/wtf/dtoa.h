@@ -21,9 +21,10 @@
 #ifndef WTF_dtoa_h
 #define WTF_dtoa_h
 
-#include <wtf/ASCIICType.h>
-#include <wtf/dtoa/double-conversion.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/dtoa/double-conversion.h"
+#include "wtf/unicode/Unicode.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 
@@ -33,21 +34,21 @@ extern Mutex* s_dtoaP5Mutex;
 
 typedef char DtoaBuffer[80];
 
-void dtoa(DtoaBuffer result, double dd, bool& sign, int& exponent, unsigned& precision);
-void dtoaRoundSF(DtoaBuffer result, double dd, int ndigits, bool& sign, int& exponent, unsigned& precision);
-void dtoaRoundDP(DtoaBuffer result, double dd, int ndigits, bool& sign, int& exponent, unsigned& precision);
+WTF_EXPORT void dtoa(DtoaBuffer result, double dd, bool& sign, int& exponent, unsigned& precision);
+WTF_EXPORT void dtoaRoundSF(DtoaBuffer result, double dd, int ndigits, bool& sign, int& exponent, unsigned& precision);
+WTF_EXPORT void dtoaRoundDP(DtoaBuffer result, double dd, int ndigits, bool& sign, int& exponent, unsigned& precision);
 
 // Size = 80 for sizeof(DtoaBuffer) + some sign bits, decimal point, 'e', exponent digits.
 const unsigned NumberToStringBufferLength = 96;
 typedef char NumberToStringBuffer[NumberToStringBufferLength];
 typedef LChar NumberToLStringBuffer[NumberToStringBufferLength];
 
-const char* numberToString(double, NumberToStringBuffer);
-const char* numberToFixedPrecisionString(double, unsigned significantFigures, NumberToStringBuffer, bool truncateTrailingZeros = false);
-const char* numberToFixedWidthString(double, unsigned decimalPlaces, NumberToStringBuffer);
+WTF_EXPORT const char* numberToString(double, NumberToStringBuffer);
+WTF_EXPORT const char* numberToFixedPrecisionString(double, unsigned significantFigures, NumberToStringBuffer, bool truncateTrailingZeros = false);
+WTF_EXPORT const char* numberToFixedWidthString(double, unsigned decimalPlaces, NumberToStringBuffer);
 
-double parseDouble(const LChar* string, size_t length, size_t& parsedLength);
-double parseDouble(const UChar* string, size_t length, size_t& parsedLength);
+WTF_EXPORT double parseDouble(const LChar* string, size_t length, size_t& parsedLength);
+WTF_EXPORT double parseDouble(const UChar* string, size_t length, size_t& parsedLength);
 
 namespace Internal {
     double parseDoubleFromLongString(const UChar* string, size_t length, size_t& parsedLength);

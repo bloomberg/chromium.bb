@@ -29,7 +29,8 @@
 #ifndef AutodrainedPool_h
 #define AutodrainedPool_h
 
-#include <wtf/Noncopyable.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/WTFExport.h"
 
 OBJC_CLASS NSAutoreleasePool;
 
@@ -38,10 +39,16 @@ namespace WTF {
 class AutodrainedPool {
     WTF_MAKE_NONCOPYABLE(AutodrainedPool);
 public:
-    explicit AutodrainedPool(int iterationLimit = 1);
-    ~AutodrainedPool();
+#if OS(DARWIN)
+    WTF_EXPORT explicit AutodrainedPool(int iterationLimit = 1);
+    WTF_EXPORT ~AutodrainedPool();
     
-    void cycle();
+    WTF_EXPORT void cycle();
+#else
+    AutodrainedPool() { }
+    ~AutodrainedPool() { }
+    void cycle() { }
+#endif
     
 private:
 #if OS(DARWIN)
@@ -50,12 +57,6 @@ private:
     NSAutoreleasePool* m_pool;
 #endif
 };
-
-#if !OS(DARWIN)
-inline AutodrainedPool::AutodrainedPool(int) { }
-inline AutodrainedPool::~AutodrainedPool() { }
-inline void AutodrainedPool::cycle() { }
-#endif
 
 } // namespace WTF
 

@@ -31,7 +31,6 @@
 #include "MockImageDecoder.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
-#include <wtf/Threading.h>
 
 using namespace WebCore;
 
@@ -318,7 +317,6 @@ static void decodeThreadMain(void* arg)
 
 TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
 {
-    WTF::initializeThreading();
     setFrameStatus(ImageFrame::FramePartial);
 
     const ScaledImageFragment* tempImage = m_generator->decodeAndScale(fullSize());

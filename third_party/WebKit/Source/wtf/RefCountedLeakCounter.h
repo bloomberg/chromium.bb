@@ -21,12 +21,13 @@
 #ifndef RefCountedLeakCounter_h
 #define RefCountedLeakCounter_h
  
-#include <wtf/Assertions.h>
-#include <wtf/Threading.h>
+#include "wtf/Assertions.h"
+#include "wtf/Threading.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
     
-    struct RefCountedLeakCounter {
+    struct WTF_EXPORT RefCountedLeakCounter {
         static void suppressMessages(const char*);
         static void cancelMessageSuppression(const char*);
         

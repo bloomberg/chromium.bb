@@ -26,9 +26,10 @@
 #ifndef CString_h
 #define CString_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 
@@ -56,7 +57,7 @@ private:
 
 // A container for a null-terminated char array supporting copy-on-write
 // assignment.  The contained char array may be null.
-class CString {
+class WTF_EXPORT CString {
 public:
     CString() { }
     CString(const char*);
@@ -85,9 +86,9 @@ private:
     RefPtr<CStringBuffer> m_buffer;
 };
 
-bool operator==(const CString& a, const CString& b);
+WTF_EXPORT bool operator==(const CString& a, const CString& b);
 inline bool operator!=(const CString& a, const CString& b) { return !(a == b); }
-bool operator==(const CString& a, const char* b);
+WTF_EXPORT bool operator==(const CString& a, const char* b);
 inline bool operator!=(const CString& a, const char* b) { return !(a == b); }
 
 } // namespace WTF

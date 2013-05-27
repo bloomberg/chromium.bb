@@ -31,11 +31,13 @@
 #ifndef StringStatics_h
 #define StringStatics_h
 
+#include "wtf/WTFExport.h"
+
 namespace WTF {
 
 class StringStatics {
 public:
-    static void init();
+    WTF_EXPORT static void init();
 
 private:
     StringStatics();

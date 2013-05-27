@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,16 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "wtf/OSRandomSource.h"
 
-#include <public/Platform.h>
+#ifndef WTFExport_h
+#define WTFExport_h
 
-namespace WTF {
+#if !defined(WTF_IMPLEMENTATION)
+#define WTF_IMPLEMENTATION 0
+#endif
 
-void cryptographicallyRandomValuesFromOS(unsigned char* buffer, size_t length)
-{
-    WebKit::Platform::current()->cryptographicallyRandomValues(buffer, length);
-}
+#if defined(COMPONENT_BUILD)
+#if defined(WIN32)
+#if WTF_IMPLEMENTATION
+#define WTF_EXPORT __declspec(dllexport)
+#else
+#define WTF_EXPORT __declspec(dllimport)
+#endif
+#else // defined(WIN32)
+#define WTF_EXPORT __attribute__((visibility("default")))
+#endif
+#else // defined(COMPONENT_BUILD)
+#define WTF_EXPORT
+#endif
 
-}
+#endif // WTFExport_h

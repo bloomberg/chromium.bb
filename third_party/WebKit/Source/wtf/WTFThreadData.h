@@ -27,13 +27,14 @@
 #ifndef WTFThreadData_h
 #define WTFThreadData_h
 
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/StackStats.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/ThreadSpecific.h>
-#include <wtf/Threading.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/StackStats.h"
+#include "wtf/ThreadSpecific.h"
+#include "wtf/Threading.h"
+#include "wtf/WTFExport.h"
+#include "wtf/text/StringHash.h"
 
 namespace WTF {
 
@@ -42,7 +43,7 @@ struct ICUConverterWrapper;
 
 typedef void (*AtomicStringTableDestructor)(AtomicStringTable*);
 
-class WTFThreadData {
+class WTF_EXPORT WTFThreadData {
     WTF_MAKE_NONCOPYABLE(WTFThreadData);
 public:
     WTFThreadData();

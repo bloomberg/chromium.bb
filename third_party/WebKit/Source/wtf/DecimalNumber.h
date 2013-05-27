@@ -27,16 +27,18 @@
 #define DecimalNumber_h
 
 #include <math.h>
-#include <wtf/dtoa.h>
-#include <wtf/MathExtras.h>
-#include <wtf/text/WTFString.h>
+
+#include "wtf/MathExtras.h"
+#include "wtf/WTFExport.h"
+#include "wtf/dtoa.h"
+#include "wtf/text/WTFString.h"
 
 namespace WTF {
 
 enum RoundingSignificantFiguresType { RoundingSignificantFigures };
 enum RoundingDecimalPlacesType { RoundingDecimalPlaces };
 
-class DecimalNumber {
+class WTF_EXPORT DecimalNumber {
 public:
     DecimalNumber(double d)
     {

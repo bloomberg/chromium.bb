@@ -31,11 +31,12 @@
 #ifndef WTF_MD5_h
 #define WTF_MD5_h
 
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 
-class MD5 {
+class WTF_EXPORT MD5 {
 public:
     MD5();
 

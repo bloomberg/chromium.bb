@@ -26,7 +26,6 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseManager.h"
 
-#include "bindings/v8/ScriptController.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/inspector/InspectorDatabaseInstrumentation.h"
@@ -222,7 +221,6 @@ PassRefPtr<Database> DatabaseManager::openDatabase(ScriptExecutionContext* conte
     unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback,
     DatabaseError& error)
 {
-    ScriptController::initializeThreading();
     ASSERT(error == DatabaseError::None);
 
     bool setVersionInNewDatabase = !creationCallback;

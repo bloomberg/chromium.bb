@@ -27,7 +27,8 @@
 
 #include <string.h>
 #include <time.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 
@@ -70,7 +71,7 @@ public:
     inline void setUtcOffset(int utcOffset) { m_utcOffset = utcOffset; }
     inline void setIsDST(int isDST) { m_isDST = isDST; }
 
-    void setToCurrentLocalTime();
+    WTF_EXPORT void setToCurrentLocalTime();
 
     operator tm() const
     {

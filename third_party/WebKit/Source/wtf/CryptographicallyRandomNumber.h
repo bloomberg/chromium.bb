@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef WTF_CryptographicallyRandomNumber_h
@@ -28,10 +28,16 @@
 
 #include <stdint.h>
 
+#include "wtf/WTFExport.h"
+
 namespace WTF {
 
-uint32_t cryptographicallyRandomNumber();
-void cryptographicallyRandomValues(void* buffer, size_t length);
+typedef void (*RandomNumberSource)(unsigned char*, size_t);
+
+WTF_EXPORT void setRandomSource(RandomNumberSource);
+
+WTF_EXPORT uint32_t cryptographicallyRandomNumber();
+WTF_EXPORT void cryptographicallyRandomValues(void* buffer, size_t length);
 
 }
 

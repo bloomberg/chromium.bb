@@ -31,10 +31,11 @@
 #if ENABLE(THREADING_LIBDISPATCH)
 
 #include <dispatch/dispatch.h>
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 
-class ParallelEnvironment {
+class WTF_EXPORT ParallelEnvironment {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     typedef void (*ThreadFunction)(void*);

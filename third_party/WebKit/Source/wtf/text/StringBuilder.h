@@ -27,12 +27,13 @@
 #ifndef StringBuilder_h
 #define StringBuilder_h
 
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/WTFExport.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WTF {
 
-class StringBuilder {
+class WTF_EXPORT StringBuilder {
     // Disallow copying since it's expensive and we don't want code to do it by accident.
     WTF_MAKE_NONCOPYABLE(StringBuilder);
 

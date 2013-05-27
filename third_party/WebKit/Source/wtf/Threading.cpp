@@ -32,6 +32,15 @@
 
 namespace WTF {
 
+extern void initializeThreading();
+
+void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction)
+{
+    setCurrentTimeFunction(currentTimeFunction);
+    setMonotonicallyIncreasingTimeFunction(monotonicallyIncreasingTimeFunction);
+    initializeThreading();
+}
+
 struct NewThreadContext {
     WTF_MAKE_FAST_ALLOCATED;
 public:

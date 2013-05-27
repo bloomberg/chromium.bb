@@ -47,25 +47,26 @@
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
-#include <wtf/CurrentTime.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnArrayPtr.h>
-#include <wtf/PassOwnArrayPtr.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/UnusedParam.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnArrayPtr.h"
+#include "wtf/PassOwnArrayPtr.h"
+#include "wtf/text/WTFString.h"
+#include "wtf/UnusedParam.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 
-void initializeDates();
-int equivalentYearForDST(int year);
+WTF_EXPORT void initializeDates();
+WTF_EXPORT int equivalentYearForDST(int year);
 
 // Not really math related, but this is currently the only shared place to put these.
-double parseES5DateFromNullTerminatedCharacters(const char* dateString);
-double parseDateFromNullTerminatedCharacters(const char* dateString);
-double parseDateFromNullTerminatedCharacters(const char* dateString, bool& haveTZ, int& offset);
-double timeClip(double);
+WTF_EXPORT double parseES5DateFromNullTerminatedCharacters(const char* dateString);
+WTF_EXPORT double parseDateFromNullTerminatedCharacters(const char* dateString);
+WTF_EXPORT double parseDateFromNullTerminatedCharacters(const char* dateString, bool& haveTZ, int& offset);
+WTF_EXPORT double timeClip(double);
 // dayOfWeek: [0, 6] 0 being Monday, day: [1, 31], month: [0, 11], year: ex: 2011, hours: [0, 23], minutes: [0, 59], seconds: [0, 59], utcOffset: [-720,720]. 
-String makeRFC2822DateString(unsigned dayOfWeek, unsigned day, unsigned month, unsigned year, unsigned hours, unsigned minutes, unsigned seconds, int utcOffset);
+WTF_EXPORT String makeRFC2822DateString(unsigned dayOfWeek, unsigned day, unsigned month, unsigned year, unsigned hours, unsigned minutes, unsigned seconds, int utcOffset);
 
 inline double jsCurrentTime()
 {
@@ -90,19 +91,19 @@ const double msPerMonth = 2592000000.0;
 bool isLeapYear(int year);
 
 // Returns the number of days from 1970-01-01 to the specified date.
-double dateToDaysFrom1970(int year, int month, int day);
-int msToYear(double ms);
-double msToDays(double ms);
-int msToMinutes(double ms);
-int msToHours(double ms);
-int dayInYear(int year, int month, int day);
-int dayInYear(double ms, int year);
-int monthFromDayInYear(int dayInYear, bool leapYear);
-int dayInMonthFromDayInYear(int dayInYear, bool leapYear);
+WTF_EXPORT double dateToDaysFrom1970(int year, int month, int day);
+WTF_EXPORT int msToYear(double ms);
+WTF_EXPORT double msToDays(double ms);
+WTF_EXPORT int msToMinutes(double ms);
+WTF_EXPORT int msToHours(double ms);
+WTF_EXPORT int dayInYear(int year, int month, int day);
+WTF_EXPORT int dayInYear(double ms, int year);
+WTF_EXPORT int monthFromDayInYear(int dayInYear, bool leapYear);
+WTF_EXPORT int dayInMonthFromDayInYear(int dayInYear, bool leapYear);
 
 // Returns offset milliseconds for UTC and DST.
-int32_t calculateUTCOffset();
-double calculateDSTOffset(double ms, double utcOffset);
+WTF_EXPORT int32_t calculateUTCOffset();
+WTF_EXPORT double calculateDSTOffset(double ms, double utcOffset);
 
 } // namespace WTF
 

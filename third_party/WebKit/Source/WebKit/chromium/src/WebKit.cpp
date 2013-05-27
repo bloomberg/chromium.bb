@@ -49,6 +49,8 @@
 #include "core/platform/graphics/chromium/MediaPlayerPrivateChromium.h"
 #include "core/workers/WorkerContextProxy.h"
 #include "wtf/Assertions.h"
+#include "wtf/CryptographicallyRandomNumber.h"
+#include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
 #include "wtf/Threading.h"
 #include "wtf/UnusedParam.h"
@@ -116,6 +118,26 @@ void initialize(Platform* platform)
     }
 }
 
+static double currentTimeFunction()
+{
+    return Platform::current()->currentTime();
+}
+
+static double monotonicallyIncreasingTimeFunction()
+{
+    return Platform::current()->monotonicallyIncreasingTime();
+}
+
+static void cryptographicallyRandomValues(unsigned char* buffer, size_t length)
+{
+    Platform::current()->cryptographicallyRandomValues(buffer, length);
+}
+
+static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
+{
+    Platform::current()->callOnMainThread(function, context);
+}
+
 void initializeWithoutV8(Platform* platform)
 {
     ASSERT(!s_webKitInitialized);
@@ -124,8 +146,9 @@ void initializeWithoutV8(Platform* platform)
     ASSERT(platform);
     Platform::initialize(platform);
 
-    WTF::initializeThreading();
-    WTF::initializeMainThread();
+    WTF::setRandomSource(cryptographicallyRandomValues);
+    WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction);
+    WTF::initializeMainThread(callOnMainThreadFunction);
     WebCore::init();
     WebCore::ImageDecodingStore::initializeOnce();
 

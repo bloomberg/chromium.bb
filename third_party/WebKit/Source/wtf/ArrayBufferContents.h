@@ -29,10 +29,11 @@
 
 #include "wtf/ArrayBufferDeallocationObserver.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 
-class ArrayBufferContents {
+class WTF_EXPORT ArrayBufferContents {
     WTF_MAKE_NONCOPYABLE(ArrayBufferContents);
 public:
     enum InitializationPolicy {

@@ -31,9 +31,10 @@
 #ifndef MemoryInstrumentation_h
 #define MemoryInstrumentation_h
 
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/WTFExport.h"
 
 #define DEBUG_POINTER_INSTRUMENTATION 0
 
@@ -93,7 +94,7 @@ public:
     virtual int registerString(const char*) = 0;
 };
 
-class MemoryInstrumentation {
+class WTF_EXPORT MemoryInstrumentation {
 public:
     explicit MemoryInstrumentation(MemoryInstrumentationClient*);
     virtual ~MemoryInstrumentation();
@@ -143,7 +144,7 @@ public:
     };
 
 protected:
-    class WrapperBase {
+    class WTF_EXPORT WrapperBase {
     public:
         WrapperBase(MemoryObjectType, const void* pointer);
         virtual ~WrapperBase() { }
@@ -248,7 +249,7 @@ template <typename T> char* fn() { return FN<T>::fn(); }
 template <typename T> char* fn() { return const_cast<char*>(__PRETTY_FUNCTION__); }
 #endif
 
-class MemoryClassInfo {
+class WTF_EXPORT MemoryClassInfo {
 public:
     template<typename T>
     MemoryClassInfo(MemoryObjectInfo* memoryObjectInfo, const T* pointer, MemoryObjectType objectType = 0, size_t actualSize = sizeof(T))

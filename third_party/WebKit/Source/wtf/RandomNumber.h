@@ -26,11 +26,13 @@
 #ifndef WTF_RandomNumber_h
 #define WTF_RandomNumber_h
 
+#include "wtf/WTFExport.h"
+
 namespace WTF {
 
 // Returns a pseudo-random number in the range [0, 1), attempts to be
 // cryptographically secure if possible on the target platform
-double randomNumber();
+WTF_EXPORT double randomNumber();
 
 }
 

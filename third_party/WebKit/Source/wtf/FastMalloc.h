@@ -21,21 +21,23 @@
 #ifndef WTF_FastMalloc_h
 #define WTF_FastMalloc_h
 
-#include <wtf/Platform.h>
-#include <wtf/PossiblyNull.h>
-#include <stdlib.h>
 #include <new>
+#include <stdlib.h>
+
+#include "wtf/Platform.h"
+#include "wtf/PossiblyNull.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 
     // These functions call CRASH() if an allocation fails.
-    void* fastMalloc(size_t);
-    void* fastZeroedMalloc(size_t);
-    void* fastCalloc(size_t numElements, size_t elementSize);
-    void* fastRealloc(void*, size_t);
-    char* fastStrDup(const char*);
-    size_t fastMallocSize(const void*);
-    size_t fastMallocGoodSize(size_t);
+    WTF_EXPORT void* fastMalloc(size_t);
+    WTF_EXPORT void* fastZeroedMalloc(size_t);
+    WTF_EXPORT void* fastCalloc(size_t numElements, size_t elementSize);
+    WTF_EXPORT void* fastRealloc(void*, size_t);
+    WTF_EXPORT char* fastStrDup(const char*);
+    WTF_EXPORT size_t fastMallocSize(const void*);
+    WTF_EXPORT size_t fastMallocGoodSize(size_t);
 
     struct TryMallocReturnValue {
         TryMallocReturnValue(void* data)
@@ -69,26 +71,26 @@ namespace WTF {
         return returnValue;
     }
 
-    TryMallocReturnValue tryFastMalloc(size_t n);
-    TryMallocReturnValue tryFastZeroedMalloc(size_t n);
-    TryMallocReturnValue tryFastCalloc(size_t n_elements, size_t element_size);
-    TryMallocReturnValue tryFastRealloc(void* p, size_t n);
+    WTF_EXPORT TryMallocReturnValue tryFastMalloc(size_t n);
+    WTF_EXPORT TryMallocReturnValue tryFastZeroedMalloc(size_t n);
+    WTF_EXPORT TryMallocReturnValue tryFastCalloc(size_t n_elements, size_t element_size);
+    WTF_EXPORT TryMallocReturnValue tryFastRealloc(void* p, size_t n);
 
-    void fastFree(void*);
+    WTF_EXPORT void fastFree(void*);
 
 #ifndef NDEBUG    
-    void fastMallocForbid();
-    void fastMallocAllow();
+    WTF_EXPORT void fastMallocForbid();
+    WTF_EXPORT void fastMallocAllow();
 #endif
 
-    void releaseFastMallocFreeMemory();
+    WTF_EXPORT void releaseFastMallocFreeMemory();
     
     struct FastMallocStatistics {
         size_t reservedVMBytes;
         size_t committedVMBytes;
         size_t freeListBytes;
     };
-    FastMallocStatistics fastMallocStatistics();
+    WTF_EXPORT FastMallocStatistics fastMallocStatistics();
 
     // This defines a type which holds an unsigned integer and is the same
     // size as the minimally aligned memory allocation.

@@ -34,25 +34,26 @@
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 #include "wtf/Threading.h"
-#include <public/Platform.h>
 
 namespace WTF {
 
 static ThreadIdentifier mainThreadIdentifier;
+static void (*callOnMainThreadFunction)(MainThreadFunction, void*);
 
-void initializeMainThread()
+void initializeMainThread(void (*function)(MainThreadFunction, void*))
 {
     static bool initializedMainThread;
     if (initializedMainThread)
         return;
     initializedMainThread = true;
+    callOnMainThreadFunction = function;
 
     mainThreadIdentifier = currentThread();
 }
 
 void callOnMainThread(MainThreadFunction* function, void* context)
 {
-    WebKit::Platform::current()->callOnMainThread(function, context);
+    (*callOnMainThreadFunction)(function, context);
 }
 
 static void callFunctionObject(void* context)

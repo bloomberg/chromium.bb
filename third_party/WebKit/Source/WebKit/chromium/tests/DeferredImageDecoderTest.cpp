@@ -37,7 +37,6 @@
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Threading.h>
 
 using namespace WebCore;
 
@@ -172,8 +171,6 @@ static void rasterizeMain(void* arg)
 
 TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
 {
-    WTF::initializeThreading();
-
     RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
     EXPECT_EQ(1, image->bitmap().width());
     EXPECT_EQ(1, image->bitmap().height());

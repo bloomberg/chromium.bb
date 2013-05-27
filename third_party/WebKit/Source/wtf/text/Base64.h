@@ -27,9 +27,10 @@
 #ifndef Base64_h
 #define Base64_h
 
-#include <wtf/Vector.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Vector.h"
+#include "wtf/WTFExport.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WTF {
 
@@ -44,16 +45,16 @@ enum Base64DecodePolicy {
     Base64IgnoreInvalidCharacters
 };
 
-void base64Encode(const char*, unsigned, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
-void base64Encode(const Vector<char>&, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
-void base64Encode(const CString&, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
-String base64Encode(const char*, unsigned, Base64EncodePolicy = Base64DoNotInsertLFs);
-String base64Encode(const Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
-String base64Encode(const CString&, Base64EncodePolicy = Base64DoNotInsertLFs);
+WTF_EXPORT void base64Encode(const char*, unsigned, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
+WTF_EXPORT void base64Encode(const Vector<char>&, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
+WTF_EXPORT void base64Encode(const CString&, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
+WTF_EXPORT String base64Encode(const char*, unsigned, Base64EncodePolicy = Base64DoNotInsertLFs);
+WTF_EXPORT String base64Encode(const Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
+WTF_EXPORT String base64Encode(const CString&, Base64EncodePolicy = Base64DoNotInsertLFs);
 
-bool base64Decode(const String&, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
-bool base64Decode(const Vector<char>&, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
-bool base64Decode(const char*, unsigned, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
+WTF_EXPORT bool base64Decode(const String&, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
+WTF_EXPORT bool base64Decode(const Vector<char>&, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
+WTF_EXPORT bool base64Decode(const char*, unsigned, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
 
 inline void base64Encode(const Vector<char>& in, Vector<char>& out, Base64EncodePolicy policy)
 {

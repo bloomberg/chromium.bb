@@ -140,8 +140,6 @@ void TestShell::initialize(MockPlatform* platformSupport)
     webkit_support::SetThemeEngine(m_testInterfaces->themeEngine());
 #endif
 
-    WTF::initializeThreading();
-
     if (m_threadedCompositingEnabled)
         m_webCompositorThread = adoptPtr(WebKit::Platform::current()->createThread("Compositor"));
     webkit_support::SetThreadedCompositorEnabled(m_threadedCompositingEnabled);

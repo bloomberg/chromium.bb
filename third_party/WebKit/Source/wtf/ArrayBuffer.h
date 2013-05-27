@@ -32,13 +32,14 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 
 class ArrayBuffer;
 class ArrayBufferView;
 
-class ArrayBuffer : public RefCounted<ArrayBuffer> {
+class WTF_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
 public:
     static inline PassRefPtr<ArrayBuffer> create(unsigned numElements, unsigned elementByteSize);
     static inline PassRefPtr<ArrayBuffer> create(ArrayBuffer*);

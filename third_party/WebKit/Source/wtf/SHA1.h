@@ -31,12 +31,13 @@
 #ifndef WTF_SHA1_h
 #define WTF_SHA1_h
 
-#include <wtf/Vector.h>
-#include <wtf/text/CString.h>
+#include "wtf/Vector.h"
+#include "wtf/WTFExport.h"
+#include "wtf/text/CString.h"
 
 namespace WTF {
 
-class SHA1 {
+class WTF_EXPORT SHA1 {
 public:
     SHA1();
 

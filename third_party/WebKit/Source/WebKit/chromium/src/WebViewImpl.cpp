@@ -433,12 +433,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_showDebugBorders(false)
     , m_continuousPaintingEnabled(false)
 {
-    // WebKit/win/WebView.cpp does the same thing, except they call the
-    // KJS specific wrapper around this method. We need to have threading
-    // initialized because CollatorICU requires it.
-    WTF::initializeThreading();
-    WTF::initializeMainThread();
-
     Page::PageClients pageClients;
     pageClients.chromeClient = &m_chromeClientImpl;
     pageClients.contextMenuClient = &m_contextMenuClientImpl;

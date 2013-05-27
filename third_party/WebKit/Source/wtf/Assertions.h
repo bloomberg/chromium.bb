@@ -48,6 +48,8 @@
 #include <inttypes.h>
 #endif
 
+#include "wtf/WTFExport.h"
+
 #ifdef NDEBUG
 /* Disable ASSERT* macros in release mode. */
 #define ASSERTIONS_DISABLED_DEFAULT 1
@@ -112,23 +114,23 @@ typedef struct {
     WTFLogChannelState state;
 } WTFLogChannel;
 
-void WTFReportAssertionFailure(const char* file, int line, const char* function, const char* assertion);
-void WTFReportAssertionFailureWithMessage(const char* file, int line, const char* function, const char* assertion, const char* format, ...) WTF_ATTRIBUTE_PRINTF(5, 6);
-void WTFReportArgumentAssertionFailure(const char* file, int line, const char* function, const char* argName, const char* assertion);
-void WTFReportFatalError(const char* file, int line, const char* function, const char* format, ...) WTF_ATTRIBUTE_PRINTF(4, 5);
-void WTFReportError(const char* file, int line, const char* function, const char* format, ...) WTF_ATTRIBUTE_PRINTF(4, 5);
-void WTFLog(WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(2, 3);
-void WTFLogVerbose(const char* file, int line, const char* function, WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(5, 6);
-void WTFLogAlways(const char* format, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
+WTF_EXPORT void WTFReportAssertionFailure(const char* file, int line, const char* function, const char* assertion);
+WTF_EXPORT void WTFReportAssertionFailureWithMessage(const char* file, int line, const char* function, const char* assertion, const char* format, ...) WTF_ATTRIBUTE_PRINTF(5, 6);
+WTF_EXPORT void WTFReportArgumentAssertionFailure(const char* file, int line, const char* function, const char* argName, const char* assertion);
+WTF_EXPORT void WTFReportFatalError(const char* file, int line, const char* function, const char* format, ...) WTF_ATTRIBUTE_PRINTF(4, 5);
+WTF_EXPORT void WTFReportError(const char* file, int line, const char* function, const char* format, ...) WTF_ATTRIBUTE_PRINTF(4, 5);
+WTF_EXPORT void WTFLog(WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(2, 3);
+WTF_EXPORT void WTFLogVerbose(const char* file, int line, const char* function, WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(5, 6);
+WTF_EXPORT void WTFLogAlways(const char* format, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
 
-void WTFGetBacktrace(void** stack, int* size);
-void WTFReportBacktrace();
-void WTFPrintBacktrace(void** stack, int size);
+WTF_EXPORT void WTFGetBacktrace(void** stack, int* size);
+WTF_EXPORT void WTFReportBacktrace();
+WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 
 typedef void (*WTFCrashHookFunction)();
-void WTFSetCrashHook(WTFCrashHookFunction);
-void WTFInvokeCrashHook();
-void WTFInstallReportBacktraceOnCrashHook();
+WTF_EXPORT void WTFSetCrashHook(WTFCrashHookFunction);
+WTF_EXPORT void WTFInvokeCrashHook();
+WTF_EXPORT void WTFInstallReportBacktraceOnCrashHook();
 
 #ifdef __cplusplus
 }

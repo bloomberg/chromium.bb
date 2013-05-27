@@ -27,9 +27,10 @@
 #define BitVector_h
 
 #include <stdio.h>
-#include <wtf/Assertions.h>
-#include <wtf/PrintStream.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/Assertions.h"
+#include "wtf/PrintStream.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 
@@ -54,7 +55,7 @@ namespace WTF {
 // juggle a lot of variable-length BitVectors and you're worried about wasting
 // space.
 
-class BitVector {
+class WTF_EXPORT BitVector {
 public: 
     BitVector()
         : m_bitsOrPointer(makeInlineBits(0))

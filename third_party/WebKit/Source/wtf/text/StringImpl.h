@@ -24,12 +24,13 @@
 #define StringImpl_h
 
 #include <limits.h>
-#include <wtf/ASCIICType.h>
-#include <wtf/Forward.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/StringHasher.h>
-#include <wtf/Vector.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/Forward.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/StringHasher.h"
+#include "wtf/Vector.h"
+#include "wtf/WTFExport.h"
+#include "wtf/unicode/Unicode.h"
 
 #if USE(CF)
 typedef const struct __CFString * CFStringRef;
@@ -113,7 +114,7 @@ struct StringStats {
 #define STRING_STATS_REMOVE_STRING(string) ((void)0)
 #endif
 
-class StringImpl {
+class WTF_EXPORT StringImpl {
     WTF_MAKE_NONCOPYABLE(StringImpl);
     // This is needed because we malloc() space for a StringImpl plus an
     // immediately following buffer, as a performance tweak.
@@ -773,15 +774,15 @@ ALWAYS_INLINE const LChar* StringImpl::getCharacters<LChar>() const { return cha
 template <>
 ALWAYS_INLINE const UChar* StringImpl::getCharacters<UChar>() const { return characters(); }
 
-bool equal(const StringImpl*, const StringImpl*);
-bool equal(const StringImpl*, const LChar*);
+WTF_EXPORT bool equal(const StringImpl*, const StringImpl*);
+WTF_EXPORT bool equal(const StringImpl*, const LChar*);
 inline bool equal(const StringImpl* a, const char* b) { return equal(a, reinterpret_cast<const LChar*>(b)); }
-bool equal(const StringImpl*, const LChar*, unsigned);
+WTF_EXPORT bool equal(const StringImpl*, const LChar*, unsigned);
 inline bool equal(const StringImpl* a, const char* b, unsigned length) { return equal(a, reinterpret_cast<const LChar*>(b), length); }
 inline bool equal(const LChar* a, StringImpl* b) { return equal(b, a); }
 inline bool equal(const char* a, StringImpl* b) { return equal(b, reinterpret_cast<const LChar*>(a)); }
-bool equal(const StringImpl*, const UChar*, unsigned);
-bool equalNonNull(const StringImpl* a, const StringImpl* b);
+WTF_EXPORT bool equal(const StringImpl*, const UChar*, unsigned);
+WTF_EXPORT bool equalNonNull(const StringImpl* a, const StringImpl* b);
 
 // Do comparisons 8 or 4 bytes-at-a-time on architectures where it's safe.
 #if CPU(X86_64)
@@ -939,11 +940,11 @@ ALWAYS_INLINE bool equal(const UChar* a, const LChar* b, unsigned length)
     return true;
 }
 
-bool equalIgnoringCase(const StringImpl*, const StringImpl*);
-bool equalIgnoringCase(const StringImpl*, const LChar*);
+WTF_EXPORT bool equalIgnoringCase(const StringImpl*, const StringImpl*);
+WTF_EXPORT bool equalIgnoringCase(const StringImpl*, const LChar*);
 inline bool equalIgnoringCase(const LChar* a, const StringImpl* b) { return equalIgnoringCase(b, a); }
-bool equalIgnoringCase(const LChar*, const LChar*, unsigned);
-bool equalIgnoringCase(const UChar*, const LChar*, unsigned);
+WTF_EXPORT bool equalIgnoringCase(const LChar*, const LChar*, unsigned);
+WTF_EXPORT bool equalIgnoringCase(const UChar*, const LChar*, unsigned);
 inline bool equalIgnoringCase(const UChar* a, const char* b, unsigned length) { return equalIgnoringCase(a, reinterpret_cast<const LChar*>(b), length); }
 inline bool equalIgnoringCase(const LChar* a, const UChar* b, unsigned length) { return equalIgnoringCase(b, a, length); }
 inline bool equalIgnoringCase(const char* a, const UChar* b, unsigned length) { return equalIgnoringCase(b, reinterpret_cast<const LChar*>(a), length); }
@@ -953,9 +954,9 @@ inline bool equalIgnoringCase(const UChar* a, const UChar* b, int length)
     ASSERT(length >= 0);
     return !Unicode::umemcasecmp(a, b, length);
 }
-bool equalIgnoringCaseNonNull(const StringImpl*, const StringImpl*);
+WTF_EXPORT bool equalIgnoringCaseNonNull(const StringImpl*, const StringImpl*);
 
-bool equalIgnoringNullity(StringImpl*, StringImpl*);
+WTF_EXPORT bool equalIgnoringNullity(StringImpl*, StringImpl*);
 
 template<typename CharacterType>
 inline size_t find(const CharacterType* characters, unsigned length, CharacterType matchCharacter, unsigned index = 0)

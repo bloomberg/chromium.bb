@@ -31,18 +31,29 @@
 #include "config.h"
 #include "wtf/CurrentTime.h"
 
-#include <public/Platform.h>
-
 namespace WTF {
+
+static TimeFunction currentTimeFunction;
+static TimeFunction monotonicallyIncreasingTimeFunction;
+
+void setCurrentTimeFunction(TimeFunction func)
+{
+    currentTimeFunction = func;
+}
+
+void setMonotonicallyIncreasingTimeFunction(TimeFunction func)
+{
+    monotonicallyIncreasingTimeFunction = func;
+}
 
 double currentTime()
 {
-    return WebKit::Platform::current()->currentTime();
+    return (*currentTimeFunction)();
 }
 
 double monotonicallyIncreasingTime()
 {
-    return WebKit::Platform::current()->monotonicallyIncreasingTime();
+    return (*monotonicallyIncreasingTimeFunction)();
 }
 
 } // namespace WTF

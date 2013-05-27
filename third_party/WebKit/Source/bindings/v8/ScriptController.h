@@ -98,9 +98,6 @@ public:
     ScriptValue callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function>, v8::Handle<v8::Object>, int argc, v8::Handle<v8::Value> argv[]);
     static v8::Local<v8::Value> callFunctionWithInstrumentation(ScriptExecutionContext*, v8::Handle<v8::Function>, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[]);
 
-    // This function must be called from the main thread. It is safe to call it repeatedly.
-    static void initializeThreading();
-
     // Returns true if the current world is isolated, and has its own Content
     // Security Policy. In this case, the policy of the main world should be
     // ignored when evaluating resources injected into the DOM.

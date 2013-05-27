@@ -84,16 +84,6 @@
 
 namespace WebCore {
 
-void ScriptController::initializeThreading()
-{
-    static bool initializedThreading = false;
-    if (!initializedThreading) {
-        WTF::initializeThreading();
-        WTF::initializeMainThread();
-        initializedThreading = true;
-    }
-}
-
 bool ScriptController::canAccessFromCurrentOrigin(Frame *frame)
 {
     return !v8::Context::InContext() || BindingSecurity::shouldAllowAccessToFrame(frame);

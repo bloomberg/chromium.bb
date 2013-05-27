@@ -62,12 +62,14 @@
 #include <wtf/Platform.h>
 
 #include <stdint.h>
-#include <wtf/Assertions.h>
-#include <wtf/Atomics.h>
-#include <wtf/Locker.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/ThreadSafeRefCounted.h>
-#include <wtf/ThreadingPrimitives.h>
+#include "wtf/Assertions.h"
+#include "wtf/Atomics.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/Locker.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/ThreadSafeRefCounted.h"
+#include "wtf/ThreadingPrimitives.h"
+#include "wtf/WTFExport.h"
 
 // For portability, we do not use thread-safe statics natively supported by some compilers (e.g. gcc).
 #define AtomicallyInitializedStatic(T, name) \
@@ -80,30 +82,28 @@ namespace WTF {
 typedef uint32_t ThreadIdentifier;
 typedef void (*ThreadFunction)(void* argument);
 
-// This function must be called from the main thread. It is safe to call it repeatedly.
-// Darwin is an exception to this rule: it is OK to call it from any thread, the only 
-// requirement is that the calls are not reentrant.
-void initializeThreading();
+// This function must be called exactly once from the main thread before using anything else in WTF.
+WTF_EXPORT void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction);
 
 // Returns 0 if thread creation failed.
 // The thread name must be a literal since on some platforms it's passed in to the thread.
-ThreadIdentifier createThread(ThreadFunction, void*, const char* threadName);
+WTF_EXPORT ThreadIdentifier createThread(ThreadFunction, void*, const char* threadName);
 
 // Internal platform-specific createThread implementation.
-ThreadIdentifier createThreadInternal(ThreadFunction, void*, const char* threadName);
+WTF_EXPORT ThreadIdentifier createThreadInternal(ThreadFunction, void*, const char* threadName);
 
 // Called in the thread during initialization.
 // Helpful for platforms where the thread name must be set from within the thread.
-void initializeCurrentThreadInternal(const char* threadName);
+WTF_EXPORT void initializeCurrentThreadInternal(const char* threadName);
 
-ThreadIdentifier currentThread();
-int waitForThreadCompletion(ThreadIdentifier);
-void detachThread(ThreadIdentifier);
+WTF_EXPORT ThreadIdentifier currentThread();
+WTF_EXPORT int waitForThreadCompletion(ThreadIdentifier);
+WTF_EXPORT void detachThread(ThreadIdentifier);
 
-void yield();
+WTF_EXPORT void yield();
 
-void lockAtomicallyInitializedStaticMutex();
-void unlockAtomicallyInitializedStaticMutex();
+WTF_EXPORT void lockAtomicallyInitializedStaticMutex();
+WTF_EXPORT void unlockAtomicallyInitializedStaticMutex();
 
 } // namespace WTF
 

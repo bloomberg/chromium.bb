@@ -42,8 +42,9 @@
 #ifndef WTF_ThreadSpecific_h
 #define WTF_ThreadSpecific_h
 
-#include <wtf/Noncopyable.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/WTFExport.h"
 
 #if USE(PTHREADS)
 #include <pthread.h>
@@ -56,7 +57,7 @@ namespace WTF {
 #if OS(WINDOWS)
 // ThreadSpecificThreadExit should be called each time when a thread is detached.
 // This is done automatically for threads created with WTF::createThread.
-void ThreadSpecificThreadExit();
+WTF_EXPORT void ThreadSpecificThreadExit();
 #endif
 
 template<typename T> class ThreadSpecific {
@@ -70,7 +71,7 @@ public:
 
 private:
 #if OS(WINDOWS)
-    friend void ThreadSpecificThreadExit();
+    WTF_EXPORT friend void ThreadSpecificThreadExit();
 #endif
 
     // Not implemented. It's technically possible to destroy a thread specific key, but one would need
@@ -164,16 +165,16 @@ inline void ThreadSpecific<T>::set(T* ptr)
 // 2) We do not need to hold many instances of ThreadSpecific<> data. This fixed number should be far enough.
 const int kMaxTlsKeySize = 256;
 
-long& tlsKeyCount();
-DWORD* tlsKeys();
+WTF_EXPORT long& tlsKeyCount();
+WTF_EXPORT DWORD* tlsKeys();
 
 class PlatformThreadSpecificKey;
 typedef PlatformThreadSpecificKey* ThreadSpecificKey;
 
-void threadSpecificKeyCreate(ThreadSpecificKey*, void (*)(void *));
-void threadSpecificKeyDelete(ThreadSpecificKey);
-void threadSpecificSet(ThreadSpecificKey, void*);
-void* threadSpecificGet(ThreadSpecificKey);
+WTF_EXPORT void threadSpecificKeyCreate(ThreadSpecificKey*, void (*)(void *));
+WTF_EXPORT void threadSpecificKeyDelete(ThreadSpecificKey);
+WTF_EXPORT void threadSpecificSet(ThreadSpecificKey, void*);
+WTF_EXPORT void* threadSpecificGet(ThreadSpecificKey);
 
 template<typename T>
 inline ThreadSpecific<T>::ThreadSpecific()

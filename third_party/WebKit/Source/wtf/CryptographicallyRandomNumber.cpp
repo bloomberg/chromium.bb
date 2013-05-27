@@ -30,11 +30,17 @@
 #include "config.h"
 #include "CryptographicallyRandomNumber.h"
 
-#include "OSRandomSource.h"
 #include "StdLibExtras.h"
 #include "ThreadingPrimitives.h"
 
 namespace WTF {
+
+static RandomNumberSource sourceFunction;
+
+void setRandomSource(RandomNumberSource source)
+{
+    sourceFunction = source;
+}
 
 namespace {
 
@@ -97,7 +103,7 @@ void ARC4RandomNumberGenerator::stir()
 {
     unsigned char randomness[128];
     size_t length = sizeof(randomness);
-    cryptographicallyRandomValuesFromOS(randomness, length);
+    (*sourceFunction)(randomness, length);
     addRandomData(randomness, length);
 
     // Discard early keystream, as per recommendations in:
@@ -163,6 +169,7 @@ ARC4RandomNumberGenerator& sharedRandomNumberGenerator()
 }
 
 }
+
 
 uint32_t cryptographicallyRandomNumber()
 {

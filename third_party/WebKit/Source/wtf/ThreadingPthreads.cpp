@@ -112,8 +112,8 @@ static Mutex& threadMapMutex()
 
 void initializeThreading()
 {
-    if (atomicallyInitializedStaticMutex)
-        return;
+    // This should only be called once.
+    ASSERT(!atomicallyInitializedStaticMutex);
 
     WTF::double_conversion::initialize();
     // StringImpl::empty() does not construct its static string in a threadsafe fashion,

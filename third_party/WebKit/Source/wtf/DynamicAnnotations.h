@@ -48,6 +48,8 @@
  * See http://code.google.com/p/data-race-test/wiki/DynamicAnnotations for more information.
  */
 
+#include "wtf/WTFExport.h"
+
 #if USE(DYNAMIC_ANNOTATIONS)
 /* Tell data race detector that we're not interested in reports on the given address range. */
 #define WTF_ANNOTATE_BENIGN_RACE_SIZED(address, size, description) WTFAnnotateBenignRaceSized(__FILE__, __LINE__, address, size, description)
@@ -77,9 +79,9 @@
 extern "C" {
 #endif
 /* Don't use these directly, use the above macros instead. */
-void WTFAnnotateBenignRaceSized(const char* file, int line, const volatile void* memory, long size, const char* description);
-void WTFAnnotateHappensBefore(const char* file, int line, const volatile void* address);
-void WTFAnnotateHappensAfter(const char* file, int line, const volatile void* address);
+WTF_EXPORT void WTFAnnotateBenignRaceSized(const char* file, int line, const volatile void* memory, long size, const char* description);
+WTF_EXPORT void WTFAnnotateHappensBefore(const char* file, int line, const volatile void* address);
+WTF_EXPORT void WTFAnnotateHappensAfter(const char* file, int line, const volatile void* address);
 #ifdef __cplusplus
 } // extern "C"
 #endif

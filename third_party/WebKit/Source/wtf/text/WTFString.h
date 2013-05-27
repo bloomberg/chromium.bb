@@ -25,8 +25,9 @@
 // This file would be called String.h, but that conflicts with <string.h>
 // on systems without case-sensitive file systems.
 
-#include <wtf/text/ASCIIFastPath.h>
-#include <wtf/text/StringImpl.h>
+#include "wtf/WTFExport.h"
+#include "wtf/text/ASCIIFastPath.h"
+#include "wtf/text/StringImpl.h"
 
 #ifdef __OBJC__
 #include <objc/objc.h>
@@ -40,37 +41,37 @@ struct StringHash;
 
 // Declarations of string operations
 
-int charactersToIntStrict(const LChar*, size_t, bool* ok = 0, int base = 10);
-int charactersToIntStrict(const UChar*, size_t, bool* ok = 0, int base = 10);
-unsigned charactersToUIntStrict(const LChar*, size_t, bool* ok = 0, int base = 10);
-unsigned charactersToUIntStrict(const UChar*, size_t, bool* ok = 0, int base = 10);
-int64_t charactersToInt64Strict(const LChar*, size_t, bool* ok = 0, int base = 10);
-int64_t charactersToInt64Strict(const UChar*, size_t, bool* ok = 0, int base = 10);
-uint64_t charactersToUInt64Strict(const LChar*, size_t, bool* ok = 0, int base = 10);
-uint64_t charactersToUInt64Strict(const UChar*, size_t, bool* ok = 0, int base = 10);
-intptr_t charactersToIntPtrStrict(const LChar*, size_t, bool* ok = 0, int base = 10);
-intptr_t charactersToIntPtrStrict(const UChar*, size_t, bool* ok = 0, int base = 10);
+WTF_EXPORT int charactersToIntStrict(const LChar*, size_t, bool* ok = 0, int base = 10);
+WTF_EXPORT int charactersToIntStrict(const UChar*, size_t, bool* ok = 0, int base = 10);
+WTF_EXPORT unsigned charactersToUIntStrict(const LChar*, size_t, bool* ok = 0, int base = 10);
+WTF_EXPORT unsigned charactersToUIntStrict(const UChar*, size_t, bool* ok = 0, int base = 10);
+WTF_EXPORT int64_t charactersToInt64Strict(const LChar*, size_t, bool* ok = 0, int base = 10);
+WTF_EXPORT int64_t charactersToInt64Strict(const UChar*, size_t, bool* ok = 0, int base = 10);
+WTF_EXPORT uint64_t charactersToUInt64Strict(const LChar*, size_t, bool* ok = 0, int base = 10);
+WTF_EXPORT uint64_t charactersToUInt64Strict(const UChar*, size_t, bool* ok = 0, int base = 10);
+WTF_EXPORT intptr_t charactersToIntPtrStrict(const LChar*, size_t, bool* ok = 0, int base = 10);
+WTF_EXPORT intptr_t charactersToIntPtrStrict(const UChar*, size_t, bool* ok = 0, int base = 10);
 
-int charactersToInt(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
-int charactersToInt(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
-unsigned charactersToUInt(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
-unsigned charactersToUInt(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
-int64_t charactersToInt64(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
-int64_t charactersToInt64(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
-uint64_t charactersToUInt64(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
-uint64_t charactersToUInt64(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
-intptr_t charactersToIntPtr(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
-intptr_t charactersToIntPtr(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
+WTF_EXPORT int charactersToInt(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
+WTF_EXPORT int charactersToInt(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
+WTF_EXPORT unsigned charactersToUInt(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
+WTF_EXPORT unsigned charactersToUInt(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
+WTF_EXPORT int64_t charactersToInt64(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
+WTF_EXPORT int64_t charactersToInt64(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
+WTF_EXPORT uint64_t charactersToUInt64(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
+WTF_EXPORT uint64_t charactersToUInt64(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
+WTF_EXPORT intptr_t charactersToIntPtr(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
+WTF_EXPORT intptr_t charactersToIntPtr(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
 
 // FIXME: Like the strict functions above, these give false for "ok" when there is trailing garbage.
 // Like the non-strict functions above, these return the value when there is trailing garbage.
 // It would be better if these were more consistent with the above functions instead.
-double charactersToDouble(const LChar*, size_t, bool* ok = 0);
-double charactersToDouble(const UChar*, size_t, bool* ok = 0);
-float charactersToFloat(const LChar*, size_t, bool* ok = 0);
-float charactersToFloat(const UChar*, size_t, bool* ok = 0);
-float charactersToFloat(const LChar*, size_t, size_t& parsedLength);
-float charactersToFloat(const UChar*, size_t, size_t& parsedLength);
+WTF_EXPORT double charactersToDouble(const LChar*, size_t, bool* ok = 0);
+WTF_EXPORT double charactersToDouble(const UChar*, size_t, bool* ok = 0);
+WTF_EXPORT float charactersToFloat(const LChar*, size_t, bool* ok = 0);
+WTF_EXPORT float charactersToFloat(const UChar*, size_t, bool* ok = 0);
+WTF_EXPORT float charactersToFloat(const LChar*, size_t, size_t& parsedLength);
+WTF_EXPORT float charactersToFloat(const UChar*, size_t, size_t& parsedLength);
 
 class ASCIILiteral;
 
@@ -82,7 +83,7 @@ enum TrailingZerosTruncatingPolicy {
 template<bool isSpecialCharacter(UChar), typename CharacterType>
 bool isAllSpecialCharacters(const CharacterType*, size_t);
 
-class String {
+class WTF_EXPORT String {
 public:
     // Construct a null string, distinguishable from an empty string.
     String() { }
@@ -572,7 +573,7 @@ inline bool String::containsOnlyASCII() const
     return charactersAreAllASCII(characters16(), m_impl->length());
 }
 
-int codePointCompare(const String&, const String&);
+WTF_EXPORT int codePointCompare(const String&, const String&);
 
 inline bool codePointCompareLessThan(const String& a, const String& b)
 {
@@ -647,7 +648,7 @@ private:
 };
 
 // Shared global empty string.
-const String& emptyString();
+WTF_EXPORT const String& emptyString();
 
 }
 

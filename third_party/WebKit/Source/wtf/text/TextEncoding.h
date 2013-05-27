@@ -26,13 +26,14 @@
 #ifndef TextEncoding_h
 #define TextEncoding_h
 
-#include "wtf/text/TextCodec.h"
 #include "wtf/Forward.h"
+#include "wtf/WTFExport.h"
+#include "wtf/text/TextCodec.h"
 #include "wtf/unicode/Unicode.h"
 
 namespace WTF {
 
-class TextEncoding {
+class WTF_EXPORT TextEncoding {
 public:
     TextEncoding() : m_name(0) { }
     TextEncoding(const char* name);
@@ -85,14 +86,14 @@ private:
 inline bool operator==(const TextEncoding& a, const TextEncoding& b) { return a.name() == b.name(); }
 inline bool operator!=(const TextEncoding& a, const TextEncoding& b) { return a.name() != b.name(); }
 
-const TextEncoding& ASCIIEncoding();
-const TextEncoding& Latin1Encoding();
-const TextEncoding& UTF16BigEndianEncoding();
-const TextEncoding& UTF16LittleEndianEncoding();
-const TextEncoding& UTF32BigEndianEncoding();
-const TextEncoding& UTF32LittleEndianEncoding();
-const TextEncoding& UTF8Encoding();
-const TextEncoding& WindowsLatin1Encoding();
+WTF_EXPORT const TextEncoding& ASCIIEncoding();
+WTF_EXPORT const TextEncoding& Latin1Encoding();
+WTF_EXPORT const TextEncoding& UTF16BigEndianEncoding();
+WTF_EXPORT const TextEncoding& UTF16LittleEndianEncoding();
+WTF_EXPORT const TextEncoding& UTF32BigEndianEncoding();
+WTF_EXPORT const TextEncoding& UTF32LittleEndianEncoding();
+WTF_EXPORT const TextEncoding& UTF8Encoding();
+WTF_EXPORT const TextEncoding& WindowsLatin1Encoding();
 
 } // namespace WTF
 

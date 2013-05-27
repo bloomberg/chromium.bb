@@ -74,21 +74,20 @@
     },
     {
       'target_name': 'wtf',
-      'type': 'static_library',
+      'type': '<(component)',
       'include_dirs': [
         '..',
-        '../Platform/chromium'
       ],
       'dependencies': [
           'wtf_config',
           '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
           '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       ],
-      'defines': [
-          'WEBKIT_IMPLEMENTATION=1',
-      ],
       'sources': [
         '<@(wtf_files)',
+      ],
+      'defines': [
+        'WTF_IMPLEMENTATION=1',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -140,7 +139,14 @@
             ['exclude', 'Win\\.cpp$'],
           ],
         }],
-        ['OS!="mac"', {
+        ['OS=="mac"', {
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
+              '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+            ]
+          }
+        }, { # OS!="mac"
           'sources/': [
             ['exclude', 'Mac\\.mm$'],
             # mac is the only OS that uses WebKit's copy of TCMalloc.
