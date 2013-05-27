@@ -54,11 +54,12 @@ void WebRtcLoggingMessageFilter::OnChannelClosing() {
 
 void WebRtcLoggingMessageFilter::InitLogging(
     WebRtcLoggingHandlerImpl* logging_handler,
-    const std::string& app_session_id) {
+    const std::string& app_session_id,
+    const std::string& app_url) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   DCHECK(!logging_handler_);
   logging_handler_ = logging_handler;
-  Send(new WebRtcLoggingMsg_OpenLog(app_session_id));
+  Send(new WebRtcLoggingMsg_OpenLog(app_session_id, app_url));
 }
 
 void WebRtcLoggingMessageFilter::OnLogOpened(

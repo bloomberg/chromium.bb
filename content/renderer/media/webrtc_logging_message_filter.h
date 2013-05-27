@@ -28,7 +28,8 @@ class CONTENT_EXPORT WebRtcLoggingMessageFilter
 
   // We take owbership of |logging_handler|. See also comment below.
   virtual void InitLogging(WebRtcLoggingHandlerImpl* logging_handler,
-                           const std::string& app_session_id);
+                           const std::string& app_session_id,
+                           const std::string& app_url);
 
   const scoped_refptr<base::MessageLoopProxy>& io_message_loop() {
     return io_message_loop_;

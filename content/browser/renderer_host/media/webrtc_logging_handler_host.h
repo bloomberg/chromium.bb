@@ -30,10 +30,11 @@ class WebRtcLoggingHandlerHost : public BrowserMessageFilter {
 
   virtual ~WebRtcLoggingHandlerHost();
 
-  void OnOpenLog(const std::string& app_session_id);
+  void OnOpenLog(const std::string& app_session_id, const std::string& app_url);
 
   base::SharedMemory shared_memory_;
   std::string app_session_id_;
+  std::string app_url_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLoggingHandlerHost);
 };

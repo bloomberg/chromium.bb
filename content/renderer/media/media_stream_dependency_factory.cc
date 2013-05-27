@@ -30,6 +30,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 #if defined(USE_OPENSSL)
@@ -508,13 +510,15 @@ MediaStreamDependencyFactory::CreatePeerConnection(
       optional_constraints.FindFirst(kWebRtcLoggingConstraint,
                                      &constraint_value)) {
     webrtc_log_open_ = true;
+    std::string url = web_frame->document().url().spec();
 
     RenderThreadImpl::current()->GetIOMessageLoopProxy()->PostTask(
         FROM_HERE, base::Bind(
             &MediaStreamDependencyFactory::CreateWebRtcLoggingHandler,
             base::Unretained(this),
             RenderThreadImpl::current()->webrtc_logging_message_filter(),
-            constraint_value));
+            constraint_value,
+            url));
   }
 
   scoped_refptr<P2PPortAllocatorFactory> pa_factory =
@@ -789,10 +793,11 @@ void MediaStreamDependencyFactory::CleanupPeerConnectionFactory() {
 
 void MediaStreamDependencyFactory::CreateWebRtcLoggingHandler(
     WebRtcLoggingMessageFilter* filter,
-    const std::string& app_session_id) {
+    const std::string& app_session_id,
+    const std::string& app_url) {
   WebRtcLoggingHandlerImpl* handler =
       new WebRtcLoggingHandlerImpl(filter->io_message_loop());
-  filter->InitLogging(handler, app_session_id);
+  filter->InitLogging(handler, app_session_id, app_url);
 }
 
 }  // namespace content

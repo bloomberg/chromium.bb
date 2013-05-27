@@ -197,7 +197,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   void CleanupPeerConnectionFactory();
 
   void CreateWebRtcLoggingHandler(WebRtcLoggingMessageFilter* filter,
-                                  const std::string& app_session_id);
+                                  const std::string& app_session_id,
+                                  const std::string& app_url);
 
   // We own network_manager_, must be deleted on the worker thread.
   // The network manager uses |p2p_socket_dispatcher_|.

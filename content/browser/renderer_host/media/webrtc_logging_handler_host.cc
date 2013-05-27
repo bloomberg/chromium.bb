@@ -42,7 +42,8 @@ bool WebRtcLoggingHandlerHost::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
-void WebRtcLoggingHandlerHost::OnOpenLog(const std::string& app_session_id) {
+void WebRtcLoggingHandlerHost::OnOpenLog(const std::string& app_session_id,
+                                         const std::string& app_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!base::SharedMemory::IsHandleValid(shared_memory_.handle()));
 
@@ -60,6 +61,7 @@ void WebRtcLoggingHandlerHost::OnOpenLog(const std::string& app_session_id) {
   }
 
   app_session_id_ = app_session_id;
+  app_url_ = app_url;
   Send(new WebRtcLoggingMsg_LogOpened(foreign_memory_handle, kWebRtcLogSize));
 }
 
