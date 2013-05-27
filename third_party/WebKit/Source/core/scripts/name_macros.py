@@ -73,8 +73,8 @@ def _name_for_entry(entry):
     return os.path.basename(entry['name'])
 
 class Writer(in_generator.Writer):
-    def __init__(self, in_file_path):
-        super(Writer, self).__init__(in_file_path)
+    def __init__(self, in_file_path, enabled_conditions):
+        super(Writer, self).__init__(in_file_path, enabled_conditions)
         self.class_name = self.in_file.parameters['namespace'].strip('"')
         self._entries_by_conditional = {}
         self._unconditional_entries = []

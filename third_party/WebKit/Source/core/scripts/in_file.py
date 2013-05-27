@@ -44,7 +44,7 @@ import os
 # Bare arguments (no '=') are treated as names with value True.
 # The first field will always be labeled 'name'.
 #
-# InFile.load_from_path('file.in', {'arg': None, 'arg2': []})
+# InFile.load_from_files(['file.in'], {'arg': None, 'arg2': []})
 #
 # Parsing produces an array of dictionaries:
 # [ { 'name' : 'name1', 'arg' :' value', arg2=['value2', 'value3'] }
@@ -61,9 +61,12 @@ class InFile(object):
         self._parse(map(str.strip, lines))
 
     @classmethod
-    def load_from_path(self, path, defaults, valid_values, default_parameters):
-        with open(os.path.abspath(path)) as in_file:
-            return InFile(in_file.readlines(), defaults, valid_values, default_parameters)
+    def load_from_files(self, file_paths, defaults, valid_values, default_parameters):
+        lines = []
+        for path in file_paths:
+            with open(os.path.abspath(path)) as in_file:
+                lines += in_file.readlines()
+        return InFile(lines, defaults, valid_values, default_parameters)
 
     def _is_sequence(self, arg):
         return (not hasattr(arg, "strip")

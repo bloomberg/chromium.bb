@@ -1,6 +1,7 @@
 //
 // CSS value names
 //
+
 inherit
 initial
 //
@@ -452,9 +453,7 @@ static
 thick
 thin
 underline
-#if defined(ENABLE_CSS3_TEXT) && ENABLE_CSS3_TEXT
-wavy
-#endif
+wavy condition=CSS3_TEXT
 -webkit-nowrap
 
 // CSS3 Values
@@ -772,12 +771,11 @@ step-end
 document
 reset
 
-#if defined(ENABLE_CSS_DEVICE_ADAPTATION) && ENABLE_CSS_DEVICE_ADAPTATION
 //
 // CSS_PROP_USER_ZOOM
 //
 // fixed
-zoom
+zoom condition=CSS_DEVICE_ADAPTATION
 
 //
 // CSS_PROP_MIN_WIDTH
@@ -786,9 +784,8 @@ zoom
 // CSS_PROP_MAX_HEIGHT
 //
 // auto
-device-width
-device-height
-#endif
+device-width condition=CSS_DEVICE_ADAPTATION
+device-height condition=CSS_DEVICE_ADAPTATION
 
 //
 // CSS_PROP_POINTER_EVENTS
@@ -848,11 +845,9 @@ no-limit
 manual
 // auto
 
-#if defined(ENABLE_ACCELERATED_OVERFLOW_SCROLLING) && ENABLE_ACCELERATED_OVERFLOW_SCROLLING
 // -webkit-overflow-scrolling
 // auto
-touch
-#endif
+touch condition=ACCELERATED_OVERFLOW_SCROLLING
 
 // -webkit-writing-mode
 // SVG compatibility
@@ -942,9 +937,7 @@ wrap
 // -webkit-line-align
 edges
 
-#if (defined(ENABLE_SVG) && ENABLE_SVG) || (defined(ENABLE_CSS3_TEXT) && ENABLE_CSS3_TEXT)
-alphabetic
-#endif
+alphabetic condition=SVG
 
 // position
 sticky
@@ -990,10 +983,8 @@ no-drag
 // -webkit-grid-{start|end|before|after}
 span
 
-#if defined(ENABLE_CSS3_TEXT) && ENABLE_CSS3_TEXT
 // text-indent
--webkit-each-line
-#endif
+-webkit-each-line condition=CSS3_TEXT
 
 // (scan:) media feature
 progressive
