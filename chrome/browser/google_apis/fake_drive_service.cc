@@ -1013,6 +1013,7 @@ void FakeDriveService::ResumeUpload(
     return;
   }
 
+  AddNewChangestamp(entry);
   result_entry = ResourceEntry::CreateFrom(*entry).Pass();
 
   std::string upload_mode;

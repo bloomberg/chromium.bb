@@ -74,16 +74,6 @@ void VerifySearchResult(
   message_loop->Quit();
 }
 
-// Counts the number of files (not directories) in |entries|.
-int CountFiles(const ResourceEntryVector& entries) {
-  int num_files = 0;
-  for (size_t i = 0; i < entries.size(); ++i) {
-    if (!entries[i].file_info().is_directory())
-      ++num_files;
-  }
-  return num_files;
-}
-
 // Counts the number of invocation, and if it increased up to |expected_counter|
 // quits the current message loop.
 void AsyncInitializationCallback(
@@ -1640,98 +1630,6 @@ TEST_F(FileSystemTest, GetFileByResourceId_FromCache) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
   EXPECT_FALSE(entry->file_specific_info().is_hosted_document());
-}
-
-TEST_F(FileSystemTest, UpdateFileByResourceId_PersistentFile) {
-  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
-
-  ASSERT_TRUE(LoadRootFeedDocument());
-
-  // This is a file defined in root_feed.json.
-  const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  const std::string kResourceId("file:2_file_resource_id");
-  const std::string kMd5("3b4382ebefec6e743578c76bbd0575ce");
-
-  // Pin the file so it'll be store in "persistent" directory.
-  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(kResourceId, kMd5)).Times(1);
-  FileError error = FILE_ERROR_OK;
-  cache_->PinOnUIThread(
-      kResourceId, kMd5,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // First store a file to cache.
-  cache_->StoreOnUIThread(
-      kResourceId,
-      kMd5,
-      // Anything works.
-      google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
-      internal::FileCache::FILE_OPERATION_COPY,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // Add the dirty bit.
-  cache_->MarkDirtyOnUIThread(
-      kResourceId, kMd5,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // Commit the dirty bit.
-  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(kResourceId)).Times(1);
-  cache_->CommitDirtyOnUIThread(
-      kResourceId, kMd5,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // We'll notify the directory change to the observer upon completion.
-  EXPECT_CALL(*mock_directory_observer_,
-              OnDirectoryChanged(Eq(util::GetDriveMyDriveRootPath())))
-      .Times(1);
-
-  // Check the number of files in the root directory. We'll compare the
-  // number after updating a file.
-  scoped_ptr<ResourceEntryVector> root_directory_entries(
-      ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive/root")));
-  ASSERT_TRUE(root_directory_entries);
-  const int num_files_in_root = CountFiles(*root_directory_entries);
-
-  // The callback will be called upon completion of
-  // UpdateFileByResourceId().
-  file_system_->UpdateFileByResourceId(
-      kResourceId,
-      DriveClientContext(USER_INITIATED),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // Make sure that the number of files did not change (i.e. we updated an
-  // existing file, rather than adding a new file. The number of files
-  // increases if we don't handle the file update right).
-  EXPECT_EQ(num_files_in_root, CountFiles(*root_directory_entries));
-}
-
-TEST_F(FileSystemTest, UpdateFileByResourceId_NonexistentFile) {
-  ASSERT_TRUE(LoadRootFeedDocument());
-
-  // This is nonexistent in root_feed.json.
-  const base::FilePath kFilePath(
-      FILE_PATH_LITERAL("drive/root/Nonexistent.txt"));
-  const std::string kResourceId("file:nonexistent_resource_id");
-  const std::string kMd5("nonexistent_md5");
-
-  // The callback will be called upon completion of
-  // UpdateFileByResourceId().
-  FileError error = FILE_ERROR_OK;
-  file_system_->UpdateFileByResourceId(
-      kResourceId,
-      DriveClientContext(USER_INITIATED),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 }
 
 TEST_F(FileSystemTest, ContentSearch) {

@@ -68,6 +68,9 @@ class OperationTestBase : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+  // Returns the path of the temporary directory for putting test files.
+  base::FilePath temp_dir() const { return temp_dir_.path(); }
+
   // Synchronously gets the resource entry corresponding to the path from local
   // ResourceMetadta.
   FileError GetLocalResourceEntry(const base::FilePath& path,
