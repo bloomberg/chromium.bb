@@ -1187,7 +1187,6 @@
           'android_sdk_root%': '<(android_sdk_root)',
           'android_sdk_version%': '<(android_sdk_version)',
           'android_stlport_root': '<(android_ndk_root)/sources/cxx-stl/stlport',
-          'android_libstdcpp_root': '<(android_ndk_root)/sources/cxx-stl/gnu-libstdc++/4.6',
 
           'android_sdk%': '<(android_sdk_root)/platforms/android-<(android_sdk_version)',
 
@@ -1237,11 +1236,8 @@
         'android_sdk_jar%': '<(android_sdk)/android.jar',
 
         'android_stlport_root': '<(android_stlport_root)',
-        'android_libstdcpp_root': '<(android_libstdcpp_root)',
         'android_stlport_include': '<(android_stlport_root)/stlport',
-        'android_libstdcpp_include': '<(android_libstdcpp_root)/include',
         'android_stlport_libs_dir': '<(android_stlport_root)/libs/<(android_app_abi)',
-        'android_libstdcpp_libs_dir': '<(android_libstdcpp_root)/libs/<(android_app_abi)',
 
         # Location of the "strip" binary, used by both gyp and scripts.
         'android_strip%' : '<!(/bin/echo -n <(android_toolchain)/*-strip)',
@@ -3428,9 +3424,6 @@
             ],
             'conditions': [
               ['component=="shared_library"', {
-                'libraries': [
-                  '-lgnustl_shared',
-                ],
                 'ldflags!': [
                   '-Wl,--exclude-libs=ALL',
                 ],
@@ -3549,11 +3542,9 @@
               }, { # else: use_system_stlport!=1
                 'cflags': [
                   '-I<(android_stlport_include)',
-                  '-I<(android_libstdcpp_include)',
                 ],
                 'ldflags': [
                   '-L<(android_stlport_libs_dir)',
-                  '-L<(android_libstdcpp_libs_dir)',
                 ],
               }],
               ['target_arch=="ia32"', {

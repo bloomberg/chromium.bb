@@ -17,7 +17,6 @@
               'destination': '<(SHARED_LIB_DIR)/',
               'files': [
                 '<(android_stlport_libs_dir)/libstlport_shared.so',
-                '<(android_libstdcpp_libs_dir)/libgnustl_shared.so',
               ],
             },
           ],
