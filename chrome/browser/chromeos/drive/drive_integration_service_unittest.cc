@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/drive/mock_file_system.h"
+#include "chrome/browser/chromeos/drive/dummy_file_system.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/dummy_drive_service.h"
 #include "chrome/test/base/testing_profile.h"
@@ -18,22 +18,19 @@ class DriveIntegrationServiceTest : public testing::Test {
  public:
   DriveIntegrationServiceTest() :
       ui_thread_(content::BrowserThread::UI, &message_loop_),
-      file_system_(NULL),
       integration_service_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
-    file_system_ = new MockFileSystem;
-    integration_service_ = new DriveIntegrationService(
+    integration_service_.reset(new DriveIntegrationService(
         profile_.get(),
         new google_apis::DummyDriveService,
         base::FilePath(),
-        file_system_);
+        new DummyFileSystem));
   }
 
   virtual void TearDown() OVERRIDE {
-    delete integration_service_;
-    file_system_ = NULL;
+    integration_service_.reset();
     google_apis::test_util::RunBlockingPoolTask();
     profile_.reset();
   }
@@ -41,11 +38,8 @@ class DriveIntegrationServiceTest : public testing::Test {
  protected:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
-
   scoped_ptr<TestingProfile> profile_;
-
-  MockFileSystem* file_system_;
-  DriveIntegrationService* integration_service_;
+  scoped_ptr<DriveIntegrationService> integration_service_;
 };
 
 TEST_F(DriveIntegrationServiceTest, InitializeAndShutdown) {
