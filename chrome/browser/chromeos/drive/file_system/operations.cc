@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
+#include "chrome/browser/chromeos/drive/file_system/operations.h"
 
 #include "base/callback.h"
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
@@ -20,21 +20,21 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
-DriveOperations::DriveOperations() {
+Operations::Operations() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-DriveOperations::~DriveOperations() {
+Operations::~Operations() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void DriveOperations::Init(OperationObserver* observer,
-                           JobScheduler* scheduler,
-                           internal::ResourceMetadata* metadata,
-                           internal::FileCache* cache,
-                           FileSystemInterface* file_system,
-                           google_apis::DriveServiceInterface* drive_service,
-                           base::SequencedTaskRunner* blocking_task_runner) {
+void Operations::Init(OperationObserver* observer,
+                      JobScheduler* scheduler,
+                      internal::ResourceMetadata* metadata,
+                      internal::FileCache* cache,
+                      FileSystemInterface* file_system,
+                      google_apis::DriveServiceInterface* drive_service,
+                      base::SequencedTaskRunner* blocking_task_runner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   copy_operation_.reset(new file_system::CopyOperation(blocking_task_runner,
@@ -66,16 +66,16 @@ void DriveOperations::Init(OperationObserver* observer,
       new SearchOperation(blocking_task_runner, scheduler, metadata));
 }
 
-void DriveOperations::Copy(const base::FilePath& src_file_path,
-                           const base::FilePath& dest_file_path,
-                           const FileOperationCallback& callback) {
+void Operations::Copy(const base::FilePath& src_file_path,
+                      const base::FilePath& dest_file_path,
+                      const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   copy_operation_->Copy(src_file_path, dest_file_path, callback);
 }
 
-void DriveOperations::TransferFileFromRemoteToLocal(
+void Operations::TransferFileFromRemoteToLocal(
     const base::FilePath& remote_src_file_path,
     const base::FilePath& local_dest_file_path,
     const FileOperationCallback& callback) {
@@ -87,7 +87,7 @@ void DriveOperations::TransferFileFromRemoteToLocal(
                                                  callback);
 }
 
-void DriveOperations::TransferFileFromLocalToRemote(
+void Operations::TransferFileFromLocalToRemote(
     const base::FilePath& local_src_file_path,
     const base::FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
@@ -99,10 +99,10 @@ void DriveOperations::TransferFileFromLocalToRemote(
                                                  callback);
 }
 
-void DriveOperations::CreateDirectory(const base::FilePath& directory_path,
-                                      bool is_exclusive,
-                                      bool is_recursive,
-                                      const FileOperationCallback& callback) {
+void Operations::CreateDirectory(const base::FilePath& directory_path,
+                                 bool is_exclusive,
+                                 bool is_recursive,
+                                 const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -110,37 +110,37 @@ void DriveOperations::CreateDirectory(const base::FilePath& directory_path,
       directory_path, is_exclusive, is_recursive, callback);
 }
 
-void DriveOperations::CreateFile(const base::FilePath& remote_file_path,
-                                 bool is_exclusive,
-                                 const FileOperationCallback& callback) {
+void Operations::CreateFile(const base::FilePath& remote_file_path,
+                            bool is_exclusive,
+                            const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   create_file_operation_->CreateFile(remote_file_path, is_exclusive, callback);
 }
 
-void DriveOperations::Move(const base::FilePath& src_file_path,
-                           const base::FilePath& dest_file_path,
-                           const FileOperationCallback& callback) {
+void Operations::Move(const base::FilePath& src_file_path,
+                      const base::FilePath& dest_file_path,
+                      const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   move_operation_->Move(src_file_path, dest_file_path, callback);
 }
 
-void DriveOperations::Remove(const base::FilePath& file_path,
-                             bool is_recursive,
-                             const FileOperationCallback& callback) {
+void Operations::Remove(const base::FilePath& file_path,
+                        bool is_recursive,
+                        const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   remove_operation_->Remove(file_path, is_recursive, callback);
 }
 
-void DriveOperations::TouchFile(const base::FilePath& file_path,
-                                const base::Time& last_access_time,
-                                const base::Time& last_modified_time,
-                                const FileOperationCallback& callback) {
+void Operations::TouchFile(const base::FilePath& file_path,
+                           const base::Time& last_access_time,
+                           const base::Time& last_modified_time,
+                           const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!last_access_time.is_null());
   DCHECK(!last_modified_time.is_null());
@@ -150,7 +150,7 @@ void DriveOperations::TouchFile(const base::FilePath& file_path,
       file_path, last_access_time, last_modified_time, callback);
 }
 
-void DriveOperations::UpdateFileByResourceId(
+void Operations::UpdateFileByResourceId(
     const std::string& resource_id,
     DriveClientContext context,
     const FileOperationCallback& callback) {
@@ -160,9 +160,9 @@ void DriveOperations::UpdateFileByResourceId(
   update_operation_->UpdateFileByResourceId(resource_id, context, callback);
 }
 
-void DriveOperations::Search(const std::string& search_query,
-                             const GURL& next_feed,
-                             const SearchOperationCallback& callback) {
+void Operations::Search(const std::string& search_query,
+                        const GURL& next_feed,
+                        const SearchOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 

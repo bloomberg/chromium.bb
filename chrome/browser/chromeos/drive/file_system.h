@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
-#include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/file_system/operations.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
@@ -467,7 +467,7 @@ class FileSystem : public FileSystemInterface,
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  file_system::DriveOperations drive_operations_;
+  file_system::Operations operations_;
 
   // Polling interval for checking updates in seconds.
   int polling_interval_sec_;

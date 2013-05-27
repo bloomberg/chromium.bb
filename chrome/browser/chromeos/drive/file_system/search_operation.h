@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
+#include "chrome/browser/chromeos/drive/file_system/operations.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;

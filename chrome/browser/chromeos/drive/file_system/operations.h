@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_DRIVE_OPERATIONS_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_DRIVE_OPERATIONS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATIONS_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATIONS_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
@@ -39,7 +39,7 @@ class SearchOperation;
 class TouchOperation;
 class UpdateOperation;
 
-// Callback for DriveOperations::Search.
+// Callback for Operations::Search.
 // On success, |error| is FILE_ERROR_OK, and remaining arguments are valid to
 // use.
 // |next_feed| is the URL to fetch the remaining result from the server. Maybe
@@ -51,11 +51,13 @@ typedef base::Callback<void(FileError error,
                             scoped_ptr<std::vector<SearchResultInfo> > result)>
     SearchOperationCallback;
 
-// Passes notifications from Drive operations back to the file system.
-class DriveOperations {
+// This class is just a bundle of file system operation handlers which
+// perform the actual operations. The class is introduced to make it easy to
+// initialize the operation handlers.
+class Operations {
  public:
-  DriveOperations();
-  ~DriveOperations();
+  Operations();
+  ~Operations();
 
   // Allocates the operation objects and initializes the operation pointers.
   void Init(OperationObserver* observer,
@@ -143,4 +145,4 @@ class DriveOperations {
 }  // namespace file_system
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_DRIVE_OPERATIONS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATIONS_H_

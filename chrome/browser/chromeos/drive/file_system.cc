@@ -218,14 +218,14 @@ void FileSystem::Initialize() {
 
   SetupChangeListLoader();
 
-  // Allocate the drive operation handlers.
-  drive_operations_.Init(this,  // OperationObserver
-                         scheduler_,
-                         resource_metadata_,
-                         cache_,
-                         this,  // FileSystemInterface
-                         drive_service_,
-                         blocking_task_runner_);
+  // Allocate the file system operation handlers.
+  operations_.Init(this,  // OperationObserver
+                   scheduler_,
+                   resource_metadata_,
+                   cache_,
+                   this,  // FileSystemInterface
+                   drive_service_,
+                   blocking_task_runner_);
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableDriveHostedFiles);
@@ -330,9 +330,9 @@ void FileSystem::TransferFileFromRemoteToLocal(
     const base::FilePath& local_dest_file_path,
     const FileOperationCallback& callback) {
 
-  drive_operations_.TransferFileFromRemoteToLocal(remote_src_file_path,
-                                                  local_dest_file_path,
-                                                  callback);
+  operations_.TransferFileFromRemoteToLocal(remote_src_file_path,
+                                            local_dest_file_path,
+                                            callback);
 }
 
 void FileSystem::TransferFileFromLocalToRemote(
@@ -340,9 +340,9 @@ void FileSystem::TransferFileFromLocalToRemote(
     const base::FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
 
-  drive_operations_.TransferFileFromLocalToRemote(local_src_file_path,
-                                                  remote_dest_file_path,
-                                                  callback);
+  operations_.TransferFileFromLocalToRemote(local_src_file_path,
+                                            remote_dest_file_path,
+                                            callback);
 }
 
 void FileSystem::Copy(const base::FilePath& src_file_path,
@@ -350,7 +350,7 @@ void FileSystem::Copy(const base::FilePath& src_file_path,
                       const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  drive_operations_.Copy(src_file_path, dest_file_path, callback);
+  operations_.Copy(src_file_path, dest_file_path, callback);
 }
 
 void FileSystem::Move(const base::FilePath& src_file_path,
@@ -358,7 +358,7 @@ void FileSystem::Move(const base::FilePath& src_file_path,
                       const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  drive_operations_.Move(src_file_path, dest_file_path, callback);
+  operations_.Move(src_file_path, dest_file_path, callback);
 }
 
 void FileSystem::Remove(const base::FilePath& file_path,
@@ -366,7 +366,7 @@ void FileSystem::Remove(const base::FilePath& file_path,
                         const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  drive_operations_.Remove(file_path, is_recursive, callback);
+  operations_.Remove(file_path, is_recursive, callback);
 }
 
 void FileSystem::CreateDirectory(
@@ -398,7 +398,7 @@ void FileSystem::CreateDirectoryAfterLoad(
     return;
   }
 
-  drive_operations_.CreateDirectory(
+  operations_.CreateDirectory(
       directory_path, is_exclusive, is_recursive, callback);
 }
 
@@ -408,7 +408,7 @@ void FileSystem::CreateFile(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  drive_operations_.CreateFile(file_path, is_exclusive, callback);
+  operations_.CreateFile(file_path, is_exclusive, callback);
 }
 
 void FileSystem::TouchFile(const base::FilePath& file_path,
@@ -420,7 +420,7 @@ void FileSystem::TouchFile(const base::FilePath& file_path,
   DCHECK(!last_modified_time.is_null());
   DCHECK(!callback.is_null());
 
-  drive_operations_.TouchFile(
+  operations_.TouchFile(
       file_path, last_access_time, last_modified_time, callback);
 }
 
@@ -1154,7 +1154,7 @@ void FileSystem::UpdateFileByResourceId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  drive_operations_.UpdateFileByResourceId(resource_id, context, callback);
+  operations_.UpdateFileByResourceId(resource_id, context, callback);
 }
 
 void FileSystem::GetAvailableSpace(
@@ -1193,7 +1193,7 @@ void FileSystem::Search(const std::string& search_query,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  drive_operations_.Search(search_query, next_feed, callback);
+  operations_.Search(search_query, next_feed, callback);
 }
 
 void FileSystem::SearchMetadata(const std::string& query,
