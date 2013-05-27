@@ -351,9 +351,11 @@ class ProxyResolverV8::Context {
 
   int ResolveProxy(const GURL& query_url, ProxyInfo* results) {
     v8::Locker locked(isolate_);
-    v8::HandleScope scope;
+    v8::HandleScope scope(isolate_);
 
-    v8::Context::Scope function_scope(v8_context_);
+    v8::Local<v8::Context> context =
+        v8::Local<v8::Context>::New(isolate_, v8_context_);
+    v8::Context::Scope function_scope(context);
 
     v8::Local<v8::Value> function;
     if (!GetFindProxyForURL(&function)) {
@@ -369,7 +371,7 @@ class ProxyResolverV8::Context {
 
     v8::TryCatch try_catch;
     v8::Local<v8::Value> ret = v8::Function::Cast(*function)->Call(
-        v8_context_->Global(), arraysize(argv), argv);
+        context->Global(), arraysize(argv), argv);
 
     if (try_catch.HasCaught()) {
       HandleError(try_catch.Message());
@@ -402,52 +404,56 @@ class ProxyResolverV8::Context {
 
   int InitV8(const scoped_refptr<ProxyResolverScriptData>& pac_script) {
     v8::Locker locked(isolate_);
-    v8::HandleScope scope;
+    v8::HandleScope scope(isolate_);
 
     v8_this_.Reset(isolate_, v8::External::New(this));
+    v8::Local<v8::External> v8_this =
+        v8::Local<v8::External>::New(isolate_, v8_this_);
     v8::Local<v8::ObjectTemplate> global_template = v8::ObjectTemplate::New();
 
     // Attach the javascript bindings.
     v8::Local<v8::FunctionTemplate> alert_template =
-        v8::FunctionTemplate::New(&AlertCallback, v8_this_);
+        v8::FunctionTemplate::New(&AlertCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String("alert"), alert_template);
 
     v8::Local<v8::FunctionTemplate> my_ip_address_template =
-        v8::FunctionTemplate::New(&MyIpAddressCallback, v8_this_);
+        v8::FunctionTemplate::New(&MyIpAddressCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String("myIpAddress"),
         my_ip_address_template);
 
     v8::Local<v8::FunctionTemplate> dns_resolve_template =
-        v8::FunctionTemplate::New(&DnsResolveCallback, v8_this_);
+        v8::FunctionTemplate::New(&DnsResolveCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String("dnsResolve"),
         dns_resolve_template);
 
     // Microsoft's PAC extensions:
 
     v8::Local<v8::FunctionTemplate> dns_resolve_ex_template =
-        v8::FunctionTemplate::New(&DnsResolveExCallback, v8_this_);
+        v8::FunctionTemplate::New(&DnsResolveExCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String("dnsResolveEx"),
                          dns_resolve_ex_template);
 
     v8::Local<v8::FunctionTemplate> my_ip_address_ex_template =
-        v8::FunctionTemplate::New(&MyIpAddressExCallback, v8_this_);
+        v8::FunctionTemplate::New(&MyIpAddressExCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String("myIpAddressEx"),
                          my_ip_address_ex_template);
 
     v8::Local<v8::FunctionTemplate> sort_ip_address_list_template =
-        v8::FunctionTemplate::New(&SortIpAddressListCallback, v8_this_);
+        v8::FunctionTemplate::New(&SortIpAddressListCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String("sortIpAddressList"),
                          sort_ip_address_list_template);
 
     v8::Local<v8::FunctionTemplate> is_in_net_ex_template =
-        v8::FunctionTemplate::New(&IsInNetExCallback, v8_this_);
+        v8::FunctionTemplate::New(&IsInNetExCallback, v8_this);
     global_template->Set(ASCIILiteralToV8String("isInNetEx"),
                          is_in_net_ex_template);
 
     v8_context_.Reset(
         isolate_, v8::Context::New(isolate_, NULL, global_template));
 
-    v8::Context::Scope ctx(v8_context_);
+    v8::Local<v8::Context> context =
+        v8::Local<v8::Context>::New(isolate_, v8_context_);
+    v8::Context::Scope ctx(context);
 
     // Add the PAC utility functions to the environment.
     // (This script should never fail, as it is a string literal!)
@@ -486,8 +492,10 @@ class ProxyResolverV8::Context {
 
  private:
   bool GetFindProxyForURL(v8::Local<v8::Value>* function) {
-    *function = v8_context_->Global()->Get(
-        ASCIILiteralToV8String("FindProxyForURL"));
+    v8::Local<v8::Context> context =
+        v8::Local<v8::Context>::New(v8::Isolate::GetCurrent(), v8_context_);
+    *function =
+        context->Global()->Get(ASCIILiteralToV8String("FindProxyForURL"));
     return (*function)->IsFunction();
   }
 
