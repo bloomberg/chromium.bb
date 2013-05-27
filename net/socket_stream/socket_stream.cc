@@ -288,6 +288,10 @@ void SocketStream::DetachDelegate() {
   if (!delegate_)
     return;
   delegate_ = NULL;
+  // Prevent the rest of the function from executing if we are being called from
+  // within Finish().
+  if (next_state_ == STATE_NONE)
+    return;
   net_log_.AddEvent(NetLog::TYPE_CANCELLED);
   // We don't need to send pending data when client detach the delegate.
   pending_write_bufs_.clear();
@@ -363,14 +367,13 @@ void SocketStream::Finish(int result) {
   DVLOG(1) << "Finish result=" << ErrorToString(result);
 
   metrics_->OnClose();
-  Delegate* delegate = delegate_;
+
+  if (result != ERR_CONNECTION_CLOSED && delegate_)
+    delegate_->OnError(this, result);
+  if (result != ERR_PROTOCOL_SWITCHED && delegate_)
+    delegate_->OnClose(this);
   delegate_ = NULL;
-  if (delegate) {
-    if (result != ERR_CONNECTION_CLOSED)
-      delegate->OnError(this, result);
-    if (result != ERR_PROTOCOL_SWITCHED)
-      delegate->OnClose(this);
-  }
+
   Release();
 }
 
