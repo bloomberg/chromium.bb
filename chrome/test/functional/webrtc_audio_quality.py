@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import sys
 import tempfile
 import time
 
@@ -17,7 +18,10 @@ import webrtc_test_base
 
 _MEDIA_PATH = os.path.abspath(os.path.join(pyauto.PyUITest.DataDir(),
                                            'pyauto_private', 'webrtc'))
-_REFERENCE_FILE = os.path.join(_MEDIA_PATH, 'human-voice.wav')
+if 'win32' in sys.platform:
+  _REFERENCE_FILE = os.path.join(_MEDIA_PATH, 'human-voice-win.wav')
+else:
+  _REFERENCE_FILE = os.path.join(_MEDIA_PATH, 'human-voice-linux.wav')
 _JAVASCRIPT_PATH = os.path.abspath(os.path.join(pyauto.PyUITest.DataDir(),
                                                 'webrtc'))
 
