@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,16 +10,9 @@
 
 namespace chrome_browser_net {
 
-// We don't bother learning to preconnect via a GET if the original URL
-// navigation was so long ago, that a preconnection would have been dropped
-// anyway.  We believe most servers will drop the connection in 10 seconds, so
-// we currently estimate this time-till-drop at 10 seconds.
-// TODO(jar): We should do a persistent field trial to validate/optimize this.
-static const int kMaxUnusedSocketLifetimeSecondsWithoutAGet = 10;
-
 ConnectInterceptor::ConnectInterceptor(Predictor* predictor)
     : timed_cache_(base::TimeDelta::FromSeconds(
-          kMaxUnusedSocketLifetimeSecondsWithoutAGet)),
+          Predictor::kMaxUnusedSocketLifetimeSecondsWithoutAGet)),
       predictor_(predictor) {
   DCHECK(predictor);
 }
@@ -78,6 +71,8 @@ void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) {
   }
   timed_cache_.SetRecentlySeen(request_scheme_host);
 
+  predictor_->RecordPreconnectNavigationStats(request_scheme_host);
+
   // Subresources for main frames usually get predicted when we detected the
   // main frame request - way back in RenderViewHost::Navigate.  So only handle
   // predictions now for subresources or for redirected hosts.
@@ -85,33 +80,6 @@ void ConnectInterceptor::WitnessURLRequest(net::URLRequest* request) {
     predictor_->PredictFrameSubresources(request_scheme_host,
                                          request->first_party_for_cookies());
   return;
-}
-
-ConnectInterceptor::TimedCache::TimedCache(const base::TimeDelta& max_duration)
-    : mru_cache_(UrlMruTimedCache::NO_AUTO_EVICT),
-      max_duration_(max_duration) {
-}
-
-// Make Clang compilation happy with explicit destructor.
-ConnectInterceptor::TimedCache::~TimedCache() {}
-
-bool ConnectInterceptor::TimedCache::WasRecentlySeen(const GURL& url) {
-  DCHECK_EQ(url.GetWithEmptyPath(), url);
-  // Evict any overly old entries.
-  base::TimeTicks now = base::TimeTicks::Now();
-  UrlMruTimedCache::reverse_iterator eldest = mru_cache_.rbegin();
-  while (!mru_cache_.empty()) {
-    DCHECK(eldest == mru_cache_.rbegin());
-    if (now - eldest->second < max_duration_)
-      break;
-    eldest = mru_cache_.Erase(eldest);
-  }
-  return mru_cache_.end() != mru_cache_.Peek(url);
-}
-
-void ConnectInterceptor::TimedCache::SetRecentlySeen(const GURL& url) {
-  DCHECK_EQ(url.GetWithEmptyPath(), url);
-  mru_cache_.Put(url, base::TimeTicks::Now());
 }
 
 }  // namespace chrome_browser_net

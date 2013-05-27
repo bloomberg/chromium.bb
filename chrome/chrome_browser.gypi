@@ -1168,6 +1168,8 @@
         'browser/net/sqlite_server_bound_cert_store.h',
         'browser/net/ssl_config_service_manager.h',
         'browser/net/ssl_config_service_manager_pref.cc',
+	'browser/net/timed_cache.cc',
+	'browser/net/timed_cache.h',
         'browser/net/transport_security_persister.cc',
         'browser/net/transport_security_persister.h',
         'browser/net/url_fixer_upper.cc',
