@@ -55,8 +55,8 @@ class Element;
 class ImmutableStylePropertySet;
 class MediaQueryExp;
 class MediaQuerySet;
+class MutableStylePropertySet;
 class StyleKeyframe;
-class StylePropertySet;
 class StylePropertyShorthand;
 class StyleRuleBase;
 class StyleRuleKeyframes;
@@ -93,12 +93,12 @@ public:
     PassRefPtr<StyleRuleBase> parseRule(StyleSheetContents*, const String&);
     PassRefPtr<StyleKeyframe> parseKeyframeRule(StyleSheetContents*, const String&);
     bool parseSupportsCondition(const String&);
-    static bool parseValue(StylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode, StyleSheetContents*);
+    static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode, StyleSheetContents*);
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
     static bool parseSystemColor(RGBA32& color, const String&, Document*);
     static PassRefPtr<CSSValueList> parseFontFaceValue(const AtomicString&);
     PassRefPtr<CSSPrimitiveValue> parseValidPrimitive(int ident, CSSParserValue*);
-    bool parseDeclaration(StylePropertySet*, const String&, SourceDataHandler*, StyleSheetContents* contextStyleSheet);
+    bool parseDeclaration(MutableStylePropertySet*, const String&, SourceDataHandler*, StyleSheetContents* contextStyleSheet);
     static PassRefPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
     PassOwnPtr<MediaQuery> parseMediaQuery(const String&);
 
@@ -115,7 +115,7 @@ public:
     bool parseContent(CSSPropertyID, bool important);
     bool parseQuotes(CSSPropertyID, bool important);
 
-    static bool parseValue(StylePropertySet*, CSSPropertyID, const String&, bool important, Document*);
+    static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, Document*);
     bool cssVariablesEnabled() const;
     void storeVariableDeclaration(const CSSParserString&, PassOwnPtr<CSSParserValueList>, bool important);
 
@@ -531,7 +531,7 @@ private:
     bool isGeneratedImageValue(CSSParserValue*) const;
     bool parseGeneratedImage(CSSParserValueList*, RefPtr<CSSValue>&);
 
-    bool parseValue(StylePropertySet*, CSSPropertyID, const String&, bool important, StyleSheetContents* contextStyleSheet);
+    bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, StyleSheetContents* contextStyleSheet);
     PassRefPtr<ImmutableStylePropertySet> parseDeclaration(const String&, StyleSheetContents* contextStyleSheet);
 
     enum SizeParameterType {

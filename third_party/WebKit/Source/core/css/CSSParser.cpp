@@ -439,7 +439,7 @@ static inline bool isColorPropertyID(CSSPropertyID propertyId)
     }
 }
 
-static bool parseColorValue(StylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, CSSParserMode cssParserMode)
+static bool parseColorValue(MutableStylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, CSSParserMode cssParserMode)
 {
     ASSERT(!string.isEmpty());
     bool strict = isStrictParserMode(cssParserMode);
@@ -535,7 +535,7 @@ static inline bool parseSimpleLength(const CharacterType* characters, unsigned& 
     return ok;
 }
 
-static bool parseSimpleLengthValue(StylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, CSSParserMode cssParserMode)
+static bool parseSimpleLengthValue(MutableStylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, CSSParserMode cssParserMode)
 {
     ASSERT(!string.isEmpty());
     bool acceptsNegativeNumbers;
@@ -1057,7 +1057,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     }
 }
 
-static bool parseKeywordValue(StylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, const CSSParserContext& parserContext)
+static bool parseKeywordValue(MutableStylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, const CSSParserContext& parserContext)
 {
     ASSERT(!string.isEmpty());
 
@@ -1114,7 +1114,7 @@ static bool parseTransformArguments(WebKitCSSTransformValue* transformValue, Cha
     return true;
 }
 
-static bool parseTranslateTransformValue(StylePropertySet* properties, CSSPropertyID propertyID, const String& string, bool important)
+static bool parseTranslateTransformValue(MutableStylePropertySet* properties, CSSPropertyID propertyID, const String& string, bool important)
 {
     if (propertyID != CSSPropertyWebkitTransform)
         return false;
@@ -1171,7 +1171,7 @@ PassRefPtr<CSSValueList> CSSParser::parseFontFaceValue(const AtomicString& strin
     return static_pointer_cast<CSSValueList>(dummyStyle->getPropertyCSSValue(CSSPropertyFontFamily));
 }
 
-bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, Document* document)
+bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, Document* document)
 {
     ASSERT(!string.isEmpty());
 
@@ -1188,7 +1188,7 @@ bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID property
     return parser.parseValue(declaration, propertyID, string, important, static_cast<StyleSheetContents*>(0));
 }
 
-bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, CSSParserMode cssParserMode, StyleSheetContents* contextStyleSheet)
+bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, CSSParserMode cssParserMode, StyleSheetContents* contextStyleSheet)
 {
     ASSERT(!string.isEmpty());
     if (parseSimpleLengthValue(declaration, propertyID, string, important, cssParserMode))
@@ -1211,7 +1211,7 @@ bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID property
     return parser.parseValue(declaration, propertyID, string, important, contextStyleSheet);
 }
 
-bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, StyleSheetContents* contextStyleSheet)
+bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, StyleSheetContents* contextStyleSheet)
 {
     // FIXME: Check RuntimeCSSEnabled::isPropertyEnabled or isValueEnabledForProperty.
 
@@ -1328,7 +1328,7 @@ PassRefPtr<ImmutableStylePropertySet> CSSParser::parseDeclaration(const String& 
 }
 
 
-bool CSSParser::parseDeclaration(StylePropertySet* declaration, const String& string, SourceDataHandler* sourceDataHandler, StyleSheetContents* contextStyleSheet)
+bool CSSParser::parseDeclaration(MutableStylePropertySet* declaration, const String& string, SourceDataHandler* sourceDataHandler, StyleSheetContents* contextStyleSheet)
 {
     setStyleSheet(contextStyleSheet);
 

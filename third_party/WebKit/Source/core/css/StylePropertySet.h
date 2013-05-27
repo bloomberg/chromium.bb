@@ -105,27 +105,7 @@ public:
     CSSPropertyID getPropertyShorthand(CSSPropertyID) const;
     bool isPropertyImplicit(CSSPropertyID) const;
 
-    // These expand shorthand properties into multiple properties.
-    bool setProperty(CSSPropertyID, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);
-    void setProperty(CSSPropertyID, PassRefPtr<CSSValue>, bool important = false);
-
-    // These do not. FIXME: This is too messy, we can do better.
-    bool setProperty(CSSPropertyID, int identifier, bool important = false);
-    void appendPrefixingVariantProperty(const CSSProperty&);
-    void setPrefixingVariantProperty(const CSSProperty&);
-    void setProperty(const CSSProperty&, CSSProperty* slot = 0);
-    
-    bool removeProperty(CSSPropertyID, String* returnText = 0);
-    void removePrefixedOrUnprefixedProperty(CSSPropertyID);
-
-    void addParsedProperties(const Vector<CSSProperty>&);
-    void addParsedProperty(const CSSProperty&);
-
-    PassRefPtr<StylePropertySet> copyBlockProperties() const;
-    void removeBlockProperties();
-    bool removePropertiesInSet(const CSSPropertyID* set, unsigned length);
-
-    void mergeAndOverrideOnConflict(const StylePropertySet*);
+    PassRefPtr<MutableStylePropertySet> copyBlockProperties() const;
 
     CSSParserMode cssParserMode() const { return static_cast<CSSParserMode>(m_cssParserMode); }
 
@@ -133,9 +113,6 @@ public:
 
     PassRefPtr<MutableStylePropertySet> mutableCopy() const;
     PassRefPtr<ImmutableStylePropertySet> immutableCopyIfNeeded() const;
-
-    void removeEquivalentProperties(const StylePropertySet*);
-    void removeEquivalentProperties(const CSSStyleDeclaration*);
 
     PassRefPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
     
@@ -157,6 +134,8 @@ public:
 
     const CSSValue** immutableValueArray() const;
     const StylePropertyMetadata* immutableMetadataArray() const;
+
+    bool propertyMatches(CSSPropertyID, const CSSValue*) const;
 
 protected:
     StylePropertySet(CSSParserMode cssParserMode)
@@ -180,12 +159,6 @@ protected:
     mutable unsigned m_ownsCSSOMWrapper : 1;
     mutable unsigned m_isMutable : 1;
     unsigned m_arraySize : 28;
-    
-private:
-    bool removeShorthandProperty(CSSPropertyID);
-    bool propertyMatches(CSSPropertyID, const CSSValue*) const;
-
-    CSSProperty* findMutableCSSPropertyWithID(CSSPropertyID);
 
     friend class PropertySetCSSStyleDeclaration;
 };
@@ -224,6 +197,28 @@ public:
 
     MutableStylePropertySet(const StylePropertySet&);
 
+    void addParsedProperties(const Vector<CSSProperty>&);
+    void addParsedProperty(const CSSProperty&);
+
+    // These expand shorthand properties into multiple properties.
+    bool setProperty(CSSPropertyID, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);
+    void setProperty(CSSPropertyID, PassRefPtr<CSSValue>, bool important = false);
+
+    // These do not. FIXME: This is too messy, we can do better.
+    bool setProperty(CSSPropertyID, int identifier, bool important = false);
+    void appendPrefixingVariantProperty(const CSSProperty&);
+    void setPrefixingVariantProperty(const CSSProperty&);
+    void setProperty(const CSSProperty&, CSSProperty* slot = 0);
+
+    bool removeProperty(CSSPropertyID, String* returnText = 0);
+    void removePrefixedOrUnprefixedProperty(CSSPropertyID);
+    void removeBlockProperties();
+    bool removePropertiesInSet(const CSSPropertyID* set, unsigned length);
+    void removeEquivalentProperties(const StylePropertySet*);
+    void removeEquivalentProperties(const CSSStyleDeclaration*);
+
+    void mergeAndOverrideOnConflict(const StylePropertySet*);
+
     void clear();
     void parseDeclaration(const String& styleDeclaration, StyleSheetContents* contextStyleSheet);
 
@@ -236,7 +231,11 @@ private:
     MutableStylePropertySet(CSSParserMode cssParserMode)
         : StylePropertySet(cssParserMode)
     { }
+
     MutableStylePropertySet(const CSSProperty* properties, unsigned count);
+
+    bool removeShorthandProperty(CSSPropertyID);
+    CSSProperty* findCSSPropertyWithID(CSSPropertyID);
 };
 
 inline Vector<CSSProperty, 4>& StylePropertySet::mutablePropertyVector()
