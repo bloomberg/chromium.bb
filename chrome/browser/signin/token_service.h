@@ -52,14 +52,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/signin/signin_internals_util.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/webdata/common/web_data_service_base.h"
+#include "components/webdata/common/web_data_service_consumer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class Profile;
 class TokenServiceTest;
+class TokenWebData;
 
 namespace net {
 class URLRequestContextGetter;
@@ -188,7 +190,7 @@ class TokenService : public GaiaAuthConsumer,
 
   // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(
-      WebDataService::Handle h,
+      WebDataServiceBase::Handle h,
       const WDTypedResult* result) OVERRIDE;
 
   // Gets the list of all service names for which tokens will be retrieved.
@@ -227,11 +229,11 @@ class TokenService : public GaiaAuthConsumer,
   Profile* profile_;
 
   // Web data service to access tokens from.
-  scoped_refptr<WebDataService> web_data_service_;
+  scoped_refptr<TokenWebData> token_web_data_;
   // Getter to use for fetchers.
   scoped_refptr<net::URLRequestContextGetter> getter_;
   // Request handle to load Gaia tokens from DB.
-  WebDataService::Handle token_loading_query_;
+  WebDataServiceBase::Handle token_loading_query_;
   // True if token loading has completed (regardless of success).
   bool tokens_loaded_;
 

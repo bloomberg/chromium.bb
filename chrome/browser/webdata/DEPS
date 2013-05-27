@@ -46,6 +46,7 @@ specific_include_rules = {
   # TODO(caitkp): Extract unit tests from //chrome, at lower priority
   # than production code.
   r"(.*_unittest|.*_test_util)\.(cc|h)": [
+    "+chrome/browser/webdata/token_web_data.h",
     "+chrome/browser/webdata/web_data_service.h",
     "+chrome/browser/webdata/web_data_service_factory.h",
   ],

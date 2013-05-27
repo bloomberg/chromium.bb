@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/token_web_data.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -66,7 +66,7 @@ void TokenService::Shutdown() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ResetCredentialsInMemory();
   }
-  web_data_service_ = NULL;
+  token_web_data_ = NULL;
 }
 
 void TokenService::Initialize(const char* const source,
@@ -81,7 +81,7 @@ void TokenService::Initialize(const char* const source,
   getter_ = profile->GetRequestContext();
   // Since the user can create a bookmark in incognito, sync may be running.
   // Thus we have to go for explicit access.
-  web_data_service_ = WebDataService::FromBrowserContext(profile);
+  token_web_data_ = TokenWebData::FromBrowserContext(profile);
   source_ = std::string(source);
 
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
@@ -140,7 +140,7 @@ void TokenService::ResetCredentialsInMemory() {
 
   // Cancel pending loads. Callbacks will not return.
   if (token_loading_query_) {
-    web_data_service_->CancelRequest(token_loading_query_);
+    token_web_data_->CancelRequest(token_loading_query_);
     token_loading_query_ = 0;
   }
 
@@ -175,21 +175,21 @@ void TokenService::UpdateCredentialsWithOAuth2(
 
 void TokenService::LoadTokensFromDB() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (web_data_service_.get())
-    token_loading_query_ = web_data_service_->GetAllTokens(this);
+  if (token_web_data_.get())
+    token_loading_query_ = token_web_data_->GetAllTokens(this);
 }
 
 void TokenService::SaveAuthTokenToDB(const std::string& service,
                                      const std::string& auth_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (web_data_service_.get())
-    web_data_service_->SetTokenForService(service, auth_token);
+  if (token_web_data_.get())
+    token_web_data_->SetTokenForService(service, auth_token);
 }
 
 void TokenService::EraseTokensFromDB() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (web_data_service_.get())
-    web_data_service_->RemoveAllTokens();
+  if (token_web_data_.get())
+    token_web_data_->RemoveAllTokens();
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOKENS_CLEARED,
@@ -363,7 +363,7 @@ void TokenService::OnClientOAuthFailure(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, error);
 }
 
-void TokenService::OnWebDataServiceRequestDone(WebDataService::Handle h,
+void TokenService::OnWebDataServiceRequestDone(WebDataServiceBase::Handle h,
                                                const WDTypedResult* result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(token_loading_query_);

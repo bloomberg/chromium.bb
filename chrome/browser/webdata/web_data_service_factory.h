@@ -13,6 +13,7 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "components/webdata/common/web_database_service.h"
 
+class TokenWebData;
 class WebDataService;
 
 namespace autofill {
@@ -36,10 +37,13 @@ class WebDataServiceWrapper : public BrowserContextKeyedService {
 
   virtual scoped_refptr<WebDataService> GetWebData();
 
+  virtual scoped_refptr<TokenWebData> GetTokenWebData();
+
  private:
   scoped_refptr<WebDatabaseService> web_database_;
 
   scoped_refptr<autofill::AutofillWebDataService> autofill_web_data_;
+  scoped_refptr<TokenWebData> token_web_data_;
   scoped_refptr<WebDataService> web_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataServiceWrapper);

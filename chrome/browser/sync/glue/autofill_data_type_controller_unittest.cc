@@ -153,7 +153,7 @@ class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
   }
 
   MockWebDataServiceWrapperSyncable()
-      : MockWebDataServiceWrapper(NULL, new FakeWebDataService()) {
+      : MockWebDataServiceWrapper(NULL, new FakeWebDataService(), NULL) {
   }
 
   virtual void Shutdown() OVERRIDE {

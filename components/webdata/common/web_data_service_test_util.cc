@@ -22,8 +22,10 @@ void MockWebDataServiceWrapperBase::Shutdown() {
 // all the webdatas in.
 MockWebDataServiceWrapper::MockWebDataServiceWrapper(
     scoped_refptr<WebDataService> fake_service,
-    scoped_refptr<AutofillWebDataService> fake_autofill)
+    scoped_refptr<AutofillWebDataService> fake_autofill,
+    scoped_refptr<TokenWebData> fake_token)
     : fake_autofill_web_data_(fake_autofill),
+      fake_token_web_data_(fake_token),
       fake_web_data_(fake_service) {
 }
 
@@ -33,6 +35,10 @@ MockWebDataServiceWrapper::~MockWebDataServiceWrapper() {
 scoped_refptr<AutofillWebDataService>
     MockWebDataServiceWrapper::GetAutofillWebData() {
   return fake_autofill_web_data_;
+}
+
+scoped_refptr<TokenWebData> MockWebDataServiceWrapper::GetTokenWebData() {
+  return fake_token_web_data_;
 }
 
 scoped_refptr<WebDataService> MockWebDataServiceWrapper::GetWebData() {

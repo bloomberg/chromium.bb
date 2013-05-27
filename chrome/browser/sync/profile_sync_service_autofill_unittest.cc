@@ -187,10 +187,10 @@ syncer::ModelType GetModelType<AutofillProfile>() {
   return syncer::AUTOFILL_PROFILE;
 }
 
-class TokenWebDataServiceFake : public WebDataService {
+class TokenWebDataServiceFake : public TokenWebData {
  public:
   TokenWebDataServiceFake()
-      : WebDataService() {
+      : TokenWebData() {
   }
 
   virtual bool IsDatabaseLoaded() OVERRIDE {
@@ -333,8 +333,9 @@ class WebDataServiceFake : public AutofillWebDataService {
 BrowserContextKeyedService* BuildMockWebDataServiceWrapper(
     content::BrowserContext* profile) {
   return new MockWebDataServiceWrapper(
-      new TokenWebDataServiceFake(),
-      new WebDataServiceFake());
+      NULL,
+      new WebDataServiceFake(),
+      new TokenWebDataServiceFake());
 }
 
 ACTION_P(MakeAutocompleteSyncComponents, wds) {

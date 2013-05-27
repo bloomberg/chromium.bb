@@ -15,6 +15,7 @@
 #include "chrome/browser/webdata/keyword_table.h"
 #include "chrome/browser/webdata/logins_table.h"
 #include "chrome/browser/webdata/token_service_table.h"
+#include "chrome/browser/webdata/token_web_data.h"
 #include "chrome/browser/webdata/web_apps_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_intents_table.h"
@@ -97,6 +98,10 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
       web_database_, base::Bind(&ProfileErrorCallback));
   autofill_web_data_->Init();
 
+  token_web_data_ = new TokenWebData(
+      web_database_, base::Bind(&ProfileErrorCallback));
+  token_web_data_->Init();
+
   web_data_ = new WebDataService(
       web_database_, base::Bind(&ProfileErrorCallback));
   web_data_->Init();
@@ -113,6 +118,7 @@ WebDataServiceWrapper::~WebDataServiceWrapper() {
 
 void WebDataServiceWrapper::Shutdown() {
   autofill_web_data_->ShutdownOnUIThread();
+  token_web_data_->ShutdownOnUIThread();
   web_data_->ShutdownOnUIThread();
   web_database_->ShutdownDatabase();
 }
@@ -124,6 +130,10 @@ WebDataServiceWrapper::GetAutofillWebData() {
 
 scoped_refptr<WebDataService> WebDataServiceWrapper::GetWebData() {
   return web_data_.get();
+}
+
+scoped_refptr<TokenWebData> WebDataServiceWrapper::GetTokenWebData() {
+  return token_web_data_.get();
 }
 
 // static
@@ -139,6 +149,21 @@ AutofillWebDataService::FromBrowserContext(content::BrowserContext* context) {
     return wrapper->GetAutofillWebData();
   // |wrapper| can be NULL in Incognito mode.
   return scoped_refptr<AutofillWebDataService>(NULL);
+}
+
+// static
+scoped_refptr<TokenWebData> TokenWebData::FromBrowserContext(
+    content::BrowserContext* context) {
+  // For this service, the implicit/explicit distinction doesn't
+  // really matter; it's just used for a DCHECK.  So we currently
+  // cheat and always say EXPLICIT_ACCESS.
+  WebDataServiceWrapper* wrapper =
+      WebDataServiceFactory::GetForProfile(
+          static_cast<Profile*>(context), Profile::EXPLICIT_ACCESS);
+  if (wrapper)
+    return wrapper->GetTokenWebData();
+  // |wrapper| can be NULL in Incognito mode.
+  return scoped_refptr<TokenWebData>(NULL);
 }
 
 // static

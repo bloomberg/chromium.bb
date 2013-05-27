@@ -195,22 +195,6 @@ class WebDataService : public WebDataServiceBase {
   Handle GetAllDefaultWebIntentServices(WebDataServiceConsumer* consumer);
 #endif
 
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Token Service
-  //
-  //////////////////////////////////////////////////////////////////////////////
-
-  // Set a token to use for a specified service.
-  void SetTokenForService(const std::string& service,
-                          const std::string& token);
-
-  // Remove all tokens stored in the web database.
-  void RemoveAllTokens();
-
-  // Null on failure. Success is WDResult<std::vector<std::string> >
-  virtual Handle GetAllTokens(WebDataServiceConsumer* consumer);
-
 #if defined(OS_WIN)
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -299,17 +283,6 @@ class WebDataService : public WebDataServiceBase {
       const string16& action);
   scoped_ptr<WDTypedResult> GetAllDefaultWebIntentServicesImpl();
 #endif
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Token Service.
-  //
-  //////////////////////////////////////////////////////////////////////////////
-
-  WebDatabase::State RemoveAllTokensImpl(WebDatabase* db);
-  WebDatabase::State SetTokenForServiceImpl(const std::string& service,
-      const std::string& token, WebDatabase* db);
-  scoped_ptr<WDTypedResult> GetAllTokensImpl(WebDatabase* db);
 
 #if defined(OS_WIN)
   //////////////////////////////////////////////////////////////////////////////
