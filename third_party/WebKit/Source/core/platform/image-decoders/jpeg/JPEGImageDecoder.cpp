@@ -38,12 +38,15 @@
  */
 
 #include "config.h"
-#include "core/platform/PlatformInstrumentation.h"
 #include "core/platform/image-decoders/jpeg/JPEGImageDecoder.h"
+
+#include "core/platform/PlatformInstrumentation.h"
 #include "wtf/CPU.h"
 #include "wtf/PassOwnPtr.h"
 
 extern "C" {
+#include <stdio.h> // jpeglib.h needs stdio FILE.
+#include "jpeglib.h"
 #if USE(ICCJPEG)
 #include "iccjpeg.h"
 #endif
@@ -634,14 +637,13 @@ bool JPEGImageDecoder::setFailed()
     return ImageDecoder::setFailed();
 }
 
-template <J_COLOR_SPACE colorSpace>
-void setPixel(ImageFrame& buffer, ImageFrame::PixelData* currentAddress, JSAMPARRAY samples, int column)
+template <J_COLOR_SPACE colorSpace> void setPixel(ImageFrame& buffer, ImageFrame::PixelData* pixel, JSAMPARRAY samples, int column)
 {
     JSAMPLE* jsample = *samples + column * (colorSpace == JCS_RGB ? 3 : 4);
 
     switch (colorSpace) {
     case JCS_RGB:
-        buffer.setRGBA(currentAddress, jsample[0], jsample[1], jsample[2], 0xFF);
+        buffer.setRGBA(pixel, jsample[0], jsample[1], jsample[2], 0xFF);
         break;
     case JCS_CMYK:
         // Source is 'Inverted CMYK', output is RGB.
@@ -654,16 +656,15 @@ void setPixel(ImageFrame& buffer, ImageFrame::PixelData* currentAddress, JSAMPAR
         // From CMY (0..1) to RGB (0..1):
         // R = 1 - C => 1 - (1 - iC*iK) => iC*iK  [G and B similar]
         unsigned k = jsample[3];
-        buffer.setRGBA(currentAddress, jsample[0] * k / 255, jsample[1] * k / 255, jsample[2] * k / 255, 0xFF);
+        buffer.setRGBA(pixel, jsample[0] * k / 255, jsample[1] * k / 255, jsample[2] * k / 255, 0xFF);
         break;
     }
 }
 
-template <J_COLOR_SPACE colorSpace>
-bool JPEGImageDecoder::outputScanlines(ImageFrame& buffer)
+template <J_COLOR_SPACE colorSpace> bool outputRows(JPEGImageReader* reader, ImageFrame& buffer)
 {
-    JSAMPARRAY samples = m_reader->samples();
-    jpeg_decompress_struct* info = m_reader->info();
+    JSAMPARRAY samples = reader->samples();
+    jpeg_decompress_struct* info = reader->info();
     int width = info->output_width;
 
     while (info->output_scanline < info->output_height) {
@@ -674,14 +675,12 @@ bool JPEGImageDecoder::outputScanlines(ImageFrame& buffer)
         if (jpeg_read_scanlines(info, samples, 1) != 1)
             return false;
 #if USE(QCMSLIB)
-        if (m_reader->colorTransform() && colorSpace == JCS_RGB)
-            qcms_transform_data(m_reader->colorTransform(), *samples, *samples, info->output_width);
+        if (reader->colorTransform() && colorSpace == JCS_RGB)
+            qcms_transform_data(reader->colorTransform(), *samples, *samples, width);
 #endif
-        ImageFrame::PixelData* currentAddress = buffer.getAddr(0, y);
-        for (int x = 0; x < width; ++x) {
-            setPixel<colorSpace>(buffer, currentAddress, samples, x);
-            ++currentAddress;
-        }
+        ImageFrame::PixelData* pixel = buffer.getAddr(0, y);
+        for (int x = 0; x < width; ++pixel, ++x)
+            setPixel<colorSpace>(buffer, pixel, samples, x);
     }
 
     return true;
@@ -724,14 +723,10 @@ bool JPEGImageDecoder::outputScanlines()
 #endif
 
     switch (info->out_color_space) {
-    // The code inside outputScanlines<int, bool> will be executed
-    // for each pixel, so we want to avoid any extra comparisons there.
-    // That is why we use template and template specializations here so
-    // the proper code will be generated at compile time.
     case JCS_RGB:
-        return outputScanlines<JCS_RGB>(buffer);
+        return outputRows<JCS_RGB>(m_reader.get(), buffer);
     case JCS_CMYK:
-        return outputScanlines<JCS_CMYK>(buffer);
+        return outputRows<JCS_CMYK>(m_reader.get(), buffer);
     default:
         ASSERT_NOT_REACHED();
     }

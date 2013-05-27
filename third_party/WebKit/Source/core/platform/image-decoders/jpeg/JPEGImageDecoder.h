@@ -27,13 +27,9 @@
 #ifndef JPEGImageDecoder_h
 #define JPEGImageDecoder_h
 
-#include <stdio.h> // Needed by jpeglib.h for FILE.
 #include "core/platform/image-decoders/ImageDecoder.h"
-#include <wtf/OwnPtr.h>
 
-extern "C" {
-#include "jpeglib.h"
-}
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -64,9 +60,6 @@ namespace WebCore {
         // calculating the image size.  If decoding fails but there is no more
         // data coming, sets the "decode failure" flag.
         void decode(bool onlySize);
-
-        template <J_COLOR_SPACE colorSpace>
-        bool outputScanlines(ImageFrame& buffer);
 
         OwnPtr<JPEGImageReader> m_reader;
     };
