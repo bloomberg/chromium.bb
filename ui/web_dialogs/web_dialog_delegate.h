@@ -38,7 +38,7 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   virtual ModalType GetDialogModalType() const = 0;
 
   // Returns the title of the dialog.
-  virtual string16 GetDialogTitle() const = 0;
+  virtual base::string16 GetDialogTitle() const = 0;
 
   // Returns the dialog's name identifier. Used to identify this dialog for
   // state restoration.

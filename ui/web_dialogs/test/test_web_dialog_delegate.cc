@@ -24,7 +24,7 @@ ModalType TestWebDialogDelegate::GetDialogModalType() const {
   return MODAL_TYPE_WINDOW;
 }
 
-string16 TestWebDialogDelegate::GetDialogTitle() const {
+base::string16 TestWebDialogDelegate::GetDialogTitle() const {
   return UTF8ToUTF16("Test");
 }
 
