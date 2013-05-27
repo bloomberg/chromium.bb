@@ -11,7 +11,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
@@ -19,12 +18,16 @@
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_devtools_delegate.h"
-#include "content/shell/shell_plugin_service_filter.h"
 #include "googleurl/src/gurl.h"
 #include "grit/net_resources.h"
 #include "net/base/net_module.h"
 #include "net/base/net_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(ENABLE_PLUGINS)
+#include "content/public/browser/plugin_service.h"
+#include "content/shell/shell_plugin_service_filter.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "net/android/network_change_notifier_factory_android.h"
@@ -123,11 +126,15 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
                            NULL,
                            MSG_ROUTING_NONE,
                            gfx::Size());
-  } else {
+  }
+
+#if defined(ENABLE_PLUGINS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     PluginService* plugin_service = PluginService::GetInstance();
     plugin_service_filter_.reset(new ShellPluginServiceFilter);
     plugin_service->SetFilter(plugin_service_filter_.get());
   }
+#endif
 
   if (parameters_.ui_task) {
     parameters_.ui_task->Run();

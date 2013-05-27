@@ -231,6 +231,12 @@
              '../third_party/freetype2/freetype2.gyp:freetype2',
           ],
         }],
+        ['enable_plugins==0', {
+          'sources/': [
+            ['exclude', 'shell/shell_plugin_service_filter.cc'],
+            ['exclude', 'shell/shell_plugin_service_filter.h'],
+          ],
+        }]
       ],
     },
     {
