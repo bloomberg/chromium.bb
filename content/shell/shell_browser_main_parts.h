@@ -17,6 +17,7 @@ namespace content {
 
 class ShellBrowserContext;
 class ShellDevToolsDelegate;
+class ShellPluginServiceFilter;
 struct MainFunctionParams;
 
 class ShellBrowserMainParts : public BrowserMainParts {
@@ -48,6 +49,7 @@ class ShellBrowserMainParts : public BrowserMainParts {
   bool run_message_loop_;
 
   ShellDevToolsDelegate* devtools_delegate_;
+  scoped_ptr<ShellPluginServiceFilter> plugin_service_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

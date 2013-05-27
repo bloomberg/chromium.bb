@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
@@ -18,6 +19,7 @@
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_devtools_delegate.h"
+#include "content/shell/shell_plugin_service_filter.h"
 #include "googleurl/src/gurl.h"
 #include "grit/net_resources.h"
 #include "net/base/net_module.h"
@@ -75,7 +77,8 @@ ShellBrowserMainParts::ShellBrowserMainParts(
     : BrowserMainParts(),
       parameters_(parameters),
       run_message_loop_(true),
-      devtools_delegate_(NULL) {
+      devtools_delegate_(NULL),
+      plugin_service_filter_(NULL) {
 }
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
@@ -120,6 +123,10 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
                            NULL,
                            MSG_ROUTING_NONE,
                            gfx::Size());
+  } else {
+    PluginService* plugin_service = PluginService::GetInstance();
+    plugin_service_filter_.reset(new ShellPluginServiceFilter);
+    plugin_service->SetFilter(plugin_service_filter_.get());
   }
 
   if (parameters_.ui_task) {

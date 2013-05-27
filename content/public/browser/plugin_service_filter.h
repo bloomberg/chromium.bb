@@ -7,6 +7,10 @@
 
 class GURL;
 
+namespace base {
+class FilePath;
+}
+
 namespace webkit {
 struct WebPluginInfo;
 }
