@@ -139,6 +139,13 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
 
     switch (relation) {
     case CSSSelector::Descendant:
+        if (context.selector->relationIsForShadowDistributed()) {
+            for (Element* element = context.element; element; element = element->parentElement()) {
+                if (matchForShadowDistributed(element, siblingTraversalStrategy, ignoreDynamicPseudo, nextContext) == SelectorMatches)
+                    return SelectorMatches;
+            }
+            return SelectorFailsCompletely;
+        }
         nextContext.element = context.element->parentElement();
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
@@ -150,15 +157,15 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
                 return SelectorFailsCompletely;
         }
         return SelectorFailsCompletely;
-
     case CSSSelector::Child:
+        if (context.selector->relationIsForShadowDistributed())
+            return matchForShadowDistributed(context.element, siblingTraversalStrategy, ignoreDynamicPseudo, nextContext);
         nextContext.element = context.element->parentElement();
         if (!nextContext.element)
             return SelectorFailsCompletely;
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
         return match(nextContext, ignoreDynamicPseudo, siblingTraversalStrategy);
-
     case CSSSelector::DirectAdjacent:
         if (m_mode == ResolvingStyle) {
             if (Element* parentElement = context.element->parentElement())
@@ -212,25 +219,24 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
             nextContext.elementStyle = 0;
             return match(nextContext, ignoreDynamicPseudo, siblingTraversalStrategy);
         }
-    case CSSSelector::ShadowDistributed:
-        {
-            Vector<InsertionPoint*, 8> insertionPoints;
-            for (Element* element = context.element; element; element = element->parentElement()) {
-                insertionPoints.clear();
-                collectInsertionPointsWhereNodeIsDistributed(element, insertionPoints);
-                for (size_t i = 0; i < insertionPoints.size(); ++i) {
-                    nextContext.element = insertionPoints[i];
-                    nextContext.isSubSelector = false;
-                    nextContext.elementStyle = 0;
-                    if (match(nextContext, ignoreDynamicPseudo, siblingTraversalStrategy) == SelectorMatches)
-                        return SelectorMatches;
-                }
-            }
-            return SelectorFailsCompletely;
-        }
     }
 
     ASSERT_NOT_REACHED();
+    return SelectorFailsCompletely;
+}
+
+template<typename SiblingTraversalStrategy>
+SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element* element, const SiblingTraversalStrategy& siblingTraversalStrategy, PseudoId& dynamicPseudo, SelectorCheckingContext& nextContext) const
+{
+    Vector<InsertionPoint*, 8> insertionPoints;
+    collectInsertionPointsWhereNodeIsDistributed(element, insertionPoints);
+    for (size_t i = 0; i < insertionPoints.size(); ++i) {
+        nextContext.element = insertionPoints[i];
+        nextContext.isSubSelector = false;
+        nextContext.elementStyle = 0;
+        if (match(nextContext, dynamicPseudo, siblingTraversalStrategy) == SelectorMatches)
+            return SelectorMatches;
+    }
     return SelectorFailsCompletely;
 }
 

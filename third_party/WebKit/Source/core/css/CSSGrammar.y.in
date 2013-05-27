@@ -87,7 +87,7 @@ static inline bool isCSSTokenAString(int yytype)
 
 %}
 
-%expect 28
+%expect 29
 
 %nonassoc LOWEST_PREC
 
@@ -276,6 +276,7 @@ static inline bool isCSSTokenAString(int yytype)
 %type <selector> specifier_list
 %type <selector> simple_selector
 %type <selector> selector
+%type <selector> relative_selector
 %type <selectorList> selector_list
 %type <selectorList> simple_selector_list
 %type <selectorList> region_selector
@@ -1133,6 +1134,19 @@ selector_list:
     }
    ;
 
+relative_selector:
+    combinator selector {
+        $$ = $2;
+        CSSParserSelector* end = $$;
+        while (end->tagHistory())
+            end = end->tagHistory();
+        end->setRelation($1);
+    }
+    | selector {
+        $$ = $1;
+    }
+    ;
+
 selector_with_trailing_whitespace:
     selector WHITESPACE {
         $$ = $1;
@@ -1393,7 +1407,7 @@ pseudo:
     | ':' ':' CUEFUNCTION selector_recovery ')' {
         YYERROR;
     }
-    | ':' ':' DISTRIBUTEDFUNCTION maybe_space selector maybe_space ')' {
+    | ':' ':' DISTRIBUTEDFUNCTION maybe_space relative_selector maybe_space ')' {
         if (!$5)
             $$ = 0;
         else {

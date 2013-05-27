@@ -190,7 +190,7 @@ class SelectorHasShadowDistributed {
 public:
     bool operator()(const CSSSelector* selector)
     {
-        return selector->isShadowDistributed();
+        return selector->relationIsForShadowDistributed();
     }
 };
 

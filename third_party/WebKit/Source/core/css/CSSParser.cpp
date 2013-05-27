@@ -11178,9 +11178,16 @@ CSSParserSelector* CSSParser::rewriteSpecifiersForShadowDistributed(CSSParserSel
     CSSParserSelector* end = argumentSelector;
     while (end->tagHistory())
         end = end->tagHistory();
-    end->setTagHistory(sinkFloatingSelector(specifiers));
-    end->setRelation(CSSSelector::ShadowDistributed);
-    return argumentSelector;
+
+    switch (end->relation()) {
+    case CSSSelector::Child:
+    case CSSSelector::Descendant:
+        end->setTagHistory(sinkFloatingSelector(specifiers));
+        end->setRelationIsForShadowDistributed();
+        return argumentSelector;
+    default:
+        return 0;
+    }
 }
 
 CSSParserSelector* CSSParser::rewriteSpecifiers(CSSParserSelector* specifiers, CSSParserSelector* newSpecifier)

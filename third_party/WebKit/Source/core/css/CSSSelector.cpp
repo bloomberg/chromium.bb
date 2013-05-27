@@ -684,8 +684,12 @@ String CSSSelector::selectorText(const String& rightSide) const
     if (const CSSSelector* tagHistory = cs->tagHistory()) {
         switch (cs->relation()) {
         case CSSSelector::Descendant:
+            if (cs->relationIsForShadowDistributed())
+                return tagHistory->selectorText("::-webkit-distributed(" + str.toString() + rightSide + ")");
             return tagHistory->selectorText(" " + str.toString() + rightSide);
         case CSSSelector::Child:
+            if (cs->relationIsForShadowDistributed())
+                return tagHistory->selectorText("::-webkit-distributed(> " + str.toString() + rightSide + ")");
             return tagHistory->selectorText(" > " + str.toString() + rightSide);
         case CSSSelector::DirectAdjacent:
             return tagHistory->selectorText(" + " + str.toString() + rightSide);
@@ -695,8 +699,6 @@ String CSSSelector::selectorText(const String& rightSide) const
             ASSERT_NOT_REACHED();
         case CSSSelector::ShadowPseudo:
             return tagHistory->selectorText(str.toString() + rightSide);
-        case CSSSelector::ShadowDistributed:
-            return tagHistory->selectorText("::-webkit-distributed(" + str.toString() + rightSide + ")");
         }
     }
     return str.toString() + rightSide;

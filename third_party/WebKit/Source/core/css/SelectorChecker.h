@@ -89,6 +89,10 @@ public:
 
     template<typename SiblingTraversalStrategy>
     Match match(const SelectorCheckingContext&, PseudoId&, const SiblingTraversalStrategy&) const;
+
+    template<typename SiblingTraversalStrategy>
+    Match matchForShadowDistributed(const Element*, const SiblingTraversalStrategy&, PseudoId&, SelectorCheckingContext& nextContext) const;
+
     template<typename SiblingTraversalStrategy>
     bool checkOne(const SelectorCheckingContext&, const SiblingTraversalStrategy&) const;
 

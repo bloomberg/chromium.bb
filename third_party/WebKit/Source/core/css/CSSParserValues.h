@@ -195,12 +195,14 @@ public:
 
     PassOwnPtr<CSSSelector> releaseSelector() { return m_selector.release(); }
 
+    CSSSelector::Relation relation() const { return m_selector->relation(); }
     void setValue(const AtomicString& value) { m_selector->setValue(value); }
     void setAttribute(const QualifiedName& value) { m_selector->setAttribute(value); }
     void setArgument(const AtomicString& value) { m_selector->setArgument(value); }
     void setMatch(CSSSelector::Match value) { m_selector->m_match = value; }
     void setRelation(CSSSelector::Relation value) { m_selector->m_relation = value; }
     void setForPage() { m_selector->setForPage(); }
+    void setRelationIsForShadowDistributed() { m_selector->setRelationIsForShadowDistributed(); }
 
     void adoptSelectorVector(Vector<OwnPtr<CSSParserSelector> >& selectorVector);
 
