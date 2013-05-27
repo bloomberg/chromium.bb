@@ -127,6 +127,13 @@ void MaybeAddEntryToResult(
     const ResourceEntry& entry) {
   DCHECK_GE(at_most_num_matches, result_candidates->size());
 
+  // If the candidate set is already full, and this |entry| is old, do nothing.
+  // We perform this check first in order to avoid the costly find-and-highlight
+  // or FilePath lookup as much as possible.
+  if (result_candidates->size() == at_most_num_matches &&
+      !CompareByTimestamp(entry, result_candidates->top()->entry))
+    return;
+
   // Add |entry| to the result if the entry is eligible for the given
   // |options| and matches the query. The base name of the entry must
   // contains |query| to match the query.
@@ -140,13 +147,9 @@ void MaybeAddEntryToResult(
     return;
 
   // Make space for |entry| when appropriate.
-  if (result_candidates->size() == at_most_num_matches &&
-      CompareByTimestamp(entry, result_candidates->top()->entry))
+  if (result_candidates->size() == at_most_num_matches)
     result_candidates->pop();
-
-  // Add |entry| to the result when appropriate.
-  if (result_candidates->size() < at_most_num_matches)
-    result_candidates->push(new MetadataSearchResult(path, entry, highlighted));
+  result_candidates->push(new MetadataSearchResult(path, entry, highlighted));
 }
 
 // Implements SearchMetadata().
