@@ -1384,7 +1384,6 @@ crbug.com/239811 crbug.com/229113 [ Win Mac ] http/tests/history/redirect-js-loc
 crbug.com/239811 crbug.com/239811 http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html [ Failure Pass ]
 crbug.com/239811 webkit.org/b/112598 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure Pass ]
 crbug.com/239811 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/data-url-iframe-in-main-frame.html [ Failure Pass ]
-crbug.com/239811 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/insecure-image-in-main-frame-blocked.html [ Failure Pass ]
 
 crbug.com/230554 [ Linux Mac Debug ] plugins/drag-events.html [ Crash Pass ]
 
