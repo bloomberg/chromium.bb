@@ -2697,6 +2697,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->mm_width = mm_width;
 	output->mm_height = mm_height;
 	output->dirty = 1;
+	output->origin_scale = scale;
 
 	weston_output_transform_scale_init(output, transform, scale);
 	weston_output_init_zoom(output);

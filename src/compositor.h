@@ -187,6 +187,7 @@ struct weston_output {
 
 	struct weston_mode *current;
 	struct weston_mode *origin;
+	int32_t origin_scale;
 	struct wl_list mode_list;
 
 	void (*start_repaint_loop)(struct weston_output *output);
