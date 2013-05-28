@@ -1156,18 +1156,9 @@ void Element::setChangedSinceLastFormControlChangeEvent(bool)
 {
 }
 
-bool Element::isDisabledFormControl() const
-{
-    // FIXME: disabled and inert are separate concepts in the spec, but now we treat them as the same.
-    // For example, an inert, non-disabled form control should not be grayed out.
-    if (isInert())
-        return true;
-    return false;
-}
-
 bool Element::isInert() const
 {
-    Element* dialog = document()->activeModalDialog();
+    const Element* dialog = document()->activeModalDialog();
     return dialog && !containsIncludingShadowDOM(dialog) && !dialog->containsIncludingShadowDOM(this);
 }
 

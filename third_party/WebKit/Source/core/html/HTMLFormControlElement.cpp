@@ -276,9 +276,7 @@ bool HTMLFormControlElement::isDisabledFormControl() const
 
     if (m_ancestorDisabledState == AncestorDisabledStateUnknown)
         updateAncestorDisabledState();
-    if (m_ancestorDisabledState == AncestorDisabledStateDisabled)
-        return true;
-    return HTMLElement::isDisabledFormControl();
+    return m_ancestorDisabledState == AncestorDisabledStateDisabled;
 }
 
 bool HTMLFormControlElement::isRequired() const

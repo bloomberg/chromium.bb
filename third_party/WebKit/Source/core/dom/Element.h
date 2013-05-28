@@ -544,7 +544,7 @@ public:
 
     // Used for disabled form elements; if true, prevents mouse events from being dispatched
     // to event listeners, and prevents DOMActivate events from being sent at all.
-    virtual bool isDisabledFormControl() const;
+    virtual bool isDisabledFormControl() const { return false; }
 
     bool isInert() const;
     virtual bool shouldBeReparentedUnderRenderView(const RenderStyle*) const { return isInTopLayer(); }

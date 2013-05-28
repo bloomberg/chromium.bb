@@ -5,7 +5,11 @@
 #inert-div {
     height: 100px;
     width: 100px;
-    background: green;
+    background: blue;
+}
+
+dialog {
+    width: 100px;
 }
 
 #dialog-div {
@@ -26,7 +30,11 @@ if (window.internals)
     <div id="dialog-div"></div>
 </dialog>
 <script>
-description('Test for bug 110952. Ensure that mouse events are not dispatched to an inert node. To test manually, move the mouse to the green box, click, and then move the mouse outside. Then repeat for the red box. The test succeeds if green box remains green and the red box turns green.');
+description('Test for bug 110952. Ensure that mouse events are not ' +
+            'dispatched to an inert node. To test manually, move the mouse ' +
+            'to the blue box, click, and then move the mouse outside. Then ' +
+            'repeat for the red box. The test succeeds if both boxes turn ' +
+            'green.');
 
 function clickOn(element)
 {
@@ -54,29 +62,42 @@ if (window.testRunner)
 dialog.showModal();
 
 inertDiv = document.getElementById('inert-div');
-dialogDiv = document.getElementById('dialog-div');
 inertDiv.firedOn = false;
 eventFiredOnInertNode = function(event) {
     inertDiv.firedOn = true;
     inertDiv.style.backgroundColor = 'red';
-}
+};
 
 events =  ['mousedown', 'mouseup', 'click', 'mousemove', 'mouseover', 'mouseout'];
+dialogDiv = document.getElementById('dialog-div');
 dialogDiv.firedOnEvents = {};
 eventFiredOnDialog = function(event) {
     dialogDiv.firedOnEvents[event.type] = true;
     if (Object.keys(dialogDiv.firedOnEvents).length == events.length)
         dialogDiv.style.backgroundColor = 'green';
-}
+};
+
+body = document.body;
+body.firedOnEvents = {};
+eventFiredOnBody = function(event) {
+    body.firedOnEvents[event.type] = true;
+    if (Object.keys(body.firedOnEvents).length == events.length && !inertDiv.firedOn)
+        inertDiv.style.backgroundColor = 'green';
+};
 
 for (var i = 0; i < events.length; ++i) {
     inertDiv.addEventListener(events[i], eventFiredOnInertNode);
     dialogDiv.addEventListener(events[i], eventFiredOnDialog);
+    document.body.addEventListener(events[i], eventFiredOnBody);
 }
 
+debug('Clicking on inert box');
 clickOn(inertDiv);
-clickOn(dialogDiv);
+shouldBeFalse('inertDiv.firedOn');
+shouldBe('Object.keys(body.firedOnEvents).length', 'events.length');
 
+debug('Clicking on non-inert box');
+clickOn(dialogDiv);
 shouldBeFalse('inertDiv.firedOn');
 shouldBe('Object.keys(dialogDiv.firedOnEvents).length', 'events.length');
 </script>
