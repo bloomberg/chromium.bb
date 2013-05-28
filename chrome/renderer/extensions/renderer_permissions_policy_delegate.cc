@@ -6,13 +6,16 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 
 namespace extensions {
 
 namespace errors = extension_manifest_errors;
 
-RendererPermissionsPolicyDelegate::RendererPermissionsPolicyDelegate() {
+RendererPermissionsPolicyDelegate::RendererPermissionsPolicyDelegate(
+    Dispatcher* dispatcher) : dispatcher_(dispatcher) {
   PermissionsData::SetPolicyDelegate(this);
 }
 RendererPermissionsPolicyDelegate::~RendererPermissionsPolicyDelegate() {
@@ -30,6 +33,12 @@ bool RendererPermissionsPolicyDelegate::CanExecuteScriptOnPage(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSigninProcess)) {
     if (error)
       *error = errors::kCannotScriptSigninPage;
+    return false;
+  }
+
+  if (dispatcher_->IsExtensionActive(extension_misc::kWebStoreAppId)) {
+    if (error)
+      *error = errors::kCannotScriptGallery;
     return false;
   }
 

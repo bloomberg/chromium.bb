@@ -131,6 +131,8 @@ class Dispatcher : public content::RenderProcessObserver {
 
  private:
   friend class RenderViewTest;
+  FRIEND_TEST_ALL_PREFIXES(RendererPermissionsPolicyDelegateTest,
+                           CannotScriptWebstore);
   typedef void (*BindingInstaller)(ModuleSystem* module_system,
                                   v8::Handle<v8::Object> chrome,
                                   v8::Handle<v8::Object> chrome_hidden);
@@ -155,6 +157,7 @@ class Dispatcher : public content::RenderProcessObserver {
   void OnSetFunctionNames(const std::vector<std::string>& names);
   void OnLoaded(
       const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions);
+  void OnLoadedInternal(scoped_refptr<const Extension> extension);
   void OnUnloaded(const std::string& id);
   void OnSetScriptingWhitelist(
       const Extension::ScriptingWhitelist& extension_ids);

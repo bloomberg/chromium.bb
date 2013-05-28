@@ -9,11 +9,13 @@
 
 namespace extensions {
 
+class Dispatcher;
+
 // Policy delegate for the renderer process.
 class RendererPermissionsPolicyDelegate
     : public PermissionsData::PolicyDelegate {
  public:
-  RendererPermissionsPolicyDelegate();
+  explicit RendererPermissionsPolicyDelegate(Dispatcher* dispatcher);
   virtual ~RendererPermissionsPolicyDelegate();
 
   virtual bool CanExecuteScriptOnPage(const Extension* extension,
@@ -23,6 +25,9 @@ class RendererPermissionsPolicyDelegate
                                       const UserScript* script,
                                       int process_id,
                                       std::string* error) OVERRIDE;
+
+ private:
+  Dispatcher* dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererPermissionsPolicyDelegate);
 };

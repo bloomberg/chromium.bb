@@ -213,7 +213,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   chrome_observer_.reset(new ChromeRenderProcessObserver(this));
   extension_dispatcher_.reset(new extensions::Dispatcher());
   permissions_policy_delegate_.reset(
-      new extensions::RendererPermissionsPolicyDelegate());
+      new extensions::RendererPermissionsPolicyDelegate(
+          extension_dispatcher_.get()));
   prescient_networking_dispatcher_.reset(new PrescientNetworkingDispatcher());
   net_predictor_.reset(new RendererNetPredictor());
   spellcheck_.reset(new SpellCheck());
@@ -1058,6 +1059,9 @@ bool ChromeContentRendererClient::HandleSetCookieRequest(
 void ChromeContentRendererClient::SetExtensionDispatcher(
     extensions::Dispatcher* extension_dispatcher) {
   extension_dispatcher_.reset(extension_dispatcher);
+  permissions_policy_delegate_.reset(
+      new extensions::RendererPermissionsPolicyDelegate(
+          extension_dispatcher_.get()));
 }
 
 bool ChromeContentRendererClient::CrossesExtensionExtents(

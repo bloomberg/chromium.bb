@@ -622,8 +622,12 @@ void Dispatcher::OnLoaded(
       extension_load_errors_[i->id] = error;
       continue;
     }
-    extensions_.Insert(extension);
+    OnLoadedInternal(extension);
   }
+}
+
+void Dispatcher::OnLoadedInternal(scoped_refptr<const Extension> extension) {
+  extensions_.Insert(extension);
 }
 
 void Dispatcher::OnUnloaded(const std::string& id) {
