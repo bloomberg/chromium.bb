@@ -34,7 +34,6 @@
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/MainThread.h>

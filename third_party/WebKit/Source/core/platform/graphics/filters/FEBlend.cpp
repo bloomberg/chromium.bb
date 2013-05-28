@@ -27,7 +27,6 @@
 #include "core/platform/graphics/cpu/arm/filters/FEBlendNEON.h"
 #include "core/platform/graphics/filters/FEBlend.h"
 
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/text/TextStream.h"

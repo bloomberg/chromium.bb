@@ -25,9 +25,6 @@
 #include "core/platform/graphics/Font.h"
 
 #include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/FontCache.h"
-#include "core/platform/graphics/GlyphBuffer.h"
-#include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/WidthIterator.h"
 #include "core/platform/text/transcoder/FontTranscoder.h"

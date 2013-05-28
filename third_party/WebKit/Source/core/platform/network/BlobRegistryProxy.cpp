@@ -34,7 +34,6 @@
 
 #include "core/platform/KURL.h"
 #include "core/platform/network/BlobData.h"
-#include "core/platform/network/ResourceHandle.h"
 #include <public/Platform.h>
 #include <public/WebBlobData.h>
 #include <public/WebBlobRegistry.h>

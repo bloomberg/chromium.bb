@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/platform/graphics/FontFallbackList.h"
 
-#include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/SegmentedFontData.h"
 

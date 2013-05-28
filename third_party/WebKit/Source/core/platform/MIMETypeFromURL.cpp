@@ -28,7 +28,6 @@
 #include "core/platform/MIMETypeFromURL.h"
 
 #include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/text/DecodeEscapeSequences.h"
 
 namespace WebCore {
 

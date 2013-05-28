@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/graphics/GlyphPageTreeNode.h"
 
-#include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
 
 #include "SkPaint.h"

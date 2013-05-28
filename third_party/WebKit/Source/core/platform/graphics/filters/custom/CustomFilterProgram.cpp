@@ -31,7 +31,6 @@
 
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 
-#include "core/platform/graphics/filters/custom/CustomFilterCompiledProgram.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramClient.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 

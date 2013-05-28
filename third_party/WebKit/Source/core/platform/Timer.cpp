@@ -30,7 +30,6 @@
 #include <limits.h>
 #include <math.h>
 #include <limits>
-#include "core/platform/SharedTimer.h"
 #include "core/platform/ThreadGlobalData.h"
 #include "core/platform/ThreadTimers.h"
 #include <wtf/CurrentTime.h>

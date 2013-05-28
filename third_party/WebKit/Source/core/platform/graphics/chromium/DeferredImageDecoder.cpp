@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 
-#include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/graphics/chromium/ImageFrameGenerator.h"
 #include "core/platform/graphics/chromium/LazyDecodingPixelRef.h"
 #include <wtf/OwnPtr.h>

@@ -28,9 +28,6 @@
 
 #include "core/accessibility/AXObjectCache.h"
 #include "core/platform/HostWindow.h"
-#include "core/platform/PlatformMouseEvent.h"
-#include "core/platform/PlatformWheelEvent.h"
-#include "core/platform/ScrollAnimator.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"

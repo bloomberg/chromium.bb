@@ -33,8 +33,6 @@
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
 
 #include <algorithm>
-#include "core/html/ImageData.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsContext3D.h"

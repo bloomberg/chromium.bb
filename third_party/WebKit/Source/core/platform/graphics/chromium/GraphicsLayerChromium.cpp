@@ -43,19 +43,9 @@
 
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 
-#include "SkImageFilter.h"
-#include "SkMatrix44.h"
-#include "core/platform/FloatConversion.h"
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/ScrollableArea.h"
-#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayerFactory.h"
-#include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/chromium/AnimationTranslationUtil.h"
-#include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
-#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "core/platform/graphics/skia/NativeImageSkia.h"
 #include <public/Platform.h>
 #include <public/WebAnimation.h>
 #include <public/WebCompositorSupport.h>

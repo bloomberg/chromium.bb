@@ -29,7 +29,6 @@
 #include "SkBlurImageFilter.h"
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
-#include "SkMatrix.h"
 #include "core/platform/graphics/filters/DropShadowImageFilter.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/FilterOperations.h"

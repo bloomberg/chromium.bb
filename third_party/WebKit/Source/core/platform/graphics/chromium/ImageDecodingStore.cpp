@@ -26,9 +26,7 @@
 #include "config.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 
-#include "core/platform/SharedBuffer.h"
 #include "core/platform/chromium/TraceEvent.h"
-#include "core/platform/graphics/chromium/ImageFrameGenerator.h"
 #include "core/platform/graphics/chromium/ScaledImageFragment.h"
 
 namespace WebCore {

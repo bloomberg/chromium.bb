@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/graphics/harfbuzz/FontPlatformDataHarfBuzz.h"
 
-#include "SkAdvancedTypefaceMetrics.h"
 #include "SkPaint.h"
 #include "SkTypeface.h"
 #include "core/platform/NotImplemented.h"

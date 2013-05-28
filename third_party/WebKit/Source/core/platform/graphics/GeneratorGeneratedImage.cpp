@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/platform/graphics/GeneratorGeneratedImage.h"
 
-#include "core/platform/Length.h"
 #include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"

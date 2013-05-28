@@ -38,11 +38,8 @@
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/harfbuzz/HarfBuzzShaper.h"
 
-#include "SkCanvas.h"
 #include "SkPaint.h"
 #include "SkTemplates.h"
-#include "SkTypeface.h"
-#include "SkUtils.h"
 
 #include <wtf/unicode/Unicode.h>
 

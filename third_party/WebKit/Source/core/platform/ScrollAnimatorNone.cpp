@@ -33,10 +33,7 @@
 #include "core/platform/ScrollAnimatorNone.h"
 
 #include <algorithm>
-#include "core/platform/NotImplemented.h"
-#include "core/platform/PlatformGestureEvent.h"
 #include "core/platform/ScrollableArea.h"
-#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/OwnArrayPtr.h>

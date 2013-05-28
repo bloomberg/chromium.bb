@@ -31,8 +31,6 @@
 
 #include "core/platform/graphics/filters/custom/CustomFilterCompiledProgram.h"
 
-#include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
-
 namespace WebCore {
 
 CustomFilterCompiledProgram::CustomFilterCompiledProgram(PassRefPtr<GraphicsContext3D> context, const String& validatedVertexShader, const String& validatedFragmentShader, CustomFilterProgramType programType)

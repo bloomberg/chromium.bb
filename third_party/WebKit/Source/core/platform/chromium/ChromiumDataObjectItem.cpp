@@ -31,13 +31,11 @@
 #include "config.h"
 #include "core/platform/chromium/ChromiumDataObjectItem.h"
 
-#include "core/dom/Clipboard.h"
 #include "core/dom/DataTransferItem.h"
 #include "core/dom/StringCallback.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
 #include "core/platform/SharedBuffer.h"
-#include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/ClipboardMimeTypes.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 

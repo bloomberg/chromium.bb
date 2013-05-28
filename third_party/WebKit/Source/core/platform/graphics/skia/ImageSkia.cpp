@@ -31,11 +31,9 @@
 #include "config.h"
 
 #include "SkBitmap.h"
-#include "SkPixelRef.h"
 #include "SkRect.h"
 #include "SkShader.h"
 #include "core/platform/FloatConversion.h"
-#include "core/platform/Logging.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -44,9 +42,6 @@
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/text/WTFString.h>
-
-#include "skia/ext/image_operations.h"
-#include "skia/ext/platform_canvas.h"
 
 #include <math.h>
 #include <limits>

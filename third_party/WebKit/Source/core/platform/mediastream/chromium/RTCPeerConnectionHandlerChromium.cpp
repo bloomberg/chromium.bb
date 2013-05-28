@@ -36,7 +36,6 @@
 #include "core/platform/mediastream/MediaStreamComponent.h"
 #include "core/platform/mediastream/RTCConfiguration.h"
 #include "core/platform/mediastream/RTCDTMFSenderHandler.h"
-#include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
 #include "core/platform/mediastream/RTCSessionDescriptionRequest.h"
 #include "core/platform/mediastream/RTCStatsRequest.h"

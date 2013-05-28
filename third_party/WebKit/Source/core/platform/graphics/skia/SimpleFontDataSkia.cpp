@@ -33,13 +33,9 @@
 
 #include <unicode/normlzr.h>
 #include "SkPaint.h"
-#include "SkTime.h"
 #include "SkTypeface.h"
 #include "SkTypes.h"
-#include "core/platform/Logging.h"
 #include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/Font.h"
-#include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/chromium/VDMXParser.h"
 #include <wtf/unicode/Unicode.h>

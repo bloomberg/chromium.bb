@@ -32,7 +32,6 @@
 #include "core/platform/sql/SQLiteFileSystem.h"
 
 #include <sqlite3.h>
-#include "core/platform/sql/SQLiteDatabase.h"
 #include <public/Platform.h>
 #include <wtf/text/CString.h>
 

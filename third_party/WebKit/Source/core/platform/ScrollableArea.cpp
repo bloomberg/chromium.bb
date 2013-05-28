@@ -33,11 +33,9 @@
 #include "core/platform/ScrollableArea.h"
 
 #include "core/platform/PlatformMemoryInstrumentation.h"
-#include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatPoint.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include <wtf/PassOwnPtr.h>
 

@@ -47,7 +47,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/MemoryInstrumentationHashMap.h"
 #include "wtf/MemoryInstrumentationVector.h"
-#include "wtf/StringExtras.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"

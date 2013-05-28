@@ -27,13 +27,11 @@
 #include "config.h"
 #include "core/platform/graphics/BitmapImage.h"
 
-#include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageObserver.h"
-#include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationVector.h>

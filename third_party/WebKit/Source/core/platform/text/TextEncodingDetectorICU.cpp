@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/text/TextEncodingDetector.h"
 
-#include "wtf/UnusedParam.h"
 #include "wtf/text/TextEncoding.h"
 #include <unicode/ucnv.h>
 #include <unicode/ucsdet.h>

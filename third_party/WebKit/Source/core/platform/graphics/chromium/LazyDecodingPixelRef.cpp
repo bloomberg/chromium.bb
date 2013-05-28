@@ -30,7 +30,6 @@
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/graphics/chromium/ImageFrameGenerator.h"
-#include "core/platform/image-decoders/ImageDecoder.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {

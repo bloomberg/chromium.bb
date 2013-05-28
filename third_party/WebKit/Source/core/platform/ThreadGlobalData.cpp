@@ -34,7 +34,6 @@
 #include "wtf/MainThread.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/WTFThreadData.h"
 #include "wtf/text/StringImpl.h"
 

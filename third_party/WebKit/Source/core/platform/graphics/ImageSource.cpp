@@ -30,7 +30,6 @@
 
 #include "core/platform/image-decoders/ImageDecoder.h"
 
-#include "core/platform/NotImplemented.h"
 #include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/ImageOrientation.h"
 

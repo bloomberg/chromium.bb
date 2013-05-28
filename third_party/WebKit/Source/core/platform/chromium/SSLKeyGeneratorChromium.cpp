@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/SSLKeyGenerator.h"
 
-
 #include <public/Platform.h>
 #include <public/WebString.h>
 #include <public/WebURL.h>

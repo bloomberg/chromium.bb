@@ -27,7 +27,6 @@
 
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/filters/Filter.h"
-#include "core/platform/text/TextStream.h"
 #include <wtf/Uint8ClampedArray.h>
 
 #if HAVE(ARM_NEON_INTRINSICS)

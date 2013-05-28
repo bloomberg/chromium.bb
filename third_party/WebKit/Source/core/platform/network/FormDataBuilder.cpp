@@ -26,9 +26,6 @@
 #include "core/platform/network/FormDataBuilder.h"
 
 #include "core/dom/Document.h"
-#include "core/loader/FrameLoader.h"
-#include "core/page/Frame.h"
-#include "wtf/Assertions.h"
 #include "wtf/HexNumber.h"
 #include "wtf/RandomNumber.h"
 #include "wtf/text/CString.h"

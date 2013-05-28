@@ -34,7 +34,6 @@
 #include <unicode/udatpg.h>
 #include <unicode/uloc.h>
 #include <limits>
-#include "core/platform/LocalizedStrings.h"
 #include <wtf/DateMath.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringBuilder.h>

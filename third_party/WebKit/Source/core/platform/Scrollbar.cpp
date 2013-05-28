@@ -36,8 +36,6 @@
 
 // FIXME: The following #includes are a layering violation and should be removed.
 #include "core/accessibility/AXObjectCache.h"
-#include "core/accessibility/AccessibilityScrollbar.h"
-#include "core/dom/Document.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"

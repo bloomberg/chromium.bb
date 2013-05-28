@@ -32,11 +32,9 @@
 
 #include "core/platform/graphics/skia/SkiaUtils.h"
 
-#include "SkCanvas.h"
 #include "SkColorPriv.h"
 #include "SkMatrix.h"
 #include "SkRegion.h"
-#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 

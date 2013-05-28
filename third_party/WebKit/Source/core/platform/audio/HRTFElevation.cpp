@@ -36,9 +36,6 @@
 #include <algorithm>
 #include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/audio/AudioBus.h"
-#include "core/platform/audio/AudioFileReader.h"
-#include "core/platform/audio/Biquad.h"
-#include "core/platform/audio/FFTFrame.h"
 #include "core/platform/audio/HRTFPanner.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/OwnPtr.h>

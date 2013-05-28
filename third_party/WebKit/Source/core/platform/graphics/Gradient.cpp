@@ -30,7 +30,6 @@
 
 #include "SkColorShader.h"
 #include "SkGradientShader.h"
-#include "core/css/CSSParser.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"

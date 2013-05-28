@@ -31,7 +31,6 @@
 
 #include "GrContext.h"
 #include "GrGLInterface.h"
-#include "SkTypes.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CheckedInt.h"
 #include "core/platform/graphics/Extensions3D.h"
@@ -41,7 +40,6 @@
 #include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
-#include "wtf/ArrayBufferView.h"
 #include "wtf/CPU.h"
 #include "wtf/OwnArrayPtr.h"
 #include "wtf/PassOwnArrayPtr.h"
