@@ -21,6 +21,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_language_list.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -282,9 +283,10 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
 
     std::string data;
     if (success) {
-      data = base::StringPrintf("%s{\"sl\": {\"bla\": \"bla\"}, \"%s\": {",
-                                TranslateManager::kLanguageListCallbackName,
-                                TranslateManager::kTargetLanguagesKey);
+      data = base::StringPrintf(
+          "%s{\"sl\": {\"bla\": \"bla\"}, \"%s\": {",
+          TranslateLanguageList::kLanguageListCallbackName,
+          TranslateLanguageList::kTargetLanguagesKey);
       const char* comma = "";
       for (size_t i = 0; i < languages.size(); ++i) {
         data += base::StringPrintf(

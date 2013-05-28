@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -29,6 +28,7 @@ struct PageTranslatedDetails;
 class PrefService;
 struct ShortcutConfiguration;
 class TranslateInfoBarDelegate;
+class TranslateLanguageList;
 
 namespace content {
 class WebContents;
@@ -52,9 +52,8 @@ class TranslateManager : public content::NotificationObserver,
   virtual ~TranslateManager();
 
   // Let the caller decide if and when we should fetch the language list from
-  // the translate server. This is a NOOP if switches::kDisableTranslate is
-  // set or if prefs::kEnableTranslate is set to false.
-  // It will not retry more than kMaxRetryLanguageListFetch times.
+  // the translate server. This is a NOOP if switches::kDisableTranslate is set
+  // or if prefs::kEnableTranslate is set to false.
   void FetchLanguageListFromTranslateServer(PrefService* prefs);
 
   // Allows caller to cleanup pending URLFetcher objects to make sure they
@@ -115,10 +114,6 @@ class TranslateManager : public content::NotificationObserver,
   // Returns true if |language| is supported by the translation server.
   static bool IsSupportedLanguage(const std::string& language);
 
-  // static const values shared with our browser tests.
-  static const char kLanguageListCallbackName[];
-  static const char kTargetLanguagesKey[];
-
   // The observer class for TranslateManager.
   class Observer {
    public:
@@ -146,14 +141,6 @@ class TranslateManager : public content::NotificationObserver,
     std::string source_lang;
     std::string target_lang;
   };
-
-  // Fills supported_languages_ with the list of languages that the translate
-  // server can translate to and from.
-  static void SetSupportedLanguages(const std::string& language_list);
-
-  // Initializes the list of supported languages if it wasn't initialized before
-  // in case we failed to get them from the server, or didn't get them just yet.
-  static void InitSupportedLanguages();
 
   // Starts the translation process on |tab| containing the page in the
   // |page_lang| language.
@@ -230,20 +217,16 @@ class TranslateManager : public content::NotificationObserver,
   // Set when the translate JS is currently being retrieved. NULL otherwise.
   scoped_ptr<net::URLFetcher> translate_script_request_pending_;
 
-  // Set when the list of languages is currently being retrieved.
-  // NULL otherwise.
-  scoped_ptr<net::URLFetcher> language_list_request_pending_;
-
   // The list of pending translate requests.  Translate requests are queued when
   // the translate script is not ready and has to be fetched from the translate
   // server.
   std::vector<PendingRequest> pending_requests_;
 
-  // The languages supported by the translation server.
-  static base::LazyInstance<std::set<std::string> > supported_languages_;
-
   // List of registered observers.
   ObserverList<Observer> observer_list_;
+
+  // An instance of TranslateLanguageList which manages supported language list.
+  scoped_ptr<TranslateLanguageList> language_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManager);
 };
