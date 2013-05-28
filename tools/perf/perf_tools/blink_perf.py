@@ -37,7 +37,8 @@ class BlinkPerf(page_measurement.PageMeasurement):
       if '../' in open(path, 'r').read():
         # If the page looks like it references its parent dir, include it.
         page_set_dict['serving_dirs'] = [os.path.dirname(os.path.dirname(path))]
-      page_set_dict['pages'].append({'url': 'file://' + path})
+      page_set_dict['pages'].append({'url':
+                                     'file://' + path.replace('\\', '/')})
 
     def _AddDir(dir_path, skipped):
       for path in os.listdir(dir_path):
