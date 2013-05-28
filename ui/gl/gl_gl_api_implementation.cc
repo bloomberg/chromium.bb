@@ -285,7 +285,8 @@ bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
     // needed for individual GL calls.
     GLApi* temp = GetCurrentGLApi();
     SetGLToRealGLApi();
-    virtual_context->GetGLStateRestorer()->RestoreState();
+    if (virtual_context->GetGLStateRestorer()->IsInitialized())
+      virtual_context->GetGLStateRestorer()->RestoreState();
     SetGLApi(temp);
   }
   SetGLApi(this);
