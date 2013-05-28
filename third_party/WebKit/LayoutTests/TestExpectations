@@ -1118,8 +1118,6 @@ webkit.org/b/91372 [ Win ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageO
 
 webkit.org/b/93624 inspector/console/console-format-collections.html [ Failure Pass ]
 
-webkit.org/b/91445 [ XP ] plugins/embed-attributes-style.html [ Pass Timeout ]
-
 webkit.org/b/92019 [ Debug ] fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ ImageOnlyFailure Pass ]
 webkit.org/b/92022 [ Debug ] svg/W3C-SVG-1.1/struct-dom-06-b.svg [ Failure Pass ]
 crbug.com/243711 [ Lion Release ] svg/W3C-SVG-1.1/struct-dom-06-b.svg [ Failure ]
@@ -1868,7 +1866,7 @@ crbug.com/243725 http/tests/w3c/webperf/submission/Google/resource-timing/html/t
 crbug.com/243730 [ Mac ] fast/dom/HTMLMeterElement/meter-optimums.html [ Timeout ImageOnlyFailure Missing Pass ]
 crbug.com/243730 [ Linux Mac Win ] fast/dom/HTMLMeterElement/meter-element.html [ Timeout Pass ]
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ ImageOnlyFailure Pass ]
-crbug.com/238858 [ Win Debug ] virtual/gpu/fast/hidpi/focus-rings.html [ Pass Timeout ]
+crbug.com/238858 [ Win ] virtual/gpu/fast/hidpi/focus-rings.html [ Pass Timeout ]
 crbug.com/243736 [ Release ] storage/websql/quota-tracking.html [ Failure Pass ]
 crbug.com/243738 [ Linux Mac ] http/tests/loading/preload-append-scan.php [ Failure Pass ]
 crbug.com/243738 [ Win ] http/tests/loading/preload-append-scan.php [ Timeout Pass ]
@@ -1918,6 +1916,8 @@ crbug.com/244129 [ Mac Win Debug ] transitions/steps-timing-function.html [ Fail
 crbug.com/244130 [ Win Debug ] fast/forms/input-search-press-escape-key.html [ Crash ]
 crbug.com/244131 [ Win Debug ] fast/forms/search-disabled-readonly.html [ Crash ]
 crbug.com/244132 [ Win Debug ] inspector-protocol/dom/setFileInputFiles.html [ Crash Pass Timeout ]
+crbug.com/242291 [ Win ] http/tests/loading/pdf-commit-load-callbacks.html [ Failure ]
+crbug.com/242291 [ Win ] plugins/embed-attributes-style.html [ Failure Pass Timeout ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
