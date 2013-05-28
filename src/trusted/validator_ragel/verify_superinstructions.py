@@ -6,52 +6,15 @@
 
 Regex-based verifier for superinstructions list."""
 
-from __future__ import print_function
-
-import collections
 import optparse
 import os
 import re
 import subprocess
 import sys
 import tempfile
+
+import objdump_parser
 import validator
-
-
-ObjdumpLine = collections.namedtuple('ObjdumpLine',
-                                     ['address', 'bytes', 'command'])
-
-
-def SplitObjdumpLine(line):
-  """Split objdump line.
-
-  Typical line from objdump output looks like this:
-
-  "   0:	48 c7 84 80 78 56 34 	movq   $0x12345678,0x12345678(%rax,%rax,4)"
-  "   7:	12 78 56 34 12 "
-
-  There are three columns (separated with tabs):
-    address: offset for a particular line
-    bytes: few bytes which encode a given command
-    command: textual representation of command
-
-  Third column is optional (as in example above).
-
-  Args:
-      line: objdump line (a single one).
-  Returns
-      ObjdumpLine tuple.
-  """
-
-  # Split columns
-  split = line.strip().split('\t')
-  if len(split) == 2:
-    split.append('')
-
-  # Split bytes
-  split[1] = split[1].split()
-
-  return ObjdumpLine(*split)
 
 
 def RemoveRexFromAssemblerLine(line):
@@ -287,15 +250,10 @@ def ProcessSuperinstructionsFile(filename, bitness, gas, objdump, out_file):
                            '-o{0}'.format(object_file.name)])
 
     objdump_proc = subprocess.Popen(
-        [objdump, '-d', object_file.name],
+        [objdump, '-d', object_file.name, '--insn-width=15'],
         stdout=subprocess.PIPE)
 
-    objdump_lines = objdump_proc.stdout
-
-    # Objdump prints few lines about file and section before disassembly
-    # listing starts, so we have to skip that.
-    for i in range(7):
-      objdump_lines.readline()
+    objdump_iter = iter(objdump_parser.SkipHeader(objdump_proc.stdout))
 
     line_prefix = '.byte '
 
@@ -314,8 +272,8 @@ def ProcessSuperinstructionsFile(filename, bitness, gas, objdump, out_file):
         superinstruction = []
         objdump_bytes = []
         while len(objdump_bytes) < len(superinstruction_bytes):
-          nextline = objdump_lines.readline().decode()
-          instruction = SplitObjdumpLine(nextline)
+          nextline = next(objdump_iter).decode()
+          instruction = objdump_parser.ParseLine(nextline)
           superinstruction.append(instruction)
           objdump_bytes += instruction.bytes
         # Bytes in objdump output in and source file should match

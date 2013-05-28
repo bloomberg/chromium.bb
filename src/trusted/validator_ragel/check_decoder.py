@@ -18,6 +18,7 @@ import tempfile
 
 import dfa_parser
 import dfa_traversal
+import objdump_parser
 
 
 FWAIT = 0x9b
@@ -91,12 +92,8 @@ class WorkerState(object):
           [options.decoder, object_file.name],
           stdout=subprocess.PIPE)
 
-      # Objdump prints few lines about file and section before disassembly
-      # listing starts, so we have to skip that.
-      objdump_header_size = 7
-
       for line1, line2 in itertools.izip_longest(
-          itertools.islice(objdump_proc.stdout, objdump_header_size, None),
+          objdump_parser.SkipHeader(objdump_proc.stdout),
           decoder_proc.stdout,
           fillvalue=None):
 

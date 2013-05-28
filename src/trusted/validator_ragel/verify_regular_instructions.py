@@ -19,6 +19,7 @@ import tempfile
 
 import dfa_parser
 import dfa_traversal
+import objdump_parser
 import validator
 
 
@@ -317,13 +318,7 @@ class WorkerState(object):
            raw_file.name],
           stdout=subprocess.PIPE)
 
-      # Objdump prints few lines about file and section before disassembly
-      # listing starts, so we have to skip that.
-      objdump_header_size = 7
-
-      objdump_iter = iter(objdump_proc.stdout)
-      for i in range(objdump_header_size):
-        next(objdump_iter)
+      objdump_iter = iter(objdump_parser.SkipHeader(objdump_proc.stdout))
 
       old_validator = OldValidator()
       for instr in self._instructions:
