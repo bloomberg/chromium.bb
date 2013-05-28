@@ -2370,3 +2370,11 @@
    fun:_ZN7content23VideoDestinationHandler4OpenEPNS_28MediaStreamDependencyFactoryEPNS_28MediaStreamRegistryInterfaceERKSsPPNS_20FrameWriterInterfaceE
    fun:_ZN7content37VideoDestinationHandlerTest_Open_Test8TestBodyEv
 }
+{
+   bug_244437
+   Memcheck:Uninitialized
+   fun:_ZN5mediaL23FromInterleavedInternalIssLs0EEEvPKviiPNS_8AudioBusEff
+   fun:_ZN5media8AudioBus22FromInterleavedPartialEPKviii
+   fun:_ZN5media8AudioBus15FromInterleavedEPKvii
+   fun:_ZN7content19WebRtcAudioRenderer14SourceCallbackEiPN5media8AudioBusE
+}
