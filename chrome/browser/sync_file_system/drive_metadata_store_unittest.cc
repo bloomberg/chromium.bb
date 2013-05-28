@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
@@ -132,10 +133,8 @@ class DriveMetadataStoreTest : public testing::Test {
 
   void DropSyncOriginsInStore() {
     EXPECT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
-    drive_metadata_store_->batch_sync_origins_.clear();
     drive_metadata_store_->incremental_sync_origins_.clear();
     drive_metadata_store_->disabled_origins_.clear();
-    EXPECT_TRUE(drive_metadata_store_->batch_sync_origins().empty());
     EXPECT_TRUE(drive_metadata_store_->incremental_sync_origins().empty());
     EXPECT_TRUE(drive_metadata_store_->disabled_origins().empty());
   }
@@ -216,14 +215,12 @@ class DriveMetadataStoreTest : public testing::Test {
   }
 
   void VerifyUntrackedOrigin(const GURL& origin) {
-    EXPECT_FALSE(metadata_store()->IsBatchSyncOrigin(origin));
     EXPECT_FALSE(metadata_store()->IsIncrementalSyncOrigin(origin));
     EXPECT_FALSE(metadata_store()->IsOriginDisabled(origin));
   }
 
   void VerifyIncrementalSyncOrigin(const GURL& origin,
                                    const std::string& resource_id) {
-    EXPECT_FALSE(metadata_store()->IsBatchSyncOrigin(origin));
     EXPECT_TRUE(metadata_store()->IsIncrementalSyncOrigin(origin));
     EXPECT_FALSE(metadata_store()->IsOriginDisabled(origin));
     EXPECT_EQ(resource_id,
@@ -233,7 +230,6 @@ class DriveMetadataStoreTest : public testing::Test {
 
   void VerifyDisabledOrigin(const GURL& origin,
                             const std::string& resource_id) {
-    EXPECT_FALSE(metadata_store()->IsBatchSyncOrigin(origin));
     EXPECT_FALSE(metadata_store()->IsIncrementalSyncOrigin(origin));
     EXPECT_TRUE(metadata_store()->IsOriginDisabled(origin));
     EXPECT_EQ(resource_id,
@@ -248,13 +244,15 @@ class DriveMetadataStoreTest : public testing::Test {
     return drive_metadata_store_.get();
   }
 
+  leveldb::DB* metadata_db() {
+    return drive_metadata_store_->GetDBInstanceForTesting();
+  }
+
   const DriveMetadataStore::MetadataMap& metadata_map() {
     return drive_metadata_store_->metadata_map_;
   }
 
   void VerifyReverseMap() {
-    const ResourceIdByOrigin& batch_sync_origins =
-        drive_metadata_store_->batch_sync_origins_;
     const ResourceIdByOrigin& incremental_sync_origins =
         drive_metadata_store_->incremental_sync_origins_;
     const ResourceIdByOrigin& disabled_origins =
@@ -262,13 +260,10 @@ class DriveMetadataStoreTest : public testing::Test {
     const OriginByResourceId& origin_by_resource_id =
         drive_metadata_store_->origin_by_resource_id_;
 
-    size_t expected_size =
-        batch_sync_origins.size() + incremental_sync_origins.size() +
-        disabled_origins.size();
+    size_t expected_size = incremental_sync_origins.size() +
+                           disabled_origins.size();
     size_t actual_size = origin_by_resource_id.size();
     EXPECT_EQ(expected_size, actual_size);
-    EXPECT_TRUE(VerifyReverseMapInclusion(batch_sync_origins,
-                                          origin_by_resource_id));
     EXPECT_TRUE(VerifyReverseMapInclusion(incremental_sync_origins,
                                           origin_by_resource_id));
     EXPECT_TRUE(VerifyReverseMapInclusion(disabled_origins,
@@ -534,7 +529,6 @@ TEST_F(DriveMetadataStoreTest, RemoveOrigin) {
   InitializeDatabase();
 
   // kOrigin1 should be the only one left.
-  EXPECT_EQ(0u, metadata_store()->batch_sync_origins().size());
   EXPECT_EQ(1u, metadata_store()->incremental_sync_origins().size());
   EXPECT_EQ(0u, metadata_store()->disabled_origins().size());
   EXPECT_TRUE(metadata_store()->IsIncrementalSyncOrigin(kOrigin1));
@@ -652,7 +646,6 @@ TEST_F(DriveMetadataStoreTest, MigrationFromV0) {
 
   EXPECT_EQ(1, metadata_store()->GetLargestChangeStamp());
   EXPECT_EQ(kSyncRootResourceId, metadata_store()->sync_root_directory());
-  EXPECT_EQ(kResourceId1, metadata_store()->GetResourceIdForOrigin(kOrigin1));
   EXPECT_EQ(kResourceId2, metadata_store()->GetResourceIdForOrigin(kOrigin2));
 
   DriveMetadata metadata;
@@ -666,6 +659,42 @@ TEST_F(DriveMetadataStoreTest, MigrationFromV0) {
   EXPECT_FALSE(metadata.to_be_fetched());
 
   VerifyReverseMap();
+}
+
+TEST_F(DriveMetadataStoreTest, DeprecateBatchSyncOrigins) {
+  // Make sure that previously saved batch sync origins were deleted from the DB
+  // as they are no longer used.
+  const char kDriveBatchSyncOriginKeyPrefix[] = "BSYNC_ORIGIN: ";
+  const GURL kOrigin1("chrome-extension://example1");
+  const std::string kResourceId1("hoge");
+
+  // Purposely add in an old batch sync origin (from previous DB version).
+  {
+    leveldb::Options options;
+    options.create_if_missing = true;
+    leveldb::DB* db_ptr = NULL;
+    std::string db_dir = fileapi::FilePathToString(
+        base_dir().Append(DriveMetadataStore::kDatabaseName));
+    leveldb::DB::Open(options, db_dir, &db_ptr);
+    scoped_ptr<leveldb::DB> db(db_ptr);
+    leveldb::WriteOptions write_options;
+    db->Put(write_options,
+            kDriveBatchSyncOriginKeyPrefix + kOrigin1.spec(), kResourceId1);
+  }
+
+  InitializeDatabase();
+
+  // Confirm no batch sync origins remain after InitializeDatabase.
+  scoped_ptr<leveldb::Iterator> itr(metadata_db()->NewIterator(
+      leveldb::ReadOptions()));
+  int batch_origins_found = 0;
+  for (itr->Seek(kDriveBatchSyncOriginKeyPrefix); itr->Valid(); itr->Next()) {
+    std::string key = itr->key().ToString();
+    if (!StartsWithASCII(key, kDriveBatchSyncOriginKeyPrefix, true))
+      break;
+    batch_origins_found++;
+  }
+  EXPECT_EQ(0, batch_origins_found);
 }
 
 TEST_F(DriveMetadataStoreTest, ResetOriginRootDirectory) {

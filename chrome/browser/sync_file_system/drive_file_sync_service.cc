@@ -381,19 +381,6 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     return;
   }
 
-  // TODO(calvinlo): Move the code to delete legacy batch_sync_origin keys from
-  // DB into DriveMetadataStore.InitializeDBOnFileThread.
-  std::vector<GURL> batch_origins_to_delete;
-  typedef std::map<GURL, std::string>::const_iterator origin_itr;
-  for (origin_itr itr = metadata_store_->batch_sync_origins().begin();
-       itr != metadata_store_->batch_sync_origins().end(); ++itr) {
-    batch_origins_to_delete.push_back(itr->first);
-  }
-  for (std::vector<GURL>::const_iterator itr = batch_origins_to_delete.begin();
-       itr != batch_origins_to_delete.end(); ++itr) {
-    metadata_store_->RemoveOrigin(*itr, base::Bind(&EmptyStatusCallback));
-  }
-
   DCHECK(pending_batch_sync_origins_.empty());
 
   UpdateRegisteredOrigins();
@@ -615,8 +602,7 @@ void DriveFileSyncService::DoApplyLocalChange(
     return;
   }
 
-  if (!metadata_store_->IsIncrementalSyncOrigin(url.origin()) &&
-      !metadata_store_->IsBatchSyncOrigin(url.origin())) {
+  if (!metadata_store_->IsIncrementalSyncOrigin(url.origin())) {
     // We may get called by LocalFileSyncService to sync local changes
     // for the origins that are disabled.
     DVLOG(1) << "Got request for stray origin: " << url.origin().spec();
@@ -636,7 +622,6 @@ void DriveFileSyncService::UpdateRegisteredOrigins() {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(pending_batch_sync_origins_.empty());
-  DCHECK(metadata_store_->batch_sync_origins().empty());
   if (!extension_service)
     return;
 
@@ -1653,8 +1638,7 @@ bool DriveFileSyncService::GetOriginForEntry(
     }
     DCHECK(origin.is_valid());
 
-    if (!metadata_store_->IsBatchSyncOrigin(origin) &&
-        !metadata_store_->IsIncrementalSyncOrigin(origin))
+    if (!metadata_store_->IsIncrementalSyncOrigin(origin))
       continue;
     std::string resource_id(metadata_store_->GetResourceIdForOrigin(origin));
     if (resource_id.empty())
