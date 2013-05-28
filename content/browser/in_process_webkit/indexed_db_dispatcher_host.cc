@@ -41,26 +41,24 @@ using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBCursor;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseError;
-using WebKit::WebIDBIndex;
 using WebKit::WebIDBKey;
 using WebKit::WebIDBMetadata;
-using WebKit::WebIDBObjectStore;
 using WebKit::WebString;
 using WebKit::WebVector;
 
 namespace content {
 namespace {
 
-template <class T>
-void DeleteOnWebKitThread(T* obj) {
-  if (!BrowserThread::DeleteSoon(BrowserThread::WEBKIT_DEPRECATED,
-                                 FROM_HERE, obj))
+template <class T> void DeleteOnWebKitThread(T* obj) {
+  if (!BrowserThread::DeleteSoon(
+          BrowserThread::WEBKIT_DEPRECATED, FROM_HERE, obj))
     delete obj;
 }
 }
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
-    int ipc_process_id, IndexedDBContextImpl* indexed_db_context)
+    int ipc_process_id,
+    IndexedDBContextImpl* indexed_db_context)
     : indexed_db_context_(indexed_db_context),
       database_dispatcher_host_(new DatabaseDispatcherHost(this)),
       cursor_dispatcher_host_(new CursorDispatcherHost(this)),
@@ -68,14 +66,14 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
   DCHECK(indexed_db_context_.get());
 }
 
-IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
-}
+IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {}
 
 void IndexedDBDispatcherHost::OnChannelClosing() {
   BrowserMessageFilter::OnChannelClosing();
 
   bool success = BrowserThread::PostTask(
-      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
+      BrowserThread::WEBKIT_DEPRECATED,
+      FROM_HERE,
       base::Bind(&IndexedDBDispatcherHost::ResetDispatcherHosts, this));
 
   if (!success)
@@ -119,12 +117,12 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message,
   if (!handled) {
     handled = true;
     IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost, message, *message_was_ok)
-      IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryGetDatabaseNames,
-                          OnIDBFactoryGetDatabaseNames)
-      IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryOpen, OnIDBFactoryOpen)
-      IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryDeleteDatabase,
-                          OnIDBFactoryDeleteDatabase)
-      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryGetDatabaseNames,
+                        OnIDBFactoryGetDatabaseNames)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryOpen, OnIDBFactoryOpen)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryDeleteDatabase,
+                        OnIDBFactoryDeleteDatabase)
+    IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
   }
   return handled;
@@ -151,10 +149,8 @@ int32 IndexedDBDispatcherHost::Add(WebIDBDatabase* idb_database,
   return ipc_database_id;
 }
 
-void IndexedDBDispatcherHost::RegisterTransactionId(
-    int64 host_transaction_id,
-    const GURL& url)
-{
+void IndexedDBDispatcherHost::RegisterTransactionId(int64 host_transaction_id,
+                                                    const GURL& url) {
   if (!database_dispatcher_host_)
     return;
   database_dispatcher_host_->transaction_url_map_[host_transaction_id] = url;
@@ -175,8 +171,8 @@ int64 IndexedDBDispatcherHost::HostTransactionId(int64 transaction_id) {
 
 int64 IndexedDBDispatcherHost::RendererTransactionId(
     int64 host_transaction_id) {
-  DCHECK(host_transaction_id >> 32 == base::GetProcId(peer_handle())) <<
-      "Invalid renderer target for transaction id";
+  DCHECK(host_transaction_id >> 32 == base::GetProcId(peer_handle()))
+      << "Invalid renderer target for transaction id";
   return host_transaction_id & 0xffffffff;
 }
 
@@ -186,8 +182,7 @@ WebIDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 ipc_cursor_id) {
 }
 
 IndexedDBDatabaseMetadata IndexedDBDispatcherHost::ConvertMetadata(
-    const WebIDBMetadata& web_metadata)
-{
+    const WebIDBMetadata& web_metadata) {
   IndexedDBDatabaseMetadata metadata;
   metadata.id = web_metadata.id;
   metadata.name = web_metadata.name;
@@ -227,8 +222,9 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   Context()->GetIDBFactory()->getDatabaseNames(
-      new IndexedDBCallbacks<WebVector<WebString> >(this, params.ipc_thread_id,
-      params.ipc_callbacks_id), params.database_identifier,
+      new IndexedDBCallbacks<WebVector<WebString> >(
+          this, params.ipc_thread_id, params.ipc_callbacks_id),
+      params.database_identifier,
       webkit_base::FilePathToWebString(indexed_db_path));
 }
 
@@ -246,19 +242,20 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
 
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
-  Context()->GetIDBFactory()->open(
-      params.name,
-      params.version,
-      host_transaction_id,
-      new IndexedDBCallbacksDatabase(this, params.ipc_thread_id,
-                                     params.ipc_callbacks_id,
-                                     params.ipc_database_callbacks_id,
-                                     host_transaction_id,
-                                     origin_url),
-      new IndexedDBDatabaseCallbacks(this, params.ipc_thread_id,
-                                     params.ipc_database_callbacks_id),
-      params.database_identifier,
-      webkit_base::FilePathToWebString(indexed_db_path));
+  Context()->GetIDBFactory()
+      ->open(params.name,
+             params.version,
+             host_transaction_id,
+             new IndexedDBCallbacksDatabase(this,
+                                            params.ipc_thread_id,
+                                            params.ipc_callbacks_id,
+                                            params.ipc_database_callbacks_id,
+                                            host_transaction_id,
+                                            origin_url),
+             new IndexedDBDatabaseCallbacks(
+                 this, params.ipc_thread_id, params.ipc_database_callbacks_id),
+             params.database_identifier,
+             webkit_base::FilePathToWebString(indexed_db_path));
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
@@ -266,23 +263,22 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  Context()->GetIDBFactory()->deleteDatabase(
-      params.name,
-      new IndexedDBCallbacks<WebData>(this,
-                                      params.ipc_thread_id,
-                                      params.ipc_callbacks_id),
-      params.database_identifier,
-      webkit_base::FilePathToWebString(indexed_db_path));
+  Context()->GetIDBFactory()
+      ->deleteDatabase(params.name,
+                       new IndexedDBCallbacks<WebData>(
+                           this, params.ipc_thread_id, params.ipc_callbacks_id),
+                       params.database_identifier,
+                       webkit_base::FilePathToWebString(indexed_db_path));
 }
 
-void IndexedDBDispatcherHost::FinishTransaction(
-    int64 host_transaction_id, bool committed) {
+void IndexedDBDispatcherHost::FinishTransaction(int64 host_transaction_id,
+                                                bool committed) {
   TransactionIDToURLMap& transaction_url_map =
-          database_dispatcher_host_->transaction_url_map_;
+      database_dispatcher_host_->transaction_url_map_;
   TransactionIDToSizeMap& transaction_size_map =
-          database_dispatcher_host_->transaction_size_map_;
+      database_dispatcher_host_->transaction_size_map_;
   TransactionIDToDatabaseIDMap& transaction_database_map =
-          database_dispatcher_host_->transaction_database_map_;
+      database_dispatcher_host_->transaction_database_map_;
   if (committed)
     Context()->TransactionComplete(transaction_url_map[host_transaction_id]);
   // It's unclear if std::map::erase(key) has defined behavior if the
@@ -305,7 +301,8 @@ void IndexedDBDispatcherHost::FinishTransaction(
 
 template <typename ObjectType>
 ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
-    IDMap<ObjectType, IDMapOwnPointer>* map, int32 ipc_return_object_id) {
+    IDMap<ObjectType, IDMapOwnPointer>* map,
+    int32 ipc_return_object_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   ObjectType* return_object = map->Lookup(ipc_return_object_id);
   if (!return_object) {
@@ -319,11 +316,11 @@ ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
 
 template <typename ObjectType>
 void IndexedDBDispatcherHost::DestroyObject(
-    IDMap<ObjectType, IDMapOwnPointer>* map, int32 ipc_object_id) {
+    IDMap<ObjectType, IDMapOwnPointer>* map,
+    int32 ipc_object_id) {
   GetOrTerminateProcess(map, ipc_object_id);
   map->Remove(ipc_object_id);
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // IndexedDBDispatcherHost::DatabaseDispatcherHost
@@ -353,14 +350,16 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::CloseAll() {
     ++iter;
     WebIDBDatabase* database = map_.Lookup(ipc_database_id);
     if (database) {
-      database->abort(transaction_id, WebIDBDatabaseError(
-          WebKit::WebIDBDatabaseExceptionUnknownError));
+      database->abort(
+          transaction_id,
+          WebIDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError));
     }
   }
   DCHECK(transaction_database_map_.empty());
 
   for (WebIDBObjectIDToURLMap::iterator iter = database_url_map_.begin();
-       iter != database_url_map_.end(); iter++) {
+       iter != database_url_map_.end();
+       iter++) {
     WebIDBDatabase* database = map_.Lookup(iter->first);
     if (database) {
       database->close();
@@ -370,37 +369,33 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::CloseAll() {
 }
 
 bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
-    const IPC::Message& message, bool* msg_is_ok) {
+    const IPC::Message& message,
+    bool* msg_is_ok) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::DatabaseDispatcherHost,
-                           message, *msg_is_ok)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateObjectStore,
-                        OnCreateObjectStore)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteObjectStore,
-                        OnDeleteObjectStore)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateTransaction,
-                        OnCreateTransaction)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGet, OnGet)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabasePut, OnPut)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetIndexKeys,
-                        OnSetIndexKeys)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetIndexesReady,
-                        OnSetIndexesReady)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseOpenCursor, OnOpenCursor)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCount, OnCount)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteRange, OnDeleteRange)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClear, OnClear)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateIndex,
-                        OnCreateIndex)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteIndex,
-                        OnDeleteIndex)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseAbort,
-                        OnAbort)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCommit,
-                        OnCommit)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_BEGIN_MESSAGE_MAP_EX(
+      IndexedDBDispatcherHost::DatabaseDispatcherHost, message, *msg_is_ok)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateObjectStore,
+                      OnCreateObjectStore)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteObjectStore,
+                      OnDeleteObjectStore)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateTransaction,
+                      OnCreateTransaction)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGet, OnGet)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabasePut, OnPut)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetIndexKeys, OnSetIndexKeys)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetIndexesReady,
+                      OnSetIndexesReady)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseOpenCursor, OnOpenCursor)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCount, OnCount)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteRange, OnDeleteRange)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClear, OnClear)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateIndex, OnCreateIndex)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteIndex, OnDeleteIndex)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseAbort, OnAbort)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCommit, OnCommit)
+  IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
@@ -413,20 +408,22 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::Send(
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
     const IndexedDBHostMsg_DatabaseCreateObjectStore_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, params.ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
   if (!database)
     return;
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
-  database->createObjectStore(
-      host_transaction_id,
-      params.object_store_id,
-      params.name, params.key_path, params.auto_increment);
+  database->createObjectStore(host_transaction_id,
+                              params.object_store_id,
+                              params.name,
+                              params.key_path,
+                              params.auto_increment);
   if (parent_->Context()->IsOverQuota(
-      database_url_map_[params.ipc_database_id])) {
-    database->abort(host_transaction_id, WebIDBDatabaseError(
-        WebKit::WebIDBDatabaseExceptionQuotaError));
+          database_url_map_[params.ipc_database_id])) {
+    database->abort(
+        host_transaction_id,
+        WebIDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError));
   }
 }
 
@@ -435,8 +432,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
     int64 transaction_id,
     int64 object_store_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
   if (!database)
     return;
 
@@ -446,22 +443,23 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
     const IndexedDBHostMsg_DatabaseCreateTransaction_Params& params) {
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, params.ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
   if (!database)
-      return;
+    return;
 
   WebVector<long long> object_stores(params.object_store_ids.size());
   for (size_t i = 0; i < params.object_store_ids.size(); ++i)
-      object_stores[i] = params.object_store_ids[i];
+    object_stores[i] = params.object_store_ids[i];
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
 
   database->createTransaction(
       host_transaction_id,
-      new IndexedDBDatabaseCallbacks(parent_, params.ipc_thread_id,
-                                     params.ipc_database_callbacks_id),
-      object_stores, params.mode);
+      new IndexedDBDatabaseCallbacks(
+          parent_, params.ipc_thread_id, params.ipc_database_callbacks_id),
+      object_stores,
+      params.mode);
   transaction_database_map_[host_transaction_id] = params.ipc_database_id;
   parent_->RegisterTransactionId(host_transaction_id,
                                  database_url_map_[params.ipc_database_id]);
@@ -469,8 +467,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
     int32 ipc_database_id) {
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
   if (!database)
     return;
   database->close();
@@ -479,8 +477,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
     int32 ipc_object_id) {
   WebIDBDatabase* database = map_.Lookup(ipc_object_id);
-  parent_->Context()->ConnectionClosed(database_url_map_[ipc_object_id],
-                                       database);
+  parent_->Context()
+      ->ConnectionClosed(database_url_map_[ipc_object_id], database);
   database_url_map_.erase(ipc_object_id);
   parent_->DestroyObject(&map_, ipc_object_id);
 }
@@ -488,41 +486,42 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
     const IndexedDBHostMsg_DatabaseGet_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, params.ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
   if (!database)
     return;
 
-  scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebData>(
-          parent_, params.ipc_thread_id,
-          params.ipc_callbacks_id));
+  scoped_ptr<WebIDBCallbacks> callbacks(new IndexedDBCallbacks<WebData>(
+      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   database->get(parent_->HostTransactionId(params.transaction_id),
                 params.object_store_id,
                 params.index_id,
-                params.key_range, params.key_only, callbacks.release());
+                params.key_range,
+                params.key_only,
+                callbacks.release());
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
     const IndexedDBHostMsg_DatabasePut_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, params.ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
   if (!database)
     return;
-  scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebIDBKey>(parent_, params.ipc_thread_id,
-                                        params.ipc_callbacks_id));
+  scoped_ptr<WebIDBCallbacks> callbacks(new IndexedDBCallbacks<WebIDBKey>(
+      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   // Be careful with empty vectors.
   WebData value;
   if (params.value.size())
-      value.assign(&params.value.front(), params.value.size());
+    value.assign(&params.value.front(), params.value.size());
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
   database->put(host_transaction_id,
                 params.object_store_id,
-                value, params.key,
-                params.put_mode, callbacks.release(),
+                value,
+                params.key,
+                params.put_mode,
+                callbacks.release(),
                 params.index_ids,
                 params.index_keys);
   TransactionIDToSizeMap* map =
@@ -535,22 +534,25 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexKeys(
     const IndexedDBHostMsg_DatabaseSetIndexKeys_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, params.ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
   if (!database)
     return;
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
   if (params.index_ids.size() != params.index_keys.size()) {
-    database->abort(host_transaction_id, WebIDBDatabaseError(
-        WebKit::WebIDBDatabaseExceptionUnknownError,
-        "Malformed IPC message: index_ids.size() != index_keys.size()"));
+    database->abort(
+        host_transaction_id,
+        WebIDBDatabaseError(
+            WebKit::WebIDBDatabaseExceptionUnknownError,
+            "Malformed IPC message: index_ids.size() != index_keys.size()"));
     return;
   }
 
   database->setIndexKeys(host_transaction_id,
                          params.object_store_id,
-                         params.primary_key, params.index_ids,
+                         params.primary_key,
+                         params.index_ids,
                          params.index_keys);
 }
 
@@ -560,8 +562,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexesReady(
     int64 object_store_id,
     const std::vector<int64>& index_ids) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
   if (!database)
     return;
 
@@ -573,54 +575,54 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexesReady(
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpenCursor(
     const IndexedDBHostMsg_DatabaseOpenCursor_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, params.ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
   if (!database)
     return;
 
-  scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.ipc_thread_id,
-                                           params.ipc_callbacks_id, -1));
-  database->openCursor(
-      parent_->HostTransactionId(params.transaction_id),
-      params.object_store_id, params.index_id,
-      params.key_range, params.direction, params.key_only, params.task_type,
-      callbacks.release());
+  scoped_ptr<WebIDBCallbacks> callbacks(new IndexedDBCallbacks<WebIDBCursor>(
+      parent_, params.ipc_thread_id, params.ipc_callbacks_id, -1));
+  database->openCursor(parent_->HostTransactionId(params.transaction_id),
+                       params.object_store_id,
+                       params.index_id,
+                       params.key_range,
+                       params.direction,
+                       params.key_only,
+                       params.task_type,
+                       callbacks.release());
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCount(
     const IndexedDBHostMsg_DatabaseCount_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, params.ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
   if (!database)
     return;
 
-  scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebData>(
-          parent_, params.ipc_thread_id,
-          params.ipc_callbacks_id));
-  database->count(
-      parent_->HostTransactionId(params.transaction_id),
-      params.object_store_id, params.index_id,
-      params.key_range, callbacks.release());
+  scoped_ptr<WebIDBCallbacks> callbacks(new IndexedDBCallbacks<WebData>(
+      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
+  database->count(parent_->HostTransactionId(params.transaction_id),
+                  params.object_store_id,
+                  params.index_id,
+                  params.key_range,
+                  callbacks.release());
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteRange(
     const IndexedDBHostMsg_DatabaseDeleteRange_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, params.ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
   if (!database)
     return;
 
-  scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebData>(
-          parent_, params.ipc_thread_id,
-          params.ipc_callbacks_id));
+  scoped_ptr<WebIDBCallbacks> callbacks(new IndexedDBCallbacks<WebData>(
+      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   database->deleteRange(parent_->HostTransactionId(params.transaction_id),
                         params.object_store_id,
-                        params.key_range, callbacks.release());
+                        params.key_range,
+                        callbacks.release());
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClear(
@@ -630,26 +632,25 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClear(
     int64 transaction_id,
     int64 object_store_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
   if (!database)
     return;
 
-  scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebData>(
-          parent_, ipc_thread_id,
-          ipc_callbacks_id));
+  scoped_ptr<WebIDBCallbacks> callbacks(new IndexedDBCallbacks<WebData>(
+      parent_, ipc_thread_id, ipc_callbacks_id));
 
   database->clear(parent_->HostTransactionId(transaction_id),
-                  object_store_id, callbacks.release());
+                  object_store_id,
+                  callbacks.release());
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnAbort(
     int32 ipc_database_id,
     int64 transaction_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
   if (!database)
     return;
 
@@ -660,17 +661,19 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCommit(
     int32 ipc_database_id,
     int64 transaction_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
   if (!database)
     return;
 
   int64 host_transaction_id = parent_->HostTransactionId(transaction_id);
   int64 transaction_size = transaction_size_map_[host_transaction_id];
-  if (transaction_size && parent_->Context()->WouldBeOverQuota(
-      transaction_url_map_[host_transaction_id], transaction_size)) {
-    database->abort(host_transaction_id, WebIDBDatabaseError(
-        WebKit::WebIDBDatabaseExceptionQuotaError));
+  if (transaction_size &&
+      parent_->Context()->WouldBeOverQuota(
+          transaction_url_map_[host_transaction_id], transaction_size)) {
+    database->abort(
+        host_transaction_id,
+        WebIDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError));
     return;
   }
 
@@ -680,24 +683,24 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCommit(
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateIndex(
     const IndexedDBHostMsg_DatabaseCreateIndex_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, params.ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
   if (!database)
     return;
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
-  database->createIndex(
-      host_transaction_id,
-      params.object_store_id,
-      params.index_id,
-      params.name,
-      params.key_path,
-      params.unique,
-      params.multi_entry);
+  database->createIndex(host_transaction_id,
+                        params.object_store_id,
+                        params.index_id,
+                        params.name,
+                        params.key_path,
+                        params.unique,
+                        params.multi_entry);
   if (parent_->Context()->IsOverQuota(
-      database_url_map_[params.ipc_database_id])) {
-    database->abort(host_transaction_id, WebIDBDatabaseError(
-        WebKit::WebIDBDatabaseExceptionQuotaError));
+          database_url_map_[params.ipc_database_id])) {
+    database->abort(
+        host_transaction_id,
+        WebIDBDatabaseError(WebKit::WebIDBDatabaseExceptionQuotaError));
   }
 }
 
@@ -707,13 +710,13 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteIndex(
     int64 object_store_id,
     int64 index_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, ipc_database_id);
+  WebIDBDatabase* database =
+      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
   if (!database)
     return;
 
-  database->deleteIndex(parent_->HostTransactionId(transaction_id),
-                        object_store_id, index_id);
+  database->deleteIndex(
+      parent_->HostTransactionId(transaction_id), object_store_id, index_id);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -726,31 +729,29 @@ IndexedDBDispatcherHost::CursorDispatcherHost::CursorDispatcherHost(
   map_.set_check_on_null_data(true);
 }
 
-IndexedDBDispatcherHost::CursorDispatcherHost::~CursorDispatcherHost() {
-}
+IndexedDBDispatcherHost::CursorDispatcherHost::~CursorDispatcherHost() {}
 
 bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
-    const IPC::Message& message, bool* msg_is_ok) {
+    const IPC::Message& message,
+    bool* msg_is_ok) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::CursorDispatcherHost,
-                           message, *msg_is_ok)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorAdvance, OnAdvance)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorContinue, OnContinue)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetch, OnPrefetch)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetchReset, OnPrefetchReset)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDelete, OnDelete)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDestroyed, OnDestroyed)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_BEGIN_MESSAGE_MAP_EX(
+      IndexedDBDispatcherHost::CursorDispatcherHost, message, *msg_is_ok)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorAdvance, OnAdvance)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorContinue, OnContinue)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetch, OnPrefetch)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetchReset, OnPrefetchReset)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDelete, OnDelete)
+  IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDestroyed, OnDestroyed)
+  IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
-
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::Send(
     IPC::Message* message) {
   parent_->Send(message);
 }
-
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnAdvance(
     int32 ipc_cursor_id,
@@ -758,16 +759,15 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnAdvance(
     int32 ipc_callbacks_id,
     unsigned long count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(
-      &map_, ipc_cursor_id);
+  WebIDBCursor* idb_cursor =
+      parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
   if (!idb_cursor)
     return;
 
-  idb_cursor->advance(count,
-                      new IndexedDBCallbacks<WebIDBCursor>(parent_,
-                                                           ipc_thread_id,
-                                                           ipc_callbacks_id,
-                                                           ipc_cursor_id));
+  idb_cursor->advance(
+      count,
+      new IndexedDBCallbacks<WebIDBCursor>(
+          parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
@@ -776,15 +776,15 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
     int32 ipc_callbacks_id,
     const IndexedDBKey& key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_,
-                                                            ipc_cursor_id);
+  WebIDBCursor* idb_cursor =
+      parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
   if (!idb_cursor)
     return;
 
   idb_cursor->continueFunction(
-      key, new IndexedDBCallbacks<WebIDBCursor>(parent_, ipc_thread_id,
-                                                ipc_callbacks_id,
-                                                ipc_cursor_id));
+      key,
+      new IndexedDBCallbacks<WebIDBCursor>(
+          parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetch(
@@ -793,22 +793,24 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetch(
     int32 ipc_callbacks_id,
     int n) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_,
-                                                            ipc_cursor_id);
+  WebIDBCursor* idb_cursor =
+      parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
   if (!idb_cursor)
     return;
 
   idb_cursor->prefetchContinue(
-      n, new IndexedDBCallbacks<WebIDBCursor>(parent_, ipc_thread_id,
-                                              ipc_callbacks_id,
-                                              ipc_cursor_id));
+      n,
+      new IndexedDBCallbacks<WebIDBCursor>(
+          parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetchReset(
-    int32 ipc_cursor_id, int used_prefetches, int unused_prefetches) {
+    int32 ipc_cursor_id,
+    int used_prefetches,
+    int unused_prefetches) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_,
-                                                            ipc_cursor_id);
+  WebIDBCursor* idb_cursor =
+      parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
   if (!idb_cursor)
     return;
 
@@ -820,14 +822,13 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnDelete(
     int32 ipc_thread_id,
     int32 ipc_callbacks_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_,
-                                                            ipc_cursor_id);
+  WebIDBCursor* idb_cursor =
+      parent_->GetOrTerminateProcess(&map_, ipc_cursor_id);
   if (!idb_cursor)
     return;
 
-  idb_cursor->deleteFunction(
-      new IndexedDBCallbacks<WebData>(parent_, ipc_thread_id,
-                                      ipc_callbacks_id));
+  idb_cursor->deleteFunction(new IndexedDBCallbacks<WebData>(
+      parent_, ipc_thread_id, ipc_callbacks_id));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnDestroyed(
