@@ -19,10 +19,6 @@
  */
 
 [
-    CustomNamedGetter,
-    CustomNamedSetter,
-    CustomIndexedGetter,
-    CustomIndexedSetter,
     CustomLegacyCall
 ] interface HTMLAppletElement : HTMLElement {
     [Reflect] attribute DOMString align;
@@ -36,5 +32,9 @@
     [Reflect] attribute DOMString object;
     [Reflect] attribute DOMString vspace;
     [Reflect] attribute DOMString width;
+    [Custom] getter boolean (unsigned long index);
+    [Custom] setter boolean (unsigned long index, Node value);
+    [Custom] getter Node (DOMString name);
+    [Custom] setter Node (DOMString name, Node value);
 };
 

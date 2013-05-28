@@ -27,13 +27,14 @@
  */
 
 [
-    CustomIndexedGetter,
-    CustomIndexedSetter,
-    CustomNamedGetter,
-    CustomNamedSetter,
     CustomEnumerateProperty,
-    CustomDeleteProperty
 ] interface TestCustomAccessors {
     void anotherFunction(DOMString str);
+    [Custom] getter boolean (unsigned long index);
+    [Custom] setter boolean (unsigned long index, Node value);
+    [Custom] deleter boolean (unsigned long index);
+    [Custom] getter Node (DOMString name);
+    [Custom] setter Node (DOMString name, Node value);
+    [Custom] deleter boolean (DOMString name);
 };
 

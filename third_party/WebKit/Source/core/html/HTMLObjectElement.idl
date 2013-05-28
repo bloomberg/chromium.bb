@@ -19,10 +19,6 @@
  */
 
 [
-    CustomNamedGetter,
-    CustomNamedSetter,
-    CustomIndexedGetter,
-    CustomIndexedSetter,
     CustomLegacyCall
 ] interface HTMLObjectElement : HTMLElement {
     readonly attribute HTMLFormElement form;
@@ -50,6 +46,10 @@
 
     // Introduced in DOM Level 2:
     [CheckSecurityForNode] readonly attribute Document contentDocument;
+    [Custom] getter boolean (unsigned long index);
+    [Custom] setter boolean (unsigned long index, Node value);
+    [Custom] getter Node (DOMString name);
+    [Custom] setter Node (DOMString name, Node value);
 
 #if defined(ENABLE_SVG) && ENABLE_SVG
     [CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();

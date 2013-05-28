@@ -28,7 +28,6 @@
     CheckSecurity,
     EventTarget,
     CustomToV8,
-    CustomNamedGetter,
     DoNotGenerateWrap,
     InterfaceName=Window
 ] interface DOMWindow {
@@ -335,5 +334,6 @@
     [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] DOMString toString();
 
     [ImplementedAs=anonymousIndexedGetter] getter DOMWindow(unsigned long index);
+    [Custom] getter DOMWindow (DOMString name);
 };
 

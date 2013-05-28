@@ -31,15 +31,10 @@ Constructor
 ConstructorTemplate=Event|TypedArray
 Custom
 CustomConstructor
-CustomDeleteProperty
 CustomEnumerateProperty
 CustomGetter
-CustomIndexedGetter
-CustomIndexedSetter
 CustomIsReachable
 CustomLegacyCall
-CustomNamedGetter
-CustomNamedSetter
 CustomSetter
 CustomToV8
 Default=NullString|Undefined

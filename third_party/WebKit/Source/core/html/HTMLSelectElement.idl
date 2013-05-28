@@ -18,9 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    CustomIndexedSetter
-] interface HTMLSelectElement : HTMLElement {
+interface HTMLSelectElement : HTMLElement {
     [Reflect] attribute boolean autofocus;
     [Reflect] attribute boolean disabled;
     readonly attribute HTMLFormElement form;
@@ -35,6 +33,7 @@
     [SetterRaisesException] attribute unsigned long length;
 
     getter Node item([IsIndex,Default=Undefined] optional unsigned long index);
+    [Custom] setter boolean (unsigned long index, HTMLOptionElement value);
     Node namedItem([Default=Undefined] optional DOMString name);
      [RaisesException] void add([Default=Undefined] optional HTMLElement element,
                             [Default=Undefined] optional HTMLElement before);

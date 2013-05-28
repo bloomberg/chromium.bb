@@ -552,6 +552,20 @@ sub GetIndexedGetterFunction
     return GetSpecialAccessorFunctionForType($interface, "getter", "unsigned long", 1);
 }
 
+sub GetIndexedSetterFunction
+{
+    my $interface = shift;
+
+    return GetSpecialAccessorFunctionForType($interface, "setter", "unsigned long", 2);
+}
+
+sub GetIndexedDeleterFunction
+{
+    my $interface = shift;
+
+    return GetSpecialAccessorFunctionForType($interface, "deleter", "unsigned long", 1);
+}
+
 sub GetNamedGetterFunction
 {
     my $interface = shift;
@@ -562,6 +576,12 @@ sub GetNamedSetterFunction
 {
     my $interface = shift;
     return GetSpecialAccessorFunctionForType($interface, "setter", "DOMString", 2);
+}
+
+sub GetNamedDeleterFunction
+{
+    my $interface = shift;
+    return GetSpecialAccessorFunctionForType($interface, "deleter", "DOMString", 1);
 }
 
 sub GetSpecialAccessorFunctionForType
@@ -682,6 +702,7 @@ END
     my @enabledPerContextFunctions;
     foreach my $function (@{$interface->functions}) {
         my $name = $function->signature->name;
+        next if $name eq "";
         my $attrExt = $function->signature->extendedAttributes;
 
         if (HasCustomMethod($attrExt) && !$attrExt->{"ImplementedBy"} && $function->{overloadIndex} == 1) {
@@ -963,50 +984,52 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     my $interface = shift;
 
     my $indexedGetterFunction = GetIndexedGetterFunction($interface);
-    my $hasCustomIndexedGetter = $interface->extendedAttributes->{"CustomIndexedGetter"};
-    my $hasIndexedGetter = $indexedGetterFunction || $hasCustomIndexedGetter;
+    my $hasCustomIndexedGetter = $indexedGetterFunction ? $indexedGetterFunction->signature->extendedAttributes->{"Custom"} : 0;
 
-    my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"};
+    my $indexedSetterFunction = GetIndexedSetterFunction($interface);
+    my $hasCustomIndexedSetter = $indexedSetterFunction ? $indexedSetterFunction->signature->extendedAttributes->{"Custom"} : 0;
+
+    my $indexedDeleterFunction = GetIndexedDeleterFunction($interface);
+    my $hasCustomIndexedDeleters = $indexedDeleterFunction ? $indexedDeleterFunction->signature->extendedAttributes->{"Custom"} : 0;
 
     my $namedGetterFunction = GetNamedGetterFunction($interface);
-    my $hasCustomNamedGetter = $interface->extendedAttributes->{"CustomNamedGetter"};
-    my $hasNamedGetter = $namedGetterFunction || $hasCustomNamedGetter;
+    my $hasCustomNamedGetter = $namedGetterFunction ? $namedGetterFunction->signature->extendedAttributes->{"Custom"} : 0;
 
     my $namedSetterFunction = GetNamedSetterFunction($interface);
-    my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
-    my $hasNamedSetter = $namedSetterFunction || $hasCustomNamedSetter;
+    my $hasCustomNamedSetter = $namedSetterFunction ? $namedSetterFunction->signature->extendedAttributes->{"Custom"} : 0;
 
-    my $hasCustomDeleters = $interface->extendedAttributes->{"CustomDeleteProperty"};
+    my $namedDeleterFunction = GetNamedDeleterFunction($interface);
+    my $hasCustomNamedDeleters = $namedDeleterFunction ? $namedSetterFunction->signature->extendedAttributes->{"Custom"} : 0;
 
     my $hasCustomEnumerator = $interface->extendedAttributes->{"CustomEnumerateProperty"};
 
-    if ($hasIndexedGetter) {
+    if ($indexedGetterFunction) {
         $header{classPublic}->add(<<END);
     static v8::Handle<v8::Value> indexedPropertyGetter(uint32_t, const v8::AccessorInfo&);
 END
     }
 
-    if ($hasCustomIndexedSetter) {
+    if ($indexedSetterFunction) {
         $header{classPublic}->add(<<END);
     static v8::Handle<v8::Value> indexedPropertySetter(uint32_t, v8::Local<v8::Value>, const v8::AccessorInfo&);
 END
     }
-    if ($hasCustomDeleters) {
+    if ($indexedDeleterFunction) {
         $header{classPublic}->add(<<END);
     static v8::Handle<v8::Boolean> indexedPropertyDeleter(uint32_t, const v8::AccessorInfo&);
 END
     }
-    if ($hasNamedGetter) {
+    if ($namedGetterFunction) {
         $header{classPublic}->add(<<END);
     static v8::Handle<v8::Value> namedPropertyGetter(v8::Local<v8::String>, const v8::AccessorInfo&);
 END
     }
-    if ($hasNamedSetter) {
+    if ($namedSetterFunction) {
         $header{classPublic}->add(<<END);
     static v8::Handle<v8::Value> namedPropertySetter(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::AccessorInfo&);
 END
     }
-    if ($hasCustomDeleters) {
+    if ($namedDeleterFunction) {
         $header{classPublic}->add(<<END);
     static v8::Handle<v8::Boolean> namedPropertyDeleter(v8::Local<v8::String>, const v8::AccessorInfo&);
 END
@@ -3046,7 +3069,7 @@ sub GenerateIsNullExpression
     }
 }
 
-sub GenerateImplementationIndexedProperty
+sub GenerateImplementationIndexedPropertyAccessors
 {
     my $interface = shift;
     my $interfaceName = $interface->name;
@@ -3054,14 +3077,21 @@ sub GenerateImplementationIndexedProperty
     my $v8ClassName = GetV8ClassName($interface);
 
     my $indexedGetterFunction = GetIndexedGetterFunction($interface);
-    my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"};
-    my $hasCustomIndexedGetter = $interface->extendedAttributes->{"CustomIndexedGetter"};
-
-    if (!$indexedGetterFunction && !$hasCustomIndexedGetter) {
-        return "";
+    my $hasCustomIndexedGetter = $indexedGetterFunction ? $indexedGetterFunction->signature->extendedAttributes->{"Custom"} : 0;
+    if ($indexedGetterFunction && !$hasCustomIndexedGetter) {
+        GenerateImplementationIndexedPropertyGetter($interface, $indexedGetterFunction);
     }
 
-    my $hasEnumerator = 1;
+    # FIXME: Support generated indexed setter bindings.
+    my $indexedSetterFunction = GetIndexedSetterFunction($interface);
+    my $hasCustomIndexedSetter = $indexedSetterFunction ? $indexedSetterFunction->signature->extendedAttributes->{"Custom"} : 0;
+
+    # FIXME: Support generated named deleter bindings.
+    my $indexedDeleterFunction = GetIndexedDeleterFunction($interface);
+    my $hasCustomIndexedDeleter = $indexedDeleterFunction ? $indexedDeleterFunction->signature->extendedAttributes->{"Custom"} : 0;
+
+    # FIXME: Support generated named enumerator bindings.
+    my $hasEnumerator = $indexedGetterFunction;
     # FIXME: Remove the special cases. Interfaces that have indexedPropertyGetter should have indexedPropertyEnumerator.
     $hasEnumerator = 0 if $interfaceName eq "WebKitCSSKeyframesRule";
     $hasEnumerator = 0 if $interfaceName eq "HTMLAppletElement";
@@ -3070,9 +3100,12 @@ sub GenerateImplementationIndexedProperty
     $hasEnumerator = 0 if $interfaceName eq "DOMWindow";
     $hasEnumerator = 0 if $interfaceName eq "Storage";
 
-    AddToImplIncludes("bindings/v8/V8Collection.h");
 
-    my $hasDeleter = $interface->extendedAttributes->{"CustomDeleteProperty"};
+    # FIXME: Support generated named query bindings.
+    my $indexedQueryFunction = 0;
+    # If there is an enumerator, there MUST be a query method to properly communicate property attributes.
+    my $hasQuery = $indexedQueryFunction || $hasEnumerator;
+
     my $setOn = "Instance";
 
     # V8 has access-check callback API (see ObjectTemplate::SetAccessCheckCallbacks) and it's used on DOMWindow
@@ -3084,48 +3117,57 @@ sub GenerateImplementationIndexedProperty
     }
 
     my $code = "";
-    $code .= "    desc->${setOn}Template()->SetIndexedPropertyHandler(${v8ClassName}::indexedPropertyGetter";
-    $code .= $hasCustomIndexedSetter ? ", ${v8ClassName}::indexedPropertySetter" : ", 0";
-    $code .= ", 0"; # IndexedPropertyQuery -- not being used at the moment.
-    $code .= $hasDeleter ? ", ${v8ClassName}::indexedPropertyDeleter" : ", 0";
-    $code .= ", nodeCollectionIndexedPropertyEnumerator<${implClassName}>" if $hasEnumerator;
-    $code .= ");\n";
-
-    if ($indexedGetterFunction && !$hasCustomIndexedGetter) {
-        my $returnType = $indexedGetterFunction->signature->type;
-        my $nativeType = GetNativeType($returnType);
-        my $methodName = GetImplName($indexedGetterFunction->signature);
-        AddToImplIncludes("bindings/v8/V8Collection.h");
-        my $nativeValue = "element";
-        $nativeValue .= ".release()" if (IsRefPtrType($returnType));
-        my $isNull = GenerateIsNullExpression($returnType, "element");
-        my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->signature->type, $indexedGetterFunction->signature->extendedAttributes, $nativeValue, "    ", "return", "info.Holder()", "info.GetIsolate()", "info", "collection");
-        my $raisesExceptions = $indexedGetterFunction->signature->extendedAttributes->{"RaisesException"};
-        my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "index", $raisesExceptions);
-        my $getterCode = "v8::Handle<v8::Value> ${v8ClassName}::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)\n";
-        $getterCode .= "{\n";
-        $getterCode .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
-        $getterCode .= "    ${implClassName}* collection = toNative(info.Holder());\n";
-        if ($raisesExceptions) {
-            $getterCode .= "    ExceptionCode ec = 0;\n";
-        }
-        $getterCode .= $methodCallCode . "\n";
-        if ($raisesExceptions) {
-            $getterCode .= "    if (ec)\n";
-            $getterCode .= "        return setDOMException(ec, info.GetIsolate());\n";
-        }
-        if (IsUnionType($returnType)) {
-            $getterCode .= "${returnJSValueCode}\n";
-            $getterCode .= "    return v8Undefined();\n";
-        } else {
-            $getterCode .= "    if (${isNull})\n";
-            $getterCode .= "        return v8Undefined();\n";
-            $getterCode .= $returnJSValueCode . "\n";
-        }
-        $getterCode .= "}\n\n";
-        $implementation{nameSpaceWebCore}->add($getterCode);
+    if ($indexedGetterFunction || $indexedSetterFunction || $indexedDeleterFunction || $hasEnumerator || $hasQuery) {
+        $code .= "    desc->${setOn}Template()->SetIndexedPropertyHandler(${v8ClassName}::indexedPropertyGetter";
+        $code .= $indexedSetterFunction ? ", ${v8ClassName}::indexedPropertySetter" : ", 0";
+        $code .= ", 0"; # IndexedPropertyQuery -- not being used at the moment.
+        $code .= $indexedDeleterFunction ? ", ${v8ClassName}::indexedPropertyDeleter" : ", 0";
+        $code .= ", nodeCollectionIndexedPropertyEnumerator<${implClassName}>" if $hasEnumerator;
+        $code .= ");\n";
     }
+
     return $code;
+}
+
+sub GenerateImplementationIndexedPropertyGetter
+{
+    my $interface = shift;
+    my $indexedGetterFunction = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+    my $methodName = GetImplName($indexedGetterFunction->signature);
+
+    AddToImplIncludes("bindings/v8/V8Collection.h");
+    my $returnType = $indexedGetterFunction->signature->type;
+    my $nativeType = GetNativeType($returnType);
+    my $nativeValue = "element";
+    $nativeValue .= ".release()" if (IsRefPtrType($returnType));
+    my $isNull = GenerateIsNullExpression($returnType, "element");
+    my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->signature->type, $indexedGetterFunction->signature->extendedAttributes, $nativeValue, "    ", "return", "info.Holder()", "info.GetIsolate()", "info", "collection");
+    my $raisesExceptions = $indexedGetterFunction->signature->extendedAttributes->{"RaisesException"};
+    my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "index", $raisesExceptions);
+    my $getterCode = "v8::Handle<v8::Value> ${v8ClassName}::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)\n";
+    $getterCode .= "{\n";
+    $getterCode .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
+    $getterCode .= "    ${implClassName}* collection = toNative(info.Holder());\n";
+    if ($raisesExceptions) {
+        $getterCode .= "    ExceptionCode ec = 0;\n";
+    }
+    $getterCode .= $methodCallCode . "\n";
+    if ($raisesExceptions) {
+        $getterCode .= "    if (ec)\n";
+        $getterCode .= "        return setDOMException(ec, info.GetIsolate());\n";
+    }
+    if (IsUnionType($returnType)) {
+        $getterCode .= "${returnJSValueCode}\n";
+        $getterCode .= "    return v8Undefined();\n";
+    } else {
+        $getterCode .= "    if (${isNull})\n";
+        $getterCode .= "        return v8Undefined();\n";
+        $getterCode .= $returnJSValueCode . "\n";
+    }
+    $getterCode .= "}\n\n";
+    $implementation{nameSpaceWebCore}->add($getterCode);
 }
 
 sub GenerateImplementationNamedPropertyAccessors
@@ -3137,23 +3179,23 @@ sub GenerateImplementationNamedPropertyAccessors
     my $v8ClassName = GetV8ClassName($interface);
 
     my $namedGetterFunction = GetNamedGetterFunction($interface);
-    my $hasCustomNamedGetter = $interface->extendedAttributes->{"CustomNamedGetter"};
-    my $hasGetter = $namedGetterFunction || $hasCustomNamedGetter;
+    my $hasCustomNamedGetter = $namedGetterFunction ? $namedGetterFunction->signature->extendedAttributes->{"Custom"} : 0;
+    my $hasGetter = $namedGetterFunction;
     if ($namedGetterFunction && !$hasCustomNamedGetter) {
         GenerateImplementationNamedPropertyGetter($interface, $namedGetterFunction);
     }
 
     my $namedSetterFunction = GetNamedSetterFunction($interface);
-    my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
-    my $hasSetter = $namedSetterFunction || $hasCustomNamedSetter;
+    my $hasCustomNamedSetter = $namedSetterFunction ? $namedSetterFunction->signature->extendedAttributes->{"Custom"} : 0;
+    my $hasSetter = $namedSetterFunction;
     if ($namedSetterFunction && !$hasCustomNamedSetter) {
         GenerateImplementationNamedPropertySetter($interface, $namedSetterFunction);
     }
 
     # FIXME: Support generated named deleter bindings.
-    my $namedDeleterFunction = 0;
-    my $hasCustomNamedDeleter = $interface->extendedAttributes->{"CustomDeleteProperty"};
-    my $hasDeleter = $namedDeleterFunction || $hasCustomNamedDeleter;
+    my $namedDeleterFunction = GetNamedDeleterFunction($interface);
+    my $hasCustomNamedDeleters = $namedDeleterFunction ? $namedSetterFunction->signature->extendedAttributes->{"Custom"} : 0;
+    my $hasDeleter = $namedDeleterFunction;
 
     # FIXME: Support generated named enumerator bindings.
     my $namedEnumeratorFunction = 0;
@@ -3793,7 +3835,7 @@ END
         $code .= "\n#endif // ${conditionalString}\n" if $conditionalString;
     }
 
-    $code .= GenerateImplementationIndexedProperty($interface);
+    $code .= GenerateImplementationIndexedPropertyAccessors($interface);
     $code .= GenerateImplementationNamedPropertyAccessors($interface);
     $code .= GenerateImplementationLegacyCall($interface);
     $code .= GenerateImplementationMasqueradesAsUndefined($interface);

@@ -30,11 +30,11 @@
 // changes in its ouput.
 [
     ActiveDOMObject,
-    CustomNamedSetter,
     Conditional=Condition1|Condition2,
     CallWith=ScriptExecutionContext,
     Constructor(DOMString str1, [Default=Undefined] optional DOMString str2),
     RaisesException
 ] interface TestInterface {
     [ImplementedAs=getItem] getter (Node or NodeList)(DOMString name);
+    [Custom] setter Node (DOMString name, Node value);
 };

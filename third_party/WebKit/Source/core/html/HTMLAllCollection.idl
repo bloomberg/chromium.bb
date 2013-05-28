@@ -30,7 +30,8 @@
     DependentLifetime
 ] interface HTMLAllCollection {
     readonly attribute unsigned long length;
-    [Custom] getter Node item([Default=Undefined] optional unsigned long index);
+    [ImplementedAs=item] getter Node (unsigned long index);
+    [Custom] Node item([Default=Undefined] optional unsigned long index);
     [ImplementedAs=anonymousNamedGetter] getter (NodeList or Node)(DOMString name);
     [Custom] Node namedItem(DOMString name);
     // FIXME: This should return an HTMLAllCollection.
