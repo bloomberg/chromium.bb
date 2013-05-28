@@ -1184,6 +1184,7 @@
         'browser/sync/glue/frontend_data_type_controller_mock.cc',
         'browser/sync/glue/frontend_data_type_controller_mock.h',
         'browser/sync/glue/frontend_data_type_controller_unittest.cc',
+        'browser/sync/glue/generic_change_processor_unittest.cc',
         'browser/sync/glue/model_association_manager_unittest.cc',
         'browser/sync/glue/model_associator_mock.cc',
         'browser/sync/glue/model_associator_mock.h',

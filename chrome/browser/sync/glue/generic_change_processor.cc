@@ -116,10 +116,13 @@ syncer::SyncError GenericChangeProcessor::GetSyncDataForType(
   // TODO(akalin): We'll have to do a tree traversal for bookmarks.
   DCHECK_NE(type, syncer::BOOKMARKS);
 
-  int64 sync_child_id = root.GetFirstChildId();
-  while (sync_child_id != syncer::kInvalidId) {
+  std::vector<int64> child_ids;
+  root.GetChildIds(&child_ids);
+
+  for (std::vector<int64>::iterator it = child_ids.begin();
+       it != child_ids.end(); ++it) {
     syncer::ReadNode sync_child_node(&trans);
-    if (sync_child_node.InitByIdLookup(sync_child_id) !=
+    if (sync_child_node.InitByIdLookup(*it) !=
             syncer::BaseNode::INIT_OK) {
       syncer::SyncError error(FROM_HERE,
                       "Failed to fetch child node for type " + type_name + ".",
@@ -128,7 +131,6 @@ syncer::SyncError GenericChangeProcessor::GetSyncDataForType(
     }
     current_sync_data->push_back(syncer::SyncData::CreateRemoteData(
         sync_child_node.GetId(), sync_child_node.GetEntitySpecifics()));
-    sync_child_id = sync_child_node.GetSuccessorId();
   }
   return syncer::SyncError();
 }

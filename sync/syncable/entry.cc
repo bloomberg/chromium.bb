@@ -104,6 +104,10 @@ Id Entry::GetFirstChildId() const {
   return dir()->GetFirstChildId(basetrans_, kernel_);
 }
 
+void Entry::GetChildHandles(std::vector<int64>* result) const {
+  dir()->GetChildHandlesById(basetrans_, Get(ID), result);
+}
+
 bool Entry::ShouldMaintainPosition() const {
   return kernel_->ShouldMaintainPosition();
 }

@@ -215,6 +215,10 @@ int64 BaseNode::GetFirstChildId() const {
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);
 }
 
+void BaseNode::GetChildIds(std::vector<int64>* result) const {
+  GetEntry()->GetChildHandles(result);
+}
+
 int BaseNode::GetTotalNodeCount() const {
   syncable::BaseTransaction* trans = GetTransaction()->GetWrappedTrans();
 

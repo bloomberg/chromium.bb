@@ -195,6 +195,11 @@ class SYNC_EXPORT BaseNode {
   // children, return 0.
   int64 GetFirstChildId() const;
 
+  // Returns the IDs of the children of this node.
+  // If this type supports user-defined positions the returned IDs will be in
+  // the correct order.
+  void GetChildIds(std::vector<int64>* result) const;
+
   // Returns the total number of nodes including and beneath this node.
   // Recursively iterates through all children.
   int GetTotalNodeCount() const;
