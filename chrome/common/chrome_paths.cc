@@ -368,7 +368,7 @@ bool PathProvider(int key, base::FilePath* result) {
     case chrome::FILE_WIDEVINE_CDM_ADAPTER:
       if (!GetInternalPluginsDirectory(&cur))
         return false;
-      cur = cur.Append(kWidevineCdmAdapterFileName);
+      cur = cur.AppendASCII(kWidevineCdmAdapterFileName);
       break;
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
     case chrome::FILE_RESOURCES_PACK:

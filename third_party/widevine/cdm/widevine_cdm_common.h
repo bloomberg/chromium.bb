@@ -26,24 +26,24 @@ const char kWidevineCdmPluginMimeTypeDescription[] =
 #endif
 
 // File name of the CDM on different platforms.
-const base::FilePath::CharType kWidevineCdmFileName[] =
+const char kWidevineCdmFileName[] =
 #if defined(OS_MACOSX)
-    FILE_PATH_LITERAL("widevinecdm.dylib");
+    "widevinecdm.dylib";
 #elif defined(OS_WIN)
-    FILE_PATH_LITERAL("widevinecdm.dll");
+    "widevinecdm.dll";
 #else  // OS_LINUX, etc.
-    FILE_PATH_LITERAL("libwidevinecdm.so");
+    "libwidevinecdm.so";
 #endif
 
 #if defined(ENABLE_PEPPER_CDMS)
 // File name of the adapter on different platforms.
-const base::FilePath::CharType kWidevineCdmAdapterFileName[] =
+const char kWidevineCdmAdapterFileName[] =
 #if defined(OS_MACOSX)
-    FILE_PATH_LITERAL("widevinecdmadapter.plugin");
+    "widevinecdmadapter.plugin";
 #elif defined(OS_WIN)
-    FILE_PATH_LITERAL("widevinecdmadapter.dll");
+    "widevinecdmadapter.dll";
 #else  // OS_LINUX, etc.
-    FILE_PATH_LITERAL("libwidevinecdmadapter.so");
+    "libwidevinecdmadapter.so";
 #endif
 #endif  // defined(ENABLE_PEPPER_CDMS)
 

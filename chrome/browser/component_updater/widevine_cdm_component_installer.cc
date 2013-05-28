@@ -217,7 +217,7 @@ bool WidevineCdmComponentInstaller::Install(
   if (current_version_.CompareTo(version) > 0)
     return false;
 
-  if (!file_util::PathExists(unpack_path.Append(kWidevineCdmFileName)))
+  if (!file_util::PathExists(unpack_path.AppendASCII(kWidevineCdmFileName)))
     return false;
 
   base::FilePath adapter_source_path;
@@ -234,7 +234,7 @@ bool WidevineCdmComponentInstaller::Install(
     return false;
 
   base::FilePath adapter_install_path =
-      install_path.Append(kWidevineCdmAdapterFileName);
+      install_path.AppendASCII(kWidevineCdmAdapterFileName);
   if (!file_util::CopyFile(adapter_source_path, adapter_install_path))
     return false;
 
@@ -270,8 +270,8 @@ void StartWidevineCdmUpdateRegistration(ComponentUpdateService* cus) {
   base::Version version(kNullVersion);
   std::vector<base::FilePath> older_dirs;
   if (GetWidevineCdmDirectory(&path, &version, &older_dirs)) {
-    if (file_util::PathExists(path.Append(kWidevineCdmAdapterFileName)) &&
-        file_util::PathExists(path.Append(kWidevineCdmFileName))) {
+    if (file_util::PathExists(path.AppendASCII(kWidevineCdmAdapterFileName)) &&
+        file_util::PathExists(path.AppendASCII(kWidevineCdmFileName))) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&RegisterWidevineCdmWithChrome, path, version));
