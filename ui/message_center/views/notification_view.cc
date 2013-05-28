@@ -59,7 +59,6 @@ const size_t kMessageCharacterLimit =
 // view::Label from modifying the text color and will not actually be drawn.
 // See view::Label's RecalculateColors() for details.
 const SkColor kRegularTextBackgroundColor = SK_ColorWHITE;
-const SkColor kDimTextColor = SkColorSetRGB(102, 102, 102);
 const SkColor kDimTextBackgroundColor = SK_ColorWHITE;
 
 // static
@@ -145,7 +144,7 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
   views::Label* message = new views::Label(item.message);
   message->set_collapse_when_hidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message->SetEnabledColor(kDimTextColor);
+  message->SetEnabledColor(message_center::kDimTextColor);
   message->SetBackgroundColor(kDimTextBackgroundColor);
   AddChildView(message);
 
@@ -415,7 +414,8 @@ NotificationView::NotificationView(const Notification& notification,
         ui::TruncateString(notification.message(), kMessageCharacterLimit));
     message_view_->SetLineHeight(kMessageLineHeight);
     message_view_->SetVisible(!is_expanded() || !notification.items().size());
-    message_view_->SetColors(kDimTextColor, kDimTextBackgroundColor);
+    message_view_->SetColors(message_center::kDimTextColor,
+                             kDimTextBackgroundColor);
     message_view_->set_border(MakeTextBorder(padding, 4, 0));
     top_view_->AddChildView(message_view_);
     accessible_lines.push_back(notification.message());

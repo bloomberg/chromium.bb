@@ -62,9 +62,10 @@
   frame.size.width -= offsetX;
 
   NSDictionary* attributes = @{
-    NSFontAttributeName : [title attribute:NSFontAttributeName
-                                   atIndex:0
-                            effectiveRange:NULL],
+    NSFontAttributeName :
+        [title attribute:NSFontAttributeName atIndex:0 effectiveRange:NULL],
+    NSForegroundColorAttributeName :
+        gfx::SkColorToDeviceNSColor(message_center::kRegularTextColor),
   };
   [[title string] drawWithRect:frame
                        options:(NSStringDrawingUsesLineFragmentOrigin |
@@ -344,6 +345,8 @@
   frame.size.height = 0;
   title_.reset([self newLabelWithFrame:frame]);
   [title_ setAutoresizingMask:NSViewMinYMargin];
+  [title_ setTextColor:gfx::SkColorToCalibratedNSColor(
+      message_center::kRegularTextColor)];
   [title_ setFont:[NSFont messageFontOfSize:message_center::kTitleFontSize]];
 }
 
@@ -352,6 +355,8 @@
   frame.size.height = 0;
   message_.reset([self newLabelWithFrame:frame]);
   [message_ setAutoresizingMask:NSViewMinYMargin];
+  [message_ setTextColor:gfx::SkColorToCalibratedNSColor(
+      message_center::kDimTextColor)];
   [message_ setFont:
       [NSFont messageFontOfSize:message_center::kMessageFontSize]];
 }
@@ -362,8 +367,6 @@
   [label setBezeled:NO];
   [label setEditable:NO];
   [label setSelectable:NO];
-  [label setTextColor:gfx::SkColorToCalibratedNSColor(
-      message_center::kRegularTextColor)];
   return label;
 }
 
