@@ -36,14 +36,26 @@ const wchar_t kKeyIEBrowserEmulation[] =
     L"Software\\Microsoft\\Internet Explorer\\BrowserEmulation";
 const wchar_t kKeyPoliciesExt[] =
     L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Ext";
+const wchar_t kValueEnabledV8[] = L"EnabledV8";
 const wchar_t kValueEnabledV9[] = L"EnabledV9";
 const wchar_t kValueFirstTime[] = L"FirstTime";
+const wchar_t kValueIE8Completed[] = L"IE8RunOncePerInstallCompleted";
+const wchar_t kValueIE8CompletionTime[] = L"IE8RunOnceCompletionTime";
+const wchar_t kValueIE8RunOnceLastShown[] = L"IE8RunOnceLastShown";
+const wchar_t kValueIE8RunOnceLastShownTimestamp[] =
+    L"IE8RunOnceLastShown_TIMESTAMP";
+const wchar_t kValueIE8TourNoShow[] = L"IE8TourNoShow";
 const wchar_t kValueIE9Completed[] = L"IE9RunOncePerInstallCompleted";
 const wchar_t kValueIE9CompletionTime[] = L"IE9RunOnceCompletionTime";
-const wchar_t kValueIE9LastShown[] = L"IE9RunOnceLastShown";
+const wchar_t kValueIE9RunOnceLastShown[] = L"IE9RunOnceLastShown";
+const wchar_t kValueIE9RunOnceLastShownTimestamp[] =
+    L"IE9RunOnceLastShown_TIMESTAMP";
 const wchar_t kValueIE9TourNoShow[] = L"IE9TourNoShow";
 const wchar_t kValueIE10Completed[] = L"IE10RunOncePerInstallCompleted";
 const wchar_t kValueIE10CompletionTime[] = L"IE10RunOnceCompletionTime";
+const wchar_t kValueIE10RunOnceLastShown[] = L"IE10RunOnceLastShown";
+const wchar_t kValueIE10RunOnceLastShownTimestamp[] =
+    L"IE10RunOnceLastShown_TIMESTAMP";
 const wchar_t kValueIgnoreFrameApprovalCheck[] = L"IgnoreFrameApprovalCheck";
 const wchar_t kValueMSCompatibilityMode[] = L"MSCompatibilityMode";
 
@@ -142,7 +154,7 @@ class IE7Configurator : public IEConfigurator {
   DISALLOW_COPY_AND_ASSIGN(IE7Configurator);
 };
 
-// A configurator for Internet Explorer 9 and 10.
+// A configurator for Internet Explorer 8, 9, and 10.
 class ModernIEConfigurator : public IEConfigurator {
  public:
   explicit ModernIEConfigurator(IEVersion ie_version);
@@ -160,8 +172,13 @@ class ModernIEConfigurator : public IEConfigurator {
     const wchar_t* completed;
     // This 8-byte binary value is the FILETIME of completion.
     const wchar_t* completion_time;
+    // This DWORD value is non-zero if run-once was previously deferred.
+    const wchar_t* last_shown;
+    // This 8-byte binary value is the FILETIME of run-once deferral.
+    const wchar_t* last_shown_timestamp;
   };
 
+  static const RunOnceValueNames kIE8ValueNames;
   static const RunOnceValueNames kIE9ValueNames;
   static const RunOnceValueNames kIE10ValueNames;
 
@@ -354,15 +371,27 @@ void IE7Configurator::RevertSettings() {
 // ModernIEConfigurator implementation
 
 const ModernIEConfigurator::RunOnceValueNames
+    ModernIEConfigurator::kIE8ValueNames = {
+  kValueIE8Completed,
+  kValueIE8CompletionTime,
+  kValueIE8RunOnceLastShown,
+  kValueIE8RunOnceLastShownTimestamp,
+};
+
+const ModernIEConfigurator::RunOnceValueNames
     ModernIEConfigurator::kIE9ValueNames = {
   kValueIE9Completed,
   kValueIE9CompletionTime,
+  kValueIE9RunOnceLastShown,
+  kValueIE9RunOnceLastShownTimestamp,
 };
 
 const ModernIEConfigurator::RunOnceValueNames
     ModernIEConfigurator::kIE10ValueNames = {
   kValueIE10Completed,
   kValueIE10CompletionTime,
+  kValueIE10RunOnceLastShown,
+  kValueIE10RunOnceLastShownTimestamp,
 };
 
 ModernIEConfigurator::ModernIEConfigurator(IEVersion ie_version)
@@ -378,6 +407,9 @@ const ModernIEConfigurator::RunOnceValueNames*
     ModernIEConfigurator::RunOnceNamesForVersion(
         IEVersion ie_version) {
   switch (ie_version) {
+    case IE_8:
+      return &kIE8ValueNames;
+      break;
     case IE_9:
       return &kIE9ValueNames;
       break;
@@ -396,22 +428,36 @@ bool ModernIEConfigurator::IsPerUserSetupComplete() {
   base::win::RegKey key_main;
 
   if (key_main.Open(HKEY_CURRENT_USER, kKeyIEMain,
-                    KEY_QUERY_VALUE) == ERROR_SUCCESS) {
-    DWORD completed = 0;
-    FILETIME completion_time = {};
-    DWORD size = sizeof(completion_time);
-
-    if (key_main.ReadValueDW(run_once_value_names_->completed,
-                             &completed) == ERROR_SUCCESS &&
-        completed != 0 &&
-        key_main.ReadValue(run_once_value_names_->completion_time,
-                           &completion_time, &size, NULL) == ERROR_SUCCESS &&
-        size == sizeof(completion_time)) {
-      is_complete = true;
-    }
+                    KEY_QUERY_VALUE) != ERROR_SUCCESS) {
+    return false;
   }
 
-  return is_complete;
+  DWORD dword_value = 0;
+  FILETIME shown_time = {};
+  FILETIME completion_time = {};
+  DWORD size = sizeof(completion_time);
+
+  // See if the user has seen the first-run prompt.
+  if (key_main.ReadValue(run_once_value_names_->last_shown_timestamp,
+                         &shown_time, &size, NULL) != ERROR_SUCCESS ||
+      size != sizeof(shown_time)) {
+    return false;
+  }
+
+  // See if setup was completed.
+  if (key_main.ReadValue(run_once_value_names_->completion_time,
+                         &completion_time, &size, NULL) != ERROR_SUCCESS ||
+      size != sizeof(completion_time)) {
+    return false;
+  }
+
+  // See if setup was completed after the last time the prompt was shown.
+  base::Time time_shown = base::Time::FromFileTime(shown_time);
+  base::Time time_completed = base::Time::FromFileTime(completion_time);
+  if (time_shown >= time_completed)
+    return false;
+
+  return true;
 }
 
 // Returns the path to the IE9 Approved Extensions key for Chrome Frame.
@@ -461,20 +507,34 @@ bool ModernIEConfigurator::IsAddonPromptDisabledForChromeFrame() {
 void ModernIEConfigurator::Initialize() {
   // Check for per-user IE setup.
   if (!IsPerUserSetupComplete()) {
+    base::Time time(base::Time::Now());
     const HKEY root = HKEY_CURRENT_USER;
     // Suppress the "Set up Internet Explorer" dialog.
+    setter_.AddDWORDValue(root, kKeyIEMain, run_once_value_names_->last_shown,
+                          1);
     setter_.AddDWORDValue(root, kKeyIEMain, run_once_value_names_->completed,
                           1);
     setter_.AddFILETIMEValue(root, kKeyIEMain,
+                             run_once_value_names_->last_shown_timestamp,
+                             time.ToFileTime());
+    time += base::TimeDelta::FromMilliseconds(10);
+    setter_.AddFILETIMEValue(root, kKeyIEMain,
                              run_once_value_names_->completion_time,
-                             base::Time::Now().ToFileTime());
-    if (ie_version_ == IE_9) {
-      setter_.AddDWORDValue(root, kKeyIEMain, kValueIE9LastShown, 1);
-      // Don't show a tour of IE 9.
-      setter_.AddDWORDValue(root, kKeyIEMain, kValueIE9TourNoShow, 1);
+                             time.ToFileTime());
+    if (ie_version_ < IE_10) {
+      // Don't show a tour of IE 8 and 9.
+      setter_.AddDWORDValue(
+          root,
+          kKeyIEMain,
+          (ie_version_ == IE_8 ? kValueIE8TourNoShow : kValueIE9TourNoShow),
+          1);
     }
     // Turn off the phishing filter.
-    setter_.AddDWORDValue(root, kKeyIEPhishingFilter, kValueEnabledV9, 0);
+    setter_.AddDWORDValue(
+        root,
+        kKeyIEPhishingFilter,
+        (ie_version_ == IE_8 ? kValueEnabledV8 : kValueEnabledV9),
+        0);
     // Don't download compatibility view lists.
     setter_.AddDWORDValue(root, kKeyIEBrowserEmulation,
                           kValueMSCompatibilityMode, 0);
@@ -514,6 +574,7 @@ IEConfigurator* CreateConfigurator() {
     case IE_7:
       configurator = new IE7Configurator();
       break;
+    case IE_8:
     case IE_9:
     case IE_10:
       configurator = new ModernIEConfigurator(ie_version);
