@@ -29,7 +29,7 @@ class MemoryMeasurement(page_measurement.PageMeasurement):
       h.Start(page, tab)
 
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArg('--enable-stats-collection-bindings')
+    options.AppendExtraBrowserArg('--dom-automation')
     # For a hard-coded set of Google pages (such as GMail), we produce custom
     # memory histograms (V8.Something_gmail) instead of the generic histograms
     # (V8.Something), if we detect that a renderer is only rendering this page
@@ -38,8 +38,7 @@ class MemoryMeasurement(page_measurement.PageMeasurement):
     # pages.
     options.AppendExtraBrowserArg('--disable-histogram-customizer')
     options.AppendExtraBrowserArg('--memory-metrics')
-    options.AppendExtraBrowserArg(
-        '--reduce-security-for-stats-collection-tests')
+    options.AppendExtraBrowserArg('--reduce-security-for-dom-automation-tests')
 
   def CanRunForPage(self, page):
     return hasattr(page, 'stress_memory')

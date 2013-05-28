@@ -130,7 +130,6 @@ class PageCyclerTest : public UIPerfTest {
                      num_test_iterations_(kTestIterations) {
     show_window_ = true;
     dom_automation_enabled_ = true;
-    stats_collection_controller_enabled_ = true;
 
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
     if (parsed_command_line.HasSwitch(switches::kPageCyclerIterations)) {
@@ -279,8 +278,8 @@ class PageCyclerTest : public UIPerfTest {
     ASSERT_TRUE(tab->ExecuteAndExtractString(
         std::wstring(),
         L"window.domAutomationController.send("
-        L"window.statsCollectionController.getHistogram ? "
-        L"window.statsCollectionController.getHistogram(\"" +
+        L"window.domAutomationController.getHistogram ? "
+        L"window.domAutomationController.getHistogram(\"" +
         base::SysUTF8ToWide(name) + L"\") : '')",
         &whistogram));
     std::string histogram = base::SysWideToNativeMB(whistogram);

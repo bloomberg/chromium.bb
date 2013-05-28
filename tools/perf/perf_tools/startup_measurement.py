@@ -19,12 +19,11 @@ class PerfWarm(page_measurement.PageMeasurement):
                                    discard_first_result=True)
 
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArg('--enable-stats-collection-bindings')
-    options.AppendExtraBrowserArg(
-          '--reduce-security-for-stats-collection-tests')
+    options.AppendExtraBrowserArg('--dom-automation')
+    options.AppendExtraBrowserArg('--reduce-security-for-dom-automation-tests')
 
   def MeasurePage(self, page, tab, results):
-    get_histogram_js = "statsCollectionController.getBrowserHistogram(\"%s\")"
+    get_histogram_js = "domAutomationController.getBrowserHistogram(\"%s\")"
 
     for display_name, histogram_name in self.HISTOGRAMS_TO_RECORD.iteritems():
       result = tab.EvaluateJavaScript(get_histogram_js % histogram_name)
