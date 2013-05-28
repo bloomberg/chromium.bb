@@ -295,9 +295,13 @@ AutofillMetricsTest::~AutofillMetricsTest() {
 
 void AutofillMetricsTest::SetUp() {
   TestingProfile* profile = new TestingProfile();
+
+  // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
+  autofill::test::DisableSystemServices(profile);
+
   profile->CreateRequestContext();
   browser_context_.reset(profile);
-  PersonalDataManagerFactory::GetInstance()->SetTestingFactory( profile, NULL);
+  PersonalDataManagerFactory::GetInstance()->SetTestingFactory(profile, NULL);
 
   ChromeRenderViewHostTestHarness::SetUp();
   io_thread_.StartIOThread();

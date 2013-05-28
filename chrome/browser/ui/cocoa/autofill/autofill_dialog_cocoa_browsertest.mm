@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/common/form_data.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -77,6 +78,9 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
   virtual ~AutofillDialogCocoaBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
+    autofill::test::DisableSystemServices(browser()->profile());
+
     FormFieldData field;
     field.autocomplete_attribute = "cc-number";
     FormData form_data;
@@ -103,9 +107,8 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogCocoaBrowserTest);
 };
 
-// The following test fails under ASAN. Disabling until root cause is found.
-// This can pop up a "browser_tests would like access to your Contacts" dialog.
-// See also http://crbug.com/234008.
+// The following test fails under ASAN due to a read-after-free.
+// http://crbug.com/234008
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_DisplayUI DISABLED_DisplayUI
 #else
