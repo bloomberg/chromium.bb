@@ -79,4 +79,21 @@ bool Storage::anonymousNamedSetter(const AtomicString& name, const AtomicString&
     return true;
 }
 
+bool Storage::anonymousNamedDeleter(const AtomicString& name, ExceptionCode& ec)
+{
+    bool found = contains(name, ec);
+    if (!found || ec)
+        return false;
+    removeItem(name, ec);
+    if (ec)
+        return false;
+    return true;
+}
+
+bool Storage::anonymousIndexedDeleter(unsigned index, ExceptionCode& ec)
+{
+    return anonymousNamedDeleter(String::number(index), ec);
+}
+
+
 }

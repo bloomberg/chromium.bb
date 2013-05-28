@@ -54,6 +54,17 @@ public:
         setItem(name, value, ec);
         return true;
     }
+    bool anonymousNamedDeleter(const AtomicString& name, ExceptionCode& ec)
+    {
+        deleteItem(name, ec);
+        bool result = !ec;
+        // DOMStringMap deleter should ignore exception.
+        // Behavior of Firefox and Opera are same.
+        // delete document.body.dataset["-foo"] // false instead of DOM Exception 12
+        // LayoutTests/fast/dom/HTMLSelectElement/select-selectedIndex-multiple.html
+        ec = 0;
+        return result;
+    }
 
     virtual Element* element() = 0;
 

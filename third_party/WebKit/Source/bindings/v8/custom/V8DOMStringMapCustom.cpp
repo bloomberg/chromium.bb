@@ -55,11 +55,4 @@ v8::Handle<v8::Array> V8DOMStringMap::namedPropertyEnumerator(const v8::Accessor
     return properties;
 }
 
-v8::Handle<v8::Boolean> V8DOMStringMap::namedPropertyDeleter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    ExceptionCode ec = 0;
-    V8DOMStringMap::toNative(info.Holder())->deleteItem(toWebCoreString(name), ec);
-    return v8Boolean(!ec, info.GetIsolate());
-}
-
 } // namespace WebCore

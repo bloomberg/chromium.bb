@@ -108,32 +108,4 @@ v8::Handle<v8::Value> V8Storage::indexedPropertySetter(uint32_t index, v8::Local
     return storageSetter(indexV8->ToString(), value, info);
 }
 
-static v8::Handle<v8::Boolean> storageDeleter(v8::Local<v8::String> v8Name, const v8::AccessorInfo& info)
-{
-    Storage* storage = V8Storage::toNative(info.Holder());
-    String name = toWebCoreString(v8Name);
-    
-    ExceptionCode ec = 0;
-    bool found = storage->contains(name, ec);
-    if (ec)
-        return setDOMException<v8::Boolean>(ec, info);
-    if (!found)
-        return v8::Handle<v8::Boolean>();
-    storage->removeItem(name, ec);
-    if (ec)
-        return setDOMException<v8::Boolean>(ec, info);
-    return v8Boolean(true, info.GetIsolate());
-}
-
-v8::Handle<v8::Boolean> V8Storage::indexedPropertyDeleter(uint32_t index, const v8::AccessorInfo& info)
-{
-    v8::Handle<v8::Integer> indexV8 = v8Integer(index, info.GetIsolate());
-    return storageDeleter(indexV8->ToString(), info);
-}
-
-v8::Handle<v8::Boolean> V8Storage::namedPropertyDeleter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    return storageDeleter(name, info);
-}
-
 } // namespace WebCore
