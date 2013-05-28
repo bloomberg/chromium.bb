@@ -754,7 +754,9 @@ extern const char kManagedNotificationsBlockedForUrls[];
 extern const char kManagedAutoSelectCertificateForUrls[];
 
 extern const char kAudioCaptureAllowed[];
+extern const char kAudioCaptureAllowedUrls[];
 extern const char kVideoCaptureAllowed[];
+extern const char kVideoCaptureAllowedUrls[];
 
 #if defined(OS_CHROMEOS)
 extern const char kDeviceSettingsCache[];

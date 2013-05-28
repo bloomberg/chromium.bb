@@ -17,10 +17,15 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/media_stream_request.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
 
 using content::BrowserThread;
 
@@ -33,7 +38,19 @@ bool HasAnyAvailableDevice() {
       MediaCaptureDevicesDispatcher::GetInstance()->GetVideoCaptureDevices();
 
   return !audio_devices.empty() || !video_devices.empty();
-};
+}
+
+bool IsInKioskMode() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+    return true;
+
+#if defined(OS_CHROMEOS)
+  const chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  return user_manager && user_manager->IsLoggedInAsKioskApp();
+#else
+  return false;
+#endif
+}
 
 }  // namespace
 
@@ -54,12 +71,14 @@ MediaStreamDevicesController::MediaStreamDevicesController(
   // Don't call GetDevicePolicy from the initializer list since the
   // implementation depends on member variables.
   if (microphone_requested_ &&
-      GetDevicePolicy(prefs::kAudioCaptureAllowed) == ALWAYS_DENY) {
+      GetDevicePolicy(prefs::kAudioCaptureAllowed,
+                      prefs::kAudioCaptureAllowedUrls) == ALWAYS_DENY) {
     microphone_requested_ = false;
   }
 
   if (webcam_requested_ &&
-      GetDevicePolicy(prefs::kVideoCaptureAllowed) == ALWAYS_DENY) {
+      GetDevicePolicy(prefs::kVideoCaptureAllowed,
+                      prefs::kVideoCaptureAllowedUrls) == ALWAYS_DENY) {
     webcam_requested_ = false;
   }
 }
@@ -75,6 +94,10 @@ void MediaStreamDevicesController::RegisterUserPrefs(
   prefs->RegisterBooleanPref(prefs::kAudioCaptureAllowed,
                              true,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kVideoCaptureAllowedUrls,
+                          user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kAudioCaptureAllowedUrls,
+                          user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 
@@ -192,14 +215,45 @@ void MediaStreamDevicesController::Deny(bool update_content_setting) {
 }
 
 MediaStreamDevicesController::DevicePolicy
-MediaStreamDevicesController::GetDevicePolicy(const char* policy_name) const {
+MediaStreamDevicesController::GetDevicePolicy(
+    const char* policy_name,
+    const char* whitelist_policy_name) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  PrefService* prefs = profile_->GetPrefs();
-  if (!prefs->IsManagedPreference(policy_name))
-    return POLICY_NOT_SET;
+  // If the security origin policy matches a value in the whitelist, allow it.
+  // Otherwise, check the |policy_name| master switch for the default behavior.
 
-  return prefs->GetBoolean(policy_name) ? ALWAYS_ALLOW : ALWAYS_DENY;
+  PrefService* prefs = profile_->GetPrefs();
+
+  // TODO(tommi): Remove the kiosk mode check when the whitelist below
+  // is visible in the media exceptions UI.
+  // See discussion here: https://codereview.chromium.org/15738004/
+  if (IsInKioskMode()) {
+    const base::ListValue* list = prefs->GetList(whitelist_policy_name);
+    std::string value;
+    for (size_t i = 0; i < list->GetSize(); ++i) {
+      if (list->GetString(i, &value)) {
+        ContentSettingsPattern pattern =
+            ContentSettingsPattern::FromString(value);
+        if (pattern == ContentSettingsPattern::Wildcard()) {
+          DLOG(WARNING) << "Ignoring wildcard URL pattern: " << value;
+          continue;
+        }
+        DLOG_IF(ERROR, !pattern.IsValid()) << "Invalid URL pattern: " << value;
+        if (pattern.IsValid() && pattern.Matches(request_.security_origin))
+          return ALWAYS_ALLOW;
+      }
+    }
+  }
+
+  // If a match was not found, check if audio capture is otherwise disallowed
+  // or if the user should be prompted.  Setting the policy value to "true"
+  // is equal to not setting it at all, so from hereon out, we will return
+  // either POLICY_NOT_SET (prompt) or ALWAYS_DENY (no prompt, no access).
+  if (!prefs->GetBoolean(policy_name))
+    return ALWAYS_DENY;
+
+  return POLICY_NOT_SET;
 }
 
 bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
@@ -210,11 +264,13 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
   struct {
     bool has_capability;
     const char* policy_name;
+    const char* list_policy_name;
     ContentSettingsType settings_type;
   } device_checks[] = {
     { microphone_requested_, prefs::kAudioCaptureAllowed,
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC },
+      prefs::kAudioCaptureAllowedUrls, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC },
     { webcam_requested_, prefs::kVideoCaptureAllowed,
+      prefs::kVideoCaptureAllowedUrls,
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA },
   };
 
@@ -222,7 +278,8 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
     if (!device_checks[i].has_capability)
       continue;
 
-    DevicePolicy policy = GetDevicePolicy(device_checks[i].policy_name);
+    DevicePolicy policy = GetDevicePolicy(device_checks[i].policy_name,
+                                          device_checks[i].list_policy_name);
     if (policy == ALWAYS_DENY ||
         (policy == POLICY_NOT_SET &&
          profile_->GetHostContentSettingsMap()->GetContentSetting(

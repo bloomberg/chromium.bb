@@ -2025,15 +2025,30 @@ const char kDailyHttpReceivedContentLength[] =
 // date of the last update to |kDailyHttp{Original,Received}ContentLength|.
 const char kDailyHttpContentLengthLastUpdateDate[] =
     "data_reduction.last_update_date";
-#endif
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
-// A pref holding the value of the policy used to disable capturing audio on
-// ChromeOS devices.
+// A pref holding the value of the policy used to explicitly allow or deny
+// access to audio capture devices.  When enabled or not set, the user is
+// prompted for device access.  When disabled, access to audio capture devices
+// is not allowed and no prompt will be shown.
+// See also kAudioCaptureAllowedUrls.
 const char kAudioCaptureAllowed[] = "hardware.audio_capture_enabled";
+// Holds URL patterns that specify URLs that will be granted access to audio
+// capture devices without prompt.  NOTE: This whitelist is currently only
+// supported when running in kiosk mode.
+// TODO(tommi): Update comment when this is supported for all modes.
+const char kAudioCaptureAllowedUrls[] = "hardware.audio_capture_allowed_urls";
 
-// A pref holding the value of the policy used to disable capturing audio on
-// ChromeOS devices.
+// A pref holding the value of the policy used to explicitly allow or deny
+// access to video capture devices.  When enabled or not set, the user is
+// prompted for device access.  When disabled, access to video capture devices
+// is not allowed and no prompt will be shown.
 const char kVideoCaptureAllowed[] = "hardware.video_capture_enabled";
+// Holds URL patterns that specify URLs that will be granted access to video
+// capture devices without prompt.  NOTE: This whitelist is currently only
+// supported when running in kiosk mode.
+// TODO(tommi): Update comment when this is supported for all modes.
+const char kVideoCaptureAllowedUrls[] = "hardware.video_capture_allowed_urls";
 
 #if defined(OS_CHROMEOS)
 // Dictionary for transient storage of settings that should go into device

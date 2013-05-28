@@ -964,6 +964,16 @@
     ]
   },
 
+  "AudioCaptureAllowedUrls": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "AudioCaptureAllowedUrls": ["[*.]google.com"] },
+    "pref_mappings": [
+      {
+        "pref": "hardware.audio_capture_allowed_urls"
+      }
+    ]
+  },
+
   "VideoCaptureAllowed": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "VideoCaptureAllowed": false },
@@ -973,6 +983,16 @@
         "indicator_tests": [
           { "policy": { "VideoCaptureAllowed": false } }
         ]
+      }
+    ]
+  },
+
+  "VideoCaptureAllowedUrls": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "VideoCaptureAllowedUrls": ["[*.]google.com"] },
+    "pref_mappings": [
+      {
+        "pref": "hardware.video_capture_allowed_urls"
       }
     ]
   },

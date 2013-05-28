@@ -66,6 +66,7 @@
 #include "chrome/common/chrome_process_type.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -1992,14 +1993,53 @@ class MediaStreamDevicesControllerBrowserTest
     : public PolicyTest,
       public testing::WithParamInterface<bool> {
  public:
-  MediaStreamDevicesControllerBrowserTest() {
+  MediaStreamDevicesControllerBrowserTest()
+      : request_url_allowed_via_whitelist_(false) {
     policy_value_ = GetParam();
   }
   virtual ~MediaStreamDevicesControllerBrowserTest() {}
 
+  // Configure a given policy map.
+  // The |policy_name| is the name of either the audio or video capture allow
+  // policy and must never be NULL.
+  // |whitelist_policy| and |allow_rule| are optional.  If NULL, no whitelist
+  // policy is set.  If non-NULL, the request_url_ will be set to be non empty
+  // and the whitelist policy is set to contain either the |allow_rule| (if
+  // non-NULL) or an "allow all" wildcard.
+  void ConfigurePolicyMap(PolicyMap* policies, const char* policy_name,
+                          const char* whitelist_policy,
+                          const char* allow_rule) {
+    policies->Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        base::Value::CreateBooleanValue(policy_value_));
+
+    if (whitelist_policy) {
+      // TODO(tommi): Remove the kiosk mode flag when the whitelist is visible
+      // in the media exceptions UI.
+      // See discussion here: https://codereview.chromium.org/15738004/
+      CommandLine::ForCurrentProcess()->AppendSwitch(switches::kKioskMode);
+
+      // Add an entry to the whitelist that allows the specified URL regardless
+      // of the setting of kAudioCapturedAllowed.
+      request_url_ = GURL("http://www.example.com/foo");
+      base::ListValue* list = new base::ListValue();
+      if (allow_rule) {
+        list->AppendString(allow_rule);
+        request_url_allowed_via_whitelist_ = true;
+      } else {
+        list->AppendString(ContentSettingsPattern::Wildcard().ToString());
+        // We should ignore all wildcard entries in the whitelist, so even
+        // though we've added an entry, it should be ignored and our expectation
+        // is that the request has not been allowed via the whitelist.
+        request_url_allowed_via_whitelist_ = false;
+      }
+      policies->Set(whitelist_policy, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_USER, list);
+    }
+  }
+
   void Accept(const content::MediaStreamDevices& devices,
               scoped_ptr<content::MediaStreamUI> ui) {
-    if (policy_value_) {
+    if (policy_value_ || request_url_allowed_via_whitelist_) {
       ASSERT_EQ(1U, devices.size());
       ASSERT_EQ("fake_dev", devices[0].id);
     } else {
@@ -2008,7 +2048,7 @@ class MediaStreamDevicesControllerBrowserTest
   }
 
   void FinishAudioTest() {
-    content::MediaStreamRequest request(0, 0, GURL(),
+    content::MediaStreamRequest request(0, 0, request_url_.GetOrigin(),
                                         content::MEDIA_OPEN_DEVICE, "fake_dev",
                                         content::MEDIA_DEVICE_AUDIO_CAPTURE,
                                         content::MEDIA_NO_SERVICE);
@@ -2021,7 +2061,7 @@ class MediaStreamDevicesControllerBrowserTest
   }
 
   void FinishVideoTest() {
-    content::MediaStreamRequest request(0, 0, GURL(),
+    content::MediaStreamRequest request(0, 0, request_url_.GetOrigin(),
                                         content::MEDIA_OPEN_DEVICE, "fake_dev",
                                         content::MEDIA_NO_SERVICE,
                                         content::MEDIA_DEVICE_VIDEO_CAPTURE);
@@ -2034,7 +2074,14 @@ class MediaStreamDevicesControllerBrowserTest
   }
 
   bool policy_value_;
+  bool request_url_allowed_via_whitelist_;
+  GURL request_url_;
+  static const char kExampleRequestPattern[];
 };
+
+// static
+const char MediaStreamDevicesControllerBrowserTest::kExampleRequestPattern[] =
+    "http://[*.]example.com/";
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        AudioCaptureAllowed) {
@@ -2044,9 +2091,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   audio_devices.push_back(fake_audio_device);
 
   PolicyMap policies;
-  policies.Set(key::kAudioCaptureAllowed, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER,
-               base::Value::CreateBooleanValue(policy_value_));
+  ConfigurePolicyMap(&policies, key::kAudioCaptureAllowed, NULL, NULL);
   UpdateProviderPolicy(policies);
 
   content::BrowserThread::PostTaskAndReply(
@@ -2061,6 +2106,41 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
+                       AudioCaptureAllowedUrls) {
+  content::MediaStreamDevices audio_devices;
+  content::MediaStreamDevice fake_audio_device(
+      content::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_dev", "Fake Audio Device");
+  audio_devices.push_back(fake_audio_device);
+
+  const char* allow_pattern[] = {
+    kExampleRequestPattern,
+    // This will set an allow-all policy whitelist.  Since we do not allow
+    // setting an allow-all entry in the whitelist, this entry should be ignored
+    // and therefore the request should be denied.
+    NULL,
+  };
+
+  for (size_t i = 0; i < arraysize(allow_pattern); ++i) {
+    PolicyMap policies;
+    ConfigurePolicyMap(&policies, key::kAudioCaptureAllowed,
+                       key::kAudioCaptureAllowedUrls, allow_pattern[i]);
+    UpdateProviderPolicy(policies);
+
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &MediaCaptureDevicesDispatcher::OnAudioCaptureDevicesChanged,
+            base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
+            audio_devices),
+        base::Bind(
+            &MediaStreamDevicesControllerBrowserTest::FinishAudioTest,
+            this));
+
+    MessageLoop::current()->Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        VideoCaptureAllowed) {
   content::MediaStreamDevices video_devices;
   content::MediaStreamDevice fake_video_device(
@@ -2068,9 +2148,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   video_devices.push_back(fake_video_device);
 
   PolicyMap policies;
-  policies.Set(key::kVideoCaptureAllowed, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER,
-               base::Value::CreateBooleanValue(policy_value_));
+  ConfigurePolicyMap(&policies, key::kVideoCaptureAllowed, NULL, NULL);
   UpdateProviderPolicy(policies);
 
   content::BrowserThread::PostTaskAndReply(
@@ -2082,6 +2160,41 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                  this));
 
   MessageLoop::current()->Run();
+}
+
+IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
+                       VideoCaptureAllowedUrls) {
+  content::MediaStreamDevices video_devices;
+  content::MediaStreamDevice fake_video_device(
+      content::MEDIA_DEVICE_VIDEO_CAPTURE, "fake_dev", "Fake Video Device");
+  video_devices.push_back(fake_video_device);
+
+  const char* allow_pattern[] = {
+    kExampleRequestPattern,
+    // This will set an allow-all policy whitelist.  Since we do not allow
+    // setting an allow-all entry in the whitelist, this entry should be ignored
+    // and therefore the request should be denied.
+    NULL,
+  };
+
+  for (size_t i = 0; i < arraysize(allow_pattern); ++i) {
+    PolicyMap policies;
+    ConfigurePolicyMap(&policies, key::kVideoCaptureAllowed,
+                       key::kVideoCaptureAllowedUrls, allow_pattern[i]);
+    UpdateProviderPolicy(policies);
+
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &MediaCaptureDevicesDispatcher::OnVideoCaptureDevicesChanged,
+            base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
+            video_devices),
+        base::Bind(
+            &MediaStreamDevicesControllerBrowserTest::FinishVideoTest,
+            this));
+
+    MessageLoop::current()->Run();
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(MediaStreamDevicesControllerBrowserTestInstance,
