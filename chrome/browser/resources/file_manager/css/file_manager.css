@@ -1572,7 +1572,15 @@ body[new-ui] .preview-thumbnails > .thumbnail > .img-container {
 }
 
 body[new-ui] .table-header-splitter {
-  display: none;
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/vertical_separator.png') 1x,
+    url('../images/files/ui/new-ui/2x/vertical_separator.png') 2x);
+  background-position: center;
+  background-repeat: repeat-y;
+  border: none;
+  height: 20px;
+  top: 10px;
+  width: 5px;
 }
 
 /* Container for a table header. */
