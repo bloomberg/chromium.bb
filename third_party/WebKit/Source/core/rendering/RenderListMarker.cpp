@@ -1600,7 +1600,7 @@ void RenderListMarker::updateMargins()
     LayoutUnit marginStart = 0;
     LayoutUnit marginEnd = 0;
 
-    if (isInside()) {
+    if (isInside() && !m_listItem->isFloating()) {
         if (isImage())
             marginEnd = cMarkerPadding;
         else switch (style()->listStyleType()) {
