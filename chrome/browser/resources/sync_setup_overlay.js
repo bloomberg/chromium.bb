@@ -123,7 +123,9 @@ cr.define('options', function() {
     closeOverlay_: function() {
       this.syncConfigureArgs_ = null;
       this.dataTypeBoxes_ = {};
-      OptionsPage.closeOverlay();
+      var overlay = $('sync-setup-overlay');
+      if (!overlay.hidden)
+        OptionsPage.closeOverlay();
     },
 
     /** @override */
