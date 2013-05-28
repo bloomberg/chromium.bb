@@ -47,7 +47,7 @@ namespace WebCore {
         virtual bool isSizeAvailable();
         virtual size_t frameCount();
         virtual int repetitionCount() const;
-        virtual ImageFrame* frameBufferAtIndex(size_t index);
+        virtual ImageFrame* frameBufferAtIndex(size_t);
         virtual bool frameIsCompleteAtIndex(size_t) const;
         virtual float frameDurationAtIndex(size_t) const;
         // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid

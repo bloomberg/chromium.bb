@@ -45,7 +45,7 @@ public:
 
     virtual String filenameExtension() const { return "webp"; }
     virtual bool isSizeAvailable();
-    virtual ImageFrame* frameBufferAtIndex(size_t index);
+    virtual ImageFrame* frameBufferAtIndex(size_t);
 
 private:
     bool decode(bool onlySize);

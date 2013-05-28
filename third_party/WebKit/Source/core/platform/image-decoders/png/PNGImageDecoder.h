@@ -42,7 +42,7 @@ namespace WebCore {
         // ImageDecoder
         virtual String filenameExtension() const { return "png"; }
         virtual bool isSizeAvailable();
-        virtual ImageFrame* frameBufferAtIndex(size_t index);
+        virtual ImageFrame* frameBufferAtIndex(size_t);
         // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid
         // accessing deleted memory, especially when calling this from inside
         // PNGImageReader!
