@@ -449,7 +449,6 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 	    buffer->width != output->base.current->width ||
 	    buffer->height != output->base.current->height ||
 	    output->base.transform != es->buffer_transform ||
-	    output->base.scale != es->buffer_scale ||
 	    es->transform.enabled)
 		return NULL;
 
@@ -1249,7 +1248,7 @@ init_pixman(struct drm_compositor *ec)
 }
 
 static struct drm_mode *
-drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info, int scale)
+drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info)
 {
 	struct drm_mode *mode;
 	uint64_t refresh;
@@ -1258,15 +1257,9 @@ drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info, int scale)
 	if (mode == NULL)
 		return NULL;
 
-	if (info->hdisplay % scale != 0 ||
-	    info->vdisplay % scale) {
-		weston_log("Mode %dx%d not multiple of scale %d\n", info->hdisplay, info->vdisplay, scale);
-		return NULL;
-	}
-
 	mode->base.flags = 0;
-	mode->base.width = info->hdisplay / scale;
-	mode->base.height = info->vdisplay / scale;
+	mode->base.width = info->hdisplay;
+	mode->base.height = info->vdisplay;
 
 	/* Calculate higher precision (mHz) refresh rate */
 	refresh = (info->clock * 1000000LL / info->htotal +
@@ -1281,9 +1274,6 @@ drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info, int scale)
 
 	mode->base.refresh = refresh;
 	mode->mode_info = *info;
-
-	if (scale != 1)
-		mode->base.flags |= WL_OUTPUT_MODE_SCALED;
 
 	if (info->type & DRM_MODE_TYPE_PREFERRED)
 		mode->base.flags |= WL_OUTPUT_MODE_PREFERRED;
@@ -1446,8 +1436,8 @@ drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 	int i, flags;
 
 	output->surface = gbm_surface_create(ec->gbm,
-					     output->base.current->width * output->base.scale,
-					     output->base.current->height * output->base.scale,
+					     output->base.current->width,
+					     output->base.current->height,
 					     GBM_FORMAT_XRGB8888,
 					     GBM_BO_USE_SCANOUT |
 					     GBM_BO_USE_RENDERING);
@@ -1491,12 +1481,12 @@ drm_output_init_pixman(struct drm_output *output, struct drm_compositor *c)
 	/* FIXME error checking */
 
 	for (i = 0; i < ARRAY_LENGTH(output->dumb); i++) {
-		output->dumb[i] = drm_fb_create_dumb(c, w * output->base.scale, h * output->base.scale);
+		output->dumb[i] = drm_fb_create_dumb(c, w, h);
 		if (!output->dumb[i])
 			goto err;
 
 		output->image[i] =
-			pixman_image_create_bits(PIXMAN_x8r8g8b8, w * output->base.scale, h * output->base.scale,
+			pixman_image_create_bits(PIXMAN_x8r8g8b8, w, h,
 						 output->dumb[i]->map,
 						 output->dumb[i]->stride);
 		if (!output->image[i])
@@ -1507,7 +1497,7 @@ drm_output_init_pixman(struct drm_output *output, struct drm_compositor *c)
 		goto err;
 
 	pixman_region32_init_rect(&output->previous_damage,
-				  output->base.x, output->base.y, w, h);
+				  output->base.x, output->base.y, output->base.width, output->base.height);
 
 	return 0;
 
@@ -1839,8 +1829,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	for (i = 0; i < connector->count_modes; i++) {
-		drm_mode = drm_output_add_mode(output, 
-					       &connector->modes[i], scale);
+		drm_mode = drm_output_add_mode(output, &connector->modes[i]);
 		if (!drm_mode)
 			goto err_free;
 	}
@@ -1858,8 +1847,8 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	wl_list_for_each(drm_mode, &output->base.mode_list, base.link) {
 		if (config == OUTPUT_CONFIG_MODE &&
-		    width == drm_mode->base.width * scale &&
-		    height == drm_mode->base.height * scale)
+		    width == drm_mode->base.width &&
+		    height == drm_mode->base.height)
 			configured = drm_mode;
 		if (!memcmp(&crtc_mode, &drm_mode->mode_info, sizeof crtc_mode))
 			current = drm_mode;
@@ -1868,13 +1857,13 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	if (config == OUTPUT_CONFIG_MODELINE) {
-		configured = drm_output_add_mode(output, &modeline, scale);
+		configured = drm_output_add_mode(output, &modeline);
 		if (!configured)
 			goto err_free;
 	}
 
 	if (current == NULL && crtc_mode.clock != 0) {
-		current = drm_output_add_mode(output, &crtc_mode, scale);
+		current = drm_output_add_mode(output, &crtc_mode);
 		if (!current)
 			goto err_free;
 	}

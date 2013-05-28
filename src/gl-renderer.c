@@ -1014,9 +1014,9 @@ gl_renderer_repaint_output(struct weston_output *output,
 	int32_t width, height;
 	pixman_region32_t buffer_damage, total_damage;
 
-	width = output->current->width * output->scale +
+	width = output->current->width +
 		output->border.left + output->border.right;
-	height = output->current->height * output->scale +
+	height = output->current->height +
 		output->border.top + output->border.bottom;
 
 	glViewport(0, 0, width, height);

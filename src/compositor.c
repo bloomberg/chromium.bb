@@ -92,9 +92,8 @@ sigchld_handler(int signal_number, void *data)
 }
 
 static void
-weston_output_transform_init(struct weston_output *output, uint32_t transform);
-static void
-weston_output_scale_init(struct weston_output *output, int32_t scale);
+weston_output_transform_scale_init(struct weston_output *output,
+				   uint32_t transform, uint32_t scale);
 
 WL_EXPORT int
 weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode)
@@ -114,8 +113,7 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 	pixman_region32_copy(&old_output_region, &output->region);
 
 	/* Update output region and transformation matrix */
-	weston_output_transform_init(output, output->transform);
-	weston_output_scale_init(output, output->scale);
+	weston_output_transform_scale_init(output, output->transform, output->scale);
 
 	pixman_region32_init(&output->previous_damage);
 	pixman_region32_init_rect(&output->region, output->x, output->y,
@@ -2643,7 +2641,7 @@ weston_output_update_matrix(struct weston_output *output)
 }
 
 static void
-weston_output_transform_init(struct weston_output *output, uint32_t transform)
+weston_output_transform_scale_init(struct weston_output *output, uint32_t transform, uint32_t scale)
 {
 	output->transform = transform;
 
@@ -2666,12 +2664,10 @@ weston_output_transform_init(struct weston_output *output, uint32_t transform)
 	default:
 		break;
 	}
-}
 
-static void
-weston_output_scale_init(struct weston_output *output, int32_t scale)
-{
         output->scale = scale;
+	output->width /= scale;
+	output->height /= scale;
 }
 
 WL_EXPORT void
@@ -2688,7 +2684,7 @@ weston_output_move(struct weston_output *output, int x, int y)
 
 WL_EXPORT void
 weston_output_init(struct weston_output *output, struct weston_compositor *c,
-		   int x, int y, int width, int height, uint32_t transform,
+		   int x, int y, int mm_width, int mm_height, uint32_t transform,
 		   int32_t scale)
 {
 	output->compositor = c;
@@ -2698,12 +2694,11 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->border.bottom = 0;
 	output->border.left = 0;
 	output->border.right = 0;
-	output->mm_width = width;
-	output->mm_height = height;
+	output->mm_width = mm_width;
+	output->mm_height = mm_height;
 	output->dirty = 1;
 
-	weston_output_transform_init(output, transform);
-	weston_output_scale_init(output, scale);
+	weston_output_transform_scale_init(output, transform, scale);
 	weston_output_init_zoom(output);
 
 	weston_output_move(output, x, y);

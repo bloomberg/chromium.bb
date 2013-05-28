@@ -823,11 +823,9 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 
 	output->mode.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
-	if (output->scale != 1)
-		output->mode.flags |= WL_OUTPUT_MODE_SCALED;
 
-	output->mode.width = width;
-	output->mode.height = height;
+	output->mode.width = output_width;
+	output->mode.height = output_height;
 	output->mode.refresh = 60000;
 	output->scale = scale;
 	wl_list_init(&output->base.mode_list);

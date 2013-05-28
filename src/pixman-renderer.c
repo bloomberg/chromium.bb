@@ -691,8 +691,8 @@ pixman_renderer_output_create(struct weston_output *output)
 		return -1;
 
 	/* set shadow image transformation */
-	w = output->current->width * output->scale;
-	h = output->current->height * output->scale;
+	w = output->current->width;
+	h = output->current->height;
 
 	po->shadow_buffer = malloc(w * h * 4);
 
