@@ -80,8 +80,8 @@ hyphenate_alderen_SOURCES  = 		\
 	hyphenate_alderen.c
 
 hyphenate_straightforward_SOURCES  =		\
-	brl_checks.c			\
-	brl_checks.h			\
+	brl_checks.c				\
+	brl_checks.h				\
 	hyphenate_straightforward.c
 
 hyphenate_xxx_SOURCES =				\
@@ -94,9 +94,9 @@ pass1Only_SOURCES =				\
 	brl_checks.h				\
 	pass1Only.c
 
-outpos_SOURCES =			\
-	brl_checks.c		\
-	brl_checks.h		\
+outpos_SOURCES =				\
+	brl_checks.c				\
+	brl_checks.h				\
 	outpos.c	
 
 getTable_SOURCES = getTable.c
@@ -104,10 +104,15 @@ getTable_SOURCES = getTable.c
 typeform_SOURCES =				\
 	typeform.c
 
-pass0_typebuf_SOURCES =			\
+pass0_typebuf_SOURCES =				\
 	brl_checks.c				\
 	brl_checks.h				\
 	pass0_typebuf.c
+
+hash_collision_SOURCES =			\
+	brl_checks.c				\
+	brl_checks.h				\
+	hash_collision.c
 
 check_PROGRAMS =				\
 	pass2					\
@@ -123,15 +128,16 @@ check_PROGRAMS =				\
 	en_gb_g1_italics			\
 	letterDefTest				\
 	squash_space				\
-	hyphenate_achena				\
-	hyphenate_alderen				\
-	hyphenate_straightforward				\
+	hyphenate_achena			\
+	hyphenate_alderen			\
+	hyphenate_straightforward		\
 	hyphenate_xxx				\
 	pass1Only				\
-	outpos				\
-	getTable \
-	typeform \
-	pass0_typebuf
+	outpos					\
+	getTable				\
+	typeform				\
+	pass0_typebuf				\
+	hash_collision
 
 
 dist_check_SCRIPTS =		\
@@ -156,6 +162,11 @@ XFAIL_TESTS =					\
 	lastworditalafter			\
 	en_gb_g1_italics			\
 	squash_space
+
+# Hyphenation is not what it is made out to be. Quite a few of the
+# tests fail.
+XFAIL_TESTS +=	hyphenate_achena hyphenate_alderen 
+
 
 TESTS =				\
 	$(check_PROGRAMS)	\

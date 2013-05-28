@@ -1,3 +1,11 @@
+2013-05-28  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/hash_collision.c:
+	* tests/tables/empty.ctb:
+	* tests/tables/Makefile.am:
+	* tests/Makefile.am: Add a new test to benchmark the hash
+	algorithm.
+
 2013-01-28  Igor B. Poretsky <poretsky@mlbox.ru>
 
 	* tables/ru-litbrl.ctb:
