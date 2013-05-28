@@ -91,7 +91,7 @@ MainThreadWebSocketChannel::MainThreadWebSocketChannel(Document* document, WebSo
     , m_sourceURLAtConnection(sourceURL)
     , m_lineNumberAtConnection(lineNumber)
 {
-    if (Page* page = m_document->page())
+    if (m_document->page())
         m_identifier = createUniqueIdentifier();
 }
 
