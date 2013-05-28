@@ -1496,15 +1496,32 @@ get_default_output(struct weston_compositor *compositor)
 }
 
 static void
+restore_output_mode(struct weston_output *output)
+{
+	if (output->current != output->origin ||
+	    (int32_t)output->scale != output->origin_scale)
+		weston_output_switch_mode(output,
+					  output->origin,
+					  output->origin_scale);
+}
+
+static void
+restore_all_output_modes(struct weston_compositor *compositor)
+{
+	struct weston_output *output;
+
+	wl_list_for_each(output, &compositor->output_list, link)
+		restore_output_mode(output);
+}
+
+static void
 shell_unset_fullscreen(struct shell_surface *shsurf)
 {
 	struct workspace *ws;
 	/* undo all fullscreen things here */
 	if (shsurf->fullscreen.type == WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER &&
 	    shell_surface_is_top_fullscreen(shsurf)) {
-		weston_output_switch_mode(shsurf->fullscreen_output,
-		                          shsurf->fullscreen_output->origin,
-					  shsurf->fullscreen_output->origin_scale);
+		restore_output_mode(shsurf->fullscreen_output);
 	}
 	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 	shsurf->fullscreen.framerate = 0;
@@ -1742,6 +1759,9 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 	float scale, output_aspect, surface_aspect, x, y;
 	int32_t surf_x, surf_y, surf_width, surf_height;
 
+	if (shsurf->fullscreen.type != WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER)
+		restore_output_mode(output);
+
 	if (!shsurf->fullscreen.black_surface)
 		shsurf->fullscreen.black_surface =
 			create_black_surface(surface->compositor,
@@ -1809,7 +1829,8 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 							 output->width,
 							 output->height);
 				break;
-			}
+			} else
+				restore_output_mode(output);
 		}
 		break;
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_FILL:
@@ -2147,11 +2168,8 @@ destroy_shell_surface(struct shell_surface *shsurf)
 	}
 
 	if (shsurf->fullscreen.type == WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER &&
-	    shell_surface_is_top_fullscreen(shsurf)) {
-		weston_output_switch_mode(shsurf->fullscreen_output,
-					  shsurf->fullscreen_output->origin,
-					  shsurf->fullscreen_output->origin_scale);
-	}
+	    shell_surface_is_top_fullscreen(shsurf))
+		restore_output_mode (shsurf->fullscreen_output);
 
 	if (shsurf->fullscreen.black_surface)
 		weston_surface_destroy(shsurf->fullscreen.black_surface);
@@ -2921,6 +2939,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 		shell_configure_fullscreen(get_shell_surface(main_surface));
 		break;
 	default:
+		restore_all_output_modes(shell->compositor);
 		ws = get_current_workspace(shell);
 		weston_surface_restack(main_surface, &ws->layer.surface_list);
 		break;
@@ -4011,6 +4030,7 @@ switcher_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 	switcher->listener.notify = switcher_handle_surface_destroy;
 	wl_list_init(&switcher->listener.link);
 
+	restore_all_output_modes(shell->compositor);
 	lower_fullscreen_layer(switcher->shell);
 	switcher->grab.interface = &switcher_grab;
 	weston_keyboard_start_grab(seat->keyboard, &switcher->grab);
