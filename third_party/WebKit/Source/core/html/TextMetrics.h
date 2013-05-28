@@ -26,12 +26,13 @@
 #ifndef TextMetrics_h
 #define TextMetrics_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class TextMetrics : public RefCounted<TextMetrics> {
+class TextMetrics : public RefCounted<TextMetrics>, public ScriptWrappable {
 public:
     static PassRefPtr<TextMetrics> create() { return adoptRef(new TextMetrics); }
 
@@ -41,7 +42,9 @@ public:
 private:
     TextMetrics()
         : m_width(0)
-    { }
+    {
+        ScriptWrappable::init(this);
+    }
 
     float m_width;
 };

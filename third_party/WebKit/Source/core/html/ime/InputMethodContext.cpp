@@ -45,6 +45,7 @@ InputMethodContext::InputMethodContext(HTMLElement* element)
     , m_composition(0)
     , m_element(element)
 {
+    ScriptWrappable::init(this);
 }
 
 InputMethodContext::~InputMethodContext()

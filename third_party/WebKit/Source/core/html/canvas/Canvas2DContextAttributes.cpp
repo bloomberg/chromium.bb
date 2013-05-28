@@ -33,6 +33,7 @@ namespace WebCore {
 Canvas2DContextAttributes::Canvas2DContextAttributes()
     : m_alpha(true)
 {
+    ScriptWrappable::init(this);
 }
 
 Canvas2DContextAttributes::~Canvas2DContextAttributes()

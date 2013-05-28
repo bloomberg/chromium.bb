@@ -27,12 +27,13 @@
 #ifndef Canvas2DContextAttributes_h
 #define Canvas2DContextAttributes_h
 
-#include "CanvasContextAttributes.h"
-#include <wtf/PassRefPtr.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "core/html/canvas/CanvasContextAttributes.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-class Canvas2DContextAttributes : public CanvasContextAttributes {
+class Canvas2DContextAttributes : public CanvasContextAttributes, public ScriptWrappable {
 public:
     virtual ~Canvas2DContextAttributes();
 

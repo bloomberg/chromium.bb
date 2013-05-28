@@ -28,14 +28,15 @@
 #ifndef DOMPath_h
 #define DOMPath_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/CanvasPathMethods.h"
 #include "core/svg/SVGPathUtilities.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class DOMPath : public RefCounted<DOMPath>, public CanvasPathMethods {
+class DOMPath : public RefCounted<DOMPath>, public CanvasPathMethods, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(DOMPath); WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassRefPtr<DOMPath> create() { return adoptRef(new DOMPath); }
@@ -48,22 +49,32 @@ public:
 
     virtual ~DOMPath() { }
 private:
-    DOMPath() : CanvasPathMethods() { }
+    DOMPath() : CanvasPathMethods()
+    {
+        ScriptWrappable::init(this);
+    }
+
     DOMPath(const Path& path)
         : CanvasPathMethods()
     {
+        ScriptWrappable::init(this);
         m_path = path;
     }
+
     DOMPath(DOMPath* path)
         : CanvasPathMethods()
     {
+        ScriptWrappable::init(this);
         m_path = path->path();
     }
+
     DOMPath(const String& pathData)
         : CanvasPathMethods()
     {
+        ScriptWrappable::init(this);
         buildPathFromString(pathData, m_path);
     }
 };
+
 }
 #endif

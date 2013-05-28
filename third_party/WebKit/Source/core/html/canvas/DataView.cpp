@@ -66,6 +66,7 @@ DataView::DataView(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned
     : ArrayBufferView(buffer, byteOffset)
     , m_byteLength(byteLength)
 {
+    ScriptWrappable::init(this);
 }
 
 static bool needToFlipBytes(bool littleEndian)

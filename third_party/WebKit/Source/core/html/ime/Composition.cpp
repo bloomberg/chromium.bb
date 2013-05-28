@@ -49,6 +49,7 @@ Composition::Composition(Node* text, Range* caret)
     : m_text(text)
     , m_caret(caret)
 {
+    ScriptWrappable::init(this);
 }
 
 } // namespace WebCore

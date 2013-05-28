@@ -26,14 +26,15 @@
 #ifndef DataView_h
 #define DataView_h
 
-#include <wtf/ArrayBufferView.h>
-#include <wtf/PassRefPtr.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/ArrayBufferView.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
 typedef int ExceptionCode;
 
-class DataView : public ArrayBufferView {
+class DataView : public ArrayBufferView, public ScriptWrappable {
 public:
     static PassRefPtr<DataView> create(unsigned length);
     static PassRefPtr<DataView> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned byteLength);

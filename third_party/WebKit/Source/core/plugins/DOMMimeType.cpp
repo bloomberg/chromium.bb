@@ -35,6 +35,7 @@ DOMMimeType::DOMMimeType(PassRefPtr<PluginData> pluginData, Frame* frame, unsign
     , m_pluginData(pluginData)
     , m_index(index)
 {
+    ScriptWrappable::init(this);
 }
 
 DOMMimeType::~DOMMimeType()

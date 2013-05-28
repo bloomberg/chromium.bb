@@ -31,6 +31,7 @@
 #ifndef Composition_h
 #define Composition_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -40,7 +41,7 @@ namespace WebCore {
 class Node;
 class Range;
 
-class Composition : public RefCounted<Composition> {
+class Composition : public RefCounted<Composition>, public ScriptWrappable {
 public:
     static PassRefPtr<Composition> create(Node*, Range*);
     ~Composition();

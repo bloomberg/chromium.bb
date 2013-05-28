@@ -61,6 +61,7 @@ CanvasPattern::CanvasPattern(PassRefPtr<Image> image, bool repeatX, bool repeatY
     : m_pattern(Pattern::create(image, repeatX, repeatY))
     , m_originClean(originClean)
 {
+    ScriptWrappable::init(this);
 }
 
 }

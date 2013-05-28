@@ -26,14 +26,14 @@
 #ifndef DOMPoint_h
 #define DOMPoint_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class DOMPoint : public RefCounted<DOMPoint> {
+class DOMPoint : public RefCounted<DOMPoint>, public ScriptWrappable {
 public:
-
     static PassRefPtr<DOMPoint> create()
     {
         return adoptRef(new DOMPoint());
@@ -54,9 +54,11 @@ private:
         : m_x(x)
         , m_y(y)
     {
+        ScriptWrappable::init(this);
     }
 
-    float m_x, m_y;
+    float m_x;
+    float m_y;
 };
 
 } // namespace WebCore

@@ -31,6 +31,7 @@
 #ifndef InputMethodContext_h
 #define InputMethodContext_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/html/HTMLElement.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -41,7 +42,7 @@ namespace WebCore {
 class Composition;
 class Node;
 
-class InputMethodContext {
+class InputMethodContext : public ScriptWrappable {
 public:
     static PassOwnPtr<InputMethodContext> create(HTMLElement*);
     ~InputMethodContext();

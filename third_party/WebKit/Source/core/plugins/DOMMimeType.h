@@ -20,20 +20,20 @@
 #ifndef DOMMimeType_h
 #define DOMMimeType_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameDestructionObserver.h"
 #include "core/plugins/PluginData.h"
-
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 class DOMPlugin;
 
-class DOMMimeType : public RefCounted<DOMMimeType>, public FrameDestructionObserver {
+class DOMMimeType : public RefCounted<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
 public:
     static PassRefPtr<DOMMimeType> create(PassRefPtr<PluginData> pluginData, Frame* frame, unsigned index) { return adoptRef(new DOMMimeType(pluginData, frame, index)); }
     ~DOMMimeType();
