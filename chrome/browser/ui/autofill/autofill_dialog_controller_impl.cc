@@ -322,6 +322,13 @@ const wallet::Address* FindDuplicateAddress(
   return NULL;
 }
 
+bool IsCardHolderNameValidForWallet(const string16& name) {
+  base::string16 whitespace_collapsed_name = CollapseWhitespace(name, true);
+  std::vector<base::string16> split_name;
+  base::SplitString(whitespace_collapsed_name, ' ', &split_name);
+  return split_name.size() >= 2;
+}
+
 }  // namespace
 
 AutofillDialogController::~AutofillDialogController() {}
@@ -1140,13 +1147,59 @@ gfx::Image AutofillDialogControllerImpl::IconForField(
 string16 AutofillDialogControllerImpl::InputValidityMessage(
     AutofillFieldType type,
     const string16& value) const {
-  if (InputIsValid(type, value))
-    return string16();
+  switch (AutofillType::GetEquivalentFieldType(type)) {
+    case EMAIL_ADDRESS:
+      if (!value.empty() && !IsValidEmailAddress(value))
+        return ASCIIToUTF16("Are you sure this is right?");
+      break;
 
-  if (value.empty())
-    return ASCIIToUTF16("You forgot one");
+    case CREDIT_CARD_NUMBER:
+      if (!value.empty() && !autofill::IsValidCreditCardNumber(value))
+        return ASCIIToUTF16("Are you sure this is right?");
+      break;
 
-  return ASCIIToUTF16("Are you sure this is right?");
+    case CREDIT_CARD_NAME:
+      // Wallet requires a first and last name.
+      if (!value.empty() && IsPayingWithWallet() &&
+          !IsCardHolderNameValidForWallet(value)) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_DIALOG_VALIDATION_WALLET_REQUIRES_TWO_NAMES);
+      }
+      break;
+
+    case CREDIT_CARD_EXP_MONTH:
+    case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+      break;
+
+    case CREDIT_CARD_VERIFICATION_CODE:
+      if (!value.empty() && !autofill::IsValidCreditCardSecurityCode(value))
+          return ASCIIToUTF16("Are you sure this is right?");
+      break;
+
+    case ADDRESS_HOME_LINE1:
+      break;
+
+    case ADDRESS_HOME_LINE2:
+      return base::string16();  // Line 2 is optional - always valid.
+
+    case ADDRESS_HOME_CITY:
+    case ADDRESS_HOME_STATE:
+    case ADDRESS_HOME_ZIP:
+    case ADDRESS_HOME_COUNTRY:
+      break;
+
+    case NAME_FULL:  // Used for shipping.
+      break;
+
+    case PHONE_HOME_WHOLE_NUMBER:  // Used in billing section.
+      break;
+
+    default:
+      NOTREACHED();  // Trying to validate unknown field.
+      break;
+  }
+
+  return !value.empty() ? base::string16() : ASCIIToUTF16("You forgot one");
 }
 
 // TODO(estade): Replace all the error messages here with more helpful and
@@ -1187,7 +1240,8 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
   // If there is a credit card number and a CVC, validate them together.
   if (field_values.count(CREDIT_CARD_NUMBER) &&
       field_values.count(CREDIT_CARD_VERIFICATION_CODE) &&
-      InputIsValid(CREDIT_CARD_NUMBER, field_values[CREDIT_CARD_NUMBER])) {
+      InputValidityMessage(CREDIT_CARD_NUMBER,
+                           field_values[CREDIT_CARD_NUMBER]).empty()) {
     if (!autofill::IsValidCreditCardSecurityCode(
             field_values[CREDIT_CARD_VERIFICATION_CODE],
             field_values[CREDIT_CARD_NUMBER])) {
@@ -2305,46 +2359,6 @@ bool AutofillDialogControllerImpl::IsManuallyEditingAnySection() const {
       return true;
   }
   return false;
-}
-
-bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
-                                                const string16& value) const {
-  switch (AutofillType::GetEquivalentFieldType(type)) {
-    case EMAIL_ADDRESS:
-      return IsValidEmailAddress(value);
-
-    case CREDIT_CARD_NUMBER:
-      return autofill::IsValidCreditCardNumber(value);
-    case CREDIT_CARD_NAME:
-      break;
-    case CREDIT_CARD_EXP_MONTH:
-    case CREDIT_CARD_EXP_4_DIGIT_YEAR:
-      break;
-    case CREDIT_CARD_VERIFICATION_CODE:
-      return autofill::IsValidCreditCardSecurityCode(value);
-
-    case ADDRESS_HOME_LINE1:
-      break;
-    case ADDRESS_HOME_LINE2:
-      return true;  // Line 2 is optional - always valid.
-    case ADDRESS_HOME_CITY:
-    case ADDRESS_HOME_STATE:
-    case ADDRESS_HOME_ZIP:
-    case ADDRESS_HOME_COUNTRY:
-      break;
-
-    case NAME_FULL:  // Used for shipping.
-      break;
-
-    case PHONE_HOME_WHOLE_NUMBER:  // Used in billing section.
-      break;
-
-    default:
-      NOTREACHED();  // Trying to validate unknown field.
-      break;
-  }
-
-  return !value.empty();
 }
 
 bool AutofillDialogControllerImpl::AllSectionsAreValid() const {

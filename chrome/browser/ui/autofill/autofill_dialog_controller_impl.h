@@ -398,10 +398,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Whether the user has chosen to enter all new data in at least one section.
   bool IsManuallyEditingAnySection() const;
 
-  // Returns true if the |value| is a valid string for the given autofill field
-  // type.
-  bool InputIsValid(AutofillFieldType type, const string16& value) const;
-
   // Whether all of the input fields currently showing in the dialog have valid
   // contents.
   bool AllSectionsAreValid() const;

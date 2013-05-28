@@ -434,8 +434,6 @@ TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
   // Construct DetailOutputMap from existing data.
   SwitchToAutofill();
 
-  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
-
   AutofillProfile full_profile(test::GetVerifiedProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   controller()->EditClickedForSection(SECTION_SHIPPING);
@@ -501,6 +499,101 @@ TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
       controller()->InputsAreValid(outputs,
                                    AutofillDialogController::VALIDATE_EDIT);
   EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+}
+
+TEST_F(AutofillDialogControllerTest, CardHolderNameValidation) {
+  // Construct DetailOutputMap from AutofillProfile data.
+  SwitchToAutofill();
+
+  AutofillProfile full_profile(test::GetVerifiedProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  controller()->EditClickedForSection(SECTION_SHIPPING);
+
+  DetailOutputMap outputs;
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_CC);
+
+  // Input an empty card holder name with VALIDATE_FINAL.
+  SetOutputValue(inputs, &outputs, CREDIT_CARD_NAME, "");
+  ValidityData validity_data =
+      controller()->InputsAreValid(outputs,
+                                   AutofillDialogController::VALIDATE_FINAL);
+  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_NAME));
+
+  // Input an empty card holder name with VALIDATE_EDIT.
+  validity_data =
+      controller()->InputsAreValid(outputs,
+                                   AutofillDialogController::VALIDATE_EDIT);
+  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
+
+  // Input a non-empty card holder name.
+  SetOutputValue(inputs, &outputs, CREDIT_CARD_NAME, "Bob");
+  validity_data =
+      controller()->InputsAreValid(outputs,
+                                   AutofillDialogController::VALIDATE_FINAL);
+  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
+
+  // Switch to Wallet which only considers names with with at least two names to
+  // be valid.
+  SwitchToWallet();
+
+  // Setup some wallet state.
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  controller()->EditClickedForSection(SECTION_CC_BILLING);
+
+  DetailOutputMap wallet_outputs;
+  const DetailInputs& wallet_inputs =
+      controller()->RequestedFieldsForSection(SECTION_CC_BILLING);
+
+  // Input an empty card holder name with VALIDATE_FINAL. Data source should not
+  // change this behavior.
+  SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME, "");
+  validity_data =
+      controller()->InputsAreValid(wallet_outputs,
+                                   AutofillDialogController::VALIDATE_FINAL);
+  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_NAME));
+
+  // Input an empty card holder name with VALIDATE_EDIT. Data source should not
+  // change this behavior.
+  validity_data =
+      controller()->InputsAreValid(wallet_outputs,
+                                   AutofillDialogController::VALIDATE_EDIT);
+  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
+
+  // Input a one name card holder name. Wallet does not currently support this.
+  SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME, "Bob");
+  validity_data =
+      controller()->InputsAreValid(wallet_outputs,
+                                   AutofillDialogController::VALIDATE_FINAL);
+  EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_NAME));
+
+  // Input a two name card holder name.
+  SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME,
+                 "Bob Barker");
+  validity_data =
+      controller()->InputsAreValid(wallet_outputs,
+                                   AutofillDialogController::VALIDATE_FINAL);
+  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
+
+  // Input a more than two name card holder name.
+  SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME,
+                 "John Jacob Jingleheimer Schmidt");
+  validity_data =
+      controller()->InputsAreValid(wallet_outputs,
+                                   AutofillDialogController::VALIDATE_FINAL);
+  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
+
+  // Input a card holder name with lots of crazy whitespace.
+  SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME,
+                 "     \\n\\r John \\n  Jacob Jingleheimer \\t Schmidt  ");
+  validity_data =
+      controller()->InputsAreValid(wallet_outputs,
+                                   AutofillDialogController::VALIDATE_FINAL);
+  EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
