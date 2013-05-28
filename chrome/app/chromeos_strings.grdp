@@ -480,11 +480,11 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_INSTRUCTIONS_TEXT" desc="Messsage indicating that instructions will be sent to manager's email.">
     To configure this profile, please check your email at <ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph> for further instructions.
   </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS" desc="Error text shown in locally managed user creation dialog when local account with suggested name already exists on machine.">
-    User with name <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> already exists.
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS" desc="Error text shown in locally managed user creation dialog when local account with suggested name already exists on a device.">
+    Whoops, this name is already in use!
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_MISMATCH_ERROR" desc="Error text shown in locally managed user creation dialog when typed passwords does not match.">
-    Passwords do not match.
+    Whoops, passwords do not match!
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TOO_SHORT" desc="Error text shown in locally managed user creation dialog when typed password is too short.">
     Password is too short.

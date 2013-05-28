@@ -179,9 +179,8 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
   if (NULL != UserManager::Get()->
           FindLocallyManagedUser(CollapseWhitespace(name, true))) {
     CallJS("login.LocallyManagedUserCreationScreen.managedUserNameError",
-           name, l10n_util::GetStringFUTF16(
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS,
-               name));
+           name, l10n_util::GetStringUTF16(
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS));
   } else {
     CallJS("login.LocallyManagedUserCreationScreen.managedUserNameOk", name);
   }
