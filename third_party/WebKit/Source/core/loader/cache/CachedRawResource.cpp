@@ -128,9 +128,8 @@ void CachedRawResource::didDownloadData(int dataLength)
 void CachedRawResource::switchClientsToRevalidatedResource()
 {
     ASSERT(m_loader);
-    // If we're in the middle of a successful revalidation, responseReceived() hasn't been called, so we haven't set m_identifier.
-    ASSERT(!m_identifier);
-    static_cast<CachedRawResource*>(resourceToRevalidate())->m_identifier = m_loader->identifier();
+    ASSERT(m_identifier);
+    static_cast<CachedRawResource*>(resourceToRevalidate())->m_identifier = m_identifier;
     CachedResource::switchClientsToRevalidatedResource();
 }
 

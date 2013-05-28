@@ -156,7 +156,7 @@ public:
 
     // Computes the status of an object after loading.  
     // Updates the expire date on the cache entry file
-    void finish();
+    void finish(double finishTime = 0.0);
 
     // FIXME: Remove the stringless variant once all the callsites' error messages are updated.
     bool passesAccessControlCheck(SecurityOrigin*);
@@ -221,6 +221,7 @@ public:
     bool mustRevalidateDueToCacheHeaders(CachePolicy) const;
     bool isCacheValidator() const { return m_resourceToRevalidate; }
     CachedResource* resourceToRevalidate() const { return m_resourceToRevalidate; }
+    void setResourceToRevalidate(CachedResource*);
     
     bool isPurgeable() const;
     bool wasPurged() const;
@@ -230,15 +231,9 @@ public:
     // better way to handle the archive case.
     bool makePurgeable(bool purgeable);
     
-    // HTTP revalidation support methods for CachedResourceLoader.
-    void setResourceToRevalidate(CachedResource*);
-    void revalidationSucceeded(const ResourceResponse&);
-    void revalidationFailed();
-    
     virtual void didSendData(unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void didDownloadData(int) { }
 
-    void setLoadFinishTime(double finishTime) { m_loadFinishTime = finishTime; }
     double loadFinishTime() const { return m_loadFinishTime; }
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
@@ -293,6 +288,9 @@ protected:
 private:
     bool addClientToSet(CachedResourceClient*);
     void decodedDataDeletionTimerFired(Timer<CachedResource>*);
+
+    void revalidationSucceeded(const ResourceResponse&);
+    void revalidationFailed();
 
     virtual PurgePriority purgePriority() const { return PurgeDefault; }
 

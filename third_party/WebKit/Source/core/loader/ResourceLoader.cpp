@@ -245,8 +245,6 @@ void ResourceLoader::cancel(const ResourceError& error)
     LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().string().latin1().data());
     m_state = Finishing;
     m_resource->setResourceError(nonNullError);
-    if (m_resource->resourceToRevalidate())
-        m_resource->revalidationFailed();
 
     m_documentLoader->cancelPendingSubstituteLoad(this);
     if (m_handle) {
@@ -308,7 +306,6 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
 void ResourceLoader::didReceiveCachedMetadata(ResourceHandle*, const char* data, int length)
 {
     ASSERT(m_state == Initialized);
-    ASSERT(!m_resource->resourceToRevalidate());
     m_resource->setSerializedCachedMetadata(data, length);
 }
 
@@ -327,24 +324,6 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
     // Reference the object in this method since the additional processing can do
     // anything including removing the last reference to this object.
     RefPtr<ResourceLoader> protect(this);
-
-    if (m_resource->resourceToRevalidate()) {
-        if (response.httpStatusCode() == 304) {
-            // 304 Not modified / Use local copy
-            // Existing resource is ok, just use it updating the expiration time.
-            m_resource->setResponse(response);
-            m_resource->revalidationSucceeded(response);
-            if (m_state == Terminated)
-                return;
-
-            if (m_options.sendLoadCallbacks == SendCallbacks)
-                frameLoader()->notifier()->didReceiveResponse(this, response);
-            return;
-        }
-        // Did not get 304 response, continue as a regular resource load.
-        m_resource->revalidationFailed();
-    }
-
     m_resource->responseReceived(response);
     if (m_state == Terminated)
         return;
@@ -380,11 +359,6 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
 void ResourceLoader::didReceiveData(ResourceHandle*, const char* data, int length, int encodedDataLength)
 {
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceData(m_frame.get(), identifier(), encodedDataLength);
-
-    if (m_resource->response().httpStatusCode() >= 400 && !m_resource->shouldIgnoreHTTPStatusCodeErrors())
-        return;
-    ASSERT(!m_resource->resourceToRevalidate());
-    ASSERT(!m_resource->errorOccurred());
     ASSERT(m_state == Initialized);
 
     // Reference the object in this method since the additional processing can do
@@ -407,15 +381,12 @@ void ResourceLoader::didFinishLoading(ResourceHandle*, double finishTime)
     if (m_state != Initialized)
         return;
     ASSERT(m_state != Terminated);
-    ASSERT(!m_resource->resourceToRevalidate());
-    ASSERT(!m_resource->errorOccurred());
     LOG(ResourceLoading, "Received '%s'.", m_resource->url().string().latin1().data());
 
     RefPtr<ResourceLoader> protect(this);
     CachedResourceHandle<CachedResource> protectResource(m_resource);
     m_state = Finishing;
-    m_resource->setLoadFinishTime(finishTime);
-    m_resource->finish();
+    m_resource->finish(finishTime);
     didFinishLoadingOnePart(finishTime);
 
     // If the load has been cancelled by a delegate in response to didFinishLoad(), do not release
@@ -434,8 +405,6 @@ void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
     CachedResourceHandle<CachedResource> protectResource(m_resource);
     m_state = Finishing;
     m_resource->setResourceError(error);
-    if (m_resource->resourceToRevalidate())
-        m_resource->revalidationFailed();
     m_resource->error(CachedResource::LoadError);
 
     if (m_state == Terminated)

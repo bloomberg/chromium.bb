@@ -266,6 +266,8 @@ void CachedResource::checkNotify()
 
 void CachedResource::appendData(const char* data, int length)
 {
+    ASSERT(!m_resourceToRevalidate);
+    ASSERT(!errorOccurred());
     if (m_options.dataBufferingPolicy == DoNotBufferData)
         return;
     if (m_data)
@@ -277,6 +279,9 @@ void CachedResource::appendData(const char* data, int length)
 
 void CachedResource::error(CachedResource::Status status)
 {
+    if (m_resourceToRevalidate)
+        revalidationFailed();
+
     setStatus(status);
     ASSERT(errorOccurred());
     m_data.clear();
@@ -291,8 +296,11 @@ void CachedResource::finishOnePart()
     checkNotify();
 }
 
-void CachedResource::finish()
+void CachedResource::finish(double finishTime)
 {
+    ASSERT(!m_resourceToRevalidate);
+    ASSERT(!errorOccurred());
+    m_loadFinishTime = finishTime;
     finishOnePart();
     if (!errorOccurred())
         m_status = Cached;
@@ -358,6 +366,13 @@ void CachedResource::responseReceived(const ResourceResponse& response)
     String encoding = response.textEncodingName();
     if (!encoding.isNull())
         setEncoding(encoding);
+
+    if (!m_resourceToRevalidate)
+        return;
+    if (response.httpStatusCode() == 304)
+        revalidationSucceeded(response);
+    else
+        revalidationFailed();
 }
 
 void CachedResource::setSerializedCachedMetadata(const char* data, size_t size)
@@ -366,6 +381,7 @@ void CachedResource::setSerializedCachedMetadata(const char* data, size_t size)
     // If this triggers, it indicates an efficiency problem which is most
     // likely unexpected in code designed to improve performance.
     ASSERT(!m_cachedMetadata);
+    ASSERT(!m_resourceToRevalidate);
 
     m_cachedMetadata = CachedMetadata::deserialize(data, size);
 }
