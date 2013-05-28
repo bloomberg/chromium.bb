@@ -1643,8 +1643,8 @@
 {
    bug_96684a
    Memcheck:Uninitialized
-   fun:_ZN7content16P2PSocketHostTcp4SendERKN3net10IPEndPointERKSt6vectorIcSaIcEE
-   fun:*SocketHostTcpTest_*_Test8TestBodyEv
+   fun:_ZN7content20P2PSocketHostTcpBase4SendERKN3net10IPEndPointERKSt6vectorIcSaIcEE
+   fun:*SocketHost*TcpTest_*_Test8TestBodyEv
 }
 {
    bug_96684b
