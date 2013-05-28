@@ -626,7 +626,7 @@ GLSurface::CreateViewGLSurface(bool software, gfx::AcceleratedWidget window) {
     VSyncProvider* sync_provider = NULL;
 #if defined(USE_OZONE)
     window = ui::SurfaceFactoryOzone::GetInstance()->RealizeAcceleratedWidget(
-        window));
+        window);
     sync_provider =
         ui::SurfaceFactoryOzone::GetInstance()->GetVSyncProvider(window);
 #endif
