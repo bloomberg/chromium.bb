@@ -100,7 +100,6 @@ public:
     virtual void setExperimentalCSSCustomFilterEnabled(bool) = 0;
     virtual void setExperimentalCSSGridLayoutEnabled(bool) = 0;
     virtual void setCSSStickyPositionEnabled(bool) = 0;
-    virtual void setExperimentalCSSVariablesEnabled(bool) = 0;
     virtual void setExperimentalWebGLEnabled(bool) = 0;
     virtual void setExperimentalWebSocketEnabled(bool) = 0;
     virtual void setPinchVirtualViewportEnabled(bool) = 0;

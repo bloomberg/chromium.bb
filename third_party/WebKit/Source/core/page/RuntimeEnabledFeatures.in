@@ -20,6 +20,7 @@ CSSCompositing status=experimental
 CSSExclusions status=experimental
 CSSRegions status=experimental
 CSSTouchAction status=test
+CSSVariables status=experimental
 CustomDOMElements status=experimental
 Database status=stable
 DataListElement status=stable

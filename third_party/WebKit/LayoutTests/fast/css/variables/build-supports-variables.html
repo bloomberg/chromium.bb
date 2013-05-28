@@ -3,7 +3,6 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 
-internals.settings.setCSSVariablesEnabled(true);
-if (internals.settings.cssVariablesEnabled())
+if (internals.runtimeFlags.cssVariablesEnabled)
     document.body.innerHTML = "YES";
 </script>

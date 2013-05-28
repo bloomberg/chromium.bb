@@ -208,7 +208,6 @@ CSSParserContext::CSSParserContext(CSSParserMode mode, const KURL& baseURL)
     , isCSSCustomFilterEnabled(false)
     , isCSSStickyPositionEnabled(false)
     , isCSSGridLayoutEnabled(false)
-    , isCSSVariablesEnabled(false)
     , needsSiteSpecificQuirks(false)
 {
 }
@@ -221,7 +220,6 @@ CSSParserContext::CSSParserContext(Document* document, const KURL& baseURL, cons
     , isCSSCustomFilterEnabled(document->settings() ? document->settings()->isCSSCustomFilterEnabled() : false)
     , isCSSStickyPositionEnabled(document->cssStickyPositionEnabled())
     , isCSSGridLayoutEnabled(document->cssGridLayoutEnabled())
-    , isCSSVariablesEnabled(document->settings() ? document->settings()->cssVariablesEnabled() : false)
     , needsSiteSpecificQuirks(document->settings() ? document->settings()->needsSiteSpecificQuirks() : false)
 {
 }
@@ -235,7 +233,6 @@ bool operator==(const CSSParserContext& a, const CSSParserContext& b)
         && a.isCSSCustomFilterEnabled == b.isCSSCustomFilterEnabled
         && a.isCSSStickyPositionEnabled == b.isCSSStickyPositionEnabled
         && a.isCSSGridLayoutEnabled == b.isCSSGridLayoutEnabled
-        && a.isCSSVariablesEnabled == b.isCSSVariablesEnabled
         && a.needsSiteSpecificQuirks == b.needsSiteSpecificQuirks;
 }
 
@@ -3058,11 +3055,6 @@ bool CSSParser::parseFillShorthand(CSSPropertyID propId, const CSSPropertyID* pr
 
     m_implicitShorthand = false;
     return true;
-}
-
-bool CSSParser::cssVariablesEnabled() const
-{
-    return m_context.isCSSVariablesEnabled;
 }
 
 void CSSParser::storeVariableDeclaration(const CSSParserString& name, PassOwnPtr<CSSParserValueList> value, bool important)
@@ -10000,7 +9992,7 @@ inline void CSSParser::detectDashToken(int length)
             m_token = MINFUNCTION;
         else if (isASCIIAlphaCaselessEqual(name[10], 'x') && isEqualToCSSIdentifier(name + 1, "webkit-ma"))
             m_token = MAXFUNCTION;
-        else if (cssVariablesEnabled() && isASCIIAlphaCaselessEqual(name[10], 'r') && isEqualToCSSIdentifier(name + 1, "webkit-va"))
+        else if (RuntimeEnabledFeatures::cssVariablesEnabled() && isASCIIAlphaCaselessEqual(name[10], 'r') && isEqualToCSSIdentifier(name + 1, "webkit-va"))
             m_token = VARFUNCTION;
     } else if (length == 12 && isEqualToCSSIdentifier(name + 1, "webkit-calc"))
         m_token = CALCFUNCTION;
@@ -10445,7 +10437,7 @@ restartAfterComment:
             parseIdentifier(result, resultString, hasEscape);
             m_token = IDENT;
 
-            if (cssVariablesEnabled() && detectCSSVariablesToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>()))
+            if (RuntimeEnabledFeatures::cssVariablesEnabled() && detectCSSVariablesToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>()))
                 m_token = VAR_DEFINITION;
             else if (*currentCharacter<SrcCharacterType>() == '(') {
                 m_token = FUNCTION;
