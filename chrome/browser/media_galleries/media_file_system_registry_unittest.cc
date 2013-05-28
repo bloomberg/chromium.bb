@@ -478,7 +478,7 @@ ProfileState::~ProfileState() {
   shared_web_contents2_.reset();
   profile_.reset();
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 MediaGalleriesPreferences* ProfileState::GetMediaGalleriesPrefs() {
@@ -500,7 +500,7 @@ void ProfileState::CheckGalleries(
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
                  base::StringPrintf("%s (no permission)", test.c_str()),
                  base::ConstRef(empty_expectation)));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
 
   // Read permission only.
@@ -509,7 +509,7 @@ void ProfileState::CheckGalleries(
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
                  base::StringPrintf("%s (regular permission)", test.c_str()),
                  base::ConstRef(regular_extension_galleries)));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
 
   // All galleries permission.
@@ -518,7 +518,7 @@ void ProfileState::CheckGalleries(
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
                  base::StringPrintf("%s (all permission)", test.c_str()),
                  base::ConstRef(all_extension_galleries)));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
 }
 
@@ -530,7 +530,7 @@ FSInfoMap ProfileState::GetGalleriesInfo(extensions::Extension* extension) {
   registry->GetMediaFileSystemsForExtension(
       rvh, extension,
       base::Bind(&GetGalleryInfoCallback, base::Unretained(&results)));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   return results;
 }
 
@@ -578,8 +578,8 @@ int ProfileState::GetAndClearComparisonCount() {
 /////////////////////////////////
 
 MediaFileSystemRegistryTest::MediaFileSystemRegistryTest()
-    : ui_thread_(content::BrowserThread::UI, MessageLoop::current()),
-      file_thread_(content::BrowserThread::FILE, MessageLoop::current()) {
+    : ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()),
+      file_thread_(content::BrowserThread::FILE, base::MessageLoop::current()) {
 }
 
 void MediaFileSystemRegistryTest::CreateProfileState(size_t profile_count) {
@@ -616,14 +616,14 @@ std::string MediaFileSystemRegistryTest::AttachDevice(
   DCHECK(StorageInfo::IsRemovableDevice(device_id));
   string16 name = location.LossyDisplayName();
   ProcessAttach(device_id, name, location.value());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   return device_id;
 }
 
 void MediaFileSystemRegistryTest::DetachDevice(const std::string& device_id) {
   DCHECK(StorageInfo::IsRemovableDevice(device_id));
   ProcessDetach(device_id);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void MediaFileSystemRegistryTest::SetGalleryPermission(
@@ -760,7 +760,7 @@ void MediaFileSystemRegistryTest::TearDown() {
       g_browser_process->media_file_system_registry();
   EXPECT_EQ(0U, registry->GetExtensionGalleriesHostCountForTests());
   BrowserThread::GetBlockingPool()->FlushForTesting();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 ///////////
@@ -861,7 +861,7 @@ TEST_F(MediaFileSystemRegistryTest,
       break;
     }
   }
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(forget_gallery);
   EXPECT_EQ(gallery_count, GetAutoAddedGalleries(profile_state).size());
 

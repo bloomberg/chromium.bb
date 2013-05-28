@@ -112,12 +112,13 @@ class PasswordStoreDefaultTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->Run();
     db_thread_.Stop();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   // PasswordStore, WDS schedule work on this thread.
   content::TestBrowserThread db_thread_;
@@ -132,7 +133,7 @@ ACTION(STLDeleteElements0) {
 
 ACTION(QuitUIMessageLoop) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
@@ -184,7 +185,7 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
       .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
 
   store->GetAutofillableLogins(&consumer);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   STLDeleteElements(&expected_forms);
 }

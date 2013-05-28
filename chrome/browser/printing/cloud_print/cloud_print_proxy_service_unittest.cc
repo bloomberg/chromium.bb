@@ -87,7 +87,7 @@ void CallTask(const base::Closure& task) {
 
 void PostTask(const base::Closure& task) {
   if (!task.is_null())
-    MessageLoop::current()->PostTask(FROM_HERE, task);
+    base::MessageLoop::current()->PostTask(FROM_HERE, task);
 }
 
 void MockServiceProcessControl::SetConnectSuccessMockExpectations(
@@ -196,7 +196,7 @@ class CloudPrintProxyPolicyTest : public ::testing::Test {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   TestingProfile profile_;
 };
@@ -432,7 +432,7 @@ BrowserContextKeyedService* TestCloudPrintProxyServiceFactory(
   service->GetMockServiceProcessControl()->SetWillBeDisabledExpectations();
 
   service->Initialize();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   return service;
 }
 
@@ -450,5 +450,5 @@ TEST_F(CloudPrintProxyPolicyTest, StartupBrowserCreatorWithCommandLine) {
   command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);
 
   EXPECT_FALSE(LaunchBrowser(command_line, &profile_));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }

@@ -597,7 +597,7 @@ class TestSBClient
   }
 
   void DownloadCheckDone() {
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
   }
 
   SBThreatType threat_type_;
@@ -818,7 +818,7 @@ class SafeBrowsingServiceShutdownTest : public SafeBrowsingServiceTest {
                                   Profile::CreateStatus status) {
     if (status == Profile::CREATE_STATUS_INITIALIZED) {
       profile2_ = profile;
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   }
 

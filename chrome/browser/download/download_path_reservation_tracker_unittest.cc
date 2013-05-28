@@ -94,7 +94,7 @@ class DownloadPathReservationTrackerTest : public testing::Test {
  protected:
   base::ScopedTempDir test_download_dir_;
   base::FilePath default_download_path_;
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

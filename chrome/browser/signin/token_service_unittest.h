@@ -66,7 +66,7 @@ class TokenServiceTestHarness : public testing::Test {
 
   void WaitForDBLoadCompletion();
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;  // Mostly so DCHECKS pass.
   content::TestBrowserThread db_thread_;  // WDS on here
 

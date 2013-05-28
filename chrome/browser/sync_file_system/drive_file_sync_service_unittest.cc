@@ -80,14 +80,14 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
  protected:
-  MessageLoop* message_loop() { return &message_loop_; }
+  base::MessageLoop* message_loop() { return &message_loop_; }
   drive::FakeAPIUtil* fake_api_util() { return fake_api_util_; }
   DriveMetadataStore* metadata_store() { return metadata_store_; }
   DriveFileSyncService* sync_service() { return sync_service_.get(); }
 
  private:
   base::ScopedTempDir scoped_base_dir_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

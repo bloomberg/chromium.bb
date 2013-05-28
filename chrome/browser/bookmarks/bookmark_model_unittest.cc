@@ -890,7 +890,7 @@ class BookmarkModelTestWithProfile : public testing::Test {
   BookmarkModel* bb_model_;
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 };

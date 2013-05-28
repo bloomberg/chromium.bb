@@ -144,7 +144,7 @@ class SyncDataTypeManagerImplTest : public testing::Test {
         static_cast<FakeDataTypeController*>(it->second.get()));
   }
 
-  MessageLoopForUI ui_loop_;
+  base::MessageLoopForUI ui_loop_;
   content::TestBrowserThread ui_thread_;
   DataTypeController::TypeMap controllers_;
   FakeBackendDataTypeConfigurer configurer_;

@@ -37,7 +37,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   ScopedTestingLocalState scoped_testing_local_state_;
 };

@@ -80,7 +80,7 @@ class AsyncPolicyProviderTest : public testing::Test {
   MockPolicyLoader* loader_;
   scoped_ptr<AsyncPolicyProvider> provider_;
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 
  private:
   content::TestBrowserThread ui_thread_;

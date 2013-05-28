@@ -78,7 +78,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
   base::FilePath kTemplateFilepath(kTemplateFilename);
   const char kNoDisplayDesktopFile[] = "[Desktop Entry]\nNoDisplay=true";
 
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
   // No existing shortcuts.
@@ -192,7 +192,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
   const char kTestData1[] = "a magical testing string";
   const char kTestData2[] = "a different testing string";
 
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
   // Test that it searches $XDG_DATA_HOME/applications.

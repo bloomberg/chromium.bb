@@ -21,7 +21,7 @@ const char kOverQuotaError[] = "This request exceeds the * quota.";
 }  // namespace
 
 ExtensionsQuotaService::ExtensionsQuotaService() {
-  if (MessageLoop::current() != NULL) {  // Null in unit tests.
+  if (base::MessageLoop::current() != NULL) {  // Null in unit tests.
     purge_timer_.Start(FROM_HERE,
                        base::TimeDelta::FromDays(kPurgeIntervalInDays),
                        this, &ExtensionsQuotaService::Purge);

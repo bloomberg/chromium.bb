@@ -88,7 +88,7 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   if (synchronous_init_) {
     // The SyncBackend posts a task to the current loop when
     // initialization completes.
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 }
 
@@ -169,7 +169,7 @@ void SyncBackendHostForProfileSyncTest
   if (fail_initial_download_) {
     frontend()->OnSyncConfigureRetry();
     if (synchronous_init_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   } else {
     initial_download_closure_.Run();
     initial_download_closure_.Reset();
@@ -258,7 +258,7 @@ void TestProfileSyncService::OnBackendInitialized(
 
   // TODO(akalin): Figure out a better way to do this.
   if (synchronous_backend_initialization_) {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 }
 
@@ -266,7 +266,7 @@ void TestProfileSyncService::OnConfigureDone(
     const browser_sync::DataTypeManager::ConfigureResult& result) {
   ProfileSyncService::OnConfigureDone(result);
   if (!synchronous_sync_configuration_)
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 UserShare* TestProfileSyncService::GetUserShare() const {

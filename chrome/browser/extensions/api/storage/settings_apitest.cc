@@ -128,7 +128,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   }
 
   void InitSync(syncer::SyncChangeProcessor* sync_processor) {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     InitSyncWithSyncableService(
         sync_processor,
         browser()->profile()->GetExtensionService()->settings_frontend()->
@@ -136,7 +136,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
   }
 
   void SendChanges(const syncer::SyncChangeList& change_list) {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     SendChangesToSyncableService(
         change_list,
         browser()->profile()->GetExtensionService()->settings_frontend()->

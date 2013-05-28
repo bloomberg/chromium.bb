@@ -95,7 +95,7 @@ class ExtensionActionIconFactoryTest
 
   void WaitForIconUpdate() {
     quit_in_icon_updated_ = true;
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     quit_in_icon_updated_ = false;
   }
 
@@ -150,7 +150,7 @@ class ExtensionActionIconFactoryTest
   // ExtensionActionIconFactory::Observer overrides:
   virtual void OnIconUpdated() OVERRIDE {
     if (quit_in_icon_updated_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   gfx::ImageSkia GetFavicon() {
@@ -166,7 +166,7 @@ class ExtensionActionIconFactoryTest
 
  private:
   bool quit_in_icon_updated_;
-  MessageLoop ui_loop_;
+  base::MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;

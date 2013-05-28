@@ -681,7 +681,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
     // determiners_ doesn't keep hogging memory.
     weak_ptr_factory_.reset(
         new base::WeakPtrFactory<ExtensionDownloadsEventRouterData>(this));
-    MessageLoopForUI::current()->PostDelayedTask(
+    base::MessageLoopForUI::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ExtensionDownloadsEventRouterData::ClearPendingDeterminers,
                    weak_ptr_factory_->GetWeakPtr()),
@@ -1138,7 +1138,8 @@ bool DownloadsDragFunction::RunImpl() {
   gfx::NativeView view = web_contents->GetView()->GetNativeView();
   {
     // Enable nested tasks during DnD, while |DragDownload()| blocks.
-    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+    base::MessageLoop::ScopedNestableTaskAllower allow(
+        base::MessageLoop::current());
     download_util::DragDownload(download_item, icon, view);
   }
   return true;

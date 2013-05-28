@@ -96,8 +96,8 @@ void TestProvider::Start(const AutocompleteInput& input,
 
   if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
     done_ = false;
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&TestProvider::Run,
-                                                           this));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&TestProvider::Run, this));
   }
 }
 
@@ -194,7 +194,7 @@ class AutocompleteProviderTest : public testing::Test,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::NotificationRegistrar registrar_;
   TestingProfile profile_;
 };
@@ -393,7 +393,7 @@ void AutocompleteProviderTest::RunQuery(const string16 query) {
   if (!controller_->done())
     // The message loop will terminate when all autocomplete input has been
     // collected.
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 }
 
 void AutocompleteProviderTest::RunExactKeymatchTest(
@@ -422,7 +422,7 @@ void AutocompleteProviderTest::Observe(
     const content::NotificationDetails& details) {
   if (controller_->done()) {
     result_.CopyFrom(controller_->result());
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 }
 

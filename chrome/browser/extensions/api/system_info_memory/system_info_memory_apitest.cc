@@ -39,11 +39,11 @@ class SystemInfoMemoryApiTest: public ExtensionApiTest {
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
+    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
   }
 
  private:
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
 };
 
 IN_PROC_BROWSER_TEST_F(SystemInfoMemoryApiTest, Memory) {

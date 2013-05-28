@@ -39,7 +39,7 @@ static void OnSendCompleted(int result) {
 }
 
 TEST(UDPSocketUnitTest, TestUDPSocketRecvFrom) {
-  MessageLoopForIO io_loop;  // For RecvFrom to do its threaded work.
+  base::MessageLoopForIO io_loop;  // For RecvFrom to do its threaded work.
   UDPSocket socket("abcdefghijklmnopqrst");
 
   // Confirm that we can call two RecvFroms in quick succession without
@@ -81,7 +81,7 @@ TEST(UDPSocketUnitTest, TestUDPMulticastLoopbackMode) {
 }
 
 static void QuitMessageLoop() {
-  MessageLoopForIO::current()->QuitNow();
+  base::MessageLoopForIO::current()->QuitNow();
 }
 
 // Send a test multicast packet every second.
@@ -90,7 +90,7 @@ static void SendMulticastPacket(UDPSocket* src, int result) {
   if (result == 0) {
     scoped_refptr<net::IOBuffer> data = new net::WrappedIOBuffer(test_message);
     src->Write(data, test_message_length, base::Bind(&OnSendCompleted));
-    MessageLoopForIO::current()->PostDelayedTask(FROM_HERE,
+    base::MessageLoopForIO::current()->PostDelayedTask(FROM_HERE,
           base::Bind(&SendMulticastPacket, src, result),
           base::TimeDelta::FromSeconds(1));
   } else {
@@ -112,7 +112,7 @@ TEST(UDPSocketUnitTest, TestUDPMulticastRecv) {
   const int kPort = 9999;
   const char* const kGroup = "237.132.100.17";
   bool packet_received = false;
-  MessageLoopForIO io_loop;  // For Read to do its threaded work.
+  base::MessageLoopForIO io_loop;  // For Read to do its threaded work.
   UDPSocket dest("abcdefghijklmnopqrst");
   UDPSocket src("abcdefghijklmnopqrst");
 

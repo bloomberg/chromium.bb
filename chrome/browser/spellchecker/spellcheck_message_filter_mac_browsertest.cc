@@ -18,18 +18,18 @@
 // allows verification by the test case.
 class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterMac {
  public:
-  explicit TestingSpellCheckMessageFilter(MessageLoopForUI* loop)
+  explicit TestingSpellCheckMessageFilter(base::MessageLoopForUI* loop)
       : SpellCheckMessageFilterMac(0),
         loop_(loop) { }
 
   virtual bool Send(IPC::Message* message) OVERRIDE {
     sent_messages_.push_back(message);
-    loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
     return true;
   }
 
   ScopedVector<IPC::Message> sent_messages_;
-  MessageLoopForUI* loop_;
+  base::MessageLoopForUI* loop_;
 
  private:
   virtual ~TestingSpellCheckMessageFilter() {}
@@ -41,7 +41,7 @@ typedef InProcessBrowserTest SpellCheckMessageFilterMacBrowserTest;
 IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterMacBrowserTest,
                        SpellCheckReturnMessage) {
   scoped_refptr<TestingSpellCheckMessageFilter> target(
-      new TestingSpellCheckMessageFilter(MessageLoopForUI::current()));
+      new TestingSpellCheckMessageFilter(base::MessageLoopForUI::current()));
 
   SpellCheckHostMsg_RequestTextCheck to_be_received(
       123, 456, UTF8ToUTF16("zz."));
@@ -49,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterMacBrowserTest,
   target->OnMessageReceived(to_be_received, &handled);
   EXPECT_TRUE(handled);
 
-  MessageLoopForUI::current()->Run();
+  base::MessageLoopForUI::current()->Run();
   EXPECT_EQ(1U, target->sent_messages_.size());
 
   int sent_identifier;

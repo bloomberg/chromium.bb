@@ -26,7 +26,7 @@ class CloudPolicyCoreTest : public testing::Test {
     chrome::RegisterLocalState(prefs_.registry());
   }
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 
   TestingPrefServiceSimple prefs_;
   MockCloudPolicyStore store_;

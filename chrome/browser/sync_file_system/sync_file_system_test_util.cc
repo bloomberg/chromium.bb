@@ -43,11 +43,11 @@ MultiThreadTestHelper::~MultiThreadTestHelper() {}
 void MultiThreadTestHelper::SetUp() {
   file_thread_->Start();
   io_thread_->StartWithOptions(
-      base::Thread::Options(MessageLoop::TYPE_IO, 0));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
   browser_ui_thread_.reset(
       new TestBrowserThread(BrowserThread::UI,
-                            MessageLoop::current()));
+                            base::MessageLoop::current()));
   browser_file_thread_.reset(
       new TestBrowserThread(BrowserThread::FILE,
                             file_thread_->message_loop()));

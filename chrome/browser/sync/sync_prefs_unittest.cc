@@ -30,7 +30,7 @@ class SyncPrefsTest : public testing::Test {
   TestingPrefServiceSyncable pref_service_;
 
  private:
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 };
 
 TEST_F(SyncPrefsTest, Basic) {

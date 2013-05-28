@@ -164,7 +164,7 @@ class TextDatabaseManagerTest : public testing::Test {
     file_util::Delete(dir_, true);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   // Directory containing the databases.
   base::FilePath dir_;

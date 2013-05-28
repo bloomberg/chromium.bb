@@ -155,7 +155,7 @@ class InputMethodManagerImplTest :  public testing::Test {
   MockIBusClient* mock_ibus_client_;
   MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;
   MockXKeyboard* xkeyboard_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   MockComponentExtIMEManagerDelegate* mock_delegate_;
   std::vector<ComponentExtensionIME> ime_list_;
 

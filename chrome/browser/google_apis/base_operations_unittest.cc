@@ -73,7 +73,7 @@ class BaseOperationsTest : public testing::Test {
     LOG(ERROR) << "Initialized.";
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<OperationRunner> runner_;

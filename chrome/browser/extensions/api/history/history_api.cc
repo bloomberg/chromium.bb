@@ -280,7 +280,7 @@ bool HistoryFunctionWithCallback::RunImpl() {
 }
 
 void HistoryFunctionWithCallback::SendAsyncResponse() {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&HistoryFunctionWithCallback::SendResponseToCallback, this));
 }

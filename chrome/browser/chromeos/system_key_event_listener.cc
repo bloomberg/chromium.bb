@@ -69,7 +69,7 @@ SystemKeyEventListener::SystemKeyEventListener()
     LOG(WARNING) << "Could not install Xkb Indicator observer";
   }
 
-  MessageLoopForUI::current()->AddObserver(this);
+  base::MessageLoopForUI::current()->AddObserver(this);
 }
 
 SystemKeyEventListener::~SystemKeyEventListener() {
@@ -79,7 +79,7 @@ SystemKeyEventListener::~SystemKeyEventListener() {
 void SystemKeyEventListener::Stop() {
   if (stopped_)
     return;
-  MessageLoopForUI::current()->RemoveObserver(this);
+  base::MessageLoopForUI::current()->RemoveObserver(this);
   stopped_ = true;
 }
 

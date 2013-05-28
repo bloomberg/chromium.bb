@@ -120,7 +120,7 @@ void TemplateURLFetcherTest::DestroyedCallback(
     TemplateURLFetcherTestCallbacks* callbacks) {
   callbacks_destroyed_++;
   if (waiting_for_download_)
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 void TemplateURLFetcherTest::ConfirmAddSearchProvider(
@@ -156,7 +156,7 @@ void TemplateURLFetcherTest::StartDownload(
 void TemplateURLFetcherTest::WaitForDownloadToFinish() {
   ASSERT_FALSE(waiting_for_download_);
   waiting_for_download_ = true;
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   waiting_for_download_ = false;
 }
 

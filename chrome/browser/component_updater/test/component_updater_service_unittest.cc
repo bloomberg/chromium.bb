@@ -49,7 +49,7 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
     // time to break from the test messageloop Run() method so the test can
     // finish.
     if (--times_ <= 0) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
       return 0;
 
     }
@@ -271,7 +271,7 @@ TEST_F(ComponentUpdaterTest, VerifyFixture) {
 // start-shutdown situation. Failure of this test will be a crash. Also
 // if there is no work to do, there are no notifications generated.
 TEST_F(ComponentUpdaterTest, StartStop) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
   component_updater()->Start();
@@ -285,7 +285,7 @@ TEST_F(ComponentUpdaterTest, StartStop) {
 // the COMPONENT_UPDATER_STARTED and COMPONENT_UPDATER_SLEEPING notifications
 // are generated.
 TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   content::TestBrowserThread file_thread(BrowserThread::FILE);
   content::TestBrowserThread io_thread(BrowserThread::IO);
@@ -364,7 +364,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 // 2- download crx
 // 3- second manifest check.
 TEST_F(ComponentUpdaterTest, InstallCrx) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   content::TestBrowserThread file_thread(BrowserThread::FILE);
   content::TestBrowserThread io_thread(BrowserThread::IO);
@@ -429,7 +429,7 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
 // has a different source. In this case there would be two manifest
 // checks to different urls, each only containing one component.
 TEST_F(ComponentUpdaterTest, InstallCrxTwoSources) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   content::TestBrowserThread file_thread(BrowserThread::FILE);
   content::TestBrowserThread io_thread(BrowserThread::IO);
@@ -501,7 +501,7 @@ TEST_F(ComponentUpdaterTest, InstallCrxTwoSources) {
 // particular there should not be an install because the minimum product
 // version is much higher than of chrome.
 TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   content::TestBrowserThread file_thread(BrowserThread::FILE);
   content::TestBrowserThread io_thread(BrowserThread::IO);
@@ -541,7 +541,7 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
 //  - We ping.
 //  - This triggers a second loop, which has a reply that triggers an install.
 TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   content::TestBrowserThread file_thread(BrowserThread::FILE);
   content::TestBrowserThread io_thread(BrowserThread::IO);
@@ -657,7 +657,7 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
 // Verify that a previously registered component can get re-registered
 // with a different version.
 TEST_F(ComponentUpdaterTest, CheckReRegistration) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   content::TestBrowserThread file_thread(BrowserThread::FILE);
   content::TestBrowserThread io_thread(BrowserThread::IO);

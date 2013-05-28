@@ -44,7 +44,7 @@ class ExtensionFromWebAppTest
           content::Details<const InstalledExtensionInfo>(details)->extension;
       if (extension->id() == expected_extension_id_) {
         installed_extension_ = extension;
-        MessageLoopForUI::current()->Quit();
+        base::MessageLoopForUI::current()->Quit();
       }
     }
   }

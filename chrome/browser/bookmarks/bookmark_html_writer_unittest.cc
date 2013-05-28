@@ -128,7 +128,7 @@ class BookmarkHTMLWriterTest : public testing::Test {
 // Class that will notify message loop when file is written.
 class BookmarksObserver : public BookmarksExportObserver {
  public:
-  explicit BookmarksObserver(MessageLoop* loop) : loop_(loop) {
+  explicit BookmarksObserver(base::MessageLoop* loop) : loop_(loop) {
     DCHECK(loop);
   }
 
@@ -137,14 +137,14 @@ class BookmarksObserver : public BookmarksExportObserver {
   }
 
  private:
-  MessageLoop* loop_;
+  base::MessageLoop* loop_;
   DISALLOW_COPY_AND_ASSIGN(BookmarksObserver);
 };
 
 // Tests bookmark_html_writer by populating a BookmarkModel, writing it out by
 // way of bookmark_html_writer, then using the importer to read it back in.
 TEST_F(BookmarkHTMLWriterTest, Test) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread fake_ui_thread(BrowserThread::UI, &message_loop);
   content::TestBrowserThread fake_file_thread(BrowserThread::FILE,
                                               &message_loop);

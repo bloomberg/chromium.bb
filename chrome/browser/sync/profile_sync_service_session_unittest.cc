@@ -249,9 +249,9 @@ class ProfileSyncServiceSessionTest
 
     // Pump messages posted by the sync core thread (which may end up
     // posting on the IO thread).
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     io_thread_.Stop();
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -293,7 +293,7 @@ class ProfileSyncServiceSessionTest
     TokenServiceFactory::GetForProfile(profile())->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");
     sync_service_->Initialize();
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     return true;
   }
 
@@ -1200,7 +1200,7 @@ TEST_F(ProfileSyncServiceSessionTest, Favicons) {
   // Update associator.
   model_associator_->AssociateForeignSpecifics(meta, base::Time());
   model_associator_->AssociateForeignSpecifics(tab, base::Time());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   ASSERT_FALSE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
 
   // Now add a favicon.
@@ -1208,7 +1208,7 @@ TEST_F(ProfileSyncServiceSessionTest, Favicons) {
   tab.mutable_tab()->set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
   tab.mutable_tab()->set_favicon("data");
   model_associator_->AssociateForeignSpecifics(tab, base::Time());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   ASSERT_TRUE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
   ASSERT_TRUE(CompareMemoryToString("data", favicon));
 
@@ -1219,7 +1219,7 @@ TEST_F(ProfileSyncServiceSessionTest, Favicons) {
   tab.mutable_tab()->clear_favicon_type();
   tab.mutable_tab()->clear_favicon();
   model_associator_->AssociateForeignSpecifics(tab, base::Time());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   ASSERT_TRUE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
 }
 

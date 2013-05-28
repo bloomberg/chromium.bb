@@ -109,7 +109,7 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   void PumpLoop();
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   // Needed to make the DeleteOnUIThread trait of WebDataService work
   // properly.
   content::TestBrowserThread ui_thread_;

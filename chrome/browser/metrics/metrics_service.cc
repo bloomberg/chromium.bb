@@ -380,7 +380,7 @@ class MetricsMemoryDetails : public MemoryDetails {
       : callback_(callback) {}
 
   virtual void OnDetailsAvailable() OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE, callback_);
+    base::MessageLoop::current()->PostTask(FROM_HERE, callback_);
   }
 
  private:
@@ -960,7 +960,7 @@ void MetricsService::OnInitTaskGotPluginInfo(
       FROM_HERE,
       base::Bind(&MetricsService::InitTaskGetGoogleUpdateData,
                  self_ptr_factory_.GetWeakPtr(),
-                 MessageLoop::current()->message_loop_proxy()));
+                 base::MessageLoop::current()->message_loop_proxy()));
 }
 
 // static
@@ -1071,7 +1071,7 @@ std::string MetricsService::GenerateClientID() {
 void MetricsService::ScheduleNextStateSave() {
   state_saver_factory_.InvalidateWeakPtrs();
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&MetricsService::SaveLocalState,
                  state_saver_factory_.GetWeakPtr()),
       base::TimeDelta::FromMinutes(kSaveStateIntervalMinutes));
@@ -1112,7 +1112,7 @@ void MetricsService::OpenNewLog() {
         FROM_HERE,
         base::Bind(&MetricsService::InitTaskGetHardwareClass,
             self_ptr_factory_.GetWeakPtr(),
-            MessageLoop::current()->message_loop_proxy()),
+            base::MessageLoop::current()->message_loop_proxy()),
         base::TimeDelta::FromSeconds(kInitializationDelaySeconds));
   }
 }
@@ -1263,7 +1263,7 @@ void MetricsService::OnMemoryDetailCollectionDone() {
   // child processes. Wait time specifies how long to wait before absolutely
   // calling us back on the task.
   content::FetchHistogramsAsynchronously(
-      MessageLoop::current(), callback,
+      base::MessageLoop::current(), callback,
       base::TimeDelta::FromMilliseconds(kMaxHistogramGatheringWaitDuration));
 }
 

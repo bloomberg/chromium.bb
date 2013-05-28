@@ -80,7 +80,7 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
     EXPECT_LE(GetLastDelay(), expected_delay);
   }
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   MockCloudPolicyClient client_;
   MockCloudPolicyStore store_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;

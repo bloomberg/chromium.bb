@@ -138,7 +138,7 @@ class ProfileManagerTest : public testing::Test {
   scoped_refptr<extensions::EventRouterForwarder>
       extension_event_router_forwarder_;
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;

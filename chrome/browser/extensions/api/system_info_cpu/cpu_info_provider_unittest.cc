@@ -145,7 +145,7 @@ class CpuInfoProviderTest : public testing::Test {
   void VerifyResult();
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_refptr<TestCpuInfoProvider> cpu_info_provider_;
@@ -158,7 +158,7 @@ class CpuInfoProviderTest : public testing::Test {
 };
 
 CpuInfoProviderTest::CpuInfoProviderTest()
-    : message_loop_(MessageLoop::TYPE_UI),
+    : message_loop_(base::MessageLoop::TYPE_UI),
       ui_thread_(BrowserThread::UI, &message_loop_),
       file_thread_(BrowserThread::FILE, &message_loop_) {
 }
@@ -173,7 +173,7 @@ void CpuInfoProviderTest::OnCheckCpuSamplingFinishedForTesting(
   // UI thread a chance to verify results.
   if (cpu_info_provider_->is_complete_sampling()) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            MessageLoop::QuitClosure());
+                            base::MessageLoop::QuitClosure());
   }
 
   TestCpuUpdateInfo result;

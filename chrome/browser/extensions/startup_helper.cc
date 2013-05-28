@@ -298,9 +298,9 @@ bool StartupHelper::InstallFromWebstore(const CommandLine& cmd_line,
   AppInstallHelper helper;
   helper.BeginInstall(profile, id,
                       !cmd_line.HasSwitch(switches::kForceAppMode),
-                      MessageLoop::QuitWhenIdleClosure());
+                      base::MessageLoop::QuitWhenIdleClosure());
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   if (!helper.success())
     LOG(ERROR) << "InstallFromWebstore failed with error: " << helper.error();
   return helper.success();

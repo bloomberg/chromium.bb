@@ -39,9 +39,9 @@ namespace extensions {
 class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
  public:
   ActivityDatabaseTest()
-      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
-        db_thread_(BrowserThread::DB, MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
+      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
+        db_thread_(BrowserThread::DB, base::MessageLoop::current()),
+        file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -56,8 +56,9 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
   }
 
   virtual ~ActivityDatabaseTest() {
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->Run();
   }
 
  protected:
@@ -371,7 +372,7 @@ TEST_F(ActivityDatabaseTest, BatchModeOn) {
 
   // Artificially trigger and then stop the timer.
   activity_db->SetTimerForTesting(0);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions_after =
         activity_db->GetActions("punky", 0);

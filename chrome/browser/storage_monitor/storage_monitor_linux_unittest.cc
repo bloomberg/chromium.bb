@@ -122,7 +122,8 @@ std::string GetDeviceId(const std::string& device) {
 
 class TestStorageMonitorLinux : public StorageMonitorLinux {
  public:
-  TestStorageMonitorLinux(const base::FilePath& path, MessageLoop* message_loop)
+  TestStorageMonitorLinux(const base::FilePath& path,
+                          base::MessageLoop* message_loop)
       : StorageMonitorLinux(path),
         message_loop_(message_loop) {
     SetMediaTransferProtocolManagerForTest(
@@ -135,10 +136,10 @@ class TestStorageMonitorLinux : public StorageMonitorLinux {
   virtual void UpdateMtab(
       const MtabWatcherLinux::MountPointDeviceMap& new_mtab) OVERRIDE {
     StorageMonitorLinux::UpdateMtab(new_mtab);
-    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestStorageMonitorLinux);
 };
@@ -160,7 +161,7 @@ class StorageMonitorLinuxTest : public testing::Test {
   };
 
   StorageMonitorLinuxTest()
-      : message_loop_(MessageLoop::TYPE_IO),
+      : message_loop_(base::MessageLoop::TYPE_IO),
         ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_) {
   }
@@ -304,7 +305,7 @@ class StorageMonitorLinuxTest : public testing::Test {
   }
 
   // The message loop and file thread to run tests on.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

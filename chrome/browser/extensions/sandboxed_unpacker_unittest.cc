@@ -159,7 +159,7 @@ class SandboxedUnpackerTest : public testing::Test {
   MockSandboxedUnpackerClient* client_;
   scoped_ptr<Unpacker> unpacker_;
   scoped_refptr<SandboxedUnpacker> sandboxed_unpacker_;
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   scoped_ptr<content::TestBrowserThread> file_thread_;
 };
 

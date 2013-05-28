@@ -27,7 +27,7 @@ namespace extensions {
 class ExternalPolicyLoaderTest : public testing::Test {
  public:
   ExternalPolicyLoaderTest()
-      : loop_(MessageLoop::TYPE_IO),
+      : loop_(base::MessageLoop::TYPE_IO),
         ui_thread_(BrowserThread::UI, &loop_) {
   }
 
@@ -36,7 +36,7 @@ class ExternalPolicyLoaderTest : public testing::Test {
  private:
   // We need these to satisfy BrowserThread::CurrentlyOn(BrowserThread::UI)
   // checks in ExternalProviderImpl.
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
 };
 

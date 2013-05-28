@@ -31,7 +31,7 @@ void HoldRefCallback(const scoped_refptr<printing::PrintJobWorkerOwner>& owner,
 namespace printing {
 
 PrintJob::PrintJob()
-    : ui_message_loop_(MessageLoop::current()),
+    : ui_message_loop_(base::MessageLoop::current()),
       source_(NULL),
       worker_(),
       settings_(),
@@ -44,8 +44,8 @@ PrintJob::PrintJob()
   DCHECK(ui_message_loop_);
   // This is normally a UI message loop, but in unit tests, the message loop is
   // of the 'default' type.
-  DCHECK(ui_message_loop_->type() == MessageLoop::TYPE_UI ||
-         ui_message_loop_->type() == MessageLoop::TYPE_DEFAULT);
+  DCHECK(ui_message_loop_->type() == base::MessageLoop::TYPE_UI ||
+         ui_message_loop_->type() == base::MessageLoop::TYPE_DEFAULT);
   ui_message_loop_->AddDestructionObserver(this);
 }
 
@@ -56,7 +56,7 @@ PrintJob::~PrintJob() {
   DCHECK(!is_canceling_);
   if (worker_.get())
     DCHECK(worker_->message_loop() == NULL);
-  DCHECK_EQ(ui_message_loop_, MessageLoop::current());
+  DCHECK_EQ(ui_message_loop_, base::MessageLoop::current());
 }
 
 void PrintJob::Initialize(PrintJobWorkerOwner* job,
@@ -84,7 +84,7 @@ void PrintJob::Initialize(PrintJobWorkerOwner* job,
 void PrintJob::Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
-  DCHECK_EQ(ui_message_loop_, MessageLoop::current());
+  DCHECK_EQ(ui_message_loop_, base::MessageLoop::current());
   switch (type) {
     case chrome::NOTIFICATION_PRINT_JOB_EVENT: {
       OnNotifyPrintJobEvent(*content::Details<JobEventDetails>(details).ptr());
@@ -126,7 +126,7 @@ void PrintJob::WillDestroyCurrentMessageLoop() {
 }
 
 void PrintJob::StartPrinting() {
-  DCHECK_EQ(ui_message_loop_, MessageLoop::current());
+  DCHECK_EQ(ui_message_loop_, base::MessageLoop::current());
   DCHECK(worker_->message_loop());
   DCHECK(!is_job_pending_);
   if (!worker_->message_loop() || is_job_pending_)
@@ -151,7 +151,7 @@ void PrintJob::StartPrinting() {
 }
 
 void PrintJob::Stop() {
-  DCHECK_EQ(ui_message_loop_, MessageLoop::current());
+  DCHECK_EQ(ui_message_loop_, base::MessageLoop::current());
 
   if (quit_factory_.HasWeakPtrs()) {
     // In case we're running a nested message loop to wait for a job to finish,
@@ -163,7 +163,7 @@ void PrintJob::Stop() {
   // Be sure to live long enough.
   scoped_refptr<PrintJob> handle(this);
 
-  MessageLoop* worker_loop = worker_->message_loop();
+  base::MessageLoop* worker_loop = worker_->message_loop();
   if (worker_loop) {
     ControlledWorkerShutdown();
 
@@ -183,8 +183,9 @@ void PrintJob::Cancel() {
   // Be sure to live long enough.
   scoped_refptr<PrintJob> handle(this);
 
-  DCHECK_EQ(ui_message_loop_, MessageLoop::current());
-  MessageLoop* worker_loop = worker_.get() ? worker_->message_loop() : NULL;
+  DCHECK_EQ(ui_message_loop_, base::MessageLoop::current());
+  base::MessageLoop* worker_loop =
+      worker_.get() ? worker_->message_loop() : NULL;
   if (worker_loop) {
     // Call this right now so it renders the context invalid. Do not use
     // InvokeLater since it would take too much time.
@@ -205,11 +206,12 @@ bool PrintJob::FlushJob(base::TimeDelta timeout) {
   // Make sure the object outlive this message loop.
   scoped_refptr<PrintJob> handle(this);
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&PrintJob::Quit, quit_factory_.GetWeakPtr()), timeout);
 
-  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-  MessageLoop::current()->Run();
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
+  base::MessageLoop::current()->Run();
 
   return true;
 }
@@ -281,7 +283,7 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
     }
     case JobEventDetails::DOC_DONE: {
       // This will call Stop() and broadcast a JOB_DONE message.
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(&PrintJob::OnDocumentDone, this));
       break;
     }
@@ -309,7 +311,7 @@ void PrintJob::OnDocumentDone() {
 }
 
 void PrintJob::ControlledWorkerShutdown() {
-  DCHECK_EQ(ui_message_loop_, MessageLoop::current());
+  DCHECK_EQ(ui_message_loop_, base::MessageLoop::current());
 
   // The deadlock this code works around is specific to window messaging on
   // Windows, so we aren't likely to need it on any other platforms.
@@ -375,7 +377,7 @@ void PrintJob::HoldUntilStopIsCalled(const scoped_refptr<PrintJob>&) {
 }
 
 void PrintJob::Quit() {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 // Takes settings_ ownership and will be deleted in the receiving thread.

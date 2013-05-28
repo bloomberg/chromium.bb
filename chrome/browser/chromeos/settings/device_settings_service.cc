@@ -150,7 +150,7 @@ void DeviceSettingsService::GetOwnershipStatusAsync(
     const OwnershipStatusCallback& callback) {
   if (owner_key_.get()) {
     // If there is a key, report status immediately.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
                    owner_key_->public_key() ? OWNERSHIP_TAKEN : OWNERSHIP_NONE,

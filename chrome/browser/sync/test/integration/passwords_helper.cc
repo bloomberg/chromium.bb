@@ -59,7 +59,7 @@ class PasswordStoreConsumerHelper : public PasswordStoreConsumer {
     }
 
     // Quit the message loop to wake up passwords_helper::GetLogins.
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
   }
 
  private:

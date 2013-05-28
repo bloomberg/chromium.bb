@@ -88,7 +88,7 @@ private:
 class InstantControllerTest : public testing::Test {
  public:
   InstantControllerTest()
-      : loop_(MessageLoop::TYPE_DEFAULT),
+      : loop_(base::MessageLoop::TYPE_DEFAULT),
         instant_controller_(new TestableInstantController()) {
   }
 
@@ -101,8 +101,8 @@ class InstantControllerTest : public testing::Test {
   }
 
  private:
-   MessageLoop loop_;
-   scoped_ptr<TestableInstantController> instant_controller_;
+  base::MessageLoop loop_;
+  scoped_ptr<TestableInstantController> instant_controller_;
 };
 
 TEST_F(InstantControllerTest, ShouldSwitchToLocalOverlayReturn) {

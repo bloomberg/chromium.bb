@@ -295,7 +295,7 @@ void TestingAutomationProvider::OnBrowserRemoved(Browser* browser) {
           switches::kKeepAliveForTest)) {
     // If you change this, update Observer for chrome::SESSION_END
     // below.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&TestingAutomationProvider::OnRemoveProvider, this));
   }

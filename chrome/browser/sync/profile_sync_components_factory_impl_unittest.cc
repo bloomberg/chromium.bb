@@ -97,7 +97,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
     CheckDefaultDatatypesInMapExcept(&controller_states, type);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<Profile> profile_;
   scoped_ptr<CommandLine> command_line_;

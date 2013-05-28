@@ -136,7 +136,7 @@ HintInfoBarDelegate::HintInfoBarDelegate(OmniboxSearchHint* omnibox_hint,
       weak_factory_(this) {
   // We want the info-bar to stick-around for few seconds and then be hidden
   // on the next navigation after that.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&HintInfoBarDelegate::AllowExpiry, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(8));

@@ -654,7 +654,7 @@ TEST_F(VariationsServiceTest, ValidateStudy) {
 }
 
 TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,
                                        &message_loop);
   TestingPrefServiceSimple prefs;
@@ -675,7 +675,7 @@ TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {
 }
 
 TEST_F(VariationsServiceTest, RequestsInitiallyAllowed) {
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,
                                        &message_loop);
   TestingPrefServiceSimple prefs;
@@ -692,7 +692,7 @@ TEST_F(VariationsServiceTest, RequestsInitiallyAllowed) {
 }
 
 TEST_F(VariationsServiceTest, SeedStoredWhenOKStatus) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread io_thread(content::BrowserThread::IO,
                                        &message_loop);
   TestingPrefServiceSimple prefs;
@@ -723,7 +723,7 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
     net::HTTP_SERVICE_UNAVAILABLE,
   };
 
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread io_thread(content::BrowserThread::IO,
                                        &message_loop);
   TestingPrefServiceSimple prefs;

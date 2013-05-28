@@ -47,7 +47,7 @@ class RulesRegistryServiceTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui;
   content::TestBrowserThread io;
 };

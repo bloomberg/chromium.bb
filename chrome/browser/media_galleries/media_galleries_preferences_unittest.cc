@@ -78,7 +78,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     // TestExtensionSystem uses DeleteSoon, so we need to delete the profile
     // and then run the message queue to clean up.
     profile_.reset();
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   virtual void SetUp() OVERRIDE {
@@ -212,7 +212,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
 
  private:
   // Needed for extension service & friends to work.
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

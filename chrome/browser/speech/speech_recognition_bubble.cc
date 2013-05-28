@@ -177,7 +177,7 @@ void SpeechRecognitionBubbleBase::SetWarmUpMode() {
 
 void SpeechRecognitionBubbleBase::DoWarmingUpAnimationStep() {
   SetImage(g_images.Get().warm_up()[animation_step_]);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&SpeechRecognitionBubbleBase::DoWarmingUpAnimationStep,
           weak_factory_.GetWeakPtr()),
@@ -206,7 +206,7 @@ void SpeechRecognitionBubbleBase::DoRecognizingAnimationStep() {
   SetImage(g_images.Get().spinner()[animation_step_]);
   if (++animation_step_ >= static_cast<int>(g_images.Get().spinner().size()))
     animation_step_ = 0;
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&SpeechRecognitionBubbleBase::DoRecognizingAnimationStep,
           weak_factory_.GetWeakPtr()),

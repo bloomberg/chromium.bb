@@ -75,7 +75,7 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   // A wrapper around SpellcheckCustomDictionary::LoadDictionaryFile private
@@ -112,7 +112,7 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
     return dictionary.Apply(change);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

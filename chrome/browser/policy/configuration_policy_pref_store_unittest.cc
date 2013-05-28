@@ -69,7 +69,7 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
   MockConfigurationPolicyProvider provider_;
   scoped_ptr<PolicyServiceImpl> policy_service_;
   scoped_refptr<ConfigurationPolicyPrefStore> store_;
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 };
 
 // Test cases for list-valued policy settings.

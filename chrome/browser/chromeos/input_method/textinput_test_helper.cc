@@ -75,7 +75,7 @@ void TextInputTestHelper::OnTextInputTypeChanged(
     const ui::TextInputClient* client) {
   latest_text_input_type_ = client->GetTextInputType();
   if (waiting_type_ == WAIT_ON_TEXT_INPUT_TYPE_CHANGED)
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 void TextInputTestHelper::OnInputMethodDestroyed(
@@ -85,13 +85,13 @@ void TextInputTestHelper::OnInputMethodDestroyed(
 void TextInputTestHelper::OnFocus() {
   focus_state_ = true;
   if (waiting_type_ == WAIT_ON_FOCUS)
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 void TextInputTestHelper::OnBlur() {
   focus_state_ = false;
   if (waiting_type_ == WAIT_ON_BLUR)
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 void TextInputTestHelper::OnCaretBoundsChanged(
@@ -102,7 +102,7 @@ void TextInputTestHelper::OnCaretBoundsChanged(
       !GetTextInputClient()->GetSelectionRange(&selection_range_))
       return;
   if (waiting_type_ == WAIT_ON_CARET_BOUNDS_CHANGED)
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 void TextInputTestHelper::OnTextInputStateChanged(

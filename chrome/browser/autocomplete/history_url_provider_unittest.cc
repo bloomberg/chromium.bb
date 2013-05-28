@@ -187,7 +187,7 @@ class HistoryURLProviderTest : public testing::Test,
 
   void RunAdjustOffsetTest(const string16 text, size_t expected_offset);
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   ACMatches matches_;
@@ -207,7 +207,7 @@ class HistoryURLProviderTestNoDB : public HistoryURLProviderTest {
 
 void HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
   if (autocomplete_->done())
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 void HistoryURLProviderTest::SetUpImpl(bool no_db) {
@@ -266,7 +266,7 @@ void HistoryURLProviderTest::RunTest(
   *identified_input_type = input.type();
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
   matches_ = autocomplete_->matches();
   if (sort_matches_) {
@@ -292,7 +292,7 @@ void HistoryURLProviderTest::RunAdjustOffsetTest(const string16 text,
                           false, true, AutocompleteInput::ALL_MATCHES);
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
   matches_ = autocomplete_->matches();
   ASSERT_GE(matches_.size(), 1U) << "Input text: " << text;
@@ -547,7 +547,7 @@ TEST_F(HistoryURLProviderTest, EmptyVisits) {
   int pandora_relevance = matches_[0].relevance;
 
   // Run the message loop. When |autocomplete_| finishes the loop is quit.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(autocomplete_->done());
   matches_ = autocomplete_->matches();
   ASSERT_GT(matches_.size(), 0u);
@@ -575,7 +575,7 @@ TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
                           AutocompleteInput::ALL_MATCHES);
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
   // None of the matches should attempt to autocomplete.
   matches_ = autocomplete_->matches();
@@ -743,7 +743,7 @@ TEST_F(HistoryURLProviderTest, CrashDueToFixup) {
                             AutocompleteInput::ALL_MATCHES);
     autocomplete_->Start(input, false);
     if (!autocomplete_->done())
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
   }
 }
 

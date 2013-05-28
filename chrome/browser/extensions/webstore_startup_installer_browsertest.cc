@@ -357,8 +357,8 @@ IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, LimitedAccept) {
   command_line->AppendSwitchASCII(
       switches::kLimitedInstallFromWebstore, "2");
   helper.LimitedInstallFromWebstore(*command_line, browser()->profile(),
-      MessageLoop::QuitWhenIdleClosure());
-  MessageLoop::current()->Run();
+      base::MessageLoop::QuitWhenIdleClosure());
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(saw_install());
   EXPECT_EQ(0, browser_open_count());

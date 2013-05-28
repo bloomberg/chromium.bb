@@ -78,14 +78,16 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
     switch (content::Details<printing::JobEventDetails>(details)->type()) {
       case printing::JobEventDetails::JOB_DONE: {
         // Succeeded.
-        MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+        base::MessageLoop::current()->PostTask(
+            FROM_HERE, base::MessageLoop::QuitClosure());
         break;
       }
       case printing::JobEventDetails::USER_INIT_CANCELED:
       case printing::JobEventDetails::FAILED: {
         // Failed.
         ASSERT_TRUE(false);
-        MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+        base::MessageLoop::current()->PostTask(
+            FROM_HERE, base::MessageLoop::QuitClosure());
         break;
       }
       case printing::JobEventDetails::NEW_DOC:

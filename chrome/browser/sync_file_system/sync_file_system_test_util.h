@@ -37,7 +37,7 @@ class MultiThreadTestHelper {
   void SetUp();
   void TearDown();
 
-  MessageLoop* message_loop() { return &message_loop_; }
+  base::MessageLoop* message_loop() { return &message_loop_; }
 
   base::SingleThreadTaskRunner* ui_task_runner() {
     return ui_task_runner_.get();
@@ -52,7 +52,7 @@ class MultiThreadTestHelper {
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<base::Thread> file_thread_;
   scoped_ptr<base::Thread> io_thread_;
 

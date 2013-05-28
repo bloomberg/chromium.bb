@@ -138,7 +138,7 @@ SimpleWebViewDialog::~SimpleWebViewDialog() {
   if (web_view_container_.get()) {
     // WebView can't be deleted immediately, because it could be on the stack.
     web_view_->web_contents()->SetDelegate(NULL);
-    MessageLoop::current()->DeleteSoon(
+    base::MessageLoop::current()->DeleteSoon(
         FROM_HERE, web_view_container_.release());
   }
 }

@@ -56,7 +56,7 @@ ExtensionUninstallDialog::ExtensionUninstallDialog(
       delegate_(delegate),
       extension_(NULL),
       state_(kImageIsLoading),
-      ui_loop_(MessageLoop::current()) {
+      ui_loop_(base::MessageLoop::current()) {
   if (browser) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_BROWSER_CLOSED,
@@ -69,7 +69,7 @@ ExtensionUninstallDialog::~ExtensionUninstallDialog() {
 
 void ExtensionUninstallDialog::ConfirmUninstall(
     const extensions::Extension* extension) {
-  DCHECK(ui_loop_ == MessageLoop::current());
+  DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
   extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
       extension_,

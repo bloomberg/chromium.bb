@@ -12,7 +12,7 @@ typedef union _XEvent XEvent;
 
 namespace chromeos {
 
-class SystemKeyEventListener : public MessageLoopForUI::Observer {
+class SystemKeyEventListener : public base::MessageLoopForUI::Observer {
  public:
   // Observer for caps lock state changes.
   class CapsLockObserver {

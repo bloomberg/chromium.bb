@@ -57,7 +57,7 @@ class TestExtensionEnvironment {
   scoped_ptr<content::WebContents> MakeTab() const;
 
  private:
-  MessageLoopForUI loop_;
+  base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread file_blocking_thread_;

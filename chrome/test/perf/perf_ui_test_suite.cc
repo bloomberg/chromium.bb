@@ -160,7 +160,7 @@ void PerfUITestSuite::BuildCachedThemePakIn(
   // both because committing large binary files is bad in a git world and
   // because people don't remember to update it anyway, meaning we usually
   // have the theme rebuild penalty in our data.)
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_(BrowserThread::UI, &message_loop_);
   content::TestBrowserThread file_thread_(BrowserThread::FILE,
                                           &message_loop_);

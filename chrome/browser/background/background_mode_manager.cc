@@ -530,8 +530,8 @@ void BackgroundModeManager::EndKeepAliveForStartup() {
     // We call this via the message queue to make sure we don't try to end
     // keep-alive (which can shutdown Chrome) before the message loop has
     // started.
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(&chrome::EndKeepAlive));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(&chrome::EndKeepAlive));
   }
 }
 

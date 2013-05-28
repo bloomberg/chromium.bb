@@ -149,7 +149,7 @@ class GeolocationPermissionContextTests
 
 GeolocationPermissionContextTests::GeolocationPermissionContextTests()
     : ChromeRenderViewHostTestHarness(),
-      ui_thread_(content::BrowserThread::UI, MessageLoop::current()),
+      ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()),
       db_thread_(content::BrowserThread::DB) {
 }
 

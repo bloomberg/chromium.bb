@@ -67,7 +67,7 @@ class PromoResourceServiceTest : public testing::Test {
  protected:
   ScopedTestingLocalState local_state_;
   scoped_refptr<PromoResourceService> promo_resource_service_;
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 };
 
 class NotificationPromoTest {

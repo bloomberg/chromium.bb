@@ -50,7 +50,7 @@ ACTION_P(SaveToScopedPtr, scoped) {
 class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   PasswordManagerTest()
-      : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()) {}
+      : ui_thread_(BrowserThread::UI, base::MessageLoopForUI::current()) {}
   virtual ~PasswordManagerTest() {}
 
  protected:

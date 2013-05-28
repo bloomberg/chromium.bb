@@ -30,7 +30,7 @@ namespace chromeos {
 class UserManagerTest : public testing::Test {
  public:
   UserManagerTest()
-      : message_loop_(MessageLoop::TYPE_UI),
+      : message_loop_(base::MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_) {
   }
@@ -122,7 +122,7 @@ class UserManagerTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

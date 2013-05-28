@@ -194,7 +194,7 @@ class BrowserThemePackTest : public ::testing::Test {
     EXPECT_FALSE(pack->GetTint(ThemeProperties::TINT_FRAME, &actual));
   }
 
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread fake_ui_thread;
   content::TestBrowserThread fake_file_thread;
 

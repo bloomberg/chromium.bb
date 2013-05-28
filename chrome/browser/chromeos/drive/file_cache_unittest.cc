@@ -522,7 +522,7 @@ class FileCacheTest : public testing::Test {
     return num_files_found;
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   base::ScopedTempDir temp_dir_;
@@ -1264,7 +1264,7 @@ TEST_F(FileCacheTest, StoreToCacheNoSpace) {
 
 // Don't use TEST_F, as we don't want SetUp() and TearDown() for this test.
 TEST(FileCacheExtraTest, InitializationFailure) {
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,
                                        &message_loop);
 

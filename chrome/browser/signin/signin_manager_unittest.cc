@@ -176,7 +176,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SigninManagerTest::NotifyUIOnComplete,
                    base::Unretained(this)));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   void NotifyUIOnComplete () {
@@ -187,7 +187,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
                      base::Unretained(this)));
       return;
     }
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void ExpectSignInWithCredentialsSuccess() {

@@ -1970,7 +1970,7 @@ void ExtensionService::GarbageCollectExtensions() {
     // Don't garbage collect while there are pending installations, which may
     // be using the temporary installation directory. Try to garbage collect
     // again later.
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ExtensionService::GarbageCollectExtensions, AsWeakPtr()),
         base::TimeDelta::FromSeconds(kGarbageCollectRetryDelay));
@@ -2647,7 +2647,7 @@ void ExtensionService::Observe(int type,
       // at all, but never half-crashed.  We do it in a PostTask so
       // that other handlers of this notification will still have
       // access to the Extension and ExtensionHost.
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(
               &ExtensionService::TrackTerminatedExtension,
@@ -2715,7 +2715,7 @@ void ExtensionService::Observe(int type,
       if (delayed_updates_for_idle_.Contains(extension_id)) {
         // We were waiting for this extension to become idle, it now might have,
         // so maybe finish installation.
-        MessageLoop::current()->PostDelayedTask(
+        base::MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
             base::Bind(&ExtensionService::MaybeFinishDelayedInstallation,
                        AsWeakPtr(), extension_id),

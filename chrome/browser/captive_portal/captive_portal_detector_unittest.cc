@@ -72,7 +72,7 @@ class CaptivePortalDetectorTest : public testing::Test,
                    base::Unretained(&client)));
 
     ASSERT_TRUE(FetchingURL());
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     CompleteURLFetch(net_error, status_code, response_headers);
 
@@ -96,7 +96,7 @@ class CaptivePortalDetectorTest : public testing::Test,
                    base::Unretained(&client)));
 
     ASSERT_TRUE(FetchingURL());
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     detector()->Cancel();
 
@@ -105,7 +105,7 @@ class CaptivePortalDetectorTest : public testing::Test,
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   // Definition order does matter.
   TestingProfile profile_;

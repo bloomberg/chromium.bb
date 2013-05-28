@@ -169,7 +169,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   bool process_launched_by_broker_;
 #elif defined(OS_LINUX)
   bool wait_for_nacl_gdb_;
-  MessageLoopForIO::FileDescriptorWatcher nacl_gdb_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher nacl_gdb_watcher_;
 
   class NaClGdbWatchDelegate;
   scoped_ptr<NaClGdbWatchDelegate> nacl_gdb_watcher_delegate_;

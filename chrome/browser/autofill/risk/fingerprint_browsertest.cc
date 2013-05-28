@@ -40,7 +40,7 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
         kScreenBounds(0, 0, 101, 71),
         kAvailableScreenBounds(0, 11, 101, 60),
         kUnavailableScreenBounds(0, 0, 101, 11),
-        message_loop_(MessageLoop::TYPE_UI) {}
+        message_loop_(base::MessageLoop::TYPE_UI) {}
 
   void GetFingerprintTestCallback(scoped_ptr<Fingerprint> fingerprint) {
     // Verify that all fields Chrome can fill have been filled.
@@ -138,7 +138,7 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
   const gfx::Rect kScreenBounds;
   const gfx::Rect kAvailableScreenBounds;
   const gfx::Rect kUnavailableScreenBounds;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 // This test is flaky on Windows. See http://crbug.com/178356.

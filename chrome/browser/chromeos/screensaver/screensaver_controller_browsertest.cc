@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(ScreensaverControllerTest, Basic) {
 
   scoped_ptr<ScreensaverController> controller_;
   controller_.reset(new ScreensaverController());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Trigger idle.
   controller_->IdleNotify(0);
@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(ScreensaverControllerTest, OutOfOrder) {
 
   scoped_ptr<ScreensaverController> controller_;
   controller_.reset(new ScreensaverController());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Trigger active.
   controller_->OnUserActivity();

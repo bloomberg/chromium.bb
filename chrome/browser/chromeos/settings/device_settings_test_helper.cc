@@ -23,10 +23,10 @@ void DeviceSettingsTestHelper::FlushLoops() {
   // between the message loop and the blocking pool. 2 iterations are currently
   // sufficient (key loading, signing).
   for (int i = 0; i < 2; ++i) {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
   }
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void DeviceSettingsTestHelper::FlushStore() {
@@ -186,7 +186,7 @@ ScopedDeviceSettingsTestHelper::~ScopedDeviceSettingsTestHelper() {
 }
 
 DeviceSettingsTestBase::DeviceSettingsTestBase()
-    : loop_(MessageLoop::TYPE_UI),
+    : loop_(base::MessageLoop::TYPE_UI),
       ui_thread_(content::BrowserThread::UI, &loop_),
       file_thread_(content::BrowserThread::FILE, &loop_),
       owner_key_util_(new MockOwnerKeyUtil()) {}

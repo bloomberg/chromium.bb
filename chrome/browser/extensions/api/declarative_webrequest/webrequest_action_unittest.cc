@@ -99,7 +99,7 @@ class WebRequestActionWithThreadsTest : public testing::Test {
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
  private:
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread io_thread_;
 };
 

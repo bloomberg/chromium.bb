@@ -587,7 +587,7 @@ class CancelableRequestBase
 
   // The message loop that this request was created on. The callback will
   // happen on the same thread.
-  MessageLoop* callback_thread_;
+  base::MessageLoop* callback_thread_;
 
   // The provider for this request. When we execute, we will notify this that
   // request is complete to it can remove us from the requests it tracks.
@@ -670,7 +670,7 @@ class CancelableRequest : public CancelableRequestBase {
   void ForwardResult(const TupleType& param) {
     DCHECK(callback_.get());
     if (!canceled()) {
-      if (callback_thread_ == MessageLoop::current()) {
+      if (callback_thread_ == base::MessageLoop::current()) {
         // We can do synchronous callbacks when we're on the same thread.
         ExecuteCallback(param);
       } else {

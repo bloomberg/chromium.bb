@@ -292,7 +292,7 @@ void ProfileSyncServiceHarness::SignalStateCompleteWithNextState(
 
 void ProfileSyncServiceHarness::SignalStateComplete() {
   if (waiting_for_status_change_)
-    MessageLoop::current()->QuitWhenIdle();
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 bool ProfileSyncServiceHarness::RunStateChangeMachine() {
@@ -754,8 +754,8 @@ bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
     // Set the flag to tell SignalStateComplete() that it's OK to quit out of
     // the MessageLoop if we hit a state transition.
     waiting_for_status_change_ = true;
-    MessageLoop* loop = MessageLoop::current();
-    MessageLoop::ScopedNestableTaskAllower allow(loop);
+    base::MessageLoop* loop = base::MessageLoop::current();
+    base::MessageLoop::ScopedNestableTaskAllower allow(loop);
     loop->PostDelayedTask(
         FROM_HERE,
         base::Bind(&StateChangeTimeoutEvent::Callback,

@@ -176,7 +176,7 @@ void FeedbackUtil::DispatchFeedback(Profile* profile,
                                     int64 delay) {
   DCHECK(post_body);
 
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FeedbackUtil::SendFeedback, profile, post_body, delay),
       base::TimeDelta::FromMilliseconds(delay));

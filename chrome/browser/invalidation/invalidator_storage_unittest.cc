@@ -58,7 +58,7 @@ class InvalidatorStorageTest : public testing::Test {
   const invalidation::ObjectId kAppNotificationsId_;
   const invalidation::ObjectId kAutofillId_;
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 };
 
 // Set invalidation states for various keys and verify that they are written and

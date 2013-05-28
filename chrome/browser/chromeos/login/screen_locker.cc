@@ -222,7 +222,7 @@ void ScreenLocker::OnLoginSuccess(
   } else {
     // Add guard for case when something get broken in call chain to unlock
     // for sure.
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ScreenLocker::UnlockOnLoginSuccess,
             weak_factory_.GetWeakPtr()),
@@ -232,7 +232,7 @@ void ScreenLocker::OnLoginSuccess(
 }
 
 void ScreenLocker::UnlockOnLoginSuccess() {
-  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+  DCHECK(base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI);
   if (!authentication_capture_.get()) {
     LOG(WARNING) << "Call to UnlockOnLoginSuccess without previous " <<
       "authentication success.";
@@ -312,7 +312,7 @@ void ScreenLocker::SetLoginStatusConsumer(
 // static
 void ScreenLocker::Show() {
   content::RecordAction(UserMetricsAction("ScreenLocker_Show"));
-  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+  DCHECK(base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI);
 
   // Check whether the currently logged in user is a guest account and if so,
   // refuse to lock the screen (crosbug.com/23764).
@@ -349,7 +349,7 @@ void ScreenLocker::Show() {
 
 // static
 void ScreenLocker::Hide() {
-  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+  DCHECK(base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI);
   // For a guest/demo user, screen_locker_ would have never been initialized.
   if (UserManager::Get()->IsLoggedInAsGuest() ||
       UserManager::Get()->IsLoggedInAsDemoUser()) {
@@ -371,7 +371,7 @@ void ScreenLocker::ScheduleDeletion() {
   VLOG(1) << "Posting task to delete ScreenLocker " << screen_locker_;
   ScreenLocker* screen_locker = screen_locker_;
   screen_locker_ = NULL;
-  MessageLoopForUI::current()->DeleteSoon(FROM_HERE, screen_locker);
+  base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, screen_locker);
 }
 
 // static
@@ -384,7 +384,7 @@ void ScreenLocker::InitClass() {
 
 ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Destroying ScreenLocker " << this;
-  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+  DCHECK(base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI);
 
   if (authenticator_)
     authenticator_->SetConsumer(NULL);

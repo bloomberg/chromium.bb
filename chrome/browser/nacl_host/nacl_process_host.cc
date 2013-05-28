@@ -404,7 +404,7 @@ scoped_ptr<CommandLine> NaClProcessHost::GetCommandForLaunchWithGdb(
 }
 #elif defined(OS_LINUX)
 class NaClProcessHost::NaClGdbWatchDelegate
-    : public MessageLoopForIO::Watcher {
+    : public base::MessageLoopForIO::Watcher {
  public:
   // fd_write_ is used by nacl-gdb via /proc/browser_PID/fd/fd_write_
   NaClGdbWatchDelegate(int fd_read, int fd_write,
@@ -482,10 +482,10 @@ bool NaClProcessHost::LaunchNaClGdb(base::ProcessId pid) {
           fds[0], fds[1],
           base::Bind(&NaClProcessHost::OnNaClGdbAttached,
                      weak_factory_.GetWeakPtr())));
-  MessageLoopForIO::current()->WatchFileDescriptor(
+  base::MessageLoopForIO::current()->WatchFileDescriptor(
       fds[0],
       true,
-      MessageLoopForIO::WATCH_READ,
+      base::MessageLoopForIO::WATCH_READ,
       &nacl_gdb_watcher_,
       nacl_gdb_watcher_delegate_.get());
   return base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);

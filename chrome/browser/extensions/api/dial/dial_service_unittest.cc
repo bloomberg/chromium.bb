@@ -53,7 +53,7 @@ class DialServiceTest : public testing::Test {
 };
 
 TEST_F(DialServiceTest, TestSendMultipleRequests) {
-  MessageLoop loop(MessageLoop::TYPE_IO);
+  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
   // Setting the finish delay to zero disables the timer that invokes
   // FinishDiscovery().
   dial_service_.finish_delay_ = TimeDelta::FromSeconds(0);

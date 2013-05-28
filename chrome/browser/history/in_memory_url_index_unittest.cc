@@ -54,15 +54,15 @@ namespace history {
 // Observer class so the unit tests can wait while the cache is being saved.
 class CacheFileSaverObserver : public InMemoryURLIndex::SaveCacheObserver {
  public:
-  explicit CacheFileSaverObserver(MessageLoop* loop);
+  explicit CacheFileSaverObserver(base::MessageLoop* loop);
   virtual void OnCacheSaveFinished(bool succeeded) OVERRIDE;
 
-  MessageLoop* loop_;
+  base::MessageLoop* loop_;
   bool succeeded_;
   DISALLOW_COPY_AND_ASSIGN(CacheFileSaverObserver);
 };
 
-CacheFileSaverObserver::CacheFileSaverObserver(MessageLoop* loop)
+CacheFileSaverObserver::CacheFileSaverObserver(base::MessageLoop* loop)
     : loop_(loop),
       succeeded_(false) {
   DCHECK(loop);
@@ -118,7 +118,7 @@ class InMemoryURLIndexTest : public testing::Test {
   void ExpectPrivateDataEqual(const URLIndexPrivateData& expected,
                               const URLIndexPrivateData& actual);
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   TestingProfile profile_;
@@ -1038,7 +1038,7 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   EXPECT_TRUE(private_data.word_starts_map_.empty());
 
   HistoryIndexRestoreObserver restore_observer(
-      base::Bind(&MessageLoop::Quit, base::Unretained(&message_loop_)));
+      base::Bind(&base::MessageLoop::Quit, base::Unretained(&message_loop_)));
   url_index_->set_restore_cache_observer(&restore_observer);
   PostRestoreFromCacheFileTask();
   message_loop_.Run();

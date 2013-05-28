@@ -101,11 +101,11 @@ class ExtensionProtocolTest : public testing::Test {
                                                      -1,
                                                      -1);
     request->Start();
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
  protected:
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;

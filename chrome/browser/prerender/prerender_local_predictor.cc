@@ -312,7 +312,7 @@ PrerenderLocalPredictor::PrerenderLocalPredictor(
       weak_factory_(this),
       current_prerender_would_have_matched_(false) {
   RecordEvent(EVENT_CONSTRUCTED);
-  if (MessageLoop::current()) {
+  if (base::MessageLoop::current()) {
     timer_.Start(FROM_HERE,
                  base::TimeDelta::FromMilliseconds(kInitDelayMs),
                  this,

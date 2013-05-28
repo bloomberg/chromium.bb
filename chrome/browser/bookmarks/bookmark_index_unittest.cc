@@ -234,7 +234,7 @@ TEST_F(BookmarkIndexTest, EmptyMatchOnMultiwideLowercaseString) {
 TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   // This ensures MessageLoop::current() will exist, which is needed by
   // TestingProfile::BlockUntilHistoryProcessesPendingRequests().
-  MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   content::TestBrowserThread ui_thread(BrowserThread::UI, &loop);
   content::TestBrowserThread file_thread(BrowserThread::FILE, &loop);
 

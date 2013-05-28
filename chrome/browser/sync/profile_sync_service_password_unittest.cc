@@ -78,7 +78,7 @@ ACTION_P(AcquireSyncTransaction, password_test_service) {
 }
 
 static void QuitMessageLoop() {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 class NullPasswordStore : public MockPasswordStore {
@@ -248,12 +248,12 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
 
       sync_service_->RegisterDataTypeController(data_type_controller);
       sync_service_->Initialize();
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
       FlushLastDBTask();
 
       sync_service_->SetEncryptionPassphrase("foo",
                                              ProfileSyncService::IMPLICIT);
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
     }
   }
 

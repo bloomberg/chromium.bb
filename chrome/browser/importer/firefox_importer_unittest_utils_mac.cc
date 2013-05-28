@@ -85,14 +85,14 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
     DCHECK(!got_result);
     result_bool = result;
     got_result = true;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void OnDecryptedTextResonse(const string16& decrypted_text) {
     DCHECK(!got_result);
     result_string = decrypted_text;
     got_result = true;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void QuitClient() {
@@ -113,7 +113,7 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
   // If an error occured, just kill the message Loop.
   virtual void OnChannelError() OVERRIDE {
     got_result = false;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   // Results of IPC calls.
@@ -132,7 +132,7 @@ FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy()
 
 bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   // Create a new message loop and spawn the child process.
-  message_loop_.reset(new MessageLoopForIO());
+  message_loop_.reset(new base::MessageLoopForIO());
 
   listener_.reset(new FFDecryptorServerChannelListener());
   channel_.reset(new IPC::Channel(kTestChannelID,
@@ -165,7 +165,7 @@ class CancellableQuitMsgLoop : public base::RefCounted<CancellableQuitMsgLoop> {
   CancellableQuitMsgLoop() : cancelled_(false) {}
   void QuitNow() {
     if (!cancelled_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
   bool cancelled_;
 
@@ -185,7 +185,7 @@ bool FFUnitTestDecryptorProxy::WaitForClientResponse() {
   // a message comes in.
   scoped_refptr<CancellableQuitMsgLoop> quit_task(
       new CancellableQuitMsgLoop());
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CancellableQuitMsgLoop::QuitNow, quit_task.get()),
       TestTimeouts::action_max_timeout());
@@ -241,7 +241,7 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
   }
 
   void OnQuitRequest() {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
@@ -256,7 +256,7 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
   }
 
   virtual void OnChannelError() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
  private:
@@ -266,7 +266,7 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
 
 // Entry function in child process.
 MULTIPROCESS_IPC_TEST_MAIN(NSSDecrypterChildProcess) {
-  MessageLoopForIO main_message_loop;
+  base::MessageLoopForIO main_message_loop;
   FFDecryptorClientChannelListener listener;
 
   IPC::Channel channel(kTestChannelID, IPC::Channel::MODE_CLIENT, &listener);
@@ -274,7 +274,7 @@ MULTIPROCESS_IPC_TEST_MAIN(NSSDecrypterChildProcess) {
   listener.SetSender(&channel);
 
   // run message loop
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   return 0;
 }

@@ -87,7 +87,7 @@ class ChromePrefServiceUserFilePrefsTest : public testing::Test {
   // The path to the directory where the test data is stored.
   base::FilePath data_dir_;
   // A message loop that we can use as the file thread message loop.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 // Verifies that ListValue and DictionaryValue pref with non emtpy default

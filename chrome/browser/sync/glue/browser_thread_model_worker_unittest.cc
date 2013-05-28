@@ -58,7 +58,7 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     timer_.Stop();  // Stop the failure timer so the test succeeds.
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, MessageLoop::QuitClosure());
+        BrowserThread::IO, FROM_HERE, base::MessageLoop::QuitClosure());
     did_do_work_ = true;
     return syncer::SYNCER_OK;
   }
@@ -68,7 +68,7 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   void Timeout() {
     ADD_FAILURE() << "Timed out waiting for work to be done on the DB thread.";
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, MessageLoop::QuitClosure());
+        BrowserThread::IO, FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
  protected:
@@ -88,17 +88,17 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   OneShotTimer<SyncBrowserThreadModelWorkerTest> timer_;
 
   content::TestBrowserThread db_thread_;
-  MessageLoopForIO io_loop_;
+  base::MessageLoopForIO io_loop_;
   content::TestBrowserThread io_thread_;
 
   base::WeakPtrFactory<SyncBrowserThreadModelWorkerTest> weak_factory_;
 };
 
 TEST_F(SyncBrowserThreadModelWorkerTest, DoesWorkOnDatabaseThread) {
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&SyncBrowserThreadModelWorkerTest::ScheduleWork,
                  factory()->GetWeakPtr()));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(did_do_work());
 }
 

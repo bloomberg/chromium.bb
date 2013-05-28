@@ -77,7 +77,7 @@ class FileWriteHelperTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestFileSystem> test_file_system_;
 };

@@ -101,7 +101,7 @@ class SyncBackendMigratorTest : public testing::Test {
 
  private:
   scoped_ptr<SyncSessionSnapshot> snap_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   syncer::ModelTypeSet preferred_types_;
   NiceMock<ProfileSyncServiceMock> service_;
   NiceMock<DataTypeManagerMock> manager_;

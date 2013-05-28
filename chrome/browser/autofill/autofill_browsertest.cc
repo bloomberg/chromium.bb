@@ -153,7 +153,7 @@ class WindowedPersonalDataManagerObserver
   // PersonalDataManagerObserver:
   virtual void OnPersonalDataChanged() OVERRIDE {
     if (has_run_message_loop_) {
-      MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->Quit();
       has_run_message_loop_ = false;
     }
     alerted_ = true;

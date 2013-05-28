@@ -143,7 +143,7 @@ void StateStore::Observe(int type,
                         content::NotificationService::AllSources());
       registrar_.Remove(this, chrome::NOTIFICATION_SESSION_RESTORE_DONE,
                         content::NotificationService::AllSources());
-      MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
           base::Bind(&StateStore::Init, AsWeakPtr()),
           base::TimeDelta::FromSeconds(kInitDelaySeconds));
       break;

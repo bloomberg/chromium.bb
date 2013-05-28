@@ -75,7 +75,7 @@ class PermissionsUpdaterListener : public content::NotificationObserver {
 
     if (waiting_) {
       waiting_ = false;
-      MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->Quit();
     }
   }
 

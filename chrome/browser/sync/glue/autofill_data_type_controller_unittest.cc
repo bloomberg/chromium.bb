@@ -220,7 +220,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 
  protected:
   base::WeakPtrFactory<SyncAutofillDataTypeControllerTest> weak_ptr_factory_;
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
 

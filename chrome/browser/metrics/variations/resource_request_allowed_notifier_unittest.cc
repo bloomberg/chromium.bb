@@ -26,7 +26,7 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
       net::NetworkChangeNotifier::ConnectionType type) {
     connection_type_to_return_ = type;
     net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange();
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
  private:
@@ -139,7 +139,7 @@ class ResourceRequestAllowedNotifierTest
   }
 
  private:
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread;
   TestNetworkChangeNotifier network_notifier;
   TestRequestAllowedNotifier resource_request_allowed_notifier_;

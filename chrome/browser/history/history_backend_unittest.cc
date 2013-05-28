@@ -413,7 +413,7 @@ class HistoryBackendTest : public testing::Test {
   // The number of notifications which were broadcasted.
   int num_broadcasted_notifications_;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::FilePath test_dir_;
   history::MostVisitedURLList most_visited_list_;
   history::FilteredURLList filtered_list_;

@@ -29,7 +29,7 @@ ExtensionErrorReporter* ExtensionErrorReporter::GetInstance() {
 }
 
 ExtensionErrorReporter::ExtensionErrorReporter(bool enable_noisy_errors)
-    : ui_loop_(MessageLoop::current()),
+    : ui_loop_(base::MessageLoop::current()),
       enable_noisy_errors_(enable_noisy_errors) {
 }
 
@@ -38,7 +38,7 @@ ExtensionErrorReporter::~ExtensionErrorReporter() {}
 void ExtensionErrorReporter::ReportError(const string16& message,
                                          bool be_noisy) {
   // NOTE: There won't be a ui_loop_ in the unit test environment.
-  if (ui_loop_ && MessageLoop::current() != ui_loop_) {
+  if (ui_loop_ && base::MessageLoop::current() != ui_loop_) {
     // base::Unretained is okay since the ExtensionErrorReporter is a singleton
     // that lives until the end of the process.
     ui_loop_->PostTask(FROM_HERE,

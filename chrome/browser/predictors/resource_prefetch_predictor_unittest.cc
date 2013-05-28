@@ -155,7 +155,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 
   void InitializeSampleData();
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   scoped_ptr<TestingProfile> profile_;
@@ -170,7 +170,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 };
 
 ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
-    : loop_(MessageLoop::TYPE_DEFAULT),
+    : loop_(base::MessageLoop::TYPE_DEFAULT),
       ui_thread_(content::BrowserThread::UI, &loop_),
       db_thread_(content::BrowserThread::DB, &loop_),
       profile_(new TestingProfile()),

@@ -77,7 +77,7 @@ class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
 class WebRequestRulesRegistryTest : public testing::Test {
  public:
   WebRequestRulesRegistryTest()
-      : message_loop(MessageLoop::TYPE_IO),
+      : message_loop(base::MessageLoop::TYPE_IO),
         ui(content::BrowserThread::UI, &message_loop),
         io(content::BrowserThread::IO, &message_loop) {}
 
@@ -219,7 +219,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui;
   content::TestBrowserThread io;
   // Two extensions with host permissions for all URLs and the DWR permission.

@@ -70,7 +70,7 @@ class SyncedDeviceTrackerTest : public ::testing::Test {
     return test_user_share_.transaction_observer()->transactions_observed();
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   syncer::TestUserShare test_user_share_;
   int transaction_count_baseline_;
 };

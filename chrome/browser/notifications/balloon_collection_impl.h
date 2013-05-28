@@ -36,7 +36,7 @@
 class BalloonCollectionImpl : public BalloonCollection,
                               public content::NotificationObserver
 #if USE_OFFSETS
-                            , public MessageLoopForUI::Observer
+                            , public base::MessageLoopForUI::Observer
 #endif
 {
  public:

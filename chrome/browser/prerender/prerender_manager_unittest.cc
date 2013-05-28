@@ -23,7 +23,7 @@ class PrerenderManagerTest : public testing::Test {
 
   PrerenderManager* prerender_manager() { return &prerender_manager_; }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   PrerenderManager prerender_manager_;
 };

@@ -57,7 +57,7 @@ class EnterpriseInstallAttributesTest : public testing::Test {
     attribute->set_value(value);
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_;
   scoped_ptr<chromeos::CryptohomeClient> stub_cryptohome_client_;

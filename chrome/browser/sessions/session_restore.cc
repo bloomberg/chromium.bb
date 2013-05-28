@@ -538,8 +538,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     if (synchronous_) {
       {
-        MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-        MessageLoop::current()->Run();
+        base::MessageLoop::ScopedNestableTaskAllower allow(
+            base::MessageLoop::current());
+        base::MessageLoop::current()->Run();
       }
       Browser* browser = ProcessSessionWindows(&windows_, active_window_id_);
       delete this;
@@ -716,7 +717,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       // NOTE: we must use DeleteLater here as most likely we're in a callback
       // from the history service which doesn't deal well with deleting the
       // object it is notifying.
-      MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+      base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 
       // The delete may take a while and at this point we no longer care about
       // if the browser is deleted. Don't listen to anything. This avoid a
@@ -750,7 +751,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       // See comment above windows_ as to why we don't process immediately.
       windows_.swap(windows.get());
       active_window_id_ = active_window_id;
-      MessageLoop::current()->QuitNow();
+      base::MessageLoop::current()->QuitNow();
       return;
     }
 

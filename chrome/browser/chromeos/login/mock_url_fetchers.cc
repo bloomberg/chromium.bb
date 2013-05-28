@@ -32,7 +32,7 @@ ExpectCanceledFetcher::~ExpectCanceledFetcher() {
 }
 
 void ExpectCanceledFetcher::Start() {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ExpectCanceledFetcher::CompleteFetch,
                  weak_factory_.GetWeakPtr()),
@@ -41,7 +41,7 @@ void ExpectCanceledFetcher::Start() {
 
 void ExpectCanceledFetcher::CompleteFetch() {
   ADD_FAILURE() << "Fetch completed in ExpectCanceledFetcher!";
-  MessageLoop::current()->Quit();  // Allow exiting even if we mess up.
+  base::MessageLoop::current()->Quit();  // Allow exiting even if we mess up.
 }
 
 GotCanceledFetcher::GotCanceledFetcher(

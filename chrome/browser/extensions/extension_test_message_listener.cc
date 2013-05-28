@@ -63,7 +63,7 @@ void ExtensionTestMessageListener::Observe(
     }
     if (waiting_) {
       waiting_ = false;
-      MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->Quit();
     }
   }
 }

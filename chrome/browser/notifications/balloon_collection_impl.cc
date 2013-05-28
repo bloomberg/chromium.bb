@@ -235,14 +235,14 @@ gfx::Rect BalloonCollectionImpl::GetBalloonsBoundingBox() const {
 #if USE_OFFSETS
 void BalloonCollectionImpl::AddMessageLoopObserver() {
   if (!added_as_message_loop_observer_) {
-    MessageLoopForUI::current()->AddObserver(this);
+    base::MessageLoopForUI::current()->AddObserver(this);
     added_as_message_loop_observer_ = true;
   }
 }
 
 void BalloonCollectionImpl::RemoveMessageLoopObserver() {
   if (added_as_message_loop_observer_) {
-    MessageLoopForUI::current()->RemoveObserver(this);
+    base::MessageLoopForUI::current()->RemoveObserver(this);
     added_as_message_loop_observer_ = false;
   }
 }
@@ -267,7 +267,7 @@ void BalloonCollectionImpl::HandleMouseMoveEvent() {
     // Mouse has left the region.  Schedule a reposition after
     // a short delay.
     if (!reposition_factory_.HasWeakPtrs()) {
-      MessageLoop::current()->PostDelayedTask(
+      base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&BalloonCollectionImpl::CancelOffsets,
                      reposition_factory_.GetWeakPtr()),

@@ -156,7 +156,7 @@ class PrerenderManager::OnCloseWebContentsDeleter
       : manager_(manager),
         tab_(tab) {
     tab_->SetDelegate(this);
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
         base::Bind(&OnCloseWebContentsDeleter::ScheduleWebContentsForDeletion,
                    AsWeakPtr(), true),
         base::TimeDelta::FromSeconds(kDeleteWithExtremePrejudiceSeconds));
@@ -1187,7 +1187,7 @@ void PrerenderManager::PeriodicCleanup() {
 
 void PrerenderManager::PostCleanupTask() {
   DCHECK(CalledOnValidThread());
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PrerenderManager::PeriodicCleanup, AsWeakPtr()));
 }

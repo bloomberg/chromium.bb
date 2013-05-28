@@ -74,7 +74,7 @@ MATCHER(CallbackIsNull, "") {
 
 ACTION(QuitUIMessageLoop) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoopForUI::current()->Quit();
+  base::MessageLoopForUI::current()->Quit();
 }
 
 // It's kind of insane that InvokeArgument doesn't work with callbacks, but it
@@ -177,7 +177,7 @@ void QuitUIMessageLoopFromIO() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
-                          MessageLoop::QuitClosure());
+                          base::MessageLoop::QuitClosure());
 }
 }  // namespace
 
@@ -222,7 +222,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
   }
 
   static void RunAllPendingOnIO(base::WaitableEvent* event) {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     event->Signal();
   }
 
@@ -266,7 +266,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     BrowserThread::PostTask(BrowserThread::IO,
                             FROM_HERE,
                             base::Bind(&QuitUIMessageLoopFromIO));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   void ExpectPreClassificationChecks(const GURL& url,
@@ -306,7 +306,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     // Wait for CheckCsdWhitelist to be called if at all.
     FlushIOMessageLoop();
     // Checks for CheckCache() to be called if at all.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
     EXPECT_TRUE(Mock::VerifyAndClear(ui_manager_.get()));
     EXPECT_TRUE(Mock::VerifyAndClear(database_manager_.get()));
@@ -403,7 +403,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
   // Make sure DoDisplayBlockingPage is not going to be called.
   EXPECT_CALL(*ui_manager_, DoDisplayBlockingPage(_)).Times(0);
   cb.Run(GURL(verdict.url()), false);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(Mock::VerifyAndClear(ui_manager_.get()));
 }
 
@@ -435,7 +435,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
   // Make sure DoDisplayBlockingPage is not going to be called.
   EXPECT_CALL(*ui_manager_, DoDisplayBlockingPage(_)).Times(0);
   cb.Run(GURL(verdict.url()), false);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(Mock::VerifyAndClear(ui_manager_.get()));
 }
 
@@ -470,7 +470,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
       .WillOnce(SaveArg<0>(&resource));
   cb.Run(phishing_url, true);
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(Mock::VerifyAndClear(ui_manager_.get()));
   EXPECT_EQ(phishing_url, resource.url);
   EXPECT_EQ(phishing_url, resource.original_url);
@@ -548,7 +548,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   redirect_chain.push_back(other_phishing_url);
   SetRedirectChain(redirect_chain);
   OnPhishingDetectionDone(verdict.SerializeAsString());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_FALSE(cb_other.is_null());
 
@@ -561,7 +561,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   cb.Run(phishing_url, true);  // Should have no effect.
   cb_other.Run(other_phishing_url, true);  // Should show interstitial.
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(Mock::VerifyAndClear(ui_manager_.get()));
   EXPECT_EQ(other_phishing_url, resource.url);
   EXPECT_EQ(other_phishing_url, resource.original_url);
@@ -627,7 +627,7 @@ TEST_F(ClientSideDetectionHostTest,
   redirect_chain.push_back(url);
   SetRedirectChain(redirect_chain);
   OnPhishingDetectionDone(verdict.SerializeAsString());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
 }
 
@@ -954,7 +954,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   // Wait for CheckCsdWhitelist to be called on the IO thread.
   FlushIOMessageLoop();
   // Wait for CheckCache() to be called on the UI thread.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   // Now we check that all expected functions were indeed called on the two
   // service objects.
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));

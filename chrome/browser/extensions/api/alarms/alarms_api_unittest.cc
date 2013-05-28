@@ -36,7 +36,7 @@ class AlarmDelegate : public AlarmManager::Delegate {
   virtual void OnAlarm(const std::string& extension_id,
                        const Alarm& alarm) OVERRIDE {
     alarms_seen.push_back(alarm.js_alarm->name);
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   std::vector<std::string> alarms_seen;
@@ -157,7 +157,7 @@ TEST_F(ExtensionAlarmsTest, Create) {
 
   // Now wait for the alarm to fire. Our test delegate will quit the
   // MessageLoop when that happens.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ASSERT_EQ(1u, alarm_delegate_->alarms_seen.size());
   EXPECT_EQ("", alarm_delegate_->alarms_seen[0]);
@@ -187,12 +187,12 @@ TEST_F(ExtensionAlarmsTest, CreateRepeating) {
   test_clock_->Advance(base::TimeDelta::FromSeconds(1));
   // Now wait for the alarm to fire. Our test delegate will quit the
   // MessageLoop when that happens.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   test_clock_->Advance(base::TimeDelta::FromSeconds(1));
   // Wait again, and ensure the alarm fires again.
   alarm_manager_->ScheduleNextPoll();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ASSERT_EQ(2u, alarm_delegate_->alarms_seen.size());
   EXPECT_EQ("", alarm_delegate_->alarms_seen[0]);
@@ -213,7 +213,7 @@ TEST_F(ExtensionAlarmsTest, CreateAbsolute) {
   test_clock_->SetNow(base::Time::FromDoubleT(10.1));
   // Now wait for the alarm to fire. Our test delegate will quit the
   // MessageLoop when that happens.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ASSERT_FALSE(alarm_manager_->GetAlarm(extension_->id(), std::string()));
 
@@ -236,13 +236,13 @@ TEST_F(ExtensionAlarmsTest, CreateRepeatingWithQuickFirstCall) {
   test_clock_->SetNow(base::Time::FromDoubleT(10.1));
   // Now wait for the alarm to fire. Our test delegate will quit the
   // MessageLoop when that happens.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ASSERT_TRUE(alarm_manager_->GetAlarm(extension_->id(), std::string()));
   EXPECT_THAT(alarm_delegate_->alarms_seen, testing::ElementsAre(""));
 
   test_clock_->SetNow(base::Time::FromDoubleT(10.7));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ASSERT_TRUE(alarm_manager_->GetAlarm(extension_->id(), std::string()));
   EXPECT_THAT(alarm_delegate_->alarms_seen, testing::ElementsAre("", ""));
@@ -372,7 +372,7 @@ TEST_F(ExtensionAlarmsTest, Clear) {
   // Now wait for the alarms to fire, and ensure the cancelled alarms don't
   // fire.
   alarm_manager_->ScheduleNextPoll();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ASSERT_EQ(1u, alarm_delegate_->alarms_seen.size());
   EXPECT_EQ("", alarm_delegate_->alarms_seen[0]);
@@ -457,7 +457,7 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     alarm.js_alarm->scheduled_time = 3 * 60000;
     alarm.js_alarm->period_in_minutes.reset(new double(3));
     alarm_manager_->AddAlarmImpl(extension_->id(), alarm);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     EXPECT_EQ(alarm_manager_->last_poll_time_ + base::TimeDelta::FromMinutes(3),
               alarm_manager_->next_poll_time_);
     alarm_manager_->RemoveAllAlarms(extension_->id());
@@ -476,7 +476,7 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     alarm3.js_alarm->scheduled_time = 25 * 60000;
     alarm3.js_alarm->period_in_minutes.reset(new double(25));
     alarm_manager_->AddAlarmImpl(extension_->id(), alarm3);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     EXPECT_EQ(alarm_manager_->last_poll_time_ + base::TimeDelta::FromMinutes(4),
               alarm_manager_->next_poll_time_);
     alarm_manager_->RemoveAllAlarms(extension_->id());
@@ -508,7 +508,7 @@ TEST_F(ExtensionAlarmsSchedulingTest, TimerRunning) {
   EXPECT_FALSE(alarm_manager_->timer_.IsRunning());
   CreateAlarm("[\"a\", {\"delayInMinutes\": 0.001}]");
   EXPECT_TRUE(alarm_manager_->timer_.IsRunning());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_FALSE(alarm_manager_->timer_.IsRunning());
   CreateAlarm("[\"bb\", {\"delayInMinutes\": 10}]");
   EXPECT_TRUE(alarm_manager_->timer_.IsRunning());

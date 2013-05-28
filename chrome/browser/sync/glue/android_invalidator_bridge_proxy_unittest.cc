@@ -58,7 +58,7 @@ class AndroidInvalidatorBridgeProxyTest : public testing::Test {
     ui_loop_.RunUntilIdle();
   }
 
-  MessageLoop ui_loop_;
+  base::MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
   ::testing::NiceMock<ProfileMock> mock_profile_;
   AndroidInvalidatorBridge bridge_;

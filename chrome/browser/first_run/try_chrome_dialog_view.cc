@@ -301,7 +301,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   popup_->Show();
   if (!listener.is_null())
     listener.Run(popup_->GetNativeView());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   if (!listener.is_null())
     listener.Run(NULL);
   return result_;
@@ -374,7 +374,7 @@ void TryChromeDialogView::ButtonPressed(views::Button* sender,
   }
 
   popup_->Close();
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 void TryChromeDialogView::LinkClicked(views::Link* source, int event_flags) {

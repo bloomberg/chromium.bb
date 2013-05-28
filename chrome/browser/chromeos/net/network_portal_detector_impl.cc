@@ -286,9 +286,8 @@ void NetworkPortalDetectorImpl::DetectCaptivePortal(
   detection_task_.Reset(
       base::Bind(&NetworkPortalDetectorImpl::DetectCaptivePortalTask,
                  weak_ptr_factory_.GetWeakPtr()));
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          detection_task_.callback(),
-                                          next_attempt_delay_);
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, detection_task_.callback(), next_attempt_delay_);
 }
 
 void NetworkPortalDetectorImpl::DetectCaptivePortalTask() {
@@ -322,9 +321,8 @@ void NetworkPortalDetectorImpl::DetectCaptivePortalTask() {
     request_timeout = request_timeout_for_testing_;
   else
     request_timeout = base::TimeDelta::FromSeconds(GetRequestTimeoutSec());
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          detection_timeout_.callback(),
-                                          request_timeout);
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, detection_timeout_.callback(), request_timeout);
 }
 
 void NetworkPortalDetectorImpl::PortalDetectionTimeout() {

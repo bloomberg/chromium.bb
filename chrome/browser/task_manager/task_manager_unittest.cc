@@ -111,7 +111,7 @@ TEST_F(TaskManagerTest, Resources) {
 
 // Tests that the model is calling Refresh() on its resources.
 TEST_F(TaskManagerTest, RefreshCalled) {
-  MessageLoop loop;
+  base::MessageLoop loop;
   TaskManager task_manager;
   TaskManagerModel* model = task_manager.model_;
   TestResource resource;

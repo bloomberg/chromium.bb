@@ -24,7 +24,7 @@ class MockDnsProbeJob : public DnsProbeJob {
   MockDnsProbeJob(const CallbackType& callback,
                   DnsProbeJob::Result result)
       : weak_factory_(this) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&MockDnsProbeJob::CallCallback,
                    weak_factory_.GetWeakPtr(),
@@ -131,7 +131,7 @@ class DnsProbeServiceTest : public testing::Test {
     callback_called_ = false;
   }
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   TestDnsProbeService service_;
   bool callback_called_;
   DnsProbeResult callback_result_;

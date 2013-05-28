@@ -100,7 +100,7 @@ void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(
     store->SaveAccessToken(ref_url_, *token_to_set_);
   }
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+      BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, SetAcrossInstances) {

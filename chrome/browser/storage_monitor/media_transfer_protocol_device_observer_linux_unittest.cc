@@ -84,7 +84,7 @@ class TestMediaTransferProtocolDeviceObserverLinux
 class MediaTransferProtocolDeviceObserverLinuxTest : public testing::Test {
  public:
   MediaTransferProtocolDeviceObserverLinuxTest()
-      : message_loop_(MessageLoop::TYPE_IO),
+      : message_loop_(base::MessageLoop::TYPE_IO),
         file_thread_(content::BrowserThread::FILE, &message_loop_) {}
 
   virtual ~MediaTransferProtocolDeviceObserverLinuxTest() {}
@@ -112,7 +112,7 @@ class MediaTransferProtocolDeviceObserverLinuxTest : public testing::Test {
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread file_thread_;
 
   chrome::test::TestStorageMonitor monitor_;

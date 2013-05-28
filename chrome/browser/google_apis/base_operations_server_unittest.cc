@@ -73,7 +73,7 @@ class BaseOperationsServerTest : public testing::Test {
     return profile_->GetPath().Append(file_name);
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
@@ -104,7 +104,7 @@ TEST_F(BaseOperationsServerTest, DownloadFileOperation_ValidFile) {
       GetTestCachedFilePath(
           base::FilePath::FromUTF8Unsafe("cached_testfile.txt")));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   std::string contents;
   file_util::ReadFileToString(temp_file, &contents);
@@ -139,7 +139,7 @@ TEST_F(BaseOperationsServerTest,
       GetTestCachedFilePath(
           base::FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   std::string contents;
   file_util::ReadFileToString(temp_file, &contents);

@@ -133,7 +133,7 @@ class AwaitCompletionHelper : public BrowsingDataRemover::Observer {
     if (!already_quit_) {
       DCHECK(!start_);
       start_ = true;
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
     } else {
       DCHECK(!start_);
       already_quit_ = false;
@@ -143,7 +143,7 @@ class AwaitCompletionHelper : public BrowsingDataRemover::Observer {
   void Notify() {
     if (start_) {
       DCHECK(!already_quit_);
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
       start_ = false;
     } else {
       DCHECK(!already_quit_);
@@ -240,7 +240,7 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
         SafeBrowsingService::CreateSafeBrowsingService();
     browser_process_->SetSafeBrowsingService(sb_service);
     sb_service->Initialize();
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     // Create a cookiemonster that does not have persistant storage, and replace
     // the SafeBrowsingService created one with it.
@@ -252,7 +252,7 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
 
   virtual ~RemoveSafeBrowsingCookieTester() {
     browser_process_->safe_browsing_service()->ShutDown();
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     browser_process_->SetSafeBrowsingService(NULL);
   }
 
@@ -443,7 +443,7 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
     profiles.push_back(profile);
 
     personal_data_manager_->SetProfiles(&profiles);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     std::vector<autofill::CreditCard> cards;
     autofill::CreditCard card;
@@ -458,12 +458,12 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
     cards.push_back(card);
 
     personal_data_manager_->SetCreditCards(&cards);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
  private:
   virtual void OnPersonalDataChanged() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   autofill::PersonalDataManager* personal_data_manager_;
@@ -655,7 +655,7 @@ class BrowsingDataRemoverTest : public testing::Test,
 
   // message_loop_, as well as all the threads associated with it must be
   // defined before profile_ to prevent explosions. Oh how I love C++.
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread webkit_thread_;

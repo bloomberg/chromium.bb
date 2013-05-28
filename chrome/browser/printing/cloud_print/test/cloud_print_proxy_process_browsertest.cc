@@ -92,20 +92,21 @@ class TestServiceProcess : public ServiceProcess {
   TestServiceProcess() { }
   virtual ~TestServiceProcess() { }
 
-  bool Initialize(MessageLoopForUI* message_loop, ServiceProcessState* state);
+  bool Initialize(base::MessageLoopForUI* message_loop,
+                  ServiceProcessState* state);
 
   base::MessageLoopProxy* IOMessageLoopProxy() {
     return io_thread_->message_loop_proxy();
   }
 };
 
-bool TestServiceProcess::Initialize(MessageLoopForUI* message_loop,
+bool TestServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
                                     ServiceProcessState* state) {
   main_message_loop_ = message_loop;
 
   service_process_state_.reset(state);
 
-  base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
   io_thread_.reset(new base::Thread("TestServiceProcess_IO"));
   return io_thread_->StartWithOptions(options);
 }
@@ -202,7 +203,7 @@ typedef base::Callback<void(MockServiceIPCServer* server)>
 // service process. Any non-zero return value will be printed out and can help
 // determine the failure.
 int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
-  MessageLoopForUI main_message_loop;
+  base::MessageLoopForUI main_message_loop;
   main_message_loop.set_thread_name("Main Thread");
 
 #if defined(OS_MACOSX)
@@ -315,7 +316,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   base::Thread io_thread_;
 
@@ -346,7 +347,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
     void Notify() {
       seen_ = true;
       if (running_)
-        MessageLoopForUI::current()->Quit();
+        base::MessageLoopForUI::current()->Quit();
     }
 
    private:
@@ -366,7 +367,7 @@ CloudPrintProxyPolicyStartupTest::~CloudPrintProxyPolicyStartupTest() {
 }
 
 void CloudPrintProxyPolicyStartupTest::SetUp() {
-  base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
   ASSERT_TRUE(io_thread_.StartWithOptions(options));
 
 #if defined(OS_MACOSX)
@@ -487,14 +488,15 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithoutPolicy) {
   test_launcher_utils::PrepareBrowserCommandLineForTests(&command_line);
 
   WaitForConnect();
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          MessageLoop::QuitClosure(),
-                                          TestTimeouts::action_timeout());
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TestTimeouts::action_timeout());
 
   bool run_loop = LaunchBrowser(command_line, profile);
   EXPECT_FALSE(run_loop);
   if (run_loop)
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
   EXPECT_EQ(MockServiceIPCServer::EnabledUserId(),
             prefs->GetString(prefs::kCloudPrintEmail));
@@ -529,16 +531,17 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithPolicy) {
   test_launcher_utils::PrepareBrowserCommandLineForTests(&command_line);
 
   WaitForConnect();
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          MessageLoop::QuitClosure(),
-                                          TestTimeouts::action_timeout());
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      TestTimeouts::action_timeout());
 
   bool run_loop = LaunchBrowser(command_line, profile);
 
   // No expectations on run_loop being true here; that would be a race
   // condition.
   if (run_loop)
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
   EXPECT_EQ("", prefs->GetString(prefs::kCloudPrintEmail));
 

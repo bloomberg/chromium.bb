@@ -55,12 +55,12 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
 //   EXPECT_CALL(mock_fooclass_instance, Foo(callback))
 //     .WillOnce(ScheduleCallback(false));
 ACTION_P(ScheduleCallback, result) {
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(arg0, result));
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(arg0, result));
 }
 
 // Similar to ScheduleCallback, but binds 2 arguments.
 ACTION_P2(ScheduleCallback2, result0, result1) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(arg0, result0, result1));
 }
 
@@ -101,8 +101,8 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
       OVERRIDE {
     // Pretend the path reservation succeeded without any change to
     // |target_path|.
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback, virtual_path, true));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, virtual_path, true));
   }
 
   virtual void PromptUserForDownloadPath(

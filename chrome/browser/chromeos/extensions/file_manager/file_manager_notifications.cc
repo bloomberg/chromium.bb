@@ -319,7 +319,7 @@ void FileManagerNotifications::ShowNotificationDelayed(
     base::TimeDelta delay) {
   std::string notification_id = GetNotificationId(type, path);
   hidden_notifications_.erase(notification_id);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FileManagerNotifications::ShowNotificationById, AsWeakPtr(),
                  type, notification_id, GetMessage(type)),
@@ -334,7 +334,7 @@ void FileManagerNotifications::HideNotification(NotificationType type,
 
 void FileManagerNotifications::HideNotificationDelayed(
     NotificationType type, const std::string& path, base::TimeDelta delay) {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FileManagerNotifications::HideNotification, AsWeakPtr(),
                  type, path),

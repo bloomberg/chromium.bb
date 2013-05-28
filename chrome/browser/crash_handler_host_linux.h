@@ -34,8 +34,8 @@ template <typename T> struct DefaultSingletonTraits;
 // Processes signal that they need to be dumped by sending a datagram over a
 // UNIX domain socket. All processes of the same type share the client end of
 // this socket which is installed in their descriptor table before exec.
-class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
-                              public MessageLoop::DestructionObserver {
+class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
+                              public base::MessageLoop::DestructionObserver {
  public:
   // Get the file descriptor which processes should be given in order to signal
   // crashes to the browser.
@@ -87,7 +87,7 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
   int browser_socket_;
 
 #if defined(USE_LINUX_BREAKPAD)
-  MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
   scoped_ptr<base::Thread> uploader_thread_;
   bool shutting_down_;
 #endif

@@ -1070,7 +1070,7 @@ void Predictor::PostIncrementalTrimTask() {
     return;
   const TimeDelta kDurationBetweenTrimmingIncrements =
       TimeDelta::FromSeconds(kDurationBetweenTrimmingIncrementsSeconds);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&Predictor::IncrementalTrimReferrers,
                  weak_factory_->GetWeakPtr(), false),

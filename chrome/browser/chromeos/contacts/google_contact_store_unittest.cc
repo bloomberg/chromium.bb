@@ -76,7 +76,7 @@ class GoogleContactStoreTest : public testing::Test {
     test_api_->SetGDataService(gdata_service_);
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
   TestContactStoreObserver observer_;

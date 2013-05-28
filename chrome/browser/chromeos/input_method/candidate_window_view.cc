@@ -789,7 +789,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   for (size_t i = 0; i < candidate_views_.size(); ++i) {
     candidate_area_contents->RemoveChildView(candidate_views_[i]);
     // Delete the view after getting out the current message loop iteration.
-    MessageLoop::current()->DeleteSoon(FROM_HERE, candidate_views_[i]);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, candidate_views_[i]);
   }
   candidate_views_.clear();
   selected_candidate_index_in_page_ = -1;  // Invalidates the index.

@@ -74,7 +74,7 @@ class FakeExternalProtocolHandlerDelegate
   }
 
   virtual void FinishedProcessingCheck() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void set_os_state(ShellIntegration::DefaultWebClientState value) {
@@ -100,7 +100,7 @@ class FakeExternalProtocolHandlerDelegate
 class ExternalProtocolHandlerTest : public testing::Test {
  protected:
   ExternalProtocolHandlerTest()
-      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
+      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
         file_thread_(BrowserThread::FILE) {}
 
   virtual void SetUp() {
@@ -124,14 +124,14 @@ class ExternalProtocolHandlerTest : public testing::Test {
     delegate_.set_os_state(os_state);
     ExternalProtocolHandler::LaunchUrlWithDelegate(url, 0, 0, &delegate_);
     if (block_state != ExternalProtocolHandler::BLOCK)
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
 
     ASSERT_EQ(should_prompt, delegate_.has_prompted());
     ASSERT_EQ(should_launch, delegate_.has_launched());
     ASSERT_EQ(should_block, delegate_.has_blocked());
   }
 
-  MessageLoopForUI ui_message_loop_;
+  base::MessageLoopForUI ui_message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

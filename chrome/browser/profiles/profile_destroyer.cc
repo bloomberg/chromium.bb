@@ -141,7 +141,7 @@ void ProfileDestroyer::Observe(int type,
   if (num_hosts_ == 0) {
     // Delay the destruction one step further in case other observers of this
     // notification need to look at the profile attached to the host.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&ProfileDestroyer::DestroyProfile, this));
   }
 }

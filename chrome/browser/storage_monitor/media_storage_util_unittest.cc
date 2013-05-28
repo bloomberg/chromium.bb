@@ -73,17 +73,17 @@ class MediaStorageUtilTest : public testing::Test {
   static void PostQuitToUIThread() {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
-                            MessageLoop::QuitClosure());
+                            base::MessageLoop::QuitClosure());
   }
 
   static void WaitForFileThread() {
     BrowserThread::PostTask(BrowserThread::FILE,
                             FROM_HERE,
                             base::Bind(&PostQuitToUIThread));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
  private:
   chrome::test::TestStorageMonitor monitor_;

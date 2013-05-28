@@ -217,7 +217,7 @@ class DriveTestVolume : public TestVolume {
         name,
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     ASSERT_TRUE(error == google_apis::HTTP_CREATED);
     ASSERT_TRUE(resource_entry);
 
@@ -228,7 +228,7 @@ class DriveTestVolume : public TestVolume {
         time,
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     ASSERT_TRUE(error == google_apis::HTTP_SUCCESS);
     ASSERT_TRUE(resource_entry);
     CheckForUpdates();
@@ -264,7 +264,7 @@ class DriveTestVolume : public TestVolume {
         shared_with_me,
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
     ASSERT_TRUE(resource_entry);
 
@@ -275,7 +275,7 @@ class DriveTestVolume : public TestVolume {
         time,
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &resource_entry));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
     ASSERT_TRUE(resource_entry);
 

@@ -25,7 +25,7 @@ class MockChromeFrameAutomationProvider
 typedef testing::Test AutomationProviderTest;
 
 TEST_F(AutomationProviderTest, TestInvalidChromeFrameMessage) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
   IPC::Message bad_msg(1, -1, IPC::Message::PRIORITY_NORMAL);

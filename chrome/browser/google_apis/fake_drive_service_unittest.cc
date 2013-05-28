@@ -86,7 +86,7 @@ class FakeDriveServiceTest : public testing::Test {
     return about_resource->largest_change_id();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   FakeDriveService fake_service_;
 };

@@ -104,7 +104,7 @@ class ExtensionBluetoothEventRouterTest : public testing::Test {
   testing::NiceMock<device::MockBluetoothProfile> mock_health_profile_;
   scoped_ptr<TestingProfile> test_profile_;
   ExtensionBluetoothEventRouter router_;
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 };
 

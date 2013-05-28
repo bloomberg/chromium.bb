@@ -72,7 +72,7 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
                  GetBackgroundHostForExtension(extension_id));
 
     // Wait for extension crash balloon to appear.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void CheckExtensionConsistency(std::string extension_id) {
@@ -500,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 
   ASSERT_EQ(1U, CountBalloons());
   UninstallExtension(first_extension_id_);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   SCOPED_TRACE("after uninstalling");
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());

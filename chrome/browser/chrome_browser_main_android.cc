@@ -69,13 +69,13 @@ void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
   {
     TRACE_EVENT0("startup",
       "ChromeBrowserMainPartsAndroid::PreEarlyInitialization:CreateUiMsgLoop");
-    main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
+    main_message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
   }
 
   {
     TRACE_EVENT0("startup",
       "ChromeBrowserMainPartsAndroid::PreEarlyInitialization:StartUiMsgLoop");
-    MessageLoopForUI::current()->Start();
+    base::MessageLoopForUI::current()->Start();
   }
 
   CommandLine::ForCurrentProcess()->AppendSwitch(

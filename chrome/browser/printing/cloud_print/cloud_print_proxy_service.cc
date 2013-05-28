@@ -114,22 +114,23 @@ bool CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
       DisableForUser();
       profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, std::string());
       if (enforcing_connector_policy_) {
-        MessageLoop::current()->PostTask(
+        base::MessageLoop::current()->PostTask(
             FROM_HERE,
             base::Bind(&CloudPrintProxyService::RefreshCloudPrintProxyStatus,
                        weak_factory_.GetWeakPtr()));
       }
       return false;
     } else if (enforcing_connector_policy_) {
-      MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+                                             base::MessageLoop::QuitClosure());
     }
   }
   return true;
 }
 
 void CloudPrintProxyService::OnCloudPrintSetupClosed() {
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   base::Bind(&chrome::EndKeepAlive));
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(&chrome::EndKeepAlive));
 }
 
 void CloudPrintProxyService::GetPrintersAvalibleForRegistration(

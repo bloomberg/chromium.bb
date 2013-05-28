@@ -204,7 +204,7 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
     }
   }
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   net::SpawnedTestServer test_server_;
   net::TestURLRequestContextGetter* context_;
   content::TestBrowserThread io_thread_;

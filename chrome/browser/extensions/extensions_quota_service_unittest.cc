@@ -140,7 +140,7 @@ class ExtensionsQuotaServiceTest : public testing::Test {
   std::string extension_b_;
   std::string extension_c_;
   scoped_ptr<ExtensionsQuotaService> service_;
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
 };
 

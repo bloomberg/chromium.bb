@@ -155,7 +155,7 @@ class NetLogTempFileTest : public ::testing::Test {
   base::FilePath net_export_log_;
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread file_user_blocking_thread_;
 };
 

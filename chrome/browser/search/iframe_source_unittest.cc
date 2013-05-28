@@ -140,7 +140,7 @@ class IframeSourceTest : public testing::Test {
     response_ = data;
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
 

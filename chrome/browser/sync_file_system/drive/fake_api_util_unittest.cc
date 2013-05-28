@@ -43,7 +43,7 @@ void DidDeleteFile(google_apis::GDataErrorCode* error_out,
 }  // namespace
 
 TEST(FakeAPIUtilTest, ChangeSquashTest) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   FakeAPIUtil api_util;
   std::string kParentResourceId("parent resource id");
   std::string kParentTitle("app-id");
@@ -117,7 +117,7 @@ TEST(FakeAPIUtilTest, ChangeSquashTest) {
 }
 
 TEST(FakeAPIUtilTest, DeleteFile) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   FakeAPIUtil api_util;
   std::string resource_id = "resource_id_to_be_deleted";
   api_util.PushRemoteChange("parent_id",

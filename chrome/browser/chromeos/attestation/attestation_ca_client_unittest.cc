@@ -49,7 +49,7 @@ class AttestationCAClientTest : public ::testing::Test {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread io_thread_;
   net::TestURLFetcherFactory url_fetcher_factory_;
 

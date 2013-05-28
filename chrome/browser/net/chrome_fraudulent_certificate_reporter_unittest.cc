@@ -184,21 +184,21 @@ TEST(ChromeFraudulentCertificateReporterTest, GoodBadInfo) {
 }
 
 TEST(ChromeFraudulentCertificateReporterTest, ReportIsSent) {
-  MessageLoop loop(MessageLoop::TYPE_IO);
+  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
   content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
   loop.PostTask(FROM_HERE, base::Bind(&DoReportIsSent));
   loop.RunUntilIdle();
 }
 
 TEST(ChromeFraudulentCertificateReporterTest, MockReportIsSent) {
-  MessageLoop loop(MessageLoop::TYPE_IO);
+  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
   content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
   loop.PostTask(FROM_HERE, base::Bind(&DoMockReportIsSent));
   loop.RunUntilIdle();
 }
 
 TEST(ChromeFraudulentCertificateReporterTest, ReportIsNotSent) {
-  MessageLoop loop(MessageLoop::TYPE_IO);
+  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
   content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
   loop.PostTask(FROM_HERE, base::Bind(&DoReportIsNotSent));
   loop.RunUntilIdle();

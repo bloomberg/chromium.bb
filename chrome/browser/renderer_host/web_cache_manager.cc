@@ -418,7 +418,7 @@ void WebCacheManager::ReviseAllocationStrategy() {
 void WebCacheManager::ReviseAllocationStrategyLater() {
   // Ask to be called back in a few milliseconds to actually recompute our
   // allocation.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(
           &WebCacheManager::ReviseAllocationStrategy,
           weak_factory_.GetWeakPtr()),

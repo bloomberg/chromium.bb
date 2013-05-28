@@ -281,7 +281,7 @@ void DriveUploader::OnUploadLocationReceived(
   // PostTask is necessary because we have to finish
   // InitiateUpload's callback before calling ResumeUpload, due to the
   // implementation of OperationRegistry. (http://crbug.com/134814)
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&DriveUploader::UploadNextChunk,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -386,7 +386,7 @@ void DriveUploader::OnUploadRangeResponseReceived(
   // PostTask is necessary because we have to finish previous ResumeUpload's
   // callback before calling ResumeUpload again, due to the implementation of
   // OperationRegistry. (http://crbug.com/134814)
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&DriveUploader::UploadNextChunk,
                  weak_ptr_factory_.GetWeakPtr(),

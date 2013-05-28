@@ -24,7 +24,7 @@ class ChromeBrowserMainPartsAndroid : public ChromeBrowserMainParts {
   virtual void ShowMissingLocaleMessageBox() OVERRIDE;
 
  private:
-  scoped_ptr<MessageLoop> main_message_loop_;
+  scoped_ptr<base::MessageLoop> main_message_loop_;
   scoped_ptr<CrashDumpManager> crash_dump_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsAndroid);

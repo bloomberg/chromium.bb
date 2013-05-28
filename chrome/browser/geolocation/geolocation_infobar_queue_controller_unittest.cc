@@ -31,7 +31,7 @@ class GeolocationInfoBarQueueControllerTests
 };
 
 GeolocationInfoBarQueueControllerTests::GeolocationInfoBarQueueControllerTests()
-    : ui_thread_(content::BrowserThread::UI, MessageLoop::current()) {
+    : ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()) {
 }
 
 GeolocationPermissionRequestID

@@ -190,7 +190,7 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
     if (!done.IsSignaled()) {
       ADD_FAILURE() << "Timed out waiting for DB thread to finish.";
     }
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void Start() {
@@ -202,7 +202,7 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
                    base::Unretained(&start_callback_)));
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   scoped_refptr<NonFrontendDataTypeControllerFake> non_frontend_dtc_;

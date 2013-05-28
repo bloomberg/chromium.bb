@@ -43,9 +43,9 @@ void WizardInProcessBrowserTest::SetUpOnMainThread() {
 
 void WizardInProcessBrowserTest::CleanUpOnMainThread() {
   // LoginDisplayHost owns controllers and all windows.
-  MessageLoopForUI::current()->DeleteSoon(FROM_HERE, host_);
+  base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, host_);
 
-  MessageLoopForUI::current()->RunUntilIdle();
+  base::MessageLoopForUI::current()->RunUntilIdle();
 }
 
 }  // namespace chromeos

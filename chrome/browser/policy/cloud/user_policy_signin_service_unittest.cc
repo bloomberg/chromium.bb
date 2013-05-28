@@ -83,7 +83,7 @@ class SigninManagerFake : public FakeSigninManager {
 class UserPolicySigninServiceTest : public testing::Test {
  public:
   UserPolicySigninServiceTest()
-      : loop_(MessageLoop::TYPE_IO),
+      : loop_(base::MessageLoop::TYPE_IO),
         ui_thread_(content::BrowserThread::UI, &loop_),
         file_thread_(content::BrowserThread::FILE, &loop_),
         io_thread_(content::BrowserThread::IO, &loop_),
@@ -264,7 +264,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   // BrowserPolicyConnector and UrlFetcherFactory want to initialize and free
   // various components asynchronously via tasks, so create fake threads here.
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;

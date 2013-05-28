@@ -66,23 +66,23 @@ const uint8 kTestKeyData[] = {
 };
 
 void DBusCallbackFalse(const BoolDBusMethodCallback& callback) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
 }
 
 void DBusCallbackTrue(const BoolDBusMethodCallback& callback) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
 }
 
 void CertCallbackSuccess(const AttestationFlow::CertificateCallback& callback) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, true, "fake_cert"));
 }
 
 void StatusCallbackSuccess(
     const policy::CloudPolicyClient::StatusCallback& callback) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, true));
 }
 
@@ -91,7 +91,7 @@ class FakeDBusData {
   explicit FakeDBusData(const std::string& data) : data_(data) {}
 
   void operator() (const CryptohomeClient::DataMethodCallback& callback) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true, data_));
   }
@@ -105,7 +105,7 @@ class FakeDBusData {
 class AttestationPolicyObserverTest : public ::testing::Test {
  public:
   AttestationPolicyObserverTest()
-      : message_loop_(MessageLoop::TYPE_UI),
+      : message_loop_(base::MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &message_loop_) {
     // Remove the real DeviceSettingsProvider and replace it with a stub.
     CrosSettings* cros_settings = CrosSettings::Get();
@@ -235,7 +235,7 @@ class AttestationPolicyObserverTest : public ::testing::Test {
     return result;
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   ScopedTestDeviceSettingsService test_device_settings_service_;
   ScopedTestCrosSettings test_cros_settings_;

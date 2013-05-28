@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
       .Times(1);
   EXPECT_CALL(*mock_screen_observer_, ShowErrorScreen())
       .Times(1);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   NotifyPortalDetectionCompleted();
 }
 

@@ -118,7 +118,7 @@ class MockCallback : public base::RefCountedThreadSafe<MockCallback> {
 
 class ManagedModeTest : public ::testing::Test {
  public:
-  ManagedModeTest() : message_loop_(MessageLoop::TYPE_UI),
+  ManagedModeTest() : message_loop_(base::MessageLoop::TYPE_UI),
                       ui_thread_(content::BrowserThread::UI, &message_loop_),
                       io_thread_(content::BrowserThread::IO, &message_loop_) {
   }
@@ -134,7 +134,7 @@ class ManagedModeTest : public ::testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   TestingProfile managed_mode_profile_;

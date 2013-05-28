@@ -30,7 +30,7 @@ namespace chromeos {
 class CrosSettingsTest : public testing::Test {
  protected:
   CrosSettingsTest()
-      : message_loop_(MessageLoop::TYPE_UI),
+      : message_loop_(base::MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &message_loop_),
         local_state_(TestingBrowserProcess::GetGlobal()),
         settings_(DeviceSettingsService::Get()),
@@ -89,7 +89,7 @@ class CrosSettingsTest : public testing::Test {
     response.set_policy_data_signature("false");
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
 
   ScopedTestingLocalState local_state_;

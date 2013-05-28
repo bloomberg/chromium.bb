@@ -172,8 +172,8 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     // This shuts down the login UI.
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(&chrome::AttemptExit));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(&chrome::AttemptExit));
     base::RunLoop().RunUntilIdle();
   }
 

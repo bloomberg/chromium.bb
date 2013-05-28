@@ -94,7 +94,7 @@ class BrowsingDataCookieHelperTest : public testing::Test {
     EXPECT_EQ("B", it->Name());
 
     ASSERT_TRUE(++it == cookies.end());
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void DomainCookieCallback(const net::CookieList& cookies) {
@@ -114,7 +114,7 @@ class BrowsingDataCookieHelperTest : public testing::Test {
     EXPECT_EQ("2", it->Value());
 
     ASSERT_TRUE(++it == cookies.end());
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void DeleteCallback(const net::CookieList& cookies) {
@@ -126,7 +126,7 @@ class BrowsingDataCookieHelperTest : public testing::Test {
     EXPECT_EQ("B", it->Name());
 
     ASSERT_TRUE(++it == cookies.end());
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void CannedUniqueCallback(const net::CookieList& cookies) {
@@ -209,7 +209,7 @@ class BrowsingDataCookieHelperTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<TestingProfile> testing_profile_;
@@ -227,7 +227,7 @@ TEST_F(BrowsingDataCookieHelperTest, FetchData) {
                  base::Unretained(this)));
 
   // Blocks until BrowsingDataCookieHelperTest::FetchCallback is notified.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(BrowsingDataCookieHelperTest, DomainCookie) {
@@ -240,7 +240,7 @@ TEST_F(BrowsingDataCookieHelperTest, DomainCookie) {
                  base::Unretained(this)));
 
   // Blocks until BrowsingDataCookieHelperTest::FetchCallback is notified.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(BrowsingDataCookieHelperTest, DeleteCookie) {
@@ -253,7 +253,7 @@ TEST_F(BrowsingDataCookieHelperTest, DeleteCookie) {
                  base::Unretained(this)));
 
   // Blocks until BrowsingDataCookieHelperTest::FetchCallback is notified.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   net::CanonicalCookie cookie = cookie_list_[0];
   cookie_helper->DeleteCookie(cookie);
@@ -261,7 +261,7 @@ TEST_F(BrowsingDataCookieHelperTest, DeleteCookie) {
   cookie_helper->StartFetching(
       base::Bind(&BrowsingDataCookieHelperTest::DeleteCallback,
                  base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(BrowsingDataCookieHelperTest, CannedDomainCookie) {

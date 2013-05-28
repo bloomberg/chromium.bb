@@ -460,7 +460,7 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf() {
             << " Intermediate:" << intermediate_path_.AsUTF8Unsafe()
             << " Should prompt:" << should_prompt_
             << " Danger type:" << danger_type_;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(completion_callback_,
                  local_path_,

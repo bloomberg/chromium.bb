@@ -212,7 +212,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
 
     // The TranslateManager class processes the navigation entry committed
     // notification in a posted task; process that task.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   virtual void Observe(int type,
@@ -808,7 +808,7 @@ TEST_F(TranslateManagerBrowserTest, ReloadFromLocationBar) {
 
   // The TranslateManager class processes the navigation entry committed
   // notification in a posted task; process that task.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 }
 
@@ -1454,7 +1454,7 @@ TEST_F(TranslateManagerBrowserTest, ScriptExpires) {
           0, 0, "fr", "en", TranslateErrors::NONE));
 
   // A task should have been posted to clear the script, run it.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Do another navigation and translation.
   SimulateNavigation(GURL("http://www.google.es"), "es", true);

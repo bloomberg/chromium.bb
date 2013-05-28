@@ -68,7 +68,7 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
 
   TestingProfileManager profile_manager_;
   BookmarkModel* bookmark_model_;
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   base::ScopedTempDir temp_dir_;

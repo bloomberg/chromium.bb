@@ -54,7 +54,7 @@ class MockClientSideDetectionService : public ClientSideDetectionService {
 };
 
 ACTION(QuitCurrentMessageLoop) {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 }  // namespace
@@ -216,7 +216,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
  protected:
   scoped_ptr<ClientSideDetectionService> csd_service_;
   scoped_ptr<net::FakeURLFetcherFactory> factory_;
-  MessageLoop msg_loop_;
+  base::MessageLoop msg_loop_;
 
  private:
   void SendRequestDone(GURL phishing_url, bool is_phishing) {

@@ -204,7 +204,7 @@ void TranslateManager::Observe(int type,
       // before the WebContents and the WebContents processing might remove the
       // current infobars.  Since InitTranslation might add an infobar, it must
       // be done after that.
-      MessageLoop::current()->PostTask(FROM_HERE,
+      base::MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(
               &TranslateManager::InitiateTranslationPosted,
               weak_method_factory_.GetWeakPtr(),
@@ -298,7 +298,7 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
       // We'll expire the cached script after some time, to make sure long
       // running browsers still get fixes that might get pushed with newer
       // scripts.
-      MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
           base::Bind(&TranslateManager::ClearTranslateScript,
                      weak_method_factory_.GetWeakPtr()),
           translate_script_expiration_delay_);
@@ -496,7 +496,7 @@ void TranslateManager::InitiateTranslationPosted(
   // has finished.
   if ((web_contents->IsLoading()) && attempt < kMaxTranslateLoadCheckAttempts) {
     int backoff = attempt * max_reload_check_attempts_;
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&TranslateManager::InitiateTranslationPosted,
                               weak_method_factory_.GetWeakPtr(), process_id,
                               render_id, page_lang, ++attempt),

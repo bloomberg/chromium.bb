@@ -39,7 +39,7 @@ class TemplateURLServiceLoader : public content::NotificationObserver {
                        const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED &&
         content::Source<TemplateURLService>(source).ptr() == model_) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   }
 

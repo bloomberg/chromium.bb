@@ -93,7 +93,7 @@ void WebResourceService::OnResourceRequestsAllowed() {
 // Delay initial load of resource data into cache so as not to interfere
 // with startup time.
 void WebResourceService::ScheduleFetch(int64 delay_ms) {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WebResourceService::StartFetch,
                  weak_ptr_factory_.GetWeakPtr()),

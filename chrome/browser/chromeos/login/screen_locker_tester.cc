@@ -81,7 +81,7 @@ void LoginAttemptObserver::WaitForAttempt() {
 void LoginAttemptObserver::LoginAttempted() {
   login_attempted_ = true;
   if (waiting_)
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
 }
 
 }

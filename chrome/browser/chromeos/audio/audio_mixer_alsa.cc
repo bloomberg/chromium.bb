@@ -87,7 +87,7 @@ AudioMixerAlsa::AudioMixerAlsa()
 AudioMixerAlsa::~AudioMixerAlsa() {
   if (!thread_.get())
     return;
-  DCHECK(MessageLoop::current() != thread_->message_loop());
+  DCHECK(base::MessageLoop::current() != thread_->message_loop());
 
   thread_->message_loop()->PostTask(
       FROM_HERE, base::Bind(&AudioMixerAlsa::Disconnect,
@@ -190,7 +190,7 @@ void AudioMixerAlsa::SetCaptureMuteLocked(bool locked) {
 }
 
 void AudioMixerAlsa::Connect() {
-  DCHECK(MessageLoop::current() == thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == thread_->message_loop());
   DCHECK(!alsa_mixer_);
 
   if (disconnected_event_.IsSignaled())
@@ -208,7 +208,7 @@ void AudioMixerAlsa::Connect() {
 }
 
 bool AudioMixerAlsa::ConnectInternal() {
-  DCHECK(MessageLoop::current() == thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == thread_->message_loop());
   num_connection_attempts_++;
   int err;
   snd_mixer_t* handle = NULL;
@@ -329,7 +329,7 @@ bool AudioMixerAlsa::ConnectInternal() {
 }
 
 void AudioMixerAlsa::Disconnect() {
-  DCHECK(MessageLoop::current() == thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == thread_->message_loop());
   if (alsa_mixer_) {
     snd_mixer_close(alsa_mixer_);
     alsa_mixer_ = NULL;
@@ -338,7 +338,7 @@ void AudioMixerAlsa::Disconnect() {
 }
 
 void AudioMixerAlsa::ApplyState() {
-  DCHECK(MessageLoop::current() == thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == thread_->message_loop());
   if (!alsa_mixer_)
     return;
 
@@ -377,7 +377,7 @@ void AudioMixerAlsa::ApplyState() {
 
 snd_mixer_elem_t* AudioMixerAlsa::FindElementWithName(
     snd_mixer_t* handle, const string& element_name) const {
-  DCHECK(MessageLoop::current() == thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == thread_->message_loop());
   snd_mixer_selem_id_t* sid = NULL;
 
   // Using id_malloc/id_free API instead of id_alloca since the latter gives the
@@ -397,7 +397,7 @@ snd_mixer_elem_t* AudioMixerAlsa::FindElementWithName(
 
 bool AudioMixerAlsa::GetElementVolume(snd_mixer_elem_t* element,
                                       double* current_volume_db) {
-  DCHECK(MessageLoop::current() == thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == thread_->message_loop());
   alsa_long_t long_volume = 0;
   int alsa_result = snd_mixer_selem_get_playback_dB(
       element, static_cast<snd_mixer_selem_channel_id_t>(0), &long_volume);
@@ -413,7 +413,7 @@ bool AudioMixerAlsa::GetElementVolume(snd_mixer_elem_t* element,
 bool AudioMixerAlsa::SetElementVolume(snd_mixer_elem_t* element,
                                       double new_volume_db,
                                       double rounding_bias) {
-  DCHECK(MessageLoop::current() == thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == thread_->message_loop());
   alsa_long_t volume_low = 0;
   alsa_long_t volume_high = 0;
   int alsa_result = snd_mixer_selem_get_playback_volume_range(
@@ -463,7 +463,7 @@ bool AudioMixerAlsa::SetElementVolume(snd_mixer_elem_t* element,
 }
 
 void AudioMixerAlsa::SetElementMuted(snd_mixer_elem_t* element, bool mute) {
-  DCHECK(MessageLoop::current() == thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == thread_->message_loop());
   int alsa_result = snd_mixer_selem_set_playback_switch_all(element, !mute);
   if (alsa_result != 0) {
     LOG(WARNING) << "snd_mixer_selem_set_playback_switch_all() failed: "

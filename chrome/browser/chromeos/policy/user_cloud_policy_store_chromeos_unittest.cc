@@ -45,14 +45,14 @@ const char kSanitizedUsername[] = "0123456789ABCDEF0123456789ABCDEF012345678";
 const char kDefaultHomepage[] = "http://chromium.org";
 
 ACTION_P2(SendSanitizedUsername, call_status, sanitized_username) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(arg1, call_status, sanitized_username));
 }
 
 class UserCloudPolicyStoreChromeOSTest : public testing::Test {
  protected:
   UserCloudPolicyStoreChromeOSTest()
-      : loop_(MessageLoop::TYPE_UI),
+      : loop_(base::MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &loop_),
         file_thread_(content::BrowserThread::FILE, &loop_) {}
 
@@ -222,7 +222,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     return tmp_dir_.path().AppendASCII("policy");
   }
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   chromeos::MockCryptohomeClient cryptohome_client_;
   chromeos::MockSessionManagerClient session_manager_client_;
   UserPolicyBuilder policy_;

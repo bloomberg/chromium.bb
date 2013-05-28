@@ -28,7 +28,7 @@ class InternalAuthTest : public ::testing::Test {
   virtual void TearDown() {
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   std::string long_string_;
 };
 

@@ -417,7 +417,7 @@ void BookmarkFaviconFetcher::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (chrome::NOTIFICATION_PROFILE_DESTROYED == type && fetcher != NULL) {
-    MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
     fetcher = NULL;
   }
 }
@@ -445,7 +445,7 @@ void BookmarkFaviconFetcher::ExecuteWriter() {
                                 profile_)),
                             path_, favicons_map_.release(), observer_)));
   if (fetcher != NULL) {
-    MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
     fetcher = NULL;
   }
 }

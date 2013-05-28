@@ -46,8 +46,8 @@ class ScriptBadgeControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   ScriptBadgeControllerTest()
       : feature_override_(FeatureSwitch::script_badges(), true),
-        ui_thread_(BrowserThread::UI, MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, MessageLoop::current()),
+        ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
+        file_thread_(BrowserThread::FILE, base::MessageLoop::current()),
         current_channel_(chrome::VersionInfo::CHANNEL_DEV) {}
 
   virtual void SetUp() OVERRIDE {

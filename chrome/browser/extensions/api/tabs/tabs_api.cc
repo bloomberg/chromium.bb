@@ -1917,7 +1917,7 @@ bool TabsDetectLanguageFunction::RunImpl() {
   if (!translate_tab_helper->language_state().original_language().empty()) {
     // Delay the callback invocation until after the current JS call has
     // returned.
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &TabsDetectLanguageFunction::GotLanguage, this,
         translate_tab_helper->language_state().original_language()));
     return true;

@@ -54,7 +54,7 @@ class SSLConfigServiceManagerPrefTest : public testing::Test {
     return config.channel_id_enabled;
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
 };

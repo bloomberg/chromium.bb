@@ -46,7 +46,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
       : auto_login_user_id_(policy::GenerateDeviceLocalAccountUserId(
             kAutoLoginAccountId,
             policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION)),
-        message_loop_(MessageLoop::TYPE_UI),
+        message_loop_(base::MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &message_loop_),
         local_state_(TestingBrowserProcess::GetGlobal()),
         mock_user_manager_(new MockUserManager()),
@@ -153,7 +153,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
   MockLoginDisplay* mock_login_display_;
 
   scoped_ptr<MockLoginDisplayHost> mock_login_display_host_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   ScopedTestingLocalState local_state_;
 

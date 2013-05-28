@@ -249,7 +249,7 @@ class GoogleURLTrackerTest : public testing::Test {
 
   // These are required by the TestURLFetchers GoogleURLTracker will create (see
   // test_url_fetcher_factory.h).
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread io_thread_;
   // Creating this allows us to call
   // net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests().
@@ -283,7 +283,7 @@ void GoogleURLTrackerTest::OnInfoBarClosed(InfoBarDelegate* infobar,
 }
 
 GoogleURLTrackerTest::GoogleURLTrackerTest()
-    : message_loop_(MessageLoop::TYPE_IO),
+    : message_loop_(base::MessageLoop::TYPE_IO),
       io_thread_(content::BrowserThread::IO, &message_loop_) {
   GoogleURLTrackerFactory::GetInstance()->RegisterUserPrefsOnBrowserContext(
       &profile_);
@@ -351,7 +351,7 @@ void GoogleURLTrackerTest::NotifyIPAddressChanged() {
   net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
   // For thread safety, the NCN queues tasks to do the actual notifications, so
   // we need to spin the message loop so the tracker will actually be notified.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void GoogleURLTrackerTest::SetLastPromptedGoogleURL(const GURL& url) {

@@ -36,7 +36,7 @@ PasswordChangeProcessor::PasswordChangeProcessor(
     : ChangeProcessor(error_handler),
       model_associator_(model_associator),
       password_store_(password_store),
-      expected_loop_(MessageLoop::current()) {
+      expected_loop_(base::MessageLoop::current()) {
   DCHECK(model_associator);
   DCHECK(error_handler);
 #if defined(OS_MACOSX)
@@ -47,14 +47,14 @@ PasswordChangeProcessor::PasswordChangeProcessor(
 }
 
 PasswordChangeProcessor::~PasswordChangeProcessor() {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
 }
 
 void PasswordChangeProcessor::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   DCHECK(chrome::NOTIFICATION_LOGINS_CHANGED == type);
 
   syncer::WriteTransaction trans(FROM_HERE, share_handle());
@@ -162,7 +162,7 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
     int64 model_version,
     const syncer::ImmutableChangeRecordList& changes) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
 
   syncer::ReadNode password_root(trans);
   if (password_root.InitByTagLookup(kPasswordTag) !=
@@ -220,7 +220,7 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
 }
 
 void PasswordChangeProcessor::CommitChangesFromSyncModel() {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   ScopedStopObserving<PasswordChangeProcessor> stop_observing(this);
 
   syncer::SyncError error = model_associator_->WriteToPasswordStore(
@@ -239,19 +239,19 @@ void PasswordChangeProcessor::CommitChangesFromSyncModel() {
 }
 
 void PasswordChangeProcessor::StartImpl(Profile* profile) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   StartObserving();
 }
 
 void PasswordChangeProcessor::StartObserving() {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGINS_CHANGED,
                               content::Source<PasswordStore>(password_store_));
 }
 
 void PasswordChangeProcessor::StopObserving() {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   notification_registrar_.Remove(
       this,
       chrome::NOTIFICATION_LOGINS_CHANGED,

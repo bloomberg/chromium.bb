@@ -386,7 +386,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     return &mock_remote_processor_;
   }
 
-  MessageLoop* message_loop() { return &message_loop_; }
+  base::MessageLoop* message_loop() { return &message_loop_; }
   DriveFileSyncService* sync_service() { return sync_service_.get(); }
   std::map<GURL, std::string>* pending_batch_sync_origins() {
     return &(sync_service()->pending_batch_sync_origins_);
@@ -570,7 +570,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
   // End of mock setup helpers -----------------------------------------------
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

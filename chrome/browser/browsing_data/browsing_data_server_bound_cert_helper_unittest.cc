@@ -57,7 +57,7 @@ class BrowsingDataServerBoundCertHelperTest
       const net::ServerBoundCertStore::ServerBoundCertList& certs) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     server_bound_cert_list_ = certs;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   // net::SSLConfigService::Observer implementation:
@@ -66,7 +66,7 @@ class BrowsingDataServerBoundCertHelperTest
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<TestingProfile> testing_profile_;
@@ -87,7 +87,7 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, FetchData) {
 
   // Blocks until BrowsingDataServerBoundCertHelperTest::FetchCallback is
   // notified.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ASSERT_EQ(2UL, server_bound_cert_list_.size());
   net::ServerBoundCertStore::ServerBoundCertList::const_iterator it =
@@ -116,7 +116,7 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, DeleteCert) {
   helper->StartFetching(
       base::Bind(&BrowsingDataServerBoundCertHelperTest::FetchCallback,
                  base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(1, ssl_config_changed_count_);
   ASSERT_EQ(1UL, server_bound_cert_list_.size());
@@ -133,7 +133,7 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, DeleteCert) {
   helper->StartFetching(
       base::Bind(&BrowsingDataServerBoundCertHelperTest::FetchCallback,
                  base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(2, ssl_config_changed_count_);
   ASSERT_EQ(0UL, server_bound_cert_list_.size());
 }
@@ -155,7 +155,7 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, CannedUnique) {
   helper->StartFetching(
       base::Bind(&BrowsingDataServerBoundCertHelperTest::FetchCallback,
                  base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ASSERT_EQ(1UL, server_bound_cert_list_.size());
   net::ServerBoundCertStore::ServerBoundCert& cert =

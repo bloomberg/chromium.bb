@@ -210,8 +210,8 @@ int JankObserverHelper::discard_count_ = 99;  // Measure only 1 in 100.
 
 //------------------------------------------------------------------------------
 class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
-                       public MessageLoopForIO::IOObserver,
-                       public MessageLoop::TaskObserver {
+                       public base::MessageLoopForIO::IOObserver,
+                       public base::MessageLoop::TaskObserver {
  public:
   IOJankObserver(const char* thread_name,
                  TimeDelta excessive_duration,
@@ -222,14 +222,14 @@ class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
   // attach to the current thread, so this function can be invoked on another
   // thread to attach it.
   void AttachToCurrentThread() {
-    MessageLoop::current()->AddTaskObserver(this);
-    MessageLoopForIO::current()->AddIOObserver(this);
+    base::MessageLoop::current()->AddTaskObserver(this);
+    base::MessageLoopForIO::current()->AddIOObserver(this);
   }
 
   // Detaches the observer to the current thread's message loop.
   void DetachFromCurrentThread() {
-    MessageLoopForIO::current()->RemoveIOObserver(this);
-    MessageLoop::current()->RemoveTaskObserver(this);
+    base::MessageLoopForIO::current()->RemoveIOObserver(this);
+    base::MessageLoop::current()->RemoveTaskObserver(this);
   }
 
   virtual void WillProcessIOEvent() OVERRIDE {
@@ -266,8 +266,8 @@ class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
 
 //------------------------------------------------------------------------------
 class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
-                       public MessageLoop::TaskObserver,
-                       public MessageLoopForUI::Observer {
+                       public base::MessageLoop::TaskObserver,
+                       public base::MessageLoopForUI::Observer {
  public:
   UIJankObserver(const char* thread_name,
                  TimeDelta excessive_duration,
@@ -278,16 +278,16 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
   // attach to the current thread, so this function can be invoked on another
   // thread to attach it.
   void AttachToCurrentThread() {
-    DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
-    MessageLoopForUI::current()->AddObserver(this);
-    MessageLoop::current()->AddTaskObserver(this);
+    DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
+    base::MessageLoopForUI::current()->AddObserver(this);
+    base::MessageLoop::current()->AddTaskObserver(this);
   }
 
   // Detaches the observer to the current thread's message loop.
   void DetachFromCurrentThread() {
-    DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
-    MessageLoop::current()->RemoveTaskObserver(this);
-    MessageLoopForUI::current()->RemoveObserver(this);
+    DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
+    base::MessageLoop::current()->RemoveTaskObserver(this);
+    base::MessageLoopForUI::current()->RemoveObserver(this);
   }
 
   virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {

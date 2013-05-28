@@ -73,7 +73,7 @@ class StopTestOnCallback {
     ASSERT_EQ(1UL, database_info_list.size());
     EXPECT_EQ(std::string(kTestIdentifier1),
               database_info_list.begin()->origin_identifier);
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
  private:

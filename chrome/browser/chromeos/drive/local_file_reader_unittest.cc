@@ -60,7 +60,7 @@ class LocalFileReaderTest : public ::testing::Test {
     worker_thread_.reset();
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<base::Thread> worker_thread_;
   scoped_ptr<LocalFileReader> file_reader_;

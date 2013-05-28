@@ -69,7 +69,7 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
 // Test that GetStatusLabelsForSyncGlobalError returns an error if a
 // passphrase is required.
 TEST(SyncUIUtilTest, PassphraseGlobalError) {
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
@@ -89,7 +89,7 @@ TEST(SyncUIUtilTest, PassphraseGlobalError) {
 // Test that GetStatusLabelsForSyncGlobalError returns an error if a
 // passphrase is required and not for auth errors.
 TEST(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
@@ -121,7 +121,7 @@ TEST(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
 // Test that GetStatusLabelsForSyncGlobalError does not indicate errors for
 // auth errors (these are reported through SigninGlobalError).
 TEST(SyncUIUtilTest, AuthStateGlobalError) {
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());

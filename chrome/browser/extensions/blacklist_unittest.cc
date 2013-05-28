@@ -33,7 +33,7 @@ class BlacklistTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   TestExtensionPrefs prefs_;
 

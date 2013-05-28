@@ -50,10 +50,10 @@ class TestMergeSessionLoadPage :  public MergeSessionLoadPage {
 class MergeSessionLoadPageTest : public ChromeRenderViewHostTestHarness {
  public:
   MergeSessionLoadPageTest()
-      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
+      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
         file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, MessageLoop::current()),
-        io_thread_(BrowserThread::IO, MessageLoop::current()) {
+            BrowserThread::FILE_USER_BLOCKING, base::MessageLoop::current()),
+        io_thread_(BrowserThread::IO, base::MessageLoop::current()) {
   }
 
   void Navigate(const char* url, int page_id) {
@@ -114,12 +114,12 @@ TEST_F(MergeSessionLoadPageTest, MergeSessionPageShown) {
   ShowInterstitial(kURL2);
   InterstitialPage* interstitial = GetMergeSessionLoadPage();
   ASSERT_TRUE(interstitial);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Simulate merge session completion.
   UserManager::Get()->SetMergeSessionState(
       UserManager::MERGE_STATUS_DONE);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // The URL remains to be URL2.
   EXPECT_EQ(kURL2, web_contents()->GetURL().spec());

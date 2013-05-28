@@ -66,7 +66,7 @@ class ValueStoreTest : public testing::TestWithParam<ValueStoreTestParam> {
   base::ScopedTempDir temp_dir_;
 
   // Need these so that the DCHECKs for running on FILE or UI threads pass.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 };

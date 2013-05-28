@@ -323,7 +323,7 @@ class ProxyConfigServiceImplTestBase : public TESTBASE {
     return proxy_config_service_->GetLatestProxyConfig(config);
   }
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   scoped_ptr<ChromeProxyConfigService> proxy_config_service_;
   scoped_ptr<ProxyConfigServiceImpl> config_service_impl_;
 

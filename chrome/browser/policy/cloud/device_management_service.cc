@@ -557,7 +557,7 @@ DeviceManagementRequestJob* DeviceManagementService::CreateJob(
 void DeviceManagementService::ScheduleInitialization(int64 delay_milliseconds) {
   if (initialized_)
     return;
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DeviceManagementService::Initialize,
                  weak_ptr_factory_.GetWeakPtr()),

@@ -74,7 +74,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
 
     // Calls back the upload URL for subsequent ResumeUpload operations.
     // InitiateUpload is an asynchronous function, so don't callback directly.
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadNewFileURL)));
   }
 
@@ -90,14 +90,14 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     EXPECT_EQ(kTestInitiateUploadResourceId, resource_id);
 
     if (!etag.empty() && etag != kTestETag) {
-      MessageLoop::current()->PostTask(FROM_HERE,
+      base::MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(callback, HTTP_PRECONDITION, GURL()));
       return;
     }
 
     // Calls back the upload URL for subsequent ResumeUpload operations.
     // InitiateUpload is an asynchronous function, so don't callback directly.
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadExistingFileURL)));
   }
 
@@ -138,7 +138,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       // For the testing purpose, it always notifies the progress at the end of
       // each chunk uploading.
       int64 chunk_size = end_position - start_position;
-      MessageLoop::current()->PostTask(FROM_HERE,
+      base::MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(progress_callback, chunk_size, chunk_size));
     }
 
@@ -178,7 +178,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
           HTTP_RESUME_INCOMPLETE, 0, received_bytes_);
     }
     // ResumeUpload is an asynchronous function, so don't callback directly.
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, response, base::Passed(&entry)));
   }
 
@@ -198,7 +198,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       const std::string& parent_resource_id,
       const std::string& title,
       const InitiateUploadCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, GDATA_NO_CONNECTION, GURL()));
   }
 
@@ -209,7 +209,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       const std::string& resource_id,
       const std::string& etag,
       const InitiateUploadCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, GDATA_NO_CONNECTION, GURL()));
   }
 
@@ -238,7 +238,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       const std::string& parent_resource_id,
       const std::string& title,
       const InitiateUploadCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadNewFileURL)));
   }
 
@@ -249,7 +249,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       const std::string& resource_id,
       const std::string& etag,
       const InitiateUploadCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadExistingFileURL)));
   }
 
@@ -264,7 +264,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       const base::FilePath& local_file_path,
       const UploadRangeCallback& callback,
       const ProgressCallback& progress_callback) OVERRIDE {
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback,
                    UploadRangeResponse(GDATA_NO_CONNECTION, -1, -1),
                    base::Passed(scoped_ptr<ResourceEntry>())));
@@ -286,7 +286,7 @@ class DriveUploaderTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
 };

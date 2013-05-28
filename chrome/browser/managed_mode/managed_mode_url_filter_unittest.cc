@@ -33,7 +33,7 @@ class ManagedModeURLFilterTest : public ::testing::Test,
            ManagedModeURLFilter::ALLOW;
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
   scoped_refptr<ManagedModeURLFilter> filter_;
 };

@@ -841,7 +841,7 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
       << " -- ProfileSyncService unusable: " << message;
 
   // Shut all data types down.
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ProfileSyncService::ShutdownImpl, weak_factory_.GetWeakPtr(),
                  delete_sync_database));
 }
@@ -864,7 +864,7 @@ void ProfileSyncService::DisableBrokenDatatype(
   failed_datatypes_handler_.UpdateFailedDatatypes(errors,
       FailedDatatypesHandler::RUNTIME);
 
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ProfileSyncService::ReconfigureDatatypeManager,
                  weak_factory_.GetWeakPtr()));
 }
@@ -967,7 +967,7 @@ void ProfileSyncService::OnSyncCycleCompleted() {
     // model associator listens too. Also consider somehow plumbing the current
     // server time as last reported by CheckServerReachable, so we don't have to
     // rely on the local clock, which may be off significantly.
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&browser_sync::SessionModelAssociator::DeleteStaleSessions,
                    GetSessionModelAssociator()->AsWeakPtr()));
   }
@@ -1302,7 +1302,7 @@ void ProfileSyncService::OnConfigureDone(
   }
 
   // Now handle partial success and full success.
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ProfileSyncService::OnSyncConfigureDone,
                  weak_factory_.GetWeakPtr(), result));
 

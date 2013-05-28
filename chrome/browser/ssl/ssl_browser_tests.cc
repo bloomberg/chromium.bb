@@ -82,7 +82,7 @@ class ProvisionalLoadWaiter : public content::WebContentsObserver {
       content::RenderViewHost* render_view_host) OVERRIDE {
     seen_ = true;
     if (waiting_)
-      MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->Quit();
   }
 
  private:
@@ -191,9 +191,9 @@ class SSLUITest : public InProcessBrowserTest {
         break;
 
       // Wait a bit.
-      MessageLoop::current()->PostDelayedTask(
+      base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
-          MessageLoop::QuitClosure(),
+          base::MessageLoop::QuitClosure(),
           base::TimeDelta::FromMilliseconds(timeout_ms));
       content::RunMessageLoop();
     }
@@ -1157,8 +1157,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   for (int i = 0; i < 10; i++) {
     if (IsShowingWebContentsModalDialog())
       break;
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, MessageLoop::QuitClosure(), base::TimeDelta::FromSeconds(1));
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::MessageLoop::QuitClosure(),
+        base::TimeDelta::FromSeconds(1));
     content::RunMessageLoop();
   }
   ASSERT_TRUE(IsShowingWebContentsModalDialog());

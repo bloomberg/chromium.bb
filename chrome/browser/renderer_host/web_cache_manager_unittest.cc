@@ -93,7 +93,7 @@ class WebCacheManagerTest : public testing::Test {
 
  private:
   WebCacheManager manager_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
 };
 

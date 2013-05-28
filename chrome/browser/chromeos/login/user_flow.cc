@@ -56,7 +56,7 @@ ExtendedUserFlow::~ExtendedUserFlow() {
 
 void ExtendedUserFlow::UnregisterFlowSoon() {
   std::string id_copy(user_id());
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&UnregisterFlow,
                  id_copy));
 }

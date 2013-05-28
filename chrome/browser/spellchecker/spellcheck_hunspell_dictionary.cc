@@ -182,7 +182,7 @@ void SpellcheckHunspellDictionary::Load() {
       spellcheck_mac::PlatformSupportsLanguage(language_)) {
     use_platform_spellchecker_ = true;
     spellcheck_mac::SetLanguage(language_);
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(
             &SpellcheckHunspellDictionary::InformListenersOfInitialization,
             weak_ptr_factory_.GetWeakPtr()));

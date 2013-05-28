@@ -62,7 +62,7 @@ class ProfileInfoCacheTest : public testing::Test {
   TestingProfileManager testing_profile_manager_;
 
  private:
-  MessageLoopForUI ui_loop_;
+  base::MessageLoopForUI ui_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   ProfileNameVerifierObserver name_observer_;

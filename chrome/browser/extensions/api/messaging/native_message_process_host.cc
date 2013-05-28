@@ -197,8 +197,8 @@ void NativeMessageProcessHost::WaitRead() {
   // would always be consuming one thread in the thread pool. On Windows
   // FileStream uses overlapped IO, so that optimization isn't necessary there.
 #if defined(OS_POSIX)
-  MessageLoopForIO::current()->WatchFileDescriptor(
-    read_file_, false /* persistent */, MessageLoopForIO::WATCH_READ,
+  base::MessageLoopForIO::current()->WatchFileDescriptor(
+    read_file_, false /* persistent */, base::MessageLoopForIO::WATCH_READ,
     &read_watcher_, this);
 #else  // defined(OS_POSIX)
   DoRead();

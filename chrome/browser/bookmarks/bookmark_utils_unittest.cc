@@ -25,7 +25,7 @@ class BookmarkUtilsTest : public ::testing::Test {
 
  private:
   // Clipboard requires a message loop.
-  MessageLoopForUI loop;
+  base::MessageLoopForUI loop;
 };
 
 TEST_F(BookmarkUtilsTest, GetBookmarksContainingText) {

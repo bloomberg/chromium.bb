@@ -93,7 +93,7 @@ CancelableRequestBase::CancelableRequestBase()
     : provider_(NULL),
       consumer_(NULL),
       handle_(0) {
-  callback_thread_ = MessageLoop::current();
+  callback_thread_ = base::MessageLoop::current();
 }
 
 CancelableRequestBase::~CancelableRequestBase() {
@@ -110,7 +110,7 @@ void CancelableRequestBase::Init(CancelableRequestProvider* provider,
 
 void CancelableRequestBase::DoForward(const base::Closure& forwarded_call,
                                       bool force_async) {
-  if (force_async || callback_thread_ != MessageLoop::current()) {
+  if (force_async || callback_thread_ != base::MessageLoop::current()) {
     callback_thread_->PostTask(
         FROM_HERE,
         base::Bind(&CancelableRequestBase::ExecuteCallback, this,
@@ -123,7 +123,7 @@ void CancelableRequestBase::DoForward(const base::Closure& forwarded_call,
 
 void CancelableRequestBase::ExecuteCallback(
     const base::Closure& forwarded_call) {
-  DCHECK_EQ(callback_thread_, MessageLoop::current());
+  DCHECK_EQ(callback_thread_, base::MessageLoop::current());
 
   if (!canceled_.IsSet()) {
     WillExecute();

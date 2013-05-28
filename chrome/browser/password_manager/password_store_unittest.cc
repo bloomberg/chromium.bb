@@ -106,11 +106,12 @@ class PasswordStoreTest : public testing::Test {
 
   virtual void TearDown() {
     db_thread_.Stop();
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->Run();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   // PasswordStore schedules work on this thread.
   content::TestBrowserThread db_thread_;
@@ -125,7 +126,7 @@ ACTION(STLDeleteElements0) {
 
 ACTION(QuitUIMessageLoop) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
@@ -262,7 +263,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   store->GetLogins(accounts_google, &consumer);
   store->GetLogins(bar_example, &consumer);
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   STLDeleteElements(&all_forms);
 }

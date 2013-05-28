@@ -164,8 +164,8 @@ void PluginPrefs::EnablePlugin(
   }
 
   if (!can_enable) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback, false));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, false));
     return;
   }
 

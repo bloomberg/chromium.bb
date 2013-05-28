@@ -295,7 +295,7 @@ class SyncFaviconCacheTest : public testing::Test {
                                   int64 last_visit_time_ms);
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   FaviconCache cache_;
 
   // Our dummy ChangeProcessor used to inspect changes pushed to Sync.

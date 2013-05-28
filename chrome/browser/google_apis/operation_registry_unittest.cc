@@ -41,7 +41,7 @@ class OperationRegistryTest : public testing::Test {
   OperationRegistryTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 };
 

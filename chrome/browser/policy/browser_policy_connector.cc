@@ -204,7 +204,7 @@ void BrowserPolicyConnector::Init(
       new policy::PolicyStatisticsCollector(
           GetPolicyService(),
           local_state_,
-          MessageLoop::current()->message_loop_proxy()));
+          base::MessageLoop::current()->message_loop_proxy()));
   policy_statistics_collector_->Initialize();
 
   is_initialized_ = true;

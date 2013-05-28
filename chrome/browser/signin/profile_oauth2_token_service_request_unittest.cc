@@ -152,7 +152,7 @@ scoped_ptr<OAuth2TokenService::Request>
         GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE),
         std::string()));
   }
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
     &MockProfileOAuth2TokenService::InformConsumer, request->AsWeakPtr()));
   return request.PassAs<OAuth2TokenService::Request>();
 }
@@ -167,7 +167,7 @@ class ProfileOAuth2TokenServiceRequestTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
 
  protected:
-  MessageLoop ui_loop_;
+  base::MessageLoop ui_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
 
   scoped_ptr<Profile> profile_;

@@ -42,7 +42,7 @@ class ShortcutsBackendTest : public testing::Test,
 
   TestingProfile profile_;
   scoped_refptr<ShortcutsBackend> backend_;
-  MessageLoopForUI ui_message_loop_;
+  base::MessageLoopForUI ui_message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
 
@@ -66,7 +66,7 @@ void ShortcutsBackendTest::TearDown() {
 
 void ShortcutsBackendTest::OnShortcutsLoaded() {
   load_notified_ = true;
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 void ShortcutsBackendTest::OnShortcutsChanged() {
@@ -78,7 +78,7 @@ void ShortcutsBackendTest::InitBackend() {
   ASSERT_TRUE(backend);
   ASSERT_FALSE(load_notified_);
   ASSERT_FALSE(backend_->initialized());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(load_notified_);
   EXPECT_TRUE(backend_->initialized());
 }

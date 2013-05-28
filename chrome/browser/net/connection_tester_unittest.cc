@@ -54,7 +54,7 @@ class ConnectionTesterDelegate : public ConnectionTester::Delegate {
 
   virtual void OnCompletedConnectionTestSuite() OVERRIDE {
     completed_connection_test_suite_count_++;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   int start_connection_test_suite_count() const {
@@ -87,7 +87,7 @@ class ConnectionTesterDelegate : public ConnectionTester::Delegate {
 class ConnectionTesterTest : public PlatformTest {
  public:
   ConnectionTesterTest()
-      : message_loop_(MessageLoop::TYPE_IO),
+      : message_loop_(base::MessageLoop::TYPE_IO),
         io_thread_(BrowserThread::IO, &message_loop_),
         test_server_(net::SpawnedTestServer::TYPE_HTTP,
                      net::SpawnedTestServer::kLocalhost,
@@ -103,7 +103,7 @@ class ConnectionTesterTest : public PlatformTest {
   // SSLClientAuthCache calls RemoveObserver when destroyed, but if the
   // MessageLoop is already destroyed, then the RemoveObserver will be a
   // no-op, and the ObserverList will contain invalid entries.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread io_thread_;
   net::SpawnedTestServer test_server_;
   ConnectionTesterDelegate test_delegate_;
@@ -157,7 +157,7 @@ TEST_F(ConnectionTesterTest, RunAllTests) {
   tester.RunAllTests(test_server_.GetURL("echoall"));
 
   // Wait for all the tests to complete.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const int kNumExperiments =
       ConnectionTester::PROXY_EXPERIMENT_COUNT *
@@ -203,8 +203,9 @@ TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
   // |backup_task| that it will try to deref during the destructor, but
   // depending on the order that pending tasks were deleted in, it might
   // already be invalid! See http://crbug.com/43291.
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
 }
 
 }  // namespace

@@ -104,7 +104,7 @@ class DriveApiOperationsTest : public testing::Test {
     ResetExpectedResponse();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
@@ -332,7 +332,7 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidJson) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &about_resource)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -364,7 +364,7 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidJson) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &about_resource)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // "parse error" should be returned, and the about resource should be NULL.
   EXPECT_EQ(GDATA_PARSE_ERROR, error);
@@ -389,7 +389,7 @@ TEST_F(DriveApiOperationsTest, GetApplistOperation) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &result)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -416,7 +416,7 @@ TEST_F(DriveApiOperationsTest, GetChangelistOperation) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &result)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -443,7 +443,7 @@ TEST_F(DriveApiOperationsTest, GetFilelistOperation) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &result)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -469,7 +469,7 @@ TEST_F(DriveApiOperationsTest, ContinueGetFileListOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &result)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -497,7 +497,7 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &file_resource)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -539,7 +539,7 @@ TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_PATCH, http_request_.method);
@@ -574,7 +574,7 @@ TEST_F(DriveApiOperationsTest, TouchResourceOperation) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &file_resource)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_PATCH, http_request_.method);
@@ -611,7 +611,7 @@ TEST_F(DriveApiOperationsTest, CopyResourceOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &file_resource)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -647,7 +647,7 @@ TEST_F(DriveApiOperationsTest, CopyResourceOperation_EmptyParentResourceId) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &file_resource)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -678,7 +678,7 @@ TEST_F(DriveApiOperationsTest, TrashResourceOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -707,7 +707,7 @@ TEST_F(DriveApiOperationsTest, InsertResourceOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -735,7 +735,7 @@ TEST_F(DriveApiOperationsTest, DeleteResourceOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_NO_CONTENT, error);
   EXPECT_EQ(net::test_server::METHOD_DELETE, http_request_.method);
@@ -773,7 +773,7 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadNewFilePath, upload_url.path());
@@ -813,7 +813,7 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
               test_util::CreateCopyResultCallback(&response, &new_entry)),
           ProgressCallback());
   operation_runner_->StartOperationWithRetry(resume_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -863,7 +863,7 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadNewFilePath, upload_url.path());
@@ -902,7 +902,7 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
               test_util::CreateCopyResultCallback(&response, &new_entry)),
           ProgressCallback());
   operation_runner_->StartOperationWithRetry(resume_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -953,7 +953,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadNewFilePath, upload_url.path());
@@ -992,7 +992,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
                 base::Bind(&test_util::RunAndQuit),
                 test_util::CreateCopyResultCallback(&response, &new_entry)));
     operation_runner_->StartOperationWithRetry(get_upload_status_operation);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
     EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1038,7 +1038,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
                 test_util::CreateCopyResultCallback(&response, &new_entry)),
             ProgressCallback());
     operation_runner_->StartOperationWithRetry(resume_operation);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
     EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1082,7 +1082,7 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
                 base::Bind(&test_util::RunAndQuit),
                 test_util::CreateCopyResultCallback(&response, &new_entry)));
     operation_runner_->StartOperationWithRetry(get_upload_status_operation);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
     EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1131,7 +1131,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadExistingFilePath, upload_url.path());
@@ -1166,7 +1166,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
               test_util::CreateCopyResultCallback(&response, &new_entry)),
           ProgressCallback());
   operation_runner_->StartOperationWithRetry(resume_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1216,7 +1216,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadExistingFilePath, upload_url.path());
@@ -1251,7 +1251,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
               test_util::CreateCopyResultCallback(&response, &new_entry)),
           ProgressCallback());
   operation_runner_->StartOperationWithRetry(resume_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1298,7 +1298,7 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETagConflicting) {
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&error, &upload_url)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_PRECONDITION, error);
   EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);

@@ -131,7 +131,7 @@ void ChromeOSVersionCallback(const std::string& version) {
 
 #endif
 
-class MessageLoopObserver : public MessageLoopForUI::Observer {
+class MessageLoopObserver : public base::MessageLoopForUI::Observer {
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE {
     return base::EVENT_CONTINUE;
@@ -448,7 +448,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
-  MessageLoopForUI* message_loop = MessageLoopForUI::current();
+  base::MessageLoopForUI* message_loop = base::MessageLoopForUI::current();
   message_loop->AddObserver(g_message_loop_observer.Pointer());
 
   dbus_services_.reset(new internal::DBusServices(parameters()));

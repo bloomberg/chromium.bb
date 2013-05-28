@@ -149,7 +149,7 @@ void PromoResourceService::PostNotification(int64 delay_ms) {
   // TODO(achuith): This crashes if we post delay_ms = 0 to the message loop.
   // during startup.
   if (delay_ms > 0) {
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PromoResourceService::PromoResourceStateChange,
                    weak_ptr_factory_.GetWeakPtr()),

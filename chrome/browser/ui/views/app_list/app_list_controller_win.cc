@@ -919,7 +919,7 @@ void AppListController::ScheduleWarmup() {
 
   // Send app list usage stats after a delay.
   const int kSendUsageStatsDelay = 5;
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&AppListController::SendAppListStats),
       base::TimeDelta::FromSeconds(kSendUsageStatsDelay));

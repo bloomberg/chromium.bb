@@ -34,7 +34,7 @@ namespace extensions {
 // thread.
 class NativeMessageProcessHost
 #if defined(OS_POSIX)
-    : public MessageLoopForIO::Watcher
+    : public base::MessageLoopForIO::Watcher
 #endif  // !defined(OS_POSIX)
 {
  public:
@@ -134,7 +134,7 @@ class NativeMessageProcessHost
   scoped_ptr<net::FileStream> read_stream_;
 
 #if defined(OS_POSIX)
-  MessageLoopForIO::FileDescriptorWatcher read_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher read_watcher_;
 #endif  // !defined(OS_POSIX)
 
   // Write stream.

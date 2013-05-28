@@ -166,7 +166,7 @@ TEST_F(DesktopNotificationsTest, TestShow) {
 
   EXPECT_TRUE(service_->ShowDesktopNotification(
       params, 0, 0, DesktopNotificationService::PageNotification));
-  MessageLoopForUI::current()->RunUntilIdle();
+  base::MessageLoopForUI::current()->RunUntilIdle();
   EXPECT_EQ(1, balloon_collection_->count());
 
   content::ShowDesktopNotificationHostMsgParams params2;
@@ -177,7 +177,7 @@ TEST_F(DesktopNotificationsTest, TestShow) {
 
   EXPECT_TRUE(service_->ShowDesktopNotification(
       params2, 0, 0, DesktopNotificationService::PageNotification));
-  MessageLoopForUI::current()->RunUntilIdle();
+  base::MessageLoopForUI::current()->RunUntilIdle();
   EXPECT_EQ(2, balloon_collection_->count());
 
   EXPECT_EQ("notification displayed\n"
@@ -193,7 +193,7 @@ TEST_F(DesktopNotificationsTest, TestClose) {
   // Request a notification; should open a balloon.
   EXPECT_TRUE(service_->ShowDesktopNotification(
       params, 0, 0, DesktopNotificationService::PageNotification));
-  MessageLoopForUI::current()->RunUntilIdle();
+  base::MessageLoopForUI::current()->RunUntilIdle();
   EXPECT_EQ(1, balloon_collection_->count());
 
   // Close all the open balloons.
@@ -219,14 +219,14 @@ TEST_F(DesktopNotificationsTest, TestCancel) {
   EXPECT_TRUE(service_->ShowDesktopNotification(
       params, process_id, route_id,
       DesktopNotificationService::PageNotification));
-  MessageLoopForUI::current()->RunUntilIdle();
+  base::MessageLoopForUI::current()->RunUntilIdle();
   EXPECT_EQ(1, balloon_collection_->count());
 
   // Cancel the same notification
   service_->CancelDesktopNotification(process_id,
                                       route_id,
                                       notification_id);
-  MessageLoopForUI::current()->RunUntilIdle();
+  base::MessageLoopForUI::current()->RunUntilIdle();
   // Verify that the balloon collection is now empty.
   EXPECT_EQ(0, balloon_collection_->count());
 
@@ -334,7 +334,7 @@ TEST_F(DesktopNotificationsTest, TestCancelByProfile) {
         params, process_id, route_id,
         DesktopNotificationService::PageNotification));
   }
-  MessageLoopForUI::current()->RunUntilIdle();
+  base::MessageLoopForUI::current()->RunUntilIdle();
 
   ui_manager_->CancelAllByProfile(second_profile);
 
@@ -371,7 +371,7 @@ TEST_F(DesktopNotificationsTest, TestCancelBySourceOrigin) {
         odd_params, process_id, route_id,
         DesktopNotificationService::PageNotification));
   }
-  MessageLoopForUI::current()->RunUntilIdle();
+  base::MessageLoopForUI::current()->RunUntilIdle();
 
   ui_manager_->CancelAllBySourceOrigin(odd_params.origin);
 
@@ -394,7 +394,7 @@ TEST_F(DesktopNotificationsTest, TestQueueing) {
         params, process_id, route_id,
         DesktopNotificationService::PageNotification));
   }
-  MessageLoopForUI::current()->RunUntilIdle();
+  base::MessageLoopForUI::current()->RunUntilIdle();
 
   // Build up an expected log of what should be happening.
   std::string expected_log;
@@ -416,7 +416,7 @@ TEST_F(DesktopNotificationsTest, TestQueueing) {
          id <= kLotsOfToasts - balloon_collection_->max_balloon_count();
          ++id) {
       service_->CancelDesktopNotification(process_id, route_id, id);
-      MessageLoopForUI::current()->RunUntilIdle();
+      base::MessageLoopForUI::current()->RunUntilIdle();
       expected_log.append("notification closed by script\n");
       expected_log.append("notification displayed\n");
       EXPECT_EQ(balloon_collection_->max_balloon_count(),
@@ -428,7 +428,7 @@ TEST_F(DesktopNotificationsTest, TestQueueing) {
     for (; id <= kLotsOfToasts; ++id) {
       service_->CancelDesktopNotification(process_id, route_id, id);
       expected_log.append("notification closed by script\n");
-      MessageLoopForUI::current()->RunUntilIdle();
+      base::MessageLoopForUI::current()->RunUntilIdle();
       EXPECT_EQ(expected_log, log_output_);
     }
   }
@@ -461,7 +461,7 @@ TEST_F(DesktopNotificationsTest, TestUserInputEscaping) {
   EXPECT_TRUE(service_->ShowDesktopNotification(
       params, 0, 0, DesktopNotificationService::PageNotification));
 
-  MessageLoopForUI::current()->RunUntilIdle();
+  base::MessageLoopForUI::current()->RunUntilIdle();
   EXPECT_EQ(1, balloon_collection_->count());
   Balloon* balloon = (*balloon_collection_->balloons().begin());
   GURL data_url = balloon->notification().content_url();

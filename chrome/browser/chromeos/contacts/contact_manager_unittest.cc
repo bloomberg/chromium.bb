@@ -80,7 +80,7 @@ class ContactManagerTest : public testing::Test {
     contact_manager_->Init();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
   scoped_ptr<TestingProfileManager> profile_manager_;

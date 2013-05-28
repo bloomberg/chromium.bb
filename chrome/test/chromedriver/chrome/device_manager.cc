@@ -182,7 +182,7 @@ Status DeviceManager::ExecuteHostShellCommand(
 void DeviceManager::ExecuteCommandOnIOThread(
     const std::string& command, std::string* response, bool* success,
     base::WaitableEvent* event) {
-  CHECK(MessageLoop::current()->IsType(MessageLoop::TYPE_IO));
+  CHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO));
   AdbClientSocket::AdbQuery(kAdbPort, command,
       base::Bind(&ReceiveAdbResponse, response, success, event));
 }

@@ -122,7 +122,7 @@ class TestFinishObserver : public content::NotificationObserver {
     if (dom_op_details->json == "\"FINISHED\"") {
       finished_ = true;
       if (waiting_)
-        MessageLoopForUI::current()->Quit();
+        base::MessageLoopForUI::current()->Quit();
     }
   }
 

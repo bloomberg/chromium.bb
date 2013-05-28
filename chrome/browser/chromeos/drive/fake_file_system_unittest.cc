@@ -36,7 +36,7 @@ class FakeFileSystemTest : public ::testing::Test {
     ASSERT_TRUE(fake_file_system_->InitializeForTesting());
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;

@@ -490,7 +490,7 @@ void PrintViewManager::ShouldQuitFromInnerMessageLoop() {
       inside_inner_message_loop_) {
     // We are in a message loop created by RenderAllMissingPagesNow. Quit from
     // it.
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
     inside_inner_message_loop_ = false;
   }
 }
@@ -595,17 +595,18 @@ bool PrintViewManager::RunInnerMessageLoop() {
   // be CPU bound, the page overly complex/large or the system just
   // memory-bound.
   static const int kPrinterSettingsTimeout = 60000;
-  base::OneShotTimer<MessageLoop> quit_timer;
+  base::OneShotTimer<base::MessageLoop> quit_timer;
   quit_timer.Start(FROM_HERE,
                    TimeDelta::FromMilliseconds(kPrinterSettingsTimeout),
-                   MessageLoop::current(), &MessageLoop::Quit);
+                   base::MessageLoop::current(), &base::MessageLoop::Quit);
 
   inside_inner_message_loop_ = true;
 
   // Need to enable recursive task.
   {
-    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-    MessageLoop::current()->Run();
+    base::MessageLoop::ScopedNestableTaskAllower allow(
+        base::MessageLoop::current());
+    base::MessageLoop::current()->Run();
   }
 
   bool success = true;

@@ -85,7 +85,7 @@ void ExperimentalWebAuthFlow::Start() {
 
 void ExperimentalWebAuthFlow::DetachDelegateAndDelete() {
   delegate_ = NULL;
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 WebContents* ExperimentalWebAuthFlow::CreateWebContents() {

@@ -215,7 +215,7 @@ class SyncClientTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<StrictMock<MockFileSystem> > mock_file_system_;

@@ -54,7 +54,7 @@ class RemoveStaleCacheFilesTest : public testing::Test {
     ASSERT_EQ(FILE_ERROR_OK, error);
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
 

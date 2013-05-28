@@ -81,7 +81,7 @@ class RendererCrashTest : public InProcessBrowserTest,
     if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
         status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
       saw_crash_ = true;
-      MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->Quit();
     }
   }
 

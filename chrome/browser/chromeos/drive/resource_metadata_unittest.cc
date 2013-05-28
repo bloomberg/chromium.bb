@@ -216,7 +216,7 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
       resource_metadata_;
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 };
 
@@ -1198,7 +1198,7 @@ class ResourceMetadataTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;

@@ -36,8 +36,8 @@ namespace {
 // requests. See note in BlockTillServiceProcessesRequests for details.
 //
 // Schedules a QuitClosure on the message loop it was created with.
-void QuitCallback(MessageLoop* message_loop) {
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+void QuitCallback(base::MessageLoop* message_loop) {
+  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 // Blocks the caller until thread has finished servicing all pending
@@ -45,9 +45,11 @@ void QuitCallback(MessageLoop* message_loop) {
 static void WaitForThreadToProcessRequests(BrowserThread::ID identifier) {
   // Schedule a task on the thread that is processed after all
   // pending requests on the thread.
-  BrowserThread::PostTask(identifier, FROM_HERE,
-                          base::Bind(&QuitCallback, MessageLoop::current()));
-  MessageLoop::current()->Run();
+  BrowserThread::PostTask(
+      identifier,
+      FROM_HERE,
+      base::Bind(&QuitCallback, base::MessageLoop::current()));
+  base::MessageLoop::current()->Run();
 }
 
 }  // namespace
@@ -135,8 +137,9 @@ void TemplateURLServiceTestUtil::TearDown() {
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
   db_thread_.Stop();
 
   UIThreadSearchTermsData::SetGoogleBaseURL(std::string());

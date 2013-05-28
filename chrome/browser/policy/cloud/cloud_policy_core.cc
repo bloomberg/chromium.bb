@@ -46,7 +46,7 @@ void CloudPolicyCore::StartRefreshScheduler() {
     refresh_scheduler_.reset(
         new CloudPolicyRefreshScheduler(
             client_.get(), store_,
-            MessageLoop::current()->message_loop_proxy()));
+            base::MessageLoop::current()->message_loop_proxy()));
     UpdateRefreshDelayFromPref();
   }
 }

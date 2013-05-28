@@ -176,7 +176,7 @@ class GoogleUpdateJobObserver
 
     // No longer need to spin the message loop that started spinning in
     // InitiateGoogleUpdateCheck.
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
     return S_OK;
   }
   STDMETHOD(SetEventSink)(IProgressWndEvents* event_sink) {
@@ -238,7 +238,7 @@ void GoogleUpdate::CheckForUpdate(bool install_if_newer, HWND window) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&GoogleUpdate::InitiateGoogleUpdateCheck, this,
-                 install_if_newer, window, MessageLoop::current()));
+                 install_if_newer, window, base::MessageLoop::current()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,7 +246,7 @@ void GoogleUpdate::CheckForUpdate(bool install_if_newer, HWND window) {
 
 void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
                                              HWND window,
-                                             MessageLoop* main_loop) {
+                                             base::MessageLoop* main_loop) {
   base::FilePath chrome_exe;
   if (!PathService::Get(base::DIR_EXE, &chrome_exe))
     NOTREACHED();
@@ -337,7 +337,7 @@ void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
   // can report back to us through GoogleUpdateJobObserver. This message loop
   // will terminate once Google Update sends us the completion status
   // (success/error). See OnComplete().
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   GoogleUpdateUpgradeResult results;
   hr = job_observer->GetResult(&results);
@@ -395,7 +395,7 @@ void GoogleUpdate::ReportResults(GoogleUpdateUpgradeResult results,
 bool GoogleUpdate::ReportFailure(HRESULT hr,
                                  GoogleUpdateErrorCode error_code,
                                  const string16& error_message,
-                                 MessageLoop* main_loop) {
+                                 base::MessageLoop* main_loop) {
   NOTREACHED() << "Communication with Google Update failed: " << hr
                << " error: " << error_code
                << ", message: " << error_message.c_str();

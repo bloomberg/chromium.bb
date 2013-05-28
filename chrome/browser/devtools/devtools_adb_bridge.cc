@@ -578,7 +578,7 @@ DevToolsAdbBridge::RefCountedAdbThread::RefCountedAdbThread() {
   instance_ = this;
   thread_ = new base::Thread(kDevToolsAdbBridgeThreadName);
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
   if (!thread_->StartWithOptions(options)) {
     delete thread_;
     thread_ = NULL;

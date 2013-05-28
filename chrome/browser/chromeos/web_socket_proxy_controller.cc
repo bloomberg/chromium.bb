@@ -41,7 +41,7 @@ class ProxyLifetime
         shutdown_requested_(false),
         web_socket_proxy_thread_("Chrome_WebSocketproxyThread") {
     DLOG(INFO) << "WebSocketProxyController initiation";
-    base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     web_socket_proxy_thread_.StartWithOptions(options);
     web_socket_proxy_thread_.message_loop()->PostTask(
         FROM_HERE,
@@ -98,7 +98,7 @@ class ProxyLifetime
         if (delay_ms_ < 100 * 1000)
           (delay_ms_ *= 3) /= 2;
 
-        MessageLoop::current()->PostDelayedTask(
+        base::MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
             base::Bind(&ProxyLifetime::ProxyCallback, base::Unretained(this)),
             base::TimeDelta::FromMilliseconds(delay_ms_));

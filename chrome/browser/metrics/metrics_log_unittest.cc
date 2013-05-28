@@ -120,7 +120,8 @@ class TestMetricsLog : public MetricsLog {
 
 class MetricsLogTest : public testing::Test {
  public:
-  MetricsLogTest() : message_loop_(MessageLoop::TYPE_IO) {}
+  MetricsLogTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
+
  protected:
   void TestRecordEnvironment(bool proto_only) {
     TestMetricsLog log(kClientId, kSessionId);
@@ -178,7 +179,7 @@ class MetricsLogTest : public testing::Test {
  private:
   // This is necessary because eventually some tests call base::RepeatingTimer
   // functions and a message loop is required for that.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
 #if defined(OS_CHROMEOS)
   chromeos::MockDBusThreadManagerWithoutGMock* mock_dbus_thread_manager_;

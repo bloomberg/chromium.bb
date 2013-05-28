@@ -82,7 +82,7 @@ void ExtensionApiTest::ResultCatcher::Observe(
       results_.push_back(true);
       messages_.push_back(std::string());
       if (waiting_)
-        MessageLoopForUI::current()->Quit();
+        base::MessageLoopForUI::current()->Quit();
       break;
 
     case chrome::NOTIFICATION_EXTENSION_TEST_FAILED:
@@ -90,7 +90,7 @@ void ExtensionApiTest::ResultCatcher::Observe(
       results_.push_back(false);
       messages_.push_back(*(content::Details<std::string>(details).ptr()));
       if (waiting_)
-        MessageLoopForUI::current()->Quit();
+        base::MessageLoopForUI::current()->Quit();
       break;
 
     default:

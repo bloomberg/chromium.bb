@@ -93,7 +93,7 @@ class PolicyCertVerifierTest : public testing::Test {
  protected:
   crypto::ScopedTestNSSDB test_nssdb_;
   net::NSSCertDatabase* cert_db_;
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   TestingProfileManager profile_manager_;

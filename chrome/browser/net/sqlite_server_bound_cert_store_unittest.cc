@@ -97,7 +97,7 @@ class SQLiteServerBoundCertStoreTest : public testing::Test {
             "a", "b"));
   }
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread io_thread_;
   base::ScopedTempDir temp_dir_;

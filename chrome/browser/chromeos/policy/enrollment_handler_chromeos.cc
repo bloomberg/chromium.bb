@@ -298,7 +298,7 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
         // InstallAttributes not ready yet, retry later.
         LOG(WARNING) << "Install Attributes not ready yet will retry in "
                      << kLockRetryIntervalMs << "ms.";
-        MessageLoop::current()->PostDelayedTask(
+        base::MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
             base::Bind(&EnrollmentHandlerChromeOS::StartLockDevice,
                        weak_factory_.GetWeakPtr(),

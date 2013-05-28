@@ -85,11 +85,11 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
   }
 
   void WaitAsyncWallpaperLoad() {
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   virtual void OnWallpaperDataChanged() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
  protected:

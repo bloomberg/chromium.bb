@@ -53,7 +53,7 @@ ACTION_P(Signal, event) {
 }
 
 void QuitMessageLoop() {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 class MockSyncFrontend : public SyncFrontend {
@@ -249,14 +249,14 @@ class SyncBackendHostTest : public testing::Test {
  protected:
   void DownloadReady(syncer::ModelTypeSet succeeded_types,
                      syncer::ModelTypeSet failed_types) {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void OnDownloadRetry() {
     NOTIMPLEMENTED();
   }
 
-  MessageLoop ui_loop_;
+  base::MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   StrictMock<MockSyncFrontend> mock_frontend_;

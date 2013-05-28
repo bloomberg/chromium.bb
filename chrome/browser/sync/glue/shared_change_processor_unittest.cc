@@ -112,7 +112,7 @@ class SyncSharedChangeProcessorTest : public testing::Test {
         base::WeakPtr<syncer::SyncMergeResult>()));
   }
 
-  MessageLoopForUI ui_loop_;
+  base::MessageLoopForUI ui_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
 

@@ -265,14 +265,14 @@ void NetworkStats::SendPacket() {
 
 void NetworkStats::SendNextPacketAfterDelay() {
   if (current_test_ == PACED_PACKET_TEST) {
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&NetworkStats::SendPacket, weak_factory_.GetWeakPtr()),
         average_time_);
     return;
   }
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&NetworkStats::SendPacket, weak_factory_.GetWeakPtr()));
 }
@@ -324,7 +324,7 @@ void NetworkStats::OnReadComplete(int result) {
     // of 1ms so that the time-out will fire before we have time to really hog
     // the CPU too extensively (waiting for the time-out) in case of an infinite
     // loop.
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&NetworkStats::ReadData, weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(1));
@@ -351,7 +351,7 @@ void NetworkStats::OnWriteComplete(int result) {
     DCHECK_EQ(bytes_to_send_, 0u);
   }
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&NetworkStats::SendPacket, weak_factory_.GetWeakPtr()));
 }
@@ -432,7 +432,7 @@ void NetworkStats::DidSendData(int bytes_sent) {
 }
 
 void NetworkStats::StartReadDataTimer(int milliseconds) {
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&NetworkStats::OnReadDataTimeout,
                  weak_factory_.GetWeakPtr(),
@@ -649,7 +649,7 @@ void NetworkStats::Finish(Status status, int result) {
 
   if (next_test() == NON_PACED_PACKET_TEST ||
       next_test() == PACED_PACKET_TEST) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&NetworkStats::RestartPacketTest,
                    weak_factory_.GetWeakPtr()));

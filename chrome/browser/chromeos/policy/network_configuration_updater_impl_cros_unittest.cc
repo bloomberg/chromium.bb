@@ -145,7 +145,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
   StrictMock<chromeos::MockNetworkLibrary> network_library_;
   StrictMock<MockConfigurationPolicyProvider> provider_;
   scoped_ptr<PolicyServiceImpl> policy_service_;
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
 };

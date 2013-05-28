@@ -108,7 +108,7 @@ class PolicyValueStoreTest : public testing::Test {
 
  protected:
   base::ScopedTempDir scoped_temp_dir_;
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread file_thread_;
   scoped_ptr<PolicyValueStore> store_;
   MockSettingsObserver observer_;

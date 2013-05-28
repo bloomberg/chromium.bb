@@ -55,11 +55,11 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
   virtual void OnInstallSuccess(const Extension* extension,
                                 SkBitmap* icon) OVERRIDE {
     extension_ = extension;
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
   }
   virtual void OnInstallFailure(const CrxInstallerError& error) OVERRIDE {
     error_ = error.message();
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
   }
 
  private:

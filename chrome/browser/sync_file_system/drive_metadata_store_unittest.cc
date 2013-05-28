@@ -305,7 +305,7 @@ class DriveMetadataStoreTest : public testing::Test {
 
   base::ScopedTempDir base_dir_;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<base::Thread> file_thread_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

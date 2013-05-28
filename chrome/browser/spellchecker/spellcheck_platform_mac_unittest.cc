@@ -19,7 +19,7 @@ class SpellcheckMacTest: public testing::Test {
       : callback_(base::Bind(&SpellcheckMacTest::CompletionCallback,
                              base::Unretained(this))),
         callback_finished_(false),
-        message_loop_(MessageLoop::TYPE_UI) {}
+        message_loop_(base::MessageLoop::TYPE_UI) {}
 
   void WaitForCallback() {
     content::RunMessageLoop();
@@ -31,8 +31,8 @@ class SpellcheckMacTest: public testing::Test {
 
  private:
   void QuitMessageLoop() {
-    CHECK(MessageLoop::current() == &message_loop_);
-    MessageLoop::current()->Quit();
+    CHECK(base::MessageLoop::current() == &message_loop_);
+    base::MessageLoop::current()->Quit();
   }
 
   void CompletionCallback(const std::vector<SpellCheckResult>& results) {
@@ -43,7 +43,7 @@ class SpellcheckMacTest: public testing::Test {
                                       base::Unretained(this)));
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   spellcheck_mac::ScopedEnglishLanguageForTest scoped_language_;
 };
 

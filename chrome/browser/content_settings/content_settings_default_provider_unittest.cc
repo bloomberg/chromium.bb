@@ -29,7 +29,7 @@ class DefaultProviderTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   TestingProfile profile_;
   content_settings::DefaultProvider provider_;

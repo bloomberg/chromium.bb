@@ -105,7 +105,7 @@ class ExpireHistoryTest : public testing::Test,
 
   BookmarkModel bookmark_model_;
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
 

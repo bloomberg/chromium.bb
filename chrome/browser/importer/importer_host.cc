@@ -179,7 +179,7 @@ void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
       chrome::AddSelectedTabWithURL(browser_, url,
                                     content::PAGE_TRANSITION_TYPED);
 
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &ImporterHost::OnImportLockDialogEnd,
         weak_ptr_factory_.GetWeakPtr(), false));
   } else {

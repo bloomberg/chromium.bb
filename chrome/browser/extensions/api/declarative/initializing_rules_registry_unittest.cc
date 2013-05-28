@@ -19,7 +19,7 @@ const char kRuleId[] = "foo";
 namespace extensions {
 
 TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
   std::string error;
@@ -136,7 +136,7 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
 }
 
 TEST(InitializingRulesRegistryTest, FillOptionalPriority) {
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
   std::string error;

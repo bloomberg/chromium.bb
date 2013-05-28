@@ -173,7 +173,7 @@ void URLRequestAutomationJob::Start() {
   if (!is_pending()) {
     // Start reading asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&URLRequestAutomationJob::StartAsync,
                    weak_factory_.GetWeakPtr()));
@@ -212,7 +212,7 @@ bool URLRequestAutomationJob::ReadRawData(
     message_filter_->Send(new AutomationMsg_RequestRead(tab_, id_, buf_size));
     SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   } else {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&URLRequestAutomationJob::NotifyJobCompletionTask,
                    weak_factory_.GetWeakPtr()));

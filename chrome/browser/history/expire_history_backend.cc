@@ -635,7 +635,7 @@ void ExpireHistoryBackend::ScheduleArchive() {
     delay = TimeDelta::FromSeconds(kExpirationDelaySec);
   }
 
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ExpireHistoryBackend::DoArchiveIteration,
                  weak_factory_.GetWeakPtr()),
@@ -731,7 +731,7 @@ void ExpireHistoryBackend::ScheduleExpireHistoryIndexFiles() {
   }
 
   TimeDelta delay = TimeDelta::FromMinutes(kIndexExpirationDelayMin);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ExpireHistoryBackend::DoExpireHistoryIndexFiles,
                  weak_factory_.GetWeakPtr()),

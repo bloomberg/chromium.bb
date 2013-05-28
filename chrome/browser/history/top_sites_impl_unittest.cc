@@ -59,7 +59,7 @@ class WaitForHistoryTask : public HistoryDBTask {
   }
 
   virtual void DoneRunOnMainThread() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
  private:
@@ -87,7 +87,7 @@ class TopSitesQuerier {
                    weak_ptr_factory_.GetWeakPtr()));
     if (wait && start_number_of_callbacks == number_of_callbacks_) {
       waiting_ = true;
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
     }
   }
 
@@ -106,7 +106,7 @@ class TopSitesQuerier {
     urls_ = data;
     number_of_callbacks_++;
     if (waiting_) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
       waiting_ = false;
     }
   }
@@ -193,7 +193,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   // need to wait until you know history has processed a task.
   void WaitForHistory() {
     history_service()->ScheduleDBTask(new WaitForHistoryTask(), &consumer_);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   // Waits for top sites to finish processing a task. This is useful if you need
@@ -202,7 +202,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     top_sites()->backend_->DoEmptyRequest(
         base::Bind(&TopSitesImplTest::QuitCallback, base::Unretained(this)),
         &cancelable_task_tracker_);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   TopSitesImpl* top_sites() {
@@ -239,7 +239,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   // Quit the current message loop when invoked. Useful when running a nested
   // message loop.
   void QuitCallback() {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   // Adds a page to history.
@@ -327,7 +327,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   }
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   scoped_ptr<TestingProfile> profile_;

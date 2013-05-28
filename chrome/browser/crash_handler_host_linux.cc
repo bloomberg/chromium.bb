@@ -99,10 +99,10 @@ CrashHandlerHostLinux::~CrashHandlerHostLinux() {
 }
 
 void CrashHandlerHostLinux::Init() {
-  MessageLoopForIO* ml = MessageLoopForIO::current();
+  base::MessageLoopForIO* ml = base::MessageLoopForIO::current();
   CHECK(ml->WatchFileDescriptor(
       browser_socket_, true /* persistent */,
-      MessageLoopForIO::WATCH_READ,
+      base::MessageLoopForIO::WATCH_READ,
       &file_descriptor_watcher_, this));
   ml->AddDestructionObserver(this);
 }

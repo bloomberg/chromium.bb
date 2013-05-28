@@ -96,7 +96,7 @@ class ExtensionHost::ProcessCreationQueue {
   // Queue up a delayed task to process the next ExtensionHost in the queue.
   void PostTask() {
     if (!pending_create_) {
-      MessageLoop::current()->PostTask(FROM_HERE,
+      base::MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(&ProcessCreationQueue::ProcessOneHost,
                      ptr_factory_.GetWeakPtr()));
       pending_create_ = true;

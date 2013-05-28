@@ -133,7 +133,7 @@ class StorageMonitorCrosTest : public testing::Test {
     return *mock_storage_observer_;
   }
 
-  MessageLoop ui_loop_;
+  base::MessageLoop ui_loop_;
 
   scoped_ptr<TestStorageMonitorCros> monitor_;
 
@@ -243,14 +243,14 @@ base::FilePath StorageMonitorCrosTest::CreateMountPoint(
 // static
 void StorageMonitorCrosTest::PostQuitToUIThread() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          MessageLoop::QuitClosure());
+                          base::MessageLoop::QuitClosure());
 }
 
 // static
 void StorageMonitorCrosTest::WaitForFileThread() {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&PostQuitToUIThread));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 void StorageMonitorCrosTest::EjectNotify(

@@ -94,7 +94,7 @@ class ITunesFinderWinTest : public testing::Test {
   base::ScopedTempDir app_data_dir_;
   base::ScopedTempDir music_dir_;
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

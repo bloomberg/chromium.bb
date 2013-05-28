@@ -295,7 +295,7 @@ HistoryURLProviderParams::HistoryURLProviderParams(
     const std::string& languages,
     TemplateURL* default_search_provider,
     const SearchTermsData& search_terms_data)
-    : message_loop(MessageLoop::current()),
+    : message_loop(base::MessageLoop::current()),
       input(input),
       prevent_inline_autocomplete(input.prevent_inline_autocomplete()),
       trim_http(trim_http),

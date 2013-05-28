@@ -1367,7 +1367,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, DragAndDrop) {
       test.launcher_view()->GetAppListButtonView()->GetBoundsInScreen();
   generator.MoveMouseTo(app_list_bounds.CenterPoint().x(),
                         app_list_bounds.CenterPoint().y());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   generator.ClickLeftButton();
 
   EXPECT_TRUE(service->IsAppListVisible());
@@ -1389,7 +1389,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, DragAndDrop) {
   gfx::Rect bounds_grid_1 = item1->GetBoundsInScreen();
   generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
                         bounds_grid_1.CenterPoint().y());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   generator.PressLeftButton();
 
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
@@ -1401,7 +1401,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, DragAndDrop) {
   gfx::Rect bounds_launcher_1 = launcher1->GetBoundsInScreen();
   generator.MoveMouseTo(bounds_launcher_1.CenterPoint().x(),
                         bounds_launcher_1.CenterPoint().y());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Check that a new item got created.
   EXPECT_EQ(3, model_->item_count());
@@ -1410,13 +1410,13 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, DragAndDrop) {
   // Move it where the item originally was and check that it disappears again.
   generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
                         bounds_grid_1.CenterPoint().y());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
 
   // Dropping it should keep the launcher as it originally was.
   generator.ReleaseLeftButton();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());
   // There are a few animations which need finishing before we can continue.
   test.RunMessageLoopUntilAnimationsDone();
@@ -1430,11 +1430,11 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, DragAndDrop) {
   generator.PressLeftButton();
   generator.MoveMouseTo(bounds_launcher_1.CenterPoint().x(),
                         bounds_launcher_1.CenterPoint().y());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(3, model_->item_count());
   EXPECT_TRUE(grid_view->forward_events_to_drag_and_drop_host_for_test());
   generator.ReleaseLeftButton();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
   EXPECT_EQ(3, model_->item_count());  // It should be still there.
   test.RunMessageLoopUntilAnimationsDone();
@@ -1446,11 +1446,11 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest, DragAndDrop) {
   generator.PressLeftButton();
   generator.MoveMouseTo(bounds_launcher_1.CenterPoint().x(),
                         bounds_launcher_1.CenterPoint().y());
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(3, model_->item_count());  // No new item got added.
   EXPECT_TRUE(grid_view->forward_events_to_drag_and_drop_host_for_test());
   generator.ReleaseLeftButton();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
   EXPECT_EQ(3, model_->item_count());  // And it remains that way.
 }

@@ -85,7 +85,8 @@ class HistoryQueryTest : public testing::Test {
         UTF8ToUTF16(text_query), options, &consumer_,
         base::Bind(&HistoryQueryTest::QueryHistoryComplete,
                    base::Unretained(this)));
-    MessageLoop::current()->Run();  // Will go until ...Complete calls Quit.
+    // Will go until ...Complete calls Quit.
+    base::MessageLoop::current()->Run();
     results->Swap(&last_query_results_);
   }
 
@@ -182,21 +183,21 @@ class HistoryQueryTest : public testing::Test {
 
   virtual void TearDown() {
     if (history_) {
-      history_->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
+      history_->SetOnBackendDestroyTask(base::MessageLoop::QuitClosure());
       history_->Cleanup();
       history_.reset();
-      MessageLoop::current()->Run();  // Wait for the other thread.
+      base::MessageLoop::current()->Run();  // Wait for the other thread.
     }
   }
 
   void QueryHistoryComplete(HistoryService::Handle, QueryResults* results) {
     results->Swap(&last_query_results_);
-    MessageLoop::current()->Quit();  // Will return out to QueryHistory.
+    base::MessageLoop::current()->Quit();  // Will return out to QueryHistory.
   }
 
   base::ScopedTempDir temp_dir_;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   base::FilePath history_dir_;
 

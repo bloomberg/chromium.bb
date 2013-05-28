@@ -120,7 +120,7 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
     const PolicyMap& current) {
   // If running a unit test that hasn't setup a MessageLoop, don't send any
   // notifications.
-  if (!MessageLoop::current())
+  if (!base::MessageLoop::current())
     return;
 
   // Don't queue up a task if we have no observers - that way Observers added
@@ -132,7 +132,7 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
   // call to MergeAndTriggerUpdates() by modifying policy.
   scoped_ptr<PolicyChangeInfo> changes(
       new PolicyChangeInfo(ns, previous, current));
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PolicyServiceImpl::NotifyNamespaceUpdatedTask,
                  weak_ptr_factory_.GetWeakPtr(),

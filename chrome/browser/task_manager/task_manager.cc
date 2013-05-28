@@ -1077,7 +1077,7 @@ void TaskManagerModel::StartUpdating() {
   // If update_state_ is STOPPING, it means a task is still pending.  Setting
   // it to TASK_PENDING ensures the tasks keep being posted (by Refresh()).
   if (update_state_ == IDLE) {
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&TaskManagerModel::RefreshCallback, this));
   }
@@ -1233,7 +1233,7 @@ void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
     origin_pid = info->GetOriginPID();
 
   if (bytes_read_buffer_.empty()) {
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&TaskManagerModel::NotifyMultipleBytesRead, this),
         base::TimeDelta::FromSeconds(1));
@@ -1259,7 +1259,7 @@ void TaskManagerModel::RefreshCallback() {
   Refresh();
 
   // Schedule the next update.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TaskManagerModel::RefreshCallback, this),
       base::TimeDelta::FromMilliseconds(kUpdateTimeMs));

@@ -292,9 +292,9 @@ void BrowserProcessImpl::PostDestroyThreads() {
 // our (other) recent requests (to save preferences).
 // Change the boolean so that the receiving thread will know that we did indeed
 // send the QuitTask that terminated the message loop.
-static void PostQuit(MessageLoop* message_loop) {
+static void PostQuit(base::MessageLoop* message_loop) {
   g_end_session_file_thread_has_completed = true;
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 #elif defined(USE_X11)
 static void Signal(base::WaitableEvent* event) {
@@ -334,14 +334,14 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
     print_job_manager_.reset();
 #endif
 
-    CHECK(MessageLoop::current()->is_running());
+    CHECK(base::MessageLoop::current()->is_running());
 
 #if defined(OS_MACOSX)
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));
 #endif
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
   return module_ref_count_;
 }
@@ -383,15 +383,17 @@ void BrowserProcessImpl::EndSession() {
 
 #elif defined(OS_WIN)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(PostQuit, MessageLoop::current()));
+      base::Bind(PostQuit, base::MessageLoop::current()));
   int quits_received = 0;
   do {
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     ++quits_received;
   } while (!g_end_session_file_thread_has_completed);
   // If we did get extra quits, then we should re-post them to the message loop.
-  while (--quits_received > 0)
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  while (--quits_received > 0) {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+  }
 #else
   NOTIMPLEMENTED();
 #endif

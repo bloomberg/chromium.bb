@@ -59,7 +59,7 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
       : extension(CreateTestExtension("deadbeef", true)),
         another_extension(CreateTestExtension("feedbeef", true)),
         extension_without_active_tab(CreateTestExtension("badbeef", false)),
-        ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
+        ui_thread_(BrowserThread::UI, base::MessageLoop::current()) {}
 
  protected:
   virtual void SetUp() OVERRIDE {

@@ -363,7 +363,7 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowse) {
 
 TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   database_.reset();
-  MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   SafeBrowsingStoreFile* browse_store = new SafeBrowsingStoreFile();
   SafeBrowsingStoreFile* download_store = new SafeBrowsingStoreFile();
   SafeBrowsingStoreFile* csd_whitelist_store = new SafeBrowsingStoreFile();
@@ -1079,7 +1079,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
   // influence task-posting.  Database specifically needs to the
   // file-backed.
   database_.reset();
-  MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   SafeBrowsingStoreFile* store = new SafeBrowsingStoreFile();
   database_.reset(new SafeBrowsingDatabaseNew(store, NULL, NULL, NULL, NULL,
                                               NULL));
@@ -1130,7 +1130,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
 
     // Flush through the corruption-handler task.
     VLOG(1) << "Expect failed check on: SafeBrowsing database reset";
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   // Database file should not exist.
@@ -1148,7 +1148,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
 // Checks database reading and writing.
 TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   database_.reset();
-  MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   SafeBrowsingStoreFile* browse_store = new SafeBrowsingStoreFile();
   SafeBrowsingStoreFile* download_store = new SafeBrowsingStoreFile();
   SafeBrowsingStoreFile* csd_whitelist_store = new SafeBrowsingStoreFile();
@@ -1252,7 +1252,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
 // Checks that the whitelists are handled properly.
 TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   database_.reset();
-  MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   // We expect all calls to ContainsCsdWhitelistedUrl in particular to be made
   // from the IO thread.  In general the whitelist lookups are thread-safe.
   content::TestBrowserThread io_thread(BrowserThread::IO, &loop);

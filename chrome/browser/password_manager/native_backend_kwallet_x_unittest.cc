@@ -212,7 +212,7 @@ class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
   void CheckPasswordForms(const std::string& folder,
                           const ExpectationArray& sorted_expected);
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   TestingProfile profile_;
@@ -278,8 +278,9 @@ void NativeBackendKWalletTest::SetUp() {
 }
 
 void NativeBackendKWalletTest::TearDown() {
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
   db_thread_.Stop();
 }
 

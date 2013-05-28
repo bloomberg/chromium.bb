@@ -50,7 +50,7 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
 
     if (waiting_) {
       waiting_ = false;
-      MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->Quit();
     }
   }
 
@@ -64,7 +64,7 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
 
     if (waiting_) {
       waiting_ = false;
-      MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->Quit();
     }
   }
 

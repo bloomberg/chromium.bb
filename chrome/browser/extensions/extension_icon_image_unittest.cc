@@ -82,7 +82,7 @@ class TestImageLoader {
     image_ = image;
     image_loaded_ = true;
     if (waiting_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   SkBitmap LoadBitmap(const std::string& path,
@@ -98,7 +98,7 @@ class TestImageLoader {
     // asynchronously), wait for it.
     if (!image_loaded_) {
       waiting_ = true;
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
       waiting_ = false;
     }
 
@@ -132,7 +132,7 @@ class ExtensionIconImageTest : public testing::Test,
 
   void WaitForImageLoad() {
     quit_in_image_loaded_ = true;
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     quit_in_image_loaded_ = false;
   }
 
@@ -179,7 +179,7 @@ class ExtensionIconImageTest : public testing::Test,
   virtual void OnExtensionIconImageChanged(IconImage* image) OVERRIDE {
     image_loaded_count_++;
     if (quit_in_image_loaded_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   gfx::ImageSkia GetDefaultIcon() {
@@ -199,7 +199,7 @@ class ExtensionIconImageTest : public testing::Test,
  private:
   int image_loaded_count_;
   bool quit_in_image_loaded_;
-  MessageLoop ui_loop_;
+  base::MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;

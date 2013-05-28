@@ -79,7 +79,7 @@ class SyncSessionModelAssociatorTest : public testing::Test {
   }
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   NiceMock<ProfileMock> profile_;
   NiceMock<ProfileSyncServiceMock> sync_service_;

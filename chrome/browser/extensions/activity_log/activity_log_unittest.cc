@@ -29,9 +29,9 @@ namespace extensions {
 class ActivityLogTest : public ChromeRenderViewHostTestHarness {
  public:
   ActivityLogTest()
-      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
-        db_thread_(BrowserThread::DB, MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
+      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
+        db_thread_(BrowserThread::DB, base::MessageLoop::current()),
+        file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -49,8 +49,9 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   }
 
   virtual ~ActivityLogTest() {
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->Run();
   }
 
   static void RetrieveActions_LogAndFetchActions(

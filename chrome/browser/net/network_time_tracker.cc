@@ -128,7 +128,7 @@ NetworkTimeTracker::BuildNotifierUpdateCallback() {
 net::NetworkTimeNotifier::ObserverCallback
 NetworkTimeTracker::BuildObserverCallback() {
   return base::Bind(&OnNetworkTimeUpdatedOnIOThread,
-                    MessageLoop::current()->message_loop_proxy(),
+                    base::MessageLoop::current()->message_loop_proxy(),
                     base::Bind(&NetworkTimeTracker::OnNetworkTimeUpdate,
                                weak_ptr_factory_.GetWeakPtr()));
 }

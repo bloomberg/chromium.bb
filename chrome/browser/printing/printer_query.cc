@@ -14,12 +14,12 @@
 namespace printing {
 
 PrinterQuery::PrinterQuery()
-    : io_message_loop_(MessageLoop::current()),
+    : io_message_loop_(base::MessageLoop::current()),
       worker_(new PrintJobWorker(this)),
       is_print_dialog_box_shown_(false),
       cookie_(PrintSettings::NewCookie()),
       last_status_(PrintingContext::FAILED) {
-  DCHECK_EQ(io_message_loop_->type(), MessageLoop::TYPE_IO);
+  DCHECK_EQ(io_message_loop_->type(), base::MessageLoop::TYPE_IO);
 }
 
 PrinterQuery::~PrinterQuery() {
@@ -74,7 +74,7 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                                bool has_selection,
                                MarginType margin_type,
                                const base::Closure& callback) {
-  DCHECK_EQ(io_message_loop_, MessageLoop::current());
+  DCHECK_EQ(io_message_loop_, base::MessageLoop::current());
   DCHECK(!is_print_dialog_box_shown_);
 
   StartWorker(callback);

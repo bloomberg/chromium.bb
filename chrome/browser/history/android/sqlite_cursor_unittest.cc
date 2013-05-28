@@ -77,24 +77,24 @@ class SQLiteCursorTest : public testing::Test,
 
   // Override SQLiteCursor::TestObserver.
   virtual void OnPostMoveToTask() OVERRIDE {
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   virtual void OnGetMoveToResult() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   virtual void OnPostGetFaviconTask() OVERRIDE {
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   virtual void OnGetFaviconResult() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
  protected:
   TestingProfileManager profile_manager_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_ptr<AndroidHistoryProviderService> service_;
@@ -126,7 +126,7 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
                   bool success,
                   int64 id) {
     success_ = success;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void OnQueryResult(AndroidHistoryProviderService::Handle handle,
@@ -134,7 +134,7 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
                      AndroidStatement* statement) {
     success_ = success;
     statement_ = statement;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
  private:
@@ -168,7 +168,7 @@ TEST_F(SQLiteCursorTest, Run) {
   service_->InsertHistoryAndBookmark(row, &cancelable_consumer_,
       Bind(&CallbackHelper::OnInserted, callback.get()));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(callback->success());
 
   std::vector<HistoryAndBookmarkRow::ColumnID> projections;
@@ -181,7 +181,7 @@ TEST_F(SQLiteCursorTest, Run) {
   service_->QueryHistoryAndBookmarks(projections, std::string(),
       std::vector<string16>(), std::string(), &cancelable_consumer_,
       Bind(&CallbackHelper::OnQueryResult, callback.get()));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   ASSERT_TRUE(callback->success());
 
   AndroidStatement* statement = callback->statement();

@@ -20,10 +20,9 @@ namespace {
 
 class BrowserPermissionsPolicyDelegateTest : public testing::Test {
 public:
-  BrowserPermissionsPolicyDelegateTest()
-      : loop_(MessageLoop::TYPE_UI),
-        ui_thread_(content::BrowserThread::UI, &loop_) {
-  }
+ BrowserPermissionsPolicyDelegateTest()
+     : loop_(base::MessageLoop::TYPE_UI),
+       ui_thread_(content::BrowserThread::UI, &loop_) {}
   virtual void SetUp() {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
@@ -35,8 +34,8 @@ public:
     profile_manager_->DeleteTestingProfile("test");
     profile_manager_.reset();
   }
-protected:
-  MessageLoop loop_;
+ protected:
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;

@@ -67,7 +67,7 @@ class StorageMonitorMacTest : public testing::Test {
 
  protected:
   // The message loop and file thread to run tests on.
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

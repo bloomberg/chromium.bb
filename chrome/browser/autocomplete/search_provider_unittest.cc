@@ -145,7 +145,7 @@ class SearchProviderTest : public testing::Test,
   const string16 keyword_term_;
   GURL keyword_url_;
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
 

@@ -86,8 +86,9 @@ class ProfileShortcutManagerTest : public testing::Test {
   }
 
   void RunPendingTasks() {
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->Run();
   }
 
   void SetupDefaultProfileShortcut(const tracked_objects::Location& location) {
@@ -269,7 +270,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     return system_shortcuts_directory;
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_ptr<TestingProfileManager> profile_manager_;

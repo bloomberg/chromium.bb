@@ -201,8 +201,8 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
 class ExtensionSettingsSyncTest : public testing::Test {
  public:
   ExtensionSettingsSyncTest()
-      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, MessageLoop::current()),
+      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
+        file_thread_(BrowserThread::FILE, base::MessageLoop::current()),
         storage_factory_(new util::ScopedSettingsStorageFactory()),
         sync_processor_(new MockSyncChangeProcessor),
         sync_processor_delegate_(new SyncChangeProcessorDelegate(
@@ -237,7 +237,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
   // Gets the syncer::SyncableService for the given sync type.
   syncer::SyncableService* GetSyncableService(syncer::ModelType model_type) {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     return frontend_->GetBackendForSync(model_type);
   }
 
@@ -257,7 +257,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   }
 
   // Need these so that the DCHECKs for running on FILE or UI threads pass.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

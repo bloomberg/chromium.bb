@@ -388,7 +388,7 @@ void ConnectionTester::TestRunner::OnResponseCompleted(
   // Post a task to notify the parent rather than handling it right away,
   // to avoid re-entrancy problems with URLRequest. (Don't want the caller
   // to end up deleting the URLRequest while in the middle of processing).
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&TestRunner::OnExperimentCompletedWithResult,
                  weak_factory_.GetWeakPtr(), result));

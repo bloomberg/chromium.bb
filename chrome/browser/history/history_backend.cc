@@ -231,7 +231,7 @@ class KillHistoryDatabaseErrorDelegate : public sql::ErrorDelegate {
 
       // Don't just do the close/delete here, as we are being called by |db| and
       // that seems dangerous.
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&HistoryBackend::KillHistoryDatabase, backend_));
     }
@@ -302,7 +302,7 @@ void HistoryBackend::Init(const std::string& languages, bool force_fail) {
   typed_url_syncable_service_.reset(new TypedUrlSyncableService(this));
 }
 
-void HistoryBackend::SetOnBackendDestroyTask(MessageLoop* message_loop,
+void HistoryBackend::SetOnBackendDestroyTask(base::MessageLoop* message_loop,
                                              const base::Closure& task) {
   if (!backend_destroy_task_.is_null())
     DLOG(WARNING) << "Setting more than one destroy task, overriding";
@@ -1218,7 +1218,7 @@ void HistoryBackend::QuerySegmentUsage(
     // entries.
     if (!segment_queried_) {
       segment_queried_ = true;
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&HistoryBackend::DeleteOldSegmentData, this));
     }
@@ -2651,7 +2651,7 @@ void HistoryBackend::ScheduleCommit() {
   if (scheduled_commit_)
     return;
   scheduled_commit_ = new CommitLaterTask(this);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CommitLaterTask::RunCommit, scheduled_commit_.get()),
       base::TimeDelta::FromSeconds(kCommitIntervalSeconds));
@@ -2691,7 +2691,7 @@ void HistoryBackend::ProcessDBTaskImpl() {
     // Tasks wants to run some more. Schedule it at the end of current tasks.
     db_task_requests_.push_back(request);
     // And process it after an invoke later.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&HistoryBackend::ProcessDBTaskImpl, this));
   }
 }

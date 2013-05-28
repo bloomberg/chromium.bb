@@ -53,7 +53,7 @@ TEST_F(ThemeServiceTest, ThemeInstallUninstall) {
       MakeThemeExtension(temp_dir.path());
   service_->FinishInstallationForTest(extension);
   // Let ThemeService finish creating the theme pack.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
   EXPECT_EQ(extension->id(), theme_service->GetThemeID());
 
@@ -75,7 +75,7 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
       MakeThemeExtension(temp_dir.path());
   service_->FinishInstallationForTest(extension);
   // Let ThemeService finish creating the theme pack.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
   EXPECT_EQ(extension->id(), theme_service->GetThemeID());
 

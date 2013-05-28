@@ -78,8 +78,8 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
     // Ensure that the backgrounding / foregrounding gets a chance to run.
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-        base::Bind(&base::DoNothing), MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+        base::Bind(&base::DoNothing), base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->Run();
 
     return wc->GetRenderProcessHost()->GetHandle();
   }

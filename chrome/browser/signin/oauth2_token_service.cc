@@ -213,7 +213,7 @@ void OAuth2TokenService::Fetcher::OnGetTokenSuccess(
   // be added when it calls back the waiting requests.
   oauth2_token_service_->OnFetchComplete(this);
   InformWaitingRequests();
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void OAuth2TokenService::Fetcher::OnGetTokenFailure(
@@ -238,7 +238,7 @@ void OAuth2TokenService::Fetcher::OnGetTokenFailure(
   // added when it calls back the waiting requests.
   oauth2_token_service_->OnFetchComplete(this);
   InformWaitingRequests();
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 // static
@@ -324,7 +324,7 @@ scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
 
   std::string refresh_token = GetRefreshToken();
   if (refresh_token.empty()) {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &OAuth2TokenService::InformConsumer,
         request->AsWeakPtr(),
         GoogleServiceAuthError(
@@ -360,7 +360,7 @@ scoped_ptr<OAuth2TokenService::Request>
   CHECK(HasCacheEntry(scopes));
   const CacheEntry* cache_entry = GetCacheEntry(scopes);
   scoped_ptr<RequestImpl> request(new RequestImpl(consumer));
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &OAuth2TokenService::InformConsumer,
       request->AsWeakPtr(),
       GoogleServiceAuthError(GoogleServiceAuthError::NONE),

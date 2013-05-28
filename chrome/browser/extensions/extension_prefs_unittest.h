@@ -46,7 +46,7 @@ class ExtensionPrefsTest : public testing::Test {
  protected:
   ExtensionPrefs* prefs() { return prefs_.prefs(); }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
 
   TestExtensionPrefs prefs_;

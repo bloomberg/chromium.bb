@@ -54,7 +54,7 @@ void SdchDictionaryFetcher::Schedule(const GURL& dictionary_url) {
 void SdchDictionaryFetcher::ScheduleDelayedRun() {
   if (fetch_queue_.empty() || current_fetch_.get() || task_is_pending_)
     return;
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&SdchDictionaryFetcher::StartFetching,
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kMsDelayFromRequestTillDownload));

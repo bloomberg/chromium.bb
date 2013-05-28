@@ -116,7 +116,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
 
   bool ExtractFeatures(ClientPhishingRequest* request) {
     StartExtractFeatures(request);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     EXPECT_EQ(1U, success_.count(request));
     return success_.count(request) ? success_[request] : false;
   }
@@ -173,7 +173,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     ASSERT_EQ(0U, success_.count(request));
     success_[request] = success;
     if (--num_pending_ == 0) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   }
 };
@@ -279,7 +279,7 @@ TEST_F(BrowserFeatureExtractorTest, MultipleRequestsAtOnce) {
   request2.set_client_score(1.0);
   StartExtractFeatures(&request2);
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_TRUE(success_[&request]);
   // Success is false because the second URL is not in the history and we are
   // not able to distinguish between a missing URL in the history and an error.

@@ -188,7 +188,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
   // object) can be deleted.
   // TODO(rdsmith): This can be removed when the DownloadManager
   // is no longer required to be deleted on the UI thread.
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
 };
 

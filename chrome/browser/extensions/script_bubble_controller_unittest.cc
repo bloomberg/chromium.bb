@@ -39,8 +39,8 @@ namespace {
 class ScriptBubbleControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   ScriptBubbleControllerTest()
-      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, MessageLoop::current()),
+      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
+        file_thread_(BrowserThread::FILE, base::MessageLoop::current()),
         enable_script_bubble_(FeatureSwitch::script_bubble(), true) {
   }
 

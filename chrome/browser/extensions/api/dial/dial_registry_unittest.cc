@@ -108,7 +108,7 @@ class DialRegistryTest : public testing::Test {
 
   // Must instantiate a MessageLoop for the thread, as the registry starts a
   // RepeatingTimer when there are listeners.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   void SetListenerExpectations() {
     EXPECT_CALL(registry_->mock_service(),

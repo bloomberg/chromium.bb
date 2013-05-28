@@ -68,7 +68,7 @@ class DownloadHandlerTest : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_refptr<content::MockDownloadManager> download_manager_;
   MockFileSystem file_system_;

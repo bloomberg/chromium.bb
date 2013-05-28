@@ -114,7 +114,7 @@ class EventRouterForwarderTest : public testing::Test {
     return incognito;
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   TestingProfileManager profile_manager_;
@@ -172,7 +172,7 @@ TEST_F(EventRouterForwarderTest, BroadcastRendererIO) {
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   ASSERT_TRUE(helper->Run());
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(EventRouterForwarderTest, UnicastRendererUIRestricted) {

@@ -58,7 +58,7 @@ class Waiter : public content::NotificationObserver {
     DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED ||
            type == chrome::NOTIFICATION_FULLSCREEN_CHANGED);
     if (running_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   // Wait until the two conditions are met.

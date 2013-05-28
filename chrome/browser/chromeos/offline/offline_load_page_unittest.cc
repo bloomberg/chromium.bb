@@ -53,10 +53,10 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
   };
 
   OfflineLoadPageTest()
-      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
+      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
         file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, MessageLoop::current()),
-        io_thread_(BrowserThread::IO, MessageLoop::current()) {
+            BrowserThread::FILE_USER_BLOCKING, base::MessageLoop::current()),
+        io_thread_(BrowserThread::IO, base::MessageLoop::current()) {
   }
 
   virtual void SetUp() {
@@ -117,11 +117,11 @@ TEST_F(OfflineLoadPageTest, OfflinePageProceed) {
   ShowInterstitial(kURL2);
   InterstitialPage* interstitial = GetOfflineLoadPage();
   ASSERT_TRUE(interstitial);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Simulate the user clicking "proceed".
   interstitial->Proceed();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(OK, user_response());
 
@@ -144,7 +144,7 @@ TEST_F(OfflineLoadPageTest, OfflinePageDontProceed) {
   ShowInterstitial(kURL2);
   InterstitialPage* interstitial = GetOfflineLoadPage();
   ASSERT_TRUE(interstitial);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Simulate the user clicking "don't proceed".
   interstitial->DontProceed();

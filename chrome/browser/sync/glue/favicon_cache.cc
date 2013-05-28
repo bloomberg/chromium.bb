@@ -538,7 +538,7 @@ void FaviconCache::OnReceivedSyncFavicon(const GURL& page_url,
 
   // Post a task to do the actual association because this method may have been
   // called while in a transaction.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FaviconCache::OnReceivedSyncFaviconImpl,
                  weak_ptr_factory_.GetWeakPtr(),

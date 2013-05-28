@@ -126,7 +126,7 @@ class HttpServerPropertiesManagerTest : public testing::Test {
                    UpdatePrefsFromCacheOnIOConcrete));
   }
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   TestingPrefServiceSimple pref_service_;
   scoped_ptr<TestingHttpServerPropertiesManager> http_server_props_manager_;
 
@@ -440,7 +440,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   ExpectPrefsUpdate();
 
   // Clear http server data, time out if we do not get a completion callback.
-  http_server_props_manager_->Clear(MessageLoop::QuitClosure());
+  http_server_props_manager_->Clear(base::MessageLoop::QuitClosure());
   loop_.Run();
 
   EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(spdy_server_mail));

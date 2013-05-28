@@ -59,7 +59,7 @@ class LocalReaderProxyTest : public ::testing::Test {
     worker_thread_.reset();
   }
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread io_thread_;
 
   base::ScopedTempDir temp_dir_;
@@ -112,7 +112,7 @@ class NetworkReaderProxyTest : public ::testing::Test {
   NetworkReaderProxyTest() : io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread io_thread_;
 };
 
@@ -348,7 +348,7 @@ class DriveFileStreamReaderTest : public ::testing::Test {
                       base::Unretained(this));
   }
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
 

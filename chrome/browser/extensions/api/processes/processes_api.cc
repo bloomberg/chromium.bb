@@ -552,7 +552,7 @@ bool GetProcessIdForTabFunction::RunImpl() {
   // the data gathering.
   if (ProcessesAPI::Get(profile_)->processes_event_router()->
       is_task_manager_listening()) {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &GetProcessIdForTabFunction::GetProcessIdForTab, this));
   } else {
     registrar_.Add(this,
@@ -615,7 +615,7 @@ bool TerminateFunction::RunImpl() {
   // the data gathering.
   if (ProcessesAPI::Get(profile_)->processes_event_router()->
       is_task_manager_listening()) {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &TerminateFunction::TerminateProcess, this));
   } else {
     registrar_.Add(this,
@@ -703,7 +703,7 @@ bool GetProcessInfoFunction::RunImpl() {
   // the data gathering.
   if (ProcessesAPI::Get(profile_)->processes_event_router()->
       is_task_manager_listening()) {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &GetProcessInfoFunction::GatherProcessInfo, this));
   } else {
     registrar_.Add(this,

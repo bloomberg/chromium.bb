@@ -438,7 +438,7 @@ void SafeBrowsingDatabase::RecordFailure(FailureType failure_type) {
 }
 
 SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew()
-    : creation_loop_(MessageLoop::current()),
+    : creation_loop_(base::MessageLoop::current()),
       browse_store_(new SafeBrowsingStoreFile),
       download_store_(NULL),
       csd_whitelist_store_(NULL),
@@ -461,7 +461,7 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
     SafeBrowsingStore* download_whitelist_store,
     SafeBrowsingStore* extension_blacklist_store,
     SafeBrowsingStore* side_effect_free_whitelist_store)
-    : creation_loop_(MessageLoop::current()),
+    : creation_loop_(base::MessageLoop::current()),
       browse_store_(browse_store),
       download_store_(download_store),
       csd_whitelist_store_(csd_whitelist_store),
@@ -474,11 +474,11 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
 }
 
 SafeBrowsingDatabaseNew::~SafeBrowsingDatabaseNew() {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 }
 
 void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
   // Ensure we haven't been run before.
   DCHECK(browse_filename_.empty());
   DCHECK(download_filename_.empty());
@@ -598,7 +598,7 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
 }
 
 bool SafeBrowsingDatabaseNew::ResetDatabase() {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   // Delete files on disk.
   // TODO(shess): Hard to see where one might want to delete without a
@@ -678,7 +678,7 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
 bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(
     const std::vector<GURL>& urls,
     std::vector<SBPrefix>* prefix_hits) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   // Ignore this check when download checking is not enabled.
   if (!download_store_.get())
@@ -694,7 +694,7 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(
 
 bool SafeBrowsingDatabaseNew::ContainsDownloadHashPrefix(
     const SBPrefix& prefix) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   // Ignore this check when download store is not available.
   if (!download_store_.get())
@@ -725,7 +725,7 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadWhitelistedUrl(const GURL& url) {
 bool SafeBrowsingDatabaseNew::ContainsExtensionPrefixes(
     const std::vector<SBPrefix>& prefixes,
     std::vector<SBPrefix>* prefix_hits) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
   if (!extension_blacklist_store_)
     return false;
 
@@ -786,7 +786,7 @@ bool SafeBrowsingDatabaseNew::ContainsWhitelistedHashes(
 // |entry| into the store.
 void SafeBrowsingDatabaseNew::InsertAdd(int chunk_id, SBPrefix host,
                                         const SBEntry* entry, int list_id) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   SafeBrowsingStore* store = GetStore(list_id);
   if (!store) return;
@@ -828,7 +828,7 @@ void SafeBrowsingDatabaseNew::InsertAdd(int chunk_id, SBPrefix host,
 void SafeBrowsingDatabaseNew::InsertAddChunks(
     const safe_browsing_util::ListType list_id,
     const SBChunkList& chunks) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   SafeBrowsingStore* store = GetStore(list_id);
   if (!store) return;
@@ -857,7 +857,7 @@ void SafeBrowsingDatabaseNew::InsertAddChunks(
 // |entry| into the store.
 void SafeBrowsingDatabaseNew::InsertSub(int chunk_id, SBPrefix host,
                                         const SBEntry* entry, int list_id) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   SafeBrowsingStore* store = GetStore(list_id);
   if (!store) return;
@@ -903,7 +903,7 @@ void SafeBrowsingDatabaseNew::InsertSub(int chunk_id, SBPrefix host,
 void SafeBrowsingDatabaseNew::InsertSubChunks(
     safe_browsing_util::ListType list_id,
     const SBChunkList& chunks) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   SafeBrowsingStore* store = GetStore(list_id);
   if (!store) return;
@@ -928,7 +928,7 @@ void SafeBrowsingDatabaseNew::InsertSubChunks(
 
 void SafeBrowsingDatabaseNew::InsertChunks(const std::string& list_name,
                                            const SBChunkList& chunks) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   if (corruption_detected_ || chunks.empty())
     return;
@@ -957,7 +957,7 @@ void SafeBrowsingDatabaseNew::InsertChunks(const std::string& list_name,
 
 void SafeBrowsingDatabaseNew::DeleteChunks(
     const std::vector<SBChunkDelete>& chunk_deletes) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   if (corruption_detected_ || chunk_deletes.empty())
     return;
@@ -1021,7 +1021,7 @@ void SafeBrowsingDatabaseNew::CacheHashResults(
 
 bool SafeBrowsingDatabaseNew::UpdateStarted(
     std::vector<SBListChunkRanges>* lists) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
   DCHECK(lists);
 
   // If |BeginUpdate()| fails, reset the database.
@@ -1133,7 +1133,7 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
 }
 
 void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   // The update may have failed due to corrupt storage (for instance,
   // an excessive number of invalid add_chunks and sub_chunks).
@@ -1461,7 +1461,7 @@ void SafeBrowsingDatabaseNew::HandleCorruptDatabase() {
   // reset once within the scope of a given task).
   if (!reset_factory_.HasWeakPtrs()) {
     RecordFailure(FAILURE_DATABASE_CORRUPT);
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&SafeBrowsingDatabaseNew::OnHandleCorruptDatabase,
                    reset_factory_.GetWeakPtr()));
   }
@@ -1477,7 +1477,7 @@ void SafeBrowsingDatabaseNew::OnHandleCorruptDatabase() {
 // TODO(shess): I'm not clear why this code doesn't have any
 // real error-handling.
 void SafeBrowsingDatabaseNew::LoadPrefixSet() {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
   DCHECK(!browse_prefix_set_filename_.empty());
 
   // If there is no database, the filter cannot be used.
@@ -1503,7 +1503,7 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet() {
 }
 
 bool SafeBrowsingDatabaseNew::Delete() {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   const bool r1 = browse_store_->Delete();
   if (!r1)
@@ -1552,7 +1552,7 @@ bool SafeBrowsingDatabaseNew::Delete() {
 }
 
 void SafeBrowsingDatabaseNew::WritePrefixSet() {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 
   if (!browse_prefix_set_.get())
     return;
@@ -1581,7 +1581,7 @@ void SafeBrowsingDatabaseNew::WhitelistEverything(SBWhitelist* whitelist) {
 void SafeBrowsingDatabaseNew::LoadWhitelist(
     const std::vector<SBAddFullHash>& full_hashes,
     SBWhitelist* whitelist) {
-  DCHECK_EQ(creation_loop_, MessageLoop::current());
+  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
   if (full_hashes.size() > kMaxWhitelistSize) {
     WhitelistEverything(whitelist);
     return;

@@ -468,7 +468,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     EXPECT_EQ(GetSyncBookmarkCount(),
               syncer_merge_result_.num_items_after_association());
 
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     // Set up change processor.
     change_processor_.reset(
@@ -655,7 +655,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
  private:
   // Used by both |ui_thread_| and |file_thread_|.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   // Needed by |model_|.
   content::TestBrowserThread file_thread_;
@@ -1867,7 +1867,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateTransactionVersion) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSync();
   WriteTestDataToBookmarkModel();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   BookmarkNodeVersionMap initial_versions;
 
@@ -1892,7 +1892,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateTransactionVersion) {
   // the same.
   const BookmarkNode* bookmark_bar = model_->bookmark_bar_node();
   model_->Remove(bookmark_bar, 0);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   BookmarkNodeVersionMap new_versions;
   GetTransactionVersions(model_->root_node(), &new_versions);
   EXPECT_EQ(initial_versions[model_->root_node()->id()] + 1,
@@ -1906,7 +1906,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateTransactionVersion) {
   const BookmarkNode* changed_bookmark =
       model_->bookmark_bar_node()->GetChild(0);
   model_->SetTitle(changed_bookmark, WideToUTF16Hack(L"test"));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   GetTransactionVersions(model_->root_node(), &new_versions);
   EXPECT_EQ(initial_versions[model_->root_node()->id()] + 2,
             new_versions[model_->root_node()->id()]);

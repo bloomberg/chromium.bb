@@ -31,7 +31,7 @@ namespace keys = declarative_webrequest_constants;
 
 TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
   // Necessary for TestURLRequest.
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
   std::string error;
   scoped_refptr<const WebRequestConditionAttribute> result;
@@ -72,7 +72,7 @@ TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
 
 TEST(WebRequestConditionAttributeTest, ResourceType) {
   // Necessary for TestURLRequest.
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
   std::string error;
   ListValue resource_types;
@@ -105,7 +105,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
 
 TEST(WebRequestConditionAttributeTest, ContentType) {
   // Necessary for TestURLRequest.
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
   std::string error;
   scoped_refptr<const WebRequestConditionAttribute> result;
@@ -122,7 +122,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   net::TestURLRequest url_request(
       test_server.GetURL("files/headers.html"), &delegate, &context, NULL);
   url_request.Start();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ListValue content_types;
   content_types.Append(Value::CreateStringValue("text/plain"));
@@ -174,7 +174,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
 // Testing WebRequestConditionAttributeThirdParty.
 TEST(WebRequestConditionAttributeTest, ThirdParty) {
   // Necessary for TestURLRequest.
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
   std::string error;
   const FundamentalValue value_true(true);
@@ -235,7 +235,7 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
 // applicable in all stages.
 TEST(WebRequestConditionAttributeTest, Stages) {
   // Necessary for TestURLRequest.
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
   typedef std::pair<RequestStage, const char*> StageNamePair;
   static const StageNamePair active_stages[] = {
@@ -411,7 +411,7 @@ void MatchAndCheck(const std::vector< std::vector<const std::string*> >& tests,
 // by both types of condition attributes, so it is enough to test it once.
 TEST(WebRequestConditionAttributeTest, RequestHeaders) {
   // Necessary for TestURLRequest.
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
@@ -420,7 +420,7 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
   url_request.SetExtraRequestHeaderByName(
       "Custom-header", "custom/value", true /* overwrite */);
   url_request.Start();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   std::vector<std::vector<const std::string*> > tests;
   bool result = false;
@@ -489,7 +489,7 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
 // 3. Negating the match in case of 'doesNotContainHeaders'.
 TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   // Necessary for TestURLRequest.
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
   net::SpawnedTestServer test_server(
       net::SpawnedTestServer::TYPE_HTTP,
@@ -503,7 +503,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   net::TestURLRequest url_request(test_server.GetURL("files/headers.html"),
                                   &delegate, &context, NULL);
   url_request.Start();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // In all the tests below we assume that the server includes the headers
   // Custom-Header: custom/value

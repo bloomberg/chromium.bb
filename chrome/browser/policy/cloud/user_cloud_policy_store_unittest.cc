@@ -37,7 +37,7 @@ void RunUntilIdle() {
 class UserCloudPolicyStoreTest : public testing::Test {
  public:
   UserCloudPolicyStoreTest()
-      : loop_(MessageLoop::TYPE_UI),
+      : loop_(base::MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &loop_),
         file_thread_(content::BrowserThread::FILE, &loop_),
         profile_(new TestingProfile()) {}
@@ -93,7 +93,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
   // CloudPolicyValidator() requires a FILE thread so declare one here. Both
   // |ui_thread_| and |file_thread_| share the same MessageLoop |loop_| so
   // callers can use RunLoop to manage both virtual threads.
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

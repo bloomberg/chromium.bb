@@ -300,7 +300,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, OverlappingApps) {
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
   TestingProfile profile;
@@ -335,7 +335,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, NotificationTest) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   content::TestBrowserThread io_thread(BrowserThread::IO, &message_loop);
 

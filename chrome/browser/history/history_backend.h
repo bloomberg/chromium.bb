@@ -479,7 +479,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Sets the task to run and the message loop to run it on when this object
   // is destroyed. See HistoryService::SetOnBackendDestroyTask for a more
   // complete description.
-  void SetOnBackendDestroyTask(MessageLoop* message_loop,
+  void SetOnBackendDestroyTask(base::MessageLoop* message_loop,
                                const base::Closure& task);
 
   // Adds the given rows to the database if it doesn't exist. A visit will be
@@ -876,7 +876,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   base::Time first_recorded_time_;
 
   // When set, this is the task that should be invoked on destruction.
-  MessageLoop* backend_destroy_message_loop_;
+  base::MessageLoop* backend_destroy_message_loop_;
   base::Closure backend_destroy_task_;
 
   // Tracks page transition types.

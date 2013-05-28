@@ -64,7 +64,7 @@ TypedUrlModelAssociator::TypedUrlModelAssociator(
     DataTypeErrorHandler* error_handler)
     : sync_service_(sync_service),
       history_backend_(history_backend),
-      expected_loop_(MessageLoop::current()),
+      expected_loop_(base::MessageLoop::current()),
       pending_abort_(false),
       error_handler_(error_handler),
       num_db_accesses_(0),
@@ -174,7 +174,7 @@ int TypedUrlModelAssociator::GetErrorPercentage() const {
 syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
   DVLOG(1) << "Associating TypedUrl Models";
   syncer::SyncError error;
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   if (IsAbortPending())
     return syncer::SyncError();
   history::URLRows typed_urls;
@@ -452,7 +452,7 @@ sync_pb::TypedUrlSpecifics TypedUrlModelAssociator::FilterExpiredVisits(
 
 bool TypedUrlModelAssociator::DeleteAllNodes(
     syncer::WriteTransaction* trans) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
 
   // Just walk through all our child nodes and delete them.
   syncer::ReadNode typed_url_root(trans);

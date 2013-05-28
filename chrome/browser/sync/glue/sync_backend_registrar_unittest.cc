@@ -65,7 +65,7 @@ class SyncBackendRegistrarTest : public testing::Test {
     }
   }
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   syncer::TestUserShare test_user_share_;
 
  private:

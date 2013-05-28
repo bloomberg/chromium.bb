@@ -149,7 +149,7 @@ class AndroidInvalidatorBridgeTest : public testing::Test {
     run_loop.Run();
   }
 
-  MessageLoop ui_loop_;
+  base::MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
   base::Thread sync_thread_;
   NiceMock<ProfileMock> mock_profile_;

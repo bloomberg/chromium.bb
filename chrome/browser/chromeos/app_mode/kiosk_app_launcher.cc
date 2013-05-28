@@ -64,7 +64,7 @@ class KioskAppLauncher::CryptohomedChecker
       }
 
       const int retry_delay_in_milliseconds = 500 * (1 << retry_count_);
-      MessageLoop::current()->PostDelayedTask(
+      base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&CryptohomedChecker::StartCheck, AsWeakPtr()),
           base::TimeDelta::FromMilliseconds(retry_delay_in_milliseconds));

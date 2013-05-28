@@ -159,7 +159,7 @@ class TestIPCSender : public IPC::Sender {
     EXPECT_EQ(ExtensionMsg_MessageInvoke::ID, message->type());
 
     EXPECT_FALSE(task_queue_.empty());
-    MessageLoop::current()->PostTask(FROM_HERE, task_queue_.front());
+    base::MessageLoop::current()->PostTask(FROM_HERE, task_queue_.front());
     task_queue_.pop();
 
     sent_messages_.push_back(linked_ptr<IPC::Message>(message));
@@ -200,7 +200,7 @@ class ExtensionWebRequestTest : public testing::Test {
                               const std::vector<char>& bytes_1,
                               const std::vector<char>& bytes_2);
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   TestingProfile profile_;
@@ -284,7 +284,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
             request.identifier(), response));
 
     request.Start();
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     EXPECT_TRUE(!request.is_pending());
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
@@ -334,7 +334,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
             request2.identifier(), response));
 
     request2.Start();
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     EXPECT_TRUE(!request2.is_pending());
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request2.status().status());
@@ -398,7 +398,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
 
   request.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(!request.is_pending());
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
@@ -452,14 +452,14 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
 
   // Extension response for OnErrorOccurred: Terminate the message loop.
   ipc_sender_.PushTask(
-      base::Bind(&MessageLoop::PostTask,
-                 base::Unretained(MessageLoop::current()),
-                 FROM_HERE, MessageLoop::QuitClosure()));
+      base::Bind(&base::MessageLoop::PostTask,
+                 base::Unretained(base::MessageLoop::current()),
+                 FROM_HERE, base::MessageLoop::QuitClosure()));
 
   request.Start();
   // request.Start() will have submitted OnBeforeRequest by the time we cancel.
   request.Cancel();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(!request.is_pending());
   EXPECT_EQ(net::URLRequestStatus::CANCELED, request.status().status());
@@ -623,7 +623,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
 
   // We inspect the result in the message list of |ipc_sender_| later.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
       &profile_, extension_id, kEventName + "/1");
@@ -656,7 +656,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   // Now send a PUT request with the same body as above.
   FireURLRequestWithData(kMethodPut, NULL /*no header*/, plain_1, plain_2);
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Clean-up.
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
@@ -717,7 +717,7 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   }
 
   // We inspect the result in the message list of |ipc_sender_| later.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
       &profile_, extension_id, kEventName + "/1");
@@ -790,7 +790,7 @@ class ExtensionWebRequestHeaderModificationTest
     context_->Init();
   }
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   TestingProfile profile_;
@@ -888,7 +888,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   // exists and are therefore not listed in the responses. This makes
   // them seem deleted.
   request.Start();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(!request.is_pending());
   // This cannot succeed as we send the request to a server that does not exist.

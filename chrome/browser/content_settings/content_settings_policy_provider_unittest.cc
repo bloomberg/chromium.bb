@@ -41,7 +41,7 @@ class PolicyProviderTest : public testing::Test {
   // from NonThreadSafe and to use native thread identifiers instead of
   // BrowserThread IDs. Then we could get rid of the message_loop and ui_thread
   // fields.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
 };
 

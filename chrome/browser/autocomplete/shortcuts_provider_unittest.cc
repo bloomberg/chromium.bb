@@ -155,7 +155,7 @@ class ShortcutsProviderTest : public testing::Test,
                std::vector<std::string> expected_urls,
                std::string expected_top_result);
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 
@@ -225,7 +225,7 @@ void ShortcutsProviderTest::RunTest(const string16 text,
                                    std::string expected_top_result) {
   std::sort(expected_urls.begin(), expected_urls.end());
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   AutocompleteInput input(text, string16::npos, string16(), GURL(), false,
                           false, true, AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, false);

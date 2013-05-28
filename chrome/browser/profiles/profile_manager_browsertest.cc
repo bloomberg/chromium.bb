@@ -23,7 +23,7 @@ namespace {
 void OnUnblockOnProfileCreation(Profile* profile,
                                 Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED)
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 void ProfileCreationComplete(Profile* profile, Profile::CreateStatus status) {
@@ -32,7 +32,7 @@ void ProfileCreationComplete(Profile* profile, Profile::CreateStatus status) {
   EXPECT_EQ(chrome::GetTotalBrowserCountForProfile(profile), 0U);
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 1U);
   if (status == Profile::CREATE_STATUS_INITIALIZED)
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 class ProfileRemovalObserver : public ProfileInfoCacheObserver {

@@ -597,7 +597,8 @@ void SafeBrowsingDatabaseManager::CloseDatabase() {
 }
 
 SafeBrowsingDatabase* SafeBrowsingDatabaseManager::GetDatabase() {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK_EQ(base::MessageLoop::current(),
+            safe_browsing_thread_->message_loop());
   if (database_)
     return database_;
   startup_metric_utils::ScopedSlowStartupUMA
@@ -682,7 +683,8 @@ void SafeBrowsingDatabaseManager::OnCheckDone(SafeBrowsingCheck* check) {
 
 void SafeBrowsingDatabaseManager::GetAllChunksFromDatabase(
     GetChunksCallback callback) {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK_EQ(base::MessageLoop::current(),
+            safe_browsing_thread_->message_loop());
 
   bool database_error = true;
   std::vector<SBListChunkRanges> lists;
@@ -749,7 +751,8 @@ void SafeBrowsingDatabaseManager::DatabaseLoadComplete() {
 void SafeBrowsingDatabaseManager::AddDatabaseChunks(
     const std::string& list_name, SBChunkList* chunks,
     AddChunksCallback callback) {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK_EQ(base::MessageLoop::current(),
+            safe_browsing_thread_->message_loop());
   if (chunks) {
     GetDatabase()->InsertChunks(list_name, *chunks);
     delete chunks;
@@ -762,7 +765,8 @@ void SafeBrowsingDatabaseManager::AddDatabaseChunks(
 
 void SafeBrowsingDatabaseManager::DeleteDatabaseChunks(
     std::vector<SBChunkDelete>* chunk_deletes) {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK_EQ(base::MessageLoop::current(),
+            safe_browsing_thread_->message_loop());
   if (chunk_deletes) {
     GetDatabase()->DeleteChunks(*chunk_deletes);
     delete chunk_deletes;
@@ -797,7 +801,8 @@ SBThreatType SafeBrowsingDatabaseManager::GetThreatTypeFromListname(
 
 void SafeBrowsingDatabaseManager::DatabaseUpdateFinished(
     bool update_succeeded) {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK_EQ(base::MessageLoop::current(),
+            safe_browsing_thread_->message_loop());
   GetDatabase()->UpdateFinished(update_succeeded);
   DCHECK(database_update_in_progress_);
   database_update_in_progress_ = false;
@@ -816,7 +821,8 @@ void SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished(
 }
 
 void SafeBrowsingDatabaseManager::OnCloseDatabase() {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK_EQ(base::MessageLoop::current(),
+            safe_browsing_thread_->message_loop());
   DCHECK(closing_database_);
 
   // Because |closing_database_| is true, nothing on the IO thread will be
@@ -833,14 +839,16 @@ void SafeBrowsingDatabaseManager::OnCloseDatabase() {
 }
 
 void SafeBrowsingDatabaseManager::OnResetDatabase() {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK_EQ(base::MessageLoop::current(),
+            safe_browsing_thread_->message_loop());
   GetDatabase()->ResetDatabase();
 }
 
 void SafeBrowsingDatabaseManager::CacheHashResults(
   const std::vector<SBPrefix>& prefixes,
   const std::vector<SBFullHashResult>& full_hashes) {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK_EQ(base::MessageLoop::current(),
+            safe_browsing_thread_->message_loop());
   GetDatabase()->CacheHashResults(prefixes, full_hashes);
 }
 
@@ -914,7 +922,8 @@ bool SafeBrowsingDatabaseManager::HandleOneCheck(
 
 void SafeBrowsingDatabaseManager::CheckDownloadHashOnSBThread(
     SafeBrowsingCheck* check) {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK_EQ(base::MessageLoop::current(),
+            safe_browsing_thread_->message_loop());
   DCHECK(enable_download_protection_);
 
   DCHECK_EQ(1u, check->full_hashes.size());
@@ -938,7 +947,8 @@ void SafeBrowsingDatabaseManager::CheckDownloadHashOnSBThread(
 
 void SafeBrowsingDatabaseManager::CheckDownloadUrlOnSBThread(
     SafeBrowsingCheck* check) {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK_EQ(base::MessageLoop::current(),
+            safe_browsing_thread_->message_loop());
   DCHECK(enable_download_protection_);
 
   std::vector<SBPrefix> prefix_hits;
@@ -962,7 +972,8 @@ void SafeBrowsingDatabaseManager::CheckDownloadUrlOnSBThread(
 
 void SafeBrowsingDatabaseManager::CheckExtensionIDsOnSBThread(
     SafeBrowsingCheck* check) {
-  DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
+  DCHECK_EQ(base::MessageLoop::current(),
+            safe_browsing_thread_->message_loop());
 
   std::vector<SBPrefix> prefixes;
   for (std::vector<SBFullHash>::iterator it = check->full_hashes.begin();
@@ -1040,7 +1051,7 @@ void SafeBrowsingDatabaseManager::StartSafeBrowsingCheck(
 
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, task);
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&SafeBrowsingDatabaseManager::TimeoutCallback,
                  check->timeout_factory_->GetWeakPtr(), check),
       check_timeout_);

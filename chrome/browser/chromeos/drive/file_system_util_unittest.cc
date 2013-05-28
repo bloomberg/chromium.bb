@@ -92,7 +92,7 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   base::ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   scoped_refptr<fileapi::ExternalMountPoints> mount_points =
       fileapi::ExternalMountPoints::CreateRefCounted();
   scoped_refptr<fileapi::FileSystemContext> context(

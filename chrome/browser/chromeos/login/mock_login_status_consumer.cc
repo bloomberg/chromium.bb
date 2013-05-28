@@ -17,25 +17,25 @@ MockConsumer::~MockConsumer() {}
 
 // static
 void MockConsumer::OnRetailModeSuccessQuit(const UserContext& user_context) {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 // static
 void MockConsumer::OnRetailModeSuccessQuitAndFail(
     const UserContext& user_context) {
   ADD_FAILURE() << "Retail mode login should have failed!";
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 // static
 void MockConsumer::OnGuestSuccessQuit() {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 // static
 void MockConsumer::OnGuestSuccessQuitAndFail() {
   ADD_FAILURE() << "Guest login should have failed!";
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 // static
@@ -43,7 +43,7 @@ void MockConsumer::OnSuccessQuit(
     const UserContext& user_context,
     bool pending_requests,
     bool using_oauth) {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 // static
@@ -52,29 +52,29 @@ void MockConsumer::OnSuccessQuitAndFail(
     bool pending_requests,
     bool using_oauth) {
   ADD_FAILURE() << "Login should NOT have succeeded!";
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 // static
 void MockConsumer::OnFailQuit(const LoginFailure& error) {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 // static
 void MockConsumer::OnFailQuitAndFail(const LoginFailure& error) {
   ADD_FAILURE() << "Login should not have failed!";
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 // static
 void MockConsumer::OnMigrateQuit() {
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 // static
 void MockConsumer::OnMigrateQuitAndFail() {
   ADD_FAILURE() << "Should not have detected a PW change!";
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 }  // namespace chromeos

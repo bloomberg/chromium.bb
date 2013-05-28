@@ -302,7 +302,7 @@ void EndKeepAlive() {
     // (MessageLoop::current() == null).
     if (chrome::GetTotalBrowserCount() == 0 &&
         !browser_shutdown::IsTryingToQuit() &&
-        MessageLoop::current()) {
+        base::MessageLoop::current()) {
       CloseAllBrowsers();
     }
   }

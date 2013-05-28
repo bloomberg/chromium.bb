@@ -61,7 +61,7 @@ GoogleURLTracker::GoogleURLTracker(
   // "wakes up", we do nothing at all.
   if (mode == NORMAL_MODE) {
     static const int kStartFetchDelayMS = 5000;
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
         base::Bind(&GoogleURLTracker::FinishSleep,
                    weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kStartFetchDelayMS));

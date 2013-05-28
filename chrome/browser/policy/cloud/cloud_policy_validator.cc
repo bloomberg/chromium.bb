@@ -131,7 +131,7 @@ void CloudPolicyValidatorBase::PostValidationTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&CloudPolicyValidatorBase::PerformValidation,
                  base::Passed(scoped_ptr<CloudPolicyValidatorBase>(this)),
-                 MessageLoop::current()->message_loop_proxy(),
+                 base::MessageLoop::current()->message_loop_proxy(),
                  completion_callback));
 }
 

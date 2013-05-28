@@ -160,7 +160,7 @@ class PolicyServiceTest : public testing::Test {
   PolicyMap policy1_;
   PolicyMap policy2_;
   scoped_ptr<PolicyServiceImpl> policy_service_;
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PolicyServiceTest);

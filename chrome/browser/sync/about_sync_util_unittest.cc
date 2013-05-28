@@ -19,7 +19,7 @@ namespace sync_ui_util {
 namespace {
 
 TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
-  MessageLoopForUI message_loop;
+  base::MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());

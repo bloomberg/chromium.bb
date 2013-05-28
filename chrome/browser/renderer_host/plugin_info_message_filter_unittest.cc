@@ -111,10 +111,10 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
 
  private:
   void PluginsLoaded(const std::vector<webkit::WebPluginInfo>& plugins) {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   // PluginService::GetPlugins on Windows jumps to the FILE thread even with
   // a MockPluginList.
   content::TestBrowserThread file_thread_;

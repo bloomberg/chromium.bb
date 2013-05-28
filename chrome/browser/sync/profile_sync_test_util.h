@@ -30,7 +30,7 @@ ACTION_P(Notify, type) {
 
 ACTION(QuitUIMessageLoop) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 class ProfileSyncServiceObserverMock : public ProfileSyncServiceObserver {

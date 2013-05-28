@@ -52,7 +52,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
       content::BrowserContext* profile);
 
  protected:
-  MessageLoopForUI ui_loop_;
+  base::MessageLoopForUI ui_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;

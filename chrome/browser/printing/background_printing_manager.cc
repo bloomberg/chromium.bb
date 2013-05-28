@@ -153,7 +153,7 @@ void BackgroundPrintingManager::DeletePreviewContents(
                     content::Source<WebContents>(preview_contents));
   printing_contents_set_.erase(preview_contents);
   printing_contents_pending_deletion_set_.insert(preview_contents);
-  MessageLoop::current()->DeleteSoon(FROM_HERE, preview_contents);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, preview_contents);
 }
 
 bool BackgroundPrintingManager::HasSharedRenderProcessHost(

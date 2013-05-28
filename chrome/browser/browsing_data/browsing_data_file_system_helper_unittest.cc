@@ -90,13 +90,13 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
 
   // Blocks on the current MessageLoop until Notify() is called.
   void BlockUntilNotified() {
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   // Unblocks the current MessageLoop. Should be called in response to some sort
   // of async activity in a callback method.
   void Notify() {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   // Callback that should be executed in response to
@@ -197,7 +197,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // message_loop_, as well as all the threads associated with it must be
   // defined before profile_ to prevent explosions. The threads also must be
   // defined in the order they're listed here. Oh how I love C++.
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread webkit_thread_;

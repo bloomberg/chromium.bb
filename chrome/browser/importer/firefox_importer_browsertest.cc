@@ -117,7 +117,7 @@ class Firefox3Observer : public ProfileWriter,
   virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
   virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
   virtual void ImportEnded() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
     EXPECT_EQ(arraysize(kFirefox3Bookmarks), bookmark_count_);
     EXPECT_EQ(1U, history_count_);
     EXPECT_EQ(arraysize(kFirefox3Passwords), password_count_);
@@ -278,7 +278,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     host->SetObserver(observer);
     host->StartImportSettings(source_profile, browser()->profile(),
                               items, make_scoped_refptr(writer));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   base::ScopedTempDir temp_dir_;

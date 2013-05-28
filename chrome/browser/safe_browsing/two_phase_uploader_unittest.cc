@@ -70,7 +70,7 @@ class TwoPhaseUploaderTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread io_thread_;
 

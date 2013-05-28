@@ -771,7 +771,7 @@ void EventRouter::Observe(int type,
         listeners_.LoadFilteredLazyListeners(extension->id(), *filtered_events);
 
       if (dispatch_chrome_updated_event_) {
-        MessageLoop::current()->PostTask(FROM_HERE,
+        base::MessageLoop::current()->PostTask(FROM_HERE,
             base::Bind(&DispatchOnInstalledEvent, profile_, extension->id(),
                        Version(), true));
       }
@@ -797,7 +797,7 @@ void EventRouter::Observe(int type,
       if (old)
         old_version = *old->version();
 
-      MessageLoop::current()->PostTask(FROM_HERE,
+      base::MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(&DispatchOnInstalledEvent, profile_, extension->id(),
                      old_version, false));
       break;

@@ -40,7 +40,7 @@ class UserScriptMasterTest : public testing::Test,
                              public content::NotificationObserver {
  public:
   UserScriptMasterTest()
-      : message_loop_(MessageLoop::TYPE_UI),
+      : message_loop_(base::MessageLoop::TYPE_UI),
         shared_memory_(NULL) {
   }
 
@@ -54,9 +54,9 @@ class UserScriptMasterTest : public testing::Test,
     // UserScriptMaster posts tasks to the file thread so make the current
     // thread look like one.
     file_thread_.reset(new content::TestBrowserThread(
-        BrowserThread::FILE, MessageLoop::current()));
+        BrowserThread::FILE, base::MessageLoop::current()));
     ui_thread_.reset(new content::TestBrowserThread(
-        BrowserThread::UI, MessageLoop::current()));
+        BrowserThread::UI, base::MessageLoop::current()));
   }
 
   virtual void TearDown() {
@@ -70,8 +70,8 @@ class UserScriptMasterTest : public testing::Test,
     DCHECK(type == chrome::NOTIFICATION_USER_SCRIPTS_UPDATED);
 
     shared_memory_ = content::Details<base::SharedMemory>(details).ptr();
-    if (MessageLoop::current() == &message_loop_)
-      MessageLoop::current()->Quit();
+    if (base::MessageLoop::current() == &message_loop_)
+      base::MessageLoop::current()->Quit();
   }
 
   // Directory containing user scripts.
@@ -80,7 +80,7 @@ class UserScriptMasterTest : public testing::Test,
   content::NotificationRegistrar registrar_;
 
   // MessageLoop used in tests.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   scoped_ptr<content::TestBrowserThread> file_thread_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
@@ -94,7 +94,7 @@ TEST_F(UserScriptMasterTest, NoScripts) {
   TestingProfile profile;
   scoped_refptr<UserScriptMaster> master(new UserScriptMaster(&profile));
   master->StartLoad();
-  message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   message_loop_.Run();
 
   ASSERT_TRUE(shared_memory_ != NULL);

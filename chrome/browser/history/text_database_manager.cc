@@ -559,7 +559,7 @@ TextDatabase* TextDatabaseManager::GetDBForTime(Time time,
 
 void TextDatabaseManager::ScheduleFlushOldChanges() {
   weak_factory_.InvalidateWeakPtrs();
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TextDatabaseManager::FlushOldChanges,
                  weak_factory_.GetWeakPtr()),

@@ -935,7 +935,7 @@ void PasswordStoreMac::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
 
 bool PasswordStoreMac::FillAutofillableLogins(
          std::vector<PasswordForm*>* forms) {
-  DCHECK(thread_->message_loop() == MessageLoop::current());
+  DCHECK(thread_->message_loop() == base::MessageLoop::current());
 
   std::vector<PasswordForm*> database_forms;
   login_metadata_db_->GetAutofillableLogins(&database_forms);
@@ -954,7 +954,7 @@ bool PasswordStoreMac::FillAutofillableLogins(
 
 bool PasswordStoreMac::FillBlacklistLogins(
          std::vector<PasswordForm*>* forms) {
-  DCHECK(thread_->message_loop() == MessageLoop::current());
+  DCHECK(thread_->message_loop() == base::MessageLoop::current());
   return login_metadata_db_->GetBlacklistLogins(forms);
 }
 

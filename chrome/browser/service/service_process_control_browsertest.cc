@@ -55,7 +55,7 @@ class ServiceProcessControlBrowserTest
 
   void CloudPrintInfoCallback(
       const cloud_print::CloudPrintProxyInfo& proxy_info) {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void Disconnect() {
@@ -82,13 +82,15 @@ class ServiceProcessControlBrowserTest
     // Quit the current message. Post a QuitTask instead of just calling Quit()
     // because this can get invoked in the context of a Launch() call and we
     // may not be in Run() yet.
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
   }
 
   void ProcessControlLaunchFailed() {
     ADD_FAILURE();
     // Quit the current message.
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
   }
 
  private:
@@ -132,7 +134,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchTwice) {
 static void DecrementUntilZero(int* count) {
   (*count)--;
   if (!(*count))
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
 }
 
 // Invoke multiple Launch calls in succession and ensure that all the tasks
@@ -144,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   for (int i = 0; i < launch_count; i++) {
     // Launch the process asynchronously.
     process->Launch(base::Bind(&DecrementUntilZero, &launch_count),
-                    MessageLoop::QuitClosure());
+                    base::MessageLoop::QuitClosure());
   }
   // Then run the message loop to keep things running.
   content::RunMessageLoop();

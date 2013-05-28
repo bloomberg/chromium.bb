@@ -285,8 +285,9 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
   }
 
   virtual void TearDown() {
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->Run();
     db_thread_.Stop();
   }
 
@@ -301,7 +302,7 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
     }
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   // PasswordStore, WDS schedule work on this thread.
   content::TestBrowserThread db_thread_;
@@ -317,7 +318,7 @@ ACTION(STLDeleteElements0) {
 
 ACTION(QuitUIMessageLoop) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 TEST_P(PasswordStoreXTest, Notifications) {
@@ -472,7 +473,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
       .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
 
   store->GetAutofillableLogins(&consumer);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // The blacklisted forms should have been migrated to the native backend.
   EXPECT_CALL(consumer,
@@ -481,7 +482,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
       .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
 
   store->GetBlacklistLogins(&consumer);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   VectorOfForms empty;
   MockLoginDatabaseReturn ld_return;

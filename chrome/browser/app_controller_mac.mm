@@ -835,7 +835,7 @@ void RecordLastRunAppBundlePath() {
   // nested message loop and commands dispatched during this operation cause
   // havoc.
   if (SessionRestore::IsRestoring(lastProfile) &&
-      MessageLoop::current()->IsNested())
+      base::MessageLoop::current()->IsNested())
     return;
 
   NSInteger tag = [sender tag];

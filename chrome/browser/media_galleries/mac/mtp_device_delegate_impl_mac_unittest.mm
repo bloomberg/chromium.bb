@@ -298,7 +298,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   // Note: threads must be made in this order: UI > FILE > IO
   scoped_ptr<content::TestBrowserThread> ui_thread_;
   scoped_ptr<content::TestBrowserThread> file_thread_;

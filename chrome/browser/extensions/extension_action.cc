@@ -394,7 +394,7 @@ void ExtensionAction::RunIconAnimation(int tab_id) {
   // timer delays), destroy it. We use a delayed task so that the Animation is
   // deleted even if it hasn't finished by the time the MessageLoop is
   // destroyed.
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DestroyIconAnimation, base::Passed(&icon_animation)),
       base::TimeDelta::FromMilliseconds(kIconFadeInDurationMs * 2));

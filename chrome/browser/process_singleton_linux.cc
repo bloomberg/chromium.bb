@@ -406,16 +406,16 @@ bool ConnectSocket(ScopedSocket* socket,
 // This class sets up a listener on the singleton socket and handles parsing
 // messages that come in on the singleton socket.
 class ProcessSingleton::LinuxWatcher
-    : public MessageLoopForIO::Watcher,
-      public MessageLoop::DestructionObserver,
+    : public base::MessageLoopForIO::Watcher,
+      public base::MessageLoop::DestructionObserver,
       public base::RefCountedThreadSafe<ProcessSingleton::LinuxWatcher,
                                         BrowserThread::DeleteOnIOThread> {
  public:
   // A helper class to read message from an established socket.
-  class SocketReader : public MessageLoopForIO::Watcher {
+  class SocketReader : public base::MessageLoopForIO::Watcher {
    public:
     SocketReader(ProcessSingleton::LinuxWatcher* parent,
-                 MessageLoop* ui_message_loop,
+                 base::MessageLoop* ui_message_loop,
                  int fd)
         : parent_(parent),
           ui_message_loop_(ui_message_loop),
@@ -423,8 +423,8 @@ class ProcessSingleton::LinuxWatcher
           bytes_read_(0) {
       DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
       // Wait for reads.
-      MessageLoopForIO::current()->WatchFileDescriptor(
-          fd, true, MessageLoopForIO::WATCH_READ, &fd_reader_, this);
+      base::MessageLoopForIO::current()->WatchFileDescriptor(
+          fd, true, base::MessageLoopForIO::WATCH_READ, &fd_reader_, this);
       // If we haven't completed in a reasonable amount of time, give up.
       timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimeoutInSeconds),
                    this, &SocketReader::CleanupAndDeleteSelf);
@@ -453,13 +453,13 @@ class ProcessSingleton::LinuxWatcher
       // We're deleted beyond this point.
     }
 
-    MessageLoopForIO::FileDescriptorWatcher fd_reader_;
+    base::MessageLoopForIO::FileDescriptorWatcher fd_reader_;
 
     // The ProcessSingleton::LinuxWatcher that owns us.
     ProcessSingleton::LinuxWatcher* const parent_;
 
     // A reference to the UI message loop.
-    MessageLoop* const ui_message_loop_;
+    base::MessageLoop* const ui_message_loop_;
 
     // The file descriptor we're reading.
     const int fd_;
@@ -478,7 +478,7 @@ class ProcessSingleton::LinuxWatcher
 
   // We expect to only be constructed on the UI thread.
   explicit LinuxWatcher(ProcessSingleton* parent)
-      : ui_message_loop_(MessageLoop::current()),
+      : ui_message_loop_(base::MessageLoop::current()),
         parent_(parent) {
   }
 
@@ -513,18 +513,18 @@ class ProcessSingleton::LinuxWatcher
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     STLDeleteElements(&readers_);
 
-    MessageLoopForIO* ml = MessageLoopForIO::current();
+    base::MessageLoopForIO* ml = base::MessageLoopForIO::current();
     ml->RemoveDestructionObserver(this);
   }
 
   // Removes and deletes the SocketReader.
   void RemoveSocketReader(SocketReader* reader);
 
-  MessageLoopForIO::FileDescriptorWatcher fd_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher fd_watcher_;
 
   // A reference to the UI message loop (i.e., the message loop we were
   // constructed on).
-  MessageLoop* ui_message_loop_;
+  base::MessageLoop* ui_message_loop_;
 
   // The ProcessSingleton that owns us.
   ProcessSingleton* const parent_;
@@ -556,16 +556,16 @@ void ProcessSingleton::LinuxWatcher::OnFileCanReadWithoutBlocking(int fd) {
 void ProcessSingleton::LinuxWatcher::StartListening(int socket) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Watch for client connections on this socket.
-  MessageLoopForIO* ml = MessageLoopForIO::current();
+  base::MessageLoopForIO* ml = base::MessageLoopForIO::current();
   ml->AddDestructionObserver(this);
-  ml->WatchFileDescriptor(socket, true, MessageLoopForIO::WATCH_READ,
+  ml->WatchFileDescriptor(socket, true, base::MessageLoopForIO::WATCH_READ,
                           &fd_watcher_, this);
 }
 
 void ProcessSingleton::LinuxWatcher::HandleMessage(
     const std::string& current_dir, const std::vector<std::string>& argv,
     SocketReader* reader) {
-  DCHECK(ui_message_loop_ == MessageLoop::current());
+  DCHECK(ui_message_loop_ == base::MessageLoop::current());
   DCHECK(reader);
 
   if (parent_->notification_callback_.Run(CommandLine(argv),

@@ -179,7 +179,7 @@ class CloudPolicyManagerTest : public testing::Test {
   }
 
   // Required by the refresh scheduler that's created by the manager.
-  MessageLoop loop_;
+  base::MessageLoop loop_;
 
   // Testing policy.
   const PolicyNamespaceKey policy_ns_key_;

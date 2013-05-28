@@ -33,7 +33,7 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
 
     if (!top_sites_inited_) {
       waiting_ = true;
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
     }
 
     // By this point, we know topsites has loaded. We can run the tests now.
@@ -42,7 +42,7 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
  private:
   void OnTopSitesAvailable(const history::MostVisitedURLList& data) {
     if (waiting_) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
       waiting_ = false;
     }
     top_sites_inited_ = true;

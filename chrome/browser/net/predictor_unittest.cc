@@ -49,7 +49,7 @@ class WaitForResolutionHelper {
 
     // When all hostnames have been resolved, exit the loop.
     timer_->Stop();
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
     delete timer_;
     delete this;
   }
@@ -92,14 +92,14 @@ class PredictorTest : public testing::Test {
     timer->Start(FROM_HERE, TimeDelta::FromMilliseconds(100),
                  new WaitForResolutionHelper(predictor, hosts, timer),
                  &WaitForResolutionHelper::Run);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
  private:
   // IMPORTANT: do not move this below |host_resolver_|; the host resolver
   // must not outlive the message loop, otherwise bad things can happen
   // (like posting to a deleted message loop).
-  MessageLoopForUI loop_;
+  base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
 
@@ -127,18 +127,18 @@ TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
 
   testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
 
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      MessageLoop::QuitClosure(),
+      base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(500));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_FALSE(testing_master.WasFound(localhost));
 
   testing_master.Shutdown();
 
   // Clean up after ourselves.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(PredictorTest, SingleLookupTest) {
@@ -158,7 +158,7 @@ TEST_F(PredictorTest, SingleLookupTest) {
 
   EXPECT_TRUE(testing_master.WasFound(goog));
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_GT(testing_master.peak_pending_lookups(), names.size() / 2);
   EXPECT_LE(testing_master.peak_pending_lookups(), names.size());
@@ -203,7 +203,7 @@ TEST_F(PredictorTest, ConcurrentLookupTest) {
   EXPECT_FALSE(testing_master.WasFound(bad1));
   EXPECT_FALSE(testing_master.WasFound(bad2));
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_FALSE(testing_master.WasFound(bad1));
   EXPECT_FALSE(testing_master.WasFound(bad2));
@@ -232,7 +232,7 @@ TEST_F(PredictorTest, MassiveConcurrentLookupTest) {
 
   WaitForResolution(&testing_master, names);
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_LE(testing_master.peak_pending_lookups(), names.size());
   EXPECT_LE(testing_master.peak_pending_lookups(),

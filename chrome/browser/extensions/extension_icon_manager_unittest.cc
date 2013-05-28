@@ -35,14 +35,14 @@ class ExtensionIconManagerTest : public testing::Test {
   void ImageLoadObserved() {
     unwaited_image_loads_++;
     if (waiting_) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   }
 
   void WaitForImageLoad() {
     if (unwaited_image_loads_ == 0) {
       waiting_ = true;
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
       waiting_ = false;
     }
     ASSERT_GT(unwaited_image_loads_, 0);
@@ -61,7 +61,7 @@ class ExtensionIconManagerTest : public testing::Test {
   // Whether we are currently waiting for an image load.
   bool waiting_;
 
-  MessageLoop ui_loop_;
+  base::MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;

@@ -26,7 +26,7 @@ class RecentlyUsedFoldersComboModelTest : public testing::Test {
   BookmarkModel* GetModel();
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_ptr<TestingProfile> profile_;

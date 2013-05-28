@@ -59,7 +59,7 @@ TEST(ExtensionActionTest, Visibility) {
 
 TEST(ExtensionActionTest, ScriptBadgeAnimation) {
   // Supports the icon animation.
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
 
   ExtensionAction script_badge(
       std::string(), ActionInfo::TYPE_SCRIPT_BADGE, ActionInfo());
@@ -83,7 +83,7 @@ TEST(ExtensionActionTest, ScriptBadgeAnimation) {
 
 TEST(ExtensionActionTest, GetAttention) {
   // Supports the icon animation.
-  scoped_ptr<MessageLoop> message_loop(new MessageLoop);
+  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop);
 
   ExtensionAction script_badge(
       std::string(), ActionInfo::TYPE_SCRIPT_BADGE, ActionInfo());
@@ -95,7 +95,7 @@ TEST(ExtensionActionTest, GetAttention) {
 
   // Simulate waiting long enough for the animation to end.
   message_loop.reset();  // Can't have 2 MessageLoops alive at once.
-  message_loop.reset(new MessageLoop);
+  message_loop.reset(new base::MessageLoop);
   EXPECT_FALSE(script_badge.GetIconAnimation(1));  // Sanity check.
 
   script_badge.SetAppearance(1, ExtensionAction::ACTIVE);

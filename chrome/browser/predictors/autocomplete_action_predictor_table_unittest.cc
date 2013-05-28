@@ -54,7 +54,7 @@ class AutocompleteActionPredictorTableTest : public testing::Test {
  private:
   TestingProfile profile_;
   scoped_ptr<PredictorDatabase> db_;
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread db_thread_;
 };
 
@@ -71,7 +71,7 @@ class AutocompleteActionPredictorTableReopenTest
 };
 
 AutocompleteActionPredictorTableTest::AutocompleteActionPredictorTableTest()
-    : loop_(MessageLoop::TYPE_DEFAULT),
+    : loop_(base::MessageLoop::TYPE_DEFAULT),
       db_thread_(BrowserThread::DB, &loop_) {
 }
 

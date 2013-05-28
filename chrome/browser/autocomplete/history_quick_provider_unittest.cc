@@ -135,7 +135,7 @@ class HistoryQuickProviderTest : public testing::Test,
   // Pass-through functions to simplify our friendship with URLIndexPrivateData.
   bool UpdateURL(const history::URLRow& row);
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 
@@ -228,7 +228,7 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
                                        bool can_inline_top_result,
                                        string16 expected_fill_into_edit) {
   SCOPED_TRACE(text);  // Minimal hint to query being run.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   AutocompleteInput input(text, string16::npos, string16(), GURL(),false, false,
                           true, AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, false);

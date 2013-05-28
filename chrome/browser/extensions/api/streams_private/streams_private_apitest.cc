@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, Navigate) {
                                test_server_->GetURL("/doc_path.doc"));
 
   // Wait for the response from the test server.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // There should be no downloads started by the navigation.
   DownloadManager* download_manager = GetDownloadManager();

@@ -1120,10 +1120,10 @@ bool SessionModelAssociator::ShouldSyncTab(const SyncedTabDelegate& tab) const {
 
 void SessionModelAssociator::QuitLoopForSubtleTesting() {
   if (waiting_for_change_) {
-    DVLOG(1) << "Quitting MessageLoop for test.";
+    DVLOG(1) << "Quitting base::MessageLoop for test.";
     waiting_for_change_ = false;
     test_weak_factory_.InvalidateWeakPtrs();
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 }
 
@@ -1136,7 +1136,7 @@ void SessionModelAssociator::BlockUntilLocalChangeForTest(
   if (test_weak_factory_.HasWeakPtrs())
     return;
   waiting_for_change_ = true;
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&SessionModelAssociator::QuitLoopForSubtleTesting,
                  test_weak_factory_.GetWeakPtr()),

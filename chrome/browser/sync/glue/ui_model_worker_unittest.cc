@@ -32,7 +32,7 @@ class UIModelWorkerVisitor {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     was_run_->Signal();
     if (quit_loop_when_run_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     return syncer::SYNCER_OK;
   }
 
@@ -98,7 +98,7 @@ class SyncUIModelWorkerTest : public testing::Test {
   base::Thread* core_thread() { return &faux_core_thread_; }
   base::Thread* syncer_thread() { return &faux_syncer_thread_; }
  private:
-  MessageLoop faux_ui_loop_;
+  base::MessageLoop faux_ui_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
   base::Thread faux_syncer_thread_;
   base::Thread faux_core_thread_;
@@ -116,7 +116,7 @@ TEST_F(SyncUIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
 
   // We are on the UI thread, so run our loop to process the
   // (hopefully) scheduled task from a SyncShare invocation.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   bmw()->OnSyncerShutdownComplete();
   bmw()->Stop();

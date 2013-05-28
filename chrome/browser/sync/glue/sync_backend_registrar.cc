@@ -55,7 +55,7 @@ bool IsOnThreadForGroup(syncer::ModelType type, syncer::ModelSafeGroup group) {
 
 SyncBackendRegistrar::SyncBackendRegistrar(
     const std::string& name, Profile* profile,
-    MessageLoop* sync_loop) :
+    base::MessageLoop* sync_loop) :
     name_(name),
     profile_(profile),
     sync_loop_(sync_loop),
@@ -175,7 +175,7 @@ void SyncBackendRegistrar::StopOnUIThread() {
 }
 
 void SyncBackendRegistrar::OnSyncerShutdownComplete() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   ui_worker_->OnSyncerShutdownComplete();
 }
 

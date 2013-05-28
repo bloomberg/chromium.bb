@@ -167,7 +167,7 @@ class CaptivePortalServiceTest : public testing::Test,
     EXPECT_FALSE(FetchingURL());
     ASSERT_TRUE(TimerRunning());
 
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_EQ(CaptivePortalService::STATE_CHECKING_FOR_PORTAL,
               service()->state());
     ASSERT_TRUE(FetchingURL());
@@ -199,7 +199,7 @@ class CaptivePortalServiceTest : public testing::Test,
     EXPECT_FALSE(FetchingURL());
     ASSERT_TRUE(TimerRunning());
 
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_FALSE(FetchingURL());
     EXPECT_FALSE(TimerRunning());
     EXPECT_EQ(1, observer.num_results_received());
@@ -274,7 +274,7 @@ class CaptivePortalServiceTest : public testing::Test,
   // after the test.
   const CaptivePortalService::TestingState old_captive_portal_testing_state_;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   // Note that the construction order of these matters.
   scoped_ptr<TestingProfile> profile_;
@@ -372,7 +372,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhileRunning) {
   // Needed to create the URLFetcher, even if it never returns any results.
   service()->DetectCaptivePortal();
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(FetchingURL());
   EXPECT_FALSE(TimerRunning());
 
@@ -381,7 +381,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhileRunning) {
   EXPECT_TRUE(TimerRunning());
   EXPECT_EQ(0, observer.num_results_received());
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_FALSE(FetchingURL());
   EXPECT_FALSE(TimerRunning());
@@ -406,7 +406,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhilePending) {
   EXPECT_TRUE(TimerRunning());
   EXPECT_EQ(0, observer.num_results_received());
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_FALSE(FetchingURL());
   EXPECT_FALSE(TimerRunning());
@@ -432,7 +432,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefEnabledWhilePending) {
   EXPECT_FALSE(FetchingURL());
   EXPECT_TRUE(TimerRunning());
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   ASSERT_TRUE(FetchingURL());
   EXPECT_FALSE(TimerRunning());
 

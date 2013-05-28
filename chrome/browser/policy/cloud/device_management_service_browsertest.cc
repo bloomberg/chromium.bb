@@ -120,8 +120,8 @@ class DeviceManagementServiceIntegrationTest
         .WillOnce(
             DoAll(Invoke(this,
                          &DeviceManagementServiceIntegrationTest::RecordToken),
-                  InvokeWithoutArgs(MessageLoop::current(),
-                                    &MessageLoop::Quit)));
+                  InvokeWithoutArgs(base::MessageLoop::current(),
+                                    &base::MessageLoop::Quit)));
     scoped_ptr<DeviceManagementRequestJob> job(
         service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION));
     job->SetGaiaToken("gaia_auth_token");
@@ -130,7 +130,7 @@ class DeviceManagementServiceIntegrationTest
     job->GetRequest()->mutable_register_request();
     job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                           base::Unretained(this)));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -178,8 +178,8 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
       .WillOnce(
           DoAll(Invoke(this,
                        &DeviceManagementServiceIntegrationTest::RecordAuthCode),
-                InvokeWithoutArgs(MessageLoop::current(),
-                                  &MessageLoop::Quit)));
+                InvokeWithoutArgs(base::MessageLoop::current(),
+                                  &base::MessageLoop::Quit)));
   scoped_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH));
   job->SetDMToken(token_);
@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
   request->set_oauth2_client_id("oauth2ClientId4Test");
   job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                         base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   ASSERT_EQ("fake_auth_code", robot_auth_code_);
 }
 
@@ -199,7 +199,8 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, PolicyFetch) {
 
   ExpectRequest();
   EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
-      .WillOnce(InvokeWithoutArgs(MessageLoop::current(), &MessageLoop::Quit));
+      .WillOnce(InvokeWithoutArgs(base::MessageLoop::current(),
+                                  &base::MessageLoop::Quit));
   scoped_ptr<DeviceManagementRequestJob> job(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH));
   job->SetDMToken(token_);
@@ -210,7 +211,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, PolicyFetch) {
   request->add_request()->set_policy_type(dm_protocol::kChromeUserPolicyType);
   job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                         base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
@@ -218,7 +219,8 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
 
   ExpectRequest();
   EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
-      .WillOnce(InvokeWithoutArgs(MessageLoop::current(), &MessageLoop::Quit));
+      .WillOnce(InvokeWithoutArgs(base::MessageLoop::current(),
+                                  &base::MessageLoop::Quit));
   scoped_ptr<DeviceManagementRequestJob> job(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION));
   job->SetDMToken(token_);
@@ -226,13 +228,14 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
   job->GetRequest()->mutable_unregister_request();
   job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                         base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
   ExpectRequest();
   EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _, _))
-      .WillOnce(InvokeWithoutArgs(MessageLoop::current(), &MessageLoop::Quit));
+      .WillOnce(InvokeWithoutArgs(base::MessageLoop::current(),
+                                  &base::MessageLoop::Quit));
   scoped_ptr<DeviceManagementRequestJob> job(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT));
   job->SetClientID("testid");
@@ -240,7 +243,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
   job->GetRequest()->mutable_auto_enrollment_request()->set_modulus(1);
   job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                         base::Unretained(this)));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 INSTANTIATE_TEST_CASE_P(

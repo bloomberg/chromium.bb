@@ -71,7 +71,7 @@ class StorageMonitorWinTest : public testing::Test {
   MockRemovableStorageObserver observer_;
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 };

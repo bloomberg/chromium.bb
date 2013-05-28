@@ -124,7 +124,7 @@ class NetworkTimeTrackerTest : public testing::Test {
 
  private:
   // Message loop and threads for the tracker's internal logic.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread;
   content::TestBrowserThread io_thread;
 

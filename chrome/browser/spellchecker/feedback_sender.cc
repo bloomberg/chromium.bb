@@ -257,7 +257,7 @@ void FeedbackSender::RequestDocumentMarkers() {
   for (std::vector<int>::const_iterator it = dead_renderers.begin();
        it != dead_renderers.end();
        ++it) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&FeedbackSender::OnReceiveDocumentMarkers,
                    AsWeakPtr(),

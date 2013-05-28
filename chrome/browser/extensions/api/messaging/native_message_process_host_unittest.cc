@@ -153,7 +153,7 @@ class NativeMessagingTest : public ::testing::Test,
   Feature::ScopedCurrentChannel current_channel_;
   scoped_ptr<NativeMessageProcessHost> native_message_process_host_;
   base::FilePath user_data_dir_;
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   scoped_ptr<base::RunLoop> read_message_run_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
   scoped_ptr<content::TestBrowserThread> io_thread_;

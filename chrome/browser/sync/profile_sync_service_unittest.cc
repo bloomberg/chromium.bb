@@ -139,7 +139,7 @@ class ProfileSyncServiceTestHarness {
   scoped_ptr<TestingProfile> profile;
 
  private:
-  MessageLoop ui_loop_;
+  base::MessageLoop ui_loop_;
   // Needed by |service|.
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;

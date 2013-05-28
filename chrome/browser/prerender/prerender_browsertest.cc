@@ -192,7 +192,7 @@ class ChannelDestructionWatcher {
     channel_destroyed_ = true;
     if (waiting_for_channel_destruction_) {
       waiting_for_channel_destruction_ = false;
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   }
 
@@ -230,7 +230,7 @@ class TestPrerenderContents : public PrerenderContents {
         prerender_should_wait_for_ready_title_(
             prerender_should_wait_for_ready_title) {
     if (expected_number_of_loads == 0)
-      MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->Quit();
   }
 
   virtual ~TestPrerenderContents() {
@@ -263,7 +263,7 @@ class TestPrerenderContents : public PrerenderContents {
     if (quit_message_loop_on_destruction_) {
       // The message loop may not be running if this is swapped in
       // synchronously on a Navigation.
-      MessageLoop* loop = MessageLoopForUI::current();
+      base::MessageLoop* loop = base::MessageLoopForUI::current();
       if (loop->is_running())
         loop->Quit();
     }
@@ -299,7 +299,7 @@ class TestPrerenderContents : public PrerenderContents {
     ++number_of_loads_;
     if (ShouldRenderPrerenderedPageCorrectly(expected_final_status_) &&
         number_of_loads_ == expected_number_of_loads_) {
-      MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->Quit();
     }
   }
 
@@ -308,7 +308,7 @@ class TestPrerenderContents : public PrerenderContents {
     PrerenderContents::AddPendingPrerender(pending_prerender_info.Pass());
     if (expected_pending_prerenders_ > 0 &&
         pending_prerender_count() == expected_pending_prerenders_) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   }
 
@@ -2406,7 +2406,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearHistory) {
 
   // Post a task to clear the history, and run the message loop until it
   // destroys the prerender.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ClearBrowsingData, current_browser(),
                  BrowsingDataRemover::REMOVE_HISTORY));
@@ -2425,7 +2425,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearCache) {
 
   // Post a task to clear the cache, and run the message loop until it
   // destroys the prerender.
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ClearBrowsingData, current_browser(),
                  BrowsingDataRemover::REMOVE_CACHE));
   content::RunMessageLoop();
@@ -2440,7 +2440,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelAll) {
                    FINAL_STATUS_CANCELLED,
                    1);
   // Post a task to cancel all the prerenders.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&CancelAllPrerenders, GetPrerenderManager()));
   content::RunMessageLoop();
   EXPECT_TRUE(GetPrerenderContents() == NULL);
@@ -2453,7 +2453,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderEvents) {
   EXPECT_TRUE(DidReceivePrerenderLoadEventForLinkNumber(0));
   EXPECT_FALSE(DidReceivePrerenderStopEventForLinkNumber(0));
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&CancelAllPrerenders, GetPrerenderManager()));
   content::RunMessageLoop();
 
@@ -2470,7 +2470,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                    FINAL_STATUS_CANCELLED,
                    1);
   // Post a task to cancel all the prerenders.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&CancelAllPrerenders, GetPrerenderManager()));
   content::RunMessageLoop();
   EXPECT_TRUE(GetPrerenderContents() == NULL);

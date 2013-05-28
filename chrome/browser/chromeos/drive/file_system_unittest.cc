@@ -47,7 +47,7 @@ const int64 kLotsOfSpace = internal::kMinFreeSpace * 10;
 // Counts the number of invocation, and if it increased up to |expected_counter|
 // quits the current message loop.
 void AsyncInitializationCallback(
-    int* counter, int expected_counter, MessageLoop* message_loop,
+    int* counter, int expected_counter, base::MessageLoop* message_loop,
     FileError error, scoped_ptr<ResourceEntry> entry) {
   if (error != FILE_ERROR_OK || !entry) {
     // If we hit an error case, quit the message loop immediately.
@@ -367,7 +367,7 @@ class FileSystemTest : public testing::Test {
     EXPECT_EQ(entry.resource_id(), resource_id);
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;

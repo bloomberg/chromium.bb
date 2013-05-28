@@ -230,7 +230,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       sync_service_->RegisterDataTypeController(data_type_controller);
 
       sync_service_->Initialize();
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
     }
     return model_associator;
   }

@@ -31,7 +31,7 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   void TestDeleteSingleDataPoint();
   void TestDeleteAllData();
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread db_thread_;
   TestingProfile profile_;
   scoped_ptr<PredictorDatabase> db_;
@@ -88,7 +88,7 @@ class ResourcePrefetchPredictorTablesReopenTest
 };
 
 ResourcePrefetchPredictorTablesTest::ResourcePrefetchPredictorTablesTest()
-    : loop_(MessageLoop::TYPE_DEFAULT),
+    : loop_(base::MessageLoop::TYPE_DEFAULT),
       db_thread_(content::BrowserThread::DB, &loop_),
       db_(new PredictorDatabase(&profile_)),
       tables_(db_->resource_prefetch_tables()) {

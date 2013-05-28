@@ -33,7 +33,7 @@ namespace chromeos {
 class OnlineAttemptTest : public testing::Test {
  public:
   OnlineAttemptTest()
-      : message_loop_(MessageLoop::TYPE_UI),
+      : message_loop_(base::MessageLoop::TYPE_UI),
         ui_thread_(BrowserThread::UI, &message_loop_),
         state_(UserContext(), "", "", "", User::USER_TYPE_REGULAR, false),
         resolver_(new MockAuthAttemptStateResolver) {
@@ -72,14 +72,14 @@ class OnlineAttemptTest : public testing::Test {
 
   static void Quit() {
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+        BrowserThread::UI, FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
   static void RunThreadTest() {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   TestAttemptState state_;
   scoped_ptr<MockAuthAttemptStateResolver> resolver_;
@@ -121,7 +121,7 @@ TEST_F(OnlineAttemptTest, LoginCancelRetry) {
       BrowserThread::UI, FROM_HERE,
       base::Bind(&OnlineAttemptTest::RunThreadTest));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(error == state_.online_outcome().error());
   EXPECT_EQ(LoginFailure::NETWORK_AUTH_FAILED,
@@ -149,7 +149,7 @@ TEST_F(OnlineAttemptTest, LoginTimeout) {
   // Post a task to cancel the login attempt.
   CancelLogin(attempt_.get());
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(LoginFailure::LOGIN_TIMED_OUT, state_.online_outcome().reason());
 }
@@ -176,7 +176,7 @@ TEST_F(OnlineAttemptTest, HostedLoginRejected) {
       BrowserThread::UI, FROM_HERE,
       base::Bind(&OnlineAttemptTest::RunThreadTest));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(error, local_state.online_outcome());
   EXPECT_EQ(LoginFailure::NETWORK_AUTH_FAILED,
@@ -201,7 +201,7 @@ TEST_F(OnlineAttemptTest, FullLogin) {
       BrowserThread::UI, FROM_HERE,
       base::Bind(&OnlineAttemptTest::RunThreadTest));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(LoginFailure::LoginFailureNone(), local_state.online_outcome());
 }

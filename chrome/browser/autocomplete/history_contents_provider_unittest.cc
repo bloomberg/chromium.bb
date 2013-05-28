@@ -56,7 +56,7 @@ class HistoryContentsProviderTest : public testing::Test,
     // When we're waiting for asynchronous messages, we have to spin the message
     // loop. This will be exited in the OnProviderUpdate function when complete.
     if (input.matches_requested() == AutocompleteInput::ALL_MATCHES)
-      MessageLoop::current()->Run();
+      base::MessageLoop::current()->Run();
   }
 
   const ACMatches& matches() const { return provider_->matches(); }
@@ -116,10 +116,11 @@ class HistoryContentsProviderTest : public testing::Test,
     // We must quit the message loop (if running) to return control to the test.
     // Note, calling Quit() directly will checkfail if the loop isn't running,
     // so we post a task, which is safe for either case.
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 

@@ -52,7 +52,7 @@ class PolicyTestBase : public testing::Test {
 
  protected:
   // Create an actual IO loop (needed by FilePathWatcher).
-  MessageLoopForIO loop_;
+  base::MessageLoopForIO loop_;
 
  private:
   content::TestBrowserThread ui_thread_;

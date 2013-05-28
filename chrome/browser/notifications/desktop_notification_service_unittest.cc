@@ -30,7 +30,7 @@ class ThreadProxy : public base::RefCountedThreadSafe<ThreadProxy> {
     // The current message loop was already initalized by the test superclass.
     ui_thread_.reset(
         new content::TestBrowserThread(BrowserThread::UI,
-                                       MessageLoop::current()));
+                                       base::MessageLoop::current()));
 
     // Create IO thread, start its message loop.
     io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));

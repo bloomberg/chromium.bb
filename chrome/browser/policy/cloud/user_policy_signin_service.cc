@@ -533,7 +533,7 @@ void UserPolicySigninService::OnClientError(CloudPolicyClient* client) {
 
       // Can't shutdown now because we're in the middle of a callback from
       // the CloudPolicyClient, so queue up a task to do the shutdown.
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&UserPolicySigninService::ShutdownUserCloudPolicyManager,
                      weak_factory_.GetWeakPtr()));

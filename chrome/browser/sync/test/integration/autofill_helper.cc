@@ -241,7 +241,7 @@ void SetProfiles(int profile, std::vector<AutofillProfile>* autofill_profiles) {
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
   pdm->AddObserver(&observer);
   pdm->SetProfiles(autofill_profiles);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   pdm->RemoveObserver(&observer);
 }
 
@@ -252,7 +252,7 @@ void SetCreditCards(int profile, std::vector<CreditCard>* credit_cards) {
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
   pdm->AddObserver(&observer);
   pdm->SetCreditCards(credit_cards);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   pdm->RemoveObserver(&observer);
 }
 
@@ -297,7 +297,7 @@ const std::vector<AutofillProfile*>& GetAllProfiles(
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
   pdm->AddObserver(&observer);
   pdm->Refresh();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   pdm->RemoveObserver(&observer);
   return pdm->web_profiles();
 }

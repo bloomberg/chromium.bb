@@ -34,7 +34,7 @@ PasswordModelAssociator::PasswordModelAssociator(
       password_store_(password_store),
       password_node_id_(syncer::kInvalidId),
       abort_association_pending_(false),
-      expected_loop_(MessageLoop::current()),
+      expected_loop_(base::MessageLoop::current()),
       error_handler_(error_handler) {
   DCHECK(sync_service_);
 #if defined(OS_MACOSX)
@@ -50,7 +50,7 @@ syncer::SyncError PasswordModelAssociator::AssociateModels(
     syncer::SyncMergeResult* local_merge_result,
     syncer::SyncMergeResult* syncer_merge_result) {
   syncer::SyncError error;
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   {
     base::AutoLock lock(abort_association_pending_lock_);
     abort_association_pending_ = false;
@@ -181,7 +181,7 @@ syncer::SyncError PasswordModelAssociator::AssociateModels(
 
 bool PasswordModelAssociator::DeleteAllNodes(
     syncer::WriteTransaction* trans) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   for (PasswordToSyncIdMap::iterator node_id = id_map_.begin();
        node_id != id_map_.end(); ++node_id) {
     syncer::WriteNode sync_node(trans);
@@ -266,7 +266,7 @@ int64 PasswordModelAssociator::GetSyncIdFromChromeId(
 
 void PasswordModelAssociator::Associate(
     const std::string* password, int64 sync_id) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   DCHECK_NE(syncer::kInvalidId, sync_id);
   DCHECK(id_map_.find(*password) == id_map_.end());
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
@@ -275,7 +275,7 @@ void PasswordModelAssociator::Associate(
 }
 
 void PasswordModelAssociator::Disassociate(int64 sync_id) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   SyncIdToPasswordMap::iterator iter = id_map_inverse_.find(sync_id);
   if (iter == id_map_inverse_.end())
     return;

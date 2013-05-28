@@ -198,7 +198,7 @@ void CannedBrowsingDataServerBoundCertHelper::StartFetching(
     return;
   // We post a task to emulate async fetching behavior.
   completion_callback_ = callback;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&CannedBrowsingDataServerBoundCertHelper::FinishFetching,
                  this));

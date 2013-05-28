@@ -21,7 +21,7 @@ using net::TransportSecurityState;
 class TransportSecurityPersisterTest : public testing::Test {
  public:
   TransportSecurityPersisterTest()
-      : message_loop_(MessageLoop::TYPE_IO),
+      : message_loop_(base::MessageLoop::TYPE_IO),
         test_file_thread_(content::BrowserThread::FILE, &message_loop_),
         test_io_thread_(content::BrowserThread::IO, &message_loop_) {
   }
@@ -39,7 +39,7 @@ class TransportSecurityPersisterTest : public testing::Test {
  protected:
   // Ordering is important here. If member variables are not destroyed in the
   // right order, then DCHECKs will fail all over the place.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   // Needed for ImportantFileWriter, which TransportSecurityPersister uses.
   content::TestBrowserThread test_file_thread_;

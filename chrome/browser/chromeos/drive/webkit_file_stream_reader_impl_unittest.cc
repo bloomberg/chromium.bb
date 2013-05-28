@@ -96,7 +96,7 @@ class WebkitFileStreamReaderImplTest : public ::testing::Test {
                       base::Unretained(this));
   }
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
 

@@ -341,7 +341,7 @@ class CookiesTreeModelTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_user_blocking_;
   content::TestBrowserThread io_thread_;

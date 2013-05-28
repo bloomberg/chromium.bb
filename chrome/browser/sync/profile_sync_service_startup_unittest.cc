@@ -132,7 +132,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     return data_type_manager;
   }
 
-  MessageLoop ui_loop_;
+  base::MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
@@ -318,7 +318,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
   token_service->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   sync_->SetSetupInProgress(false);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Verify we successfully finish startup and configuration.
   EXPECT_TRUE(sync_->ShouldPushChanges());

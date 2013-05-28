@@ -73,7 +73,7 @@ class RulesRegistryWithCacheTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_refptr<TestRulesRegistry> registry_;

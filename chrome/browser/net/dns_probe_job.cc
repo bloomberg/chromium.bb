@@ -105,7 +105,7 @@ DnsProbeJobImpl::DnsProbeJobImpl(scoped_ptr<DnsClient> dns_client,
   DCHECK(dns_client_.get());
   DCHECK(dns_client_->GetConfig());
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&DnsProbeJobImpl::Start,
                  weak_factory_.GetWeakPtr()));

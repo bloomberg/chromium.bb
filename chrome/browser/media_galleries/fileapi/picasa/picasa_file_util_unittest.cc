@@ -252,7 +252,7 @@ class PicasaFileUtilTest : public testing::Test {
     bool completed = false;
     NewOperation(url)->ReadDirectory(
         url, base::Bind(&DidReadDirectory, &contents, &completed));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     ASSERT_TRUE(completed);
     ASSERT_EQ(test_folders.size(), contents.size());
@@ -275,7 +275,7 @@ class PicasaFileUtilTest : public testing::Test {
           folder_url,
           base::Bind(&DidReadDirectory, &folder_contents,
                      &folder_read_completed));
-      MessageLoop::current()->RunUntilIdle();
+      base::MessageLoop::current()->RunUntilIdle();
 
       EXPECT_TRUE(folder_read_completed);
 
@@ -304,7 +304,7 @@ class PicasaFileUtilTest : public testing::Test {
     bool completed = false;
     NewOperation(url)->ReadDirectory(
         url, base::Bind(&DidReadDirectory, &contents, &completed));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     ASSERT_FALSE(completed);
   }
@@ -324,7 +324,7 @@ class PicasaFileUtilTest : public testing::Test {
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   base::ScopedTempDir profile_dir_;
 
@@ -409,7 +409,7 @@ TEST_F(PicasaFileUtilTest, RootFolders) {
   bool completed = false;
   NewOperation(url)->ReadDirectory(
       url, base::Bind(&DidReadDirectory, &contents, &completed));
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   ASSERT_TRUE(completed);
   ASSERT_EQ(2u, contents.size());

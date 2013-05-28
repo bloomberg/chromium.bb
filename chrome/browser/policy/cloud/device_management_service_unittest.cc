@@ -166,7 +166,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
   scoped_ptr<DeviceManagementService> service_;
 
  private:
-  MessageLoopForUI loop_;
+  base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
 };

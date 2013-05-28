@@ -29,7 +29,7 @@ void ContextMenuNotificationObserver::Observe(
     case chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN: {
       RenderViewContextMenu* context_menu =
           content::Source<RenderViewContextMenu>(source).ptr();
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&ContextMenuNotificationObserver::ExecuteCommand,
                      base::Unretained(this), context_menu));

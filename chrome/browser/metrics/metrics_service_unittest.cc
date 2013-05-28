@@ -30,7 +30,7 @@ class MetricsServiceTest : public testing::Test {
   }
 
  private:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   ScopedTestingLocalState testing_local_state_;
 

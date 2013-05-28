@@ -64,7 +64,7 @@ class TestGetInstallState :
                           const std::string& url);
 
   SearchProviderInstallData* install_data_;
-  MessageLoop* main_loop_;
+  base::MessageLoop* main_loop_;
 
   // A host which should be a search provider but not the default.
   std::string search_provider_host_;
@@ -88,14 +88,14 @@ TestGetInstallState::TestGetInstallState(
 bool TestGetInstallState::RunTests() {
   passed_ = true;
 
-  main_loop_ = MessageLoop::current();
+  main_loop_ = base::MessageLoop::current();
 
   BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)->PostTask(
       FROM_HERE,
       base::Bind(&TestGetInstallState::StartTestOnIOThread, this));
   // Run the current message loop. When the test is finished on the I/O thread,
   // it invokes Quit, which unblocks this.
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   main_loop_ = NULL;
 
   // Let the testing code know what the result is.
@@ -136,7 +136,7 @@ void TestGetInstallState::DoInstallStateTests() {
   }
 
   // All done.
-  main_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  main_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 void TestGetInstallState::VerifyInstallState(

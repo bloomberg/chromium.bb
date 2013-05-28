@@ -653,7 +653,7 @@ void BrowsingDataRemover::NotifyAndDeleteIfDone() {
 
   // History requests aren't happy if you delete yourself from the callback.
   // As such, we do a delete later.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void BrowsingDataRemover::OnClearedHostnameResolutionCache() {

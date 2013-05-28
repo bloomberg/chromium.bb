@@ -437,7 +437,7 @@ class Conn {
   DISALLOW_COPY_AND_ASSIGN(Conn);
 };
 
-class SSLChan : public MessageLoopForIO::Watcher {
+class SSLChan : public base::MessageLoopForIO::Watcher {
  public:
   static void Start(const net::AddressList& address_list,
                     const net::HostPortPair& host_port_pair,
@@ -585,7 +585,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
       };
       for (int i = arraysize(buf); i--;) {
         if (buf[i] && buf[i]->size() > 0) {
-          MessageLoop::current()->PostTask(
+          base::MessageLoop::current()->PostTask(
               FROM_HERE,
               base::Bind(&SSLChan::Proceed, weak_factory_.GetWeakPtr()));
           return;
@@ -596,7 +596,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
         socket_->Disconnect();
         socket_.reset();
       }
-      MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+      base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     }
   }
 
@@ -639,11 +639,11 @@ class SSLChan : public MessageLoopForIO::Watcher {
     is_socket_write_pending_ = false;
     is_read_pipe_blocked_ = false;
     is_write_pipe_blocked_ = false;
-    MessageLoopForIO::current()->WatchFileDescriptor(
-        read_pipe_, false, MessageLoopForIO::WATCH_READ,
+    base::MessageLoopForIO::current()->WatchFileDescriptor(
+        read_pipe_, false, base::MessageLoopForIO::WATCH_READ,
         &read_pipe_controller_, this);
-    MessageLoopForIO::current()->WatchFileDescriptor(
-        write_pipe_, false, MessageLoopForIO::WATCH_WRITE,
+    base::MessageLoopForIO::current()->WatchFileDescriptor(
+        write_pipe_, false, base::MessageLoopForIO::WATCH_WRITE,
         &write_pipe_controller_, this);
     phase_ = PHASE_RUNNING;
     Proceed();
@@ -707,8 +707,8 @@ class SSLChan : public MessageLoopForIO::Watcher {
             proceed = true;
           } else if (rv == -1 && errno == EAGAIN) {
             is_read_pipe_blocked_ = true;
-            MessageLoopForIO::current()->WatchFileDescriptor(
-                read_pipe_, false, MessageLoopForIO::WATCH_READ,
+            base::MessageLoopForIO::current()->WatchFileDescriptor(
+                read_pipe_, false, base::MessageLoopForIO::WATCH_READ,
                 &read_pipe_controller_, this);
           } else if (rv == 0) {
             Shut(0);
@@ -728,7 +728,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
               base::Bind(&SSLChan::OnSocketRead, base::Unretained(this)));
           is_socket_read_pending_ = true;
           if (rv != net::ERR_IO_PENDING) {
-            MessageLoop::current()->PostTask(
+            base::MessageLoop::current()->PostTask(
                 FROM_HERE, base::Bind(&SSLChan::OnSocketRead,
                                       weak_factory_.GetWeakPtr(), rv));
           }
@@ -743,7 +743,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
               base::Bind(&SSLChan::OnSocketWrite, base::Unretained(this)));
           is_socket_write_pending_ = true;
           if (rv != net::ERR_IO_PENDING) {
-            MessageLoop::current()->PostTask(
+            base::MessageLoop::current()->PostTask(
                 FROM_HERE, base::Bind(&SSLChan::OnSocketWrite,
                                       weak_factory_.GetWeakPtr(), rv));
           }
@@ -761,8 +761,8 @@ class SSLChan : public MessageLoopForIO::Watcher {
             proceed = true;
           } else if (rv == -1 && errno == EAGAIN) {
             is_write_pipe_blocked_ = true;
-            MessageLoopForIO::current()->WatchFileDescriptor(
-                write_pipe_, false, MessageLoopForIO::WATCH_WRITE,
+            base::MessageLoopForIO::current()->WatchFileDescriptor(
+                write_pipe_, false, base::MessageLoopForIO::WATCH_WRITE,
                 &write_pipe_controller_, this);
           } else {
             DCHECK_LE(rv, 0);
@@ -791,8 +791,8 @@ class SSLChan : public MessageLoopForIO::Watcher {
   bool is_read_pipe_blocked_;
   bool is_write_pipe_blocked_;
   base::WeakPtrFactory<SSLChan> weak_factory_;
-  MessageLoopForIO::FileDescriptorWatcher read_pipe_controller_;
-  MessageLoopForIO::FileDescriptorWatcher write_pipe_controller_;
+  base::MessageLoopForIO::FileDescriptorWatcher read_pipe_controller_;
+  base::MessageLoopForIO::FileDescriptorWatcher write_pipe_controller_;
 
   friend class base::DeleteHelper<SSLChan>;
   DISALLOW_COPY_AND_ASSIGN(SSLChan);

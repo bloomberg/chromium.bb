@@ -78,7 +78,7 @@ class ChromeNetworkDelegateTest : public testing::Test {
 
  private:
   bool never_throttle_requests_original_value_;
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
 
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;
   BooleanPrefMember pref_member_;
@@ -131,13 +131,13 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
         GURL(url_string), &delegate_, &context_, network_delegate_);
 
     request.Start();
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
 
     EXPECT_EQ(expected_query_parameters, request.url().query());
   }
 
  private:
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;
@@ -316,7 +316,7 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;

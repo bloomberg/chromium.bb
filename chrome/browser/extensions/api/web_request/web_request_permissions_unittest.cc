@@ -38,7 +38,7 @@ class ExtensionWebRequestHelpersTestWithThreadsTest : public testing::Test {
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
  private:
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread io_thread_;
 };
 
@@ -70,7 +70,7 @@ void ExtensionWebRequestHelpersTestWithThreadsTest::SetUp() {
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestHideRequestForURL) {
-  MessageLoopForIO message_loop;
+  base::MessageLoopForIO message_loop;
   net::TestURLRequestContext context;
   scoped_refptr<ExtensionInfoMap> extension_info_map(new ExtensionInfoMap);
   const char* sensitive_urls[] = {

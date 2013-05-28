@@ -53,8 +53,8 @@ class ExtensionSettingsFrontendTest : public testing::Test {
  public:
   ExtensionSettingsFrontendTest()
       : storage_factory_(new util::ScopedSettingsStorageFactory()),
-        ui_thread_(BrowserThread::UI, MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
+        ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
+        file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -82,7 +82,7 @@ class ExtensionSettingsFrontendTest : public testing::Test {
   scoped_refptr<util::ScopedSettingsStorageFactory> storage_factory_;
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 };
@@ -141,7 +141,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
 
   // This would be triggered by extension uninstall via a DataDeleter.
   frontend_->DeleteStorageSoon(id);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // The storage area may no longer be valid post-uninstall, so re-request.
   storage = util::GetStorage(id, frontend_.get());
@@ -177,7 +177,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   }
 
   frontend_.reset();
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   // TODO(kalman): Figure out why this fails, despite appearing to work.
   // Leaving this commented out rather than disabling the whole test so that the
   // deletion code paths are at least exercised.
@@ -282,7 +282,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   frontend_->RunWithStorage(
       id, settings::LOCAL, base::Bind(&UnlimitedLocalStorageTestCallback));
 
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace extensions

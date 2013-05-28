@@ -24,7 +24,7 @@ class BrowsingDataHelperCallback {
   }
 
   const std::list<T>& result() {
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     DCHECK(has_result_);
     return result_;
   }
@@ -32,7 +32,7 @@ class BrowsingDataHelperCallback {
   void callback(const std::list<T>& info) {
     result_ = info;
     has_result_ = true;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
  private:

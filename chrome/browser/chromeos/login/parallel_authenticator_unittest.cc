@@ -57,7 +57,7 @@ class TestOnlineAttempt : public OnlineAttempt {
 class ParallelAuthenticatorTest : public testing::Test {
  public:
   ParallelAuthenticatorTest()
-      : message_loop_(MessageLoop::TYPE_UI),
+      : message_loop_(base::MessageLoop::TYPE_UI),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
         io_thread_(BrowserThread::IO),
@@ -199,7 +199,7 @@ class ParallelAuthenticatorTest : public testing::Test {
     auth_->set_online_attempt(new TestOnlineAttempt(state_.get(), auth_.get()));
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;

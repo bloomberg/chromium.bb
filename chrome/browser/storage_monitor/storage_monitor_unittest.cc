@@ -26,7 +26,7 @@ TEST(StorageMonitorTest, TestInitialize) {
 }
 
 TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   const string16 kDeviceName = ASCIIToUTF16("media device");
   const std::string kDeviceId1 = "1";
   const std::string kDeviceId2 = "2";
@@ -73,14 +73,14 @@ TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
 }
 
 TEST(StorageMonitorTest, GetAttachedStorageEmpty) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   test::TestStorageMonitor monitor;
   std::vector<StorageInfo> devices = monitor.GetAttachedStorage();
   EXPECT_EQ(0U, devices.size());
 }
 
 TEST(StorageMonitorTest, GetRemovableStorageAttachDetach) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   test::TestStorageMonitor monitor;
   const std::string kDeviceId1 = "42";
   const string16 kDeviceName1 = ASCIIToUTF16("test");

@@ -44,7 +44,7 @@ AudioMixerCras::AudioMixerCras()
 AudioMixerCras::~AudioMixerCras() {
   if (!thread_.get())
     return;
-  DCHECK(MessageLoop::current() != thread_->message_loop());
+  DCHECK(base::MessageLoop::current() != thread_->message_loop());
 
   base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
   thread_->Stop();
@@ -139,7 +139,7 @@ void AudioMixerCras::SetCaptureMuteLocked(bool locked) {
 }
 
 void AudioMixerCras::Connect() {
-  DCHECK(MessageLoop::current() == thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == thread_->message_loop());
 
   // Create the client structure.
   if (client_ == NULL && cras_client_create(&client_) < 0) {
@@ -159,7 +159,7 @@ void AudioMixerCras::Connect() {
 }
 
 void AudioMixerCras::ApplyState() {
-  DCHECK(MessageLoop::current() == thread_->message_loop());
+  DCHECK(base::MessageLoop::current() == thread_->message_loop());
   if (!client_connected_)
     return;
 

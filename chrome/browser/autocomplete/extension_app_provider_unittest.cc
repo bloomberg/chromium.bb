@@ -33,7 +33,7 @@ class ExtensionAppProviderTest : public testing::Test {
                int num_cases);
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_refptr<ExtensionAppProvider> app_provider_;
   scoped_ptr<TestingProfile> profile_;

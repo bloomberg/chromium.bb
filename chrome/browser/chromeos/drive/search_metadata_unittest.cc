@@ -215,7 +215,7 @@ class SearchMetadataTest : public testing::Test {
     EXPECT_EQ(FILE_ERROR_OK, error);
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;

@@ -315,7 +315,7 @@ class GDataWapiOperationsTest : public testing::Test {
     return response.PassAs<net::test_server::HttpResponse>();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
@@ -358,7 +358,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -390,7 +390,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -423,7 +423,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -447,7 +447,7 @@ TEST_F(GDataWapiOperationsTest, SearchByTitleOperation) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -471,7 +471,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_ValidResourceId) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -496,7 +496,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_InvalidResourceId) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -519,7 +519,7 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
           test_util::CreateCopyResultCallback(&result_code, &result_data)),
       true);  // Include installed apps.
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -558,7 +558,7 @@ TEST_F(GDataWapiOperationsTest,
           test_util::CreateCopyResultCallback(&result_code, &result_data)),
       false);  // Exclude installed apps.
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -594,7 +594,7 @@ TEST_F(GDataWapiOperationsTest, DeleteResourceOperation) {
       std::string());
 
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_DELETE, http_request_.method);
@@ -619,7 +619,7 @@ TEST_F(GDataWapiOperationsTest, DeleteResourceOperationWithETag) {
       "etag");
 
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_DELETE, http_request_.method);
@@ -646,7 +646,7 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
       "new directory");
 
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -681,7 +681,7 @@ TEST_F(GDataWapiOperationsTest, CopyHostedDocumentOperation) {
       "New Document");
 
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -713,7 +713,7 @@ TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
       "New File");
 
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -748,7 +748,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
       "the_app_id");
 
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(GURL("https://entry1_open_with_link/"), result_data);
@@ -785,7 +785,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_NotFound) {
       "unauthorized_app_id");
 
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(GDATA_OTHER_ERROR, result_code);
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -820,7 +820,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
       "APP_ID");
 
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -855,7 +855,7 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
           "file:2_file_resource_id");
 
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -890,7 +890,7 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
           "file:2_file_resource_id");
 
   operation_runner_->StartOperationWithRetry(operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   // DELETE method should be used, without the body content.
@@ -929,7 +929,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
           "New file");
 
   operation_runner_->StartOperationWithRetry(initiate_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server_.GetURL("/upload_new_file"), upload_url);
@@ -972,7 +972,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
       kTestFilePath);
 
   operation_runner_->StartOperationWithRetry(resume_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1031,7 +1031,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
           "New file");
 
   operation_runner_->StartOperationWithRetry(initiate_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server_.GetURL("/upload_new_file"), upload_url);
@@ -1074,7 +1074,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
             upload_url,
             kUploadContent.size());
     operation_runner_->StartOperationWithRetry(get_upload_status_operation);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
     EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1126,7 +1126,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
         kTestFilePath);
 
     operation_runner_->StartOperationWithRetry(resume_operation);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
     EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1171,7 +1171,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
             upload_url,
             kUploadContent.size());
     operation_runner_->StartOperationWithRetry(get_upload_operation);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
     EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1224,7 +1224,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
           "New file");
 
   operation_runner_->StartOperationWithRetry(initiate_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server_.GetURL("/upload_new_file"), upload_url);
@@ -1267,7 +1267,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
       kTestFilePath);
 
   operation_runner_->StartOperationWithRetry(resume_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1314,7 +1314,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
           std::string() /* etag */);
 
   operation_runner_->StartOperationWithRetry(initiate_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server_.GetURL("/upload_existing_file"), upload_url);
@@ -1356,7 +1356,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
       kTestFilePath);
 
   operation_runner_->StartOperationWithRetry(resume_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1405,7 +1405,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
           kTestETag);
 
   operation_runner_->StartOperationWithRetry(initiate_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server_.GetURL("/upload_existing_file"), upload_url);
@@ -1447,7 +1447,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
       kTestFilePath);
 
   operation_runner_->StartOperationWithRetry(resume_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1492,7 +1492,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETagConflict) {
           kWrongETag);
 
   operation_runner_->StartOperationWithRetry(initiate_operation);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_PRECONDITION, result_code);
   // For updating an existing file, METHOD_PUT should be used.

@@ -62,7 +62,8 @@ class RedirectTest : public InProcessBrowserTest {
       history::RedirectList* redirects) {
     for (size_t i = 0; i < redirects->size(); ++i)
       rv->push_back(redirects->at(i));
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
   }
 
   // Consumer for asynchronous history queries.

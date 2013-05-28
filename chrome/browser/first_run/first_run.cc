@@ -88,7 +88,7 @@ class ImportEndedObserver : public importer::ImporterProgressObserver {
   virtual void ImportEnded() OVERRIDE {
     ended_ = true;
     if (should_quit_message_loop_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   void set_should_quit_message_loop() {
@@ -244,7 +244,7 @@ void ImportFromSourceProfile(ImporterHost* importer_host,
   // If the import process has not errored out, block on it.
   if (!observer.ended()) {
     observer.set_should_quit_message_loop();
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 }
 

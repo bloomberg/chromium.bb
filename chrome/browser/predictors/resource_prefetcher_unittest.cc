@@ -47,7 +47,7 @@ class TestResourcePrefetcher : public ResourcePrefetcher {
 // Delegate for ResourcePrefetcher.
 class TestResourcePrefetcherDelegate : public ResourcePrefetcher::Delegate {
  public:
-  explicit TestResourcePrefetcherDelegate(MessageLoop* loop)
+  explicit TestResourcePrefetcherDelegate(base::MessageLoop* loop)
       : request_context_getter_(new net::TestURLRequestContextGetter(
           loop->message_loop_proxy())) { }
   ~TestResourcePrefetcherDelegate() { }
@@ -128,7 +128,7 @@ class ResourcePrefetcherTest : public testing::Test {
     prefetcher_->OnResponseStarted(GetInFlightRequest(url));
   }
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread io_thread_;
   ResourcePrefetchPredictorConfig config_;
   TestResourcePrefetcherDelegate prefetcher_delegate_;
@@ -139,7 +139,7 @@ class ResourcePrefetcherTest : public testing::Test {
 };
 
 ResourcePrefetcherTest::ResourcePrefetcherTest()
-    : loop_(MessageLoop::TYPE_IO),
+    : loop_(base::MessageLoop::TYPE_IO),
       io_thread_(content::BrowserThread::IO, &loop_),
       prefetcher_delegate_(&loop_) {
   config_.max_prefetches_inflight_per_navigation = 5;

@@ -268,7 +268,7 @@ class TestObserver : public ProfileWriter,
   virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
   virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
   virtual void ImportEnded() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
     EXPECT_EQ(arraysize(kIEBookmarks), bookmark_count_);
     EXPECT_EQ(1, history_count_);
     EXPECT_EQ(arraysize(kIEFaviconGroup), favicon_count_);
@@ -374,7 +374,7 @@ class MalformedFavoritesRegistryTestObserver
   virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE {}
   virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
   virtual void ImportEnded() OVERRIDE {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
     EXPECT_EQ(arraysize(kIESortedBookmarks), bookmark_count_);
   }
 
@@ -498,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
       browser()->profile(),
       importer::HISTORY | importer::PASSWORDS | importer::FAVORITES,
       observer);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Cleans up.
   url_history_stg2->DeleteUrl(kIEIdentifyUrl, 0);
@@ -575,6 +575,6 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest,
         browser()->profile(),
         importer::FAVORITES,
         observer);
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 }

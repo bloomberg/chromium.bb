@@ -42,7 +42,7 @@ ACTION(STLDeleteElements0) {
 
 ACTION(QuitUIMessageLoop) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 }  // namespace
@@ -916,12 +916,13 @@ class PasswordStoreMacTest : public testing::Test {
 
   virtual void TearDown() {
     store_->ShutdownOnUIThread();
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->Run();
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
   MockAppleKeychain* keychain_;  // Owned by store_.
@@ -1002,7 +1003,7 @@ TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
   EXPECT_CALL(consumer, OnGetPasswordStoreResults(_)).WillOnce(
       DoAll(WithArg<0>(STLDeleteElements0()), QuitUIMessageLoop()));
   store_->GetLogins(*joint_form, &consumer);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
   for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(updates); ++i) {

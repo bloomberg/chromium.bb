@@ -70,7 +70,7 @@ class BrowserClosedObserver : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
   }
 
  private:
@@ -171,7 +171,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
 
 void TimeoutCallback(const std::string& timeout_message) {
   FAIL() << timeout_message;
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
 }
 
 // Base class for DevTools tests that test devtools functionality for
@@ -203,7 +203,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
                     content::NotificationService::AllSources());
       base::CancelableClosure timeout(
           base::Bind(&TimeoutCallback, "Extension load timed out."));
-      MessageLoop::current()->PostDelayedTask(
+      base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(4));
       extensions::UnpackedInstaller::Create(service)->Load(path);
       content::RunMessageLoop();
@@ -226,7 +226,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
                   content::NotificationService::AllSources());
     base::CancelableClosure timeout(
         base::Bind(&TimeoutCallback, "Extension host load timed out."));
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(4));
 
     ExtensionProcessManager* manager =
@@ -252,7 +252,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_LOADED:
       case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
-        MessageLoopForUI::current()->Quit();
+        base::MessageLoopForUI::current()->Quit();
         break;
       default:
         NOTREACHED();
@@ -304,7 +304,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       worker_data_->worker_route_id = route_id;
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          MessageLoop::QuitClosure());
+          base::MessageLoop::QuitClosure());
       delete this;
     }
     scoped_refptr<WorkerData> worker_data_;
@@ -324,7 +324,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       ASSERT_EQ(worker_data_->worker_route_id, route_id);
       WorkerService::GetInstance()->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          MessageLoop::QuitClosure());
+          base::MessageLoop::QuitClosure());
       delete this;
     }
     scoped_refptr<WorkerData> worker_data_;
@@ -366,7 +366,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       worker_data->worker_process_id = worker_info[0].process_id;
       worker_data->worker_route_id = worker_info[0].route_id;
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          MessageLoop::QuitClosure());
+          base::MessageLoop::QuitClosure());
       return;
     }
 

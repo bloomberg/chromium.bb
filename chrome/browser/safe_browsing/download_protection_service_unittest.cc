@@ -246,7 +246,7 @@ class DownloadProtectionServiceTest : public testing::Test {
  private:
   // Helper functions for FlushThreadMessageLoops.
   void RunAllPendingAndQuitUI() {
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -255,7 +255,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   }
 
   void QuitMessageLoop() {
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   void PostRunMessageLoopTask(BrowserThread::ID thread) {
@@ -308,7 +308,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   scoped_refptr<FakeSafeBrowsingService> sb_service_;
   scoped_refptr<MockSignatureUtil> signature_util_;
   DownloadProtectionService* download_service_;
-  MessageLoop msg_loop_;
+  base::MessageLoop msg_loop_;
   DownloadProtectionService::DownloadCheckResult result_;
   bool has_result_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
@@ -827,7 +827,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   EXPECT_EQ("dummy cert data", chain.element(0).certificate());
 
   // Simulate the request finishing.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                  base::Unretained(this), fetcher));
@@ -898,7 +898,7 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_EQ(0, request.signature().certificate_chain_size());
 
   // Simulate the request finishing.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                  base::Unretained(this), fetcher));

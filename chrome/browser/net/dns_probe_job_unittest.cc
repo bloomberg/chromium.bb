@@ -70,7 +70,7 @@ void DnsProbeJobTest::RunProbe(MockDnsClientRule::Result good_result,
   callback_result_ = DnsProbeJob::SERVERS_UNKNOWN;
 
   // DnsProbeJob needs somewhere to post the callback.
-  scoped_ptr<MessageLoop> message_loop_(new MessageLoopForIO());
+  scoped_ptr<base::MessageLoop> message_loop_(new base::MessageLoopForIO());
 
   scoped_ptr<DnsProbeJob> job(
       DnsProbeJob::CreateJob(dns_client.Pass(), callback, net_log));

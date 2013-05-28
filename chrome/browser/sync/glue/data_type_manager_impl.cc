@@ -167,7 +167,7 @@ bool DataTypeManagerImpl::ProcessReconfigure() {
 
   // Unwind the stack before executing configure. The method configure and its
   // callees are not re-entrant.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&DataTypeManagerImpl::ConfigureImpl,
                  weak_ptr_factory_.GetWeakPtr(),

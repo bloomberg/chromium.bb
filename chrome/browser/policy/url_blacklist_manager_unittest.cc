@@ -70,7 +70,7 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
 class URLBlacklistManagerTest : public testing::Test {
  protected:
   URLBlacklistManagerTest()
-      : loop_(MessageLoop::TYPE_IO),
+      : loop_(base::MessageLoop::TYPE_IO),
         ui_thread_(BrowserThread::UI, &loop_),
         file_thread_(BrowserThread::FILE, &loop_),
         io_thread_(BrowserThread::IO, &loop_) {
@@ -93,7 +93,7 @@ class URLBlacklistManagerTest : public testing::Test {
     blacklist_manager_.reset();
   }
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   TestingPrefServiceSimple pref_service_;
   scoped_ptr<TestingURLBlacklistManager> blacklist_manager_;
 

@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   EXPECT_TRUE(ui_test_utils::SendMouseMoveSync(gfx::Point()));
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 
-  MessageLoop::current()->DeleteSoon(
+  base::MessageLoop::current()->DeleteSoon(
       FROM_HERE, chromeos::LoginDisplayHostImpl::default_host());
 }
 

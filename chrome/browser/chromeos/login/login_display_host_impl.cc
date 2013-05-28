@@ -584,9 +584,9 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
 
   shutting_down_ = true;
   registrar_.RemoveAll();
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   if (post_quit_task)
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
 }
 
 void LoginDisplayHostImpl::StartAnimation() {

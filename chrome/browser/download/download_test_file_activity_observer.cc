@@ -43,7 +43,7 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
                                          const FileSelectedCallback&
                                              callback) OVERRIDE {
     file_chooser_displayed_ = true;
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, (file_chooser_enabled_ ? suggested_path
                                          : base::FilePath())));
   }

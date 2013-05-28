@@ -209,14 +209,14 @@ class MakeRequestFail {
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
         base::Bind(MakeRequestFailOnIO, host_),
-        MessageLoop::QuitClosure());
+        base::MessageLoop::QuitClosure());
     content::RunMessageLoop();
   }
   ~MakeRequestFail() {
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
         base::Bind(UndoMakeRequestFailOnIO, host_),
-        MessageLoop::QuitClosure());
+        base::MessageLoop::QuitClosure());
     content::RunMessageLoop();
   }
 
@@ -333,13 +333,13 @@ bool IsJavascriptEnabled(content::WebContents* contents) {
 void CopyPluginListAndQuit(std::vector<webkit::WebPluginInfo>* out,
                            const std::vector<webkit::WebPluginInfo>& in) {
   *out = in;
-  MessageLoop::current()->QuitWhenIdle();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 template<typename T>
 void CopyValueAndQuit(T* out, T in) {
   *out = in;
-  MessageLoop::current()->QuitWhenIdle();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void GetPluginList(std::vector<webkit::WebPluginInfo>* plugins) {
@@ -462,7 +462,7 @@ class PolicyTest : public InProcessBrowserTest {
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
         base::Bind(URLRequestMockHTTPJob::AddUrlHandler, root_http),
-        MessageLoop::current()->QuitWhenIdleClosure());
+        base::MessageLoop::current()->QuitWhenIdleClosure());
     content::RunMessageLoop();
   }
 
@@ -531,7 +531,7 @@ class PolicyTest : public InProcessBrowserTest {
         BrowserThread::IO,
         FROM_HERE,
         base::Bind(base::DoNothing),
-        MessageLoop::QuitClosure());
+        base::MessageLoop::QuitClosure());
     content::RunMessageLoop();
   }
 #endif
@@ -586,7 +586,7 @@ class PolicyTest : public InProcessBrowserTest {
 
   void UpdateProviderPolicy(const PolicyMap& policy) {
     provider_.UpdateChromePolicy(policy);
-    DCHECK(MessageLoop::current());
+    DCHECK(base::MessageLoop::current());
     base::RunLoop loop;
     loop.RunUntilIdle();
   }
@@ -2094,7 +2094,7 @@ class MediaStreamDevicesControllerBrowserTest
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
     controller.DismissInfoBarAndTakeActionOnSettings();
 
-    MessageLoop::current()->QuitWhenIdle();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void FinishVideoTest() {
@@ -2107,7 +2107,7 @@ class MediaStreamDevicesControllerBrowserTest
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
     controller.DismissInfoBarAndTakeActionOnSettings();
 
-    MessageLoop::current()->QuitWhenIdle();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
 
   bool policy_value_;
@@ -2139,7 +2139,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
       base::Bind(&MediaStreamDevicesControllerBrowserTest::FinishAudioTest,
                  this));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
@@ -2196,7 +2196,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
       base::Bind(&MediaStreamDevicesControllerBrowserTest::FinishVideoTest,
                  this));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 }
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,

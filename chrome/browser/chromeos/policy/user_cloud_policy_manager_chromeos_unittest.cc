@@ -261,7 +261,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   }
 
   // Required by the refresh scheduler that's created by the manager.
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   // Required to cleanup the URLRequestContextGetter of the |signin_profile_|.
   content::TestBrowserThread io_thread_;

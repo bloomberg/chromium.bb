@@ -144,10 +144,10 @@ class APIUtilTest : public testing::Test {
     return mock_drive_service_;
   }
 
-  MessageLoop* message_loop() { return &message_loop_; }
+  base::MessageLoop* message_loop() { return &message_loop_; }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   TestingProfile profile_;
   scoped_ptr<APIUtil> api_util_;

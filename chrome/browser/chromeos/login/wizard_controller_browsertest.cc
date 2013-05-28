@@ -307,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   ExistingUserController::current_controller()->CompleteLogin(
       UserContext(kUsername, kPassword, ""));
   // Run the tasks posted to complete the login:
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   EnrollmentScreen* screen =
       WizardController::default_controller()->GetEnrollmentScreen();
@@ -318,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   // Prevent browser launch when the profile is prepared:
   browser_shutdown::SetTryingToQuit(true);
   // Run the tasks posted to complete the login:
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowResetScreen) {

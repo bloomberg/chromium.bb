@@ -40,7 +40,7 @@ class DownloadShelfTest : public testing::Test {
  private:
   scoped_ptr<content::MockDownloadItem> GetInProgressMockDownload();
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<content::MockDownloadItem> download_item_;
   scoped_refptr<content::MockDownloadManager> download_manager_;

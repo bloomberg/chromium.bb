@@ -112,7 +112,7 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   MockAutofillProfileSyncableService autofill_syncable_service_;

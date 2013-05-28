@@ -464,7 +464,7 @@ HistoryService::Handle HistoryService::QuerySegmentDurationSince(
 void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetOnBackendDestroyTask,
-                    MessageLoop::current(), task);
+                    base::MessageLoop::current(), task);
 }
 
 void HistoryService::AddPage(const GURL& url,

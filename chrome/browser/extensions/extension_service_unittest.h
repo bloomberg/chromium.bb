@@ -69,7 +69,7 @@ class ExtensionServiceTestBase : public testing::Test {
   void InitializeExtensionServiceHelper(bool autoupdate_enabled,
                                         bool is_first_run);
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   base::ShadowingAtExitManager at_exit_manager_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;

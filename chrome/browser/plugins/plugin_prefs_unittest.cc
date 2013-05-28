@@ -180,7 +180,7 @@ TEST_F(PluginPrefsTest, EnabledAndDisabledByPolicy) {
 TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
   base::ShadowingAtExitManager at_exit_manager_;  // Destroys the PluginService.
 
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   webkit::npapi::MockPluginList plugin_list;
   PluginService::GetInstance()->SetPluginListForTesting(&plugin_list);

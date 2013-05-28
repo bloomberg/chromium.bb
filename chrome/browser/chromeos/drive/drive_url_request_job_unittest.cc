@@ -202,7 +202,7 @@ class DriveURLRequestJobTest : public testing::Test {
     return true;
   }
 
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
 
@@ -222,7 +222,7 @@ TEST_F(DriveURLRequestJobTest, NonGetMethod) {
   request.set_method("POST");  // Set non "GET" method.
   request.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_METHOD_NOT_SUPPORTED, request.status().error());
@@ -239,7 +239,7 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
         url_request_context_.get(), test_network_delegate_.get());
     request.Start();
 
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
     // It looks weird, but the mime type for the "File 1.txt" is "audio/mpeg"
@@ -264,7 +264,7 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
         url_request_context_.get(), test_network_delegate_.get());
     request.Start();
 
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
     std::string mime_type;
@@ -286,7 +286,7 @@ TEST_F(DriveURLRequestJobTest, HostedDocument) {
       url_request_context_.get(), test_network_delegate_.get());
   request.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
   // Make sure that a hosted document triggers redirection.
@@ -301,7 +301,7 @@ TEST_F(DriveURLRequestJobTest, RootDirectory) {
       url_request_context_.get(), test_network_delegate_.get());
   request.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_FAILED, request.status().error());
@@ -313,7 +313,7 @@ TEST_F(DriveURLRequestJobTest, Directory) {
       url_request_context_.get(), test_network_delegate_.get());
   request.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_FAILED, request.status().error());
@@ -325,7 +325,7 @@ TEST_F(DriveURLRequestJobTest, NonExistingFile) {
       url_request_context_.get(), test_network_delegate_.get());
   request.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request.status().error());
@@ -337,7 +337,7 @@ TEST_F(DriveURLRequestJobTest, WrongFormat) {
       url_request_context_.get(), test_network_delegate_.get());
   request.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_INVALID_URL, request.status().error());
@@ -352,7 +352,7 @@ TEST_F(DriveURLRequestJobTest, Cancel) {
   request.Start();
   request.Cancel();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(net::URLRequestStatus::CANCELED, request.status().status());
 }
@@ -370,7 +370,7 @@ TEST_F(DriveURLRequestJobTest, RangeHeader) {
       "Range", "bytes=3-5", false /* overwrite */);
   request.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
 
@@ -393,7 +393,7 @@ TEST_F(DriveURLRequestJobTest, WrongRangeHeader) {
       "Range", "Wrong Range Header Value", false /* overwrite */);
   request.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, request.status().error());

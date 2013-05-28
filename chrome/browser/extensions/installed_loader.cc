@@ -173,7 +173,7 @@ void InstalledLoader::LoadAllExtensions() {
           old_version = Version(version_str);
         }
       }
-      MessageLoop::current()->PostTask(FROM_HERE,
+      base::MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(&DispatchOnInstalledEvent, extension_service_->profile(),
                      info->extension_id, old_version, false));
 

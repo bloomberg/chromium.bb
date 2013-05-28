@@ -184,7 +184,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
     if (!done.IsSignaled()) {
       ADD_FAILURE() << "Timed out waiting for DB thread to finish.";
     }
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
  protected:
@@ -241,7 +241,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
     done->Signal();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   ProfileMock profile_;

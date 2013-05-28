@@ -558,7 +558,7 @@ void SigninScreenHandler::UpdateStateInternal(
         base::Bind(
             &SigninScreenHandler::UpdateStateInternal,
             weak_factory_.GetWeakPtr(), state, reason, force_update));
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         update_state_closure_.callback(),
         base::TimeDelta::FromSeconds(kOfflineTimeoutSec));
@@ -573,7 +573,7 @@ void SigninScreenHandler::UpdateStateInternal(
       connecting_closure_.Reset(
           base::Bind(&SigninScreenHandler::UpdateStateInternal,
                      weak_factory_.GetWeakPtr(), state, reason, true));
-      MessageLoop::current()->PostDelayedTask(
+      base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           connecting_closure_.callback(),
           base::TimeDelta::FromSeconds(kConnectingTimeoutSec));

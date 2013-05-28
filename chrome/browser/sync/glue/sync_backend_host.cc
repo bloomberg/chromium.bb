@@ -272,7 +272,7 @@ class SyncBackendHost::Core
 
   // The loop where all the sync backend operations happen.
   // Non-NULL only between calls to DoInitialize() and DoShutdown().
-  MessageLoop* sync_loop_;
+  base::MessageLoop* sync_loop_;
 
   // Our parent's registrar (not owned).  Non-NULL only between
   // calls to DoInitialize() and DoShutdown().
@@ -353,7 +353,7 @@ SyncBackendHost::SyncBackendHost(
     const base::WeakPtr<invalidation::InvalidatorStorage>& invalidator_storage)
     : weak_ptr_factory_(this),
       sync_thread_("Chrome_SyncThread"),
-      frontend_loop_(MessageLoop::current()),
+      frontend_loop_(base::MessageLoop::current()),
       profile_(profile),
       name_(name),
       core_(new Core(name, profile_->GetPath().Append(kSyncDataFolderName),
@@ -372,7 +372,7 @@ SyncBackendHost::SyncBackendHost(
 SyncBackendHost::SyncBackendHost(Profile* profile)
     : weak_ptr_factory_(this),
       sync_thread_("Chrome_SyncThread"),
-      frontend_loop_(MessageLoop::current()),
+      frontend_loop_(base::MessageLoop::current()),
       profile_(profile),
       name_("Unknown"),
       initialization_state_(NOT_ATTEMPTED),
@@ -478,7 +478,7 @@ void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
 
 void SyncBackendHost::UpdateRegisteredInvalidationIds(
     const syncer::ObjectIdSet& ids) {
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
   DCHECK(sync_thread_.IsRunning());
   sync_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoUpdateRegisteredInvalidationIds,
@@ -487,7 +487,7 @@ void SyncBackendHost::UpdateRegisteredInvalidationIds(
 
 void SyncBackendHost::AcknowledgeInvalidation(
     const invalidation::ObjectId& id, const syncer::AckHandle& ack_handle) {
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
   DCHECK(sync_thread_.IsRunning());
   sync_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoAcknowledgeInvalidation,
@@ -518,7 +518,7 @@ void SyncBackendHost::SetEncryptionPassphrase(const std::string& passphrase,
   DCHECK(!passphrase.empty());
 
   // This should only be called by the frontend.
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
 
   // SetEncryptionPassphrase should never be called if we are currently
   // encrypted with an explicit passphrase.
@@ -542,7 +542,7 @@ bool SyncBackendHost::SetDecryptionPassphrase(const std::string& passphrase) {
   DCHECK(!passphrase.empty());
 
   // This should only be called by the frontend.
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
 
   // This should only be called when we have cached pending keys.
   DCHECK(cached_pending_keys_.has_blob());
@@ -591,7 +591,7 @@ void SyncBackendHost::StopSyncManagerForShutdown(
 }
 
 void SyncBackendHost::StopSyncingForShutdown() {
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
 
   // Immediately stop sending messages to the frontend.
   frontend_ = NULL;
@@ -848,7 +848,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop(
                               syncer::ModelTypeSet)>& ready_task) {
   if (!frontend_)
     return;
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
   if (!ready_task.is_null())
     ready_task.Run(succeeded_configuration_types, failed_configuration_types);
 }
@@ -906,7 +906,7 @@ void SyncBackendHost::Observe(
 }
 
 SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
-    MessageLoop* sync_loop,
+    base::MessageLoop* sync_loop,
     SyncBackendRegistrar* registrar,
     const syncer::ModelSafeRoutingInfo& routing_info,
     const std::vector<syncer::ModelSafeWorker*>& workers,
@@ -970,7 +970,7 @@ void SyncBackendHost::Core::OnSyncCycleCompleted(
     const SyncSessionSnapshot& snapshot) {
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
 
   host_.Call(
       FROM_HERE,
@@ -1000,7 +1000,7 @@ void SyncBackendHost::Core::DoDownloadControlTypes(
 }
 
 void SyncBackendHost::Core::DoRefreshTypes(syncer::ModelTypeSet types) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   sync_manager_->RefreshTypes(types);
 }
 
@@ -1015,7 +1015,7 @@ void SyncBackendHost::Core::OnInitializationComplete(
         debug_info_listener,
     bool success,
     const syncer::ModelTypeSet restored_types) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
 
   if (!success) {
     DoDestroySyncManager();
@@ -1047,7 +1047,7 @@ void SyncBackendHost::Core::OnConnectionStatusChange(
     syncer::ConnectionStatus status) {
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   host_.Call(
       FROM_HERE,
       &SyncBackendHost::HandleConnectionStatusChangeOnFrontendLoop, status);
@@ -1058,7 +1058,7 @@ void SyncBackendHost::Core::OnPassphraseRequired(
     const sync_pb::EncryptedData& pending_keys) {
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   host_.Call(
       FROM_HERE,
       &SyncBackendHost::NotifyPassphraseRequired, reason, pending_keys);
@@ -1067,7 +1067,7 @@ void SyncBackendHost::Core::OnPassphraseRequired(
 void SyncBackendHost::Core::OnPassphraseAccepted() {
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   host_.Call(
       FROM_HERE,
       &SyncBackendHost::NotifyPassphraseAccepted);
@@ -1078,7 +1078,7 @@ void SyncBackendHost::Core::OnBootstrapTokenUpdated(
     syncer::BootstrapTokenType type) {
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   host_.Call(FROM_HERE,
              &SyncBackendHost::PersistEncryptionBootstrapToken,
              bootstrap_token,
@@ -1088,7 +1088,7 @@ void SyncBackendHost::Core::OnBootstrapTokenUpdated(
 void SyncBackendHost::Core::OnStopSyncingPermanently() {
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   host_.Call(
       FROM_HERE,
       &SyncBackendHost::HandleStopSyncingPermanentlyOnFrontendLoop);
@@ -1097,7 +1097,7 @@ void SyncBackendHost::Core::OnStopSyncingPermanently() {
 void SyncBackendHost::Core::OnUpdatedToken(const std::string& token) {
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   host_.Call(
       FROM_HERE,
       &SyncBackendHost::NotifyUpdatedToken, token);
@@ -1108,7 +1108,7 @@ void SyncBackendHost::Core::OnEncryptedTypesChanged(
     bool encrypt_everything) {
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   // NOTE: We're in a transaction.
   host_.Call(
       FROM_HERE,
@@ -1119,7 +1119,7 @@ void SyncBackendHost::Core::OnEncryptedTypesChanged(
 void SyncBackendHost::Core::OnEncryptionComplete() {
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   // NOTE: We're in a transaction.
   host_.Call(
       FROM_HERE,
@@ -1143,7 +1143,7 @@ void SyncBackendHost::Core::OnActionableError(
     const syncer::SyncProtocolError& sync_error) {
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   host_.Call(
       FROM_HERE,
       &SyncBackendHost::HandleActionableErrorEventOnFrontendLoop,
@@ -1154,7 +1154,7 @@ void SyncBackendHost::Core::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   host_.Call(FROM_HERE,
              &SyncBackendHost::HandleInvalidatorStateChangeOnFrontendLoop,
              state);
@@ -1164,7 +1164,7 @@ void SyncBackendHost::Core::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   host_.Call(FROM_HERE,
              &SyncBackendHost::HandleIncomingInvalidationOnFrontendLoop,
              invalidation_map);
@@ -1244,7 +1244,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
 
 void SyncBackendHost::Core::DoUpdateCredentials(
     const SyncCredentials& credentials) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   // UpdateCredentials can be called during backend initialization, possibly
   // when backend initialization has failed but hasn't notified the UI thread
   // yet. In that case, the sync manager may have been destroyed on the sync
@@ -1256,7 +1256,7 @@ void SyncBackendHost::Core::DoUpdateCredentials(
 
 void SyncBackendHost::Core::DoUpdateRegisteredInvalidationIds(
     const syncer::ObjectIdSet& ids) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   // |sync_manager_| may end up being NULL here in tests (in
   // synchronous initialization mode) since this is called during
   // shutdown.
@@ -1269,7 +1269,7 @@ void SyncBackendHost::Core::DoUpdateRegisteredInvalidationIds(
 
 void SyncBackendHost::Core::DoAcknowledgeInvalidation(
     const invalidation::ObjectId& id, const syncer::AckHandle& ack_handle) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   // |sync_manager_| may end up being NULL here in tests (in
   // synchronous initialization mode).
   //
@@ -1281,20 +1281,20 @@ void SyncBackendHost::Core::DoAcknowledgeInvalidation(
 
 void SyncBackendHost::Core::DoStartSyncing(
     const syncer::ModelSafeRoutingInfo& routing_info) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   sync_manager_->StartSyncingNormally(routing_info);
 }
 
 void SyncBackendHost::Core::DoSetEncryptionPassphrase(
     const std::string& passphrase,
     bool is_explicit) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   sync_manager_->GetEncryptionHandler()->SetEncryptionPassphrase(
       passphrase, is_explicit);
 }
 
 void SyncBackendHost::Core::DoInitialProcessControlTypes() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
 
   DVLOG(1) << "Initilalizing Control Types";
 
@@ -1347,13 +1347,13 @@ void SyncBackendHost::Core::DoFinishInitialProcessControlTypes() {
 
 void SyncBackendHost::Core::DoSetDecryptionPassphrase(
     const std::string& passphrase) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   sync_manager_->GetEncryptionHandler()->SetDecryptionPassphrase(
       passphrase);
 }
 
 void SyncBackendHost::Core::DoEnableEncryptEverything() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   sync_manager_->GetEncryptionHandler()->EnableEncryptEverything();
 }
 
@@ -1367,7 +1367,7 @@ void SyncBackendHost::Core::DoStopSyncManagerForShutdown(
 }
 
 void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   // It's safe to do this even if the type was never activated.
   registrar_->DeactivateDataType(syncer::DEVICE_INFO);
   synced_device_tracker_.reset();
@@ -1385,7 +1385,7 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
 }
 
 void SyncBackendHost::Core::DoDestroySyncManager() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   if (sync_manager_) {
     save_changes_timer_.reset();
     if (registered_as_invalidation_handler_) {
@@ -1406,7 +1406,7 @@ void SyncBackendHost::Core::DoConfigureSyncer(
     const base::Callback<void(syncer::ModelTypeSet,
                               syncer::ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   sync_manager_->ConfigureSyncer(
       reason,
       types_to_config,
@@ -1425,7 +1425,7 @@ void SyncBackendHost::Core::DoFinishConfigureDataTypes(
     syncer::ModelTypeSet types_to_config,
     const base::Callback<void(syncer::ModelTypeSet,
                               syncer::ModelTypeSet)>& ready_task) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
 
   // Update the enabled types for the bridge and sync manager.
   syncer::ModelSafeRoutingInfo routing_info;
@@ -1446,14 +1446,14 @@ void SyncBackendHost::Core::DoFinishConfigureDataTypes(
 
 void SyncBackendHost::Core::DoRetryConfiguration(
     const base::Closure& retry_callback) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   host_.Call(FROM_HERE,
              &SyncBackendHost::RetryConfigurationOnFrontendLoop,
              retry_callback);
 }
 
 void SyncBackendHost::Core::DeleteSyncDataFolder() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   if (file_util::DirectoryExists(sync_data_folder_path_)) {
     if (!file_util::Delete(sync_data_folder_path_, true))
       SLOG(DFATAL) << "Could not delete the Sync Data folder.";
@@ -1464,7 +1464,7 @@ void SyncBackendHost::Core::StartSavingChanges() {
   // We may already be shut down.
   if (!sync_loop_)
     return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   DCHECK(!save_changes_timer_.get());
   save_changes_timer_.reset(new base::RepeatingTimer<Core>());
   save_changes_timer_->Start(FROM_HERE,
@@ -1473,7 +1473,7 @@ void SyncBackendHost::Core::StartSavingChanges() {
 }
 
 void SyncBackendHost::Core::SaveChanges() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   sync_manager_->SaveChanges();
 }
 
@@ -1485,7 +1485,7 @@ void SyncBackendHost::AddExperimentalTypes() {
 }
 
 void SyncBackendHost::HandleControlTypesDownloadRetry() {
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
   if (!frontend_)
     return;
 
@@ -1498,7 +1498,7 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
   if (!frontend_)
     return;
 
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
   if (!success) {
     js_backend_.Reset();
     initialization_state_ = NOT_INITIALIZED;
@@ -1525,7 +1525,7 @@ void SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop(
     const SyncSessionSnapshot& snapshot) {
   if (!frontend_)
     return;
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
 
   last_snapshot_ = snapshot;
 
@@ -1566,7 +1566,7 @@ void SyncBackendHost::HandleActionableErrorEventOnFrontendLoop(
     const syncer::SyncProtocolError& sync_error) {
   if (!frontend_)
     return;
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
   frontend_->OnActionableError(sync_error);
 }
 
@@ -1574,7 +1574,7 @@ void SyncBackendHost::HandleInvalidatorStateChangeOnFrontendLoop(
     syncer::InvalidatorState state) {
   if (!frontend_)
     return;
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
   frontend_->OnInvalidatorStateChange(state);
 }
 
@@ -1582,7 +1582,7 @@ void SyncBackendHost::HandleIncomingInvalidationOnFrontendLoop(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
   if (!frontend_)
     return;
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
   frontend_->OnIncomingInvalidation(invalidation_map);
 }
 
@@ -1604,7 +1604,7 @@ void SyncBackendHost::NotifyPassphraseRequired(
   if (!frontend_)
     return;
 
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
 
   // Update our cache of the cryptographer's pending keys.
   cached_pending_keys_ = pending_keys;
@@ -1616,7 +1616,7 @@ void SyncBackendHost::NotifyPassphraseAccepted() {
   if (!frontend_)
     return;
 
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
 
   // Clear our cache of the cryptographer's pending keys.
   cached_pending_keys_.clear_blob();
@@ -1638,7 +1638,7 @@ void SyncBackendHost::NotifyEncryptedTypesChanged(
   if (!frontend_)
     return;
 
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
   frontend_->OnEncryptedTypesChanged(
       encrypted_types, encrypt_everything);
 }
@@ -1647,14 +1647,14 @@ void SyncBackendHost::NotifyEncryptionComplete() {
   if (!frontend_)
     return;
 
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
   frontend_->OnEncryptionComplete();
 }
 
 void SyncBackendHost::HandlePassphraseTypeChangedOnFrontendLoop(
     syncer::PassphraseType type,
     base::Time explicit_passphrase_time) {
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
   DVLOG(1) << "Passphrase type changed to "
            << syncer::PassphraseTypeToString(type);
   cached_passphrase_type_ = type;
@@ -1672,7 +1672,7 @@ void SyncBackendHost::HandleConnectionStatusChangeOnFrontendLoop(
   if (!frontend_)
     return;
 
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
 
   DVLOG(1) << "Connection status changed: "
            << syncer::ConnectionStatusToString(status);

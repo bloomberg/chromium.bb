@@ -135,7 +135,7 @@ class KeyEventDoneCallback {
 
   void Run(bool consumed) {
     if (consumed == expected_argument_) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
       is_called_ = true;
     }
   }

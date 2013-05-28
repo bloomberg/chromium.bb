@@ -76,7 +76,7 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
   }
 
   void Wait() {
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   bool loaded() const { return loaded_; }
@@ -85,11 +85,11 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
   // KioskAppManagerObserver overrides:
   virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE {
     loaded_ = true;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
   virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE {
     loaded_ = false;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
   KioskAppManager* manager_;

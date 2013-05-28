@@ -221,7 +221,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
 
   ExtractBrowseInfoFeatures(*info, request);
   pending_extractions_[request] = callback;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&BrowserFeatureExtractor::StartExtractFeatures,
                  weak_factory_.GetWeakPtr(), request, callback));

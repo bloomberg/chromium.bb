@@ -592,7 +592,7 @@ class ProfileSyncServiceAutofillTest
 
     sync_service_->RegisterDataTypeController(data_type_controller);
     sync_service_->Initialize();
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     // It's possible this test triggered an unrecoverable error, in which case
     // we can't get the sync count.

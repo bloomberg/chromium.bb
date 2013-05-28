@@ -161,7 +161,7 @@ class JobSchedulerTest : public testing::Test {
     ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<JobScheduler> scheduler_;

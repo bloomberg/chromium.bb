@@ -164,7 +164,7 @@ void ClientSideDetectionService::SendClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
     const ClientReportPhishingRequestCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ClientSideDetectionService::StartClientReportPhishingRequest,
                  weak_factory_.GetWeakPtr(), verdict, callback));
@@ -174,7 +174,7 @@ void ClientSideDetectionService::SendClientReportMalwareRequest(
     ClientMalwareRequest* verdict,
     const ClientReportMalwareRequestCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ClientSideDetectionService::StartClientReportMalwareRequest,
                  weak_factory_.GetWeakPtr(), verdict, callback));
@@ -294,7 +294,7 @@ void ClientSideDetectionService::ScheduleFetchModel(int64 delay_ms) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSbDisableAutoUpdate))
     return;
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ClientSideDetectionService::StartFetchModel,
                  weak_factory_.GetWeakPtr()),

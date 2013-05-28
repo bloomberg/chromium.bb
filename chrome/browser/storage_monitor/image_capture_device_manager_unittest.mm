@@ -276,7 +276,7 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
   chrome::test::TestStorageMonitor monitor_;
   TestCameraListener listener_;

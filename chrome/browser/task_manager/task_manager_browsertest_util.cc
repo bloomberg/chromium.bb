@@ -67,7 +67,7 @@ class ResourceChangeObserver : public TaskManagerModelObserver {
  private:
   void OnResourceChange() {
     if (GetWebResourceCount(model_) == target_resource_count_)
-      MessageLoopForUI::current()->Quit();
+      base::MessageLoopForUI::current()->Quit();
   }
 
   const TaskManagerModel* model_;

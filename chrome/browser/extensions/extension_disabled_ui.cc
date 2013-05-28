@@ -262,7 +262,7 @@ void ExtensionDisabledGlobalError::OnBubbleViewDidClose(Browser* browser) {
 void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
     Browser* browser) {
   // Delay extension reenabling so this bubble closes properly.
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ExtensionService::GrantPermissionsAndEnableExtension,
                  service_->AsWeakPtr(), extension_));
 }
@@ -274,7 +274,7 @@ void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
       ExtensionUninstallDialog::Create(service_->profile(), browser, this));
   // Delay showing the uninstall dialog, so that this function returns
   // immediately, to close the bubble properly. See crbug.com/121544.
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&ExtensionUninstallDialog::ConfirmUninstall,
                  uninstall_dialog_->AsWeakPtr(), extension_));
 #endif  // !defined(OS_ANDROID)

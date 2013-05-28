@@ -90,7 +90,7 @@ void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
 
   // Register for additional cache updates. This is done first to avoid a race
   // that could cause registered FieldTrials to be missed.
-  DCHECK(MessageLoop::current());
+  DCHECK(base::MessageLoop::current());
   base::FieldTrialList::AddObserver(this);
 
   base::TimeTicks before_time = base::TimeTicks::Now();

@@ -24,7 +24,7 @@ class NetworkStatsTest : public PlatformTest {
     // Flush the message loop to make application verifiers happy.
     message_loop_.RunUntilIdle();
   }
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
 };
 
 class NetworkStatsTestUDP : public NetworkStatsTest {

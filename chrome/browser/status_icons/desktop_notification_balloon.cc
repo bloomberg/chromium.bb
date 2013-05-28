@@ -39,7 +39,7 @@ class DummyNotificationDelegate : public NotificationDelegate {
       : id_(kNotificationPrefix + id) {}
 
   virtual void Display() OVERRIDE {
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&CloseBalloon, id()),
         base::TimeDelta::FromSeconds(kTimeoutSeconds));

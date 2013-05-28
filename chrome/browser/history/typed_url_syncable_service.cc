@@ -64,13 +64,13 @@ TypedUrlSyncableService::TypedUrlSyncableService(
     HistoryBackend* history_backend)
     : history_backend_(history_backend),
       processing_syncer_changes_(false),
-      expected_loop_(MessageLoop::current()) {
+      expected_loop_(base::MessageLoop::current()) {
   DCHECK(history_backend_);
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
 }
 
 TypedUrlSyncableService::~TypedUrlSyncableService() {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
 }
 
 syncer::SyncMergeResult TypedUrlSyncableService::MergeDataAndStartSyncing(
@@ -78,7 +78,7 @@ syncer::SyncMergeResult TypedUrlSyncableService::MergeDataAndStartSyncing(
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> error_handler) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
   DCHECK(error_handler.get());
@@ -94,7 +94,7 @@ syncer::SyncMergeResult TypedUrlSyncableService::MergeDataAndStartSyncing(
 }
 
 void TypedUrlSyncableService::StopSyncing(syncer::ModelType type) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   DCHECK_EQ(type, syncer::TYPED_URLS);
 
   sync_processor_.reset();
@@ -103,7 +103,7 @@ void TypedUrlSyncableService::StopSyncing(syncer::ModelType type) {
 
 syncer::SyncDataList TypedUrlSyncableService::GetAllSyncData(
     syncer::ModelType type) const {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   syncer::SyncDataList list;
 
   // TODO(mgist): Add implementation
@@ -114,7 +114,7 @@ syncer::SyncDataList TypedUrlSyncableService::GetAllSyncData(
 syncer::SyncError TypedUrlSyncableService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& change_list) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
 
   // TODO(mgist): Add implementation
 
@@ -124,7 +124,7 @@ syncer::SyncError TypedUrlSyncableService::ProcessSyncChanges(
 }
 
 void TypedUrlSyncableService::OnUrlsModified(URLRows* changed_urls) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   DCHECK(changed_urls);
 
   if (processing_syncer_changes_)
@@ -152,7 +152,7 @@ void TypedUrlSyncableService::OnUrlsModified(URLRows* changed_urls) {
 
 void TypedUrlSyncableService::OnUrlVisited(content::PageTransition transition,
                                            URLRow* row) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
   DCHECK(row);
 
   if (processing_syncer_changes_)
@@ -175,7 +175,7 @@ void TypedUrlSyncableService::OnUrlVisited(content::PageTransition transition,
 void TypedUrlSyncableService::OnUrlsDeleted(bool all_history,
                                             bool archived,
                                             URLRows* rows) {
-  DCHECK(expected_loop_ == MessageLoop::current());
+  DCHECK(expected_loop_ == base::MessageLoop::current());
 
   if (processing_syncer_changes_)
     return;  // These are changes originating from us, ignore.

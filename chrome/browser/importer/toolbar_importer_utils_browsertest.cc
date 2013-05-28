@@ -19,7 +19,7 @@ class ToolbarImporterUtilsTest : public InProcessBrowserTest {
   void Callback(bool result) {
     DCHECK(!result);
     did_run_ = true;
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
  protected:

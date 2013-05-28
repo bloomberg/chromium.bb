@@ -129,7 +129,7 @@ class ContactDatabaseTest : public testing::Test {
     message_loop_.Quit();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
   // Temporary directory where the database is saved.

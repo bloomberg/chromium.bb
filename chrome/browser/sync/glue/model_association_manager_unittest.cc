@@ -60,7 +60,7 @@ class SyncModelAssociationManagerTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForUI ui_loop_;
+  base::MessageLoopForUI ui_loop_;
   content::TestBrowserThread ui_thread_;
   MockModelAssociationResultProcessor result_processor_;
   DataTypeController::TypeMap controllers_;

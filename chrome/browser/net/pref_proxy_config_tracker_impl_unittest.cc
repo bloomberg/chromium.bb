@@ -105,7 +105,7 @@ class PrefProxyConfigTrackerImplTestBase : public TESTBASE {
     proxy_config_service_.reset();
   }
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   TestProxyConfigService* delegate_service_; // weak
   scoped_ptr<ChromeProxyConfigService> proxy_config_service_;
   net::ProxyConfig fixed_config_;

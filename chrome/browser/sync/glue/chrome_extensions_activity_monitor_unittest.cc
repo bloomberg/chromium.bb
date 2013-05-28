@@ -70,7 +70,7 @@ class SyncChromeExtensionsActivityMonitorTest : public testing::Test {
   virtual ~SyncChromeExtensionsActivityMonitorTest() {}
 
  private:
-  MessageLoop ui_loop_;
+  base::MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
 
  protected:

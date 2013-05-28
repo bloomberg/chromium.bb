@@ -203,7 +203,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     return is_update_scheduled_;
   }
 
-  MessageLoop* SafeBrowsingMessageLoop() {
+  base::MessageLoop* SafeBrowsingMessageLoop() {
     return database_manager()->safe_browsing_thread_->message_loop();
   }
 
@@ -350,7 +350,7 @@ class SafeBrowsingServerTestHelper
 
   // Checks status in SafeBrowsing Thread.
   void CheckIsDatabaseReady() {
-    EXPECT_EQ(MessageLoop::current(),
+    EXPECT_EQ(base::MessageLoop::current(),
               safe_browsing_test_->SafeBrowsingMessageLoop());
     safe_browsing_test_->CheckIsDatabaseReady();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -422,7 +422,7 @@ class SafeBrowsingServerTestHelper
   // Stops UI loop after desired status is updated.
   void StopUILoop() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
   }
 
   // Fetch a URL. If message_loop_started is true, starts the message loop

@@ -128,10 +128,10 @@ void CannedBrowsingDataLocalStorageHelper::StartFetching(
   completion_callback_ = callback;
 
   // We post a task to emulate async fetching behavior.
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&CannedBrowsingDataLocalStorageHelper::
-          ConvertPendingInfo, this));
+      base::Bind(&CannedBrowsingDataLocalStorageHelper::ConvertPendingInfo,
+                 this));
 }
 
 CannedBrowsingDataLocalStorageHelper::~CannedBrowsingDataLocalStorageHelper() {}
@@ -144,7 +144,7 @@ void CannedBrowsingDataLocalStorageHelper::ConvertPendingInfo() {
     local_storage_info_.push_back(
         LocalStorageInfo(*iter, 0,  base::Time()));
   }
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&CannedBrowsingDataLocalStorageHelper::CallCompletionCallback,
                  this));

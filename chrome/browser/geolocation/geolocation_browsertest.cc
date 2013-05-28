@@ -116,7 +116,7 @@ void IFrameLoader::Observe(int type,
     javascript_completed_ = true;
   }
   if (javascript_completed_ && navigation_completed_)
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
 }
 
 
@@ -194,9 +194,9 @@ void GeolocationNotificationObserver::Observe(
   // We're either waiting for just the inforbar, or for both a javascript
   // prompt and response.
   if (wait_for_infobar_ && infobar_)
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
   else if (navigation_completed_ && !javascript_response_.empty())
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
 }
 
 void GeolocationNotificationObserver::AddWatchAndWaitForNotification(

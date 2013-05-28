@@ -109,7 +109,7 @@ void LoginPerformer::OnLoginFailure(const LoginFailure& failure) {
     VLOG(1) << "Online login timed out. "
             << "Granting user access based on offline auth only.";
     // ScreenLock is not active, it's ok to delete itself.
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   } else {
     // COULD_NOT_MOUNT_CRYPTOHOME, COULD_NOT_MOUNT_TMPFS:
     // happens during offline auth only.
@@ -150,7 +150,7 @@ void LoginPerformer::OnLoginSuccess(
   // 1. ScreenLock active (pending correct new password input)
   // 2. Pending online auth request.
   if (!pending_requests)
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   else
     initial_online_auth_pending_ = true;
 
@@ -375,7 +375,7 @@ void LoginPerformer::ResolveInitialNetworkAuthFailure() {
               << "Online login failed with "
               << last_login_failure_.error().state();
       // Resolving initial online auth failure, no ScreenLock is active.
-      MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+      base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
       return;
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
       // Offline auth OK, so it might be the case of changed password.
@@ -473,7 +473,7 @@ void LoginPerformer::ResolveScreenUnlocked() {
   DVLOG(1) << "Screen unlocked";
   registrar_.RemoveAll();
   // If screen was unlocked that was for a reason, should delete itself now.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void LoginPerformer::StartLoginCompletion() {

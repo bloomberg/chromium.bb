@@ -63,7 +63,7 @@ class ManagedUserServiceTest : public ::testing::Test {
   virtual ~ManagedUserServiceTest() {}
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   TestingProfile profile_;
   ManagedUserService managed_user_service_;

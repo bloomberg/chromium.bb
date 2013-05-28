@@ -62,12 +62,12 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
     DCHECK(type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED);
     registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                       content::NotificationService::AllSources());
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
   }
 
   // UserManager::Observer overrides:
   virtual void LocalStateChanged(UserManager* user_manager) OVERRIDE {
-    MessageLoopForUI::current()->Quit();
+    base::MessageLoopForUI::current()->Quit();
   }
 
   // Adds given user to Local State, if not there.

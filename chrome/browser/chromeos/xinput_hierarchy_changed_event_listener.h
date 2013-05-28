@@ -18,7 +18,8 @@ namespace chromeos {
 // which is sent to Chrome when X detects a system or USB keyboard (or mouse),
 // then tells X to change the current XKB keyboard layout. Start by just calling
 // instance() to get it going.
-class XInputHierarchyChangedEventListener : public MessageLoopForUI::Observer {
+class XInputHierarchyChangedEventListener
+    : public base::MessageLoopForUI::Observer {
  public:
   static XInputHierarchyChangedEventListener* GetInstance();
 

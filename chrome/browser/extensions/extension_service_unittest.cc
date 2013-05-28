@@ -418,7 +418,7 @@ ExtensionServiceInitParams()
 
 // Our message loop may be used in tests which require it to be an IO loop.
 ExtensionServiceTestBase::ExtensionServiceTestBase()
-    : loop_(MessageLoop::TYPE_IO),
+    : loop_(base::MessageLoop::TYPE_IO),
       service_(NULL),
       management_policy_(NULL),
       expected_extensions_count_(0),
@@ -441,9 +441,9 @@ ExtensionServiceTestBase::~ExtensionServiceTestBase() {
   // can be destroyed while BrowserThreads and MessageLoop are still around
   // (they are used in the destruction process).
   service_ = NULL;
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   profile_.reset(NULL);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void ExtensionServiceTestBase::InitializeExtensionService(
@@ -1126,7 +1126,7 @@ void PackExtensionTestClient::OnPackSuccess(
   // on with the rest of the test.
   // This call to |Quit()| matches the call to |Run()| in the
   // |PackPunctuatedExtension| test.
-  MessageLoop::current()->Quit();
+  base::MessageLoop::current()->Quit();
   EXPECT_EQ(expected_crx_path_.value(), crx_path.value());
   EXPECT_EQ(expected_private_key_path_.value(), private_key_path.value());
   ASSERT_TRUE(file_util::PathExists(private_key_path));
@@ -2027,7 +2027,7 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
     // block and catch the notification; otherwise, the process would exit.
     // This call to |Run()| is matched by a call to |Quit()| in the
     // |PackExtensionTestClient|'s notification handling code.
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     if (HasFatalFailure())
       return;
@@ -3812,22 +3812,22 @@ class ExtensionCookieCallback {
  public:
   ExtensionCookieCallback()
     : result_(false),
-      weak_factory_(MessageLoop::current()) {}
+      weak_factory_(base::MessageLoop::current()) {}
 
   void SetCookieCallback(bool result) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&MessageLoop::Quit, weak_factory_.GetWeakPtr()));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&base::MessageLoop::Quit, weak_factory_.GetWeakPtr()));
     result_ = result;
   }
 
   void GetAllCookiesCallback(const net::CookieList& list) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&MessageLoop::Quit, weak_factory_.GetWeakPtr()));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&base::MessageLoop::Quit, weak_factory_.GetWeakPtr()));
     list_ = list;
   }
   net::CookieList list_;
   bool result_;
-  base::WeakPtrFactory<MessageLoop> weak_factory_;
+  base::WeakPtrFactory<base::MessageLoop> weak_factory_;
 };
 
 // Verifies extension state is removed upon uninstall.
@@ -4643,7 +4643,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   ExtensionErrorReporter::Init(false);  // no noisy errors
   ExtensionsReadyRecorder recorder;
   scoped_ptr<TestingProfile> profile(new TestingProfile());
-  MessageLoop loop;
+  base::MessageLoop loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &loop);
   content::TestBrowserThread file_thread(BrowserThread::FILE, &loop);
 #if defined OS_CHROMEOS

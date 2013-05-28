@@ -151,7 +151,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_refptr<FrontendDataTypeControllerFake> frontend_dtc_;
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;

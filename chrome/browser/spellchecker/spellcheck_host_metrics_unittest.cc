@@ -19,7 +19,7 @@ using base::StatisticsRecorder;
 
 class SpellcheckHostMetricsTest : public testing::Test {
  public:
-  SpellcheckHostMetricsTest() : loop_(MessageLoop::TYPE_DEFAULT) {
+  SpellcheckHostMetricsTest() : loop_(base::MessageLoop::TYPE_DEFAULT) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -31,8 +31,8 @@ class SpellcheckHostMetricsTest : public testing::Test {
   void RecordWordCountsForTesting() { metrics_->RecordWordCounts(); }
 
  private:
-   MessageLoop loop_;
-   scoped_ptr<SpellCheckHostMetrics> metrics_;
+  base::MessageLoop loop_;
+  scoped_ptr<SpellCheckHostMetrics> metrics_;
 };
 
 TEST_F(SpellcheckHostMetricsTest, RecordEnabledStats) {
