@@ -20,11 +20,7 @@ bool ShellPluginServiceFilter::IsPluginAvailable(
     const GURL& url,
     const GURL& policy_url,
     webkit::WebPluginInfo* plugin) {
-  if (plugin->name == ASCIIToUTF16("WebKit Test PlugIn") ||
-      plugin->name == ASCIIToUTF16("NPAPI Test Plugin")) {
-    return true;
-  }
-  return false;
+  return plugin->name == ASCIIToUTF16("WebKit Test PlugIn");
 }
 
 bool ShellPluginServiceFilter::CanLoadPlugin(int render_process_id,
