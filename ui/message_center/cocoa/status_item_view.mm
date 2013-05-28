@@ -55,7 +55,6 @@ const CGFloat kInset = 6;
 }
 
 - (void)mouseDown:(NSEvent*)event {
-  DCHECK(!inMouseEventSequence_);
   inMouseEventSequence_ = YES;
   [self setNeedsDisplay:YES];
 
@@ -64,9 +63,24 @@ const CGFloat kInset = 6;
 }
 
 - (void)mouseUp:(NSEvent*)event {
-  DCHECK(inMouseEventSequence_);
   inMouseEventSequence_ = NO;
   [self setNeedsDisplay:YES];
+}
+
+- (void)rightMouseDown:(NSEvent*)event {
+  [self mouseDown:event];
+}
+
+- (void)rightMouseUp:(NSEvent*)event {
+  [self mouseUp:event];
+}
+
+- (void)otherMouseDown:(NSEvent*)event {
+  [self mouseDown:event];
+}
+
+- (void)otherMouseUp:(NSEvent*)event {
+  [self mouseUp:event];
 }
 
 - (void)drawRect:(NSRect)dirtyRect {

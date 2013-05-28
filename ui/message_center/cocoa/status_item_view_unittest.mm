@@ -40,6 +40,17 @@ TEST_F(StatusItemViewTest, Callback) {
   }];
   [view_ mouseDown:nil];
   EXPECT_TRUE(got_callback);
+  [view_ mouseUp:nil];
+
+  got_callback = NO;
+  [view_ rightMouseDown:nil];
+  EXPECT_TRUE(got_callback);
+  [view_ rightMouseUp:nil];
+
+  got_callback = NO;
+  [view_ otherMouseDown:nil];
+  EXPECT_TRUE(got_callback);
+  [view_ otherMouseUp:nil];
 }
 
 TEST_F(StatusItemViewTest, UnreadCount) {
