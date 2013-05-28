@@ -887,7 +887,6 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	if (fullscreen)
 		x11_output_wait_for_map(c, output);
 
-	output->base.origin = output->base.current;
 	output->base.start_repaint_loop = x11_output_start_repaint_loop;
 	if (c->use_pixman)
 		output->base.repaint = x11_output_repaint_shm;
@@ -899,6 +898,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.set_dpms = NULL;
 	output->base.switch_mode = NULL;
 	output->base.current = &output->mode;
+	output->base.origin = output->base.current;
 	output->base.make = "xwayland";
 	output->base.model = "none";
 	weston_output_init(&output->base, &c->base,
