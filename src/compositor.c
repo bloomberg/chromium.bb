@@ -96,7 +96,7 @@ weston_output_transform_scale_init(struct weston_output *output,
 				   uint32_t transform, uint32_t scale);
 
 WL_EXPORT int
-weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode)
+weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode, int32_t scale)
 {
 	struct weston_seat *seat;
 	pixman_region32_t old_output_region;
@@ -108,6 +108,8 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 	ret = output->switch_mode(output, mode);
 	if (ret < 0)
 		return ret;
+
+        output->scale = scale;
 
 	pixman_region32_init(&old_output_region);
 	pixman_region32_copy(&old_output_region, &output->region);

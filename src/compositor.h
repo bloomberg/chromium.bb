@@ -1141,7 +1141,7 @@ void
 weston_surface_destroy(struct weston_surface *surface);
 
 int
-weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode);
+weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode, int32_t scale);
 
 int
 noop_renderer_init(struct weston_compositor *ec);

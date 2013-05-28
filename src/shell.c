@@ -1503,7 +1503,8 @@ shell_unset_fullscreen(struct shell_surface *shsurf)
 	if (shsurf->fullscreen.type == WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER &&
 	    shell_surface_is_top_fullscreen(shsurf)) {
 		weston_output_switch_mode(shsurf->fullscreen_output,
-		                          shsurf->fullscreen_output->origin);
+		                          shsurf->fullscreen_output->origin,
+					  shsurf->fullscreen_output->origin_scale);
 	}
 	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 	shsurf->fullscreen.framerate = 0;
@@ -1797,11 +1798,11 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER:
 		if (shell_surface_is_top_fullscreen(shsurf)) {
 			struct weston_mode mode = {0,
-				surf_width,
-				surf_height,
+				surf_width * surface->buffer_scale,
+				surf_height * surface->buffer_scale,
 				shsurf->fullscreen.framerate};
 
-			if (weston_output_switch_mode(output, &mode) == 0) {
+			if (weston_output_switch_mode(output, &mode, surface->buffer_scale) == 0) {
 				weston_surface_configure(shsurf->fullscreen.black_surface,
 					                 output->x - surf_x,
 					                 output->y - surf_y,
@@ -2148,7 +2149,8 @@ destroy_shell_surface(struct shell_surface *shsurf)
 	if (shsurf->fullscreen.type == WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER &&
 	    shell_surface_is_top_fullscreen(shsurf)) {
 		weston_output_switch_mode(shsurf->fullscreen_output,
-					  shsurf->fullscreen_output->origin);
+					  shsurf->fullscreen_output->origin,
+					  shsurf->fullscreen_output->origin_scale);
 	}
 
 	if (shsurf->fullscreen.black_surface)
