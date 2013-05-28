@@ -373,14 +373,8 @@ void MediaSourceDelegate::OnDemuxerError(
     media::PipelineStatus status) {
   DVLOG(1) << "MediaSourceDelegate::OnDemuxerError(" << status << ") : "
            << player_id_;
-  if (status != media::PIPELINE_OK) {
-    DCHECK(status == media::DEMUXER_ERROR_COULD_NOT_OPEN ||
-           status == media::DEMUXER_ERROR_COULD_NOT_PARSE ||
-           status == media::DEMUXER_ERROR_NO_SUPPORTED_STREAMS)
-        << "Unexpected error from demuxer: " << static_cast<int>(status);
-    if (!update_network_state_cb_.is_null())
-      update_network_state_cb_.Run(WebMediaPlayer::NetworkStateFormatError);
-  }
+  if (status != media::PIPELINE_OK && !update_network_state_cb_.is_null())
+    update_network_state_cb_.Run(PipelineErrorToNetworkState(status));
 }
 
 void MediaSourceDelegate::OnDemuxerInitDone(

@@ -520,7 +520,15 @@ void WebMediaPlayerAndroid::OnMediaSeekRequest(base::TimeDelta time_to_seek,
 
 void WebMediaPlayerAndroid::UpdateNetworkState(
     WebMediaPlayer::NetworkState state) {
-  network_state_ = state;
+  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing &&
+      (state == WebMediaPlayer::NetworkStateNetworkError ||
+       state == WebMediaPlayer::NetworkStateDecodeError)) {
+    // Any error that occurs before reaching ReadyStateHaveMetadata should
+    // be considered a format error.
+    network_state_ = WebMediaPlayer::NetworkStateFormatError;
+  } else {
+    network_state_ = state;
+  }
   client_->networkStateChanged();
 }
 

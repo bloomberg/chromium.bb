@@ -873,6 +873,7 @@ void WebMediaPlayerImpl::OnPipelineEnded() {
 
 void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK_NE(error, media::PIPELINE_OK);
 
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing) {
     // Any error that occurs before reaching ReadyStateHaveMetadata should
@@ -882,49 +883,10 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
     return;
   }
 
-  switch (error) {
-    case media::PIPELINE_OK:
-      NOTREACHED() << "PIPELINE_OK isn't an error!";
-      break;
+  SetNetworkState(PipelineErrorToNetworkState(error));
 
-    case media::PIPELINE_ERROR_NETWORK:
-    case media::PIPELINE_ERROR_READ:
-      SetNetworkState(WebMediaPlayer::NetworkStateNetworkError);
-      break;
-
-    // TODO(vrk): Because OnPipelineInitialize() directly reports the
-    // NetworkStateFormatError instead of calling OnPipelineError(), I believe
-    // this block can be deleted. Should look into it! (crbug.com/126070)
-    case media::PIPELINE_ERROR_INITIALIZATION_FAILED:
-    case media::PIPELINE_ERROR_COULD_NOT_RENDER:
-    case media::PIPELINE_ERROR_URL_NOT_FOUND:
-    case media::DEMUXER_ERROR_COULD_NOT_OPEN:
-    case media::DEMUXER_ERROR_COULD_NOT_PARSE:
-    case media::DEMUXER_ERROR_NO_SUPPORTED_STREAMS:
-    case media::DECODER_ERROR_NOT_SUPPORTED:
-      SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
-      break;
-
-    case media::PIPELINE_ERROR_DECODE:
-    case media::PIPELINE_ERROR_ABORT:
-    case media::PIPELINE_ERROR_OPERATION_PENDING:
-    case media::PIPELINE_ERROR_INVALID_STATE:
-      SetNetworkState(WebMediaPlayer::NetworkStateDecodeError);
-      break;
-
-    case media::PIPELINE_ERROR_DECRYPT:
-      // Decrypt error.
-      EmeUMAHistogramCounts(current_key_system_.utf8(), "DecryptError", 1);
-
-      // TODO(xhwang): Change to use NetworkStateDecryptError once it's added in
-      // Webkit (see http://crbug.com/124486).
-      SetNetworkState(WebMediaPlayer::NetworkStateDecodeError);
-      break;
-
-    case media::PIPELINE_STATUS_MAX:
-      NOTREACHED() << "PIPELINE_STATUS_MAX isn't a real error!";
-      break;
-  }
+  if (error == media::PIPELINE_ERROR_DECRYPT)
+    EmeUMAHistogramCounts(current_key_system_.utf8(), "DecryptError", 1);
 
   // Repaint to trigger UI update.
   Repaint();

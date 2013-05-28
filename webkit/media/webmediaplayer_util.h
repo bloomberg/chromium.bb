@@ -6,7 +6,9 @@
 #define WEBKIT_MEDIA_WEBMEDIAPLAYER_UTIL_H_
 
 #include "base/time.h"
+#include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTimeRange.h"
 
 namespace webkit_media {
@@ -19,6 +21,9 @@ base::TimeDelta ConvertSecondsToTimestamp(double seconds);
 
 WebKit::WebTimeRanges ConvertToWebTimeRanges(
     const media::Ranges<base::TimeDelta>& ranges);
+
+WebKit::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
+    media::PipelineStatus error);
 
 }  // namespace webkit_media
 
