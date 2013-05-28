@@ -4,7 +4,12 @@
 
 #include "chrome/browser/ui/cocoa/notifications/message_center_tray_bridge.h"
 
+#include "base/i18n/number_formatting.h"
 #include "chrome/browser/browser_process.h"
+#include "grit/chromium_strings.h"
+#include "grit/ui_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/message_center/cocoa/popup_collection.h"
 #import "ui/message_center/cocoa/status_item_view.h"
 #import "ui/message_center/cocoa/tray_controller.h"
@@ -42,8 +47,20 @@ MessageCenterTrayBridge::~MessageCenterTrayBridge() {
 }
 
 void MessageCenterTrayBridge::OnMessageCenterTrayChanged() {
-  [status_item_view_ setUnreadCount:
-      message_center_->UnreadNotificationCount()];
+  size_t unread_count = message_center_->UnreadNotificationCount();
+  [status_item_view_ setUnreadCount:unread_count];
+
+  string16 product_name = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+  if (unread_count > 0) {
+    string16 unread_count_string = base::FormatNumber(unread_count);
+    [status_item_view_ setToolTip:
+        l10n_util::GetNSStringF(IDS_MESSAGE_CENTER_TOOLTIP_UNREAD,
+            product_name, unread_count_string)];
+  } else {
+    [status_item_view_ setToolTip:
+        l10n_util::GetNSStringF(IDS_MESSAGE_CENTER_TOOLTIP, product_name)];
+  }
+
   [tray_controller_ onMessageCenterTrayChanged];
 }
 
