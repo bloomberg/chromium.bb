@@ -22,9 +22,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/history/history_notifications.h"
-#include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/test/base/model_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -948,30 +945,6 @@ TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
     VerifyModelMatchesNode(&mobile, bb_model_->mobile_node());
     VerifyNoDuplicateIDs(bb_model_);
   }
-}
-
-// Simple test that removes a bookmark. This test exercises the code paths in
-// History that block till bookmark bar model is loaded.
-TEST_F(BookmarkModelTestWithProfile, RemoveNotification) {
-  profile_.reset(new TestingProfile());
-
-  profile_->CreateHistoryService(false, false);
-  profile_->CreateBookmarkModel(true);
-  BlockTillBookmarkModelLoaded();
-
-  // Add a URL.
-  GURL url("http://www.google.com");
-  bookmark_utils::AddIfNotBookmarked(bb_model_, url, string16());
-
-  HistoryServiceFactory::GetForProfile(
-      profile_.get(), Profile::EXPLICIT_ACCESS)->AddPage(
-          url, base::Time::Now(), NULL, 1, GURL(), history::RedirectList(),
-          content::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false);
-
-  // This won't actually delete the URL, rather it'll empty out the visits.
-  // This triggers blocking on the BookmarkModel.
-  HistoryServiceFactory::GetForProfile(
-      profile_.get(), Profile::EXPLICIT_ACCESS)->DeleteURL(url);
 }
 
 TEST_F(BookmarkModelTest, Sort) {

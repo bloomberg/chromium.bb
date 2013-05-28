@@ -10,7 +10,6 @@ include_rules = [
   # TODO(kaiwang): Bring this list to zero.
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!chrome/browser/history/history_notifications.h",
   "!chrome/browser/history/history_service.h",
   "!chrome/browser/history/history_service_factory.h",
   "!chrome/browser/history/query_parser.h",

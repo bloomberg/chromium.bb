@@ -19,10 +19,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/favicon/imported_favicon_usage.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/visit_filter.h"
@@ -30,9 +33,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/thumbnail_score.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -118,7 +124,8 @@ class HistoryBackendTest : public testing::Test {
   HistoryBackendTest()
       : bookmark_model_(NULL),
         loaded_(false),
-        num_broadcasted_notifications_(0) {
+        num_broadcasted_notifications_(0),
+        ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
   virtual ~HistoryBackendTest() {
@@ -410,6 +417,7 @@ class HistoryBackendTest : public testing::Test {
   base::FilePath test_dir_;
   history::MostVisitedURLList most_visited_list_;
   history::FilteredURLList filtered_list_;
+  content::TestBrowserThread ui_thread_;
 };
 
 void HistoryBackendTestDelegate::SetInMemoryBackend(int backend_id,
@@ -2779,6 +2787,32 @@ TEST_F(HistoryBackendSegmentDurationTest, SegmentDuration) {
   EXPECT_EQ(url1.spec(), data[1]->GetURL().spec());
   EXPECT_EQ(url1_id, data[1]->GetID());
   EXPECT_EQ(segment1_time_delta.InHours(), data[1]->duration().InHours());
+}
+
+// Simple test that removes a bookmark. This test exercises the code paths in
+// History that block till bookmark bar model is loaded.
+TEST_F(HistoryBackendTest, RemoveNotification) {
+  scoped_ptr<TestingProfile> profile(new TestingProfile());
+
+  profile->CreateHistoryService(false, false);
+  profile->CreateBookmarkModel(true);
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile.get());
+  ui_test_utils::WaitForBookmarkModelToLoad(model);
+
+  // Add a URL.
+  GURL url("http://www.google.com");
+  bookmark_utils::AddIfNotBookmarked(model, url, base::string16());
+
+  HistoryService* service = HistoryServiceFactory::GetForProfile(
+      profile.get(), Profile::EXPLICIT_ACCESS);
+
+  service->AddPage(
+      url, base::Time::Now(), NULL, 1, GURL(), RedirectList(),
+      content::PAGE_TRANSITION_TYPED, SOURCE_BROWSED, false);
+
+  // This won't actually delete the URL, rather it'll empty out the visits.
+  // This triggers blocking on the BookmarkModel.
+  service->DeleteURL(url);
 }
 
 }  // namespace history

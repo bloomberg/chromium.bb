@@ -22,10 +22,6 @@ URLsDeletedDetails::URLsDeletedDetails()
 
 URLsDeletedDetails::~URLsDeletedDetails() {}
 
-FaviconChangeDetails::FaviconChangeDetails() {}
-
-FaviconChangeDetails::~FaviconChangeDetails() {}
-
 KeywordSearchTermDetails::KeywordSearchTermDetails() : keyword_id(0) {}
 
 KeywordSearchTermDetails::~KeywordSearchTermDetails() {}

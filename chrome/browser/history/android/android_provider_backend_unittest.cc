@@ -15,6 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
+#include "chrome/browser/favicon/favicon_changed_details.h"
 #include "chrome/browser/history/android/android_time.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -67,7 +68,7 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
         deleted_details_.reset(static_cast<URLsDeletedDetails*>(details));
         break;
       case chrome::NOTIFICATION_FAVICON_CHANGED:
-        favicon_details_.reset(static_cast<FaviconChangeDetails*>(details));
+        favicon_details_.reset(static_cast<FaviconChangedDetails*>(details));
         break;
       case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
         modified_details_.reset(static_cast<URLsModifiedDetails*>(details));
@@ -87,7 +88,7 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
     return modified_details_.get();
   }
 
-  FaviconChangeDetails* favicon_details() const {
+  FaviconChangedDetails* favicon_details() const {
     return favicon_details_.get();
   }
 
@@ -100,7 +101,7 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
  private:
   scoped_ptr<URLsDeletedDetails> deleted_details_;
   scoped_ptr<URLsModifiedDetails> modified_details_;
-  scoped_ptr<FaviconChangeDetails> favicon_details_;
+  scoped_ptr<FaviconChangedDetails> favicon_details_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidProviderBackendDelegate);
 };

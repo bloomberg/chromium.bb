@@ -8,21 +8,13 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_NOTIFICATIONS_H__
 
 #include <set>
-#include <vector>
 
-#include "googleurl/src/gurl.h"
+#include "chrome/browser/history/history_details.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "googleurl/src/gurl.h"
 
 namespace history {
-
-// Base class for history notifications. This needs only a virtual destructor
-// so that the history service's broadcaster can delete it when the request
-// is complete.
-struct HistoryDetails {
- public:
-  virtual ~HistoryDetails() {}
-};
 
 // Details for NOTIFICATION_HISTORY_URL_VISITED.
 struct URLVisitedDetails : public HistoryDetails {
@@ -67,14 +59,6 @@ struct URLsDeletedDetails : public HistoryDetails {
   // The list of deleted favicon urls. This is valid only when |all_history| is
   // false, indicating that a subset of history has been deleted.
   std::set<GURL> favicon_urls;
-};
-
-// Details for NOTIFY_FAVICON_CHANGED.
-struct FaviconChangeDetails : public HistoryDetails {
-  FaviconChangeDetails();
-  virtual ~FaviconChangeDetails();
-
-  std::set<GURL> urls;
 };
 
 // Details for HISTORY_KEYWORD_SEARCH_TERM_UPDATED.
