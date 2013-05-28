@@ -585,6 +585,7 @@
         'browser/chromeos/drive/file_system/move_operation_unittest.cc',
         'browser/chromeos/drive/file_system/operation_test_base.cc',
         'browser/chromeos/drive/file_system/operation_test_base.h',
+        'browser/chromeos/drive/file_system/remove_operation_unittest.cc',
         'browser/chromeos/drive/file_system/search_operation_unittest.cc',
         'browser/chromeos/drive/file_system/touch_operation_unittest.cc',
         'browser/chromeos/drive/file_system/update_operation_unittest.cc',

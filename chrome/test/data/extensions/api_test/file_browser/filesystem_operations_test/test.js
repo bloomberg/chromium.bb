@@ -436,14 +436,13 @@ function collectTestsForMountPoint(mountPointName, mountPoint) {
   });
 
   testsToRun.push(function deleteDirectoryTest() {
-    // The directory exists if and only if the file system is not drive.
+    // Verify that the directory still exists after the operation.
     var callback = getDirectory.bind(null, mountPoint, 'test_dir', false,
-        !isOnDrive, chrome.test.succeed);
+        true, chrome.test.succeed);
 
     // The directory should still contain some files, so non-recursive delete
-    // should fail. The drive file system does not respect is_recursive flag, so
-    // the operation succeeds.
-    deleteDirectory(mountPoint, 'test_dir', isOnDrive, callback);
+    // should fail.
+    deleteDirectory(mountPoint, 'test_dir', false, callback);
   });
 
   // On drive, the directory was deleted in the previous test.

@@ -172,15 +172,6 @@ class FileSystemTest : public testing::Test {
     return error;
   }
 
-  bool RemoveEntry(const base::FilePath& file_path) {
-    FileError error = FILE_ERROR_FAILED;
-    file_system_->Remove(
-        file_path, false,
-        google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
-    return error == FILE_ERROR_OK;
-  }
-
   // Gets resource entry by path synchronously.
   scoped_ptr<ResourceEntry> GetResourceEntryByPathSync(
       const base::FilePath& file_path) {
@@ -1134,61 +1125,6 @@ TEST_F(FileSystemTest, CopyFileToInvalidPath) {
   EXPECT_TRUE(EntryExists(dest_parent_path));
 
   EXPECT_FALSE(EntryExists(dest_file_path));
-}
-
-TEST_F(FileSystemTest, RemoveEntries) {
-  ASSERT_TRUE(LoadRootFeedDocument());
-
-  base::FilePath nonexisting_file(
-      FILE_PATH_LITERAL("drive/root/Dummy file.txt"));
-  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  base::FilePath dir_in_root(FILE_PATH_LITERAL("drive/root/Directory 1"));
-  base::FilePath file_in_subdir(
-      FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
-
-  ASSERT_TRUE(EntryExists(file_in_root));
-  scoped_ptr<ResourceEntry> file_in_root_proto = GetResourceEntryByPathSync(
-      file_in_root);
-  ASSERT_TRUE(file_in_root_proto);
-
-  ASSERT_TRUE(EntryExists(dir_in_root));
-  scoped_ptr<ResourceEntry> dir_in_root_proto = GetResourceEntryByPathSync(
-      dir_in_root);
-  ASSERT_TRUE(dir_in_root_proto);
-  ASSERT_TRUE(dir_in_root_proto->file_info().is_directory());
-
-  ASSERT_TRUE(EntryExists(file_in_subdir));
-  scoped_ptr<ResourceEntry> file_in_subdir_proto = GetResourceEntryByPathSync(
-      file_in_subdir);
-  ASSERT_TRUE(file_in_subdir_proto);
-
-  // Once for file in root and once for file...
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(2);
-
-  // Remove first file in root.
-  EXPECT_TRUE(RemoveEntry(file_in_root));
-  EXPECT_FALSE(EntryExists(file_in_root));
-  EXPECT_TRUE(EntryExists(dir_in_root));
-  EXPECT_TRUE(EntryExists(file_in_subdir));
-
-  // Remove directory.
-  EXPECT_TRUE(RemoveEntry(dir_in_root));
-  EXPECT_FALSE(EntryExists(file_in_root));
-  EXPECT_FALSE(EntryExists(dir_in_root));
-  EXPECT_FALSE(EntryExists(file_in_subdir));
-
-  // Try removing file in already removed subdirectory.
-  EXPECT_FALSE(RemoveEntry(file_in_subdir));
-
-  // Try removing non-existing file.
-  EXPECT_FALSE(RemoveEntry(nonexisting_file));
-
-  // Try removing root file element.
-  EXPECT_FALSE(RemoveEntry(base::FilePath(FILE_PATH_LITERAL("drive/root"))));
-
-  // Need this to ensure OnDirectoryChanged() is run.
-  google_apis::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(FileSystemTest, CreateDirectory) {
