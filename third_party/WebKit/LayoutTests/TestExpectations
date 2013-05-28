@@ -1532,7 +1532,7 @@ crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-background-dyna
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-background-repeat-without-size.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-background-repeat.html [ Pass Timeout ]
 crbug.com/238858 [ Linux Win ] virtual/gpu/fast/hidpi/image-set-border-image-comparison.html [ Pass Timeout ]
-crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-border-image-dynamic.html [ Pass Timeout ]
+crbug.com/238858 [ Win ] virtual/gpu/fast/hidpi/image-set-border-image-dynamic.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-border-image-simple.html [ Pass Timeout ]
 crbug.com/238858 [ Win ] virtual/gpu/fast/hidpi/image-set-in-content-dynamic.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ Pass Timeout ]
