@@ -530,7 +530,7 @@ void TracingMessageHandler::OnKnownCategoriesCollected(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<base::ListValue> categories(new base::ListValue());
-  for (std::set<std::string>::iterator iter = known_categories.begin();
+  for (std::set<std::string>::const_iterator iter = known_categories.begin();
        iter != known_categories.end();
        ++iter) {
     categories->AppendString(*iter);
