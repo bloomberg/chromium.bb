@@ -1823,6 +1823,9 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 				shsurf->fullscreen.framerate};
 
 			if (weston_output_switch_mode(output, &mode, surface->buffer_scale) == 0) {
+				weston_surface_set_position(surface,
+							    output->x - surf_x,
+							    output->y - surf_y);
 				weston_surface_configure(shsurf->fullscreen.black_surface,
 					                 output->x - surf_x,
 					                 output->y - surf_y,
