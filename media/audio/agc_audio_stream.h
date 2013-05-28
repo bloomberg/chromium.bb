@@ -149,7 +149,10 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
   // Range is normalized to [0.0,1.0] or [0.0, 1.5] on Linux.
   void QueryAndStoreNewMicrophoneVolume() {
     DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK(timer_.IsRunning());
+
+    // Avoid updating the volume member if AGC is not running.
+    if (!timer_.IsRunning())
+      return;
 
     // Cach the maximum volume if this is the first time we ask for it.
     if (max_volume_ == 0.0)
