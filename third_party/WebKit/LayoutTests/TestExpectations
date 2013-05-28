@@ -121,7 +121,7 @@ webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-cra
 webkit.org/b/67434 [ Debug ] fast/block/float/overhanging-tall-block.html [ Skip ]
 
 # Battery Status API is not supported yet in the chromium port.
-webkit.org/b/62698 batterystatus [ Crash Missing Pass ]
+webkit.org/b/62698 batterystatus [ Crash Pass ]
 
 # Requires generation of progress events during loading
 webkit.org/b/100985 media/progress-events-generated-correctly.html [ Failure Pass Slow ]
@@ -140,7 +140,7 @@ webkit.org/b/112755 [ Mac ] fast/css3-text/css3-text-indent/getComputedStyle/get
 webkit.org/b/112755 [ Mac ] fast/css3-text/css3-text-indent/getComputedStyle/getComputedStyle-text-indent-inherited.html [ Failure Pass ]
 
 # Chromium does not support smart pasting in text controls yet.
-webkit.org/b/60830 editing/pasteboard/smart-paste-in-text-control.html [ Crash Failure ImageOnlyFailure Missing Pass Timeout ]
+webkit.org/b/60830 editing/pasteboard/smart-paste-in-text-control.html [ Crash Failure ImageOnlyFailure Pass Timeout ]
 
 # We expect V8 to crash in an orderly fashion instead of throwing a JavaScript out-of-memory error.
 webkit.org/b/103348 fast/js/string-replacement-outofmemory.html [ Crash ]
@@ -855,11 +855,6 @@ crbug.com/88894 http/tests/cache/subresource-expiration-2.html [ Slow ]
 
 webkit.org/b/70887 [ Debug ] jquery/css.html [ Pass Timeout ]
 
-# For some reason, these tests are running as pixel tests most of the time instead of dumping as text.
-webkit.org/b/74694 http/tests/cache/history-only-cached-subresource-loads-max-age-https.html [ Missing Pass ]
-
-webkit.org/b/95365 fast/loader/reload-zero-byte-plugin.html [ Missing Pass ]
-
 webkit.org/b/66419 http/tests/misc/authentication-redirect-1/authentication-sent-to-redirect-cross-origin.html [ Failure Timeout ]
 webkit.org/b/66419 http/tests/misc/authentication-redirect-2/authentication-sent-to-redirect-same-origin.html [ Failure Timeout ]
 webkit.org/b/66419 http/tests/misc/authentication-redirect-3/authentication-sent-to-redirect-same-origin-with-location-credentials.html [ Failure Timeout ]
@@ -878,11 +873,12 @@ webkit.org/b/72530 [ Debug ] fast/frames/sandboxed-iframe-navigation-targetlink.
 # SVG painting in high DPI mode is broken in DRT.
 webkit.org/b/92511 svg/as-image/animated-svg-repaints-completely-in-hidpi.html [ ImageOnlyFailure Pass ]
 
-# Test is sometimes missing because of https://bugs.webkit.org/show_bug.cgi?id=107328
-webkit.org/b/70866 [ Linux Mac Debug ] fast/forms/form-associated-element-crash3.html [ Failure Missing Pass Timeout ]
-webkit.org/b/72039 [ Release ] fast/forms/form-associated-element-crash3.html [ Missing Pass ]
-webkit.org/b/72039 [ Release ] fast/forms/formaction-attribute.html [ Missing Pass ]
+webkit.org/b/70866 [ Linux Mac Debug ] fast/forms/form-associated-element-crash3.html [ Failure Pass Timeout ]
 webkit.org/b/78620 [ Linux Debug ] fast/forms/formaction-attribute.html [ Failure Pass Slow ]
+
+webkit.org/b/72039 webaudio/test-basic.html [ Missing Pass ]
+webkit.org/b/72039 http/tests/download/literal-utf-8.html [ Missing Pass ]
+webkit.org/b/72039 editing/pasteboard/drag-files-to-editable-element.html [ Missing Pass ]
 
 webkit.org/b/110929 http/tests/multipart/policy-ignore-crash.php [ Missing Pass ]
 webkit.org/b/110929 http/tests/multipart/multipart-html.php [ Missing Pass ]
@@ -1287,8 +1283,6 @@ webkit.org/b/106426 [ XP ] inspector/geolocation-watchPosition.html [ Failure Pa
 
 webkit.org/b/106858 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/107328 http/tests/cache/cancel-multiple-post-xhrs.html [ Missing Pass ]
-
 webkit.org/b/107341 [ Debug ] inspector/profiler/memory-instrumentation-cached-images.html [ Failure ]
 
 webkit.org/b/107962 [ Release ] http/tests/loading/redirect-methods.html [ Failure Pass ]
@@ -1539,20 +1533,6 @@ crbug.com/240400 fast/dom/console-log-stack-overflow.html [ Failure Pass ]
 crbug.com/240515 [ Mac ] fast/dom/HTMLMeterElement/meter-styles.html [ ImageOnlyFailure Pass ]
 
 crbug.com/240632 fast/loader/javascript-url-iframe-remove-on-navigate.html [ Skip ]
-
-# An exception is being thrown, causing tests to generate PNG output when they should not.
-crbug.com/239470 [ Mac ] fast/canvas/webgl [ Missing Pass ]
-crbug.com/239470 [ Mac ] fast/dom [ Missing Pass ]
-crbug.com/239470 [ Mac ] fast/css/style-scoped/basic-attribute.html [ Missing Pass ]
-crbug.com/239470 [ Mac ] fast/css/style-scoped/registering-shadowroot.html [ Missing Pass ]
-crbug.com/239470 [ Mac ] fast/css/style-scoped/registering.html [ Missing Pass ]
-crbug.com/239470 [ Mac ] fast/css-intrinsic-dimensions/intrinsic-sized-flex-items.html [ Missing Pass ]
-crbug.com/239470 [ Mac ] fast/css-intrinsic-dimensions/intrinsic-sized-column-flex-items.html [ Missing Pass ]
-crbug.com/239470 [ Mac ] fast/css-intrinsic-dimensions/width-shrinks-avoid-floats.html [ Missing Pass ]
-crbug.com/239470 [ Mac ] fast/css/getComputedStyle/getComputedStyle-border-shorthand.html [ Missing Pass ]
-crbug.com/240700 [ Mac ] fast/css/getComputedStyle/computed-style-select-overflow.html [ Missing Pass ]
-crbug.com/240700 [ Mac ] fast/css/getComputedStyle/getComputedStyle-outline-offset.html [ Missing Pass ]
-crbug.com/240700 [ Mac ] fast/css/getComputedStyle/getComputedStyle-padding-shorthand.html [ Missing Pass ]
 
 crbug.com/241576 [ Win ] http/tests/appcache [ Pass Timeout ]
 
@@ -1853,7 +1833,7 @@ crbug.com/146756 [ Win Linux ] virtual/gpu/fast/hidpi/broken-image-with-size-hid
 crbug.com/243713 virtual/gpu/fast/canvas/webgl/context-release-upon-reload.html [ Timeout Pass ]
 crbug.com/243713 [ Win Linux ] virtual/gpu/fast/hidpi/clip-text-in-hidpi.html [ Timeout Pass ]
 crbug.com/243725 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_cached.html [ Failure Pass ]
-crbug.com/243730 [ Mac ] fast/dom/HTMLMeterElement/meter-optimums.html [ Timeout ImageOnlyFailure Missing Pass ]
+crbug.com/243730 [ Mac ] fast/dom/HTMLMeterElement/meter-optimums.html [ Timeout ImageOnlyFailure Pass ]
 crbug.com/243730 [ Linux Mac Win ] fast/dom/HTMLMeterElement/meter-element.html [ Timeout Pass ]
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ ImageOnlyFailure Pass ]
 crbug.com/238858 [ Win ] virtual/gpu/fast/hidpi/focus-rings.html [ Pass Timeout ]
