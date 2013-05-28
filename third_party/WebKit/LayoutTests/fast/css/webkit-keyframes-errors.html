@@ -46,7 +46,7 @@
             0 {foo: bar;} from
         }
 
-        #test5:before {
+        #test5 {
             display: none;
         }
     </style>
@@ -56,17 +56,40 @@
             {foo: bar;}
         }
 
-        #test6:before {
+        #test6 {
             display: none;
         }
     </style>
-    
+
+    <style>
+        @-webkit-keyframes foo {
+            10%
+        }
+
+        #test7 {
+            display: none;
+        }
+    </style>
+
+    <style>
+        @-webkit-keyframes foo {
+            from (}) {}
+            #(}) {}
+        }
+
+        #test8 {
+            display: none;
+        }
+    </style>
+
     <div id="test1">Test 1 failed (INTEGER single key)</div>
     <div id="test2">Test 2 failed (INTEGER in a key list)</div>
     <div id="test3">Test 3 failed (unknown IDENT in a key list)</div>
     <div id="test4">Test 4 failed (out-of-range percentage key value in a key list)</div>
     <div id="test5">Test 5 failed (key list with no block)</div>
     <div id="test6">Test 6 failed (no key list)</div>
+    <div id="test7">Test 7 failed (no declaration block)</div>
+    <div id="test8">Test 8 failed (handling invalid perentheses block)</div>
 </body>
 <script type="text/javascript">
 if (window.testRunner)

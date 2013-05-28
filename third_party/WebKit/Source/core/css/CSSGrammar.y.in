@@ -267,6 +267,7 @@ static inline bool isCSSTokenAString(int yytype)
 %type <string> keyframe_name
 %type <keyframe> keyframe_rule
 %type <keyframeRuleList> keyframes_rule
+%type <keyframeRuleList> keyframe_rule_list
 %type <valueList> key_list
 %type <value> key
 
@@ -803,50 +804,67 @@ keyframe_name:
     ;
 
 keyframes_rule:
-    /* empty */ { $$ = parser->createFloatingKeyframeVector(); }
-    | keyframes_rule keyframe_rule maybe_space {
+    keyframe_rule_list
+    | keyframe_rule_list keyframes_error_recovery {
+        parser->clearProperties();
+    };
+
+keyframe_rule_list:
+    /* empty */ {
+        $$ = parser->createFloatingKeyframeVector();
+    }
+    |  keyframe_rule_list keyframe_rule maybe_space {
         $$ = $1;
         if ($2)
             $$->append($2);
     }
+    | keyframe_rule_list keyframes_error_recovery invalid_block {
+        parser->clearProperties();
+    }
     ;
 
 keyframe_rule:
-    key_list maybe_space '{' maybe_space declaration_list closing_brace {
+    key_list '{' maybe_space declaration_list closing_brace {
         $$ = parser->createKeyframe($1);
     }
     ;
 
 key_list:
-    key {
+    key maybe_space {
         $$ = parser->createFloatingValueList();
         $$->addValue(parser->sinkFloatingValue($1));
     }
-    | key_list maybe_space ',' maybe_space key {
+    | key_list ',' maybe_space key maybe_space {
         $$ = $1;
         if ($$)
-            $$->addValue(parser->sinkFloatingValue($5));
+            $$->addValue(parser->sinkFloatingValue($4));
     }
     ;
 
 key:
-    maybe_unary_operator PERCENTAGE { $$.id = 0; $$.isInt = false; $$.fValue = $1 * $2; $$.unit = CSSPrimitiveValue::CSS_NUMBER; }
+    maybe_unary_operator PERCENTAGE {
+        $$.id = 0;
+        $$.isInt = false;
+        $$.fValue = $1 * $2;
+        $$.unit = CSSPrimitiveValue::CSS_NUMBER;
+    }
     | IDENT {
-        $$.id = 0; $$.isInt = false; $$.unit = CSSPrimitiveValue::CSS_NUMBER;
-        CSSParserString& str = $1;
+        $$.id = 0;
+        $$.isInt = false;
+        $$.unit = CSSPrimitiveValue::CSS_NUMBER;
+        const CSSParserString& str = $1;
         if (str.equalIgnoringCase("from"))
             $$.fValue = 0;
         else if (str.equalIgnoringCase("to"))
             $$.fValue = 100;
         else {
-            $$.unit = 0;
             YYERROR;
         }
     }
-    | error {
-        $$.unit = 0;
-    }
     ;
+
+keyframes_error_recovery:
+    error rule_error_recovery;
 
 before_page_rule:
     /* empty */ {

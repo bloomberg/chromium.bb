@@ -11291,14 +11291,6 @@ StyleKeyframe* CSSParser::createKeyframe(CSSParserValueList* keys)
     // Create a key string from the passed keys
     StringBuilder keyString;
     for (unsigned i = 0; i < keys->size(); ++i) {
-        // Just as per the comment below, we ignore keyframes with
-        // invalid key values (plain numbers or unknown identifiers)
-        // marked as CSSPrimitiveValue::CSS_UNKNOWN during parsing.
-        if (keys->valueAt(i)->unit == CSSPrimitiveValue::CSS_UNKNOWN) {
-            clearProperties();
-            return 0;
-        }
-
         ASSERT(keys->valueAt(i)->unit == CSSPrimitiveValue::CSS_NUMBER);
         float key = static_cast<float>(keys->valueAt(i)->fValue);
         if (key < 0 || key > 100) {
