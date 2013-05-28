@@ -337,7 +337,7 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const Vector
         // Check if this change is between stable nodes. If it is, consider it as "modified".
         if (!m_unusedNodesMap.contains(oldList[i]->m_sha1) && (!i || oldMap[i - 1].first) && (i == oldMap.size() - 1 || oldMap[i + 1].first)) {
             size_t anchorCandidate = i ? oldMap[i - 1].second + 1 : 0;
-            size_t anchorAfter = i == oldMap.size() - 1 ? anchorCandidate + 1 : oldMap[i + 1].second;
+            size_t anchorAfter = (i == oldMap.size() - 1) ? anchorCandidate + 1 : oldMap[i + 1].second;
             if (anchorAfter - anchorCandidate == 1 && anchorCandidate < newList.size())
                 merges.set(newList[anchorCandidate].get(), oldList[i].get());
             else {
