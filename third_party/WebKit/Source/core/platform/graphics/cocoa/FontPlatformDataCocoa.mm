@@ -233,13 +233,23 @@ static CTFontDescriptorRef cascadeToLastResortAndDisableSwashesFontDescriptor()
     return descriptor;
 }
 
+// Adding a cascade list breaks the font on Leopard
+static bool canSetCascadeListForCustomFont()
+{
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+    return true;
+#else
+    return false;
+#endif
+}
+
 CTFontRef FontPlatformData::ctFont() const
 {
     if (m_CTFont)
         return m_CTFont.get();
 
     if (m_inMemoryFont) {
-        m_CTFont.adoptCF(CTFontCreateWithGraphicsFont(m_inMemoryFont->cgFont(), m_size, 0, cascadeToLastResortFontDescriptor());
+        m_CTFont.adoptCF(CTFontCreateWithGraphicsFont(m_inMemoryFont->cgFont(), m_size, 0, canSetCascadeListForCustomFont() ? cascadeToLastResortFontDescriptor() : 0));
         return m_CTFont.get();
     }
 
@@ -254,7 +264,7 @@ CTFontRef FontPlatformData::ctFont() const
             fontDescriptor = cascadeToLastResortFontDescriptor();
         m_CTFont.adoptCF(CTFontCreateCopyWithAttributes(m_CTFont.get(), m_size, 0, fontDescriptor));
     } else
-        m_CTFont.adoptCF(CTFontCreateWithGraphicsFont(m_cgFont.get(), m_size, 0, cascadeToLastResortFontDescriptor());
+        m_CTFont.adoptCF(CTFontCreateWithGraphicsFont(m_cgFont.get(), m_size, 0, canSetCascadeListForCustomFont() ? cascadeToLastResortFontDescriptor() : 0));
 
     if (m_widthVariant != RegularWidth) {
         int featureTypeValue = kTextSpacingType;

@@ -32,6 +32,13 @@
 
 #if ENABLE(RUBBER_BANDING)
 
+#if __MAC_OS_X_VERSION_MIN_REQUIRED == 1050
+@interface NSProcessInfo (ScrollAnimatorMacExt)
+- (NSTimeInterval)systemUptime;
+@end
+#endif
+
+#if ENABLE(RUBBER_BANDING)
 static NSTimeInterval systemUptime()
 {
     if ([[NSProcessInfo processInfo] respondsToSelector:@selector(systemUptime)])
@@ -54,6 +61,8 @@ static NSTimeInterval systemUptime()
     }
     return 0;
 }
+#endif
+
 
 namespace WebCore {
 

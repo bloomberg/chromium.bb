@@ -62,8 +62,13 @@ PassOwnPtr<Collator> Collator::userDefault()
 {
 #if OS(DARWIN) && USE(CF)
     // Mac OS X doesn't set UNIX locale to match user-selected one, so ICU default doesn't work.
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
     RetainPtr<CFLocaleRef> currentLocale(AdoptCF, CFLocaleCopyCurrent());
     CFStringRef collationOrder = (CFStringRef)CFLocaleGetValue(currentLocale.get(), kCFLocaleCollatorIdentifier);
+#else
+    RetainPtr<CFStringRef> collationOrderRetainer(AdoptCF, (CFStringRef)CFPreferencesCopyValue(CFSTR("AppleCollationOrder"), kCFPreferencesAnyApplication, kCFPreferencesCurrentUser, kCFPreferencesAnyHost));
+    CFStringRef collationOrder = collationOrderRetainer.get();
+#endif
     char buf[256];
     if (!collationOrder)
         return adoptPtr(new Collator(""));
