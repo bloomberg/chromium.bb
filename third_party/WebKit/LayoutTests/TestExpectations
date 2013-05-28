@@ -100,10 +100,6 @@ webkit.org/b/100071 fast/canvas/canvas-blend-solid.html [ Failure Pass ]
 webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-image.html [ Pass Timeout ]
 webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Pass Timeout ]
 
-crbug.com/229166 css3/compositing/effect-background-blend-mode.html [ Missing ]
-crbug.com/229166 css3/compositing/effect-background-blend-mode-stacking.html [ Missing ]
-crbug.com/229166 css3/compositing/effect-background-blend-mode-tiled.html [ Missing ]
-
 # Quota API is not supported in DRT yet.
 crbug.com/84572 storage/storageinfo-missing-arguments.html [ Skip ]
 crbug.com/84572 storage/storageinfo-no-callbacks.html [ Skip ]
@@ -1452,9 +1448,6 @@ crbug.com/234758 [ Mac Debug ] fast/workers/worker-document-leak.html [ Pass Tim
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Crash Pass ]
 crbug.com/234758 [ Debug ] virtual/gpu/fast/canvas/canvas-strokePath-gradient-shadow.html [ Pass Timeout ]
 
-# Needs baselines:
-Bug(thakis) fast/block/lineboxcontain/block-with-ideographs.xhtml [ Missing ]
-
 crbug.com/77779 [ Win Mac ] fast/forms/placeholder-position.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/77779 fast/forms/search-rtl.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/77779 fast/forms/search/search-appearance-basic.html [ Failure ImageOnlyFailure Pass ]
@@ -1560,9 +1553,6 @@ crbug.com/239470 [ Mac ] fast/css/getComputedStyle/getComputedStyle-border-short
 crbug.com/240700 [ Mac ] fast/css/getComputedStyle/computed-style-select-overflow.html [ Missing Pass ]
 crbug.com/240700 [ Mac ] fast/css/getComputedStyle/getComputedStyle-outline-offset.html [ Missing Pass ]
 crbug.com/240700 [ Mac ] fast/css/getComputedStyle/getComputedStyle-padding-shorthand.html [ Missing Pass ]
-
-# New test, requires rebaseline
-crbug.com/236269 media/video-remove-insert-repaints.html [ Failure ImageOnlyFailure Missing ]
 
 crbug.com/241576 [ Win ] http/tests/appcache [ Pass Timeout ]
 

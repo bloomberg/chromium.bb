@@ -1,0 +1,1 @@
+if (window.testRunner) window.testRunner.dumpAsText(true); li { margin: 5px; width: 130px; height: 130px; background: url("resources/ducky.png") 0 0 /50% 50%, linear-gradient(to right, #00ffff 0%, rgba(0,0,255,0) 24%, #ff0000 50%, #ffff00 75%, #00ff00 100%) 0 0 /100% 100%; display: block; float: left; } 
