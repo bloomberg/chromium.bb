@@ -867,6 +867,10 @@ ImmediateInterpreter::Point ImmediateInterpreter::FingerTraveledVector(
   const Point& start = (*positions)[fs.tracking_id];
   float dx = fs.position_x - start.x_;
   float dy = fs.position_y - start.y_;
+  if (fs.flags & GESTURES_FINGER_WARP_X)
+    dx = 0;
+  if (fs.flags & GESTURES_FINGER_WARP_Y)
+    dy = 0;
   return Point(dx, dy);
 }
 
@@ -1886,7 +1890,7 @@ int ImmediateInterpreter::EvaluateButtonType(
 
   // Handle T5R2/SemiMT touchpads
   if ((hwprops_->supports_t5r2 || hwprops_->support_semi_mt) &&
-      hwstate.touch_cnt >= 2) {
+      hwstate.touch_cnt > 2) {
     if (hwstate.touch_cnt - thumb_.size() == 3 &&
         three_finger_click_enable_.val_ && t5r2_three_finger_click_enable_.val_)
       return GESTURES_BUTTON_MIDDLE;
@@ -2111,8 +2115,7 @@ void ImmediateInterpreter::UpdateStartedMovingTime(
       // This finger already moving
       continue;
     }
-    const Point& start_position = start_positions_[*it];
-    float dist_sq = DistSqXY(*fs, start_position.x_, start_position.y_);
+    float dist_sq = DistanceTravelledSq(*fs, false);
     if (dist_sq > kMinDistSq) {
       started_moving_time_ = hwstate.timestamp;
       moving_.insert(fs->tracking_id);

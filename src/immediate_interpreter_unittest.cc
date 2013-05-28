@@ -3148,17 +3148,17 @@ TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
 
   FingerState finger_state[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
-    {0, 0, 0, 0, 25, 0, 30, 53, 1, 3},  // index 0
-    {0, 0, 0, 0, 46, 0, 30, 53, 1, 3},  // index 1
-    {0, 0, 0, 0, 69, 0, 30, 53, 1, 3},  // index 2
+    {0, 0, 0, 0, 25, 0, 30, 53, 1, 0},  // index 0
+    {0, 0, 0, 0, 46, 0, 30, 53, 1, 0},  // index 1
+    {0, 0, 0, 0, 69, 0, 30, 53, 1, 0},  // index 2
 
-    {0, 0, 0, 0, 67, 0, 30, 53, 1, 3},  // index 3
-    {0, 0, 0, 0, 67, 0, 68, 27, 2, 3},
+    {0, 0, 0, 0, 67, 0, 30, 53, 1, 0},  // index 3
+    {0, 0, 0, 0, 67, 0, 68, 27, 2, 0},
 
-    {0, 0, 0, 0, 91, 0, 43, 52, 1, 3},  // index 5
+    {0, 0, 0, 0, 91, 0, 43, 52, 1, 0},  // index 5
     {0, 0, 0, 0, 91, 0, 44, 23, 2, 0},
 
-    {0, 0, 0, 0, 91, 0, 43, 52, 1, 3},  // index 7
+    {0, 0, 0, 0, 91, 0, 43, 52, 1, 0},  // index 7
     {0, 0, 0, 0, 91, 0, 43, 23, 2, 0},
   };
 
@@ -3177,16 +3177,24 @@ TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
   TestInterpreterWrapper wrapper(&ii, &hwprops);
 
   Gesture *gesture;
-  for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
+  for (size_t idx = 0; idx < arraysize(hardware_states); ++idx) {
     gesture = wrapper.SyncInterpret(&hardware_states[idx], NULL);
+    // reset finger flags
+    for (size_t fidx = 0; fidx < hardware_states[idx].finger_cnt; ++fidx)
+      hardware_states[idx].fingers[fidx].flags = 0;
+  }
   EXPECT_EQ(gesture->type, kGestureTypePinch);
 
   // For a semi_mt device, replay the same inputs should not generate
   // a pinch gesture.
   hwprops.support_semi_mt = 1;
   wrapper.Reset(&ii, &hwprops);
-  for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
+  for (size_t idx = 0; idx < arraysize(hardware_states); ++idx) {
     gesture = wrapper.SyncInterpret(&hardware_states[idx], NULL);
+    // reset finger flags
+    for (size_t fidx = 0; fidx < hardware_states[idx].finger_cnt; ++fidx)
+      hardware_states[idx].fingers[fidx].flags = 0;
+  }
   if (gesture)
     EXPECT_NE(gesture->type, kGestureTypePinch);
 }
