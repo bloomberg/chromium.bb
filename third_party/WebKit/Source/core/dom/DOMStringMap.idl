@@ -29,6 +29,6 @@
     CustomEnumerateProperty
 ] interface DOMStringMap {
     [ImplementedAs=item, OverrideBuiltins] getter DOMString (DOMString name);
-    [ImplementedAs=anonymousNamedSetter, RaisesException] setter DOMString (DOMString name, DOMString value);
+    [ImplementedAs=anonymousNamedSetter, RaisesException, OverrideBuiltins] setter DOMString (DOMString name, DOMString value);
 };
 

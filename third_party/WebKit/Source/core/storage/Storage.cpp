@@ -73,4 +73,10 @@ String Storage::anonymousNamedGetter(const AtomicString& name, ExceptionCode& ec
     return result;
 }
 
+bool Storage::anonymousNamedSetter(const AtomicString& name, const AtomicString& value, ExceptionCode& ec)
+{
+    setItem(name, value, ec);
+    return true;
+}
+
 }

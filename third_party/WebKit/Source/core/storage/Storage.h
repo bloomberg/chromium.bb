@@ -55,6 +55,7 @@ namespace WebCore {
 
         String anonymousIndexedGetter(unsigned, ExceptionCode&);
         String anonymousNamedGetter(const AtomicString&, ExceptionCode&);
+        bool anonymousNamedSetter(const AtomicString& name, const AtomicString& value, ExceptionCode&);
 
     private:
         Storage(Frame*, PassRefPtr<StorageArea>);

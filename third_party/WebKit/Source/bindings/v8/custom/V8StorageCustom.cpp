@@ -108,11 +108,6 @@ v8::Handle<v8::Value> V8Storage::indexedPropertySetter(uint32_t index, v8::Local
     return storageSetter(indexV8->ToString(), value, info);
 }
 
-v8::Handle<v8::Value> V8Storage::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    return storageSetter(name, value, info);
-}
-
 static v8::Handle<v8::Boolean> storageDeleter(v8::Local<v8::String> v8Name, const v8::AccessorInfo& info)
 {
     Storage* storage = V8Storage::toNative(info.Holder());

@@ -3290,6 +3290,12 @@ sub GenerateImplementationNamedPropertySetter
 
     my $code = "v8::Handle<v8::Value> ${v8ClassName}::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n";
     $code .= "{\n";
+    if (!$namedSetterFunction->signature->extendedAttributes->{"OverrideBuiltins"}) {
+        $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
+        $code .= "        return v8Undefined();\n";
+        $code .= "    if (info.Holder()->HasRealNamedCallbackProperty(name))\n";
+        $code .= "        return v8Undefined();\n";
+    }
     $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
     $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, propertyName, name);\n";
     my $extraArguments = "";
