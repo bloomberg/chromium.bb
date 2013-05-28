@@ -96,18 +96,23 @@ class TranslateHelper : public content::RenderViewObserver {
                            CLDAgreeWithLanguageCodeHavingCountryCode);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
                            InvalidLanguageMetaTagProviding);
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, AdoptHtmlLang);
 
-  // Correct language code if it contains well-known mistakes.
+  // Corrects language code if it contains well-known mistakes.
   static void CorrectLanguageCodeTypo(std::string* code);
 
-  // Convert language code to the one used in server supporting list.
+  // Converts language code to the one used in server supporting list.
   static void ConvertLanguageCodeSynonym(std::string* code);
 
-  // Reset language code if the specified string is apparently invalid.
+  // Resets language code if the specified string is apparently invalid.
   static void ResetInvalidLanguageCode(std::string* code);
 
-  // Determine content page language from Content-Language code and contents.
+  // Applies a series of language code modification in proper order.
+  static void ApplyLanguageCodeCorrection(std::string* code);
+
+  // Determines content page language from Content-Language code and contents.
   static std::string DeterminePageLanguage(const std::string& code,
+                                           const std::string& html_lang,
                                            const string16& contents,
                                            std::string* cld_language,
                                            bool* is_cld_reliable);

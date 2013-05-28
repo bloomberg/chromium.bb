@@ -33,23 +33,20 @@ class MetricsRecorder {
       base_samples_ = histogram->SnapshotSamples();
   }
 
-  void CheckContentLanguage(int expected_not_provided,
-                            int expected_valid,
-                            int expected_invalid) {
-    ASSERT_EQ(TranslateHelperMetrics::GetMetricsName(
-        TranslateHelperMetrics::UMA_CONTENT_LANGUAGE), key_);
+  void CheckLanguage(TranslateHelperMetrics::MetricsNameIndex index,
+                     int expected_not_provided,
+                     int expected_valid,
+                     int expected_invalid) {
+    ASSERT_EQ(TranslateHelperMetrics::GetMetricsName(index), key_);
 
     Snapshot();
 
-    EXPECT_EQ(
-        expected_not_provided,
-        GetCount(TranslateHelperMetrics::CONTENT_LANGUAGE_NOT_PROVIDED));
-    EXPECT_EQ(
-        expected_valid,
-        GetCount(TranslateHelperMetrics::CONTENT_LANGUAGE_VALID));
-    EXPECT_EQ(
-        expected_invalid,
-        GetCount(TranslateHelperMetrics::CONTENT_LANGUAGE_INVALID));
+    EXPECT_EQ(expected_not_provided,
+              GetCount(TranslateHelperMetrics::LANGUAGE_NOT_PROVIDED));
+    EXPECT_EQ(expected_valid,
+              GetCount(TranslateHelperMetrics::LANGUAGE_VALID));
+    EXPECT_EQ(expected_invalid,
+              GetCount(TranslateHelperMetrics::LANGUAGE_INVALID));
   }
 
   void CheckLanguageVerification(int expected_cld_disabled,
@@ -150,13 +147,26 @@ TEST(TranslateHelperMetricsTest, ReportContentLanguage) {
   MetricsRecorder recorder(TranslateHelperMetrics::GetMetricsName(
       TranslateHelperMetrics::UMA_CONTENT_LANGUAGE));
 
-  recorder.CheckContentLanguage(0, 0, 0);
+  recorder.CheckLanguage(TranslateHelperMetrics::UMA_CONTENT_LANGUAGE, 0, 0, 0);
   TranslateHelperMetrics::ReportContentLanguage(std::string(), std::string());
-  recorder.CheckContentLanguage(1, 0, 0);
+  recorder.CheckLanguage(TranslateHelperMetrics::UMA_CONTENT_LANGUAGE, 1, 0, 0);
   TranslateHelperMetrics::ReportContentLanguage("ja_JP", "ja-JP");
-  recorder.CheckContentLanguage(1, 0, 1);
+  recorder.CheckLanguage(TranslateHelperMetrics::UMA_CONTENT_LANGUAGE, 1, 0, 1);
   TranslateHelperMetrics::ReportContentLanguage("en", "en");
-  recorder.CheckContentLanguage(1, 1, 1);
+  recorder.CheckLanguage(TranslateHelperMetrics::UMA_CONTENT_LANGUAGE, 1, 1, 1);
+}
+
+TEST(TranslateHelperMetricsTest, ReportHtmlLang) {
+  MetricsRecorder recorder(TranslateHelperMetrics::GetMetricsName(
+      TranslateHelperMetrics::UMA_HTML_LANG));
+
+  recorder.CheckLanguage(TranslateHelperMetrics::UMA_HTML_LANG, 0, 0, 0);
+  TranslateHelperMetrics::ReportHtmlLang(std::string(), std::string());
+  recorder.CheckLanguage(TranslateHelperMetrics::UMA_HTML_LANG, 1, 0, 0);
+  TranslateHelperMetrics::ReportHtmlLang("ja_JP", "ja-JP");
+  recorder.CheckLanguage(TranslateHelperMetrics::UMA_HTML_LANG, 1, 0, 1);
+  TranslateHelperMetrics::ReportHtmlLang("en", "en");
+  recorder.CheckLanguage(TranslateHelperMetrics::UMA_HTML_LANG, 1, 1, 1);
 }
 
 TEST(TranslateHelperMetricsTest, ReportLanguageVerification) {
