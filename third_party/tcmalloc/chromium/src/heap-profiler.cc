@@ -225,7 +225,7 @@ static DeepHeapProfile* deep_profile = NULL;  // deep memory profiler
 //----------------------------------------------------------------------
 
 // Input must be a buffer of size at least 1MB.
-static char* DoGetHeapProfileLocked(char* buf, int buflen) {
+static char* DoGetHeapProfileLocked(const char* reason, char* buf, int buflen) {
   // We used to be smarter about estimating the required memory and
   // then capping it to 1MB and generating the profile into that.
   if (buf == NULL || buflen < 1)
@@ -237,7 +237,7 @@ static char* DoGetHeapProfileLocked(char* buf, int buflen) {
     HeapProfileTable::Stats const stats = heap_profile->total();
     (void)stats;   // avoid an unused-variable warning in non-debug mode.
     if (deep_profile) {
-      bytes_written = deep_profile->FillOrderedProfile(buf, buflen - 1);
+      bytes_written = deep_profile->FillOrderedProfile(reason, buf, buflen - 1);
     } else {
       bytes_written = heap_profile->FillOrderedProfile(buf, buflen - 1);
     }
@@ -257,7 +257,7 @@ extern "C" char* GetHeapProfile() {
   // Use normal malloc: we return the profile to the user to free it:
   char* buffer = reinterpret_cast<char*>(malloc(kProfileBufferSize));
   SpinLockHolder l(&heap_lock);
-  return DoGetHeapProfileLocked(buffer, kProfileBufferSize);
+  return DoGetHeapProfileLocked(/* reason */ NULL, buffer, kProfileBufferSize);
 }
 
 // defined below
@@ -298,7 +298,7 @@ static void DumpProfileLocked(const char* reason) {
         reinterpret_cast<char*>(ProfilerMalloc(kProfileBufferSize));
   }
 
-  char* profile = DoGetHeapProfileLocked(global_profiler_buffer,
+  char* profile = DoGetHeapProfileLocked(reason, global_profiler_buffer,
                                          kProfileBufferSize);
   RawWrite(fd, profile, strlen(profile));
   RawClose(fd);

@@ -83,7 +83,9 @@ class DeepHeapProfile {
   //
   // In addition, a list of buckets is dumped into a ".buckets" file in
   // descending order of allocated bytes.
-  int FillOrderedProfile(char raw_buffer[], int buffer_size);
+  int FillOrderedProfile(const char* reason,
+                         char raw_buffer[],
+                         int buffer_size);
 
  private:
 #ifdef USE_DEEP_HEAP_PROFILE
@@ -134,13 +136,13 @@ class DeepHeapProfile {
     void Clear();
     void Write(RawFD fd);
 
-    bool AppendChar(char v);
-    bool AppendString(const char* v, int d);
-    bool AppendInt(int v, int d, bool leading_zero);
-    bool AppendLong(long v, int d);
-    bool AppendUnsignedLong(unsigned long v, int d);
-    bool AppendInt64(int64 v, int d);
-    bool AppendPtr(uint64 v, int d);
+    bool AppendChar(char value);
+    bool AppendString(const char* value, int width);
+    bool AppendInt(int value, int width, bool leading_zero);
+    bool AppendLong(long value, int width);
+    bool AppendUnsignedLong(unsigned long value, int width);
+    bool AppendInt64(int64 value, int width);
+    bool AppendPtr(uint64 value, int width);
 
    private:
     bool ForwardCursor(int appended);

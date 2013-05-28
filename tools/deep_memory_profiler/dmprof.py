@@ -944,6 +944,8 @@ class Dump(object):
             self._time += float(matched_format.group(2)[1:]) / 1000.0
         elif matched_seconds:
           self._time = float(matched_seconds.group(1))
+      elif self._lines[ln].startswith('Reason:'):
+        pass  # Nothing to do for 'Reason:'
       else:
         break
       ln += 1

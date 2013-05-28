@@ -229,7 +229,9 @@ DeepHeapProfile::~DeepHeapProfile() {
 
 // Global malloc() should not be used in this function.
 // Use LowLevelAlloc if required.
-int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
+int DeepHeapProfile::FillOrderedProfile(const char* reason,
+                                        char raw_buffer[],
+                                        int buffer_size) {
   TextBuffer buffer(raw_buffer, buffer_size);
   TextBuffer global_buffer(profiler_buffer_, kProfilerBufferSize);
 
@@ -274,6 +276,12 @@ int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
   buffer.AppendString("Time: ", 0);
   buffer.AppendUnsignedLong(time_value, 0);
   buffer.AppendChar('\n');
+
+  if (reason != NULL) {
+    buffer.AppendString("Reason: ", 0);
+    buffer.AppendString(reason, 0);
+    buffer.AppendChar('\n');
+  }
 
   // Fill buffer with the global stats.
   buffer.AppendString(kMMapListHeader, 0);
@@ -325,63 +333,79 @@ void DeepHeapProfile::TextBuffer::Write(RawFD fd) {
 }
 
 // TODO(dmikurube): These Append* functions should not use snprintf.
-bool DeepHeapProfile::TextBuffer::AppendChar(char v) {
-  return ForwardCursor(snprintf(buffer_ + cursor_, size_ - cursor_, "%c", v));
+bool DeepHeapProfile::TextBuffer::AppendChar(char value) {
+  return ForwardCursor(snprintf(buffer_ + cursor_, size_ - cursor_,
+                                "%c", value));
 }
 
-bool DeepHeapProfile::TextBuffer::AppendString(const char* s, int d) {
+bool DeepHeapProfile::TextBuffer::AppendString(const char* value, int width) {
+  char* position = buffer_ + cursor_;
+  int available = size_ - cursor_;
   int appended;
-  if (d == 0)
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%s", s);
+  if (width == 0)
+    appended = snprintf(position, available, "%s", value);
   else
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%*s", d, s);
+    appended = snprintf(position, available, "%*s",
+                        width, value);
   return ForwardCursor(appended);
 }
 
-bool DeepHeapProfile::TextBuffer::AppendInt(int v, int d, bool leading_zero) {
+bool DeepHeapProfile::TextBuffer::AppendInt(int value, int width,
+                                            bool leading_zero) {
+  char* position = buffer_ + cursor_;
+  int available = size_ - cursor_;
   int appended;
-  if (d == 0)
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%d", v);
+  if (width == 0)
+    appended = snprintf(position, available, "%d", value);
   else if (leading_zero)
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%0*d", d, v);
+    appended = snprintf(position, available, "%0*d", width, value);
   else
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%*d", d, v);
+    appended = snprintf(position, available, "%*d", width, value);
   return ForwardCursor(appended);
 }
 
-bool DeepHeapProfile::TextBuffer::AppendLong(long v, int d) {
+bool DeepHeapProfile::TextBuffer::AppendLong(long value, int width) {
+  char* position = buffer_ + cursor_;
+  int available = size_ - cursor_;
   int appended;
-  if (d == 0)
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%ld", v);
+  if (width == 0)
+    appended = snprintf(position, available, "%ld", value);
   else
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%*ld", d, v);
+    appended = snprintf(position, available, "%*ld", width, value);
   return ForwardCursor(appended);
 }
 
-bool DeepHeapProfile::TextBuffer::AppendUnsignedLong(unsigned long v, int d) {
+bool DeepHeapProfile::TextBuffer::AppendUnsignedLong(unsigned long value,
+                                                     int width) {
+  char* position = buffer_ + cursor_;
+  int available = size_ - cursor_;
   int appended;
-  if (d == 0)
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%lu", v);
+  if (width == 0)
+    appended = snprintf(position, available, "%lu", value);
   else
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%*lu", d, v);
+    appended = snprintf(position, available, "%*lu", width, value);
   return ForwardCursor(appended);
 }
 
-bool DeepHeapProfile::TextBuffer::AppendInt64(int64 v, int d) {
+bool DeepHeapProfile::TextBuffer::AppendInt64(int64 value, int width) {
+  char* position = buffer_ + cursor_;
+  int available = size_ - cursor_;
   int appended;
-  if (d == 0)
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%"PRId64, v);
+  if (width == 0)
+    appended = snprintf(position, available, "%"PRId64, value);
   else
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%*"PRId64, d, v);
+    appended = snprintf(position, available, "%*"PRId64, width, value);
   return ForwardCursor(appended);
 }
 
-bool DeepHeapProfile::TextBuffer::AppendPtr(uint64 v, int d) {
+bool DeepHeapProfile::TextBuffer::AppendPtr(uint64 value, int width) {
+  char* position = buffer_ + cursor_;
+  int available = size_ - cursor_;
   int appended;
-  if (d == 0)
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%"PRIx64, v);
+  if (width == 0)
+    appended = snprintf(position, available, "%"PRIx64, value);
   else
-    appended = snprintf(buffer_ + cursor_, size_ - cursor_, "%0*"PRIx64, d, v);
+    appended = snprintf(position, available, "%0*"PRIx64, width, value);
   return ForwardCursor(appended);
 }
 
