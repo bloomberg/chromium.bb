@@ -12,6 +12,8 @@
 #include "gpu/config/gpu_switching_option.h"
 #include "gpu/gpu_export.h"
 
+class CommandLine;
+
 namespace gpu {
 
 // Maps string to GpuSwitchingOption; returns GPU_SWITCHING_UNKNOWN if an
@@ -25,6 +27,10 @@ GPU_EXPORT std::string GpuSwitchingOptionToString(GpuSwitchingOption option);
 // Merge features in src into dst.
 GPU_EXPORT void MergeFeatureSets(
     std::set<int>* dst, const std::set<int>& src);
+
+// Collect basic GPUInfo, compute the driver bug workarounds for the current
+// system, and append the |command_line|.
+GPU_EXPORT void ApplyGpuDriverBugWorkarounds(CommandLine* command_line);
 
 }  // namespace gpu
 

@@ -10,6 +10,7 @@
 #endif
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
+#include "gpu/config/gpu_util.h"
 #include "ui/gl/gl_surface.h"
 
 #if defined(OS_ANDROID)
@@ -36,6 +37,7 @@ int main(int argc, char** argv) {
 #endif
   gfx::GLSurface::InitializeOneOff();
   ::gles2::Initialize();
+  gpu::ApplyGpuDriverBugWorkarounds(CommandLine::ForCurrentProcess());
   base::MessageLoop::Type message_loop_type = base::MessageLoop::TYPE_UI;
   base::MessageLoop main_message_loop(message_loop_type);
   return GLTestHelper::RunTests(argc, argv);

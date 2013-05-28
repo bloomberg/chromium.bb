@@ -180,78 +180,6 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
   StringSet extensions(
       reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
 
-  // This is a temporary fix to turn gl_tests green on Linux and Android bots.
-  // Once we migrate blacklisting stuff from src/content to src/gpu, we can
-  // get the workarounds from json file. Then we should remove this block.
-  // See crbug.com/228979.
-  bool is_intel = false;
-  bool is_nvidia = false;
-  bool is_amd = false;
-  bool is_mesa = false;
-  bool is_qualcomm = false;
-  bool is_imagination = false;
-  bool is_arm = false;
-  bool is_vivante = false;
-  const char* gl_strings[2];
-  gl_strings[0] = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-  gl_strings[1] = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
-  if (!command_line.HasSwitch(switches::kGpuDriverBugWorkarounds) &&
-      !command_line.HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
-    for (size_t ii = 0; ii < arraysize(gl_strings); ++ii) {
-      const char* str = gl_strings[ii];
-      if (str) {
-        std::string lstr(StringToLowerASCII(std::string(str)));
-        StringSet string_set(lstr);
-        is_intel |= string_set.Contains("intel");
-        is_nvidia |= string_set.Contains("nvidia");
-        is_amd |= string_set.Contains("amd") || string_set.Contains("ati");
-        is_mesa |= string_set.Contains("mesa");
-        is_qualcomm |= string_set.Contains("qualcomm");
-        is_imagination |= string_set.Contains("imagination");
-        is_arm |= string_set.Contains("arm");
-      }
-    }
-    if (extensions.Contains("GL_VIV_shader_binary"))
-      is_vivante = true;
-
-    workarounds_.set_texture_filter_before_generating_mipmap = true;
-    workarounds_.clear_alpha_in_readpixels = true;
-    if (is_nvidia) {
-      workarounds_.use_current_program_after_successful_link = true;
-    }
-    if (is_qualcomm) {
-      workarounds_.restore_scissor_on_fbo_change = true;
-      workarounds_.flush_on_context_switch = true;
-      workarounds_.delete_instead_of_resize_fbo = true;
-    }
-    if (is_vivante || is_imagination) {
-      workarounds_.unbind_fbo_on_context_switch = true;
-    }
-#if defined(OS_MACOSX)
-    workarounds_.needs_offscreen_buffer_workaround = is_nvidia;
-    workarounds_.needs_glsl_built_in_function_emulation = is_amd;
-    if ((is_amd || is_intel) &&
-        gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
-      workarounds_.reverse_point_sprite_coord_origin = true;
-    }
-    if (is_intel) {
-      workarounds_.max_texture_size = 4096;
-      workarounds_.max_cube_map_texture_size = 1024;
-      int32 major = 0;
-      int32 minor = 0;
-      int32 bugfix = 0;
-      base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-      if (major < 10 ||
-          (major == 10 && ((minor == 7 && bugfix < 3) || (minor < 7))))
-        workarounds_.max_cube_map_texture_size = 512;
-    }
-    if (is_amd) {
-      workarounds_.max_texture_size = 4096;
-      workarounds_.max_cube_map_texture_size = 4096;
-    }
-#endif
-  }
-
   if (command_line.HasSwitch(switches::kGpuDriverBugWorkarounds)) {
     std::string types = command_line.GetSwitchValueASCII(
         switches::kGpuDriverBugWorkarounds);
@@ -282,8 +210,7 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
   AddExtensionString("GL_CHROMIUM_texture_mailbox");
   AddExtensionString("GL_EXT_debug_marker");
 
-  if (workarounds_.enable_chromium_fast_npot_mo8_textures ||
-      is_imagination)
+  if (workarounds_.enable_chromium_fast_npot_mo8_textures)
     AddExtensionString("GL_CHROMIUM_fast_NPOT_MO8_textures");
 
   feature_flags_.chromium_stream_texture = true;
@@ -368,7 +295,7 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
   // get rid of it.
   //
   bool enable_depth_texture = false;
-  if ((!workarounds_.disable_depth_texture && !is_qualcomm) &&
+  if (!workarounds_.disable_depth_texture &&
       (extensions.Contains("GL_ARB_depth_texture") ||
        extensions.Contains("GL_OES_depth_texture") ||
        extensions.Contains("GL_ANGLE_depth_texture"))) {
@@ -403,10 +330,6 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
       extensions.Contains("GL_ARB_vertex_array_object") ||
       extensions.Contains("GL_APPLE_vertex_array_object")) {
     feature_flags_.native_vertex_array_object = true;
-  }
-
-  if (is_arm || is_imagination) {
-    workarounds_.use_client_side_arrays_for_stream_buffers = true;
   }
 
   // If we're using client_side_arrays we have to emulate
@@ -529,7 +452,7 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
   // Check for multisample support
   bool ext_has_multisample =
       extensions.Contains("GL_EXT_framebuffer_multisample");
-  if (!is_qualcomm && !workarounds_.disable_angle_framebuffer_multisample) {
+  if (!workarounds_.disable_angle_framebuffer_multisample) {
     ext_has_multisample |=
        extensions.Contains("GL_ANGLE_framebuffer_multisample");
   }
@@ -648,9 +571,6 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
       extensions.Contains("GL_ARB_occlusion_query");
 
   if (!workarounds_.disable_ext_occlusion_query &&
-#if defined(OS_LINUX)
-      !is_intel &&
-#endif
       (have_ext_occlusion_query_boolean ||
        have_arb_occlusion_query2 ||
        have_arb_occlusion_query)) {
