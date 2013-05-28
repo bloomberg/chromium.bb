@@ -435,6 +435,9 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME" desc="Title close to icon shown on side of Google sign-in UI to create a locally managed user.">
     Locally managed user
   </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_NO_MANAGER_TEXT" desc="Text shown when managed user can be created, but no users that can be manager exist.">
+    At least one account must exist on this device before creating a Limited user.
+  </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_HTML" desc="Text with actual name shown on side of Google sign-in UI to create a locally managed user.">
     <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Create managed user<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> for this device.
   </message>

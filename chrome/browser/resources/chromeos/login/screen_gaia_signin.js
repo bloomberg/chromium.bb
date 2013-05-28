@@ -259,7 +259,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       $('createAccount').hidden = !data.createAccount;
       $('guestSignin').hidden = !data.guestSignin;
-      $('createManagedUserPane').hidden = !data.createLocallyManagedUser;
+      $('createManagedUserPane').hidden = !data.managedUsersEnabled;
+
+      $('createManagedUserLinkPlaceholder').hidden =
+          !data.managedUsersCanCreate;
+      $('createManagedUserNoManagerText').hidden = data.managedUsersCanCreate;
+
       // Allow cancellation of screen only when user pods can be displayed.
       this.cancelAllowed_ = data.isShowUsers && $('pod-row').pods.length;
       $('login-header-bar').allowCancel = this.cancelAllowed_;

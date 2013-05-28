@@ -271,6 +271,9 @@ class SigninScreenHandler
   void UpdateAuthExtension();
   void UpdateAddButtonStatus();
 
+  // Fill |params| that are passed to JS..
+  void UpdateAuthParams(DictionaryValue* params);
+
   // Restore input focus to current user pod.
   void RefocusCurrentPod();
 

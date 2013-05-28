@@ -178,16 +178,6 @@ void UpdateAuthParamsFromSettings(DictionaryValue* params,
   // Account creation depends on Guest sign-in (http://crosbug.com/24570).
   params->SetBoolean("createAccount", allow_new_user && allow_guest);
   params->SetBoolean("guestSignin", allow_guest);
-  // TODO(nkostylev): Allow locally managed user creation only if:
-  // 1. Enterprise managed device > is allowed by policy.
-  // 2. Consumer device > owner exists.
-  // g_browser_process->browser_policy_connector()->IsEnterpriseManaged()
-  // const UserList& users = delegate_->GetUsers();
-  // bool single_user = users.size() == 1;
-  // chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  params->SetBoolean("createLocallyManagedUser",
-                     command_line->HasSwitch(::switches::kEnableManagedUsers));
 }
 
 bool IsOnline(NetworkStateInformer::State state,
@@ -400,6 +390,8 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_LOCALLY_MANAGED_USER_HTML);
   builder->Add("createManagedUserFeatureName",
                IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME);
+  builder->Add("createManagedUserNoManagerText",
+               IDS_CREATE_LOCALLY_MANAGED_USER_NO_MANAGER_TEXT);
   builder->Add("offlineLogin", IDS_OFFLINE_LOGIN_HTML);
   builder->Add("ownerUserPattern", IDS_LOGIN_POD_OWNER_USER);
   builder->Add("removeUser", IDS_LOGIN_POD_REMOVE_USER);
@@ -995,6 +987,28 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
               ErrorScreenActor::ERROR_REASON_UPDATE);
 }
 
+
+void SigninScreenHandler::UpdateAuthParams(DictionaryValue* params) {
+  UpdateAuthParamsFromSettings(params, CrosSettings::Get());
+
+  // TODO(nkostylev): Allow locally managed user creation only if:
+  // 1. Enterprise managed device > is allowed by policy.
+  // 2. Consumer device > owner exists.
+  // g_browser_process->browser_policy_connector()->IsEnterpriseManaged()
+  // const UserList& users = delegate_->GetUsers();
+  // bool single_user = users.size() == 1;
+  // chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
+
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  bool managed_users_enabled =
+      command_line->HasSwitch(::switches::kEnableManagedUsers);
+  bool managed_users_can_create = false;
+  if (managed_users_enabled)
+    managed_users_can_create = delegate_->GetUsers().size() > 0;
+  params->SetBoolean("managedUsersEnabled", managed_users_enabled);
+  params->SetBoolean("managedUsersCanCreate", managed_users_can_create);
+}
+
 void SigninScreenHandler::LoadAuthExtension(
     bool force, bool silent_load, bool offline) {
   DictionaryValue params;
@@ -1010,7 +1024,7 @@ void SigninScreenHandler::LoadAuthExtension(
   params.SetString("email", email_);
   email_.clear();
 
-  UpdateAuthParamsFromSettings(&params, CrosSettings::Get());
+  UpdateAuthParams(&params);
 
   if (!offline) {
     const std::string app_locale = g_browser_process->GetApplicationLocale();
@@ -1055,7 +1069,7 @@ void SigninScreenHandler::LoadAuthExtension(
 
 void SigninScreenHandler::UpdateAuthExtension() {
   DictionaryValue params;
-  UpdateAuthParamsFromSettings(&params, CrosSettings::Get());
+  UpdateAuthParams(&params);
   CallJS("login.GaiaSigninScreen.updateAuthExtension", params);
 }
 
