@@ -1912,3 +1912,6 @@ crbug.com/243309 [ Mac Debug ] fast/text/international/spaces-combined-in-vertic
 crbug.com/243309 [ Mac Debug ] svg/text/font-size-too-large-crash.svg [ Crash Pass ]
 
 crbug.com/244384 inspector/elements/shadow-dom-modify-chardata.html [ Failure Pass ]
+
+crbug.com/244479 [ Win7 Debug ] inspector/profiler/heap-snapshot-summary-expansion-preserved-when-sorting.html [ Failure ]
+crbug.com/244481 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-canvas.html [ Timeout ]
