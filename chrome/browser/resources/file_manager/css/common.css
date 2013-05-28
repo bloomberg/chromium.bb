@@ -536,6 +536,7 @@ body[new-ui] .progress-track {
   background-color: #888;
   border-radius: 3px;
   height: 6px;
+  min-width: 6px;
 }
 
 .progress-track.smoothed {
