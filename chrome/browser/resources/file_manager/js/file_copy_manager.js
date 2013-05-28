@@ -522,18 +522,18 @@ FileCopyManager.prototype.paste = function(files, directories, isCut, isOnDrive,
 };
 
 /**
- * Checks if source and target are on the same root.
+ * Checks if the move operation is avaiable between the given two locations.
  *
  * @param {DirectoryEntry} sourceEntry An entry from the source.
  * @param {DirectoryEntry} targetDirEntry Directory entry for the target.
- * @param {boolean} targetOnDrive If target is on Drive.
- * @return {boolean} Whether source and target dir are on the same root.
+ * @return {boolean} Whether we can move from the source to the target.
  */
-FileCopyManager.prototype.isOnSameRoot = function(sourceEntry,
-                                                  targetDirEntry,
-                                                  targetOnDrive) {
-  return PathUtil.getRootPath(sourceEntry.fullPath) ==
-         PathUtil.getRootPath(targetDirEntry.fullPath);
+FileCopyManager.prototype.isMovable = function(sourceEntry,
+                                               targetDirEntry) {
+  return (PathUtil.isDriveBasedPath(sourceEntry.fullPath) &&
+          PathUtil.isDriveBasedPath(targetDirEntry.fullPath)) ||
+         (PathUtil.getRootPath(sourceEntry.fullPath) ==
+          PathUtil.getRootPath(targetDirEntry.fullPath));
 };
 
 /**
@@ -556,9 +556,7 @@ FileCopyManager.prototype.queueCopy_ = function(targetDirEntry,
   // When copying files, null can be specified as source directory.
   var copyTask = new FileCopyManager.Task(targetDirEntry);
   if (deleteAfterCopy) {
-    // |sourecDirEntry| may be null, so let's check the root for the first of
-    // the entries scheduled to be copied.
-    if (this.isOnSameRoot(entries[0], targetDirEntry)) {
+    if (this.isMovable(entries[0], targetDirEntry)) {
       copyTask.move = true;
     } else {
       copyTask.deleteAfterCopy = true;

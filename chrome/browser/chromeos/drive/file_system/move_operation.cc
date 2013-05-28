@@ -212,6 +212,13 @@ void MoveOperation::RemoveFromDirectory(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // Moving files out from "drive/other" special folder for storing orphan files
+  // has no meaning in the server. Just skip the step.
+  if (util::IsSpecialResourceId(directory_resource_id)) {
+    callback.Run(FILE_ERROR_OK);
+    return;
+  }
+
   scheduler_->RemoveResourceFromDirectory(
       directory_resource_id,
       resource_id,
