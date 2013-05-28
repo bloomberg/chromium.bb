@@ -1962,4 +1962,12 @@ bool RenderThemeChromiumMac::paintMediaToggleClosedCaptionsButton(RenderObject* 
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaShowClosedCaptionsButton, object, paintInfo, rect);
 }
 
+bool RenderThemeChromiumMac::shouldUseFallbackTheme(RenderStyle* style) const
+{
+    ControlPart part = style->appearance();
+    if (part == CheckboxPart || part == RadioPart)
+        return style->effectiveZoom() != 1;
+    return false;
+}
+
 } // namespace WebCore

@@ -89,6 +89,7 @@ public:
 
 protected:
     virtual double caretBlinkIntervalInternal() const OVERRIDE;
+    virtual bool shouldUseFallbackTheme(RenderStyle*) const OVERRIDE;
 
 private:
     enum ControlSubPart {

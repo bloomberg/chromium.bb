@@ -139,8 +139,6 @@ protected:
 
     virtual int menuListArrowPadding() const;
 
-    static void setSizeIfAuto(RenderStyle*, const IntSize&);
-
     IntRect determinateProgressValueRectFor(RenderProgress*, const IntRect&) const;
     IntRect indeterminateProgressValueRectFor(RenderProgress*, const IntRect&) const;
     IntRect progressValueRectFor(RenderProgress*, const IntRect&) const;

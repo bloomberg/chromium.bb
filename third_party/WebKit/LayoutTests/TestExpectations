@@ -1495,6 +1495,8 @@ crbug.com/130259 [ Linux ] fast/forms/checkbox/checkbox-appearance-basic.html [ 
 crbug.com/130259 [ Linux ] fast/forms/datalist/input-appearance-range-with-datalist-zoomed.html [ ImageOnlyFailure Pass ]
 crbug.com/130259 [ Linux ] fast/forms/radio/radio-appearance-basic.html [ ImageOnlyFailure Pass ]
 crbug.com/130259 [ Linux ] fast/forms/range/range-appearance-basic.html [ ImageOnlyFailure Pass ]
+crbug.com/14866009 [ Mac Win ] fast/forms/checkbox/checkbox-appearance-basic.html [ Failure ImageOnlyFailure Pass ]
+crbug.com/14866009 [ Mac Win ] fast/forms/radio/radio-appearance-basic.html [ Failure ImageOnlyFailure Pass ]
 
 crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
 webkit.org/b/81697 fast/notifications/notifications-request-permission.html [ Failure Pass ]

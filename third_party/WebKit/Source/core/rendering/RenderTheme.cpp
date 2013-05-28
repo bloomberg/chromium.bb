@@ -53,6 +53,9 @@
 #include "core/rendering/RenderMeter.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
+#include <public/Platform.h>
+#include <public/WebFallbackThemeEngine.h>
+#include <public/WebRect.h>
 
 #if ENABLE(INPUT_SPEECH)
 #include "core/rendering/RenderInputSpeech.h"
@@ -68,6 +71,18 @@ static Color& customFocusRingColor()
 {
     DEFINE_STATIC_LOCAL(Color, color, ());
     return color;
+}
+
+static WebKit::WebFallbackThemeEngine::State getWebFallbackThemeState(const RenderTheme* theme, const RenderObject* o)
+{
+    if (!theme->isEnabled(o))
+        return WebKit::WebFallbackThemeEngine::StateDisabled;
+    if (theme->isPressed(o))
+        return WebKit::WebFallbackThemeEngine::StatePressed;
+    if (theme->isHovered(o))
+        return WebKit::WebFallbackThemeEngine::StateHover;
+
+    return WebKit::WebFallbackThemeEngine::StateNormal;
 }
 
 RenderTheme::RenderTheme()
@@ -99,6 +114,11 @@ void RenderTheme::adjustStyle(StyleResolver* styleResolver, RenderStyle* style, 
 
     if (!style->hasAppearance())
         return;
+
+    if (shouldUseFallbackTheme(style)) {
+        adjustStyleUsingFallbackTheme(styleResolver, style, e);
+        return;
+    }
 
 #if USE(NEW_THEME)
     switch (part) {
@@ -257,6 +277,9 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
         return false;
 
     ControlPart part = o->style()->appearance();
+
+    if (shouldUseFallbackTheme(o->style()))
+        return paintUsingFallbackTheme(o, paintInfo, r);
 
 #if USE(NEW_THEME)
     switch (part) {
@@ -1237,5 +1260,130 @@ bool RenderTheme::supportsCalendarPicker(const AtomicString& type) const
         || type == InputTypeNames::week();
 }
 #endif
+
+bool RenderTheme::shouldUseFallbackTheme(RenderStyle*) const
+{
+    return false;
+}
+
+void RenderTheme::adjustStyleUsingFallbackTheme(StyleResolver* styleResolver, RenderStyle* style, Element* e)
+{
+    ControlPart part = style->appearance();
+    switch (part) {
+    case CheckboxPart:
+        return adjustCheckboxStyleUsingFallbackTheme(styleResolver, style, e);
+    case RadioPart:
+        return adjustRadioStyleUsingFallbackTheme(styleResolver, style, e);
+    default:
+        break;
+    }
+}
+
+bool RenderTheme::paintUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
+{
+    ControlPart part = o->style()->appearance();
+    switch (part) {
+    case CheckboxPart:
+        return paintCheckboxUsingFallbackTheme(o, i, r);
+    case RadioPart:
+        return paintRadioUsingFallbackTheme(o, i, r);
+    default:
+        break;
+    }
+    return true;
+}
+
+// static
+void RenderTheme::setSizeIfAuto(RenderStyle* style, const IntSize& size)
+{
+    if (style->width().isIntrinsicOrAuto())
+        style->setWidth(Length(size.width(), Fixed));
+    if (style->height().isAuto())
+        style->setHeight(Length(size.height(), Fixed));
+}
+
+bool RenderTheme::paintCheckboxUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
+{
+    WebKit::WebFallbackThemeEngine::ExtraParams extraParams;
+    WebKit::WebCanvas* canvas = i.context->canvas();
+    extraParams.button.checked = isChecked(o);
+    extraParams.button.indeterminate = isIndeterminate(o);
+
+    float zoomLevel = o->style()->effectiveZoom();
+    GraphicsContextStateSaver stateSaver(*i.context);
+    IntRect unzoomedRect = r;
+    if (zoomLevel != 1) {
+        unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
+        unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
+        i.context->translate(unzoomedRect.x(), unzoomedRect.y());
+        i.context->scale(FloatSize(zoomLevel, zoomLevel));
+        i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
+    }
+
+    WebKit::Platform::current()->fallbackThemeEngine()->paint(canvas, WebKit::WebFallbackThemeEngine::PartCheckbox, getWebFallbackThemeState(this, o), WebKit::WebRect(unzoomedRect), &extraParams);
+    return false;
+}
+
+void RenderTheme::adjustCheckboxStyleUsingFallbackTheme(StyleResolver*, RenderStyle* style, Element*) const
+{
+    // If the width and height are both specified, then we have nothing to do.
+    if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
+        return;
+
+    IntSize size = WebKit::Platform::current()->fallbackThemeEngine()->getSize(WebKit::WebFallbackThemeEngine::PartCheckbox);
+    float zoomLevel = style->effectiveZoom();
+    size.setWidth(size.width() * zoomLevel);
+    size.setHeight(size.height() * zoomLevel);
+    setSizeIfAuto(style, size);
+
+    // padding - not honored by WinIE, needs to be removed.
+    style->resetPadding();
+
+    // border - honored by WinIE, but looks terrible (just paints in the control box and turns off the Windows XP theme)
+    // for now, we will not honor it.
+    style->resetBorder();
+}
+
+bool RenderTheme::paintRadioUsingFallbackTheme(RenderObject* o, const PaintInfo& i, const IntRect& r)
+{
+    WebKit::WebFallbackThemeEngine::ExtraParams extraParams;
+    WebKit::WebCanvas* canvas = i.context->canvas();
+    extraParams.button.checked = isChecked(o);
+    extraParams.button.indeterminate = isIndeterminate(o);
+
+    float zoomLevel = o->style()->effectiveZoom();
+    GraphicsContextStateSaver stateSaver(*i.context);
+    IntRect unzoomedRect = r;
+    if (zoomLevel != 1) {
+        unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
+        unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
+        i.context->translate(unzoomedRect.x(), unzoomedRect.y());
+        i.context->scale(FloatSize(zoomLevel, zoomLevel));
+        i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
+    }
+
+    WebKit::Platform::current()->fallbackThemeEngine()->paint(canvas, WebKit::WebFallbackThemeEngine::PartRadio, getWebFallbackThemeState(this, o), WebKit::WebRect(unzoomedRect), &extraParams);
+    return false;
+}
+
+void RenderTheme::adjustRadioStyleUsingFallbackTheme(StyleResolver*, RenderStyle* style, Element*) const
+{
+    // If the width and height are both specified, then we have nothing to do.
+    if (!style->width().isIntrinsicOrAuto() && !style->height().isAuto())
+        return;
+
+    IntSize size = WebKit::Platform::current()->fallbackThemeEngine()->getSize(WebKit::WebFallbackThemeEngine::PartRadio);
+    float zoomLevel = style->effectiveZoom();
+    size.setWidth(size.width() * zoomLevel);
+    size.setHeight(size.height() * zoomLevel);
+    setSizeIfAuto(style, size);
+
+    // padding - not honored by WinIE, needs to be removed.
+    style->resetPadding();
+
+    // border - honored by WinIE, but looks terrible (just paints in the control box and turns off the Windows XP theme)
+    // for now, we will not honor it.
+    style->resetBorder();
+}
 
 } // namespace WebCore

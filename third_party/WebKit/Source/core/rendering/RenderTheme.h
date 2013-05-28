@@ -62,6 +62,8 @@ public:
         return themeForPage(0);
     };
 
+    static void setSizeIfAuto(RenderStyle*, const IntSize&);
+
     // This method is called whenever style has been computed for an element and the appearance
     // property has been set to a value other than "none".  The theme should map in all of the appropriate
     // metrics and defaults given the contents of the style.  This includes sophisticated operations like
@@ -312,6 +314,14 @@ protected:
     virtual bool paintMediaTimeRemaining(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMediaFullScreenVolumeSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMediaFullScreenVolumeSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) { return true; }
+
+    virtual bool shouldUseFallbackTheme(RenderStyle*) const;
+    void adjustStyleUsingFallbackTheme(StyleResolver*, RenderStyle*, Element*);
+    bool paintUsingFallbackTheme(RenderObject*, const PaintInfo&, const IntRect&);
+    void adjustCheckboxStyleUsingFallbackTheme(StyleResolver*, RenderStyle*, Element*) const;
+    bool paintCheckboxUsingFallbackTheme(RenderObject*, const PaintInfo&, const IntRect&);
+    void adjustRadioStyleUsingFallbackTheme(StyleResolver*, RenderStyle*, Element*) const;
+    bool paintRadioUsingFallbackTheme(RenderObject*, const PaintInfo&, const IntRect&);
 
 public:
     // Methods for state querying

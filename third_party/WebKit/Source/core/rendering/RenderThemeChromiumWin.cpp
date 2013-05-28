@@ -654,4 +654,12 @@ bool RenderThemeChromiumWin::shouldOpenPickerWithF4Key() const
     return true;
 }
 
+bool RenderThemeChromiumWin::shouldUseFallbackTheme(RenderStyle* style) const
+{
+    ControlPart part = style->appearance();
+    if (part == CheckboxPart || part == RadioPart)
+        return style->effectiveZoom() != 1;
+    return false;
+}
+
 } // namespace WebCore
