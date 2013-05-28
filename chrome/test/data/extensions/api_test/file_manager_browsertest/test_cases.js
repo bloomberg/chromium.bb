@@ -116,6 +116,33 @@ var EXPECTED_FILES_IN_SHARED_WITH_ME = [
 ];
 
 /**
+ * Returns the name of the given file list entry.
+ * @param {Array.<string>} file An entry in a file list.
+ * @return {string} Name of the file.
+ */
+function getFileName(fileListEntry) {
+  return fileListEntry[0];
+}
+
+/**
+ * Returns the size of the given file list entry.
+ * @param {Array.<string>} An entry in a file list.
+ * @return {string} Size of the file.
+ */
+function getFileSize(fileListEntry) {
+  return fileListEntry[1];
+}
+
+/**
+ * Returns the type of the given file list entry.
+ * @param {Array.<string>} An entry in a file list.
+ * @return {string} Type of the file.
+ */
+function getFileType(fileListEntry) {
+  return fileListEntry[2];
+}
+
+/**
  * Namespace for test cases.
  */
 var testcase = {};
@@ -221,16 +248,57 @@ testcase.intermediate.galleryOpen = function(path) {
  * @param {string} path Directory path to be tested.
  */
 testcase.intermediate.keyboardCopy = function(path, callback) {
-  setupAndWaitUntilReady(path, function(appId) {
-    callRemoteTestUtil('copyFile', appId, ['world.ogv'], function(result) {
-      chrome.test.assertFalse(!result);
-      callRemoteTestUtil('waitForFileListChange',
-                         appId,
-                         [getExpectedFilesBefore(path == '/drive/root').length],
-                         checkIfNoErrorsOccured.bind(null,
-                                                     chrome.test.succeed));
-    });
-  });
+  // Returns true if |fileList| contains a copy of |filename|.
+  var isCopyPresent = function(filename, fileList) {
+    var originalEntry;
+    for (var i = 0; i < fileList.length; i++) {
+      if (getFileName(fileList[i]) == filename)
+        originalEntry = fileList[i];
+    }
+    if (!originalEntry)
+      return false;
+
+    var baseName = filename.substring(0, filename.lastIndexOf('.'));
+    var extension = filename.substring(filename.lastIndexOf('.'));
+    var filenamePattern = new RegExp('^' + baseName + '.+' + extension + '$');
+    for (var i = 0; i < fileList.length; i++) {
+      // Check size, type and file name pattern to find a copy.
+      if (getFileSize(fileList[i]) == getFileSize(originalEntry) &&
+          getFileType(fileList[i]) == getFileType(originalEntry) &&
+          filenamePattern.exec(getFileName(fileList[i])))
+        return true;
+    }
+    return false;
+  }
+
+  var filename = 'world.ogv';
+  var appId, fileListBefore;
+  var steps = [
+    // Set up File Manager.
+    function() {
+      setupAndWaitUntilReady(path, steps.shift());
+    },
+    // Copy the file.
+    function(inAppId, inFileListBefore) {
+      appId = inAppId;
+      fileListBefore = inFileListBefore;
+      chrome.test.assertFalse(isCopyPresent(filename, fileListBefore));
+      callRemoteTestUtil('copyFile', appId, [filename], steps.shift());
+    },
+    // Wait for a file list change.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForFileListChange', appId,
+                         [fileListBefore.length], steps.shift());
+    },
+    // Verify the result.
+    function(fileList) {
+      chrome.test.assertTrue(isCopyPresent(filename, fileList));
+      checkIfNoErrorsOccured(chrome.test.succeed);
+    }
+  ];
+  steps = steps.map(function(f) { return chrome.test.callbackPass(f); });
+  steps.shift()();
 };
 
 /**
@@ -238,18 +306,47 @@ testcase.intermediate.keyboardCopy = function(path, callback) {
  * @param {string} path Directory path to be tested.
  */
 testcase.intermediate.keyboardDelete = function(path) {
-  setupAndWaitUntilReady(path, function(appId) {
-    callRemoteTestUtil('deleteFile', appId, ['world.ogv'], function(result) {
-      chrome.test.assertFalse(!result);
-      callRemoteTestUtil('waitAndAcceptDialog', appId, [], function() {
-        callRemoteTestUtil(
-            'waitForFileListChange',
-            appId,
-            [getExpectedFilesBefore(path == '/drive/root').length],
-            checkIfNoErrorsOccured.bind(null, chrome.test.succeed));
-      });
-    });
-  });
+  // Returns true if |fileList| contains |filename|.
+  var isFilePresent = function(filename, fileList) {
+    for (var i = 0; i < fileList.length; i++) {
+      if (getFileName(fileList[i]) == filename)
+        return true;
+    }
+    return false;
+  }
+
+  var filename = 'world.ogv';
+  var appId, fileListBefore;
+  var steps = [
+    // Set up File Manager.
+    function() {
+      setupAndWaitUntilReady(path, steps.shift());
+    },
+    // Delete the file.
+    function(inAppId, inFileListBefore) {
+      appId = inAppId;
+      fileListBefore = inFileListBefore;
+      chrome.test.assertTrue(isFilePresent(filename, fileListBefore));
+      callRemoteTestUtil('deleteFile', appId, [filename], steps.shift());
+    },
+    // Reply to a dialog.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitAndAcceptDialog', appId, [], steps.shift());
+    },
+    // Wait for a file list change.
+    function() {
+      callRemoteTestUtil('waitForFileListChange', appId,
+                         [fileListBefore.length], steps.shift());
+    },
+    // Verify the result.
+    function(fileList) {
+      chrome.test.assertFalse(isFilePresent(filename, fileList));
+      checkIfNoErrorsOccured(chrome.test.succeed);
+    }
+  ];
+  steps = steps.map(function(f) { return chrome.test.callbackPass(f); });
+  steps.shift()();
 };
 
 testcase.fileDisplayDownloads = function() {
