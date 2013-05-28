@@ -18,6 +18,10 @@ class AURA_EXPORT TooltipClient {
   // Informs the shell tooltip manager of change in tooltip for window |target|.
   virtual void UpdateTooltip(Window* target) = 0;
 
+  // Sets the time after which the tooltip is hidden for Window |target|. If
+  // |timeout_in_ms| is <= 0, the tooltip is shown indefinitely.
+  virtual void SetTooltipShownTimeout(Window* target, int timeout_in_ms) = 0;
+
   // Enables/Disables tooltips.
   virtual void SetTooltipsEnabled(bool enable) = 0;
 };

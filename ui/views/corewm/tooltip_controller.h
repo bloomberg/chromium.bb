@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_COREWM_TOOLTIP_CONTROLLER_H_
 #define UI_VIEWS_COREWM_TOOLTIP_CONTROLLER_H_
 
+#include <map>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
@@ -36,6 +38,8 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
 
   // Overridden from aura::client::TooltipClient.
   virtual void UpdateTooltip(aura::Window* target) OVERRIDE;
+  virtual void SetTooltipShownTimeout(aura::Window* target,
+                                      int timeout_in_ms) OVERRIDE;
   virtual void SetTooltipsEnabled(bool enable) OVERRIDE;
 
   // Overridden from ui::EventHandler.
@@ -89,6 +93,8 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
   // Returns true if the cursor is visible.
   bool IsCursorVisible();
 
+  int GetTooltipShownTimeout();
+
   const gfx::ScreenType screen_type_;
 
   aura::Window* tooltip_window_;
@@ -110,6 +116,8 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
   gfx::Point curr_mouse_loc_;
 
   bool tooltips_enabled_;
+
+  std::map<aura::Window*, int> tooltip_shown_timeout_map_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipController);
 };
