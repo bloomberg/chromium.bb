@@ -26,6 +26,12 @@
 #include "skia/ext/platform_device.h"
 #include "win8/util/win8_util.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/remote_root_window_host_win.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
+
 using base::Time;
 
 namespace {
@@ -44,6 +50,23 @@ const int kPDFA4Height = 11.69 * kPDFDpi;
 // A3: 11.69 x 16.54 inches
 const int kPDFA3Width = 11.69 * kPDFDpi;
 const int kPDFA3Height = 16.54 * kPDFDpi;
+
+HWND GetRootWindow(gfx::NativeView view) {
+  HWND window = NULL;
+#if defined(USE_AURA)
+  if (view)
+    window = view->GetRootWindow()->GetAcceleratedWidget();
+#else
+  if (view && IsWindow(view)) {
+    window = GetAncestor(view, GA_ROOTOWNER);
+  }
+#endif
+  if (!window) {
+    // TODO(maruel):  bug 1214347 Get the right browser window instead.
+    return GetDesktopWindow();
+  }
+  return window;
+}
 
 }  // anonymous namespace
 
@@ -166,12 +189,11 @@ PrintingContextWin::~PrintingContextWin() {
   ReleaseContext();
 }
 
+// TODO(vitalybuka): Implement as ui::BaseShellDialog crbug.com/180997.
 void PrintingContextWin::AskUserForSettings(
     gfx::NativeView view, int max_pages, bool has_selection,
     const PrintSettingsCallback& callback) {
-#if !defined(USE_AURA)
   DCHECK(!in_print_job_);
-
   if (win8::IsSingleWindowMetroMode()) {
     // The system dialog can not be opened while running in Metro.
     // But we can programatically launch the Metro print device charm though.
@@ -192,13 +214,7 @@ void PrintingContextWin::AskUserForSettings(
   }
   dialog_box_dismissed_ = false;
 
-  HWND window;
-  if (!view || !IsWindow(view)) {
-    // TODO(maruel):  bug 1214347 Get the right browser window instead.
-    window = GetDesktopWindow();
-  } else {
-    window = GetAncestor(view, GA_ROOTOWNER);
-  }
+  HWND window = GetRootWindow(view);
   DCHECK(window);
 
   // Show the OS-dependent dialog box.
@@ -236,14 +252,14 @@ void PrintingContextWin::AskUserForSettings(
     dialog_options.Flags |= PD_NOPAGENUMS;
   }
 
-  if ((*print_dialog_func_)(&dialog_options) != S_OK) {
+  HRESULT hr = (*print_dialog_func_)(&dialog_options);
+  if (hr != S_OK) {
     ResetSettings();
     callback.Run(FAILED);
   }
 
   // TODO(maruel):  Support PD_PRINTTOFILE.
   callback.Run(ParseDialogResultEx(dialog_options));
-#endif
 }
 
 PrintingContext::Result PrintingContextWin::UseDefaultSettings() {

@@ -97,6 +97,11 @@
             ['exclude', '.'],
           ],
         }],
+        ['use_aura==1', {
+          'dependencies': [
+            '<(DEPTH)/ui/aura/aura.gyp:aura',
+          ],
+        }], 
         ['toolkit_uses_gtk == 0',{
             'sources/': [['exclude', '_cairo\\.cc$']]
         }],
@@ -132,10 +137,9 @@
             '../win8/win8.gyp:win8_util',
           ],
           'conditions': [
-            ['use_aura==0', {
-              'sources': [
-                'printing_context_win.cc',
-                'printing_context_win.h',
+            ['use_aura==1', {
+              'dependencies': [
+                '<(DEPTH)/ui/aura/aura.gyp:aura',
               ],
           }]],
           'defines': [
@@ -147,12 +151,14 @@
             'backend/win_helper.cc',
             'backend/win_helper.h',
             'backend/print_backend_win.cc',
+            'printing_context_win.cc',
+            'printing_context_win.h',
           ],
           'sources!': [
             'print_destination_none.cc',
           ],
         }],
-        ['chromeos==1 or use_aura==1',{
+        ['chromeos==1 or (use_aura==1 and OS!="win")',{
           'sources': [
             'printing_context_no_system_dialog.cc',
             'printing_context_no_system_dialog.h',

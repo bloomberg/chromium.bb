@@ -2,6 +2,7 @@ include_rules = [
   "+skia/ext",
   "+third_party/icu",
   "+third_party/skia",
+  "+ui/aura",
   "+ui/base/text",
   "+ui/gfx",
   "+win8/util",
