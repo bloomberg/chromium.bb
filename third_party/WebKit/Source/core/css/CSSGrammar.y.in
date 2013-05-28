@@ -223,11 +223,12 @@ static inline bool isCSSTokenAString(int yytype)
 %type <rule> host
 %type <rule> keyframes
 %type <rule> invalid_rule
-%type <rule> save_block
 %type <rule> invalid_at
 %type <rule> rule
 %type <rule> valid_rule
+%type <ruleList> block_rule_body
 %type <ruleList> block_rule_list 
+%type <ruleList> region_block_rule_body
 %type <ruleList> region_block_rule_list
 %type <rule> block_rule
 %type <rule> block_valid_rule
@@ -466,6 +467,10 @@ rule:
   | invalid_at
   ;
 
+block_rule_body:
+    block_rule_list
+  | block_rule_list error rule_error_recovery; 
+
 block_rule_list: 
     /* empty */ { $$ = 0; }
   | block_rule_list block_rule maybe_sgml {
@@ -477,6 +482,10 @@ block_rule_list:
       }
   }
   ;
+
+region_block_rule_body:
+    region_block_rule_list
+  | region_block_rule_list error rule_error_recovery;
 
 region_block_rule_list:
     /* empty */ { $$ = 0; }
@@ -681,10 +690,10 @@ at_rule_header_end_maybe_space:
     ;
 
 media:
-    before_media_rule MEDIA_SYM maybe_space media_list at_rule_header_end '{' at_rule_body_start maybe_space block_rule_list save_block {
+    before_media_rule MEDIA_SYM maybe_space media_list at_rule_header_end '{' at_rule_body_start maybe_space block_rule_body closing_brace {
         $$ = parser->createMediaRule($4, $9);
     }
-    | before_media_rule MEDIA_SYM at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space block_rule_list save_block {
+    | before_media_rule MEDIA_SYM at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space block_rule_body closing_brace {
         $$ = parser->createMediaRule(0, $7);
     }
     | before_media_rule MEDIA_SYM at_rule_recovery {
@@ -700,7 +709,7 @@ medium:
   ;
 
 supports:
-    before_supports_rule SUPPORTS_SYM maybe_space supports_condition at_supports_rule_header_end '{' at_rule_body_start maybe_space block_rule_list save_block {
+    before_supports_rule SUPPORTS_SYM maybe_space supports_condition at_supports_rule_header_end '{' at_rule_body_start maybe_space block_rule_body closing_brace {
         $$ = parser->createSupportsRule($4, $9);
     }
     | before_supports_rule SUPPORTS_SYM at_rule_recovery {
@@ -996,7 +1005,7 @@ before_host_rule:
 
 host:
     before_host_rule HOST_SYM at_rule_header_end_maybe_space
-    '{' at_rule_body_start maybe_space block_rule_list save_block {
+    '{' at_rule_body_start maybe_space block_rule_body closing_brace {
         $$ = parser->createHostRule($7);
     }
     | before_host_rule HOST_SYM at_rule_recovery {
@@ -1045,7 +1054,7 @@ before_region_rule:
     ;
 
 region:
-    before_region_rule WEBKIT_REGION_RULE_SYM WHITESPACE region_selector at_rule_header_end '{' at_rule_body_start maybe_space region_block_rule_list save_block {
+    before_region_rule WEBKIT_REGION_RULE_SYM WHITESPACE region_selector at_rule_header_end '{' at_rule_body_start maybe_space region_block_rule_body closing_brace {
         if ($4)
             $$ = parser->createRegionRule($4, $9);
         else {
@@ -1916,17 +1925,6 @@ min_or_max_function:
     } 
     | min_or_max maybe_space expr_recovery closing_parenthesis {
         YYERROR;
-    }
-    ;
-
-/* error handling rules */
-
-save_block:
-    closing_brace {
-        $$ = 0;
-    }
-  | error closing_brace {
-        $$ = 0;
     }
     ;
 
