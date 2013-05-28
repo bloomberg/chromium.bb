@@ -263,7 +263,7 @@ void RenderQuote::updateText()
 
     m_text = text;
 
-    while (RenderObject* child = firstChild())
+    while (RenderObject* child = lastChild())
         child->destroy();
 
     RenderTextFragment* fragment = new (renderArena()) RenderTextFragment(document(), m_text.impl());
