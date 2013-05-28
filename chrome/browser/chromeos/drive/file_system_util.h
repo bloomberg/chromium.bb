@@ -42,10 +42,6 @@ const base::FilePath::CharType kMountedArchiveFileExtension[] =
     FILE_PATH_LITERAL("mounted");
 const base::FilePath::CharType kWildCard[] =
     FILE_PATH_LITERAL("*");
-// The path is used for creating a symlink in "pinned" directory for a file
-// which is not yet fetched.
-const base::FilePath::CharType kSymLinkToDevNull[] =
-    FILE_PATH_LITERAL("/dev/null");
 
 // Special resource IDs introduced to manage pseudo directory tree locally.
 // These strings are supposed to be different from any resource ID used on the

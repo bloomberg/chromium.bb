@@ -581,6 +581,8 @@ void JobScheduler::CreateFile(
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  const base::FilePath kDevNull(FILE_PATH_LITERAL("/dev/null"));
+
   JobEntry* new_job = CreateNewJob(TYPE_CREATE_FILE);
   new_job->job_info.file_path = drive_file_path;
   new_job->context = context;
@@ -588,7 +590,7 @@ void JobScheduler::CreateFile(
   UploadNewFileParams params;
   params.parent_resource_id = parent_resource_id;
   params.drive_file_path = drive_file_path;
-  params.local_file_path = base::FilePath(util::kSymLinkToDevNull);
+  params.local_file_path = kDevNull;  // Upload an empty file.
   params.title = title;
   params.content_type = content_type;
 

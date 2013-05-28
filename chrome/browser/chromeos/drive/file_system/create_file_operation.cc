@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/file_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
@@ -94,14 +95,17 @@ FileError UpdateLocalStateForCreateFile(
     // Populate the |file_path| which will be used to notify the observer.
     *file_path = metadata->GetFilePath(entry.resource_id());
 
-    // Also store the entry to the cache. Here, failure is not a fatal error,
-    // so ignore the returned code.
-    FileError cache_store_error = cache->Store(
-        entry.resource_id(),
-        entry.file_specific_info().file_md5(),
-        base::FilePath(util::kSymLinkToDevNull),
-        internal::FileCache::FILE_OPERATION_COPY);
-
+    // Also store an empty file to the cache.
+    // Here, failure is not a fatal error, so ignore the returned code.
+    FileError cache_store_error = FILE_ERROR_FAILED;
+    base::FilePath empty_file;
+    if (file_util::CreateTemporaryFile(&empty_file)) {
+      cache_store_error =  cache->Store(
+          entry.resource_id(),
+          entry.file_specific_info().file_md5(),
+          empty_file,
+          internal::FileCache::FILE_OPERATION_MOVE);
+    }
     DLOG_IF(WARNING, cache_store_error != FILE_ERROR_OK)
         << "Failed to store a cache file: "
         << FileErrorToString(cache_store_error)
