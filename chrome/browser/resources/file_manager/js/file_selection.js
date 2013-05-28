@@ -476,72 +476,80 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
   if (this.selection != selection) return;
 
   // Update the file tasks.
+  var onTasks = function() {
+    if (this.selection != selection) return;
+    selection.tasks.display(this.taskItems_);
+    selection.tasks.updateMenuItem();
+  }.bind(this);
+
   if (this.fileManager_.dialogType == DialogType.FULL_PAGE &&
       selection.directoryCount == 0 && selection.fileCount > 0) {
-    selection.createTasks(function() {
-      if (this.selection != selection)
-        return;
-      selection.tasks.display(this.taskItems_);
-      selection.tasks.updateMenuItem();
-    }.bind(this));
+    selection.createTasks(onTasks);
   } else {
     this.taskItems_.hidden = true;
   }
 
-  // Update preview panels.
+  // Update the UI.
   var wasVisible = this.isPreviewPanelVisibile_();
-  var thumbnailEntries;
-  if (util.platform.newUI() && selection.totalCount == 0) {
-    thumbnailEntries = [
-      this.fileManager_.getCurrentDirectoryEntry()
-    ];
-  } else {
-    thumbnailEntries = selection.entries;
-    if (selection.totalCount != 1) {
-      selection.computeBytes(function() {
-        if (this.selection != selection)
-          return;
-        this.updatePreviewPanelText_();
-      }.bind(this));
-    }
-  }
   this.updatePreviewPanelVisibility_();
-  this.updatePreviewPanelText_();
-  this.showPreviewThumbnails_(thumbnailEntries);
 
-  // Update breadcrums.
-  var updateTarget = null;
-  if (util.platform.newUI()) {
+  if (util.platform.newUI() && selection.totalCount == 0) {
     var path = this.fileManager_.getCurrentDirectory();
-    if (selection.totalCount == 1) {
-      // Shows the breadcrumb list when a file is selected.
-      updateTarget = selection.entries[0].fullPath;
-    } else if (selection.totalCount == 0 && !PathUtil.isRootPath(path)) {
-      // Shows the breadcrumb list when no file is selected and the current
-      // directory is non-root path.
-      updateTarget = path;
-    }
+    // Hides the breadcrumbs list on the root path.
+    if (PathUtil.isRootPath(path))
+      this.updatePreviewPanelBreadcrumbs_(null);
+    else
+      this.updatePreviewPanelBreadcrumbs_(path);
+    var entry = this.fileManager_.getCurrentDirectoryEntry();
+    this.showPreviewThumbnails_([entry]);
+    this.updatePreviewPanelText_();
+    return;
   }
-  this.updatePreviewPanelBreadcrumbs_(updateTarget);
 
-  // Scroll to item
+  this.fileManager_.updateContextMenuActionItems(null, false);
   if (!wasVisible && this.selection.totalCount == 1) {
     var list = this.fileManager_.getCurrentList();
     list.scrollIndexIntoView(list.selectionModel.selectedIndex);
   }
 
   // Sync the commands availability.
-  if (selection.totalCount != 0) {
-    var commands = this.fileManager_.dialogDom_.querySelectorAll('command');
-    for (var i = 0; i < commands.length; i++)
-      commands[i].canExecuteChange();
-  }
+  var commands = this.fileManager_.dialogDom_.querySelectorAll('command');
+  for (var i = 0; i < commands.length; i++)
+    commands[i].canExecuteChange();
 
-  // Update context menu.
-  this.fileManager_.updateContextMenuActionItems(null, false);
+  if (!util.platform.newUI()) {
+    this.updateSearchBreadcrumbs_();
+    // Update the summary information.
+    var onBytes = function() {
+      if (this.selection != selection) return;
+      this.updatePreviewPanelText_();
+    }.bind(this);
+    selection.computeBytes(onBytes);
+    this.updatePreviewPanelText_();
+  } else {
+    if (selection.totalCount == 1) {
+      // Shows the breadcrumb list.
+      var firstEntry = selection.entries[0];
+      this.updatePreviewPanelBreadcrumbs_(firstEntry.fullPath);
+      this.updatePreviewPanelText_();
+    } else {
+      this.updatePreviewPanelBreadcrumbs_(null);
+
+      // Update the summary information.
+      var onBytes = function() {
+        if (this.selection != selection) return;
+        this.updatePreviewPanelText_();
+      }.bind(this);
+      selection.computeBytes(onBytes);
+      this.updatePreviewPanelText_();
+    }
+  }
 
   // Inform tests it's OK to click buttons now.
   chrome.test.sendMessage('selection-change-complete');
+
+  // Show thumbnails.
+  this.showPreviewThumbnails_(selection.entries);
 };
 
 /**
