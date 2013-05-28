@@ -843,20 +843,13 @@ key_list:
 
 key:
     maybe_unary_operator PERCENTAGE {
-        $$.id = 0;
-        $$.isInt = false;
-        $$.fValue = $1 * $2;
-        $$.unit = CSSPrimitiveValue::CSS_NUMBER;
+        $$.setFromNumber($1 * $2);
     }
     | IDENT {
-        $$.id = 0;
-        $$.isInt = false;
-        $$.unit = CSSPrimitiveValue::CSS_NUMBER;
-        const CSSParserString& str = $1;
-        if (str.equalIgnoringCase("from"))
-            $$.fValue = 0;
-        else if (str.equalIgnoringCase("to"))
-            $$.fValue = 100;
+        if ($1.equalIgnoringCase("from"))
+            $$.setFromNumber(0);
+        else if ($1.equalIgnoringCase("to"))
+            $$.setFromNumber(100);
         else {
             YYERROR;
         }
@@ -1721,42 +1714,40 @@ term:
   ;
 
 unary_term:
-  INTEGER { $$.id = 0; $$.isInt = true; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_NUMBER; }
-  | FLOATTOKEN { $$.id = 0; $$.isInt = false; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_NUMBER; }
-  | PERCENTAGE { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_PERCENTAGE; }
-  | PXS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_PX; }
-  | CMS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_CM; }
-  | MMS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_MM; }
-  | INS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_IN; }
-  | PTS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_PT; }
-  | PCS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_PC; }
-  | DEGS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_DEG; }
-  | RADS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_RAD; }
-  | GRADS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_GRAD; }
-  | TURNS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_TURN; }
-  | MSECS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_MS; }
-  | SECS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_S; }
-  | HERTZ { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_HZ; }
-  | KHERTZ { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_KHZ; }
-  | EMS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_EMS; }
-  | QEMS { $$.id = 0; $$.fValue = $1; $$.unit = CSSParserValue::Q_EMS; }
-  | EXS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_EXS; }
+  INTEGER { $$.setFromNumber($1); $$.isInt = true; }
+  | FLOATTOKEN { $$.setFromNumber($1); }
+  | PERCENTAGE { $$.setFromNumber($1, CSSPrimitiveValue::CSS_PERCENTAGE); }
+  | PXS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_PX); }
+  | CMS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_CM); }
+  | MMS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_MM); }
+  | INS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_IN); }
+  | PTS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_PT); }
+  | PCS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_PC); }
+  | DEGS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_DEG); }
+  | RADS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_RAD); }
+  | GRADS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_GRAD); }
+  | TURNS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_TURN); }
+  | MSECS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_MS); }
+  | SECS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_S); }
+  | HERTZ { $$.setFromNumber($1, CSSPrimitiveValue::CSS_HZ); }
+  | KHERTZ { $$.setFromNumber($1, CSSPrimitiveValue::CSS_KHZ); }
+  | EMS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_EMS); }
+  | QEMS { $$.setFromNumber($1, CSSParserValue::Q_EMS); }
+  | EXS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_EXS); }
   | REMS {
-      $$.id = 0;
-      $$.fValue = $1;
-      $$.unit = CSSPrimitiveValue::CSS_REMS;
+      $$.setFromNumber($1, CSSPrimitiveValue::CSS_REMS);
       if (parser->m_styleSheet)
           parser->m_styleSheet->parserSetUsesRemUnits(true);
   }
-  | CHS { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_CHS; }
-  | VW { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_VW; }
-  | VH { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_VH; }
-  | VMIN { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_VMIN; }
-  | VMAX { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_VMAX; }
-  | DPPX { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_DPPX; }
-  | DPI { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_DPI; }
-  | DPCM { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_DPCM; }
-  | FR { $$.id = 0; $$.fValue = $1; $$.unit = CSSPrimitiveValue::CSS_FR; }
+  | CHS { $$.setFromNumber($1, CSSPrimitiveValue::CSS_CHS); }
+  | VW { $$.setFromNumber($1, CSSPrimitiveValue::CSS_VW); }
+  | VH { $$.setFromNumber($1, CSSPrimitiveValue::CSS_VH); }
+  | VMIN { $$.setFromNumber($1, CSSPrimitiveValue::CSS_VMIN); }
+  | VMAX { $$.setFromNumber($1, CSSPrimitiveValue::CSS_VMAX); }
+  | DPPX { $$.setFromNumber($1, CSSPrimitiveValue::CSS_DPPX); }
+  | DPI { $$.setFromNumber($1, CSSPrimitiveValue::CSS_DPI); }
+  | DPCM { $$.setFromNumber($1, CSSPrimitiveValue::CSS_DPCM); }
+  | FR { $$.setFromNumber($1, CSSPrimitiveValue::CSS_FR); }
   ;
 
 function:

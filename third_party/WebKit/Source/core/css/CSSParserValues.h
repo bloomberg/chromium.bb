@@ -21,6 +21,7 @@
 #ifndef CSSParserValues_h
 #define CSSParserValues_h
 
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSValueList.h"
 #include <wtf/text/AtomicString.h>
@@ -140,6 +141,7 @@ struct CSSParserValue {
     };
     int unit;
 
+    inline void setFromNumber(double value, int unit = CSSPrimitiveValue::CSS_NUMBER);
 
     PassRefPtr<CSSValue> createCSSValue();
 };
@@ -233,6 +235,14 @@ private:
 inline bool CSSParserSelector::hasShadowPseudo() const
 {
     return m_selector->relation() == CSSSelector::ShadowPseudo;
+}
+
+inline void CSSParserValue::setFromNumber(double value, int unit)
+{
+    id = 0;
+    isInt = false;
+    fValue = value;
+    this->unit = unit;
 }
 
 }
