@@ -104,6 +104,8 @@ class CrashNotificationDelegate : public NotificationDelegate {
     ScheduleCloseBalloon(extension_id_);
   }
 
+  virtual bool HasClickedListener() OVERRIDE { return true; }
+
   virtual std::string id() const OVERRIDE {
     return kNotificationPrefix + extension_id_;
   }
