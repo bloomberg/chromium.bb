@@ -1835,7 +1835,7 @@ crbug.com/243420 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_mea
 crbug.com/243477 plugins/plugin-initiate-popup-window.html [ Failure ]
 crbug.com/243479 fast/loader/recursive-before-unload-crash.html [ Crash Pass ]
 crbug.com/243481 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass ]
-crbug.com/243492 [ Win Mac ] http/tests/inspector-enabled/injected-script-discard.html [ Pass Timeout ]
+crbug.com/243492 [ Win Mac Linux ] http/tests/inspector-enabled/injected-script-discard.html [ Pass Timeout ]
 crbug.com/243515 [ Win Mac ] fast/autoresize/basic.html [ Pass Timeout ]
 crbug.com/243516 [ Mac ] transitions/transition-hit-test-transform.html [ Timeout ]
 crbug.com/243520 [ Mac ] fast/css/font-weight-1.html [ Failure Pass ]
