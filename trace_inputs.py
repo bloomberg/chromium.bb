@@ -1627,7 +1627,19 @@ class Strace(ApiBase):
       traces = ','.join(Strace.Context.traces() + ['file'])
       trace_cmd = [
         'strace',
+        # Each child process has its own trace file. It is necessary because
+        # strace may generate corrupted log file if multiple processes are
+        # heavily doing syscalls simultaneously.
         '-ff',
+        # Reduce whitespace usage.
+        '-a1',
+        # hex encode non-ascii strings.
+        # TODO(maruel): '-x',
+        # TODO(maruel): '-ttt',
+        # Signals are unnecessary noise here. Note the parser can cope with them
+        # but reduce the unnecessary output.
+        '-esignal=none',
+        # Print as much data as wanted.
         '-s', '%d' % self.MAX_LEN,
         '-e', 'trace=%s' % traces,
         '-o', self._logname + '.' + tracename,
