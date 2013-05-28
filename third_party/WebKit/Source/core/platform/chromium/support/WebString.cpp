@@ -64,6 +64,12 @@ size_t WebString::length() const
     return m_private ? const_cast<WebStringPrivate*>(m_private)->length() : 0;
 }
 
+WebUChar WebString::at(unsigned i) const
+{
+    ASSERT(m_private);
+    return (*m_private)[i];
+}
+
 const WebUChar* WebString::data() const
 {
     return m_private ? const_cast<WebStringPrivate*>(m_private)->characters() : 0;

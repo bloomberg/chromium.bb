@@ -60,7 +60,7 @@ template<> struct CrossThreadCopierBase<false, false, WebKit::WebFileInfo> {
         newInfo.modificationTime = info.modificationTime;
         newInfo.length = info.length;
         newInfo.type = info.type;
-        newInfo.platformPath.assign(info.platformPath.data(), info.platformPath.length());
+        newInfo.platformPath.assign(info.platformPath);
         return newInfo;
     }
 };

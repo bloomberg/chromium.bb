@@ -85,12 +85,11 @@ void SpellCheckClient::checkTextOfParagraph(const WebString& text, WebTextChecki
     vector<WebTextCheckingResult> results;
     if (mask & WebTextCheckingTypeSpelling) {
         size_t offset = 0;
-        size_t length = text.length();
-        const WebUChar* data = text.data();
-        while (offset < length) {
+        string16 data = text;
+        while (offset < data.length()) {
             int misspelledPosition = 0;
             int misspelledLength = 0;
-            m_spellcheck.spellCheckWord(WebString(&data[offset], length - offset), &misspelledPosition, &misspelledLength);
+            m_spellcheck.spellCheckWord(data.substr(offset), &misspelledPosition, &misspelledLength);
             if (!misspelledLength)
                 break;
             WebTextCheckingResult result;

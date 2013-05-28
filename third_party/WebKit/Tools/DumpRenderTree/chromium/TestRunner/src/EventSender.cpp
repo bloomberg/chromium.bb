@@ -616,7 +616,7 @@ void EventSender::keyDown(const CppArgumentList& arguments, CppVariant* result)
         if (!code) {
             WebString webCodeStr = WebString::fromUTF8(codeStr.data(), codeStr.size());
             WEBKIT_ASSERT(webCodeStr.length() == 1);
-            text = code = webCodeStr.data()[0];
+            text = code = webCodeStr.at(0);
             needsShiftKeyModifier = needsShiftModifier(code);
             if ((code & 0xFF) >= 'a' && (code & 0xFF) <= 'z')
                 code -= 'a' - 'A';

@@ -78,6 +78,9 @@ public:
     WEBKIT_EXPORT size_t length() const;
     WEBKIT_EXPORT const WebUChar* data() const;
 
+    // Caller must check bounds.
+    WEBKIT_EXPORT WebUChar at(unsigned) const;
+
     bool isEmpty() const { return !length(); }
     bool isNull() const { return !m_private; }
 
@@ -159,6 +162,7 @@ public:
 
 private:
     void assign(WebStringPrivate*);
+
     WebStringPrivate* m_private;
 };
 
