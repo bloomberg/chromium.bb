@@ -17,10 +17,13 @@ nexe = env.ComponentProgram('untrusted_check_test',
 # nacl-newlib and nacl-glibc's abort() implementations produce
 # different exit codes.
 if env.Bit('nacl_glibc'):
-  expected_exit_status = 'untrusted_sigill'
+  expected_exit_status = 'untrusted_sigsegv'
 else:
   expected_exit_status = '1'
 
+# Valgrind and ASan interfere with the exit status
+testing_on_asan_or_valgrind = (env.Bit('running_on_valgrind') or
+                               env.Bit('asan'))
 node = env.CommandSelLdrTestNacl(
     'untrusted_check_test.out',
     nexe,
@@ -32,4 +35,5 @@ node = env.CommandSelLdrTestNacl(
     stderr_golden = env.File('untrusted_check_test.stderr'),
     exit_status=expected_exit_status)
 
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_untrusted_check_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_untrusted_check_test',
+                       is_broken=testing_on_asan_or_valgrind)

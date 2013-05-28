@@ -91,14 +91,18 @@ env.AddNodeToTestSuite(node, test_suites, 'run_without_stubout_2_test')
 if env.Bit('target_mips32'):
   partly_invalid_exit_status = 'sigtrap'
 else:
-  partly_invalid_exit_status = 'untrusted_sigill'
+  partly_invalid_exit_status = 'untrusted_sigsegv'
 
+# Valgrind and ASan interfere with the exit status
+testing_on_asan_or_valgrind = (env.Bit('running_on_valgrind') or
+                               env.Bit('asan'))
 node = env.CommandSelLdrTestNacl(
     'partly_invalid_3.out', partly_invalid_nexe,
     stdout_golden=env.File('with_stubout.stdout'),
     sel_ldr_flags=['-s'],
     exit_status=partly_invalid_exit_status)
-env.AddNodeToTestSuite(node, test_suites, 'run_stubout_mode_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_stubout_mode_test',
+                       is_broken=testing_on_asan_or_valgrind)
 
 # Using the standalone ncval_stubout tool to rewrite the executable
 # offline should be equivalent to using sel_ldr's "-s" option.
@@ -107,6 +111,7 @@ node = env.CommandSelLdrTestNacl(
     'partly_invalid_stubout.out',
     partly_invalid_stubout_nexe,
     stdout_golden=env.File('with_stubout.stdout'),
-    exit_status='untrusted_sigill')
+    exit_status='untrusted_sigsegv')
 env.AddNodeToTestSuite(node, test_suites, 'run_offline_stubout_test',
-                       is_broken=env.Bit('target_mips32'))
+                       is_broken=(env.Bit('target_mips32') or
+                                  testing_on_asan_or_valgrind))
