@@ -3131,6 +3131,12 @@
                   '-Wl,--as-needed',
                 ],
               }],
+              ['_toolset=="target" and OS=="linux"', {
+                'ldflags': [
+                  # http://crbug.com/234010.
+                  '-lrt',
+                ],
+              }],
             ],
           }],
           ['asan==1', {
@@ -3142,8 +3148,6 @@
                 ],
                 'ldflags': [
                   '-fsanitize=address',
-                  # http://crbug.com/234010.
-                  '-lrt',
                 ],
                 'defines': [
                   'ADDRESS_SANITIZER',
