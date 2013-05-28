@@ -34,6 +34,7 @@ class BrowserContext;
 class ColorChooser;
 class DownloadItem;
 class JavaScriptDialogManager;
+class PageState;
 class RenderViewHost;
 class WebContents;
 class WebContentsImpl;
@@ -240,7 +241,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Opens source view for the given subframe.
   virtual void ViewSourceForFrame(WebContents* source,
                                   const GURL& url,
-                                  const std::string& content_state);
+                                  const PageState& page_state);
 
   // Allows delegates to handle keyboard events before sending to the renderer.
   // Returns true if the |event| was handled. Otherwise, if the |event| would be

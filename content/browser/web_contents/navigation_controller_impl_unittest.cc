@@ -32,6 +32,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/page_state.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
@@ -39,7 +40,6 @@
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/glue_serialize.h"
 
 using base::Time;
 
@@ -1493,7 +1493,7 @@ TEST_F(NavigationControllerTest, Redirect) {
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
+  params.page_state = PageState::CreateFromURL(url2);
 
   LoadCommittedDetails details;
 
@@ -1548,7 +1548,7 @@ TEST_F(NavigationControllerTest, PostThenRedirect) {
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
+  params.page_state = PageState::CreateFromURL(url2);
 
   LoadCommittedDetails details;
 
@@ -1594,7 +1594,7 @@ TEST_F(NavigationControllerTest, ImmediateRedirect) {
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
+  params.page_state = PageState::CreateFromURL(url2);
 
   LoadCommittedDetails details;
 
@@ -1633,7 +1633,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   params.should_update_history = false;
   params.gesture = NavigationGestureUser;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
+  params.page_state = PageState::CreateFromURL(url2);
 
   LoadCommittedDetails details;
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
@@ -1668,7 +1668,7 @@ TEST_F(NavigationControllerTest, SubframeOnEmptyPage) {
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
+  params.page_state = PageState::CreateFromURL(url);
 
   LoadCommittedDetails details;
   EXPECT_FALSE(controller.RendererDidNavigate(params, &details));
@@ -1694,7 +1694,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   params.should_update_history = false;
   params.gesture = NavigationGestureUser;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
+  params.page_state = PageState::CreateFromURL(url2);
 
   // Navigating should do nothing.
   LoadCommittedDetails details;
@@ -1725,7 +1725,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   params.should_update_history = false;
   params.gesture = NavigationGestureUser;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
+  params.page_state = PageState::CreateFromURL(url2);
 
   // This should generate a new entry.
   LoadCommittedDetails details;
@@ -1808,7 +1808,7 @@ TEST_F(NavigationControllerTest, InPage) {
   self_params.should_update_history = false;
   self_params.gesture = NavigationGestureUser;
   self_params.is_post = false;
-  self_params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url1));
+  self_params.page_state = PageState::CreateFromURL(url1);
   self_params.was_within_same_page = true;
 
   LoadCommittedDetails details;
@@ -1827,7 +1827,7 @@ TEST_F(NavigationControllerTest, InPage) {
   params.should_update_history = false;
   params.gesture = NavigationGestureUser;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
+  params.page_state = PageState::CreateFromURL(url2);
 
   // This should generate a new entry.
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
@@ -1905,7 +1905,7 @@ TEST_F(NavigationControllerTest, InPage_Replace) {
   params.should_update_history = false;
   params.gesture = NavigationGestureUser;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
+  params.page_state = PageState::CreateFromURL(url2);
 
   // This should NOT generate a new entry, nor prune the list.
   LoadCommittedDetails details;
@@ -1952,7 +1952,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
     params.should_update_history = true;
     params.gesture = NavigationGestureUnknown;
     params.is_post = false;
-    params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
+    params.page_state = PageState::CreateFromURL(url);
 
     // This should NOT generate a new entry, nor prune the list.
     LoadCommittedDetails details;
@@ -1975,7 +1975,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
     params.should_update_history = true;
     params.gesture = NavigationGestureUnknown;
     params.is_post = false;
-    params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
+    params.page_state = PageState::CreateFromURL(url);
 
     // This SHOULD generate a new entry.
     LoadCommittedDetails details;
@@ -2093,7 +2093,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
       browser_context());
   entry->SetPageID(0);
   entry->SetTitle(ASCIIToUTF16("Title"));
-  entry->SetContentState("state");
+  entry->SetPageState(PageState::CreateFromEncodedData("state"));
   const base::Time timestamp = base::Time::Now();
   entry->SetTimestamp(timestamp);
   entries.push_back(entry);
@@ -2139,7 +2139,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   params.should_update_history = false;
   params.gesture = NavigationGestureUser;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
+  params.page_state = PageState::CreateFromURL(url);
   LoadCommittedDetails details;
   our_controller.RendererDidNavigate(params, &details);
 
@@ -2172,7 +2172,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
       browser_context());
   entry->SetPageID(0);
   entry->SetTitle(ASCIIToUTF16("Title"));
-  entry->SetContentState("state");
+  entry->SetPageState(PageState::CreateFromEncodedData("state"));
   entries.push_back(entry);
   scoped_ptr<WebContentsImpl> our_contents(static_cast<WebContentsImpl*>(
       WebContents::Create(WebContents::CreateParams(browser_context()))));
@@ -2225,7 +2225,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   params.should_update_history = false;
   params.gesture = NavigationGestureUser;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
+  params.page_state = PageState::CreateFromURL(url);
   LoadCommittedDetails details;
   our_controller.RendererDidNavigate(params, &details);
 
@@ -2594,7 +2594,7 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(subframe));
+  params.page_state = PageState::CreateFromURL(subframe);
   LoadCommittedDetails details;
   EXPECT_FALSE(controller.RendererDidNavigate(params, &details));
 
@@ -2664,7 +2664,7 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url1_sub));
+  params.page_state = PageState::CreateFromURL(url1_sub);
   LoadCommittedDetails details;
 
   // This should return false meaning that nothing was actually updated.

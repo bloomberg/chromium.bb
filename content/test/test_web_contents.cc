@@ -15,10 +15,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/page_state.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/password_form.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "webkit/glue/glue_serialize.h"
 
 namespace content {
 
@@ -83,7 +83,7 @@ void TestWebContents::TestDidNavigateWithReferrer(
   params.gesture = NavigationGestureUser;
   params.was_within_same_page = false;
   params.is_post = false;
-  params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
+  params.page_state = PageState::CreateFromURL(url);
 
   DidNavigate(render_view_host, params);
 }

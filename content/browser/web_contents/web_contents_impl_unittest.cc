@@ -30,7 +30,6 @@
 #include "content/test/test_content_client.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/webkit_glue.h"
 
 namespace content {
 namespace {
@@ -1023,7 +1022,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationCanceled) {
   EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
 }
 
-// Test that NavigationEntries have the correct content state after going
+// Test that NavigationEntries have the correct page state after going
 // forward and back.  Prevents regression for bug 1116137.
 TEST_F(WebContentsImplTest, NavigationEntryContentState) {
   TestRenderViewHost* orig_rvh = test_rvh();
@@ -1034,30 +1033,30 @@ TEST_F(WebContentsImplTest, NavigationEntryContentState) {
   NavigationEntry* entry = controller().GetLastCommittedEntry();
   EXPECT_TRUE(entry == NULL);
 
-  // Committed entry should have content state after DidNavigate.
+  // Committed entry should have page state after DidNavigate.
   contents()->TestDidNavigate(orig_rvh, 1, url, PAGE_TRANSITION_TYPED);
   entry = controller().GetLastCommittedEntry();
-  EXPECT_FALSE(entry->GetContentState().empty());
+  EXPECT_TRUE(entry->GetPageState().IsValid());
 
   // Navigate to same site.
   const GURL url2("http://images.google.com");
   controller().LoadURL(url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   entry = controller().GetLastCommittedEntry();
-  EXPECT_FALSE(entry->GetContentState().empty());
+  EXPECT_TRUE(entry->GetPageState().IsValid());
 
-  // Committed entry should have content state after DidNavigate.
+  // Committed entry should have page state after DidNavigate.
   contents()->TestDidNavigate(orig_rvh, 2, url2, PAGE_TRANSITION_TYPED);
   entry = controller().GetLastCommittedEntry();
-  EXPECT_FALSE(entry->GetContentState().empty());
+  EXPECT_TRUE(entry->GetPageState().IsValid());
 
-  // Now go back.  Committed entry should still have content state.
+  // Now go back.  Committed entry should still have page state.
   controller().GoBack();
   contents()->TestDidNavigate(orig_rvh, 1, url, PAGE_TRANSITION_TYPED);
   entry = controller().GetLastCommittedEntry();
-  EXPECT_FALSE(entry->GetContentState().empty());
+  EXPECT_TRUE(entry->GetPageState().IsValid());
 }
 
-// Test that NavigationEntries have the correct content state and SiteInstance
+// Test that NavigationEntries have the correct page state and SiteInstance
 // state after opening a new window to about:blank.  Prevents regression for
 // bugs b/1116137 and http://crbug.com/111975.
 TEST_F(WebContentsImplTest, NavigationEntryContentStateNewWindow) {
@@ -1069,9 +1068,9 @@ TEST_F(WebContentsImplTest, NavigationEntryContentStateNewWindow) {
   contents()->TestDidNavigate(orig_rvh, 1, url, PAGE_TRANSITION_TYPED);
   contents()->TestDidNavigate(orig_rvh, 1, url, PAGE_TRANSITION_TYPED);
 
-  // Should have a content state here.
+  // Should have a page state here.
   NavigationEntry* entry = controller().GetLastCommittedEntry();
-  EXPECT_FALSE(entry->GetContentState().empty());
+  EXPECT_TRUE(entry->GetPageState().IsValid());
 
   // The SiteInstance should be available for other navigations to use.
   NavigationEntryImpl* entry_impl =

@@ -9,6 +9,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/renderer/history_item_serialization.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
@@ -25,7 +26,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;
@@ -358,7 +358,7 @@ void RenderViewTest::GoToOffset(int offset,
   navigate_params.current_history_list_offset = impl->history_list_offset();
   navigate_params.pending_history_list_offset = pending_offset;
   navigate_params.page_id = impl->GetPageId() + offset;
-  navigate_params.state = webkit_glue::HistoryItemToString(history_item);
+  navigate_params.page_state = HistoryItemToPageState(history_item);
   navigate_params.request_time = base::Time::Now();
 
   ViewMsg_Navigate navigate_message(impl->GetRoutingID(), navigate_params);

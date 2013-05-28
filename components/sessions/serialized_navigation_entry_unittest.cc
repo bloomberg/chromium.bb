@@ -34,7 +34,8 @@ const content::Referrer kReferrer =
                       WebKit::WebReferrerPolicyAlways);
 const GURL kVirtualURL("http://www.virtual-url.com");
 const string16 kTitle = ASCIIToUTF16("title");
-const std::string kContentState = "content state";
+const content::PageState kPageState =
+    content::PageState::CreateFromEncodedData("page state");
 const content::PageTransition kTransitionType =
     static_cast<content::PageTransition>(
         content::PAGE_TRANSITION_AUTO_SUBFRAME |
@@ -57,7 +58,7 @@ scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   navigation_entry->SetReferrer(kReferrer);
   navigation_entry->SetVirtualURL(kVirtualURL);
   navigation_entry->SetTitle(kTitle);
-  navigation_entry->SetContentState(kContentState);
+  navigation_entry->SetPageState(kPageState);
   navigation_entry->SetTransitionType(kTransitionType);
   navigation_entry->SetHasPostData(kHasPostData);
   navigation_entry->SetPostID(kPostID);
@@ -76,7 +77,7 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_data.set_virtual_url(kVirtualURL.spec());
   sync_data.set_referrer(kReferrer.url.spec());
   sync_data.set_title(UTF16ToUTF8(kTitle));
-  sync_data.set_state(kContentState);
+  sync_data.set_state(kPageState.ToEncodedData());
   sync_data.set_page_transition(
       sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME);
   sync_data.set_unique_id(kUniqueID);
@@ -98,7 +99,7 @@ TEST(SerializedNavigationEntryTest, DefaultInitializer) {
   EXPECT_EQ(WebKit::WebReferrerPolicyDefault, navigation.referrer().policy);
   EXPECT_EQ(GURL(), navigation.virtual_url());
   EXPECT_TRUE(navigation.title().empty());
-  EXPECT_TRUE(navigation.content_state().empty());
+  EXPECT_FALSE(navigation.page_state().IsValid());
   EXPECT_EQ(content::PAGE_TRANSITION_TYPED, navigation.transition_type());
   EXPECT_FALSE(navigation.has_post_data());
   EXPECT_EQ(-1, navigation.post_id());
@@ -125,7 +126,7 @@ TEST(SerializedNavigationEntryTest, FromNavigationEntry) {
   EXPECT_EQ(kReferrer.policy, navigation.referrer().policy);
   EXPECT_EQ(kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(kTitle, navigation.title());
-  EXPECT_EQ(kContentState, navigation.content_state());
+  EXPECT_EQ(kPageState, navigation.page_state());
   EXPECT_EQ(kTransitionType, navigation.transition_type());
   EXPECT_EQ(kHasPostData, navigation.has_post_data());
   EXPECT_EQ(kPostID, navigation.post_id());
@@ -150,7 +151,7 @@ TEST(SerializedNavigationEntryTest, FromSyncData) {
   EXPECT_EQ(WebKit::WebReferrerPolicyDefault, navigation.referrer().policy);
   EXPECT_EQ(kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(kTitle, navigation.title());
-  EXPECT_EQ(kContentState, navigation.content_state());
+  EXPECT_EQ(kPageState, navigation.page_state());
   EXPECT_EQ(kTransitionType, navigation.transition_type());
   EXPECT_FALSE(navigation.has_post_data());
   EXPECT_EQ(-1, navigation.post_id());
@@ -183,7 +184,7 @@ TEST(SerializedNavigationEntryTest, Pickle) {
   EXPECT_EQ(kReferrer.policy, new_navigation.referrer().policy);
   EXPECT_EQ(kVirtualURL, new_navigation.virtual_url());
   EXPECT_EQ(kTitle, new_navigation.title());
-  EXPECT_TRUE(new_navigation.content_state().empty());
+  EXPECT_FALSE(new_navigation.page_state().IsValid());
   EXPECT_EQ(kTransitionType, new_navigation.transition_type());
   EXPECT_EQ(kHasPostData, new_navigation.has_post_data());
   EXPECT_EQ(-1, new_navigation.post_id());
@@ -212,7 +213,7 @@ TEST(SerializedNavigationEntryTest, ToNavigationEntry) {
   EXPECT_EQ(kReferrer.policy, new_navigation_entry->GetReferrer().policy);
   EXPECT_EQ(kVirtualURL, new_navigation_entry->GetVirtualURL());
   EXPECT_EQ(kTitle, new_navigation_entry->GetTitle());
-  EXPECT_EQ(kContentState, new_navigation_entry->GetContentState());
+  EXPECT_EQ(kPageState, new_navigation_entry->GetPageState());
   EXPECT_EQ(kPageID, new_navigation_entry->GetPageID());
   EXPECT_EQ(content::PAGE_TRANSITION_RELOAD,
             new_navigation_entry->GetTransitionType());

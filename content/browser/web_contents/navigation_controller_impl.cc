@@ -40,7 +40,6 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
-#include "webkit/glue/glue_serialize.h"
 
 namespace content {
 namespace {
@@ -69,11 +68,9 @@ void NotifyPrunedEntries(NavigationControllerImpl* nav_controller,
 // losing the navigation entries and generating a new navigation entry after
 // this one. We don't want that. To avoid this we create a valid state which
 // WebKit will not treat as a new navigation.
-void SetContentStateIfEmpty(NavigationEntryImpl* entry) {
-  if (entry->GetContentState().empty()) {
-    entry->SetContentState(
-        webkit_glue::CreateHistoryStateForURL(entry->GetURL()));
-  }
+void SetPageStateIfEmpty(NavigationEntryImpl* entry) {
+  if (!entry->GetPageState().IsValid())
+    entry->SetPageState(PageState::CreateFromURL(entry->GetURL()));
 }
 
 NavigationEntryImpl::RestoreType ControllerRestoreTypeToEntryType(
@@ -101,7 +98,7 @@ void ConfigureEntriesForRestore(
     (*entries)[i]->SetTransitionType(PAGE_TRANSITION_RELOAD);
     (*entries)[i]->set_restore_type(ControllerRestoreTypeToEntryType(type));
     // NOTE(darin): This code is only needed for backwards compat.
-    SetContentStateIfEmpty((*entries)[i].get());
+    SetPageStateIfEmpty((*entries)[i].get());
   }
 }
 
@@ -769,11 +766,11 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // All committed entries should have nonempty content state so WebKit doesn't
   // get confused when we go back to them (see the function for details).
-  DCHECK(!params.content_state.empty());
+  DCHECK(params.page_state.IsValid());
   NavigationEntryImpl* active_entry =
       NavigationEntryImpl::FromNavigationEntry(GetLastCommittedEntry());
   active_entry->SetTimestamp(timestamp);
-  active_entry->SetContentState(params.content_state);
+  active_entry->SetPageState(params.page_state);
   // No longer needed since content state will hold the post data if any.
   active_entry->SetBrowserInitiatedPostData(NULL);
 

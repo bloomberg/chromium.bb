@@ -276,7 +276,7 @@ class CONTENT_EXPORT WebContentsImpl
                              bool* enable_decrement) const OVERRIDE;
   virtual void ViewSource() OVERRIDE;
   virtual void ViewFrameSource(const GURL& url,
-                               const std::string& content_state) OVERRIDE;
+                               const PageState& page_state) OVERRIDE;
   virtual int GetMinimumZoomPercent() const OVERRIDE;
   virtual int GetMaximumZoomPercent() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
@@ -334,7 +334,7 @@ class CONTENT_EXPORT WebContentsImpl
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual void UpdateState(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const std::string& state) OVERRIDE;
+                           const PageState& page_state) OVERRIDE;
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
                            const string16& title,

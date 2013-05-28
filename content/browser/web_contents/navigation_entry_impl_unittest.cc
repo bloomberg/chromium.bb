@@ -142,10 +142,10 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(ASCIIToUTF16("title2"), entry2_->GetTitle());
 
   // State
-  EXPECT_EQ(std::string(), entry1_->GetContentState());
-  EXPECT_EQ(std::string(), entry2_->GetContentState());
-  entry2_->SetContentState("state");
-  EXPECT_EQ("state", entry2_->GetContentState());
+  EXPECT_FALSE(entry1_->GetPageState().IsValid());
+  EXPECT_FALSE(entry2_->GetPageState().IsValid());
+  entry2_->SetPageState(PageState::CreateFromEncodedData("state"));
+  EXPECT_EQ("state", entry2_->GetPageState().ToEncodedData());
 
   // Page ID
   EXPECT_EQ(-1, entry1_->GetPageID());

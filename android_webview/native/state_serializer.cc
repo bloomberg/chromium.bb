@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_state.h"
 
 // Reasons for not re-using TabNavigation under chrome/ as of 20121116:
 // * Android WebView has different requirements for fields to store since
@@ -146,7 +147,7 @@ bool WriteNavigationEntryToPickle(const content::NavigationEntry& entry,
   if (!pickle->WriteString16(entry.GetTitle()))
     return false;
 
-  if (!pickle->WriteString(entry.GetContentState()))
+  if (!pickle->WriteString(entry.GetPageState().ToEncodedData()))
     return false;
 
   if (!pickle->WriteBool(static_cast<int>(entry.GetHasPostData())))
@@ -211,7 +212,8 @@ bool RestoreNavigationEntryFromPickle(PickleIterator* iterator,
     string content_state;
     if (!iterator->ReadString(&content_state))
       return false;
-    entry->SetContentState(content_state);
+    entry->SetPageState(
+        content::PageState::CreateFromEncodedData(content_state));
   }
 
   {

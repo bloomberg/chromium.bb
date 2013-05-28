@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/page_state.h"
 #include "content/shell/common/shell_test_configuration.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -51,7 +52,7 @@ IPC_MESSAGE_ROUTED0(ShellViewMsg_NotifyDone)
 IPC_MESSAGE_ROUTED3(
     ShellViewMsg_SessionHistory,
     std::vector<int> /* routing_ids */,
-    std::vector<std::vector<std::string> > /* session_histories */,
+    std::vector<std::vector<content::PageState> > /* session_histories */,
     std::vector<unsigned> /* current_entry_indexes */)
 
 // Send a text dump of the WebContents to the render host.

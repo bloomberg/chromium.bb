@@ -59,6 +59,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/document_state.h"
+#include "content/public/renderer/history_item_serialization.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/password_form_conversion_utils.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -198,7 +199,6 @@
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/weburlresponse_extradata_impl.h"
@@ -1227,10 +1227,10 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
       frame->reloadWithOverrideURL(params.url, true);
     else
       frame->reload(ignore_cache);
-  } else if (!params.state.empty()) {
+  } else if (params.page_state.IsValid()) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
-    WebHistoryItem item = webkit_glue::HistoryItemFromString(params.state);
+    WebHistoryItem item = PageStateToHistoryItem(params.page_state);
     if (!item.isNull()) {
       // Ensure we didn't save the swapped out URL in UpdateState, since the
       // browser should never be telling us to navigate to swappedout://.
@@ -1321,7 +1321,7 @@ bool RenderViewImpl::IsBackForwardToStaleEntry(
   // Make sure this isn't a back/forward to an entry we have already cropped
   // or replaced from our history, before the browser knew about it.  If so,
   // a new navigation has committed in the mean time, and we can ignore this.
-  bool is_back_forward = !is_reload && !params.state.empty();
+  bool is_back_forward = !is_reload && params.page_state.IsValid();
 
   // Note: if the history_list_length_ is 0 for a back/forward, we must be
   // restoring from a previous session.  We'll update our state in OnNavigate.
@@ -1682,13 +1682,12 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
 
   // Make navigation state a part of the FrameNavigate message so that commited
   // entry had it at all times.
-  const WebHistoryItem& item = frame->currentHistoryItem();
-  if (!item.isNull()) {
-    params.content_state = webkit_glue::HistoryItemToString(item);
-  } else {
-    params.content_state =
-        webkit_glue::CreateHistoryStateForURL(GURL(request.url()));
+  WebHistoryItem item = frame->currentHistoryItem();
+  if (item.isNull()) {
+    item.initialize();
+    item.setURLString(request.url().spec().utf16());
   }
+  params.page_state = HistoryItemToPageState(item);
 
   if (!frame->parent()) {
     // Top-level navigation.
@@ -1853,7 +1852,7 @@ void RenderViewImpl::SendUpdateState(const WebHistoryItem& item) {
     return;
 
   Send(new ViewHostMsg_UpdateState(
-      routing_id_, page_id_, webkit_glue::HistoryItemToString(item)));
+      routing_id_, page_id_, HistoryItemToPageState(item)));
 }
 
 void RenderViewImpl::OpenURL(WebFrame* frame,
@@ -3300,7 +3299,7 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
 
   if (IsReload(params))
     document_state->set_load_type(DocumentState::RELOAD);
-  else if (!params.state.empty())
+  else if (params.page_state.IsValid())
     document_state->set_load_type(DocumentState::HISTORY_LOAD);
   else
     document_state->set_load_type(DocumentState::NORMAL_LOAD);

@@ -1775,7 +1775,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
       source_web_contents_->ViewFrameSource(params_.frame_url,
-                                            params_.frame_content_state);
+                                            params_.frame_page_state);
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO: {

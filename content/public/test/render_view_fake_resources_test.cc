@@ -13,6 +13,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/renderer/history_item_serialization.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
@@ -28,7 +29,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace content {
@@ -213,7 +213,7 @@ void RenderViewFakeResourcesTest::GoToOffset(
                                         impl->historyForwardListCount() + 1);
   params.url = GURL(history_item.urlString());
   params.transition = PAGE_TRANSITION_FORWARD_BACK;
-  params.state = webkit_glue::HistoryItemToString(history_item);
+  params.page_state = HistoryItemToPageState(history_item);
   params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
   params.request_time = base::Time::Now();
   channel_->Send(new ViewMsg_Navigate(impl->routing_id(), params));

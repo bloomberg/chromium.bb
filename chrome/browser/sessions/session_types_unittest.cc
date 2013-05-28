@@ -34,7 +34,8 @@ const content::Referrer kReferrer =
                       WebKit::WebReferrerPolicyAlways);
 const GURL kVirtualURL("http://www.virtual-url.com");
 const string16 kTitle = ASCIIToUTF16("title");
-const std::string kContentState = "content state";
+const content::PageState kPageState =
+    content::PageState::CreateFromEncodedData("page state");
 const content::PageTransition kTransitionType =
     static_cast<content::PageTransition>(
         content::PAGE_TRANSITION_AUTO_SUBFRAME |
@@ -57,7 +58,7 @@ scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   navigation_entry->SetReferrer(kReferrer);
   navigation_entry->SetVirtualURL(kVirtualURL);
   navigation_entry->SetTitle(kTitle);
-  navigation_entry->SetContentState(kContentState);
+  navigation_entry->SetPageState(kPageState);
   navigation_entry->SetTransitionType(kTransitionType);
   navigation_entry->SetHasPostData(kHasPostData);
   navigation_entry->SetPostID(kPostID);
@@ -76,7 +77,7 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_data.set_virtual_url(kVirtualURL.spec());
   sync_data.set_referrer(kReferrer.url.spec());
   sync_data.set_title(UTF16ToUTF8(kTitle));
-  sync_data.set_state(kContentState);
+  sync_data.set_state(kPageState.ToEncodedData());
   sync_data.set_page_transition(
       sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME);
   sync_data.set_unique_id(kUniqueID);

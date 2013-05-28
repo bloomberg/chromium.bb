@@ -29,7 +29,6 @@
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
-#include "webkit/glue/glue_serialize.h"
 #include "webkit/support/webkit_support_gfx.h"
 
 namespace content {
@@ -568,7 +567,7 @@ void WebKitTestController::OnLoadURLForFrame(const GURL& url,
 
 void WebKitTestController::OnCaptureSessionHistory() {
   std::vector<int> routing_ids;
-  std::vector<std::vector<std::string> > session_histories;
+  std::vector<std::vector<PageState> > session_histories;
   std::vector<unsigned> current_entry_indexes;
 
   RenderViewHost* render_view_host =
@@ -590,13 +589,13 @@ void WebKitTestController::OnCaptureSessionHistory() {
     routing_ids.push_back(web_contents->GetRenderViewHost()->GetRoutingID());
     current_entry_indexes.push_back(
         web_contents->GetController().GetCurrentEntryIndex());
-    std::vector<std::string> history;
+    std::vector<PageState> history;
     for (int entry = 0; entry < web_contents->GetController().GetEntryCount();
          ++entry) {
-      std::string state = web_contents->GetController().GetEntryAtIndex(entry)
-          ->GetContentState();
-      if (state.empty()) {
-        state = webkit_glue::CreateHistoryStateForURL(
+      PageState state = web_contents->GetController().GetEntryAtIndex(entry)->
+          GetPageState();
+      if (!state.IsValid()) {
+        state = PageState::CreateFromURL(
             web_contents->GetController().GetEntryAtIndex(entry)->GetURL());
       }
       history.push_back(state);
