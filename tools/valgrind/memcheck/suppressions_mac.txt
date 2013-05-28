@@ -2362,3 +2362,11 @@
    fun:_ZN5media19ScreenCaptureDevice4Core9DoCaptureEv
    fun:_ZN5media19ScreenCaptureDevice4Core7DoStartEv
 }
+{
+   bug_244420
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN9talk_baseL8ToStringIyEESsRKT_
+   fun:_ZN7content23VideoDestinationHandler4OpenEPNS_28MediaStreamDependencyFactoryEPNS_28MediaStreamRegistryInterfaceERKSsPPNS_20FrameWriterInterfaceE
+   fun:_ZN7content37VideoDestinationHandlerTest_Open_Test8TestBodyEv
+}
