@@ -309,6 +309,7 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
     return false;
   }
 
+  pending_input_method_.clear();
   IBusInputContextClient* input_context =
       chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
   const std::string current_input_method_id = current_input_method_.id();
@@ -401,10 +402,8 @@ void InputMethodManagerImpl::OnComponentExtensionInitialized(
 
   LoadNecessaryComponentExtensions();
 
-  if (!pending_input_method_.empty()) {
-    if (ChangeInputMethodInternal(pending_input_method_, false))
-      pending_input_method_.clear();
-  }
+  if (!pending_input_method_.empty())
+    ChangeInputMethodInternal(pending_input_method_, false);
 
 }
 
@@ -722,10 +721,8 @@ void InputMethodManagerImpl::OnConnected() {
     }
   }
 
-  if (!pending_input_method_.empty()) {
-    if (ChangeInputMethodInternal(pending_input_method_, false))
-      pending_input_method_.clear();
-  }
+  if (!pending_input_method_.empty())
+    ChangeInputMethodInternal(pending_input_method_, false);
 }
 
 void InputMethodManagerImpl::OnDisconnected() {
