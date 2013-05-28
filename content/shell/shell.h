@@ -51,6 +51,9 @@ class WebContents;
 class Shell : public WebContentsDelegate,
               public NotificationObserver {
  public:
+  static const int kDefaultTestWindowWidthDip;
+  static const int kDefaultTestWindowHeightDip;
+
   virtual ~Shell();
 
   void LoadURL(const GURL& url);

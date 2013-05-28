@@ -130,6 +130,9 @@ void Shell::PlatformCleanUp() {
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
+  if (headless_)
+    return;
+
   int id;
   switch (control) {
     case BACK_BUTTON:
@@ -149,6 +152,9 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
+  if (headless_)
+    return;
+
   NSString* url_string = base::SysUTF8ToNSString(url.spec());
   [url_edit_view_ setStringValue:url_string];
 }
@@ -157,6 +163,9 @@ void Shell::PlatformSetIsLoading(bool loading) {
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
+  if (headless_)
+    return;
+
   NSRect initial_window_bounds =
       NSMakeRect(0, 0, width, height + kURLBarHeight);
   NSRect content_rect = initial_window_bounds;
@@ -229,6 +238,15 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
 void Shell::PlatformSetContents() {
   NSView* web_view = web_contents_->GetView()->GetNativeView();
+
+  if (headless_) {
+    NSRect frame = NSMakeRect(
+        0, 0, kDefaultTestWindowWidthDip, kDefaultTestWindowHeightDip);
+    [web_view setFrame:frame];
+    [web_view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
+    return;
+  }
+
   NSView* content = [window_ contentView];
   [content addSubview:web_view];
 
@@ -244,12 +262,18 @@ void Shell::PlatformResizeSubViews() {
 }
 
 void Shell::PlatformSetTitle(const string16& title) {
+  if (headless_)
+    return;
+
   NSString* title_string = base::SysUTF16ToNSString(title);
   [window_ setTitle:title_string];
 }
 
 void Shell::Close() {
-  [window_ performClose:nil];
+  if (headless_)
+    delete this;
+  else
+    [window_ performClose:nil];
 }
 
 void Shell::ActionPerformed(int control) {

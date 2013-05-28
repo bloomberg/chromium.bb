@@ -32,11 +32,10 @@
 #include "content/shell/shell_javascript_dialog_manager.h"
 #include "content/shell/webkit_test_controller.h"
 
-// Content area size for newly created windows.
-static const int kTestWindowWidth = 800;
-static const int kTestWindowHeight = 600;
-
 namespace content {
+
+const int Shell::kDefaultTestWindowWidthDip = 800;
+const int Shell::kDefaultTestWindowHeightDip = 600;
 
 std::vector<Shell*> Shell::windows_;
 base::Callback<void(Shell*)> Shell::shell_created_callback_;
@@ -147,7 +146,8 @@ Shell* Shell::FromRenderViewHost(RenderViewHost* rvh) {
 
 // static
 void Shell::Initialize() {
-  PlatformInitialize(gfx::Size(kTestWindowWidth, kTestWindowHeight));
+  PlatformInitialize(
+      gfx::Size(kDefaultTestWindowWidthDip, kDefaultTestWindowHeightDip));
 }
 
 Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
@@ -160,7 +160,8 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
   if (!initial_size.IsEmpty())
     create_params.initial_size = initial_size;
   else
-    create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
+    create_params.initial_size =
+        gfx::Size(kDefaultTestWindowWidthDip, kDefaultTestWindowHeightDip);
   WebContents* web_contents = WebContents::Create(create_params);
   Shell* shell = CreateShell(web_contents, create_params.initial_size);
   if (!url.is_empty())

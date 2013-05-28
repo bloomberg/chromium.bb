@@ -568,6 +568,7 @@ void WebKitTestRunner::Navigate(const GURL& url) {
         ShellRenderProcessObserver::GetInstance()->test_interfaces();
     interfaces->setTestIsRunning(true);
     interfaces->configureForTestWithURL(GURL(), false);
+    ForceResizeRenderView(render_view(), WebSize(800, 600));
   }
 }
 

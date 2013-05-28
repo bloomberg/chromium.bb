@@ -38,9 +38,6 @@ const int kTestTimeoutMilliseconds = 30 * 1000;
 // 0x20000000ms is big enough for the purpose to avoid timeout in debugging.
 const int kCloseEnoughToInfinity = 0x20000000;
 
-const int kTestWindowWidthDip = 800;
-const int kTestWindowHeightDip = 600;
-
 const int kTestSVGWindowWidthDip = 480;
 const int kTestSVGWindowHeightDip = 360;
 
@@ -210,7 +207,8 @@ bool WebKitTestController::PrepareForLayoutTest(
       ShellContentBrowserClient::Get()->browser_context();
   if (test_url.spec().find("compositing/") != std::string::npos)
     is_compositing_test_ = true;
-  initial_size_ = gfx::Size(kTestWindowWidthDip, kTestWindowHeightDip);
+  initial_size_ = gfx::Size(
+      Shell::kDefaultTestWindowWidthDip, Shell::kDefaultTestWindowHeightDip);
   // The W3C SVG layout tests use a different size than the other layout tests.
   if (test_url.spec().find("W3C-SVG-1.1") != std::string::npos)
     initial_size_ = gfx::Size(kTestSVGWindowWidthDip, kTestSVGWindowHeightDip);
