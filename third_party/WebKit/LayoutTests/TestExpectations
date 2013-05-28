@@ -1174,7 +1174,6 @@ webkit.org/b/95136 [ Linux Win ] fast/css/sticky/sticky-writing-mode-vertical-rl
 webkit.org/b/95506 http/tests/notifications [ Skip ]
 
 webkit.org/b/96441 [ Win Debug ] fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
-webkit.org/b/96441 [ Win ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure Timeout ]
 webkit.org/b/96441 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-as-background.html [ Pass Timeout ]
 
 webkit.org/b/98087 fast/css/lang-mapped-to-webkit-locale-dynamic.xhtml [ Failure Pass ]
@@ -1528,16 +1527,18 @@ crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout
 crbug.com/239839 [ Win ] fast/canvas/webgl/ [ Crash Pass ]
 
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/device-scale-factor-paint.html [ Pass Timeout ]
-crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-background-dynamic.html [ Pass Timeout ]
+crbug.com/238858 [ Win7 ] virtual/gpu/fast/hidpi/image-set-background-dynamic.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-background-repeat-without-size.html [ Pass Timeout ]
-crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-background-repeat.html [ Pass Timeout ]
-crbug.com/238858 [ Linux Win ] virtual/gpu/fast/hidpi/image-set-border-image-comparison.html [ Pass Timeout ]
+crbug.com/238858 [ Win7 ] virtual/gpu/fast/hidpi/image-set-background-repeat.html [ Pass Timeout Failure ]
+crbug.com/238858 [ Linux Win ] virtual/gpu/fast/hidpi/image-set-border-image-comparison.html [ Pass Timeout ImageOnlyFailure ]
 crbug.com/238858 [ Win ] virtual/gpu/fast/hidpi/image-set-border-image-dynamic.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-border-image-simple.html [ Pass Timeout ]
-crbug.com/238858 [ Win ] virtual/gpu/fast/hidpi/image-set-in-content-dynamic.html [ Pass Timeout ]
-crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ Pass Timeout ]
-crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-simple.html [ Pass Timeout ]
+crbug.com/238858 virtual/gpu/fast/hidpi/image-set-in-content-dynamic.html [ Pass Timeout ]
+crbug.com/238858 [ Linux ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ Pass Timeout ]
+crbug.com/238858 [ Win ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ Pass Timeout ImageOnlyFailure ]
+crbug.com/238858 virtual/gpu/fast/hidpi/image-set-simple.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Pass Timeout ]
+crbug.com/238858 virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure Timeout Pass ]
 
 crbug.com/239077 fast/canvas/webgl/index-validation-with-resized-buffer.html [ Crash ]
 
