@@ -38,6 +38,7 @@ SpellingMenuObserver::SpellingMenuObserver(RenderViewContextMenuProxy* proxy)
     : proxy_(proxy),
       loading_frame_(0),
       succeeded_(false),
+      misspelling_hash_(0),
       client_(new SpellingServiceClient) {
   if (proxy && proxy->GetProfile()) {
     integrate_spelling_service_.Init(prefs::kSpellCheckUseSpellingService,
@@ -67,6 +68,7 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
 
   suggestions_ = params.dictionary_suggestions;
   misspelled_word_ = params.misspelled_word;
+  misspelling_hash_ = params.misspelling_hash;
 
   bool use_suggestions = SpellingServiceClient::IsAvailable(
       profile, SpellingServiceClient::SUGGEST);
@@ -343,6 +345,17 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       }
     }
   }
+}
+
+void SpellingMenuObserver::OnMenuCancel() {
+  Profile* profile = proxy_->GetProfile();
+  if (!profile)
+    return;
+  SpellcheckService* spellcheck =
+      SpellcheckServiceFactory::GetForProfile(profile);
+  if (!spellcheck)
+    return;
+  spellcheck->GetFeedbackSender()->IgnoredSuggestions(misspelling_hash_);
 }
 
 void SpellingMenuObserver::OnTextCheckComplete(
