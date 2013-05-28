@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "components/autofill/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
@@ -2385,6 +2386,58 @@ TEST(FormStructureTest, ToFormData) {
   // false. This forces a future author that changes this to update this test.
   form.user_submitted = true;
   EXPECT_NE(form, FormStructure(form, std::string()).ToFormData());
+}
+
+TEST(FormStructureTest, SkipFieldTest) {
+  FormData form;
+  form.name = ASCIIToUTF16("the-name");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://cool.com");
+  form.action = form.origin.Resolve("/login");
+
+  FormFieldData field;
+  field.label = ASCIIToUTF16("username");
+  field.name = ASCIIToUTF16("username");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("password");
+  field.name = ASCIIToUTF16("password");
+  field.form_control_type = "password";
+  form.fields.push_back(field);
+
+  field.label = base::string16();
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  ScopedVector<FormStructure> forms;
+  forms.push_back(new FormStructure(form, std::string()));
+  std::vector<std::string> encoded_signatures;
+  std::string encoded_xml;
+
+  const char * const kSignature = "18006745212084723782";
+  const char * const kResponse =
+      "<\?xml version=\"1.0\" encoding=\"UTF-8\"?><autofillquery "
+      "clientversion=\"6.1.1715.1442/en (GGLL)\" accepts=\"e\"><form "
+      "signature=\"18006745212084723782\"><field signature=\"239111655\"/>"
+      "<field signature=\"420638584\"/></form></autofillquery>";
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms.get(),
+                                                &encoded_signatures,
+                                                &encoded_xml));
+  ASSERT_EQ(1U, encoded_signatures.size());
+  EXPECT_EQ(kSignature, encoded_signatures[0]);
+  EXPECT_EQ(kResponse, encoded_xml);
+
+  AutocheckoutPageMetaData page_meta_data;
+  const char * const kServerResponse =
+      "<autofillqueryresponse><field autofilltype=\"3\" />"
+      "<field autofilltype=\"9\" /></autofillqueryresponse>";
+  FormStructure::ParseQueryResponse(kServerResponse, forms.get(),
+                                    &page_meta_data, TestAutofillMetrics());
+  ASSERT_EQ(NAME_FIRST, forms[0]->field(0)->server_type());
+  ASSERT_EQ(NO_SERVER_DATA, forms[0]->field(1)->server_type());
+  ASSERT_EQ(EMAIL_ADDRESS, forms[0]->field(2)->server_type());
 }
 
 }  // namespace autofill

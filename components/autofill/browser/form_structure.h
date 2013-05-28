@@ -201,6 +201,9 @@ class FormStructure {
 
   bool IsAutocheckoutEnabled() const;
 
+  // Returns true if field should be skipped when talking to Autofill server.
+  bool ShouldSkipField(const FormFieldData field) const;
+
   // Returns the minimal number of fillable fields required to start autofill.
   size_t RequiredFillableFields() const;
   size_t active_field_count() const;

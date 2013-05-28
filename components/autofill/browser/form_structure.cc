@@ -305,11 +305,7 @@ FormStructure::FormStructure(const FormData& form,
            form.fields.begin();
        field != form.fields.end(); field++) {
 
-    // Skip checkable and password elements when Autocheckout is not enabled,
-    // else these fields will interfere with existing field signatures with
-    // Autofill servers.
-    if ((!field->is_checkable && field->form_control_type != "password") ||
-        IsAutocheckoutEnabled()) {
+    if (!ShouldSkipField(*field)) {
       // Add all supported form fields (including with empty names) to the
       // signature.  This is a requirement for Autofill servers.
       form_signature_field_names_.append("&");
@@ -559,7 +555,10 @@ void FormStructure::ParseQueryResponse(
     form->server_experiment_id_ = experiment_id;
 
     for (std::vector<AutofillField*>::iterator field = form->fields_.begin();
-         field != form->fields_.end(); ++field, ++current_info) {
+         field != form->fields_.end(); ++field) {
+      if (form->ShouldSkipField(**field))
+        continue;
+
       // In some cases *successful* response does not return all the fields.
       // Quit the update of the types then.
       if (current_info == field_infos.end())
@@ -579,6 +578,8 @@ void FormStructure::ParseQueryResponse(
       // Copy default value into the field if available.
       if (!current_info->default_value.empty())
         (*field)->set_default_value(current_info->default_value);
+
+      ++current_info;
     }
 
     form->UpdateAutofillCount();
@@ -655,6 +656,11 @@ std::string FormStructure::FormSignature() const {
 
 bool FormStructure::IsAutocheckoutEnabled() const {
   return !autocheckout_url_prefix_.empty();
+}
+
+bool FormStructure::ShouldSkipField(const FormFieldData field) const {
+  return (field.is_checkable || field.form_control_type == "password") &&
+      !IsAutocheckoutEnabled();
 }
 
 size_t FormStructure::RequiredFillableFields() const {
@@ -1026,10 +1032,7 @@ bool FormStructure::EncodeFormRequest(
         EncodeFieldForUpload(*field, encompassing_xml_element);
         break;
       case FormStructure::QUERY:
-        // Skip putting checkable and password fields in the request if
-        // Autocheckout is not enabled.
-        if ((field->is_checkable || field->form_control_type == "password") &&
-            !IsAutocheckoutEnabled())
+        if (ShouldSkipField(*field))
           continue;
         EncodeFieldForQuery(*field, encompassing_xml_element);
         break;
