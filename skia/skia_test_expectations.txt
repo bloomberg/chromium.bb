@@ -56,4 +56,8 @@ crbug.com/241761 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ I
 # the way curves are drawn. The changes to this image are imperceptible
 crbug.com/243726 svg/as-background-image/svg-as-background-6.html [ ImageOnlyFailure ]
 
+# Skia r9279 improved hairline rendering of quadratics and slightly
+# changed this layout test
+crbug.com/244401 virtual/gpu/fast/canvas/quadraticCurveTo.xml [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
