@@ -17,10 +17,6 @@
 #include <string>
 #include <vector>
 
-#if !defined(OS_ANDROID) && !defined(OS_NACL)
-#include <execinfo.h>
-#endif
-
 #if defined(__GLIBCXX__)
 #include <cxxabi.h>
 #endif

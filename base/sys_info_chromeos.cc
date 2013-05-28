@@ -13,8 +13,6 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/threading/thread_restrictions.h"
 
-#include <execinfo.h>
-
 namespace base {
 
 static const char* kLinuxStandardBaseVersionKeys[] = {
