@@ -33,3 +33,26 @@ vector-subscript-3.c,CFLAGS:--pnacl-disable-abi-check
 20030811-1.c,CFLAGS:--pnacl-disable-abi-check
 frame-address.c,CFLAGS:--pnacl-disable-abi-check
 pr17377.c,CFLAGS:--pnacl-disable-abi-check
+
+# The following tests use inline assembly, though it happens to be in
+# a "portable" way, with an empty assembly string, e.g. asm("").
+20001009-2.c,CFLAGS:--pnacl-disable-abi-check
+20020107-1.c,CFLAGS:--pnacl-disable-abi-check
+20030222-1.c,CFLAGS:--pnacl-disable-abi-check
+20050203-1.c,CFLAGS:--pnacl-disable-abi-check
+20061031-1.c,CFLAGS:--pnacl-disable-abi-check
+20071211-1.c,CFLAGS:--pnacl-disable-abi-check
+20080122-1.c,CFLAGS:--pnacl-disable-abi-check
+960312-1.c,CFLAGS:--pnacl-disable-abi-check
+990130-1.c,CFLAGS:--pnacl-disable-abi-check
+pr38533.c,CFLAGS:--pnacl-disable-abi-check
+pr40022.c,CFLAGS:--pnacl-disable-abi-check
+pr40657.c,CFLAGS:--pnacl-disable-abi-check
+pr41239.c,CFLAGS:--pnacl-disable-abi-check
+pr43385.c,CFLAGS:--pnacl-disable-abi-check
+pr43560.c,CFLAGS:--pnacl-disable-abi-check
+pr44852.c,CFLAGS:--pnacl-disable-abi-check
+pr45695.c,CFLAGS:--pnacl-disable-abi-check
+pr47925.c,CFLAGS:--pnacl-disable-abi-check
+pr49218.c,CFLAGS:--pnacl-disable-abi-check
+pr49390.c,CFLAGS:--pnacl-disable-abi-check
