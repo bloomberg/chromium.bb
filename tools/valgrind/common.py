@@ -35,6 +35,9 @@ def RunSubprocess(proc, timeout=0):
   """
 
   logging.info("running %s, timeout %d sec" % (" ".join(proc), timeout))
+  sys.stdout.flush()
+  sys.stderr.flush()
+
   # Manually read and print out stdout and stderr.
   # By default, the subprocess is supposed to inherit these from its parent,
   # however when run under buildbot, it seems unable to read data from a
@@ -43,25 +46,22 @@ def RunSubprocess(proc, timeout=0):
   # necessary.
   # TODO(erikkay): should we buffer stderr and stdout separately?
   p = subprocess.Popen(proc, universal_newlines=True,
-                       bufsize=1,  # line buffered
+                       bufsize=0,  # unbuffered
                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
   logging.info("started subprocess")
 
-  # How long to wait (in seconds) before printing progress log messages.
-  progress_delay = 300
-  progress_delay_time = time.time() + progress_delay
   did_timeout = False
   if timeout > 0:
     wait_until = time.time() + timeout
   while p.poll() is None and not did_timeout:
-    for line in p.stdout:
+    line = p.stdout.readline()
+    while line and not did_timeout:
       sys.stdout.write(line)
       sys.stdout.flush()
+      line = p.stdout.readline()
       if timeout > 0:
         did_timeout = time.time() > wait_until
-      if did_timeout:
-        break
 
   if did_timeout:
     logging.info("process timed out")
@@ -85,7 +85,7 @@ def RunSubprocess(proc, timeout=0):
       sys.stdout.write(line)
     if not IsMac():   # stdout flush fails on Mac
       logging.info("flushing stdout")
-      p.stdout.flush()
+      sys.stdout.flush()
 
   logging.info("collecting result code")
   result = p.poll()
