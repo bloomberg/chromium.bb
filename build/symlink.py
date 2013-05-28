@@ -17,7 +17,7 @@ def Main(argv):
   parser.add_option('-f', '--force', action='store_true')
   parser.add_option('--touch')
 
-  options, args = parser.parse_args(argv)
+  options, args = parser.parse_args(argv[1:])
   if len(args) < 2:
     parser.error('at least two arguments required.')
 
