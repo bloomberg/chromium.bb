@@ -2171,9 +2171,14 @@ LayoutUnit RenderBox::computeLogicalWidthInRegionUsing(SizeType widthType, Lengt
     return logicalWidthResult;
 }
 
-static bool flexItemHasStretchAlignment(const RenderObject* flexitem)
+static bool columnFlexItemHasStretchAlignment(const RenderObject* flexitem)
 {
     RenderObject* parent = flexitem->parent();
+    // auto margins mean we don't stretch. Note that this function will only be used for
+    // widths, so we don't have to check marginBefore/marginAfter.
+    ASSERT(parent->style()->isColumnFlexDirection());
+    if (flexitem->style()->marginStart().isAuto() || flexitem->style()->marginEnd().isAuto())
+        return false;
     return flexitem->style()->alignSelf() == AlignStretch || (flexitem->style()->alignSelf() == AlignAuto && parent->style()->alignItems() == AlignStretch);
 }
 
@@ -2184,7 +2189,7 @@ static bool isStretchingColumnFlexItem(const RenderObject* flexitem)
         return true;
 
     // We don't stretch multiline flexboxes because they need to apply line spacing (align-content) first.
-    if (parent->isFlexibleBox() && parent->style()->flexWrap() == FlexNoWrap && parent->style()->isColumnFlexDirection() && flexItemHasStretchAlignment(flexitem))
+    if (parent->isFlexibleBox() && parent->style()->flexWrap() == FlexNoWrap && parent->style()->isColumnFlexDirection() && columnFlexItemHasStretchAlignment(flexitem))
         return true;
     return false;
 }
@@ -2220,7 +2225,7 @@ bool RenderBox::sizesLogicalWidthToFitContent(SizeType widthType) const
         // For multiline columns, we need to apply align-content first, so we can't stretch now.
         if (!parent()->style()->isColumnFlexDirection() || parent()->style()->flexWrap() != FlexNoWrap)
             return true;
-        if (!flexItemHasStretchAlignment(this))
+        if (!columnFlexItemHasStretchAlignment(this))
             return true;
     }
 
