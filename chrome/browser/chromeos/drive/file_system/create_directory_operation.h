@@ -58,17 +58,16 @@ class CreateDirectoryOperation {
                        bool is_recursive,
                        const FileOperationCallback& callback);
 
+ private:
   // Returns the file path to the existing deepest directory, which appears
   // in the |file_path|, with |entry| storing the directory's resource entry.
   // If not found, returns an empty file path.
   // This should run on |blocking_task_runner_|.
-  // This is public for testing.
   static base::FilePath GetExistingDeepestDirectory(
       internal::ResourceMetadata* metadata,
       const base::FilePath& directory_path,
       ResourceEntry* entry);
 
- private:
   // Part of CreateDirectory(). Called after GetExistingDeepestDirectory
   // is completed.
   void CreateDirectoryAfterGetExistingDeepestDirectory(

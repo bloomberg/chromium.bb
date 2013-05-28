@@ -161,16 +161,6 @@ class FileSystemTest : public testing::Test {
     return true;
   }
 
-  FileError AddDirectory(const base::FilePath& directory_path) {
-    FileError error = FILE_ERROR_FAILED;
-    file_system_->CreateDirectory(
-        directory_path,
-        false,  // is_exclusive
-        false,  // is_recursive
-        google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
-    return error;
-  }
 
   // Gets resource entry by path synchronously.
   scoped_ptr<ResourceEntry> GetResourceEntryByPathSync(
@@ -1125,30 +1115,6 @@ TEST_F(FileSystemTest, CopyFileToInvalidPath) {
   EXPECT_TRUE(EntryExists(dest_parent_path));
 
   EXPECT_FALSE(EntryExists(dest_file_path));
-}
-
-TEST_F(FileSystemTest, CreateDirectory) {
-  ASSERT_TRUE(LoadRootFeedDocument());
-
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
-
-  // Create directory in root.
-  base::FilePath dir_path(FILE_PATH_LITERAL("drive/root/New Folder 1"));
-  EXPECT_FALSE(EntryExists(dir_path));
-  EXPECT_EQ(FILE_ERROR_OK, AddDirectory(dir_path));
-  EXPECT_TRUE(EntryExists(dir_path));
-
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/New Folder 1")))))
-      .Times(1);
-
-  // Create directory in a sub directory.
-  base::FilePath subdir_path(
-      FILE_PATH_LITERAL("drive/root/New Folder 1/New Folder 2"));
-  EXPECT_FALSE(EntryExists(subdir_path));
-  EXPECT_EQ(FILE_ERROR_OK, AddDirectory(subdir_path));
-  EXPECT_TRUE(EntryExists(subdir_path));
 }
 
 TEST_F(FileSystemTest, CreateDirectoryByImplicitLoad) {
