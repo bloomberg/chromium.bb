@@ -61,8 +61,11 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
     if (loading_state_ == kUnknown)
       loading_state_ = kLoading;
   }
-  *is_pending = (loading_state_ == kLoading) ||
-                scheduled_frame_set_.count(frame_id) > 0;
+  *is_pending = loading_state_ == kLoading;
+  if (frame_id.empty())
+    *is_pending |= scheduled_frame_set_.size() > 0;
+  else
+    *is_pending |= scheduled_frame_set_.count(frame_id) > 0;
   return Status(kOk);
 }
 
@@ -118,5 +121,8 @@ void NavigationTracker::OnEvent(DevToolsClient* client,
     const base::Value* unused_value;
     if (!params.Get("frame.parentId", &unused_value))
       scheduled_frame_set_.clear();
+  } else if (method == "Inspector.targetCrashed") {
+    loading_state_ = kNotLoading;
+    scheduled_frame_set_.clear();
   }
 }

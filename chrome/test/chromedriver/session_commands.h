@@ -18,7 +18,6 @@ class Value;
 
 struct Session;
 class Status;
-class WebView;
 
 typedef base::Callback<Status(
     Session* session,
@@ -91,43 +90,6 @@ Status ExecuteSetScriptTimeout(
 
 // Set the amount of time the driver should wait when searching for elements.
 Status ExecuteImplicitlyWait(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value);
-
-// Executes an alert command.
-Status ExecuteAlertCommand(
-     const SessionCommand& alert_command,
-     Session* session,
-     const base::DictionaryValue& params,
-     scoped_ptr<base::Value>* value);
-
-// Returns whether an alert is open.
-Status ExecuteGetAlert(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value);
-
-// Returns the text of the open alert.
-Status ExecuteGetAlertText(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value);
-
-// Sets the value of the alert prompt.
-Status ExecuteSetAlertValue(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value);
-
-// Accepts the open alert.
-Status ExecuteAcceptAlert(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value);
-
-// Dismisses the open alert.
-Status ExecuteDismissAlert(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);

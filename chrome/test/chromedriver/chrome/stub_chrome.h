@@ -25,11 +25,6 @@ class StubChrome : public Chrome {
   virtual Status GetWebViewById(const std::string& id,
                                 WebView** web_view) OVERRIDE;
   virtual Status CloseWebView(const std::string& id) OVERRIDE;
-  virtual Status IsJavaScriptDialogOpen(bool* is_open) OVERRIDE;
-  virtual Status GetJavaScriptDialogMessage(std::string* message) OVERRIDE;
-  virtual Status HandleJavaScriptDialog(
-      bool accept,
-      const std::string* prompt_text) OVERRIDE;
   virtual Status GetAutomationExtension(
       AutomationExtension** extension) OVERRIDE;
   virtual std::string GetOperatingSystemName() OVERRIDE;

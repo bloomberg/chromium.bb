@@ -14,7 +14,9 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
+#include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/geoposition.h"
+#include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
@@ -126,21 +128,21 @@ Status ExecuteWindowCommand(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  bool is_dialog_open;
-  Status status = session->chrome->IsJavaScriptDialogOpen(&is_dialog_open);
-  if (status.IsError())
-    return status;
-  if (is_dialog_open)
-    return Status(kUnexpectedAlertOpen);
-
   WebView* web_view = NULL;
-  status = session->GetTargetWindow(&web_view);
+  Status status = session->GetTargetWindow(&web_view);
   if (status.IsError())
     return status;
 
   status = web_view->ConnectIfNecessary();
   if (status.IsError())
     return status;
+
+  status = web_view->GetDevToolsClient()->HandleReceivedEvents();
+  if (status.IsError())
+    return status;
+
+  if (web_view->GetJavaScriptDialogManager()->IsDialogOpen())
+    return Status(kUnexpectedAlertOpen);
 
   Status nav_status =
       web_view->WaitForPendingNavigations(session->GetCurrentFrameId());

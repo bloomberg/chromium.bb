@@ -106,6 +106,10 @@ Status WebViewImpl::ConnectIfNecessary() {
   return client_->ConnectIfNecessary();
 }
 
+DevToolsClient* WebViewImpl::GetDevToolsClient() {
+  return client_.get();
+}
+
 Status WebViewImpl::Load(const std::string& url) {
   base::DictionaryValue params;
   params.SetString("url", url);
@@ -250,41 +254,17 @@ Status WebViewImpl::DeleteCookie(const std::string& name,
 }
 
 Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id) {
-  std::string full_frame_id(frame_id);
-  if (full_frame_id.empty()) {
-    Status status = GetMainFrame(&full_frame_id);
-    if (status.IsError())
-      return status;
-  }
   log_->AddEntry(Log::kLog, "waiting for pending navigations");
   Status status = client_->HandleEventsUntil(
       base::Bind(&WebViewImpl::IsNotPendingNavigation, base::Unretained(this),
-                 full_frame_id));
+                 frame_id));
   log_->AddEntry(Log::kLog, "done waiting for pending navigations");
   return status;
 }
 
 Status WebViewImpl::IsPendingNavigation(const std::string& frame_id,
                                         bool* is_pending) {
-  std::string full_frame_id(frame_id);
-  if (full_frame_id.empty()) {
-    Status status = GetMainFrame(&full_frame_id);
-    if (status.IsError())
-      return status;
-  }
   return navigation_tracker_->IsPendingNavigation(frame_id, is_pending);
-}
-
-Status WebViewImpl::GetMainFrame(std::string* out_frame) {
-  base::DictionaryValue params;
-  scoped_ptr<base::DictionaryValue> result;
-  Status status = client_->SendCommandAndGetResult(
-      "Page.getResourceTree", params, &result);
-  if (status.IsError())
-    return status;
-  if (!result->GetString("frameTree.frame.id", out_frame))
-    return Status(kUnknownError, "missing 'frameTree.frame.id' in response");
-  return Status(kOk);
 }
 
 JavaScriptDialogManager* WebViewImpl::GetJavaScriptDialogManager() {

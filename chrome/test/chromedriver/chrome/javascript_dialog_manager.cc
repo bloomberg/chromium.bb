@@ -14,11 +14,9 @@ JavaScriptDialogManager::JavaScriptDialogManager(DevToolsClient* client)
   client_->AddListener(this);
 }
 
-JavaScriptDialogManager::~JavaScriptDialogManager() {
-}
+JavaScriptDialogManager::~JavaScriptDialogManager() {}
 
 bool JavaScriptDialogManager::IsDialogOpen() {
-  client_->HandleReceivedEvents();
   return !unhandled_dialog_queue_.empty();
 }
 

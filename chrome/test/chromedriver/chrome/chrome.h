@@ -29,17 +29,6 @@ class Chrome {
   // Closes the specified WebView.
   virtual Status CloseWebView(const std::string& id) = 0;
 
-  // Returns whether a JavaScript dialog is open.
-  virtual Status IsJavaScriptDialogOpen(bool* is_open) = 0;
-
-  // Returns the message of the open JavaScript dialog.
-  virtual Status GetJavaScriptDialogMessage(std::string* message) = 0;
-
-  // Handles an open JavaScript dialog. |prompt_text| may be NULL to signify
-  // not to set the prompt text.
-  virtual Status HandleJavaScriptDialog(bool accept,
-                                        const std::string* prompt_text) = 0;
-
   // Gets the automation extension.
   virtual Status GetAutomationExtension(AutomationExtension** extension) = 0;
 

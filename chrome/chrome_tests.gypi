@@ -953,6 +953,8 @@
       'sources': [
         '../third_party/webdriver/atoms.cc',
         '../third_party/webdriver/atoms.h',
+        'test/chromedriver/alert_commands.cc',
+        'test/chromedriver/alert_commands.h',
         'test/chromedriver/basic_types.cc',
         'test/chromedriver/basic_types.h',
         'test/chromedriver/capabilities.cc',

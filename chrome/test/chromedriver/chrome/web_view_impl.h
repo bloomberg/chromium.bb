@@ -39,6 +39,7 @@ class WebViewImpl : public WebView {
   // Overridden from WebView:
   virtual std::string GetId() OVERRIDE;
   virtual Status ConnectIfNecessary() OVERRIDE;
+  virtual DevToolsClient* GetDevToolsClient() OVERRIDE;
   virtual Status Load(const std::string& url) OVERRIDE;
   virtual Status Reload() OVERRIDE;
   virtual Status EvaluateScript(const std::string& frame,
@@ -73,7 +74,6 @@ class WebViewImpl : public WebView {
       const std::string& frame_id) OVERRIDE;
   virtual Status IsPendingNavigation(
       const std::string& frame_id, bool* is_pending) OVERRIDE;
-  virtual Status GetMainFrame(std::string* out_frame) OVERRIDE;
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
   virtual Status OverrideGeolocation(const Geoposition& geoposition) OVERRIDE;
   virtual Status CaptureScreenshot(std::string* screenshot) OVERRIDE;

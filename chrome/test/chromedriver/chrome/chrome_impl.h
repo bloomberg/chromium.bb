@@ -34,11 +34,6 @@ class ChromeImpl : public Chrome {
   virtual Status GetWebViewById(const std::string& id,
                                 WebView** web_view) OVERRIDE;
   virtual Status CloseWebView(const std::string& id) OVERRIDE;
-  virtual Status IsJavaScriptDialogOpen(bool* is_open) OVERRIDE;
-  virtual Status GetJavaScriptDialogMessage(std::string* message) OVERRIDE;
-  virtual Status HandleJavaScriptDialog(
-      bool accept,
-      const std::string* prompt_text) OVERRIDE;
   virtual Status GetAutomationExtension(
       AutomationExtension** extension) OVERRIDE;
 
@@ -55,8 +50,6 @@ class ChromeImpl : public Chrome {
 
  private:
   typedef std::list<linked_ptr<WebViewImpl> > WebViewList;
-
-  Status GetDialogManagerForOpenDialog(JavaScriptDialogManager** manager);
 
   std::string version_;
   int build_no_;
