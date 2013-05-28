@@ -995,7 +995,7 @@
       'name': 'ClearSiteDataOnExit',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:11-29', 'chrome_os:0.11-0.29'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -1005,13 +1005,7 @@
       'example_value': True,
       'id': 65,
       'caption': '''Clear site data on browser shutdown (deprecated)''',
-      'desc': '''This policy is an override for the "Clear cookies and other site data when I close my browser" content settings option that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> supported prior to version 21.
-
-      This policy exists only for backward-compatibility and will go away in the future. The recommended way to clear site data on exit on version 21 and later is to configure the DefaultCookiesSetting policy to session-only.
-
-      If this policy is enabled it will be translated to the appropriate policy setting for the DefaultCookiesSetting policy, setting it to session-only if the DefaultCookiesSetting policy is not configured or set to Allow.
-
-      If this policy is disabled or left unconfigured the policy for storing site data is determined by the DefaultCookiesSetting policy.''',
+      'desc': '''This policy has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 29.''',
       'label': '''Clear site data on browser shutdown (deprecated)''',
     },
     {

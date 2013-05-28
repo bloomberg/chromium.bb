@@ -415,19 +415,7 @@
   },
 
   "ClearSiteDataOnExit": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "ClearSiteDataOnExit": true },
-    "pref_mappings": [
-      { "pref": "profile.managed_default_content_settings.cookies",
-        "indicator_selector": "[content-setting=cookies]",
-        "indicator_tests": [
-          { "policy": { "ClearSiteDataOnExit": true },
-            "value": "session"}
-        ]
-      }
-    ],
-
-    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+    "note": "This policy is retired, see http://crbug.com/133291."
   },
 
   "ProxyMode": {

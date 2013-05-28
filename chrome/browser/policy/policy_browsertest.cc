@@ -681,7 +681,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
   EXPECT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_PRE_ClearSiteDataOnExit) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_PRE_DefaultCookiesSetting) {
   // Verifies that cookies are deleted on shutdown. This test is split in 3
   // parts because it spans 2 browser restarts.
 
@@ -696,17 +696,17 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_PRE_ClearSiteDataOnExit) {
   EXPECT_EQ(kCookieValue, GetCookies(profile, url));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_ClearSiteDataOnExit) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_DefaultCookiesSetting) {
   // Verify that the cookie persists across restarts.
   EXPECT_EQ(kCookieValue, GetCookies(browser()->profile(), GURL(kURL)));
   // Now set the policy and the cookie should be gone after another restart.
   PolicyMap policies;
-  policies.Set(key::kClearSiteDataOnExit, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+  policies.Set(key::kDefaultCookiesSetting, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateIntegerValue(4));
   UpdateProviderPolicy(policies);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, ClearSiteDataOnExit) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultCookiesSetting) {
   // Verify that the cookie is gone.
   EXPECT_TRUE(GetCookies(browser()->profile(), GURL(kURL)).empty());
 }
