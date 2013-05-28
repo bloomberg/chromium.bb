@@ -1945,3 +1945,5 @@ crbug.com/243309 [ Mac Debug ] fast/css/font-size-nan.svg [ Crash Pass ]
 crbug.com/243309 [ Mac Debug ] fast/css/large-font-size-crash.html [ Crash Pass ]
 crbug.com/243309 [ Mac Debug ] fast/text/international/spaces-combined-in-vertical-text.html [ Crash Pass ]
 crbug.com/243309 [ Mac Debug ] svg/text/font-size-too-large-crash.svg [ Crash Pass ]
+
+crbug.com/244384 inspector/elements/shadow-dom-modify-chardata.html [ Failure Pass ]
