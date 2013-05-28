@@ -8,6 +8,11 @@
 #include "base/compiler_specific.h"
 #include "base/test/test_suite.h"
 
+#if defined(OS_WIN)
+#include "base/memory/scoped_ptr.h"
+#include "base/win/scoped_com_initializer.h"
+#endif
+
 namespace ash {
 namespace test {
 
@@ -19,6 +24,11 @@ class AuraShellTestSuite : public base::TestSuite {
   // base::TestSuite:
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
+
+ private:
+#if defined(OS_WIN)
+  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+#endif
 };
 
 }  // namespace test

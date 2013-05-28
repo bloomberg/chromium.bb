@@ -9,18 +9,14 @@
 
 namespace win8 {
 
-// Registers a viewer process as a potential Win8 default browser. Intended to
-// be used by a test binary in the build output directory and assumes the
-// presence of test_registrar.exe, a viewer process and all needed DLLs in the
-// same directory as the calling module. The viewer process is then subsequently
-// set as THE default Win8 browser, is activatable using the AppUserModelId in
-// |app_user_model_id| and will show up in the default browser selection dialog
-// as |viewer_process_name|.
-//
-// See also open_with_dialog_controller.h for a mechanism for setting THE
-// default Win8 browser.
-bool RegisterTestDefaultBrowser(const string16& app_user_model_id,
-                                const string16& viewer_process_name);
+// Synchronously makes chrome.exe THE default Win8 browser after which it is
+// activatable into a Metro viewer process using
+// win8::test::kDefaultTestAppUserModelId. Intended to be used by a test binary
+// in the output directory and assumes the presence of test_registrar.exe,
+// chrome.exe (the viewer process), and all needed DLLs in the same directory
+// as the calling module.
+// NOTE: COM must be initialized prior to calling this method.
+bool MakeTestDefaultBrowserSynchronously();
 
 }  // namespace win8
 

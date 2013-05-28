@@ -24,7 +24,6 @@
 #include "base/win/windows_version.h"
 #include "ui/base/win/atl_module.h"
 #include "win8/test/metro_registration_helper.h"
-#include "win8/test/open_with_dialog_controller.h"
 #include "win8/test/test_registrar_constants.h"
 #endif
 
@@ -41,16 +40,9 @@ void AuraShellTestSuite::Initialize() {
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kForceAshToDesktop)) {
-    ASSERT_TRUE(win8::RegisterTestDefaultBrowser(
-        win8::test::kDefaultTestAppUserModelId,
-        win8::test::kDefaultTestExeName));
-
+    com_initializer_.reset(new base::win::ScopedCOMInitializer());
     ui::win::CreateATLModuleIfNeeded();
-
-    std::vector<base::string16> choices;
-    win8::OpenWithDialogController controller;
-    controller.RunSynchronously(NULL, L"http", win8::test::kDefaultTestExeName,
-                                &choices);
+    ASSERT_TRUE(win8::MakeTestDefaultBrowserSynchronously());
   }
 #endif
 
@@ -71,6 +63,9 @@ void AuraShellTestSuite::Initialize() {
 void AuraShellTestSuite::Shutdown() {
   ui::CompositorTestSupport::Terminate();
   ui::ResourceBundle::CleanupSharedInstance();
+#if defined(OS_WIN)
+  com_initializer_.reset();
+#endif
   base::TestSuite::Shutdown();
 }
 
