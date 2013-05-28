@@ -2380,6 +2380,10 @@ body[new-ui] list.autocomplete-suggestions > [lead] > div.detail-text em {
   color: white;
 }
 
+body[new-ui] #gear-menu {
+  margin-top: 8px;
+}
+
 body[new-ui] #gear-menu > menuitem:not(.menuitem-button) {
   margin-right: 50px;
 }
