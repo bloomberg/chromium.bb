@@ -332,9 +332,6 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   }
   top = LayoutToolbar(top);
 
-  web_contents_modal_dialog_top_y_ =
-      top + browser_view->y() - kConstrainedWindowOverlap;
-
   // Overlay container requires updated toolbar bounds to determine its
   // position, and needs to be laid out before:
   // - GetTopMarginForActiveContent(), which calls GetInstantUIState() to check
@@ -344,7 +341,7 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   //   visible.
   LayoutOverlayContainer();
 
-  top = LayoutBookmarkAndInfoBars(top);
+  top = LayoutBookmarkAndInfoBars(top, browser_view->y());
 
   // Top container requires updated toolbar and bookmark bar to compute size.
   top_container_->SetSize(top_container_->GetPreferredSize());
@@ -448,16 +445,23 @@ int BrowserViewLayout::LayoutToolbar(int top) {
   return y + height;
 }
 
-int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
+int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
   if (bookmark_bar_) {
     // If we're showing the Bookmark bar in detached style, then we
     // need to show any Info bar _above_ the Bookmark bar, since the
     // Bookmark bar is styled to look like it's part of the page.
-    if (bookmark_bar_->IsDetached())
+    if (bookmark_bar_->IsDetached()) {
+      web_contents_modal_dialog_top_y_ =
+          top + browser_view_y - kConstrainedWindowOverlap;
       return LayoutBookmarkBar(LayoutInfoBar(top));
+    }
     // Otherwise, Bookmark bar first, Info bar second.
     top = std::max(toolbar_->bounds().bottom(), LayoutBookmarkBar(top));
   }
+
+  web_contents_modal_dialog_top_y_ =
+      top + browser_view_y - kConstrainedWindowOverlap;
+
   return LayoutInfoBar(top);
 }
 
