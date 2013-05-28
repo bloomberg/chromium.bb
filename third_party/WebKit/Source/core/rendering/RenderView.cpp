@@ -1025,31 +1025,6 @@ void RenderView::updateHitTestResult(HitTestResult& result, const LayoutPoint& p
     }
 }
 
-// FIXME: This function is obsolete and only used by embedded WebViews inside AppKit NSViews.
-// Do not add callers of this function!
-// The idea here is to take into account what object is moving the pagination point, and
-// thus choose the best place to chop it.
-void RenderView::setBestTruncatedAt(int y, RenderBoxModelObject* forRenderer, bool forcedBreak)
-{
-    // Nobody else can set a page break once we have a forced break.
-    if (m_legacyPrinting.m_forcedPageBreak)
-        return;
-
-    // Forced breaks always win over unforced breaks.
-    if (forcedBreak) {
-        m_legacyPrinting.m_forcedPageBreak = true;
-        m_legacyPrinting.m_bestTruncatedAt = y;
-        return;
-    }
-
-    // Prefer the widest object that tries to move the pagination point
-    IntRect boundingBox = forRenderer->borderBoundingBox();
-    if (boundingBox.width() > m_legacyPrinting.m_truncatorWidth) {
-        m_legacyPrinting.m_truncatorWidth = boundingBox.width();
-        m_legacyPrinting.m_bestTruncatedAt = y;
-    }
-}
-
 bool RenderView::usesCompositing() const
 {
     return m_compositor && m_compositor->inCompositingMode();
@@ -1122,7 +1097,6 @@ void RenderView::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_flowThreadController, "flowThreadController");
     info.addMember(m_intervalArena, "intervalArena");
     info.addWeakPointer(m_renderQuoteHead);
-    info.addMember(m_legacyPrinting, "legacyPrinting");
 }
 
 FragmentationDisabler::FragmentationDisabler(RenderObject* root)

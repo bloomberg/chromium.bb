@@ -34,7 +34,6 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderArena.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderView.h"
 #include "core/rendering/RootInlineBox.h"
 
 using namespace std;
@@ -171,7 +170,7 @@ bool RenderLineBoxList::rangeIntersectsRect(RenderBoxModelObject* renderer, Layo
     return true;
 }
 
-bool RenderLineBoxList::anyLineIntersectsRect(RenderBoxModelObject* renderer, const LayoutRect& rect, const LayoutPoint& offset, bool usePrintRect, LayoutUnit outlineSize) const
+bool RenderLineBoxList::anyLineIntersectsRect(RenderBoxModelObject* renderer, const LayoutRect& rect, const LayoutPoint& offset, LayoutUnit outlineSize) const
 {
     // We can check the first box and last box and avoid painting/hit testing if we don't
     // intersect.  This is a quick short-circuit that we can take to avoid walking any lines.
@@ -180,11 +179,7 @@ bool RenderLineBoxList::anyLineIntersectsRect(RenderBoxModelObject* renderer, co
     RootInlineBox* firstRootBox = firstLineBox()->root();
     RootInlineBox* lastRootBox = lastLineBox()->root();
     LayoutUnit firstLineTop = firstLineBox()->logicalTopVisualOverflow(firstRootBox->lineTop());
-    if (usePrintRect && !firstLineBox()->parent())
-        firstLineTop = min(firstLineTop, firstLineBox()->root()->lineTop());
     LayoutUnit lastLineBottom = lastLineBox()->logicalBottomVisualOverflow(lastRootBox->lineBottom());
-    if (usePrintRect && !lastLineBox()->parent())
-        lastLineBottom = max(lastLineBottom, lastLineBox()->root()->lineBottom());
     LayoutUnit logicalTop = firstLineTop - outlineSize;
     LayoutUnit logicalBottom = outlineSize + lastLineBottom;
     
@@ -214,12 +209,8 @@ void RenderLineBoxList::paint(RenderBoxModelObject* renderer, PaintInfo& paintIn
     if (!firstLineBox())
         return;
 
-    // FIXME: Paint-time pagination is obsolete and is now only used by embedded WebViews inside AppKit
-    // NSViews.  Do not add any more code for this.
-    RenderView* v = renderer->view();
-    bool usePrintRect = !v->printRect().isEmpty();
     LayoutUnit outlineSize = renderer->maximalOutlineSize(paintInfo.phase);
-    if (!anyLineIntersectsRect(renderer, paintInfo.rect, paintOffset, usePrintRect, outlineSize))
+    if (!anyLineIntersectsRect(renderer, paintInfo.rect, paintOffset, outlineSize))
         return;
 
     PaintInfo info(paintInfo);
@@ -230,33 +221,6 @@ void RenderLineBoxList::paint(RenderBoxModelObject* renderer, PaintInfo& paintIn
     // them.  Note that boxes can easily overlap, so we can't make any assumptions
     // based off positions of our first line box or our last line box.
     for (InlineFlowBox* curr = firstLineBox(); curr; curr = curr->nextLineBox()) {
-        if (usePrintRect) {
-            // FIXME: This is the deprecated pagination model that is still needed
-            // for embedded views inside AppKit.  AppKit is incapable of paginating vertical
-            // text pages, so we don't have to deal with vertical lines at all here.
-            RootInlineBox* root = curr->root();
-            LayoutUnit topForPaginationCheck = curr->logicalTopVisualOverflow(root->lineTop());
-            LayoutUnit bottomForPaginationCheck = curr->logicalLeftVisualOverflow();
-            if (!curr->parent()) {
-                // We're a root box.  Use lineTop and lineBottom as well here.
-                topForPaginationCheck = min(topForPaginationCheck, root->lineTop());
-                bottomForPaginationCheck = max(bottomForPaginationCheck, root->lineBottom());
-            }
-            if (bottomForPaginationCheck - topForPaginationCheck <= v->printRect().height()) {
-                if (paintOffset.y() + bottomForPaginationCheck > v->printRect().maxY()) {
-                    if (RootInlineBox* nextRootBox = curr->root()->nextRootBox())
-                        bottomForPaginationCheck = min(bottomForPaginationCheck, min<LayoutUnit>(nextRootBox->logicalTopVisualOverflow(), nextRootBox->lineTop()));
-                }
-                if (paintOffset.y() + bottomForPaginationCheck > v->printRect().maxY()) {
-                    if (paintOffset.y() + topForPaginationCheck < v->truncatedAt())
-                        v->setBestTruncatedAt(paintOffset.y() + topForPaginationCheck, renderer);
-                    // If we were able to truncate, don't paint.
-                    if (paintOffset.y() + topForPaginationCheck >= v->truncatedAt())
-                        break;
-                }
-            }
-        }
-
         if (lineIntersectsDirtyRect(renderer, curr, info, paintOffset)) {
             RootInlineBox* root = curr->root();
             curr->paint(info, paintOffset, root->lineTop(), root->lineBottom());

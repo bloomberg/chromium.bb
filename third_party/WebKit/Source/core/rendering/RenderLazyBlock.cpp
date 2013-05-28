@@ -133,12 +133,10 @@ void RenderLazyBlock::detachLazyBlock()
     m_previous = 0;
 }
 
-void RenderLazyBlock::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset, PaintInfo& paintInfoForChild, bool usePrintRect)
+void RenderLazyBlock::paintChildren(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    for (RenderBox* child = m_firstVisibleChildBox; child && child != m_lastVisibleChildBox; child = child->nextSiblingBox()) {
-        if (!paintChild(child, paintInfo, paintOffset, paintInfoForChild, usePrintRect))
-            return;
-    }
+    for (RenderBox* child = m_firstVisibleChildBox; child && child != m_lastVisibleChildBox; child = child->nextSiblingBox())
+        paintChild(child, paintInfo, paintOffset);
 }
 
 void RenderLazyBlock::layoutChildren(bool relayoutChildren)

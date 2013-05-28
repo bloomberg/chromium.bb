@@ -56,7 +56,7 @@ public:
     RenderBox* lastVisibleChildBox() const { return m_lastVisibleChildBox; }
 
 private:
-    virtual void paintChildren(PaintInfo& forSelf, const LayoutPoint&, PaintInfo& forChild, bool usePrintRect) OVERRIDE;
+    virtual void paintChildren(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
     virtual bool isRenderLazyBlock() const OVERRIDE { return true; }
     virtual void willBeDestroyed() OVERRIDE;
