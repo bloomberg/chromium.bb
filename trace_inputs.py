@@ -1382,6 +1382,9 @@ class Strace(ApiBase):
         self.cwd = self.RelativePath(self, args[0])
         logging.debug('handle_chdir(%d, %s)' % (self.pid, self.cwd))
 
+      def handle_chown(self, _args, result):
+        pass
+
       def handle_clone(self, _args, result):
         self._handling_forking('clone', result)
 
