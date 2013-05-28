@@ -1423,6 +1423,9 @@ class Strace(ApiBase):
         else:
           raise Exception('Relative faccess not implemented.')
 
+      def handle_fallocate(self, _args, result):
+        pass
+
       def handle_fork(self, args, result):
         self._handle_unknown('fork', args, result)
 
