@@ -1852,7 +1852,7 @@ crbug.com/243655 [ Win7 ] compositing/iframes/scroll-grandchild-iframe.html [ Ti
 crbug.com/243658 [ Lion ] fast/writing-mode/vertical-font-vmtx-units-per-em.html [ Crash ]
 crbug.com/243663 [ Win7 ] compositing/animation/animated-composited-inside-hidden.html [ Failure ]
 crbug.com/243663 [ Mac ] compositing/animation/computed-style-during-delay.html [ Timeout ]
-crbug.com/243663 [ Win7 Debug ] compositing/animation/computed-style-during-delay.html [ Failure ]
+crbug.com/243663 [ Win7 ] compositing/animation/computed-style-during-delay.html [ Pass Failure ]
 crbug.com/243663 [ Win7 Debug ] compositing/reflections/nested-reflection-transition.html [ Failure ]
 crbug.com/243663 [ SnowLeopard Win7 Debug ] compositing/transitions/scale-transition-no-start.html [ Failure ]
 crbug.com/243683 [ Linux ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Pass Failure ]
