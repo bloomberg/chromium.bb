@@ -44,6 +44,10 @@ IBusPanelService* GetIBusPanelService() {
 }  // namespace
 
 bool CandidateWindowControllerImpl::Init() {
+  if (DBusThreadManager::Get()->GetIBusPanelService()) {
+    DBusThreadManager::Get()->GetIBusPanelService()->
+        SetUpCandidateWindowHandler(this);
+  }
   IBusDaemonController::GetInstance()->AddObserver(this);
   // Create the candidate window view.
   CreateView();
