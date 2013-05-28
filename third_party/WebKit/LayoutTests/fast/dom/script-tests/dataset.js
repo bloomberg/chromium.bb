@@ -123,3 +123,10 @@ shouldBeFalse("div.hasAttribute('foo')");
 shouldBeUndefined("delete div.dataset.Bar; div.dataset.Bar");
 
 debug("");
+debug("Set null:");
+
+var d = document.createElement("div");
+d.dataset.foo = null;
+shouldBe("d.dataset.foo", "'null'");
+
+debug("");

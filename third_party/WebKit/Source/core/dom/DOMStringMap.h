@@ -49,6 +49,11 @@ public:
     virtual bool contains(const String& name) = 0;
     virtual void setItem(const String& name, const String& value, ExceptionCode&) = 0;
     virtual void deleteItem(const String& name, ExceptionCode&) = 0;
+    bool anonymousNamedSetter(const String& name, const String& value, ExceptionCode& ec)
+    {
+        setItem(name, value, ec);
+        return true;
+    }
 
     virtual Element* element() = 0;
 

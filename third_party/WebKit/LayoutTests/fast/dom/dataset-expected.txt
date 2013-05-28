@@ -66,6 +66,9 @@ PASS div.setAttribute('data-foo', 'attr'); delete div.dataset.foo; div.dataset.f
 PASS div.hasAttribute('foo') is false
 PASS delete div.dataset.Bar; div.dataset.Bar is undefined.
 
+Set null:
+PASS d.dataset.foo is 'null'
+
 PASS successfullyParsed is true
 
 TEST COMPLETE
