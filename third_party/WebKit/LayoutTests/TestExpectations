@@ -1835,3 +1835,10 @@ crbug.com/244419 fast/repaint/shadow-multiple-strict-horizontal.html [ ImageOnly
 crbug.com/244419 fast/repaint/shadow-multiple-strict-vertical.html [ ImageOnlyFailure ]
 crbug.com/244419 fast/repaint/shadow-multiple-vertical.html [ ImageOnlyFailure ]
 crbug.com/244419 virtual/softwarecompositing/shadows/shadow-drawing.html [ ImageOnlyFailure ]
+
+crbug.com/244621 [ Win ] css3/compositing/effect-background-blend-mode-stacking.html [ Failure ]
+crbug.com/244621 [ Win ] css3/compositing/effect-background-blend-mode-tiled.html [ Failure ]
+crbug.com/244621 [ Win ] css3/compositing/effect-background-blend-mode.html [ Failure ]
+crbug.com/244621 [ Win ] compositing/iframes/iframe-content-flipping.html [ ImageOnlyFailure ]
+crbug.com/244621 [ Win ] virtual/softwarecompositing/iframes/iframe-content-flipping.html [ ImageOnlyFailure ]
+
