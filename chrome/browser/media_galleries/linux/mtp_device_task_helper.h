@@ -14,7 +14,7 @@
 #include "base/platform_file.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
-#include "webkit/fileapi/async_file_util.h"
+#include "webkit/browser/fileapi/async_file_util.h"
 
 namespace chrome {
 

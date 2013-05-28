@@ -9,7 +9,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "webkit/blob/blob_storage_controller.h"
-#include "webkit/fileapi/upload_file_system_file_element_reader.h"
+#include "webkit/browser/fileapi/upload_file_system_file_element_reader.h"
 
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;

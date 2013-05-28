@@ -22,8 +22,8 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 
 using file_handler_util::FileTaskExecutor;

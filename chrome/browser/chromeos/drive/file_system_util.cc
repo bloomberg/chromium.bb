@@ -28,7 +28,7 @@
 #include "chromeos/chromeos_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
-#include "webkit/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 
 using content::BrowserThread;
 

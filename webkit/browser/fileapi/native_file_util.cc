@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/browser/fileapi/file_system_operation_context.h"
 
 namespace fileapi {
 

@@ -13,7 +13,7 @@
 #include "chrome/browser/storage_monitor/image_capture_device_manager.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/fileapi/async_file_util.h"
+#include "webkit/browser/fileapi/async_file_util.h"
 
 namespace chrome {
 

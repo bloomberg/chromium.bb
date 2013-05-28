@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 
 using ::testing::_;
 using ::testing::Invoke;

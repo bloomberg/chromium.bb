@@ -21,8 +21,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "webkit/blob/file_stream_reader.h"
 #include "webkit/blob/shareable_file_reference.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 
 using base::MessageLoopProxy;

@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/blob/shareable_file_reference.h"
-#include "webkit/fileapi/async_file_util.h"
+#include "webkit/browser/fileapi/async_file_util.h"
 
 namespace base {
 class SequencedTaskRunner;

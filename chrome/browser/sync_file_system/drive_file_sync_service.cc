@@ -37,7 +37,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "webkit/blob/scoped_file.h"
-#include "webkit/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/sync_file_type.h"

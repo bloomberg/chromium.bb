@@ -6,11 +6,11 @@
 
 #include "base/memory/scoped_vector.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
-#include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/test_mount_point_provider.h"
+#include "webkit/browser/fileapi/test_mount_point_provider.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
 namespace fileapi {

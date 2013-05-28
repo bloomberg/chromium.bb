@@ -11,7 +11,7 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/blob_url_request_job.h"
-#include "webkit/fileapi/file_system_context.h"
+#include "webkit/browser/fileapi/file_system_context.h"
 
 namespace webkit_blob {
 

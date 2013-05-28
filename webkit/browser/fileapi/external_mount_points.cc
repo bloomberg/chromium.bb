@@ -8,8 +8,8 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/remote_file_system_proxy.h"
+#include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/remote_file_system_proxy.h"
 
 namespace {
 

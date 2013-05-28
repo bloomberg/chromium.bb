@@ -14,7 +14,7 @@
 #include "base/platform_file.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
-#include "webkit/fileapi/async_file_util.h"
+#include "webkit/browser/fileapi/async_file_util.h"
 
 namespace base {
 class FilePath;

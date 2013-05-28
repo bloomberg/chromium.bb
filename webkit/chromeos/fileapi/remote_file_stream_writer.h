@@ -10,8 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "webkit/fileapi/file_stream_writer.h"
-#include "webkit/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/file_stream_writer.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace net {
 class IOBuffer;

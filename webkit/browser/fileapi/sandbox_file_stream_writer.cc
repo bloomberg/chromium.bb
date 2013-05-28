@@ -11,10 +11,10 @@
 #include "net/base/net_errors.h"
 #include "webkit/blob/local_file_stream_reader.h"
 #include "webkit/browser/fileapi/file_observers.h"
-#include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_context.h"
+#include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/local_file_stream_writer.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/local_file_stream_writer.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace fileapi {

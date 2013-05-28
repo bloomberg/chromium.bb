@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
-#include "webkit/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
 
 class GURL;

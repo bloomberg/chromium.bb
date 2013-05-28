@@ -5,7 +5,7 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_OPTIONS_H_
 #define WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_OPTIONS_H_
 
-#include "webkit/fileapi/file_system_options.h"
+#include "webkit/browser/fileapi/file_system_options.h"
 
 namespace fileapi {
 

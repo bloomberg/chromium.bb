@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "webkit/fileapi/file_system_context.h"
+#include "webkit/browser/fileapi/file_system_context.h"
 
 namespace fileapi {
 class ExternalMountPoints;

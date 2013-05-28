@@ -18,8 +18,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
-#include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_context.h"
+#include "webkit/browser/fileapi/file_system_operation.h"
 
 class ExtensionService;
 

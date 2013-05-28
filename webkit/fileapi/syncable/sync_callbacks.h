@@ -6,7 +6,7 @@
 #define WEBKIT_FILEAPI_SYNCABLE_SYNC_CALLBACKS_H_
 
 #include "base/callback_forward.h"
-#include "webkit/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_file_status.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 

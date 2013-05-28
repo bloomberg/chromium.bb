@@ -13,7 +13,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "net/url_request/url_request_job.h"
-#include "webkit/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {

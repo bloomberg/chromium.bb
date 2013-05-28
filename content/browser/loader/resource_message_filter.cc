@@ -8,7 +8,7 @@
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/resource_context.h"
-#include "webkit/fileapi/file_system_context.h"
+#include "webkit/browser/fileapi/file_system_context.h"
 
 namespace content {
 

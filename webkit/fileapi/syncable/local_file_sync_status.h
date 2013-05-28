@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
-#include "webkit/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace fileapi {
 class FileSystemURL;
