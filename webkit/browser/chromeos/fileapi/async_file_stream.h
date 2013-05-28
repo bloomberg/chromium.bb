@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHROMEOS_FILEAPI_ASYNC_FILE_STREAM_H_
-#define WEBKIT_CHROMEOS_FILEAPI_ASYNC_FILE_STREAM_H_
+#ifndef WEBKIT_BROWSER_CHROMEOS_FILEAPI_ASYNC_FILE_STREAM_H_
+#define WEBKIT_BROWSER_CHROMEOS_FILEAPI_ASYNC_FILE_STREAM_H_
 
 #include "base/callback.h"
 #include "base/platform_file.h"
@@ -53,4 +53,4 @@ class AsyncFileStream {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_CHROMEOS_FILEAPI_ASYNC_FILE_STREAM_H_
+#endif  // WEBKIT_BROWSER_CHROMEOS_FILEAPI_ASYNC_FILE_STREAM_H_

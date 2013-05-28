@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
+#include "webkit/browser/chromeos/fileapi/cros_mount_point_provider.h"
 
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
@@ -15,6 +15,9 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "webkit/browser/chromeos/fileapi/file_access_permissions.h"
+#include "webkit/browser/chromeos/fileapi/remote_file_stream_writer.h"
+#include "webkit/browser/chromeos/fileapi/remote_file_system_operation.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -27,9 +30,6 @@
 #include "webkit/browser/fileapi/isolated_file_util.h"
 #include "webkit/browser/fileapi/local_file_stream_writer.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
-#include "webkit/chromeos/fileapi/file_access_permissions.h"
-#include "webkit/chromeos/fileapi/remote_file_stream_writer.h"
-#include "webkit/chromeos/fileapi/remote_file_system_operation.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {

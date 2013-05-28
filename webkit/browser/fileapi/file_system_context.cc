@@ -31,7 +31,7 @@
 #include "webkit/quota/special_storage_policy.h"
 
 #if defined(OS_CHROMEOS)
-#include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
+#include "webkit/browser/chromeos/fileapi/cros_mount_point_provider.h"
 #endif
 
 using quota::QuotaClient;

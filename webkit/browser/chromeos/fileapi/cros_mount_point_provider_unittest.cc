@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
+#include "webkit/browser/chromeos/fileapi/cros_mount_point_provider.h"
 
 #include <set>
 
@@ -172,7 +172,8 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
           kPermission));
 
   // oem is restricted file system.
-  provider.GrantFileAccessToExtension(extension, base::FilePath(FPL("oem/foo")));
+  provider.GrantFileAccessToExtension(
+      extension, base::FilePath(FPL("oem/foo")));
   // The extension should not be able to access the file even if
   // GrantFileAccessToExtension was called.
   EXPECT_EQ(
@@ -257,7 +258,8 @@ TEST(CrosMountPointProvider, GetVirtualPathConflictWithSystemPoints) {
   ASSERT_TRUE(system_mount_points->RegisterFileSystem(
       "gb", type, base::FilePath(FPL("/a/b"))));
   ASSERT_TRUE(
-      system_mount_points->RegisterFileSystem("gz", type, base::FilePath(FPL("/z"))));
+      system_mount_points->RegisterFileSystem(
+          "gz", type, base::FilePath(FPL("/z"))));
   ASSERT_TRUE(system_mount_points->RegisterFileSystem(
        "gp", type, base::FilePath(FPL("/m/n/o/p"))));
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
-#define WEBKIT_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
+#ifndef WEBKIT_BROWSER_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
+#define WEBKIT_BROWSER_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
 
 #include <map>
 #include <string>
@@ -141,4 +141,4 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
 
 }  // namespace chromeos
 
-#endif  // WEBKIT_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_
+#endif  // WEBKIT_BROWSER_CHROMEOS_FILEAPI_CROS_MOUNT_POINT_PROVIDER_H_

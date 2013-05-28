@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/chromeos/fileapi/remote_file_stream_writer.h"
+#include "webkit/browser/chromeos/fileapi/remote_file_stream_writer.h"
 
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

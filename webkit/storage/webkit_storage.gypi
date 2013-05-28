@@ -7,7 +7,6 @@
     '../appcache/webkit_appcache.gypi',
     '../blob/webkit_blob.gypi',
     '../dom_storage/webkit_dom_storage.gypi',
-    '../fileapi/webkit_fileapi.gypi',
     '../quota/webkit_quota.gypi',
 
     # TODO(kinuko): Deprecate this when we have a new target for
@@ -50,7 +49,7 @@
       'conditions': [
         ['chromeos==1', {
           'sources': [
-            '<@(webkit_fileapi_chromeos_sources)',
+            '<@(webkit_browser_fileapi_chromeos_sources)',
           ],
         }],
       ],

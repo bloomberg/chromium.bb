@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/chromeos/fileapi/file_access_permissions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/browser/chromeos/fileapi/file_access_permissions.h"
 
 
 class FileAccessPermissionsTest : public testing::Test {

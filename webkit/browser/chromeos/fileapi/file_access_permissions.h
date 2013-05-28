@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_
-#define WEBKIT_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_
+#ifndef WEBKIT_BROWSER_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_
+#define WEBKIT_BROWSER_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_
 
 #include <map>
 #include <set>
@@ -39,4 +39,4 @@ class WEBKIT_STORAGE_EXPORT FileAccessPermissions {
 
 }  // namespace chromeos
 
-#endif  // WEBKIT_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_
+#endif  // WEBKIT_BROWSER_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_

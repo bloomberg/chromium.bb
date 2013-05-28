@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
-#define WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
+#ifndef WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
+#define WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -72,4 +72,4 @@ class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_
+#endif  // WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_STREAM_WRITER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
-#define WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
+#ifndef WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
+#define WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
 
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_writer_delegate.h"
@@ -132,4 +132,4 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperation {
 
 }  // namespace chromeos
 
-#endif  // WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
+#endif  // WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
