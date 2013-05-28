@@ -113,7 +113,7 @@ void ErrorStateImpl::SetGLError(
     last_error_ = msg;
     logger_->LogMessage(
         filename, line,
-        logger_->GetLogPrefix() + ": " + std::string("GL ERROR :") +
+        std::string("GL ERROR :") +
         GLES2Util::GetStringEnum(error) + " : " +
         function_name + ": " + msg);
   }
@@ -170,7 +170,7 @@ void ErrorStateImpl::ClearRealGLErrors(
       // GL_OUT_OF_MEMORY can legally happen on lost device.
       logger_->LogMessage(
           filename, line,
-          logger_->GetLogPrefix() + ": " + std::string("GL ERROR :") +
+          std::string("GL ERROR :") +
           GLES2Util::GetStringEnum(error) + " : " +
           function_name + ": was unhandled");
       NOTREACHED() << "GL error " << error << " was unhandled.";

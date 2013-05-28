@@ -18,7 +18,8 @@ Logger::Logger(const DebugMarkerManager* debug_marker_manager)
       log_message_count_(0),
       log_synthesized_gl_errors_(true) {
   Logger* this_temp = this;
-  this_in_hex_ = base::HexEncode(&this_temp, sizeof(this_temp));
+  this_in_hex_ = std::string("GroupMarkerNotSet(crbug.com/242999)!:") +
+      base::HexEncode(&this_temp, sizeof(this_temp));
 }
 
 Logger::~Logger() {}
@@ -28,15 +29,16 @@ void Logger::LogMessage(
   if (log_message_count_ < kMaxLogMessages ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGLErrorLimit)) {
+    std::string prefixed_msg(std::string("[") + GetLogPrefix() + "]" + msg);
     ++log_message_count_;
     // LOG this unless logging is turned off as any chromium code that
     // generates these errors probably has a bug.
     if (log_synthesized_gl_errors_) {
       ::logging::LogMessage(
-          filename, line, ::logging::LOG_ERROR).stream() << msg;
+          filename, line, ::logging::LOG_ERROR).stream() << prefixed_msg;
     }
     if (!msg_callback_.is_null()) {
-      msg_callback_.Run(0, msg);
+      msg_callback_.Run(0, prefixed_msg);
     }
   } else {
     if (log_message_count_ == kMaxLogMessages) {
