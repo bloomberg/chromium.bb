@@ -593,6 +593,15 @@
     { "name": "sah3.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "grc.com", "mode": "force-https" },
     { "name": "www.grc.com", "mode": "force-https" },
+    { "name": "linode.com", "mode": "force-https" },
+    { "name": "www.linode.com", "mode": "force-https" },
+    { "name": "manager.linode.com", "mode": "force-https" },
+    { "name": "blog.linode.com", "mode": "force-https" },
+    { "name": "library.linode.com", "mode": "force-https" },
+    { "name": "forum.linode.com", "mode": "force-https" },
+    { "name": "p.linode.com", "mode": "force-https" },
+    { "name": "paste.linode.com", "mode": "force-https" },
+    { "name": "pastebin.linode.com", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
