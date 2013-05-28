@@ -33,6 +33,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud/test_request_interceptor.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -155,6 +157,10 @@ const char kHostedAppCrxId[] = "kbmnembihfiondgfjekmnmcbddelicoi";
 
 const base::FilePath::CharType kGoodCrxManifestName[] =
     FILE_PATH_LITERAL("good_update_manifest.xml");
+const base::FilePath::CharType kGood2CrxManifestName[] =
+    FILE_PATH_LITERAL("good2_update_manifest.xml");
+const base::FilePath::CharType kGoodV1CrxManifestName[] =
+    FILE_PATH_LITERAL("good_v1_update_manifest.xml");
 const base::FilePath::CharType kGoodUnpackedExt[] =
     FILE_PATH_LITERAL("good_unpacked");
 const base::FilePath::CharType kAppUnpackedExt[] =
@@ -1305,12 +1311,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
 
   // Extensions that are force-installed come from an update URL, which defaults
   // to the webstore. Use a mock URL for this test with an update manifest
-  // that includes "good.crx".
+  // that includes "good_v1.crx".
   base::FilePath path =
-      base::FilePath(kTestExtensionsDir).Append(kGoodCrxManifestName);
+      base::FilePath(kTestExtensionsDir).Append(kGoodV1CrxManifestName);
   GURL url(URLRequestMockHTTPJob::GetMockUrl(path));
 
-  // Setting the forcelist extension should install "good.crx".
+  // Setting the forcelist extension should install "good_v1.crx".
   base::ListValue forcelist;
   forcelist.Append(base::Value::CreateStringValue(base::StringPrintf(
       "%s;%s", kGoodCrxId, url.spec().c_str())));
@@ -1337,6 +1343,37 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
 
   // Loading other unpacked extensions are not blocked.
   LoadUnpackedExtension(kAppUnpackedExt, true);
+
+  const std::string old_version_number =
+      service->GetExtensionById(kGoodCrxId, true)->version()->GetString();
+
+  base::FilePath test_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_path));
+
+  TestRequestInterceptor interceptor("update.extension");
+  interceptor.PushJobCallback(
+      TestRequestInterceptor::FileJob(
+          test_path.Append(kTestExtensionsDir).Append(kGood2CrxManifestName)));
+
+  // Updating the force-installed extension.
+  extensions::ExtensionUpdater* updater = service->updater();
+  extensions::ExtensionUpdater::CheckParams params;
+  params.install_immediately = true;
+  content::WindowedNotificationObserver update_observer(
+      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      content::NotificationService::AllSources());
+  updater->CheckNow(params);
+  update_observer.Wait();
+
+  const base::Version* new_version =
+      service->GetExtensionById(kGoodCrxId, true)->version();
+  ASSERT_TRUE(new_version->IsValid());
+  base::Version old_version(old_version_number);
+  ASSERT_TRUE(old_version.IsValid());
+
+  EXPECT_EQ(1, new_version->CompareTo(old_version));
+
+  EXPECT_EQ(0u, interceptor.GetPendingSize());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {

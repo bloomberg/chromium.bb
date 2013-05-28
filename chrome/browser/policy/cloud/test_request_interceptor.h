@@ -11,6 +11,10 @@
 #include "base/callback.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace net {
 class NetworkDelegate;
 class URLRequest;
@@ -55,6 +59,9 @@ class TestRequestInterceptor {
   static JobCallback RegisterJob(
       enterprise_management::DeviceRegisterRequest::Type expected_type,
       bool expect_reregister);
+
+  // Returns a JobCallback that will send the contents of |file_path|.
+  static JobCallback FileJob(const base::FilePath& file_path);
 
  private:
   class Delegate;

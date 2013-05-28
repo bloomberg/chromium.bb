@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/net/url_request_mock_http_job.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -52,6 +53,15 @@ net::URLRequestJob* BadRequestJobCallback(
   std::string headers(kBadHeaders, arraysize(kBadHeaders));
   return new net::URLRequestTestJob(
       request, network_delegate, headers, std::string(), true);
+}
+
+net::URLRequestJob* FileJobCallback(const base::FilePath& file_path,
+                                    net::URLRequest* request,
+                                    net::NetworkDelegate* network_delegate) {
+  return new content::URLRequestMockHTTPJob(
+      request,
+      network_delegate,
+      file_path);
 }
 
 // Parses the upload data in |request| into |request_msg|, and validates the
@@ -252,6 +262,12 @@ TestRequestInterceptor::JobCallback TestRequestInterceptor::RegisterJob(
     em::DeviceRegisterRequest::Type expected_type,
     bool expect_reregister) {
   return base::Bind(&RegisterJobCallback, expected_type, expect_reregister);
+}
+
+// static
+TestRequestInterceptor::JobCallback TestRequestInterceptor::FileJob(
+    const base::FilePath& file_path) {
+  return base::Bind(&FileJobCallback, file_path);
 }
 
 }  // namespace policy
