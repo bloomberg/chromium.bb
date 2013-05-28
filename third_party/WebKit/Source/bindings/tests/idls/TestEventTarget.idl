@@ -33,6 +33,7 @@
 
     getter Node item([IsIndex] unsigned long index);
     getter Node namedItem(DOMString name);
+    [ImplementedAs=anonymousNamedSetter] setter Node(DOMString name, DOMString value);
 
     void addEventListener(DOMString type, 
                           EventListener listener, 

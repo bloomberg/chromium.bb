@@ -93,25 +93,4 @@ v8::Handle<v8::Integer> V8CSSStyleDeclaration::namedPropertyQuery(v8::Local<v8::
     return v8::Handle<v8::Integer>();
 }
 
-v8::Handle<v8::Value> V8CSSStyleDeclaration::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    CSSStyleDeclaration* imp = V8CSSStyleDeclaration::toNative(info.Holder());
-    String propertyName = toWebCoreString(name);
-    CSSPropertyInfo* propInfo = CSSStyleDeclaration::cssPropertyInfo(propertyName);
-    if (!propInfo)
-        return v8Undefined();
-
-    String propertyValue = toWebCoreStringWithNullCheck(value);
-    if (propInfo->hadPixelOrPosPrefix)
-        propertyValue.append("px");
-
-    ExceptionCode ec = 0;
-    imp->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, ec);
-
-    if (ec)
-        setDOMException(ec, info.GetIsolate());
-
-    return value;
-}
-
 } // namespace WebCore

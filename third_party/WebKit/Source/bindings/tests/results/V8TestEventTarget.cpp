@@ -178,6 +178,17 @@ v8::Handle<v8::Value> V8TestEventTarget::namedPropertyGetter(v8::Local<v8::Strin
     return toV8Fast(element.release(), info, collection);
 }
 
+v8::Handle<v8::Value> V8TestEventTarget::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    TestEventTarget* collection = toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, propertyName, name);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, propertyValue, value);
+    bool result = collection->anonymousNamedSetter(propertyName, propertyValue);
+    if (!result)
+        return v8Undefined();
+    return value;
+}
+
 static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
@@ -192,7 +203,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
     desc->InstanceTemplate()->SetIndexedPropertyHandler(V8TestEventTarget::indexedPropertyGetter, 0, 0, 0, nodeCollectionIndexedPropertyEnumerator<TestEventTarget>);
-    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestEventTarget::namedPropertyGetter, 0, 0, 0, 0);
+    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestEventTarget::namedPropertyGetter, V8TestEventTarget::namedPropertySetter, 0, 0, 0);
     desc->InstanceTemplate()->MarkAsUndetectable();
 
     // Custom Signature 'dispatchEvent'

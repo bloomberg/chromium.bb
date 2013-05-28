@@ -42,6 +42,7 @@ public:
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     static v8::Handle<v8::Value> indexedPropertyGetter(uint32_t, const v8::AccessorInfo&);
     static v8::Handle<v8::Value> namedPropertyGetter(v8::Local<v8::String>, const v8::AccessorInfo&);
+    static v8::Handle<v8::Value> namedPropertySetter(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::AccessorInfo&);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
     static void installPerContextProperties(v8::Handle<v8::Object>, TestEventTarget*, v8::Isolate*) { }

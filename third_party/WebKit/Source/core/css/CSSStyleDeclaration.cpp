@@ -165,4 +165,19 @@ void CSSStyleDeclaration::anonymousNamedGetter(const AtomicString& name, bool& r
     returnValue1Enabled = true;
 }
 
+bool CSSStyleDeclaration::anonymousNamedSetter(const AtomicString& propertyName, const String& value, ExceptionCode& ec)
+{
+    String propertyValue = value;
+    CSSPropertyInfo* propInfo = CSSStyleDeclaration::cssPropertyInfo(propertyName);
+    if (!propInfo)
+        return false;
+
+    if (propInfo->hadPixelOrPosPrefix)
+        propertyValue.append("px");
+
+    this->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, ec);
+
+    return true;
+}
+
 } // namespace WebCore

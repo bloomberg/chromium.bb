@@ -78,6 +78,7 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const = 0;
     void anonymousNamedGetter(const AtomicString& name, bool&, String&, bool&, float&);
+    bool anonymousNamedSetter(const AtomicString& name, const String& value, ExceptionCode&);
 
     static CSSPropertyInfo* cssPropertyInfo(const String& propertyName);
 

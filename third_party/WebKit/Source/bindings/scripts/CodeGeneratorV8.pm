@@ -549,26 +549,33 @@ sub GetIndexedGetterFunction
         return 0;
     }
 
-    return GetSpecialAccessorFunctionForType($interface, "getter", "unsigned long");
+    return GetSpecialAccessorFunctionForType($interface, "getter", "unsigned long", 1);
 }
 
 sub GetNamedGetterFunction
 {
     my $interface = shift;
-    return GetSpecialAccessorFunctionForType($interface, "getter", "DOMString");
+    return GetSpecialAccessorFunctionForType($interface, "getter", "DOMString", 1);
+}
+
+sub GetNamedSetterFunction
+{
+    my $interface = shift;
+    return GetSpecialAccessorFunctionForType($interface, "setter", "DOMString", 2);
 }
 
 sub GetSpecialAccessorFunctionForType
 {
     my $interface = shift;
     my $special = shift;
-    my $type = shift;
+    my $firstParameterType = shift;
+    my $numberOfParameters = shift;
 
     foreach my $function (@{$interface->functions}) {
         my $specials = $function->signature->specials;
         my $specialExists = grep { $_ eq $special } @$specials;
         my $parameters = $function->parameters;
-        if ($specialExists and scalar(@$parameters) == 1 and $parameters->[0]->type eq $type) {
+        if ($specialExists and scalar(@$parameters) == $numberOfParameters and $parameters->[0]->type eq $firstParameterType) {
             return $function;
         }
     }
@@ -965,7 +972,9 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     my $hasCustomNamedGetter = $interface->extendedAttributes->{"CustomNamedGetter"};
     my $hasNamedGetter = $namedGetterFunction || $hasCustomNamedGetter;
 
+    my $namedSetterFunction = GetNamedSetterFunction($interface);
     my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
+    my $hasNamedSetter = $namedSetterFunction || $hasCustomNamedSetter;
 
     my $hasCustomDeleters = $interface->extendedAttributes->{"CustomDeleteProperty"};
 
@@ -992,7 +1001,7 @@ END
     static v8::Handle<v8::Value> namedPropertyGetter(v8::Local<v8::String>, const v8::AccessorInfo&);
 END
     }
-    if ($hasCustomNamedSetter) {
+    if ($hasNamedSetter) {
         $header{classPublic}->add(<<END);
     static v8::Handle<v8::Value> namedPropertySetter(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::AccessorInfo&);
 END
@@ -1773,7 +1782,7 @@ END
             $code .= "        return;\n";
         }
     } else {
-        my $value = JSValueToNative($attribute->signature, "value", "info.GetIsolate()");
+        my $value = JSValueToNative($attribute->signature->type, $attribute->signature->extendedAttributes, "value", "info.GetIsolate()");
         my $arrayType = GetArrayType($nativeType);
 
         if ($nativeType =~ /^V8StringResource/) {
@@ -2332,7 +2341,7 @@ sub GenerateParametersCheck
             }
         } elsif ($nativeType =~ /^V8StringResource/) {
             my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
-            my $value = JSValueToNative($parameter, $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
+            my $value = JSValueToNative($parameter->type, $parameter->extendedAttributes, $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
             $parameterCheckString .= "    " . ConvertToV8StringResource($parameter, $nativeType, $parameterName, $value) . "\n";
             if (IsEnumType($parameter->type)) {
                 my @enumValues = ValidEnumValues($parameter->type);
@@ -2361,7 +2370,7 @@ sub GenerateParametersCheck
                 }
             }
             my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
-            my $value = JSValueToNative($parameter, $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
+            my $value = JSValueToNative($parameter->type, $parameter->extendedAttributes, $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
             if ($parameter->extendedAttributes->{"EnforceRange"}) {
                 $parameterCheckString .= "    V8TRYCATCH_WITH_TYPECHECK($nativeType, $parameterName, $value, args.GetIsolate());\n";
             } else {
@@ -3134,10 +3143,12 @@ sub GenerateImplementationNamedPropertyAccessors
         GenerateImplementationNamedPropertyGetter($interface, $namedGetterFunction);
     }
 
-    # FIXME: Support generated named setter bindings.
-    my $namedSetterFunction = 0;
+    my $namedSetterFunction = GetNamedSetterFunction($interface);
     my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
     my $hasSetter = $namedSetterFunction || $hasCustomNamedSetter;
+    if ($namedSetterFunction && !$hasCustomNamedSetter) {
+        GenerateImplementationNamedPropertySetter($interface, $namedSetterFunction);
+    }
 
     # FIXME: Support generated named deleter bindings.
     my $namedDeleterFunction = 0;
@@ -3259,6 +3270,51 @@ sub GenerateImplementationNamedPropertyGetter
         $code .= "        return v8Undefined();\n";
         $code .= $returnJSValueCode . "\n";
     }
+    $code .= "}\n\n";
+    $implementation{nameSpaceWebCore}->add($code);
+}
+
+sub GenerateImplementationNamedPropertySetter
+{
+    my $interface = shift;
+    my $namedSetterFunction = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+    my $methodName = GetImplName($namedSetterFunction->signature);
+
+    AddToImplIncludes("bindings/v8/V8Collection.h");
+    my $type = $namedSetterFunction->parameters->[1]->type;
+    my $nativeType = GetNativeType($type);
+    my $raisesExceptions = $namedSetterFunction->signature->extendedAttributes->{"RaisesException"};
+    my $nativeValue = JSValueToNative($type, $namedSetterFunction->signature->extendedAttributes, "value", "info.GetIsolate()");
+
+    my $code = "v8::Handle<v8::Value> ${v8ClassName}::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n";
+    $code .= "{\n";
+    $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
+    $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, propertyName, name);\n";
+    my $extraArguments = "";
+    if ($raisesExceptions) {
+        $code .= "    ExceptionCode ec = 0;\n";
+        $extraArguments = ", ec";
+    }
+    if ($type eq "DOMString") {
+        my $nullCheck = "";
+        my $treatNullAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
+        if ($treatNullAs && $treatNullAs eq "NullString") {
+            $nullCheck = "WithNullCheck";
+        }
+        $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<${nullCheck}>, propertyValue, value);\n";
+    } else {
+        $code .= "    $nativeType propertyValue = $nativeValue;\n";
+    }
+    $code .= "    bool result = collection->${methodName}(propertyName, propertyValue$extraArguments);\n";
+    $code .= "    if (!result)\n";
+    $code .= "        return v8Undefined();\n";
+    if ($raisesExceptions) {
+        $code .= "    if (ec)\n";
+        $code .= "        return setDOMException(ec, info.GetIsolate());\n";
+    }
+    $code .= "    return value;\n";
     $code .= "}\n\n";
     $implementation{nameSpaceWebCore}->add($code);
 }
@@ -4470,12 +4526,12 @@ sub GetNativeTypeForCallbacks
 
 sub JSValueToNative
 {
-    my $signature = shift;
+    my $type = shift;
+    my $extendedAttributes = shift;
     my $value = shift;
     my $getIsolate = shift;
 
-    my $type = $signature->type;
-    my $intConversion = $signature->extendedAttributes->{"EnforceRange"} ? "EnforceRange" : "NormalConversion";
+    my $intConversion = $extendedAttributes->{"EnforceRange"} ? "EnforceRange" : "NormalConversion";
 
     return "$value->BooleanValue()" if $type eq "boolean";
     return "static_cast<$type>($value->NumberValue())" if $type eq "float" or $type eq "double";
