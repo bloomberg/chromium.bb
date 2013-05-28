@@ -24,8 +24,8 @@
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 using fileapi::FileSystemURL;
 

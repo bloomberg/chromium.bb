@@ -26,9 +26,9 @@
 #include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/fileapi/syncable/sync_direction.h"
-#include "webkit/fileapi/syncable/sync_file_metadata.h"
-#include "webkit/fileapi/syncable/sync_status_code.h"
+#include "webkit/browser/fileapi/syncable/sync_direction.h"
+#include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
+#include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 using content::BrowserThread;
 using fileapi::FileSystemURL;

@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
-#include "webkit/fileapi/syncable/sync_callbacks.h"
+#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
 
 namespace base {
 class FilePath;

@@ -10,7 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/public/test/test_browser_thread.h"
-#include "webkit/fileapi/syncable/sync_status_code.h"
+#include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 using content::BrowserThread;
 using content::TestBrowserThread;

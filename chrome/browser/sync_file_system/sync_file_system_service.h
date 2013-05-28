@@ -24,7 +24,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/syncable/sync_callbacks.h"
+#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
 
 class ProfileSyncServiceBase;
 

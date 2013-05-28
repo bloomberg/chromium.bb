@@ -17,8 +17,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/fileapi/syncable/sync_callbacks.h"
-#include "webkit/fileapi/syncable/sync_status_code.h"
+#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
+#include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 namespace base {
 class SequencedTaskRunner;

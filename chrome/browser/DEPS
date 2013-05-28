@@ -57,7 +57,6 @@ include_rules = [
   "+webkit/common/plugins",  # Common plugins functionality.
   "+webkit/common/user_agent",
   "+webkit/dom_storage/dom_storage_types.h",
-  "+webkit/fileapi",
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.
   "+webkit/quota",
 

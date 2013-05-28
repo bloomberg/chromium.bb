@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_SYNC_OPERATION_RESOLVER_H_
 
 #include "base/gtest_prod_util.h"
-#include "webkit/fileapi/syncable/file_change.h"
-#include "webkit/fileapi/syncable/sync_file_type.h"
+#include "webkit/browser/fileapi/syncable/file_change.h"
+#include "webkit/browser/fileapi/syncable/sync_file_type.h"
 
 namespace sync_file_system {
 

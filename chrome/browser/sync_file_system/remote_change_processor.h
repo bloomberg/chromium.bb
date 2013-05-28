@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "webkit/fileapi/syncable/sync_callbacks.h"
-#include "webkit/fileapi/syncable/sync_status_code.h"
+#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
+#include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 namespace base {
 class FilePath;

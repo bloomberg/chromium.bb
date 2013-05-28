@@ -38,7 +38,6 @@
         '<@(webkit_appcache_sources)',
         '<@(webkit_blob_sources)',
         '<@(webkit_dom_storage_sources)',
-        '<@(webkit_fileapi_sources)',
         '<@(webkit_quota_sources)',
 
         # TODO(kinuko): Deprecate them when we have new targets for

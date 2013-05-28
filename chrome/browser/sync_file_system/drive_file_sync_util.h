@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_UTIL_H_
 
 #include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "webkit/fileapi/syncable/sync_status_code.h"
+#include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 namespace sync_file_system {
 

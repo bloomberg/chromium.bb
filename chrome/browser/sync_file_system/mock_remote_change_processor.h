@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "webkit/fileapi/syncable/file_change.h"
-#include "webkit/fileapi/syncable/sync_callbacks.h"
+#include "webkit/browser/fileapi/syncable/file_change.h"
+#include "webkit/browser/fileapi/syncable/sync_callbacks.h"
 
 namespace base {
 class FilePath;

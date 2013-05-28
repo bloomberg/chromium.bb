@@ -24,7 +24,7 @@
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
-#include "webkit/fileapi/syncable/syncable_file_system_util.h"
+#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
 namespace sync_file_system {
 namespace drive {

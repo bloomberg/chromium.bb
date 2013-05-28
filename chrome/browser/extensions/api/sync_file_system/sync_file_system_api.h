@@ -12,8 +12,8 @@
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/fileapi/syncable/sync_file_status.h"
-#include "webkit/fileapi/syncable/sync_status_code.h"
+#include "webkit/browser/fileapi/syncable/sync_file_status.h"
+#include "webkit/browser/fileapi/syncable/sync_status_code.h"
 #include "webkit/quota/quota_types.h"
 
 namespace fileapi {

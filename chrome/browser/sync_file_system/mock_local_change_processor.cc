@@ -8,8 +8,8 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/fileapi/syncable/file_change.h"
-#include "webkit/fileapi/syncable/sync_file_metadata.h"
+#include "webkit/browser/fileapi/syncable/file_change.h"
+#include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
 
 using ::testing::_;
 using ::testing::Invoke;
