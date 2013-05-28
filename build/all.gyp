@@ -414,9 +414,8 @@
           'target_name': 'chromium_builder_perf_av',
           'type': 'none',
           'dependencies': [
+            'all_webkit', # to run layout tests
             'chromium_builder_qa',  # needed for perf pyauto tests
-            '../content/content.gyp:content_shell',
-            '../webkit/webkit.gyp:pull_in_DumpRenderTree',  # to run layout tests
           ],
         },  # target_name: chromium_builder_perf_av
         {
@@ -554,8 +553,7 @@
           'dependencies': [
             '../chrome/chrome.gyp:chrome',
             '../net/net.gyp:dns_fuzz_stub',
-            '../content/content.gyp:content_shell',
-            '../webkit/webkit.gyp:pull_in_DumpRenderTree',
+            'all_webkit',
           ],
         },
         {
@@ -712,9 +710,7 @@
           'target_name': 'webkit_builder_win',
           'type': 'none',
           'dependencies': [
-            '../webkit/webkit.gyp:pull_in_webkit_unit_tests',
-            '../content/content.gyp:content_shell',
-            '../webkit/webkit.gyp:pull_in_DumpRenderTree',
+            'all_webkit',
           ],
         },
       ],  # targets
@@ -804,7 +800,7 @@
             '../ui/views/views.gyp:views_unittests',
             '../ui/keyboard/keyboard.gyp:*',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
-            '../webkit/webkit.gyp:pull_in_webkit_unit_tests',
+            'all_webkit',
           ],
           'conditions': [
             ['OS=="win"', {
