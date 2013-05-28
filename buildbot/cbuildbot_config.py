@@ -34,6 +34,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'release-pgo-use',
     'sdk',
     'chromium-pfq',
+    'chromium-pfq-informational',
     'chrome-perf',
     'chrome-pgo',
     'chrome-pfq',
@@ -823,6 +824,11 @@ chrome_info = chromium_info.derive(
   internal, official,
 )
 
+# Config with the official flags except pdf.
+chrome_info_no_pdf = chrome_info.derive(
+  useflags=[y for y in official['useflags'] if y != constants.USE_CHROME_PDF],
+)
+
 chrome_perf = chrome_info.derive(
   vm_tests=None,
   upload_hw_test_artifacts=True,
@@ -885,13 +891,24 @@ chrome_info.add_config('lumpy-tot-chrome-pfq-informational',
   boards=['lumpy'],
 )
 
-chromium_info_x86.add_config('x86-webrtc-chrome-pfq-informational',
+# WebRTC configurations.
+chrome_info_no_pdf.add_config('alex-webrtc-chrome-pfq-informational',
+  boards=['x86-alex'],
+)
+chrome_info_no_pdf.add_config('lumpy-webrtc-chrome-pfq-informational',
+  boards=['lumpy'],
+)
+chrome_info_no_pdf.add_config('daisy-webrtc-chrome-pfq-informational',
+  arm,
+  boards=['daisy'],
+)
+chromium_info_x86.add_config('x86-webrtc-chromium-pfq-informational',
   archive_build_debug=True,
 )
-chromium_info_amd64.add_config('amd64-webrtc-chrome-pfq-informational',
+chromium_info_amd64.add_config('amd64-webrtc-chromium-pfq-informational',
   archive_build_debug=True,
 )
-chromium_info_daisy.add_config('daisy-webrtc-chrome-pfq-informational',
+chromium_info_daisy.add_config('daisy-webrtc-chromium-pfq-informational',
   archive_build_debug=True,
 )
 
