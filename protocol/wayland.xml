@@ -729,7 +729,7 @@
       <entry name="default" value="0" summary="no preference, apply default policy"/>
       <entry name="scale" value="1" summary="scale, preserve the surface's aspect ratio and center on output"/>
       <entry name="driver" value="2" summary="switch output mode to the smallest mode that can fit the surface, add black borders to compensate size mismatch"/>
-      <entry name="fill" value="3" summary="no scaling, center on output and add black borders to compensate size mismatch"/>
+      <entry name="fill" value="3" summary="no upscaling, center on output and add black borders to compensate size mismatch"/>
     </enum>
 
     <request name="set_fullscreen">
@@ -750,6 +750,19 @@
 	to "driver", to indicate the preferred framerate. A value of 0
 	indicates that the app does not care about framerate.  The
 	framerate is specified in mHz, that is framerate of 60000 is 60Hz.
+
+	A method of "scale" or "driver" implies a scaling operation of
+	the surface, either via a direct scaling operation or a change of
+	the output mode. This will override any kind of output scaling, so
+	that mapping a surface with a buffer size equal to the mode can
+	fill the screen independent of buffer_scale.
+
+	A method of "fill" means we don't scale up the buffer, however
+	any output scale is applied. This means that you may run into
+	an edge case where the application maps a buffer with the same
+	size of the output mode but buffer_scale 1 (thus making a
+	surface larger than the output). In this case it is allowed to
+	downscale the results to fit the screen.
 
 	The compositor must reply to this request with a configure event
 	with the dimensions for the output on which the surface will
@@ -1596,8 +1609,6 @@
 	     summary="indicates this is the current mode"/>
       <entry name="preferred" value="0x2"
 	     summary="indicates this is the preferred mode"/>
-      <entry name="scaled" value="0x4"
-	     summary="indicates that this is a scaled mode"/>
     </enum>
 
     <event name="mode">
@@ -1610,14 +1621,15 @@
 	current.  In other words, the current mode is always the last
 	mode that was received with the current flag set.
 
-	The size of a mode is given relative to the global compositor
-	space. This is not necessarily the native size of the display,
-	as the output might be scaled, as described in wl_output.scale.
-	In this case the scaled flag will be set.
+	The size of a mode is given in physical hardware units of
+        the output device. This is not necessarily the same as
+        the output size in the global compositor space. For instance,
+        the output may be scaled, as described in wl_output.scale,
+        or transformed , as described in wl_output.transform.
       </description>
       <arg name="flags" type="uint" summary="bitfield of mode flags"/>
-      <arg name="width" type="int" summary="width of the mode in global coordinates"/>
-      <arg name="height" type="int" summary="height of the mode in global coordinates"/>
+      <arg name="width" type="int" summary="width of the mode in hardware units"/>
+      <arg name="height" type="int" summary="height of the mode in hardware units"/>
       <arg name="refresh" type="int" summary="vertical refresh rate in mHz"/>
     </event>
 
