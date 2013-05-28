@@ -122,7 +122,7 @@
 //                            [browser]
 //                                |
 //                AudioInputStream::(Capture thread loop)
-//   AudioInputStreamImpl::QueryAgcVolume() => new volume once per second
+//  AgcAudioStream<AudioInputStream>::GetAgcVolume() => get latest mic volume
 //                 AudioInputData::OnData(..., volume)
 //              AudioInputController::OnData(..., volume)
 //               AudioInputSyncWriter::Write(..., volume)

@@ -59,6 +59,7 @@
         '..',
       ],
       'sources': [
+        'audio/agc_audio_stream.h',
         'audio/android/audio_manager_android.cc',
         'audio/android/audio_manager_android.h',
         'audio/android/opensles_input.cc',
@@ -80,8 +81,6 @@
         'audio/audio_input_device.h',
         'audio/audio_input_ipc.cc',
         'audio/audio_input_ipc.h',
-        'audio/audio_input_stream_impl.cc',
-        'audio/audio_input_stream_impl.h',
         'audio/audio_io.h',
         'audio/audio_manager.cc',
         'audio/audio_manager.h',

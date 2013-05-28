@@ -66,6 +66,8 @@ void PulseAudioInputStream::Start(AudioInputCallback* callback) {
   if (stream_started_)
     return;
 
+  StartAgc();
+
   // Clean up the old buffer.
   pa_stream_drop(handle_);
   buffer_->Clear();
@@ -85,6 +87,8 @@ void PulseAudioInputStream::Stop() {
   AutoPulseLock auto_lock(pa_mainloop_);
   if (!stream_started_)
     return;
+
+  StopAgc();
 
   // Set the flag to false to stop filling new data to soundcard.
   stream_started_ = false;
@@ -246,11 +250,10 @@ void PulseAudioInputStream::ReadData() {
   // Update the AGC volume level once every second. Note that,
   // |volume| is also updated each time SetVolume() is called
   // through IPC by the render-side AGC.
-  // QueryAgcVolume() will trigger a callback to asynchronously update the
-  // |volume_|, we disregard the |normalized_volume| from QueryAgcVolume()
+  // We disregard the |normalized_volume| from GetAgcVolume()
   // and use the value calculated by |volume_|.
   double normalized_volume = 0.0;
-  QueryAgcVolume(&normalized_volume);
+  GetAgcVolume(&normalized_volume);
   normalized_volume = volume_ / GetMaxVolume();
 
   do {

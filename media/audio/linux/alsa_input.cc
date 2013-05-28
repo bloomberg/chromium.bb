@@ -102,6 +102,7 @@ bool AlsaPcmInputStream::Open() {
 void AlsaPcmInputStream::Start(AudioInputCallback* callback) {
   DCHECK(!callback_ && callback);
   callback_ = callback;
+  StartAgc();
   int error = wrapper_->PcmPrepare(device_handle_);
   if (error < 0) {
     HandleError("PcmPrepare", error);
@@ -203,7 +204,7 @@ void AlsaPcmInputStream::ReadAudio() {
   // Update the AGC volume level once every second. Note that, |volume| is
   // also updated each time SetVolume() is called through IPC by the
   // render-side AGC.
-  QueryAgcVolume(&normalized_volume);
+  GetAgcVolume(&normalized_volume);
 
   while (num_buffers--) {
     int frames_read = wrapper_->PcmReadi(device_handle_, audio_buffer_.get(),
@@ -239,6 +240,8 @@ void AlsaPcmInputStream::ReadAudio() {
 void AlsaPcmInputStream::Stop() {
   if (!device_handle_ || !callback_)
     return;
+
+  StopAgc();
 
   // Stop is always called before Close. In case of error, this will be
   // also called when closing the input controller.

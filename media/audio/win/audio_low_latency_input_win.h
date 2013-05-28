@@ -69,7 +69,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
-#include "media/audio/audio_input_stream_impl.h"
+#include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/media_export.h"
 
@@ -79,7 +79,7 @@ class AudioManagerWin;
 
 // AudioInputStream implementation using Windows Core Audio APIs.
 class MEDIA_EXPORT WASAPIAudioInputStream
-    : public AudioInputStreamImpl,
+    : public AgcAudioStream<AudioInputStream>,
       public base::DelegateSimpleThread::Delegate,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:

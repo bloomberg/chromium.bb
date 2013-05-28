@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/threading/thread_checker.h"
+#include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_device_name.h"
-#include "media/audio/audio_input_stream_impl.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 
@@ -23,7 +23,7 @@ namespace media {
 class AudioManagerPulse;
 class SeekableBuffer;
 
-class PulseAudioInputStream : public AudioInputStreamImpl {
+class PulseAudioInputStream : public AgcAudioStream<AudioInputStream> {
  public:
   PulseAudioInputStream(AudioManagerPulse* audio_manager,
                         const std::string& device_name,

@@ -42,8 +42,8 @@
 #include "base/atomicops.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_input_stream_impl.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/seekable_buffer.h"
 
@@ -52,7 +52,7 @@ namespace media {
 class AudioManagerMac;
 class DataBuffer;
 
-class AUAudioInputStream : public AudioInputStreamImpl {
+class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
  public:
   // The ctor takes all the usual parameters, plus |manager| which is the
   // the audio manager who is creating this object.

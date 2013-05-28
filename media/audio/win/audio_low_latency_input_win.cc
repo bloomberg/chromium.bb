@@ -127,6 +127,10 @@ void WASAPIAudioInputStream::Start(AudioInputCallback* callback) {
 
   sink_ = callback;
 
+  // Starts periodic AGC microphone measurements if the AGC has been enabled
+  // using SetAutomaticGainControl().
+  StartAgc();
+
   // Create and start the thread that will drive the capturing by waiting for
   // capture events.
   capture_thread_ =
@@ -145,6 +149,9 @@ void WASAPIAudioInputStream::Stop() {
   DVLOG(1) << "WASAPIAudioInputStream::Stop()";
   if (!started_)
     return;
+
+  // Stops periodic AGC microphone measurements.
+  StopAgc();
 
   // Shut down the capture thread.
   if (stop_capture_event_.IsValid()) {
@@ -387,10 +394,10 @@ void WASAPIAudioInputStream::Run() {
                 first_audio_frame_timestamp) / 10000.0) * ms_to_frame_count_ +
                 buffer_frame_index - num_frames_to_read;
 
-          // Update the AGC volume level once every second. Note that,
-          // |volume| is also updated each time SetVolume() is called
-          // through IPC by the render-side AGC.
-          QueryAgcVolume(&volume);
+          // Get a cached AGC volume level which is updated once every second
+          // on the audio manager thread. Note that, |volume| is also updated
+          // each time SetVolume() is called through IPC by the render-side AGC.
+          GetAgcVolume(&volume);
 
           // Deliver captured data to the registered consumer using a packet
           // size which was specified at construction.

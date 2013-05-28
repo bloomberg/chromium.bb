@@ -268,6 +268,7 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
   if (started_ || !audio_unit_)
     return;
   sink_ = callback;
+  StartAgc();
   OSStatus result = AudioOutputUnitStart(audio_unit_);
   if (result == noErr) {
     started_ = true;
@@ -279,6 +280,7 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
 void AUAudioInputStream::Stop() {
   if (!started_)
     return;
+  StopAgc();
   OSStatus result = AudioOutputUnitStop(audio_unit_);
   if (result == noErr) {
     started_ = false;
@@ -483,11 +485,11 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
   // Update the capture latency.
   double capture_latency_frames = GetCaptureLatency(time_stamp);
 
-  // Update the AGC volume level once every second. Note that, |volume| is
-  // also updated each time SetVolume() is called through IPC by the
-  // render-side AGC.
+  // The AGC volume level is updated once every second on a separate thread.
+  // Note that, |volume| is also updated each time SetVolume() is called
+  // through IPC by the render-side AGC.
   double normalized_volume = 0.0;
-  QueryAgcVolume(&normalized_volume);
+  GetAgcVolume(&normalized_volume);
 
   AudioBuffer& buffer = io_data->mBuffers[0];
   uint8* audio_data = reinterpret_cast<uint8*>(buffer.mData);

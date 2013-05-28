@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "media/audio/audio_input_stream_impl.h"
+#include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 
@@ -23,7 +23,7 @@ class AudioManagerCras;
 // Provides an input stream for audio capture based on CRAS, the ChromeOS Audio
 // Server.  This object is not thread safe and all methods should be invoked in
 // the thread that created the object.
-class CrasInputStream : public AudioInputStreamImpl {
+class CrasInputStream : public AgcAudioStream<AudioInputStream> {
  public:
   // The ctor takes all the usual parameters, plus |manager| which is the
   // audio manager who is creating this object.
