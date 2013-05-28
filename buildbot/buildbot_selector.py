@@ -273,6 +273,12 @@ def Main():
   env = os.environ.copy()
   env['ARCHIVE_IRT'] = builder in IRT_ARCHIVE_BUILDERS and '1' or '0'
 
+  # Use .boto file from home-dir instead of buildbot supplied one.
+  if 'AWS_CREDENTIAL_FILE' in env:
+    del env['AWS_CREDENTIAL_FILE']
+  if 'BOTO_CONFIG' in env:
+    del env['BOTO_CONFIG']
+
   if sys.platform in ['win32', 'cygwin']:
     env['GSUTIL'] = r'\b\build\scripts\slave\gsutil.bat'
   else:
