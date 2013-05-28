@@ -228,7 +228,7 @@ extern struct NaClHostDesc *NaClHostDescPosixMake(int posix_d,
  *
  * buf is not validated.
  *
- * Underlying host-OS functions: read / _read
+ * Underlying host-OS functions: read / FileRead
  */
 extern ssize_t NaClHostDescRead(struct NaClHostDesc *d,
                                 void                *buf,
@@ -240,11 +240,38 @@ extern ssize_t NaClHostDescRead(struct NaClHostDesc *d,
  *
  * buf is not validated.
  *
- * Underlying host-OS functions: write / _write
+ * Underlying host-OS functions: write / FileWrite
  */
 extern ssize_t NaClHostDescWrite(struct NaClHostDesc  *d,
                                  void const           *buf,
                                  size_t               count) NACL_WUR;
+
+/*
+ * Read data from an opened file into a memory buffer from specified
+ * offset into file.
+ *
+ * buf is not validated.
+ *
+ * Underlying host-OS functions: pread{,64} / FileRead
+ */
+extern ssize_t NaClHostDescPRead(struct NaClHostDesc *d,
+                                 void *buf,
+                                 size_t len,
+                                 nacl_off64_t offset) NACL_WUR;
+
+
+/*
+ * Write data from a memory buffer into an opened file at the specific
+ * offset in the file.
+ *
+ * buf is not validated.
+ *
+ * Underlying host-OS functions: pwrite{,64} / FileWrite
+ */
+extern ssize_t NaClHostDescPWrite(struct NaClHostDesc  *d,
+                                  void const *buf,
+                                  size_t count,
+                                  nacl_off64_t offset) NACL_WUR;
 
 extern nacl_off64_t NaClHostDescSeek(struct NaClHostDesc *d,
                                      nacl_off64_t        offset,

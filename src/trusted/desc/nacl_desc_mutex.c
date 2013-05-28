@@ -109,6 +109,8 @@ static struct NaClDescVtbl const kNaClDescMutexVtbl = {
   NaClDescReadNotImplemented,
   NaClDescWriteNotImplemented,
   NaClDescSeekNotImplemented,
+  NaClDescPReadNotImplemented,
+  NaClDescPWriteNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescMutexFstat,
   NaClDescGetdentsNotImplemented,
