@@ -23,6 +23,7 @@ class DialogExample : public DialogDelegateView {
   virtual ~DialogExample();
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual View* CreateExtraView() OVERRIDE;
+  virtual View* CreateTitlebarExtraView() OVERRIDE;
   virtual View* CreateFootnoteView() OVERRIDE;
 };
 
@@ -32,8 +33,7 @@ DialogExample::DialogExample() {
   AddChildView(new Label(ASCIIToUTF16("Dialog contents label!")));
 }
 
-DialogExample::~DialogExample() {
-}
+DialogExample::~DialogExample() {}
 
 string16 DialogExample::GetWindowTitle() const {
   return ASCIIToUTF16("Dialog Widget Example");
@@ -43,6 +43,12 @@ View* DialogExample::CreateExtraView() {
   LabelButton* button = new LabelButton(NULL, ASCIIToUTF16("Extra button!"));
   button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
   return button;
+}
+
+View* DialogExample::CreateTitlebarExtraView() {
+  Label* label = new Label(ASCIIToUTF16("Extra view!"));
+  label->SetEnabledColor(SK_ColorBLUE);
+  return label;
 }
 
 View* DialogExample::CreateFootnoteView() {

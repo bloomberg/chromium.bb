@@ -19,9 +19,10 @@
 
 namespace {
 
-// Insets, in pixels, for the title view, when it exists.
-const int kTitleTopInset = 19;
-const int kTitleLeftInset = 10;
+// Padding, in pixels, for the title view, when it exists.
+const int kTitleTopInset = 12;
+const int kTitleLeftInset = 19;
+const int kTitleBottomInset = 12;
 
 // Get the |vertical| or horizontal screen overflow of the |window_bounds|.
 int GetOffScreenLength(const gfx::Rect& monitor_bounds,
@@ -129,33 +130,45 @@ void BubbleFrameView::UpdateWindowTitle() {}
 
 gfx::Insets BubbleFrameView::GetInsets() const {
   gfx::Insets insets = content_margins_;
-  insets += gfx::Insets(
-      std::max(title_->text().empty() ? 0 : title_->height() + kTitleTopInset,
-               close_->visible() ? close_->height() : 0),
-      0, 0, 0);
+  const int title_height = title_->text().empty() ? 0 :
+      title_->GetPreferredSize().height() + kTitleTopInset + kTitleBottomInset;
+  const int close_height = close_->visible() ? close_->height() : 0;
+  insets += gfx::Insets(std::max(title_height, close_height), 0, 0, 0);
   return insets;
 }
 
 gfx::Size BubbleFrameView::GetPreferredSize() {
-  gfx::Size client_size(GetWidget()->client_view()->GetPreferredSize());
-  return GetUpdatedWindowBounds(gfx::Rect(), client_size, false).size();
+  const gfx::Size client(GetWidget()->client_view()->GetPreferredSize());
+  gfx::Size size(GetUpdatedWindowBounds(gfx::Rect(), client, false).size());
+  // Accommodate the width of the title bar elements.
+  int title_bar_width = GetInsets().width() + border()->GetInsets().width() +
+      kTitleLeftInset + title_->GetPreferredSize().width() +
+      close_->width() + 1;
+  if (titlebar_extra_view_ != NULL)
+    title_bar_width += titlebar_extra_view_->GetPreferredSize().width();
+  size.ClampToMin(gfx::Size(title_bar_width, 0));
+  return size;
 }
 
 void BubbleFrameView::Layout() {
-  gfx::Rect bounds = GetLocalBounds();
+  gfx::Rect bounds(GetLocalBounds());
   bounds.Inset(border()->GetInsets());
   // Small additional insets yield the desired 10px visual close button insets.
-  bounds.Inset(0, 2, close_->width() + 1, 0);
-  close_->SetPosition(gfx::Point(bounds.right(), bounds.y()));
+  bounds.Inset(0, 0, close_->width() + 1, 0);
+  close_->SetPosition(gfx::Point(bounds.right(), bounds.y() + 2));
 
-  gfx::Rect title_bounds = bounds;
-  title_bounds.Inset(kTitleTopInset, kTitleLeftInset, 0, 0);
-
-  title_bounds.set_size(title_->GetPreferredSize());
+  gfx::Rect title_bounds(bounds);
+  title_bounds.Inset(kTitleLeftInset, kTitleTopInset, 0, 0);
+  gfx::Size title_size(title_->GetPreferredSize());
+  const int title_width = std::max(0, close_->bounds().x() - title_bounds.x());
+  title_size.ClampToMax(gfx::Size(title_width, title_size.height()));
+  title_bounds.set_size(title_size);
   title_->SetBoundsRect(title_bounds);
 
   if (titlebar_extra_view_) {
-    const gfx::Size size = titlebar_extra_view_->GetPreferredSize();
+    const int extra_width = close_->bounds().x() - title_->bounds().right();
+    gfx::Size size = titlebar_extra_view_->GetPreferredSize();
+    size.ClampToMax(gfx::Size(std::max(0, extra_width), size.height()));
     gfx::Rect titlebar_extra_view_bounds(
         bounds.right() - size.width(),
         title_bounds.y(),
