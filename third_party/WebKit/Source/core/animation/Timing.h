@@ -84,8 +84,7 @@ struct Timing {
     // FIXME: Add activeDuration.
     double playbackRate;
     PlaybackDirection direction;
-    // FIXME: Placeholder for timing function.
-    const RefPtr<TimingFunction> timingFunction;
+    RefPtr<TimingFunction> timingFunction;
 
 };
 

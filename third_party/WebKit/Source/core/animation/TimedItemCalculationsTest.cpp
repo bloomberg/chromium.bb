@@ -80,7 +80,7 @@ TEST(TimedItemCalculations, ScaledActiveTime)
 {
     Timing timing;
 
-    // activeDuration, localTime, startTime
+    // calculateScaledActiveTime(activeDuration, activeTime, startOffset)
 
     // if the active time is null
     ASSERT_TRUE(isNull(calculateScaledActiveTime(4, nullValue(), 5, timing)));
@@ -100,7 +100,7 @@ TEST(TimedItemCalculations, IterationTime)
 {
     Timing timing;
 
-    // iterationDuration, repeatedDuration, scaledActiveTime, startOffset
+    // calculateIterationTime(iterationDuration, repeatedDuration, scaledActiveTime, startOffset)
 
     // if the scaled active time is null
     ASSERT_TRUE(isNull(calculateIterationTime(1, 1, nullValue(), 1, timing)));
@@ -123,7 +123,7 @@ TEST(TimedItemCalculations, CurrentIteration)
 {
     Timing timing;
 
-    // iterationDuration, iterationTime, scaledActiveTime
+    // calculateCurrentIteration(iterationDuration, iterationTime, scaledActiveTime)
 
     // if the scaled active time is null
     ASSERT_TRUE(isNull(calculateCurrentIteration(1, 1, nullValue(), timing)));
@@ -147,7 +147,7 @@ TEST(TimedItemCalculations, DirectedTime)
 {
     Timing timing;
 
-    // currentIteration, iterationDuration, iterationTime
+    // calculateDirectedTime(currentIteration, iterationDuration, iterationTime)
 
     // if the iteration time is null
     ASSERT_TRUE(isNull(calculateDirectedTime(1, 2, nullValue(), timing)));
@@ -172,6 +172,37 @@ TEST(TimedItemCalculations, DirectedTime)
     timing.direction = Timing::PlaybackDirectionAlternateReverse;
     ASSERT_EQ(3, calculateDirectedTime(0, 20, 17, timing));
     ASSERT_EQ(3, calculateDirectedTime(2, 20, 17, timing));
+}
+
+TEST(TimedItemCalculations, TransformedTime)
+{
+    Timing timing;
+
+    // calculateTransformedTime(currentIteration, iterationDuration, iterationTime)
+
+    // Iteration time is null
+    ASSERT_TRUE(isNull(calculateTransformedTime(1, 2, nullValue(), timing)));
+
+    // PlaybackDirectionForwards
+    ASSERT_EQ(12, calculateTransformedTime(0, 20, 12, timing));
+    ASSERT_EQ(12, calculateTransformedTime(1, 20, 12, timing));
+
+    // PlaybackDirectionForwards with timing function
+    timing.timingFunction = StepsTimingFunction::create(4, false /* stepAtStart */);
+    ASSERT_EQ(10, calculateTransformedTime(0, 20, 12, timing));
+    ASSERT_EQ(10, calculateTransformedTime(1, 20, 12, timing));
+
+    // PlaybackDirectionReverse
+    timing.timingFunction = 0;
+    timing.direction = Timing::PlaybackDirectionReverse;
+    ASSERT_EQ(8, calculateTransformedTime(0, 20, 12, timing));
+    ASSERT_EQ(8, calculateTransformedTime(1, 20, 12, timing));
+
+    // PlaybackDirectionReverse with timing function
+    timing.timingFunction = StepsTimingFunction::create(4, false /* stepAtStart */);
+    ASSERT_EQ(5, calculateTransformedTime(0, 20, 12, timing));
+    ASSERT_EQ(5, calculateTransformedTime(1, 20, 12, timing));
+
 }
 
 }

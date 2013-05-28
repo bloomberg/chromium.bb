@@ -33,6 +33,7 @@
 
 #include "core/animation/TimedItem.h"
 #include "core/animation/Timing.h"
+#include "core/platform/animation/AnimationUtilities.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {
@@ -149,8 +150,9 @@ static inline double calculateTransformedTime(double currentIteration, double it
     ASSERT(isNull(iterationTime) || (iterationTime >= 0 && iterationTime <= iterationDuration));
 
     double directedTime = calculateDirectedTime(currentIteration, iterationDuration, iterationTime, specified);
-    ASSERT(!specified.timingFunction); // FIXME: evaluate timing functions
-    return directedTime;
+    return specified.timingFunction ?
+        iterationDuration * specified.timingFunction->evaluate(directedTime / iterationDuration, accuracyForDuration(iterationDuration)) :
+        directedTime;
 }
 
 } // namespace WebCore
