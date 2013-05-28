@@ -4,6 +4,9 @@
 
 #include <math.h>
 
+#include <map>
+
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/speech/tts_platform.h"
@@ -17,6 +20,11 @@ namespace {
 
 const char kNotSupportedError[] =
     "Native speech synthesis not supported on this platform.";
+
+struct SPDChromeVoice {
+  std::string name;
+  std::string module;
+};
 
 }  // namespace
 
@@ -66,6 +74,10 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
   // These apply to the current utterance only.
   std::string utterance_;
   int utterance_id_;
+
+  // Map a string composed of a voicename and module to the voicename. Used to
+  // uniquely identify a voice across all available modules.
+  scoped_ptr<std::map<std::string, SPDChromeVoice> > all_native_voices_;
 
   friend struct DefaultSingletonTraits<TtsPlatformImplLinux>;
 
@@ -153,6 +165,13 @@ bool TtsPlatformImplLinux::Speak(
   float pitch = params.pitch > 3 ? 3 : params.pitch;
   pitch = params.pitch < 0.334 ? 0.334 : pitch;
 
+  std::map<std::string, SPDChromeVoice>::iterator it =
+      all_native_voices_->find(voice.name);
+  if (it != all_native_voices_->end()) {
+    libspeechd_loader_.spd_set_output_module(conn_, it->second.module.c_str());
+    libspeechd_loader_.spd_set_synthesis_voice(conn_, it->second.name.c_str());
+  }
+
   // Map our multiplicative range to Speech Dispatcher's linear range.
   // .334 = -100.
   // 3 = 100.
@@ -185,16 +204,50 @@ bool TtsPlatformImplLinux::IsSpeaking() {
 
 void TtsPlatformImplLinux::GetVoices(
     std::vector<VoiceData>* out_voices) {
-  // TODO: get all voices, not just default voice.
-  // http://crbug.com/88059
-  out_voices->push_back(VoiceData());
-  VoiceData& voice = out_voices->back();
-  voice.native = true;
-  voice.name = "native";
-  voice.events.insert(TTS_EVENT_START);
-  voice.events.insert(TTS_EVENT_END);
-  voice.events.insert(TTS_EVENT_CANCELLED);
-  voice.events.insert(TTS_EVENT_MARKER);
+  if (!all_native_voices_.get()) {
+    all_native_voices_.reset(new std::map<std::string, SPDChromeVoice>());
+    char** modules = libspeechd_loader_.spd_list_modules(conn_);
+    if (!modules)
+      return;
+    for (int i = 0; modules[i]; i++) {
+      char* module = modules[i];
+      libspeechd_loader_.spd_set_output_module(conn_, module);
+      SPDVoice** native_voices =
+          libspeechd_loader_.spd_list_synthesis_voices(conn_);
+      if (!native_voices) {
+        free(module);
+        continue;
+      }
+      for (int j = 0; native_voices[j]; j++) {
+        SPDVoice* native_voice = native_voices[j];
+        SPDChromeVoice native_data;
+        native_data.name = native_voice->name;
+        native_data.module = module;
+        std::string key;
+        key.append(native_data.name);
+        key.append(" ");
+        key.append(native_data.module);
+        all_native_voices_->insert(
+            std::pair<std::string, SPDChromeVoice>(key, native_data));
+        free(native_voices[j]);
+      }
+      free(modules[i]);
+    }
+  }
+
+  for (std::map<std::string, SPDChromeVoice>::iterator it =
+           all_native_voices_->begin();
+       it != all_native_voices_->end();
+       it++) {
+    out_voices->push_back(VoiceData());
+    VoiceData& voice = out_voices->back();
+    voice.native = true;
+    voice.name = it->first;
+    voice.events.insert(TTS_EVENT_START);
+    voice.events.insert(TTS_EVENT_END);
+    voice.events.insert(TTS_EVENT_CANCELLED);
+    voice.events.insert(TTS_EVENT_MARKER);
+  }
 }
 
 void TtsPlatformImplLinux::OnSpeechEvent(SPDNotificationType type) {
