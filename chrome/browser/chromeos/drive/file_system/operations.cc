@@ -63,8 +63,11 @@ void Operations::Init(OperationObserver* observer,
       new TouchOperation(blocking_task_runner, observer, scheduler, metadata));
   download_operation_.reset(new DownloadOperation(
       blocking_task_runner, observer, scheduler, metadata, cache));
-  update_operation_.reset(
-      new UpdateOperation(observer, scheduler, metadata, cache));
+  update_operation_.reset(new UpdateOperation(blocking_task_runner,
+                                              observer,
+                                              scheduler,
+                                              metadata,
+                                              cache));
   search_operation_.reset(
       new SearchOperation(blocking_task_runner, scheduler, metadata));
 }

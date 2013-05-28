@@ -336,8 +336,12 @@ class FileCacheTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
 
     FileError error = FILE_ERROR_OK;
-    cache_->ClearDirtyOnUIThread(
-        resource_id, md5,
+    PostTaskAndReplyWithResult(
+        blocking_task_runner_,
+        FROM_HERE,
+        base::Bind(&FileCache::ClearDirty,
+                   base::Unretained(cache_.get()),
+                   resource_id, md5),
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     VerifyCacheFileState(error, resource_id, md5);

@@ -6,13 +6,16 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_UPDATE_OPERATION_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace drive {
@@ -34,7 +37,8 @@ class OperationObserver;
 // metadata to reflect the new state.
 class UpdateOperation {
  public:
-  UpdateOperation(OperationObserver* observer,
+  UpdateOperation(base::SequencedTaskRunner* blocking_task_runner,
+                  OperationObserver* observer,
                   JobScheduler* scheduler,
                   internal::ResourceMetadata* metadata,
                   internal::FileCache* cache);
@@ -50,29 +54,23 @@ class UpdateOperation {
                               const FileOperationCallback& callback);
 
  private:
-  void UpdateFileAfterGetEntryInfo(DriveClientContext context,
-                                   const FileOperationCallback& callback,
-                                   FileError error,
-                                   const base::FilePath& drive_file_path,
-                                   scoped_ptr<ResourceEntry> entry);
-
-  void UpdateFileAfterGetFile(DriveClientContext context,
-                              const FileOperationCallback& callback,
-                              const base::FilePath& drive_file_path,
-                              scoped_ptr<ResourceEntry> entry,
-                              FileError error,
-                              const base::FilePath& cache_file_path);
+  void UpdateFileAfterGetLocalState(DriveClientContext context,
+                                    const FileOperationCallback& callback,
+                                    const ResourceEntry* entry,
+                                    const base::FilePath* drive_file_path,
+                                    const base::FilePath* cache_file_path,
+                                    FileError error);
 
   void UpdateFileAfterUpload(
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
-  void UpdateFileAfterRefresh(const FileOperationCallback& callback,
-                              FileError error,
-                              const base::FilePath& drive_file_path,
-                              scoped_ptr<ResourceEntry> entry);
+  void UpdateFileAfterUpdateLocalState(const FileOperationCallback& callback,
+                                       const base::FilePath* drive_file_path,
+                                       FileError error);
 
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
   JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;

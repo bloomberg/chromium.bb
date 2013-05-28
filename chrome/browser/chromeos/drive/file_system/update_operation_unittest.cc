@@ -17,8 +17,11 @@ class UpdateOperationTest : public OperationTestBase {
  protected:
   virtual void SetUp() OVERRIDE {
    OperationTestBase::SetUp();
-   operation_.reset(
-       new UpdateOperation(observer(), scheduler(), metadata(), cache()));
+   operation_.reset(new UpdateOperation(blocking_task_runner(),
+                                        observer(),
+                                        scheduler(),
+                                        metadata(),
+                                        cache()));
  }
 
  virtual void TearDown() OVERRIDE {

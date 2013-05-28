@@ -537,18 +537,62 @@ void FileCache::CommitDirtyOnUIThread(const std::string& resource_id,
                  FILE_ERROR_OK));
 }
 
-void FileCache::ClearDirtyOnUIThread(const std::string& resource_id,
-                                     const std::string& md5,
-                                     const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
+FileError FileCache::ClearDirty(const std::string& resource_id,
+                                const std::string& md5) {
+  AssertOnSequencedWorkerPool();
 
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&FileCache::ClearDirty,
-                 base::Unretained(this), resource_id, md5),
-      callback);
+  // |md5| is the new .<md5> extension to rename the file to.
+  // So, search for entry in cache without comparing md5.
+  FileCacheEntry cache_entry;
+
+  // Clearing a dirty file means its entry and actual file blob must exist in
+  // cache.
+  if (!GetCacheEntry(resource_id, std::string(), &cache_entry) ||
+      !cache_entry.is_present()) {
+    LOG(WARNING) << "Can't clear dirty state of a file that wasn't cached: "
+                 << "res_id=" << resource_id
+                 << ", md5=" << md5;
+    return FILE_ERROR_NOT_FOUND;
+  }
+
+  // If a file is not dirty (it should have been marked dirty via
+  // MarkDirtyInCache), clearing its dirty state is an invalid operation.
+  if (!cache_entry.is_dirty()) {
+    LOG(WARNING) << "Can't clear dirty state of a non-dirty file: res_id="
+                 << resource_id
+                 << ", md5=" << md5;
+    return FILE_ERROR_INVALID_OPERATION;
+  }
+
+  // File must be dirty and hence in persistent dir.
+  DCHECK(cache_entry.is_persistent());
+
+  // Get the current path of the file in cache.
+  base::FilePath source_path =
+      GetCacheFilePath(resource_id,
+                       md5,
+                       GetSubDirectoryType(cache_entry),
+                       CACHED_FILE_LOCALLY_MODIFIED);
+
+  // Determine destination path.
+  // If file is pinned, move it to persistent dir with .md5 extension;
+  // otherwise, move it to tmp dir with .md5 extension.
+  const CacheSubDirectoryType sub_dir_type =
+      cache_entry.is_pinned() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
+  base::FilePath dest_path = GetCacheFilePath(resource_id,
+                                              md5,
+                                              sub_dir_type,
+                                              CACHED_FILE_FROM_SERVER);
+
+  if (!MoveFile(source_path, dest_path))
+    return FILE_ERROR_FAILED;
+
+  // Now that file operations have completed, update metadata.
+  cache_entry.set_md5(md5);
+  cache_entry.set_is_dirty(false);
+  cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
+  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+  return FILE_ERROR_OK;
 }
 
 void FileCache::RemoveOnUIThread(const std::string& resource_id,
@@ -954,64 +998,6 @@ FileError FileCache::MarkDirty(const std::string& resource_id,
   // Now that file operations have completed, update metadata.
   cache_entry.set_md5(md5);
   cache_entry.set_is_dirty(true);
-  cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
-  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
-  return FILE_ERROR_OK;
-}
-
-FileError FileCache::ClearDirty(const std::string& resource_id,
-                                const std::string& md5) {
-  AssertOnSequencedWorkerPool();
-
-  // |md5| is the new .<md5> extension to rename the file to.
-  // So, search for entry in cache without comparing md5.
-  FileCacheEntry cache_entry;
-
-  // Clearing a dirty file means its entry and actual file blob must exist in
-  // cache.
-  if (!GetCacheEntry(resource_id, std::string(), &cache_entry) ||
-      !cache_entry.is_present()) {
-    LOG(WARNING) << "Can't clear dirty state of a file that wasn't cached: "
-                 << "res_id=" << resource_id
-                 << ", md5=" << md5;
-    return FILE_ERROR_NOT_FOUND;
-  }
-
-  // If a file is not dirty (it should have been marked dirty via
-  // MarkDirtyInCache), clearing its dirty state is an invalid operation.
-  if (!cache_entry.is_dirty()) {
-    LOG(WARNING) << "Can't clear dirty state of a non-dirty file: res_id="
-                 << resource_id
-                 << ", md5=" << md5;
-    return FILE_ERROR_INVALID_OPERATION;
-  }
-
-  // File must be dirty and hence in persistent dir.
-  DCHECK(cache_entry.is_persistent());
-
-  // Get the current path of the file in cache.
-  base::FilePath source_path =
-      GetCacheFilePath(resource_id,
-                       md5,
-                       GetSubDirectoryType(cache_entry),
-                       CACHED_FILE_LOCALLY_MODIFIED);
-
-  // Determine destination path.
-  // If file is pinned, move it to persistent dir with .md5 extension;
-  // otherwise, move it to tmp dir with .md5 extension.
-  const CacheSubDirectoryType sub_dir_type =
-      cache_entry.is_pinned() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
-  base::FilePath dest_path = GetCacheFilePath(resource_id,
-                                              md5,
-                                              sub_dir_type,
-                                              CACHED_FILE_FROM_SERVER);
-
-  if (!MoveFile(source_path, dest_path))
-    return FILE_ERROR_FAILED;
-
-  // Now that file operations have completed, update metadata.
-  cache_entry.set_md5(md5);
-  cache_entry.set_is_dirty(false);
   cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
   metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   return FILE_ERROR_OK;

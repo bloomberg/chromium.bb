@@ -18,11 +18,64 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
-UpdateOperation::UpdateOperation(OperationObserver* observer,
-                                 JobScheduler* scheduler,
-                                 internal::ResourceMetadata* metadata,
-                                 internal::FileCache* cache)
-    : observer_(observer),
+namespace {
+
+// Gets locally stored information about the specified file.
+FileError GetFileLocalState(internal::ResourceMetadata* metadata,
+                            internal::FileCache* cache,
+                            const std::string& resource_id,
+                            ResourceEntry* entry,
+                            base::FilePath* drive_file_path,
+                            base::FilePath* cache_file_path) {
+  FileError error = metadata->GetResourceEntryById(resource_id, NULL, entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  if (entry->file_info().is_directory())
+    return FILE_ERROR_NOT_A_FILE;
+
+  *drive_file_path = metadata->GetFilePath(resource_id);
+  if (drive_file_path->empty())
+    return FILE_ERROR_NOT_FOUND;
+
+  return cache->GetFile(resource_id,
+                        entry->file_specific_info().file_md5(),
+                        cache_file_path);
+}
+
+// Updates locally stored information about the specified file.
+FileError UpdateFileLocalState(
+    internal::ResourceMetadata* metadata,
+    internal::FileCache* cache,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry,
+    base::FilePath* drive_file_path) {
+  const ResourceEntry& entry = ConvertToResourceEntry(*resource_entry);
+  if (entry.resource_id().empty())
+    return FILE_ERROR_NOT_A_FILE;
+
+  FileError error = metadata->RefreshEntry(entry, NULL, NULL);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  *drive_file_path = metadata->GetFilePath(entry.resource_id());
+  if (drive_file_path->empty())
+    return FILE_ERROR_NOT_FOUND;
+
+  // Clear the dirty bit if we have updated an existing file.
+  return cache->ClearDirty(entry.resource_id(),
+                           entry.file_specific_info().file_md5());
+}
+
+}  // namespace
+
+UpdateOperation::UpdateOperation(
+    base::SequencedTaskRunner* blocking_task_runner,
+    OperationObserver* observer,
+    JobScheduler* scheduler,
+    internal::ResourceMetadata* metadata,
+    internal::FileCache* cache)
+    : blocking_task_runner_(blocking_task_runner),
+      observer_(observer),
       scheduler_(scheduler),
       metadata_(metadata),
       cache_(cache),
@@ -41,54 +94,35 @@ void UpdateOperation::UpdateFileByResourceId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  metadata_->GetResourceEntryByIdOnUIThread(
-      resource_id,
-      base::Bind(&UpdateOperation::UpdateFileAfterGetEntryInfo,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 context,
-                 callback));
-}
-
-void UpdateOperation::UpdateFileAfterGetEntryInfo(
-    DriveClientContext context,
-    const FileOperationCallback& callback,
-    FileError error,
-    const base::FilePath& drive_file_path,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  DCHECK(entry);
-  if (entry->file_info().is_directory()) {
-    callback.Run(FILE_ERROR_NOT_A_FILE);
-    return;
-  }
-
-  // Extract a pointer before we call Pass() so we can use it below.
-  ResourceEntry* entry_ptr = entry.get();
-  cache_->GetFileOnUIThread(
-      entry_ptr->resource_id(),
-      entry_ptr->file_specific_info().file_md5(),
-      base::Bind(&UpdateOperation::UpdateFileAfterGetFile,
+  ResourceEntry* entry = new ResourceEntry;
+  base::FilePath* drive_file_path = new base::FilePath;
+  base::FilePath* cache_file_path = new base::FilePath;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&GetFileLocalState,
+                 metadata_,
+                 cache_,
+                 resource_id,
+                 entry,
+                 drive_file_path,
+                 cache_file_path),
+      base::Bind(&UpdateOperation::UpdateFileAfterGetLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  context,
                  callback,
-                 drive_file_path,
-                 base::Passed(&entry)));
+                 base::Owned(entry),
+                 base::Owned(drive_file_path),
+                 base::Owned(cache_file_path)));
 }
 
-void UpdateOperation::UpdateFileAfterGetFile(
+void UpdateOperation::UpdateFileAfterGetLocalState(
     DriveClientContext context,
     const FileOperationCallback& callback,
-    const base::FilePath& drive_file_path,
-    scoped_ptr<ResourceEntry> entry,
-    FileError error,
-    const base::FilePath& cache_file_path) {
+    const ResourceEntry* entry,
+    const base::FilePath* drive_file_path,
+    const base::FilePath* cache_file_path,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -99,8 +133,8 @@ void UpdateOperation::UpdateFileAfterGetFile(
 
   scheduler_->UploadExistingFile(
       entry->resource_id(),
-      drive_file_path,
-      cache_file_path,
+      *drive_file_path,
+      *cache_file_path,
       entry->file_specific_info().content_mime_type(),
       "",  // etag
       context,
@@ -122,17 +156,25 @@ void UpdateOperation::UpdateFileAfterUpload(
     return;
   }
 
-  metadata_->RefreshEntryOnUIThread(
-      ConvertToResourceEntry(*resource_entry),
-      base::Bind(&UpdateOperation::UpdateFileAfterRefresh,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+  base::FilePath* drive_file_path = new base::FilePath;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&UpdateFileLocalState,
+                 metadata_,
+                 cache_,
+                 base::Passed(&resource_entry),
+                 drive_file_path),
+      base::Bind(&UpdateOperation::UpdateFileAfterUpdateLocalState,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 base::Owned(drive_file_path)));
 }
 
-void UpdateOperation::UpdateFileAfterRefresh(
+void UpdateOperation::UpdateFileAfterUpdateLocalState(
     const FileOperationCallback& callback,
-    FileError error,
-    const base::FilePath& drive_file_path,
-    scoped_ptr<ResourceEntry> entry) {
+    const base::FilePath* drive_file_path,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -140,18 +182,8 @@ void UpdateOperation::UpdateFileAfterRefresh(
     callback.Run(error);
     return;
   }
-
-  DCHECK(entry);
-  DCHECK(entry->has_resource_id());
-  DCHECK(entry->has_file_specific_info());
-  DCHECK(entry->file_specific_info().has_file_md5());
-
-  observer_->OnDirectoryChangedByOperation(drive_file_path.DirName());
-
-  // Clear the dirty bit if we have updated an existing file.
-  cache_->ClearDirtyOnUIThread(entry->resource_id(),
-                               entry->file_specific_info().file_md5(),
-                               callback);
+  observer_->OnDirectoryChangedByOperation(drive_file_path->DirName());
+  callback.Run(FILE_ERROR_OK);
 }
 
 }  // namespace file_system

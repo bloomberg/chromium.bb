@@ -262,18 +262,9 @@ class FileCache {
                              const std::string& md5,
                              const FileOperationCallback& callback);
 
-  // Modifies cache state, which involves the following:
-  // - moves |source_path| to |dest_path| in persistent dir if
-  //   file is pinned or tmp dir otherwise, where |source_path| has .local
-  //   extension and |dest_path| has .<md5> extension
-  // - deletes symlink in outgoing dir
-  // - if file is pinned, updates symlink in pinned dir to reference
-  //   |dest_path|
-  // |callback| must not be null.
-  // Must be called on the UI thread.
-  void ClearDirtyOnUIThread(const std::string& resource_id,
-                            const std::string& md5,
-                            const FileOperationCallback& callback);
+  // Clears dirty state of the specified entry.
+  FileError ClearDirty(const std::string& resource_id,
+                       const std::string& md5);
 
   // Runs Remove() on |blocking_task_runner_| and runs |callback| with the
   // result.
@@ -380,10 +371,6 @@ class FileCache {
   // Used to implement MarkDirtyOnUIThread.
   FileError MarkDirty(const std::string& resource_id,
                       const std::string& md5);
-
-  // Used to implement ClearDirtyOnUIThread.
-  FileError ClearDirty(const std::string& resource_id,
-                       const std::string& md5);
 
   // Used to implement ClearAllOnUIThread.
   bool ClearAll();
