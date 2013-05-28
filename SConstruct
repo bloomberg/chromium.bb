@@ -2899,6 +2899,19 @@ than via the compiler driver."""
 nacl_env.AddMethod(RodataSwitch)
 
 
+def AllowNonStableBitcode(env):
+  """ This modifies the environment to allow features that aren't part
+      of PNaCl's stable ABI.  If tests using these features should be
+      skipped entirely, this returns False.  Otherwise, on success, it
+      returns True.
+  """
+  if env.Bit('bitcode'):
+    env.SetBits('nonstable_bitcode')
+  return not env.Bit('skip_nonstable_bitcode')
+
+nacl_env.AddMethod(AllowNonStableBitcode)
+
+
 def AllowInlineAssembly(env):
   """ This modifies the environment to allow inline assembly in
       untrusted code.  If the environment cannot be modified to allow

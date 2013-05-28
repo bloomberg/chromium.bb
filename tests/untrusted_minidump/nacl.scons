@@ -5,10 +5,8 @@
 
 Import('env')
 
-if env.Bit('bitcode'):
-  # Preserve debugging info (which is not ABI-stable under PNaCl).
-  env.SetBits('nonstable_bitcode')
-if env.Bit('skip_nonstable_bitcode'):
+# Preserve debugging info (which is not ABI-stable under PNaCl).
+if not env.AllowNonStableBitcode():
   Return()
 
 # Add a build ID to the nexe in the cases where this works.

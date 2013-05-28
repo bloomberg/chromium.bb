@@ -5,6 +5,8 @@
 
 Import('env')
 
+if not env.AllowNonStableBitcode():
+  Return()
 if env.Bit('bitcode'):
   # Computed gotos are currently not allowed by PNaCl's bitcode ABI.
   env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])

@@ -28,13 +28,12 @@ if env.Bit('build_arm'):
 # Then the translator will get the required functions from system libs.
 # However, removing -nostdlib from TRANSLATEFLAGS will break due to:
 # https://code.google.com/p/nativeclient/issues/detail?id=3069
+if not env.AllowNonStableBitcode():
+  Return()
 if env.Bit('bitcode'):
-  env.SetBits('nonstable_bitcode')
   # The stack_alignment16 test uses __builtin_dwarf_cfa (llvm.eh.dwarf.cfa),
   # which we do not support in stable bitcode.
   env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
-if env.Bit('skip_nonstable_bitcode'):
-  Return()
 
 # NOTE: the x86 linker wants _start() to be the very first function
 FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')

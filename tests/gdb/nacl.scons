@@ -26,14 +26,11 @@ env.Append(CCFLAGS=['-O0', '-g', '-fno-omit-frame-pointer'])
 # We need to disable PNaCl's link time optimizations so that functions
 # do not get inlined, so that we can set breakpoints on these
 # functions.  Also make translation optimizaton level -O0.
+if not env.AllowNonStableBitcode():
+  Return()
 if env.Bit('bitcode'):
   env.Append(LINKFLAGS=['-O0'])
   env.Append(TRANSLATEFLAGS=['-O0'])
-  # This requires preserving nonstable bitcode debug metadata.
-  env.SetBits('nonstable_bitcode')
-
-if env.Bit('skip_nonstable_bitcode'):
-  Return()
 
 test_args = ['--gdb', env['GDB'],
              '--output_dir', env.subst('${TARGET_ROOT}/test_results')]
