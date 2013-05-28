@@ -192,5 +192,11 @@ int main(int argc, char *argv[])
 	config = run_test(t4);
 	assert(config == NULL);
 
+	weston_config_destroy(NULL);
+	assert(weston_config_next_section(NULL, NULL, NULL) == 0);
+
+	section = weston_config_get_section(NULL, "bucket", NULL, NULL);
+	assert(section == NULL);
+
 	return 0;
 }
