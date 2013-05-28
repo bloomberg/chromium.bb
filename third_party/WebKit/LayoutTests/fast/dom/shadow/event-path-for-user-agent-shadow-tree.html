@@ -18,8 +18,8 @@
 <script>
 ['sandbox', 'details', 'details-child', 'summary', 'summary-child'].forEach(function(path) {
     getNodeInShadowTreeStack(path).addEventListener('click', function(event) {
-        debug('\nevent.path() on node ' + dumpNode(event.currentTarget));
-        debug(dumpNodeList(event.path()));
+        debug('\nevent.path on node ' + dumpNode(event.currentTarget));
+        debug(dumpNodeList(event.path));
     });
 });
 var clickEvent = document.createEvent("MouseEvents");

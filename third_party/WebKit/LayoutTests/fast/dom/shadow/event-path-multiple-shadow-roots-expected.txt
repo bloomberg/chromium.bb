@@ -1,29 +1,29 @@
 
-event.path() on node #C
+event.path on node #C
 #C, #B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
 
-event.path() on node #B
+event.path on node #B
 #C, #B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
 
-event.path() on node #F
+event.path on node #F
 #C, #B, #F, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
-event.path() on node #E
+event.path on node #E
 #C, #B, #F, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
-event.path() on node #D
+event.path on node #D
 #C, #B, #F, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
-event.path() on node #I
+event.path on node #I
 #C, #B, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
-event.path() on node #H
+event.path on node #H
 #C, #B, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
-event.path() on node #G
+event.path on node #G
 #C, #B, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
-event.path() on node #A
+event.path on node #A
 #C, #B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
 PASS successfullyParsed is true
 
