@@ -63,6 +63,7 @@ clients_programs =				\
 	eventdemo				\
 	clickdot				\
 	transformed				\
+	fullscreen				\
 	calibrator				\
 	$(subsurfaces)				\
 	$(full_gl_client_programs)
@@ -128,6 +129,9 @@ clickdot_LDADD = libtoytoolkit.la
 
 transformed_SOURCES = transformed.c
 transformed_LDADD = libtoytoolkit.la
+
+fullscreen_SOURCES = fullscreen.c
+fullscreen_LDADD = libtoytoolkit.la
 
 calibrator_SOURCES = calibrator.c ../shared/matrix.c ../shared/matrix.h
 calibrator_LDADD = libtoytoolkit.la
