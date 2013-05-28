@@ -1,0 +1,34 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<link id="link" rel="stylesheet" href="resources/stylesheet-removal.css" />
+<script>
+function removeStyleSheet()
+{
+    var link = document.getElementById("link");
+    link.parentElement.removeChild(link);
+}
+
+function test()
+{
+    var uiSourceCode;
+
+    function headerRemoved(header)
+    {
+        InspectorTest.addResult("Style file is " + (uiSourceCode.styleFile() ? "" : "not ") + "present");
+        InspectorTest.completeTest();
+    }
+
+    var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(WebInspector.ParsedURL.completeURL(WebInspector.inspectedPageURL, "resources/stylesheet-removal.css"));
+    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, headerRemoved, this);
+    InspectorTest.evaluateInPage("removeStyleSheet()");
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests that things are cleaned up properly upon stylesheet header removal.</p>
+</body>
+</html>

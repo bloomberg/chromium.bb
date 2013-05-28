@@ -1,0 +1,4 @@
+Tests that things are cleaned up properly upon stylesheet header removal.
+
+Style file is not present
+
