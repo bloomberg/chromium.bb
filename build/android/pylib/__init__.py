@@ -4,14 +4,16 @@
 
 import os
 import subprocess
+import sys
 
 
-if not os.environ.get('ANDROID_SDK_ROOT'):
+if sys.platform == 'linux2' and not os.environ.get('ANDROID_SDK_ROOT'):
   # If envsetup.sh hasn't been sourced and there's no adb in the path,
   # set it here.
-  with file(os.devnull, 'w') as devnull:
-    ret = subprocess.call(['which', 'adb'], stdout=devnull, stderr=devnull)
-    if ret:
+  try:
+    with file(os.devnull, 'w') as devnull:
+      subprocess.call(['adb', 'version'], stdout=devnull, stderr=devnull)
+  except OSError:
       print 'No adb found in $PATH, fallback to checked in binary.'
       os.environ['PATH'] += os.pathsep + os.path.abspath(os.path.join(
           os.path.dirname(__file__),
