@@ -1903,7 +1903,7 @@ crbug.com/243782 [ Win7 Debug ] editing/selection/move-by-word-visually-multi-li
 crbug.com/243782 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Slow ]
 crbug.com/243782 [ Win7 Debug ] fast/js/dfg-inline-arguments-out-of-bounds.html [ Slow ]
 crbug.com/243782 [ Mac ] fast/dom/HTMLProgressElement/progress-writing-mode.html [ Pass Timeout ]
-crbug.com/243888 [ Win7 Debug ] compositing/transitions/singular-scale-transition.html [ Failure ]
+crbug.com/243888 [ Win7 ] compositing/transitions/singular-scale-transition.html [ Failure Pass ]
 crbug.com/243894 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
 crbug.com/244003 [ Win ] svg/css/font-face-crash.html [ Crash Timeout Pass ]
 crbug.com/244004 [ Win ] virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-crash.html [ Pass Timeout ]
