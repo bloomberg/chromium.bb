@@ -30,13 +30,21 @@ class MissingRequiredToolException(Exception):
   pass
 
 
+class FailedToRunToolException(Exception):
+  pass
+
+
 class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
   """Test the video quality of the WebRTC output.
 
   Prerequisites: This test case must run on a machine with a virtual webcam that
   plays video from the reference file located in the location defined by
-  _REFERENCE_YUV_FILE. You must also compile the peerconnection_server target
-  before you run this test.
+  _REFERENCE_YUV_FILE. You must also compile the chromium_builder_webrtc target
+  before you run this test to get all the tools built.
+  The external compare_videos.py script also depends on two external executables
+  which must be located in the PATH when running this test.
+  * zxing (see the CPP version at https://code.google.com/p/zxing)
+  * ffmpeg 0.11.1 or compatible version (see http://www.ffmpeg.org)
 
   The test case will launch a custom binary (peerconnection_server) which will
   allow two WebRTC clients to find each other.
@@ -190,11 +198,8 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     self.assertTrue(self._RunRGBAToI420Converter(width, height))
 
     stats_file = os.path.join(_WORKING_DIR, 'pyauto_stats.txt')
-    self.assertTrue(self._RunBarcodeDecoder(width, height, _OUTPUT_YUV_FILE,
-                                            stats_file))
-
-    analysis_result = self._RunFrameAnalyzer(width, height, reference_yuv,
-                                             _OUTPUT_YUV_FILE, stats_file)
+    analysis_result = self._CompareVideos(width, height, _OUTPUT_YUV_FILE,
+                                          reference_yuv, stats_file)
     self._ProcessPsnrAndSsimOutput(analysis_result)
     self._ProcessFramesCountOutput(analysis_result)
 
@@ -273,97 +278,61 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     rgba_converter.wait()
     return rgba_converter.returncode == 0
 
-  def _RunBarcodeDecoder(self, width, height, captured_video_filename,
-                         stats_filename):
-    """Runs the barcode decoder script.
+  def _CompareVideos(self, width, height, captured_video_filename,
+                     reference_video_filename, stats_filename):
+    """Compares the captured video with the reference video.
 
     The barcode decoder decodes the captured video containing barcodes overlaid
     into every frame of the video (produced by rgba_to_i420_converter). It
     produces a set of PNG images and a stats file that describes the relation
     between the filenames and the (decoded) frame number of each frame.
 
-    The script depends on an external executable which is a part of the Zxing
-    barcode library, which must be located in the PATH when running this test.
-
     Args:
       width(int): The frames width of the video to be decoded.
       height(int): The frames height of the video to be decoded.
       captured_video_filename(string): The captured video file we want to
         extract frame images and decode frame numbers from.
+      reference_video_filename(string): The reference video file we want to
+        compare the captured video quality with.
       stats_filename(string): Filename for the output file containing
         data that shows the relation between each frame filename and the
         reference file's frame numbers.
 
     Returns:
-      (bool): True if the decoding was successful, False otherwise.
-    """
-    path_to_decoder = os.path.join(pyauto_paths.GetThirdPartyDir(), 'webrtc',
-                                   'tools', 'barcode_tools',
-                                   'barcode_decoder.py')
-    if not os.path.exists(path_to_decoder):
-      raise MissingRequiredToolException(
-          'Could not locate the barcode decoder script! The barcode decoder '
-          'decodes the barcodes overlaid on top of every frame of the captured '
-          'video.')
-    python_interp = sys.executable
-    start_cmd = [python_interp, path_to_decoder,
-                 '--yuv_file=%s' % captured_video_filename,
-                 '--yuv_frame_width=%d' % width,
-                 '--yuv_frame_height=%d' % height,
-                 '--stats_file=%s' % stats_filename]
-    print 'Start command: ', ' '.join(start_cmd)
+      (string): The output of the script.
 
-    barcode_decoder = subprocess.Popen(start_cmd, stdout=sys.stdout,
-                                       stderr=sys.stderr)
-    barcode_decoder.wait()
-    return barcode_decoder.returncode == 0
-
-  def _RunFrameAnalyzer(self, width, height, reference_video_file,
-                        captured_video_file, stats_file):
-    """Runs the frame analyzer tool for PSNR and SSIM analysis.
-
-    The frame analyzer is also part of the webrtc_test_tools. It should be
-    built before running this test. We assume that the binary will end up next
-    to Chrome.
-
-    Frame analyzer prints its output to the standard output from where it has to
-    be read and processed.
-
-    Args:
-      width(int): The width of the video frames to be analyzed.
-      height(int): The height of the video frames to be analyzed.
-      reference_video_file(string): Filename of the video to be used as a
-         reference during the analysis.
-      captured_video_file(string): Filename for the video containing the
-        captured frames.
-      stats_file(string): Filename for the file that contains frame
-        synchronization data for the captured frames.
-
-    Returns:
-      (string): The output from the frame_analyzer.
+    Raises:
+      FailedToRunToolException: If the script fails to run.
     """
     path_to_analyzer = os.path.join(self.BrowserPath(), 'frame_analyzer')
     path_to_analyzer = os.path.abspath(path_to_analyzer)
-
     path_to_analyzer = self.BinPathForPlatform(path_to_analyzer)
 
-    if not os.path.exists(path_to_analyzer):
-      raise webrtc_test_base.MissingRequiredBinaryException(
-          'Could not locate frame_analyzer! Did you build the '
-          'webrtc_test_tools target?')
+    path_to_compare_script = os.path.join(pyauto_paths.GetThirdPartyDir(),
+                                          'webrtc', 'tools',
+                                          'compare_videos.py')
+    if not os.path.exists(path_to_compare_script):
+      raise MissingRequiredToolException('Cannot find the script at %s' %
+                                         path_to_compare_script)
+    python_interp = sys.executable
+    cmd = [
+      python_interp,
+      path_to_compare_script,
+      '--ref_video=%s' % reference_video_filename,
+      '--test_video=%s' % captured_video_filename,
+      '--frame_analyzer=%s' % path_to_analyzer,
+      '--yuv_frame_width=%d' % width,
+      '--yuv_frame_height=%d' % height,
+      '--stats_file=%s' % stats_filename,
+    ]
+    print 'Start command: ', ' '.join(cmd)
 
-    start_cmd = [path_to_analyzer, '--reference_file=%s' % reference_video_file,
-                 '--test_file=%s' % captured_video_file,
-                 '--stats_file=%s' % stats_file,
-                 '--width=%d' % width, '--height=%d' % height]
-    print 'Start command: ', ' '.join(start_cmd)
-
-    frame_analyzer = subprocess.Popen(start_cmd, stdout=subprocess.PIPE,
+    compare_videos = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE)
-    output, error = frame_analyzer.communicate()
-    if error:
-      print 'Error: ', error
-      return 'BSTATS undef undef; ESTATS'
+    output, error = compare_videos.communicate()
+    if compare_videos.returncode != 0:
+      raise FailedToRunToolException('Failed to run compare videos script!')
+
     return output
 
   def _ProcessFramesCountOutput(self, output):
