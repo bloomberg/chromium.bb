@@ -1919,6 +1919,7 @@ crbug.com/244131 [ Win Debug ] fast/forms/search-disabled-readonly.html [ Crash 
 crbug.com/244132 [ Win Debug ] inspector-protocol/dom/setFileInputFiles.html [ Crash Pass Timeout ]
 crbug.com/242291 [ Win ] http/tests/loading/pdf-commit-load-callbacks.html [ Failure ]
 crbug.com/242291 [ Win ] plugins/embed-attributes-style.html [ ImageOnlyFailure Pass Timeout ]
+crbug.com/244341 [ Win ] css3/filters/composited-during-animation.html [ Failure Pass Timeout ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
