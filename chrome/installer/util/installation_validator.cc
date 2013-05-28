@@ -115,8 +115,6 @@ BrowserDistribution::Type
 void InstallationValidator::ChromeAppHostRules::AddUninstallSwitchExpectations(
     const ProductContext& ctx,
     SwitchExpectations* expectations) const {
-  DCHECK(!ctx.system_install);
-
   // --app-launcher must be present.
   expectations->push_back(
       std::make_pair(std::string(switches::kChromeAppLauncher), true));
@@ -867,11 +865,6 @@ bool InstallationValidator::ValidateInstallationTypeForState(
     ValidateProduct(machine_state, system_level, *product_state,
                     chrome_app_host_rules, &rock_on);
     *type = static_cast<InstallationType>(*type | ProductBits::CHROME_APP_HOST);
-    if (system_level) {
-      LOG(ERROR) <<
-          "Chrome App Launcher must not be installed at system level.";
-      rock_on = false;
-    }
     if (!product_state->is_multi_install()) {
       LOG(ERROR) << "Chrome App Launcher must always be multi-install.";
       rock_on = false;

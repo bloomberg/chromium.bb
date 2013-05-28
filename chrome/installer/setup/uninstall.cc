@@ -1140,8 +1140,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     DeleteShortcuts(installer_state, product, base::FilePath(chrome_exe));
 
   } else if (product.is_chrome_app_host()) {
-    // TODO(huangs): Remove this check once we have system-level App Host.
-    DCHECK(!installer_state.system_install());
     const base::FilePath app_host_exe(
         installer_state.target_path().Append(installer::kChromeAppHostExe));
     DeleteShortcuts(installer_state, product, app_host_exe);
