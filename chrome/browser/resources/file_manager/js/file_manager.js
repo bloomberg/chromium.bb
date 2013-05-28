@@ -1049,6 +1049,8 @@ DialogType.isModal = function(type) {
     this.searchBox_ = this.dialogDom_.querySelector('#search-box');
     this.searchBox_.addEventListener(
         'input', this.onSearchBoxUpdate_.bind(this));
+    this.searchBox_.addEventListener(
+        'keydown', this.onSearchBoxKeyDown_.bind(this));
     this.searchTextMeasure_ = new TextMeasure(this.searchBox_);
     if (util.platform.newUI()) {
       this.searchIcon_ = this.dialogDom_.querySelector('#search-icon');
@@ -3498,7 +3500,7 @@ DialogType.isModal = function(type) {
   /**
    * Invoked when the search box is changed.
    *
-   * @param {Event} event The 'changed' event.
+   * @param {Event} event The changed event.
    * @private
    */
   FileManager.prototype.onSearchBoxUpdate_ = function(event) {
@@ -3520,6 +3522,25 @@ DialogType.isModal = function(type) {
     }
 
     this.search_(searchString);
+  };
+
+  /**
+   * Handles special keys such as Escape on the search box.
+   *
+   * @param {Event} event The keydown event.
+   * @private
+   */
+  FileManager.prototype.onSearchBoxKeyDown_ = function(event) {
+    // Handle only Esc key now.
+    if (event.keyCode != 27) return;
+    if (this.searchBox_.value) return;
+    var currentList = this.listType_ == FileManager.ListType.DETAIL ?
+        this.table_.list : this.grid_;
+    currentList.focus();
+    if (currentList.dataModel.length != 0 &&
+        currentList.selectionModel.selectedIndex == -1) {
+      currentList.selectionModel.selectedIndex = 0;
+    }
   };
 
   /**
