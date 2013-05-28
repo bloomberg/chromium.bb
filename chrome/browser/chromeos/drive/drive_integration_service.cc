@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
 #include "chrome/browser/chromeos/drive/download_handler.h"
-#include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/drive/drive_app_registry.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_proxy.h"
@@ -121,7 +121,7 @@ DriveIntegrationService::DriveIntegrationService(
       util::GetCacheRootPath(profile),
       blocking_task_runner_,
       NULL /* free_disk_space_getter */));
-  webapps_registry_.reset(new DriveWebAppsRegistry(scheduler_.get()));
+  drive_app_registry_.reset(new DriveAppRegistry(scheduler_.get()));
 
   // We can call FileCache::GetCacheDirectoryPath safely even before the cache
   // gets initialized.
@@ -182,7 +182,7 @@ void DriveIntegrationService::RemoveObserver(
 
 void DriveIntegrationService::OnNotificationReceived() {
   file_system_->CheckForUpdates();
-  webapps_registry_->Update();
+  drive_app_registry_->Update();
 }
 
 void DriveIntegrationService::OnPushNotificationEnabled(bool enabled) {
@@ -227,7 +227,7 @@ void DriveIntegrationService::AddBackDriveMountPoint(
   }
 
   file_system_->Initialize();
-  webapps_registry_->Update();
+  drive_app_registry_->Update();
   AddDriveMountPoint();
 
   callback.Run(true);
@@ -238,7 +238,7 @@ void DriveIntegrationService::ReloadAndRemountFileSystem() {
 
   RemoveDriveMountPoint();
   file_system_->Reload();
-  webapps_registry_->Update();
+  drive_app_registry_->Update();
 
   // Reload() is asynchronous. But we can add back the mount point right away
   // because every operation waits until loading is complete.
@@ -335,7 +335,7 @@ void DriveIntegrationService::InitializeAfterResourceMetadataInitialized(
     util::Log("Push notification is %s", status);
   }
 
-  webapps_registry_->Update();
+  drive_app_registry_->Update();
   AddDriveMountPoint();
 }
 

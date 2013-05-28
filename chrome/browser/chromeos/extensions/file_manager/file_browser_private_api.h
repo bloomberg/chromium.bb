@@ -36,8 +36,8 @@ class FileSystemURL;
 
 namespace drive {
 class FileCacheEntry;
-class DriveWebAppsRegistry;
-struct DriveWebAppInfo;
+class DriveAppRegistry;
+struct DriveAppInfo;
 struct SearchResultInfo;
 }
 
@@ -232,7 +232,7 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
   // Looks up available apps for each file in |file_info_list| in the
   // |registry|, and returns the intersection of all available apps as a
   // map from task id to TaskInfo.
-  static void GetAvailableDriveTasks(drive::DriveWebAppsRegistry* registry,
+  static void GetAvailableDriveTasks(drive::DriveAppRegistry* registry,
                                      const FileInfoList& file_info_list,
                                      TaskInfoMap* task_info_map);
 

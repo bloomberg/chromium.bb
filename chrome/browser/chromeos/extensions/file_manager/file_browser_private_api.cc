@@ -29,8 +29,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_app_registry.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/logging.h"
@@ -755,7 +755,7 @@ struct GetFileTasksFileBrowserFunction::TaskInfo {
 
 // static
 void GetFileTasksFileBrowserFunction::GetAvailableDriveTasks(
-    drive::DriveWebAppsRegistry* registry,
+    drive::DriveAppRegistry* registry,
     const FileInfoList& file_info_list,
     TaskInfoMap* task_info_map) {
   DCHECK(registry);
@@ -768,14 +768,14 @@ void GetFileTasksFileBrowserFunction::GetAvailableDriveTasks(
     if (file_info.file_path.empty())
       continue;
 
-    ScopedVector<drive::DriveWebAppInfo> app_info_list;
-    registry->GetWebAppsForFile(
+    ScopedVector<drive::DriveAppInfo> app_info_list;
+    registry->GetAppsForFile(
         file_info.file_path, file_info.mime_type, &app_info_list);
 
     if (is_first) {
       // For the first file, we store all the info.
       for (size_t j = 0; j < app_info_list.size(); ++j) {
-        const drive::DriveWebAppInfo& app_info = *app_info_list[j];
+        const drive::DriveAppInfo& app_info = *app_info_list[j];
         GURL icon_url =
             FindPreferredIcon(app_info.app_icons, kPreferredIconSize);
         task_info_map->insert(std::pair<std::string, TaskInfo>(
@@ -870,11 +870,11 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
   // |integration_service| is NULL if Drive is disabled. We return true in this
   // case because there might be other extension tasks, even if we don't have
   // any to add.
-  if (!integration_service || !integration_service->webapps_registry())
+  if (!integration_service || !integration_service->drive_app_registry())
     return true;
 
-  drive::DriveWebAppsRegistry* registry =
-      integration_service->webapps_registry();
+  drive::DriveAppRegistry* registry =
+      integration_service->drive_app_registry();
   DCHECK(registry);
 
   // Map of task_id to TaskInfo of available tasks.
@@ -2436,10 +2436,10 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
       entry->file_specific_info();
 
   // Get drive WebApps that can accept this file.
-  ScopedVector<drive::DriveWebAppInfo> web_apps;
-  integration_service->webapps_registry()->GetWebAppsForFile(
-      file_path_, file_specific_info.content_mime_type(), &web_apps);
-  if (!web_apps.empty()) {
+  ScopedVector<drive::DriveAppInfo> drive_apps;
+  integration_service->drive_app_registry()->GetAppsForFile(
+      file_path_, file_specific_info.content_mime_type(), &drive_apps);
+  if (!drive_apps.empty()) {
     std::string default_task_id = file_handler_util::GetDefaultTaskIdFromPrefs(
         profile_,
         file_specific_info.content_mime_type(),
@@ -2450,23 +2450,23 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
 
     ListValue* apps = new ListValue();
     properties_->Set("driveApps", apps);
-    for (ScopedVector<drive::DriveWebAppInfo>::const_iterator it =
-             web_apps.begin();
-         it != web_apps.end(); ++it) {
-      const drive::DriveWebAppInfo* webapp_info = *it;
+    for (ScopedVector<drive::DriveAppInfo>::const_iterator it =
+             drive_apps.begin();
+         it != drive_apps.end(); ++it) {
+      const drive::DriveAppInfo* app_info = *it;
       DictionaryValue* app = new DictionaryValue();
-      app->SetString("appId", webapp_info->app_id);
-      app->SetString("appName", webapp_info->app_name);
-      GURL app_icon = FindPreferredIcon(webapp_info->app_icons,
+      app->SetString("appId", app_info->app_id);
+      app->SetString("appName", app_info->app_name);
+      GURL app_icon = FindPreferredIcon(app_info->app_icons,
                                         kPreferredIconSize);
       if (!app_icon.is_empty())
         app->SetString("appIcon", app_icon.spec());
-      GURL doc_icon = FindPreferredIcon(webapp_info->document_icons,
+      GURL doc_icon = FindPreferredIcon(app_info->document_icons,
                                         kPreferredIconSize);
       if (!doc_icon.is_empty())
         app->SetString("docIcon", doc_icon.spec());
-      app->SetString("objectType", webapp_info->object_type);
-      app->SetBoolean("isPrimary", default_app_id == webapp_info->app_id);
+      app->SetString("objectType", app_info->object_type);
+      app->SetBoolean("isPrimary", default_app_id == app_info->app_id);
       apps->Append(app);
     }
   }

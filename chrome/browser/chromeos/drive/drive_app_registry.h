@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_WEBAPPS_REGISTRY_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_WEBAPPS_REGISTRY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_APP_REGISTRY_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_APP_REGISTRY_H_
 
 #include <map>
 #include <set>
@@ -28,18 +28,20 @@ namespace drive {
 
 class JobScheduler;
 
-// Data structure that defines WebApp
-struct DriveWebAppInfo {
-  DriveWebAppInfo(const std::string& app_id,
-                  const google_apis::InstalledApp::IconList& app_icons,
-                  const google_apis::InstalledApp::IconList& document_icons,
-                  const std::string& web_store_id,
-                  const string16& app_name,
-                  const string16& object_type,
-                  bool is_primary_selector);
-  ~DriveWebAppInfo();
+// Data structure that defines Drive app. See
+// https://chrome.google.com/webstore/category/collection/drive_apps for
+// Drive apps available on the webstore.
+struct DriveAppInfo {
+  DriveAppInfo(const std::string& app_id,
+               const google_apis::InstalledApp::IconList& app_icons,
+               const google_apis::InstalledApp::IconList& document_icons,
+               const std::string& web_store_id,
+               const string16& app_name,
+               const string16& object_type,
+               bool is_primary_selector);
+  ~DriveAppInfo();
 
-  // Drive app id
+  // Drive app id.
   std::string app_id;
   // Drive application icon URLs for this app, paired with their size (length of
   // a side in pixels).
@@ -49,7 +51,7 @@ struct DriveWebAppInfo {
   google_apis::InstalledApp::IconList document_icons;
   // Web store id/extension id;
   std::string web_store_id;
-  // WebApp name.
+  // App name.
   string16 app_name;
   // Object (file) type description handled by this app.
   string16 object_type;
@@ -57,33 +59,33 @@ struct DriveWebAppInfo {
   bool is_primary_selector;
 };
 
-// Keeps the track of installed drive web application and provider in-memory.
-class DriveWebAppsRegistry {
+// Keeps the track of installed drive applications in-memory.
+class DriveAppRegistry {
  public:
-  explicit DriveWebAppsRegistry(JobScheduler* scheduler);
-  ~DriveWebAppsRegistry();
+  explicit DriveAppRegistry(JobScheduler* scheduler);
+  ~DriveAppRegistry();
 
   // Returns a list of web app information for the |file| with |mime_type|.
-  void GetWebAppsForFile(const base::FilePath& file,
-                         const std::string& mime_type,
-                         ScopedVector<DriveWebAppInfo>* apps);
+  void GetAppsForFile(const base::FilePath& file_path,
+                      const std::string& mime_type,
+                      ScopedVector<DriveAppInfo>* apps);
 
   // Updates this registry by fetching the data from the server.
   void Update();
 
  private:
-  // Defines WebApp application details that are associated with a given
+  // Defines application details that are associated with a given
   // file extension or content mimetype.
-  struct WebAppFileSelector {
-    WebAppFileSelector(
+  struct DriveAppFileSelector {
+    DriveAppFileSelector(
         const GURL& product_link,
         const google_apis::InstalledApp::IconList& app_icons,
         const google_apis::InstalledApp::IconList& document_icons,
         const string16& object_type,
         const std::string& app_id,
         bool is_primary_selector);
-    ~WebAppFileSelector();
-    // WebApp product link.
+    ~DriveAppFileSelector();
+    // Product link to the webstore.
     GURL product_link;
     // Drive application icon URLs for this app, paired with their size (length
     // of a side in pixels).
@@ -102,12 +104,13 @@ class DriveWebAppsRegistry {
   };
 
   // Defines mapping between file content type selectors (extensions, MIME
-  // types) and corresponding WebApp.
-  typedef std::multimap<std::string, WebAppFileSelector*> WebAppFileSelectorMap;
+  // types) and corresponding app.
+  typedef std::multimap<std::string,
+                        DriveAppFileSelector*> DriveAppFileSelectorMap;
 
   // Helper map used for deduplication of selector matching results.
-  typedef std::map<const WebAppFileSelector*,
-                   DriveWebAppInfo*> SelectorWebAppList;
+  typedef std::map<const DriveAppFileSelector*,
+                   DriveAppInfo*> SelectorAppList;
 
   // Part of Update(). Runs upon the completion of fetching the web apps
   // data from the server.
@@ -124,12 +127,12 @@ class DriveWebAppsRegistry {
       const std::string& app_id,
       bool is_primary_selector,
       const ScopedVector<std::string>& selectors,
-      WebAppFileSelectorMap* map);
+      DriveAppFileSelectorMap* map);
 
   // Finds matching |apps| from |map| based on provided file |selector|.
-  void FindWebAppsForSelector(const std::string& selector,
-                              const WebAppFileSelectorMap& map,
-                              SelectorWebAppList* apps);
+  void FindAppsForSelector(const std::string& selector,
+                           const DriveAppFileSelectorMap& map,
+                           SelectorAppList* apps);
 
   JobScheduler* scheduler_;
 
@@ -137,17 +140,17 @@ class DriveWebAppsRegistry {
   std::map<GURL, std::string> url_to_name_map_;
 
   // Map of filename extension to application info.
-  WebAppFileSelectorMap webapp_extension_map_;
+  DriveAppFileSelectorMap app_extension_map_;
 
   // Map of MIME type to application info.
-  WebAppFileSelectorMap webapp_mimetypes_map_;
+  DriveAppFileSelectorMap app_mimetypes_map_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveWebAppsRegistry> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(DriveWebAppsRegistry);
+  base::WeakPtrFactory<DriveAppRegistry> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(DriveAppRegistry);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_WEBAPPS_REGISTRY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_APP_REGISTRY_H_

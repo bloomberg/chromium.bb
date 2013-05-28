@@ -32,7 +32,7 @@ namespace drive {
 
 class DebugInfoCollector;
 class DownloadHandler;
-class DriveWebAppsRegistry;
+class DriveAppRegistry;
 class FileSystemInterface;
 class FileSystemProxy;
 class FileWriteHelper;
@@ -107,7 +107,7 @@ class DriveIntegrationService
   FileSystemInterface* file_system() { return file_system_.get(); }
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
   DownloadHandler* download_handler() { return download_handler_.get(); }
-  DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
+  DriveAppRegistry* drive_app_registry() { return drive_app_registry_.get(); }
   JobListInterface* job_list() { return scheduler_.get(); }
 
   // Clears all the local cache files and in-memory data, and remounts the
@@ -158,7 +158,7 @@ class DriveIntegrationService
   scoped_ptr<internal::FileCache, util::DestroyHelper> cache_;
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
-  scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
+  scoped_ptr<DriveAppRegistry> drive_app_registry_;
   scoped_ptr<internal::ResourceMetadata,
              util::DestroyHelper> resource_metadata_;
   scoped_ptr<FileSystemInterface> file_system_;

@@ -98,14 +98,14 @@ class AboutResource {
 };
 
 // DriveAppIcon represents an icon for Drive Application.
-// https://developers.google.com/drive/v2/reference/apps/list
+// https://developers.google.com/drive/v2/reference/apps
 class DriveAppIcon {
  public:
   enum IconCategory {
-    UNKNOWN,          // Uninitialized state
-    DOCUMENT,         // Document icon for various MIME types
-    APPLICATION,      // Application icon for various MIME types
-    SHARED_DOCUMENT,  // Icon for documents that are shared from other users.
+    UNKNOWN,          // Uninitialized state.
+    DOCUMENT,         // Icon for a file associated with the app.
+    APPLICATION,      // Icon for the application.
+    SHARED_DOCUMENT,  // Icon for a shared file associated with the app.
   };
 
   DriveAppIcon();
@@ -164,7 +164,7 @@ class DriveAppIcon {
 };
 
 // AppResource represents a Drive Application.
-// https://developers.google.com/drive/v2/reference/apps/list
+// https://developers.google.com/drive/v2/reference/apps
 class AppResource {
  public:
   ~AppResource();
