@@ -799,10 +799,10 @@ static bool testPostURLFile(PluginObject* obj, const NPVariant* args, uint32_t a
     if (!tempFile)
         return false;
 
-    if (!fwrite(contentsString.UTF8Characters, contentsString.UTF8Length, 1, tempFile))
-        return false;
-
+    size_t written = fwrite(contentsString.UTF8Characters, contentsString.UTF8Length, 1, tempFile);
     fclose(tempFile);
+    if (!written)
+        return false;
 
     NPError error = browser->posturl(obj->npp, url, target, pathString.UTF8Length, path, TRUE);
 
