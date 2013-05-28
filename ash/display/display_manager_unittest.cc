@@ -702,7 +702,13 @@ TEST_F(DisplayManagerTest, AutomaticOverscanInsets) {
             GetDisplayInfoAt(1).size_in_pixel().ToString());
 }
 
-TEST_F(DisplayManagerTest, Rotate) {
+#if defined(OS_WIN)
+// Flaky on Win8 Aura: http://crbug.com/244466
+#define MAYBE_Rotate DISABLED_Rotate
+#else
+#define MAYBE_Rotate Rotate
+#endif
+TEST_F(DisplayManagerTest, MAYBE_Rotate) {
   UpdateDisplay("100x200/r,300x400/l");
   EXPECT_EQ("1,1 100x200",
             GetDisplayInfoAt(0).bounds_in_pixel().ToString());
