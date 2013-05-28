@@ -267,7 +267,8 @@ void UserImageManagerImpl::UserLoggedIn(const std::string& email,
                                         bool user_is_new,
                                         bool user_is_local) {
   if (user_is_new) {
-    SetInitialUserImage(email);
+    if (!user_is_local)
+      SetInitialUserImage(email);
   } else {
     User* user = UserManager::Get()->GetLoggedInUser();
 
