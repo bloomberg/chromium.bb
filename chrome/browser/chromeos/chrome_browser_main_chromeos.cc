@@ -849,10 +849,13 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   chrome::CloseAsh();
 
-  // Destroy the UserManager after ash has been destroyed.
-  UserManager::Destroy();
-
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
+
+  // Destroy the UserManager after ash has been destroyed and
+  // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun run.  The latter might
+  // trigger MergeSessionThrottle::ShouldShowMergeSessionPage, which requires
+  // the UserManager to exist.
+  UserManager::Destroy();
 }
 
 void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
