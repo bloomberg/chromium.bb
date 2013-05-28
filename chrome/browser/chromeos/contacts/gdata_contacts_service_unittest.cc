@@ -167,11 +167,11 @@ class GDataContactsServiceTest : public testing::Test {
       const net::test_server::HttpRequest& request) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     // Requested url must not contain a query string.
-    scoped_ptr<net::test_server::HttpResponse> result =
+    scoped_ptr<net::test_server::BasicHttpResponse> result =
         google_apis::test_util::CreateHttpResponseFromFile(
             google_apis::test_util::GetTestFilePath(
                 std::string("chromeos/gdata/contacts") + request.relative_url));
-    return result.Pass();
+    return result.PassAs<net::test_server::HttpResponse>();
   }
 
   MessageLoopForUI message_loop_;

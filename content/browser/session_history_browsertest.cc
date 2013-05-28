@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/navigation_controller.h"
@@ -14,17 +15,43 @@
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+
+namespace {
+
+// Handles |request| by serving a response with title set to request contents.
+scoped_ptr<net::test_server::HttpResponse> HandleEchoTitleRequest(
+    const std::string& echotitle_path,
+    const net::test_server::HttpRequest& request) {
+  if (!StartsWithASCII(request.relative_url, echotitle_path, true))
+    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_code(net::test_server::SUCCESS);
+  http_response->set_content(
+      base::StringPrintf(
+          "<html><head><title>%s</title></head></html>",
+          request.content.c_str()));
+  return http_response.PassAs<net::test_server::HttpResponse>();
+}
+
+}  // namespace
 
 class SessionHistoryTest : public ContentBrowserTest {
  protected:
   SessionHistoryTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    ASSERT_TRUE(test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&HandleEchoTitleRequest, "/echotitle"));
+
     NavigateToURL(shell(), GURL(kAboutBlankURL));
   }
 
@@ -66,7 +93,8 @@ class SessionHistoryTest : public ContentBrowserTest {
   }
 
   GURL GetURL(const std::string file) {
-    return test_server()->GetURL(std::string("files/session_history/") + file);
+    return embedded_test_server()->GetURL(
+        std::string("/session_history/") + file);
   }
 
   void NavigateAndCheckTitle(const char* filename,
@@ -297,6 +325,9 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, CrossFrameFormBackForward) {
 // navigations. Bug 730379.
 // If this flakes use http://crbug.com/61619.
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FragmentBackForward) {
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&HandleEchoTitleRequest, "/echotitle"));
+
   ASSERT_FALSE(CanGoBack());
 
   GURL fragment(GetURL("fragment.html"));

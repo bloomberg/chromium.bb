@@ -175,7 +175,7 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
     GURL url = test_server_->GetURL(request.relative_url);
     LOG(INFO) << "Http request: " << url.spec();
 
-    scoped_ptr<HttpResponse> http_response(new HttpResponse());
+    scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
     if (url.path() == "/ServiceLogin") {
       http_response->set_code(net::test_server::SUCCESS);
       http_response->set_content(service_login_response_);
@@ -197,7 +197,7 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
     } else {
       NOTREACHED() << url.path();
     }
-    return http_response.Pass();
+    return http_response.PassAs<HttpResponse>();
   }
 
   scoped_ptr<TestContentBrowserClient> content_browser_client_;

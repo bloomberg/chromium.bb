@@ -155,10 +155,10 @@ class DriveApiOperationsTest : public testing::Test {
     http_request_ = request;
 
     // Return the response with just "204 No Content" status code.
-    scoped_ptr<net::test_server::HttpResponse> http_response(
-        new net::test_server::HttpResponse);
+    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse);
     http_response->set_code(net::test_server::NO_CONTENT);
-    return http_response.Pass();
+    return http_response.PassAs<net::test_server::HttpResponse>();
   }
 
   // Reads the data file of |expected_data_file_path_| and returns its content
@@ -176,7 +176,8 @@ class DriveApiOperationsTest : public testing::Test {
     http_request_ = request;
 
     // Return the response from the data file.
-    return test_util::CreateHttpResponseFromFile(expected_data_file_path_);
+    return test_util::CreateHttpResponseFromFile(
+        expected_data_file_path_).PassAs<net::test_server::HttpResponse>();
   }
 
   // Returns the response based on set expected upload url.
@@ -195,8 +196,8 @@ class DriveApiOperationsTest : public testing::Test {
 
     http_request_ = request;
 
-    scoped_ptr<net::test_server::HttpResponse> response(
-        new net::test_server::HttpResponse);
+    scoped_ptr<net::test_server::BasicHttpResponse> response(
+        new net::test_server::BasicHttpResponse);
 
     // Check an ETag.
     std::map<std::string, std::string>::const_iterator found =
@@ -205,7 +206,7 @@ class DriveApiOperationsTest : public testing::Test {
         found->second != "*" &&
         found->second != kTestETag) {
       response->set_code(net::test_server::PRECONDITION);
-      return response.Pass();
+      return response.PassAs<net::test_server::HttpResponse>();
     }
 
     // Check if the X-Upload-Content-Length is present. If yes, store the
@@ -221,7 +222,7 @@ class DriveApiOperationsTest : public testing::Test {
     response->AddCustomHeader(
         "Location",
         test_server_.base_url().Resolve(expected_upload_path_).spec());
-    return response.Pass();
+    return response.PassAs<net::test_server::HttpResponse>();
   }
 
   scoped_ptr<net::test_server::HttpResponse> HandleResumeUploadRequest(
@@ -259,8 +260,8 @@ class DriveApiOperationsTest : public testing::Test {
     }
 
     if (received_bytes_ < content_length_) {
-      scoped_ptr<net::test_server::HttpResponse> response(
-          new net::test_server::HttpResponse);
+      scoped_ptr<net::test_server::BasicHttpResponse> response(
+          new net::test_server::BasicHttpResponse);
       // Set RESUME INCOMPLETE (308) status code.
       response->set_code(net::test_server::RESUME_INCOMPLETE);
 
@@ -272,12 +273,12 @@ class DriveApiOperationsTest : public testing::Test {
             "Range", "bytes=0-" + base::Int64ToString(received_bytes_ - 1));
       }
 
-      return response.Pass();
+      return response.PassAs<net::test_server::HttpResponse>();
     }
 
     // All bytes are received. Return the "success" response with the file's
     // (dummy) metadata.
-    scoped_ptr<net::test_server::HttpResponse> response =
+    scoped_ptr<net::test_server::BasicHttpResponse> response =
         test_util::CreateHttpResponseFromFile(
             test_util::GetTestFilePath("chromeos/drive/file_entry.json"));
 
@@ -286,7 +287,7 @@ class DriveApiOperationsTest : public testing::Test {
       response->set_code(net::test_server::CREATED);
     }
 
-    return response.Pass();
+    return response.PassAs<net::test_server::HttpResponse>();
   }
 
   // Returns the response based on set expected content and its type.
@@ -302,12 +303,12 @@ class DriveApiOperationsTest : public testing::Test {
 
     http_request_ = request;
 
-    scoped_ptr<net::test_server::HttpResponse> response(
-        new net::test_server::HttpResponse);
+    scoped_ptr<net::test_server::BasicHttpResponse> response(
+        new net::test_server::BasicHttpResponse);
     response->set_code(net::test_server::SUCCESS);
     response->set_content_type(expected_content_type_);
     response->set_content(expected_content_);
-    return response.Pass();
+    return response.PassAs<net::test_server::HttpResponse>();
   }
 
   // These are for the current upload file status.
