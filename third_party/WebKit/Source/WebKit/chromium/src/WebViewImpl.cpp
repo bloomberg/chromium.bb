@@ -2076,7 +2076,7 @@ bool WebViewImpl::setComposition(
     // editable because JavaScript may delete a parent node of the composition
     // node. In this case, WebKit crashes while deleting texts from the parent
     // node, which doesn't exist any longer.
-    PassRefPtr<Range> range = editor->compositionRange();
+    RefPtr<Range> range = editor->compositionRange();
     if (range) {
         Node* node = range->startContainer();
         if (!node || !node->isContentEditable())
@@ -2125,7 +2125,7 @@ bool WebViewImpl::confirmComposition(const WebString& text)
     // editable because JavaScript may delete a parent node of the composition
     // node. In this case, WebKit crashes while deleting texts from the parent
     // node, which doesn't exist any longer.
-    PassRefPtr<Range> range = editor->compositionRange();
+    RefPtr<Range> range = editor->compositionRange();
     if (range) {
         Node* node = range->startContainer();
         if (!node || !node->isContentEditable())
