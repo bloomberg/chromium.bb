@@ -30,8 +30,8 @@
 #include "V8Node.h"
 #include "V8SVGDocument.h"
 #include "V8SVGPoint.h"
-#include "V8ScriptProfile.h"
 #include "V8TestCallback.h"
+#include "V8TestInterface.h"
 #include "V8TestNode.h"
 #include "V8TestObjectectA.h"
 #include "V8TestObjectectB.h"
@@ -2451,7 +2451,7 @@ static v8::Handle<v8::Value> methodWithSequenceArgMethod(const v8::Arguments& ar
     if (args.Length() < 1)
         return throwNotEnoughArgumentsError(args.GetIsolate());
     TestObj* imp = V8TestObject::toNative(args.Holder());
-    V8TRYCATCH(Vector<RefPtr<ScriptProfile> >, sequenceArg, (toRefPtrNativeArray<ScriptProfile, V8ScriptProfile>(args[0], args.GetIsolate())));
+    V8TRYCATCH(Vector<RefPtr<TestInterface> >, sequenceArg, (toRefPtrNativeArray<TestInterface, V8TestInterface>(args[0], args.GetIsolate())));
     imp->methodWithSequenceArg(sequenceArg);
     return v8Undefined();
 }

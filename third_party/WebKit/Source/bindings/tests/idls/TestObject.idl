@@ -79,8 +79,8 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     [MeasureAs=TestFeature] TestObject objMethod();
     TestObject objMethodWithArgs(long longArg, DOMString strArg, TestObject objArg);
 
-    void methodWithSequenceArg(sequence<ScriptProfile> sequenceArg);
-    sequence<ScriptProfile> methodReturningSequence(long longArg);
+    void methodWithSequenceArg(sequence<TestInterface> sequenceArg);
+    sequence<TestInterface> methodReturningSequence(long longArg);
 
     void methodWithEnumArg(TestEnumType enumArg);
     [RaisesException] TestObject methodThatRequiresAllArgsAndThrows(DOMString strArg, TestObject objArg);
