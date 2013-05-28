@@ -120,6 +120,12 @@ class WebKitTestController : public base::NonThreadSafe,
   virtual void OnGpuProcessCrashed(base::TerminationStatus exit_code) OVERRIDE;
 
  private:
+  enum TestPhase {
+    BETWEEN_TESTS,
+    DURING_TEST,
+    CLEAN_UP
+  };
+
   static WebKitTestController* instance_;
 
   void TimeoutHandler();
@@ -156,9 +162,8 @@ class WebKitTestController : public base::NonThreadSafe,
   // created.
   bool send_configuration_to_next_host_;
 
-  // True if we are currently running a layout test, and false during the setup
-  // phase between two layout tests.
-  bool is_running_test_;
+  // What phase of running an individual test we are currently in.
+  TestPhase test_phase_;
 
   // True if the currently running test is a compositing test.
   bool is_compositing_test_;

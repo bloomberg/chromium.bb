@@ -171,7 +171,7 @@ WebKitTestController* WebKitTestController::Get() {
 
 WebKitTestController::WebKitTestController()
     : main_window_(NULL),
-      is_running_test_(false) {
+      test_phase_(BETWEEN_TESTS) {
   CHECK(!instance_);
   instance_ = this;
   printer_.reset(new WebKitTestResultPrinter(&std::cout, &std::cerr));
@@ -185,7 +185,7 @@ WebKitTestController::WebKitTestController()
 WebKitTestController::~WebKitTestController() {
   DCHECK(CalledOnValidThread());
   CHECK(instance_ == this);
-  CHECK(!is_running_test_);
+  CHECK(test_phase_ == BETWEEN_TESTS);
   GpuDataManager::GetInstance()->RemoveObserver(this);
   DiscardMainWindow();
   instance_ = NULL;
@@ -197,7 +197,7 @@ bool WebKitTestController::PrepareForLayoutTest(
     bool enable_pixel_dumping,
     const std::string& expected_pixel_hash) {
   DCHECK(CalledOnValidThread());
-  is_running_test_ = true;
+  test_phase_ = DURING_TEST;
   current_working_directory_ = current_working_directory;
   enable_pixel_dumping_ = enable_pixel_dumping;
   expected_pixel_hash_ = expected_pixel_hash;
@@ -263,7 +263,7 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   printer_->PrintTextFooter();
   printer_->PrintImageFooter();
   send_configuration_to_next_host_ = false;
-  is_running_test_ = false;
+  test_phase_ = BETWEEN_TESTS;
   is_compositing_test_ = false;
   enable_pixel_dumping_ = false;
   expected_pixel_hash_.clear();
@@ -299,6 +299,9 @@ void WebKitTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
 }
 
 void WebKitTestController::OpenURL(const GURL& url) {
+  if (test_phase_ != DURING_TEST)
+    return;
+
   Shell::CreateNewWindow(main_window_->web_contents()->GetBrowserContext(),
                          url,
                          main_window_->web_contents()->GetSiteInstance(),
@@ -424,10 +427,11 @@ void WebKitTestController::DiscardMainWindow() {
   // loop. Otherwise, we're already outside of the message loop, and we just
   // discard the main window.
   WebContentsObserver::Observe(NULL);
-  if (is_running_test_) {
+  if (test_phase_ != BETWEEN_TESTS) {
     Shell::CloseAllWindows();
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::MessageLoop::QuitClosure());
+    test_phase_ = CLEAN_UP;
   } else if (main_window_) {
     main_window_->Close();
   }
@@ -463,6 +467,7 @@ void WebKitTestController::OnTestFinished(bool did_timeout) {
     DiscardMainWindow();
     return;
   }
+  test_phase_ = CLEAN_UP;
   if (!printer_->output_finished())
     printer_->PrintImageFooter();
   RenderViewHost* render_view_host =
