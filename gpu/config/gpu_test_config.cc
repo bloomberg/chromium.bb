@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/gpu/gpu_test_config.h"
+#include "gpu/config/gpu_test_config.h"
 
 #include "base/logging.h"
 #include "base/sys_info.h"
-#include "content/test/gpu/gpu_test_expectations_parser.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "gpu/config/gpu_test_expectations_parser.h"
+
+namespace gpu {
 
 namespace {
 
@@ -141,7 +143,7 @@ void GPUTestBotConfig::AddGPUVendor(uint32 gpu_vendor) {
   GPUTestConfig::AddGPUVendor(gpu_vendor);
 }
 
-bool GPUTestBotConfig::SetGPUInfo(const gpu::GPUInfo& gpu_info) {
+bool GPUTestBotConfig::SetGPUInfo(const GPUInfo& gpu_info) {
   DCHECK(validate_gpu_info_);
   if (gpu_info.gpu.device_id == 0 || gpu_info.gpu.vendor_id == 0)
     return false;
@@ -218,14 +220,14 @@ bool GPUTestBotConfig::Matches(const std::string& config_data) const {
   return Matches(config);
 }
 
-bool GPUTestBotConfig::LoadCurrentConfig(const gpu::GPUInfo* gpu_info) {
+bool GPUTestBotConfig::LoadCurrentConfig(const GPUInfo* gpu_info) {
   bool rt;
   if (gpu_info == NULL) {
-    gpu::GPUInfo my_gpu_info;
-    gpu::GpuIDResult result;
-    result = gpu::CollectGpuID(&my_gpu_info.gpu.vendor_id,
-                               &my_gpu_info.gpu.device_id);
-    if (result == gpu::kGpuIDNotSupported) {
+    GPUInfo my_gpu_info;
+    GpuIDResult result;
+    result = CollectGpuID(&my_gpu_info.gpu.vendor_id,
+                          &my_gpu_info.gpu.device_id);
+    if (result == kGpuIDNotSupported) {
       DisableGPUInfoValidation();
       rt = true;
     } else {
@@ -265,4 +267,6 @@ bool GPUTestBotConfig::CurrentConfigMatches(
   }
   return false;
 }
+
+}  // namespace gpu
 

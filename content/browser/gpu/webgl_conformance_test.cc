@@ -13,8 +13,8 @@
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
-#include "content/test/gpu/gpu_test_config.h"
-#include "content/test/gpu/gpu_test_expectations_parser.h"
+#include "gpu/config/gpu_test_config.h"
+#include "gpu/config/gpu_test_expectations_parser.h"
 #include "net/base/net_util.h"
 
 namespace content {
@@ -52,14 +52,18 @@ class WebGLConformanceTest : public ContentBrowserTest {
     ASSERT_TRUE(bot_config_.IsValid())
         << "Invalid bot configuration";
 
-    ASSERT_TRUE(test_expectations_.LoadTestExpectations(
-        GPUTestExpectationsParser::kWebGLConformanceTest));
+    base::FilePath path;
+    ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &path));
+    path = path.Append(FILE_PATH_LITERAL("gpu"))
+        .Append(FILE_PATH_LITERAL("webgl_conformance_test_expectations.txt"));
+    ASSERT_TRUE(file_util::PathExists(path));
+    ASSERT_TRUE(test_expectations_.LoadTestExpectations(path));
   }
 
   void RunTest(std::string url, std::string test_name) {
     int32 expectation =
         test_expectations_.GetTestExpectation(test_name, bot_config_);
-    if (expectation != GPUTestExpectationsParser::kGpuTestPass) {
+    if (expectation != gpu::GPUTestExpectationsParser::kGpuTestPass) {
       LOG(WARNING) << "Test " << test_name << " is bypassed";
       return;
     }
@@ -76,8 +80,8 @@ class WebGLConformanceTest : public ContentBrowserTest {
 
  private:
   base::FilePath test_path_;
-  GPUTestBotConfig bot_config_;
-  GPUTestExpectationsParser test_expectations_;
+  gpu::GPUTestBotConfig bot_config_;
+  gpu::GPUTestExpectationsParser test_expectations_;
 };
 
 #define CONFORMANCE_TEST(name, url) \

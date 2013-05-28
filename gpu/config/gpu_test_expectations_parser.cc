@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/gpu/gpu_test_expectations_parser.h"
+#include "gpu/config/gpu_test_expectations_parser.h"
 
-#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_split.h"
-#include "content/public/common/content_paths.h"
+
+namespace gpu {
 
 namespace {
 
@@ -197,14 +196,6 @@ bool GPUTestExpectationsParser::LoadTestExpectations(
     return false;
   }
   return LoadTestExpectations(data);
-}
-
-bool GPUTestExpectationsParser::LoadTestExpectations(
-    GPUTestProfile profile) {
-  base::FilePath path;
-  if (!GetExpectationsPath(profile, &path))
-    return false;
-  return LoadTestExpectations(path);
 }
 
 int32 GPUTestExpectationsParser::GetTestExpectation(
@@ -503,30 +494,10 @@ void GPUTestExpectationsParser::PushErrorMessage(
                          message.c_str()));
 }
 
-// static
-bool GPUTestExpectationsParser::GetExpectationsPath(
-    GPUTestProfile profile, base::FilePath* path) {
-  DCHECK(path);
-
-  bool rt = true;
-  switch (profile) {
-    case kWebGLConformanceTest:
-      rt = PathService::Get(content::DIR_TEST_DATA, path);
-      if (rt) {
-        *path = path->Append(FILE_PATH_LITERAL("gpu"))
-            .Append(FILE_PATH_LITERAL(
-                "webgl_conformance_test_expectations.txt"));
-        rt = file_util::PathExists(*path);
-      }
-      break;
-    default:
-      DCHECK(false);
-  }
-  return rt;
-}
-
 GPUTestExpectationsParser:: GPUTestExpectationEntry::GPUTestExpectationEntry()
     : test_expectation(0),
       line_number(0) {
 }
+
+}  // namespace gpu
 

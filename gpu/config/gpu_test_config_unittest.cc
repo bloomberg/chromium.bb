@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/gpu/gpu_test_config.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/config/gpu_test_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace gpu {
 
 class GPUTestConfigTest : public testing::Test {
  public:
@@ -27,7 +29,7 @@ TEST_F(GPUTestConfigTest, EmptyValues) {
 }
 
 TEST_F(GPUTestConfigTest, SetGPUInfo) {
-  gpu::GPUInfo gpu_info;
+  GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x10de;
   gpu_info.gpu.device_id = 0x0640;
   GPUTestBotConfig config;
@@ -242,10 +244,12 @@ TEST_F(GPUTestConfigTest, OverlapsWith) {
 
 TEST_F(GPUTestConfigTest, LoadCurrentConfig) {
   GPUTestBotConfig config;
-  gpu::GPUInfo gpu_info;
+  GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x10de;
   gpu_info.gpu.device_id = 0x0640;
   EXPECT_TRUE(config.LoadCurrentConfig(&gpu_info));
   EXPECT_TRUE(config.IsValid());
 }
+
+}  // namespace gpu
 

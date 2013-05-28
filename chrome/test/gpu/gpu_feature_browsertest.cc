@@ -20,9 +20,9 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/test/gpu/gpu_test_config.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/config/gpu_test_config.h"
 #include "net/base/net_util.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/compositor/compositor_setup.h"
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
   std::vector<std::string> configs;
   configs.push_back("LINUX INTEL");
   configs.push_back("MAC VMWARE");
-  if (GPUTestBotConfig::CurrentConfigMatches(configs))
+  if (gpu::GPUTestBotConfig::CurrentConfigMatches(configs))
     return;
 
   const base::FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
@@ -326,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingBlocked) {
   // Multisampling fails on virtualized mac os.
-  if (GPUTestBotConfig::CurrentConfigMatches("MAC VMWARE"))
+  if (gpu::GPUTestBotConfig::CurrentConfigMatches("MAC VMWARE"))
     return;
 
   const std::string json_blacklist =
@@ -360,7 +360,7 @@ class WebGLMultisamplingTest : public GpuFeatureTest {
 
 IN_PROC_BROWSER_TEST_F(WebGLMultisamplingTest, MultisamplingDisabled) {
   // Multisampling fails on virtualized mac os.
-  if (GPUTestBotConfig::CurrentConfigMatches("MAC VMWARE"))
+  if (gpu::GPUTestBotConfig::CurrentConfigMatches("MAC VMWARE"))
     return;
 
   const base::FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(WebGLMultisamplingTest, MultisamplingDisabled) {
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
   // Accelerated canvas 2D is not supported on XP.
-  if (GPUTestBotConfig::CurrentConfigMatches("XP"))
+  if (gpu::GPUTestBotConfig::CurrentConfigMatches("XP"))
     return;
 
   EXPECT_FALSE(GpuDataManager::GetInstance()->IsFeatureBlacklisted(

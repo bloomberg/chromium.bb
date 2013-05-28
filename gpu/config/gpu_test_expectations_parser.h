@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_GPU_GPU_TEST_EXPECTATIONS_PARSER_H_
-#define CONTENT_TEST_GPU_GPU_TEST_EXPECTATIONS_PARSER_H_
+#ifndef GPU_CONFIG_GPU_TEST_EXPECTATIONS_PARSER_H_
+#define GPU_CONFIG_GPU_TEST_EXPECTATIONS_PARSER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "content/test/gpu/gpu_test_config.h"
+#include "gpu/config/gpu_test_config.h"
+#include "gpu/gpu_export.h"
 
-class GPUTestExpectationsParser {
+namespace gpu {
+
+class GPU_EXPORT GPUTestExpectationsParser {
  public:
   enum GPUTestExpectation {
     kGpuTestPass = 1 << 0,
@@ -20,10 +23,6 @@ class GPUTestExpectationsParser {
     kGpuTestFlaky = 1 << 2,
     kGpuTestTimeout = 1 << 3,
     kGpuTestSkip = 1 << 4,
-  };
-
-  enum GPUTestProfile {
-    kWebGLConformanceTest,
   };
 
   GPUTestExpectationsParser();
@@ -34,7 +33,6 @@ class GPUTestExpectationsParser {
   // Return true if parsing succeeds.
   bool LoadTestExpectations(const std::string& data);
   bool LoadTestExpectations(const base::FilePath& path);
-  bool LoadTestExpectations(GPUTestProfile profile);
 
   // Query error messages from the last LoadTestExpectations() call.
   const std::vector<std::string>& GetErrorMessages() const;
@@ -80,13 +78,11 @@ class GPUTestExpectationsParser {
                         size_t entry1_line_number,
                         size_t entry2_line_number);
 
-  // Return false if an error occurs or the path does not exist.
-  static bool GetExpectationsPath(GPUTestProfile profile,
-                                  base::FilePath* path);
-
   std::vector<GPUTestExpectationEntry> entries_;
   std::vector<std::string> error_messages_;
 };
 
-#endif  // CONTENT_TEST_GPU_GPU_TEST_EXPECTATIONS_PARSER_H_
+}  // namespace gpu
+
+#endif  // GPU_CONFIG_GPU_TEST_EXPECTATIONS_PARSER_H_
 

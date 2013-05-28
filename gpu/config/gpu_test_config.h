@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_GPU_GPU_TEST_CONFIG_H_
-#define CONTENT_TEST_GPU_GPU_TEST_CONFIG_H_
+#ifndef GPU_CONFIG_GPU_TEST_CONFIG_H_
+#define GPU_CONFIG_GPU_TEST_CONFIG_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
-struct GPUInfo;
-}  // namespace content
 
-class GPUTestConfig {
+struct GPUInfo;
+
+class GPU_EXPORT GPUTestConfig {
  public:
   enum OS {
     kOsUnknown = 0,
@@ -87,7 +88,7 @@ class GPUTestConfig {
   int32 build_type_;
 };
 
-class GPUTestBotConfig : public GPUTestConfig {
+class GPU_EXPORT GPUTestBotConfig : public GPUTestConfig {
  public:
   GPUTestBotConfig() { }
   virtual ~GPUTestBotConfig();
@@ -96,7 +97,7 @@ class GPUTestBotConfig : public GPUTestConfig {
   virtual void AddGPUVendor(uint32 gpu_vendor) OVERRIDE;
 
   // Return false if gpu_info does not have valid vendor_id and device_id.
-  bool SetGPUInfo(const gpu::GPUInfo& gpu_info);
+  bool SetGPUInfo(const GPUInfo& gpu_info);
 
   // Check if the bot config is valid, i.e., if it is one valid test-bot
   // environment. For example, if a field is unknown, or if OS is not one
@@ -110,12 +111,14 @@ class GPUTestBotConfig : public GPUTestConfig {
 
   // Setup the config with the current gpu testing environment.
   // If gpu_info is NULL, collect GPUInfo first.
-  bool LoadCurrentConfig(const gpu::GPUInfo* gpu_info);
+  bool LoadCurrentConfig(const GPUInfo* gpu_info);
 
   // Check if this bot's config matches |config_data| or any of the |configs|.
   static bool CurrentConfigMatches(const std::string& config_data);
   static bool CurrentConfigMatches(const std::vector<std::string>& configs);
 };
 
-#endif  // CONTENT_TEST_GPU_GPU_TEST_CONFIG_H_
+}  // namespace gpu
+
+#endif  // GPU_CONFIG_GPU_TEST_CONFIG_H_
 

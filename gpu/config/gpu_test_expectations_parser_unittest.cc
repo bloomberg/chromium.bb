@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "content/test/gpu/gpu_test_expectations_parser.h"
+#include "gpu/config/gpu_test_expectations_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace gpu {
 
 class GPUTestExpectationsParserTest : public testing::Test {
  public:
@@ -239,12 +241,5 @@ TEST_F(GPUTestExpectationsParserTest, StarMatching) {
             parser.GetTestExpectation("OtherTest", bot_config()));
 }
 
-TEST_F(GPUTestExpectationsParserTest, WebGLTestExpectationsValidation) {
-  GPUTestExpectationsParser parser;
-  EXPECT_TRUE(parser.LoadTestExpectations(
-      GPUTestExpectationsParser::kWebGLConformanceTest));
-  EXPECT_EQ(0u, parser.GetErrorMessages().size());
-  for (size_t i = 0; i < parser.GetErrorMessages().size(); ++i)
-    LOG(ERROR) << parser.GetErrorMessages()[i];
-}
+}  // namespace gpu
 

@@ -25,7 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/test/gpu/gpu_test_config.h"
+#include "gpu/config/gpu_test_config.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -258,7 +258,7 @@ void LatencyTest::RunTest(const std::vector<int>& behaviors) {
   // without multisampling. Since the Latency test does not depend much on the
   // GPU, let's just skip testing on Intel since the data is redundant with
   // other non-Intel bots.
-  GPUTestBotConfig test_bot;
+  gpu::GPUTestBotConfig test_bot;
   test_bot.LoadCurrentConfig(NULL);
   const std::vector<uint32>& gpu_vendor = test_bot.gpu_vendor();
 #if defined(OS_LINUX)

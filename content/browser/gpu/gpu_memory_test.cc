@@ -15,8 +15,8 @@
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
-#include "content/test/gpu/gpu_test_config.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_test_config.h"
 #include "net/base/net_util.h"
 
 namespace content {
