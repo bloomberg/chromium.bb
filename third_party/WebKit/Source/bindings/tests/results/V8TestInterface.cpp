@@ -537,9 +537,9 @@ v8::Handle<v8::Value> V8TestInterface::namedPropertyGetter(v8::Local<v8::String>
     bool element1Enabled = false;
     RefPtr<NodeList> element1;
     collection->getItem(propertyName, element0Enabled, element0, element1Enabled, element1);
-    if (element0Enabled && !!element0)
+    if (element0Enabled)
         return toV8Fast(element0.release(), info, collection);
-    if (element1Enabled && !!element1)
+    if (element1Enabled)
         return toV8Fast(element1.release(), info, collection);
     return v8Undefined();
 }

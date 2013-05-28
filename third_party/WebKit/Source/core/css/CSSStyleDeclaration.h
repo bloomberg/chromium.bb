@@ -37,6 +37,12 @@ class StyledElement;
 
 typedef int ExceptionCode;
 
+class CSSPropertyInfo {
+public:
+    CSSPropertyID propID;
+    bool hadPixelOrPosPrefix;
+};
+
 class CSSStyleDeclaration : public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CSSStyleDeclaration); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -71,6 +77,9 @@ public:
     virtual CSSStyleSheet* parentStyleSheet() const { return 0; }
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const = 0;
+    void anonymousNamedGetter(const AtomicString& name, bool&, String&, bool&, float&);
+
+    static CSSPropertyInfo* cssPropertyInfo(const String& propertyName);
 
 protected:
     CSSStyleDeclaration()

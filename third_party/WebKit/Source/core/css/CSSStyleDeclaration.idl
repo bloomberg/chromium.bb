@@ -21,7 +21,6 @@
 // Introduced in DOM Level 2:
 [
     CustomNamedSetter,
-    CustomNamedGetter,
     CustomEnumerateProperty,
     DependentLifetime
 ] interface CSSStyleDeclaration {
@@ -37,6 +36,7 @@
 
     readonly attribute unsigned long    length;
     getter DOMString          item([Default=Undefined] optional unsigned long index);
+    [ImplementedAs=anonymousNamedGetter, TreatReturnedNullStringAs=Null] getter (DOMString or float) (DOMString name);
     readonly attribute CSSRule          parentRule;
 };
 

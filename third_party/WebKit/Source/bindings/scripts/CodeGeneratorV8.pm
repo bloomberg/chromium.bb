@@ -4730,10 +4730,8 @@ sub NativeToJSValue
             my $unionMemberNativeValue = $unionMemberVariable;
             $unionMemberNativeValue .= ".release()" if (IsRefPtrType($unionMemberType));
             my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getCreationContext, $getIsolate, $getHolderContainer, $getScriptWrappable, $returnHandleType, $forMainWorldSuffix);
-            my $isNotNull = GenerateIsNullExpression($unionMemberType, $unionMemberVariable);
-            $isNotNull = " && !" . $isNotNull if $isNotNull;
             my $code = "";
-            $code .= "${indent}if (${unionMemberEnabledVariable}${isNotNull})\n";
+            $code .= "${indent}if (${unionMemberEnabledVariable})\n";
             $code .= "${returnJSValueCode}";
             push @codes, $code;
         }
