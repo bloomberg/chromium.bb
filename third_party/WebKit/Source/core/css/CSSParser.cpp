@@ -10950,7 +10950,7 @@ void CSSParser::endInvalidRuleHeader()
 
 void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
 {
-    if (!isLoggingErrors())
+    if (!isLoggingErrors() || (m_ruleHeaderType == CSSRuleSourceData::SUPPORTS_RULE && error != InvalidSupportsConditionError))
         return;
 
     m_ignoreErrors = true;
@@ -10984,6 +10984,10 @@ void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
 
     case InvalidSelectorError:
         builder.appendLiteral("Invalid CSS selector: ");
+        break;
+
+    case InvalidSupportsConditionError:
+        builder.appendLiteral("Invalid CSS @supports condition: ");
         break;
 
     case InvalidRuleError:
@@ -11327,6 +11331,7 @@ void CSSParser::updateLastMediaLine(MediaQuerySet* media)
 
 void CSSParser::startRuleHeader(CSSRuleSourceData::Type ruleType)
 {
+    resumeErrorLogging();
     m_ruleHeaderType = ruleType;
     m_ruleHeaderStartOffset = safeUserStringTokenOffset();
     m_ruleHeaderStartLineNumber = m_tokenStartLineNumber;

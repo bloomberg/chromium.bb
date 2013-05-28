@@ -19,5 +19,7 @@ Invalid CSS property declaration at: - console-css-warnings.html:67
 Invalid CSS property name: -webkit-invalidproperty console-css-warnings.html:70
 Invalid CSS property value: invalid-linear-gradient(top,rgba(0,0,0,0) 0,rgba(0,0,0,1) 100%) console-css-warnings.html:77
 Invalid CSS selector: x, console-css-warnings.html:81
-Unexpected CSS token: @ console-css-warnings.html:85
+Invalid CSS @supports condition: # console-css-warnings.html:87
+Invalid CSS @supports condition: # console-css-warnings.html:90
+Invalid CSS @supports condition: # console-css-warnings.html:92
 

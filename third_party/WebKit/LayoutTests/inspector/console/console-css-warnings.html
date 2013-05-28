@@ -81,8 +81,15 @@ x {
 x, {
 }
 
-x {
-    color: @;  /* Test simple error to ensure parsing recovered. */
+@supports (display: #) { /* No warning expected. */
+}
+
+@supports (#) {
+}
+
+@supports #;
+
+@supports (display: none) # (display: block) {
 }
 
 </style>

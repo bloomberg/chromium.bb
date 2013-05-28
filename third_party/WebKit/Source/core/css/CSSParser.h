@@ -81,6 +81,7 @@ public:
         InvalidPropertyValueError,
         InvalidPropertyError,
         InvalidSelectorError,
+        InvalidSupportsConditionError,
         InvalidRuleError,
         GeneralError
     };

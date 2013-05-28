@@ -712,8 +712,9 @@ supports:
     before_supports_rule SUPPORTS_SYM maybe_space supports_condition at_supports_rule_header_end '{' at_rule_body_start maybe_space block_rule_body closing_brace {
         $$ = parser->createSupportsRule($4, $9);
     }
-    | before_supports_rule SUPPORTS_SYM at_rule_recovery {
+    | before_supports_rule SUPPORTS_SYM error error_location rule_error_recovery at_rule_end {
         $$ = 0;
+        parser->reportError($4, CSSParser::InvalidSupportsConditionError);
         parser->endRuleBody(true);
         parser->popSupportsRuleData();
     }
@@ -769,25 +770,32 @@ supports_condition_in_parens:
         $$ = $3;
     }
     | supports_declaration_condition
-    | '(' error error_recovery ')' {
+    | '(' error error_location error_recovery ')' {
+        parser->reportError($3, CSSParser::InvalidSupportsConditionError);
         $$ = false;
     }
     ;
 
 supports_declaration_condition:
-    '(' maybe_space property ':' maybe_space expr prio ')' maybe_space {
+    '(' maybe_space IDENT maybe_space ':' maybe_space expr prio ')' maybe_space {
         $$ = false;
-        CSSParser* p = static_cast<CSSParser*>(parser);
-        if ($3 && $6) {
-            p->m_valueList = p->sinkFloatingValueList($6);
-            int oldParsedProperties = p->m_parsedProperties.size();
-            $$ = p->parseValue(static_cast<CSSPropertyID>($3), $7);
-            // We just need to know if the declaration is supported as it is written. Rollback any additions.
-            if ($$)
-                p->rollbackLastProperties(p->m_parsedProperties.size() - oldParsedProperties);
-            p->m_valueList = nullptr;
+        if ($7) {
+            CSSPropertyID id = cssPropertyID($3);
+            if (id != CSSPropertyInvalid) {
+                parser->m_valueList = parser->sinkFloatingValueList($7);
+                int oldParsedProperties = parser->m_parsedProperties.size();
+                $$ = parser->parseValue(id, $8);
+                // We just need to know if the declaration is supported as it is written. Rollback any additions.
+                if ($$)
+                    parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
+            }
+            parser->m_valueList = nullptr;
         }
-        p->endProperty($7, false);
+        parser->endProperty($8, false);
+    }
+    | '(' maybe_space IDENT maybe_space ':' maybe_space error error_recovery ')' maybe_space {
+        $$ = false;
+        parser->endProperty(false, false, CSSParser::GeneralError);
     }
     ;
 
@@ -1938,13 +1946,15 @@ invalid_at:
     ;
 
 at_rule_recovery:
-    error rule_error_recovery ';'
-  | error rule_error_recovery invalid_block
+    error rule_error_recovery at_rule_end;
+
+at_rule_end:
+    at_invalid_rule_header_end ';'
+  | at_invalid_rule_header_end invalid_block
     ;
 
 invalid_rule:
     error rule_error_recovery at_invalid_rule_header_end invalid_block {
-        parser->resumeErrorLogging();
         $$ = 0;
     }
     ;
