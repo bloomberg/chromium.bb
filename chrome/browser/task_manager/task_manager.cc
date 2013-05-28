@@ -586,11 +586,16 @@ bool TaskManagerModel::GetPhysicalMemory(int index, size_t* result) const {
         !iter->second->GetWorkingSetKBytes(&ws_usage))
       return false;
 
+    values.is_physical_memory_valid = true;
+#if defined(OS_LINUX)
+    // On Linux private memory is also resident. Just use it.
+    values.physical_memory = ws_usage.priv * 1024;
+#else
     // Memory = working_set.private + working_set.shareable.
     // We exclude the shared memory.
-    values.is_physical_memory_valid = true;
     values.physical_memory = iter->second->GetWorkingSetSize();
     values.physical_memory -= ws_usage.shared * 1024;
+#endif
   }
   *result = values.physical_memory;
   return true;

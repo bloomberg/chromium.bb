@@ -170,6 +170,14 @@ class BASE_EXPORT ProcessMetrics {
   ProcessMetrics(ProcessHandle process, PortProvider* port_provider);
 #endif  // !defined(OS_MACOSX) || defined(OS_IOS)
 
+#if defined(OS_LINUX)
+  bool GetWorkingSetKBytesStatm(WorkingSetKBytes* ws_usage) const;
+#endif
+
+#if defined(OS_CHROMEOS)
+  bool GetWorkingSetKBytesTotmaps(WorkingSetKBytes *ws_usage) const;
+#endif
+
   ProcessHandle process_;
 
   int processor_count_;
