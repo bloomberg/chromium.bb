@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_DIRECTORY_ENTRY_H_
-#define WEBKIT_FILEAPI_DIRECTORY_ENTRY_H_
+#ifndef WEBKIT_COMMON_FILEAPI_DIRECTORY_ENTRY_H_
+#define WEBKIT_COMMON_FILEAPI_DIRECTORY_ENTRY_H_
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -21,4 +21,4 @@ struct DirectoryEntry {
 
 }
 
-#endif  // WEBKIT_FILEAPI_DIRECTORY_ENTRY_H_
+#endif  // WEBKIT_COMMON_FILEAPI_DIRECTORY_ENTRY_H_

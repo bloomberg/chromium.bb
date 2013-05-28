@@ -23,8 +23,8 @@
 #include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/browser/fileapi/remove_operation_delegate.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
 

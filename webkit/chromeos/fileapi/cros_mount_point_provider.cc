@@ -30,7 +30,6 @@
 #include "webkit/chromeos/fileapi/file_access_permissions.h"
 #include "webkit/chromeos/fileapi/remote_file_stream_writer.h"
 #include "webkit/chromeos/fileapi/remote_file_system_operation.h"
-#include "webkit/fileapi/file_system_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {

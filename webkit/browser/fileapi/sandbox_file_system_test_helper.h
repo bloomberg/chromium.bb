@@ -12,8 +12,8 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/quota/quota_types.h"
 
 namespace base {

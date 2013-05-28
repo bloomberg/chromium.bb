@@ -27,7 +27,7 @@
 #include "webkit/browser/fileapi/local_file_util.h"
 #include "webkit/browser/fileapi/mock_file_change_observer.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/quota/mock_quota_manager.h"
 
 using webkit_blob::MockBlobURLRequestContext;

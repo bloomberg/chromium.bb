@@ -42,7 +42,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

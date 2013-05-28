@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 #include "base/files/file_path.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace fileapi {
 namespace {

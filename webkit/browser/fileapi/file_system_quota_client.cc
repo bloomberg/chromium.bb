@@ -23,7 +23,7 @@
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 using quota::StorageType;
 

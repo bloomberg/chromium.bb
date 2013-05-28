@@ -23,8 +23,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 using file_handler_util::FileTaskExecutor;
 using fileapi::FileSystemURL;

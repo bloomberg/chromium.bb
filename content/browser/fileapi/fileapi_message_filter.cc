@@ -33,9 +33,9 @@
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/fileapi/directory_entry.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/directory_entry.h"
+#include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/quota/quota_manager.h"
 
 using fileapi::FileSystemFileUtil;

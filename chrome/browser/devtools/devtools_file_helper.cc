@@ -33,7 +33,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 using base::Bind;
 using base::Callback;

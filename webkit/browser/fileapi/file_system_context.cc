@@ -23,7 +23,7 @@
 #include "webkit/browser/fileapi/mount_points.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/browser/fileapi/test_mount_point_provider.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"

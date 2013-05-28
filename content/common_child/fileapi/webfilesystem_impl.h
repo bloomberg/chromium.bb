@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_FILEAPI_WEBFILESYSTEM_IMPL_H_
-#define CONTENT_COMMON_FILEAPI_WEBFILESYSTEM_IMPL_H_
+#ifndef CONTENT_COMMON_CHILD_FILEAPI_WEBFILESYSTEM_IMPL_H_
+#define CONTENT_COMMON_CHILD_FILEAPI_WEBFILESYSTEM_IMPL_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -66,4 +66,4 @@ class WebFileSystemImpl : public WebKit::WebFileSystem {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_FILEAPI_WEBFILESYSTEM_IMPL_H_
+#endif  // CONTENT_COMMON_CHILD_FILEAPI_WEBFILESYSTEM_IMPL_H_

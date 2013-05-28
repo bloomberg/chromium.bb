@@ -10,7 +10,7 @@
 
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
@@ -68,10 +68,11 @@ namespace fileapi {
 // one of the friended classes.
 //
 // TODO(ericu): Look into making virtual_path() [and all FileSystem API virtual
-// paths] just an std::string, to prevent platform-specific base::FilePath behavior
-// from getting invoked by accident. Currently the base::FilePath returned here needs
-// special treatment, as it may contain paths that are illegal on the current
-// platform.  To avoid problems, use VirtualPath::BaseName and
+// paths] just an std::string, to prevent platform-specific base::FilePath
+// behavior from getting invoked by accident. Currently the base::FilePath
+// returned here needs special treatment, as it may contain paths that are
+// illegal on the current platform.
+// To avoid problems, use VirtualPath::BaseName and
 // VirtualPath::GetComponents instead of the base::FilePath methods.
 class WEBKIT_STORAGE_EXPORT FileSystemURL {
  public:

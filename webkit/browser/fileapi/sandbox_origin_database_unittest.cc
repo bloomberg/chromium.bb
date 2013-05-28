@@ -17,7 +17,7 @@
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "webkit/browser/fileapi/sandbox_database_test_helper.h"
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace fileapi {
 

@@ -14,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/storage/webkit_storage_export.h"
 

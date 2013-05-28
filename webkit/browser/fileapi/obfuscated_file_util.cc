@@ -25,7 +25,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/quota/quota_manager.h"
 

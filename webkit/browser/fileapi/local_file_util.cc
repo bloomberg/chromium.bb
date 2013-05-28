@@ -12,8 +12,8 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/native_file_util.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace fileapi {
 

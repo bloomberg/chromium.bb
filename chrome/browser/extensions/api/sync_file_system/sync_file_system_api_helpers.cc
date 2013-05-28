@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace extensions {
 

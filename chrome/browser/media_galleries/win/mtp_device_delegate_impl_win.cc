@@ -30,7 +30,7 @@
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace chrome {
 

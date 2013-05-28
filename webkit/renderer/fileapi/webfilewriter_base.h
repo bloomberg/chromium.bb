@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_WEBFILEWRITER_BASE_H_
-#define WEBKIT_FILEAPI_WEBFILEWRITER_BASE_H_
+#ifndef WEBKIT_RENDERER_FILEAPI_WEBFILEWRITER_BASE_H_
+#define WEBKIT_RENDERER_FILEAPI_WEBFILEWRITER_BASE_H_
 
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
@@ -68,4 +68,4 @@ class WEBKIT_STORAGE_EXPORT WebFileWriterBase
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_WEBFILEWRITER_BASE_H_
+#endif  // WEBKIT_RENDERER_FILEAPI_WEBFILEWRITER_BASE_H_

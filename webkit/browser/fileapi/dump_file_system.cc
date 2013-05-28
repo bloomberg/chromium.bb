@@ -42,8 +42,8 @@
 #include "webkit/browser/fileapi/sandbox_directory_database.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace {
 

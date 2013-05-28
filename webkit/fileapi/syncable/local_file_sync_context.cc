@@ -15,7 +15,7 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_origin_change_observer.h"

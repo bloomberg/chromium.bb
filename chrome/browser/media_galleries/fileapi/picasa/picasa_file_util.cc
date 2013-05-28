@@ -16,7 +16,7 @@
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 using base::FilePath;
 using fileapi::FileSystemOperationContext;

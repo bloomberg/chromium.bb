@@ -11,7 +11,7 @@
 #include "base/file_util.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace fileapi {
 

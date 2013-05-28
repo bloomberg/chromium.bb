@@ -18,7 +18,7 @@
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace {
 

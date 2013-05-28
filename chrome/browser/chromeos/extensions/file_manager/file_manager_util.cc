@@ -56,7 +56,7 @@
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using base::DictionaryValue;

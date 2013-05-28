@@ -21,7 +21,7 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/mock_file_change_observer.h"
 #include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/quota/mock_quota_manager.h"
 #include "webkit/quota/quota_manager.h"
 

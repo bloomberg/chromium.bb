@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_TYPES_H_
-#define WEBKIT_FILEAPI_FILE_SYSTEM_TYPES_H_
+#ifndef WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_TYPES_H_
+#define WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_TYPES_H_
 
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystemType.h"
@@ -107,4 +107,4 @@ enum FileSystemType {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_TYPES_H_
+#endif  // WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_TYPES_H_

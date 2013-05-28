@@ -29,7 +29,7 @@
 #include "webkit/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 using net::NetworkDelegate;
 using net::URLRequest;

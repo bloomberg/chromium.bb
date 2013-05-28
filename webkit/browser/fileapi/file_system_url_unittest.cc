@@ -7,8 +7,8 @@
 #include "base/files/file_path.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 #define FPL FILE_PATH_LITERAL

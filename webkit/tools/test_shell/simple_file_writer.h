@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/fileapi/webfilewriter_base.h"
+#include "webkit/renderer/fileapi/webfilewriter_base.h"
 
 namespace net {
 class URLRequestContext;

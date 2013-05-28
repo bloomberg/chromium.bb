@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "net/base/escape.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace fileapi {
 

@@ -16,8 +16,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystemType.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace extensions {
 

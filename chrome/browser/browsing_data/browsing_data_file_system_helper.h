@@ -15,7 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_types.h"
 
 namespace fileapi {
 class FileSystemContext;

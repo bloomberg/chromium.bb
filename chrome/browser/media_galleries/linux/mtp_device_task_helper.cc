@@ -13,7 +13,7 @@
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "webkit/browser/fileapi/async_file_util.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace chrome {
 

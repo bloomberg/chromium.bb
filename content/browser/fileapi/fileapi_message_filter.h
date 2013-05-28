@@ -17,7 +17,7 @@
 #include "base/shared_memory.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "webkit/blob/blob_data.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/quota/quota_types.h"
 
 class GURL;

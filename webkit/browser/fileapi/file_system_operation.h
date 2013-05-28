@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
 #include "base/process.h"
-#include "webkit/fileapi/directory_entry.h"
+#include "webkit/common/fileapi/directory_entry.h"
 
 namespace base {
 class Time;

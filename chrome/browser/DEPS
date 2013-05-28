@@ -53,6 +53,7 @@ include_rules = [
   "+webkit/appcache",
   "+webkit/base/origin_url_conversions.h",
   "+webkit/blob",
+  "+webkit/common/fileapi",
   "+webkit/common/plugins",  # Common plugins functionality.
   "+webkit/common/user_agent",
   "+webkit/dom_storage/dom_storage_types.h",

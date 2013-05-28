@@ -85,8 +85,8 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 using extensions::app_file_handler_util::FindFileHandlersForFiles;
 using extensions::app_file_handler_util::PathAndMimeTypeSet;

@@ -9,7 +9,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_util_proxy.h"
 #include "base/platform_file.h"
-#include "webkit/fileapi/directory_entry.h"
+#include "webkit/common/fileapi/directory_entry.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {

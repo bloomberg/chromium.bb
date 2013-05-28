@@ -8,8 +8,8 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
-#include "webkit/fileapi/directory_entry.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/directory_entry.h"
+#include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/quota/quota_types.h"
 
 #define IPC_MESSAGE_START FileSystemMsgStart

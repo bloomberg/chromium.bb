@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {

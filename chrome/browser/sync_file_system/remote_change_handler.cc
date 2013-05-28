@@ -5,7 +5,7 @@
 #include "chrome/browser/sync_file_system/remote_change_handler.h"
 
 #include "base/logging.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace sync_file_system {
 

@@ -17,7 +17,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {

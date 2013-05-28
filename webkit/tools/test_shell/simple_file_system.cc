@@ -25,8 +25,8 @@
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
-#include "webkit/fileapi/directory_entry.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/directory_entry.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/tools/test_shell/simple_file_writer.h"
 
 using base::WeakPtr;

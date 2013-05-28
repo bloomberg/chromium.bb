@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/webfilewriter_base.h"
+#include "webkit/renderer/fileapi/webfilewriter_base.h"
 
 #include "base/logging.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileWriterClient.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace fileapi {
 

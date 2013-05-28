@@ -33,7 +33,7 @@
 #include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/shared_impl/dir_contents.h"
 #include "ui/gfx/size.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/glue/clipboard_client.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 #include "webkit/quota/quota_types.h"

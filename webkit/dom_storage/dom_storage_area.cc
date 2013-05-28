@@ -14,6 +14,7 @@
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/dom_storage/dom_storage_map.h"
 #include "webkit/dom_storage/dom_storage_namespace.h"
 #include "webkit/dom_storage/dom_storage_task_runner.h"
@@ -21,7 +22,6 @@
 #include "webkit/dom_storage/local_storage_database_adapter.h"
 #include "webkit/dom_storage/session_storage_database.h"
 #include "webkit/dom_storage/session_storage_database_adapter.h"
-#include "webkit/fileapi/file_system_util.h"
 
 using webkit_database::DatabaseUtil;
 

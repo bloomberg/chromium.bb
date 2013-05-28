@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_UTIL_H_
-#define WEBKIT_FILEAPI_FILE_SYSTEM_UTIL_H_
+#ifndef WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_UTIL_H_
+#define WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_UTIL_H_
 
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 #include "base/platform_file.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystemType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/quota/quota_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
@@ -111,7 +111,8 @@ WEBKIT_STORAGE_EXPORT bool GetFileSystemPublicType(
 //
 // TODO(tzik): Replace CreateFilePath and FilePathToString in
 // third_party/leveldatabase/env_chromium.cc with them.
-WEBKIT_STORAGE_EXPORT std::string FilePathToString(const base::FilePath& file_path);
+WEBKIT_STORAGE_EXPORT std::string FilePathToString(
+    const base::FilePath& file_path);
 
 // Decode a file path from |file_path_string|.
 WEBKIT_STORAGE_EXPORT base::FilePath StringToFilePath(
@@ -145,4 +146,4 @@ WEBKIT_STORAGE_EXPORT std::string GetIsolatedFileSystemRootURIString(
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_UTIL_H_
+#endif  // WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_UTIL_H_

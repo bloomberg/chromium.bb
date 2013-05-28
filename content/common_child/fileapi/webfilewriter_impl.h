@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_FILEAPI_WEBFILEWRITER_IMPL_H_
-#define CONTENT_COMMON_FILEAPI_WEBFILEWRITER_IMPL_H_
+#ifndef CONTENT_COMMON_CHILD_FILEAPI_WEBFILEWRITER_IMPL_H_
+#define CONTENT_COMMON_CHILD_FILEAPI_WEBFILEWRITER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/fileapi/webfilewriter_base.h"
+#include "webkit/renderer/fileapi/webfilewriter_base.h"
 
 namespace content {
 
@@ -32,4 +32,4 @@ class WebFileWriterImpl : public fileapi::WebFileWriterBase,
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_FILEAPI_WEBFILEWRITER_IMPL_H_
+#endif  // CONTENT_COMMON_CHILD_FILEAPI_WEBFILEWRITER_IMPL_H_

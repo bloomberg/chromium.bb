@@ -31,7 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_types.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"

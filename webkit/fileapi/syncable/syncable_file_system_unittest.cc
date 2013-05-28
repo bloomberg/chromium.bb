@@ -11,7 +11,7 @@
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"

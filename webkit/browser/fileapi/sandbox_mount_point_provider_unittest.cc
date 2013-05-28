@@ -17,7 +17,7 @@
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 // PS stands for path separator.
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)

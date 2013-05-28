@@ -19,7 +19,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/test_file_set.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/quota/mock_quota_manager.h"
 #include "webkit/quota/quota_manager.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/webfilewriter_base.h"
+#include "webkit/renderer/fileapi/webfilewriter_base.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

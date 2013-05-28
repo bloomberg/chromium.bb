@@ -5,12 +5,14 @@
 {
   'includes': [
     '../common/database/webkit_common_database.gypi',
+    '../common/fileapi/webkit_common_fileapi.gypi',
   ],
   # TODO(michaeln): Have webkit_browser target and deprecate old gypis like
   # webkit_storage.gypi.
   'variables': {
     'webkit_common_storage_sources': [
       '<@(webkit_common_database_sources)',
+      '<@(webkit_common_fileapi_sources)',
     ],
   },
 }

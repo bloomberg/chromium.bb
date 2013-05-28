@@ -30,7 +30,7 @@
 #include "net/base/escape.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/sync_direction.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"

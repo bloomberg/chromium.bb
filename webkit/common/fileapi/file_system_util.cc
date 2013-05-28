@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/file_system_util.h"
-
-#include "build/build_config.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -12,9 +10,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/base/origin_url_conversions.h"
 
 namespace fileapi {

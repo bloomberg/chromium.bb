@@ -12,7 +12,7 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 

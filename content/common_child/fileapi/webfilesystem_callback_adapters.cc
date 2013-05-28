@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/fileapi/webfilesystem_callback_adapters.h"
+#include "content/common_child/fileapi/webfilesystem_callback_adapters.h"
 
 #include <string>
 #include <vector>
@@ -14,8 +14,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "webkit/base/file_path_string_conversions.h"
-#include "webkit/fileapi/directory_entry.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/directory_entry.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFileInfo;

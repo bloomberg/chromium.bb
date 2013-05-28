@@ -18,8 +18,8 @@
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/quota/quota_types.h"
 
 namespace fileapi {

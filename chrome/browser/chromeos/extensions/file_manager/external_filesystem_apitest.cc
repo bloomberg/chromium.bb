@@ -37,8 +37,8 @@
 #include "webkit/browser/fileapi/external_mount_points.h"
 
 // Tests for access to external file systems (as defined in
-// webkit/fileapi/file_system_types.h) from extensions with fileBrowserPrivate
-// and fileBrowserHandler extension permissions.
+// webkit/common/fileapi/file_system_types.h) from extensions with
+// fileBrowserPrivate and fileBrowserHandler extension permissions.
 // The tests cover following external file system types:
 // - local (kFileSystemTypeLocalNative): a local file system on which files are
 //   accessed using native local path.

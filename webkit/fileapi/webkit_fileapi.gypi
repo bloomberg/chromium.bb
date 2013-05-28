@@ -5,10 +5,6 @@
 {
   'variables': {
     'webkit_fileapi_sources': [
-      '../fileapi/directory_entry.h',
-      '../fileapi/file_system_types.h',
-      '../fileapi/file_system_util.cc',
-      '../fileapi/file_system_util.h',
       '../fileapi/syncable/file_change.cc',
       '../fileapi/syncable/file_change.h',
       '../fileapi/syncable/local_file_change_tracker.cc',
@@ -33,8 +29,6 @@
       '../fileapi/syncable/syncable_file_system_operation.h',
       '../fileapi/syncable/syncable_file_system_util.cc',
       '../fileapi/syncable/syncable_file_system_util.h',
-      '../fileapi/webfilewriter_base.cc',
-      '../fileapi/webfilewriter_base.h',
     ],
     'webkit_fileapi_chromeos_sources': [
       '../chromeos/fileapi/async_file_stream.h',

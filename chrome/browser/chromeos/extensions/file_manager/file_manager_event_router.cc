@@ -35,8 +35,8 @@
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::disks::DiskMountManager;

@@ -9,7 +9,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
-#include "webkit/fileapi/file_system_util.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace extensions {
 

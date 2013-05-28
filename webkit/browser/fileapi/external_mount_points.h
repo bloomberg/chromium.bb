@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "webkit/browser/fileapi/mount_points.h"
-#include "webkit/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
@@ -166,4 +166,3 @@ class WEBKIT_STORAGE_EXPORT ScopedExternalFileSystem {
 }  // namespace fileapi
 
 #endif  // WEBKIT_BROWSER_FILEAPI_EXTERNAL_MOUNT_POINTS_H_
-

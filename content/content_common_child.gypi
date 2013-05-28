@@ -16,6 +16,12 @@
     '../base/base.gyp:base',
   ],
   'sources': [
+    'common_child/fileapi/webfilesystem_callback_adapters.cc',
+    'common_child/fileapi/webfilesystem_callback_adapters.h',
+    'common_child/fileapi/webfilesystem_impl.cc',
+    'common_child/fileapi/webfilesystem_impl.h',
+    'common_child/fileapi/webfilewriter_impl.cc',
+    'common_child/fileapi/webfilewriter_impl.h',
     'common_child/indexed_db/indexed_db_dispatcher.cc',
     'common_child/indexed_db/indexed_db_dispatcher.h',
     'common_child/indexed_db/indexed_db_message_filter.cc',
