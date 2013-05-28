@@ -23,11 +23,21 @@ def CommonChecks(input_api, output_api):
   finally:
     sys.path = sys_path_backup
 
+  integation_tests = []
+  if not input_api.is_committing:
+    # These tests are touching the live infrastructure. It's a pain if your IP
+    # is not whitelisted so only run these on commit.
+    integation_tests = [
+      r'.*isolateserver_archive_smoke_test\.py$',
+      r'.*swarm_get_results_smoke_test\.py$',
+    ]
+
   output.extend(
       input_api.canned_checks.RunUnitTestsInDirectory(
           input_api, output_api,
           input_api.os_path.join(input_api.PresubmitLocalPath(), 'tests'),
-          whitelist=[r'.+_test\.py$']))
+          whitelist=[r'.+_test\.py$'],
+          blacklist=integation_tests))
 
   if input_api.is_committing:
     output.extend(input_api.canned_checks.PanProjectChecks(input_api,
