@@ -407,12 +407,12 @@ void GamepadPlatformDataFetcherMac::XboxValueChanged(
   WebGamepad& pad = data_.items[slot];
 
   for (size_t i = 0; i < 6; i++) {
-    pad.buttons[i] = data.buttons[i] ? 0.0f : 1.1f;
+    pad.buttons[i] = data.buttons[i] ? 1.0f : 0.0f;
   }
   pad.buttons[6] = data.triggers[0];
   pad.buttons[7] = data.triggers[1];
   for (size_t i = 8; i < 17; i++) {
-    pad.buttons[i] = data.buttons[i - 2] ? 0.0f : 1.1f;
+    pad.buttons[i] = data.buttons[i - 2] ? 1.0f : 0.0f;
   }
   for (size_t i = 0; i < arraysize(data.axes); i++) {
     pad.axes[i] = data.axes[i];
