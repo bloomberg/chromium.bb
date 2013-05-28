@@ -60,6 +60,12 @@ bool OriginSetContainsOrigin(const OriginSetByHost& origins,
   return itr != origins.end() && ContainsKey(itr->second, origin);
 }
 
+void DidGetGlobalUsageForLimitedGlobalUsage(const UsageCallback& callback,
+                                            int64 total_global_usage,
+                                            int64 global_unlimited_usage) {
+  callback.Run(total_global_usage - global_unlimited_usage);
+}
+
 }  // namespace
 
 // UsageTracker ----------------------------------------------------------
@@ -86,6 +92,10 @@ ClientUsageTracker* UsageTracker::GetClientTracker(QuotaClient::ID client_id) {
   if (found != client_tracker_map_.end())
     return found->second;
   return NULL;
+}
+
+void UsageTracker::GetGlobalLimitedUsage(const UsageCallback& callback) {
+  GetGlobalUsage(base::Bind(&DidGetGlobalUsageForLimitedGlobalUsage, callback));
 }
 
 void UsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {

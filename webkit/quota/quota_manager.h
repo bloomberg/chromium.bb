@@ -48,15 +48,13 @@ struct QuotaManagerDeleter;
 
 struct WEBKIT_STORAGE_EXPORT UsageAndQuota {
   int64 usage;
-  int64 global_usage;
-  int64 global_unlimited_usage;
+  int64 global_limited_usage;
   int64 quota;
   int64 available_disk_space;
 
   UsageAndQuota();
   UsageAndQuota(int64 usage,
-                int64 global_usage,
-                int64 global_unlimited_usage,
+                int64 global_limited_usage,
                 int64 quota,
                 int64 available_disk_space);
 };

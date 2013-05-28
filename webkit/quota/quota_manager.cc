@@ -191,19 +191,17 @@ int64 CallSystemGetAmountOfFreeDiskSpace(const base::FilePath& profile_path) {
   return base::SysInfo::AmountOfFreeDiskSpace(profile_path);
 }
 
-int64 CalculateTemporaryGlobalQuota(int64 global_usage,
-                                    int64 global_unlimited_usage,
+int64 CalculateTemporaryGlobalQuota(int64 global_limited_usage,
                                     int64 available_space) {
-    DCHECK_GE(global_usage, global_unlimited_usage);
-    int64 limited_usage = global_usage - global_unlimited_usage;
-    int64 avail_space = available_space;
-    if (avail_space < kint64max - limited_usage) {
-      // We basically calculate the temporary quota by
-      // [available_space + space_used_for_temp] * kTempQuotaRatio,
-      // but make sure we'll have no overflow.
-      avail_space += limited_usage;
-    }
-    return avail_space * kTemporaryQuotaRatioToAvail;
+  DCHECK_GE(global_limited_usage, 0);
+  int64 avail_space = available_space;
+  if (avail_space < kint64max - global_limited_usage) {
+    // We basically calculate the temporary quota by
+    // [available_space + space_used_for_temp] * kTempQuotaRatio,
+    // but make sure we'll have no overflow.
+    avail_space += global_limited_usage;
+  }
+  return avail_space * kTemporaryQuotaRatioToAvail;
 }
 
 void DispatchTemporaryGlobalQuotaCallback(
@@ -216,8 +214,7 @@ void DispatchTemporaryGlobalQuotaCallback(
   }
 
   callback.Run(status, CalculateTemporaryGlobalQuota(
-      usage_and_quota.global_usage,
-      usage_and_quota.global_unlimited_usage,
+      usage_and_quota.global_limited_usage,
       usage_and_quota.available_disk_space));
 }
 
@@ -238,14 +235,12 @@ int64 CalculateQuotaWithDiskSpace(
 
 int64 CalculateTemporaryHostQuota(int64 host_usage,
                                   int64 global_quota,
-                                  int64 global_usage,
-                                  int64 global_unlimited_usage) {
-  DCHECK_GE(global_usage, global_unlimited_usage);
-    int64 limited_global_usage = global_usage - global_unlimited_usage;
-    int64 host_quota = global_quota / QuotaManager::kPerHostTemporaryPortion;
-    if (limited_global_usage > global_quota)
-      host_quota = std::min(host_quota, host_usage);
-    return host_quota;
+                                  int64 global_limited_usage) {
+  DCHECK_GE(global_limited_usage, 0);
+  int64 host_quota = global_quota / QuotaManager::kPerHostTemporaryPortion;
+  if (global_limited_usage > global_quota)
+    host_quota = std::min(host_quota, host_usage);
+  return host_quota;
 }
 
 void DispatchUsageAndQuotaForWebApps(
@@ -264,11 +259,9 @@ void DispatchUsageAndQuotaForWebApps(
   int64 usage = usage_and_quota.usage;
   int64 quota = usage_and_quota.quota;
 
-  if (type == kStorageTypeTemporary) {
+  if (type == kStorageTypeTemporary && !is_unlimited) {
     quota = CalculateTemporaryHostQuota(
-        usage, quota,
-        usage_and_quota.global_usage,
-        usage_and_quota.global_unlimited_usage);
+        usage, quota, usage_and_quota.global_limited_usage);
   }
 
   if (is_incognito) {
@@ -297,21 +290,18 @@ void DispatchUsageAndQuotaForWebApps(
 
 UsageAndQuota::UsageAndQuota()
     : usage(0),
-      global_usage(0),
-      global_unlimited_usage(0),
+      global_limited_usage(0),
       quota(0),
       available_disk_space(0) {
 }
 
 UsageAndQuota::UsageAndQuota(
     int64 usage,
-    int64 global_usage,
-    int64 global_unlimited_usage,
+    int64 global_limited_usage,
     int64 quota,
     int64 available_disk_space)
     : usage(usage),
-      global_usage(global_usage),
-      global_unlimited_usage(global_unlimited_usage),
+      global_limited_usage(global_limited_usage),
       quota(quota),
       available_disk_space(available_disk_space) {
 }
@@ -323,11 +313,11 @@ class UsageAndQuotaCallbackDispatcher
   UsageAndQuotaCallbackDispatcher(QuotaManager* manager)
       : QuotaTask(manager),
         has_usage_(false),
-        has_global_usage_(false),
+        has_global_limited_usage_(false),
         has_quota_(false),
         has_available_disk_space_(false),
         status_(kQuotaStatusUnknown),
-        usage_and_quota_(-1, -1, -1, -1, -1),
+        usage_and_quota_(-1, -1, -1, -1),
         waiting_callbacks_(1) {}
 
   virtual ~UsageAndQuotaCallbackDispatcher() {}
@@ -342,14 +332,9 @@ class UsageAndQuotaCallbackDispatcher
     has_usage_ = true;
   }
 
-  void set_global_usage(int64 global_usage) {
-    usage_and_quota_.global_usage = global_usage;
-    has_global_usage_ = true;
-  }
-
-  void set_global_unlimited_usage(int64 global_unlimited_usage) {
-    usage_and_quota_.global_unlimited_usage = global_unlimited_usage;
-    has_global_usage_ = true;
+  void set_global_limited_usage(int64 global_limited_usage) {
+    usage_and_quota_.global_limited_usage = global_limited_usage;
+    has_global_limited_usage_ = true;
   }
 
   void set_quota(int64 quota) {
@@ -369,11 +354,12 @@ class UsageAndQuotaCallbackDispatcher
                       AsWeakPtr());
   }
 
-  GlobalUsageCallback GetGlobalUsageCallback() {
+  UsageCallback GetGlobalLimitedUsageCallback() {
     ++waiting_callbacks_;
-    has_global_usage_ = true;
-    return base::Bind(&UsageAndQuotaCallbackDispatcher::DidGetGlobalUsage,
-                      AsWeakPtr());
+    has_global_limited_usage_ = true;
+    return base::Bind(
+        &UsageAndQuotaCallbackDispatcher::DidGetGlobalLimitedUsage,
+        AsWeakPtr());
   }
 
   QuotaCallback GetQuotaCallback() {
@@ -398,12 +384,10 @@ class UsageAndQuotaCallbackDispatcher
     CheckCompleted();
   }
 
-  void DidGetGlobalUsage(int64 usage,
-                         int64 unlimited_usage) {
+  void DidGetGlobalLimitedUsage(int64 limited_usage) {
     if (status_ == kQuotaStatusUnknown)
       status_ = kQuotaStatusOk;
-    usage_and_quota_.global_usage = usage;
-    usage_and_quota_.global_unlimited_usage = unlimited_usage;
+    usage_and_quota_.global_limited_usage = limited_usage;
     CheckCompleted();
   }
 
@@ -436,10 +420,8 @@ class UsageAndQuotaCallbackDispatcher
 
   virtual void Completed() OVERRIDE {
     DCHECK(!has_usage_ || usage_and_quota_.usage >= 0);
-    DCHECK_LE(usage_and_quota_.global_unlimited_usage,
-              usage_and_quota_.global_usage);
-    DCHECK(!has_global_usage_ ||
-           usage_and_quota_.global_unlimited_usage >= 0);
+    DCHECK(!has_global_limited_usage_ ||
+           usage_and_quota_.global_limited_usage >= 0);
     DCHECK(!has_quota_ || usage_and_quota_.quota >= 0);
     DCHECK(!has_available_disk_space_ ||
            usage_and_quota_.available_disk_space >= 0);
@@ -455,7 +437,7 @@ class UsageAndQuotaCallbackDispatcher
 
   // For sanity checks, they're checked only when DCHECK is on.
   bool has_usage_;
-  bool has_global_usage_;
+  bool has_global_limited_usage_;
   bool has_quota_;
   bool has_available_disk_space_;
 
@@ -858,8 +840,8 @@ void QuotaManager::GetUsageAndQuotaForWebApps(
     dispatcher->set_quota(kNoLimit);
   } else {
     if (type == kStorageTypeTemporary) {
-      GetUsageTracker(type)->GetGlobalUsage(
-          dispatcher->GetGlobalUsageCallback());
+      GetUsageTracker(type)->GetGlobalLimitedUsage(
+          dispatcher->GetGlobalLimitedUsageCallback());
       GetTemporaryGlobalQuota(dispatcher->GetQuotaCallback());
     } else if (type == kStorageTypePersistent) {
       GetPersistentHostQuota(net::GetHostOrSpecFromURL(origin),
@@ -990,8 +972,8 @@ void QuotaManager::GetTemporaryGlobalQuota(const QuotaCallback& callback) {
 
   UsageAndQuotaCallbackDispatcher* dispatcher =
       new UsageAndQuotaCallbackDispatcher(this);
-  GetGlobalUsage(kStorageTypeTemporary,
-                 dispatcher->GetGlobalUsageCallback());
+  GetUsageTracker(kStorageTypeTemporary)->
+      GetGlobalLimitedUsage(dispatcher->GetGlobalLimitedUsageCallback());
   GetAvailableSpace(dispatcher->GetAvailableSpaceCallback());
   dispatcher->WaitForResults(
       base::Bind(&DispatchTemporaryGlobalQuotaCallback, callback));
@@ -1450,11 +1432,12 @@ void QuotaManager::EvictOriginData(
 void QuotaManager::GetUsageAndQuotaForEviction(
     const UsageAndQuotaCallback& callback) {
   DCHECK(io_thread_->BelongsToCurrentThread());
+  LazyInitialize();
 
   UsageAndQuotaCallbackDispatcher* dispatcher =
       new UsageAndQuotaCallbackDispatcher(this);
-  GetGlobalUsage(kStorageTypeTemporary,
-                 dispatcher->GetGlobalUsageCallback());
+  GetUsageTracker(kStorageTypeTemporary)->
+      GetGlobalLimitedUsage(dispatcher->GetGlobalLimitedUsageCallback());
   GetTemporaryGlobalQuota(dispatcher->GetQuotaCallback());
   GetAvailableSpace(dispatcher->GetAvailableSpaceCallback());
   dispatcher->WaitForResults(callback);

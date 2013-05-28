@@ -346,8 +346,7 @@ class QuotaManagerTest : public testing::Test {
   void DidGetUsageAndQuotaForEviction(QuotaStatusCode status,
                                       const UsageAndQuota& usage_and_quota) {
     quota_status_ = status;
-    usage_ = usage_and_quota.global_usage;
-    unlimited_usage_ = usage_and_quota.global_unlimited_usage;
+    limited_usage_ = usage_and_quota.global_limited_usage;
     quota_ = usage_and_quota.quota;
     available_space_ = usage_and_quota.available_disk_space;
   }
@@ -390,6 +389,7 @@ class QuotaManagerTest : public testing::Test {
   QuotaStatusCode status() const { return quota_status_; }
   const UsageInfoEntries& usage_info() const { return usage_info_; }
   int64 usage() const { return usage_; }
+  int64 limited_usage() const { return limited_usage_; }
   int64 unlimited_usage() const { return unlimited_usage_; }
   int64 quota() const { return quota_; }
   int64 available_space() const { return available_space_; }
@@ -420,6 +420,7 @@ class QuotaManagerTest : public testing::Test {
   QuotaStatusCode quota_status_;
   UsageInfoEntries usage_info_;
   int64 usage_;
+  int64 limited_usage_;
   int64 unlimited_usage_;
   int64 quota_;
   int64 available_space_;
@@ -1411,8 +1412,7 @@ TEST_F(QuotaManagerTest, GetUsageAndQuotaForEviction) {
   GetUsageAndQuotaForEviction();
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(4021, usage());
-  EXPECT_EQ(4000, unlimited_usage());
+  EXPECT_EQ(21, limited_usage());
   EXPECT_EQ(10000000, quota());
   EXPECT_LE(0, available_space());
 }

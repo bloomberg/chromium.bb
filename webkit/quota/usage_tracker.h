@@ -36,6 +36,7 @@ class WEBKIT_STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
   StorageType type() const { return type_; }
   ClientUsageTracker* GetClientTracker(QuotaClient::ID client_id);
 
+  void GetGlobalLimitedUsage(const UsageCallback& callback);
   void GetGlobalUsage(const GlobalUsageCallback& callback);
   void GetHostUsage(const std::string& host, const UsageCallback& callback);
   void UpdateUsageCache(QuotaClient::ID client_id,
