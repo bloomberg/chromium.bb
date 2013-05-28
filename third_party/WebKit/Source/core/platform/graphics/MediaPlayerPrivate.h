@@ -43,7 +43,6 @@ public:
 
     virtual void load(const String& url) = 0;
     virtual void load(const String& url, PassRefPtr<WebKitMediaSource>) = 0;
-    virtual void cancelLoad() = 0;
 
     virtual void prepareToPlay() = 0;
     virtual PlatformLayer* platformLayer() const = 0;

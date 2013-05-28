@@ -360,30 +360,32 @@ private:
     void setReadyState(MediaPlayer::ReadyState);
     void setNetworkState(MediaPlayer::NetworkState);
 
-    virtual void mediaPlayerNetworkStateChanged(MediaPlayer*) OVERRIDE;
-    virtual void mediaPlayerReadyStateChanged(MediaPlayer*) OVERRIDE;
-    virtual void mediaPlayerTimeChanged(MediaPlayer*) OVERRIDE;
-    virtual void mediaPlayerVolumeChanged(MediaPlayer*) OVERRIDE;
-    virtual void mediaPlayerMuteChanged(MediaPlayer*) OVERRIDE;
-    virtual void mediaPlayerDurationChanged(MediaPlayer*) OVERRIDE;
-    virtual void mediaPlayerRateChanged(MediaPlayer*) OVERRIDE;
-    virtual void mediaPlayerPlaybackStateChanged(MediaPlayer*) OVERRIDE;
-    virtual void mediaPlayerSawUnsupportedTracks(MediaPlayer*) OVERRIDE;
-    virtual void mediaPlayerResourceNotSupported(MediaPlayer*) OVERRIDE;
-    virtual void mediaPlayerRepaint(MediaPlayer*) OVERRIDE;
-    virtual void mediaPlayerSizeChanged(MediaPlayer*) OVERRIDE;
-    virtual void mediaPlayerEngineUpdated(MediaPlayer*) OVERRIDE;
+    virtual void mediaPlayerNetworkStateChanged() OVERRIDE;
+    virtual void mediaPlayerReadyStateChanged() OVERRIDE;
+    virtual void mediaPlayerTimeChanged() OVERRIDE;
+    virtual void mediaPlayerVolumeChanged() OVERRIDE;
+    virtual void mediaPlayerMuteChanged() OVERRIDE;
+    virtual void mediaPlayerDurationChanged() OVERRIDE;
+    virtual void mediaPlayerRateChanged() OVERRIDE;
+    virtual void mediaPlayerPlaybackStateChanged() OVERRIDE;
+    virtual void mediaPlayerSawUnsupportedTracks() OVERRIDE;
+    virtual void mediaPlayerResourceNotSupported() OVERRIDE;
+    virtual void mediaPlayerRepaint() OVERRIDE;
+    virtual void mediaPlayerSizeChanged() OVERRIDE;
+    virtual void mediaPlayerEngineUpdated() OVERRIDE;
 
-    virtual void mediaPlayerKeyAdded(MediaPlayer*, const String& keySystem, const String& sessionId) OVERRIDE;
-    virtual void mediaPlayerKeyError(MediaPlayer*, const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode) OVERRIDE;
-    virtual void mediaPlayerKeyMessage(MediaPlayer*, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL) OVERRIDE;
-    virtual bool mediaPlayerKeyNeeded(MediaPlayer*, const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
+    virtual void mediaPlayerKeyAdded(const String& keySystem, const String& sessionId) OVERRIDE;
+    virtual void mediaPlayerKeyError(const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode) OVERRIDE;
+    virtual void mediaPlayerKeyMessage(const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL) OVERRIDE;
+    virtual bool mediaPlayerKeyNeeded(const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
-    virtual bool mediaPlayerKeyNeeded(MediaPlayer*, Uint8Array*) OVERRIDE;
+    virtual bool mediaPlayerKeyNeeded(Uint8Array*) OVERRIDE;
 #endif
 
     virtual CORSMode mediaPlayerCORSMode() const OVERRIDE;
+
+    virtual void mediaPlayerNeedsStyleRecalc() OVERRIDE;
 
     void loadTimerFired(Timer<HTMLMediaElement>*);
     void progressEventTimerFired(Timer<HTMLMediaElement>*);

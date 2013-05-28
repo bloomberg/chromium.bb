@@ -43,7 +43,6 @@ namespace WebCore {
 class AudioSourceProvider;
 class ContentType;
 class Document;
-class FrameView;
 class GraphicsContext;
 class GraphicsContext3D;
 class HostWindow;
@@ -62,57 +61,59 @@ public:
     virtual ~MediaPlayerClient() { }
 
     // the network state has changed
-    virtual void mediaPlayerNetworkStateChanged(MediaPlayer*) = 0;
+    virtual void mediaPlayerNetworkStateChanged() = 0;
 
     // the ready state has changed
-    virtual void mediaPlayerReadyStateChanged(MediaPlayer*) = 0;
+    virtual void mediaPlayerReadyStateChanged() = 0;
 
     // the volume state has changed
-    virtual void mediaPlayerVolumeChanged(MediaPlayer*) = 0;
+    virtual void mediaPlayerVolumeChanged() = 0;
 
     // the mute state has changed
-    virtual void mediaPlayerMuteChanged(MediaPlayer*) = 0;
+    virtual void mediaPlayerMuteChanged() = 0;
 
     // time has jumped, eg. not as a result of normal playback
-    virtual void mediaPlayerTimeChanged(MediaPlayer*) = 0;
+    virtual void mediaPlayerTimeChanged() = 0;
 
     // the media file duration has changed, or is now known
-    virtual void mediaPlayerDurationChanged(MediaPlayer*) = 0;
+    virtual void mediaPlayerDurationChanged() = 0;
 
     // the playback rate has changed
-    virtual void mediaPlayerRateChanged(MediaPlayer*) = 0;
+    virtual void mediaPlayerRateChanged() = 0;
 
     // the play/pause status changed
-    virtual void mediaPlayerPlaybackStateChanged(MediaPlayer*) = 0;
+    virtual void mediaPlayerPlaybackStateChanged() = 0;
 
     // The MediaPlayer has found potentially problematic media content.
     // This is used internally to trigger swapping from a <video>
     // element to an <embed> in standalone documents
-    virtual void mediaPlayerSawUnsupportedTracks(MediaPlayer*) = 0;
+    virtual void mediaPlayerSawUnsupportedTracks() = 0;
 
     // The MediaPlayer could not discover an engine which supports the requested resource.
-    virtual void mediaPlayerResourceNotSupported(MediaPlayer*) = 0;
+    virtual void mediaPlayerResourceNotSupported() = 0;
 
 // Presentation-related methods
     // a new frame of video is available
-    virtual void mediaPlayerRepaint(MediaPlayer*) = 0;
+    virtual void mediaPlayerRepaint() = 0;
 
     // the movie size has changed
-    virtual void mediaPlayerSizeChanged(MediaPlayer*) = 0;
+    virtual void mediaPlayerSizeChanged() = 0;
 
-    virtual void mediaPlayerEngineUpdated(MediaPlayer*) = 0;
+    virtual void mediaPlayerEngineUpdated() = 0;
 
     enum MediaKeyErrorCode { UnknownError = 1, ClientError, ServiceError, OutputError, HardwareChangeError, DomainError };
-    virtual void mediaPlayerKeyAdded(MediaPlayer*, const String& /* keySystem */, const String& /* sessionId */) = 0;
-    virtual void mediaPlayerKeyError(MediaPlayer*, const String& /* keySystem */, const String& /* sessionId */, MediaKeyErrorCode, unsigned short /* systemCode */) = 0;
-    virtual void mediaPlayerKeyMessage(MediaPlayer*, const String& /* keySystem */, const String& /* sessionId */, const unsigned char* /* message */, unsigned /* messageLength */, const KURL& /* defaultURL */) = 0;
-    virtual bool mediaPlayerKeyNeeded(MediaPlayer*, const String& /* keySystem */, const String& /* sessionId */, const unsigned char* /* initData */, unsigned /* initDataLength */) = 0;
+    virtual void mediaPlayerKeyAdded(const String& /* keySystem */, const String& /* sessionId */) = 0;
+    virtual void mediaPlayerKeyError(const String& /* keySystem */, const String& /* sessionId */, MediaKeyErrorCode, unsigned short /* systemCode */) = 0;
+    virtual void mediaPlayerKeyMessage(const String& /* keySystem */, const String& /* sessionId */, const unsigned char* /* message */, unsigned /* messageLength */, const KURL& /* defaultURL */) = 0;
+    virtual bool mediaPlayerKeyNeeded(const String& /* keySystem */, const String& /* sessionId */, const unsigned char* /* initData */, unsigned /* initDataLength */) = 0;
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
-    virtual bool mediaPlayerKeyNeeded(MediaPlayer*, Uint8Array*) = 0;
+    virtual bool mediaPlayerKeyNeeded(Uint8Array*) = 0;
 #endif
     
     virtual CORSMode mediaPlayerCORSMode() const = 0;
+
+    virtual void mediaPlayerNeedsStyleRecalc() = 0;
 
     virtual void mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate>) = 0;
     virtual void mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPrivate>) = 0;
@@ -141,18 +142,11 @@ public:
     bool hasVideo() const;
     bool hasAudio() const;
 
-    void setFrameView(FrameView* frameView) { m_frameView = frameView; }
-    FrameView* frameView() { return m_frameView; }
-    bool inMediaDocument();
-
-    IntSize size() const { return m_size; }
     void setSize(const IntSize& size);
 
     bool load(const KURL&, const ContentType&, const String& keySystem);
     bool load(const KURL&, PassRefPtr<WebKitMediaSource>);
-    void cancelLoad();
 
-    bool visible() const;
     void setVisible(bool);
 
     void prepareToPlay();
@@ -179,7 +173,6 @@ public:
     void setRate(double);
 
     PassRefPtr<TimeRanges> buffered();
-    PassRefPtr<TimeRanges> seekable();
     double maxTimeSeekable();
 
     bool didLoadingProgress();
@@ -221,19 +214,8 @@ public:
     Preload preload() const;
     void setPreload(Preload);
 
-    void networkStateChanged();
-    void readyStateChanged();
     void volumeChanged(double);
     void muteChanged(bool);
-    void timeChanged();
-    void sizeChanged();
-    void rateChanged();
-    void playbackStateChanged();
-    void durationChanged();
-    void firstVideoFrameAvailable();
-    void characteristicChanged();
-
-    void repaint();
 
     MediaPlayerClient* mediaPlayerClient() const { return m_mediaPlayerClient; }
 
@@ -260,24 +242,18 @@ public:
     unsigned audioDecodedByteCount() const;
     unsigned videoDecodedByteCount() const;
 
+    void setNeedsStyleRecalc();
+
 #if ENABLE(WEB_AUDIO)
     AudioSourceProvider* audioSourceProvider();
 #endif
-
-    void keyAdded(const String& keySystem, const String& sessionId);
-    void keyError(const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode);
-    void keyMessage(const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL);
-    bool keyNeeded(const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength);
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
     bool keyNeeded(Uint8Array* initData);
 #endif
 
-    void addTextTrack(PassRefPtr<InbandTextTrackPrivate>);
-    void removeTextTrack(PassRefPtr<InbandTextTrackPrivate>);
-
 private:
-    MediaPlayer(MediaPlayerClient*);
+    explicit MediaPlayer(MediaPlayerClient*);
     void loadWithMediaEngine();
 
     MediaPlayerClient* m_mediaPlayerClient;
@@ -287,14 +263,12 @@ private:
     String m_contentMIMEType;
     String m_contentTypeCodecs;
     String m_keySystem;
-    FrameView* m_frameView;
-    IntSize m_size;
     Preload m_preload;
-    bool m_visible;
     double m_rate;
     double m_volume;
     bool m_muted;
     bool m_contentMIMETypeWasInferredFromExtension;
+    bool m_inDestructor;
 
     RefPtr<WebKitMediaSource> m_mediaSource;
 };

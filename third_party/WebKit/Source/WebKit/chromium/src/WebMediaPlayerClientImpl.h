@@ -95,7 +95,6 @@ public:
     virtual void load(const WTF::String& url);
     virtual void load(const WTF::String& url, PassRefPtr<WebCore::WebKitMediaSource>);
 
-    virtual void cancelLoad();
     virtual WebKit::WebLayer* platformLayer() const;
     virtual void play();
     virtual void pause();

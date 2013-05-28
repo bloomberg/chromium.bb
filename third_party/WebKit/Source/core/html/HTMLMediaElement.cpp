@@ -284,6 +284,11 @@ HTMLMediaElement::~HTMLMediaElement()
 
     removeElementFromDocumentMap(this, document());
 
+    // Destroying the player may cause a resource load to be canceled,
+    // which could result in userCancelledLoad() being called back.
+    // Setting m_completelyLoaded ensures that such a call will not cause
+    // us to dispatch an abort event, which would result in a crash.
+    // See http://crbug.com/233654 for more details.
     m_completelyLoaded = true;
     m_player.clear();
 }
@@ -1392,7 +1397,7 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
     }
 }
 
-void HTMLMediaElement::mediaPlayerNetworkStateChanged(MediaPlayer*)
+void HTMLMediaElement::mediaPlayerNetworkStateChanged()
 {
     beginProcessingMediaPlayerCallback();
     setNetworkState(m_player->networkState());
@@ -1490,7 +1495,7 @@ void HTMLMediaElement::changeNetworkStateFromLoadingToIdle()
     m_networkState = NETWORK_IDLE;
 }
 
-void HTMLMediaElement::mediaPlayerReadyStateChanged(MediaPlayer*)
+void HTMLMediaElement::mediaPlayerReadyStateChanged()
 {
     beginProcessingMediaPlayerCallback();
 
@@ -1610,7 +1615,7 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
         updateActiveTextTrackCues(currentTime());
 }
 
-void HTMLMediaElement::mediaPlayerKeyAdded(MediaPlayer*, const String& keySystem, const String& sessionId)
+void HTMLMediaElement::mediaPlayerKeyAdded(const String& keySystem, const String& sessionId)
 {
     MediaKeyEventInit initializer;
     initializer.keySystem = keySystem;
@@ -1623,7 +1628,7 @@ void HTMLMediaElement::mediaPlayerKeyAdded(MediaPlayer*, const String& keySystem
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
-void HTMLMediaElement::mediaPlayerKeyError(MediaPlayer*, const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode errorCode, unsigned short systemCode)
+void HTMLMediaElement::mediaPlayerKeyError(const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode errorCode, unsigned short systemCode)
 {
     MediaKeyError::Code mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_UNKNOWN;
     switch (errorCode) {
@@ -1660,7 +1665,7 @@ void HTMLMediaElement::mediaPlayerKeyError(MediaPlayer*, const String& keySystem
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
-void HTMLMediaElement::mediaPlayerKeyMessage(MediaPlayer*, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL)
+void HTMLMediaElement::mediaPlayerKeyMessage(const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL)
 {
     MediaKeyEventInit initializer;
     initializer.keySystem = keySystem;
@@ -1675,7 +1680,7 @@ void HTMLMediaElement::mediaPlayerKeyMessage(MediaPlayer*, const String& keySyst
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
-bool HTMLMediaElement::mediaPlayerKeyNeeded(MediaPlayer*, const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength)
+bool HTMLMediaElement::mediaPlayerKeyNeeded(const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength)
 {
     if (!hasEventListeners(eventNames().webkitneedkeyEvent)) {
         m_error = MediaError::create(MediaError::MEDIA_ERR_ENCRYPTED);
@@ -1697,7 +1702,7 @@ bool HTMLMediaElement::mediaPlayerKeyNeeded(MediaPlayer*, const String& keySyste
 }
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
-bool HTMLMediaElement::mediaPlayerKeyNeeded(MediaPlayer*, Uint8Array* initData)
+bool HTMLMediaElement::mediaPlayerKeyNeeded(Uint8Array* initData)
 {
     if (!hasEventListeners("webkitneedkey")) {
         m_error = MediaError::create(MediaError::MEDIA_ERR_ENCRYPTED);
@@ -3034,7 +3039,7 @@ void HTMLMediaElement::sourceWasRemoved(HTMLSourceElement* source)
     }
 }
 
-void HTMLMediaElement::mediaPlayerTimeChanged(MediaPlayer*)
+void HTMLMediaElement::mediaPlayerTimeChanged()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerTimeChanged");
 
@@ -3091,7 +3096,7 @@ void HTMLMediaElement::mediaPlayerTimeChanged(MediaPlayer*)
     endProcessingMediaPlayerCallback();
 }
 
-void HTMLMediaElement::mediaPlayerVolumeChanged(MediaPlayer*)
+void HTMLMediaElement::mediaPlayerVolumeChanged()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerVolumeChanged");
 
@@ -3107,7 +3112,7 @@ void HTMLMediaElement::mediaPlayerVolumeChanged(MediaPlayer*)
     endProcessingMediaPlayerCallback();
 }
 
-void HTMLMediaElement::mediaPlayerMuteChanged(MediaPlayer*)
+void HTMLMediaElement::mediaPlayerMuteChanged()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerMuteChanged");
 
@@ -3117,7 +3122,7 @@ void HTMLMediaElement::mediaPlayerMuteChanged(MediaPlayer*)
     endProcessingMediaPlayerCallback();
 }
 
-void HTMLMediaElement::mediaPlayerDurationChanged(MediaPlayer* player)
+void HTMLMediaElement::mediaPlayerDurationChanged()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerDurationChanged");
 
@@ -3138,7 +3143,7 @@ void HTMLMediaElement::mediaPlayerDurationChanged(MediaPlayer* player)
     endProcessingMediaPlayerCallback();
 }
 
-void HTMLMediaElement::mediaPlayerRateChanged(MediaPlayer*)
+void HTMLMediaElement::mediaPlayerRateChanged()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerRateChanged");
 
@@ -3153,7 +3158,7 @@ void HTMLMediaElement::mediaPlayerRateChanged(MediaPlayer*)
     endProcessingMediaPlayerCallback();
 }
 
-void HTMLMediaElement::mediaPlayerPlaybackStateChanged(MediaPlayer*)
+void HTMLMediaElement::mediaPlayerPlaybackStateChanged()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerPlaybackStateChanged");
 
@@ -3168,7 +3173,7 @@ void HTMLMediaElement::mediaPlayerPlaybackStateChanged(MediaPlayer*)
     endProcessingMediaPlayerCallback();
 }
 
-void HTMLMediaElement::mediaPlayerSawUnsupportedTracks(MediaPlayer*)
+void HTMLMediaElement::mediaPlayerSawUnsupportedTracks()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerSawUnsupportedTracks");
 
@@ -3181,7 +3186,7 @@ void HTMLMediaElement::mediaPlayerSawUnsupportedTracks(MediaPlayer*)
     }
 }
 
-void HTMLMediaElement::mediaPlayerResourceNotSupported(MediaPlayer*)
+void HTMLMediaElement::mediaPlayerResourceNotSupported()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerResourceNotSupported");
 
@@ -3190,7 +3195,7 @@ void HTMLMediaElement::mediaPlayerResourceNotSupported(MediaPlayer*)
 }
 
 // MediaPlayerPresentation methods
-void HTMLMediaElement::mediaPlayerRepaint(MediaPlayer*)
+void HTMLMediaElement::mediaPlayerRepaint()
 {
     beginProcessingMediaPlayerCallback();
     updateDisplayState();
@@ -3199,7 +3204,7 @@ void HTMLMediaElement::mediaPlayerRepaint(MediaPlayer*)
     endProcessingMediaPlayerCallback();
 }
 
-void HTMLMediaElement::mediaPlayerSizeChanged(MediaPlayer*)
+void HTMLMediaElement::mediaPlayerSizeChanged()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerSizeChanged");
 
@@ -3209,7 +3214,7 @@ void HTMLMediaElement::mediaPlayerSizeChanged(MediaPlayer*)
     endProcessingMediaPlayerCallback();
 }
 
-void HTMLMediaElement::mediaPlayerEngineUpdated(MediaPlayer*)
+void HTMLMediaElement::mediaPlayerEngineUpdated()
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerEngineUpdated");
     beginProcessingMediaPlayerCallback();
@@ -3241,7 +3246,8 @@ PassRefPtr<TimeRanges> HTMLMediaElement::played()
 
 PassRefPtr<TimeRanges> HTMLMediaElement::seekable() const
 {
-    return m_player ? m_player->seekable() : TimeRanges::create();
+    double maxSeekable = maxTimeSeekable();
+    return maxSeekable ? TimeRanges::create(0, maxSeekable) : TimeRanges::create();
 }
 
 bool HTMLMediaElement::potentiallyPlaying() const
@@ -4004,6 +4010,11 @@ MediaPlayerClient::CORSMode HTMLMediaElement::mediaPlayerCORSMode() const
 void HTMLMediaElement::removeBehaviorsRestrictionsAfterFirstUserGesture()
 {
     m_restrictions = NoRestrictions;
+}
+
+void HTMLMediaElement::mediaPlayerNeedsStyleRecalc()
+{
+    setNeedsStyleRecalc(WebCore::SyntheticStyleChange);
 }
 
 void HTMLMediaElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

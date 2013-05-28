@@ -98,7 +98,7 @@ public:
 
     virtual void load(const WebURL&, CORSMode) = 0;
     virtual void load(const WebURL&, WebMediaSource*, CORSMode) = 0;
-    virtual void cancelLoad() = 0;
+    virtual void cancelLoad() { } // FIXME: Remove once Chromium no longer overrides
 
     // Playback controls.
     virtual void play() = 0;
