@@ -23,7 +23,6 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
-#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -295,7 +294,6 @@ void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       registry);
   chrome_browser_net::Predictor::RegisterUserPrefs(registry);
   DownloadPrefs::RegisterUserPrefs(registry);
-  extensions::ComponentLoader::RegisterUserPrefs(registry);
   extensions::ExtensionPrefs::RegisterUserPrefs(registry);
   ExtensionWebUI::RegisterUserPrefs(registry);
   first_run::RegisterUserPrefs(registry);

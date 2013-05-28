@@ -1381,19 +1381,11 @@
   },
 
   "EnterpriseWebStoreURL": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "EnterpriseWebStoreURL": "http://example.com/webstore" },
-    "pref_mappings": [
-      { "pref": "webstore.enterprise_store_url" }
-    ]
+    "note": "This policy is retired, see http://crbug.com/178938."
   },
 
   "EnterpriseWebStoreName": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "EnterpriseWebStoreName": "Example Webstore" },
-    "pref_mappings": [
-      { "pref": "webstore.enterprise_store_name" }
-    ]
+    "note": "This policy is retired, see http://crbug.com/178938."
   },
 
   "EnableMemoryInfo": {

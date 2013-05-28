@@ -92,16 +92,6 @@ class ComponentLoaderTest : public testing::Test {
         extension_path_.Append(kManifestFilename),
         &manifest_contents_));
 
-    // Register the user prefs that ComponentLoader will read.
-    prefs_.registry()->RegisterStringPref(
-        prefs::kEnterpriseWebStoreURL,
-        std::string(),
-        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-    prefs_.registry()->RegisterStringPref(
-        prefs::kEnterpriseWebStoreName,
-        std::string(),
-        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
     // Register the local state prefs.
 #if defined(OS_CHROMEOS)
     local_state_.registry()->RegisterBooleanPref(
@@ -258,31 +248,6 @@ TEST_F(ComponentLoaderTest, RemoveAll) {
   // Remove all default extensions.
   component_loader_.RemoveAll();
   EXPECT_EQ(0u, extension_service_.extensions()->size());
-}
-
-TEST_F(ComponentLoaderTest, EnterpriseWebStore) {
-  component_loader_.AddDefaultComponentExtensions(false);
-  component_loader_.LoadAll();
-  unsigned int default_count = extension_service_.extensions()->size();
-
-  // Set the pref, and it should get loaded automatically.
-  extension_service_.set_ready(true);
-  prefs_.SetUserPref(prefs::kEnterpriseWebStoreURL,
-                     Value::CreateStringValue("http://www.google.com"));
-  EXPECT_EQ(default_count + 1, extension_service_.extensions()->size());
-
-  // Now that the pref is set, check if it's added by default.
-  extension_service_.set_ready(false);
-  extension_service_.clear_extensions();
-  component_loader_.ClearAllRegistered();
-  component_loader_.AddDefaultComponentExtensions(false);
-  component_loader_.LoadAll();
-  EXPECT_EQ(default_count + 1, extension_service_.extensions()->size());
-
-  // Number of loaded extensions should be the same after changing the pref.
-  prefs_.SetUserPref(prefs::kEnterpriseWebStoreURL,
-                     Value::CreateStringValue("http://www.google.de"));
-  EXPECT_EQ(default_count + 1, extension_service_.extensions()->size());
 }
 
 TEST_F(ComponentLoaderTest, AddOrReplace) {

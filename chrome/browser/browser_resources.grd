@@ -263,7 +263,6 @@
       <include name="IDR_USER_ACTIONS_CSS" file="resources\user_actions\user_actions.css" type="BINDATA" />
       <include name="IDR_USER_ACTIONS_JS" file="resources\user_actions\user_actions.js" type="BINDATA" />
       <include name="IDR_WEBSTORE_MANIFEST" file="resources\webstore_app\manifest.json" type="BINDATA" />
-      <include name="IDR_ENTERPRISE_WEBSTORE_MANIFEST" file="resources\enterprise_webstore_app\manifest.json" type="BINDATA" />
       <if expr="pp_ifdef('use_ash')">
         <include name="IDR_TASK_MANAGER_HTML" file="resources\task_manager\main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_TASK_MANAGER_COMMANDS_JS" file="resources\task_manager\commands.js" type="BINDATA" />

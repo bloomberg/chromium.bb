@@ -39,9 +39,9 @@
 #endif
 
 using testing::AllOf;
+using testing::AnyNumber;
 using testing::Mock;
 using testing::Property;
-using testing::AnyNumber;
 using testing::Return;
 using testing::_;
 
@@ -435,19 +435,6 @@ void PreferencesBrowserTest::UseDefaultTestPrefs(bool includeListPref) {
   pref_names_.push_back(prefs::kRestoreOnStartup);
   policy_names_.push_back(policy::key::kRestoreOnStartup);
   non_default_values_.push_back(new base::FundamentalValue(4));
-
-  // String pref.
-  types_.push_back("String");
-  pref_names_.push_back(prefs::kEnterpriseWebStoreName);
-  policy_names_.push_back(policy::key::kEnterpriseWebStoreName);
-  non_default_values_.push_back(new base::StringValue("Store"));
-
-  // URL pref.
-  types_.push_back("URL");
-  pref_names_.push_back(prefs::kEnterpriseWebStoreURL);
-  policy_names_.push_back(policy::key::kEnterpriseWebStoreURL);
-  non_default_values_.push_back(
-      new base::StringValue("http://www.google.com/"));
 
   // List pref.
   if (includeListPref) {

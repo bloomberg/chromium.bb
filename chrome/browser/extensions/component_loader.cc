@@ -9,8 +9,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/pref_notifier.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -20,7 +18,6 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/common/id_util.h"
@@ -86,16 +83,7 @@ ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
                                  PrefService* local_state)
     : profile_prefs_(profile_prefs),
       local_state_(local_state),
-      extension_service_(extension_service) {
-  pref_change_registrar_.Init(profile_prefs);
-
-  // This pref is set by policy. We have to watch it for change because on
-  // ChromeOS, policy isn't loaded until after the browser process is started.
-  pref_change_registrar_.Add(
-      prefs::kEnterpriseWebStoreURL,
-      base::Bind(&ComponentLoader::AddOrReloadEnterpriseWebStore,
-                 base::Unretained(this)));
-}
+      extension_service_(extension_service) {}
 
 ComponentLoader::~ComponentLoader() {
   ClearAllRegistered();
@@ -284,33 +272,6 @@ void ComponentLoader::AddImageLoaderExtension() {
 #endif  // defined(IMAGE_LOADER_EXTENSION)
 }
 
-void ComponentLoader::AddOrReloadEnterpriseWebStore() {
-  base::FilePath path(FILE_PATH_LITERAL("enterprise_web_store"));
-
-  // Remove the extension if it was already loaded.
-  Remove(path);
-
-  std::string enterprise_webstore_url =
-      profile_prefs_->GetString(prefs::kEnterpriseWebStoreURL);
-
-  // Load the extension only if the URL preference is set.
-  if (!enterprise_webstore_url.empty()) {
-    std::string manifest_contents =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_ENTERPRISE_WEBSTORE_MANIFEST).as_string();
-
-    // The manifest is missing some values that are provided by policy.
-    DictionaryValue* manifest = ParseManifest(manifest_contents);
-    if (manifest) {
-      std::string name =
-          profile_prefs_->GetString(prefs::kEnterpriseWebStoreName);
-      manifest->SetString("app.launch.web_url", enterprise_webstore_url);
-      manifest->SetString("name", name);
-      Add(manifest, path);
-    }
-  }
-}
-
 void ComponentLoader::AddChromeApp() {
 #if defined(ENABLE_APP_LIST)
   std::string manifest_contents =
@@ -377,13 +338,6 @@ void ComponentLoader::AddDefaultComponentExtensions(
 
   if (!skip_session_components) {
     Add(IDR_WEBSTORE_MANIFEST, base::FilePath(FILE_PATH_LITERAL("web_store")));
-
-    // If a URL for the enterprise webstore has been specified, load the
-    // component extension. This extension might also be loaded later, because
-    // it is specified by policy, and on ChromeOS policies are loaded after
-    // the browser process has started.
-    AddOrReloadEnterpriseWebStore();
-
     AddChromeApp();
   }
 
@@ -485,19 +439,6 @@ void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
         UnloadExtension(component->extension_id,
                         extension_misc::UNLOAD_REASON_DISABLE);
   }
-}
-
-// static
-void ComponentLoader::RegisterUserPrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(
-      prefs::kEnterpriseWebStoreURL,
-      std::string() /* default_value */,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kEnterpriseWebStoreName,
-      std::string() /* default_value */,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace extensions
