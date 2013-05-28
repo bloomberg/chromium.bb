@@ -8,8 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "base/values.h"
 #include "chromeos/network/managed_state.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace chromeos {
 
@@ -42,12 +45,12 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& guid() const { return guid_; }
   const std::string& connection_state() const { return connection_state_; }
   const std::string& profile_path() const { return profile_path_; }
+  const std::string& proxy_config() const { return proxy_config_; }
   const std::string& error() const { return error_; }
   const std::string& error_details() const { return error_details_; }
   bool auto_connect() const { return auto_connect_; }
   bool favorite() const { return favorite_; }
   int priority() const { return priority_; }
-  const base::DictionaryValue& proxy_config() const { return proxy_config_; }
   // Wireless property accessors
   int signal_strength() const { return signal_strength_; }
   bool connectable() const { return connectable_; }
@@ -97,14 +100,12 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string guid_;
   std::string connection_state_;
   std::string profile_path_;
+  std::string proxy_config_;
   std::string error_;
   std::string error_details_;
   bool auto_connect_;
   bool favorite_;
   int priority_;
-  // TODO(pneubeck): Remove this property once NetworkConfigurationHandler
-  // provides proxy configuration. crbug/241775
-  base::DictionaryValue proxy_config_;
   // IPConfig properties.
   // Note: These do not correspond to actual Shill.Service properties
   // but are derived from the service's corresponding IPConfig object.
