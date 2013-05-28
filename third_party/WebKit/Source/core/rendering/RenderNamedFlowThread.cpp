@@ -29,6 +29,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NamedFlow.h"
+#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Position.h"
 #include "core/dom/Range.h"
@@ -400,6 +401,19 @@ void RenderNamedFlowThread::unregisterNamedFlowContentNode(Node* contentNode)
 const AtomicString& RenderNamedFlowThread::flowThreadName() const
 {
     return m_namedFlow->name();
+}
+
+bool RenderNamedFlowThread::isChildAllowed(RenderObject* child, RenderStyle* style) const
+{
+    ASSERT(child);
+    ASSERT(style);
+
+    if (!child->node())
+        return true;
+
+    ASSERT(child->node()->isElementNode());
+    RenderObject* parentRenderer = NodeRenderingContext(child->node()).parentRenderer();
+    return parentRenderer->isChildAllowed(child, style);
 }
 
 void RenderNamedFlowThread::dispatchRegionLayoutUpdateEvent()

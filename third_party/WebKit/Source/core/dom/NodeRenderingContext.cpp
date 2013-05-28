@@ -255,6 +255,7 @@ void NodeRenderingContext::createRendererForElementIfNeeded()
     RenderObject* newRenderer = element->createRenderer(document->renderArena(), m_style.get());
     if (!newRenderer)
         return;
+
     if (!parentRenderer->isChildAllowed(newRenderer, m_style.get())) {
         newRenderer->destroy();
         return;
