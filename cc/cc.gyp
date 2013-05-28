@@ -84,6 +84,7 @@
       'input/top_controls_manager.h',
       'input/top_controls_manager_client.h',
       'layers/append_quads_data.h',
+      'layers/compositing_reasons.h',
       'layers/content_layer.cc',
       'layers/content_layer.h',
       'layers/content_layer_client.h',

@@ -9,6 +9,7 @@
 #include "cc/base/region.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_position_constraint.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositingReasons.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerPositionConstraint.h"
@@ -168,6 +169,11 @@ void WebLayerImpl::setFilter(SkImageFilter* filter) {
 void WebLayerImpl::setDebugName(WebKit::WebString name) {
   layer_->SetDebugName(
       UTF16ToASCII(base::string16(name.data(), name.length())));
+}
+
+void WebLayerImpl::setCompositingReasons(
+    WebKit::WebCompositingReasons reasons) {
+  layer_->SetCompositingReasons(reasons);
 }
 
 void WebLayerImpl::setAnimationDelegate(
