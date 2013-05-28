@@ -23,34 +23,22 @@ CaptivePortalWindowProxy::CaptivePortalWindowProxy(Delegate* delegate,
     : delegate_(delegate),
       widget_(NULL),
       parent_(parent) {
+  DCHECK(GetState() == STATE_IDLE);
 }
 
 CaptivePortalWindowProxy::~CaptivePortalWindowProxy() {
-  if (widget_) {
-    widget_->RemoveObserver(this);
-    widget_->Close();
-  }
+  if (!widget_)
+    return;
+  DCHECK(GetState() == STATE_DISPLAYED);
+  widget_->RemoveObserver(this);
+  widget_->Close();
 }
 
 void CaptivePortalWindowProxy::ShowIfRedirected() {
-  if (widget_) {
-    // Invalid state as when widget is created (Show())
-    // CaptivePortalView ownership is transferred to it.
-    if (captive_portal_view_.get()) {
-      NOTREACHED();
-    }
-    // Dialog is already shown, no need to reload.
+  if (GetState() != STATE_IDLE)
     return;
-  }
-
-  // Dialog is not initialized yet.
-  if (!captive_portal_view_.get()) {
-    captive_portal_view_.reset(
-        new CaptivePortalView(ProfileHelper::GetSigninProfile(), this));
-  }
-
-  // If dialog has been created (but not shown) previously, force reload.
-  captive_portal_view_->StartLoad();
+  InitCaptivePortalView();
+  DCHECK(GetState() == STATE_WAITING_FOR_REDIRECTION);
 }
 
 void CaptivePortalWindowProxy::Show() {
@@ -60,10 +48,10 @@ void CaptivePortalWindowProxy::Show() {
     return;
   }
 
-  if (!captive_portal_view_.get() || widget_) {
-    // Dialog is already shown, do nothing.
+  if (GetState() == STATE_DISPLAYED)  // Dialog is already shown, do nothing.
     return;
-  }
+
+  InitCaptivePortalView();
 
   CaptivePortalView* captive_portal_view = captive_portal_view_.release();
   widget_ = views::Widget::CreateWindowWithParent(
@@ -77,18 +65,18 @@ void CaptivePortalWindowProxy::Show() {
 
   widget_->AddObserver(this);
   widget_->Show();
+  DCHECK(GetState() == STATE_DISPLAYED);
 }
 
 void CaptivePortalWindowProxy::Close() {
-  if (widget_) {
+  if (GetState() == STATE_DISPLAYED)
     widget_->Close();
-  } else {
-    captive_portal_view_.reset();
-  }
+  captive_portal_view_.reset();
 }
 
 void CaptivePortalWindowProxy::OnRedirected() {
-  Show();
+  if (GetState() == STATE_WAITING_FOR_REDIRECTION)
+    Show();
   delegate_->OnPortalDetected();
 }
 
@@ -96,11 +84,39 @@ void CaptivePortalWindowProxy::OnOriginalURLLoaded() {
   Close();
 }
 
-void CaptivePortalWindowProxy::OnWidgetDestroying(views::Widget* widget) {
+void CaptivePortalWindowProxy::OnWidgetClosing(views::Widget* widget) {
+  DCHECK(GetState() == STATE_DISPLAYED);
   DCHECK(widget == widget_);
-  DCHECK(captive_portal_view_.get() == NULL);
+
   widget->RemoveObserver(this);
   widget_ = NULL;
+
+  DCHECK(GetState() == STATE_IDLE);
+}
+
+void CaptivePortalWindowProxy::InitCaptivePortalView() {
+  DCHECK(GetState() == STATE_IDLE ||
+         GetState() == STATE_WAITING_FOR_REDIRECTION);
+  if (!captive_portal_view_.get()) {
+    captive_portal_view_.reset(
+        new CaptivePortalView(ProfileHelper::GetSigninProfile(), this));
+  }
+  captive_portal_view_->StartLoad();
+}
+
+CaptivePortalWindowProxy::State CaptivePortalWindowProxy::GetState() const {
+  if (widget_ == NULL) {
+    if (captive_portal_view_.get() == NULL)
+      return STATE_IDLE;
+    else
+      return STATE_WAITING_FOR_REDIRECTION;
+  } else {
+    if (captive_portal_view_.get() == NULL)
+      return STATE_DISPLAYED;
+    else
+      NOTREACHED();
+  }
+  return STATE_UNKNOWN;
 }
 
 }  // namespace chromeos

@@ -58,9 +58,35 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   void OnOriginalURLLoaded();
 
   // Overridden from views::WidgetObserver:
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
  private:
+  friend class CaptivePortalWindowTest;
+
+  // Possible transitions between states:
+  //
+  // wp(ShowIfRedirected(), WAITING_FOR_REDIRECTION) = IDLE
+  // wp(Show(), DISPLAYED) = IDLE | WAITING_FOR_REDIRECTION
+  // wp(Close(), IDLE) = WAITING_FOR_REDIRECTION | DISPLAYED
+  // wp(OnRedirected(), DISPLAYED) = WAITING_FOR_REDIRECTION
+  // wp(OnOriginalURLLoaded(), IDLE) = WAITING_FOR_REDIRECTION | DISPLAYED
+  //
+  // where wp(E, S) is a weakest precondition (initial state) such
+  // that after execution of E the system will be surely in the state S.
+  enum State {
+    STATE_IDLE = 0,
+    STATE_WAITING_FOR_REDIRECTION,
+    STATE_DISPLAYED,
+    STATE_UNKNOWN
+  };
+
+  // Initializes |captive_portal_view_| if it is not initialized and
+  // starts loading Captive Portal redirect URL.
+  void InitCaptivePortalView();
+
+  // Returns symbolic state name based on internal state.
+  State GetState() const;
+
   Delegate* delegate_;
   views::Widget* widget_;
   scoped_ptr<CaptivePortalView> captive_portal_view_;

@@ -403,6 +403,7 @@
             'browser/chromeos/input_method/textinput_surroundingtext_browsertest.cc',
             'browser/chromeos/input_method/textinput_test_helper.cc',
             'browser/chromeos/input_method/textinput_test_helper.h',
+            'browser/chromeos/login/captive_portal_window_browsertest.cc',
             'browser/chromeos/login/eula_browsertest.cc',
             'browser/chromeos/login/login_browsertest.cc',
             'browser/chromeos/login/mock_authenticator.cc',
