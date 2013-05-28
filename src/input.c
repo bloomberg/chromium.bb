@@ -593,7 +593,7 @@ clip_pointer_motion(struct weston_seat *seat, wl_fixed_t *fx, wl_fixed_t *fy)
 						prev->width - 1);
 		if (y < prev->y)
 			*fy = wl_fixed_from_int(prev->y);
-		else if (y >= prev->y + prev->current->height)
+		else if (y >= prev->y + prev->height)
 			*fy = wl_fixed_from_int(prev->y +
 						prev->height - 1);
 	}
