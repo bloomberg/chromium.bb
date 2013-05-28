@@ -26,7 +26,7 @@ FAIL WebVTT parser tests, header-space.vtt assert_equals: number of cues expecte
 FAIL WebVTT parser tests, header-tab.vtt assert_equals: number of cues expected 1 but got 0
 PASS WebVTT parser tests, ids.vtt 
 FAIL WebVTT parser tests, arrows.vtt assert_equals: number of cues expected 6 but got 0
-FAIL WebVTT parser tests, space-chars.vtt assert_equals: number of cues expected 3 but got 2
+PASS WebVTT parser tests, space-chars.vtt 
 PASS WebVTT parser tests, timings-garbage.vtt 
 PASS WebVTT parser tests, timings-too-short.vtt 
 PASS WebVTT parser tests, timings-too-long.vtt 
