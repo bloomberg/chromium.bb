@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_export.h"
+#include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
 
 namespace message_center {
@@ -39,7 +40,8 @@ class MESSAGE_CENTER_EXPORT Notification {
                const string16& message,
                const string16& display_source,
                const std::string& extension_id,
-               const DictionaryValue* optional_fields);  // May be NULL.
+               const DictionaryValue* optional_fields,  // May be NULL.
+               NotificationDelegate* delegate);         // May be NULL.
   virtual ~Notification();
 
   // Copies the internal on-memory state from |base|, i.e. shown_as_popup,
@@ -89,6 +91,7 @@ class MESSAGE_CENTER_EXPORT Notification {
   unsigned serial_number() { return serial_number_; }
 
   bool never_timeout() const { return never_timeout_; }
+  NotificationDelegate* delegate() { return delegate_.get(); }
 
  private:
   // Unpacks the provided |optional_fields| and applies the values to override
@@ -113,6 +116,10 @@ class MESSAGE_CENTER_EXPORT Notification {
   bool is_read_;  // True if this has been seen in the message center.
   bool is_expanded_;  // True if this has been expanded in the message center.
   bool never_timeout_; // True if it doesn't timeout when it appears as a toast.
+
+  // A proxy object that allows access back to the JavaScript object that
+  // represents the notification, for firing events.
+  scoped_refptr<NotificationDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(Notification);
 };

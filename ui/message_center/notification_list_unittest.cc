@@ -33,11 +33,14 @@ class NotificationListTest : public testing::Test {
   std::string AddNotification(const base::DictionaryValue* optional_fields) {
     std::string new_id = base::StringPrintf(kIdFormat, counter_);
     notification_list_->AddNotification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, new_id,
+        message_center::NOTIFICATION_TYPE_SIMPLE,
+        new_id,
         UTF8ToUTF16(base::StringPrintf(kTitleFormat, counter_)),
         UTF8ToUTF16(base::StringPrintf(kMessageFormat, counter_)),
-        UTF8ToUTF16(kDisplaySource), kExtensionId,
-        optional_fields);
+        UTF8ToUTF16(kDisplaySource),
+        kExtensionId,
+        optional_fields,
+        NULL);
     counter_++;
     return new_id;
   }
@@ -161,8 +164,12 @@ TEST_F(NotificationListTest, UpdateNotification) {
   std::string id0 = AddNotification(NULL);
   std::string replaced = id0 + "_replaced";
   EXPECT_EQ(1u, notification_list()->NotificationCount());
-  notification_list()->UpdateNotificationMessage(
-      id0, replaced, UTF8ToUTF16("newtitle"), UTF8ToUTF16("newbody"), NULL);
+  notification_list()->UpdateNotificationMessage(id0,
+                                                 replaced,
+                                                 UTF8ToUTF16("newtitle"),
+                                                 UTF8ToUTF16("newbody"),
+                                                 NULL,
+                                                 NULL);
   EXPECT_EQ(1u, notification_list()->NotificationCount());
   const NotificationList::Notifications& notifications =
       notification_list()->GetNotifications();
@@ -172,18 +179,38 @@ TEST_F(NotificationListTest, UpdateNotification) {
 }
 
 TEST_F(NotificationListTest, GetNotificationsBySourceOrExtensions) {
-  notification_list()->AddNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, "id0", UTF8ToUTF16("title0"),
-      UTF8ToUTF16("message0"), UTF8ToUTF16("source0"), "ext0", NULL);
-  notification_list()->AddNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, "id1", UTF8ToUTF16("title1"),
-      UTF8ToUTF16("message1"), UTF8ToUTF16("source0"), "ext0", NULL);
-  notification_list()->AddNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, "id2", UTF8ToUTF16("title1"),
-      UTF8ToUTF16("message1"), UTF8ToUTF16("source1"), "ext0", NULL);
-  notification_list()->AddNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, "id3", UTF8ToUTF16("title1"),
-      UTF8ToUTF16("message1"), UTF8ToUTF16("source2"), "ext1", NULL);
+  notification_list()->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                                       "id0",
+                                       UTF8ToUTF16("title0"),
+                                       UTF8ToUTF16("message0"),
+                                       UTF8ToUTF16("source0"),
+                                       "ext0",
+                                       NULL,
+                                       NULL);
+  notification_list()->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                                       "id1",
+                                       UTF8ToUTF16("title1"),
+                                       UTF8ToUTF16("message1"),
+                                       UTF8ToUTF16("source0"),
+                                       "ext0",
+                                       NULL,
+                                       NULL);
+  notification_list()->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                                       "id2",
+                                       UTF8ToUTF16("title1"),
+                                       UTF8ToUTF16("message1"),
+                                       UTF8ToUTF16("source1"),
+                                       "ext0",
+                                       NULL,
+                                       NULL);
+  notification_list()->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                                       "id3",
+                                       UTF8ToUTF16("title1"),
+                                       UTF8ToUTF16("message1"),
+                                       UTF8ToUTF16("source2"),
+                                       "ext1",
+                                       NULL,
+                                       NULL);
 
   NotificationList::Notifications by_source =
       notification_list()->GetNotificationsBySource("id0");
@@ -281,9 +308,12 @@ TEST_F(NotificationListTest, PriorityPromotion) {
   EXPECT_EQ(0u, GetPopupCounts());
   base::DictionaryValue optional;
   optional.SetInteger(message_center::kPriorityKey, 1);
-  notification_list()->UpdateNotificationMessage(
-      id0, replaced, UTF8ToUTF16("newtitle"), UTF8ToUTF16("newbody"),
-      &optional);
+  notification_list()->UpdateNotificationMessage(id0,
+                                                 replaced,
+                                                 UTF8ToUTF16("newtitle"),
+                                                 UTF8ToUTF16("newbody"),
+                                                 &optional,
+                                                 NULL);
   EXPECT_EQ(1u, notification_list()->NotificationCount());
   EXPECT_EQ(1u, GetPopupCounts());
   const NotificationList::Notifications& notifications =
@@ -305,26 +335,31 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
   base::DictionaryValue priority_default;
   priority_default.SetInteger(message_center::kPriorityKey,
                               static_cast<int>(DEFAULT_PRIORITY));
-  notification_list()->UpdateNotificationMessage(
-      id0, id0, UTF8ToUTF16("newtitle"), UTF8ToUTF16("newbody"),
-      &priority_default);
+  notification_list()->UpdateNotificationMessage(id0,
+                                                 id0,
+                                                 UTF8ToUTF16("newtitle"),
+                                                 UTF8ToUTF16("newbody"),
+                                                 &priority_default,
+                                                 NULL);
   EXPECT_EQ(1u, GetPopupCounts());
   notification_list()->MarkSinglePopupAsShown(id0, true);
   EXPECT_EQ(0u, GetPopupCounts());
 
   // update with no promotion change for id0, it won't appear as a toast.
   notification_list()->UpdateNotificationMessage(
-      id0, id0, UTF8ToUTF16("newtitle2"), UTF8ToUTF16("newbody2"),
-      NULL);
+      id0, id0, UTF8ToUTF16("newtitle2"), UTF8ToUTF16("newbody2"), NULL, NULL);
   EXPECT_EQ(0u, GetPopupCounts());
 
   // id1 promoted to DEFAULT->HIGH, it'll appear as toast (popup).
   base::DictionaryValue priority_high;
   priority_high.SetInteger(message_center::kPriorityKey,
                            static_cast<int>(HIGH_PRIORITY));
-  notification_list()->UpdateNotificationMessage(
-      id1, id1, UTF8ToUTF16("newtitle"), UTF8ToUTF16("newbody"),
-      &priority_high);
+  notification_list()->UpdateNotificationMessage(id1,
+                                                 id1,
+                                                 UTF8ToUTF16("newtitle"),
+                                                 UTF8ToUTF16("newbody"),
+                                                 &priority_high,
+                                                 NULL);
   EXPECT_EQ(1u, GetPopupCounts());
   notification_list()->MarkSinglePopupAsShown(id1, true);
   EXPECT_EQ(0u, GetPopupCounts());
@@ -333,17 +368,23 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
   base::DictionaryValue priority_max;
   priority_max.SetInteger(message_center::kPriorityKey,
                           static_cast<int>(MAX_PRIORITY));
-  notification_list()->UpdateNotificationMessage(
-      id1, id1, UTF8ToUTF16("newtitle2"), UTF8ToUTF16("newbody2"),
-      &priority_max);
+  notification_list()->UpdateNotificationMessage(id1,
+                                                 id1,
+                                                 UTF8ToUTF16("newtitle2"),
+                                                 UTF8ToUTF16("newbody2"),
+                                                 &priority_max,
+                                                 NULL);
   EXPECT_EQ(1u, GetPopupCounts());
   notification_list()->MarkSinglePopupAsShown(id1, true);
   EXPECT_EQ(0u, GetPopupCounts());
 
   // id1 demoted to MAX->DEFAULT, no appearing as toast.
-  notification_list()->UpdateNotificationMessage(
-      id1, id1, UTF8ToUTF16("newtitle3"), UTF8ToUTF16("newbody3"),
-      &priority_default);
+  notification_list()->UpdateNotificationMessage(id1,
+                                                 id1,
+                                                 UTF8ToUTF16("newtitle3"),
+                                                 UTF8ToUTF16("newbody3"),
+                                                 &priority_default,
+                                                 NULL);
   EXPECT_EQ(0u, GetPopupCounts());
 }
 
@@ -472,8 +513,12 @@ TEST_F(NotificationListTest, UpdateAfterMarkedAsShown) {
   EXPECT_TRUE(n1->is_read());
 
   const std::string replaced("test-replaced-id");
-  notification_list()->UpdateNotificationMessage(
-      id1, replaced, UTF8ToUTF16("newtitle"), UTF8ToUTF16("newbody"), NULL);
+  notification_list()->UpdateNotificationMessage(id1,
+                                                 replaced,
+                                                 UTF8ToUTF16("newtitle"),
+                                                 UTF8ToUTF16("newbody"),
+                                                 NULL,
+                                                 NULL);
   n1 = GetNotification(id1);
   EXPECT_TRUE(n1 == NULL);
   const Notification* nr = GetNotification(replaced);

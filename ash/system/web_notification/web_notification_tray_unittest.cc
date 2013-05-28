@@ -63,15 +63,18 @@ class WebNotificationTrayTest : public test::AshTestBase {
         ASCIIToUTF16("Notification message body."),
         ASCIIToUTF16("www.test.org"),
         "" /* extension id */,
-        NULL /* optional_fields */);
+        NULL /* optional_fields */,
+        NULL /* delegate */);
   }
 
   void UpdateNotification(const std::string& old_id,
                           const std::string& new_id) {
     GetMessageCenter()->UpdateNotification(
-        old_id, new_id,
+        old_id,
+        new_id,
         ASCIIToUTF16("Updated Web Notification"),
         ASCIIToUTF16("Updated message body."),
+        NULL,
         NULL);
   }
 

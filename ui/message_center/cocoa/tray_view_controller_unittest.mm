@@ -42,6 +42,7 @@ TEST_F(TrayViewControllerTest, AddRemoveOne) {
                            ASCIIToUTF16("This is a simple test."),
                            string16(),
                            std::string(),
+                           NULL,
                            NULL);
   [tray_ onMessageCenterTrayChanged];
   ASSERT_EQ(1u, [[view subviews] count]);
@@ -71,6 +72,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
                            ASCIIToUTF16("This is a simple test."),
                            string16(),
                            std::string(),
+                           NULL,
                            NULL);
   center_->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
                            "2",
@@ -78,6 +80,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
                            ASCIIToUTF16("This is a simple test."),
                            string16(),
                            std::string(),
+                           NULL,
                            NULL);
   center_->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
                            "3",
@@ -85,6 +88,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
                            ASCIIToUTF16("This is a simple test."),
                            string16(),
                            std::string(),
+                           NULL,
                            NULL);
   [tray_ onMessageCenterTrayChanged];
   ASSERT_EQ(3u, [[view subviews] count]);
@@ -112,6 +116,7 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
                            ASCIIToUTF16("This is a simple test."),
                            string16(),
                            std::string(),
+                           NULL,
                            NULL);
   [tray_ onMessageCenterTrayChanged];
 
@@ -127,6 +132,7 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
                            ASCIIToUTF16("This is a simple test."),
                            string16(),
                            std::string(),
+                           NULL,
                            NULL);
   [tray_ onMessageCenterTrayChanged];
   EXPECT_FALSE([[tray_ clearAllButton] isHidden]);

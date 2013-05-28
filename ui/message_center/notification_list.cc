@@ -71,17 +71,22 @@ void NotificationList::SetMessageCenterVisible(
   }
 }
 
-void NotificationList::AddNotification(
-    NotificationType type,
-    const std::string& id,
-    const string16& title,
-    const string16& message,
-    const string16& display_source,
-    const std::string& extension_id,
-    const DictionaryValue* optional_fields) {
-  scoped_ptr<Notification> notification(
-      new Notification(type, id, title, message, display_source, extension_id,
-          optional_fields));
+void NotificationList::AddNotification(NotificationType type,
+                                       const std::string& id,
+                                       const string16& title,
+                                       const string16& message,
+                                       const string16& display_source,
+                                       const std::string& extension_id,
+                                       const DictionaryValue* optional_fields,
+                                       NotificationDelegate* delegate) {
+  scoped_ptr<Notification> notification(new Notification(type,
+                                                         id,
+                                                         title,
+                                                         message,
+                                                         display_source,
+                                                         extension_id,
+                                                         optional_fields,
+                                                         delegate));
   PushNotification(notification.Pass());
 }
 
@@ -90,7 +95,8 @@ void NotificationList::UpdateNotificationMessage(
     const std::string& new_id,
     const string16& title,
     const string16& message,
-    const base::DictionaryValue* optional_fields) {
+    const base::DictionaryValue* optional_fields,
+    NotificationDelegate* delegate) {
   Notifications::iterator iter = GetNotification(old_id);
   if (iter == notifications_.end())
     return;
@@ -104,7 +110,8 @@ void NotificationList::UpdateNotificationMessage(
                        message,
                        (*iter)->display_source(),
                        (*iter)->extension_id(),
-                       optional_fields));
+                       optional_fields,
+                       delegate));
   notification->CopyState(*iter);
 
   // Handles priority promotion. If the notification is already dismissed but
@@ -283,6 +290,14 @@ void NotificationList::MarkNotificationAsExpanded(const std::string& id) {
   Notifications::iterator iter = GetNotification(id);
   if (iter != notifications_.end())
     (*iter)->set_is_expanded(true);
+}
+
+NotificationDelegate* NotificationList::GetNotificationDelegate(
+    const std::string& id) {
+  Notifications::iterator iter = GetNotification(id);
+  if (iter == notifications_.end())
+    return NULL;
+  return (*iter)->delegate();
 }
 
 void NotificationList::SetQuietMode(bool quiet_mode) {

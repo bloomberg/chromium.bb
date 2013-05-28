@@ -348,17 +348,18 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
 
   } else if (sender == show_web_notification_) {
     ash::Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget()
-        ->web_notification_tray()->message_center()->AddNotification(
-            message_center::NOTIFICATION_TYPE_SIMPLE,
-            "id0",
-            ASCIIToUTF16("Test Shell Web Notification"),
-            ASCIIToUTF16("Notification message body."),
-            ASCIIToUTF16("www.testshell.org"),
-            "" /* extension id */,
-            NULL /* optional_fields */);
+        ->web_notification_tray()->message_center()
+        ->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                          "id0",
+                          ASCIIToUTF16("Test Shell Web Notification"),
+                          ASCIIToUTF16("Notification message body."),
+                          ASCIIToUTF16("www.testshell.org"),
+                          "" /* extension id */,
+                          NULL /* optional_fields */,
+                          NULL /* delegate */);
   }
 #if !defined(OS_MACOSX)
-  else if (sender == examples_button_) {
+      else if (sender == examples_button_) {
     views::examples::ShowExamplesWindowWithContent(
         views::examples::DO_NOTHING_ON_CLOSE,
         ash::Shell::GetInstance()->browser_context());

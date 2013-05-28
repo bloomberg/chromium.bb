@@ -29,20 +29,22 @@ Notification::Notification(NotificationType type,
                            const string16& message,
                            const string16& display_source,
                            const std::string& extension_id,
-                           const DictionaryValue* optional_fields)
- : type_(type),
-   id_(id),
-   title_(title),
-   message_(message),
-   display_source_(display_source),
-   extension_id_(extension_id),
-   priority_(DEFAULT_PRIORITY),
-   timestamp_(base::Time::Now()),
-   serial_number_(g_next_serial_number_++),
-   shown_as_popup_(false),
-   is_read_(false),
-   is_expanded_(false),
-   never_timeout_(false) {
+                           const DictionaryValue* optional_fields,
+                           NotificationDelegate* delegate)
+    : type_(type),
+      id_(id),
+      title_(title),
+      message_(message),
+      display_source_(display_source),
+      extension_id_(extension_id),
+      priority_(DEFAULT_PRIORITY),
+      timestamp_(base::Time::Now()),
+      serial_number_(g_next_serial_number_++),
+      shown_as_popup_(false),
+      is_read_(false),
+      is_expanded_(false),
+      never_timeout_(false),
+      delegate_(delegate) {
   // This can override some data members initialized to deafule values above.
   ApplyOptionalFields(optional_fields);
 }
@@ -55,6 +57,8 @@ void Notification::CopyState(Notification* base) {
   is_read_ = base->is_read();
   is_expanded_ = base->is_expanded();
   never_timeout_ = base->never_timeout();
+  if (!delegate_.get())
+    delegate_ = base->delegate();
 }
 
 bool Notification::SetButtonIcon(size_t index, const gfx::Image& icon) {

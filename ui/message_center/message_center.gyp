@@ -40,6 +40,8 @@
         'message_center.cc',
         'message_center.h',
         'message_center_export.h',
+        'notification_delegate.cc',
+        'notification_delegate.h',
         'message_center_impl.cc',
         'message_center_impl.h',
         'message_center_observer.h',

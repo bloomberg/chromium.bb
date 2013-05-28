@@ -64,7 +64,9 @@ bool MessageCenterImpl::IsQuietMode() const {
 }
 
 bool MessageCenterImpl::HasClickedListener(const std::string& id) {
-  return delegate_ && delegate_->HasClickedListener(id);
+  NotificationDelegate* delegate =
+      notification_list_->GetNotificationDelegate(id);
+  return delegate && delegate->HasClickedListener();
 }
 
 const NotificationList::Notifications& MessageCenterImpl::GetNotifications() {
@@ -86,13 +88,20 @@ void MessageCenterImpl::AddNotification(
     const string16& message,
     const string16& display_source,
     const std::string& extension_id,
-    const base::DictionaryValue* optional_fields) {
+    const base::DictionaryValue* optional_fields,
+    NotificationDelegate* delegate) {
   // Sometimes the notification can be added with the same id and the
   // |notification_list| will replace the notification instead of adding new.
   // This is essentially an update rather than addition.
   bool already_exists = notification_list_->HasNotification(id);
-  notification_list_->AddNotification(type, id, title, message, display_source,
-                                      extension_id, optional_fields);
+  notification_list_->AddNotification(type,
+                                      id,
+                                      title,
+                                      message,
+                                      display_source,
+                                      extension_id,
+                                      optional_fields,
+                                      delegate);
   if (already_exists) {
     FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
                       OnNotificationUpdated(id));
@@ -107,9 +116,10 @@ void MessageCenterImpl::UpdateNotification(
     const std::string& new_id,
     const string16& title,
     const string16& message,
-    const base::DictionaryValue* optional_fields) {
+    const base::DictionaryValue* optional_fields,
+    NotificationDelegate* delegate) {
   notification_list_->UpdateNotificationMessage(
-      old_id, new_id, title, message, optional_fields);
+      old_id, new_id, title, message, optional_fields, delegate);
   if (old_id == new_id) {
     FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
                       OnNotificationUpdated(new_id));
@@ -233,8 +243,12 @@ void MessageCenterImpl::ClickOnNotification(const std::string& id) {
     return;
   if (HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
-  FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
-                    OnNotificationClicked(id));
+  NotificationDelegate* delegate =
+      notification_list_->GetNotificationDelegate(id);
+  if (delegate)
+    delegate->Click();
+  FOR_EACH_OBSERVER(
+      MessageCenterObserver, observer_list_, OnNotificationClicked(id));
 }
 
 void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
@@ -243,8 +257,13 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
     return;
   if (HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
-  FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
-                    OnNotificationButtonClicked(id, button_index));
+  NotificationDelegate* delegate =
+      notification_list_->GetNotificationDelegate(id);
+  if (delegate)
+    delegate->ButtonClick(button_index);
+  FOR_EACH_OBSERVER(
+      MessageCenterObserver, observer_list_, OnNotificationButtonClicked(
+          id, button_index));
 }
 
 void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
@@ -262,8 +281,12 @@ void MessageCenterImpl::DisplayedNotification(const std::string& id) {
 
   if (HasPopupNotifications())
     notification_list_->MarkSinglePopupAsDisplayed(id);
-  FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
-                    OnNotificationDisplayed(id));
+  NotificationDelegate* delegate =
+      notification_list_->GetNotificationDelegate(id);
+  if (delegate)
+    delegate->Display();
+  FOR_EACH_OBSERVER(
+      MessageCenterObserver, observer_list_, OnNotificationDisplayed(id));
 }
 
 void MessageCenterImpl::SetQuietMode(bool in_quiet_mode) {

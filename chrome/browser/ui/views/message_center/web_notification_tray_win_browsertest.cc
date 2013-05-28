@@ -43,7 +43,7 @@ class WebNotificationTrayWinTest : public InProcessBrowserTest {
   }
 
  protected:
-  class TestNotificationDelegate : public NotificationDelegate {
+  class TestNotificationDelegate : public ::NotificationDelegate {
    public:
     explicit TestNotificationDelegate(std::string id) : id_(id) {}
     virtual void Display() {}

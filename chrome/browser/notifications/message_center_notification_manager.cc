@@ -151,7 +151,8 @@ bool MessageCenterNotificationManager::UpdateNotification(
                                           notification.notification_id(),
                                           notification.title(),
                                           notification.body(),
-                                          notification.optional_fields());
+                                          notification.optional_fields(),
+                                          notification.delegate());
       new_notification->StartDownloads();
       return true;
     }
@@ -228,14 +229,6 @@ void MessageCenterNotificationManager::ShowSettingsDialog(
   settings_controller_->ShowSettingsDialog(context);
 }
 
-bool MessageCenterNotificationManager::HasClickedListener(
-    const std::string& notification_id) {
-  ProfileNotification* profile_notification =
-      FindProfileNotification(notification_id);
-  return profile_notification &&
-      profile_notification->notification().HasClickedListener();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // MessageCenter::Observer
 void MessageCenterNotificationManager::OnNotificationRemoved(
@@ -248,30 +241,6 @@ void MessageCenterNotificationManager::OnNotificationRemoved(
       profile_notifications_.find(notification_id);
   if (iter != profile_notifications_.end())
     RemoveProfileNotification(iter->second, by_user);
-}
-
-void MessageCenterNotificationManager::OnNotificationClicked(
-    const std::string& notification_id) {
-  ProfileNotification* profile_notification =
-      FindProfileNotification(notification_id);
-  if (!profile_notification)
-    return;
-  profile_notification->notification().Click();
-}
-
-void MessageCenterNotificationManager::OnNotificationButtonClicked(
-    const std::string& notification_id,
-    int button_index) {
-  ProfileNotification* profile_notification =
-      FindProfileNotification(notification_id);
-  if (!profile_notification)
-    return;
-  profile_notification->notification().ButtonClick(button_index);
-}
-
-void MessageCenterNotificationManager::OnNotificationDisplayed(
-    const std::string& notification_id) {
-  FindProfileNotification(notification_id)->notification().Display();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -473,7 +442,8 @@ void MessageCenterNotificationManager::AddProfileNotification(
                                    notification.body(),
                                    notification.display_source(),
                                    profile_notification->GetExtensionId(),
-                                   notification.optional_fields());
+                                   notification.optional_fields(),
+                                   notification.delegate());
   profile_notification->StartDownloads();
 }
 

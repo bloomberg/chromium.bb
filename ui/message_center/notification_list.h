@@ -22,6 +22,9 @@ class DictionaryValue;
 }
 
 namespace message_center {
+
+class NotificationDelegate;
+
 namespace test {
 class NotificationListTest;
 }
@@ -61,13 +64,15 @@ class MESSAGE_CENTER_EXPORT NotificationList {
                        const string16& message,
                        const string16& display_source,
                        const std::string& extension_id,
-                       const base::DictionaryValue* optional_fields);
+                       const base::DictionaryValue* optional_fields,
+                       NotificationDelegate* delegate);
 
   void UpdateNotificationMessage(const std::string& old_id,
                                  const std::string& new_id,
                                  const string16& title,
                                  const string16& message,
-                                 const base::DictionaryValue* optional_fields);
+                                 const base::DictionaryValue* optional_fields,
+                                 NotificationDelegate* delegate);
 
   void RemoveNotification(const std::string& id);
 
@@ -114,6 +119,8 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   // Marks the specified notification as expanded in the notification center.
   void MarkNotificationAsExpanded(const std::string& id);
+
+  NotificationDelegate* GetNotificationDelegate(const std::string& id);
 
   bool quiet_mode() const { return quiet_mode_; }
 

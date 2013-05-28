@@ -54,6 +54,7 @@ class PopupCollectionTest : public ui::CocoaTest {
                                           " be displayed"),
                              string16(),
                              std::string(),
+                             NULL,
                              NULL);
     center_->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
                              "2",
@@ -61,6 +62,7 @@ class PopupCollectionTest : public ui::CocoaTest {
                              ASCIIToUTF16("This is the second notification."),
                              string16(),
                              std::string(),
+                             NULL,
                              NULL);
     center_->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
                              "3",
@@ -72,6 +74,7 @@ class PopupCollectionTest : public ui::CocoaTest {
                                           "set the screen size too small."),
                              string16(),
                              std::string(),
+                             NULL,
                              NULL);
 
     WaitForAnimationEnded();
@@ -127,6 +130,7 @@ TEST_F(PopupCollectionTest, AttemptFourOneOffscreen) {
                            ASCIIToUTF16("This is the fourth notification."),
                            string16(),
                            std::string(),
+                           NULL,
                            NULL);
   WaitForAnimationEnded();
 
@@ -172,7 +176,8 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
                            ASCIIToUTF16("This is the fourth notification."),
                            string16(),
                            std::string(),
-                           optional.get());
+                           optional.get(),
+                           NULL);
   WaitForAnimationEnded();
   EXPECT_TRUE(CheckSpacingBetween([popups objectAtIndex:2],
                                   [popups objectAtIndex:3]));
@@ -205,6 +210,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
                                         " be displayed"),
                            string16(),
                            std::string(),
+                           NULL,
                            NULL);
   WaitForAnimationEnded();
   EXPECT_EQ(1u, [[collection_ popups] count]);
@@ -221,6 +227,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
                                            "very very very very very very very "
                                            "very very very very very very very "
                                            "long notification."),
+                              NULL,
                               NULL);
   WaitForAnimationEnded();
   EXPECT_EQ(0u, [[collection_ popups] count]);
@@ -260,6 +267,7 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
                                         "longer body"),
                            string16(),
                            std::string(),
+                           NULL,
                            NULL);
   WaitForAnimationEnded();
   EXPECT_GT(NSHeight([[controller view] frame]), NSHeight(old_frame));

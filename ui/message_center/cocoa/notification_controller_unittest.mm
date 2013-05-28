@@ -101,6 +101,7 @@ TEST_F(NotificationControllerTest, BasicLayout) {
           ASCIIToUTF16("Jonathan and 5 others"),
           string16(),
           std::string(),
+          NULL,
           NULL));
   notification->set_icon(gfx::Image([TestIcon() retain]));
 
@@ -129,6 +130,7 @@ TEST_F(NotificationControllerTest, OverflowText) {
                        "entire thing?"),
           string16(),
           std::string(),
+          NULL,
           NULL));
   scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
@@ -148,6 +150,7 @@ TEST_F(NotificationControllerTest, Close) {
           string16(),
           string16(),
           std::string(),
+          NULL,
           NULL));
   MockMessageCenter message_center;
 
@@ -173,6 +176,7 @@ TEST_F(NotificationControllerTest, Update) {
                        "default bounds."),
           string16(),
           std::string(),
+          NULL,
           NULL));
   scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
@@ -205,7 +209,8 @@ TEST_F(NotificationControllerTest, Buttons) {
           string16(),
           string16(),
           std::string(),
-          &buttons));
+          &buttons,
+          NULL));
   MockMessageCenter message_center;
 
   scoped_nsobject<MCNotificationController> controller(
@@ -228,6 +233,7 @@ TEST_F(NotificationControllerTest, Image) {
           string16(),
           string16(),
           std::string(),
+          NULL,
           NULL));
   NSImage* image = [NSImage imageNamed:NSImageNameFolder];
   notification->set_image(gfx::Image([image retain]));

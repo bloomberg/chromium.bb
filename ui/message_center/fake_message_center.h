@@ -9,6 +9,8 @@
 
 namespace message_center {
 
+class NotificationDelegate;
+
 // MessageCenter implementation of doing nothing. Useful for tests.
 class FakeMessageCenter : public MessageCenter {
  public:
@@ -27,20 +29,20 @@ class FakeMessageCenter : public MessageCenter {
   virtual bool HasClickedListener(const std::string& id) OVERRIDE;
   virtual const NotificationList::Notifications& GetNotifications() OVERRIDE;
   virtual NotificationList::PopupNotifications GetPopupNotifications() OVERRIDE;
-  virtual void AddNotification(
-      NotificationType type,
-      const std::string& id,
-      const string16& title,
-      const string16& message,
-      const string16& display_source,
-      const std::string& extension_id,
-      const base::DictionaryValue* optional_fields) OVERRIDE;
-  virtual void UpdateNotification(
-      const std::string& old_id,
-      const std::string& new_id,
-      const string16& title,
-      const string16& message,
-      const base::DictionaryValue* optional_fields) OVERRIDE;
+  virtual void AddNotification(NotificationType type,
+                               const std::string& id,
+                               const string16& title,
+                               const string16& message,
+                               const string16& display_source,
+                               const std::string& extension_id,
+                               const base::DictionaryValue* optional_fields,
+                               NotificationDelegate* delegate) OVERRIDE;
+  virtual void UpdateNotification(const std::string& old_id,
+                                  const std::string& new_id,
+                                  const string16& title,
+                                  const string16& message,
+                                  const base::DictionaryValue* optional_fields,
+                                  NotificationDelegate* delegate) OVERRIDE;
   virtual void RemoveNotification(const std::string& id, bool by_user) OVERRIDE;
   virtual void RemoveAllNotifications(bool by_user) OVERRIDE;
   virtual void SetNotificationIcon(const std::string& notification_id,

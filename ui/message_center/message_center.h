@@ -59,9 +59,6 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
     // Request to show the notification settings dialog. |context| is necessary
     // to create a new window.
     virtual void ShowSettingsDialog(gfx::NativeView context) = 0;
-
-    // Request to check if the notification has the listener of Clicked event.
-    virtual bool HasClickedListener(const std::string& notification_id) = 0;
   };
 
   // Called to set the delegate.  Generally called only once, except in tests.
@@ -95,23 +92,24 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // from the extension. Otherwise if |display_source| is provided, a menu item
   // showing the source and allowing notifications from that source to be
   // disabled will be shown. All actual disabling is handled by the Delegate.
-  virtual void AddNotification(
-      NotificationType type,
-      const std::string& id,
-      const string16& title,
-      const string16& message,
-      const string16& display_source,
-      const std::string& extension_id,
-      const base::DictionaryValue* optional_fields) = 0;
+  virtual void AddNotification(NotificationType type,
+                               const std::string& id,
+                               const string16& title,
+                               const string16& message,
+                               const string16& display_source,
+                               const std::string& extension_id,
+                               const base::DictionaryValue* optional_fields,
+                               NotificationDelegate* delegate) = 0;
 
   // Updates an existing notification with id = old_id and set its id to new_id.
-  // |optional_fields| can be NULL in case of no updates on those fields.
-  virtual void UpdateNotification(
-      const std::string& old_id,
-      const std::string& new_id,
-      const string16& title,
-      const string16& message,
-      const base::DictionaryValue* optional_fields) = 0;
+  // |delegate| and |optional_fields| can be NULL in case of no updates on
+  // those fields.
+  virtual void UpdateNotification(const std::string& old_id,
+                                  const std::string& new_id,
+                                  const string16& title,
+                                  const string16& message,
+                                  const base::DictionaryValue* optional_fields,
+                                  NotificationDelegate* delegate) = 0;
 
   // Removes an existing notification.
   virtual void RemoveNotification(const std::string& id, bool by_user) = 0;

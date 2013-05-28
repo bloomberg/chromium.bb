@@ -122,9 +122,9 @@ class Notification {
     return delegate()->GetRenderViewHost();
   }
 
- private:
   NotificationDelegate* delegate() const { return delegate_.get(); }
 
+ private:
   // The type of notification we'd like displayed.
   message_center::NotificationType type_;
 

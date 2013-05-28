@@ -17,8 +17,7 @@ Notification::Notification(const GURL& origin_url,
       content_url_(content_url),
       display_source_(display_source),
       replace_id_(replace_id),
-      delegate_(delegate) {
-}
+      delegate_(delegate) {}
 
 Notification::Notification(const GURL& origin_url,
                            const GURL& icon_url,
@@ -86,8 +85,7 @@ Notification::Notification(const GURL& origin_url,
       body_(body),
       display_source_(display_source),
       replace_id_(replace_id),
-      delegate_(delegate) {
-}
+      delegate_(delegate) {}
 
 Notification::Notification(const Notification& notification)
     : type_(notification.type()),

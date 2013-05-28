@@ -23,6 +23,7 @@ TEST_F(PopupControllerTest, Creation) {
           ASCIIToUTF16("Jonathan and 5 others"),
           string16(),
           std::string(),
+          NULL,
           NULL));
 
   scoped_nsobject<MCPopupController> controller(

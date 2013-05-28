@@ -102,14 +102,14 @@ TEST_F(MessageCenterTrayTest, BasicPopup) {
   ASSERT_FALSE(message_center_tray_->popups_visible());
   ASSERT_FALSE(message_center_tray_->message_center_visible());
 
-  message_center_->AddNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "BasicPopup",
-      ASCIIToUTF16("Test Web Notification"),
-      ASCIIToUTF16("Notification message body."),
-      ASCIIToUTF16("www.test.org"),
-      "" /* extension id */,
-      NULL /* optional_fields */);
+  message_center_->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                                   "BasicPopup",
+                                   ASCIIToUTF16("Test Web Notification"),
+                                   ASCIIToUTF16("Notification message body."),
+                                   ASCIIToUTF16("www.test.org"),
+                                   "" /* extension id */,
+                                   NULL /* optional_fields */,
+                                   NULL /* delegate */);
 
   ASSERT_TRUE(message_center_tray_->popups_visible());
   ASSERT_FALSE(message_center_tray_->message_center_visible());
@@ -124,14 +124,14 @@ TEST_F(MessageCenterTrayTest, MessageCenterClosesPopups) {
   ASSERT_FALSE(message_center_tray_->popups_visible());
   ASSERT_FALSE(message_center_tray_->message_center_visible());
 
-  message_center_->AddNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "MessageCenterClosesPopups",
-      ASCIIToUTF16("Test Web Notification"),
-      ASCIIToUTF16("Notification message body."),
-      ASCIIToUTF16("www.test.org"),
-      "" /* extension id */,
-      NULL /* optional_fields */);
+  message_center_->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                                   "MessageCenterClosesPopups",
+                                   ASCIIToUTF16("Test Web Notification"),
+                                   ASCIIToUTF16("Notification message body."),
+                                   ASCIIToUTF16("www.test.org"),
+                                   "" /* extension id */,
+                                   NULL /* optional_fields */,
+                                   NULL /* delegate */);
 
   ASSERT_TRUE(message_center_tray_->popups_visible());
   ASSERT_FALSE(message_center_tray_->message_center_visible());
@@ -142,14 +142,14 @@ TEST_F(MessageCenterTrayTest, MessageCenterClosesPopups) {
   ASSERT_FALSE(message_center_tray_->popups_visible());
   ASSERT_TRUE(message_center_tray_->message_center_visible());
 
-  message_center_->AddNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "MessageCenterClosesPopups2",
-      ASCIIToUTF16("Test Web Notification"),
-      ASCIIToUTF16("Notification message body."),
-      ASCIIToUTF16("www.test.org"),
-      "" /* extension id */,
-      NULL /* optional_fields */);
+  message_center_->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                                   "MessageCenterClosesPopups2",
+                                   ASCIIToUTF16("Test Web Notification"),
+                                   ASCIIToUTF16("Notification message body."),
+                                   ASCIIToUTF16("www.test.org"),
+                                   "" /* extension id */,
+                                   NULL /* optional_fields */,
+                                   NULL /* delegate */);
 
   message_center_tray_->ShowPopupBubble();
 
@@ -170,14 +170,14 @@ TEST_F(MessageCenterTrayTest, ShowBubbleFails) {
   ASSERT_FALSE(message_center_tray_->popups_visible());
   ASSERT_FALSE(message_center_tray_->message_center_visible());
 
-  message_center_->AddNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "ShowBubbleFails",
-      ASCIIToUTF16("Test Web Notification"),
-      ASCIIToUTF16("Notification message body."),
-      ASCIIToUTF16("www.test.org"),
-      "" /* extension id */,
-      NULL /* optional_fields */);
+  message_center_->AddNotification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                                   "ShowBubbleFails",
+                                   ASCIIToUTF16("Test Web Notification"),
+                                   ASCIIToUTF16("Notification message body."),
+                                   ASCIIToUTF16("www.test.org"),
+                                   "" /* extension id */,
+                                   NULL /* optional_fields */,
+                                   NULL /* delegate */);
 
   message_center_tray_->ShowPopupBubble();
 

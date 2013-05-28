@@ -127,14 +127,14 @@ MessageCenterViewTest::~MessageCenterViewTest() {
 
 void MessageCenterViewTest::SetUp() {
   // Create a dummy notification.
-  Notification notification(
-        NOTIFICATION_TYPE_SIMPLE,
-        std::string("notification id"),
-        UTF8ToUTF16("title"),
-        UTF8ToUTF16("message"),
-        UTF8ToUTF16("display source"),
-        std::string("extension id"),
-        NULL);
+  Notification notification(NOTIFICATION_TYPE_SIMPLE,
+                            std::string("notification id"),
+                            UTF8ToUTF16("title"),
+                            UTF8ToUTF16("message"),
+                            UTF8ToUTF16("display source"),
+                            std::string("extension id"),
+                            NULL,
+                            NULL);
 
   // ...and a list for it.
   NotificationList::Notifications notifications;
