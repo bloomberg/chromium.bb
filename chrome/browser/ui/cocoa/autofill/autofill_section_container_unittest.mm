@@ -50,26 +50,18 @@ class AutofillSectionContainerTest : public ui::CocoaTest {
 TEST_VIEW(AutofillSectionContainerTest, [container_ view])
 
 TEST_F(AutofillSectionContainerTest, HasSubviews) {
-  ASSERT_EQ(2U, [[[container_ view] subviews] count]);
-
   bool hasLayoutView = false;
   bool hasTextField = false;
   bool hasSuggestButton = false;
 
-  NSView* sectionView = nil;
+  ASSERT_EQ(3U, [[[container_ view] subviews] count]);
   for (NSView* view in [[container_ view] subviews]) {
-    if ([view isKindOfClass:[MenuButton class]])
-      hasSuggestButton = true;
-    else
-      sectionView = view;
-  }
-
-  ASSERT_EQ(2U, [[sectionView subviews] count]);
-  for (NSView* view in [sectionView subviews]) {
     if ([view isKindOfClass:[NSTextField class]]) {
       hasTextField = true;
     } else if ([view isKindOfClass:[LayoutView class]]) {
       hasLayoutView = true;
+    } else if ([view isKindOfClass:[MenuButton class]]) {
+      hasSuggestButton = true;
     }
   }
 

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
 namespace content {
@@ -71,8 +72,8 @@ class AutofillDialogCocoa : public AutofillDialogView,
 
 }  // autofill
 
-@interface AutofillDialogWindowController : NSWindowController
-                                            <NSWindowDelegate> {
+@interface AutofillDialogWindowController :
+    NSWindowController<NSWindowDelegate, AutofillLayout> {
  @private
   content::WebContents* webContents_;  // weak.
   autofill::AutofillDialogCocoa* autofillDialog_;  // weak.
@@ -85,6 +86,9 @@ class AutofillDialogCocoa : public AutofillDialogView,
 // Designated initializer. The WebContents cannot be NULL.
 - (id)initWithWebContents:(content::WebContents*)webContents
       autofillDialog:(autofill::AutofillDialogCocoa*)autofillDialog;
+
+// A child view request re-layouting.
+- (void)requestRelayout;
 
 // Validate data. If it is valid, notify the controller that the user would
 // like to use the data.

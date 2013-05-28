@@ -19,6 +19,13 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
+namespace {
+
+const CGFloat kAccountChooserHeight = 20.0;
+const CGFloat kRelatedControlVerticalSpacing = 8.0;
+
+}  // namespace;
+
 namespace autofill {
 
 // static
@@ -143,7 +150,6 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     [[mainContainer_ view] setFrame:clientRect];
     [[signInContainer_ view] setFrame:clientRect];
 
-    const CGFloat kAccountChooserHeight = 20.0;
     NSRect headerRect = clientRect;
     headerRect.size.height = kAccountChooserHeight;
     headerRect.origin.y = NSMaxY(clientRect);
@@ -159,14 +165,58 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
     contentRect.size.height += NSHeight(headerRect) +
                                chrome_style::kClientBottomPadding +
                                chrome_style::kTitleTopPadding;
-    [[[self window] contentView] setFrame:contentRect];
-    NSRect frame = [[self window] frameRectForContentRect:contentRect];
-    [[self window] setFrame:frame display:YES];
-
-    [accountChooser_
-        setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
+    [self performLayout];
   }
   return self;
+}
+
+- (void)requestRelayout {
+  [self performLayout];
+}
+
+- (NSSize)preferredSize {
+  NSSize contentSize;
+  // TODO(groby): Currently, keep size identical to main container.
+  // Change to allow autoresize of web contents.
+  contentSize = [mainContainer_ preferredSize];
+
+  NSSize headerSize = NSMakeSize(contentSize.width, kAccountChooserHeight);
+  NSSize size = NSMakeSize(
+      std::max(contentSize.width, headerSize.width),
+      contentSize.height + headerSize.height + kRelatedControlVerticalSpacing);
+  size.width += 2 * chrome_style::kHorizontalPadding;
+  size.height += chrome_style::kClientBottomPadding +
+                 chrome_style::kTitleTopPadding;
+  return size;
+}
+
+- (void)performLayout {
+  // Don't animate when we first show the window.
+  BOOL shouldAnimate =
+      !NSEqualRects(ui::kWindowSizeDeterminedLater, [[self window] frame]);
+
+  NSRect contentRect = NSZeroRect;
+  contentRect.size = [self preferredSize];
+  NSRect clientRect = NSInsetRect(
+      contentRect, chrome_style::kHorizontalPadding, 0);
+  clientRect.origin.y += chrome_style::kClientBottomPadding;
+  clientRect.size.height -= chrome_style::kTitleTopPadding +
+                            chrome_style::kClientBottomPadding;
+
+  NSRect headerRect, mainRect;
+  NSDivideRect(clientRect, &headerRect, &mainRect,
+               kAccountChooserHeight, NSMaxYEdge);
+
+  [accountChooser_ setFrame:headerRect];
+  if ([[signInContainer_ view] isHidden]) {
+    [[mainContainer_ view] setFrame:mainRect];
+    [mainContainer_ performLayout];
+  } else {
+    [[signInContainer_ view] setFrame:mainRect];
+  }
+
+  NSRect frameRect = [[self window] frameRectForContentRect:contentRect];
+  [[self window] setFrame:frameRect display:YES animate:shouldAnimate];
 }
 
 - (IBAction)accept:(id)sender {
@@ -188,6 +238,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   [signInContainer_ loadSignInPage];
   [[mainContainer_ view] setHidden:YES];
   [[signInContainer_ view] setHidden:NO];
+  [self performLayout];
 
   return [signInContainer_ navigationController];
 }
@@ -200,6 +251,7 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 - (void)hideSignIn {
   [[signInContainer_ view] setHidden:YES];
   [[mainContainer_ view] setHidden:NO];
+  [self performLayout];
 }
 
 - (void)modelChanged {

@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
 @class AutofillDetailsContainer;
 @class AutofillDialogWindowController;
@@ -22,7 +23,7 @@ namespace autofill {
 // NSViewController for the main portion of the autofill dialog. Contains
 // account chooser, details for current payment instruments, OK/Cancel.
 // Might dynamically add and remove other elements.
-@interface AutofillMainContainer : NSViewController {
+@interface AutofillMainContainer : NSViewController<AutofillLayout> {
  @private
   scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
   scoped_nsobject<AutofillDetailsContainer> detailsContainer_;

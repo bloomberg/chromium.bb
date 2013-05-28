@@ -50,10 +50,6 @@ const size_t kDetailSectionInset = 10;
 // Create properly styled label for section. Autoreleased.
 - (NSTextField*)makeDetailSectionLabel:(NSString*)labelText;
 
-// Create NSView containing inputs & labelling. Autoreleased.
-- (NSView*)makeSectionView:(NSString*)labelText
-             withControls:(LayoutView*)controls;
-
 // Create a button offering input suggestions.
 - (MenuButton*)makeSuggestionButton;
 
@@ -103,22 +99,67 @@ const size_t kDetailSectionInset = 10;
   inputs_.reset([[self makeInputControls] retain]);
   string16 labelText = controller_->LabelForSection(section_);
 
-  scoped_nsobject<NSView> sectionView(
-      [[self makeSectionView:base::SysUTF16ToNSString(labelText)
-                withControls:inputs_] retain]);
+  label_.reset([[self makeDetailSectionLabel:
+                   base::SysUTF16ToNSString(labelText)] retain]);
+
   suggestButton_.reset([[self makeSuggestionButton] retain]);
 
-  NSRect buttonFrame = [suggestButton_ frame];
-  buttonFrame.origin.x = NSMaxX([sectionView frame]);
-  NSRect frame = NSUnionRect(buttonFrame, [sectionView frame]);
-  DCHECK(NSHeight(frame) >= NSHeight(buttonFrame) + 2 * kDetailSectionInset);
-  buttonFrame.origin.y =
-      NSMaxY(frame) - NSHeight(buttonFrame) - kDetailSectionInset;
-  [suggestButton_ setFrame:buttonFrame];
   [self modelChanged];
 
-  [self setView:[[[NSView alloc] initWithFrame:frame] autorelease]];
-  [[self view] setSubviews:@[sectionView, suggestButton_]];
+  view_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
+  [self performLayout];
+  [self setView:view_];
+  [[self view] setSubviews:@[label_, inputs_, suggestButton_]];
+}
+
+- (NSSize)preferredSize {
+  NSSize labelSize = [label_ frame].size;  // Assumes sizeToFit was called.
+  CGFloat contentHeight = [inputs_ preferredHeightForWidth:kDetailsWidth];
+  contentHeight = std::max(contentHeight, labelSize.height);
+  contentHeight = std::max(contentHeight, NSHeight([suggestButton_ frame]));
+
+  return NSMakeSize(kLabelWidth + kPadding + kDetailsWidth,
+                    contentHeight + 2 * kDetailSectionInset);
+}
+
+- (void)performLayout {
+  NSSize buttonSize = [suggestButton_ frame].size;  // Assume sizeToFit.
+  NSSize labelSize = [label_ frame].size;  // Assumes sizeToFit was called.
+  CGFloat controlHeight = [inputs_ preferredHeightForWidth:kDetailsWidth];
+
+  NSRect viewFrame = NSZeroRect;
+  viewFrame.size = [self preferredSize];
+
+  NSRect contentFrame = NSInsetRect(viewFrame, 0, kDetailSectionInset);
+  NSRect dummy;
+
+  // Set up three content columns. kLabelWidth is first column width,
+  // then padding, then have suggestButton and inputs share kDetailsWidth.
+  NSRect column[3];
+  NSDivideRect(contentFrame, &column[0], &dummy, kLabelWidth, NSMinXEdge);
+  NSDivideRect(contentFrame, &column[1], &dummy, kDetailsWidth, NSMaxXEdge);
+  NSDivideRect(column[1],
+               &column[2], &column[1], buttonSize.width, NSMaxXEdge);
+
+  // Center inputs by height in column 1.
+  NSRect controlFrame = column[1];
+  int centerOffset = (NSHeight(controlFrame) - controlHeight) / 2;
+  controlFrame.origin.x += centerOffset;
+  controlFrame.size.height = controlHeight;
+
+  // Align label to right top in column 0.
+  NSRect labelFrame;
+  NSDivideRect(column[0], &labelFrame, &dummy, labelSize.height, NSMaxYEdge);
+  NSDivideRect(labelFrame, &labelFrame, &dummy, labelSize.width, NSMaxXEdge);
+
+  // suggest button is top left of column 2.
+  NSRect buttonFrame = column[2];
+  NSDivideRect(column[2], &buttonFrame, &dummy, buttonSize.height, NSMaxYEdge);
+
+  [inputs_ setFrame:controlFrame];
+  [label_ setFrame:labelFrame];
+  [suggestButton_ setFrame:buttonFrame];
+  [view_ setFrame:viewFrame];
 }
 
 - (NSTextField*)makeDetailSectionLabel:(NSString*)labelText {
@@ -132,37 +173,6 @@ const size_t kDetailSectionInset = 10;
   [label setBordered:NO];
   [label sizeToFit];
   return label.autorelease();
-}
-
-- (NSView*)makeSectionView:(NSString*)labelText
-             withControls:(LayoutView*)controls {
-  scoped_nsobject<NSTextField> label(
-      [[self makeDetailSectionLabel:labelText] retain]);
-
-  CGFloat controlHeight = [controls preferredHeightForWidth:kDetailsWidth];
-  NSRect frame = NSZeroRect;
-  frame.size.width = kLabelWidth + kPadding + kDetailsWidth;
-  frame.size.height = std::max(NSHeight([label frame]), controlHeight) +
-                      2 * kDetailSectionInset;
-  scoped_nsobject<NSView> section_container(
-      [[NSView alloc] initWithFrame:frame]);
-
-  NSPoint labelOrigin = NSMakePoint(
-      kLabelWidth - NSWidth([label frame]),
-      NSHeight(frame) - NSHeight([label frame]) - kDetailSectionInset);
-  [label setFrameOrigin:labelOrigin];
-  [label setAutoresizingMask:(NSViewMinYMargin | NSViewMinYMargin)];
-
-  NSRect dummyFrame;
-  NSRect controlFrame = [controls frame];
-  NSDivideRect(NSInsetRect(frame, 0, kDetailSectionInset),
-               &controlFrame, &dummyFrame, kDetailsWidth, NSMaxXEdge);
-  controlFrame.size.height = controlHeight;
-  [controls setFrame:controlFrame];
-  [controls setAutoresizingMask:(NSViewMaxXMargin | NSViewMinYMargin)];
-
-  [section_container setSubviews:@[label, controls]];
-  return section_container.autorelease();
 }
 
 - (MenuButton*)makeSuggestionButton {
@@ -272,4 +282,4 @@ const size_t kDetailSectionInset = 10;
   return nil;
 }
 
- @end
+@end

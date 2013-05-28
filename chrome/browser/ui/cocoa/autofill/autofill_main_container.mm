@@ -4,6 +4,9 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
 
+#include <algorithm>
+#include <cmath>
+
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
@@ -47,6 +50,22 @@
   frameSize.height += NSHeight([buttonContainer_ frame]);
   [[self view] setFrameSize:frameSize];
   [[self view] addSubview:[detailsContainer_ view]];
+}
+
+- (NSSize)preferredSize {
+  // The buttons never change size, so rely on container.
+  NSSize buttonSize = [buttonContainer_ frame].size;
+  NSSize detailsSize = [detailsContainer_ preferredSize];
+
+  NSSize size = NSMakeSize(std::max(buttonSize.width, detailsSize.width),
+                           buttonSize.height + detailsSize.height);
+
+  return size;
+}
+
+- (void)performLayout {
+  // Assume that the frame for the container is set already.
+  [detailsContainer_ performLayout];
 }
 
 - (void)buildWindowButtonsForFrame:(NSRect)frame {
