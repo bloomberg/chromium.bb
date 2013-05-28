@@ -8,7 +8,7 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=179138
+CLANG_REVISION=182481
 
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
@@ -329,9 +329,11 @@ if [[ -n "${with_android}" ]]; then
       --stl=stlport
 
   # Build ASan runtime for Android.
+  # Note: LLVM_ANDROID_TOOLCHAIN_DIR is not relative to PWD, but to where we
+  # build the runtime, i.e. third_party/llvm/projects/compiler-rt.
   cd "${LLVM_BUILD_DIR}"
-  TC="${PWD}/android-toolchain"
-  make -C tools/clang/runtime/ LLVM_ANDROID_TOOLCHAIN_DIR="${TC}"
+  make -C tools/clang/runtime/ \
+    LLVM_ANDROID_TOOLCHAIN_DIR="../../../llvm-build/android-toolchain"
   cd -
 fi
 
