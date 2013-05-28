@@ -31,8 +31,7 @@
 #include "core/rendering/exclusions/ExclusionPolygon.h"
 
 #include "core/platform/graphics/LayoutPoint.h"
-
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
 namespace WebCore {
 
@@ -120,12 +119,12 @@ static inline void appendArc(Vector<FloatPoint>& vertices, const FloatPoint& arc
     if (endAngle < 0)
         endAngle += twoPI;
     float angle = (startAngle > endAngle) ? (startAngle - endAngle) : (startAngle + twoPI - endAngle);
-    const float arcSegmentCount = 5; // An odd number so that one arc vertex will be eactly arcRadius from arcCenter.
-    float angle5 =  ((padding) ? -angle : twoPI - angle) / arcSegmentCount;
+    const float arcSegmentCount = 6; // An even number so that one arc vertex will be eactly arcRadius from arcCenter.
+    float arcSegmentAngle =  ((padding) ? -angle : twoPI - angle) / arcSegmentCount;
 
     vertices.append(startArcVertex);
     for (unsigned i = 1; i < arcSegmentCount; ++i) {
-        float angle = startAngle + angle5 * i;
+        float angle = startAngle + arcSegmentAngle * i;
         vertices.append(arcCenter + FloatPoint(cos(angle) * arcRadius, sin(angle) * arcRadius));
     }
     vertices.append(endArcVertex);

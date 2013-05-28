@@ -12,7 +12,7 @@
 #container {
     font: 20px/1 Ahem, sans-serif;
     width: 200px;
-    height: 300px;
+    height: 150px;
   }
 
 #float-left {
@@ -25,14 +25,14 @@
 
 #svg-shape {
     position: absolute;
-    display:block;
+    display: block;
+    top: 0px;
+    left: 0px;
     width: 100px;
     height: 100px;
 }
 </style>
-
 <body>
-<p></p>
 <div id="container">
     <div id="float-left">
         <svg id="svg-shape" xmlns="http://www.w3.org/2000/">
@@ -41,9 +41,10 @@
     </div>
     <span id="l1">X</span></br><span id="l2">X</span><br/><span id="l3">X</span><br/><br/><span id="l4">X</span><br/><span id="l5">X</span><br/><span id="l6">X</span>
 </div>
+<div id="console"></div>
 </body>
 <script>
-function elementRect(elementId)
+function elementRect(elementId) 
 {
     var s = document.getElementById("container").getBoundingClientRect();
     var r = document.getElementById(elementId).getBoundingClientRect();
@@ -58,27 +59,29 @@ function elementRect(elementId)
 
 function marginLeftXIntercept(lineNumber)
 {
-    return SubPixelLayout.roundLineLeft(lineNumber * 20 + 20 * Math.sqrt(2) + 50);
+    var f = SubPixelLayout.snapToLayoutUnit(lineNumber * 20 + 20 * Math.sqrt(2) + 50);
+    return Math.round(f);
 }
 
+var quiet = true; // PASS output depends on SubPixelLayout.isEnabled()
+
 shouldBe("elementRect('l1').top", "0");
-shouldBeCloseTo("elementRect('l1').left", marginLeftXIntercept(1), 1);
+shouldBeCloseTo("elementRect('l1').left", marginLeftXIntercept(1), 1, quiet);
 
 shouldBe("elementRect('l2').top", "20");
-shouldBeCloseTo("elementRect('l2').left", marginLeftXIntercept(2), 1);
+shouldBeCloseTo("elementRect('l2').left", marginLeftXIntercept(2), 1, quiet);
 
 shouldBe("elementRect('l3').top", "40");
-shouldBeCloseTo("elementRect('l3').left", marginLeftXIntercept(3), 1);
+shouldBeCloseTo("elementRect('l3').left", marginLeftXIntercept(3), 1, quiet);
 
 shouldBe("elementRect('l4').top", "80");
-shouldBeCloseTo("elementRect('l4').left", marginLeftXIntercept(3), 1);
+shouldBeCloseTo("elementRect('l4').left", marginLeftXIntercept(3), 1, quiet);
 
 shouldBe("elementRect('l5').top", "100");
-shouldBeCloseTo("elementRect('l5').left", marginLeftXIntercept(2), 1);
+shouldBeCloseTo("elementRect('l5').left", marginLeftXIntercept(2), 1, quiet);
 
 shouldBe("elementRect('l6').top", "120");
-shouldBeCloseTo("elementRect('l6').left", marginLeftXIntercept(1), 1);
+shouldBeCloseTo("elementRect('l6').left", marginLeftXIntercept(1), 1, quiet);
 
 </script>
 </html>
-
