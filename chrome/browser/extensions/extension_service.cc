@@ -27,6 +27,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
@@ -2195,18 +2196,21 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   // can upgrade without requiring this user's approval.
   int disable_reasons = extension_prefs_->GetDisableReasons(extension->id());
 
-  bool is_default_app_install =
-      (!is_extension_upgrade && extension->was_installed_by_default());
+  bool auto_grant_permission =
+      (!is_extension_upgrade && extension->was_installed_by_default()) ||
+      chrome::IsRunningInForcedAppMode();
   // Silently grant all active permissions to default apps only on install.
   // After install they should behave like other apps.
-  if (is_default_app_install)
+  // Silently grant all active permissions to apps install in kiosk mode on both
+  // install and update.
+  if (auto_grant_permission)
     GrantPermissions(extension);
 
   bool is_privilege_increase = false;
   // We only need to compare the granted permissions to the current permissions
   // if the extension is not allowed to silently increase its permissions.
   if (!extensions::PermissionsData::CanSilentlyIncreasePermissions(extension) &&
-      !is_default_app_install) {
+      !auto_grant_permission) {
     // Add all the recognized permissions if the granted permissions list
     // hasn't been initialized yet.
     scoped_refptr<PermissionSet> granted_permissions =
