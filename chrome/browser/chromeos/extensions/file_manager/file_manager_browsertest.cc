@@ -60,6 +60,8 @@ TestEntryInfo kTestEntrySetCommon[] = {
   { FILE, "text.txt", "hello.txt", "text/plain", NONE, "4 Sep 1998 12:34:56" },
   { FILE, "image.png", "My Desktop Background.png", "text/plain", NONE,
     "18 Jan 2038 01:02:03" },
+  { FILE, "music.ogg", "Beautiful Song.ogg", "text/plain", NONE,
+    "12 Nov 2086 12:00:00" },
   { FILE, "video.ogv", "world.ogv", "text/plain", NONE,
     "4 July 2012 10:35:00" },
   { DIRECTORY, "", "photos", NULL, NONE, "1 Jan 1980 23:59:59" },
@@ -334,6 +336,9 @@ class FileManagerBrowserTestBase : public ExtensionApiTest,
   // Runs the gallery open test on the passed |volume|, shared by subclasses.
   void DoTestGalleryOpen(TestVolume* volume);
 
+  // Runs the audio open test on the passed |volume|, shared by subclasses.
+  void DoTestAudioOpen(TestVolume* volume);
+
   // Runs the keyboard copy test on the passed |volume|, shared by subclasses.
   void DoTestKeyboardCopy(TestVolume* volume);
 
@@ -498,6 +503,16 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestGalleryOpen) {
   ASSERT_NO_FATAL_FAILURE(StartTest("galleryOpenDrive"));
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestAudioOpen) {
+  ResultCatcher catcher;
+  ASSERT_NO_FATAL_FAILURE(StartTest("galleryOpenDownloads"));
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();}
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAudioOpen) {
+  ResultCatcher catcher;
+  ASSERT_NO_FATAL_FAILURE(StartTest("galleryOpenDrive"));
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();}
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
   ResultCatcher catcher;

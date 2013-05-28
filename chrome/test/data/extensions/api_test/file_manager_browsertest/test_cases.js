@@ -12,6 +12,7 @@ var EXPECTED_FILES_BEFORE_LOCAL = [
   ['world.ogv', '59 KB', 'OGG video', 'Jul 4, 2012 10:35 AM'],
   ['My Desktop Background.png', '272 bytes', 'PNG image',
       'Jan 18, 2038 1:02 AM'],
+  ['Beautiful Song.ogg', '14 KB', 'OGG audio', 'Nov 12, 2086 12:00 PM'],
   ['photos', '--', 'Folder', 'Jan 1, 1980 11:59 PM']
   // ['.warez', '--', 'Folder', 'Oct 26, 1985 1:39 PM']  # should be hidden
 ].sort();
@@ -26,6 +27,7 @@ var EXPECTED_FILES_BEFORE_DRIVE = [
   ['world.ogv', '59 KB', 'OGG video', 'Jul 4, 2012 10:35 AM'],
   ['My Desktop Background.png', '272 bytes', 'PNG image',
       'Jan 18, 2038 1:02 AM'],
+  ['Beautiful Song.ogg', '14 KB', 'OGG audio', 'Nov 12, 2086 12:00 PM'],
   ['photos', '--', 'Folder', 'Jan 1, 1980 11:59 PM'],
   ['Test Document.gdoc','--','Google document','Apr 10, 2013 4:20 PM'],
   ['Test Shared Document.gdoc','--','Google document','Mar 20, 2013 10:40 PM']
@@ -89,6 +91,7 @@ var EXPECTED_FILES_IN_RECENT = [
   ['world.ogv', '59 KB', 'OGG video', 'Jul 4, 2012 10:35 AM'],
   ['My Desktop Background.png', '272 bytes', 'PNG image',
       'Jan 18, 2038 1:02 AM'],
+  ['Beautiful Song.ogg', '14 KB', 'OGG audio', 'Nov 12, 2086 12:00 PM'],
   ['Test Document.gdoc','--','Google document','Apr 10, 2013 4:20 PM'],
   ['Test Shared Document.gdoc','--','Google document','Mar 20, 2013 10:40 PM']
 ].sort();
@@ -219,10 +222,10 @@ testcase.intermediate.galleryOpen = function(path) {
                           'iframe.overlay-pane'],
                          steps.shift());
     },
-    function(attributes) {
+    function(element) {
       // Verify the gallery's screen image.
-      chrome.test.assertEq('320', attributes['width']);
-      chrome.test.assertEq('240', attributes['height']);
+      chrome.test.assertEq('320', element.attributes.width);
+      chrome.test.assertEq('240', element.attributes.height);
       // Get the full-resolution image.
       callRemoteTestUtil('waitForElement',
                          appId,
@@ -230,12 +233,84 @@ testcase.intermediate.galleryOpen = function(path) {
                           'iframe.overlay-pane'],
                          steps.shift());
     },
-    function(attributes) {
+    function(element) {
       // Verify the gallery's screen image.
-      chrome.test.assertEq('800', attributes['width']);
-      chrome.test.assertEq('600', attributes['height']);
+      chrome.test.assertEq('800', element.attributes.width);
+      chrome.test.assertEq('600', element.attributes.height);
       chrome.test.succeed();
+    }
+  ];
+  steps = steps.map(function(f) { return chrome.test.callbackPass(f); });
+  steps.shift()();
+};
+
+/**
+ * Tests if the audio player shows up for the selected image and that the audio
+ * is loaded successfully.
+ *
+ * @param {string} path Directory path to be tested.
+ */
+testcase.intermediate.audioOpen = function(path) {
+  var appId;
+  var audioAppId;
+  var steps = [
+    function() {
+      setupAndWaitUntilReady(path, steps.shift());
     },
+    function(inAppId) {
+      appId = inAppId;
+      // Select the song.
+      callRemoteTestUtil(
+          'selectFile', appId, ['Beautiful Song.ogg'], steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      // Click on the label to enter the audio player.
+      callRemoteTestUtil(
+          'fakeMouseClick',
+          appId,
+          ['#file-list li.table-row[selected] .filename-label span'],
+          steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      // Wait for the audio player.
+      callRemoteTestUtil('waitForWindow',
+                         null,
+                         ['mediaplayer.html'],
+                         steps.shift());
+    },
+    function(inAppId) {
+      audioAppId = inAppId;
+      // Wait for the audio tag and verify the source.
+      callRemoteTestUtil('waitForElement',
+                         audioAppId,
+                         ['audio[src]'],
+                         steps.shift());
+    },
+    function(element) {
+      chrome.test.assertEq(
+          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+              'external' + path + '/Beautiful%20Song.ogg',
+          element.attributes.src);
+      // Get the title tag.
+      callRemoteTestUtil('waitForElement',
+                         audioAppId,
+                         ['.data-title'],
+                         steps.shift());
+    },
+    function(element) {
+      chrome.test.assertEq('Beautiful Song', element.text);
+      // Get the artist tag.
+      callRemoteTestUtil('waitForElement',
+                         audioAppId,
+                         ['.data-artist'],
+                         steps.shift());
+    },
+    function(element) {
+      chrome.test.assertEq('Unknown Artist', element.text);
+      chrome.test.succeed();
+    }
   ];
   steps = steps.map(function(f) { return chrome.test.callbackPass(f); });
   steps.shift()();
@@ -357,6 +432,10 @@ testcase.galleryOpenDownloads = function() {
   testcase.intermediate.galleryOpen('/Downloads');
 };
 
+testcase.audioOpenDownloads = function() {
+  testcase.intermediate.audioOpen('/Downloads');
+};
+
 testcase.keyboardCopyDownloads = function() {
   testcase.intermediate.keyboardCopy('/Downloads');
 };
@@ -371,6 +450,10 @@ testcase.fileDisplayDrive = function() {
 
 testcase.galleryOpenDrive = function() {
   testcase.intermediate.galleryOpen('/drive/root');
+};
+
+testcase.audioOpenDrive = function() {
+  testcase.intermediate.audioOpen('/drive/root');
 };
 
 testcase.keyboardCopyDrive = function() {

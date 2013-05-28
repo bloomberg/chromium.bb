@@ -49,6 +49,28 @@ test.util.openMainWindow = function(path, callback) {
 };
 
 /**
+ * Waits for a window with the specified App ID prefix. Eg. `files` will match
+ * windows such as files#0, files#1, etc.
+ *
+ * @param {string} appIdPrefix ID prefix of the requested window.
+ * @param {function(string)} callback Completion callback with the new window's
+ *     App ID.
+ */
+test.util.waitForWindow = function(appIdPrefix, callback) {
+  var appId;
+  function helper() {
+    for (var appId in appWindows) {
+      if (appId.indexOf(appIdPrefix) == 0) {
+        callback(appId);
+        return;
+      }
+    }
+    window.setTimeout(helper, 50);
+  }
+  helper();
+};
+
+/**
  * Gets a document in the Files.app's window, including iframes.
  *
  * @param {Window} contentWindow Window to be used.
@@ -140,7 +162,8 @@ test.util.getFileList = function(contentWindow) {
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
  * @param {?string} iframeQuery Iframe selector or null if no iframe.
- * @param {function(Object)} callback Callback with a hash array of attributes.
+ * @param {function(Object)} callback Callback with a hash array of attributes
+ *     and contents as text.
  */
 test.util.waitForElement = function(
     contentWindow, targetQuery, iframeQuery, callback) {
@@ -154,7 +177,8 @@ test.util.waitForElement = function(
           attributes[element.attributes[i].nodeName] =
               element.attributes[i].nodeValue;
         }
-        callback(attributes);
+        var text = element.textContent;
+        callback({attributes: attributes, text: text});
         return;
       }
     }
@@ -482,6 +506,9 @@ test.util.registerRemoteTestUtils = function() {
       switch (request.func) {
         case 'openMainWindow':
           test.util.openMainWindow(request.args[0], sendResponse);
+          return true;
+        case 'waitForWindow':
+          test.util.waitForWindow(request.args[0], sendResponse);
           return true;
         case 'getErrorCount':
           sendResponse(test.util.getErrorCount());
