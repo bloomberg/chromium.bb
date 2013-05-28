@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_generic_obj.h"
+#include "base/memory/scoped_ptr.h"
 #include "libyuv/convert.h"
 #include "libyuv/video_common.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -36,16 +36,14 @@ static void Ebml_SerializeUnsigned32(EbmlGlobal* ebml,
 }
 
 // Wrapper functor for vpx_codec_destroy().
-class VpxCodecDestroyHelper {
- public:
+struct VpxCodecDeleter {
   void operator()(vpx_codec_ctx_t* codec) {
     vpx_codec_destroy(codec);
   }
 };
 
 // Wrapper functor for vpx_img_free().
-class VpxImgFreeHelper {
- public:
+struct VpxImgDeleter {
   void operator()(vpx_image_t* image) {
     vpx_img_free(image);
   }
@@ -89,7 +87,7 @@ bool WebmEncoder::EncodeFromSprite(const SkBitmap& sprite,
   vpx_image_t image;
   vpx_img_alloc(&image, VPX_IMG_FMT_I420, width_, height_, 16);
   // Ensure that image is freed after return.
-  ScopedGenericObj<vpx_image_t*, VpxImgFreeHelper> image_ptr(&image);
+  scoped_ptr<vpx_image_t, VpxImgDeleter> image_ptr(&image);
 
   const vpx_codec_iface_t* codec_iface = vpx_codec_vp8_cx();
   DCHECK(codec_iface);
@@ -113,7 +111,7 @@ bool WebmEncoder::EncodeFromSprite(const SkBitmap& sprite,
   if (ret != VPX_CODEC_OK)
     return false;
   // Ensure that codec context is freed after return.
-  ScopedGenericObj<vpx_codec_ctx_t*, VpxCodecDestroyHelper> codec_ptr(&codec);
+  scoped_ptr<vpx_codec_ctx_t, VpxCodecDeleter> codec_ptr(&codec);
 
   SkAutoLockPixels lock_sprite(sprite);
 
