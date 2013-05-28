@@ -118,7 +118,7 @@ std::string NetworkStateToHtmlTableRow(const NetworkState* network) {
 }
 
 std::string GetNetworkStateHtmlInfo() {
-  NetworkStateHandler* handler = NetworkStateHandler::Get();
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   NetworkStateHandler::NetworkStateList network_list;
   handler->GetNetworkList(&network_list);
 

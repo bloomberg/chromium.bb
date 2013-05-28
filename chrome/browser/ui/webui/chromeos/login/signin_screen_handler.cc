@@ -214,8 +214,8 @@ bool IsSigninScreenError(ErrorScreen::ErrorState error_state) {
 
 // Returns network name by service path.
 std::string GetNetworkName(const std::string& service_path) {
-  const NetworkState* network =
-      NetworkStateHandler::Get()->GetNetworkState(service_path);
+  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
   if (!network)
     return std::string();
   return network->name();
@@ -223,8 +223,8 @@ std::string GetNetworkName(const std::string& service_path) {
 
 // Returns network unique id by service path.
 std::string GetNetworkUniqueId(const std::string& service_path) {
-  const NetworkState* network =
-      NetworkStateHandler::Get()->GetNetworkState(service_path);
+  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
   if (!network)
     return std::string();
   return network->guid();
@@ -234,8 +234,8 @@ std::string GetNetworkUniqueId(const std::string& service_path) {
 NetworkPortalDetector::CaptivePortalState GetCaptivePortalState(
     const std::string& service_path) {
   NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
-  const NetworkState* network =
-      NetworkStateHandler::Get()->GetNetworkState(service_path);
+  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
   if (!detector || !network)
     return NetworkPortalDetector::CaptivePortalState();
   return detector->GetCaptivePortalState(network);
@@ -266,8 +266,8 @@ void RecordDiscrepancyWithShill(
 // network is online but NetworkPortalDetector claims that it's behind
 // portal) for the network identified by |service_path|.
 void RecordNetworkPortalDetectorStats(const std::string& service_path) {
-  const NetworkState* network =
-      NetworkStateHandler::Get()->GetNetworkState(service_path);
+  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
   if (!network)
     return;
   NetworkPortalDetector::CaptivePortalState state =

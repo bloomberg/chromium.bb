@@ -142,11 +142,11 @@ void WifiDataProviderChromeOs::ScheduleStart() {
 bool WifiDataProviderChromeOs::GetAccessPointData(
     WifiData::AccessPointDataSet* result) {
   chromeos::WifiAccessPointVector access_points;
-  if (!chromeos::GeolocationHandler::Get()->wifi_enabled())
+  if (!chromeos::NetworkHandler::Get()->geolocation_handler()->wifi_enabled())
     return false;
   int64 age_ms = 0;
-  if (!chromeos::GeolocationHandler::Get()->GetWifiAccessPoints(
-          &access_points, &age_ms)) {
+  if (!chromeos::NetworkHandler::Get()->geolocation_handler()->
+      GetWifiAccessPoints(&access_points, &age_ms)) {
     return false;
   }
   for (chromeos::WifiAccessPointVector::const_iterator i

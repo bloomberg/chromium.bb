@@ -13,8 +13,6 @@
 
 namespace chromeos {
 
-static GeolocationHandler* g_geolocation_handler = NULL;
-
 GeolocationHandler::GeolocationHandler()
     : wifi_enabled_(false),
       weak_ptr_factory_(this) {
@@ -34,27 +32,6 @@ void GeolocationHandler::Init() {
       base::Bind(&GeolocationHandler::ManagerPropertiesCallback,
                  weak_ptr_factory_.GetWeakPtr()));
   manager_client->AddPropertyChangedObserver(this);
-}
-
-// static
-void GeolocationHandler::Initialize() {
-  CHECK(!g_geolocation_handler);
-  g_geolocation_handler = new GeolocationHandler();
-  g_geolocation_handler->Init();
-}
-
-// static
-void GeolocationHandler::Shutdown() {
-  CHECK(g_geolocation_handler);
-  delete g_geolocation_handler;
-  g_geolocation_handler = NULL;
-}
-
-// static
-GeolocationHandler* GeolocationHandler::Get() {
-  CHECK(g_geolocation_handler)
-      << "GeolocationHandler::Get() called before Initialize()";
-  return g_geolocation_handler;
 }
 
 bool GeolocationHandler::GetWifiAccessPoints(

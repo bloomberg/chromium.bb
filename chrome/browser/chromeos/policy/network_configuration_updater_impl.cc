@@ -21,12 +21,10 @@ namespace policy {
 
 NetworkConfigurationUpdaterImpl::NetworkConfigurationUpdaterImpl(
     PolicyService* policy_service,
-    chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
     scoped_ptr<chromeos::CertificateHandler> certificate_handler)
     : policy_change_registrar_(
           policy_service, PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())),
       policy_service_(policy_service),
-      network_config_handler_(network_config_handler),
       certificate_handler_(certificate_handler.Pass()) {
   policy_change_registrar_.Observe(
       key::kDeviceOpenNetworkConfiguration,
@@ -96,7 +94,8 @@ void NetworkConfigurationUpdaterImpl::ApplyNetworkConfiguration(
 
   std::string userhash = onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY ?
       hashed_username_ : std::string();
-  network_config_handler_->SetPolicy(onc_source, userhash, network_configs);
+  chromeos::NetworkHandler::Get()->managed_network_configuration_handler()->
+      SetPolicy(onc_source, userhash, network_configs);
 
   scoped_ptr<net::CertificateList> web_trust_certs(new net::CertificateList);
   certificate_handler_->ImportCertificates(

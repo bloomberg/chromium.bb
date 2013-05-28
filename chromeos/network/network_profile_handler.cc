@@ -18,8 +18,6 @@
 
 namespace chromeos {
 
-static NetworkProfileHandler* g_profile_handler_instance = NULL;
-
 namespace {
 
 bool ConvertListValueToStringVector(const base::ListValue& string_list,
@@ -54,50 +52,7 @@ class ProfilePathEquals {
   std::string path_;
 };
 
-class NetworkProfileHandlerImpl : public NetworkProfileHandler {
- public:
-  NetworkProfileHandlerImpl() {
-    DBusThreadManager::Get()->GetShillManagerClient()->
-        AddPropertyChangedObserver(this);
-
-    // Request the initial profile list.
-    DBusThreadManager::Get()->GetShillManagerClient()->GetProperties(
-        base::Bind(&NetworkProfileHandler::GetManagerPropertiesCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  virtual ~NetworkProfileHandlerImpl() {
-    DBusThreadManager::Get()->GetShillManagerClient()->
-        RemovePropertyChangedObserver(this);
-  }
-};
-
 }  // namespace
-
-// static
-NetworkProfileHandler* NetworkProfileHandler::Initialize() {
-  CHECK(!g_profile_handler_instance);
-  g_profile_handler_instance = new NetworkProfileHandlerImpl();
-  return g_profile_handler_instance;
-}
-
-// static
-bool NetworkProfileHandler::IsInitialized() {
-  return g_profile_handler_instance;
-}
-
-// static
-void NetworkProfileHandler::Shutdown() {
-  CHECK(g_profile_handler_instance);
-  delete g_profile_handler_instance;
-  g_profile_handler_instance = NULL;
-}
-
-// static
-NetworkProfileHandler* NetworkProfileHandler::Get() {
-  CHECK(g_profile_handler_instance);
-  return g_profile_handler_instance;
-}
 
 void NetworkProfileHandler::AddObserver(NetworkProfileObserver* observer) {
   observers_.AddObserver(observer);
@@ -139,6 +94,7 @@ void NetworkProfileHandler::OnPropertyChanged(const std::string& name,
                                                &new_profile_paths);
   DCHECK(result);
 
+  VLOG(2) << "Profiles: " << profiles_.size();
   // Search for removed profiles.
   std::vector<std::string> removed_profile_paths;
   for (ProfileList::const_iterator it = profiles_.begin();
@@ -225,9 +181,18 @@ const NetworkProfile* NetworkProfileHandler::GetProfileForUserhash(
 
 NetworkProfileHandler::NetworkProfileHandler()
     : weak_ptr_factory_(this) {
+  DBusThreadManager::Get()->GetShillManagerClient()->
+      AddPropertyChangedObserver(this);
+
+  // Request the initial profile list.
+  DBusThreadManager::Get()->GetShillManagerClient()->GetProperties(
+      base::Bind(&NetworkProfileHandler::GetManagerPropertiesCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 NetworkProfileHandler::~NetworkProfileHandler() {
+  DBusThreadManager::Get()->GetShillManagerClient()->
+      RemovePropertyChangedObserver(this);
 }
 
 }  // namespace chromeos

@@ -24,8 +24,6 @@ namespace chromeos {
 
 namespace {
 
-NetworkConfigurationHandler* g_configuration_handler_instance = NULL;
-
 // None of these error messages are user-facing: they should only appear in
 // logs.
 const char kErrorsListTag[] = "errors";
@@ -93,43 +91,12 @@ void RunCallbackWithDictionaryValue(
   }
 }
 
-void RunCreateNetworkCallback(
-    const network_handler::StringResultCallback& callback,
-    const dbus::ObjectPath& service_path) {
-  callback.Run(service_path.value());
-  // This may also get called when CreateConfiguration is used to update an
-  // existing configuration, so request a service update just in case.
-  // TODO(pneubeck): Separate 'Create' and 'Update' calls and only trigger
-  // this on an update.
-  NetworkStateHandler::Get()->RequestUpdateForNetwork(service_path.value());
-}
-
 void IgnoreObjectPathCallback(const base::Closure& callback,
                               const dbus::ObjectPath& object_path) {
   callback.Run();
 }
 
 }  // namespace
-
-// static
-void NetworkConfigurationHandler::Initialize() {
-  CHECK(!g_configuration_handler_instance);
-  g_configuration_handler_instance = new NetworkConfigurationHandler;
-}
-
-// static
-void NetworkConfigurationHandler::Shutdown() {
-  CHECK(g_configuration_handler_instance);
-  delete g_configuration_handler_instance;
-  g_configuration_handler_instance = NULL;
-}
-
-// static
-NetworkConfigurationHandler* NetworkConfigurationHandler::Get() {
-  CHECK(g_configuration_handler_instance)
-      << "NetworkConfigurationHandler::Get() called before Initialize()";
-  return g_configuration_handler_instance;
-}
 
 void NetworkConfigurationHandler::GetProperties(
     const std::string& service_path,
@@ -153,7 +120,7 @@ void NetworkConfigurationHandler::SetProperties(
       base::Bind(&IgnoreObjectPathCallback, callback),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
                  service_path, error_callback));
-  NetworkStateHandler::Get()->RequestUpdateForNetwork(service_path);
+  network_state_handler_->RequestUpdateForNetwork(service_path);
 }
 
 void NetworkConfigurationHandler::ClearProperties(
@@ -176,7 +143,7 @@ void NetworkConfigurationHandler::ClearProperties(
 void NetworkConfigurationHandler::CreateConfiguration(
     const base::DictionaryValue& properties,
     const network_handler::StringResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback) const {
+    const network_handler::ErrorCallback& error_callback) {
   ShillManagerClient* manager =
       DBusThreadManager::Get()->GetShillManagerClient();
 
@@ -193,13 +160,15 @@ void NetworkConfigurationHandler::CreateConfiguration(
     manager->ConfigureServiceForProfile(
         dbus::ObjectPath(profile),
         properties,
-        base::Bind(&RunCreateNetworkCallback, callback),
+        base::Bind(&NetworkConfigurationHandler::RunCreateNetworkCallback,
+                   AsWeakPtr(), callback),
         base::Bind(&network_handler::ShillErrorCallbackFunction,
                    "", error_callback));
   } else {
     manager->GetService(
         properties,
-        base::Bind(&RunCreateNetworkCallback, callback),
+        base::Bind(&NetworkConfigurationHandler::RunCreateNetworkCallback,
+                   AsWeakPtr(), callback),
         base::Bind(&network_handler::ShillErrorCallbackFunction,
                    "", error_callback));
   }
@@ -216,10 +185,35 @@ void NetworkConfigurationHandler::RemoveConfiguration(
                  service_path, error_callback));
 }
 
-NetworkConfigurationHandler::NetworkConfigurationHandler() {
+NetworkConfigurationHandler::NetworkConfigurationHandler()
+    : network_state_handler_(NULL) {
 }
 
 NetworkConfigurationHandler::~NetworkConfigurationHandler() {
+}
+
+void NetworkConfigurationHandler::Init(
+    NetworkStateHandler* network_state_handler) {
+  network_state_handler_ = network_state_handler;
+}
+
+void NetworkConfigurationHandler::RunCreateNetworkCallback(
+    const network_handler::StringResultCallback& callback,
+    const dbus::ObjectPath& service_path) {
+  callback.Run(service_path.value());
+  // This may also get called when CreateConfiguration is used to update an
+  // existing configuration, so request a service update just in case.
+  // TODO(pneubeck): Separate 'Create' and 'Update' calls and only trigger
+  // this on an update.
+  network_state_handler_->RequestUpdateForNetwork(service_path.value());
+}
+
+// static
+NetworkConfigurationHandler* NetworkConfigurationHandler::InitializeForTest(
+    NetworkStateHandler* network_state_handler) {
+  NetworkConfigurationHandler* handler = new NetworkConfigurationHandler();
+  handler->Init(network_state_handler);
+  return handler;
 }
 
 }  // namespace chromeos

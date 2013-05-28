@@ -1355,8 +1355,10 @@ void NetworkLibraryImplCros::SetIPParametersCallback(
     return;
 
   // Ensure NetworkStateHandler properties are up-to-date.
-  if (NetworkStateHandler::IsInitialized())
-    NetworkStateHandler::Get()->RequestUpdateForNetwork(service_path);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RequestUpdateForNetwork(
+        service_path);
+  }
 
   // Attempt to refresh its IP parameters, so that the changes to the service
   // properties can take effect.

@@ -25,8 +25,9 @@ ash::SystemTray* GetSystemTray() {
 
 }  // namespace
 
-using chromeos::NetworkStateHandler;
 using chromeos::DBusThreadManager;
+using chromeos::NetworkHandler;
+using chromeos::NetworkStateHandler;
 using chromeos::ShillDeviceClient;
 using chromeos::ShillServiceClient;
 
@@ -43,14 +44,14 @@ class NetworkStateNotifierTest : public AshTestBase {
   virtual void SetUp() OVERRIDE {
     DBusThreadManager::InitializeWithStub();
     SetupDefaultShillState();
-    NetworkStateHandler::Initialize();
+    NetworkHandler::Initialize();
     RunAllPendingInMessageLoop();
     AshTestBase::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
     AshTestBase::TearDown();
-    NetworkStateHandler::Shutdown();
+    NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
   }
 
@@ -96,7 +97,7 @@ TEST_F(NetworkStateNotifierTest, ConnectionFailure) {
   EXPECT_FALSE(GetSystemTray()->CloseNotificationBubbleForTest());
   // State -> Failure for connecting network should spawn a notification
   SetServiceState("wifi1", flimflam::kStateAssociation);
-  NetworkStateHandler::Get()->SetConnectingNetwork("wifi1");
+  NetworkHandler::Get()->network_state_handler()->SetConnectingNetwork("wifi1");
   SetServiceState("wifi1", flimflam::kStateFailure);
   EXPECT_TRUE(GetSystemTray()->CloseNotificationBubbleForTest());
   // Failure -> Idle should not spawn a notification

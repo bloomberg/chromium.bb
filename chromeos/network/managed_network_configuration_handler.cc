@@ -294,34 +294,6 @@ void TranslatePropertiesToOncAndRunCallback(
 
 }  // namespace
 
-static ManagedNetworkConfigurationHandler*
-g_configuration_handler_instance = NULL;
-
-// static
-void ManagedNetworkConfigurationHandler::Initialize(
-    NetworkProfileHandler* profile_handler) {
-  CHECK(!g_configuration_handler_instance);
-  g_configuration_handler_instance =
-      new ManagedNetworkConfigurationHandler(profile_handler);
-}
-
-// static
-bool ManagedNetworkConfigurationHandler::IsInitialized() {
-  return g_configuration_handler_instance;
-}
-
-// static
-void ManagedNetworkConfigurationHandler::Shutdown() {
-  CHECK(g_configuration_handler_instance);
-  delete g_configuration_handler_instance;
-  g_configuration_handler_instance = NULL;
-}
-
-// static
-ManagedNetworkConfigurationHandler* ManagedNetworkConfigurationHandler::Get() {
-  CHECK(g_configuration_handler_instance);
-  return g_configuration_handler_instance;
-}
 
 // static
 scoped_ptr<NetworkUIData> ManagedNetworkConfigurationHandler::GetUIData(
@@ -354,7 +326,7 @@ void ManagedNetworkConfigurationHandler::GetManagedProperties(
                      error_callback);
     return;
   }
-  NetworkConfigurationHandler::Get()->GetProperties(
+  network_configuration_handler_->GetProperties(
       service_path,
       base::Bind(
           &ManagedNetworkConfigurationHandler::GetManagedPropertiesCallback,
@@ -372,10 +344,11 @@ void ManagedNetworkConfigurationHandler::GetManagedPropertiesCallback(
   std::string profile_path;
   shill_properties.GetStringWithoutPathExpansion(flimflam::kProfileProperty,
                                                  &profile_path);
+  LOG(ERROR) << "Profile: " << profile_path;
   const NetworkProfile* profile =
-      profile_handler_->GetProfileForPath(profile_path);
+      network_profile_handler_->GetProfileForPath(profile_path);
   if (!profile) {
-    VLOG(1) << "No or no known profile received for service "
+    LOG(ERROR) << "No or no known profile received for service "
             << service_path << ".";
   }
 
@@ -444,7 +417,7 @@ void ManagedNetworkConfigurationHandler::GetProperties(
     const std::string& service_path,
     const network_handler::DictionaryResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) const {
-  NetworkConfigurationHandler::Get()->GetProperties(
+  network_configuration_handler_->GetProperties(
       service_path,
       base::Bind(&TranslatePropertiesToOncAndRunCallback, callback),
       error_callback);
@@ -456,7 +429,7 @@ void ManagedNetworkConfigurationHandler::SetProperties(
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) const {
   const NetworkState* state =
-      NetworkStateHandler::Get()->GetNetworkState(service_path);
+      network_state_handler_->GetNetworkState(service_path);
 
   if (!state) {
     RunErrorCallback(service_path,
@@ -480,7 +453,7 @@ void ManagedNetworkConfigurationHandler::SetProperties(
 
   const std::string& profile_path = state->profile_path();
   const NetworkProfile *profile =
-      profile_handler_->GetProfileForPath(profile_path);
+      network_profile_handler_->GetProfileForPath(profile_path);
   if (!profile) {
     RunErrorCallback(service_path,
                      kUnknownProfilePath,
@@ -531,10 +504,8 @@ void ManagedNetworkConfigurationHandler::SetProperties(
   scoped_ptr<base::DictionaryValue> shill_dictionary(
       CreateShillConfiguration(*profile, guid, policy, &user_settings));
 
-  NetworkConfigurationHandler::Get()->SetProperties(service_path,
-                                                    *shill_dictionary,
-                                                    callback,
-                                                    error_callback);
+  network_configuration_handler_->SetProperties(
+      service_path, *shill_dictionary, callback, error_callback);
 }
 
 void ManagedNetworkConfigurationHandler::CreateConfiguration(
@@ -559,7 +530,7 @@ void ManagedNetworkConfigurationHandler::CreateConfiguration(
   }
 
   const NetworkProfile* profile =
-      profile_handler_->GetProfileForUserhash(userhash);
+      network_profile_handler_->GetProfileForUserhash(userhash);
   if (!profile) {
     RunErrorCallback("",
                      kProfileNotInitialized,
@@ -578,18 +549,16 @@ void ManagedNetworkConfigurationHandler::CreateConfiguration(
       CreateShillConfiguration(*profile, guid, NULL /*no policy*/,
                                &properties));
 
-  NetworkConfigurationHandler::Get()->CreateConfiguration(*shill_dictionary,
-                                                          callback,
-                                                          error_callback);
+  network_configuration_handler_->CreateConfiguration(
+      *shill_dictionary, callback, error_callback);
 }
 
 void ManagedNetworkConfigurationHandler::RemoveConfiguration(
     const std::string& service_path,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) const {
-  NetworkConfigurationHandler::Get()->RemoveConfiguration(service_path,
-                                                          callback,
-                                                          error_callback);
+  network_configuration_handler_->RemoveConfiguration(
+      service_path, callback, error_callback);
 }
 
 // This class compares (entry point is Run()) |modified_policies| with the
@@ -736,10 +705,10 @@ class ManagedNetworkConfigurationHandler::PolicyApplicator
         scoped_ptr<base::DictionaryValue> shill_dictionary =
             CreateShillConfiguration(profile_, new_guid, new_policy,
                                      ui_data->user_settings());
-        NetworkConfigurationHandler::Get()->CreateConfiguration(
-            *shill_dictionary,
-            base::Bind(&IgnoreString),
-            base::Bind(&LogErrorWithDict, FROM_HERE));
+        handler_->network_configuration_handler()->
+            CreateConfiguration(*shill_dictionary,
+                                base::Bind(&IgnoreString),
+                                base::Bind(&LogErrorWithDict, FROM_HERE));
         remaining_policies_.erase(new_guid);
       }
     } else if (was_managed) {
@@ -801,7 +770,7 @@ class ManagedNetworkConfigurationHandler::PolicyApplicator
       scoped_ptr<base::DictionaryValue> shill_dictionary =
           CreateShillConfiguration(profile_, *it, policy,
                                    NULL /* no user settings */);
-      NetworkConfigurationHandler::Get()->CreateConfiguration(
+      handler_->network_configuration_handler()->CreateConfiguration(
           *shill_dictionary,
           base::Bind(&IgnoreString),
           base::Bind(&LogErrorWithDict, FROM_HERE));
@@ -860,7 +829,7 @@ void ManagedNetworkConfigurationHandler::SetPolicy(
   STLDeleteValues(&old_policies);
 
   const NetworkProfile* profile =
-      profile_handler_->GetProfileForUserhash(userhash);
+      network_profile_handler_->GetProfileForUserhash(userhash);
   if (!profile) {
     VLOG(1) << "The relevant Shill profile isn't initialized yet, postponing "
             << "policy application.";
@@ -920,19 +889,29 @@ ManagedNetworkConfigurationHandler::GetPoliciesForProfile(
   return GetPoliciesForUser(profile.userhash);
 }
 
-ManagedNetworkConfigurationHandler::ManagedNetworkConfigurationHandler(
-    NetworkProfileHandler* profile_handler)
-    : profile_handler_(profile_handler),
+ManagedNetworkConfigurationHandler::ManagedNetworkConfigurationHandler()
+    : network_state_handler_(NULL),
+      network_profile_handler_(NULL),
+      network_configuration_handler_(NULL),
       weak_ptr_factory_(this) {
-  profile_handler_->AddObserver(this);
 }
 
 ManagedNetworkConfigurationHandler::~ManagedNetworkConfigurationHandler() {
-  profile_handler_->RemoveObserver(this);
+  network_profile_handler_->RemoveObserver(this);
   for (UserToPoliciesMap::iterator it = policies_by_user_.begin();
        it != policies_by_user_.end(); ++it) {
     STLDeleteValues(&it->second);
   }
+}
+
+void ManagedNetworkConfigurationHandler::Init(
+    NetworkStateHandler* network_state_handler,
+    NetworkProfileHandler* network_profile_handler,
+    NetworkConfigurationHandler* network_configuration_handler) {
+  network_state_handler_ = network_state_handler;
+  network_profile_handler_ = network_profile_handler;
+  network_configuration_handler_ = network_configuration_handler;
+  network_profile_handler_->AddObserver(this);
 }
 
 }  // namespace chromeos

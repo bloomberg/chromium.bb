@@ -226,7 +226,7 @@ BurnManager::BurnManager(
       url_request_context_getter_(context_getter),
       bytes_image_download_progress_last_reported_(0),
       weak_ptr_factory_(this) {
-  NetworkStateHandler::Get()->AddObserver(this);
+  NetworkHandler::Get()->network_state_handler()->AddObserver(this);
   base::WeakPtr<BurnManager> weak_ptr(weak_ptr_factory_.GetWeakPtr());
   device_handler_.SetCallbacks(
       base::Bind(&BurnManager::NotifyDeviceAdded, weak_ptr),
@@ -242,7 +242,7 @@ BurnManager::~BurnManager() {
   if (image_dir_created_) {
     file_util::Delete(image_dir_, true);
   }
-  NetworkStateHandler::Get()->RemoveObserver(this);
+  NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
   DBusThreadManager::Get()->GetImageBurnerClient()->ResetEventHandlers();
 }
 

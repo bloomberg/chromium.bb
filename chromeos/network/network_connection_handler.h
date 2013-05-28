@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 
 namespace chromeos {
@@ -49,14 +50,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   static const char kErrorShillError[];
   static const char kErrorPreviousConnectFailed[];
 
-  // Sets the global instance. Must be called before any calls to Get().
-  static void Initialize();
-
-  // Destroys the global instance.
-  static void Shutdown();
-
-  // Gets the global instance. Initialize() must be called first.
-  static NetworkConnectionHandler* Get();
+  ~NetworkConnectionHandler();
 
   // ConnectToNetwork() will start an asynchronous connection attempt.
   // On success, |success_callback| will be called.
@@ -89,8 +83,12 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
                          const network_handler::ErrorCallback& error_callback);
 
  private:
+  friend class NetworkHandler;
+  friend class NetworkConnectionHandlerTest;
   NetworkConnectionHandler();
-  ~NetworkConnectionHandler();
+
+  void Init(NetworkStateHandler* network_state_handler,
+            NetworkConfigurationHandler* network_configuration_handler);
 
   // Calls Shill.Manager.Connect asynchronously.
   void CallShillConnect(
@@ -132,6 +130,11 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
                           const network_handler::ErrorCallback& error_callback,
                           const std::string& error_name,
                           const std::string& error_message);
+
+  // Local references to the associated handler instances.
+  NetworkStateHandler* network_state_handler_;
+  NetworkProfileHandler* network_profile_handler_;
+  NetworkConfigurationHandler* network_configuration_handler_;
 
   // Set of pending connect requests, used to prevent repeat attempts while
   // waiting for Shill.

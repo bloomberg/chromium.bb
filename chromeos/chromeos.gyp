@@ -240,6 +240,8 @@
         'network/network_connection_handler.h',
         'network/network_event_log.cc',
         'network/network_event_log.h',
+        'network/network_handler.cc',
+        'network/network_handler.h',
         'network/network_handler_callbacks.cc',
         'network/network_handler_callbacks.h',
         'network/network_ip_config.cc',

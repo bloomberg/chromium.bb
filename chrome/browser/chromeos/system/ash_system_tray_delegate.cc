@@ -486,7 +486,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     std::string page = chrome::kInternetOptionsSubPage;
     const chromeos::NetworkState* network = service_path.empty() ? NULL :
-        chromeos::NetworkStateHandler::Get()->GetNetworkState(service_path);
+        NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+            service_path);
     if (network) {
       std::string name(network->name());
       if (name.empty() && network->type() == flimflam::kTypeEthernet)
@@ -747,7 +748,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ConfigureNetwork(const std::string& network_id) OVERRIDE {
     const chromeos::NetworkState* network = network_id.empty() ? NULL :
-        chromeos::NetworkStateHandler::Get()->GetNetworkState(network_id);
+        NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+            network_id);
     if (!network) {
       LOG(ERROR) << "ConfigureNetwork: Network not found: " << network_id;
       return;

@@ -11,11 +11,17 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace dbus {
+class ObjectPath;
 }
 
 namespace chromeos {
@@ -39,18 +45,10 @@ namespace chromeos {
 // that is suitable for logging. None of the error message text is meant for
 // user consumption.
 
-class CHROMEOS_EXPORT NetworkConfigurationHandler {
+class CHROMEOS_EXPORT NetworkConfigurationHandler
+    : public base::SupportsWeakPtr<NetworkConfigurationHandler> {
  public:
   ~NetworkConfigurationHandler();
-
-  // Sets the global instance. Must be called before any calls to Get().
-  static void Initialize();
-
-  // Destroys the global instance.
-  static void Shutdown();
-
-  // Gets the global instance. Initialize() must be called first.
-  static NetworkConfigurationHandler* Get();
 
   // Gets the properties of the network with id |service_path|. See note on
   // |callback| and |error_callback|, in class description above.
@@ -88,7 +86,7 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler {
   void CreateConfiguration(
       const base::DictionaryValue& properties,
       const network_handler::StringResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) const;
+      const network_handler::ErrorCallback& error_callback);
 
   // Removes the network |service_path| from the remembered network list in the
   // active Shill profile. The network may still show up in the visible networks
@@ -99,9 +97,22 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler {
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) const;
 
- private:
+  // Construct and initialize an instance for testing.
+  static NetworkConfigurationHandler* InitializeForTest(
+      NetworkStateHandler* network_state_handler);
+
+ protected:
+  friend class NetworkHandler;
   friend class NetworkConfigurationHandlerTest;
+
   NetworkConfigurationHandler();
+  void Init(NetworkStateHandler* network_state_handler);
+
+  void RunCreateNetworkCallback(
+      const network_handler::StringResultCallback& callback,
+      const dbus::ObjectPath& service_path);
+
+  NetworkStateHandler* network_state_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationHandler);
 };

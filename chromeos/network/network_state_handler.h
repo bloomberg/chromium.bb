@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/managed_state.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/shill_property_handler.h"
 
@@ -66,18 +67,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
   };
 
   virtual ~NetworkStateHandler();
-
-  // Sets the global instance. Must be called before any calls to Get().
-  static void Initialize();
-
-  // Returns true if the global instance has been initialized.
-  static bool IsInitialized();
-
-  // Destroys the global instance.
-  static void Shutdown();
-
-  // Gets the global instance. Initialize() must be called first.
-  static NetworkStateHandler* Get();
 
   // Add/remove observers.
   void AddObserver(NetworkStateHandlerObserver* observer);
@@ -180,12 +169,16 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void GetNetworkStatePropertiesForTest(
       base::DictionaryValue* dictionary) const;
 
+  // Construct and initialize an instance for testing.
+  static NetworkStateHandler* InitializeForTest();
+
   static const char kMatchTypeDefault[];
   static const char kMatchTypeWireless[];
   static const char kMatchTypeMobile[];
   static const char kMatchTypeNonVirtual[];
 
  protected:
+  friend class NetworkHandler;
   NetworkStateHandler();
 
   // ShillPropertyHandler::Listener overrides.
@@ -228,7 +221,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   virtual void ManagedStateListChanged(
       ManagedState::ManagedType type) OVERRIDE;
 
-  // Called in Initialize(). Called explicitly by tests after adding
+  // Called after construction. Called explicitly by tests after adding
   // test observers.
   void InitShillPropertyHandler();
 

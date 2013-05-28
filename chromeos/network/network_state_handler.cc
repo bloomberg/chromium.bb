@@ -71,8 +71,6 @@ const char NetworkStateHandler::kMatchTypeWireless[] = "wireless";
 const char NetworkStateHandler::kMatchTypeMobile[] = "mobile";
 const char NetworkStateHandler::kMatchTypeNonVirtual[] = "non-virtual";
 
-static NetworkStateHandler* g_network_state_handler = NULL;
-
 NetworkStateHandler::NetworkStateHandler() {
 }
 
@@ -87,29 +85,10 @@ void NetworkStateHandler::InitShillPropertyHandler() {
 }
 
 // static
-void NetworkStateHandler::Initialize() {
-  CHECK(!g_network_state_handler);
-  g_network_state_handler = new NetworkStateHandler();
-  g_network_state_handler->InitShillPropertyHandler();
-}
-
-// static
-bool NetworkStateHandler::IsInitialized() {
-  return g_network_state_handler != NULL;
-}
-
-// static
-void NetworkStateHandler::Shutdown() {
-  CHECK(g_network_state_handler);
-  delete g_network_state_handler;
-  g_network_state_handler = NULL;
-}
-
-// static
-NetworkStateHandler* NetworkStateHandler::Get() {
-  CHECK(g_network_state_handler)
-      << "NetworkStateHandler::Get() called before Initialize()";
-  return g_network_state_handler;
+NetworkStateHandler* NetworkStateHandler::InitializeForTest() {
+  NetworkStateHandler* handler = new NetworkStateHandler();
+  handler->InitShillPropertyHandler();
+  return handler;
 }
 
 void NetworkStateHandler::AddObserver(NetworkStateHandlerObserver* observer) {

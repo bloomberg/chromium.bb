@@ -17,6 +17,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 
@@ -107,15 +108,12 @@ namespace internal {
 
 NetworkStateNotifier::NetworkStateNotifier()
     : cellular_out_of_credits_(false) {
-  if (!NetworkStateHandler::Get())
-    return;
-  NetworkStateHandler::Get()->AddObserver(this);
+  NetworkHandler::Get()->network_state_handler()->AddObserver(this);
   InitializeNetworks();
 }
 
 NetworkStateNotifier::~NetworkStateNotifier() {
-  if (NetworkStateHandler::Get())
-    NetworkStateHandler::Get()->RemoveObserver(this);
+  NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
 }
 
 void NetworkStateNotifier::DefaultNetworkChanged(const NetworkState* network) {
@@ -130,7 +128,7 @@ void NetworkStateNotifier::DefaultNetworkChanged(const NetworkState* network) {
 
 void NetworkStateNotifier::NetworkConnectionStateChanged(
     const NetworkState* network) {
-  NetworkStateHandler* handler = NetworkStateHandler::Get();
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   std::string prev_state;
   std::string new_state = network->connection_state();
   CachedStateMap::iterator iter = cached_state_.find(network->path());
@@ -215,7 +213,7 @@ void NetworkStateNotifier::NotificationLinkClicked(
 
 void NetworkStateNotifier::InitializeNetworks() {
   NetworkStateList network_list;
-  NetworkStateHandler::Get()->GetNetworkList(&network_list);
+  NetworkHandler::Get()->network_state_handler()->GetNetworkList(&network_list);
   VLOG(1) << "NetworkStateNotifier:InitializeNetworks: "
           << network_list.size();
   for (NetworkStateList::iterator iter = network_list.begin();
@@ -225,7 +223,7 @@ void NetworkStateNotifier::InitializeNetworks() {
     cached_state_[network->path()] = network->connection_state();
   }
   const NetworkState* default_network =
-      NetworkStateHandler::Get()->DefaultNetwork();
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   if (default_network && default_network->IsConnectedState())
     last_active_network_ = default_network->path();
 }

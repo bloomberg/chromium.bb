@@ -15,6 +15,7 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_profile.h"
 
 namespace base {
@@ -30,22 +31,11 @@ class CHROMEOS_EXPORT NetworkProfileHandler
  public:
   typedef std::vector<NetworkProfile> ProfileList;
 
-  // Initializes the singleton and registers it for DBus events.
-  static NetworkProfileHandler* Initialize();
-
-  // Returns if the singleton is initialized.
-  static bool IsInitialized();
-
-  // Unregisters the singleton from DBus events and destroys it.
-  static void Shutdown();
-
-  // Initialize() must be called before this.
-  static NetworkProfileHandler* Get();
+  virtual ~NetworkProfileHandler();
 
   void AddObserver(NetworkProfileObserver* observer);
   void RemoveObserver(NetworkProfileObserver* observer);
 
-  void RequestInitialProfileList();
   void GetManagerPropertiesCallback(DBusMethodCallStatus call_status,
                                     const base::DictionaryValue& properties);
 
@@ -62,11 +52,8 @@ class CHROMEOS_EXPORT NetworkProfileHandler
       const std::string& userhash) const;
 
  protected:
-  // We make the de-/constructor protected to prevent their usage except in
-  // tests by deriving a stub (see NetworkProfileHandlerStub). Outside of tests,
-  // the singleton should be retrieved with the static Get() function.
+  friend class NetworkHandler;
   NetworkProfileHandler();
-  virtual ~NetworkProfileHandler();
 
   void AddProfile(const NetworkProfile& profile);
   void RemoveProfile(const std::string& profile_path);

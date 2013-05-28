@@ -340,7 +340,6 @@ NetworkConfigurationUpdater*
       network_configuration_updater_.reset(
           new NetworkConfigurationUpdaterImpl(
               GetPolicyService(),
-              chromeos::ManagedNetworkConfigurationHandler::Get(),
               make_scoped_ptr(new chromeos::CertificateHandler)));
     } else {
       network_configuration_updater_.reset(

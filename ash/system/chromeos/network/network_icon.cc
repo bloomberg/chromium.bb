@@ -23,8 +23,9 @@
 #include "ui/gfx/size_conversions.h"
 
 using chromeos::DeviceState;
-using chromeos::NetworkStateHandler;
+using chromeos::NetworkHandler;
 using chromeos::NetworkState;
+using chromeos::NetworkStateHandler;
 
 namespace ash {
 namespace network_icon {
@@ -444,7 +445,7 @@ gfx::ImageSkia GetIcon(const NetworkState* network,
 // Get connecting images
 
 gfx::ImageSkia GetConnectingVpnImage(IconType icon_type) {
-  NetworkStateHandler* handler = NetworkStateHandler::Get();
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   const NetworkState* connected_network = NULL;
   if (icon_type == ICON_TYPE_TRAY) {
     connected_network = handler->ConnectedNetworkByType(
@@ -546,8 +547,8 @@ bool NetworkIconImpl::UpdateCellularState(const NetworkState* network) {
 }
 
 bool NetworkIconImpl::UpdateVPNBadge() {
-  const NetworkState* vpn =
-      NetworkStateHandler::Get()->ConnectedNetworkByType(flimflam::kTypeVPN);
+  const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
+      ConnectedNetworkByType(flimflam::kTypeVPN);
   if (vpn && vpn_badge_ == NULL) {
     vpn_badge_ = BadgeForVPN(icon_type_);
     return true;
@@ -561,7 +562,7 @@ bool NetworkIconImpl::UpdateVPNBadge() {
 void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
   DCHECK(network);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  NetworkStateHandler* handler = NetworkStateHandler::Get();
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
   const std::string& type = network->type();
   if (type == flimflam::kTypeWifi) {
@@ -691,7 +692,7 @@ int GetCellularUninitializedMsg() {
   static base::Time s_uninitialized_state_time;
   static int s_uninitialized_msg(0);
 
-  NetworkStateHandler* handler = NetworkStateHandler::Get();
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   if (handler->GetTechnologyState(NetworkStateHandler::kMatchTypeMobile)
       == NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
     s_uninitialized_msg = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;

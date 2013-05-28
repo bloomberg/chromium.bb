@@ -15,6 +15,7 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/network_handler.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/x509_certificate.h"
 
@@ -49,11 +50,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  // Manage the global instance.
-  static void Initialize();
-  static void Shutdown();
-  static CertLoader* Get();
-  static bool IsInitialized();
+  virtual ~CertLoader();
 
   void AddObserver(CertLoader::Observer* observer);
   void RemoveObserver(CertLoader::Observer* observer);
@@ -78,8 +75,8 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   const net::CertificateList& cert_list() const { return cert_list_; }
 
  private:
+  friend class NetworkHandler;
   CertLoader();
-  virtual ~CertLoader();
 
   void RequestCertificates();
 

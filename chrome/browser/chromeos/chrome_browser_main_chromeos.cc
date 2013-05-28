@@ -107,16 +107,9 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "chromeos/login/login_state.h"
-#include "chromeos/network/cert_loader.h"
-#include "chromeos/network/geolocation_handler.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
-#include "chromeos/network/network_configuration_handler.h"
-#include "chromeos/network/network_connection_handler.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_profile_handler.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/power/power_manager_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -315,8 +308,6 @@ class DBusServices {
     CrosDBusService::Initialize();
 
     LoginState::Initialize();
-    CertLoader::Initialize();
-    CertLibrary::Initialize();
     CryptohomeLibrary::Initialize();
 
     // This function and SystemKeyEventListener use InputMethodManager.
@@ -330,15 +321,8 @@ class DBusServices {
 
     // Always initialize these handlers which should not conflict with
     // NetworkLibrary.
-    network_event_log::Initialize();
-    GeolocationHandler::Initialize();
-    NetworkStateHandler::Initialize();
-
-    NetworkProfileHandler* profile_handler =
-        NetworkProfileHandler::Initialize();
-    NetworkConfigurationHandler::Initialize();
-    ManagedNetworkConfigurationHandler::Initialize(profile_handler);
-    NetworkConnectionHandler::Initialize();
+    NetworkHandler::Initialize();
+    CertLibrary::Initialize();
 
     // Initialize the network change notifier for Chrome OS. The network
     // change notifier starts to monitor changes from the power manager and
@@ -380,21 +364,14 @@ class DBusServices {
     if (cros_initialized_ && CrosLibrary::Get())
       CrosLibrary::Shutdown();
 
-    NetworkConnectionHandler::Shutdown();
-    ManagedNetworkConfigurationHandler::Shutdown();
-    NetworkConfigurationHandler::Shutdown();
-    NetworkProfileHandler::Shutdown();
-
-    NetworkStateHandler::Shutdown();
-    GeolocationHandler::Shutdown();
-    network_event_log::Shutdown();
+    CertLibrary::Shutdown();
+    NetworkHandler::Shutdown();
 
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
     input_method::Shutdown();
+
     CryptohomeLibrary::Shutdown();
-    CertLibrary::Shutdown();
-    CertLoader::Shutdown();
     LoginState::Shutdown();
 
     CrosDBusService::Shutdown();

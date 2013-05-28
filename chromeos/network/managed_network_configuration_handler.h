@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+ // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_profile_observer.h"
 #include "chromeos/network/onc/onc_constants.h"
@@ -24,7 +25,9 @@ class ListValue;
 
 namespace chromeos {
 
+class NetworkConfigurationHandler;
 class NetworkProfileHandler;
+class NetworkStateHandler;
 class NetworkUIData;
 
 // The ManagedNetworkConfigurationHandler class is used to create and configure
@@ -58,17 +61,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler
   typedef std::map<std::string, const base::DictionaryValue*> GuidToPolicyMap;
   typedef std::map<std::string, GuidToPolicyMap> UserToPoliciesMap;
 
-  // Initializes the singleton.
-  static void Initialize(NetworkProfileHandler* profile_handler);
-
-  // Returns if the singleton is initialized.
-  static bool IsInitialized();
-
-  // Destroys the singleton.
-  static void Shutdown();
-
-  // Initialize() must be called before this.
-  static ManagedNetworkConfigurationHandler* Get();
+  virtual ~ManagedNetworkConfigurationHandler();
 
   // Returns the NetworkUIData parsed from the UIData property of
   // |shill_dictionary|. If parsing fails or the field doesn't exist, returns
@@ -135,12 +128,21 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler
   virtual void OnProfileAdded(const NetworkProfile& profile) OVERRIDE;
   virtual void OnProfileRemoved(const NetworkProfile& profile) OVERRIDE;
 
+  NetworkConfigurationHandler* network_configuration_handler() {
+    return network_configuration_handler_;
+  }
+
  private:
+  friend class NetworkHandler;
+  friend class ManagedNetworkConfigurationHandlerTest;
   class PolicyApplicator;
 
-  explicit ManagedNetworkConfigurationHandler(
-      NetworkProfileHandler* profile_handler);
-  virtual ~ManagedNetworkConfigurationHandler();
+  ManagedNetworkConfigurationHandler();
+
+  void Init(NetworkStateHandler* network_state_handler,
+            NetworkProfileHandler* network_profile_handler,
+            NetworkConfigurationHandler* network_configuration_handler);
+
 
   void GetManagedPropertiesCallback(
       const network_handler::DictionaryResultCallback& callback,
@@ -157,8 +159,10 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler
   // the device policy.
   UserToPoliciesMap policies_by_user_;
 
-  // A local reference to the policy handler singleton.
-  NetworkProfileHandler* profile_handler_;
+  // Local references to the associated handler instances.
+  NetworkStateHandler* network_state_handler_;
+  NetworkProfileHandler* network_profile_handler_;
+  NetworkConfigurationHandler* network_configuration_handler_;
 
   // For Shill client callbacks
   base::WeakPtrFactory<ManagedNetworkConfigurationHandler> weak_ptr_factory_;

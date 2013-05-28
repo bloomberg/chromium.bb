@@ -28,7 +28,8 @@ NetworkStateInformer::NetworkStateInformer()
 }
 
 NetworkStateInformer::~NetworkStateInformer() {
-  NetworkStateHandler::Get()->RemoveObserver(this);
+  if (NetworkHandler::IsInitialized())
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
   if (NetworkPortalDetector::IsEnabledInCommandLine() &&
       NetworkPortalDetector::GetInstance()) {
     NetworkPortalDetector::GetInstance()->RemoveObserver(this);
@@ -37,7 +38,7 @@ NetworkStateInformer::~NetworkStateInformer() {
 
 void NetworkStateInformer::Init() {
   UpdateState();
-  NetworkStateHandler::Get()->AddObserver(this);
+  NetworkHandler::Get()->network_state_handler()->AddObserver(this);
 
   if (NetworkPortalDetector::IsEnabledInCommandLine() &&
       NetworkPortalDetector::GetInstance()) {
@@ -64,7 +65,7 @@ void NetworkStateInformer::RemoveObserver(
 
 void NetworkStateInformer::NetworkManagerChanged() {
   const NetworkState* default_network =
-      NetworkStateHandler::Get()->DefaultNetwork();
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   State new_state = OFFLINE;
   std::string new_network_service_path;
   if (default_network) {
@@ -103,8 +104,9 @@ void NetworkStateInformer::DefaultNetworkChanged(const NetworkState* network) {
 void NetworkStateInformer::OnPortalDetectionCompleted(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
-  if (NetworkStateHandler::IsInitialized() &&
-      NetworkStateHandler::Get()->DefaultNetwork() == network)
+  if (NetworkHandler::IsInitialized() &&
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork() ==
+      network)
     NetworkManagerChanged();
 }
 
@@ -128,7 +130,7 @@ bool NetworkStateInformer::UpdateState() {
   State new_state = OFFLINE;
 
   const NetworkState* default_network =
-      NetworkStateHandler::Get()->DefaultNetwork();
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   if (default_network) {
     new_state = GetNetworkState(default_network);
     last_network_service_path_ = default_network->path();

@@ -29,7 +29,6 @@ class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater {
  public:
   NetworkConfigurationUpdaterImpl(
       PolicyService* policy_service,
-      chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
       scoped_ptr<chromeos::CertificateHandler> certificate_handler);
   virtual ~NetworkConfigurationUpdaterImpl();
 
@@ -52,9 +51,6 @@ class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater {
 
   // The policy service storing the ONC policies.
   PolicyService* policy_service_;
-
-  // Pointer to the global singleton or mock provided to the constructor.
-  chromeos::ManagedNetworkConfigurationHandler* network_config_handler_;
 
   // User hash of the user that the user policy applies to.
   std::string hashed_username_;

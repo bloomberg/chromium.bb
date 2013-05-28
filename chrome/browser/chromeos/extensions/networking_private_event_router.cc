@@ -57,7 +57,7 @@ void NetworkingPrivateEventRouter::Shutdown() {
     event_router->UnregisterObserver(this);
 
   if (listening_)
-    NetworkStateHandler::Get()->RemoveObserver(this);
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
   listening_ = false;
 }
 
@@ -81,10 +81,10 @@ void NetworkingPrivateEventRouter::StartOrStopListeningForNetworkChanges() {
 
   if (should_listen) {
     if (!listening_)
-      NetworkStateHandler::Get()->AddObserver(this);
+      NetworkHandler::Get()->network_state_handler()->AddObserver(this);
   } else {
     if (listening_)
-      NetworkStateHandler::Get()->RemoveObserver(this);
+      NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
   }
   listening_ = should_listen;
 }
@@ -92,7 +92,7 @@ void NetworkingPrivateEventRouter::StartOrStopListeningForNetworkChanges() {
 void NetworkingPrivateEventRouter::NetworkListChanged() {
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
   NetworkStateList networks;
-  NetworkStateHandler::Get()->GetNetworkList(&networks);
+  NetworkHandler::Get()->network_state_handler()->GetNetworkList(&networks);
   if (!event_router->HasEventListener(kOnNetworkListChanged))
     return;
 

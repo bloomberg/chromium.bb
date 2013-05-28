@@ -47,7 +47,7 @@ class NetworkPortalDetectorImplTest
 
   virtual void SetUp() {
     DBusThreadManager::InitializeWithStub();
-    SetupNetworkStateHandler();
+    SetupNetworkHandler();
 
     profile_.reset(new TestingProfile());
     network_portal_detector_.reset(
@@ -64,7 +64,7 @@ class NetworkPortalDetectorImplTest
   virtual void TearDown() {
     network_portal_detector_->Shutdown();
     profile_.reset();
-    NetworkStateHandler::Shutdown();
+    NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
   }
 
@@ -72,7 +72,8 @@ class NetworkPortalDetectorImplTest
                         int response_code,
                         const std::string& network_service_path) {
     const NetworkState* network =
-        NetworkStateHandler::Get()->GetNetworkState(network_service_path);
+        NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+            network_service_path);
     NetworkPortalDetector::CaptivePortalState state =
         network_portal_detector()->GetCaptivePortalState(network);
     ASSERT_EQ(status, state.status);
@@ -170,7 +171,7 @@ class NetworkPortalDetectorImplTest
   }
 
   void SetNetworkDeviceEnabled(const std::string& type, bool enabled) {
-    NetworkStateHandler::Get()->SetTechnologyEnabled(
+    NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
         type, enabled, network_handler::ErrorCallback());
     MessageLoop::current()->RunUntilIdle();
   }
@@ -208,9 +209,9 @@ class NetworkPortalDetectorImplTest
                              add_to_watchlist);
   }
 
-  void SetupNetworkStateHandler() {
+  void SetupNetworkHandler() {
     SetupDefaultShillState();
-    NetworkStateHandler::Initialize();
+    NetworkHandler::Initialize();
   }
 
   MessageLoop message_loop_;

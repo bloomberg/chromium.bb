@@ -1204,8 +1204,10 @@ void NetworkLibraryImplBase::LoadOncNetworks(
     ForgetNetworksById(source, removal_ids, true);
   }
   // Ensure NetworkStateHandler properties are up-to-date.
-  if (NetworkStateHandler::IsInitialized())
-    NetworkStateHandler::Get()->RequestUpdateForAllNetworks();
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->
+        RequestUpdateForAllNetworks();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////

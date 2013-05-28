@@ -48,32 +48,6 @@ void LoadNSSCertificates(net::CertificateList* cert_list) {
 
 }  // namespace
 
-static CertLoader* g_cert_loader = NULL;
-
-// static
-void CertLoader::Initialize() {
-  CHECK(!g_cert_loader);
-  g_cert_loader = new CertLoader();
-}
-
-// static
-void CertLoader::Shutdown() {
-  CHECK(g_cert_loader);
-  delete g_cert_loader;
-  g_cert_loader = NULL;
-}
-
-// static
-CertLoader* CertLoader::Get() {
-  CHECK(g_cert_loader) << "CertLoader::Get() called before Initialize()";
-  return g_cert_loader;
-}
-
-// static
-bool CertLoader::IsInitialized() {
-  return g_cert_loader;
-}
-
 CertLoader::CertLoader()
     : certificates_requested_(false),
       certificates_loaded_(false),
@@ -85,13 +59,15 @@ CertLoader::CertLoader()
       initialize_token_factory_(this),
       update_certificates_factory_(this) {
   net::CertDatabase::GetInstance()->AddObserver(this);
-  LoginState::Get()->AddObserver(this);
+  if (LoginState::IsInitialized())
+    LoginState::Get()->AddObserver(this);
   RequestCertificates();
 }
 
 CertLoader::~CertLoader() {
   net::CertDatabase::GetInstance()->RemoveObserver(this);
-  LoginState::Get()->RemoveObserver(this);
+  if (LoginState::IsInitialized())
+    LoginState::Get()->RemoveObserver(this);
 }
 
 void CertLoader::AddObserver(CertLoader::Observer* observer) {
@@ -112,8 +88,10 @@ bool CertLoader::IsHardwareBacked() const {
 
 void CertLoader::RequestCertificates() {
   CHECK(thread_checker_.CalledOnValidThread());
-  VLOG(1) << "RequestCertificates: " << LoginState::Get()->IsUserLoggedIn();
-  if (certificates_requested_ || !LoginState::Get()->IsUserLoggedIn())
+  const bool logged_in = LoginState::IsInitialized() ?
+      LoginState::Get()->IsUserLoggedIn() : false;
+  VLOG(1) << "RequestCertificates: " << logged_in;
+  if (certificates_requested_ || !logged_in)
     return;
 
   certificates_requested_ = true;
@@ -133,7 +111,7 @@ void CertLoader::InitializeTokenAndLoadCertificates() {
   CHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "InitializeTokenAndLoadCertificates";
 
-  switch(tpm_token_state_) {
+  switch (tpm_token_state_) {
     case TPM_STATE_UNKNOWN: {
       DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsEnabled(
       base::Bind(&CertLoader::OnTpmIsEnabled,

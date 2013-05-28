@@ -36,6 +36,7 @@
 
 using ash::internal::TrayNetwork;
 using ash::NetworkObserver;
+using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 
@@ -120,7 +121,8 @@ class NetworkTrayView : public TrayItemView,
   }
 
   void UpdateNetworkStateHandlerIcon() {
-    NetworkStateHandler* handler = NetworkStateHandler::Get();
+    NetworkStateHandler* handler =
+        NetworkHandler::Get()->network_state_handler();
     gfx::ImageSkia image;
     base::string16 name;
     bool animating = false;
@@ -265,8 +267,8 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
 
  private:
   void Update() {
-    bool wifi_enabled =
-        NetworkStateHandler::Get()->IsTechnologyEnabled(flimflam::kTypeWifi);
+    bool wifi_enabled = NetworkHandler::Get()->network_state_handler()->
+        IsTechnologyEnabled(flimflam::kTypeWifi);
     const int image_id = wifi_enabled ?
         IDR_AURA_UBER_TRAY_WIFI_ENABLED : IDR_AURA_UBER_TRAY_WIFI_DISABLED;
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
@@ -401,7 +403,7 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
       messages_(new tray::NetworkMessages()),
       request_wifi_view_(false) {
   network_state_observer_.reset(new TrayNetworkStateObserver(this));
-  if (NetworkStateHandler::IsInitialized())
+  if (NetworkHandler::IsInitialized())
     network_state_notifier_.reset(new NetworkStateNotifier());
   Shell::GetInstance()->system_tray_notifier()->AddNetworkObserver(this);
 }
@@ -413,7 +415,7 @@ TrayNetwork::~TrayNetwork() {
 
 views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {
   CHECK(tray_ == NULL);
-  if (!chromeos::NetworkStateHandler::IsInitialized())
+  if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
   tray_ = new tray::NetworkTrayView(this);
   return tray_;
@@ -421,7 +423,7 @@ views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {
 
 views::View* TrayNetwork::CreateDefaultView(user::LoginStatus status) {
   CHECK(default_ == NULL);
-  if (!chromeos::NetworkStateHandler::IsInitialized())
+  if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
   CHECK(tray_ != NULL);
   default_ = new tray::NetworkDefaultView(
@@ -431,7 +433,7 @@ views::View* TrayNetwork::CreateDefaultView(user::LoginStatus status) {
 
 views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
   CHECK(detailed_ == NULL);
-  if (!chromeos::NetworkStateHandler::IsInitialized())
+  if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
   // Clear any notifications when showing the detailed view.
   messages_->messages().clear();
@@ -514,7 +516,7 @@ void TrayNetwork::RequestToggleWifi() {
     request_wifi_view_ = true;
     PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
   }
-  NetworkStateHandler* handler = NetworkStateHandler::Get();
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   bool enabled = handler->IsTechnologyEnabled(flimflam::kTypeWifi);
   handler->SetTechnologyEnabled(
       flimflam::kTypeWifi, !enabled,
@@ -544,7 +546,7 @@ void TrayNetwork::GetNetworkStateHandlerImageAndLabel(
     gfx::ImageSkia* image,
     base::string16* label,
     bool* animating) {
-  NetworkStateHandler* handler = NetworkStateHandler::Get();
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   const NetworkState* connected_network = handler->ConnectedNetworkByType(
       NetworkStateHandler::kMatchTypeNonVirtual);
   const NetworkState* connecting_network = handler->ConnectingNetworkByType(

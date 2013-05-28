@@ -11,18 +11,20 @@
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using chromeos::NetworkHandler;
+
 namespace ash {
 namespace internal {
 
 TrayNetworkStateObserver::TrayNetworkStateObserver(Delegate* delegate)
     : delegate_(delegate) {
-  if (chromeos::NetworkStateHandler::IsInitialized())
-    chromeos::NetworkStateHandler::Get()->AddObserver(this);
+  if (NetworkHandler::IsInitialized())
+    NetworkHandler::Get()->network_state_handler()->AddObserver(this);
 }
 
 TrayNetworkStateObserver::~TrayNetworkStateObserver() {
-  if (chromeos::NetworkStateHandler::IsInitialized())
-    chromeos::NetworkStateHandler::Get()->RemoveObserver(this);
+  if (NetworkHandler::IsInitialized())
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
 }
 
 void TrayNetworkStateObserver::NetworkManagerChanged() {
@@ -44,7 +46,8 @@ void TrayNetworkStateObserver::DefaultNetworkChanged(
 
 void TrayNetworkStateObserver::NetworkPropertiesUpdated(
     const chromeos::NetworkState* network) {
-  if (network == chromeos::NetworkStateHandler::Get()->DefaultNetwork())
+  if (network ==
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork())
     delegate_->NetworkStateChanged(true);
   delegate_->NetworkServiceChanged(network);
 }

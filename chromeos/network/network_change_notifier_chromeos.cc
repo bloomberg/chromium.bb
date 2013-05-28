@@ -58,20 +58,20 @@ NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
 
 void NetworkChangeNotifierChromeos::Initialize() {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  NetworkStateHandler::Get()->AddObserver(this);
+  NetworkHandler::Get()->network_state_handler()->AddObserver(this);
 
   dns_config_service_.reset(new DnsConfigService());
   dns_config_service_->WatchConfig(
       base::Bind(net::NetworkChangeNotifier::SetDnsConfig));
 
   // Update initial connection state.
-  DefaultNetworkChanged(NetworkStateHandler::Get()->DefaultNetwork());
+  DefaultNetworkChanged(
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork());
 }
 
 void NetworkChangeNotifierChromeos::Shutdown() {
   dns_config_service_.reset();
-  if (NetworkStateHandler::Get())
-    NetworkStateHandler::Get()->RemoveObserver(this);
+  NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 
@@ -210,4 +210,3 @@ NetworkChangeNotifierChromeos::NetworkChangeCalculatorParamsChromeos() {
 }
 
 }  // namespace chromeos
-

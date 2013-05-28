@@ -114,6 +114,8 @@ MockDBusThreadManager::MockDBusThreadManager()
   EXPECT_CALL(*mock_cryptohome_client_.get(), GetSystemSalt(_))
       .WillRepeatedly(DoAll(SetArgumentPointee<0>(*GetMockSystemSalt()),
                             Return(true)));
+  EXPECT_CALL(*mock_cryptohome_client_.get(), TpmIsEnabled(_))
+      .Times(AnyNumber());
 
   // Called from GeolocationHandler::Init().
   EXPECT_CALL(*mock_shill_manager_client_.get(), GetProperties(_))

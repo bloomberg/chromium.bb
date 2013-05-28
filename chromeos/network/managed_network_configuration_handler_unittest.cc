@@ -15,7 +15,7 @@
 #include "chromeos/dbus/mock_shill_service_client.h"
 #include "chromeos/dbus/shill_profile_client_stub.h"
 #include "chromeos/network/network_configuration_handler.h"
-#include "chromeos/network/network_profile_handler_stub.h"
+#include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "dbus/object_path.h"
@@ -23,6 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::Pointee;
@@ -129,6 +130,19 @@ class ShillProfileTestClient {
   std::map<std::string, std::string> profile_to_user_;
 };
 
+class TestNetworkProfileHandler : public NetworkProfileHandler {
+ public:
+  TestNetworkProfileHandler() {}
+  virtual ~TestNetworkProfileHandler() {}
+
+  void AddProfileForTest(const NetworkProfile& profile) {
+    AddProfile(profile);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestNetworkProfileHandler);
+};
+
 }  // namespace
 
 class ManagedNetworkConfigurationHandlerTest : public testing::Test {
@@ -145,6 +159,8 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
         .WillRepeatedly(Return(static_cast<dbus::Bus*>(NULL)));
     DBusThreadManager::InitializeForTesting(dbus_thread_manager);
 
+    SetNetworkConfigurationHandlerExpectations();
+
     EXPECT_CALL(*dbus_thread_manager, GetShillManagerClient())
         .WillRepeatedly(Return(&mock_manager_client_));
     EXPECT_CALL(*dbus_thread_manager, GetShillServiceClient())
@@ -160,14 +176,24 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
         .WillByDefault(Invoke(&profiles_stub_,
                               &ShillProfileTestClient::GetEntry));
 
-    NetworkConfigurationHandler::Initialize();
-    ManagedNetworkConfigurationHandler::Initialize(&stub_profile_handler_);
+    network_profile_handler_.reset(new TestNetworkProfileHandler());
+    network_configuration_handler_.reset(
+        NetworkConfigurationHandler::InitializeForTest(
+            NULL /* no NetworkStateHandler */));
+    managed_network_configuration_handler_.reset(
+        new ManagedNetworkConfigurationHandler());
+    managed_network_configuration_handler_->Init(
+        NULL /* no NetworkStateHandler */,
+        network_profile_handler_.get(),
+        network_configuration_handler_.get());
+
     message_loop_.RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
-    ManagedNetworkConfigurationHandler::Shutdown();
-    NetworkConfigurationHandler::Shutdown();
+    managed_network_configuration_handler_.reset();
+    network_configuration_handler_.reset();
+    network_profile_handler_.reset();
     DBusThreadManager::Shutdown();
   }
 
@@ -175,13 +201,15 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     Mock::VerifyAndClearExpectations(&mock_manager_client_);
     Mock::VerifyAndClearExpectations(&mock_service_client_);
     Mock::VerifyAndClearExpectations(&mock_profile_client_);
+    SetNetworkConfigurationHandlerExpectations();
   }
 
   void InitializeStandardProfiles() {
     profiles_stub_.AddProfile(kUser1ProfilePath, kUser1);
-    stub_profile_handler_.AddProfile(NetworkProfile(kUser1ProfilePath, kUser1));
-    stub_profile_handler_.AddProfile(
-        NetworkProfile(kSharedProfilePath, std::string()));
+    network_profile_handler_->
+        AddProfileForTest(NetworkProfile(kUser1ProfilePath, kUser1));
+    network_profile_handler_->
+        AddProfileForTest(NetworkProfile(kSharedProfilePath, std::string()));
   }
 
   void SetUpEntry(const std::string& path_to_shill_json,
@@ -209,16 +237,28 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
         onc::ONC_SOURCE_USER_POLICY, userhash, *network_configs);
   }
 
+  void SetNetworkConfigurationHandlerExpectations() {
+    // These calls occur in NetworkConfigurationHandler.
+    EXPECT_CALL(mock_manager_client_, GetProperties(_)).Times(AnyNumber());
+    EXPECT_CALL(mock_manager_client_,
+                AddPropertyChangedObserver(_)).Times(AnyNumber());
+    EXPECT_CALL(mock_manager_client_,
+                RemovePropertyChangedObserver(_)).Times(AnyNumber());
+  }
+
   ManagedNetworkConfigurationHandler* managed_handler() {
-    return ManagedNetworkConfigurationHandler::Get();
+    return managed_network_configuration_handler_.get();
   }
 
  protected:
   StrictMock<MockShillManagerClient> mock_manager_client_;
   StrictMock<MockShillServiceClient> mock_service_client_;
   StrictMock<MockShillProfileClient> mock_profile_client_;
-  NetworkProfileHandlerStub stub_profile_handler_;
   ShillProfileTestClient profiles_stub_;
+  scoped_ptr<TestNetworkProfileHandler> network_profile_handler_;
+  scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
+  scoped_ptr<ManagedNetworkConfigurationHandler>
+        managed_network_configuration_handler_;
   MessageLoop message_loop_;
 
  private:

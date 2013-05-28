@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_util.h"
 
 namespace base {
@@ -33,11 +34,6 @@ class CHROMEOS_EXPORT GeolocationHandler : public ShillPropertyChangedObserver {
  public:
   virtual ~GeolocationHandler();
 
-  // Manage the global instance. Must be initialized before any calls to Get().
-  static void Initialize();
-  static void Shutdown();
-  static GeolocationHandler* Get();
-
   // This sends a request for wifi access point data. If data is already
   // available, returns |true|, fills |access_points| with the latest access
   // point data, and sets |age_ms| to the time since the last update in MS.
@@ -50,8 +46,10 @@ class CHROMEOS_EXPORT GeolocationHandler : public ShillPropertyChangedObserver {
                                  const base::Value& value) OVERRIDE;
 
  private:
+  friend class NetworkHandler;
   friend class GeolocationHandlerTest;
   GeolocationHandler();
+
   void Init();
 
   // ShillManagerClient callback

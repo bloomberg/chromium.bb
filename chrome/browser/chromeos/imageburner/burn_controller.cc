@@ -127,7 +127,7 @@ class BurnControllerImpl
                               const base::FilePath& target_file_path) OVERRIDE {
     if (!target_device_path.empty() && !target_file_path.empty() &&
         state_machine_->new_burn_posible()) {
-      if (!NetworkStateHandler::Get()->DefaultNetwork()) {
+      if (!NetworkHandler::Get()->network_state_handler()->DefaultNetwork()) {
         delegate_->OnNoNetwork();
         return;
       }

@@ -101,7 +101,7 @@ void NetworkPortalDetectorImpl::Init() {
   DCHECK(CalledOnValidThread());
 
   state_ = STATE_IDLE;
-  NetworkStateHandler::Get()->AddObserver(this);
+  NetworkHandler::Get()->network_state_handler()->AddObserver(this);
 }
 
 void NetworkPortalDetectorImpl::Shutdown() {
@@ -113,8 +113,8 @@ void NetworkPortalDetectorImpl::Shutdown() {
   captive_portal_detector_->Cancel();
   captive_portal_detector_.reset();
   observers_.Clear();
-  if (NetworkStateHandler::IsInitialized())
-    NetworkStateHandler::Get()->RemoveObserver(this);
+  if (NetworkHandler::IsInitialized())
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
 }
 
 void NetworkPortalDetectorImpl::AddObserver(Observer* observer) {
@@ -129,7 +129,8 @@ void NetworkPortalDetectorImpl::AddAndFireObserver(Observer* observer) {
   if (!observer)
     return;
   AddObserver(observer);
-  const NetworkState* network = NetworkStateHandler::Get()->DefaultNetwork();
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   observer->OnPortalDetectionCompleted(network, GetCaptivePortalState(network));
 }
 
@@ -156,7 +157,7 @@ void NetworkPortalDetectorImpl::Enable(bool start_detection) {
   state_ = STATE_IDLE;
   attempt_count_ = 0;
   const NetworkState* default_network =
-      NetworkStateHandler::Get()->DefaultNetwork();
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   if (!default_network)
     return;
   portal_state_map_.erase(default_network->path());
@@ -204,7 +205,7 @@ void NetworkPortalDetectorImpl::DisableLazyDetection() {
 void NetworkPortalDetectorImpl::NetworkManagerChanged() {
   DCHECK(CalledOnValidThread());
   const NetworkState* default_network =
-      NetworkStateHandler::Get()->DefaultNetwork();
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   if (!default_network) {
     default_network_id_.clear();
     return;
@@ -362,7 +363,7 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
   detection_timeout_.Cancel();
 
   const NetworkState* default_network =
-      NetworkStateHandler::Get()->DefaultNetwork();
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
 
   CaptivePortalState state;
   state.response_code = results.response_code;
@@ -480,7 +481,8 @@ bool NetworkPortalDetectorImpl::DetectionTimeoutIsCancelledForTesting() const {
 
 int NetworkPortalDetectorImpl::GetRequestTimeoutSec() const {
   DCHECK_LE(0, attempt_count_);
-  const NetworkState* network = NetworkStateHandler::Get()->DefaultNetwork();
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   if (!network)
     return kBaseRequestTimeoutSec;
   if (lazy_detection_enabled_)

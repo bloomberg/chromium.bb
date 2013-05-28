@@ -377,8 +377,10 @@ void Network::SetValueProperty(const char* prop, const base::Value& value) {
     return;
   CrosSetNetworkServiceProperty(service_path_, prop, value);
   // Ensure NetworkStateHandler properties are up-to-date.
-  if (NetworkStateHandler::IsInitialized())
-    NetworkStateHandler::Get()->RequestUpdateForNetwork(service_path());
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RequestUpdateForNetwork(
+        service_path());
+  }
 }
 
 void Network::ClearProperty(const char* prop) {
@@ -387,8 +389,10 @@ void Network::ClearProperty(const char* prop) {
     return;
   CrosClearNetworkServiceProperty(service_path_, prop);
   // Ensure NetworkStateHandler properties are up-to-date.
-  if (NetworkStateHandler::IsInitialized())
-    NetworkStateHandler::Get()->RequestUpdateForNetwork(service_path());
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RequestUpdateForNetwork(
+        service_path());
+  }
 }
 
 void Network::SetStringProperty(
@@ -456,8 +460,10 @@ void Network::AttemptConnection(const base::Closure& closure) {
 void Network::set_connecting() {
   state_ = STATE_CONNECT_REQUESTED;
   // Set the connecting network in NetworkStateHandler for the status area UI.
-  if (NetworkStateHandler::IsInitialized())
-    NetworkStateHandler::Get()->SetConnectingNetwork(service_path());
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->
+        SetConnectingNetwork(service_path());
+  }
 }
 
 void Network::SetProfilePath(const std::string& profile_path) {

@@ -111,8 +111,6 @@ bool CertificateIsConfigured(NetworkUIData* ui_data) {
 
 }  // namespace
 
-static NetworkConnectionHandler* g_connection_handler_instance = NULL;
-
 const char NetworkConnectionHandler::kErrorNotFound[] = "not-found";
 const char NetworkConnectionHandler::kErrorConnected[] = "connected";
 const char NetworkConnectionHandler::kErrorConnecting[] = "connecting";
@@ -127,27 +125,9 @@ const char NetworkConnectionHandler::kErrorConfigurationRequired[] =
     "configuration-required";
 const char NetworkConnectionHandler::kErrorShillError[] = "shill-error";
 
-// static
-void NetworkConnectionHandler::Initialize() {
-  CHECK(!g_connection_handler_instance);
-  g_connection_handler_instance = new NetworkConnectionHandler;
-}
-
-// static
-void NetworkConnectionHandler::Shutdown() {
-  CHECK(g_connection_handler_instance);
-  delete g_connection_handler_instance;
-  g_connection_handler_instance = NULL;
-}
-
-// static
-NetworkConnectionHandler* NetworkConnectionHandler::Get() {
-  CHECK(g_connection_handler_instance)
-      << "NetworkConnectionHandler::Get() called before Initialize()";
-  return g_connection_handler_instance;
-}
-
-NetworkConnectionHandler::NetworkConnectionHandler() {
+NetworkConnectionHandler::NetworkConnectionHandler()
+    : network_state_handler_(NULL),
+      network_configuration_handler_(NULL) {
   const char* new_handlers_enabled =
       CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kUseNewNetworkConfigurationHandlers) ?
@@ -158,13 +138,20 @@ NetworkConnectionHandler::NetworkConnectionHandler() {
 NetworkConnectionHandler::~NetworkConnectionHandler() {
 }
 
+void NetworkConnectionHandler::Init(
+    NetworkStateHandler* network_state_handler,
+    NetworkConfigurationHandler* network_configuration_handler) {
+  network_state_handler_ = network_state_handler;
+  network_configuration_handler_ = network_configuration_handler;
+}
+
 void NetworkConnectionHandler::ConnectToNetwork(
     const std::string& service_path,
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback,
     bool ignore_error_state) {
   const NetworkState* network =
-      NetworkStateHandler::Get()->GetNetworkState(service_path);
+      network_state_handler_->GetNetworkState(service_path);
   if (!network) {
     InvokeErrorCallback(service_path, error_callback, kErrorNotFound);
     return;
@@ -210,7 +197,7 @@ void NetworkConnectionHandler::ConnectToNetwork(
 
   if (!network->connectable() && NetworkMayNeedCredentials(network)) {
     // Request additional properties to check.
-    NetworkConfigurationHandler::Get()->GetProperties(
+    network_configuration_handler_->GetProperties(
         network->path(),
         base::Bind(&NetworkConnectionHandler::VerifyConfiguredAndConnect,
                    AsWeakPtr(), success_callback, error_callback),
@@ -227,7 +214,7 @@ void NetworkConnectionHandler::DisconnectNetwork(
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
   const NetworkState* network =
-      NetworkStateHandler::Get()->GetNetworkState(service_path);
+      network_state_handler_->GetNetworkState(service_path);
   if (!network) {
     InvokeErrorCallback(service_path, error_callback, kErrorNotFound);
     return;
@@ -245,7 +232,7 @@ void NetworkConnectionHandler::CallShillConnect(
     const network_handler::ErrorCallback& error_callback) {
   // TODO(stevenjb): Remove SetConnectingNetwork and use this class to maintain
   // the connecting network(s) once NetworkLibrary path is eliminated.
-  NetworkStateHandler::Get()->SetConnectingNetwork(service_path);
+  network_state_handler_->SetConnectingNetwork(service_path);
   NET_LOG_EVENT("Connect Request", service_path);
   DBusThreadManager::Get()->GetShillServiceClient()->Connect(
       dbus::ObjectPath(service_path),
@@ -274,7 +261,7 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     const std::string& service_path,
     const base::DictionaryValue& properties) {
   const NetworkState* network =
-      NetworkStateHandler::Get()->GetNetworkState(service_path);
+      network_state_handler_->GetNetworkState(service_path);
   if (!network) {
     InvokeErrorCallback(service_path, error_callback, kErrorNotFound);
     return;

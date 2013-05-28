@@ -28,6 +28,7 @@ namespace api = extensions::api::networking_private;
 namespace onc = chromeos::onc;
 using chromeos::DBusThreadManager;
 using chromeos::ManagedNetworkConfigurationHandler;
+using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 using chromeos::ShillManagerClient;
@@ -68,7 +69,7 @@ bool NetworkingPrivateGetPropertiesFunction::RunImpl() {
       api::GetProperties::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ManagedNetworkConfigurationHandler::Get()->GetProperties(
+  NetworkHandler::Get()->managed_network_configuration_handler()->GetProperties(
       params->network_guid,  // service path
       base::Bind(&NetworkingPrivateGetPropertiesFunction::GetPropertiesSuccess,
                  this),
@@ -116,13 +117,14 @@ bool NetworkingPrivateGetManagedPropertiesFunction::RunImpl() {
         profile_helper()->active_user_id_hash();
   }
 
-  ManagedNetworkConfigurationHandler::Get()->GetManagedProperties(
-      user_id_hash,
-      params->network_guid,  // service path
-      base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Success,
-                 this),
-      base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Failure,
-                 this));
+  NetworkHandler::Get()->managed_network_configuration_handler()->
+      GetManagedProperties(
+          user_id_hash,
+          params->network_guid,  // service path
+          base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Success,
+                     this),
+          base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Failure,
+                     this));
   return true;
 }
 
@@ -157,8 +159,8 @@ bool NetworkingPrivateGetStateFunction::RunImpl() {
   // The |network_guid| parameter is storing the service path.
   std::string service_path = params->network_guid;
 
-  const NetworkState* state =
-      NetworkStateHandler::Get()->GetNetworkState(service_path);
+  const NetworkState* state = NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
   if (!state) {
     error_ = "Error.InvalidParameter";
     SendResponse(false);
@@ -190,7 +192,7 @@ bool NetworkingPrivateSetPropertiesFunction::RunImpl() {
   scoped_ptr<base::DictionaryValue> properties_dict(
       params->properties.ToValue());
 
-  ManagedNetworkConfigurationHandler::Get()->SetProperties(
+  NetworkHandler::Get()->managed_network_configuration_handler()->SetProperties(
       params->network_guid,  // service path
       *properties_dict,
       base::Bind(&NetworkingPrivateSetPropertiesFunction::ResultCallback,
@@ -226,7 +228,8 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
       api::GetVisibleNetworks::Params::ToString(params->type);
 
   NetworkStateHandler::NetworkStateList network_states;
-  NetworkStateHandler::Get()->GetNetworkList(&network_states);
+  NetworkHandler::Get()->network_state_handler()->GetNetworkList(
+      &network_states);
 
   base::ListValue* network_properties_list = new base::ListValue;
   for (NetworkStateHandler::NetworkStateList::iterator it =
@@ -264,7 +267,7 @@ NetworkingPrivateRequestNetworkScanFunction::
 }
 
 bool NetworkingPrivateRequestNetworkScanFunction::RunImpl() {
-  NetworkStateHandler::Get()->RequestScan();
+  NetworkHandler::Get()->network_state_handler()->RequestScan();
   return true;
 }
 
@@ -292,7 +295,7 @@ bool NetworkingPrivateStartConnectFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const bool ignore_error_state = true;
-  chromeos::NetworkConnectionHandler::Get()->ConnectToNetwork(
+  NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
       params->network_guid,  // service path
       base::Bind(
           &NetworkingPrivateStartConnectFunction::ConnectionStartSuccess,
@@ -327,7 +330,7 @@ bool NetworkingPrivateStartDisconnectFunction::RunImpl() {
       api::StartDisconnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  chromeos::NetworkConnectionHandler::Get()->DisconnectNetwork(
+  NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
       params->network_guid,  // service path
       base::Bind(
           &NetworkingPrivateStartDisconnectFunction::DisconnectionStartSuccess,

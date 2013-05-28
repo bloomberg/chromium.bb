@@ -20,6 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 
@@ -42,9 +43,9 @@ class VpnDefaultView : public TrayItemMore,
 
   static bool ShouldShow() {
     // Do not show VPN line in uber tray bubble if VPN is not configured.
-    NetworkStateHandler* handler = NetworkStateHandler::Get();
-    const NetworkState* vpn = handler->FirstNetworkByType(
-        flimflam::kTypeVPN);
+    NetworkStateHandler* handler =
+        NetworkHandler::Get()->network_state_handler();
+    const NetworkState* vpn = handler->FirstNetworkByType(flimflam::kTypeVPN);
     return vpn != NULL;
   }
 
@@ -71,7 +72,8 @@ class VpnDefaultView : public TrayItemMore,
   void GetNetworkStateHandlerImageAndLabel(gfx::ImageSkia* image,
                                            base::string16* label,
                                            bool* animating) {
-    NetworkStateHandler* handler = NetworkStateHandler::Get();
+    NetworkStateHandler* handler =
+        NetworkHandler::Get()->network_state_handler();
     const NetworkState* vpn = handler->FirstNetworkByType(
         flimflam::kTypeVPN);
     if (!vpn || (vpn->connection_state() == flimflam::kStateIdle)) {
@@ -114,7 +116,7 @@ views::View* TrayVPN::CreateTrayView(user::LoginStatus status) {
 
 views::View* TrayVPN::CreateDefaultView(user::LoginStatus status) {
   CHECK(default_ == NULL);
-  if (!chromeos::NetworkStateHandler::IsInitialized())
+  if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
   if (status == user::LOGGED_IN_NONE)
     return NULL;
@@ -127,7 +129,7 @@ views::View* TrayVPN::CreateDefaultView(user::LoginStatus status) {
 
 views::View* TrayVPN::CreateDetailedView(user::LoginStatus status) {
   CHECK(detailed_ == NULL);
-  if (!chromeos::NetworkStateHandler::IsInitialized())
+  if (!chromeos::NetworkHandler::IsInitialized())
     return NULL;
 
   detailed_ = new tray::NetworkStateListDetailedView(
