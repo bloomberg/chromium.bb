@@ -79,7 +79,6 @@
                         'WEBKIT_IMPLEMENTATION=1',
                     ],
                     'sources': [
-                        '<@(wtf_unittest_files)',
                         '<@(core_unittest_files)',
                         '<@(webkit_unittest_files)',
                     ],

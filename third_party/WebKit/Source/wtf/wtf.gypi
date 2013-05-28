@@ -225,8 +225,8 @@
         ],
         'wtf_unittest_files': [
             'tests/AtomicString.cpp',
-            'tests/CheckedArithmeticOperations.cpp',
             'tests/CString.cpp',
+            'tests/CheckedArithmeticOperations.cpp',
             'tests/Functional.cpp',
             'tests/HashMap.cpp',
             'tests/HashSet.cpp',

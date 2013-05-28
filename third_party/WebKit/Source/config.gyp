@@ -33,12 +33,13 @@
     # size of the binary and increasing the speed of gdb.  gcc only.
     'remove_webcore_debug_symbols%': 0,
   },
-  'targets': [{
+  'targets': [
+  {
     'target_name': 'config',
     'type': 'none',
     'direct_dependent_settings': {
-      'defines': [
-        'WEBKIT_IMPLEMENTATION=1',
+      'include_dirs': [
+        '.'
       ],
       'msvs_disabled_warnings': [
         4138, 4244, 4291, 4305, 4344, 4355, 4521, 4099,
@@ -76,5 +77,26 @@
         }],
       ],
     },
-  }],
+  },
+  {
+    'target_name': 'unittest_config',
+    'type': 'none',
+    'dependencies': [
+      'config',
+      '<(DEPTH)/testing/gmock.gyp:gmock',
+      '<(DEPTH)/testing/gtest.gyp:gtest',
+    ],
+    'export_dependent_settings': [
+      'config',
+      '<(DEPTH)/testing/gmock.gyp:gmock',
+      '<(DEPTH)/testing/gtest.gyp:gtest',
+    ],
+    'direct_dependent_settings': {
+      'cflags!': ['-Wglobal-constructors'],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': ['-Wglobal-constructors'],
+      },
+    },
+  }
+  ],
 }

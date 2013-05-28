@@ -60,6 +60,9 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(libjpeg_gyp_path):libjpeg',
       ],
+      'defines': [
+        'WEBKIT_IMPLEMENTATION=1',
+      ],
       'include_dirs': [
         # FIXME:  Remove <(SHARED_INTERMEDIATE_DIR)/webcore when we
         # can entice gyp into letting us put both the .cpp and .h

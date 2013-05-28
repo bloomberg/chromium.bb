@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2013 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,27 +25,43 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
 {
   'includes': [
     '../WebKit/chromium/WinPrecompile.gypi',
-    'modules.gypi',
+    'wtf.gypi',
   ],
-  'targets': [{
-    'target_name': 'modules',
-    'type': 'static_library',
-    'dependencies': [
-      '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
-      '../config.gyp:config',
-      '../core/core.gyp/core.gyp:webcore',
-    ],
-    'defines': [
-      'WEBKIT_IMPLEMENTATION=1',
-    ],
-    'sources': [
-      '<@(modules_files)',
-    ],
-    # Disable c4267 warnings until we fix size_t to int truncations.
-    'msvs_disabled_warnings': [ 4267, 4334, ]
-  }],
+  'targets': [
+    {
+      'target_name': 'wtf_unittests',
+      'type': 'executable',
+      'dependencies': [
+        'run_all_tests',
+        'wtf.gyp:wtf',
+        '../config.gyp:unittest_config',
+      ],
+      'sources': [
+        '<@(wtf_unittest_files)',
+      ],
+      # Disable c4267 warnings until we fix size_t to int truncations.
+      'msvs_disabled_warnings': [4127, 4510, 4512, 4610, 4706, 4068, 4267],
+      'conditions': [
+        ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and linux_use_tcmalloc==1', {
+          'dependencies': [
+            '<(DEPTH)/base/base.gyp:base',
+            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+          ],
+        }]
+      ]
+    },
+    {
+      'target_name': 'run_all_tests',
+      'type': 'static_library',
+      'dependencies': [
+        '../config.gyp:unittest_config',
+      ],
+      'sources': [
+        'tests/RunAllTests.cpp',
+      ]
+    }
+  ]
 }

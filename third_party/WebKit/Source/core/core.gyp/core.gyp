@@ -1046,6 +1046,9 @@
         '../../config.gyp:config',
         'webcore',
       ],
+      'defines': [
+        'WEBKIT_IMPLEMENTATION=1',
+      ],
       'include_dirs': [
         '<(bindings_dir)/v8',  # FIXME: Remove once http://crbug.com/236119 is fixed.
         '../testing',
