@@ -338,13 +338,10 @@ bool AreWeShowingSignin(GURL url, SyncPromoUI::Source source,
       GURL(GaiaUrls::GetInstance()->service_login_url()).ReplaceComponents(
           replacements);
 
-  GURL clean_one_click_url =
-      GURL(GaiaUrls::GetInstance()->gaia_login_form_realm() +
-           "ChromeLoginPrompt").ReplaceComponents(replacements);
-
   return (url.ReplaceComponents(replacements) == clean_login_url &&
           source != SyncPromoUI::SOURCE_UNKNOWN) ||
-      (url.ReplaceComponents(replacements) == clean_one_click_url &&
+      (IsValidGaiaSigninRedirectOrResponseURL(url) &&
+       url.spec().find("ChromeLoginPrompt") != std::string::npos &&
        !email.empty());
 }
 
