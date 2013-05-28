@@ -351,6 +351,16 @@ body[new-ui] #volume-list .volume-icon {
   width: 24px;
 }
 
+#middlebar-header {
+  -webkit-box-sizing: border-box;
+  -webkit-padding-start: 20px;
+  border-right: 1px solid rgb(212, 212, 212);
+  color: rgb(100, 100, 100);
+  height: 47px;
+  line-height: 40px;
+  position: absolute;
+  width: 100%;
+}
 
 #directory-tree {
   bottom: 0;
@@ -359,7 +369,7 @@ body[new-ui] #volume-list .volume-icon {
   overflow-y: auto;
   position: absolute;
   right: 0;
-  top: 0;
+  top: 47px;
 }
 
 body[new-ui] #directory-tree {
@@ -1594,7 +1604,7 @@ body[new-ui] .table-header-splitter {
 body[new-ui] .table-header {
   background-color: transparent;
   border-bottom: none;
-  height: 40px;
+  height: 47px;
 }
 
 .table-header-sort-image-desc::after {
@@ -1722,7 +1732,11 @@ body[new-ui] #list-container list:focus li.table-row[selected] .file-checkbox {
 }
 
 body[new-ui] #list-container li.table-row {
-  height: 30px;
+  border-style: none;
+  height: 29px;
+  margin: 0;
+  padding-bottom: 0;
+  padding-top: 0;
 }
 
 body[new-ui] #default-actions-list li {
