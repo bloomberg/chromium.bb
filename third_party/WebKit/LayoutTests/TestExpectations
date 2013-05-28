@@ -1915,7 +1915,6 @@ crbug.com/244128 [ Win7 ] transitions/cubic-bezier-overflow-transform.html [ Fai
 crbug.com/244129 [ Mac Win Debug ] transitions/steps-timing-function.html [ Failure Pass ]
 crbug.com/244130 [ Win Debug ] fast/forms/input-search-press-escape-key.html [ Crash ]
 crbug.com/244131 [ Win Debug ] fast/forms/search-disabled-readonly.html [ Crash ]
-crbug.com/244132 [ Win Debug ] inspector-protocol/dom/setFileInputFiles.html [ Crash Pass Timeout ]
 crbug.com/244341 [ Win ] css3/filters/composited-during-animation.html [ Failure Pass Timeout ]
 
 # Seems to be hit by the try jobs only.
@@ -1930,7 +1929,7 @@ crbug.com/244116 [ Win Release ] virtual/gpu/fast/hidpi/image-set-without-specif
 crbug.com/244179 fast/js/date-parse-test.html [ Failure Pass ]
 
 # Makes the following test crash
-crbug.com/244225 inspector-protocol/input/dispatchKeyEvent.html [ Skip ]
+crbug.com/244225 inspector-protocol/dom/setFileInputFiles.html [ Skip ]
 
 # Uses setTimeout trying to catch a specific frame.
 crbug.com/244276 [ Mac ] fast/images/gif-loop-count.html [ ImageOnlyFailure Pass ]
