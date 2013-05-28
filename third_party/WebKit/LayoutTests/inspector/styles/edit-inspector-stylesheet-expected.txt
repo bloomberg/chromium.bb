@@ -13,7 +13,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#inspected  { (inspector-stylesheet:1 -> inspector-stylesheet:1)
+#inspected  { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
 background-color: green;
 
 [expanded] 
