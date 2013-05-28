@@ -62,7 +62,7 @@ class PageCycler(page_measurement.PageMeasurement):
       h.Start(page, tab)
 
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArg('--dom-automation')
+    options.AppendExtraBrowserArg('--enable-stats-collection-bindings')
     options.AppendExtraBrowserArg('--js-flags=--expose_gc')
     options.AppendExtraBrowserArg('--no-sandbox')
 

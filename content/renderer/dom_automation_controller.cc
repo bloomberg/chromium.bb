@@ -31,12 +31,6 @@ DomAutomationController::DomAutomationController()
                                       base::Unretained(this)));
   BindCallback("sendWithId", base::Bind(&DomAutomationController::SendWithId,
                                         base::Unretained(this)));
-  BindCallback("getHistogram",
-               base::Bind(&DomAutomationController::GetHistogram,
-                          base::Unretained(this)));
-  BindCallback("getBrowserHistogram",
-               base::Bind(&DomAutomationController::GetBrowserHistogram,
-                          base::Unretained(this)));
 }
 
 void DomAutomationController::Send(const CppArgumentList& args,
@@ -175,42 +169,6 @@ void DomAutomationController::SetAutomationId(
 
   automation_id_ = args[0].ToInt32();
   result->Set(true);
-}
-
-void DomAutomationController::GetHistogram(const CppArgumentList& args,
-                                           CppVariant* result) {
-  if (args.size() != 1) {
-    result->SetNull();
-    return;
-  }
-  base::HistogramBase* histogram =
-      base::StatisticsRecorder::FindHistogram(args[0].ToString());
-  std::string output;
-  if (!histogram) {
-    output = "{}";
-  } else {
-    histogram->WriteJSON(&output);
-  }
-  result->Set(output);
-}
-
-void DomAutomationController::GetBrowserHistogram(const CppArgumentList& args,
-                                                  CppVariant* result) {
-  if (args.size() != 1) {
-    result->SetNull();
-    return;
-  }
-
-  if (!sender_) {
-    NOTREACHED();
-    result->SetNull();
-    return;
-  }
-
-  std::string histogram_json;
-  sender_->Send(new ChildProcessHostMsg_GetBrowserHistogram(
-      args[0].ToString(), &histogram_json));
-  result->Set(histogram_json);
 }
 
 }  // namespace content

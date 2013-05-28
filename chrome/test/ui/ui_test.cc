@@ -85,6 +85,7 @@ UITestBase::UITestBase()
       homepage_(content::kAboutBlankURL),
       wait_for_initial_loads_(true),
       dom_automation_enabled_(false),
+      stats_collection_controller_enabled_(false),
       show_window_(false),
       clear_profile_(true),
       include_testing_id_(true),
@@ -99,6 +100,7 @@ UITestBase::UITestBase(base::MessageLoop::Type msg_loop_type)
       expected_crashes_(0),
       wait_for_initial_loads_(true),
       dom_automation_enabled_(false),
+      stats_collection_controller_enabled_(false),
       show_window_(false),
       clear_profile_(true),
       include_testing_id_(true),
@@ -187,6 +189,8 @@ void UITestBase::SetLaunchSwitches() {
     launch_arguments_.AppendSwitch(switches::kEnableFileCookies);
   if (dom_automation_enabled_)
     launch_arguments_.AppendSwitch(switches::kDomAutomationController);
+  if (stats_collection_controller_enabled_)
+    launch_arguments_.AppendSwitch(switches::kStatsCollectionController);
   // Allow off-store extension installs.
   launch_arguments_.AppendSwitchASCII(
       switches::kEasyOffStoreExtensionInstall, "1");
