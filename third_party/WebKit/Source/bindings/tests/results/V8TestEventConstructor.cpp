@@ -81,24 +81,26 @@ static v8::Handle<v8::Value> attr2AttrGetterCallback(v8::Local<v8::String> name,
     return TestEventConstructorV8Internal::attr2AttrGetter(name, info);
 }
 
-static v8::Handle<v8::Value> constructor(const v8::Arguments& args)
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, type, args[0]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, args[0]);
     TestEventConstructorInit eventInit;
     if (args.Length() >= 2) {
-        V8TRYCATCH(Dictionary, options, Dictionary(args[1], args.GetIsolate()));
+        V8TRYCATCH_VOID(Dictionary, options, Dictionary(args[1], args.GetIsolate()));
         if (!fillTestEventConstructorInit(eventInit, options))
-            return v8Undefined();
+            return;
     }
 
     RefPtr<TestEventConstructor> event = TestEventConstructor::create(type, eventInit);
 
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper(event.release(), &V8TestEventConstructor::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    return wrapper;
+    args.GetReturnValue().Set(wrapper);
 }
 } // namespace TestEventConstructorV8Internal
 
@@ -115,15 +117,19 @@ bool fillTestEventConstructorInit(TestEventConstructorInit& eventInit, const Dic
     return true;
 }
 
-v8::Handle<v8::Value> V8TestEventConstructor::constructorCallback(const v8::Arguments& args)
+void V8TestEventConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (!args.IsConstructCall())
-        return throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+    if (!args.IsConstructCall()) {
+        throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+        return;
+    }
 
-    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject)
-        return args.Holder();
+    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
+        args.GetReturnValue().Set(args.Holder());
+        return;
+    }
 
-    return TestEventConstructorV8Internal::constructor(args);
+    TestEventConstructorV8Internal::constructor(args);
 }
 
 static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestEventConstructorTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

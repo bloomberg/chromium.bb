@@ -49,7 +49,7 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8XMLHttpRequest::constructorCustom(const v8::Arguments& args)
+void V8XMLHttpRequest::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     ScriptExecutionContext* context = getScriptExecutionContext();
 
@@ -63,7 +63,7 @@ v8::Handle<v8::Value> V8XMLHttpRequest::constructorCustom(const v8::Arguments& a
 
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper(xmlHttpRequest.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    return wrapper;
+    args.GetReturnValue().Set(wrapper);
 }
 
 v8::Handle<v8::Value> V8XMLHttpRequest::responseTextAttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo& info)

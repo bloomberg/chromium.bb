@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8FormData::constructorCustom(const v8::Arguments& args)
+void V8FormData::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     HTMLFormElement* form = 0;
     if (args.Length() > 0 && V8HTMLFormElement::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())))
@@ -48,7 +48,7 @@ v8::Handle<v8::Value> V8FormData::constructorCustom(const v8::Arguments& args)
 
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper(domFormData.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    return wrapper;
+    args.GetReturnValue().Set(wrapper);
 }
 
 v8::Handle<v8::Value> V8FormData::appendMethodCustom(const v8::Arguments& args)

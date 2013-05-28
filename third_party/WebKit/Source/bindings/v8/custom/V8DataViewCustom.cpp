@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8DataView::constructorCustom(const v8::Arguments& args)
+void V8DataView::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (!args.Length()) {
         // see constructWebGLArray -- we don't seem to be able to distingish between
@@ -40,11 +40,14 @@ v8::Handle<v8::Value> V8DataView::constructorCustom(const v8::Arguments& args)
         RefPtr<DataView> dataView = DataView::create(0);
         v8::Handle<v8::Object> wrapper = args.Holder();
         V8DOMWrapper::associateObjectWithWrapper(dataView.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-        return wrapper;
+        args.GetReturnValue().Set(wrapper);
+        return;
     }
-    if (args[0]->IsNull() || !V8ArrayBuffer::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())))
-        return throwTypeError(0, args.GetIsolate());
-    return constructWebGLArrayWithArrayBufferArgument<DataView, char>(args, &info, v8::kExternalByteArray, false);
+    if (args[0]->IsNull() || !V8ArrayBuffer::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
+        throwTypeError(0, args.GetIsolate());
+        return;
+    }
+    constructWebGLArrayWithArrayBufferArgument<DataView, char>(args, &info, v8::kExternalByteArray, false);
 }
 
 // FIXME: Don't need this override.

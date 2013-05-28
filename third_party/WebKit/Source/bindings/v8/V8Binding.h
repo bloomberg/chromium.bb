@@ -70,7 +70,7 @@ namespace WebCore {
     // A helper for throwing JavaScript TypeError for not enough arguments.
     v8::Handle<v8::Value> throwNotEnoughArgumentsError(v8::Isolate*);
 
-    inline v8::Handle<v8::Value> argumentOrNull(const v8::Arguments& args, int index)
+    inline v8::Handle<v8::Value> argumentOrNull(const v8::FunctionCallbackInfo<v8::Value>& args, int index)
     {
         return index >= args.Length() ? v8::Local<v8::Value>() : args[index];
     }

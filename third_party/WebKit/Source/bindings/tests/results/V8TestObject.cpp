@@ -3953,19 +3953,23 @@ static v8::Handle<v8::Value> deprecatedStaticMethodMethodCallback(const v8::Argu
     return TestObjV8Internal::deprecatedStaticMethodMethod(args);
 }
 
-static v8::Handle<v8::Value> constructor(const v8::Arguments& args)
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
-    if (args.Length() <= 0 || !args[0]->IsFunction())
-        return throwTypeError(0, args.GetIsolate());
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
+    if (args.Length() <= 0 || !args[0]->IsFunction()) {
+        throwTypeError(0, args.GetIsolate());
+        return;
+    }
     RefPtr<TestCallback> testCallback = V8TestCallback::create(args[0], getScriptExecutionContext());
 
     RefPtr<TestObj> impl = TestObj::create(testCallback);
     v8::Handle<v8::Object> wrapper = args.Holder();
 
     V8DOMWrapper::associateObjectWithWrapper(impl.release(), &V8TestObject::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    return wrapper;
+    args.GetReturnValue().Set(wrapper);
 }
 
 } // namespace TestObjV8Internal
@@ -4259,15 +4263,19 @@ COMPILE_ASSERT(0x1abc == TestObj::CONST_VALUE_14, TestObjEnumCONST_VALUE_14IsWro
 COMPILE_ASSERT(15 == TestObj::CONST_IMPL, TestObjEnumCONST_IMPLIsWrongUseDoNotCheckConstants);
 COMPILE_ASSERT(1 == TestObj::DEPRECATED_CONSTANT, TestObjEnumDEPRECATED_CONSTANTIsWrongUseDoNotCheckConstants);
 
-v8::Handle<v8::Value> V8TestObject::constructorCallback(const v8::Arguments& args)
+void V8TestObject::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (!args.IsConstructCall())
-        return throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+    if (!args.IsConstructCall()) {
+        throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+        return;
+    }
 
-    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject)
-        return args.Holder();
+    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
+        args.GetReturnValue().Set(args.Holder());
+        return;
+    }
 
-    return TestObjV8Internal::constructor(args);
+    TestObjV8Internal::constructor(args);
 }
 
 v8::Handle<v8::Value> V8TestObject::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)

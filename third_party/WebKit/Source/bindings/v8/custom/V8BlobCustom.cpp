@@ -51,36 +51,45 @@ v8::Handle<v8::Object> wrap(Blob* impl, v8::Handle<v8::Object> creationContext, 
     return V8Blob::createWrapper(impl, creationContext, isolate);
 }
 
-v8::Handle<v8::Value> V8Blob::constructorCustom(const v8::Arguments& args)
+void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (!args.Length()) {
         RefPtr<Blob> blob = Blob::create();
-        return toV8(blob.get(), args.Holder(), args.GetIsolate());
+        args.GetReturnValue().Set(toV8(blob.get(), args.Holder(), args.GetIsolate()));
+        return;
     }
 
     v8::Local<v8::Value> firstArg = args[0];
-    if (!firstArg->IsArray())
-        return throwTypeError("First argument of the constructor is not of type Array", args.GetIsolate());
+    if (!firstArg->IsArray()) {
+        throwTypeError("First argument of the constructor is not of type Array", args.GetIsolate());
+        return;
+    }
 
     String type;
     String endings = ASCIILiteral("transparent");
 
     if (args.Length() > 1) {
-        if (!args[1]->IsObject())
-            return throwTypeError("Second argument of the constructor is not of type Object", args.GetIsolate());
-
-        V8TRYCATCH(Dictionary, dictionary, Dictionary(args[1], args.GetIsolate()));
-
-        V8TRYCATCH(bool, containsEndings, dictionary.get("endings", endings));
-        if (containsEndings) {
-            if (endings != "transparent" && endings != "native")
-                return throwTypeError("The endings property must be either \"transparent\" or \"native\"", args.GetIsolate());
+        if (!args[1]->IsObject()) {
+            throwTypeError("Second argument of the constructor is not of type Object", args.GetIsolate());
+            return;
         }
 
-        V8TRYCATCH(bool, containsType, dictionary.get("type", type));
+        V8TRYCATCH_VOID(Dictionary, dictionary, Dictionary(args[1], args.GetIsolate()));
+
+        V8TRYCATCH_VOID(bool, containsEndings, dictionary.get("endings", endings));
+        if (containsEndings) {
+            if (endings != "transparent" && endings != "native") {
+                throwTypeError("The endings property must be either \"transparent\" or \"native\"", args.GetIsolate());
+                return;
+            }
+        }
+
+        V8TRYCATCH_VOID(bool, containsType, dictionary.get("type", type));
         UNUSED_PARAM(containsType);
-        if (!type.containsOnlyASCII())
-            return throwError(v8SyntaxError, "type must consist of ASCII characters", args.GetIsolate());
+        if (!type.containsOnlyASCII()) {
+            throwError(v8SyntaxError, "type must consist of ASCII characters", args.GetIsolate());
+            return;
+        }
         type.makeLower();
     }
 
@@ -88,7 +97,7 @@ v8::Handle<v8::Value> V8Blob::constructorCustom(const v8::Arguments& args)
 
     BlobBuilder blobBuilder;
 
-    V8TRYCATCH(v8::Local<v8::Array>, blobParts, v8::Local<v8::Array>::Cast(firstArg));
+    V8TRYCATCH_VOID(v8::Local<v8::Array>, blobParts, v8::Local<v8::Array>::Cast(firstArg));
     uint32_t length = blobParts->Length();
 
     for (uint32_t i = 0; i < length; ++i) {
@@ -108,13 +117,13 @@ v8::Handle<v8::Value> V8Blob::constructorCustom(const v8::Arguments& args)
             ASSERT(blob);
             blobBuilder.append(blob);
         } else {
-            V8TRYCATCH(String, stringValue, toWebCoreString(item));
+            V8TRYCATCH_VOID(String, stringValue, toWebCoreString(item));
             blobBuilder.append(stringValue, endings);
         }
     }
 
     RefPtr<Blob> blob = blobBuilder.getBlob(type);
-    return toV8(blob.get(), args.Holder(), args.GetIsolate());
+    args.GetReturnValue().Set(toV8(blob.get(), args.Holder(), args.GetIsolate()));
 }
 
 } // namespace WebCore

@@ -89,7 +89,7 @@ static v8::Handle<v8::Value> setMethodCallback(const v8::Arguments& args)
     return Float64ArrayV8Internal::setMethod(args);
 }
 
-static v8::Handle<v8::Value> constructor(const v8::Arguments& args)
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     return constructWebGLArray<Float64Array, V8Float64Array, double>(args, &V8Float64Array::info, v8::kExternalDoubleArray);
 }
@@ -109,15 +109,19 @@ static const V8DOMConfiguration::BatchedMethod V8Float64ArrayMethods[] = {
     {"set", Float64ArrayV8Internal::setMethodCallback, 0, 0},
 };
 
-v8::Handle<v8::Value> V8Float64Array::constructorCallback(const v8::Arguments& args)
+void V8Float64Array::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (!args.IsConstructCall())
-        return throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+    if (!args.IsConstructCall()) {
+        throwTypeError("DOM object constructor cannot be called as a function.", args.GetIsolate());
+        return;
+    }
 
-    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject)
-        return args.Holder();
+    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
+        args.GetReturnValue().Set(args.Holder());
+        return;
+    }
 
-    return Float64ArrayV8Internal::constructor(args);
+    Float64ArrayV8Internal::constructor(args);
 }
 
 static v8::Persistent<v8::FunctionTemplate> ConfigureV8Float64ArrayTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8DOMPoint::constructorCustom(const v8::Arguments& args)
+void V8DOMPoint::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     float x = 0;
     float y = 0;
@@ -58,7 +58,7 @@ v8::Handle<v8::Value> V8DOMPoint::constructorCustom(const v8::Arguments& args)
     RefPtr<DOMPoint> point = DOMPoint::create(x, y);
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper(point.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    return wrapper;
+    args.GetReturnValue().Set(wrapper);
 }
 
 } // namespace WebCore

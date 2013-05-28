@@ -47,7 +47,7 @@ V8ArrayBufferDeallocationObserver* V8ArrayBufferDeallocationObserver::instance()
 }
 
 
-v8::Handle<v8::Value> V8ArrayBuffer::constructorCustom(const v8::Arguments& args)
+void V8ArrayBuffer::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     // If we return a previously constructed ArrayBuffer,
     // e.g. from the call to ArrayBufferView.buffer, this code is called
@@ -70,14 +70,16 @@ v8::Handle<v8::Value> V8ArrayBuffer::constructorCustom(const v8::Arguments& args
     RefPtr<ArrayBuffer> buffer;
     if (length >= 0)
         buffer = ArrayBuffer::create(static_cast<unsigned>(length), 1);
-    if (!buffer.get())
-        return throwError(v8RangeError, "ArrayBuffer size is not a small enough positive integer.", args.GetIsolate());
+    if (!buffer.get()) {
+        throwError(v8RangeError, "ArrayBuffer size is not a small enough positive integer.", args.GetIsolate());
+        return;
+    }
     buffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
     v8::V8::AdjustAmountOfExternalAllocatedMemory(buffer->byteLength());
     // Transform the holder into a wrapper object for the array.
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper(buffer.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    return wrapper;
+    args.GetReturnValue().Set(wrapper);
 }
 
 } // namespace WebCore

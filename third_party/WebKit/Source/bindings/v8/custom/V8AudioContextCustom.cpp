@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8AudioContext::constructorCustom(const v8::Arguments& args)
+void V8AudioContext::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     Document* document = currentDocument();
 
@@ -50,25 +50,29 @@ v8::Handle<v8::Value> V8AudioContext::constructorCustom(const v8::Arguments& arg
     if (!args.Length()) {
         // Constructor for default AudioContext which talks to audio hardware.
         audioContext = AudioContext::create(document);
-        if (!audioContext.get())
-            return throwError(v8SyntaxError, "audio resources unavailable for AudioContext construction", args.GetIsolate());
+        if (!audioContext.get()) {
+            throwError(v8SyntaxError, "audio resources unavailable for AudioContext construction", args.GetIsolate());
+            return;
+        }
     } else {
         // Constructor for offline (render-target) AudioContext which renders into an AudioBuffer.
         // new AudioContext(in unsigned long numberOfChannels, in unsigned long numberOfFrames, in float sampleRate);
         document->addConsoleMessage(JSMessageSource, WarningMessageLevel,
             "Deprecated AudioContext constructor: use OfflineAudioContext instead");
 
-        return V8OfflineAudioContext::constructorCallback(args);
+        V8OfflineAudioContext::constructorCallback(args);
+        return;
     }
 
-    if (!audioContext.get())
-        return throwError(v8SyntaxError, "Error creating AudioContext", args.GetIsolate());
+    if (!audioContext.get()) {
+        throwError(v8SyntaxError, "Error creating AudioContext", args.GetIsolate());
+        return;
+    }
     
     // Transform the holder into a wrapper object for the audio context.
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper(audioContext.release(), &info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
-    
-    return wrapper;
+    args.GetReturnValue().Set(wrapper);
 }
 
 } // namespace WebCore
