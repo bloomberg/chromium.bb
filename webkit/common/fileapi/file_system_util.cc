@@ -4,6 +4,8 @@
 
 #include "webkit/common/fileapi/file_system_util.h"
 
+#include <algorithm>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/string_util.h"

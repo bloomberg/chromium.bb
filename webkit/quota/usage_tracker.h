@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/quota/quota_callbacks.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_task.h"
 #include "webkit/quota/quota_types.h"

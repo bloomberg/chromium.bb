@@ -18,6 +18,7 @@
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
+#include "webkit/quota/quota_callbacks.h"
 #include "webkit/quota/quota_types.h"
 
 namespace base {

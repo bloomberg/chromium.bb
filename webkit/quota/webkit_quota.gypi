@@ -5,6 +5,7 @@
 {
   'variables': {
     'webkit_quota_sources': [
+      '../quota/quota_callbacks.h',
       '../quota/quota_client.h',
       '../quota/quota_database.cc',
       '../quota/quota_database.h',

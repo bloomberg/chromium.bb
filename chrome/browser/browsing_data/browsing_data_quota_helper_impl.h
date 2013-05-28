@@ -16,6 +16,8 @@
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "webkit/quota/quota_types.h"
 
+class GURL;
+
 namespace quota {
 class QuotaManager;
 }
