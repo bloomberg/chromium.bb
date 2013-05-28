@@ -65,11 +65,14 @@ class LoginUtils {
   // this value, shown in UI.
   // |user_context.username_hash| defines when user homedir is mounted.
   // Also see DelegateDeleted method.
+  // If |has_active_session| is true than this is a case of restoring user
+  // session after browser crash so no need to start new session.
   virtual void PrepareProfile(
       const UserContext& user_context,
       const std::string& display_email,
       bool using_oauth,
       bool has_cookies,
+      bool has_active_session,
       Delegate* delegate) = 0;
 
   // Invalidates |delegate|, which was passed to PrepareProfile method call.

@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -40,6 +41,7 @@ class SessionLengthLimiter;
 // Implementation of the UserManager.
 class UserManagerImpl
     : public UserManager,
+      public LoginUtils::Delegate,
       public ProfileSyncServiceObserver,
       public content::NotificationObserver,
       public policy::DeviceLocalAccountPolicyService::Observer {
@@ -93,6 +95,7 @@ class UserManagerImpl
   virtual bool IsLoggedInAsKioskApp() const OVERRIDE;
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
+  virtual bool UserSessionsRestored() const OVERRIDE;
   virtual MergeSessionState GetMergeSessionState() const OVERRIDE;
   virtual void SetMergeSessionState(MergeSessionState status) OVERRIDE;
   virtual bool HasBrowserRestarted() const OVERRIDE;
@@ -146,6 +149,10 @@ class UserManagerImpl
   friend class UserManagerTest;
 
   UserManagerImpl();
+
+  // LoginUtils::Delegate implementation:
+  // Used when restoring user sessions after crash.
+  virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
 
   // Loads |users_| from Local State if the list has not been loaded yet.
   // Subsequent calls have no effect. Must be called on the UI thread.
@@ -254,6 +261,9 @@ class UserManagerImpl
   // Notifies observers that active user_id hash has changed.
   void NotifyActiveUserHashChanged(const std::string& hash);
 
+  // Notifies observers that user pending sessions restore has finished.
+  void NotifyPendingUserSessionsRestoreFinished();
+
   // Returns true if there is non-committed user creation transaction.
   bool HasFailedLocallyManagedUserCreationTransaction();
 
@@ -273,6 +283,12 @@ class UserManagerImpl
   void OnRestoreActiveSessions(
       const SessionManagerClient::ActiveSessionsMap& sessions,
       bool success);
+
+  // Called by OnRestoreActiveSessions() when there're user sessions in
+  // |pending_user_sessions_| that has to be restored one by one.
+  // Also called after first user session from that list is restored and so on.
+  // Process continues till |pending_user_sessions_| map is not empty.
+  void RestorePendingUserSessions();
 
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
@@ -308,6 +324,10 @@ class UserManagerImpl
 
   // True if SessionStarted() has been called.
   bool session_started_;
+
+  // True is user sessions has been restored after crash.
+  // On a normal boot then login into user sessions this will be false.
+  bool user_sessions_restored_;
 
   // Cached flag of whether currently logged-in user is owner or not.
   // May be accessed on different threads, requires locking.
@@ -367,6 +387,10 @@ class UserManagerImpl
 
   // Specific flows by user e-mail.
   FlowMap specific_flows_;
+
+  // User sessions that have to be restored after browser crash.
+  // [user_id] > [user_id_hash]
+  SessionManagerClient::ActiveSessionsMap pending_user_sessions_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };

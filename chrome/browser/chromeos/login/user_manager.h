@@ -53,6 +53,9 @@ class UserManager {
     // on user_id hash would be accessing up-to-date value.
     virtual void ActiveUserHashChanged(const std::string& hash) = 0;
 
+    // Called when UserManager finishes restoring user sessions after crash.
+    virtual void PendingUserSessionsRestoreFinished() = 0;
+
    protected:
     virtual ~UserSessionStateObserver();
   };
@@ -257,6 +260,10 @@ class UserManager {
   // browser_creator.LaunchBrowser(...) was called after sign in
   // or restart after crash.
   virtual bool IsSessionStarted() const = 0;
+
+  // Returns true iff browser has been restarted after crash and UserManager
+  // finished restoring user sessions.
+  virtual bool UserSessionsRestored() const = 0;
 
   // Returns merge session status.
   virtual MergeSessionState GetMergeSessionState() const = 0;

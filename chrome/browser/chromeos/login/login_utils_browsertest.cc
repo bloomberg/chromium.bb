@@ -435,9 +435,10 @@ class LoginUtilsTest : public testing::Test,
     // Setting |kHasCookies| to false prevents ProfileAuthData::Transfer from
     // waiting for an IO task before proceeding.
     const bool kHasCookies = false;
+    const bool kHasActiveSession = false;
     LoginUtils::Get()->PrepareProfile(
         UserContext(username, "password", std::string(), username),
-        std::string(), kUsingOAuth, kHasCookies, this);
+        std::string(), kUsingOAuth, kHasCookies, kHasActiveSession, this);
     device_settings_test_helper.Flush();
     RunUntilIdle();
 

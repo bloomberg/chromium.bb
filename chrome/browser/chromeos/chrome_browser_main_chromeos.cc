@@ -184,6 +184,7 @@ class StubLogin : public LoginStatusConsumer,
                                         std::string(),  // display_email
                                         using_oauth,
                                         false,          // has_cookies
+                                        true,           // has_active_session
                                         this);
     } else if (!pending_requests) {
       delete this;

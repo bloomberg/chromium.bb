@@ -22,6 +22,7 @@ void TestLoginUtils::PrepareProfile(
     const std::string& display_email,
     bool using_oauth,
     bool has_cookies,
+    bool has_active_session,
     Delegate* delegate) {
   DCHECK_EQ(expected_username_, credentials.username);
   DCHECK_EQ(expected_password_, credentials.password);

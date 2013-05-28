@@ -762,6 +762,7 @@ void ExistingUserController::OnLoginSuccess(
                                     display_email_,
                                     using_oauth,
                                     has_cookies,
+                                    false,          // Start session for user.
                                     this);
 
   display_email_.clear();

@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "chromeos/dbus/cryptohome_client.h"
 
 namespace chromeos {
 
@@ -47,6 +48,10 @@ void FakeSessionManagerClient::RestartEntd() {
 }
 
 void FakeSessionManagerClient::StartSession(const std::string& user_email) {
+  DCHECK_EQ(0UL, user_sessions_.count(user_email));
+  std::string user_id_hash =
+      CryptohomeClient::GetStubSanitizedUsername(user_email);
+  user_sessions_[user_email] = user_id_hash;
 }
 
 void FakeSessionManagerClient::StopSession() {
@@ -71,10 +76,9 @@ void FakeSessionManagerClient::NotifyLockScreenDismissed() {
 
 void FakeSessionManagerClient::RetrieveActiveSessions(
       const ActiveSessionsCallback& callback) {
-  ActiveSessionsMap sessions;
   MessageLoop::current()->PostTask(FROM_HERE,
                                    base::Bind(callback,
-                                              sessions,
+                                              user_sessions_,
                                               true));
 }
 

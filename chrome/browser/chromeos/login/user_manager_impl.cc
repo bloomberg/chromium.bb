@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
 #include "chrome/browser/chromeos/login/login_display.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/remove_user_delegate.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -188,6 +189,7 @@ UserManagerImpl::UserManagerImpl()
       users_loaded_(false),
       active_user_(NULL),
       session_started_(false),
+      user_sessions_restored_(false),
       is_current_user_owner_(false),
       is_current_user_new_(false),
       is_current_user_ephemeral_regular_user_(false),
@@ -629,9 +631,13 @@ void UserManagerImpl::Observe(int type,
           !IsLoggedInAsKioskApp()) {
         Profile* profile = content::Source<Profile>(source).ptr();
         if (!profile->IsOffTheRecord() &&
-            // TODO(nkostylev): We should observe all logged in user's profiles.
             profile == ProfileManager::GetDefaultProfile()) {
-          DCHECK(NULL == observed_sync_service_);
+          // TODO(nkostylev): We should observe all logged in user's profiles.
+          // http://crbug.com/230860
+          if (!CommandLine::ForCurrentProcess()->
+                  HasSwitch(::switches::kMultiProfiles)) {
+            DCHECK(NULL == observed_sync_service_);
+          }
           observed_sync_service_ =
               ProfileSyncServiceFactory::GetForProfile(profile);
           if (observed_sync_service_)
@@ -762,6 +768,11 @@ bool UserManagerImpl::IsSessionStarted() const {
   return session_started_;
 }
 
+bool UserManagerImpl::UserSessionsRestored() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return user_sessions_restored_;
+}
+
 UserManager::MergeSessionState UserManagerImpl::GetMergeSessionState() const {
   return merge_session_state_;
 }
@@ -844,6 +855,23 @@ void UserManagerImpl::NotifyLocalStateChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(UserManager::Observer, observer_list_,
                     LocalStateChanged(this));
+}
+
+void UserManagerImpl::OnProfilePrepared(Profile* profile) {
+  LoginUtils::Get()->DoBrowserLaunch(profile,
+                                     NULL);     // host_, not needed here
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestName)) {
+    // Did not log in (we crashed or are debugging), need to restore Sync.
+    // TODO(nkostylev): Make sure that OAuth state is restored correctly for all
+    // users once it is fully multi-profile aware. http://crbug.com/238987
+    // For now if we have other user pending sessions they'll override OAuth
+    // session restore for previous users.
+    LoginUtils::Get()->RestoreAuthenticationSession(profile);
+  }
+
+  // Restore other user sessions if any.
+  RestorePendingUserSessions();
 }
 
 void UserManagerImpl::EnsureUsersLoaded() {
@@ -1505,6 +1533,14 @@ void UserManagerImpl::NotifyActiveUserHashChanged(const std::string& hash) {
                     ActiveUserHashChanged(hash));
 }
 
+void UserManagerImpl::NotifyPendingUserSessionsRestoreFinished() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  user_sessions_restored_ = true;
+  FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
+                    session_state_observer_list_,
+                    PendingUserSessionsRestoreFinished());
+}
+
 void UserManagerImpl::UpdateLoginState() {
   if (!LoginState::IsInitialized())
     return;  // LoginState may not be intialized in tests.
@@ -1545,13 +1581,70 @@ void UserManagerImpl::SetLRUUser(User* user) {
 void UserManagerImpl::OnRestoreActiveSessions(
     const SessionManagerClient::ActiveSessionsMap& sessions,
     bool success) {
-  // TODO(nkostylev): Restore all user sessions (in the background).
-  // This requires first refactoring this flow out of LoginUtils.
-  // 1. UserManager::UserLoggedIn()
-  // 2. InitSessionRestoreStrategy() (OAuth)
-  // 2. ProfileManager::CreateDefaultProfileAsync()
-  // 3. InitProfilePreferences
-  // 4. chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED
+  if (!success) {
+    LOG(ERROR) << "Could not get list of active user sessions after crash.";
+    // If we could not get list of active user sessions it is safer to just
+    // sign out so that we don't get in the inconsistent state.
+    DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
+    return;
+  }
+
+  // One profile has been already loaded on browser start.
+  DCHECK(GetLoggedInUsers().size() == 1);
+  DCHECK(GetActiveUser());
+  std::string active_user_id = GetActiveUser()->email();
+
+  SessionManagerClient::ActiveSessionsMap::const_iterator it;
+  for (it = sessions.begin(); it != sessions.end(); ++it) {
+    if (active_user_id == it->first)
+      continue;
+    pending_user_sessions_[it->first] = it->second;
+  }
+  RestorePendingUserSessions();
+}
+
+void UserManagerImpl::RestorePendingUserSessions() {
+  if (pending_user_sessions_.empty()) {
+    NotifyPendingUserSessionsRestoreFinished();
+    return;
+  }
+
+  // Get next user to restore sessions and delete it from list.
+  SessionManagerClient::ActiveSessionsMap::const_iterator it =
+      pending_user_sessions_.begin();
+  std::string user_id = it->first;
+  std::string user_id_hash = it->second;
+  DCHECK(!user_id.empty());
+  DCHECK(!user_id_hash.empty());
+  pending_user_sessions_.erase(user_id);
+
+  // Check that this user is not logged in yet.
+  UserList logged_in_users = GetLoggedInUsers();
+  bool user_already_logged_in = false;
+  for (UserList::const_iterator it = logged_in_users.begin();
+       it != logged_in_users.end(); ++it) {
+    const User* user = (*it);
+    if (user->email() == user_id) {
+      user_already_logged_in = true;
+      break;
+    }
+  }
+  DCHECK(!user_already_logged_in);
+
+  if (!user_already_logged_in) {
+    // Will call OnProfilePrepared() once profile has been loaded.
+    LoginUtils::Get()->PrepareProfile(UserContext(user_id,
+                                                  std::string(),  // password
+                                                  std::string(),  // auth_code
+                                                  user_id_hash),
+                                      std::string(),  // display_email
+                                      false,          // using_oauth
+                                      false,          // has_cookies
+                                      true,           // has_active_session
+                                      this);
+  } else {
+    RestorePendingUserSessions();
+  }
 }
 
 }  // namespace chromeos

@@ -144,4 +144,7 @@ void ProfileHelper::ActiveUserHashChanged(const std::string& hash) {
   LOG(INFO) << "Switching to profile path: " << profile_path.value();
 }
 
+void ProfileHelper::PendingUserSessionsRestoreFinished() {
+}
+
 }  // namespace chromeos

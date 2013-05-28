@@ -137,6 +137,7 @@ class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
         std::string(),  // display email
         false,  // using_oauth
         false,  // has_cookies
+        false,  // has_active_session
         this);
   }
 

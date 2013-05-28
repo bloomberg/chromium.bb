@@ -58,6 +58,7 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD0(IsLoggedInAsKioskApp, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsStub, bool(void));
   MOCK_CONST_METHOD0(IsSessionStarted, bool(void));
+  MOCK_CONST_METHOD0(UserSessionsRestored, bool(void));
   MOCK_CONST_METHOD0(HasBrowserRestarted, bool(void));
   MOCK_CONST_METHOD1(IsUserNonCryptohomeDataEphemeral,
                      bool(const std::string&));
