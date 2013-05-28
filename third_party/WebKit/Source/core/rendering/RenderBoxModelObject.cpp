@@ -2391,14 +2391,12 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             shadowRect.move(shadowOffset);
 
             GraphicsContextStateSaver stateSaver(*context);
-            context->clip(shadowRect);
 
-            // Move the fill just outside the clip, adding 1 pixel separation so that the fill does not
-            // bleed in (due to antialiasing) if the context is transformed.
-            IntSize extraOffset(paintRect.pixelSnappedWidth() + max(0, shadowOffset.width()) + shadowBlur + 2 * shadowSpread + 1, 0);
-            shadowOffset -= extraOffset;
-            fillRect.move(extraOffset);
-            context->setShadow(shadowOffset, shadowBlur, shadowColor, DrawLooper::ShadowIgnoresAlpha);
+            // Draw only the shadow.
+            DrawLooper drawLooper;
+            drawLooper.addShadow(shadowOffset, shadowBlur, shadowColor,
+                DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
+            context->setDrawLooper(drawLooper);
 
             if (hasBorderRadius) {
                 RoundedRect rectToClipOut = border;
@@ -2485,10 +2483,10 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             } else
                 context->clip(border.rect());
 
-            IntSize extraOffset(2 * paintRect.pixelSnappedWidth() + max(0, shadowOffset.width()) + shadowBlur - 2 * shadowSpread + 1, 0);
-            context->translate(extraOffset.width(), extraOffset.height());
-            shadowOffset -= extraOffset;
-            context->setShadow(shadowOffset, shadowBlur, shadowColor, DrawLooper::ShadowIgnoresAlpha);
+            DrawLooper drawLooper;
+            drawLooper.addShadow(shadowOffset, shadowBlur, shadowColor,
+                DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
+            context->setDrawLooper(drawLooper);
             context->fillRectWithRoundedHole(outerRect, roundedHole, fillColor, s->colorSpace());
         }
     }
