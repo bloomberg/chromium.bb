@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.text.Editable;
 import android.text.Selection;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentView;
@@ -95,6 +96,7 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertTrue(waitForHandleShowingEquals(false));
     }
 
+
     @MediumTest
     @Feature({"TextSelection", "TextInput", "Main"})
     public void testDragInsertionHandle() throws Throwable {
@@ -113,6 +115,7 @@ public class InsertionHandleTest extends ContentShellTestBase {
         dragHandleTo(dragToX, dragToY);
         assertWaitForHandleNear(dragToX, dragToY);
     }
+
 
     @MediumTest
     @Feature({"TextSelection", "TextInput", "Main"})
@@ -133,8 +136,12 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertTrue(waitForHandleShowingEquals(false));
     }
 
-    @MediumTest
-    @Feature({"TextSelection", "TextInput", "Main"})
+    /**
+     * @MediumTest
+     * @Feature({"TextSelection", "TextInput", "Main"})
+     * http://crbug.com/169648
+     */
+    @DisabledTest
     public void testDragInsertionHandleInputText() throws Throwable {
         launchWithUrl(INPUT_TEXT_DATA_URL);
 
@@ -160,8 +167,12 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertWaitForHandleNear(initialX, initialY);
     }
 
-    @MediumTest
-    @Feature({"TextSelection", "TextInput", "Main"})
+    /**
+     * @MediumTest
+     * @Feature({"TextSelection", "TextInput", "Main"})
+     * http://crbug.com/169648
+     */
+    @DisabledTest
     public void testDragInsertionHandleInputTextOutsideBounds() throws Throwable {
         launchWithUrl(INPUT_TEXT_DATA_URL);
 
