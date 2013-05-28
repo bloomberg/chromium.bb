@@ -62,10 +62,6 @@ CHROMEOS_EXPORT extern const char kKioskModeScreensaverPath[];
 CHROMEOS_EXPORT extern const char kLoginManager[];
 CHROMEOS_EXPORT extern const char kLoginPassword[];
 CHROMEOS_EXPORT extern const char kLoginProfile[];
-// TODO(avayvod): Remove this flag when it's unnecessary for testing
-// purposes.
-CHROMEOS_EXPORT extern const char kLoginScreen[];
-CHROMEOS_EXPORT extern const char kLoginScreenSize[];
 CHROMEOS_EXPORT extern const char kLoginUser[];
 CHROMEOS_EXPORT extern const char kNaturalScrollDefault[];
 CHROMEOS_EXPORT extern const char kNoDiscardTabs[];

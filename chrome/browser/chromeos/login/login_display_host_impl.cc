@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
@@ -218,10 +217,6 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
   initialize_webui_hidden_ =
       kHiddenWebUIInitializationDefault && !zero_delay_enabled;
 
-  is_boot_animation2_enabled_ = waiting_for_wallpaper_load_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshDisableBootAnimation2);
-
   // Prevents white flashing on OOBE (http://crbug.com/131569).
   aura::Env::GetInstance()->set_render_white_bg(false);
 
@@ -249,9 +244,9 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
                    content::NotificationService::AllSources());
   }
 
-  // In boot-animation2 we want to show login WebUI as soon as possible.
-  if ((waiting_for_user_pods_ || is_boot_animation2_enabled_)
-      && initialize_webui_hidden_) {
+  // When we wait for WebUI to be initialized we wait for one of
+  // these notifications.
+  if (waiting_for_user_pods_ && initialize_webui_hidden_) {
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
@@ -779,8 +774,7 @@ void LoginDisplayHostImpl::ResetLoginWindowAndView() {
 
 // Declared in login_wizard.h so that others don't need to depend on our .h.
 // TODO(nkostylev): Split this into a smaller functions.
-void ShowLoginWizard(const std::string& first_screen_name,
-                     const gfx::Size& size) {
+void ShowLoginWizard(const std::string& first_screen_name) {
   if (browser_shutdown::IsTryingToQuit())
     return;
 
@@ -822,7 +816,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
   ui::SetNaturalScroll(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kNaturalScrollDefault));
 
-  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(size));
+  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
 
   // Check whether we need to execute OOBE process.
   bool oobe_complete = chromeos::StartupUtils::IsOobeCompleted();

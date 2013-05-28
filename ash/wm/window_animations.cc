@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
@@ -477,13 +476,6 @@ std::vector<ui::LayerAnimationSequence*>
 CreateBrightnessGrayscaleAnimationSequence(float target_value,
                                            base::TimeDelta duration) {
   ui::Tween::Type animation_type = ui::Tween::EASE_OUT;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshBootAnimationFunction2)) {
-    animation_type = ui::Tween::EASE_OUT_2;
-  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
-                  ash::switches::kAshBootAnimationFunction3)) {
-    animation_type = ui::Tween::EASE_OUT_3;
-  }
   scoped_ptr<ui::LayerAnimationSequence> brightness_sequence(
       new ui::LayerAnimationSequence());
   scoped_ptr<ui::LayerAnimationSequence> grayscale_sequence(

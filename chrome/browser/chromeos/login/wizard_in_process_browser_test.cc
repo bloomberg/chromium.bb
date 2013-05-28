@@ -36,7 +36,7 @@ void WizardInProcessBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 void WizardInProcessBrowserTest::SetUpOnMainThread() {
   SetUpWizard();
   if (!screen_name_.empty()) {
-    ShowLoginWizard(screen_name_, gfx::Size(1024, 600));
+    ShowLoginWizard(screen_name_);
     host_ = LoginDisplayHostImpl::default_host();
   }
 }

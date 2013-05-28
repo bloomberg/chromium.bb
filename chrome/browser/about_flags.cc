@@ -166,13 +166,6 @@ const Experiment::Choice kNaClDebugMaskChoices[] = {
 };
 
 #if defined(OS_CHROMEOS)
-const Experiment::Choice kAshBootAnimationFunction[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION2,
-    ash::switches::kAshBootAnimationFunction2, ""},
-  { IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION3,
-    ash::switches::kAshBootAnimationFunction3, ""}
-};
 
 const Experiment::Choice kChromeCaptivePortalDetectionChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -1037,20 +1030,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_BOOT_ANIMATION_DESCRIPTION,
     kOsCrOSOwnerOnly,
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableBootAnimation),
-  },
-  {
-    "disable-boot-animation2",
-    IDS_FLAGS_DISABLE_BOOT_ANIMATION2,
-    IDS_FLAGS_DISABLE_BOOT_ANIMATION2_DESCRIPTION,
-    kOsCrOSOwnerOnly,
-    SINGLE_VALUE_TYPE(ash::switches::kAshDisableBootAnimation2),
-  },
-  {
-    "boot-animation-fucntion",
-    IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION,
-    IDS_FLAGS_ASH_BOOT_ANIMATION_FUNCTION_DESCRIPTION,
-    kOsCrOSOwnerOnly,
-    MULTI_VALUE_TYPE(kAshBootAnimationFunction),
   },
   {
     "captive-portal-detector",

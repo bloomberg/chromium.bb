@@ -13,8 +13,8 @@ class Size;
 
 namespace chromeos {
 
-// Shows the Login Wizard.
-void ShowLoginWizard(const std::string& start_screen, const gfx::Size& size);
+// Shows the Chrome OS out-of-box / login UI.
+void ShowLoginWizard(const std::string& start_screen);
 
 }  // namespace chromeos
 

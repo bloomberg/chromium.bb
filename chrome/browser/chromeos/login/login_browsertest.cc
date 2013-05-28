@@ -200,8 +200,7 @@ IN_PROC_BROWSER_TEST_F(LoginGuestTest, CursorShown) {
 // Verifies the cursor is hidden at startup on login screen.
 IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   // Login screen needs to be shown explicitly when running test.
-  chromeos::ShowLoginWizard(chromeos::WizardController::kLoginScreenName,
-                            gfx::Size());
+  chromeos::ShowLoginWizard(chromeos::WizardController::kLoginScreenName);
 
   // Cursor should be hidden at startup
   EXPECT_FALSE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());

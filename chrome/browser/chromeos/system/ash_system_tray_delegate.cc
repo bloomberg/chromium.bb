@@ -602,7 +602,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (has_regular_not_logged_in_users) {
       ash::Shell::GetInstance()->
           desktop_background_controller()->MoveDesktopToLockedContainer();
-      ShowLoginWizard(std::string(), gfx::Size());
+      ShowLoginWizard(std::string());
     }
   }
 

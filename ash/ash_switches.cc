@@ -17,12 +17,6 @@ namespace switches {
 const char kAshAnimateFromBootSplashScreen[] =
     "ash-animate-from-boot-splash-screen";
 
-// Variation of boot animation that uses Tween::EASE_OUT_2.
-const char kAshBootAnimationFunction2[] = "ash-boot-animation-function2";
-
-// Variation of boot animation that uses Tween::EASE_OUT_3.
-const char kAshBootAnimationFunction3[] = "ash-boot-animation-function3";
-
 // Constrains the pointer movement within a root window on desktop.
 const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
 
@@ -41,9 +35,6 @@ const char kAshDisableAutoMaximizing[] = "ash-disable-auto-maximizing";
 // Disable support for auto window placement.
 const char kAshDisableAutoWindowPlacement[] =
     "ash-enable-auto-window-placement";
-
-// Disables boot animation v2, go back to v1.
-const char kAshDisableBootAnimation2[] = "ash-disable-boot-animation2";
 
 // Disables the limitter to throttle how quickly a user
 // can change display settings.

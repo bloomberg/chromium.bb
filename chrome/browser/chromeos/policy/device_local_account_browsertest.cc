@@ -20,9 +20,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
@@ -140,9 +141,6 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
-    command_line->AppendSwitchASCII(
-        chromeos::switches::kLoginScreen,
-        chromeos::WizardController::kLoginScreenName);
     command_line->AppendSwitchASCII(
         switches::kDeviceManagementUrl, test_server_.GetServiceURL().spec());
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
@@ -374,6 +372,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
       chrome::NOTIFICATION_USER_LIST_CHANGED,
       base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName1)).Run();
 
+  chromeos::LoginDisplayHost* host =
+      chromeos::LoginDisplayHostImpl::default_host();
+  ASSERT_TRUE(host);
+  host->StartSignInScreen();
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   ASSERT_TRUE(controller);
