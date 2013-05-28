@@ -550,7 +550,7 @@ bool TextResourceDecoder::checkForXMLCharset(const char* data, size_t len, bool&
 
 void TextResourceDecoder::checkForMetaCharset(const char* data, size_t length)
 {
-    if (m_source != DefaultEncoding && m_source != EncodingFromParentFrame && m_source != EncodingFromXMLHeader) {
+    if (m_source == UserChosenEncoding || m_source == EncodingFromHTTPHeader || m_source == AutoDetectedEncoding) {
         m_checkedForMetaCharset = true;
         return;
     }
@@ -571,13 +571,13 @@ void TextResourceDecoder::detectJapaneseEncoding(const char* data, size_t len)
 {
     switch (KanjiCode::judge(data, len)) {
         case KanjiCode::JIS:
-            setEncoding("ISO-2022-JP", AutoDetectedEncoding);
+            setEncoding("ISO-2022-JP", EncodingFromContentSniffing);
             break;
         case KanjiCode::EUC:
-            setEncoding("EUC-JP", AutoDetectedEncoding);
+            setEncoding("EUC-JP", EncodingFromContentSniffing);
             break;
         case KanjiCode::SJIS:
-            setEncoding("Shift_JIS", AutoDetectedEncoding);
+            setEncoding("Shift_JIS", EncodingFromContentSniffing);
             break;
         case KanjiCode::ASCII:
         case KanjiCode::UTF16:
@@ -615,18 +615,19 @@ String TextResourceDecoder::decode(const char* data, size_t len)
         if (!checkForCSSCharset(data, len, movedDataToBuffer))
             return emptyString();
 
-    if ((m_contentType == HTML || m_contentType == XML) && !m_checkedForXMLCharset) // HTML and XML
+    if ((m_contentType == HTML || m_contentType == XML) && !m_checkedForXMLCharset)
         if (!checkForXMLCharset(data, len, movedDataToBuffer))
             return emptyString();
 
-    // FIXME: It is wrong to change the encoding downstream after we have already done some decoding.
+    // FIXME: It would be more efficient to move this logic below checkForMetaCharset because
+    //        checkForMetaCharset can overrule these detections.
     if (shouldAutoDetect()) {
         if (m_encoding.isJapanese())
             detectJapaneseEncoding(data, len); // FIXME: We should use detectTextEncoding() for all languages.
         else {
             WTF::TextEncoding detectedEncoding;
             if (detectTextEncoding(data, len, m_hintEncoding, &detectedEncoding))
-                setEncoding(detectedEncoding, AutoDetectedEncoding);
+                setEncoding(detectedEncoding, EncodingFromContentSniffing);
         }
     }
 
@@ -665,10 +666,9 @@ String TextResourceDecoder::flush()
    // autodetection is satisfied.
     if (m_buffer.size() && shouldAutoDetect()
         && ((!m_checkedForXMLCharset && (m_contentType == HTML || m_contentType == XML)) || (!m_checkedForCSSCharset && (m_contentType == CSS)))) {
-         WTF::TextEncoding detectedEncoding;
-         if (detectTextEncoding(m_buffer.data(), m_buffer.size(),
-                                m_hintEncoding, &detectedEncoding))
-             setEncoding(detectedEncoding, AutoDetectedEncoding);
+        WTF::TextEncoding detectedEncoding;
+        if (detectTextEncoding(m_buffer.data(), m_buffer.size(), m_hintEncoding, &detectedEncoding))
+            setEncoding(detectedEncoding, EncodingFromContentSniffing);
     }
 
     if (!m_codec)

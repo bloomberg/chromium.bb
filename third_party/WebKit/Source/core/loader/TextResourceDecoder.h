@@ -35,6 +35,7 @@ public:
     enum EncodingSource {
         DefaultEncoding,
         AutoDetectedEncoding,
+        EncodingFromContentSniffing,
         EncodingFromXMLHeader,
         EncodingFromMetaTag,
         EncodingFromCSSCharset,
@@ -59,10 +60,10 @@ public:
     {
         // hintEncoding is for use with autodetection, which should be 
         // only invoked when hintEncoding comes from auto-detection.
-        if (hintDecoder && hintDecoder->m_source == AutoDetectedEncoding)
+        if (hintDecoder && hintDecoder->wasDetectedHueristically())
             m_hintEncoding = hintDecoder->encoding().name();
     }
-   
+
     void useLenientXMLDecoding() { m_useLenientXMLDecoding = true; }
     bool sawError() const { return m_sawError; }
 
@@ -72,6 +73,8 @@ private:
     enum ContentType { PlainText, HTML, XML, CSS }; // PlainText only checks for BOM.
     static ContentType determineContentType(const String& mimeType);
     static const WTF::TextEncoding& defaultEncoding(ContentType, const WTF::TextEncoding& defaultEncoding);
+
+    bool wasDetectedHueristically() const { return m_source == AutoDetectedEncoding || m_source == EncodingFromContentSniffing; }
 
     size_t checkForBOM(const char*, size_t);
     bool checkForCSSCharset(const char*, size_t, bool& movedDataToBuffer);
