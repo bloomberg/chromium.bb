@@ -38,11 +38,11 @@
     void copyText(DOMString text);
     [Custom] void inspect(any objectId, any hints);
     [Custom] any inspectedObject(long num);
-    [Custom] any internalConstructorName(any object);
-    [Custom] boolean isHTMLAllCollection(any object);
-    [Custom] DOMString type(any object);
-    [Custom] any functionDetails(any object);
-    [Custom] Array getInternalProperties(any object);
+    [Custom] any internalConstructorName(any obj);
+    [Custom] boolean isHTMLAllCollection(any obj);
+    [Custom] DOMString type(any obj);
+    [Custom] any functionDetails(any obj);
+    [Custom] Array getInternalProperties(any obj);
     [Custom] Array getEventListeners(Node node);
     [Custom] any evaluate(DOMString text);
     [Custom] DOMString databaseId(any database);
