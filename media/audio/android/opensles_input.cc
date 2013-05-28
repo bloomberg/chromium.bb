@@ -71,7 +71,7 @@ void OpenSLESInputStream::Start(AudioInputCallback* callback) {
 
   SLresult err = SL_RESULT_UNKNOWN_ERROR;
   // Enqueues |kNumOfQueuesInBuffer| zero buffers to get the ball rolling.
-  for (int i = 0; i < kNumOfQueuesInBuffer - 1; ++i) {
+  for (int i = 0; i < kNumOfQueuesInBuffer; ++i) {
     err = (*simple_buffer_queue_)->Enqueue(
         simple_buffer_queue_,
         audio_data_[i],
@@ -187,7 +187,7 @@ bool OpenSLESInputStream::CreateRecorder() {
 
   // Audio sink configuration.
   SLDataLocator_AndroidSimpleBufferQueue buffer_queue = {
-    SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, // Locator type.
+    SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,  // Locator type.
     static_cast<SLuint32>(kNumOfQueuesInBuffer)  // Number of buffers.
   };
   SLDataSink audio_sink = { &buffer_queue, &format_ };
@@ -258,20 +258,20 @@ void OpenSLESInputStream::ReadBufferQueue() {
   if (!started_)
     return;
 
-  // Get the enqueued buffer from the soundcard.
-  SLresult err = (*simple_buffer_queue_)->Enqueue(
-      simple_buffer_queue_,
-      audio_data_[active_queue_],
-      buffer_size_bytes_);
-  if (SL_RESULT_SUCCESS != err)
-    HandleError(err);
-
   // TODO(xians): Get an accurate delay estimation.
   callback_->OnData(this,
                     audio_data_[active_queue_],
                     buffer_size_bytes_,
                     buffer_size_bytes_,
                     0.0);
+
+  // Done with this buffer. Send it to device for recording.
+  SLresult err = (*simple_buffer_queue_)->Enqueue(
+      simple_buffer_queue_,
+      audio_data_[active_queue_],
+      buffer_size_bytes_);
+  if (SL_RESULT_SUCCESS != err)
+    HandleError(err);
 
   active_queue_ = (active_queue_ + 1) % kNumOfQueuesInBuffer;
 }
