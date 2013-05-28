@@ -145,8 +145,9 @@ class TestNmfUtils(unittest.TestCase):
   def Mktemp(self):
     self.tempdir = tempfile.mkdtemp()
 
-  def CreateNmfUtils(self):
-    libdir = os.path.join(self.toolchain, 'x86_64-nacl', 'lib32')
+  def CreateNmfUtils(self, libdir=None):
+    if not libdir:
+      libdir = os.path.join(self.toolchain, 'x86_64-nacl', 'lib32')
     return create_nmf.NmfUtils([self.dyn_nexe],
                                lib_path=[libdir],
                                objdump=self.objdump)
@@ -194,6 +195,8 @@ class TestNmfUtils(unittest.TestCase):
   def testStageDependencies(self):
     self.Mktemp()
     nmf = self.CreateNmfUtils()
+    #create_nmf.DebugPrint.debug_mode = True
+    #create_nmf.Trace.verbose = True
 
     # Stage dependencies
     nmf.StageDependencies(self.tempdir)
@@ -208,6 +211,16 @@ class TestNmfUtils(unittest.TestCase):
     contents = set(contents)
     expectedContents = self.dyn_deps
     self.assertEqual(contents, expectedContents)
+
+  def testMissingArchLibrary(self):
+    self.Mktemp()
+    nmf = self.CreateNmfUtils()
+    # CreateNmfUtils uses the 32-bit library path, but not the 64-bit one
+    # so searching for a 32-bit library should succeed while searching for
+    # a 64-bit one should fail.
+    nmf.GleanFromObjdump(['libgcc_s.so.1'], 'x86-32')
+    self.assertRaises(create_nmf.Error,
+                      nmf.GleanFromObjdump, ['libgcc_s.so.1'], 'x86-64')
 
 
 if __name__ == '__main__':
