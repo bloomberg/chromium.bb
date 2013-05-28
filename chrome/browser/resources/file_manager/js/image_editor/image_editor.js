@@ -672,17 +672,16 @@ ImageEditor.MouseControl.MAX_DISTANCE_FOR_DOUBLE_TAP_ = 32;
 ImageEditor.MouseControl.MAX_DOUBLE_TAP_DURATION_ = 1000;
 
 /**
- * Convert the event position from the event object to client coordinates.
+ * Returns an event's position.
  *
  * @param {MouseEvent|Touch} e Pointer position.
- * @return {Object} A pair of x,y in client coordinates.
+ * @return {Object} A pair of x,y in page coordinates.
  * @private
  */
 ImageEditor.MouseControl.getPosition_ = function(e) {
-  var clientRect = e.target.getBoundingClientRect();
   return {
-    x: e.clientX - clientRect.left,
-    y: e.clientY - clientRect.top
+    x: e.pageX,
+    y: e.pageY
   };
 };
 
@@ -690,7 +689,7 @@ ImageEditor.MouseControl.getPosition_ = function(e) {
  * Returns touch position or null if there is more than one touch position.
  *
  * @param {TouchEvent} e Event.
- * @return {object?} A pair of x,y in client coordinates.
+ * @return {object?} A pair of x,y in page coordinates.
  * @private
  */
 ImageEditor.MouseControl.prototype.getTouchPosition_ = function(e) {
