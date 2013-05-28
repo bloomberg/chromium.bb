@@ -1503,6 +1503,11 @@
       ['OS=="android"', {
         'grit_defines': ['-t', 'android',
                          '-E', 'ANDROID_JAVA_TAGGED_ONLY=true'],
+        'conditions': [
+          ['google_tv==1', {
+            'grit_defines': ['-D', 'google_tv'],
+          }],
+        ],
       }],
       ['OS=="mac"', {
         'grit_defines': ['-D', 'scale_factors=2x'],
