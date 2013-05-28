@@ -377,12 +377,14 @@ class Rule(object):
 
   def __init__(self,
                name,
-               mmap,
+               allocator_type,
                stackfunction_pattern=None,
                stacksourcefile_pattern=None,
-               typeinfo_pattern=None):
+               typeinfo_pattern=None,
+               mappedpathname_pattern=None,
+               mappedpermission_pattern=None):
     self._name = name
-    self._mmap = mmap
+    self._allocator_type = allocator_type
 
     self._stackfunction_pattern = None
     if stackfunction_pattern:
@@ -398,13 +400,22 @@ class Rule(object):
     if typeinfo_pattern:
       self._typeinfo_pattern = re.compile(typeinfo_pattern + r'\Z')
 
+    self._mappedpathname_pattern = None
+    if mappedpathname_pattern:
+      self._mappedpathname_pattern = re.compile(mappedpathname_pattern + r'\Z')
+
+    self._mappedpermission_pattern = None
+    if mappedpermission_pattern:
+      self._mappedpermission_pattern = re.compile(
+          mappedpermission_pattern + r'\Z')
+
   @property
   def name(self):
     return self._name
 
   @property
-  def mmap(self):
-    return self._mmap
+  def allocator_type(self):
+    return self._allocator_type
 
   @property
   def stackfunction_pattern(self):
@@ -417,6 +428,14 @@ class Rule(object):
   @property
   def typeinfo_pattern(self):
     return self._typeinfo_pattern
+
+  @property
+  def mappedpathname_pattern(self):
+    return self._mappedpathname_pattern
+
+  @property
+  def mappedpermission_pattern(self):
+    return self._mappedpermission_pattern
 
 
 class Policy(object):
@@ -460,13 +479,29 @@ class Policy(object):
       typeinfo = bucket.typeinfo_name
 
     for rule in self._rules:
-      if (bucket.mmap == rule.mmap and
+      if (bucket.allocator_type == rule.allocator_type and
           (not rule.stackfunction_pattern or
            rule.stackfunction_pattern.match(stackfunction)) and
           (not rule.stacksourcefile_pattern or
            rule.stacksourcefile_pattern.match(stacksourcefile)) and
           (not rule.typeinfo_pattern or rule.typeinfo_pattern.match(typeinfo))):
         bucket.component_cache = rule.name
+        return rule.name
+
+    assert False
+
+  def find_unhooked(self, region):
+    for rule in self._rules:
+      if (region[0] == 'unhooked' and
+          rule.allocator_type == 'unhooked' and
+          (not rule.mappedpathname_pattern or
+           rule.mappedpathname_pattern.match(region[1]['vma']['name'])) and
+          (not rule.mappedpermission_pattern or
+           rule.mappedpermission_pattern.match(
+               region[1]['vma']['readable'] +
+               region[1]['vma']['writable'] +
+               region[1]['vma']['executable'] +
+               region[1]['vma']['private']))):
         return rule.name
 
     assert False
@@ -525,10 +560,12 @@ class Policy(object):
       stacksourcefile = rule.get('stacksourcefile')
       rules.append(Rule(
           rule['name'],
-          rule['allocator'] == 'mmap',
+          rule['allocator'],  # allocator_type
           stackfunction,
           stacksourcefile,
-          rule['typeinfo'] if 'typeinfo' in rule else None))
+          rule['typeinfo'] if 'typeinfo' in rule else None,
+          rule.get('mappedpathname'),
+          rule.get('mappedpermission')))
 
     return Policy(rules, policy['version'], policy['components'])
 
@@ -598,9 +635,9 @@ class PolicySet(object):
 class Bucket(object):
   """Represents a bucket, which is a unit of memory block classification."""
 
-  def __init__(self, stacktrace, mmap, typeinfo, typeinfo_name):
+  def __init__(self, stacktrace, allocator_type, typeinfo, typeinfo_name):
     self._stacktrace = stacktrace
-    self._mmap = mmap
+    self._allocator_type = allocator_type
     self._typeinfo = typeinfo
     self._typeinfo_name = typeinfo_name
 
@@ -614,7 +651,7 @@ class Bucket(object):
 
   def __str__(self):
     result = []
-    result.append('mmap' if self._mmap else 'malloc')
+    result.append(self._allocator_type)
     if self._symbolized_typeinfo == 'no typeinfo':
       result.append('tno_typeinfo')
     else:
@@ -659,8 +696,8 @@ class Bucket(object):
     return self._stacktrace
 
   @property
-  def mmap(self):
-    return self._mmap
+  def allocator_type(self):
+    return self._allocator_type
 
   @property
   def typeinfo(self):
@@ -740,7 +777,7 @@ class BucketSet(object):
       for frame in stacktrace:
         self._code_addresses.add(frame)
       self._buckets[int(words[0])] = Bucket(
-          stacktrace, words[1] == 'mmap', typeinfo, typeinfo_name)
+          stacktrace, words[1], typeinfo, typeinfo_name)
 
   def __iter__(self):
     for bucket_id, bucket_content in self._buckets.iteritems():
@@ -777,6 +814,14 @@ class Dump(object):
   _HOOK_PATTERN = re.compile(
       r'^ ([ \(])([a-f0-9]+)([ \)])-([ \(])([a-f0-9]+)([ \)])\s+'
       r'(hooked|unhooked)\s+(.+)$', re.IGNORECASE)
+
+  _HOOKED_PATTERN = re.compile(r'(?P<TYPE>.+ )?(?P<COMMITTED>[0-9]+) / '
+                               '(?P<RESERVED>[0-9]+) @ (?P<BUCKETID>[0-9]+)')
+  _UNHOOKED_PATTERN = re.compile(r'(?P<TYPE>.+ )?(?P<COMMITTED>[0-9]+) / '
+                                 '(?P<RESERVED>[0-9]+)')
+
+  _OLD_HOOKED_PATTERN = re.compile(r'(?P<TYPE>.+) @ (?P<BUCKETID>[0-9]+)')
+  _OLD_UNHOOKED_PATTERN = re.compile(r'(?P<TYPE>.+) (?P<COMMITTED>[0-9]+)')
 
   _TIME_PATTERN_FORMAT = re.compile(
       r'^Time: ([0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+:[0-9]+)(\.[0-9]+)?')
@@ -960,12 +1005,15 @@ class Dump(object):
 
     ln += 1
     self._map = {}
+    current_vma = dict()
     while True:
       entry = proc_maps.ProcMaps.parse_line(self._lines[ln])
       if entry:
+        current_vma = dict()
         for _, _, attr in self._procmaps.iter_range(entry.begin, entry.end):
           for key, value in entry.as_dict().iteritems():
             attr[key] = value
+            current_vma[key] = value
         ln += 1
         continue
       matched = self._HOOK_PATTERN.match(self._lines[ln])
@@ -975,9 +1023,30 @@ class Dump(object):
       # 5: end address
       # 7: hooked or unhooked
       # 8: additional information
+      if matched.group(7) == 'hooked':
+        submatched = self._HOOKED_PATTERN.match(matched.group(8))
+        if not submatched:
+          submatched = self._OLD_HOOKED_PATTERN.match(matched.group(8))
+      elif matched.group(7) == 'unhooked':
+        submatched = self._UNHOOKED_PATTERN.match(matched.group(8))
+        if not submatched:
+          submatched = self._OLD_UNHOOKED_PATTERN.match(matched.group(8))
+      else:
+        assert matched.group(7) in ['hooked', 'unhooked']
+
+      submatched_dict = submatched.groupdict()
+      region_info = { 'vma': current_vma }
+      if 'TYPE' in submatched_dict:
+        region_info['type'] = submatched_dict['TYPE'].strip()
+      if 'COMMITTED' in submatched_dict:
+        region_info['committed'] = int(submatched_dict['COMMITTED'])
+      if 'RESERVED' in submatched_dict:
+        region_info['reserved'] = int(submatched_dict['RESERVED'])
+      if 'BUCKETID' in submatched_dict:
+        region_info['bucket_id'] = int(submatched_dict['BUCKETID'])
+
       self._map[(int(matched.group(2), 16),
-                 int(matched.group(5), 16))] = (matched.group(7),
-                                                matched.group(8))
+                 int(matched.group(5), 16))] = (matched.group(7), region_info)
       ln += 1
 
   def _extract_stacktrace_lines(self, line_number):
@@ -1290,6 +1359,7 @@ class PolicyCommands(Command):
     sizes = dict((c, 0) for c in policy.components)
 
     PolicyCommands._accumulate(dump, policy, bucket_set, sizes)
+    PolicyCommands._accumulate_maps(dump, policy, sizes)
 
     sizes['mmap-no-log'] = (
         dump.global_stat('profiled-mmap_committed') -
@@ -1304,6 +1374,10 @@ class PolicyCommands(Command):
     sizes['tc-unused'] = (
         sizes['mmap-tcmalloc'] -
         dump.global_stat('profiled-malloc_committed'))
+    if sizes['tc-unused'] < 0:
+      LOGGER.warn('    Assuming tc-unused=0 as it is negative: %d (bytes)' %
+                  sizes['tc-unused'])
+      sizes['tc-unused'] = 0
     sizes['tc-total'] = sizes['mmap-tcmalloc']
 
     for key, value in {
@@ -1316,11 +1390,6 @@ class PolicyCommands(Command):
         'stack': 'stack_committed',
         'other': 'other_committed',
         'unhooked-absent': 'nonprofiled-absent_committed',
-        'unhooked-anonymous': 'nonprofiled-anonymous_committed',
-        'unhooked-file-exec': 'nonprofiled-file-exec_committed',
-        'unhooked-file-nonexec': 'nonprofiled-file-nonexec_committed',
-        'unhooked-stack': 'nonprofiled-stack_committed',
-        'unhooked-other': 'nonprofiled-other_committed',
         'total-vm': 'total_virtual',
         'filemapped-vm': 'file_virtual',
         'anonymous-vm': 'anonymous_virtual',
@@ -1367,6 +1436,13 @@ class PolicyCommands(Command):
         sizes['mmap-total-log'] += int(words[COMMITTED])
       else:
         sizes['other-total-log'] += int(words[COMMITTED])
+
+  @staticmethod
+  def _accumulate_maps(dump, policy, sizes):
+    for _, value in dump.iter_map:
+      if value[0] == 'unhooked':
+        component_match = policy.find_unhooked(value)
+        sizes[component_match] += int(value[1]['committed'])
 
 
 class CSVCommand(PolicyCommands):
@@ -1514,16 +1590,18 @@ class MapCommand(Command):
         if not x:
           out.write('None\n')
         elif x[0] == 'hooked':
-          attrs = x[1].split()
-          assert len(attrs) == 3
-          bucket_id = int(attrs[2])
+          region_info = x[1]
+          bucket_id = region_info['bucket_id']
           bucket = bucket_set.get(bucket_id)
           component = policy.find(bucket)
-          out.write('hooked %s: %s @ %d\n' % (attrs[0], component, bucket_id))
+          out.write('hooked %s: %s @ %d\n' % (
+              region_info['type'] if 'type' in region_info else 'None',
+              component, bucket_id))
         else:
-          attrs = x[1].split()
-          size = int(attrs[1])
-          out.write('unhooked %s: %d bytes committed\n' % (attrs[0], size))
+          region_info = x[1]
+          size = region_info['committed']
+          out.write('unhooked %s: %d bytes committed\n' % (
+              region_info['type'] if 'type' in region_info else 'None', size))
 
 
 class ExpandCommand(Command):

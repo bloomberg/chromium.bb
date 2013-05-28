@@ -7,8 +7,19 @@
     "FROM_HERE_FOR_TOTAL",
     "mustbezero",
     "unhooked-absent",
+    "unhooked-ashmem-dalvik-heap",
+    "unhooked-ashmem-dalvik-LinearAlloc",
+    "unhooked-ashmem-dalvik-aux-structure",
+    "unhooked-ashmem-dalvik-bitmap",
+    "unhooked-ashmem-dalvik-other",
+    "unhooked-pvrsrvkm",
+    "unhooked-system-dex",
+    "unhooked-chrome-dex",
+    "unhooked-other-ashmem",
     "unhooked-anonymous",
+    "unhooked-file-exec-lib-chrome",
     "unhooked-file-exec",
+    "unhooked-file-nonexec-lib-chrome",
     "unhooked-file-nonexec",
     "unhooked-stack",
     "unhooked-other",
@@ -84,29 +95,86 @@
       "allocator": "optional"
     },
     {
+      "name": "unhooked-ashmem-dalvik-heap",
+      "mappedpathname": "/dev/ashmem/dalvik-heap.*",
+      "allocator": "unhooked"
+    },
+    {
+      "name": "unhooked-ashmem-dalvik-LinearAlloc",
+      "mappedpathname": "/dev/ashmem/dalvik-LinearAlloc.*",
+      "allocator": "unhooked"
+    },
+    {
+      "name": "unhooked-ashmem-dalvik-aux-structure",
+      "mappedpathname": "/dev/ashmem/dalvik-aux-structure.*",
+      "allocator": "unhooked"
+    },
+    {
+      "name": "unhooked-ashmem-dalvik-bitmap",
+      "mappedpathname": "/dev/ashmem/dalvik-bitmap.*",
+      "allocator": "unhooked"
+    },
+    {
+      "name": "unhooked-ashmem-dalvik-other",
+      "mappedpathname": "/dev/ashmem/dalvik.*",
+      "allocator": "unhooked"
+    },
+    {
+      "name": "unhooked-pvrsrvkm",
+      "mappedpathname": "/dev/pvrsrvkm.*",
+      "allocator": "unhooked"
+    },
+    {
+      "name": "unhooked-system-dex",
+      "mappedpathname": "/data/dalvik-cache/system.*.dex.*",
+      "allocator": "unhooked"
+    },
+    {
+      "name": "unhooked-chrome-dex",
+      "mappedpathname": "^/.*?(chrome|content).*?apk@classes.dex",
+      "allocator": "unhooked"
+    },
+    {
+      "name": "unhooked-other-ashmem",
+      "mappedpathname": "/dev/ashmem/.*",
+      "allocator": "unhooked"
+    },
+    {
       "name": "unhooked-anonymous",
-      "stacktrace": "optional",
-      "allocator": "optional"
+      "mappedpathname": "^$",
+      "allocator": "unhooked"
+    },
+    {
+      "name": "unhooked-file-exec-lib-chrome",
+      "mappedpathname": "^/.*?(chromeview|content).*",
+      "mappedpermission": "..x.",
+      "allocator": "unhooked"
     },
     {
       "name": "unhooked-file-exec",
-      "stacktrace": "optional",
-      "allocator": "optional"
+      "mappedpathname": "^/.*",
+      "mappedpermission": "..x.",
+      "allocator": "unhooked"
+    },
+    {
+      "name": "unhooked-file-nonexec-lib-chrome",
+      "mappedpathname": "^/.*?(chromeview|content).*",
+      "allocator": "unhooked"
     },
     {
       "name": "unhooked-file-nonexec",
-      "stacktrace": "optional",
-      "allocator": "optional"
+      "mappedpathname": "^/.*",
+      "allocator": "unhooked"
     },
     {
       "name": "unhooked-stack",
-      "stacktrace": "optional",
-      "allocator": "optional"
+      "mappedpathname": ".stack.",
+      "allocator": "unhooked"
     },
     {
       "name": "unhooked-other",
-      "stacktrace": "optional",
-      "allocator": "optional"
+      "mappedpathname": ".*",
+      "allocator": "unhooked"
     },
     {
       "name": "mmap-gpu-transferbuffer",

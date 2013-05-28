@@ -107,28 +107,29 @@
     },
     {
       "name": "unhooked-anonymous",
-      "stacktrace": "optional",
-      "allocator": "optional"
+      "mappedpathname": "^$",
+      "allocator": "unhooked"
     },
     {
       "name": "unhooked-file-exec",
-      "stacktrace": "optional",
-      "allocator": "optional"
+      "mappedpathname": "^/.*",
+      "mappedpermission": "..x.",
+      "allocator": "unhooked"
     },
     {
       "name": "unhooked-file-nonexec",
-      "stacktrace": "optional",
-      "allocator": "optional"
+      "mappedpathname": "^/.*",
+      "allocator": "unhooked"
     },
     {
       "name": "unhooked-stack",
-      "stacktrace": "optional",
-      "allocator": "optional"
+      "mappedpathname": ".stack.",
+      "allocator": "unhooked"
     },
     {
       "name": "unhooked-other",
-      "stacktrace": "optional",
-      "allocator": "optional"
+      "mappedpathname": ".*",
+      "allocator": "unhooked"
     },
     {
       "name": "mmap-v8-heap-newspace",

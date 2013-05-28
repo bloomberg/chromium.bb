@@ -41,15 +41,6 @@ static const char kProcSelfMapsHeader[] = "\nMAPPED_LIBRARIES:\n";
 static const char kVirtualLabel[] = "virtual";
 static const char kCommittedLabel[] = "committed";
 
-const char* DeepHeapProfile::kMapsRegionTypeDict[] = {
-  "absent",
-  "anonymous",
-  "file-exec",
-  "file-nonexec",
-  "stack",
-  "other",
-};
-
 namespace {
 
 #if defined(__linux__)
@@ -767,8 +758,6 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
             mmap_dump_buffer->AppendString(" - ", 0);
             mmap_dump_buffer->AppendPtr(last_address_of_unhooked + 1, 0);
             mmap_dump_buffer->AppendString("  unhooked ", 0);
-            mmap_dump_buffer->AppendString(kMapsRegionTypeDict[type], 0);
-            mmap_dump_buffer->AppendString(" ", 0);
             mmap_dump_buffer->AppendInt64(committed_size, 0);
             mmap_dump_buffer->AppendString(" / ", 0);
             mmap_dump_buffer->AppendInt64(
@@ -802,8 +791,6 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
           mmap_dump_buffer->AppendPtr(mmap_iter->end_addr, 0);
           mmap_dump_buffer->AppendString(continued ? ")" : " ", 0);
           mmap_dump_buffer->AppendString(" hooked ", 0);
-          mmap_dump_buffer->AppendString(kMapsRegionTypeDict[type], 0);
-          mmap_dump_buffer->AppendString(" ", 0);
           mmap_dump_buffer->AppendInt64(committed_size, 0);
           mmap_dump_buffer->AppendString(" / ", 0);
           mmap_dump_buffer->AppendInt64(

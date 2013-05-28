@@ -176,11 +176,11 @@ class PolicyTest(unittest.TestCase):
     symbol_mapping_cache.add(FUNCTION_SYMBOLS, 0x1212, 'v8::create')
     symbol_mapping_cache.add(FUNCTION_SYMBOLS, 0x1381, 'WebKit::create')
 
-    bucket1 = dmprof.Bucket([0x1212, 0x013], False, 0x29492, '_Z')
+    bucket1 = dmprof.Bucket([0x1212, 0x013], 'malloc', 0x29492, '_Z')
     bucket1.symbolize(symbol_mapping_cache)
-    bucket2 = dmprof.Bucket([0x18242, 0x1381], False, 0x9492, '_Z')
+    bucket2 = dmprof.Bucket([0x18242, 0x1381], 'malloc', 0x9492, '_Z')
     bucket2.symbolize(symbol_mapping_cache)
-    bucket3 = dmprof.Bucket([0x18242, 0x181], False, 0x949, '_Z')
+    bucket3 = dmprof.Bucket([0x18242, 0x181], 'malloc', 0x949, '_Z')
     bucket3.symbolize(symbol_mapping_cache)
 
     self.assertEqual('malloc-v8', policy.find(bucket1))
