@@ -814,6 +814,7 @@
         'test/chromedriver/chrome/devtools_client.h',
         'test/chromedriver/chrome/devtools_client_impl.cc',
         'test/chromedriver/chrome/devtools_client_impl.h',
+        'test/chromedriver/chrome/devtools_event_listener.cc',
         'test/chromedriver/chrome/devtools_event_listener.h',
         'test/chromedriver/chrome/devtools_http_client.cc',
         'test/chromedriver/chrome/devtools_http_client.h',

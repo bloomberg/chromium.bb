@@ -1072,3 +1072,54 @@ TEST(DevToolsClientImpl, CorrectlyDeterminesWhichIsBlockedByAlert) {
   msgs.push_back("{\"id\": 6, \"result\": {}}");
   ASSERT_EQ(kOk, client.HandleReceivedEvents().code());
 }
+
+namespace {
+
+class MockCommandListener : public DevToolsEventListener {
+ public:
+  MockCommandListener() {}
+  virtual ~MockCommandListener() {}
+
+  virtual void OnEvent(DevToolsClient* client,
+                       const std::string& method,
+                       const base::DictionaryValue& params) OVERRIDE {
+    msgs_.push_back(method);
+  }
+
+  virtual Status OnCommandSuccess(DevToolsClient* client,
+                                  const std::string& method) OVERRIDE {
+    msgs_.push_back(method);
+    if (!callback_.is_null())
+      callback_.Run(client);
+    return Status(kOk);
+  }
+
+  base::Callback<void(DevToolsClient*)> callback_;
+  std::list<std::string> msgs_;
+};
+
+void HandleReceivedEvents(DevToolsClient* client) {
+  EXPECT_EQ(kOk, client->HandleReceivedEvents().code());
+}
+
+}  // namespace
+
+TEST(DevToolsClientImpl, ReceivesCommandResponse) {
+  std::list<std::string> msgs;
+  SyncWebSocketFactory factory = base::Bind(&CreateMockSyncWebSocket6, &msgs);
+  Logger logger;
+  DevToolsClientImpl client(
+      factory, "http://url", "id", base::Bind(&CloserFunc), &logger);
+  MockCommandListener listener1;
+  listener1.callback_ = base::Bind(&HandleReceivedEvents);
+  MockCommandListener listener2;
+  client.AddListener(&listener1);
+  client.AddListener(&listener2);
+  msgs.push_back("{\"id\": 1, \"result\": {}}");
+  msgs.push_back("{\"method\": \"event\", \"params\": {}}");
+  base::DictionaryValue params;
+  ASSERT_EQ(kOk, client.SendCommand("cmd", params).code());
+  ASSERT_EQ(2u, listener2.msgs_.size());
+  ASSERT_EQ("cmd", listener2.msgs_.front());
+  ASSERT_EQ("event", listener2.msgs_.back());
+}

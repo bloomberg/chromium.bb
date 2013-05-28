@@ -14,16 +14,23 @@ class DictionaryValue;
 class DevToolsClient;
 class Status;
 
-// Listens to WebKit Inspector events and DevTools debugger connection.
+// Receives notification of incoming Blink Inspector messages and connection
+// to the DevTools server.
 class DevToolsEventListener {
  public:
-  virtual ~DevToolsEventListener() {}
+  virtual ~DevToolsEventListener();
 
-  virtual Status OnConnected(DevToolsClient* client) = 0;
+  // Called when a connection is made to the DevTools server.
+  virtual Status OnConnected(DevToolsClient* client);
 
+  // Called when an event is received.
   virtual void OnEvent(DevToolsClient* client,
                        const std::string& method,
-                       const base::DictionaryValue& params) = 0;
+                       const base::DictionaryValue& params);
+
+  // Called when a command success response is received.
+  virtual Status OnCommandSuccess(DevToolsClient* client,
+                                  const std::string& method);
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_DEVTOOLS_EVENT_LISTENER_H_

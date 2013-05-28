@@ -126,3 +126,10 @@ void NavigationTracker::OnEvent(DevToolsClient* client,
     scheduled_frame_set_.clear();
   }
 }
+
+Status NavigationTracker::OnCommandSuccess(DevToolsClient* client,
+                                           const std::string& method) {
+  if (method == "Page.navigate")
+    loading_state_ = kLoading;
+  return Status(kOk);
+}

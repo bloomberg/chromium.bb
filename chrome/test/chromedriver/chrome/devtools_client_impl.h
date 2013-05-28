@@ -103,10 +103,11 @@ class DevToolsClientImpl : public DevToolsClient {
     kReceived
   };
   struct ResponseInfo {
-    ResponseInfo();
+    explicit ResponseInfo(const std::string& method);
     ~ResponseInfo();
 
     ResponseState state;
+    std::string method;
     internal::InspectorCommandResponse response;
   };
   typedef std::map<int, linked_ptr<ResponseInfo> > ResponseInfoMap;
@@ -121,6 +122,7 @@ class DevToolsClientImpl : public DevToolsClient {
       const internal::InspectorCommandResponse& response);
   Status EnsureListenersNotifiedOfConnect();
   Status EnsureListenersNotifiedOfEvent();
+  Status EnsureListenersNotifiedOfCommandResponse();
 
   scoped_ptr<SyncWebSocket> socket_;
   GURL url_;
@@ -132,6 +134,8 @@ class DevToolsClientImpl : public DevToolsClient {
   std::list<DevToolsEventListener*> unnotified_connect_listeners_;
   std::list<DevToolsEventListener*> unnotified_event_listeners_;
   const internal::InspectorEvent* unnotified_event_;
+  std::list<DevToolsEventListener*> unnotified_cmd_response_listeners_;
+  linked_ptr<ResponseInfo> unnotified_cmd_response_info_;
   ResponseInfoMap response_info_map_;
   int next_id_;
   int stack_count_;

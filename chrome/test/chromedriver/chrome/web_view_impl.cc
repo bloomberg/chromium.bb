@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
@@ -111,6 +112,10 @@ DevToolsClient* WebViewImpl::GetDevToolsClient() {
 }
 
 Status WebViewImpl::Load(const std::string& url) {
+  // Javascript URLs will cause a hang while waiting for the page to stop
+  // loading, so just disallow.
+  if (StartsWithASCII(url, "javascript:", false))
+    return Status(kUnknownError, "unsupported protocol");
   base::DictionaryValue params;
   params.SetString("url", url);
   return client_->SendCommand("Page.navigate", params);

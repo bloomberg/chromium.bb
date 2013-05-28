@@ -178,7 +178,8 @@ Status DevToolsClientImpl::HandleEventsUntil(
   return Status(kOk);
 }
 
-DevToolsClientImpl::ResponseInfo::ResponseInfo() : state(kWaiting) {}
+DevToolsClientImpl::ResponseInfo::ResponseInfo(const std::string& method)
+    : state(kWaiting), method(method) {}
 
 DevToolsClientImpl::ResponseInfo::~ResponseInfo() {}
 
@@ -200,7 +201,8 @@ Status DevToolsClientImpl::SendCommandInternal(
   if (!socket_->Send(message))
     return Status(kDisconnected, "unable to send message to renderer");
 
-  linked_ptr<ResponseInfo> response_info = make_linked_ptr(new ResponseInfo());
+  linked_ptr<ResponseInfo> response_info =
+      make_linked_ptr(new ResponseInfo(method));
   response_info_map_[command_id] = response_info;
   while (response_info->state == kWaiting) {
     Status status = ProcessNextMessage(command_id);
@@ -229,6 +231,9 @@ Status DevToolsClientImpl::ProcessNextMessage(int expected_id) {
   if (status.IsError())
     return status;
   status = EnsureListenersNotifiedOfEvent();
+  if (status.IsError())
+    return status;
+  status = EnsureListenersNotifiedOfCommandResponse();
   if (status.IsError())
     return status;
 
@@ -300,15 +305,25 @@ Status DevToolsClientImpl::ProcessCommandResponse(
   linked_ptr<ResponseInfo> response_info = response_info_map_[response.id];
   if (response_info->state == kReceived)
     return Status(kUnknownError, "received multiple command responses");
+
   if (response_info->state == kIgnored) {
     response_info_map_.erase(response.id);
-    return Status(kOk);
+  } else {
+    response_info->state = kReceived;
+    response_info->response.id = response.id;
+    response_info->response.error = response.error;
+    if (response.result)
+      response_info->response.result.reset(response.result->DeepCopy());
   }
-  response_info->state = kReceived;
-  response_info->response.id = response.id;
-  response_info->response.error = response.error;
-  if (response.result)
-    response_info->response.result.reset(response.result->DeepCopy());
+
+  if (response.result) {
+    unnotified_cmd_response_listeners_ = listeners_;
+    unnotified_cmd_response_info_ = response_info;
+    Status status = EnsureListenersNotifiedOfCommandResponse();
+    unnotified_cmd_response_info_.reset();
+    if (status.IsError())
+      return status;
+  }
   return Status(kOk);
 }
 
@@ -329,6 +344,19 @@ Status DevToolsClientImpl::EnsureListenersNotifiedOfEvent() {
     unnotified_event_listeners_.pop_front();
     listener->OnEvent(this,
                       unnotified_event_->method, *unnotified_event_->params);
+  }
+  return Status(kOk);
+}
+
+Status DevToolsClientImpl::EnsureListenersNotifiedOfCommandResponse() {
+  while (unnotified_cmd_response_listeners_.size()) {
+    DevToolsEventListener* listener =
+        unnotified_cmd_response_listeners_.front();
+    unnotified_cmd_response_listeners_.pop_front();
+    Status status =
+        listener->OnCommandSuccess(this, unnotified_cmd_response_info_->method);
+    if (status.IsError())
+      return status;
   }
   return Status(kOk);
 }
