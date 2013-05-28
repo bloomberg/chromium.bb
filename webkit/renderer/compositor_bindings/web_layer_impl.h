@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebColor.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositingReasons.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
@@ -82,7 +81,6 @@ class WebLayerImpl : public WebKit::WebLayer {
   virtual void setFilters(const WebKit::WebFilterOperations& filters);
   virtual void setBackgroundFilters(const WebKit::WebFilterOperations& filters);
   virtual void setDebugName(WebKit::WebString name);
-  virtual void setCompositingReasons(WebKit::WebCompositingReasons);
   virtual void setAnimationDelegate(WebKit::WebAnimationDelegate* delegate);
   virtual bool addAnimation(WebKit::WebAnimation* animation);
   virtual void removeAnimation(int animation_id);

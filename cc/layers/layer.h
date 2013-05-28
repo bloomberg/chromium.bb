@@ -15,7 +15,6 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
-#include "cc/layers/compositing_reasons.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/layer_position_constraint.h"
@@ -285,7 +284,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual void ReduceMemoryUsage() {}
 
   void SetDebugName(const std::string& debug_name);
-  void SetCompositingReasons(CompositingReasons reasons);
 
   virtual void PushPropertiesTo(LayerImpl* layer);
 
@@ -453,7 +451,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   gfx::PointF anchor_point_;
   SkColor background_color_;
   std::string debug_name_;
-  CompositingReasons compositing_reasons_;
   float opacity_;
   skia::RefPtr<SkImageFilter> filter_;
   WebKit::WebFilterOperations filters_;

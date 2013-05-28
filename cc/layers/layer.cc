@@ -40,7 +40,6 @@ Layer::Layer()
       have_wheel_event_handlers_(false),
       anchor_point_(0.5f, 0.5f),
       background_color_(0),
-      compositing_reasons_(kCompositingReasonUnknown),
       opacity_(1.f),
       anchor_point_z_(0.f),
       is_container_for_fixed_position_layers_(false),
@@ -644,7 +643,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetContentBounds(content_bounds());
   layer->SetContentsScale(contents_scale_x(), contents_scale_y());
   layer->SetDebugName(debug_name_);
-  layer->SetCompositingReasons(compositing_reasons_);
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawCheckerboardForMissingTiles(
       draw_checkerboard_for_missing_tiles_);
@@ -748,11 +746,6 @@ bool Layer::NeedMoreUpdates() {
 
 void Layer::SetDebugName(const std::string& debug_name) {
   debug_name_ = debug_name;
-  SetNeedsCommit();
-}
-
-void Layer::SetCompositingReasons(CompositingReasons reasons) {
-  compositing_reasons_ = reasons;
   SetNeedsCommit();
 }
 
