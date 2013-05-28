@@ -1829,11 +1829,14 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 							 output->width,
 							 output->height);
 				break;
-			} else
+			} else {
 				restore_output_mode(output);
+				center_on_output(surface, output);
+			}
 		}
 		break;
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_FILL:
+		center_on_output(surface, output);
 		break;
 	default:
 		break;
