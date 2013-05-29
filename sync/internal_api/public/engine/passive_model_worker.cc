@@ -8,13 +8,20 @@
 
 namespace syncer {
 
-PassiveModelWorker::PassiveModelWorker(const base::MessageLoop* sync_loop)
-    : sync_loop_(sync_loop) {}
+PassiveModelWorker::PassiveModelWorker(const base::MessageLoop* sync_loop,
+                                       WorkerLoopDestructionObserver* observer)
+    : ModelSafeWorker(observer),
+      sync_loop_(sync_loop) {
+}
 
 PassiveModelWorker::~PassiveModelWorker() {
 }
 
-SyncerError PassiveModelWorker::DoWorkAndWaitUntilDone(
+void PassiveModelWorker::RegisterForLoopDestruction() {
+  NOTREACHED();
+}
+
+SyncerError PassiveModelWorker::DoWorkAndWaitUntilDoneImpl(
     const WorkCallback& work) {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   // Simply do the work on the current thread.

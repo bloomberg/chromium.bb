@@ -14,19 +14,26 @@ using base::WaitableEvent;
 namespace browser_sync {
 
 PasswordModelWorker::PasswordModelWorker(
-    const scoped_refptr<PasswordStore>& password_store)
-  : password_store_(password_store) {
+    const scoped_refptr<PasswordStore>& password_store,
+    syncer::WorkerLoopDestructionObserver* observer)
+  : syncer::ModelSafeWorker(observer),
+    password_store_(password_store) {
   DCHECK(password_store);
 }
 
-syncer::SyncerError PasswordModelWorker::DoWorkAndWaitUntilDone(
+void PasswordModelWorker::RegisterForLoopDestruction() {
+  password_store_->ScheduleTask(
+      base::Bind(&PasswordModelWorker::RegisterForPasswordLoopDestruction,
+                 this));
+}
+
+syncer::SyncerError PasswordModelWorker::DoWorkAndWaitUntilDoneImpl(
     const syncer::WorkCallback& work) {
-  WaitableEvent done(false, false);
   syncer::SyncerError error = syncer::UNSET;
   if (password_store_->ScheduleTask(
           base::Bind(&PasswordModelWorker::CallDoWorkAndSignalTask,
-                     this, work, &done, &error))) {
-    done.Wait();
+                     this, work, work_done_or_stopped(), &error))) {
+    work_done_or_stopped()->Wait();
   } else {
     error = syncer::CANNOT_DO_WORK;
   }
@@ -45,6 +52,10 @@ void PasswordModelWorker::CallDoWorkAndSignalTask(
     syncer::SyncerError *error) {
   *error = work.Run();
   done->Signal();
+}
+
+void PasswordModelWorker::RegisterForPasswordLoopDestruction() {
+  MessageLoop::current()->AddDestructionObserver(this);
 }
 
 }  // namespace browser_sync

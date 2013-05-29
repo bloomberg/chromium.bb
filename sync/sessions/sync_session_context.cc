@@ -27,7 +27,6 @@ SyncSessionContext::SyncSessionContext(
     const std::string& invalidator_client_id)
     : connection_manager_(connection_manager),
       directory_(directory),
-      workers_(workers),
       extensions_activity_monitor_(extensions_activity_monitor),
       notifications_enabled_(false),
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
@@ -36,6 +35,9 @@ SyncSessionContext::SyncSessionContext(
       traffic_recorder_(traffic_recorder),
       keystore_encryption_enabled_(keystore_encryption_enabled),
       invalidator_client_id_(invalidator_client_id) {
+  for (size_t i = 0u; i < workers.size(); ++i)
+    workers_.push_back(workers[i]);
+
   std::vector<SyncEngineEventListener*>::const_iterator it;
   for (it = listeners.begin(); it != listeners.end(); ++it)
     listeners_.AddObserver(*it);

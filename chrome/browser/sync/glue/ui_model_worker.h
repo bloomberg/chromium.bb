@@ -24,7 +24,7 @@ namespace browser_sync {
 // after the actual syncer pthread has exited.
 class UIModelWorker : public syncer::ModelSafeWorker {
  public:
-  UIModelWorker();
+  explicit UIModelWorker(syncer::WorkerLoopDestructionObserver* observer);
 
   // Called by the UI thread on shutdown of the sync service. Blocks until
   // the UIModelWorker has safely met termination conditions, namely that
@@ -33,8 +33,7 @@ class UIModelWorker : public syncer::ModelSafeWorker {
   void Stop();
 
   // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  virtual syncer::SyncerError DoWorkAndWaitUntilDone(
-      const syncer::WorkCallback& work) OVERRIDE;
+  virtual void RegisterForLoopDestruction() OVERRIDE;
   virtual syncer::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
   // Upon receiving this idempotent call, the syncer::ModelSafeWorker can
@@ -46,6 +45,10 @@ class UIModelWorker : public syncer::ModelSafeWorker {
   // Callback from |pending_work_| to notify us that it has been run.
   // Called on ui loop.
   void OnTaskCompleted() { pending_work_.Reset(); }
+
+ protected:
+  virtual syncer::SyncerError DoWorkAndWaitUntilDoneImpl(
+      const syncer::WorkCallback& work) OVERRIDE;
 
  private:
   // The life-cycle of a UIModelWorker in three states.

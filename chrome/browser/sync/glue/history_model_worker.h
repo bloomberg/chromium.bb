@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/common/cancelable_request.h"
+#include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 
 class HistoryService;
@@ -24,12 +25,16 @@ namespace browser_sync {
 class HistoryModelWorker : public syncer::ModelSafeWorker {
  public:
   explicit HistoryModelWorker(
-      const base::WeakPtr<HistoryService>& history_service);
+      const base::WeakPtr<HistoryService>& history_service,
+      syncer::WorkerLoopDestructionObserver* observer);
 
   // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  virtual syncer::SyncerError DoWorkAndWaitUntilDone(
-      const syncer::WorkCallback& work) OVERRIDE;
+  virtual void RegisterForLoopDestruction() OVERRIDE;
   virtual syncer::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
+
+ protected:
+  virtual syncer::SyncerError DoWorkAndWaitUntilDoneImpl(
+      const syncer::WorkCallback& work) OVERRIDE;
 
  private:
   virtual ~HistoryModelWorker();

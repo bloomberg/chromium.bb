@@ -45,8 +45,9 @@ void CallDoWorkAndSignalCallback(const syncer::WorkCallback& work,
 
 }  // namespace
 
-UIModelWorker::UIModelWorker()
-    : state_(WORKING),
+UIModelWorker::UIModelWorker(syncer::WorkerLoopDestructionObserver* observer)
+    : syncer::ModelSafeWorker(observer),
+      state_(WORKING),
       syncapi_has_shutdown_(false),
       syncapi_event_(&lock_) {
 }
@@ -76,7 +77,12 @@ void UIModelWorker::Stop() {
   state_ = STOPPED;
 }
 
-syncer::SyncerError UIModelWorker::DoWorkAndWaitUntilDone(
+void UIModelWorker::RegisterForLoopDestruction() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  MessageLoop::current()->AddDestructionObserver(this);
+}
+
+syncer::SyncerError UIModelWorker::DoWorkAndWaitUntilDoneImpl(
     const syncer::WorkCallback& work) {
   // In most cases, this method is called in WORKING state. It is possible this
   // gets called when we are in the RUNNING_MANUAL_SHUTDOWN_PUMP state, because
@@ -92,15 +98,14 @@ syncer::SyncerError UIModelWorker::DoWorkAndWaitUntilDone(
     return work.Run();
   }
 
-  // Create an unsignaled event to wait on.
-  base::WaitableEvent work_done(false, false);
   {
     // We lock only to avoid PostTask'ing a NULL pending_work_ (because it
     // could get Run() in Stop() and call OnTaskCompleted before we post).
     // The task is owned by the message loop as per usual.
     base::AutoLock lock(lock_);
     DCHECK(pending_work_.is_null());
-    pending_work_ = base::Bind(&CallDoWorkAndSignalCallback, work, &work_done,
+    pending_work_ = base::Bind(&CallDoWorkAndSignalCallback, work,
+                               work_done_or_stopped(),
                                base::Unretained(this), &error_info);
     if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, pending_work_)) {
       DLOG(WARNING) << "Could not post work to UI loop.";
@@ -111,7 +116,7 @@ syncer::SyncerError UIModelWorker::DoWorkAndWaitUntilDone(
     }
   }
   syncapi_event_.Signal();  // Notify that the syncapi produced work for us.
-  work_done.Wait();
+  work_done_or_stopped()->Wait();
   return error_info;
 }
 

@@ -20,20 +20,23 @@ namespace browser_sync {
 
 // A syncer::ModelSafeWorker for models that accept requests from the
 // syncapi that need to be fulfilled on a browser thread, for example
-// autofill on the DB thread.  TODO(sync): Try to generalize other
-// ModelWorkers (e.g. history, etc).
+// autofill on the DB thread.
+// TODO(sync): Try to generalize other ModelWorkers (e.g. history, etc).
 class BrowserThreadModelWorker : public syncer::ModelSafeWorker {
  public:
   BrowserThreadModelWorker(content::BrowserThread::ID thread,
-                           syncer::ModelSafeGroup group);
+                           syncer::ModelSafeGroup group,
+                           syncer::WorkerLoopDestructionObserver* observer);
 
   // syncer::ModelSafeWorker implementation. Called on the sync thread.
-  virtual syncer::SyncerError DoWorkAndWaitUntilDone(
-      const syncer::WorkCallback& work) OVERRIDE;
+  virtual void RegisterForLoopDestruction() OVERRIDE;
   virtual syncer::ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
  protected:
   virtual ~BrowserThreadModelWorker();
+
+  virtual syncer::SyncerError DoWorkAndWaitUntilDoneImpl(
+      const syncer::WorkCallback& work) OVERRIDE;
 
   // Marked pure virtual so subclasses have to override, but there is
   // an implementation that subclasses should use.  This is so that
@@ -55,7 +58,7 @@ class BrowserThreadModelWorker : public syncer::ModelSafeWorker {
 
 class DatabaseModelWorker : public BrowserThreadModelWorker {
  public:
-  DatabaseModelWorker();
+  explicit DatabaseModelWorker(syncer::WorkerLoopDestructionObserver* observer);
 
  protected:
   virtual void CallDoWorkAndSignalTask(
@@ -69,7 +72,7 @@ class DatabaseModelWorker : public BrowserThreadModelWorker {
 
 class FileModelWorker : public BrowserThreadModelWorker {
  public:
-  FileModelWorker();
+  explicit FileModelWorker(syncer::WorkerLoopDestructionObserver* observer);
 
  protected:
   virtual void CallDoWorkAndSignalTask(

@@ -34,7 +34,8 @@ class UIModelWorker;
 // A class that keep track of the workers, change processors, and
 // routing info for the enabled sync types, and also routes change
 // events to the right processors.
-class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate {
+class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
+                             public syncer::WorkerLoopDestructionObserver {
  public:
   // |name| is used for debugging.  Does not take ownership of |profile| or
   // |sync_loop|.  Must be created on the UI thread.
@@ -107,6 +108,9 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate {
 
   void GetWorkers(std::vector<syncer::ModelSafeWorker*>* out);
   void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out);
+
+  // syncer::WorkerLoopDestructionObserver implementation.
+  virtual void OnWorkerLoopDestroyed(syncer::ModelSafeGroup group) OVERRIDE;
 
  private:
   typedef std::map<syncer::ModelSafeGroup,

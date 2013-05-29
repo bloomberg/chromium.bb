@@ -22,12 +22,16 @@ namespace syncer {
 // thread).
 class SYNC_EXPORT PassiveModelWorker : public ModelSafeWorker {
  public:
-  explicit PassiveModelWorker(const base::MessageLoop* sync_loop);
+  explicit PassiveModelWorker(const base::MessageLoop* sync_loop,
+                              WorkerLoopDestructionObserver* observer);
 
   // ModelSafeWorker implementation. Called on the sync thread.
-  virtual SyncerError DoWorkAndWaitUntilDone(
-      const WorkCallback& work) OVERRIDE;
+  virtual void RegisterForLoopDestruction() OVERRIDE;
   virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
+
+ protected:
+  virtual SyncerError DoWorkAndWaitUntilDoneImpl(
+      const WorkCallback& work) OVERRIDE;
 
  private:
   virtual ~PassiveModelWorker();

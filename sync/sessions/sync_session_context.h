@@ -76,7 +76,7 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
     routing_info_ = routing_info;
   }
 
-  const std::vector<ModelSafeWorker*> workers() const {
+  const std::vector<scoped_refptr<ModelSafeWorker> >& workers() const {
     return workers_;
   }
 
@@ -151,7 +151,7 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
   ModelSafeRoutingInfo routing_info_;
 
   // The set of ModelSafeWorkers.  Used to execute tasks of various threads.
-  const std::vector<ModelSafeWorker*> workers_;
+  std::vector<scoped_refptr<ModelSafeWorker> > workers_;
 
   // We use this to stuff extensions activity into CommitMessages so the server
   // can correlate commit traffic with extension-related bookmark mutations.

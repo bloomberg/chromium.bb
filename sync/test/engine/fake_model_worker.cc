@@ -6,7 +6,9 @@
 
 namespace syncer {
 
-FakeModelWorker::FakeModelWorker(ModelSafeGroup group) : group_(group) {}
+FakeModelWorker::FakeModelWorker(ModelSafeGroup group)
+    : ModelSafeWorker(NULL),
+      group_(group) {}
 
 FakeModelWorker::~FakeModelWorker() {
   // We may need to relax this is FakeModelWorker is used in a
@@ -16,7 +18,11 @@ FakeModelWorker::~FakeModelWorker() {
   DCHECK(CalledOnValidThread());
 }
 
-SyncerError FakeModelWorker::DoWorkAndWaitUntilDone(
+void FakeModelWorker::RegisterForLoopDestruction() {
+  NOTREACHED();
+}
+
+SyncerError FakeModelWorker::DoWorkAndWaitUntilDoneImpl(
     const WorkCallback& work) {
   DCHECK(CalledOnValidThread());
   // Simply do the work on the current thread.

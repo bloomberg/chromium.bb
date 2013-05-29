@@ -89,7 +89,7 @@ class SyncUIModelWorkerTest : public testing::Test {
     faux_syncer_thread_.Start();
     ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
                                                     &faux_ui_loop_));
-    bmw_ = new UIModelWorker();
+    bmw_ = new UIModelWorker(NULL);
     syncer_.reset(new Syncer(bmw_.get()));
   }
 

@@ -74,7 +74,7 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
  protected:
   virtual void SetUp() {
     db_thread_.Start();
-    worker_ = new DatabaseModelWorker();
+    worker_ = new DatabaseModelWorker(NULL);
   }
 
   virtual void Teardown() {
