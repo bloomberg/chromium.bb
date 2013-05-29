@@ -38,6 +38,7 @@
 #else
 #include <base/nullable_string16.h>
 #include <base/string16.h>
+#include <webkit/glue/latin1_string_conversions.h>
 #endif
 
 namespace WebKit {
@@ -76,6 +77,7 @@ public:
     WEBKIT_EXPORT bool equals(const WebString& s) const;
 
     WEBKIT_EXPORT size_t length() const;
+    // Deprecated: This function will be removed once all its callers are gone.
     WEBKIT_EXPORT const WebUChar* data() const;
 
     // Caller must check bounds.
@@ -124,8 +126,7 @@ public:
 
     operator string16() const
     {
-        size_t len = length();
-        return len ? string16(data(), len) : string16();
+        return webkit_glue::Latin1OrUTF16ToUTF16(length(), data8(), data16());
     }
 
     WebString(const NullableString16& s) : m_private(0)
@@ -147,10 +148,7 @@ public:
 
     operator NullableString16() const
     {
-        if (!m_private)
-            return NullableString16(string16(), true);
-        size_t len = length();
-        return NullableString16(len ? string16(data(), len) : string16(), false);
+        return NullableString16(operator string16(), !m_private);
     }
 
     template <class UTF8String>
@@ -161,6 +159,10 @@ public:
 #endif
 
 private:
+    WEBKIT_EXPORT bool is8Bit() const;
+    WEBKIT_EXPORT const WebLChar* data8() const;
+    WEBKIT_EXPORT const WebUChar* data16() const;
+
     void assign(WebStringPrivate*);
 
     WebStringPrivate* m_private;

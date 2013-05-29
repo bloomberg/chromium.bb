@@ -75,6 +75,21 @@ const WebUChar* WebString::data() const
     return m_private ? const_cast<WebStringPrivate*>(m_private)->characters() : 0;
 }
 
+bool WebString::is8Bit() const
+{
+    return m_private->is8Bit();
+}
+
+const WebLChar* WebString::data8() const
+{
+    return m_private && is8Bit() ? m_private->characters8() : 0;
+}
+
+const WebUChar* WebString::data16() const
+{
+    return m_private && !is8Bit() ? m_private->characters16() : 0;
+}
+
 WebCString WebString::utf8() const
 {
     return WTF::String(m_private).utf8();

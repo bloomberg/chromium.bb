@@ -77,6 +77,9 @@ typedef wchar_t WebUChar;
 typedef unsigned short WebUChar;
 #endif
 
+// Latin-1 character type
+typedef unsigned char WebLChar;
+
 // -----------------------------------------------------------------------------
 // Assertions
 
