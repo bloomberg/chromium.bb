@@ -316,6 +316,11 @@ def BuildScript(status, context):
   with Step('scons_compile', status):
     SCons(context, parallel=True, args=[])
 
+  if context['coverage']:
+    with Step('collect_coverage', status, halt_on_fail=True):
+      SCons(context, args=['coverage'])
+    return
+
   ### BEGIN tests ###
   with Step('small_tests', status, halt_on_fail=False):
     SCons(context, args=['small_tests'])

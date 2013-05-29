@@ -60,6 +60,9 @@ def ParseStandardCommandLine(context):
                     action='store_true', help='Inside toolchain build.')
   parser.add_option('--clang', dest='clang', default=False,
                     action='store_true', help='Build trusted code with Clang.')
+  parser.add_option('--coverage', dest='coverage', default=False,
+                    action='store_true',
+                    help='Build and test for code coverage.')
   parser.add_option('--validator', dest='validator', default=False,
                     action='store_true',
                     help='Only run validator regression test')
@@ -77,7 +80,7 @@ def ParseStandardCommandLine(context):
 
   # script + 3 args == 4
   mode, arch, clib = args
-  if mode not in ('dbg', 'opt'):
+  if mode not in ('dbg', 'opt', 'coverage'):
     parser.error('Invalid mode %r' % mode)
 
   if arch not in ARCH_MAP:
@@ -97,7 +100,10 @@ def ParseStandardCommandLine(context):
   context['validator'] = options.validator
   context['asan'] = options.asan
   # TODO(ncbray) turn derived values into methods.
-  context['gyp_mode'] = {'opt': 'Release', 'dbg': 'Debug'}[mode]
+  context['gyp_mode'] = {
+      'opt': 'Release',
+      'dbg': 'Debug',
+      'coverage': 'Debug'}[mode]
   context['gyp_arch'] = ARCH_MAP[arch]['gyp_arch']
   context['gyp_vars'] = []
   if context['clang']:
@@ -116,6 +122,10 @@ def ParseStandardCommandLine(context):
   context['inside_toolchain'] = options.inside_toolchain
   context['step_suffix'] = options.step_suffix
   context['no_gyp'] = options.no_gyp
+  context['coverage'] = options.coverage
+  # Don't run gyp on coverage builds.
+  if context['coverage']:
+    context['no_gyp'] = True
 
   for key, value in sorted(context.config.items()):
     print '%s=%s' % (key, value)

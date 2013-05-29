@@ -140,6 +140,7 @@ def FilterEnvironments(environments):
     name = platform_map[sys.platform]
     environment_map['opt-host'] = environment_map['opt-%s' % name]
     environment_map['dbg-host'] = environment_map['dbg-%s' % name]
+    environment_map['coverage-host'] = environment_map['coverage-%s' % name]
 
   matched_envs = []
   for mode in build_modes.split(','):

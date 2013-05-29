@@ -14,26 +14,17 @@ if [ $# -ne 0 ]; then
   exit 2
 fi
 
+export BITS=64
+
 set -x
 set -e
 set -u
 
+# Standard script emits its own annotator tags.
+python buildbot/buildbot_standard.py coverage ${BITS} newlib --coverage --clang
 
-echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out ../xcodebuild
-
-echo @@@BUILD_STEP cleanup_temp@@@
-ls -al /tmp/
-rm -rf /tmp/* /tmp/.[!.]* || true
-
-echo @@BUILD_STEP update_clang@@@
-../tools/clang/scripts/update.sh
-
-echo @@@BUILD_STEP scons_compile@@@
-./scons -j 8 -k --verbose --mode=coverage-mac,nacl platform=x86-32 --clang
-
-echo @@@BUILD_STEP coverage@@@
-./scons -k --verbose --mode=coverage-mac,nacl coverage platform=x86-32 --clang
+echo @@@BUILD_STEP summarize coverage@@@
+python tools/coverage_summary.py mac-x86-${BITS}
 
 # Stop here and don't archive if on trybots.
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
@@ -43,7 +34,7 @@ fi
 echo @@@BUILD_STEP archive_coverage@@@
 export GSUTIL=/b/build/scripts/slave/gsutil
 GSD_URL=http://gsdview.appspot.com/nativeclient-coverage2/revs
-VARIANT_NAME=coverage-mac-x86-32
+VARIANT_NAME=coverage-mac-x86-${BITS}
 COVERAGE_PATH=${VARIANT_NAME}/html/index.html
 BUILDBOT_REVISION=${BUILDBOT_REVISION:-None}
 LINK_URL=${GSD_URL}/${BUILDBOT_REVISION}/${COVERAGE_PATH}

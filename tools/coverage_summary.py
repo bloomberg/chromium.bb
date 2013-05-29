@@ -126,13 +126,34 @@ def CoveragePercent(used, total, name):
     return '%6.2f  > Unused < %s' % (0.0, name)
 
 
-def CoverageProcess(bits, verbose = False):
+def ShortGroup(path):
+  parts = path.rsplit('/native_client/', 1)
+  if len(parts) > 1:
+    name = parts[1]
+  else:
+    name = path
+  return name.replace('/', '_')
+
+
+def CoverageResult(used, total, name):
+  # Perf dashboard format results.
+  return [
+      'RESULT coverage_percent_%s: coverage_percent_%s= %f percent' % (
+          name, name, used * 100.0 / total),
+      'RESULT lines_%s: lines_%s= %d lines' % (
+          name, name, total),
+      'RESULT covered_%s: covered_%s= %d lines' % (
+          name, name, used),
+  ]
+
+
+def CoverageProcess(platform, verbose = False):
   helper = coverage_helper.CoverageHelper()
   groups  = helper.groups
   filters = helper.path_filter
 
   # Load and parse the 'lcov' file
-  covfile = 'scons-out/coverage-linux-x86-%s/coverage/coverage.lcov' % bits
+  covfile = 'scons-out/coverage-%s/coverage/coverage.lcov' % platform
   covdata = open(covfile, 'r').readlines()
   cov = CoverageParse(covdata, helper.ignore_set)
 
@@ -144,6 +165,7 @@ def CoverageProcess(bits, verbose = False):
   perfile = SortedOutput()
   pergroup = SortedOutput()
   summary = SortedOutput()
+  results = []
 
   # Build the group dictionary with an empty list for each key
   group_data = {}
@@ -181,13 +203,16 @@ def CoverageProcess(bits, verbose = False):
       used += u
       total += t
 
+    sgroup = ShortGroup(group)
+
     # If this is a filtered group, add it to the filtered output set
     if group in filters:
-      filtered.append(CoveragePercent(used, total, group))
+      filtered.append(CoveragePercent(used, total, sgroup))
     else:
       # Otherwise add it to the per group only if the group has hits
       if total:
-        pergroup.append(CoveragePercent(used, total, group))
+        pergroup.append(CoveragePercent(used, total, sgroup))
+        results.extend(CoverageResult(used, total, sgroup))
         global_total += total
         global_used += used
 
@@ -198,24 +223,35 @@ def CoverageProcess(bits, verbose = False):
 
   summary.append(CoveragePercent(global_used, global_total, 'Overall'))
   summary.section(title = '\nSummary')
+  results.extend(CoverageResult(global_used, global_total, 'Overall'))
 
   summary.output()
   pergroup.output()
   filtered.output()
   if verbose: perfile.output()
 
+  # Emit perf dashboard results.
+  print ''
+  print 'Dashboard Results'
+  print '-----------------'
+  for line in results:
+    print line
+  print ''
+
   return (global_used * 100) / global_total
 
 def main(argv):
+  platform = argv[0]
+
   # TOODO Raise the coverage requirement once we get coverage to a reasonable
   # number.
-  coverage_target = 20
+  if platform.startswith('linux-'):
+    coverage_target = 50
+  else:
+    coverage_target = 12
 
-  if len(argv) != 1 or argv[0] != '32' and argv[0] != '64':
-    print "Expecting argument of 32 or 64 for machine width."
-    return -1
-
-  if CoverageProcess(int(argv[0])) >= coverage_target: return 0
+  if CoverageProcess(platform) >= coverage_target:
+    return 0
   print 'Coverage bellow %d%%, failed.' % coverage_target
   return -1
 

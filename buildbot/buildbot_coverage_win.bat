@@ -7,45 +7,15 @@ echo on
 set BITS=32
 set VCBITS=x86
 
-:: Picking out drive letter on which the build is happening so we can use it
-:: for the temp directory.
-set BUILD_DRIVE=%PATH:~0,1%
-
 call buildbot\msvs_env.bat %BITS%
-
-echo @@@BUILD_STEP clobber@@@
-rd /s /q scons-out ^
- & rd /s /q build\Debug build\Release ^
- & rd /s /q build\Debug-Win32 build\Release-Win32 ^
- & rd /s /q build\Debug-x64 build\Release-x64
-
-echo @@@BUILD_STEP cleanup_temp@@@
-:: Selecting a temp directory on the same drive as the build.
-:: Many of our bots have tightly packed C: drives, but plentiful E: drives.
-set OLD_TEMP=%TEMP%
-set TEMP=%BUILD_DRIVE%:\temp
-set TMP=%TEMP%
-mkdir %TEMP%
-:: Safety check.
-if "%OLD_TEMP%" equ "" goto SkipClean
-:: Cleaning old temp directory to clear up all the nearly full bots out there.
-del /S /Q "%OLD_TEMP%\*"
-for /D %%I in ("%OLD_TEMP%\*") do rmdir /S /Q %%I
-:: Cleaning new temp directory so we don't overflow in the future.
-del /S /Q "%TEMP%\*"
-for /D %%I in ("%TEMP%\*") do rmdir /S /Q %%I
-
-echo on
-echo @@@BUILD_STEP scons_compile@@@
 call vcvarsall.bat %VCBITS%
-call scons.bat -j 8 ^
- -k --verbose --mode=coverage-win,nacl platform=x86-%BITS%
+
+:: Standard script emits its own annotator tags.
+python buildbot/buildbot_standard.py coverage %BITS% newlib --coverage
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
-echo @@@BUILD_STEP coverage@@@
-call vcvarsall.bat %VCBITS%
-call scons.bat ^
- -k --verbose --mode=coverage-win,nacl coverage platform=x86-%BITS%
+echo @@@BUILD_STEP summarize coverage@@@
+python tools/coverage_summary.py win-x86-%BITS%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 :: Stop here and don't archive if on trybots.

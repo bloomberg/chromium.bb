@@ -21,24 +21,11 @@ set -u
 # Pick 32 or 64
 BITS=$1
 
+# Standard script emits its own annotator tags.
+python buildbot/buildbot_standard.py coverage ${BITS} newlib --coverage
 
-echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out ../sconsbuild ../out
-
-echo @@@BUILD_STEP cleanup_temp@@@
-ls -al /tmp/
-rm -rf /tmp/* /tmp/.[!.]* || true
-
-echo @@@BUILD_STEP scons_compile@@@
-./scons -j 8 -k --verbose --mode=coverage-linux,nacl platform=x86-${BITS}
-
-echo @@@BUILD_STEP coverage@@@
-XVFB_PREFIX="xvfb-run --auto-servernum"
-
-$XVFB_PREFIX \
-    ./scons -k --verbose --mode=coverage-linux,nacl coverage \
-    platform=x86-${BITS}
-python tools/coverage_linux.py ${BITS}
+echo @@@BUILD_STEP summarize coverage@@@
+python tools/coverage_summary.py linux-x86-${BITS}
 
 # Stop here and don't archive if on trybots.
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
