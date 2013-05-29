@@ -637,7 +637,6 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     }
   }
 
-  scoped_refptr<Context> protect(this);
   client_->didReceiveResponse(loader_, response);
 
   // We may have been cancelled after didReceiveResponse, which would leave us
