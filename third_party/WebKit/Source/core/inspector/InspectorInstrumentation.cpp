@@ -31,25 +31,18 @@
 #include "config.h"
 #include "core/inspector/InspectorInstrumentation.h"
 
-#include "bindings/v8/DOMWrapperWorld.h"
-#include "bindings/v8/ScriptController.h"
-#include "core/css/CSSRule.h"
-#include "core/css/CSSStyleRule.h"
-#include "core/css/StyleRule.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/DeviceOrientationData.h"
-#include "core/dom/EventContext.h"
-#include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorApplicationCacheAgent.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorCanvasAgent.h"
 #include "core/inspector/InspectorConsoleAgent.h"
+#include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorDOMStorageAgent.h"
 #include "core/inspector/InspectorDatabaseAgent.h"
+#include "core/inspector/InspectorDatabaseInstrumentation.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorHeapProfilerAgent.h"
 #include "core/inspector/InspectorLayerTreeAgent.h"
@@ -61,19 +54,8 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/PageDebuggerAgent.h"
 #include "core/inspector/PageRuntimeAgent.h"
-#include "core/inspector/ScriptArguments.h"
-#include "core/inspector/ScriptCallStack.h"
-#include "core/inspector/ScriptProfile.h"
-#include "core/inspector/WorkerInspectorController.h"
 #include "core/inspector/WorkerRuntimeAgent.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/page/ConsoleTypes.h"
-#include "core/page/DOMWindow.h"
-#include "core/rendering/RenderObject.h"
 #include "core/workers/WorkerContext.h"
-#include "core/workers/WorkerThread.h"
-#include "core/xml/XMLHttpRequest.h"
-#include "modules/webdatabase/Database.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 
@@ -928,7 +910,7 @@ void addMessageToConsoleImpl(InstrumentingAgents* instrumentingAgents, MessageSo
     if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
         consoleAgent->addMessageToConsole(source, type, level, message, callStack, requestIdentifier);
     if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
-        debuggerAgent->addMessageToConsole(source, type);
+        debuggerAgent->addMessageToConsole(source, type, level, message, callStack, requestIdentifier);
 }
 
 void addMessageToConsoleImpl(InstrumentingAgents* instrumentingAgents, MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtr<ScriptArguments> arguments, unsigned long requestIdentifier)
@@ -936,7 +918,7 @@ void addMessageToConsoleImpl(InstrumentingAgents* instrumentingAgents, MessageSo
     if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
         consoleAgent->addMessageToConsole(source, type, level, message, state, arguments, requestIdentifier);
     if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
-        debuggerAgent->addMessageToConsole(source, type);
+        debuggerAgent->addMessageToConsole(source, type, level, message, state, arguments, requestIdentifier);
 }
 
 void addMessageToConsoleImpl(InstrumentingAgents* instrumentingAgents, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, ScriptState* state, unsigned long requestIdentifier)
@@ -948,32 +930,29 @@ void addMessageToConsoleImpl(InstrumentingAgents* instrumentingAgents, MessageSo
 void consoleCountImpl(InstrumentingAgents* instrumentingAgents, ScriptState* state, PassRefPtr<ScriptArguments> arguments)
 {
     if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
-        consoleAgent->count(state, arguments);
+        consoleAgent->consoleCount(state, arguments);
 }
 
 void startConsoleTimingImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, const String& title)
 {
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->time(frame, title);
+        timelineAgent->startConsoleTiming(frame, title);
     if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
-        consoleAgent->startTiming(title);
+        consoleAgent->startConsoleTiming(frame, title);
 }
 
 void stopConsoleTimingImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, const String& title, PassRefPtr<ScriptCallStack> stack)
 {
     if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
-        consoleAgent->stopTiming(title, stack);
+        consoleAgent->stopConsoleTiming(frame, title, stack);
     if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
-        timelineAgent->timeEnd(frame, title);
+        timelineAgent->stopConsoleTiming(frame, title, stack);
 }
 
 void consoleTimeStampImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, PassRefPtr<ScriptArguments> arguments)
 {
-    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
-        String message;
-        arguments->getFirstArgumentAsString(message);
-        timelineAgent->didTimeStamp(frame, message);
-     }
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->consoleTimeStamp(frame, arguments);
 }
 
 void addStartProfilingMessageToConsoleImpl(InstrumentingAgents* instrumentingAgents, const String& title, unsigned lineNumber, const String& sourceURL)
@@ -982,12 +961,10 @@ void addStartProfilingMessageToConsoleImpl(InstrumentingAgents* instrumentingAge
         profilerAgent->addStartProfilingMessageToConsole(title, lineNumber, sourceURL);
 }
 
-void addProfileImpl(InstrumentingAgents* instrumentingAgents, RefPtr<ScriptProfile> profile, PassRefPtr<ScriptCallStack> callStack)
+void addProfileImpl(InstrumentingAgents* instrumentingAgents, PassRefPtr<ScriptProfile> profile, PassRefPtr<ScriptCallStack> callStack)
 {
-    if (InspectorProfilerAgent* profilerAgent = instrumentingAgents->inspectorProfilerAgent()) {
-        const ScriptCallFrame& lastCaller = callStack->at(0);
-        profilerAgent->addProfile(profile, lastCaller.lineNumber(), lastCaller.sourceURL());
-    }
+    if (InspectorProfilerAgent* profilerAgent = instrumentingAgents->inspectorProfilerAgent())
+        profilerAgent->addProfile(profile, callStack);
 }
 
 String getCurrentUserInitiatedProfileNameImpl(InstrumentingAgents* instrumentingAgents, bool incrementProfileNumber)

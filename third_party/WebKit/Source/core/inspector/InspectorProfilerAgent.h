@@ -49,6 +49,7 @@ class InspectorObject;
 class InspectorState;
 class InstrumentingAgents;
 class Page;
+class ScriptCallStack;
 class ScriptProfile;
 class WorkerContext;
 
@@ -60,7 +61,7 @@ public:
     static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*);
     virtual ~InspectorProfilerAgent();
 
-    void addProfile(PassRefPtr<ScriptProfile> prpProfile, unsigned lineNumber, const String& sourceURL);
+    void addProfile(PassRefPtr<ScriptProfile> prpProfile, PassRefPtr<ScriptCallStack>);
     void addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
     void addStartProfilingMessageToConsole(const String& title, unsigned lineNumber, const String& sourceURL);
     virtual void clearProfiles(ErrorString*);
@@ -89,6 +90,8 @@ public:
 
 private:
     InspectorProfilerAgent(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*);
+
+    void addProfile(PassRefPtr<ScriptProfile> prpProfile, unsigned lineNumber, const String& sourceURL);
 
     void resetFrontendProfiles();
     PassRefPtr<TypeBuilder::Profiler::ProfileHeader> stop(ErrorString* = 0);

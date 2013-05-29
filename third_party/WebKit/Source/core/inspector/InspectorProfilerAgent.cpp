@@ -43,6 +43,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptProfile.h"
 #include "core/page/Console.h"
 #include "core/page/ConsoleTypes.h"
@@ -95,6 +96,12 @@ void InspectorProfilerAgent::addProfile(PassRefPtr<ScriptProfile> prpProfile, un
     if (m_frontend && m_state->getBoolean(ProfilerAgentState::profileHeadersRequested))
         m_frontend->addProfileHeader(createProfileHeader(*profile));
     addProfileFinishedMessageToConsole(profile, lineNumber, sourceURL);
+}
+
+void InspectorProfilerAgent::addProfile(PassRefPtr<ScriptProfile> prpProfile, PassRefPtr<ScriptCallStack> callStack)
+{
+    const ScriptCallFrame& lastCaller = callStack->at(0);
+    addProfile(prpProfile, lastCaller.lineNumber(), lastCaller.sourceURL());
 }
 
 void InspectorProfilerAgent::addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile> prpProfile, unsigned lineNumber, const String& sourceURL)

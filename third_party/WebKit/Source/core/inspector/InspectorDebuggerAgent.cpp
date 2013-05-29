@@ -40,6 +40,8 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/ScriptArguments.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/platform/text/RegularExpression.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
@@ -182,6 +184,17 @@ void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageTy
     if (scriptDebugServer().pauseOnExceptionsState() != ScriptDebugServer::DontPauseOnExceptions && source == ConsoleAPIMessageSource && type == AssertMessageType)
         breakProgram(InspectorFrontend::Debugger::Reason::Assert, 0);
 }
+
+void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel, const String&, PassRefPtr<ScriptCallStack>, unsigned long)
+{
+    addMessageToConsole(source, type);
+}
+
+void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageType type, MessageLevel, const String&, ScriptState*, PassRefPtr<ScriptArguments>, unsigned long)
+{
+    addMessageToConsole(source, type);
+}
+
 
 static PassRefPtr<InspectorObject> buildObjectForBreakpointCookie(const String& url, int lineNumber, int columnNumber, const String& condition, bool isRegex)
 {

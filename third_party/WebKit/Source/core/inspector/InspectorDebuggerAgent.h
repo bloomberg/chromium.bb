@@ -54,6 +54,8 @@ class InspectorObject;
 class InspectorState;
 class InspectorValue;
 class InstrumentingAgents;
+class ScriptArguments;
+class ScriptCallStack;
 class ScriptDebugServer;
 class ScriptValue;
 
@@ -74,7 +76,8 @@ public:
 
     bool isPaused();
     bool runningNestedMessageLoop();
-    void addMessageToConsole(MessageSource, MessageType);
+    void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String&, PassRefPtr<ScriptCallStack>, unsigned long);
+    void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String&, ScriptState*, PassRefPtr<ScriptArguments>, unsigned long);
 
     // Part of the protocol.
     virtual void enable(ErrorString*);
@@ -150,6 +153,7 @@ protected:
 
 private:
     void cancelPauseOnNextStatement();
+    void addMessageToConsole(MessageSource, MessageType);
 
     bool enabled();
 

@@ -51,7 +51,7 @@ void startConsoleTimingImpl(InstrumentingAgents*, Frame*, const String& title);
 void stopConsoleTimingImpl(InstrumentingAgents*, Frame*, const String& title, PassRefPtr<ScriptCallStack>);
 void consoleTimeStampImpl(InstrumentingAgents*, Frame*, PassRefPtr<ScriptArguments>);
 void addStartProfilingMessageToConsoleImpl(InstrumentingAgents*, const String& title, unsigned lineNumber, const String& sourceURL);
-void addProfileImpl(InstrumentingAgents*, RefPtr<ScriptProfile>, PassRefPtr<ScriptCallStack>);
+void addProfileImpl(InstrumentingAgents*, PassRefPtr<ScriptProfile>, PassRefPtr<ScriptCallStack>);
 
 inline void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier = 0)
 {
@@ -115,7 +115,7 @@ inline void addStartProfilingMessageToConsole(Page* page, const String& title, u
         addStartProfilingMessageToConsoleImpl(instrumentingAgents, title, lineNumber, sourceURL);
 }
 
-inline void addProfile(Page* page, RefPtr<ScriptProfile> profile, PassRefPtr<ScriptCallStack> callStack)
+inline void addProfile(Page* page, PassRefPtr<ScriptProfile> profile, PassRefPtr<ScriptCallStack> callStack)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
         addProfileImpl(instrumentingAgents, profile, callStack);

@@ -42,6 +42,7 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/TimelineRecordFactory.h"
 #include "core/inspector/TimelineTraceEventProcessor.h"
 #include "core/loader/DocumentLoader.h"
@@ -549,17 +550,19 @@ void InspectorTimelineAgent::didFailLoading(unsigned long identifier, DocumentLo
     didFinishLoadingResource(identifier, true, 0, loader->frame());
 }
 
-void InspectorTimelineAgent::didTimeStamp(Frame* frame, const String& message)
+void InspectorTimelineAgent::consoleTimeStamp(Frame* frame, PassRefPtr<ScriptArguments> arguments)
 {
+    String message;
+    arguments->getFirstArgumentAsString(message);
     appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frame);
 }
 
-void InspectorTimelineAgent::time(Frame* frame, const String& message)
+void InspectorTimelineAgent::startConsoleTiming(Frame* frame, const String& message)
 {
     appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::Time, true, frame);
 }
 
-void InspectorTimelineAgent::timeEnd(Frame* frame, const String& message)
+void InspectorTimelineAgent::stopConsoleTiming(Frame* frame, const String& message, PassRefPtr<ScriptCallStack>)
 {
     appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeEnd, true, frame);
 }
