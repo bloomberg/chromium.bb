@@ -66,14 +66,6 @@ public:
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
-    // Map from sample-rate to loader.
-    class LoaderMap : public HashMap<double, HRTFDatabaseLoader*> {
-    public:
-        void reportMemoryUsage(MemoryObjectInfo*) const;
-    };
-
-    static HRTFDatabaseLoader::LoaderMap* loaderMap() { return s_loaderMap; }
-
 private:
     // Both constructor and destructor must be called from the main thread.
     explicit HRTFDatabaseLoader(float sampleRate);
@@ -81,6 +73,9 @@ private:
     // If it hasn't already been loaded, creates a new thread and initiates asynchronous loading of the default database.
     // This must be called from the main thread.
     void loadAsynchronously();
+
+    // Map from sample-rate to loader.
+    typedef HashMap<double, HRTFDatabaseLoader*> LoaderMap;
 
     // Keeps track of loaders on a per-sample-rate basis.
     static LoaderMap* s_loaderMap; // singleton

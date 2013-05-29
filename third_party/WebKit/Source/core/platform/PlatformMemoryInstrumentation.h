@@ -50,11 +50,6 @@ public:
     static MemoryObjectType AudioSharedData;
 };
 
-class PlatformMemoryInstrumentation {
-public:
-    static void reportStaticMembersMemoryUsage(WTF::MemoryInstrumentation*);
-};
-
 } // namespace WebCore
 
 #endif // !defined(PlatformMemoryInstrumentation_h)

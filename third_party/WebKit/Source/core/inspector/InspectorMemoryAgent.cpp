@@ -364,7 +364,6 @@ PassRefPtr<InspectorObject> InspectorMemoryAgent::getProcessMemoryDistributionIm
     reportRenderTreeInfo(memoryInstrumentationClient, m_page);
     collectDomTreeInfo(memoryInstrumentation, m_page); // FIXME: collect for all pages?
 
-    PlatformMemoryInstrumentation::reportStaticMembersMemoryUsage(&memoryInstrumentation);
     WebCoreMemoryInstrumentation::reportStaticMembersMemoryUsage(&memoryInstrumentation);
 
     memoryInstrumentation.addRootObject(this);

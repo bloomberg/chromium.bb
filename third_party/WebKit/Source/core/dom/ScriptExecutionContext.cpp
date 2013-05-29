@@ -362,6 +362,9 @@ void ScriptExecutionContext::reportMemoryUsage(MemoryObjectInfo* memoryObjectInf
     info.addMember(m_timeouts, "timeouts");
     info.addMember(m_pendingExceptions, "pendingExceptions");
     info.addMember(m_publicURLManager, "publicURLManager");
+    ActiveDOMObjectsSet::iterator activeObjectsEnd = m_activeDOMObjects.end();
+    for (ActiveDOMObjectsSet::iterator iter = m_activeDOMObjects.begin(); iter != activeObjectsEnd; ++iter)
+        info.addMember(*iter, "activeDOMObject", WTF::RetainingPointer);
 }
 
 ScriptExecutionContext::Task::~Task()
