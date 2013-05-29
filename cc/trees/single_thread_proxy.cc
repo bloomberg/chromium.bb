@@ -97,7 +97,7 @@ void SingleThreadProxy::SetLayerTreeHostClientReady() {
 }
 
 void SingleThreadProxy::SetVisible(bool visible) {
-  DebugScopedSetImplThreadAndMainThreadBlocked impl(this);
+  DebugScopedSetImplThread impl(this);
   layer_tree_host_impl_->SetVisible(visible);
 }
 
@@ -176,7 +176,9 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
   DCHECK(Proxy::IsMainThread());
   // Commit immediately.
   {
-    DebugScopedSetImplThreadAndMainThreadBlocked impl_with_main_blocked(this);
+    DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+    DebugScopedSetImplThread impl(this);
+
     RenderingStatsInstrumentation* stats_instrumentation =
         layer_tree_host_->rendering_stats_instrumentation();
     base::TimeTicks start_time = stats_instrumentation->StartRecording();
