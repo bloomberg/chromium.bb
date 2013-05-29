@@ -47,8 +47,7 @@
                   'ash/',
     },
     'autofill': {
-      'filepath': 'chrome/browser/api/webdata/|'\
-                  'chrome/browser/autofill/|'\
+      'filepath': 'chrome/browser/autofill/|'\
                   'chrome/browser/resources/options/autofill_|'\
                   'chrome/browser/sync/glue/autofill_|'\
                   'chrome/browser/ui/android/autofill/|'\
@@ -57,10 +56,11 @@
                   'chrome/browser/ui/gtk/autofill/|'\
                   'chrome/browser/ui/views/autofill/|'\
                   'chrome/browser/ui/webui/options/autofill_|'\
-                  'chrome/browser/webdata/|'\
                   'chrome/renderer/autofill/|'\
                   'chrome/test/data/autofill/|'\
                   'components/autofill/|'\
+                  'components/autofill/browser/webdata/|'\
+                  'components/webdata/|'\
                   'content/public/common/password_|'\
                   'content/public/renderer/password_|'\
                   'content/renderer/password_',
