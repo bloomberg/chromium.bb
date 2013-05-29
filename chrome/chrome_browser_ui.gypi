@@ -2716,7 +2716,6 @@
             'browser/ui/browser_command_controller.cc',
             'browser/ui/browser_finder.cc',
             'browser/ui/browser_iterator.cc',
-            'browser/ui/browser_instant_controller.cc',
             'browser/ui/browser_list.cc',
             'browser/ui/browser_navigator.cc',
             'browser/ui/browser_otr_state.cc',
