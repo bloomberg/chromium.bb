@@ -276,15 +276,17 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
 
   if (command_id == IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION ||
       command_id == IDC_SPELLCHECK_ADD_TO_DICTIONARY) {
-    // GetHostForProfile() can return null when the suggested word is
-    // provided by Web SpellCheck API.
+    // GetHostForProfile() can return null when the suggested word is provided
+    // by Web SpellCheck API.
     Profile* profile = proxy_->GetProfile();
     if (profile) {
-      SpellcheckService* spellcheck_service =
-            SpellcheckServiceFactory::GetForProfile(profile);
-      if (spellcheck_service)
-        spellcheck_service->GetCustomDictionary()->AddWord(
-            UTF16ToUTF8(misspelled_word_));
+      SpellcheckService* spellcheck =
+          SpellcheckServiceFactory::GetForProfile(profile);
+      if (spellcheck) {
+        spellcheck->GetCustomDictionary()->AddWord(UTF16ToUTF8(
+            misspelled_word_));
+        spellcheck->GetFeedbackSender()->AddedToDictionary(misspelling_hash_);
+      }
     }
 #if defined(OS_MACOSX)
     spellcheck_mac::AddWord(misspelled_word_);
