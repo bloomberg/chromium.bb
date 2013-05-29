@@ -1506,7 +1506,7 @@ crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
 
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/device-scale-factor-paint.html [ Pass Timeout ]
-crbug.com/238858 [ Win ] virtual/gpu/fast/hidpi/image-set-background-dynamic.html [ Pass Timeout ]
+crbug.com/238858 crbug.com/244735 [ Win ] virtual/gpu/fast/hidpi/image-set-background-dynamic.html [ Crash Pass Timeout ]
 crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-background-repeat-without-size.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 ] virtual/gpu/fast/hidpi/image-set-background-repeat.html [ Pass Timeout Failure ]
 crbug.com/238858 [ Linux Win ] virtual/gpu/fast/hidpi/image-set-border-image-comparison.html [ Pass Timeout ImageOnlyFailure ]
