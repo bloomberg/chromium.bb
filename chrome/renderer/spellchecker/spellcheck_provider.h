@@ -39,7 +39,7 @@ class SpellCheckProvider
   // Requests async spell and grammar checker to the platform text
   // checker, which is available on the browser process.
   void RequestTextChecking(
-      const WebKit::WebString& text,
+      const string16& text,
       WebKit::WebTextCheckingCompletion* completion,
       const std::vector<SpellCheckMarker>& markers);
 
@@ -64,7 +64,7 @@ class SpellCheckProvider
   // Tries to satisfy a spell check request from the cache in |last_request_|.
   // Returns true (and cancels/finishes the completion) if it can, false
   // if the provider should forward the query on.
-  bool SatisfyRequestFromCache(const WebKit::WebString& text,
+  bool SatisfyRequestFromCache(const string16& text,
                                WebKit::WebTextCheckingCompletion* completion);
 
   // WebKit::WebSpellCheckClient implementation.
@@ -101,7 +101,7 @@ class SpellCheckProvider
 
   // Returns whether |text| has word characters, i.e. whether a spellchecker
   // needs to check this text.
-  bool HasWordCharacters(const WebKit::WebString& text, int index) const;
+  bool HasWordCharacters(const string16& text, int index) const;
 
 #if defined(OS_MACOSX)
   void OnAdvanceToNextMisspelling();

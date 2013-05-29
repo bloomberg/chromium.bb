@@ -49,11 +49,11 @@ SpellCheckProvider::~SpellCheckProvider() {
 }
 
 void SpellCheckProvider::RequestTextChecking(
-    const WebString& text,
+    const string16& text,
     WebTextCheckingCompletion* completion,
     const std::vector<SpellCheckMarker>& markers) {
   // Ignore invalid requests.
-  if (text.isEmpty() || !HasWordCharacters(text, 0)) {
+  if (text.empty() || !HasWordCharacters(text, 0)) {
     completion->didCancelCheckingText();
     return;
   }
@@ -155,7 +155,7 @@ void SpellCheckProvider::checkTextOfParagraph(
   // TODO(groby): As far as I can tell, this method is never invoked.
   // UMA results seem to support that. Investigate, clean up if true.
   NOTREACHED();
-  spellcheck_->SpellCheckParagraph(string16(text), results);
+  spellcheck_->SpellCheckParagraph(text, results);
   UMA_HISTOGRAM_COUNTS("SpellCheck.api.paragraph", text.length());
 }
 
@@ -236,7 +236,7 @@ void SpellCheckProvider::OnRespondSpellingService(
 #endif
 
 bool SpellCheckProvider::HasWordCharacters(
-    const WebKit::WebString& text,
+    const string16& text,
     int index) const {
   const char16* data = text.data();
   int length = text.length();
@@ -303,7 +303,7 @@ void SpellCheckProvider::EnableSpellcheck(bool enable) {
 }
 
 bool SpellCheckProvider::SatisfyRequestFromCache(
-    const WebString& text,
+    const string16& text,
     WebTextCheckingCompletion* completion) {
   size_t last_length = last_request_.length();
 

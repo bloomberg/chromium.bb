@@ -289,8 +289,7 @@ void RendererWebKitPlatformSupportImpl::prefetchHostName(
   if (hostname.isEmpty())
     return;
 
-  std::string hostname_utf8;
-  UTF16ToUTF8(hostname.data(), hostname.length(), &hostname_utf8);
+  std::string hostname_utf8 = UTF16ToUTF8(hostname);
   GetContentClient()->renderer()->PrefetchHostName(
       hostname_utf8.data(), hostname_utf8.length());
 }

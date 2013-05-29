@@ -170,12 +170,16 @@ GURL ReadGURL(const SerializeObject* obj) {
 // If length == -1, then the WebString itself is NULL (WebString()).
 // Otherwise the length is the number of WebUChars (not bytes) in the WebString.
 void WriteString(const WebString& str, SerializeObject* obj) {
+  base::string16 string = str;
+  const char16* data = string.data();
+  size_t length_in_uchars = string.length();
+  size_t length_in_bytes = length_in_uchars * sizeof(char16);
   switch (kVersion) {
     case 1:
       // Version 1 writes <length in bytes><string data>.
       // It saves WebString() and "" as "".
-      obj->pickle.WriteInt(str.length() * sizeof(WebUChar));
-      obj->pickle.WriteBytes(str.data(), str.length() * sizeof(WebUChar));
+      obj->pickle.WriteInt(length_in_bytes);
+      obj->pickle.WriteBytes(data, length_in_bytes);
       break;
     case 2:
       // Version 2 writes <length in WebUChar><string data>.
@@ -183,9 +187,8 @@ void WriteString(const WebString& str, SerializeObject* obj) {
       if (str.isNull()) {
         obj->pickle.WriteInt(-1);
       } else {
-        obj->pickle.WriteInt(str.length());
-        obj->pickle.WriteBytes(str.data(),
-                               str.length() * sizeof(WebUChar));
+        obj->pickle.WriteInt(length_in_uchars);
+        obj->pickle.WriteBytes(data, length_in_bytes);
       }
       break;
     default:
@@ -194,9 +197,8 @@ void WriteString(const WebString& str, SerializeObject* obj) {
       if (str.isNull()) {
         obj->pickle.WriteInt(-1);
       } else {
-        obj->pickle.WriteInt(str.length() * sizeof(WebUChar));
-        obj->pickle.WriteBytes(str.data(),
-                               str.length() * sizeof(WebUChar));
+        obj->pickle.WriteInt(length_in_bytes);
+        obj->pickle.WriteBytes(data, length_in_bytes);
       }
       break;
   }

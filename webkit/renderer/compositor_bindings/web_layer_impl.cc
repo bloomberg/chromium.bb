@@ -166,8 +166,7 @@ void WebLayerImpl::setFilter(SkImageFilter* filter) {
 }
 
 void WebLayerImpl::setDebugName(WebKit::WebString name) {
-  layer_->SetDebugName(
-      UTF16ToASCII(base::string16(name.data(), name.length())));
+  layer_->SetDebugName(UTF16ToASCII(name));
 }
 
 void WebLayerImpl::setAnimationDelegate(

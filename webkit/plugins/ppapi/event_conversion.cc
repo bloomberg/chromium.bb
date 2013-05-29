@@ -513,7 +513,7 @@ void GetKeyCode(const std::string& char_text,
       WebString web_char_text =
           WebString::fromUTF8(char_text.data(), char_text.size());
       DCHECK_EQ(web_char_text.length(), 1U);
-      vk_text = vk_code = web_char_text.data()[0];
+      vk_text = vk_code = web_char_text.at(0);
       *needs_shift_modifier =
           (vk_code & 0xFF) >= 'A' && (vk_code & 0xFF) <= 'Z';
       if ((vk_code & 0xFF) >= 'a' && (vk_code & 0xFF) <= 'z')
