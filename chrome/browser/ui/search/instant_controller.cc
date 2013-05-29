@@ -295,13 +295,11 @@ InstantController::~InstantController() {
 }
 
 void InstantController::OnAutocompleteStart() {
-  if (instant_tab_ && instant_tab_->supports_instant()) {
+  if (UseTabForSuggestions() && instant_tab_->supports_instant()) {
     LOG_INSTANT_DEBUG_EVENT(
         this, "OnAutocompleteStart: using InstantTab");
     return;
   }
-
-  use_tab_for_suggestions_ = false;
 
   // Not using |instant_tab_|. Check if overlay is OK to use.
   InstantFallbackReason fallback_reason = ShouldSwitchToLocalOverlay();
@@ -314,6 +312,7 @@ void InstantController::OnAutocompleteStart() {
     LOG_INSTANT_DEBUG_EVENT(
         this, "OnAutocompleteStart: using existing overlay");
   }
+  use_tab_for_suggestions_ = false;
 }
 
 bool InstantController::Update(const AutocompleteMatch& match,
