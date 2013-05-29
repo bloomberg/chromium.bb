@@ -2063,7 +2063,8 @@ class ArchiveStage(ArchivingStage):
       metadata['results'].append({
           'name': name,
           'status': status,
-          'summary': result,
+          # The result might be a custom exception.
+          'summary': str(result),
           'duration': '%s' % timestr,
           'description': description,
           'log': self.ConstructDashboardURL(stage=name),

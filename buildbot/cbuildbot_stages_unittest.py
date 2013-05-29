@@ -960,7 +960,14 @@ class ArchiveStageTest(AbstractStageTest):
 
   def testMetadataJson(self):
     """Test that the json metadata is built correctly"""
-    # First run the code.
+    # First add some results to make sure we can handle various types.
+    results_lib.Results.Clear()
+    results_lib.Results.Record('Sync', results_lib.Results.SUCCESS, time=1)
+    results_lib.Results.Record('Build', results_lib.Results.SUCCESS, time=2)
+    results_lib.Results.Record('Test', FailStage.FAIL_EXCEPTION, time=3)
+    results_lib.Results.Record('SignerTests', results_lib.Results.SKIPPED)
+
+    # Now run the code.
     stage = self.ConstructStage()
     stage.RefreshMetadata('tests')
 
@@ -972,6 +979,7 @@ class ArchiveStageTest(AbstractStageTest):
         'boards',
         'bot-config',
         'metadata-version',
+        'results',
         'sdk-version',
         'toolchain-tuple',
         'toolchain-url',
@@ -984,6 +992,18 @@ class ArchiveStageTest(AbstractStageTest):
     self.assertEquals(json_data['bot-config'], 'x86-generic-paladin')
     self.assertEquals(json_data['version']['full'], stage.version)
     self.assertEquals(json_data['metadata-version'], '2')
+
+    results_passed = ('Sync', 'Build',)
+    results_failed = ('Test',)
+    results_skipped = ('SignerTests',)
+    for result in json_data['results']:
+      if result['name'] in results_passed:
+        self.assertEquals(result['status'], 'passed')
+      elif result['name'] in results_failed:
+        self.assertEquals(result['status'], 'failed')
+      elif result['name'] in results_skipped:
+        self.assertEquals(result['status'], 'passed')
+        self.assertTrue('skipped' in result['summary'].lower())
 
     # The buildtools manifest doesn't have any overlays. In this case, we can't
     # find any toolchains.
