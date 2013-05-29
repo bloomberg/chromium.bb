@@ -7,10 +7,8 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "content/common/gpu/image_transport_surface.h"
-#include "content/renderer/devtools/devtools_client.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
@@ -60,27 +58,22 @@ void SetMockGamepads(const WebGamepads& pads) {
   RendererWebKitPlatformSupportImpl::SetMockGamepadsForTesting(pads);
 }
 
-void DisableAppCacheLogging() {
-  RendererWebApplicationCacheHostImpl::DisableLoggingForTesting();
+void EnableRendererLayoutTestMode() {
+  RenderThreadImpl::current()->set_layout_test_mode(true);
 }
 
-void EnableDevToolsFrontendTesting() {
-  DevToolsClient::EnableDevToolsFrontendTesting();
+void EnableBrowserLayoutTestMode() {
+#if defined(OS_MACOSX)
+  ImageTransportSurface::SetAllowOSMesaForTesting(true);
+  PopupMenuHelper::DontShowPopupMenuForTesting();
+#elif defined(OS_WIN) && !defined(USE_AURA)
+  WebContentsDragWin::DisableDragDropForTesting();
+#endif
 }
 
 int GetLocalSessionHistoryLength(RenderView* render_view) {
   return static_cast<RenderViewImpl*>(render_view)
       ->GetLocalSessionHistoryLengthForTesting();
-}
-
-void SetAllowOSMesaImageTransportForTesting() {
-#if defined(OS_MACOSX)
-  ImageTransportSurface::SetAllowOSMesaForTesting(true);
-#endif
-}
-
-void DoNotSendFocusEvents() {
-  RenderThreadImpl::current()->set_should_send_focus_ipcs(false);
 }
 
 void SyncNavigationState(RenderView* render_view) {
@@ -92,10 +85,6 @@ void SetFocusAndActivate(RenderView* render_view, bool enable) {
       ->SetFocusAndActivateForTesting(enable);
 }
 
-void EnableShortCircuitSizeUpdates() {
-  RenderThreadImpl::current()->set_short_circuit_size_updates(true);
-}
-
 void ForceResizeRenderView(RenderView* render_view,
                            const WebSize& new_size) {
   RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
@@ -105,25 +94,9 @@ void ForceResizeRenderView(RenderView* render_view,
                                           new_size.height));
 }
 
-void DisableNavigationErrorPages() {
-  RenderThreadImpl::current()->set_skip_error_pages(true);
-}
-
 void SetDeviceScaleFactor(RenderView* render_view, float factor) {
   static_cast<RenderViewImpl*>(render_view)
       ->SetDeviceScaleFactorForTesting(factor);
-}
-
-void DisableSystemDragDrop() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  WebContentsDragWin::DisableDragDropForTesting();
-#endif
-}
-
-void DisableModalPopupMenus() {
-#if defined(OS_MACOSX)
-  PopupMenuHelper::DontShowPopupMenuForTesting();
-#endif
 }
 
 void EnableAutoResizeMode(RenderView* render_view,

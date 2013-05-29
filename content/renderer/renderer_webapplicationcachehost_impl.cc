@@ -16,8 +16,6 @@ using WebKit::WebConsoleMessage;
 
 namespace content {
 
-static bool g_disable_logging = false;
-
 RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
     RenderViewImpl* render_view,
     WebApplicationCacheHostClient* client,
@@ -28,7 +26,7 @@ RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
 
 void RendererWebApplicationCacheHostImpl::OnLogMessage(
     appcache::LogLevel log_level, const std::string& message) {
-  if (g_disable_logging)
+  if (RenderThreadImpl::current()->layout_test_mode())
     return;
 
   RenderViewImpl* render_view = GetRenderView();
@@ -59,11 +57,6 @@ void RendererWebApplicationCacheHostImpl::OnCacheSelected(
 
 RenderViewImpl* RendererWebApplicationCacheHostImpl::GetRenderView() {
   return RenderViewImpl::FromRoutingID(routing_id_);
-}
-
-// static
-void RendererWebApplicationCacheHostImpl::DisableLoggingForTesting() {
-  g_disable_logging = true;
 }
 
 }  // namespace content

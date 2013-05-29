@@ -34,7 +34,6 @@ class CONTENT_EXPORT DevToolsClient
   explicit DevToolsClient(RenderViewImpl* render_view);
   virtual ~DevToolsClient();
 
-  static void EnableDevToolsFrontendTesting();
  private:
   // RenderView::Observer implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

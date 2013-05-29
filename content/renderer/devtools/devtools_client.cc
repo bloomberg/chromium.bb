@@ -23,12 +23,6 @@ using WebKit::WebString;
 
 namespace content {
 
-namespace {
-
-bool g_devtools_frontend_testing_enabled = false;
-
-}  // namespace
-
 DevToolsClient::DevToolsClient(RenderViewImpl* render_view)
     : RenderViewObserver(render_view) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -116,17 +110,12 @@ void DevToolsClient::removeFileSystem(const WebString& fileSystemPath) {
 }
 
 bool DevToolsClient::isUnderTest() {
-  return g_devtools_frontend_testing_enabled;
+  return RenderThreadImpl::current()->layout_test_mode();
 }
 
 void DevToolsClient::OnDispatchOnInspectorFrontend(const std::string& message) {
   web_tools_frontend_->dispatchOnInspectorFrontend(
       WebString::fromUTF8(message));
-}
-
-// static
-void DevToolsClient::EnableDevToolsFrontendTesting() {
-  g_devtools_frontend_testing_enabled = true;
 }
 
 }  // namespace content

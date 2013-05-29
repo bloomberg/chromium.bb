@@ -188,29 +188,14 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void DoNotSuspendWebKitSharedTimer();
   void DoNotNotifyWebKitOfModalLoop();
 
-  // True if focus changes should be send via IPC to the browser.
-  bool should_send_focus_ipcs() const {
-    return should_send_focus_ipcs_;
+  // True if we are running layout tests. This currently disables forwarding
+  // various status messages to the console, skips network error pages, and
+  // short circuits size update and focus events.
+  bool layout_test_mode() const {
+    return layout_test_mode_;
   }
-  void set_should_send_focus_ipcs(bool send) {
-    should_send_focus_ipcs_ = send;
-  }
-
-  // True if RenderWidgets should report the newly requested size back to
-  // WebKit without waiting for the browser to acknowledge the size.
-  bool short_circuit_size_updates() const {
-    return short_circuit_size_updates_;
-  }
-  void set_short_circuit_size_updates(bool short_circuit) {
-    short_circuit_size_updates_ = short_circuit;
-  }
-
-  // True if we should never display error pages in response to a failed load.
-  bool skip_error_pages() const {
-    return skip_error_pages_;
-  }
-  void set_skip_error_pages(bool skip) {
-    skip_error_pages_ = skip;
+  void set_layout_test_mode(bool layout_test_mode) {
+    layout_test_mode_ = layout_test_mode;
   }
 
   IPC::ForwardingMessageFilter* compositor_output_surface_filter() const {
@@ -433,10 +418,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   bool suspend_webkit_shared_timer_;
   bool notify_webkit_of_modal_loop_;
 
-  // The following flags are used to control layout test specific behavior.
-  bool should_send_focus_ipcs_;
-  bool short_circuit_size_updates_;
-  bool skip_error_pages_;
+  // The following flag is used to control layout test specific behavior.
+  bool layout_test_mode_;
 
   // Timer that periodically calls IdleHandler.
   base::RepeatingTimer<RenderThreadImpl> idle_timer_;

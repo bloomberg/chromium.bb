@@ -353,9 +353,7 @@ void RenderThreadImpl::Init() {
   hidden_widget_count_ = 0;
   idle_notification_delay_in_ms_ = kInitialIdleHandlerDelayMs;
   idle_notifications_to_skip_ = 0;
-  should_send_focus_ipcs_ = true;
-  short_circuit_size_updates_ = false;
-  skip_error_pages_ = false;
+  layout_test_mode_ = false;
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());

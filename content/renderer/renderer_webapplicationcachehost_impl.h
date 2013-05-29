@@ -5,7 +5,6 @@
 #ifndef CONTENT_RENDERER_RENDERER_WEBAPPLICATIONCACHEHOST_IMPL_H_
 #define CONTENT_RENDERER_RENDERER_WEBAPPLICATIONCACHEHOST_IMPL_H_
 
-#include "content/common/content_export.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 
 namespace content {
@@ -24,8 +23,6 @@ class RendererWebApplicationCacheHostImpl
                             const std::string& message) OVERRIDE;
   virtual void OnContentBlocked(const GURL& manifest_url) OVERRIDE;
   virtual void OnCacheSelected(const appcache::AppCacheInfo& info) OVERRIDE;
-
-  CONTENT_EXPORT static void DisableLoggingForTesting();
 
  private:
   RenderViewImpl* GetRenderView();

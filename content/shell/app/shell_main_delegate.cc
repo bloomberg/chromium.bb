@@ -112,13 +112,12 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     }
   }
   if (command_line.HasSwitch(switches::kDumpRenderTree)) {
+    EnableBrowserLayoutTestMode();
+
     command_line.AppendSwitch(switches::kProcessPerTab);
     command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
     command_line.AppendSwitchASCII(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
-    SetAllowOSMesaImageTransportForTesting();
-    DisableSystemDragDrop();
-    DisableModalPopupMenus();
     command_line.AppendSwitch(switches::kSkipGpuDataLoading);
     command_line.AppendSwitch(switches::kEnableExperimentalWebKitFeatures);
     command_line.AppendSwitch(switches::kEnableCssShaders);

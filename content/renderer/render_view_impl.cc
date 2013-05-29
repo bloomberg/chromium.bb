@@ -2519,7 +2519,7 @@ void RenderViewImpl::didFocus() {
   //                 we won't have to test for user gesture anymore and we can
   //                 move that code back to render_widget.cc
   if (WebUserGestureIndicator::isProcessingUserGesture() &&
-      RenderThreadImpl::current()->should_send_focus_ipcs()) {
+      !RenderThreadImpl::current()->layout_test_mode()) {
     Send(new ViewHostMsg_Focus(routing_id_));
   }
 }
@@ -2527,7 +2527,7 @@ void RenderViewImpl::didFocus() {
 void RenderViewImpl::didBlur() {
   // TODO(jcivelli): see TODO above in didFocus().
   if (WebUserGestureIndicator::isProcessingUserGesture() &&
-      RenderThreadImpl::current()->should_send_focus_ipcs()) {
+      !RenderThreadImpl::current()->layout_test_mode()) {
     Send(new ViewHostMsg_Blur(routing_id_));
   }
 }
@@ -3490,7 +3490,7 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   if (error.reason == net::ERR_ABORTED)
     return;
 
-  if (RenderThreadImpl::current()->skip_error_pages())
+  if (RenderThreadImpl::current()->layout_test_mode())
     return;
 
   // Make sure we never show errors in view source mode.

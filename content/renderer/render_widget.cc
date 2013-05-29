@@ -1412,7 +1412,7 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
     // with invalid damage rects.
     paint_aggregator_.ClearPendingUpdate();
 
-    if (RenderThreadImpl::current()->short_circuit_size_updates()) {
+    if (RenderThreadImpl::current()->layout_test_mode()) {
       WebRect new_pos(rootWindowRect().x,
                       rootWindowRect().y,
                       new_size.width,
@@ -1423,7 +1423,7 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
 
     AutoResizeCompositor();
 
-    if (!RenderThreadImpl::current()->short_circuit_size_updates())
+    if (!RenderThreadImpl::current()->layout_test_mode())
       need_update_rect_for_auto_resize_ = true;
   }
 }
@@ -1680,7 +1680,7 @@ void RenderWidget::setToolTipText(const WebKit::WebString& text,
 
 void RenderWidget::setWindowRect(const WebRect& pos) {
   if (did_show_) {
-    if (!RenderThreadImpl::current()->short_circuit_size_updates()) {
+    if (!RenderThreadImpl::current()->layout_test_mode()) {
       Send(new ViewHostMsg_RequestMove(routing_id_, pos));
       SetPendingWindowRect(pos);
     } else {

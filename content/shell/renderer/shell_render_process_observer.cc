@@ -41,11 +41,7 @@ ShellRenderProcessObserver::ShellRenderProcessObserver()
   RenderThread::Get()->AddObserver(this);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
-  DisableAppCacheLogging();
-  EnableDevToolsFrontendTesting();
-  EnableShortCircuitSizeUpdates();
-  DoNotSendFocusEvents();
-  DisableNavigationErrorPages();
+  EnableRendererLayoutTestMode();
 }
 
 ShellRenderProcessObserver::~ShellRenderProcessObserver() {
