@@ -946,6 +946,9 @@ crbug.com/244884 fast/layers/no-clipping-overflow-hidden-added-after-transform.h
 crbug.com/244884 fast/layers/no-clipping-overflow-hidden-added-after-transition.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/244884 fast/layers/no-clipping-overflow-hidden-hardware-acceleration.html [ Failure ImageOnlyFailure Pass ]
 
+# animation-test-helpers.js is causing test failures
+crbug.com/244895 [ Win7 Linux Debug ] animations/cross-fade-list-style-image.html [ ImageOnlyFailure ]
+
 # Skipped until setTouchPointRadius get implemented
 webkit.org/b/91012 touchadjustment/focusout-on-touch.html [ Skip ]
 
