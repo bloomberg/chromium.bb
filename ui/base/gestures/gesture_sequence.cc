@@ -646,9 +646,11 @@ GestureEvent* GestureSequence::CreateGestureEvent(
   GestureEventDetails gesture_details(details);
   gesture_details.set_touch_points(point_count_);
   gesture_details.set_bounding_box(bounding_box_);
+  base::TimeDelta time_stamp =
+      base::TimeDelta::FromMicroseconds(timestamp.ToDoubleT() * 1000000);
   return new GestureEvent(gesture_details.type(), location.x(), location.y(),
-      flags, base::TimeDelta::FromMilliseconds(timestamp.ToDoubleT() * 1000),
-      gesture_details, touch_id_bitmask);
+                          flags, time_stamp, gesture_details,
+                          touch_id_bitmask);
 }
 
 void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
