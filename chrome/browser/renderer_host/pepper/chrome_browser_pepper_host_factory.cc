@@ -70,14 +70,6 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
             host_->GetPpapiHost(), instance, params.pp_resource(),
             broker_filter));
       }
-      case PpapiHostMsg_Ext_CrxFileSystem_Create::ID: {
-        PepperCrxFileSystemMessageFilter* crxfs_filter =
-            PepperCrxFileSystemMessageFilter::Create(instance, host_);
-        if (!crxfs_filter)
-          return scoped_ptr<ResourceHost>();
-        return scoped_ptr<ResourceHost>(new MessageFilterHost(
-            host, instance, params.pp_resource(), crxfs_filter));
-      }
       case PpapiHostMsg_Talk_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperTalkHost(
             host_, instance, params.pp_resource()));
@@ -103,6 +95,22 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
             host_, instance, params.pp_resource()));
     }
   }
+
+  // Permissions for the following interfaces will be checked at the
+  // time of the corresponding instance's methods calls (because
+  // permission check can be performed only on the UI
+  // thread). Currently these interfaces are available only for
+  // whitelisted apps which may not have access to the other private
+  // interfaces.
+  if (message.type() == PpapiHostMsg_Ext_CrxFileSystem_Create::ID) {
+    PepperCrxFileSystemMessageFilter* crxfs_filter =
+        PepperCrxFileSystemMessageFilter::Create(instance, host_);
+    if (!crxfs_filter)
+      return scoped_ptr<ResourceHost>();
+    return scoped_ptr<ResourceHost>(new MessageFilterHost(
+        host, instance, params.pp_resource(), crxfs_filter));
+  }
+
   return scoped_ptr<ResourceHost>();
 }
 

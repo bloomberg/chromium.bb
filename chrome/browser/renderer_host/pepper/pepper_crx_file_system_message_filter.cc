@@ -7,11 +7,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/pepper_permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_view_host.h"
 #include "extensions/common/constants.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -21,6 +24,14 @@
 #include "webkit/browser/fileapi/isolated_context.h"
 
 namespace chrome {
+
+namespace {
+
+const char* kPredefinedAllowedCrxFsOrigins[] = {
+  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F"  // see crbug.com/234789
+};
+
+}  // namespace
 
 // static
 PepperCrxFileSystemMessageFilter* PepperCrxFileSystemMessageFilter::Create(
@@ -45,6 +56,8 @@ PepperCrxFileSystemMessageFilter::PepperCrxFileSystemMessageFilter(
     : render_process_id_(render_process_id),
       profile_directory_(profile_directory),
       document_url_(document_url) {
+  for (size_t i = 0; i < arraysize(kPredefinedAllowedCrxFsOrigins); ++i)
+    allowed_crxfs_origins_.insert(kPredefinedAllowedCrxFsOrigins[i]);
 }
 
 PepperCrxFileSystemMessageFilter::~PepperCrxFileSystemMessageFilter() {
@@ -68,13 +81,14 @@ int32_t PepperCrxFileSystemMessageFilter::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
-std::string PepperCrxFileSystemMessageFilter::CreateIsolatedFileSystem() {
+Profile* PepperCrxFileSystemMessageFilter::GetProfile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!document_url_.SchemeIs(extensions::kExtensionScheme))
-    return std::string();
-
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* profile = profile_manager->GetProfile(profile_directory_);
+  return profile_manager->GetProfile(profile_directory_);
+}
+
+std::string PepperCrxFileSystemMessageFilter::CreateIsolatedFileSystem(
+    Profile* profile) {
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
   if (!extension_system)
@@ -100,7 +114,16 @@ std::string PepperCrxFileSystemMessageFilter::CreateIsolatedFileSystem() {
 
 int32_t PepperCrxFileSystemMessageFilter::OnOpenFileSystem(
     ppapi::host::HostMessageContext* context) {
-  const std::string fsid = CreateIsolatedFileSystem();
+  Profile* profile = GetProfile();
+  if (!IsExtensionOrSharedModuleWhitelisted(profile,
+                                            document_url_,
+                                            allowed_crxfs_origins_,
+                                            switches::kAllowNaClCrxFsAPI)) {
+    LOG(ERROR) << "Host " << document_url_.host() << " cannot use CrxFs API.";
+    return PP_ERROR_NOACCESS;
+  }
+
+  const std::string fsid = CreateIsolatedFileSystem(profile);
   if (fsid.empty()) {
     context->reply_msg =
         PpapiPluginMsg_Ext_CrxFileSystem_BrowserOpenReply(std::string());

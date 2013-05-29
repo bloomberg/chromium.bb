@@ -22,7 +22,6 @@ class QuotaPermissionContext;
 }
 
 namespace extensions {
-class Extension;
 class BrowserPermissionsPolicyDelegate;
 }
 
@@ -257,8 +256,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #endif
 
  private:
+#if defined(ENABLE_PLUGINS)
   // Set of origins that can use TCP/UDP private APIs from NaCl.
   std::set<std::string> allowed_socket_origins_;
+#endif
   scoped_ptr<extensions::BrowserPermissionsPolicyDelegate>
       permissions_policy_delegate_;
 

@@ -80,7 +80,7 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   // Permissions for the following interfaces will be checked at the
   // time of the corresponding instance's methods calls (because
   // permission check can be performed only on the UI
-  // thread). Currently thise interfaces are available only for
+  // thread). Currently these interfaces are available only for
   // whitelisted apps which may not have access to the other private
   // interfaces.
   if (message.type() == PpapiHostMsg_HostResolverPrivate_Create::ID) {
