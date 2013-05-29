@@ -318,7 +318,8 @@ void DevToolsFileHelper::AddUserConfirmedFileSystem(
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kDevToolsFileSystemPaths);
   DictionaryValue* file_systems_paths_value = update.Get();
-  file_systems_paths_value->Set(file_system_path, Value::CreateNullValue());
+  file_systems_paths_value->SetWithoutPathExpansion(file_system_path,
+                                                    Value::CreateNullValue());
 
   FileSystem filesystem = CreateFileSystemStruct(web_contents_,
                                                  file_system_id,
