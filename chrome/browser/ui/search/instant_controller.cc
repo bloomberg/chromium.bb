@@ -652,13 +652,19 @@ void InstantController::HandleAutocompleteResults(
   } else {
     for (ACProviders::const_iterator provider = providers.begin();
          provider != providers.end(); ++provider) {
-      // We are talking to remote NTP, skip SearchProvider, since it only echoes
-      // suggestions.
-      if ((*provider)->type() == AutocompleteProvider::TYPE_SEARCH)
-        continue;
-
       for (ACMatches::const_iterator match = (*provider)->matches().begin();
            match != (*provider)->matches().end(); ++match) {
+        // When the top match is an inline history URL, the page calls
+        // SetSuggestions(url) which calls FinalizeInstantQuery() in
+        // SearchProvider creating a NAVSUGGEST match for the URL. If we sent
+        // this NAVSUGGEST match back to the page, it would be deduped against
+        // the original history match and replace it. But since the page ignores
+        // SearchProvider suggestions, the match would then disappear. Yuck.
+        // TODO(jered): Remove this when FinalizeInstantQuery() is ripped out.
+        if ((*provider)->type() == AutocompleteProvider::TYPE_SEARCH &&
+            match->type == AutocompleteMatchType::NAVSUGGEST) {
+          continue;
+        }
         InstantAutocompleteResult result;
         PopulateInstantAutocompleteResultFromMatch(*match, kNoMatchIndex,
                                                    &result);

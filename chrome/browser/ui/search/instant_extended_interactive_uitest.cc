@@ -2310,6 +2310,78 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchProviderForLocalNTP) {
               search_provider()->IsNonInstantSearchDone());
 }
 
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OverlaySendsSearchWhatYouTyped) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+
+  // This input could be interpreted either as an URL or a query based on the
+  // relative ranking of search-what-you-typed or url-what-you-typed.
+  content::WindowedNotificationObserver autocomplete_observer(
+      chrome::NOTIFICATION_INSTANT_SENT_AUTOCOMPLETE_RESULTS,
+      content::NotificationService::AllSources());
+  SetOmniboxText("define:foo");
+  autocomplete_observer.Wait();
+
+  // In this case, we should treat [define:foo] as a query, so
+  // search-what-you-typed should be the top suggestion.
+  EXPECT_TRUE(ExecuteScript(
+      "var sorted = chrome.embeddedSearch.searchBox.nativeSuggestions.sort("
+          "function (a,b) {"
+            "return b.rankingData.relevance - a.rankingData.relevance;"
+          "});"));
+  std::string type;
+  EXPECT_TRUE(GetStringFromJS(instant()->GetOverlayContents(),
+                              "sorted[0].type", &type));
+  ASSERT_EQ("search-what-you-typed", type);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       OverlayDoesNotEchoSearchProviderNAVSUGGEST) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+
+  // Show the overlay so suggestions are allowed.
+  SetOmniboxTextAndWaitForOverlayToShow("www.");
+  content::WebContents* overlay = instant()->GetOverlayContents();
+
+  // Set a URL suggestion and wait for SearchProvider to echo it.
+  content::WindowedNotificationObserver autocomplete_observer(
+      chrome::NOTIFICATION_INSTANT_SENT_AUTOCOMPLETE_RESULTS,
+      content::NotificationService::AllSources());
+  instant()->SetSuggestions(
+      overlay,
+      std::vector<InstantSuggestion>(
+          1,
+          InstantSuggestion(ASCIIToUTF16("http://www.example.com/"),
+                            INSTANT_COMPLETE_NOW,
+                            INSTANT_SUGGESTION_URL,
+                            ASCIIToUTF16("www."),
+                            kNoMatchIndex)));
+  autocomplete_observer.Wait();
+
+  // Check that SearchProvider set a NAVSUGGEST match.
+  bool have_navsuggest_match = false;
+  SearchProvider* search_provider =
+      omnibox()->model()->autocomplete_controller()->search_provider();
+  for (ACMatches::const_iterator match = search_provider->matches().begin();
+       match != search_provider->matches().end(); ++match) {
+    if (match->type == AutocompleteMatchType::NAVSUGGEST) {
+      have_navsuggest_match = true;
+      break;
+    }
+  }
+  ASSERT_TRUE(have_navsuggest_match);
+
+  // Check that InstantController did not send the NAVSUGGEST match.
+  bool sent_navsuggest_match = true;
+  EXPECT_TRUE(GetBoolFromJS(overlay,
+      "chrome.embeddedSearch.searchBox.nativeSuggestions.some("
+          "function (s) {"
+            "return s.type == 'navsuggest';"
+          "})", &sent_navsuggest_match));
+  EXPECT_FALSE(sent_navsuggest_match);
+}
+
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, AcceptingURLSearchDoesNotNavigate) {
   // Get a committed Instant tab, which will be in the Instant process and thus
   // support chrome::GetSearchTerms().

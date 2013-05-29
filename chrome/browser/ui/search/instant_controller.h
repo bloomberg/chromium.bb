@@ -296,6 +296,8 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(
       InstantExtendedFirstTabTest, RedirectToLocalOnLoadFailure);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LogDropdownShown);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
+                           OverlayDoesNotEchoSearchProviderNAVSUGGEST);
 
   Profile* profile() const;
 
