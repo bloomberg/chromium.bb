@@ -43,6 +43,13 @@ function test()
             if (it.item().name() === "HTMLBodyElement")
                 bodyWrapperIds.push(it.item().id());
         }
+
+        if (bodyWrapperIds.length < 3) {
+            InspectorTest.addResult("FAILED: less than 3 HTMLBodyElement objects were detected");
+            clear();
+            return;
+        }
+
         for (var i = 0; i < bodyWrapperIds.length; i++)
             HeapProfilerAgent.getObjectByHeapObjectId("" + bodyWrapperIds[i], undefined, didGetObjectByHeapObjectId);
 
@@ -50,9 +57,7 @@ function test()
         var remoteObjects = [];
         function didGetObjectByHeapObjectId(error, object)
         {
-            if (error)
-                InspectorTest.addResult("Error resolving heap snapshot object: " + error);
-            else
+            if (!error)
                 remoteObjects.push(WebInspector.RemoteObject.fromPayload(object));
 
             if (++resolvedObjectsCount  === bodyWrapperIds.length)
@@ -61,6 +66,12 @@ function test()
 
         function requestPropertiesOfResolvedObjects()
         {
+            if (!remoteObjects.length) {
+                InspectorTest.addResult("FAILED: no resolved objects were detected");
+                clear();
+                return;
+            }
+
             for (var i = 0; i < remoteObjects.length; i++)
                 remoteObjects[i].getOwnProperties(didGetOwnProperties);
         }
@@ -71,6 +82,11 @@ function test()
             if (++didGetOwnPropertiesCount !== remoteObjects.length)
                 return;
 
+            clear();
+        }
+
+        function clear()
+        {
             HeapProfilerAgent.clearProfiles(done);
             WebInspector.panels.profiles._reset();
         }
