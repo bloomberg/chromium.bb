@@ -50,6 +50,7 @@ PASS getComputedStyle(document.getElementById('t43')).content is "UNTOUCHED"
 PASS getComputedStyle(document.getElementById('t44')).content is "UNTOUCHED"
 PASS getComputedStyle(document.getElementById('t45')).content is "UNTOUCHED"
 PASS getComputedStyle(document.getElementById('t46')).content is "UNTOUCHED"
+PASS getComputedStyle(document.getElementById('t47')).content is "APPLIED"
 PASS successfullyParsed is true
 
 TEST COMPLETE

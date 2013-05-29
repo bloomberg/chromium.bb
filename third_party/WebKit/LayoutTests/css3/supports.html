@@ -231,6 +231,10 @@
         #t46 { content: "FAIL" }
     );
 
+    @supports (#) or (display: none) {
+        #t47 { content: "APPLIED"; }
+    }
+
 </style>
 </head>
 <body>
@@ -238,7 +242,7 @@
 
 <script>
     description("Test the @supports rule.");
-    var numTests = 47;
+    var numTests = 48;
     var untouchedTests = [1, 3, 5, 8, 12, 13, 14, 18, 28, 29, 34, 36, 43, 44, 45, 46]; // Tests whose content shouldn't change from the UNTOUCHED default.
 
     var container = document.getElementById("test_container");

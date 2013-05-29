@@ -770,7 +770,7 @@ supports_condition_in_parens:
         $$ = $3;
     }
     | supports_declaration_condition
-    | '(' error error_location error_recovery ')' {
+    | '(' error error_location error_recovery ')' maybe_space {
         parser->reportError($3, CSSParser::InvalidSupportsConditionError);
         $$ = false;
     }
