@@ -83,15 +83,6 @@ void MediaFileSystemMountPointProvider::ValidateFileSystemRoot(
       base::Bind(callback, base::PLATFORM_FILE_ERROR_SECURITY));
 }
 
-base::FilePath
-MediaFileSystemMountPointProvider::GetFileSystemRootPathOnFileThread(
-    const FileSystemURL& url,
-    bool create) {
-  // This is not supposed to be used.
-  NOTREACHED();
-  return base::FilePath();
-}
-
 fileapi::FileSystemFileUtil* MediaFileSystemMountPointProvider::GetFileUtil(
     fileapi::FileSystemType type) {
   switch (type) {

@@ -100,23 +100,6 @@ void CrosMountPointProvider::ValidateFileSystemRoot(
   callback.Run(base::PLATFORM_FILE_OK);
 }
 
-base::FilePath CrosMountPointProvider::GetFileSystemRootPathOnFileThread(
-    const fileapi::FileSystemURL& url,
-    bool create) {
-  DCHECK(fileapi::IsolatedContext::IsIsolatedType(url.mount_type()));
-  if (!url.is_valid())
-    return base::FilePath();
-
-  base::FilePath root_path;
-  std::string mount_name = url.filesystem_id();
-  if (!mount_points_->GetRegisteredPath(mount_name, &root_path) &&
-      !system_mount_points_->GetRegisteredPath(mount_name, &root_path)) {
-    return base::FilePath();
-  }
-
-  return root_path.DirName();
-}
-
 fileapi::FileSystemQuotaUtil* CrosMountPointProvider::GetQuotaUtil() {
   // No quota support.
   return NULL;
@@ -288,6 +271,7 @@ fileapi::FileSystemOperation* CrosMountPointProvider::CreateFileSystemOperation(
          url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal);
   scoped_ptr<fileapi::FileSystemOperationContext> operation_context(
       new fileapi::FileSystemOperationContext(context));
+  operation_context->set_root_path(GetFileSystemRootPath(url));
   return new fileapi::LocalFileSystemOperation(context,
                                                operation_context.Pass());
 }
@@ -353,6 +337,22 @@ fileapi::RemoteFileSystemProxyInterface* CrosMountPointProvider::GetRemoteProxy(
   if (proxy)
     return proxy;
   return system_mount_points_->GetRemoteFileSystemProxy(mount_name);
+}
+
+base::FilePath CrosMountPointProvider::GetFileSystemRootPath(
+    const fileapi::FileSystemURL& url) const {
+  DCHECK(fileapi::IsolatedContext::IsIsolatedType(url.mount_type()));
+  if (!url.is_valid())
+    return base::FilePath();
+
+  base::FilePath root_path;
+  std::string mount_name = url.filesystem_id();
+  if (!mount_points_->GetRegisteredPath(mount_name, &root_path) &&
+      !system_mount_points_->GetRegisteredPath(mount_name, &root_path)) {
+    return base::FilePath();
+  }
+
+  return root_path.DirName();
 }
 
 }  // namespace chromeos

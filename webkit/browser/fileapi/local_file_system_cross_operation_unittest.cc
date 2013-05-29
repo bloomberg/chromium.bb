@@ -27,6 +27,14 @@ namespace fileapi {
 
 typedef FileSystemOperation::FileEntryList FileEntryList;
 
+namespace {
+
+void ExpectOk(base::PlatformFileError error) {
+  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
+}
+
+}  // namespace
+
 class CrossOperationTestHelper {
  public:
   CrossOperationTestHelper(
@@ -63,12 +71,13 @@ class CrossOperationTestHelper {
     // Prepare the origin's root directory.
     FileSystemMountPointProvider* mount_point_provider =
         file_system_context_->GetMountPointProvider(src_type_);
-    mount_point_provider->GetFileSystemRootPathOnFileThread(
-        SourceURL(std::string()), true /* create */);
+    mount_point_provider->ValidateFileSystemRoot(
+        origin_, src_type_, true /* create */, base::Bind(&ExpectOk));
     mount_point_provider =
         file_system_context_->GetMountPointProvider(dest_type_);
-    mount_point_provider->GetFileSystemRootPathOnFileThread(
-        DestURL(std::string()), true /* create */);
+    mount_point_provider->ValidateFileSystemRoot(
+        origin_, dest_type_, true /* create */, base::Bind(&ExpectOk));
+    base::MessageLoop::current()->RunUntilIdle();
 
     // Grant relatively big quota initially.
     quota_manager_->SetQuota(origin_,

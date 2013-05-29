@@ -5,6 +5,7 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_CONTEXT_H_
 #define WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_CONTEXT_H_
 
+#include "base/files/file_path.h"
 #include "base/supports_user_data.h"
 #include "base/threading/thread_checker.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
@@ -48,15 +49,9 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
 
   // Returns the current remaining quota.
   int64 allowed_bytes_growth() const { return allowed_bytes_growth_; }
-
-  quota::QuotaLimitType quota_limit_type() const {
-    return quota_limit_type_;
-  }
-
-  // Returns TaskRunner which the operation is performed on.
-  base::SequencedTaskRunner* task_runner() const {
-    return task_runner_.get();
-  }
+  quota::QuotaLimitType quota_limit_type() const { return quota_limit_type_; }
+  base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
+  const base::FilePath& root_path() const { return root_path_; }
 
   ChangeObserverList* change_observers() { return &change_observers_; }
   AccessObserverList* access_observers() { return &access_observers_; }
@@ -80,6 +75,10 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
   void set_quota_limit_type(quota::QuotaLimitType limit_type) {
     DCHECK(setter_thread_checker_.CalledOnValidThread());
     quota_limit_type_ = limit_type;
+  }
+  void set_root_path(const base::FilePath& root_path) {
+    DCHECK(setter_thread_checker_.CalledOnValidThread());
+    root_path_ = root_path;
   }
 
   // Gets and sets value-type (or not-owned) variable as UserData.
@@ -109,12 +108,19 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
   FileSystemContext* file_system_context_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
+  // The current remaining quota, used by ObfuscatedFileUtil.
   int64 allowed_bytes_growth_;
+
+  // The current quota limit type, used by ObfuscatedFileUtil.
   quota::QuotaLimitType quota_limit_type_;
 
+  // Observers attached to this context.
   AccessObserverList access_observers_;
   ChangeObserverList change_observers_;
   UpdateObserverList update_observers_;
+
+  // Root path for the operation, used by LocalFileUtil.
+  base::FilePath root_path_;
 
   // Used to check its setters are not called on arbitrary thread.
   base::ThreadChecker setter_thread_checker_;

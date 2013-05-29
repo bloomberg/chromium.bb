@@ -59,9 +59,6 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
       fileapi::FileSystemType type,
       bool create,
       const ValidateFileSystemCallback& callback) OVERRIDE;
-  virtual base::FilePath GetFileSystemRootPathOnFileThread(
-      const fileapi::FileSystemURL& url,
-      bool create) OVERRIDE;
   virtual fileapi::FileSystemFileUtil* GetFileUtil(
       fileapi::FileSystemType type) OVERRIDE;
   virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(
@@ -113,6 +110,7 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
  private:
   fileapi::RemoteFileSystemProxyInterface* GetRemoteProxy(
       const std::string& mount_name) const;
+  base::FilePath GetFileSystemRootPath(const fileapi::FileSystemURL& url) const;
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_ptr<FileAccessPermissions> file_access_permissions_;

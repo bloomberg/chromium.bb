@@ -24,9 +24,6 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
       FileSystemType type,
       bool create,
       const ValidateFileSystemCallback& callback) OVERRIDE;
-  virtual base::FilePath GetFileSystemRootPathOnFileThread(
-      const FileSystemURL& url,
-      bool create) OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(

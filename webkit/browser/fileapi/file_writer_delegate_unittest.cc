@@ -117,6 +117,7 @@ class FileWriterDelegateTest : public PlatformTest {
       new FileSystemOperationContext(file_system_context_);
     context->set_update_observers(
         *file_system_context_->GetUpdateObservers(kFileSystemType));
+    context->set_root_path(dir_.path());
     return make_scoped_ptr(context);
   }
 

@@ -27,6 +27,10 @@ namespace {
 const FileSystemType kNoValidatorType = kFileSystemTypeTemporary;
 const FileSystemType kWithValidatorType = kFileSystemTypeTest;
 
+void ExpectOk(base::PlatformFileError error) {
+  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
+}
+
 class CopyOrMoveFileValidatorTestHelper {
  public:
   CopyOrMoveFileValidatorTestHelper(
@@ -57,8 +61,9 @@ class CopyOrMoveFileValidatorTestHelper {
     // Sets up source.
     FileSystemMountPointProvider* src_mount_point_provider =
         file_system_context_->GetMountPointProvider(src_type_);
-    src_mount_point_provider->GetFileSystemRootPathOnFileThread(
-        SourceURL(std::string()), true /* create */);
+    src_mount_point_provider->ValidateFileSystemRoot(
+        origin_, src_type_, true /* create */, base::Bind(&ExpectOk));
+    base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(base::PLATFORM_FILE_OK, CreateDirectory(SourceURL("")));
 
     // Sets up dest.

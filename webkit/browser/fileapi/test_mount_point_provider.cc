@@ -96,21 +96,7 @@ void TestMountPointProvider::ValidateFileSystemRoot(
     FileSystemType type,
     bool create,
     const ValidateFileSystemCallback& callback) {
-  // This won't be called unless we add test code that opens a test
-  // filesystem by OpenFileSystem.
-  NOTREACHED();
-}
-
-base::FilePath TestMountPointProvider::GetFileSystemRootPathOnFileThread(
-    const FileSystemURL& url,
-    bool create) {
-  DCHECK_EQ(kFileSystemTypeTest, url.type());
-  bool success = true;
-  if (create)
-    success = file_util::CreateDirectory(base_path_);
-  else
-    success = file_util::DirectoryExists(base_path_);
-  return success ? base_path_ : base::FilePath();
+  callback.Run(base::PLATFORM_FILE_OK);
 }
 
 FileSystemFileUtil* TestMountPointProvider::GetFileUtil(FileSystemType type) {
@@ -157,6 +143,7 @@ FileSystemOperation* TestMountPointProvider::CreateFileSystemOperation(
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
   operation_context->set_update_observers(observers_);
+  operation_context->set_root_path(base_path_);
   return new LocalFileSystemOperation(context, operation_context.Pass());
 }
 

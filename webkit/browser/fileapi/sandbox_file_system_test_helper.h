@@ -50,7 +50,7 @@ class SandboxFileSystemTestHelper {
              quota::QuotaManagerProxy* quota_manager_proxy);
   void TearDown();
 
-  base::FilePath GetOriginRootPath() const;
+  base::FilePath GetOriginRootPath();
   base::FilePath GetLocalPath(const base::FilePath& path);
   base::FilePath GetLocalPathFromASCII(const std::string& path);
 
@@ -68,7 +68,7 @@ class SandboxFileSystemTestHelper {
   // This doesn't work with OFSFU.
   int64 ComputeCurrentOriginUsage();
 
-  int64 ComputeCurrentDirectoryDatabaseUsage() const;
+  int64 ComputeCurrentDirectoryDatabaseUsage();
 
   LocalFileSystemOperation* NewOperation();
   FileSystemOperationContext* NewOperationContext();

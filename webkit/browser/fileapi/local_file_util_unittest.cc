@@ -52,6 +52,7 @@ class LocalFileUtilTest : public testing::Test {
       new FileSystemOperationContext(file_system_context_);
     context->set_update_observers(
         *file_system_context_->GetUpdateObservers(kFileSystemType));
+    context->set_root_path(data_dir_.path());
     return context;
   }
 

@@ -242,23 +242,6 @@ void SandboxMountPointProvider::ValidateFileSystemRoot(
                  file_system_usage_cache_.get()));
 };
 
-base::FilePath
-SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
-    const FileSystemURL& url,
-    bool create) {
-  if (file_system_options_.is_incognito() &&
-      !(enable_temporary_file_system_in_incognito_ &&
-        url.type() == kFileSystemTypeTemporary)) {
-    // TODO(kinuko): return an isolated temporary directory.
-    return base::FilePath();
-  }
-
-  if (!IsAllowedScheme(url.origin()))
-    return base::FilePath();
-
-  return GetBaseDirectoryForOriginAndType(url.origin(), url.type(), create);
-}
-
 FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil(
     FileSystemType type) {
   DCHECK(sandbox_file_util_.get());

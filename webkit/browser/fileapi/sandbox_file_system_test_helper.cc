@@ -61,7 +61,7 @@ void SandboxFileSystemTestHelper::TearDown() {
   base::MessageLoop::current()->RunUntilIdle();
 }
 
-base::FilePath SandboxFileSystemTestHelper::GetOriginRootPath() const {
+base::FilePath SandboxFileSystemTestHelper::GetOriginRootPath() {
   return file_system_context_->sandbox_provider()->
       GetBaseDirectoryForOriginAndType(origin_, type_, false);
 }
@@ -104,7 +104,7 @@ int64 SandboxFileSystemTestHelper::ComputeCurrentOriginUsage() {
 }
 
 int64
-SandboxFileSystemTestHelper::ComputeCurrentDirectoryDatabaseUsage() const {
+SandboxFileSystemTestHelper::ComputeCurrentDirectoryDatabaseUsage() {
   return file_util::ComputeDirectorySize(
       GetOriginRootPath().AppendASCII("Paths"));
 }
@@ -141,8 +141,7 @@ void SandboxFileSystemTestHelper::SetUpFileSystem() {
 
   // Prepare the origin's root directory.
   file_system_context_->sandbox_provider()->
-      GetFileSystemRootPathOnFileThread(CreateURL(base::FilePath()),
-                                        true /* create */);
+      GetBaseDirectoryForOriginAndType(origin_, type_, true /* create */);
 
   // Initialize the usage cache file.
   base::FilePath usage_cache_path = GetUsageCachePath();
