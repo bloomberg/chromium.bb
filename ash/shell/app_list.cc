@@ -307,6 +307,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
+  virtual void OpenHelp() OVERRIDE {
+    // Nothing needs to be done.
+  }
+
   virtual void OpenFeedback() OVERRIDE {
     // Nothing needs to be done.
   }

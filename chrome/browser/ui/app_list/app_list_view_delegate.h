@@ -54,6 +54,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   virtual string16 GetCurrentUserName() OVERRIDE;
   virtual string16 GetCurrentUserEmail() OVERRIDE;
   virtual void OpenSettings() OVERRIDE;
+  virtual void OpenHelp() OVERRIDE;
   virtual void OpenFeedback() OVERRIDE;
 
   scoped_ptr<app_list::SigninDelegate> signin_delegate_;

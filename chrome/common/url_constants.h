@@ -374,6 +374,9 @@ extern const char kSyncEverythingLearnMoreURL[];
 // The URL for information on how to recover your password.
 extern const char kInvalidPasswordHelpURL[];
 
+// The URL for information on how to use the app launcher.
+extern const char kAppLauncherHelpURL[];
+
 // The URL for information on what to do if you can't sign in to your Google
 // account.
 extern const char kCanNotAccessAccountURL[];

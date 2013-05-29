@@ -40,6 +40,7 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   virtual string16 GetCurrentUserName() OVERRIDE;
   virtual string16 GetCurrentUserEmail() OVERRIDE;
   virtual void OpenSettings() OVERRIDE {}
+  virtual void OpenHelp() OVERRIDE {}
   virtual void OpenFeedback() OVERRIDE {}
 
  private:

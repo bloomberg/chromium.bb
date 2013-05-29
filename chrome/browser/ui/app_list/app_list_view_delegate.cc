@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/url_constants.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 
 #if defined(USE_ASH)
@@ -132,6 +134,18 @@ void AppListViewDelegate::OpenSettings() {
       extension_misc::kSettingsAppId);
   DCHECK(extension);
   controller_->ActivateApp(profile_, extension, 0);
+}
+
+void AppListViewDelegate::OpenHelp() {
+  chrome::HostDesktopType desktop = chrome::GetHostDesktopTypeForNativeWindow(
+      controller_->GetAppListWindow());
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+      profile_, desktop);
+  browser->OpenURL(content::OpenURLParams(GURL(chrome::kAppLauncherHelpURL),
+                                          content::Referrer(),
+                                          NEW_FOREGROUND_TAB,
+                                          content::PAGE_TRANSITION_LINK,
+                                          false));
 }
 
 void AppListViewDelegate::OpenFeedback() {

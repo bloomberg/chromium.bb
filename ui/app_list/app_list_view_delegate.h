@@ -74,6 +74,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Open the settings UI.
   virtual void OpenSettings() = 0;
 
+  // Open the help UI.
+  virtual void OpenHelp() = 0;
+
   // Open the feedback UI.
   virtual void OpenFeedback() = 0;
 };

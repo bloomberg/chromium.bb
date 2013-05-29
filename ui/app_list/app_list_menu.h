@@ -19,6 +19,7 @@ class AppListMenu : public ui::SimpleMenuModel::Delegate {
   enum AppListMenuCommands {
     CURRENT_USER,
     SHOW_SETTINGS,
+    SHOW_HELP,
     SHOW_FEEDBACK,
   };
 

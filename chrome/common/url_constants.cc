@@ -459,6 +459,9 @@ const char kCloudPrintLearnMoreURL[] =
 const char kInvalidPasswordHelpURL[] =
     "https://support.google.com/accounts/bin/answer.py?ctx=ch&answer=27444";
 
+const char kAppLauncherHelpURL[] =
+    "https://support.google.com/chrome_webstore/?p=cws_app_launcher";
+
 const char kCanNotAccessAccountURL[] =
     "https://support.google.com/accounts/bin/answer.py?answer=48598";
 

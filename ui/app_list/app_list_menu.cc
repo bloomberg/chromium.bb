@@ -27,6 +27,9 @@ void AppListMenu::InitMenu() {
   menu_model_.AddItem(SHOW_SETTINGS, l10n_util::GetStringUTF16(
       IDS_APP_LIST_OPEN_SETTINGS));
 
+  menu_model_.AddItem(SHOW_HELP, l10n_util::GetStringUTF16(
+      IDS_APP_LIST_HELP));
+
   menu_model_.AddItem(SHOW_FEEDBACK, l10n_util::GetStringUTF16(
       IDS_APP_LIST_OPEN_FEEDBACK));
 }
@@ -50,6 +53,9 @@ void AppListMenu::ExecuteCommand(int command_id, int event_flags) {
       break;  // Do nothing.
     case SHOW_SETTINGS:
       delegate_->OpenSettings();
+      break;
+    case SHOW_HELP:
+      delegate_->OpenHelp();
       break;
     case SHOW_FEEDBACK:
       delegate_->OpenFeedback();
