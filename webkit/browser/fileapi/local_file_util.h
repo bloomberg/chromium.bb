@@ -90,12 +90,6 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE LocalFileUtil : public FileSystemFileUtil {
       base::FilePath* platform_path) OVERRIDE;
 
  private:
-  // Given the filesystem url, produces a real, full local path for the
-  // underlying filesystem (which is usually the native filesystem).
-  FileSystemURL GetLocalPath(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url);
-
   DISALLOW_COPY_AND_ASSIGN(LocalFileUtil);
 };
 

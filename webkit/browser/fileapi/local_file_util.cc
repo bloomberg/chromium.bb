@@ -8,7 +8,6 @@
 #include "base/files/file_util_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/native_file_util.h"
@@ -161,9 +160,6 @@ PlatformFileError LocalFileUtil::GetLocalFilePath(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     base::FilePath* local_file_path) {
-  FileSystemMountPointProvider* provider =
-      context->file_system_context()->GetMountPointProvider(url.type());
-  DCHECK(provider);
   base::FilePath root = context->root_path();
   if (root.empty())
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
