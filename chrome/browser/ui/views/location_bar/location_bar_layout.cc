@@ -44,7 +44,7 @@ struct LocationBarDecoration {
   // The y position of the view inside its parent.
   int y;
 
-  // If 0, will use the preferred height of the view.
+  // The height of the view.
   int height;
 
   // Used for resizeable decorations, indicates the maximum fraction of the
@@ -85,22 +85,16 @@ LocationBarDecoration::LocationBarDecoration(DecorationType type,
       builtin_padding(builtin_padding),
       view(view),
       computed_width(0) {
-  if (type == NORMAL) {
-    DCHECK_GE(max_fraction, 0.0);
-  } else {
-    DCHECK_EQ(0.0, max_fraction);
-  }
+  DCHECK((max_fraction == 0.0) || ((type == NORMAL) && (max_fraction > 0.0)));
 }
 
 
 // LocationBarLayout ---------------------------------------------------------
 
-LocationBarLayout::LocationBarLayout(Position position,
-                                     int item_edit_padding,
-                                     int edge_edit_padding)
+LocationBarLayout::LocationBarLayout(Position position, int item_edit_padding)
     : position_(position),
-      item_edit_padding_(item_edit_padding),
-      edge_edit_padding_(edge_edit_padding) {}
+      item_edit_padding_(item_edit_padding) {
+}
 
 
 LocationBarLayout::~LocationBarLayout() {
@@ -124,7 +118,7 @@ void LocationBarLayout::AddDecoration(int y,
                                       int builtin_padding,
                                       views::View* view) {
   decorations_.push_back(new LocationBarDecoration(
-      NORMAL, y, height, 0, LocationBarView::GetEdgeItemPadding(),
+      NORMAL, y, height, 0, LocationBarView::GetItemPadding(),
       LocationBarView::GetItemPadding(), builtin_padding, view));
 }
 
@@ -140,12 +134,10 @@ void LocationBarLayout::AddSeparator(int y,
 
 void LocationBarLayout::LayoutPass1(int* entry_width) {
   bool first_item = true;
-  bool at_least_one_visible = false;
   for (Decorations::iterator it(decorations_.begin()); it != decorations_.end();
        ++it) {
     // Autocollapsing decorations are ignored in this pass.
     if ((*it)->type != AUTO_COLLAPSE) {
-      at_least_one_visible = true;
       *entry_width -= -2 * (*it)->builtin_padding +
           (first_item ? (*it)->edge_item_padding : (*it)->item_padding);
     }
@@ -156,8 +148,7 @@ void LocationBarLayout::LayoutPass1(int* entry_width) {
       *entry_width -= (*it)->computed_width;
     }
   }
-  *entry_width -= at_least_one_visible ? item_edit_padding_ :
-      edge_edit_padding_;
+  *entry_width -= item_edit_padding_;
 }
 
 void LocationBarLayout::LayoutPass2(int *entry_width) {
@@ -248,9 +239,7 @@ void LocationBarLayout::SetBoundsForDecorations(gfx::Rect* bounds) {
     first_visible = false;
     int x = (position_ == LEFT_EDGE) ? (bounds->x() + padding) :
         (bounds->right() - padding - curr->computed_width);
-    int height = curr->height == 0 ?
-        curr->view->GetPreferredSize().height() : curr->height;
-    curr->view->SetBounds(x, curr->y, curr->computed_width, height);
+    curr->view->SetBounds(x, curr->y, curr->computed_width, curr->height);
     bounds->set_width(bounds->width() - padding - curr->computed_width +
                       curr->builtin_padding);
     if (position_ == LEFT_EDGE) {
@@ -258,8 +247,7 @@ void LocationBarLayout::SetBoundsForDecorations(gfx::Rect* bounds) {
           bounds->x() + padding + curr->computed_width - curr->builtin_padding);
     }
   }
-  int final_padding = first_visible ? edge_edit_padding_ : item_edit_padding_;
-  bounds->set_width(bounds->width() - final_padding);
+  bounds->set_width(bounds->width() - item_edit_padding_);
   if (position_ == LEFT_EDGE)
-    bounds->set_x(bounds->x() + final_padding);
+    bounds->set_x(bounds->x() + item_edit_padding_);
 }

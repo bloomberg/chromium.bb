@@ -25,10 +25,8 @@ class View;
 // Return |view| as an OmniboxViewViews, or NULL if it is of a different type.
 OmniboxViewViews* GetOmniboxViewViews(OmniboxView* view);
 
-#if defined(OS_WIN) && !defined(USE_AURA)
 // Return |view| as an OmniboxViewWin, or NULL if it is of a different type.
 OmniboxViewWin* GetOmniboxViewWin(OmniboxView* view);
-#endif
 
 // Creates an OmniboxView of the appropriate type; Views or Win.
 OmniboxView* CreateOmniboxView(OmniboxEditController* controller,

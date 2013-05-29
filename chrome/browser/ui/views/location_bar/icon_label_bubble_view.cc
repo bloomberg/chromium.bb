@@ -18,12 +18,10 @@ namespace {
 // Amount of padding at the edges of the bubble.
 //
 // This can't be statically initialized because
-// LocationBarView::GetEdgeItemPadding() depends on whether we are
-// using desktop or touch layout, and this in turn depends on the
-// command line.
+// LocationBarView::GetItemPadding() depends on whether we are using desktop or
+// touch layout, and this in turn depends on the command line.
 int GetBubbleOuterPadding() {
-  return LocationBarView::GetEdgeItemPadding() -
-      LocationBarView::kBubblePadding;
+  return LocationBarView::GetItemPadding() - LocationBarView::kBubblePadding;
 }
 }  // namespace
 

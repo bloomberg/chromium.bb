@@ -315,11 +315,9 @@ class LocationBarView : public LocationBar,
   // otherwise it will be the current height.
   int GetInternalHeight(bool use_preferred_size);
 
-  // Space between items in the location bar.
+  // Space between items in the location bar, as well as between items and the
+  // edges.
   static int GetItemPadding();
-
-  // Space between the edges and the items next to them.
-  static int GetEdgeItemPadding();
 
   // Thickness of the left and right edges of the omnibox, in normal mode.
   static const int kNormalHorizontalEdgeThickness;

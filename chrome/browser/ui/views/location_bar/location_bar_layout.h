@@ -26,9 +26,7 @@ class LocationBarLayout {
     RIGHT_EDGE,
   };
 
-  LocationBarLayout(Position position,
-                    int item_edit_padding,
-                    int edge_edit_padding);
+  LocationBarLayout(Position position, int item_edit_padding);
   virtual ~LocationBarLayout();
 
   // Add a decoration, specifying:
@@ -97,9 +95,6 @@ class LocationBarLayout {
 
   // The padding between the last decoration and the edit box.
   int item_edit_padding_;
-
-  // The padding between the edge and the edit box, if there are no decorations.
-  int edge_edit_padding_;
 
   // The list of decorations to layout.
   Decorations decorations_;

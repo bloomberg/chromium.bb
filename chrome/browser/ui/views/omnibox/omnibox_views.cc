@@ -18,12 +18,14 @@ OmniboxViewViews* GetOmniboxViewViews(OmniboxView* view) {
       static_cast<OmniboxViewViews*>(view) : NULL;
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
 OmniboxViewWin* GetOmniboxViewWin(OmniboxView* view) {
+#if defined(OS_WIN) && !defined(USE_AURA)
   return views::Textfield::IsViewsTextfieldEnabled() ?
       NULL : static_cast<OmniboxViewWin*>(view);
-}
+#else
+  return NULL;
 #endif
+}
 
 OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
                                ToolbarModel* toolbar_model,
