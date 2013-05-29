@@ -86,8 +86,8 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/appcache/appcache_interceptor.h"
 #include "webkit/appcache/appcache_interfaces.h"
-#include "webkit/blob/blob_storage_controller.h"
-#include "webkit/blob/shareable_file_reference.h"
+#include "webkit/browser/blob/blob_storage_controller.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/glue/resource_request_body.h"
 #include "webkit/glue/webkit_glue.h"
 

@@ -7,7 +7,7 @@
 
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "webkit/blob/blob_data.h"
+#include "webkit/common/blob/blob_data.h"
 
 #define IPC_MESSAGE_START BlobMsgStart
 

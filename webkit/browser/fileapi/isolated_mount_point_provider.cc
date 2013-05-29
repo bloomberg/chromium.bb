@@ -13,7 +13,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner.h"
-#include "webkit/blob/local_file_stream_reader.h"
+#include "webkit/browser/blob/local_file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/file_system_context.h"

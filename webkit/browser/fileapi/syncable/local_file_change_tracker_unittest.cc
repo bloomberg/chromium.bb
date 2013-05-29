@@ -14,7 +14,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/blob/mock_blob_url_request_context.h"
+#include "webkit/browser/blob/mock_blob_url_request_context.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/syncable/canned_syncable_file_system.h"

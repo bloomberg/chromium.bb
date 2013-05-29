@@ -17,7 +17,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
-#include "webkit/blob/shareable_file_reference.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 
 using webkit_blob::ShareableFileReference;
 

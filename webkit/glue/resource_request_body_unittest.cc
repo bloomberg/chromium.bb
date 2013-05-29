@@ -16,7 +16,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/blob/blob_storage_controller.h"
+#include "webkit/browser/blob/blob_storage_controller.h"
 
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;

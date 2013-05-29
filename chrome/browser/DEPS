@@ -52,7 +52,6 @@ include_rules = [
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+webkit/appcache",
   "+webkit/base/origin_url_conversions.h",
-  "+webkit/blob",
   "+webkit/common/fileapi",
   "+webkit/common/plugins",  # Common plugins functionality.
   "+webkit/common/user_agent",
@@ -63,6 +62,7 @@ include_rules = [
   # TODO(kinuko): Remove all other webkit/* dependencies after we cleaned
   # up webkit/. crbug.com/239710
   "+webkit/browser",
+  "+webkit/common",
 
   # webkit/glue files are listed individually since they aren't conceptually
   # grouped like the other webkit/ files, and can therefore be tackled one at

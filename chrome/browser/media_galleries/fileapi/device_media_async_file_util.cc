@@ -14,13 +14,13 @@
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
-#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/native_file_util.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 
 using fileapi::FileSystemOperationContext;
 using fileapi::FileSystemURL;

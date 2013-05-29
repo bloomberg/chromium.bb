@@ -12,7 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/blob/mock_blob_url_request_context.h"
+#include "webkit/browser/blob/mock_blob_url_request_context.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"

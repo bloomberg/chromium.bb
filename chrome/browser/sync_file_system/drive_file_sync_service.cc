@@ -36,11 +36,11 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
-#include "webkit/blob/scoped_file.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/browser/fileapi/syncable/sync_file_type.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
+#include "webkit/common/blob/scoped_file.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 using fileapi::FileSystemURL;

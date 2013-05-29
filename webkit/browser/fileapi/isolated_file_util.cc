@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "base/file_util.h"
-#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/native_file_util.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 
 using base::PlatformFileError;
 using base::PlatformFileInfo;

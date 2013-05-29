@@ -15,7 +15,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/blob/mock_blob_url_request_context.h"
+#include "webkit/browser/blob/mock_blob_url_request_context.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/isolated_context.h"

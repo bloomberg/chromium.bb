@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "content/public/common/url_constants.h"
-#include "webkit/blob/view_blob_internals_job.h"
+#include "webkit/browser/blob/view_blob_internals_job.h"
 
 namespace content {
 

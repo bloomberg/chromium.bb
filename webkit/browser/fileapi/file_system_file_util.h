@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "webkit/blob/scoped_file.h"
+#include "webkit/common/blob/scoped_file.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {

@@ -10,7 +10,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "webkit/blob/local_file_stream_reader.h"
+#include "webkit/browser/blob/local_file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"

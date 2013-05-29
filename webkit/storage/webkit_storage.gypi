@@ -5,7 +5,6 @@
 {
   'includes': [
     '../appcache/webkit_appcache.gypi',
-    '../blob/webkit_blob.gypi',
     '../dom_storage/webkit_dom_storage.gypi',
     '../quota/webkit_quota.gypi',
 
@@ -35,7 +34,6 @@
       'sources': [
         '../storage/webkit_storage_export.h',
         '<@(webkit_appcache_sources)',
-        '<@(webkit_blob_sources)',
         '<@(webkit_dom_storage_sources)',
         '<@(webkit_quota_sources)',
 

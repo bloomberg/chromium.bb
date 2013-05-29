@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "net/base/net_errors.h"
-#include "webkit/blob/file_stream_reader.h"
+#include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 

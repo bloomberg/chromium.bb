@@ -47,12 +47,12 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "webkit/blob/blob_data.h"
-#include "webkit/blob/blob_storage_controller.h"
-#include "webkit/blob/blob_url_request_job.h"
+#include "webkit/browser/blob/blob_storage_controller.h"
+#include "webkit/browser/blob/blob_url_request_job.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/common/blob/blob_data.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

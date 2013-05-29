@@ -8,8 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/browser/fileapi/async_file_util.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 
 namespace base {
 class SequencedTaskRunner;

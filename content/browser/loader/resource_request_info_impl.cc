@@ -9,7 +9,7 @@
 #include "content/common/net/url_request_user_data.h"
 #include "content/public/browser/global_request_id.h"
 #include "net/url_request/url_request.h"
-#include "webkit/blob/blob_data.h"
+#include "webkit/common/blob/blob_data.h"
 
 namespace content {
 

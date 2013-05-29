@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/page_capture.h"
-#include "webkit/blob/shareable_file_reference.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 
 namespace base {
 class FilePath;

@@ -19,9 +19,9 @@
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/blob/file_stream_reader.h"
-#include "webkit/blob/shareable_file_reference.h"
+#include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 

@@ -10,8 +10,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebBlobData.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "webkit/base/file_path_string_conversions.h"
-#include "webkit/blob/blob_data.h"
-#include "webkit/blob/blob_storage_controller.h"
+#include "webkit/browser/blob/blob_storage_controller.h"
+#include "webkit/common/blob/blob_data.h"
 
 using WebKit::WebBlobData;
 using WebKit::WebURL;

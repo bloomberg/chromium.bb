@@ -173,8 +173,6 @@
     'common/fileapi/file_system_dispatcher.h',
     'common/fileapi/file_system_messages.h',
     'common/fileapi/webblob_messages.h',
-    'common/fileapi/webblobregistry_impl.cc',
-    'common/fileapi/webblobregistry_impl.h',
     'common/find_match_rect_android.cc',
     'common/find_match_rect_android.h',
     'common/font_cache_dispatcher_win.cc',

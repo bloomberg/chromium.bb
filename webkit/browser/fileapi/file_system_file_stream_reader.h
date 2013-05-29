@@ -9,9 +9,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "base/time.h"
-#include "webkit/blob/file_stream_reader.h"
-#include "webkit/blob/shareable_file_reference.h"
+#include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
