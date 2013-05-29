@@ -228,13 +228,8 @@ void EditorClientImpl::didBeginEditing()
 
 void EditorClientImpl::respondToChangedSelection(Frame* frame)
 {
-    if (m_webView->client()) {
-        if (frame) {
-            m_webView->client()->didChangeSelection(!frame->selection()->isRange());
-            if (frame->editor()->cancelCompositionIfSelectionIsInvalid())
-                m_webView->client()->didCancelCompositionOnSelectionChange();
-        }
-    }
+    if (m_webView->client() && frame)
+        m_webView->client()->didChangeSelection(!frame->selection()->isRange());
 }
 
 void EditorClientImpl::respondToChangedContents()
@@ -247,6 +242,12 @@ void EditorClientImpl::didEndEditing()
 {
     if (m_webView->client())
         m_webView->client()->didEndEditing();
+}
+
+void EditorClientImpl::didCancelCompositionOnSelectionChange()
+{
+    if (m_webView->client())
+        m_webView->client()->didCancelCompositionOnSelectionChange();
 }
 
 void EditorClientImpl::registerUndoStep(PassRefPtr<UndoStep> step)

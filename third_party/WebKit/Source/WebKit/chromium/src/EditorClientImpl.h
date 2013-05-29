@@ -69,6 +69,7 @@ public:
     virtual void respondToChangedContents() OVERRIDE;
     virtual void respondToChangedSelection(WebCore::Frame*) OVERRIDE;
     virtual void didEndEditing() OVERRIDE;
+    virtual void didCancelCompositionOnSelectionChange() OVERRIDE;
     virtual void registerUndoStep(PassRefPtr<WebCore::UndoStep>) OVERRIDE;
     virtual void registerRedoStep(PassRefPtr<WebCore::UndoStep>) OVERRIDE;
     virtual void clearUndoRedoOperations() OVERRIDE;

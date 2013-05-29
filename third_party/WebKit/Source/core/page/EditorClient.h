@@ -78,6 +78,7 @@ public:
     virtual void respondToChangedContents() = 0;
     virtual void respondToChangedSelection(Frame*) = 0;
     virtual void didEndEditing() = 0;
+    virtual void didCancelCompositionOnSelectionChange() = 0;
 
     virtual void registerUndoStep(PassRefPtr<UndoStep>) = 0;
     virtual void registerRedoStep(PassRefPtr<UndoStep>) = 0;

@@ -248,7 +248,7 @@ public:
     void confirmComposition(const String& text);
     // Deletes the existing composition text.
     void cancelComposition();
-    bool cancelCompositionIfSelectionIsInvalid();
+    void cancelCompositionIfSelectionIsInvalid();
     PassRefPtr<Range> compositionRange() const;
     bool setSelectionOffsets(int selectionStart, int selectionEnd);
 

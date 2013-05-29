@@ -315,6 +315,7 @@ public:
     virtual void respondToChangedContents() OVERRIDE { }
     virtual void respondToChangedSelection(Frame*) OVERRIDE { }
     virtual void didEndEditing() OVERRIDE { }
+    virtual void didCancelCompositionOnSelectionChange() OVERRIDE { }
 
     virtual void registerUndoStep(PassRefPtr<UndoStep>) OVERRIDE;
     virtual void registerRedoStep(PassRefPtr<UndoStep>) OVERRIDE;

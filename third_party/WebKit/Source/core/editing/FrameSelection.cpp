@@ -301,6 +301,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
 
     if (m_selection == s) {
         // Even if selection was not changed, selection offsets may have been changed.
+        m_frame->editor()->cancelCompositionIfSelectionIsInvalid();
         notifyRendererOfSelectionChange(userTriggered);
         return;
     }

@@ -1158,10 +1158,10 @@ void Editor::cancelComposition()
     finishComposition(emptyString(), CancelComposition);
 }
 
-bool Editor::cancelCompositionIfSelectionIsInvalid()
+void Editor::cancelCompositionIfSelectionIsInvalid()
 {
     if (!hasComposition() || ignoreCompositionSelectionChange())
-        return false;
+        return;
 
     // Check if selection start and selection end are valid.
     Position start = m_frame->selection()->start();
@@ -1170,10 +1170,11 @@ bool Editor::cancelCompositionIfSelectionIsInvalid()
         && end.containerNode() == m_compositionNode
         && static_cast<unsigned>(start.computeOffsetInContainerNode()) > m_compositionStart
         && static_cast<unsigned>(end.computeOffsetInContainerNode()) < m_compositionEnd)
-        return false;
+        return;
 
     cancelComposition();
-    return true;
+    if (client())
+        client()->didCancelCompositionOnSelectionChange();
 }
 
 void Editor::finishComposition(const String& text, FinishCompositionMode mode)
@@ -2295,6 +2296,8 @@ void Editor::respondToChangedSelection(const VisibleSelection& oldSelection, Fra
         m_frame->document()->markers()->removeMarkers(DocumentMarker::Spelling);
     if (!isContinuousGrammarCheckingEnabled)
         m_frame->document()->markers()->removeMarkers(DocumentMarker::Grammar);
+
+    cancelCompositionIfSelectionIsInvalid();
 
     notifyComponentsOnChangedSelection(oldSelection, options);
 }
