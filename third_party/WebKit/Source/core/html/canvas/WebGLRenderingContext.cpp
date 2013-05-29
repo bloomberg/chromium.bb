@@ -569,6 +569,30 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
         setupFlags();
         initializeNewContext();
     }
+
+    // Register extensions.
+    static const char* unprefixed[] = { "", 0, };
+    static const char* webkitPrefix[] = { "WEBKIT_", 0, };
+    static const char* bothPrefixes[] = { "", "WEBKIT_", 0, };
+
+    registerExtension<EXTDrawBuffers>(m_extDrawBuffers, false, false, unprefixed);
+    registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic, false, true, webkitPrefix);
+    registerExtension<OESElementIndexUint>(m_oesElementIndexUint, false, false, unprefixed);
+    registerExtension<OESStandardDerivatives>(m_oesStandardDerivatives, false, false, unprefixed);
+    registerExtension<OESTextureFloat>(m_oesTextureFloat, false, false, unprefixed);
+    registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear, false, false, unprefixed);
+    registerExtension<OESTextureHalfFloat>(m_oesTextureHalfFloat, false, false, unprefixed);
+    registerExtension<OESTextureHalfFloatLinear>(m_oesTextureHalfFloatLinear, false, false, unprefixed);
+    registerExtension<OESVertexArrayObject>(m_oesVertexArrayObject, false, false, unprefixed);
+    registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC, false, true, webkitPrefix);
+    registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, false, true, webkitPrefix);
+    registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, false, true, bothPrefixes);
+    registerExtension<WebGLDepthTexture>(m_webglDepthTexture, false, true, bothPrefixes);
+    registerExtension<WebGLLoseContext>(m_webglLoseContext, false, false, bothPrefixes);
+
+    // Register privileged extensions.
+    registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo, true, false, unprefixed);
+    registerExtension<WebGLDebugShaders>(m_webglDebugShaders, true, false, unprefixed);
 }
 
 void WebGLRenderingContext::initializeNewContext()
@@ -2081,10 +2105,11 @@ GC3Denum WebGLRenderingContext::getError()
     return m_context->getError();
 }
 
-bool WebGLRenderingContext::matchesNameWithPrefixes(const String& name, const String& baseName, const char** prefixes)
+bool WebGLRenderingContext::ExtensionTracker::matchesNameWithPrefixes(const String& name) const
 {
+    const char** prefixes = m_prefixes;
     for (; *prefixes; ++prefixes) {
-        String prefixedName = String(*prefixes) + baseName;
+        String prefixedName = String(*prefixes) + getExtensionName();
         if (equalIgnoringCase(prefixedName, name)) {
             return true;
         }
@@ -2097,44 +2122,15 @@ WebGLExtension* WebGLRenderingContext::getExtension(const String& name)
     if (isContextLost())
         return 0;
 
-    static const char* unprefixed[] = { "", NULL, };
-    static const char* webkitPrefix[] = { "WEBKIT_", NULL, };
-    static const char* bothPrefixes[] = { "", "WEBKIT_", NULL, };
-
-    WebGLExtension* extension = 0;
-    if (getExtensionIfMatch<EXTDrawBuffers>(name, m_extDrawBuffers, unprefixed, extension))
-        return extension;
-    if (getExtensionIfMatch<EXTTextureFilterAnisotropic>(name, m_extTextureFilterAnisotropic, webkitPrefix, extension))
-        return extension;
-    if (getExtensionIfMatch<OESElementIndexUint>(name, m_oesElementIndexUint, unprefixed, extension))
-        return extension;
-    if (getExtensionIfMatch<OESStandardDerivatives>(name, m_oesStandardDerivatives, unprefixed, extension))
-        return extension;
-    if (getExtensionIfMatch<OESTextureFloat>(name, m_oesTextureFloat, unprefixed, extension))
-        return extension;
-    if (getExtensionIfMatch<OESTextureFloatLinear>(name, m_oesTextureFloatLinear, unprefixed, extension))
-        return extension;
-    if (getExtensionIfMatch<OESTextureHalfFloat>(name, m_oesTextureHalfFloat, unprefixed, extension))
-        return extension;
-    if (getExtensionIfMatch<OESTextureHalfFloatLinear>(name, m_oesTextureHalfFloatLinear, unprefixed, extension))
-        return extension;
-    if (getExtensionIfMatch<OESVertexArrayObject>(name, m_oesVertexArrayObject, unprefixed, extension))
-        return extension;
-    if (getExtensionIfMatch<WebGLCompressedTextureATC>(name, m_webglCompressedTextureATC, webkitPrefix, extension))
-        return extension;
-    if (getExtensionIfMatch<WebGLCompressedTexturePVRTC>(name, m_webglCompressedTexturePVRTC, webkitPrefix, extension))
-        return extension;
-    if (getExtensionIfMatch<WebGLCompressedTextureS3TC>(name, m_webglCompressedTextureS3TC, bothPrefixes, extension))
-        return extension;
-    if (getExtensionIfMatch<WebGLDepthTexture>(name, m_webglDepthTexture, bothPrefixes, extension))
-        return extension;
-    if (getExtensionIfMatch<WebGLLoseContext>(name, m_webglLoseContext, bothPrefixes, extension))
-        return extension;
-    if (allowPrivilegedExtensions()) {
-        if (getExtensionIfMatch<WebGLDebugRendererInfo>(name, m_webglDebugRendererInfo, unprefixed, extension))
-            return extension;
-        if (getExtensionIfMatch<WebGLDebugShaders>(name, m_webglDebugShaders, unprefixed, extension))
-            return extension;
+    for (size_t i = 0; i < m_extensions.size(); ++i) {
+        ExtensionTracker* tracker = m_extensions[i];
+        if (tracker->matchesNameWithPrefixes(name)) {
+            if (tracker->getPrivileged() && !allowPrivilegedExtensions())
+                return 0;
+            if (!tracker->supported(this))
+                return 0;
+            return tracker->getExtension(this);
+        }
     }
 
     return 0;
@@ -2611,24 +2607,10 @@ Vector<String> WebGLRenderingContext::getSupportedExtensions()
     if (isContextLost())
         return result;
 
-    appendIfSupported<EXTDrawBuffers>(result, false);
-    appendIfSupported<EXTTextureFilterAnisotropic>(result, true);
-    appendIfSupported<OESElementIndexUint>(result, false);
-    appendIfSupported<OESStandardDerivatives>(result, false);
-    appendIfSupported<OESTextureFloat>(result, false);
-    appendIfSupported<OESTextureFloatLinear>(result, false);
-    appendIfSupported<OESTextureHalfFloat>(result, false);
-    appendIfSupported<OESTextureHalfFloatLinear>(result, false);
-    appendIfSupported<OESVertexArrayObject>(result, false);
-    appendIfSupported<WebGLCompressedTextureATC>(result, true);
-    appendIfSupported<WebGLCompressedTexturePVRTC>(result, true);
-    appendIfSupported<WebGLCompressedTextureS3TC>(result, true);
-    appendIfSupported<WebGLDepthTexture>(result, true);
-    appendIfSupported<WebGLLoseContext>(result, false);
-
-    if (allowPrivilegedExtensions()) {
-        appendIfSupported<WebGLDebugShaders>(result, false);
-        appendIfSupported<WebGLDebugRendererInfo>(result, false);
+    for (size_t i = 0; i < m_extensions.size(); ++i) {
+        ExtensionTracker* tracker = m_extensions[i];
+        if ((!tracker->getPrivileged() || allowPrivilegedExtensions()) && tracker->supported(this))
+            result.append(String(tracker->getPrefixed()  ? "WEBKIT_" : "") + tracker->getExtensionName());
     }
 
     return result;

@@ -365,30 +365,6 @@ public:
     // Adds a compressed texture format.
     void addCompressedTextureFormat(GC3Denum);
 
-    // Template to help getSupportedExtensions
-    template<typename T>
-    void appendIfSupported(Vector<String>& strings, bool prefixed)
-    {
-        if (T::supported(this))
-            strings.append(String(prefixed ? "WEBKIT_" : "") + T::getExtensionName());
-    }
-
-    bool matchesNameWithPrefixes(const String& name, const String& baseName, const char** prefixes);
-
-    // Templates to help getExtension
-    template<typename T>
-    bool getExtensionIfMatch(const String& name, OwnPtr<T>& extensionPtr, const char** prefixes, WebGLExtension*& extension)
-    {
-        if (matchesNameWithPrefixes(name, T::getExtensionName(), prefixes) && (extensionPtr || T::supported(this))) {
-            if (!extensionPtr) {
-                extensionPtr = T::create(this);
-            }
-            extension = extensionPtr.get();
-            return true;
-        }
-        return false;
-    }
-
     PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*, BackingStoreCopy, ExceptionCode&);
 
     RefPtr<GraphicsContext3D> m_context;
@@ -538,6 +514,76 @@ public:
     OwnPtr<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
     OwnPtr<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
     OwnPtr<WebGLDepthTexture> m_webglDepthTexture;
+
+    class ExtensionTracker {
+    public:
+        ExtensionTracker(bool privileged, bool prefixed, const char** prefixes)
+            : m_privileged(privileged)
+            , m_prefixed(prefixed)
+            , m_prefixes(prefixes)
+        {
+        }
+
+        bool getPrefixed() const
+        {
+            return m_prefixed;
+        }
+
+        bool getPrivileged() const
+        {
+            return m_privileged;
+        }
+
+        bool matchesNameWithPrefixes(const String&) const;
+
+        virtual WebGLExtension* getExtension(WebGLRenderingContext*) const = 0;
+        virtual bool supported(WebGLRenderingContext*) const = 0;
+        virtual const char* getExtensionName() const = 0;
+
+    private:
+        bool m_privileged;
+        bool m_prefixed;
+        const char** m_prefixes;
+    };
+
+    template <typename T>
+    class TypedExtensionTracker : public ExtensionTracker {
+    public:
+        TypedExtensionTracker(OwnPtr<T>& extensionField, bool privileged, bool prefixed, const char** prefixes)
+            : ExtensionTracker(privileged, prefixed, prefixes)
+            , m_extensionField(extensionField)
+        {
+        }
+
+        virtual WebGLExtension* getExtension(WebGLRenderingContext* context) const
+        {
+            if (!m_extensionField)
+                m_extensionField = T::create(context);
+
+            return m_extensionField.get();
+        }
+
+        virtual bool supported(WebGLRenderingContext* context) const
+        {
+            return T::supported(context);
+        }
+
+        virtual const char* getExtensionName() const
+        {
+            return T::getExtensionName();
+        }
+
+    private:
+        OwnPtr<T>& m_extensionField;
+    };
+
+    Vector<ExtensionTracker*> m_extensions;
+
+    template <typename T>
+    void registerExtension(OwnPtr<T>& extensionPtr, bool privileged, bool prefixed, const char** prefixes)
+    {
+        m_extensions.append(new TypedExtensionTracker<T>(extensionPtr, privileged, prefixed, prefixes));
+    }
 
     // Errors raised by synthesizeGLError() while the context is lost.
     Vector<GC3Denum> lost_context_errors_;
