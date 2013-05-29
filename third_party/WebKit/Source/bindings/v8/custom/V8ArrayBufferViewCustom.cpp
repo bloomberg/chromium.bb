@@ -31,7 +31,6 @@
 
 #include <v8.h>
 
-
 namespace WebCore {
 
 bool copyElements(v8::Handle<v8::Object> destArray, v8::Handle<v8::Object> srcArray, uint32_t length, uint32_t offset, v8::Isolate* isolate)
@@ -49,11 +48,8 @@ bool copyElements(v8::Handle<v8::Object> destArray, v8::Handle<v8::Object> srcAr
     if (value.IsEmpty() || !value->IsFunction())
         return false;
     v8::Handle<v8::Function> copy_method = value.As<v8::Function>();
-    v8::Handle<v8::Value> arguments[3];
-    arguments[0] = srcArray;
-    arguments[1] = v8::Uint32::New(length);
-    arguments[2] = v8::Uint32::New(offset);
-    copy_method->Call(destArray, 3, arguments);
+    v8::Handle<v8::Value> arguments[3] = { srcArray, v8::Uint32::New(length), v8::Uint32::New(offset) };
+    V8ScriptRunner::callInternalFunction(copy_method, v8::Context::GetCurrent(), destArray, WTF_ARRAY_LENGTH(arguments), arguments, isolate);
     return true;
 }
 
