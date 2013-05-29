@@ -55,6 +55,8 @@ def RunSubprocess(proc, timeout=0):
   if timeout > 0:
     wait_until = time.time() + timeout
   while p.poll() is None and not did_timeout:
+    # Have to use readline rather than readlines() or "for line in p.stdout:",
+    # otherwise we get buffered even with bufsize=0.
     line = p.stdout.readline()
     while line and not did_timeout:
       sys.stdout.write(line)
