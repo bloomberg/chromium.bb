@@ -1570,7 +1570,7 @@ crbug.com/222896 virtual/softwarecompositing/layer-creation/spanOverlapsCanvas.h
 crbug.com/222896 virtual/softwarecompositing/visibility/visibility-simple-canvas2d-layer.html [ Crash ]
 crbug.com/222896 virtual/softwarecompositing/overflow/overflow-hidden-canvas-layer.html [ Crash ]
 crbug.com/223583 http/tests/filesystem/no-cache-filesystem-url.html [ Timeout ]
-crbug.com/231859 compositing/plugins/invalidate_rect.html [ Failure ]
+crbug.com/231859 [ Win Linux ] compositing/plugins/invalidate_rect.html [ Failure ]
 crbug.com/231860 [ Mac Linux ] compositing/reflections/animation-inside-reflection.html [ ImageOnlyFailure ]
 crbug.com/231860 [ Win ] compositing/reflections/animation-inside-reflection.html [ Failure ]
 crbug.com/231863 compositing/visibility/visibility-composited-animation.html [ ImageOnlyFailure ]
