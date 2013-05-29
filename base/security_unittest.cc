@@ -46,8 +46,9 @@ Type HideValueFromCompiler(volatile Type value) {
 // - ADDRESS_SANITIZER because it has its own memory allocator
 // - IOS does not use tcmalloc
 // - OS_MACOSX does not use tcmalloc
+// - OS_WIN does not use tcmalloc crbug.com/242304
 #if !defined(NO_TCMALLOC) && !defined(ADDRESS_SANITIZER) && \
-    !defined(OS_IOS) && !defined(OS_MACOSX)
+    !defined(OS_IOS) && !defined(OS_MACOSX) && !defined(OS_WIN)
   #define TCMALLOC_TEST(function) function
 #else
   #define TCMALLOC_TEST(function) DISABLED_##function
