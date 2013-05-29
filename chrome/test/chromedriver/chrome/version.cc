@@ -8,7 +8,7 @@
 
 namespace {
 
-const int kMinimumSupportedChromeVersion[] = {26, 0, 1395, 0};
+const int kMinimumSupportedChromeVersion[] = {27, 0, 1453, 0};
 
 }  // namespace
 

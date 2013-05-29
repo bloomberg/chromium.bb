@@ -14,7 +14,6 @@ sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
 
 from common import util
 
-CHROME_26_REVISION = '181664'
 CHROME_27_REVISION = '190466'
 CHROME_28_REVISION = '198276'
 

@@ -153,8 +153,7 @@ def main():
     versions = [
         ['HEAD', latest_snapshot_revision],
         ['28', archive.CHROME_28_REVISION],
-        ['27', archive.CHROME_27_REVISION],
-        ['26', archive.CHROME_26_REVISION]
+        ['27', archive.CHROME_27_REVISION]
     ]
     code = 0
     for version in versions:

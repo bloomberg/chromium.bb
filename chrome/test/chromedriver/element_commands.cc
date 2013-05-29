@@ -217,16 +217,6 @@ Status ExecuteSendKeysToElement(
   if (status.IsError())
     return status;
   if (is_input && is_file) {
-    // File upload is only supported for chrome 27+.
-    if (session->chrome->GetBuildNo() < 1420) {
-      return Status(
-          kUnknownError,
-          base::StringPrintf(
-              "file upload requires chrome 27+, build 1420+,"
-              "while current one is %s",
-              session->chrome->GetVersion().c_str()));
-    }
-
     // Compress array into a single string.
     base::FilePath::StringType paths_string;
     for (size_t i = 0; i < key_list->GetSize(); ++i) {
