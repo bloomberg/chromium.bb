@@ -8,6 +8,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -172,7 +173,7 @@ class BrowserViewImmersiveInstantExtendedTest : public InProcessBrowserTest,
   virtual ~BrowserViewImmersiveInstantExtendedTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    chrome::EnableImmersiveFullscreenForTest();
+    ImmersiveFullscreenConfiguration::EnableImmersiveFullscreenForTest();
     chrome::EnableInstantExtendedAPIForTesting();
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
@@ -196,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewImmersiveInstantExtendedTest,
 
   // Start up both instant and immersive fullscreen.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  ASSERT_TRUE(chrome::UseImmersiveFullscreen());
+  ASSERT_TRUE(ImmersiveFullscreenConfiguration::UseImmersiveFullscreen());
   chrome::ToggleFullscreenMode(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
   ASSERT_TRUE(browser_view->immersive_mode_controller()->IsEnabled());

@@ -8,6 +8,7 @@
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -77,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, WindowHeader) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveMode) {
-  if (!chrome::UseImmersiveFullscreen())
+  if (!ImmersiveFullscreenConfiguration::UseImmersiveFullscreen())
     return;
 
   ui::ScopedAnimationDurationScaleMode zero_duration_mode(

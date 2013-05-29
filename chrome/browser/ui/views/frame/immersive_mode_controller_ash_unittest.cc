@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
 #include "ash/test/ash_test_base.h"
+#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -53,8 +54,8 @@ class ImmersiveModeControllerAshTest : public ash::test::AshTestBase {
   virtual void SetUp() OVERRIDE {
     ash::test::AshTestBase::SetUp();
 
-    chrome::EnableImmersiveFullscreenForTest();
-    ASSERT_TRUE(chrome::UseImmersiveFullscreen());
+    ImmersiveFullscreenConfiguration::EnableImmersiveFullscreenForTest();
+    ASSERT_TRUE(ImmersiveFullscreenConfiguration::UseImmersiveFullscreen());
 
     controller_.reset(new ImmersiveModeControllerAsh);
     delegate_.reset(new MockImmersiveModeControllerDelegate);

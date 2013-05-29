@@ -118,14 +118,6 @@ class ImmersiveModeController {
 
 namespace chrome {
 
-// Returns true if immersive mode should be used for fullscreen based on
-// command line flags.
-// Implemented in immersive_mode_controller_factory.cc.
-bool UseImmersiveFullscreen();
-
-// Implemented in immersive_mode_controller_factory.cc.
-void EnableImmersiveFullscreenForTest();
-
 // Implemented in immersive_mode_controller_factory.cc.
 ImmersiveModeController* CreateImmersiveModeController();
 

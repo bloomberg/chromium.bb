@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/ntp_background_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
@@ -252,7 +253,8 @@ bool ShouldSaveOrRestoreWindowPos() {
 // for the tab entering fullscreen).
 bool UseImmersiveFullscreenForUrl(const GURL& url) {
   bool is_browser_fullscreen = url.is_empty();
-  return is_browser_fullscreen && chrome::UseImmersiveFullscreen();
+  return is_browser_fullscreen &&
+         ImmersiveFullscreenConfiguration::UseImmersiveFullscreen();
 }
 
 }  // namespace

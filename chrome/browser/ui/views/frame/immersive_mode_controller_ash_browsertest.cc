@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
+#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -75,11 +76,11 @@ class ImmersiveModeControllerAshTest : public InProcessBrowserTest {
 
   // content::BrowserTestBase overrides:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    chrome::EnableImmersiveFullscreenForTest();
+    ImmersiveFullscreenConfiguration::EnableImmersiveFullscreenForTest();
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    ASSERT_TRUE(chrome::UseImmersiveFullscreen());
+    ASSERT_TRUE(ImmersiveFullscreenConfiguration::UseImmersiveFullscreen());
     browser_view_ = static_cast<BrowserView*>(browser()->window());
     controller_ = static_cast<ImmersiveModeControllerAsh*>(
         browser_view_->immersive_mode_controller());

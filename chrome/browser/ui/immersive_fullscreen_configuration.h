@@ -9,6 +9,12 @@
 
 class ImmersiveFullscreenConfiguration {
  public:
+  // Returns true if immersive mode should be used for fullscreen based on
+  // command line flags.
+  static bool UseImmersiveFullscreen();
+
+  static void EnableImmersiveFullscreenForTest();
+
   static int immersive_mode_reveal_delay_ms() {
     return immersive_mode_reveal_delay_ms_;
   }

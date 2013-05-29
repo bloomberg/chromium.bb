@@ -39,7 +39,7 @@
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/time_format.h"
@@ -188,7 +188,7 @@ void ChromeShellDelegate::ToggleMaximized() {
 
   // TODO(pkotwicz): If immersive mode replaces fullscreen, bind fullscreen to
   // F4 and find a different key binding for maximize.
-  if (chrome::UseImmersiveFullscreen()) {
+  if (ImmersiveFullscreenConfiguration::UseImmersiveFullscreen()) {
     ToggleFullscreen();
     return;
   }

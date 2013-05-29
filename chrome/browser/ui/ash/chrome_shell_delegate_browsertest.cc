@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 typedef InProcessBrowserTest ChromeShellDelegateBrowserTest;
@@ -24,7 +24,7 @@ IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleMaximized) {
   aura::Window* window = ash::wm::GetActiveWindow();
   ASSERT_TRUE(window);
 
-  if (chrome::UseImmersiveFullscreen()) {
+  if (ImmersiveFullscreenConfiguration::UseImmersiveFullscreen()) {
     // "ToggleMaximized" toggles immersive fullscreen.
     EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
     EXPECT_FALSE(ash::wm::IsWindowFullscreen(window));
