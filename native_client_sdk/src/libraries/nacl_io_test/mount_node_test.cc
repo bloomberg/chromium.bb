@@ -107,6 +107,7 @@ TEST(MountNodeTest, File) {
 
   struct stat s;
   EXPECT_EQ(0, file->GetStat(&s));
+  EXPECT_LT(0, s.st_ino);  // 0 is an invalid inode number.
   EXPECT_EQ(sizeof(buf1), s.st_size);
 
   // Directory operations should fail
@@ -157,6 +158,9 @@ TEST(MountNodeTest, Directory) {
   // Test that the directory is there
   struct dirent d;
   EXPECT_EQ(sizeof(d), root->GetDents(0, &d, sizeof(d)));
+  EXPECT_LT(0, d.d_ino);  // 0 is an invalid inode number.
+  EXPECT_EQ(sizeof(d), d.d_off);
+  EXPECT_EQ(sizeof(d), d.d_reclen);
   EXPECT_EQ(0, strcmp("F1", d.d_name));
   EXPECT_EQ(0, root->GetDents(sizeof(d), &d, sizeof(d)));
 

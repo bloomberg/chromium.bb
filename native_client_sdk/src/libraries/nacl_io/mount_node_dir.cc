@@ -129,6 +129,7 @@ void MountNodeDir::BuildCache() {
       MountNode* node = it->second;
       size_t len = it->first.length();
       cache_[index].d_ino = node->stat_.st_ino;
+      cache_[index].d_off = sizeof(struct dirent);
       cache_[index].d_reclen = sizeof(struct dirent);
       cache_[index].d_name[len] = 0;
       strncpy(cache_[index].d_name, &it->first[0], len);

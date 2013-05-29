@@ -25,8 +25,11 @@ MountNode::MountNode(Mount* mount)
   stat_.st_uid = USR_ID;
 
   // Mount should normally never be NULL, but may be null in tests.
+  // If NULL, at least set the inode to a valid (nonzero) value.
   if (mount_)
     mount_->OnNodeCreated(this);
+  else
+    stat_.st_ino = 1;
 }
 
 MountNode::~MountNode() {
