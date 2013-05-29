@@ -390,6 +390,12 @@ class ValgrindTool(BaseTool):
 
     # The Valgrind command is constructed.
 
+    # Valgrind doesn't play nice with the Chrome sandbox.  Empty this env var
+    # set by runtest.py to disable the sandbox.
+    if os.environ.get("CHROME_DEVEL_SANDBOX", None):
+      logging.info("Removing CHROME_DEVEL_SANDBOX fron environment")
+      os.environ["CHROME_DEVEL_SANDBOX"] = ''
+
     # Handle --indirect_webkit_layout separately.
     if self._options.indirect_webkit_layout:
       # Need to create the wrapper before modifying |proc|.
@@ -398,12 +404,6 @@ class ValgrindTool(BaseTool):
       proc.append("--wrapper")
       proc.append(wrapper)
       return proc
-
-    # Valgrind doesn't play nice with the Chrome sandbox.  Empty this env var
-    # set by runtest.py to disable the sandbox.
-    if os.environ.get("CHROME_DEVEL_SANDBOX", None):
-      logging.info("Removing CHROME_DEVEL_SANDBOX fron environment")
-      os.environ["CHROME_DEVEL_SANDBOX"] = ''
 
     if self._options.indirect:
       wrapper = self.CreateBrowserWrapper(proc)
