@@ -397,50 +397,54 @@ class JsonResults(object):
         return aggregate_results_format
 
     @classmethod
-    def _get_aggregated_json(cls, builder, aggregated, incremental, is_full_results_format, num_runs, sort_keys):
-        if not incremental:
+    def _get_incremental_json(cls, builder, incremental_string, is_full_results_format):
+        if not incremental_string:
             logging.warning("Nothing to merge.")
             return None
 
-        logging.info("Loading incremental json...")
-        incremental_json = cls._load_json(incremental)
+        logging.info("Loading incremental json.")
+        incremental_json = cls._load_json(incremental_string)
         if not incremental_json:
             return None
 
         if is_full_results_format:
+            logging.info("Converting full results format to aggregate.")
             incremental_json = cls._convert_full_results_format_to_aggregate(incremental_json)
 
-        logging.info("Checking incremental json...")
+        logging.info("Checking incremental json.")
         if not cls._check_json(builder, incremental_json):
             return None
+        return incremental_json
 
-        logging.info("Loading existing aggregated json...")
-        aggregated_json = cls._load_json(aggregated)
+    @classmethod
+    def _get_aggregated_json(cls, builder, aggregated_string):
+        logging.info("Loading existing aggregated json.")
+        aggregated_json = cls._load_json(aggregated_string)
         if not aggregated_json:
-            return incremental_json
+            return None
 
-        logging.info("Checking existing aggregated json...")
+        logging.info("Checking existing aggregated json.")
         if not cls._check_json(builder, aggregated_json):
-            return incremental_json
-
-        if aggregated_json[builder][BUILD_NUMBERS_KEY][0] == incremental_json[builder][BUILD_NUMBERS_KEY][0]:
-            logging.error("Incremental JSON's build number is the latest build number in the aggregated JSON: %d." % aggregated_json[builder][BUILD_NUMBERS_KEY][0])
-            return aggregated_json
-
-        logging.info("Merging json results...")
-        try:
-            cls._merge_json(aggregated_json[builder], incremental_json[builder], num_runs)
-        except:
-            logging.error("Failed to merge json results: %s", traceback.print_exception(*sys.exc_info()))
             return None
 
         return aggregated_json
 
     @classmethod
-    def merge(cls, builder, aggregated, incremental, is_full_results_format, num_runs, sort_keys=False):
-        aggregated_json = cls._get_aggregated_json(builder, aggregated, incremental, is_full_results_format, num_runs, sort_keys)
+    def merge(cls, builder, aggregated_string, incremental_json, num_runs, sort_keys=False):
+        aggregated_json = cls._get_aggregated_json(builder, aggregated_string)
         if not aggregated_json:
-            return None
+            aggregated_json = incremental_json
+        else:
+            if aggregated_json[builder][BUILD_NUMBERS_KEY][0] == incremental_json[builder][BUILD_NUMBERS_KEY][0]:
+                logging.error("Incremental JSON's build number is the latest build number in the aggregated JSON: %d." % aggregated_json[builder][BUILD_NUMBERS_KEY][0])
+                return None
+
+            logging.info("Merging json results.")
+            try:
+                cls._merge_json(aggregated_json[builder], incremental_json[builder], num_runs)
+            except:
+                logging.error("Failed to merge json results: %s", traceback.print_exception(*sys.exc_info()))
+                return None
 
         aggregated_json[VERSIONS_KEY] = JSON_RESULTS_HIERARCHICAL_VERSION
         aggregated_json[builder][FAILURE_MAP_KEY] = CHAR_TO_FAILURE
@@ -448,31 +452,46 @@ class JsonResults(object):
         return cls._generate_file_data(aggregated_json, sort_keys)
 
     @classmethod
-    def update(cls, master, builder, test_type, incremental, is_full_results_format):
-        small_file_updated = cls.update_file(master, builder, test_type, incremental, is_full_results_format, JSON_RESULTS_FILE_SMALL, JSON_RESULTS_MAX_BUILDS_SMALL)
-        large_file_updated = cls.update_file(master, builder, test_type, incremental, is_full_results_format, JSON_RESULTS_FILE, JSON_RESULTS_MAX_BUILDS)
+    def _get_file(cls, master, builder, test_type, filename):
+        files = TestFile.get_files(master, builder, test_type, filename)
+        if files:
+            return files[0]
+
+        file = TestFile()
+        file.master = master
+        file.builder = builder
+        file.test_type = test_type
+        file.name = filename
+        file.data = ""
+        return file
+
+    @classmethod
+    def update(cls, master, builder, test_type, incremental_string, is_full_results_format):
+        logging.info("Updating %s and %s." % (JSON_RESULTS_FILE_SMALL, JSON_RESULTS_FILE))
+        small_file = cls._get_file(master, builder, test_type, JSON_RESULTS_FILE_SMALL)
+        large_file = cls._get_file(master, builder, test_type, JSON_RESULTS_FILE)
+        return cls.update_files(builder, incremental_string, small_file, large_file, is_full_results_format)
+
+    @classmethod
+    def update_files(cls, builder, incremental_string, small_file, large_file, is_full_results_format):
+        incremental_json = cls._get_incremental_json(builder, incremental_string, is_full_results_format)
+        if not incremental_json:
+            return False
+
+        small_file_updated = cls.update_file(builder, small_file, incremental_json, JSON_RESULTS_MAX_BUILDS_SMALL)
+        if not small_file_updated:
+            logging.info("Update for %s failed." % JSON_RESULTS_FILE_SMALL)
+
+        large_file_updated = cls.update_file(builder, large_file, incremental_json, JSON_RESULTS_MAX_BUILDS)
+        if not large_file_updated:
+            logging.info("Update for %s failed." % JSON_RESULTS_FILE)
+
         return small_file_updated and large_file_updated
 
     @classmethod
-    def update_file(cls, master, builder, test_type, incremental, is_full_results_format, filename, num_runs):
-        files = TestFile.get_files(master, builder, test_type, filename)
-        if files:
-            file = files[0]
-        else:
-            file = TestFile()
-            file.master = master
-            file.builder = builder
-            file.test_type = test_type
-            file.name = filename
-            file.data = ""
-
-        new_results = cls.merge(builder, file.data, incremental, is_full_results_format, num_runs)
-
-        if not new_results or not file.save(new_results):
-            logging.info("Update failed, master: %s, builder: %s, test_type: %s, name: %s." % (master, builder, test_type, filename))
-            return False
-
-        return True
+    def update_file(cls, builder, file, incremental_json, num_runs):
+        new_results = cls.merge(builder, file.data, incremental_json, num_runs)
+        return new_results and file.save(new_results)
 
     @classmethod
     def _delete_results_and_times(cls, tests):

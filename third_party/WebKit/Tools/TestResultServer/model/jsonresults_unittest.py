@@ -131,7 +131,7 @@ FULL_RESULT_EXAMPLE = """ADD_RESULTS({
 });"""
 
 JSON_RESULTS_OLD_TEMPLATE = (
-    '{"Webkit":{'
+    '{"[BUILDER_NAME]":{'
     '"allFixableCount":[[TESTDATA_COUNT]],'
     '"blinkRevision":[[TESTDATA_WEBKITREVISION]],'
     '"buildNumbers":[[TESTDATA_BUILDNUMBERS]],'
@@ -148,7 +148,7 @@ JSON_RESULTS_OLD_TEMPLATE = (
 JSON_RESULTS_COUNTS = '{"' + '":[[TESTDATA_COUNT]],"'.join([char for char in CHAR_TO_FAILURE.values()]) + '":[[TESTDATA_COUNT]]}'
 
 JSON_RESULTS_TEMPLATE = (
-    '{"Webkit":{'
+    '{"[BUILDER_NAME]":{'
     '"allFixableCount":[[TESTDATA_COUNT]],'
     '"blinkRevision":[[TESTDATA_WEBKITREVISION]],'
     '"buildNumbers":[[TESTDATA_BUILDNUMBERS]],'
@@ -168,6 +168,19 @@ JSON_RESULTS_COUNTS_TEMPLATE = '{"' + '":[TESTDATA],"'.join([char for char in CH
 JSON_RESULTS_TEST_LIST_TEMPLATE = '{"Webkit":{"tests":{[TESTDATA_TESTS]}}}'
 
 
+class MockFile(object):
+    def __init__(self, name='results.json', data=''):
+        self.master = 'MockMasterName'
+        self.builder = 'MockBuilderName'
+        self.test_type = 'MockTestType'
+        self.name = name
+        self.data = data
+
+    def save(self, data):
+        self.data = data
+        return True
+
+
 class JsonResultsTest(unittest.TestCase):
     def setUp(self):
         self._builder = "Webkit"
@@ -184,7 +197,7 @@ class JsonResultsTest(unittest.TestCase):
         self.assertEqual(JsonResults._strip_prefix_suffix("ADD_RESULTS(" + json + ");"), json)
         self.assertEqual(JsonResults._strip_prefix_suffix(json), json)
 
-    def _make_test_json(self, test_data, json_string=JSON_RESULTS_TEMPLATE):
+    def _make_test_json(self, test_data, json_string=JSON_RESULTS_TEMPLATE, builder_name="Webkit"):
         if not test_data:
             return ""
 
@@ -205,6 +218,7 @@ class JsonResultsTest(unittest.TestCase):
             chrome_revision.append("3000%s" % build)
             times.append("100000%s000" % build)
 
+        json_string = json_string.replace("[BUILDER_NAME]", builder_name)
         json_string = json_string.replace("[TESTDATA_COUNTS]", ",".join(counts))
         json_string = json_string.replace("[TESTDATA_COUNT]", ",".join(builds))
         json_string = json_string.replace("[TESTDATA_BUILDNUMBERS]", ",".join(build_numbers))
@@ -219,8 +233,8 @@ class JsonResultsTest(unittest.TestCase):
 
     def _test_merge(self, aggregated_data, incremental_data, expected_data, max_builds=jsonresults.JSON_RESULTS_MAX_BUILDS):
         aggregated_results = self._make_test_json(aggregated_data)
-        incremental_results = self._make_test_json(incremental_data)
-        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, is_full_results_format=False, num_runs=max_builds, sort_keys=True)
+        incremental_json = JsonResults._get_incremental_json(self._builder, self._make_test_json(incremental_data), is_full_results_format=False)
+        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_json, num_runs=max_builds, sort_keys=True)
 
         if expected_data:
             expected_results = self._make_test_json(expected_data)
@@ -234,6 +248,75 @@ class JsonResultsTest(unittest.TestCase):
         actual_results = JsonResults.get_test_list(self._builder, input_results)
         self.assert_json_equal(actual_results, expected_results)
 
+    def test_update_files_empty_aggregate_data(self):
+        small_file = MockFile(name='results-small.json')
+        large_file = MockFile(name='results.json')
+
+        incremental_data = {
+            "builds": ["2", "1"],
+            "tests": {
+                "001.html": {
+                    "results": [[200, TEXT]],
+                    "times": [[200, 0]],
+                }
+            }
+        }
+        incremental_string = self._make_test_json(incremental_data, builder_name=small_file.builder)
+
+        self.assertTrue(JsonResults.update_files(small_file.builder, incremental_string, small_file, large_file, is_full_results_format=False))
+        self.assert_json_equal(small_file.data, incremental_string)
+        self.assert_json_equal(large_file.data, incremental_string)
+
+    def test_update_files_null_incremental_data(self):
+        small_file = MockFile(name='results-small.json')
+        large_file = MockFile(name='results.json')
+
+        aggregated_data = {
+            "builds": ["2", "1"],
+            "tests": {
+                "001.html": {
+                    "results": [[200, TEXT]],
+                    "times": [[200, 0]],
+                }
+            }
+        }
+        aggregated_string = self._make_test_json(aggregated_data, builder_name=small_file.builder)
+
+        small_file.data = large_file.data = aggregated_string
+
+        incremental_string = ""
+
+        self.assertFalse(JsonResults.update_files(small_file.builder, incremental_string, small_file, large_file, is_full_results_format=False))
+        self.assert_json_equal(small_file.data, aggregated_string)
+        self.assert_json_equal(large_file.data, aggregated_string)
+
+    def test_update_files_empty_incremental_data(self):
+        small_file = MockFile(name='results-small.json')
+        large_file = MockFile(name='results.json')
+
+        aggregated_data = {
+            "builds": ["2", "1"],
+            "tests": {
+                "001.html": {
+                    "results": [[200, TEXT]],
+                    "times": [[200, 0]],
+                }
+            }
+        }
+        aggregated_string = self._make_test_json(aggregated_data, builder_name=small_file.builder)
+
+        small_file.data = large_file.data = aggregated_string
+
+        incremental_data = {
+            "builds": [],
+            "tests": {}
+        }
+        incremental_string = self._make_test_json(incremental_data, builder_name=small_file.builder)
+
+        self.assertFalse(JsonResults.update_files(small_file.builder, incremental_string, small_file, large_file, is_full_results_format=False))
+        self.assert_json_equal(small_file.data, aggregated_string)
+        self.assert_json_equal(large_file.data, aggregated_string)
+
     def test_merge_with_empty_aggregated_results(self):
         incremental_data = {
             "builds": ["2", "1"],
@@ -244,9 +327,9 @@ class JsonResultsTest(unittest.TestCase):
                 }
             }
         }
-        incremental_results = self._make_test_json(incremental_data)
+        incremental_results = JsonResults._get_incremental_json(self._builder, self._make_test_json(incremental_data), is_full_results_format=False)
         aggregated_results = ""
-        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, is_full_results_format=False, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
+        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
         self.assert_json_equal(merged_results, incremental_results)
 
     def test_failures_by_type_added(self):
@@ -268,7 +351,8 @@ class JsonResultsTest(unittest.TestCase):
                 }
             }
         }, json_string=JSON_RESULTS_OLD_TEMPLATE)
-        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, is_full_results_format=False, num_runs=200, sort_keys=True)
+        incremental_json = JsonResults._get_incremental_json(self._builder, incremental_results, is_full_results_format=False)
+        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_json, num_runs=200, sort_keys=True)
         self.assert_json_equal(merged_results, self._make_test_json({
             "builds": ["3", "2", "1"],
             "tests": {
@@ -333,37 +417,9 @@ class JsonResultsTest(unittest.TestCase):
         }
 
         aggregated_results = ""
-        merged_results = JsonResults.merge("Webkit", aggregated_results, FULL_RESULT_EXAMPLE, is_full_results_format=True, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
+        incremental_json = JsonResults._get_incremental_json(self._builder, FULL_RESULT_EXAMPLE, is_full_results_format=True)
+        merged_results = JsonResults.merge("Webkit", aggregated_results, incremental_json, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
         self.assert_json_equal(merged_results, expected_incremental_results)
-
-    def test_merge_null_incremental_results(self):
-        # Empty incremental results json.
-        # Nothing to merge.
-        self._test_merge(
-            # Aggregated results
-            {"builds": ["2", "1"],
-             "tests": {"001.html": {
-                           "results": [[200, TEXT]],
-                           "times": [[200, 0]]}}},
-            # Incremental results
-            None,
-            # Expect no merge happens.
-            None)
-
-    def test_merge_empty_incremental_results(self):
-        # No actual incremental test results (only prefix and suffix) to merge.
-        # Nothing to merge.
-        self._test_merge(
-            # Aggregated results
-            {"builds": ["2", "1"],
-             "tests": {"001.html": {
-                           "results": [[200, TEXT]],
-                           "times": [[200, 0]]}}},
-            # Incremental results
-            {"builds": [],
-             "tests": {}},
-            # Expected no merge happens.
-            None)
 
     def test_merge_empty_aggregated_results(self):
         # No existing aggregated results.
@@ -372,7 +428,6 @@ class JsonResultsTest(unittest.TestCase):
             # Aggregated results
             None,
             # Incremental results
-
             {"builds": ["2", "1"],
              "tests": {"001.html": {
                            "results": [[200, TEXT]],
@@ -396,10 +451,7 @@ class JsonResultsTest(unittest.TestCase):
                            "results": [[1, TEXT]],
                            "times": [[1, 0]]}}},
             # Expected results
-            {"builds": ["2", "1"],
-             "tests": {"001.html": {
-                           "results": [[100, TEXT]],
-                           "times": [[100, 0]]}}})
+            None)
 
     def test_merge_incremental_single_test_single_run_same_result(self):
         # Incremental results has the latest build and same test results for
