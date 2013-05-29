@@ -1108,8 +1108,13 @@ void RenderWidgetHostViewAura::Destroy() {
 void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
   tooltip_ = tooltip_text;
   aura::RootWindow* root_window = window_->GetRootWindow();
-  if (aura::client::GetTooltipClient(root_window))
-    aura::client::GetTooltipClient(root_window)->UpdateTooltip(window_);
+  aura::client::TooltipClient* tooltip_client =
+      aura::client::GetTooltipClient(root_window);
+  if (tooltip_client) {
+    tooltip_client->UpdateTooltip(window_);
+    // Content tooltips should be visible indefinitely.
+    tooltip_client->SetTooltipShownTimeout(window_, 0);
+  }
 }
 
 void RenderWidgetHostViewAura::SelectionChanged(const string16& text,
