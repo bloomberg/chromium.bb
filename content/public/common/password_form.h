@@ -157,6 +157,12 @@ struct CONTENT_EXPORT PasswordForm {
   // The form type. Not used yet. Please see http://crbug.com/152422
   Type type;
 
+  // The number of times that this username/password has been used to
+  // authenticate the user.
+  //
+  // When parsing an HTML form, this is not used.
+  int times_used;
+
   PasswordForm();
   ~PasswordForm();
 };

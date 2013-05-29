@@ -12,7 +12,8 @@ PasswordForm::PasswordForm()
       ssl_valid(false),
       preferred(false),
       blacklisted_by_user(false),
-      type(TYPE_MANUAL) {
+      type(TYPE_MANUAL),
+      times_used(0) {
 }
 
 PasswordForm::~PasswordForm() {

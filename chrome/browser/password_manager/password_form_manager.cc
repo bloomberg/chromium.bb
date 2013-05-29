@@ -448,6 +448,9 @@ void PasswordFormManager::UpdateLogin() {
     return;
   }
 
+  // Update metadata.
+  ++pending_credentials_.times_used;
+
   UpdatePreferredLoginState(password_store);
 
   // Update the new preferred login.
