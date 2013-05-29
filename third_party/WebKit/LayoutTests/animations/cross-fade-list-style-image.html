@@ -7,7 +7,6 @@
         top: 100px;
         height: 100px;
         width: 100px;
-        -webkit-animation: anim 1s linear infinite;
     }
     #boxShorthand {
         position: absolute;
@@ -15,7 +14,6 @@
         top: 100px;
         height: 100px;
         width: 100px;
-        -webkit-animation: animShorthand 1s linear infinite;
     }
     #boxStatic {
         position: absolute;
@@ -36,19 +34,24 @@
   </style>
   <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
-    const expectedValues = [
-      // [animation-name, time, element-id, property, expected-value, tolerance]
-      ["anim", 2.5, "box", "listStyleImage", 0.5, 0.05],
-      ["anim", 2.5, ["box", "static:boxStatic"], "listStyleImage", 0.5, 0.05],
-      ["animShorthand", 2.5, ["boxShorthand", "static:boxStatic"], "listStyleImage", 0.5, 0.05],
-    ];
+    function runTest() {
+      document.querySelector('#box').style.webkitAnimation = "anim 1s linear infinite";
+      document.querySelector('#boxShorthand').style.webkitAnimation = "animShorthand 1s linear infinite";
 
-    var doPixelTest = true;
-    var disablePauseAPI = false;
-    runAnimationTest(expectedValues, null, undefined, disablePauseAPI, doPixelTest);
+      const expectedValues = [
+        // [animation-name, time, element-id, property, expected-value, tolerance]
+        ["anim", 2.5, "box", "listStyleImage", 0.5, 0.05],
+        ["anim", 2.5, ["box", "static:boxStatic"], "listStyleImage", 0.5, 0.05],
+        ["animShorthand", 2.5, ["boxShorthand", "static:boxStatic"], "listStyleImage", 0.5, 0.05],
+      ];
+
+      var doPixelTest = true;
+      var disablePauseAPI = false;
+      runAnimationTest(expectedValues, null, undefined, disablePauseAPI, doPixelTest);
+    }
   </script>
 </head>
-<body>
+<body onload="runTest()">
 <ul id="box"><li>one</li><li>two</li></ul>
 <ul id="boxStatic"><li>one</li><li>two</li></ul>
 <ul id="boxShorthand"><li>one</li><li>two</li></ul>
