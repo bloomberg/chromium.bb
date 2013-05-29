@@ -10,13 +10,21 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+
+namespace rcd = net::registry_controlled_domains;
 
 namespace extensions {
 
 namespace externally_connectable_errors {
-  const char kErrorInvalid[] = "Invalid value for 'externally_connectable'";
-  const char kErrorInvalidMatchPattern[] = "Invalid match pattern '*'";
-  const char kErrorInvalidId[] = "Invalid ID '*'";
+const char kErrorInvalid[] = "Invalid value for 'externally_connectable'";
+const char kErrorInvalidMatchPattern[] = "Invalid match pattern '*'";
+const char kErrorInvalidId[] = "Invalid ID '*'";
+const char kErrorTopLevelDomainsNotAllowed[] =
+    "\"*\" is an effective top level domain for which wildcard subdomains such "
+    "as \"*\" are not allowed";
+const char kErrorWildcardHostsNotAllowed[] =
+    "Wildcard domain patterns such as \"*\" are not allowed";
 }
 
 namespace keys = extension_manifest_keys;
@@ -80,6 +88,42 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
             errors::kErrorInvalidMatchPattern, *it);
         return scoped_ptr<ExternallyConnectableInfo>();
       }
+
+      // Wildcard hosts are not allowed.
+      if (pattern.host().empty()) {
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            errors::kErrorWildcardHostsNotAllowed, *it);
+        return scoped_ptr<ExternallyConnectableInfo>();
+      }
+
+      // Wildcards on subdomains of a TLD are not allowed.
+      size_t registry_length = rcd::GetRegistryLength(
+          pattern.host(),
+          // This means that things that look like TLDs - the foobar in
+          // http://google.foobar - count as TLDs.
+          rcd::INCLUDE_UNKNOWN_REGISTRIES,
+          // This means that effective TLDs like appspot.com count as TLDs;
+          // codereview.appspot.com and evil.appspot.com are different.
+          rcd::INCLUDE_PRIVATE_REGISTRIES);
+
+      if (registry_length == std::string::npos) {
+        // The URL parsing combined with host().empty() should have caught this.
+        NOTREACHED() << *it;
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            errors::kErrorInvalidMatchPattern, *it);
+        return scoped_ptr<ExternallyConnectableInfo>();
+      }
+
+      // Broad match patterns like "*.com", "*.co.uk", and even "*.appspot.com"
+      // are not allowed. However just "appspot.com" is ok.
+      if (registry_length == 0 && pattern.match_subdomains()) {
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            errors::kErrorTopLevelDomainsNotAllowed,
+            pattern.host().c_str(),
+            *it);
+        return scoped_ptr<ExternallyConnectableInfo>();
+      }
+
       matches.AddPattern(pattern);
     }
   }

@@ -23,9 +23,11 @@ namespace extensions {
 
 // Error constants used when parsing the externally_connectable manifest entry.
 namespace externally_connectable_errors {
-  extern const char kErrorInvalid[];
-  extern const char kErrorInvalidMatchPattern[];
-  extern const char kErrorInvalidId[];
+extern const char kErrorInvalid[];
+extern const char kErrorInvalidMatchPattern[];
+extern const char kErrorInvalidId[];
+extern const char kErrorTopLevelDomainsNotAllowed[];
+extern const char kErrorWildcardHostsNotAllowed[];
 }
 
 // Parses the externally_connectable manifest entry.

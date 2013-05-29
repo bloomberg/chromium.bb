@@ -15,11 +15,13 @@
         "description": "The schema of the <code>externally_connectable</code> manifest property",
         "properties": {
           "matches": {
+            "description": "<p>The URL patterns for web pages that are allowed to connect. If left empty or unspecified, no web pages can connect.</p><p>Patterns cannot include wildcard domains nor subdomains of (effective) top level domains; <code>*://google.com/*</code> and <code>http://*.chromium.org/*</code> are valid, while <code>&lt;all_urls&gt;</code>, <code>http://*/*</code>, <code>*://*.com/*</code>, and even <code>http://*.appspot.com/*</code> are not.</p>",
             "optional": true,
             "type": "array",
             "items": {"type": "string"}
           },
           "ids": {
+            "description": "The IDs of extensions or apps that are allowed to connect. If left empty or unspecified, no extensions nor apps can connect. <code>*</code> will match all extension and app IDs.",
             "optional": true,
             "type": "array",
             "items": {"type": "string"}

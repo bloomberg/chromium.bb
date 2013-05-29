@@ -10,7 +10,11 @@
     "matches": [
       "http://example.com/",
       "*://*.google.com/*",
-      "http://build.chromium.org/*"
+      "http://build.chromium.org/*",
+      "http://appspot.com/*",
+      "http://com/*",
+      "http://go/*",
+      "http://no.wildcard.path/"
     ]
   }
 }

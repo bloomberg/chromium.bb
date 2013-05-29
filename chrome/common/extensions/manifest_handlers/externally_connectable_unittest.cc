@@ -62,6 +62,25 @@ TEST_F(ExternallyConnectableTest, IDsAndMatches) {
 
   EXPECT_FALSE(info->matches.MatchesURL(GURL("http://yahoo.com")));
   EXPECT_FALSE(info->matches.MatchesURL(GURL("http://yahoo.com/")));
+
+  // TLD-style patterns should match just the TLD.
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("http://appspot.com/foo.html")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("http://com")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("http://go/here")));
+
+  // TLD-style patterns should *not* match any subdomains of the TLD.
+  EXPECT_FALSE(
+      info->matches.MatchesURL(GURL("http://codereview.appspot.com/foo.html")));
+  EXPECT_FALSE(
+      info->matches.MatchesURL(GURL("http://chromium.com/index.html")));
+  EXPECT_FALSE(info->matches.MatchesURL(GURL("http://here.go/somewhere")));
+
+  // Paths that don't have any wildcards should match the exact domain, but
+  // ignore the trailing slash. This is kind of a corner case, so let's test it.
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("http://no.wildcard.path")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("http://no.wildcard.path/")));
+  EXPECT_FALSE(info->matches.MatchesURL(
+        GURL("http://no.wildcard.path/index.html")));
 }
 
 TEST_F(ExternallyConnectableTest, IDs) {
@@ -151,6 +170,57 @@ TEST_F(ExternallyConnectableTest, ErrorBadMatches) {
       Testcase("externally_connectable_error_bad_matches.json",
                ErrorUtils::FormatErrorMessage(errors::kErrorInvalidMatchPattern,
                                               "www.yahoo.com")),
+      EXPECT_TYPE_ERROR);
+}
+
+TEST_F(ExternallyConnectableTest, ErrorNoAllURLs) {
+  RunTestcase(
+      Testcase(
+          "externally_connectable_error_all_urls.json",
+          ErrorUtils::FormatErrorMessage(errors::kErrorWildcardHostsNotAllowed,
+                                         "<all_urls>")),
+      EXPECT_TYPE_ERROR);
+}
+
+TEST_F(ExternallyConnectableTest, ErrorWildcardHost) {
+  RunTestcase(
+      Testcase(
+          "externally_connectable_error_wildcard_host.json",
+          ErrorUtils::FormatErrorMessage(errors::kErrorWildcardHostsNotAllowed,
+                                         "http://*/*")),
+      EXPECT_TYPE_ERROR);
+}
+
+TEST_F(ExternallyConnectableTest, ErrorNoTLD) {
+  RunTestcase(
+      Testcase(
+          "externally_connectable_error_tld.json",
+          ErrorUtils::FormatErrorMessage(
+              errors::kErrorTopLevelDomainsNotAllowed,
+              "co.uk",
+              "http://*.co.uk/*")),
+      EXPECT_TYPE_ERROR);
+}
+
+TEST_F(ExternallyConnectableTest, ErrorNoEffectiveTLD) {
+  RunTestcase(
+      Testcase(
+          "externally_connectable_error_effective_tld.json",
+          ErrorUtils::FormatErrorMessage(
+              errors::kErrorTopLevelDomainsNotAllowed,
+              "appspot.com",
+              "http://*.appspot.com/*")),
+      EXPECT_TYPE_ERROR);
+}
+
+TEST_F(ExternallyConnectableTest, ErrorUnknownTLD) {
+  RunTestcase(
+      Testcase(
+          "externally_connectable_error_unknown_tld.json",
+          ErrorUtils::FormatErrorMessage(
+              errors::kErrorTopLevelDomainsNotAllowed,
+              "notatld",
+              "http://*.notatld/*")),
       EXPECT_TYPE_ERROR);
 }
 
