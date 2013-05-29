@@ -45,7 +45,7 @@ class LoginStateTest : public testing::Test,
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   LoginState::LoggedInState logged_in_state_;
   LoginState::LoggedInUserType logged_in_user_type_;
 

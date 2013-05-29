@@ -259,7 +259,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   scoped_ptr<ManagedNetworkConfigurationHandler>
         managed_network_configuration_handler_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ManagedNetworkConfigurationHandlerTest);

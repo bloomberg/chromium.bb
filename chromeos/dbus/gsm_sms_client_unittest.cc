@@ -159,7 +159,7 @@ class GsmSMSClientTest : public testing::Test {
   // The client to be tested.
   scoped_ptr<GsmSMSClient> client_;
   // A message loop to emulate asynchronous behavior.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   // The mock bus.
   scoped_refptr<dbus::MockBus> mock_bus_;
   // The mock object proxy.

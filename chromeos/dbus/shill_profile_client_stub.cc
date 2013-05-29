@@ -74,7 +74,7 @@ void ShillProfileClientStub::GetProperties(
     entry_paths->AppendString(it.key());
   }
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PassDictionary, callback, base::Owned(properties.release())));
 }
@@ -95,7 +95,7 @@ void ShillProfileClientStub::GetEntry(
     return;
   }
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PassDictionary, callback, base::Owned(entry->DeepCopy())));
 }
@@ -113,7 +113,7 @@ void ShillProfileClientStub::DeleteEntry(const dbus::ObjectPath& profile_path,
     return;
   }
 
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 ShillProfileClient::TestInterface* ShillProfileClientStub::GetTestInterface() {

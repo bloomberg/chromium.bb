@@ -16,7 +16,7 @@ namespace {
 
 // Runs callback with true.
 void RunCallbackWithTrue(const BoolDBusMethodCallback& callback) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
 }
 

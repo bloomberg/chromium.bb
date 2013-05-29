@@ -813,7 +813,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void IsMounted(const BoolDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
@@ -859,7 +859,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
     // Even for stub implementation we have to return different values
     // so that multi-profiles would work.
     std::string sanitized_username = GetStubSanitizedUsername(username);
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, sanitized_username));
   }
@@ -879,13 +879,13 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void TpmIsReady(const BoolDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
   // CryptohomeClient override.
   virtual void TpmIsEnabled(const BoolDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
@@ -899,14 +899,14 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual void TpmGetPassword(
       const StringDBusMethodCallback& callback) OVERRIDE {
     const char kStubTpmPassword[] = "Stub-TPM-password";
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, kStubTpmPassword));
   }
 
   // CryptohomeClient override.
   virtual void TpmIsOwned(const BoolDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
@@ -919,7 +919,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void TpmIsBeingOwned(const BoolDBusMethodCallback& callback)
       OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
@@ -932,14 +932,14 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void TpmCanAttemptOwnership(
       const VoidDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
   }
 
   // CryptohomeClient override.
   virtual void TpmClearStoredPassword(const VoidDBusMethodCallback& callback)
       OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
   }
 
@@ -949,7 +949,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void Pkcs11IsTpmTokenReady(
       const BoolDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
@@ -958,7 +958,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
       const Pkcs11GetTpmTokenInfoCallback& callback) OVERRIDE {
     const char kStubLabel[] = "Stub TPM Token";
     const char kStubUserPin[] = "012345";
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, kStubLabel,
                               kStubUserPin));
   }
@@ -996,7 +996,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void InstallAttributesIsReady(const BoolDBusMethodCallback& callback)
       OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
@@ -1016,14 +1016,14 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   // CryptohomeClient override.
   virtual void TpmAttestationIsPrepared(
         const BoolDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
   // CryptohomeClient override.
   virtual void TpmAttestationIsEnrolled(
         const BoolDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
   }
 
@@ -1061,7 +1061,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const BoolDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
   }
@@ -1071,7 +1071,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const DataMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false, std::string()));
   }
@@ -1081,7 +1081,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const DataMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false, std::string()));
   }
@@ -1119,7 +1119,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const std::string& key_name,
       const DataMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false, std::string()));
   }
@@ -1129,7 +1129,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
       const std::string& key_name,
       const std::string& payload,
       const BoolDBusMethodCallback& callback) OVERRIDE {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
   }
@@ -1139,7 +1139,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   // Posts tasks which return fake results to the UI thread.
   void ReturnAsyncMethodResult(const AsyncMethodCallback& callback,
                                bool returns_data) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&CryptohomeClientStubImpl::ReturnAsyncMethodResultInternal,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -1152,14 +1152,14 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
                                        bool returns_data) {
     callback.Run(async_call_id_);
     if (!returns_data && !async_call_status_handler_.is_null()) {
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(async_call_status_handler_,
                      async_call_id_,
                      true,
                      cryptohome::MOUNT_ERROR_NONE));
     } else if (returns_data && !async_call_status_data_handler_.is_null()) {
-      MessageLoop::current()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(async_call_status_data_handler_,
                      async_call_id_,

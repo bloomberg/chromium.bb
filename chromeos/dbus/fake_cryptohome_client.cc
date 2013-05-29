@@ -71,7 +71,7 @@ void FakeCryptohomeClient::AsyncMigrateKey(
 }
 
 void FakeCryptohomeClient::IsMounted(const BoolDBusMethodCallback& callback) {
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
                                    base::Bind(callback,
                                               DBUS_METHOD_CALL_SUCCESS, true));
 }
@@ -87,10 +87,10 @@ void FakeCryptohomeClient::AsyncMount(const std::string& username,
                                       const AsyncMethodCallback& callback) {
   DCHECK(!callback.is_null());
 
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
                                    base::Bind(callback, 1 /* async_id */));
   if (!handler_.is_null())
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(handler_,
                                                 1,     // async_id
                                                 true,  // return_status
@@ -162,7 +162,7 @@ void FakeCryptohomeClient::TpmAttestationGetCertificate(
 
 void FakeCryptohomeClient::InstallAttributesIsReady(
     const BoolDBusMethodCallback& callback) {
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
                                    base::Bind(callback,
                                               DBUS_METHOD_CALL_SUCCESS, true));
 }
@@ -229,13 +229,13 @@ void FakeCryptohomeClient::GetSanitizedUsername(
     const StringDBusMethodCallback& callback) {
   DCHECK(!callback.is_null());
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
                  chromeos::DBUS_METHOD_CALL_SUCCESS,
                  username));
   if (!data_handler_.is_null())
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(data_handler_,
                    1,     // async_id

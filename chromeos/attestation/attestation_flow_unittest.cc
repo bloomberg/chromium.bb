@@ -23,17 +23,17 @@ namespace attestation {
 namespace {
 
 void DBusCallbackFalse(const BoolDBusMethodCallback& callback) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
 }
 
 void DBusCallbackTrue(const BoolDBusMethodCallback& callback) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
 }
 
 void DBusCallbackFail(const BoolDBusMethodCallback& callback) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_FAILURE, false));
 }
 
@@ -46,7 +46,7 @@ class FakeDBusData {
   explicit FakeDBusData(const std::string& data) : data_(data) {}
 
   void operator() (const CryptohomeClient::DataMethodCallback& callback) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true, data_));
   }
@@ -63,7 +63,7 @@ class AttestationFlowTest : public testing::Test {
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
   }
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(AttestationFlowTest, GetCertificate) {

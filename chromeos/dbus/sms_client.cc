@@ -101,7 +101,7 @@ class SMSClientStubImpl : public SMSClient {
     // Run callback asynchronously.
     if (callback.is_null())
       return;
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&SMSClientStubImpl::OnGetAll,
                    weak_ptr_factory_.GetWeakPtr(),

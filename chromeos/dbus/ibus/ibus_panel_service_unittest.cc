@@ -325,7 +325,7 @@ class IBusPanelServiceTest : public testing::Test {
   // The mock exported object.
   scoped_refptr<dbus::MockExportedObject> mock_exported_object_;
   // A message loop to emulate asynchronous behavior.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   // The map from method call to method call handler.
   std::map<std::string, dbus::ExportedObject::MethodCallCallback>
       method_callback_map_;

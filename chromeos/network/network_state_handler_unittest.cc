@@ -181,7 +181,7 @@ class NetworkStateHandlerTest : public testing::Test {
                              add_to_watchlist);
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<TestObserver> test_observer_;
 

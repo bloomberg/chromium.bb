@@ -67,7 +67,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
     // Create the D-Bus thread.
     base::Thread::Options thread_options;
-    thread_options.message_loop_type = MessageLoop::TYPE_IO;
+    thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
     dbus_thread_.reset(new base::Thread("D-Bus thread"));
     dbus_thread_->StartWithOptions(thread_options);
 

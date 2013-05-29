@@ -150,7 +150,7 @@ void CertLoader::InitializeTokenAndLoadCertificates() {
 
 void CertLoader::RetryTokenInitializationLater() {
   LOG(WARNING) << "Re-Requesting Certificates later.";
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CertLoader::InitializeTokenAndLoadCertificates,
                  initialize_token_factory_.GetWeakPtr()),

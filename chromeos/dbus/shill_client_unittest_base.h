@@ -175,7 +175,7 @@ class ShillClientUnittestBase : public testing::Test {
       const base::DictionaryValue& result);
 
   // A message loop to emulate asynchronous behavior.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   // The mock bus.
   scoped_refptr<dbus::MockBus> mock_bus_;
 

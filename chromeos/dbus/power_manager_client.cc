@@ -782,7 +782,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   virtual void RequestShutdown() OVERRIDE {}
 
   virtual void RequestIdleNotification(int64 threshold) OVERRIDE {
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&PowerManagerClientStubImpl::TriggerIdleNotify,
                    base::Unretained(this),

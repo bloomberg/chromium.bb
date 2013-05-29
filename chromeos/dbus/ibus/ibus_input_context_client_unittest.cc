@@ -318,7 +318,7 @@ class IBusInputContextClientTest : public testing::Test {
   dbus::Response* response_;
   dbus::ErrorResponse* error_response_;
   // A message loop to emulate asynchronous behavior.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   // The map from signal to signal handler.
   std::map<std::string, dbus::ObjectProxy::SignalCallback> signal_callback_map_;
   // Call count of OnSetCursorLocation.

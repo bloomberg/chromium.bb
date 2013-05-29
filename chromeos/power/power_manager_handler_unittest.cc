@@ -73,7 +73,7 @@ class PowerManagerHandlerTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   scoped_ptr<PowerManagerHandler> power_handler_;
   scoped_ptr<TestObserver> test_observer_;
 

@@ -72,7 +72,7 @@ class LowMemoryListenerImpl
   void StartWatchingDescriptor();
 
   // Delegate to receive events from WatchFileDescriptor.
-  class FileWatcherDelegate : public MessageLoopForIO::Watcher {
+  class FileWatcherDelegate : public base::MessageLoopForIO::Watcher {
    public:
     explicit FileWatcherDelegate(LowMemoryListenerImpl* owner)
         : owner_(owner) {}
@@ -94,7 +94,7 @@ class LowMemoryListenerImpl
     DISALLOW_COPY_AND_ASSIGN(FileWatcherDelegate);
   };
 
-  scoped_ptr<MessageLoopForIO::FileDescriptorWatcher> watcher_;
+  scoped_ptr<base::MessageLoopForIO::FileDescriptorWatcher> watcher_;
   FileWatcherDelegate watcher_delegate_;
   int file_descriptor_;
   base::OneShotTimer<LowMemoryListenerImpl> timer_;
@@ -110,7 +110,7 @@ void LowMemoryListenerImpl::StartObservingOnFileThread(
       << "Attempted to start observation when it was already started.";
   DCHECK(watcher_.get() == NULL);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(MessageLoopForIO::current());
+  DCHECK(base::MessageLoopForIO::current());
 
   file_descriptor_ = ::open(kLowMemFile, O_RDONLY);
   // Don't report this error unless we're really running on ChromeOS
@@ -119,7 +119,7 @@ void LowMemoryListenerImpl::StartObservingOnFileThread(
     PLOG(ERROR) << "Unable to open " << kLowMemFile;
     return;
   }
-  watcher_.reset(new MessageLoopForIO::FileDescriptorWatcher);
+  watcher_.reset(new base::MessageLoopForIO::FileDescriptorWatcher);
   StartWatchingDescriptor();
 }
 
@@ -144,13 +144,13 @@ void LowMemoryListenerImpl::ScheduleNextObservation() {
 void LowMemoryListenerImpl::StartWatchingDescriptor() {
   DCHECK(watcher_.get());
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(MessageLoopForIO::current());
+  DCHECK(base::MessageLoopForIO::current());
   if (file_descriptor_ < 0)
     return;
-  if (!MessageLoopForIO::current()->WatchFileDescriptor(
+  if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
           file_descriptor_,
           false,  // persistent=false: We want it to fire once and reschedule.
-          MessageLoopForIO::WATCH_READ,
+          base::MessageLoopForIO::WATCH_READ,
           watcher_.get(),
           &watcher_delegate_)) {
     LOG(ERROR) << "Unable to watch " << kLowMemFile;

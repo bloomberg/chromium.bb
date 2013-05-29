@@ -155,7 +155,7 @@ class IBusClientTest : public testing::Test {
   scoped_ptr<IBusClient> client_;
 
   // A message loop to emulate asynchronous behavior.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<dbus::MockBus> mock_bus_;
   scoped_refptr<dbus::MockObjectProxy> mock_proxy_;
 

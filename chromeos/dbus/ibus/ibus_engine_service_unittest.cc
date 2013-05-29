@@ -166,7 +166,7 @@ class ProcessKeyEventHandler {
 class DelayProcessKeyEventHandler {
  public:
   DelayProcessKeyEventHandler(bool expected_value,
-                              MessageLoop* message_loop)
+                              base::MessageLoop* message_loop)
       : expected_value_(expected_value),
         message_loop_(message_loop) {
   }
@@ -181,7 +181,7 @@ class DelayProcessKeyEventHandler {
 
  private:
   bool expected_value_;
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayProcessKeyEventHandler);
 };
@@ -494,7 +494,7 @@ class IBusEngineServiceTest : public testing::Test {
   // The mock exported object.
   scoped_refptr<dbus::MockExportedObject> mock_exported_object_;
   // A message loop to emulate asynchronous behavior.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   // The map from method call to method call handler.
   std::map<std::string, dbus::ExportedObject::MethodCallCallback>
       method_callback_map_;

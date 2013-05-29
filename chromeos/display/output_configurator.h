@@ -38,7 +38,8 @@ enum OutputState {
 
 // This class interacts directly with the underlying Xrandr API to manipulate
 // CTRCs and Outputs.
-class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
+class CHROMEOS_EXPORT OutputConfigurator
+    : public base::MessageLoop::Dispatcher {
  public:
   // Information about an output's current state.
   struct OutputSnapshot {

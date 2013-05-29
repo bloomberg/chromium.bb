@@ -39,7 +39,7 @@ class SynchronousCreateEngineHandler {
 class AsynchronousCreateEngineHandler {
  public:
   AsynchronousCreateEngineHandler(const dbus::ObjectPath& path,
-                                  MessageLoop* message_loop)
+                                  base::MessageLoop* message_loop)
       : path_(path),
         message_loop_(message_loop) {}
 
@@ -49,7 +49,7 @@ class AsynchronousCreateEngineHandler {
 
  private:
   dbus::ObjectPath path_;
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousCreateEngineHandler);
 };
@@ -126,7 +126,7 @@ class IBusEngineFactoryServiceTest : public testing::Test {
   std::map<std::string, dbus::ExportedObject::MethodCallCallback>
       method_exported_map_;
   // A message loop to emulate asynchronous behavior.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
  private:
   // Used to implement the method call exportation.

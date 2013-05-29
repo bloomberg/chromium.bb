@@ -86,7 +86,7 @@ void ShillServiceClientStub::GetProperties(
     call_status = DBUS_METHOD_CALL_FAILURE;
   }
 
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PassStubServiceProperties,
                  callback,
@@ -120,13 +120,13 @@ void ShillServiceClientStub::SetProperty(const dbus::ObjectPath& service_path,
     }
   }
   dict->SetWithoutPathExpansion(name, value.DeepCopy());
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ShillServiceClientStub::NotifyObserversPropertyChanged,
                  weak_ptr_factory_.GetWeakPtr(), service_path, name));
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void ShillServiceClientStub::ClearProperty(
@@ -141,13 +141,13 @@ void ShillServiceClientStub::ClearProperty(
     return;
   }
   dict->Remove(name, NULL);
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ShillServiceClientStub::NotifyObserversPropertyChanged,
                  weak_ptr_factory_.GetWeakPtr(), service_path, name));
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void ShillServiceClientStub::ClearProperties(
@@ -169,7 +169,7 @@ void ShillServiceClientStub::ClearProperties(
   }
   for (std::vector<std::string>::const_iterator iter = names.begin();
       iter != names.end(); ++iter) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(
             &ShillServiceClientStub::NotifyObserversPropertyChanged,
@@ -177,7 +177,7 @@ void ShillServiceClientStub::ClearProperties(
   }
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PassStubListValue,
                  callback, base::Owned(results.release())));
@@ -204,7 +204,7 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
   }
   // Set Online after a delay
   base::StringValue online_value(flimflam::kStateOnline);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ShillServiceClientStub::SetProperty,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -233,7 +233,7 @@ void ShillServiceClientStub::Disconnect(const dbus::ObjectPath& service_path,
   }
   // Set Idle after a delay
   base::StringValue idle_value(flimflam::kStateIdle);
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ShillServiceClientStub::SetProperty,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -251,7 +251,7 @@ void ShillServiceClientStub::Remove(const dbus::ObjectPath& service_path,
                                     const ErrorCallback& error_callback) {
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void ShillServiceClientStub::ActivateCellularModem(
@@ -261,7 +261,7 @@ void ShillServiceClientStub::ActivateCellularModem(
     const ErrorCallback& error_callback) {
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void ShillServiceClientStub::CompleteCellularActivation(
@@ -270,7 +270,7 @@ void ShillServiceClientStub::CompleteCellularActivation(
     const ErrorCallback& error_callback) {
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 bool ShillServiceClientStub::CallActivateCellularModemAndBlock(

@@ -57,7 +57,7 @@ void ShillDeviceClientStub::GetProperties(
     const DictionaryValueCallback& callback){
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ShillDeviceClientStub::PassStubDeviceProperties,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -87,7 +87,7 @@ void ShillDeviceClientStub::SetProperty(const dbus::ObjectPath& device_path,
     std::string error_name("org.chromium.flimflam.Error.Failure");
     std::string error_message("Failed");
     if (!error_callback.is_null()) {
-      MessageLoop::current()->PostTask(FROM_HERE,
+      base::MessageLoop::current()->PostTask(FROM_HERE,
                                        base::Bind(error_callback,
                                                   error_name,
                                                   error_message));
@@ -95,13 +95,13 @@ void ShillDeviceClientStub::SetProperty(const dbus::ObjectPath& device_path,
     return;
   }
   device_properties->Set(name, value.DeepCopy());
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ShillDeviceClientStub::NotifyObserversPropertyChanged,
                  weak_ptr_factory_.GetWeakPtr(), device_path, name));
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void ShillDeviceClientStub::ClearProperty(
@@ -123,7 +123,7 @@ void ShillDeviceClientStub::AddIPConfig(
     const ObjectPathDBusMethodCallback& callback){
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
                                    base::Bind(callback,
                                               DBUS_METHOD_CALL_SUCCESS,
                                               dbus::ObjectPath()));
@@ -136,7 +136,7 @@ void ShillDeviceClientStub::RequirePin(const dbus::ObjectPath& device_path,
                                        const ErrorCallback& error_callback){
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void ShillDeviceClientStub::EnterPin(const dbus::ObjectPath& device_path,
@@ -145,7 +145,7 @@ void ShillDeviceClientStub::EnterPin(const dbus::ObjectPath& device_path,
                                      const ErrorCallback& error_callback){
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void ShillDeviceClientStub::UnblockPin(const dbus::ObjectPath& device_path,
@@ -155,7 +155,7 @@ void ShillDeviceClientStub::UnblockPin(const dbus::ObjectPath& device_path,
                                        const ErrorCallback& error_callback){
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void ShillDeviceClientStub::ChangePin(const dbus::ObjectPath& device_path,
@@ -165,7 +165,7 @@ void ShillDeviceClientStub::ChangePin(const dbus::ObjectPath& device_path,
                                       const ErrorCallback& error_callback){
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void ShillDeviceClientStub::Register(const dbus::ObjectPath& device_path,
@@ -174,7 +174,7 @@ void ShillDeviceClientStub::Register(const dbus::ObjectPath& device_path,
                                      const ErrorCallback& error_callback){
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void ShillDeviceClientStub::SetCarrier(const dbus::ObjectPath& device_path,
@@ -183,7 +183,7 @@ void ShillDeviceClientStub::SetCarrier(const dbus::ObjectPath& device_path,
                                        const ErrorCallback& error_callback){
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 void ShillDeviceClientStub::Reset(const dbus::ObjectPath& device_path,
@@ -191,7 +191,7 @@ void ShillDeviceClientStub::Reset(const dbus::ObjectPath& device_path,
                                   const ErrorCallback& error_callback){
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 ShillDeviceClient::TestInterface* ShillDeviceClientStub::GetTestInterface(){
@@ -288,7 +288,7 @@ void ShillDeviceClientStub::PostVoidCallback(
     DBusMethodCallStatus status) {
   if (callback.is_null())
     return;
-  MessageLoop::current()->PostTask(FROM_HERE,
+  base::MessageLoop::current()->PostTask(FROM_HERE,
                                    base::Bind(callback, status));
 }
 

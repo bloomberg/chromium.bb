@@ -120,7 +120,7 @@ class NetworkConnectionHandlerTest : public testing::Test {
   scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   scoped_ptr<NetworkConnectionHandler> network_connection_handler_;
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   std::string result_;
 
  private:

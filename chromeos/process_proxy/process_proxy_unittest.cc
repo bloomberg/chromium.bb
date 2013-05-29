@@ -77,8 +77,8 @@ class RegistryTestRunner : public TestRunner {
     }
 
     if (!valid || TestSucceeded()) {
-      MessageLoop::current()->PostTask(FROM_HERE,
-                                       MessageLoop::QuitClosure());
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+                                             base::MessageLoop::QuitClosure());
     }
   }
 
@@ -137,8 +137,8 @@ class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {
       return;
     }
     EXPECT_EQ("exit", type);
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
   }
 
   virtual void StartRegistryTest(ProcessProxyRegistry* registry) OVERRIDE {
@@ -163,8 +163,8 @@ class SigIntTestRunner : public TestRunner {
     // We may receive ^C on stdout, but we don't care about that, as long as we
     // eventually received exit event.
     if (type == "exit") {
-      MessageLoop::current()->PostTask(FROM_HERE,
-                                       MessageLoop::QuitClosure());
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+                                             base::MessageLoop::QuitClosure());
     }
   }
 
@@ -202,27 +202,27 @@ class ProcessProxyTest : public testing::Test {
     if (status == base::TERMINATION_STATUS_STILL_RUNNING)
       base::KillProcess(pid_, 0, true);
 
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     MessageLoop::QuitClosure());
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
   }
 
   void RunTest() {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ProcessProxyTest::InitRegistryTest,
                    base::Unretained(this)));
 
     // Wait until all data from output watcher is received (QuitTask will be
     // fired on watcher thread).
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&ProcessProxyTest::EndRegistryTest,
                    base::Unretained(this)));
 
     // Wait until we clean up the process proxy.
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
   scoped_ptr<TestRunner> test_runner_;
@@ -231,7 +231,7 @@ class ProcessProxyTest : public testing::Test {
   ProcessProxyRegistry* registry_;
   pid_t pid_;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 };
 
 // Test will open new process that will run cat command, and verify data we

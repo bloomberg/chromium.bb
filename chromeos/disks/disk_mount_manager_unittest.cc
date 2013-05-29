@@ -200,7 +200,7 @@ class DiskMountManagerTest : public testing::Test {
  protected:
   chromeos::FakeCrosDisksClient* fake_cros_disks_client_;
   MockDiskMountManagerObserver observer_;
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 };
 
 // Tests that the observer gets notified on attempt to format non existent mount

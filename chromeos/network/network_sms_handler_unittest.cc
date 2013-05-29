@@ -73,7 +73,7 @@ class NetworkSmsHandlerTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 };
 
 TEST_F(NetworkSmsHandlerTest, SmsHandlerDbusStub) {

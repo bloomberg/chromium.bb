@@ -154,7 +154,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   MockShillServiceClient* mock_service_client_;
   scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::DictionaryValue* dictionary_value_result_;
 };
 

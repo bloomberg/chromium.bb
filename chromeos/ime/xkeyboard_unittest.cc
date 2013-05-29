@@ -35,7 +35,7 @@ class XKeyboardTest : public testing::Test {
 
   scoped_ptr<XKeyboard> xkey_;
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 };
 
 // Returns true if X display is available.

@@ -76,29 +76,27 @@ void FakeSessionManagerClient::NotifyLockScreenDismissed() {
 
 void FakeSessionManagerClient::RetrieveActiveSessions(
       const ActiveSessionsCallback& callback) {
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   base::Bind(callback,
-                                              user_sessions_,
-                                              true));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, user_sessions_, true));
 }
 
 void FakeSessionManagerClient::RetrieveDevicePolicy(
     const RetrievePolicyCallback& callback) {
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   base::Bind(callback, device_policy_));
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(callback, device_policy_));
 }
 
 void FakeSessionManagerClient::RetrievePolicyForUser(
     const std::string& username,
     const RetrievePolicyCallback& callback) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, user_policies_[username]));
 }
 
 void FakeSessionManagerClient::RetrieveDeviceLocalAccountPolicy(
     const std::string& account_id,
     const RetrievePolicyCallback& callback) {
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, device_local_account_policy_[account_id]));
 }
@@ -107,7 +105,7 @@ void FakeSessionManagerClient::StoreDevicePolicy(
     const std::string& policy_blob,
     const StorePolicyCallback& callback) {
   device_policy_ = policy_blob;
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
   FOR_EACH_OBSERVER(Observer, observers_, PropertyChangeComplete(true));
 }
 
@@ -117,7 +115,7 @@ void FakeSessionManagerClient::StorePolicyForUser(
     const std::string& policy_key,
     const StorePolicyCallback& callback) {
   user_policies_[username] = policy_blob;
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
 }
 
 void FakeSessionManagerClient::StoreDeviceLocalAccountPolicy(
@@ -125,7 +123,7 @@ void FakeSessionManagerClient::StoreDeviceLocalAccountPolicy(
     const std::string& policy_blob,
     const StorePolicyCallback& callback) {
   device_local_account_policy_[account_id] = policy_blob;
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
 }
 
 const std::string& FakeSessionManagerClient::device_policy() const {
