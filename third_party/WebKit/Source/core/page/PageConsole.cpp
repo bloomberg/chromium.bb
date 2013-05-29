@@ -95,13 +95,14 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
     if (!page)
         return;
 
+    // FIXME: enable css errors logging once console filters are supported in inspector.
+    if (source == CSSMessageSource)
+        return;
+
     if (callStack)
         InspectorInstrumentation::addMessageToConsole(page, source, LogMessageType, level, message, callStack, requestIdentifier);
     else
         InspectorInstrumentation::addMessageToConsole(page, source, LogMessageType, level, message, url, lineNumber, state, requestIdentifier);
-
-    if (source == CSSMessageSource)
-        return;
 
     page->chrome().client()->addMessageToConsole(source, level, message, lineNumber, url);
 }
