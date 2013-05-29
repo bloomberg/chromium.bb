@@ -18,7 +18,6 @@ class CC_EXPORT LayerTreeSettings {
   LayerTreeSettings();
   ~LayerTreeSettings();
 
-  bool accelerate_painting;
   bool compositor_frame_message;
   bool impl_side_painting;
   bool throttle_frame_production;

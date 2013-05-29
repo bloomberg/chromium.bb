@@ -21,31 +21,6 @@ class LayerPainter;
 // implementations.
 class SkPictureContentLayerUpdater : public ContentLayerUpdater {
  public:
-  class Resource : public LayerUpdater::Resource {
-   public:
-    Resource(SkPictureContentLayerUpdater* updater,
-             scoped_ptr<PrioritizedResource> texture);
-    virtual ~Resource();
-
-    virtual void Update(ResourceUpdateQueue* queue,
-                        gfx::Rect source_rect,
-                        gfx::Vector2d dest_offset,
-                        bool partial_update,
-                        RenderingStats* stats) OVERRIDE;
-
-   private:
-    SkPictureContentLayerUpdater* updater_;
-
-    DISALLOW_COPY_AND_ASSIGN(Resource);
-  };
-
-  static scoped_refptr<SkPictureContentLayerUpdater> Create(
-      scoped_ptr<LayerPainter> painter,
-      RenderingStatsInstrumentation* stats_instrumentation,
-      int layer_id);
-
-  virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
-      PrioritizedResourceManager* manager) OVERRIDE;
   virtual void SetOpaque(bool opaque) OVERRIDE;
 
  protected:
@@ -62,11 +37,6 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
                                gfx::Rect* resulting_opaque_rect,
                                RenderingStats* stats) OVERRIDE;
   void DrawPicture(SkCanvas* canvas);
-  void UpdateTexture(ResourceUpdateQueue* queue,
-                     PrioritizedResource* texture,
-                     gfx::Rect source_rect,
-                     gfx::Vector2d dest_offset,
-                     bool partial_update);
 
   bool layer_is_opaque() const { return layer_is_opaque_; }
 

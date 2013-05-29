@@ -250,9 +250,6 @@ const char kDomAutomationController[]       = "dom-automation";
 const char kReduceSecurityForDomAutomationTests[] =
     "reduce-security-for-dom-automation-tests";
 
-// Enable hardware accelerated page painting.
-const char kEnableAcceleratedPainting[]     = "enable-accelerated-painting";
-
 // Enable gpu-accelerated SVG/W3C filters.
 const char kEnableAcceleratedFilters[]      = "enable-accelerated-filters";
 

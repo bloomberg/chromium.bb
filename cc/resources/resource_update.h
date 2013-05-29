@@ -12,7 +12,6 @@
 #include "ui/gfx/vector2d.h"
 
 class SkBitmap;
-class SkPicture;
 class SkCanvas;
 
 namespace cc {
@@ -30,18 +29,12 @@ struct CC_EXPORT ResourceUpdate {
                                          gfx::Rect content_rect,
                                          gfx::Rect source_rect,
                                          gfx::Vector2d dest_offset);
-  static ResourceUpdate CreateFromPicture(PrioritizedResource* resource,
-                                          SkPicture* bitmap,
-                                          gfx::Rect content_rect,
-                                          gfx::Rect source_rect,
-                                          gfx::Vector2d dest_offset);
 
   ResourceUpdate();
   virtual ~ResourceUpdate();
 
   PrioritizedResource* texture;
   const SkBitmap* bitmap;
-  SkPicture* picture;
   skia::RefPtr<SkCanvas> canvas;
   gfx::Rect content_rect;
   gfx::Rect source_rect;

@@ -336,14 +336,6 @@ base::Value* GetFeatureStatus() {
           " line or not supported by the current system.",
           false
       },
-      {
-          "raster",
-          false,
-          !command_line.HasSwitch(switches::kEnableAcceleratedPainting),
-          "Accelerated rasterization has not been enabled or"
-          " is not supported by the current system.",
-          true
-      }
   };
   const size_t kNumFeatures = sizeof(kGpuFeatureInfo) / sizeof(GpuFeatureInfo);
 

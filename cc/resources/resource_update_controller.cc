@@ -4,20 +4,11 @@
 
 #include "cc/resources/resource_update_controller.h"
 
-#include <limits>
-
-#include "base/debug/trace_event.h"
+#include "base/bind.h"
 #include "cc/base/thread.h"
-#include "cc/output/context_provider.h"
 #include "cc/output/texture_copier.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_provider.h"
-#include "skia/ext/refptr.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/skia/include/gpu/SkGpuDevice.h"
-
-using WebKit::WebGraphicsContext3D;
 
 namespace {
 
@@ -32,21 +23,6 @@ const double kUploaderBusyTickRate = 0.001;
 
 // Number of blocking update intervals to allow.
 const size_t kMaxBlockingUpdateIntervals = 4;
-
-skia::RefPtr<SkCanvas> CreateAcceleratedCanvas(
-    GrContext* gr_context, gfx::Size canvas_size, unsigned texture_id) {
-  GrBackendTextureDesc texture_desc;
-  texture_desc.fFlags = kRenderTarget_GrBackendTextureFlag;
-  texture_desc.fWidth = canvas_size.width();
-  texture_desc.fHeight = canvas_size.height();
-  texture_desc.fConfig = kSkia8888_GrPixelConfig;
-  texture_desc.fTextureHandle = texture_id;
-  skia::RefPtr<GrTexture> target =
-      skia::AdoptRef(gr_context->wrapBackendTexture(texture_desc));
-  skia::RefPtr<SkDevice> device =
-      skia::AdoptRef(new SkGpuDevice(gr_context, target.get()));
-  return skia::AdoptRef(new SkCanvas(device.get()));
-}
 
 }  // namespace
 
@@ -111,75 +87,14 @@ void ResourceUpdateController::DiscardUploadsToEvictedResources() {
 }
 
 void ResourceUpdateController::UpdateTexture(ResourceUpdate update) {
-  if (update.picture) {
-    PrioritizedResource* texture = update.texture;
-    gfx::Rect picture_rect = update.content_rect;
-    gfx::Rect source_rect = update.source_rect;
-    gfx::Vector2d dest_offset = update.dest_offset;
-
-    texture->AcquireBackingTexture(resource_provider_);
-    DCHECK(texture->have_backing_texture());
-
-    DCHECK_EQ(resource_provider_->GetResourceType(texture->resource_id()),
-              ResourceProvider::GLTexture);
-
-    cc::ContextProvider* offscreen_contexts =
-        resource_provider_->offscreen_context_provider();
-
-    ResourceProvider::ScopedWriteLockGL lock(
-        resource_provider_, texture->resource_id());
-
-    // Flush the compositor context to ensure that textures there are available
-    // in the shared context.  Do this after locking/creating the compositor
-    // texture.
-    resource_provider_->Flush();
-
-    // Make sure skia uses the correct GL context.
-    offscreen_contexts->Context3d()->makeContextCurrent();
-
-    // Create an accelerated canvas to draw on.
-    skia::RefPtr<SkCanvas> canvas = CreateAcceleratedCanvas(
-        offscreen_contexts->GrContext(), texture->size(), lock.texture_id());
-
-    // The compositor expects the textures to be upside-down so it can flip
-    // the final composited image. Ganesh renders the image upright so we
-    // need to do a y-flip.
-    canvas->translate(0.0, texture->size().height());
-    canvas->scale(1.0, -1.0);
-    // Clip to the destination on the texture that must be updated.
-    canvas->clipRect(SkRect::MakeXYWH(dest_offset.x(),
-                                      dest_offset.y(),
-                                      source_rect.width(),
-                                      source_rect.height()));
-    // Translate the origin of picture_rect to dest_offset.
-    // Note that dest_offset is defined relative to source_rect.
-    canvas->translate(
-        picture_rect.x() - source_rect.x() + dest_offset.x(),
-        picture_rect.y() - source_rect.y() + dest_offset.y());
-    canvas->drawPicture(*update.picture);
-
-    // Flush skia context so that all the rendered stuff appears on the
-    // texture.
-    offscreen_contexts->GrContext()->flush();
-
-    // Flush the GL context so rendering results from this context are
-    // visible in the compositor's context.
-    offscreen_contexts->Context3d()->flush();
-
-    // Use the compositor's GL context again.
-    resource_provider_->GraphicsContext3D()->makeContextCurrent();
-  }
-
-  if (update.bitmap) {
-    update.bitmap->lockPixels();
-    update.texture->SetPixels(
-        resource_provider_,
-        static_cast<const uint8_t*>(update.bitmap->getPixels()),
-        update.content_rect,
-        update.source_rect,
-        update.dest_offset);
-    update.bitmap->unlockPixels();
-  }
+  update.bitmap->lockPixels();
+  update.texture->SetPixels(
+      resource_provider_,
+      static_cast<const uint8_t*>(update.bitmap->getPixels()),
+      update.content_rect,
+      update.source_rect,
+      update.dest_offset);
+  update.bitmap->unlockPixels();
 }
 
 void ResourceUpdateController::Finalize() {

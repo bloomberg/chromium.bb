@@ -47,7 +47,6 @@ namespace cc {
 RendererCapabilities::RendererCapabilities()
     : best_texture_format(0),
       using_partial_swap(false),
-      using_accelerated_painting(false),
       using_set_visibility(false),
       using_swap_complete_callback(false),
       using_gpu_memory_manager(false),
@@ -168,11 +167,6 @@ LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
   DCHECK(output_surface_lost_);
   if (success) {
     output_surface_lost_ = false;
-
-    // Update settings_ based on capabilities that we got back from the
-    // renderer.
-    settings_.accelerate_painting =
-        proxy_->GetRendererCapabilities().using_accelerated_painting;
 
     // Update settings_ based on partial update capability.
     size_t max_partial_texture_updates = 0;

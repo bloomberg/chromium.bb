@@ -80,16 +80,13 @@ bool DelegatingRenderer::Initialize() {
 
   // TODO(danakj): We need non-GPU-specific paths for these things. This
   // renderer shouldn't need to use context3d extensions directly.
-  bool has_read_bgra = false;
   bool has_set_visibility = false;
   bool has_io_surface = false;
   bool has_arb_texture_rect = false;
   bool has_egl_image = false;
   bool has_map_image = false;
   for (size_t i = 0; i < extensions.size(); ++i) {
-    if (extensions[i] == "GL_EXT_read_format_bgra") {
-      has_read_bgra = true;
-    } else if (extensions[i] == "GL_CHROMIUM_set_visibility") {
+    if (extensions[i] == "GL_CHROMIUM_set_visibility") {
       has_set_visibility = true;
     } else if (extensions[i] == "GL_CHROMIUM_iosurface") {
       has_io_surface = true;
@@ -104,11 +101,6 @@ bool DelegatingRenderer::Initialize() {
 
   if (has_io_surface)
     DCHECK(has_arb_texture_rect);
-
-  capabilities_.using_accelerated_painting =
-      Settings().accelerate_painting &&
-      capabilities_.best_texture_format == GL_BGRA_EXT &&
-      has_read_bgra;
 
   // TODO(piman): loop visibility to GPU process?
   capabilities_.using_set_visibility = has_set_visibility;

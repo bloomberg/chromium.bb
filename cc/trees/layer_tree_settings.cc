@@ -13,8 +13,7 @@
 namespace cc {
 
 LayerTreeSettings::LayerTreeSettings()
-    : accelerate_painting(false),
-      compositor_frame_message(false),
+    : compositor_frame_message(false),
       impl_side_painting(false),
       throttle_frame_production(true),
       render_parent_drives_begin_frame_(false),

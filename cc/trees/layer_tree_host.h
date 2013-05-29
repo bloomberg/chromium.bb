@@ -73,7 +73,6 @@ struct CC_EXPORT RendererCapabilities {
 
   unsigned best_texture_format;
   bool using_partial_swap;
-  bool using_accelerated_painting;
   bool using_set_visibility;
   bool using_swap_complete_callback;
   bool using_gpu_memory_manager;
@@ -99,7 +98,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   void set_needs_filter_context() { needs_filter_context_ = true; }
   bool needs_offscreen_context() const {
-    return needs_filter_context_ || settings_.accelerate_painting;
+    return needs_filter_context_;
   }
 
   // LayerTreeHost interface to Proxy.

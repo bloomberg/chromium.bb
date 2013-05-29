@@ -92,8 +92,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   // to keep content always crisp when possible.
   settings.layer_transforms_should_scale_layer_contents = true;
 
-  settings.accelerate_painting =
-      cmd->HasSwitch(switches::kEnableAcceleratedPainting);
   settings.throttle_frame_production =
       !cmd->HasSwitch(switches::kDisableGpuVsync);
   settings.render_parent_drives_begin_frame_ =

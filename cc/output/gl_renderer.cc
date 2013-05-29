@@ -155,13 +155,6 @@ bool GLRenderer::Initialize() {
   std::set<std::string> extensions(extensions_list.begin(),
                                    extensions_list.end());
 
-  if (Settings().accelerate_painting &&
-      extensions.count("GL_EXT_texture_format_BGRA8888") &&
-      extensions.count("GL_EXT_read_format_bgra"))
-    capabilities_.using_accelerated_painting = true;
-  else
-    capabilities_.using_accelerated_painting = false;
-
   capabilities_.using_partial_swap =
       Settings().partial_swap_enabled &&
       extensions.count("GL_CHROMIUM_post_sub_buffer");
