@@ -1841,12 +1841,8 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
   handler_map_["OpenCrosh"] = &TestingAutomationProvider::OpenCrosh;
   handler_map_["SetProxySettings"] =
       &TestingAutomationProvider::SetProxySettings;
-  handler_map_["GetProxySettings"] =
-      &TestingAutomationProvider::GetProxySettings;
   handler_map_["SetSharedProxies"] =
       &TestingAutomationProvider::SetSharedProxies;
-  handler_map_["RefreshInternetDetails"] =
-      &TestingAutomationProvider::RefreshInternetDetails;
 
   browser_handler_map_["GetTimeInfo"] =
       &TestingAutomationProvider::GetTimeInfo;

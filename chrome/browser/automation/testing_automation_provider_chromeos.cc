@@ -80,23 +80,6 @@ DictionaryValue* GetWifiInfoDict(const chromeos::WifiNetwork* wifi) {
   return item;
 }
 
-base::Value* GetProxySetting(const std::string& setting_name,
-                             Profile* profile) {
-  std::string setting_path = "cros.session.proxy.";
-  setting_path.append(setting_name);
-  base::Value* setting;
-  if (chromeos::proxy_cros_settings_parser::GetProxyPrefValue(
-          profile, setting_path, &setting)) {
-    scoped_ptr<DictionaryValue> setting_dict(
-        static_cast<DictionaryValue*>(setting));
-    base::Value* value;
-    if (setting_dict->Remove("value", &value))
-      return value;
-  }
-
-  return NULL;
-}
-
 const char* UpdateStatusToString(
     UpdateEngineClient::UpdateStatusOperation status) {
   switch (status) {
@@ -681,31 +664,6 @@ void TestingAutomationProvider::ToggleNetworkDevice(
   }
 }
 
-void TestingAutomationProvider::GetProxySettings(DictionaryValue* args,
-                                                 IPC::Message* reply_message) {
-  const char* settings[] = { "pacurl", "singlehttp", "singlehttpport",
-                             "httpurl", "httpport", "httpsurl", "httpsport",
-                             "type", "single", "ftpurl", "ftpport",
-                             "socks", "socksport", "ignorelist" };
-  AutomationJSONReply reply(this, reply_message);
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-
-  std::string error_message;
-  Profile* profile =
-      automation_util::GetCurrentProfileOnChromeOS(&error_message);
-  if (!profile) {
-    reply.SendError(error_message);
-    return;
-  }
-  for (size_t i = 0; i < arraysize(settings); ++i) {
-    base::Value* setting =
-        GetProxySetting(settings[i], profile);
-    if (setting)
-      return_value->Set(settings[i], setting);
-  }
-  reply.SendSuccess(return_value.get());
-}
-
 void TestingAutomationProvider::SetSharedProxies(
     DictionaryValue* args,
     IPC::Message* reply_message) {
@@ -716,8 +674,6 @@ void TestingAutomationProvider::SetSharedProxies(
     reply.SendError("Invalid or missing value argument.");
     return;
   }
-  std::string proxy_setting_type;
-  std::string setting_path = prefs::kUseSharedProxies;
   std::string error_message;
   Profile* profile =
       automation_util::GetCurrentProfileOnChromeOS(&error_message);
@@ -726,58 +682,29 @@ void TestingAutomationProvider::SetSharedProxies(
     return;
   }
   PrefService* pref_service = profile->GetPrefs();
-  pref_service->Set(setting_path.c_str(), *value);
-  reply.SendSuccess(NULL);
-}
-
-void TestingAutomationProvider::RefreshInternetDetails(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-
-  AutomationJSONReply reply(this, reply_message);
-  std::string service_path;
-  if (!args->GetString("service path", &service_path)) {
-    reply.SendError("missing service path.");
-    return;
-  }
-  std::string error_message;
-  Profile* profile =
-      automation_util::GetCurrentProfileOnChromeOS(&error_message);
-  if (!profile) {
-    reply.SendError(error_message);
-    return;
-  }
-  chromeos::ProxyConfigServiceImpl* config_service =
-      profile->GetProxyConfigTracker();
-  if (!config_service) {
-    reply.SendError("Unable to get proxy configuration.");
-    return;
-  }
-  config_service->UISetCurrentNetwork(service_path);
+  pref_service->Set(prefs::kUseSharedProxies, *value);
   reply.SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::SetProxySettings(DictionaryValue* args,
                                                  IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  std::string key;
-  base::Value* value;
-  if (!args->GetString("key", &key) || !args->Get("value", &value)) {
+  std::string proxy_config;
+  if (!args->GetString("proxy_config", &proxy_config)) {
     reply.SendError("Invalid or missing args.");
     return;
   }
-  std::string error_message;
-  Profile* profile =
-      automation_util::GetCurrentProfileOnChromeOS(&error_message);
-  if (!profile) {
-    reply.SendError(error_message);
+
+  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  chromeos::Network* network =
+      const_cast<chromeos::Network*>(network_library->active_network());
+
+  if (!network) {
+    reply.SendError("No network connected.");
     return;
   }
-  // ProxyCrosSettingsProvider will own the Value* passed to Set().
-  std::string setting_path = "cros.session.proxy.";
-  setting_path.append(key);
-  chromeos::proxy_cros_settings_parser::SetProxyPrefValue(
-      profile, setting_path, value);
+
+  network->SetProxyConfig(proxy_config);
   reply.SendSuccess(NULL);
 }
 

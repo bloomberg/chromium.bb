@@ -33,9 +33,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/prefs/proxy_config_dictionary.h"
+#include "chromeos/network/onc/onc_utils.h"
 #endif
 
 using testing::AllOf;
@@ -77,6 +81,10 @@ PreferencesBrowserTest::~PreferencesBrowserTest() {
 void PreferencesBrowserTest::SetUpOnMainThread() {
   ui_test_utils::NavigateToURL(browser(),
                                GURL(chrome::kChromeUISettingsFrameURL));
+  SetUpPrefs();
+}
+
+void PreferencesBrowserTest::SetUpPrefs() {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
@@ -321,6 +329,23 @@ void PreferencesBrowserTest::SetupJavaScriptTestEnvironment(
       render_view_host_, javascript.str(), observed_json));
 }
 
+void PreferencesBrowserTest::SetPref(const std::string& name,
+                                     const std::string& type,
+                                     const base::Value* value,
+                                     bool commit,
+                                     std::string* observed_json) {
+  scoped_ptr<base::Value> commit_ptr(new base::FundamentalValue(commit));
+  std::stringstream javascript;
+  javascript << "testEnv.runAndReply(function() {"
+             << "  Preferences.set" << type << "Pref("
+             << "      '" << name << "',"
+             << "      " << *value << ","
+             << "      " << *commit_ptr << ");"
+             << "});";
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      render_view_host_, javascript.str(), observed_json));
+}
+
 void PreferencesBrowserTest::VerifySetPref(const std::string& name,
                                            const std::string& type,
                                            const base::Value* value,
@@ -329,20 +354,8 @@ void PreferencesBrowserTest::VerifySetPref(const std::string& name,
     ExpectSetCommit(name, value);
   else
     ExpectNoCommit(name);
-  scoped_ptr<base::Value> commit_ptr(new base::FundamentalValue(commit));
-  std::string value_json;
-  std::string commit_json;
-  base::JSONWriter::Write(value, &value_json);
-  base::JSONWriter::Write(commit_ptr.get(), &commit_json);
-  std::stringstream javascript;
-  javascript << "testEnv.runAndReply(function() {"
-             << "    Preferences.set" << type.c_str() << "Pref("
-             << "      '" << name.c_str() << "',"
-             << "      " << value_json.c_str() << ","
-             << "      " << commit_json.c_str() << ");});";
   std::string observed_json;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      render_view_host_, javascript.str(), &observed_json));
+  SetPref(name, type, value, commit, &observed_json);
   VerifyObservedPref(observed_json, name, value, std::string(), false, !commit);
   VerifyAndClearExpectations();
 }
@@ -694,49 +707,129 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, ChromeOSDeviceFetchPrefs) {
   STLDeleteElements(&decorated_non_default_values);
 }
 
-// Verifies that initializing the JavaScript Preferences class fires the correct
-// notifications in JavaScript for pref values handled by the Chrome OS proxy
-// settings parser.
-IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, ChromeOSProxyFetchPrefs) {
-  std::string observed_json;
+class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
+ public:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    scoped_ptr<base::DictionaryValue> proxy_config_dict(
+        ProxyConfigDictionary::CreateFixedServers(
+            "127.0.0.1:8080",
+            "*.google.com, 1.2.3.4:22"));
 
+    std::string proxy_config;
+    base::JSONWriter::Write(proxy_config_dict.get(), &proxy_config);
+
+    GetActiveNetwork()->SetProxyConfig(proxy_config);
+
+    ui_test_utils::NavigateToURL(browser(),
+                                 GURL(chrome::kChromeUIProxySettingsURL));
+    SetUpPrefs();
+  }
+
+ protected:
+  chromeos::Network* GetActiveNetwork() {
+    chromeos::NetworkLibrary* network_library =
+        chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+    return const_cast<chromeos::Network*>(network_library->active_network());
+  }
+
+  void SetProxyPref(const std::string& name, const base::Value& value) {
+    std::string type;
+    switch (value.GetType()) {
+      case base::Value::TYPE_BOOLEAN:
+        type = "Boolean";
+        break;
+      case base::Value::TYPE_INTEGER:
+        type = "Integer";
+        break;
+      case base::Value::TYPE_STRING:
+        type = "String";
+        break;
+      default:
+        ASSERT_TRUE(false);
+    }
+
+    std::string observed_json;
+    SetPref(name, type, &value, true, &observed_json);
+  }
+
+  void VerifyCurrentProxyServer(const std::string& expected_server) {
+    scoped_ptr<base::DictionaryValue> proxy_config =
+        chromeos::onc::ReadDictionaryFromJson(
+            GetActiveNetwork()->proxy_config());
+
+    ProxyConfigDictionary proxy_dict(proxy_config.get());
+    std::string actual_proxy_server;
+    EXPECT_TRUE(proxy_dict.GetProxyServer(&actual_proxy_server));
+    EXPECT_EQ(expected_server, actual_proxy_server);
+  }
+};
+
+// Verifies that proxy settings are correctly pushed to JavaScript during
+// initialization of the proxy settings page.
+IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest,
+                       ChromeOSInitializeProxy) {
   // Boolean pref.
   pref_names_.push_back(chromeos::kProxySingle);
-  default_values_.push_back(new base::FundamentalValue(false));
   non_default_values_.push_back(new base::FundamentalValue(true));
 
   // Integer pref.
   pref_names_.push_back(chromeos::kProxySingleHttpPort);
-  default_values_.push_back(new base::StringValue(""));
   non_default_values_.push_back(new base::FundamentalValue(8080));
 
   // String pref.
   pref_names_.push_back(chromeos::kProxySingleHttp);
-  default_values_.push_back(new base::StringValue(""));
   non_default_values_.push_back(new base::StringValue("127.0.0.1"));
 
   // List pref.
   pref_names_.push_back(chromeos::kProxyIgnoreList);
-  default_values_.push_back(new base::ListValue());
   base::ListValue* list = new base::ListValue();
-  list->Append(new base::StringValue("www.google.com"));
-  list->Append(new base::StringValue("example.com"));
+  list->Append(new base::StringValue("*.google.com"));
+  list->Append(new base::StringValue("1.2.3.4:22"));
   non_default_values_.push_back(list);
 
-  // Verify notifications when default values are in effect.
-  SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
-  VerifyObservedPrefs(observed_json, pref_names_, default_values_,
-                      "", false, false);
-
-  // Verify notifications when user-modified values are in effect.
-  Profile* profile = browser()->profile();
-  // Do not set the Boolean pref. It will toogle automatically.
-  for (size_t i = 1; i < pref_names_.size(); ++i)
-    chromeos::proxy_cros_settings_parser::SetProxyPrefValue(
-        profile, pref_names_[i], non_default_values_[i]->DeepCopy());
+  std::string observed_json;
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
   VerifyObservedPrefs(observed_json, pref_names_, non_default_values_,
                       "", false, false);
+}
+
+// Verifies that modifications to the proxy settings are correctly pushed from
+// JavaScript to the ProxyConfig property stored in the network configuration.
+IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSSetProxy) {
+  ASSERT_NO_FATAL_FAILURE(SetupJavaScriptTestEnvironment(pref_names_, NULL));
+
+  SetProxyPref(chromeos::kProxySingleHttpPort, base::FundamentalValue(123));
+  SetProxyPref(chromeos::kProxySingleHttp, base::StringValue("www.adomain.xy"));
+
+  VerifyCurrentProxyServer("www.adomain.xy:123");
+}
+
+// Verify that default proxy ports are used and that ports can be updated
+// without affecting the previously set hosts.
+IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSProxyDefaultPorts) {
+  ASSERT_NO_FATAL_FAILURE(SetupJavaScriptTestEnvironment(pref_names_, NULL));
+
+  // Set to manual, per scheme proxy.
+  SetProxyPref(chromeos::kProxySingle, base::FundamentalValue(false));
+
+  // Set hosts but no ports.
+  SetProxyPref(chromeos::kProxyHttpUrl, base::StringValue("a.com"));
+  SetProxyPref(chromeos::kProxyHttpsUrl, base::StringValue("4.3.2.1"));
+  SetProxyPref(chromeos::kProxyFtpUrl, base::StringValue("c.com"));
+  SetProxyPref(chromeos::kProxySocks, base::StringValue("d.com"));
+
+  // Verify default ports.
+  VerifyCurrentProxyServer(
+      "http=a.com:80;https=4.3.2.1:80;ftp=c.com:80;socks=socks4://d.com:1080");
+
+  // Set and verify the ports.
+  SetProxyPref(chromeos::kProxyHttpPort, base::FundamentalValue(1));
+  SetProxyPref(chromeos::kProxyHttpsPort, base::FundamentalValue(2));
+  SetProxyPref(chromeos::kProxyFtpPort, base::FundamentalValue(3));
+  SetProxyPref(chromeos::kProxySocksPort, base::FundamentalValue(4));
+
+  VerifyCurrentProxyServer(
+      "http=a.com:1;https=4.3.2.1:2;ftp=c.com:3;socks=socks4://d.com:4");
 }
 
 #endif

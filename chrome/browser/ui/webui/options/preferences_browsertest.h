@@ -45,6 +45,8 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
  protected:
   MOCK_METHOD1(OnCommit, void(const PrefService::Preference*));
 
+  void SetUpPrefs();
+
   // InProcessBrowserTest implementation:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
@@ -108,9 +110,19 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
   void SetupJavaScriptTestEnvironment(
       const std::vector<std::string>& pref_names,
       std::string* observed_json) const;
+
+  // Sets a value through the JavaScript Preferences class as if the user had
+  // modified it. Returns the observation which can be verified using the
+  // VerifyObserved* methods.
+  void SetPref(const std::string& name,
+               const std::string& type,
+               const base::Value* value,
+               bool commit,
+               std::string* observed_json);
+
   // Verifies that setting a user-modified pref value through the JavaScript
-  // Preferences class fires the correct notification in JavaScript and does
-  // respectively does not cause the change to be committed to the C++ backend.
+  // Preferences class fires the correct notification in JavaScript and commits
+  // the change to C++ if |commit| is true.
   void VerifySetPref(const std::string& name,
                      const std::string& type,
                      const base::Value* value,

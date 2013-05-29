@@ -12,19 +12,6 @@ import chromeos_network  # pyauto_functional must come before chromeos_network
 class ChromeosWifiSanity(chromeos_network.PyNetworkUITest):
   """Tests for ChromeOS network related functions."""
 
-  def testNetworkInfoAndScan(self):
-    """Get basic info on networks."""
-    # NetworkScan will also call GetNetworkInfo and return the results.
-    result = self.NetworkScan()
-    self.assertTrue(result)
-    logging.debug(result)
-
-  def testGetProxySettings(self):
-    """Print some information about proxy settings."""
-    result = self.GetProxySettingsOnChromeOS()
-    self.assertTrue(result)
-    logging.debug(result)
-
   def testToggleNetworkDevice(self):
     """Sanity check to make sure wifi can be disabled and reenabled."""
     self.ToggleNetworkDevice('wifi', False)

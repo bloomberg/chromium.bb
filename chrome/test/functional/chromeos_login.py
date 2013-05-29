@@ -303,11 +303,12 @@ class ChromeosLoginCachedCredentialsAddUser(pyauto.PyUITest):
     return self.GetPrivateInfo()[account_type]
 
   def testCachedCredentialsAddUser(self):
-    proxy_dict = {
-      'url_path': 'singlehttp',
-      'proxy_url': '127.0.0.1',
+    self.SetSharedProxies(True)
+    proxy_config = {
+        'mode': 'fixed_servers',
+        'server': '127.0.0.1'
     }
-    self.SetProxySettingOnChromeOS(proxy_dict)
+    self.SetProxySettingOnChromeOS(proxy_config);
 
     """Test that login fails."""
     credentials = self._ValidCredentials()
@@ -317,7 +318,7 @@ class ChromeosLoginCachedCredentialsAddUser(pyauto.PyUITest):
                            credentials['password'])
     )
 
-class ChromeosLoginCachedCredentialsUserPod(pyauto.PyUITest):
+class ChromeosLoginCachedCredentialsUserPod(ChromeosLogin):
   """TestCase for Logging into ChromeOS with cached credentials and
   invalid proxy settings.
   """
@@ -356,7 +357,12 @@ class ChromeosLoginCachedCredentialsUserPod(pyauto.PyUITest):
     """
     self.testGoodLogin()
     self.Logout()
-    self.SetProxySettingOnChromeOS('singlehttp', '127.0.0.1')
+    self.SetSharedProxies(True)
+    proxy_config = {
+        'mode': 'fixed_servers',
+        'server': '127.0.0.1'
+    }
+    self.SetProxySettingOnChromeOS(proxy_config);
     self.testGoodLogin()
     self.ResetProxySettingsOnChromeOS()
 
