@@ -72,8 +72,8 @@ pixman_renderer_read_pixels(struct weston_output *output,
 			       uint32_t width, uint32_t height)
 {
 	struct pixman_output_state *po = get_output_state(output);
+	pixman_transform_t transform;
 	pixman_image_t *out_buf;
-	uint32_t cur_y;
 
 	if (!po->hw_buffer) {
 		errno = ENODEV;
@@ -86,18 +86,25 @@ pixman_renderer_read_pixels(struct weston_output *output,
 		pixels,
 		(PIXMAN_FORMAT_BPP(format) / 8) * width);
 
-	/* Caller expects vflipped image */
-	for (cur_y = y; cur_y < y + height; cur_y++) {
-		pixman_image_composite32(PIXMAN_OP_SRC,
-			po->hw_buffer, /* src */
-			NULL /* mask */,
-			out_buf, /* dest */
-			x, cur_y, /* src_x, src_y */
-			0, 0, /* mask_x, mask_y */
-			0, height - (cur_y - y), /* dest_x, dest_y */
-			width, /* width */
-			1 /* height */);
-	}
+	/* Caller expects vflipped source image */
+	pixman_transform_init_translate(&transform,
+					pixman_int_to_fixed (x),
+					pixman_int_to_fixed (y - pixman_image_get_height (po->hw_buffer)));
+	pixman_transform_scale(&transform, NULL,
+			       pixman_fixed_1,
+			       pixman_fixed_minus_1);
+	pixman_image_set_transform(po->hw_buffer, &transform);
+
+	pixman_image_composite32(PIXMAN_OP_SRC,
+				 po->hw_buffer, /* src */
+				 NULL /* mask */,
+				 out_buf, /* dest */
+				 0, 0, /* src_x, src_y */
+				 0, 0, /* mask_x, mask_y */
+				 0, 0, /* dest_x, dest_y */
+				 pixman_image_get_width (po->hw_buffer), /* width */
+				 pixman_image_get_height (po->hw_buffer) /* height */);
+	pixman_image_set_transform(po->hw_buffer, NULL);
 
 	pixman_image_unref(out_buf);
 
