@@ -1561,6 +1561,10 @@ crbug.com/243226 [ SnowLeopard ] inspector/debugger/pause-in-inline-script.html 
 # Seems to be flaky on all platforms
 crbug.com/244921 http/tests/navigation/back-twice-without-commit.html [ Failure Pass ]
 
+# Crashing on Mac 
+crbug.com/244925 [ SnowLeopard MountainLion ] fast/dom/HTMLSelectElement/select-selectedIndex-multiple.html [ Crash ]
+crbug.com/244925 [ SnowLeopard MountainLion ] fast/dom/HTMLSelectElement/select-selectedIndex.html [ Crash ]
+
 # Copy of ContentShellTestExpectations
 crbug.com/178709 plugins/document-open.html [ Failure ]
 crbug.com/178719 plugins/reloadplugins-and-pages.html [ Timeout ]
