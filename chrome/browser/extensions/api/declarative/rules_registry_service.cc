@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative/initializing_rules_registry.h"
@@ -35,7 +36,8 @@ RulesRegistryService::RulesRegistryService(Profile* profile)
     : profile_(profile) {
   if (profile) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                   content::Source<Profile>(profile->GetOriginalProfile()));
+        content::Source<Profile>(profile->GetOriginalProfile()));
+    RegisterDefaultRulesRegistries();
   }
 }
 
@@ -68,6 +70,20 @@ void RulesRegistryService::Shutdown() {
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
           profile_, scoped_refptr<WebRequestRulesRegistry>(NULL)));
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<RulesRegistryService> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<RulesRegistryService>*
+RulesRegistryService::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
+// static
+RulesRegistryService* RulesRegistryService::Get(Profile* profile) {
+  return ProfileKeyedAPIFactory<RulesRegistryService>::GetForProfile(profile);
 }
 
 void RulesRegistryService::RegisterRulesRegistry(

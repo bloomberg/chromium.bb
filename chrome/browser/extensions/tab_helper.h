@@ -254,8 +254,6 @@ class TabHelper : public content::WebContentsObserver,
 
   scoped_ptr<ScriptBubbleController> script_bubble_controller_;
 
-  RulesRegistryService* rules_registry_service_;
-
   Profile* profile_;
 
   // Vend weak pointers that can be invalidated to stop in-progress loads.

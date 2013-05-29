@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -34,14 +35,21 @@ namespace extensions {
 
 // This class owns all RulesRegistries implementations of an ExtensionService.
 // This class lives on the UI thread.
-class RulesRegistryService : public content::NotificationObserver  {
+class RulesRegistryService : public ProfileKeyedAPI,
+                             public content::NotificationObserver {
  public:
   explicit RulesRegistryService(Profile* profile);
   virtual ~RulesRegistryService();
 
   // Unregisters refptrs to concrete RulesRegistries at other objects that were
   // created by us so that the RulesRegistries can be released.
-  void Shutdown();
+  virtual void Shutdown() OVERRIDE;
+
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<RulesRegistryService>* GetFactoryInstance();
+
+  // Convenience method to get the RulesRegistryService for a profile.
+  static RulesRegistryService* Get(Profile* profile);
 
   // Registers the default RulesRegistries used in Chromium.
   void RegisterDefaultRulesRegistries();
@@ -62,6 +70,8 @@ class RulesRegistryService : public content::NotificationObserver  {
   // For testing.
   void SimulateExtensionUnloaded(const std::string& extension_id);
  private:
+  friend class ProfileKeyedAPIFactory<RulesRegistryService>;
+
   // Maps event names to RuleRegistries that handle these events.
   typedef std::map<std::string, scoped_refptr<RulesRegistry> > RulesRegistryMap;
 
@@ -74,6 +84,13 @@ class RulesRegistryService : public content::NotificationObserver  {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "RulesRegistryService";
+  }
+  static const bool kServiceHasOwnInstanceInIncognito = true;
+  static const bool kServiceIsNULLWhileTesting = true;
 
   RulesRegistryMap rule_registries_;
 
