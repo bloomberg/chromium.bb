@@ -433,8 +433,9 @@ testcase.intermediate.keyboardCopy = function(path, callback) {
     // Verify the result.
     function(fileList) {
       chrome.test.assertTrue(isCopyPresent(filename, fileList));
-      checkIfNoErrorsOccured(chrome.test.succeed);
-    }
+      checkIfNoErrorsOccured(steps.shift());
+    },
+    function() {}
   ];
   steps = steps.map(function(f) { return chrome.test.callbackPass(f); });
   steps.shift()();
@@ -455,6 +456,7 @@ testcase.intermediate.keyboardDelete = function(path) {
   }
 
   var filename = 'world.ogv';
+  var directoryName = 'photos';
   var appId, fileListBefore;
   var steps = [
     // Set up File Manager.
@@ -478,11 +480,29 @@ testcase.intermediate.keyboardDelete = function(path) {
       callRemoteTestUtil('waitForFileListChange', appId,
                          [fileListBefore.length], steps.shift());
     },
+    // Delete the directory.
+    function(fileList) {
+      fileListBefore = fileList;
+      chrome.test.assertFalse(isFilePresent(filename, fileList));
+      chrome.test.assertTrue(isFilePresent(directoryName, fileList));
+      callRemoteTestUtil('deleteFile', appId, [directoryName], steps.shift());
+    },
+    // Reply to a dialog.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitAndAcceptDialog', appId, [], steps.shift());
+    },
+    // Wait for a file list change.
+    function() {
+      callRemoteTestUtil('waitForFileListChange', appId,
+                         [fileListBefore.length], steps.shift());
+    },
     // Verify the result.
     function(fileList) {
-      chrome.test.assertFalse(isFilePresent(filename, fileList));
-      checkIfNoErrorsOccured(chrome.test.succeed);
-    }
+      chrome.test.assertFalse(isFilePresent(directoryName, fileList));
+      checkIfNoErrorsOccured(steps.shift());
+    },
+    function() {}
   ];
   steps = steps.map(function(f) { return chrome.test.callbackPass(f); });
   steps.shift()();
