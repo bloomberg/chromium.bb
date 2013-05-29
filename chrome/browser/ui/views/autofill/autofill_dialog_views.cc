@@ -1506,6 +1506,7 @@ void AutofillDialogViews::UpdateSectionImpl(
 
     if (text_mapping != group->textfields.end()) {
       views::Textfield* textfield = text_mapping->second->textfield();
+      textfield->SetEnabled(input.editable);
       if (textfield->text().empty() || clobber_inputs) {
         textfield->SetText(iter->initial_value);
         textfield->SetIcon(controller_->IconForField(
@@ -1516,6 +1517,7 @@ void AutofillDialogViews::UpdateSectionImpl(
     ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
     if (combo_mapping != group->comboboxes.end()) {
       views::Combobox* combobox = combo_mapping->second;
+      combobox->SetEnabled(input.editable);
       if (combobox->selected_index() == combobox->model()->GetDefaultIndex() ||
           clobber_inputs) {
         for (int i = 0; i < combobox->model()->GetItemCount(); ++i) {
@@ -1619,6 +1621,9 @@ bool AutofillDialogViews::ValidateGroup(
   if (group.manual_input->visible()) {
     for (TextfieldMap::const_iterator iter = group.textfields.begin();
          iter != group.textfields.end(); ++iter) {
+      if (!iter->first->editable)
+        continue;
+
       detail_outputs[iter->first] = iter->second->textfield()->text();
       field_map[iter->first->type] = base::Bind(
           &AutofillDialogViews::SetValidityForInput<DecoratedTextfield>,
@@ -1627,6 +1632,9 @@ bool AutofillDialogViews::ValidateGroup(
     }
     for (ComboboxMap::const_iterator iter = group.comboboxes.begin();
          iter != group.comboboxes.end(); ++iter) {
+      if (!iter->first->editable)
+        continue;
+
       views::Combobox* combobox = iter->second;
       string16 item =
           combobox->model()->GetItemAt(combobox->selected_index());

@@ -35,6 +35,15 @@
       },
       'includes': [ '../build/protoc.gypi' ]
     },
+    {
+      'target_name': 'autofill_test_util',
+      'type': 'static_library',
+      'sources': [
+        'autofill/browser/wallet/wallet_test_util.cc',
+        'autofill/browser/wallet/wallet_test_util.h',
+      ],
+      'include_dirs': [ '..' ],
+    },
   ],
   'conditions': [
     ['OS != "ios"', {

@@ -324,8 +324,7 @@ base::string16 WalletItems::MaskedInstrument::GetInfo(
       return address().recipient_name();
 
     case CREDIT_CARD_NUMBER:
-      // TODO(dbeam): show these as XXXX-#### and non-editable in the UI.
-      return last_four_digits();
+      return DisplayName();
 
     case CREDIT_CARD_EXP_4_DIGIT_YEAR:
       return base::IntToString16(expiration_year());

@@ -778,22 +778,26 @@ void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
 
 void AutofillDialogControllerImpl::PrepareDetailInputsForSection(
     DialogSection section) {
-  // Reset all previously entered data and stop editing |section|.
-  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
-  for (size_t i = 0; i < inputs->size(); ++i) {
-    (*inputs)[i].initial_value.clear();
-  }
   section_editing_state_[section] = false;
+  scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
 
   // If the chosen item in |model| yields an empty suggestion text, it is
   // invalid. In this case, show the editing UI with invalid fields highlighted.
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   if (IsASuggestionItemKey(model->GetItemKeyForCheckedItem()) &&
       SuggestionTextForSection(section).empty()) {
-    scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
-    wrapper->FillInputs(MutableRequestedFieldsForSection(section));
     section_editing_state_[section] = true;
   }
+
+  // Reset all previously entered data and stop editing |section|.
+  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
+  for (DetailInputs::iterator it = inputs->begin(); it != inputs->end(); ++it) {
+    it->initial_value.clear();
+    it->editable = InputIsEditable(*it, section);
+  }
+
+  if (wrapper && section_editing_state_[section])
+    wrapper->FillInputs(inputs);
 
   if (view_)
     view_->UpdateSection(section);
@@ -1080,8 +1084,14 @@ bool AutofillDialogControllerImpl::EditEnabledForSection(
 void AutofillDialogControllerImpl::EditClickedForSection(
     DialogSection section) {
   scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
-  model->FillInputs(MutableRequestedFieldsForSection(section));
   section_editing_state_[section] = true;
+
+  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
+  for (DetailInputs::iterator it = inputs->begin(); it != inputs->end(); ++it) {
+    it->editable = InputIsEditable(*it, section);
+  }
+  model->FillInputs(inputs);
+
   view_->UpdateSection(section);
 
   GetMetricLogger().LogDialogUiEvent(
@@ -2359,6 +2369,20 @@ bool AutofillDialogControllerImpl::IsManuallyEditingAnySection() const {
       return true;
   }
   return false;
+}
+
+bool AutofillDialogControllerImpl::InputIsEditable(
+    const DetailInput& input,
+    DialogSection section) const {
+  if (input.type != CREDIT_CARD_NUMBER || !IsPayingWithWallet())
+    return true;
+
+  std::map<DialogSection, bool>::const_iterator it =
+      section_editing_state_.find(section);
+  if (it != section_editing_state_.end() && it->second)
+    return false;
+
+  return true;
 }
 
 bool AutofillDialogControllerImpl::AllSectionsAreValid() const {

@@ -17,6 +17,7 @@
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/test_personal_data_manager.h"
+#include "components/autofill/browser/wallet/wallet_test_util.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
 #include "content/public/test/test_utils.h"
@@ -87,9 +88,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
                                      dialog_type,
                                      base::Bind(&MockCallback)),
         metric_logger_(metric_logger),
-        message_loop_runner_(runner) {
-    DisableWallet();
-  }
+        message_loop_runner_(runner) {}
 
   virtual ~TestAutofillDialogController() {}
 
@@ -125,6 +124,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   TestPersonalDataManager* GetTestingManager() {
     return &test_manager_;
   }
+
+  using AutofillDialogControllerImpl::DisableWallet;
 
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
@@ -266,6 +267,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutError) {
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  controller()->DisableWallet();
 
   AutofillProfile full_profile(test::GetFullProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
@@ -343,6 +345,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 // expected when Autofill is used to fill text inputs.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillComboboxFromAutofill) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  controller()->DisableWallet();
 
   CreditCard card1;
   test::SetCreditCardInfo(&card1, "JJ Smith", "4111111111111111", "12", "2018");
@@ -423,6 +426,44 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillComboboxFromAutofill) {
                 view->GetTextContentsOfInput(input));
     }
   }
+}
+
+// Tests that credit card number is disabled while editing a Wallet instrument.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, WalletCreditCardDisabled) {
+  InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  controller()->OnUserNameFetchSuccess("user@example.com");
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+
+  // Click "Edit" in the billing section (while using Wallet).
+  controller()->EditClickedForSection(SECTION_CC_BILLING);
+
+  const DetailInputs& edit_inputs =
+      controller()->RequestedFieldsForSection(SECTION_CC_BILLING);
+  size_t i;
+  for (i = 0; i < edit_inputs.size(); ++i) {
+    if (edit_inputs[i].type == CREDIT_CARD_NUMBER) {
+      EXPECT_FALSE(edit_inputs[i].editable);
+      break;
+    }
+  }
+  ASSERT_LT(i, edit_inputs.size());
+
+  // Select "Add new billing info..." while using Wallet.
+  ui::MenuModel* model = controller()->MenuModelForSection(SECTION_CC_BILLING);
+  model->ActivatedAt(model->GetItemCount() - 2);
+
+  const DetailInputs& add_inputs =
+      controller()->RequestedFieldsForSection(SECTION_CC_BILLING);
+  for (i = 0; i < add_inputs.size(); ++i) {
+    if (add_inputs[i].type == CREDIT_CARD_NUMBER) {
+      EXPECT_TRUE(add_inputs[i].editable);
+      break;
+    }
+  }
+  ASSERT_LT(i, add_inputs.size());
 }
 #endif  // defined(TOOLKIT_VIEWS)
 

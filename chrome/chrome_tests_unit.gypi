@@ -413,6 +413,7 @@
         '<@(chromium_child_dependencies)',
         # 2) test-specific support libraries:
         '../base/base.gyp:test_support_base',
+        '../components/components.gyp:autofill_test_util',
         '../media/media.gyp:media_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
@@ -1774,8 +1775,6 @@
         '../components/autofill/browser/wallet/wallet_items_unittest.cc',
         '../components/autofill/browser/wallet/wallet_service_url_unittest.cc',
         '../components/autofill/browser/wallet/wallet_signin_helper_unittest.cc',
-        '../components/autofill/browser/wallet/wallet_test_util.cc',
-        '../components/autofill/browser/wallet/wallet_test_util.h',
 
         # TODO(caitkp): Move to //components/components.gypi once
         # remaining dependencies back to //chrome are eliminated.
