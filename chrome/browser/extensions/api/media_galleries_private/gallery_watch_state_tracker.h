@@ -27,6 +27,8 @@ class Value;
 
 namespace extensions {
 
+// This class is owned by the MediaGalleriesPrivateAPI, and is created on demand
+// along with the MediaGalleriesPrivateEventRouter.
 class GalleryWatchStateTracker
     : public content::NotificationObserver,
       public base::SupportsWeakPtr<GalleryWatchStateTracker> {
@@ -53,9 +55,11 @@ class GalleryWatchStateTracker
   // |has_permission| is set to true if the user granted permission to
   // access the gallery associated with the |gallery_id| and is set to false
   // if the user revoked the gallery permission.
-  void OnGalleryPermissionChanged(const std::string& extension_id,
-                                  chrome::MediaGalleryPrefId gallery_id,
-                                  bool has_permission);
+  void OnGalleryPermissionChanged(
+      const std::string& extension_id,
+      chrome::MediaGalleryPrefId gallery_id,
+      bool has_permission,
+      chrome::MediaGalleriesPreferences* preferences);
 
   // Returns a set of watched gallery identifiers for the extension specified
   // by the |extension_id|.
@@ -64,7 +68,9 @@ class GalleryWatchStateTracker
 
   // Removes all the gallery watchers associated with the extension specified
   // by the |extension_id|.
-  void RemoveAllGalleryWatchersForExtension(const std::string& extension_id);
+  void RemoveAllGalleryWatchersForExtension(
+      const std::string& extension_id,
+      chrome::MediaGalleriesPreferences* preferences);
 
  private:
   // Key: Gallery identifier.
@@ -91,12 +97,14 @@ class GalleryWatchStateTracker
   // Sets up the gallery watcher on the receipt of granted gallery permission
   // event.
   void SetupGalleryWatch(const std::string& extension_id,
-                         chrome::MediaGalleryPrefId gallery_id);
+                         chrome::MediaGalleryPrefId gallery_id,
+                         chrome::MediaGalleriesPreferences* preferences);
 
   // Removes the gallery watcher on the receipt of revoked gallery permission
   // event.
   void RemoveGalleryWatch(const std::string& extension_id,
-                          chrome::MediaGalleryPrefId gallery_id);
+                          chrome::MediaGalleryPrefId gallery_id,
+                          chrome::MediaGalleriesPreferences* preferences);
 
   // Returns true if a gallery watcher exists for the extension.
   // Set |has_active_watcher| to true to find if the gallery watcher is active.

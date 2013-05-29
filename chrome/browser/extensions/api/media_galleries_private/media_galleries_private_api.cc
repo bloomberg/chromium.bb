@@ -23,6 +23,7 @@
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 
@@ -105,8 +106,7 @@ bool GetMediaGalleryPermissionFromDictionary(
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaGalleriesPrivateAPI::MediaGalleriesPrivateAPI(Profile* profile)
-    : profile_(profile),
-      tracker_(profile) {
+    : profile_(profile) {
   DCHECK(profile_);
   (new MediaGalleriesHandlerParser)->Register();
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
@@ -268,24 +268,27 @@ void MediaGalleriesPrivateAPI::OnListenerAdded(
   // Try to initialize the event router for the listener. If
   // MediaGalleriesPrivateAPI::GetEventRouter() was called before adding
   // the listener, router would be initialized.
-  MaybeInitializeEventRouter();
+  MaybeInitializeEventRouterAndTracker();
 }
 
 MediaGalleriesPrivateEventRouter* MediaGalleriesPrivateAPI::GetEventRouter() {
-  MaybeInitializeEventRouter();
+  MaybeInitializeEventRouterAndTracker();
   return media_galleries_private_event_router_.get();
 }
 
 GalleryWatchStateTracker*
 MediaGalleriesPrivateAPI::GetGalleryWatchStateTracker() {
-  return &tracker_;
+  MaybeInitializeEventRouterAndTracker();
+  return tracker_.get();
 }
 
-void MediaGalleriesPrivateAPI::MaybeInitializeEventRouter() {
+void MediaGalleriesPrivateAPI::MaybeInitializeEventRouterAndTracker() {
   if (media_galleries_private_event_router_.get())
     return;
   media_galleries_private_event_router_.reset(
       new MediaGalleriesPrivateEventRouter(profile_));
+  tracker_.reset(
+      new GalleryWatchStateTracker(profile_));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -304,6 +307,7 @@ bool MediaGalleriesPrivateAddGalleryWatchFunction::RunImpl() {
   scoped_ptr<AddGalleryWatch::Params> params(
       AddGalleryWatch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+
   base::FilePath gallery_file_path;
   chrome::MediaGalleryPrefId gallery_pref_id = 0;
   if (!GetGalleryFilePathAndId(params->gallery_id, profile_, GetExtension(),
@@ -438,9 +442,14 @@ bool MediaGalleriesPrivateRemoveAllGalleryWatchFunction::RunImpl() {
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
 
+  chrome::MediaFileSystemRegistry* registry =
+      g_browser_process->media_file_system_registry();
+  chrome::MediaGalleriesPreferences* preferences =
+      registry->GetPreferences(profile_);
   GalleryWatchStateTracker* state_tracker =
       MediaGalleriesPrivateAPI::Get(profile_)->GetGalleryWatchStateTracker();
-  state_tracker->RemoveAllGalleryWatchersForExtension(extension_id());
+  state_tracker->RemoveAllGalleryWatchersForExtension(
+      extension_id(), preferences);
 #endif
   return true;
 }

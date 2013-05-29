@@ -74,7 +74,7 @@ class MediaGalleriesPrivateAPI : public ProfileKeyedAPI,
  private:
   friend class ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>;
 
-  void MaybeInitializeEventRouter();
+  void MaybeInitializeEventRouterAndTracker();
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {
@@ -85,7 +85,7 @@ class MediaGalleriesPrivateAPI : public ProfileKeyedAPI,
   // Current profile.
   Profile* profile_;
 
-  GalleryWatchStateTracker tracker_;
+  scoped_ptr<GalleryWatchStateTracker> tracker_;
 
   // Created lazily on first access.
   scoped_ptr<MediaGalleriesPrivateEventRouter>

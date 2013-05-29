@@ -656,7 +656,7 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
 #if defined(ENABLE_EXTENSIONS)
       if (state_tracker) {
         state_tracker->OnGalleryPermissionChanged(extension.id(), pref_id,
-                                                  true);
+                                                  true, this);
       }
 #endif
       return;
@@ -674,7 +674,7 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
 #if defined(ENABLE_EXTENSIONS)
   if (state_tracker) {
     state_tracker->OnGalleryPermissionChanged(extension.id(), pref_id,
-                                              has_permission);
+                                              has_permission, this);
   }
 #endif
 }

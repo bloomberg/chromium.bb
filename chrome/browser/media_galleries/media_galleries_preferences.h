@@ -115,14 +115,14 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
                                   public RemovableStorageObserver {
  public:
   class GalleryChangeObserver {
-    public:
-     // |extension_id| specifies the extension affected by this change.
-     // It is empty if the gallery change affects all extensions.
-     virtual void OnGalleryChanged(MediaGalleriesPreferences* pref,
-                                   const std::string& extension_id) {}
+   public:
+    // |extension_id| specifies the extension affected by this change.
+    // It is empty if the gallery change affects all extensions.
+    virtual void OnGalleryChanged(MediaGalleriesPreferences* pref,
+                                  const std::string& extension_id) {}
 
-    protected:
-     virtual ~GalleryChangeObserver();
+   protected:
+    virtual ~GalleryChangeObserver();
   };
 
   explicit MediaGalleriesPreferences(Profile* profile);
