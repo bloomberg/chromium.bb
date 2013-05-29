@@ -6,13 +6,6 @@
 // isn't implemented if OpenSSL is used.
 GEN('#if defined(USE_NSS)');
 
-// Triggers an issue in v8: http://crbug.com/225325
-GEN('#if defined(OS_LINUX)');
-GEN('#define MAYBE_testViewAndDeleteCert DISABLED_testViewAndDeleteCert');
-GEN('#else');
-GEN('#define MAYBE_testViewAndDeleteCert testViewAndDeleteCert');
-GEN('#endif');
-
 /**
  * TestFixture for certificate manager WebUI testing.
  * @extends {testing.Test}
@@ -143,7 +136,7 @@ CertificateManagerWebUITest.prototype = {
 };
 
 TEST_F('CertificateManagerWebUITest',
-       'MAYBE_testViewAndDeleteCert', function() {
+       'testViewAndDeleteCert', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   this.mockHandler.expects(once()).viewCertificate(['c1']);
