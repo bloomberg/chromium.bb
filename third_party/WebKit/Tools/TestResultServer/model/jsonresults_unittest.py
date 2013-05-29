@@ -233,14 +233,15 @@ class JsonResultsTest(unittest.TestCase):
 
     def _test_merge(self, aggregated_data, incremental_data, expected_data, max_builds=jsonresults.JSON_RESULTS_MAX_BUILDS):
         aggregated_results = self._make_test_json(aggregated_data)
-        incremental_json = JsonResults._get_incremental_json(self._builder, self._make_test_json(incremental_data), is_full_results_format=False)
-        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_json, num_runs=max_builds, sort_keys=True)
+        incremental_json, _ = JsonResults._get_incremental_json(self._builder, self._make_test_json(incremental_data), is_full_results_format=False)
+        merged_results, status_code = JsonResults.merge(self._builder, aggregated_results, incremental_json, num_runs=max_builds, sort_keys=True)
 
         if expected_data:
             expected_results = self._make_test_json(expected_data)
             self.assert_json_equal(merged_results, expected_results)
+            self.assertEqual(status_code, 200)
         else:
-            self.assertFalse(merged_results)
+            self.assertTrue(status_code != 200)
 
     def _test_get_test_list(self, input_data, expected_data):
         input_results = self._make_test_json(input_data)
@@ -286,7 +287,8 @@ class JsonResultsTest(unittest.TestCase):
 
         incremental_string = ""
 
-        self.assertFalse(JsonResults.update_files(small_file.builder, incremental_string, small_file, large_file, is_full_results_format=False))
+        self.assertEqual(JsonResults.update_files(small_file.builder, incremental_string, small_file, large_file, is_full_results_format=False),
+            ('No incremental JSON data to merge.', 403))
         self.assert_json_equal(small_file.data, aggregated_string)
         self.assert_json_equal(large_file.data, aggregated_string)
 
@@ -313,7 +315,8 @@ class JsonResultsTest(unittest.TestCase):
         }
         incremental_string = self._make_test_json(incremental_data, builder_name=small_file.builder)
 
-        self.assertFalse(JsonResults.update_files(small_file.builder, incremental_string, small_file, large_file, is_full_results_format=False))
+        self.assertEqual(JsonResults.update_files(small_file.builder, incremental_string, small_file, large_file, is_full_results_format=False),
+            ('No incremental JSON data to merge.', 403))
         self.assert_json_equal(small_file.data, aggregated_string)
         self.assert_json_equal(large_file.data, aggregated_string)
 
@@ -327,9 +330,9 @@ class JsonResultsTest(unittest.TestCase):
                 }
             }
         }
-        incremental_results = JsonResults._get_incremental_json(self._builder, self._make_test_json(incremental_data), is_full_results_format=False)
+        incremental_results, _ = JsonResults._get_incremental_json(self._builder, self._make_test_json(incremental_data), is_full_results_format=False)
         aggregated_results = ""
-        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_results, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
+        merged_results, _ = JsonResults.merge(self._builder, aggregated_results, incremental_results, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
         self.assert_json_equal(merged_results, incremental_results)
 
     def test_failures_by_type_added(self):
@@ -351,8 +354,8 @@ class JsonResultsTest(unittest.TestCase):
                 }
             }
         }, json_string=JSON_RESULTS_OLD_TEMPLATE)
-        incremental_json = JsonResults._get_incremental_json(self._builder, incremental_results, is_full_results_format=False)
-        merged_results = JsonResults.merge(self._builder, aggregated_results, incremental_json, num_runs=200, sort_keys=True)
+        incremental_json, _ = JsonResults._get_incremental_json(self._builder, incremental_results, is_full_results_format=False)
+        merged_results, _ = JsonResults.merge(self._builder, aggregated_results, incremental_json, num_runs=200, sort_keys=True)
         self.assert_json_equal(merged_results, self._make_test_json({
             "builds": ["3", "2", "1"],
             "tests": {
@@ -417,8 +420,8 @@ class JsonResultsTest(unittest.TestCase):
         }
 
         aggregated_results = ""
-        incremental_json = JsonResults._get_incremental_json(self._builder, FULL_RESULT_EXAMPLE, is_full_results_format=True)
-        merged_results = JsonResults.merge("Webkit", aggregated_results, incremental_json, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
+        incremental_json, _ = JsonResults._get_incremental_json(self._builder, FULL_RESULT_EXAMPLE, is_full_results_format=True)
+        merged_results, _ = JsonResults.merge("Webkit", aggregated_results, incremental_json, num_runs=jsonresults.JSON_RESULTS_MAX_BUILDS, sort_keys=True)
         self.assert_json_equal(merged_results, expected_incremental_results)
 
     def test_merge_empty_aggregated_results(self):

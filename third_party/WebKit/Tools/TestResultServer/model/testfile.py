@@ -85,11 +85,22 @@ class TestFile(DataStoreFile):
         return files
 
     @classmethod
+    def save_file(cls, file, data):
+        file_information = "master: %s, builder: %s, test_type: %s, name: %s." % (file.master, file.builder, file.test_type, file.name)
+        if file.save(data):
+            status_string = "Saved file. %s" % file_information
+            status_code = 200
+        else:
+            status_string = "Couldn't save file. %s" % file_information
+            status_code = 500
+        return status_string, status_code
+
+    @classmethod
     def overwrite_or_add_file(cls, master, builder, test_type, name, data):
         files = TestFile.get_files(master, builder, test_type, name)
         if not files:
             return cls.add_file(master, builder, test_type, name, data)
-        return files[0].save(data)
+        return cls.save_file(files[0], data)
 
     @classmethod
     def add_file(cls, master, builder, test_type, name, data):
@@ -98,15 +109,7 @@ class TestFile(DataStoreFile):
         file.builder = builder
         file.test_type = test_type
         file.name = name
-
-        if not file.save(data):
-            return False
-
-        logging.info(
-            "File saved, master: %s, builder: %s, test_type: %s, name: %s, key: %s.",
-            master, builder, test_type, file.name, str(file.data_keys))
-
-        return True
+        return cls.save_file(file, data)
 
     def save(self, data):
         if not self.save_data(data):

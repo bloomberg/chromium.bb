@@ -243,33 +243,31 @@ class Upload(webapp.RequestHandler):
             files.extend(item)
 
         errors = []
+        final_status_code = 200
         for file in files:
             if file.filename == "incremental_results.json":
-                # FIXME: Remove this check once we stop uploading incremental_results.json files for layout tests.
-                if test_type == "layout-tests":
-                    update_succeeded = True
-                else:
-                    update_succeeded = JsonResults.update(master, builder, test_type, file.value, is_full_results_format=False)
+                status_string, status_code = JsonResults.update(master, builder, test_type, file.value, is_full_results_format=False)
             elif file.filename == "times_ms.json":
                 # We never look at historical times_ms.json files, so we can overwrite the existing one if it exists.
-                update_succeeded = TestFile.overwrite_or_add_file(master, builder, test_type, file.filename, file.value)
+                status_string, status_code = TestFile.overwrite_or_add_file(master, builder, test_type, file.filename, file.value)
             else:
-                update_succeeded = TestFile.add_file(master, builder, test_type, file.filename, file.value)
+                status_string, status_code = TestFile.add_file(master, builder, test_type, file.filename, file.value)
                 # FIXME: Upload full_results.json files for non-layout tests as well and stop supporting the
                 # incremental_results.json file format.
-                if file.filename == "full_results.json" and test_type == "layout-tests":
-                    update_succeeded |= JsonResults.update(master, builder, test_type, file.value, is_full_results_format=True)
+                if status_code == 200 and file.filename == "full_results.json":
+                    status_string, status_code = JsonResults.update(master, builder, test_type, file.value, is_full_results_format=True)
 
-            if not update_succeeded:
-                errors.append(
-                    "Upload failed, master: %s, builder: %s, test_type: %s, name: %s." %
-                    (master, builder, test_type, file.filename))
+            if status_code == 200:
+                logging.info(status_string)
+            else:
+                logging.error(status_string)
+                errors.append(status_string)
+                final_status_code = status_code
 
         if errors:
             messages = "FAIL: " + "; ".join(errors)
-            logging.warning(messages)
-            self.response.set_status(500, messages)
-            self.response.out.write("FAIL")
+            self.response.set_status(final_status_code, messages)
+            self.response.out.write(messages)
         else:
             self.response.set_status(200)
             self.response.out.write("OK")
