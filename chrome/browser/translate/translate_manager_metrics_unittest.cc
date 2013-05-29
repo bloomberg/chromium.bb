@@ -43,25 +43,25 @@ class MetricsRecorder {
                              int expected_show_infobar) {
     Snapshot();
 
-    EXPECT_EQ(expected_disabled_by_prefs, GetCount(
+    EXPECT_EQ(expected_disabled_by_prefs, GetCountWithoutSnapshot(
         TranslateManagerMetrics::INITIATION_STATUS_DISABLED_BY_PREFS));
-    EXPECT_EQ(expected_disabled_by_switch, GetCount(
+    EXPECT_EQ(expected_disabled_by_switch, GetCountWithoutSnapshot(
         TranslateManagerMetrics::INITIATION_STATUS_DISABLED_BY_SWITCH));
-    EXPECT_EQ(expected_disabled_by_config, GetCount(
+    EXPECT_EQ(expected_disabled_by_config, GetCountWithoutSnapshot(
         TranslateManagerMetrics::INITIATION_STATUS_DISABLED_BY_CONFIG));
-    EXPECT_EQ(expected_language_is_not_supported, GetCount(
+    EXPECT_EQ(expected_language_is_not_supported, GetCountWithoutSnapshot(
         TranslateManagerMetrics::INITIATION_STATUS_LANGUAGE_IS_NOT_SUPPORTED));
-    EXPECT_EQ(expected_url_is_not_supported, GetCount(
+    EXPECT_EQ(expected_url_is_not_supported, GetCountWithoutSnapshot(
         TranslateManagerMetrics::INITIATION_STATUS_URL_IS_NOT_SUPPORTED));
-    EXPECT_EQ(expected_similar_languages, GetCount(
+    EXPECT_EQ(expected_similar_languages, GetCountWithoutSnapshot(
         TranslateManagerMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES));
-    EXPECT_EQ(expected_accept_languages, GetCount(
+    EXPECT_EQ(expected_accept_languages, GetCountWithoutSnapshot(
         TranslateManagerMetrics::INITIATION_STATUS_ACCEPT_LANGUAGES));
-    EXPECT_EQ(expected_auto_by_config, GetCount(
+    EXPECT_EQ(expected_auto_by_config, GetCountWithoutSnapshot(
         TranslateManagerMetrics::INITIATION_STATUS_AUTO_BY_CONFIG));
-    EXPECT_EQ(expected_auto_by_link, GetCount(
+    EXPECT_EQ(expected_auto_by_link, GetCountWithoutSnapshot(
         TranslateManagerMetrics::INITIATION_STATUS_AUTO_BY_LINK));
-    EXPECT_EQ(expected_show_infobar, GetCount(
+    EXPECT_EQ(expected_show_infobar, GetCountWithoutSnapshot(
         TranslateManagerMetrics::INITIATION_STATUS_SHOW_INFOBAR));
   }
 
@@ -75,6 +75,11 @@ class MetricsRecorder {
     return count - base_samples_->TotalCount();
   }
 
+  HistogramBase::Count GetCount(HistogramBase::Sample value) {
+    Snapshot();
+    return GetCountWithoutSnapshot(value);
+  }
+
  private:
   void Snapshot() {
     HistogramBase* histogram = StatisticsRecorder::FindHistogram(key_);
@@ -83,7 +88,7 @@ class MetricsRecorder {
     samples_ = histogram->SnapshotSamples();
   }
 
-  HistogramBase::Count GetCount(HistogramBase::Sample value) {
+  HistogramBase::Count GetCountWithoutSnapshot(HistogramBase::Sample value) {
     if (!samples_.get())
       return 0;
     HistogramBase::Count count = samples_->GetCount(value);
@@ -144,6 +149,7 @@ TEST(TranslateManagerMetricsTest, ReportLanguageDetectionError) {
   EXPECT_EQ(0, recorder.GetTotalCount());
   TranslateManagerMetrics::ReportLanguageDetectionError();
   EXPECT_EQ(1, recorder.GetTotalCount());
+
 }
 
 TEST(TranslateManagerMetricsTest, ReportedUnsupportedLanguage) {
@@ -152,4 +158,14 @@ TEST(TranslateManagerMetricsTest, ReportedUnsupportedLanguage) {
   EXPECT_EQ(0, recorder.GetTotalCount());
   TranslateManagerMetrics::ReportUnsupportedLanguage();
   EXPECT_EQ(1, recorder.GetTotalCount());
+}
+
+TEST(TranslateManagerMetricsTest, ReportedUnsupportedLanguageAtInitiation) {
+  const int ENGLISH = 25966;
+
+  MetricsRecorder recorder(TranslateManagerMetrics::GetMetricsName(
+      TranslateManagerMetrics::UMA_UNSUPPORTED_LANGUAGE_AT_INITIATION));
+  EXPECT_EQ(0, recorder.GetTotalCount());
+  TranslateManagerMetrics::ReportUnsupportedLanguageAtInitiation("en");
+  EXPECT_EQ(1, recorder.GetCount(ENGLISH));
 }

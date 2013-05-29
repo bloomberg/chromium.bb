@@ -4,8 +4,12 @@
 
 #include "chrome/browser/translate/translate_manager_metrics.h"
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
+#include "chrome/browser/language_usage_metrics.h"
 
 namespace {
 
@@ -17,6 +21,8 @@ const char kTranslateReportLanguageDetectionError[] =
     "Translate.ReportLanguageDetectionError";
 const char kTranslateServerReportedUnsupportedLanguage[] =
     "Translate.ServerReportedUnsupportedLanguage";
+const char kTranslateUnsupportedLanguageAtInitiation[] =
+    "Translate.UnsupportedLanguageAtInitiation";
 
 struct MetricsEntry {
   TranslateManagerMetrics::MetricsNameIndex index;
@@ -31,6 +37,8 @@ const MetricsEntry kMetricsEntries[] = {
     kTranslateReportLanguageDetectionError },
   { TranslateManagerMetrics::UMA_SERVER_REPORTED_UNSUPPORTED_LANGUAGE,
     kTranslateServerReportedUnsupportedLanguage },
+  { TranslateManagerMetrics::UMA_UNSUPPORTED_LANGUAGE_AT_INITIATION,
+    kTranslateUnsupportedLanguageAtInitiation },
 };
 
 COMPILE_ASSERT(arraysize(kMetricsEntries) == TranslateManagerMetrics::UMA_MAX,
@@ -52,6 +60,12 @@ void ReportLanguageDetectionError() {
 
 void ReportUnsupportedLanguage() {
   UMA_HISTOGRAM_COUNTS(kTranslateServerReportedUnsupportedLanguage, 1);
+}
+
+void ReportUnsupportedLanguageAtInitiation(const std::string& language) {
+  int language_code = LanguageUsageMetrics::ToLanguageCode(language);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kTranslateUnsupportedLanguageAtInitiation,
+                              language_code);
 }
 
 const char* GetMetricsName(MetricsNameIndex index) {

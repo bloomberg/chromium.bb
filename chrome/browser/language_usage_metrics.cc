@@ -35,19 +35,6 @@ void LanguageUsageMetrics::RecordApplicationLanguage(
 }
 
 // static
-void LanguageUsageMetrics::ParseAcceptLanguages(
-    const std::string& accept_languages,
-    std::set<int>* languages) {
-  languages->clear();
-  base::StringTokenizer locales(accept_languages, ",");
-  while (locales.GetNext()) {
-    const int language_code = ToLanguageCode(locales.token());
-    if (language_code != 0)
-      languages->insert(language_code);
-  }
-}
-
-// static
 int LanguageUsageMetrics::ToLanguageCode(const std::string& locale) {
   base::StringTokenizer parts(locale, "-_");
   if (!parts.GetNext())
@@ -68,4 +55,17 @@ int LanguageUsageMetrics::ToLanguageCode(const std::string& locale) {
   }
 
   return language_code;
+}
+
+// static
+void LanguageUsageMetrics::ParseAcceptLanguages(
+    const std::string& accept_languages,
+    std::set<int>* languages) {
+  languages->clear();
+  base::StringTokenizer locales(accept_languages, ",");
+  while (locales.GetNext()) {
+    const int language_code = ToLanguageCode(locales.token());
+    if (language_code != 0)
+      languages->insert(language_code);
+  }
 }

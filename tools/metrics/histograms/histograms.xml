@@ -9017,6 +9017,16 @@ other types of suffix sets.
   <summary>The time from starting translation to the completion.</summary>
 </histogram>
 
+<histogram name="Translate.UnsupportedLanguageAtInitiation" enum="LanguageCode">
+  <summary>
+    Logs an unsupported source language detected during initiation of the
+    Translate feature.  This is reported when the language detector successfully
+    detects the language of the webpage, but the language is not supported by
+    the translation server because it is too minor.  This metric allows us to
+    assess how important the unsupported language is for Google translate.
+  </summary>
+</histogram>
+
 <histogram name="Translate.UserActionDuration" units="milliseconds">
   <summary>
     The time from a page content language being determined to user requesting

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_MANAGER_METRICS_H_
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_MANAGER_METRICS_H_
 
+#include <string>
+
 namespace TranslateManagerMetrics {
 
 // An indexing type to query each UMA entry name via GetMetricsName() function.
@@ -13,6 +15,7 @@ enum MetricsNameIndex {
   UMA_INITIATION_STATUS,
   UMA_LANGUAGE_DETECTION_ERROR,
   UMA_SERVER_REPORTED_UNSUPPORTED_LANGUAGE,
+  UMA_UNSUPPORTED_LANGUAGE_AT_INITIATION,
   UMA_MAX,
 };
 
@@ -43,6 +46,8 @@ void ReportLanguageDetectionError();
 
 // Called when it turns out that translating page is in unsupported language.
 void ReportUnsupportedLanguage();
+
+void ReportUnsupportedLanguageAtInitiation(const std::string& language);
 
 // Provides UMA entry names for unit tests.
 const char* GetMetricsName(MetricsNameIndex index);

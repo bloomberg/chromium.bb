@@ -59,6 +59,7 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #ifdef FILE_MANAGER_EXTENSION
@@ -433,6 +434,9 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   if (target_lang.empty() || !IsSupportedLanguage(language_code)) {
     TranslateManagerMetrics::ReportInitiationStatus(
         TranslateManagerMetrics::INITIATION_STATUS_LANGUAGE_IS_NOT_SUPPORTED);
+    TranslateManagerMetrics::ReportUnsupportedLanguageAtInitiation(
+        language_code);
+
     return;
   }
 
