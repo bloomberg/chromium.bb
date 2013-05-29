@@ -317,6 +317,70 @@ testcase.intermediate.audioOpen = function(path) {
 };
 
 /**
+ * Tests if the video player shows up for the selected movie and that it is
+ * loaded successfully.
+ *
+ * @param {string} path Directory path to be tested.
+ */
+testcase.intermediate.videoOpen = function(path) {
+  var appId;
+  var videoAppId;
+  var steps = [
+    function() {
+      setupAndWaitUntilReady(path, steps.shift());
+    },
+    function(inAppId) {
+      appId = inAppId;
+      // Select the song.
+      callRemoteTestUtil(
+          'selectFile', appId, ['world.ogv'], steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      // Click on the label to enter the video player.
+      callRemoteTestUtil(
+          'fakeMouseClick',
+          appId,
+          ['#file-list li.table-row[selected] .filename-label span'],
+          steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      // Wait for the video player.
+      callRemoteTestUtil('waitForWindow',
+                         null,
+                         ['video_player.html'],
+                         steps.shift());
+    },
+    function(inAppId) {
+      videoAppId = inAppId;
+      // Wait for the video tag and verify the source.
+      callRemoteTestUtil('waitForElement',
+                         videoAppId,
+                         ['video[src]'],
+                         steps.shift());
+    },
+    function(element) {
+      chrome.test.assertEq(
+          'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
+              'external' + path + '/world.ogv',
+          element.attributes.src);
+      // Wait for the window's inner dimensions. Should be changed to the video
+      // size once the metadata is loaded.
+      callRemoteTestUtil('waitForWindowGeometry',
+                         videoAppId,
+                         [320, 192],
+                         steps.shift());
+    },
+    function(element) {
+      chrome.test.succeed();
+    }
+  ];
+  steps = steps.map(function(f) { return chrome.test.callbackPass(f); });
+  steps.shift()();
+};
+
+/**
  * Tests copying a file to the same directory and waits until the file lists
  * changes.
  *
@@ -436,6 +500,10 @@ testcase.audioOpenDownloads = function() {
   testcase.intermediate.audioOpen('/Downloads');
 };
 
+testcase.videoOpenDownloads = function() {
+  testcase.intermediate.videoOpen('/Downloads');
+};
+
 testcase.keyboardCopyDownloads = function() {
   testcase.intermediate.keyboardCopy('/Downloads');
 };
@@ -454,6 +522,10 @@ testcase.galleryOpenDrive = function() {
 
 testcase.audioOpenDrive = function() {
   testcase.intermediate.audioOpen('/drive/root');
+};
+
+testcase.videoOpenDrive = function() {
+  testcase.intermediate.videoOpen('/drive/root');
 };
 
 testcase.keyboardCopyDrive = function() {

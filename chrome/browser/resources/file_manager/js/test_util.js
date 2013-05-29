@@ -157,6 +157,27 @@ test.util.getFileList = function(contentWindow) {
 };
 
 /**
+ * Waits until the window is set to the specified dimensions.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {number} width Requested width.
+ * @param {number} height Requested height.
+ * @param {function(Object)} callback Success callback with the dimensions.
+ */
+test.util.waitForWindowGeometry = function(
+    contentWindow, width, height, callback) {
+  function helper() {
+    if (contentWindow.innerWidth == width &&
+        contentWindow.innerHeight == height) {
+       callback({width: width, height: height});
+       return;
+    }
+    window.setTimeout(helper, 50);
+  }
+  helper();
+};
+
+/**
  * Waits for an element and returns it as an array of it's attributes.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -529,6 +550,10 @@ test.util.registerRemoteTestUtils = function() {
         case 'getFileList':
           sendResponse(test.util.getFileList(contentWindow));
           return false;
+        case 'waitForWindowGeometry':
+          test.util.waitForWindowGeometry(
+              contentWindow, request.args[0], request.args[1], sendResponse);
+          return true;
         case 'waitForElement':
           test.util.waitForElement(
               contentWindow, request.args[0], request.args[1], sendResponse);

@@ -332,18 +332,6 @@ class FileManagerBrowserTestBase : public ExtensionApiTest,
 
   // Runs the file display test on the passed |volume|, shared by subclasses.
   void DoTestFileDisplay(TestVolume* volume);
-
-  // Runs the gallery open test on the passed |volume|, shared by subclasses.
-  void DoTestGalleryOpen(TestVolume* volume);
-
-  // Runs the audio open test on the passed |volume|, shared by subclasses.
-  void DoTestAudioOpen(TestVolume* volume);
-
-  // Runs the keyboard copy test on the passed |volume|, shared by subclasses.
-  void DoTestKeyboardCopy(TestVolume* volume);
-
-  // Runs the keyboard delete test on the passed |volume|, shared by subclasses.
-  void DoTestKeyboardDelete(TestVolume* volume);
 };
 
 void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
@@ -512,7 +500,20 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestAudioOpen) {
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAudioOpen) {
   ResultCatcher catcher;
   ASSERT_NO_FATAL_FAILURE(StartTest("galleryOpenDrive"));
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();}
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestVideoOpen) {
+  ResultCatcher catcher;
+  ASSERT_NO_FATAL_FAILURE(StartTest("galleryOpenDownloads"));
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestVideoOpen) {
+  ResultCatcher catcher;
+  ASSERT_NO_FATAL_FAILURE(StartTest("galleryOpenDrive"));
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
   ResultCatcher catcher;
