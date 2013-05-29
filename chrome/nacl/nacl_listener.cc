@@ -138,7 +138,7 @@ class BrowserValidationDBProxy : public NaClValidationDB {
     if (file_token->lo == 0 && file_token->hi == 0) {
       return false;
     }
-    IPC::PlatformFileForTransit ipc_fd;
+    IPC::PlatformFileForTransit ipc_fd = IPC::InvalidPlatformFileForTransit();
     base::FilePath ipc_path;
     if (!listener_->Send(new NaClProcessMsg_ResolveFileToken(file_token->lo,
                                                              file_token->hi,
