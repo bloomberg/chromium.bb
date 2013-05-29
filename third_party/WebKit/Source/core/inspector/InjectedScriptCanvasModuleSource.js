@@ -2353,8 +2353,11 @@ CanvasRenderingContext2DResource.prototype = {
      */
     _populateReplayableData: function(data, cache)
     {
+        var ctx = this.wrappedObject();
         data.currentAttributes = this._currentAttributesState();
-        data.originalCanvasCloned = TypeUtils.cloneIntoCanvas(this.wrappedObject().canvas);
+        data.originalCanvasCloned = TypeUtils.cloneIntoCanvas(ctx.canvas);
+        if (ctx.getContextAttributes)
+            data.originalContextAttributes = ctx.getContextAttributes();
     },
 
     /**
@@ -2365,7 +2368,7 @@ CanvasRenderingContext2DResource.prototype = {
     _doReplayCalls: function(data, cache)
     {
         var canvas = TypeUtils.cloneIntoCanvas(data.originalCanvasCloned);
-        var ctx = /** @type {!CanvasRenderingContext2D} */ (Resource.wrappedObject(canvas.getContext("2d")));
+        var ctx = /** @type {!CanvasRenderingContext2D} */ (Resource.wrappedObject(canvas.getContext("2d", data.originalContextAttributes)));
         this.setWrappedObject(ctx);
 
         for (var i = 0, n = data.calls.length; i < n; ++i) {
