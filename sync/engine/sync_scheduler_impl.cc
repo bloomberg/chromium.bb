@@ -43,6 +43,7 @@ bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
       return false;
     case NOT_MY_BIRTHDAY:
     case CLEAR_PENDING:
+    case DISABLED_BY_ADMIN:
       // If we send terminate sync early then |sync_cycle_ended| notification
       // would not be sent. If there were no actions then |ACTIONABLE_ERROR|
       // notification wouldnt be sent either. Then the UI layer would be left

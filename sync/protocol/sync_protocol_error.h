@@ -39,6 +39,9 @@ enum SyncProtocolErrorType {
   // Invalid Credential.
   INVALID_CREDENTIAL,
 
+  // An administrator disabled sync for this domain.
+  DISABLED_BY_ADMIN,
+
   // The default value.
   UNKNOWN_ERROR
 };
@@ -58,6 +61,10 @@ enum ClientAction {
 
   // Wipe this client of any sync data.
   DISABLE_SYNC_ON_CLIENT,
+
+  // Account is disabled by admin. Stop sync, clear prefs and show message on
+  // settings page that account is disabled.
+  STOP_SYNC_FOR_DISABLED_ACCOUNT,
 
   // The default. No action.
   UNKNOWN_ACTION

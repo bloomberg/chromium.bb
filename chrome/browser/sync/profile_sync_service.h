@@ -848,6 +848,11 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Whether the SyncBackendHost has been initialized.
   bool backend_initialized_;
 
+  // Set when sync receives DISABLED_BY_ADMIN error from server. Prevents
+  // ProfileSyncService from starting backend till browser restarted or user
+  // signed out.
+  bool sync_disabled_by_admin_;
+
   // Set to true if a signin has completed but we're still waiting for the
   // backend to refresh its credentials.
   bool is_auth_in_progress_;

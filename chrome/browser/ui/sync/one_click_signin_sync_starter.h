@@ -117,7 +117,14 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
   // signin is completed.
   void UntrustedSigninConfirmed(StartSyncMode response);
 
+  // GetProfileSyncService returns non-NULL pointer if sync is enabled.
+  // There is a scenario when when ProfileSyncService discovers that sync is
+  // disabled during setup. In this case GetProfileSyncService will return NULL,
+  // but we still need to call PSS::SetSetupInProgress(false). For this purpose
+  // call FinishProfileSyncServiceSetup() function.
   ProfileSyncService* GetProfileSyncService();
+
+  void FinishProfileSyncServiceSetup();
 
   // Displays the sync configuration UI.
   void ConfigureSync();

@@ -133,6 +133,7 @@ const char* GetErrorTypeString(sync_pb::SyncEnums::ErrorType error_type) {
     ENUM_CASE(sync_pb::SyncEnums, CLEAR_PENDING);
     ENUM_CASE(sync_pb::SyncEnums, TRANSIENT_ERROR);
     ENUM_CASE(sync_pb::SyncEnums, MIGRATION_DONE);
+    ENUM_CASE(sync_pb::SyncEnums, DISABLED_BY_ADMIN);
     ENUM_CASE(sync_pb::SyncEnums, UNKNOWN);
   }
   NOTREACHED();

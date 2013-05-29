@@ -1147,8 +1147,8 @@ void SyncSetupHandler::CloseSyncSetup() {
   if (IsActiveLogin()) {
     // Don't log a cancel event if the sync setup dialog is being
     // automatically closed due to an auth error.
-    if ((!sync_service || !sync_service->HasSyncSetupCompleted()) &&
-        sync_service->GetAuthError().state() == GoogleServiceAuthError::NONE) {
+    if (!sync_service || (!sync_service->HasSyncSetupCompleted() &&
+        sync_service->GetAuthError().state() == GoogleServiceAuthError::NONE)) {
       if (signin_tracker_.get()) {
         ProfileSyncService::SyncEvent(
             ProfileSyncService::CANCEL_DURING_SIGNON);

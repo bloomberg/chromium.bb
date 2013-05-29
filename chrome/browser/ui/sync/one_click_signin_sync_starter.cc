@@ -220,9 +220,7 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
     // Copy credentials from the old profile to the just-created profile,
     // and switch over to tracking that profile.
     new_signin_manager->CopyCredentialsFrom(*old_signin_manager);
-    ProfileSyncService* profile_sync_service = GetProfileSyncService();
-    if (profile_sync_service)
-      profile_sync_service->SetSetupInProgress(false);
+    FinishProfileSyncServiceSetup();
     Initialize(new_profile, NULL);
     DCHECK_EQ(profile_, new_profile);
 
@@ -281,9 +279,7 @@ void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
 
 void OneClickSigninSyncStarter::SigninFailed(
     const GoogleServiceAuthError& error) {
-  ProfileSyncService* profile_sync_service = GetProfileSyncService();
-  if (profile_sync_service)
-    profile_sync_service->SetSetupInProgress(false);
+  FinishProfileSyncServiceSetup();
   if (confirmation_required_ == CONFIRM_AFTER_SIGNIN) {
     switch (error.state()) {
       case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
@@ -311,8 +307,8 @@ void OneClickSigninSyncStarter::SigninSuccess() {
         profile_sync_service->OnUserChoseDatatypes(true,
                                                    syncer::ModelTypeSet());
         profile_sync_service->SetSyncSetupCompleted();
-        profile_sync_service->SetSetupInProgress(false);
       }
+      FinishProfileSyncServiceSetup();
       if (confirmation_required_ == CONFIRM_AFTER_SIGNIN) {
         string16 message;
         if (!profile_sync_service) {
@@ -377,6 +373,7 @@ void OneClickSigninSyncStarter::ConfigureSync() {
       }
     } else {
       // Sync is disabled - just display the settings page.
+      FinishProfileSyncServiceSetup();
       chrome::ShowSettings(browser_);
     }
   }
@@ -387,6 +384,13 @@ ProfileSyncService* OneClickSigninSyncStarter::GetProfileSyncService() {
   if (profile_->IsSyncAccessible())
     service = ProfileSyncServiceFactory::GetForProfile(profile_);
   return service;
+}
+
+void OneClickSigninSyncStarter::FinishProfileSyncServiceSetup() {
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (service)
+    service->SetSetupInProgress(false);
 }
 
 void OneClickSigninSyncStarter::ShowSyncSettingsPageOnSameTab() {

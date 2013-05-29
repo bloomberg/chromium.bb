@@ -132,13 +132,6 @@ void SyncPrefs::RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-// static
-bool SyncPrefs::IsSyncAccessibleOnIOThread(ProfileIOData* io_data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return ProfileSyncService::IsSyncEnabled() &&
-         !io_data->sync_disabled()->GetValue();
-}
-
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
   DCHECK(CalledOnValidThread());
   sync_pref_observers_.AddObserver(sync_pref_observer);

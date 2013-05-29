@@ -131,7 +131,8 @@ static bool IsTokenServiceRelevant(const std::string& service) {
 bool ShouldShowActionOnUI(
     const syncer::SyncProtocolError& error) {
   return (error.action != syncer::UNKNOWN_ACTION &&
-          error.action != syncer::DISABLE_SYNC_ON_CLIENT);
+          error.action != syncer::DISABLE_SYNC_ON_CLIENT &&
+          error.action != syncer::STOP_SYNC_FOR_DISABLED_ACCOUNT);
 }
 
 ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
@@ -149,6 +150,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       data_type_requested_sync_startup_(false),
       is_first_time_sync_configure_(false),
       backend_initialized_(false),
+      sync_disabled_by_admin_(false),
       is_auth_in_progress_(false),
       signin_(signin_manager),
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
@@ -1223,6 +1225,12 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // TODO(rsimha): Re-evaluate whether to also sign out the user here after
       // a dashboard clear. See http://crbug.com/240436.
       break;
+    case syncer::STOP_SYNC_FOR_DISABLED_ACCOUNT:
+      // Sync disabled by domain admin. we should stop syncing until next
+      // restart.
+      sync_disabled_by_admin_ = true;
+      ShutdownImpl(true);
+      break;
     default:
       NOTREACHED();
   }
@@ -1979,7 +1987,7 @@ void ProfileSyncService::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
-      // Disable sync if the user is signed out.
+      sync_disabled_by_admin_ = false;
       DisableForUser();
       break;
     default: {
@@ -2016,7 +2024,7 @@ bool ProfileSyncService::IsSyncEnabled() {
 }
 
 bool ProfileSyncService::IsManaged() const {
-  return sync_prefs_.IsManaged();
+  return sync_prefs_.IsManaged() || sync_disabled_by_admin_;
 }
 
 bool ProfileSyncService::ShouldPushChanges() {
