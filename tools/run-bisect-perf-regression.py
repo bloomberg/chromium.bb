@@ -17,6 +17,7 @@ import optparse
 import os
 import subprocess
 import sys
+import traceback
 
 
 def LoadConfigFile(path_to_file):
@@ -39,6 +40,9 @@ def LoadConfigFile(path_to_file):
 
     return local_vars['config']
   except:
+    print
+    traceback.print_exc()
+    print
     return None
 
 
@@ -148,7 +152,8 @@ def main():
 
   config = LoadConfigFile(path_to_file)
   if not config:
-    print 'Error: Could not load config file.'
+    print 'Error: Could not load config file. Double check your changes to '\
+          'run-bisect-perf-regression.cfg for syntax errors.'
     print
     return 1
 
