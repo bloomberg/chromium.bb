@@ -247,8 +247,15 @@ const char kDomAutomationController[]       = "dom-automation";
 
 // Loosen security. Needed for tests using some of the functionality of
 // |DOMAutomationController|.
-const char kReduceSecurityForDomAutomationTests[] =
-    "reduce-security-for-dom-automation-tests";
+const char kReduceSecurityForStatsCollectionTests[] =
+    "reduce-security-for-stats-collection-tests";
+
+// Specifies if the |StatsCollectionController| needs to be bound in the
+// renderer. This binding happens on per-frame basis and hence can potentially
+// be a performance bottleneck. One should only enable it when running a test
+// that needs to access the provided statistics.
+const char kStatsCollectionController[] =
+    "enable-stats-collection-bindings";
 
 // Enable gpu-accelerated SVG/W3C filters.
 const char kEnableAcceleratedFilters[]      = "enable-accelerated-filters";

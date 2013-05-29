@@ -299,6 +299,10 @@ class UITestBase {
   // This can be set to true to have the test run the dom automation case.
   bool dom_automation_enabled_;
 
+  // This can be set to true to enable the stats collection controller JS
+  // bindings.
+  bool stats_collection_controller_enabled_;
+
   // See set_template_user_data().
   base::FilePath template_user_data_;
 

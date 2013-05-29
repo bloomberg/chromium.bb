@@ -38,6 +38,7 @@
 #include "content/renderer/render_view_pepper_helper.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
+#include "content/renderer/stats_collection_observer.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
@@ -164,6 +165,7 @@ class RendererPpapiHost;
 class RendererWebColorChooserImpl;
 class RenderWidgetFullscreenPepper;
 class SpeechRecognitionDispatcher;
+class StatsCollectionController;
 class WebPluginDelegateProxy;
 struct CustomContextMenuContext;
 struct FaviconURL;
@@ -266,6 +268,12 @@ class CONTENT_EXPORT RenderViewImpl
   // Functions to add and remove observers for this object.
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);
+
+  // Returns the StatsCollectionObserver associated with this view, or NULL
+  // if one wasn't created;
+  StatsCollectionObserver* GetStatsCollectionObserver() {
+    return stats_collection_observer_.get();
+  }
 
   // Adds the given file chooser request to the file_chooser_completion_ queue
   // (see that var for more) and requests the chooser be displayed if there are
@@ -1518,14 +1526,20 @@ class CONTENT_EXPORT RenderViewImpl
   // DOM automation bindings are enabled.
   scoped_ptr<DomAutomationController> dom_automation_controller_;
 
+   // Allows JS to read out a variety of internal various metrics. The JS object
+   // is only exposed when the stats collection bindings are enabled.
+   scoped_ptr<StatsCollectionController> stats_collection_controller_;
+
   // This field stores drag/drop related info for the event that is currently
   // being handled. If the current event results in starting a drag/drop
   // session, this info is sent to the browser along with other drag/drop info.
   DragEventSourceInfo possible_drag_event_info_;
 
-  // NOTE: pepper_helper_ should be last member because its constructor calls
-  // AddObservers method of RenderViewImpl from c-tor.
+  // NOTE: pepper_helper_ and stats_collection_observer_ should be the last
+  // members because their constructors call the AddObservers method of
+  // RenderViewImpl.
   scoped_ptr<RenderViewPepperHelper> pepper_helper_;
+  scoped_ptr<StatsCollectionObserver> stats_collection_observer_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

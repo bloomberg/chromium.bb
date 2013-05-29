@@ -111,6 +111,8 @@
 #include "content/renderer/renderer_webcolorchooser_impl.h"
 #include "content/renderer/savable_resources.h"
 #include "content/renderer/speech_recognition_dispatcher.h"
+#include "content/renderer/stats_collection_controller.h"
+#include "content/renderer/stats_collection_observer.h"
 #include "content/renderer/text_input_client_observer.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/web_ui_extension.h"
@@ -713,6 +715,9 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
+  if (command_line.HasSwitch(switches::kStatsCollectionController))
+    stats_collection_observer_.reset(new StatsCollectionObserver(this));
+
 #if defined(OS_ANDROID)
   content::DeviceTelephonyInfo device_info;
 
@@ -802,6 +807,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
 
   if (command_line.HasSwitch(switches::kDomAutomationController))
     enabled_bindings_ |= BINDINGS_POLICY_DOM_AUTOMATION;
+  if (command_line.HasSwitch(switches::kStatsCollectionController))
+    enabled_bindings_ |= BINDINGS_POLICY_STATS_COLLECTION;
 
   ProcessViewLayoutFlags(command_line);
 
@@ -3654,6 +3661,15 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame) {
     dom_automation_controller_->BindToJavascript(frame,
                                                  "domAutomationController");
   }
+
+   if (enabled_bindings_ & BINDINGS_POLICY_STATS_COLLECTION) {
+     if (!stats_collection_controller_.get())
+       stats_collection_controller_.reset(new StatsCollectionController());
+     stats_collection_controller_->set_message_sender(
+         static_cast<RenderView*>(this));
+     stats_collection_controller_->BindToJavascript(frame,
+                                                  "statsCollectionController");
+   }
 }
 
 void RenderViewImpl::didCreateDocumentElement(WebFrame* frame) {

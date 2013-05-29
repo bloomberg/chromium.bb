@@ -49,17 +49,17 @@ void HistogramMessageFilter::OnGetBrowserHistogram(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   // Security: Only allow access to browser histograms when running in the
   // context of a test.
-  bool using_dom_controller =
+  bool using_stats_collection_controller =
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDomAutomationController);
+          switches::kStatsCollectionController);
   bool reduced_security =
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kReduceSecurityForDomAutomationTests);
+          switches::kReduceSecurityForStatsCollectionTests);
 
-  if (!using_dom_controller || !reduced_security) {
+  if (!using_stats_collection_controller || !reduced_security) {
     LOG(ERROR) << "Attempt at reading browser histogram without specifying "
-               << "--" << switches::kDomAutomationController << " and "
-               << "--" << switches::kReduceSecurityForDomAutomationTests
+               << "--" << switches::kStatsCollectionController << " and "
+               << "--" << switches::kReduceSecurityForStatsCollectionTests
                << " switches.";
     return;
   }
