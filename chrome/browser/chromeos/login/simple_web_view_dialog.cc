@@ -159,6 +159,8 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
 
   // LoginHandlerViews uses a constrained window for the password manager view.
   WebContentsModalDialogManager::CreateForWebContents(web_contents);
+  WebContentsModalDialogManager::FromWebContents(web_contents)->
+      set_delegate(this);
 }
 
 void SimpleWebViewDialog::Init() {
@@ -232,6 +234,14 @@ void SimpleWebViewDialog::Init() {
   UpdateReload(web_view_->web_contents()->IsLoading(), true);
 
   Layout();
+}
+
+void SimpleWebViewDialog::Layout() {
+  views::WidgetDelegateView::Layout();
+
+  FOR_EACH_OBSERVER(web_modal::WebContentsModalDialogHostObserver,
+                    observer_list_,
+                    OnPositionRequiresUpdate());
 }
 
 views::View* SimpleWebViewDialog::GetContentsView() {
@@ -340,6 +350,33 @@ void SimpleWebViewDialog::ExecuteCommandWithDisposition(
     default:
       NOTREACHED();
   }
+}
+
+web_modal::WebContentsModalDialogHost*
+    SimpleWebViewDialog::GetWebContentsModalDialogHost() {
+  return this;
+}
+
+gfx::NativeView SimpleWebViewDialog::GetHostView() const {
+  return GetWidget()->GetNativeView();
+}
+
+gfx::Point SimpleWebViewDialog::GetDialogPosition(const gfx::Size& size) {
+  // Center the widget.
+  gfx::Size widget_size = GetWidget()->GetWindowBoundsInScreen().size();
+  return gfx::Point(widget_size.width() / 2 - size.width() / 2,
+                    widget_size.height() / 2 - size.height() / 2);
+}
+
+void SimpleWebViewDialog::AddObserver(
+    web_modal::WebContentsModalDialogHostObserver* observer) {
+  if (observer && !observer_list_.HasObserver(observer))
+    observer_list_.AddObserver(observer);
+}
+
+void SimpleWebViewDialog::RemoveObserver(
+    web_modal::WebContentsModalDialogHostObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void SimpleWebViewDialog::LoadImages() {

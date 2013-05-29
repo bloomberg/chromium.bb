@@ -198,6 +198,8 @@ void WebUILoginView::Init(views::Widget* login_window) {
 
   // LoginHandlerViews uses a constrained window for the password manager view.
   WebContentsModalDialogManager::CreateForWebContents(web_contents);
+  WebContentsModalDialogManager::FromWebContents(web_contents)->
+      set_delegate(this);
 
   web_contents->SetDelegate(this);
   renderer_preferences_util::UpdateFromSystemSettings(
@@ -211,6 +213,33 @@ void WebUILoginView::Init(views::Widget* login_window) {
 
 const char* WebUILoginView::GetClassName() const {
   return kViewClassName;
+}
+
+web_modal::WebContentsModalDialogHost*
+    WebUILoginView::GetWebContentsModalDialogHost() {
+  return this;
+}
+
+gfx::NativeView WebUILoginView::GetHostView() const {
+  return GetWidget()->GetNativeView();
+}
+
+gfx::Point WebUILoginView::GetDialogPosition(const gfx::Size& size) {
+  // Center the widget.
+  gfx::Size widget_size = GetWidget()->GetWindowBoundsInScreen().size();
+  return gfx::Point(widget_size.width() / 2 - size.width() / 2,
+                    widget_size.height() / 2 - size.height() / 2);
+}
+
+void WebUILoginView::AddObserver(
+    web_modal::WebContentsModalDialogHostObserver* observer) {
+  if (observer && !observer_list_.HasObserver(observer))
+    observer_list_.AddObserver(observer);
+}
+
+void WebUILoginView::RemoveObserver(
+    web_modal::WebContentsModalDialogHostObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 bool WebUILoginView::AcceleratorPressed(
@@ -299,6 +328,10 @@ void WebUILoginView::SetUIEnabled(bool enabled) {
 void WebUILoginView::Layout() {
   DCHECK(webui_login_);
   webui_login_->SetBoundsRect(bounds());
+
+  FOR_EACH_OBSERVER(web_modal::WebContentsModalDialogHostObserver,
+                    observer_list_,
+                    OnPositionRequiresUpdate());
 }
 
 void WebUILoginView::OnLocaleChanged() {
