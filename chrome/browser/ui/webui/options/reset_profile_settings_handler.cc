@@ -43,7 +43,8 @@ void ResetProfileSettingsHandler::GetLocalizedValues(
     { "resetProfileSettingsLabel", IDS_RESET_PROFILE_SETTINGS_LABEL },
     { "resetDefaultSearchEngineCheckbox",
        IDS_RESET_PROFILE_DEFAULT_SEARCH_ENGINE_CHECKBOX },
-    { "resetHomepageCheckbox", IDS_RESET_PROFILE_HOMEPAGE_CHECKBOX },
+    { "resetStartupAndHomepageCheckbox",
+       IDS_RESET_PROFILE_STARTUP_HOMEPAGE_CHECKBOX },
     { "resetContentSettingsCheckbox",
        IDS_RESET_PROFILE_CONTENT_SETTINGS_CHECKBOX },
     { "resetCookiesAndSiteDataCheckbox", IDS_RESET_PROFILE_COOKIES_CHECKBOX },
@@ -100,11 +101,12 @@ void ResetProfileSettingsHandler::HandleResetProfileSettings(
 
   struct {
     const char* flag_name;
-    ProfileResetter::Resettable mask;
+    ProfileResetter::ResettableFlags mask;
   } name_to_flag[] = {
     { prefs::kResetDefaultSearchEngine,
       ProfileResetter::DEFAULT_SEARCH_ENGINE },
-    { prefs::kResetHomepage, ProfileResetter::HOMEPAGE },
+    { prefs::kResetHomepage, ProfileResetter::HOMEPAGE |
+                             ProfileResetter::STARTUP_PAGE },
     { prefs::kResetContentSettings, ProfileResetter::CONTENT_SETTINGS },
     { prefs::kResetCookiesAndSiteData, ProfileResetter::COOKIES_AND_SITE_DATA },
     { prefs::kResetExtensions, ProfileResetter::EXTENSIONS },

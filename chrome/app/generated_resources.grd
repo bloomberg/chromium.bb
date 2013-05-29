@@ -15302,10 +15302,10 @@ First, create a limited user in Chrome on this device. You can then configure th
       What would you like to reset?
     </message>
     <message name="IDS_RESET_PROFILE_DEFAULT_SEARCH_ENGINE_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
-      Default Search Engine
+      Search Engines
     </message>
-    <message name="IDS_RESET_PROFILE_HOMEPAGE_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
-      Homepage
+    <message name="IDS_RESET_PROFILE_STARTUP_HOMEPAGE_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
+      Home and startup pages
     </message>
     <message name="IDS_RESET_PROFILE_CONTENT_SETTINGS_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
       Content settings
