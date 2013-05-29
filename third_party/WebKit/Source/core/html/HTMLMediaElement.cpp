@@ -501,11 +501,6 @@ void HTMLMediaElement::scheduleDelayedAction(DelayedActionType actionType)
     if (RuntimeEnabledFeatures::videoTrackEnabled() && (actionType & LoadTextTrackResource))
         m_pendingActionFlags |= LoadTextTrackResource;
 
-#if USE(PLATFORM_TEXT_TRACK_MENU)
-    if (actionType & TextTrackChangesNotification)
-        m_pendingActionFlags |= TextTrackChangesNotification;
-#endif
-
     if (!m_loadTimer.isActive())
         m_loadTimer.startOneShot(0);
 }
@@ -541,11 +536,6 @@ void HTMLMediaElement::loadTimerFired(Timer<HTMLMediaElement>*)
         else
             loadInternal();
     }
-
-#if USE(PLATFORM_TEXT_TRACK_MENU)
-    if (RuntimeEnabledFeatures::videoTrackEnabled() && (m_pendingActionFlags & TextTrackChangesNotification))
-        notifyMediaPlayerOfTextTrackChanges();
-#endif
 
     m_pendingActionFlags = 0;
 }
@@ -1188,11 +1178,6 @@ void HTMLMediaElement::textTrackModeChanged(TextTrack* track)
         }
     } else if (track->trackType() == TextTrack::AddTrack && track->mode() != TextTrack::disabledKeyword())
         textTrackAddCues(track, track->cues());
-
-#if USE(PLATFORM_TEXT_TRACK_MENU)
-    if (platformTextTrackMenu())
-        platformTextTrackMenu()->trackWasSelected(track->platformTextTrack());
-#endif
 
     configureTextTrackDisplay();
     updateActiveTextTrackCues(currentTime());
@@ -3463,13 +3448,6 @@ void HTMLMediaElement::userCancelledLoad()
 
 void HTMLMediaElement::clearMediaPlayer(int flags)
 {
-#if USE(PLATFORM_TEXT_TRACK_MENU)
-    if (platformTextTrackMenu()) {
-        m_platformMenu->setClient(0);
-        m_platformMenu = 0;
-    }
-#endif
-
     removeAllInbandTracks();
 
     closeMediaSource();
