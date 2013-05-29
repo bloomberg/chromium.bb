@@ -4,6 +4,7 @@
 
 import collections
 import itertools
+import re
 
 
 def SkipHeader(objdump_output_lines):
@@ -13,8 +14,9 @@ def SkipHeader(objdump_output_lines):
   return itertools.islice(objdump_output_lines, objdump_header_size, None)
 
 
-ObjdumpLine = collections.namedtuple('ObjdumpLine',
-                                     ['address', 'bytes', 'command'])
+Instruction = collections.namedtuple(
+    'Instruction',
+    ['address', 'bytes', 'disasm'])
 
 
 def ParseLine(line):
@@ -26,16 +28,27 @@ def ParseLine(line):
 
   There are three columns (separated with tabs):
     address: offset for a particular line
-    bytes: few bytes which encode a given command
-    command: textual representation of command
+    bytes: few bytes which encode a given instruction
+    disasm: textual representation of the instruction
 
   Args:
       line: objdump line (a single one).
   Returns
-      ObjdumpLine tuple.
+      Instruction tuple.
   """
 
-  address, bytes, command = line.strip().split('\t')
-  assert command.strip() != ''
+  address, bytes, disasm = line.strip().split('\t')
+  assert disasm.strip() != ''
 
-  return ObjdumpLine(address, bytes.split(), command)
+  return Instruction(address, bytes.split(), disasm)
+
+
+def CanonicalizeInstruction(insn):
+  # Canonicalize whitespaces.
+  disasm = ' '.join(insn.disasm.split())
+
+  # Find and remove "rex" or "rex.WRXB" prefix from line
+  rex_prefix = re.compile(r'(rex([.]W?R?X?B?)? )')
+  disasm = re.sub(rex_prefix, '', disasm, count=1)
+
+  return Instruction(insn.address, insn.bytes, disasm)

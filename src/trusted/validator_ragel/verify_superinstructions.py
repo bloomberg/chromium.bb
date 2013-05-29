@@ -17,22 +17,6 @@ import objdump_parser
 import validator
 
 
-def RemoveRexFromAssemblerLine(line):
-  """Remove rex from assembler line.
-
-  Find and remove "rex" or "rex.WRXB" prefix from line."
-
-  Args:
-      line: source line (binary string)
-  Returns
-      line with rex prefix removed.
-  """
-
-  rex_prefix = re.compile(r'(rex([.]W?R?X?B?)? )')
-
-  return re.sub(rex_prefix, '', line, count=1)
-
-
 def ValidateSuperinstructionWithRegex32(superinstruction):
   """Validate superinstruction with ia32 set of regexps.
 
@@ -45,14 +29,10 @@ def ValidateSuperinstructionWithRegex32(superinstruction):
   actions.  For these we generate either "True" or "False".
 
   Args:
-      superinstruction: list of "ObjdumpLine"s from the objdump output
+      superinstruction: list of objdump_parser.Instruction tuples
   Returns:
       True if superinstruction is valid, otherwise False
   """
-
-  # Pick only disassembler text from objdump output
-  disasm = [RemoveRexFromAssemblerLine(re.sub(' +', ' ', line.command))
-            for line in superinstruction]
 
   call_jmp = re.compile(
       r'(call|jmp) ' # call or jmp
@@ -61,14 +41,15 @@ def ValidateSuperinstructionWithRegex32(superinstruction):
   and_for_call_jmp = re.compile(
       r'and [$]0xffffffe0,(?P<register>%e[a-z]+)$')
 
-  dangerous_instruction = disasm[-1]
+  dangerous_instruction = superinstruction[-1].disasm
 
   if call_jmp.match(dangerous_instruction):
     # If "dangerous instruction" is call or jmp then we need to check if two
     # lines match
-    assert len(disasm) == 2
-    register_and = and_for_call_jmp.match(disasm[0]).group('register')
-    register_call_jmp = call_jmp.match(disasm[1]).group('register')
+    assert len(superinstruction) == 2
+    register_and = (
+        and_for_call_jmp.match(superinstruction[0].disasm).group('register'))
+    register_call_jmp = call_jmp.match(dangerous_instruction).group('register')
     if register_and == register_call_jmp:
       return True
     return False
@@ -90,16 +71,12 @@ def ValidateSuperinstructionWithRegex64(superinstruction):
   superinstruction always produce "True" or throw an error.
 
   Args:
-      superinstruction: list of "ObjdumpLine"s from the objdump output
+      superinstruction: list of objdump_parser.Instruction tuples
   Returns:
       True if superinstruction is valid, otherwise False
   """
 
-  # Pick only disassembler text from objdump output
-  disasm = [RemoveRexFromAssemblerLine(re.sub(' +', ' ', line.command))
-            for line in superinstruction]
-
-  dangerous_instruction = disasm[-1]
+  dangerous_instruction = superinstruction[-1].disasm
 
   # This is dangerous instructions in naclcall/nacljmp
   callq_jmpq = re.compile(
@@ -114,10 +91,13 @@ def ValidateSuperinstructionWithRegex64(superinstruction):
   if callq_jmpq.match(dangerous_instruction):
     # If "dangerous instruction" is callq or jmpq then we need to check if all
     # three lines match
-    assert len(disasm) == 3
-    register_and = and_for_callq_jmpq.match(disasm[0]).group('register')
-    register_add = add_for_callq_jmpq.match(disasm[1]).group('register')
-    register_callq_jmpq = callq_jmpq.match(disasm[2]).group('register')
+    assert len(superinstruction) == 3
+    register_and = (
+        and_for_callq_jmpq.match(superinstruction[0].disasm).group('register'))
+    register_add = (
+        add_for_callq_jmpq.match(superinstruction[1].disasm).group('register'))
+    register_callq_jmpq = (
+        callq_jmpq.match(dangerous_instruction).group('register'))
     # Double-check that registers are 32-bit and convert them to 64-bit so
     # they can be compared
     if register_and[1] == 'e':
@@ -149,24 +129,24 @@ def ValidateSuperinstructionWithRegex64(superinstruction):
   lea_r15_rdi_rdi = re.compile(r'lea [(]%r15,%rdi,1[)],%rdi$')
 
   if string_instruction_rsi_no_rdi.match(dangerous_instruction):
-    assert len(disasm) == 3
-    assert mov_esi_esi.match(disasm[0]) is not None
-    assert lea_r15_rsi_rsi.match(disasm[1]) is not None
+    assert len(superinstruction) == 3
+    assert mov_esi_esi.match(superinstruction[0].disasm) is not None
+    assert lea_r15_rsi_rsi.match(superinstruction[1].disasm) is not None
     return True
 
   if string_instruction_rdi_no_rsi.match(dangerous_instruction):
-    assert len(disasm) == 3
-    assert mov_edi_edi.match(disasm[0]) is not None
-    assert lea_r15_rdi_rdi.match(disasm[1]) is not None
+    assert len(superinstruction) == 3
+    assert mov_edi_edi.match(superinstruction[0].disasm) is not None
+    assert lea_r15_rdi_rdi.match(superinstruction[1].disasm) is not None
     # vmaskmovdqu is disabled for compatibility with the previous validator
     return not dangerous_instruction.startswith('vmaskmovdqu ')
 
   if string_instruction_rsi_rdi.match(dangerous_instruction):
-    assert len(disasm) == 5
-    assert mov_esi_esi.match(disasm[0]) is not None
-    assert lea_r15_rsi_rsi.match(disasm[1]) is not None
-    assert mov_edi_edi.match(disasm[2]) is not None
-    assert lea_r15_rdi_rdi.match(disasm[3]) is not None
+    assert len(superinstruction) == 5
+    assert mov_esi_esi.match(superinstruction[0].disasm) is not None
+    assert lea_r15_rsi_rsi.match(superinstruction[1].disasm) is not None
+    assert mov_edi_edi.match(superinstruction[2].disasm) is not None
+    assert lea_r15_rdi_rdi.match(superinstruction[3].disasm) is not None
     return True
 
   assert False, ('Unknown "dangerous" instruction: {0}'.
@@ -274,6 +254,7 @@ def ProcessSuperinstructionsFile(filename, bitness, gas, objdump, out_file):
         while len(objdump_bytes) < len(superinstruction_bytes):
           nextline = next(objdump_iter).decode()
           instruction = objdump_parser.ParseLine(nextline)
+          instruction = objdump_parser.CanonicalizeInstruction(instruction)
           superinstruction.append(instruction)
           objdump_bytes += instruction.bytes
         # Bytes in objdump output in and source file should match
