@@ -177,7 +177,7 @@ class TestUDPClientSocket : public MockUDPClientSocket {
 // Creates TestUDPClientSockets and keeps endpoints reported via OnConnect.
 class TestSocketFactory : public MockClientSocketFactory {
  public:
-  TestSocketFactory() : create_failing_sockets_(false) {}
+  TestSocketFactory() : fail_next_socket_(false) {}
   virtual ~TestSocketFactory() {}
 
   virtual DatagramClientSocket* CreateDatagramClientSocket(
@@ -185,8 +185,10 @@ class TestSocketFactory : public MockClientSocketFactory {
       const RandIntCallback& rand_int_cb,
       net::NetLog* net_log,
       const net::NetLog::Source& source) OVERRIDE {
-    if (create_failing_sockets_)
+    if (fail_next_socket_) {
+      fail_next_socket_ = false;
       return new FailingUDPClientSocket(&empty_data_, net_log);
+    }
     SocketDataProvider* data_provider = mock_data().GetNext();
     TestUDPClientSocket* socket = new TestUDPClientSocket(this,
                                                           data_provider,
@@ -200,7 +202,7 @@ class TestSocketFactory : public MockClientSocketFactory {
   }
 
   std::vector<IPEndPoint> remote_endpoints_;
-  bool create_failing_sockets_;
+  bool fail_next_socket_;
 
  private:
   StaticSocketDataProvider empty_data_;
@@ -858,10 +860,24 @@ TEST_F(DnsTransactionTest, SyncSearchQuery) {
 }
 
 TEST_F(DnsTransactionTest, ConnectFailure) {
-  socket_factory_->create_failing_sockets_ = true;
+  socket_factory_->fail_next_socket_ = true;
   transaction_ids_.push_back(0);  // Needed to make a DnsUDPAttempt.
   TransactionHelper helper0("www.chromium.org", dns_protocol::kTypeA,
                             ERR_CONNECTION_REFUSED);
+  EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
+}
+
+TEST_F(DnsTransactionTest, ConnectFailureFollowedBySuccess) {
+  // Retry after server failure.
+  config_.attempts = 2;
+  ConfigureFactory();
+  // First server connection attempt fails.
+  transaction_ids_.push_back(0);  // Needed to make a DnsUDPAttempt.
+  socket_factory_->fail_next_socket_ = true;
+  // Second DNS query succeeds.
+  AddAsyncQueryAndResponse(0 /* id */, kT0HostName, kT0Qtype,
+                           kT0ResponseDatagram, arraysize(kT0ResponseDatagram));
+  TransactionHelper helper0(kT0HostName, kT0Qtype, kT0RecordCount);
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
 }
 

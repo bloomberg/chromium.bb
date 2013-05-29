@@ -802,14 +802,16 @@ class DnsTransactionImpl : public DnsTransaction,
     if (first_completed == attempts_.size())
       return;
 
-    std::vector<int> num_rounds(session_->config().nameservers.size());
+    size_t num_servers = session_->config().nameservers.size();
     for (size_t i = 0; i < first_completed; ++i) {
-      unsigned server_index = attempts_[i]->GetServerIndex();
-      int server_round = num_rounds[server_index]++;
       // Don't record lost packet unless attempt is in pending state.
       if (!attempts_[i]->is_pending())
         continue;
-      session_->RecordLostPacket(server_index, server_round);
+      unsigned server_index = attempts_[i]->GetServerIndex();
+      // Servers are rotated in round robin, so server round can be calculated
+      // from attempt index.
+      size_t server_round = i / num_servers;
+      session_->RecordLostPacket(server_index, static_cast<int>(server_round));
     }
   }
 
