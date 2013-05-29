@@ -328,6 +328,8 @@
         'view.h',
         'view_constants.cc',
         'view_constants.h',
+        'view_constants_aura.cc',
+        'view_constants_aura.h',
         'view_aura.cc',
         'view_model.cc',
         'view_model.h',
@@ -421,6 +423,8 @@
         'widget/widget_message_filter.cc',
         'widget/widget_message_filter.h',
         'widget/widget_observer.h',
+        'widget/window_reorderer.cc',
+        'widget/window_reorderer.h',
         'win/fullscreen_handler.cc',
         'win/fullscreen_handler.h',
         'win/hwnd_message_handler.cc',
@@ -493,6 +497,8 @@
           'sources/': [
             ['exclude', 'corewm'],
             ['exclude', 'widget/desktop_aura'],
+            ['exclude', 'widget/window_reorderer.h'],
+            ['exclude', 'widget/window_reorderer.cc'],
           ],
           'sources!': [
             'widget/native_widget_aura_window_observer.cc',
@@ -723,6 +729,7 @@
         'widget/native_widget_unittest.cc',
         'widget/native_widget_win_unittest.cc',
         'widget/widget_unittest.cc',
+        'widget/window_reorderer_unittest.cc',
         'run_all_unittests.cc',
       ],
       'conditions': [
@@ -766,6 +773,7 @@
           'sources/': [
             ['exclude', 'corewm'],
             ['exclude', 'widget/desktop_aura'],
+            ['exclude', 'widget/window_reorderer_unittest.cc']
           ],
         }],
       ],

@@ -10,6 +10,7 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
+#include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -21,6 +22,10 @@ class NativeViewHostAuraTest : public ViewsTestBase {
 
   NativeViewHostAura* native_host() {
     return static_cast<NativeViewHostAura*>(host_->native_wrapper_.get());
+  }
+
+  NativeViewHost* host() {
+    return host_.get();
   }
 
   Widget* child() {
@@ -71,6 +76,23 @@ TEST_F(NativeViewHostAuraTest, StopObservingNativeViewOnDestruct) {
   EXPECT_TRUE(child_win->HasObserver(aura_host));
   DestroyHost();
   EXPECT_FALSE(child_win->HasObserver(aura_host));
+}
+
+// Tests that the kHostViewKey is correctly set and cleared.
+TEST_F(NativeViewHostAuraTest, HostViewPropertyKey) {
+  // Create the NativeViewHost and attach a NativeView.
+  CreateHost();
+  aura::Window* child_win = child()->GetNativeView();
+  EXPECT_EQ(host(), child_win->GetProperty(views::kHostViewKey));
+
+  host()->Detach();
+  EXPECT_FALSE(child_win->GetProperty(views::kHostViewKey));
+
+  host()->Attach(child_win);
+  EXPECT_EQ(host(), child_win->GetProperty(views::kHostViewKey));
+
+  DestroyHost();
+  EXPECT_FALSE(child_win->GetProperty(views::kHostViewKey));
 }
 
 }  // namespace views

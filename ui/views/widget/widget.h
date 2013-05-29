@@ -573,6 +573,15 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns the widget's layer, if any.
   ui::Layer* GetLayer();
 
+  // Reorders the widget's child NativeViews which are associated to the view
+  // tree (eg via a NativeViewHost) to match the z-order of the views in the
+  // view tree. The z-order of views with layers relative to views with
+  // associated NativeViews is used to reorder the NativeView layers. This
+  // method assumes that the widget's child layers which are owned by a view are
+  // already in the correct z-order relative to each other and does no
+  // reordering if there are no views with an associated NativeView.
+  void ReorderNativeViews();
+
   // Schedules an update to the root layers. The actual processing occurs when
   // GetRootLayers() is invoked.
   void UpdateRootLayers();
