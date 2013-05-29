@@ -10,6 +10,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_cgl.h"
@@ -17,7 +18,18 @@
 
 namespace gfx {
 
+namespace {
+
 bool g_support_renderer_switching;
+
+struct CGLRendererInfoObjDeleter {
+  void operator()(CGLRendererInfoObj* x) {
+    if (x)
+      CGLDestroyRendererInfo(*x);
+  }
+};
+
+}  // namespace
 
 static CGLPixelFormatObj GetPixelFormat() {
   static CGLPixelFormatObj format;
@@ -245,7 +257,8 @@ bool GLContextCGL::GetTotalGpuMemory(size_t* bytes) {
                            &num_renderers) != kCGLNoError)
     return false;
 
-  ScopedCGLRendererInfoObj scoper(renderer_info);
+  scoped_ptr<CGLRendererInfoObj,
+      CGLRendererInfoObjDeleter> scoper(&renderer_info);
 
   for (GLint renderer_index = 0;
        renderer_index < num_renderers;
@@ -284,10 +297,6 @@ GLContextCGL::~GLContextCGL() {
 
 GpuPreference GLContextCGL::GetGpuPreference() {
   return gpu_preference_;
-}
-
-void ScopedCGLDestroyRendererInfo::operator()(CGLRendererInfoObj x) const {
-  CGLDestroyRendererInfo(x);
 }
 
 }  // namespace gfx

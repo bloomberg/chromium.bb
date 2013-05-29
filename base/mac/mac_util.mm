@@ -18,7 +18,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_generic_obj.h"
+#include "base/mac/scoped_ioobject.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -647,34 +647,24 @@ bool IsOSLaterThanMountainLion_DontCallThis() {
 }
 #endif
 
-namespace {
-
-// ScopedGenericObj functor for IOObjectRelease().
-class ScopedReleaseIOObject {
- public:
-  void operator()(io_object_t x) const {
-    IOObjectRelease(x);
-  }
-};
-
-}  // namespace
-
 std::string GetModelIdentifier() {
-  ScopedGenericObj<io_service_t, ScopedReleaseIOObject>
-      platform_expert(IOServiceGetMatchingService(
-          kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice")));
-  if (!platform_expert)
-    return "";
-  ScopedCFTypeRef<CFDataRef> model_data(
-      static_cast<CFDataRef>(IORegistryEntryCreateCFProperty(
-          platform_expert,
-          CFSTR("model"),
-          kCFAllocatorDefault,
-          0)));
-  if (!model_data)
-    return "";
-  return reinterpret_cast<const char*>(
-      CFDataGetBytePtr(model_data));
+  std::string return_string;
+  ScopedIOObject<io_service_t> platform_expert(
+      IOServiceGetMatchingService(kIOMasterPortDefault,
+                                  IOServiceMatching("IOPlatformExpertDevice")));
+  if (platform_expert) {
+    ScopedCFTypeRef<CFDataRef> model_data(
+        static_cast<CFDataRef>(IORegistryEntryCreateCFProperty(
+            platform_expert,
+            CFSTR("model"),
+            kCFAllocatorDefault,
+            0)));
+    if (model_data) {
+      return_string =
+          reinterpret_cast<const char*>(CFDataGetBytePtr(model_data));
+    }
+  }
+  return return_string;
 }
 
 bool ParseModelIdentifier(const std::string& ident,
