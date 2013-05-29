@@ -328,7 +328,7 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnRequestObjectGarbageCollected(int request_id);
   // V8 garbage collection callback for |object|.
   static void WeakCallbackForPersistObject(v8::Isolate* isolate,
-                                           v8::Persistent<v8::Value> object,
+                                           v8::Persistent<v8::Value>* object,
                                            void* param);
 
   // IPC message handlers.

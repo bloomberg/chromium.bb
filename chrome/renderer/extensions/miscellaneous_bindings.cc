@@ -164,10 +164,9 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
   };
 
   static void GCCallback(v8::Isolate* isolate,
-                         v8::Persistent<v8::Value> object,
-                         void* parameter) {
+                         v8::Persistent<v8::Object>* object,
+                         GCCallbackArgs* args) {
     v8::HandleScope handle_scope;
-    GCCallbackArgs* args = static_cast<GCCallbackArgs*>(parameter);
     v8::Handle<v8::Context> context = args->callback->CreationContext();
     v8::Context::Scope context_scope(context);
     WebKit::WebScopedMicrotaskSuppression suppression;

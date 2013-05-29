@@ -1013,14 +1013,13 @@ void BrowserPlugin::PersistRequestObject(
           std::make_pair(id, new_item));
   CHECK(result.second);  // Inserted in the map.
   AliveV8PermissionRequestItem* request_item = result.first->second;
-  weak_request.MakeWeak(isolate, request_item, WeakCallbackForPersistObject);
+  weak_request.MakeWeak(
+      isolate, static_cast<void*>(request_item), WeakCallbackForPersistObject);
 }
 
 // static
 void BrowserPlugin::WeakCallbackForPersistObject(
-    v8::Isolate* isolate, v8::Persistent<v8::Value> object, void* param) {
-  v8::Persistent<v8::Object> persistent_object =
-      v8::Persistent<v8::Object>::Cast(object);
+    v8::Isolate* isolate, v8::Persistent<v8::Value>* object, void* param) {
 
   AliveV8PermissionRequestItem* item_ptr =
       static_cast<AliveV8PermissionRequestItem*>(param);
@@ -1028,8 +1027,7 @@ void BrowserPlugin::WeakCallbackForPersistObject(
   base::WeakPtr<BrowserPlugin> plugin = item_ptr->second;
   delete item_ptr;
 
-  persistent_object.Dispose(isolate);
-  persistent_object.Clear();
+  object->Dispose();
 
   if (plugin) {
     // Asynchronously remove item from |alive_v8_permission_request_objects_|.
