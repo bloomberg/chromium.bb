@@ -11,6 +11,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -287,6 +288,8 @@ ExtensionSystemImpl::ExtensionSystemImpl(Profile* profile)
 }
 
 ExtensionSystemImpl::~ExtensionSystemImpl() {
+  if (rules_registry_service_)
+    rules_registry_service_->Shutdown();
 }
 
 void ExtensionSystemImpl::Shutdown() {
@@ -310,7 +313,21 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
   usb_device_resource_manager_.reset(
       new ApiResourceManager<UsbDeviceResource>(BrowserThread::IO));
 
+  rules_registry_service_.reset(new RulesRegistryService(profile_));
+  rules_registry_service_->RegisterDefaultRulesRegistries();
+
   shared_->Init(extensions_enabled);
+}
+
+void ExtensionSystemImpl::InitForOTRProfile() {
+  // Only initialize the RulesRegistryService of the OTR ExtensionSystem if the
+  // regular ExtensionSystem has been initialized properly, as we depend on it.
+  // Some ChromeOS browser tests don't initialize the regular ExtensionSystem
+  // in login-tests.
+  if (extension_service()) {
+    rules_registry_service_.reset(new RulesRegistryService(profile_));
+    rules_registry_service_->RegisterDefaultRulesRegistries();
+  }
 }
 
 ExtensionService* ExtensionSystemImpl::extension_service() {
@@ -347,6 +364,10 @@ LazyBackgroundTaskQueue* ExtensionSystemImpl::lazy_background_task_queue() {
 
 EventRouter* ExtensionSystemImpl::event_router() {
   return shared_->event_router();
+}
+
+RulesRegistryService* ExtensionSystemImpl::rules_registry_service() {
+  return rules_registry_service_.get();
 }
 
 ApiResourceManager<SerialConnection>*

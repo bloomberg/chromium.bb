@@ -37,7 +37,8 @@ bool RulesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
 
   RulesRegistryService* rules_registry_service =
-      RulesRegistryService::Get(profile());
+      ExtensionSystemFactory::GetForProfile(profile())->
+      rules_registry_service();
   rules_registry_ = rules_registry_service->GetRulesRegistry(event_name);
   // Raw access to this function is not available to extensions, therefore
   // there should never be a request for a nonexisting rules registry.

@@ -146,7 +146,7 @@ TEST_F(OffTheRecordProfileImplTest, GetHostZoomMap) {
   child_profile->InitHostZoomMap();
 
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
-      child_profile.get(), true);
+      child_profile.get(), false);
 
   // Prepare child host zoom map.
   HostZoomMap* child_zoom_map =

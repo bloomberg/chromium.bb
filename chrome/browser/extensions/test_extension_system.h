@@ -51,6 +51,7 @@ class TestExtensionSystem : public ExtensionSystem {
   void CreateSocketManager();
 
   virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE {}
+  virtual void InitForOTRProfile() OVERRIDE {}
   void SetExtensionService(ExtensionService* service);
   virtual ExtensionService* extension_service() OVERRIDE;
   virtual ManagementPolicy* management_policy() OVERRIDE;
@@ -62,6 +63,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual ExtensionInfoMap* info_map() OVERRIDE;
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;
   virtual EventRouter* event_router() OVERRIDE;
+  virtual RulesRegistryService* rules_registry_service() OVERRIDE;
   virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
       OVERRIDE;
   virtual ApiResourceManager<Socket>* socket_manager() OVERRIDE;

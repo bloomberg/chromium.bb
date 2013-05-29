@@ -25,6 +25,7 @@ class Profile;
 namespace extensions {
 // Unfortunately, for the ApiResourceManager<> template classes, we don't seem
 // to be able to forward-declare because of compilation errors on Windows.
+class AlarmManager;
 class Blacklist;
 class EventRouter;
 class Extension;
@@ -33,7 +34,9 @@ class ExtensionWarningBadgeService;
 class ExtensionWarningService;
 class LazyBackgroundTaskQueue;
 class ManagementPolicy;
+class MessageService;
 class NavigationObserver;
+class RulesRegistryService;
 class StandardManagementPolicyProvider;
 class StateStore;
 class UserScriptMaster;
@@ -59,6 +62,8 @@ class ExtensionSystem : public BrowserContextKeyedService {
   // Component extensions are always enabled, external and user extensions
   // are controlled by |extensions_enabled|.
   virtual void InitForRegularProfile(bool extensions_enabled) = 0;
+
+  virtual void InitForOTRProfile() = 0;
 
   // The ExtensionService is created at startup.
   virtual ExtensionService* extension_service() = 0;
@@ -88,6 +93,9 @@ class ExtensionSystem : public BrowserContextKeyedService {
 
   // The EventRouter is created at startup.
   virtual EventRouter* event_router() = 0;
+
+  // The RulesRegistryService is created at startup.
+  virtual RulesRegistryService* rules_registry_service() = 0;
 
   // The SerialConnection ResourceManager is created at startup.
   virtual ApiResourceManager<SerialConnection>*
@@ -140,6 +148,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual void Shutdown() OVERRIDE;
 
   virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE;
+  virtual void InitForOTRProfile() OVERRIDE;
 
   virtual ExtensionService* extension_service() OVERRIDE;  // shared
   virtual ManagementPolicy* management_policy() OVERRIDE;  // shared
@@ -151,6 +160,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
       OVERRIDE;  // shared
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
   virtual EventRouter* event_router() OVERRIDE;  // shared
+  virtual RulesRegistryService* rules_registry_service()
+      OVERRIDE;  // shared
   virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
       OVERRIDE;
   virtual ApiResourceManager<Socket>* socket_manager() OVERRIDE;
@@ -240,6 +251,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
   scoped_ptr<ApiResourceManager<
                UsbDeviceResource> > usb_device_resource_manager_;
+  scoped_ptr<RulesRegistryService> rules_registry_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemImpl);
 };
