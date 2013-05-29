@@ -17,7 +17,7 @@ function OobeWebUITest() {}
 OobeWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
-  browsePreload: 'chrome://oobe',
+  browsePreload: 'chrome://oobe#login',
 
   isAsync: false
 };

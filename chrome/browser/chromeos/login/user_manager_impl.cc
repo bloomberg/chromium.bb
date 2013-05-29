@@ -242,6 +242,16 @@ const UserList& UserManagerImpl::GetUsers() const {
   return users_;
 }
 
+UserList UserManagerImpl::GetUsersAdmittedForMultiProfile() const {
+  UserList result;
+  const UserList& users = GetUsers();
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    if ((*it)->GetType() == User::USER_TYPE_REGULAR && !(*it)->is_logged_in())
+      result.push_back(*it);
+  }
+  return result;
+}
+
 const UserList& UserManagerImpl::GetLoggedInUsers() const {
   return logged_in_users_;
 }

@@ -517,6 +517,8 @@
         'browser/chromeos/login/tpm_password_fetcher.h',
         'browser/chromeos/login/user.cc',
         'browser/chromeos/login/user.h',
+        'browser/chromeos/login/user_adding_screen.cc',
+        'browser/chromeos/login/user_adding_screen.h',
         'browser/chromeos/login/user_image.cc',
         'browser/chromeos/login/user_image.h',
         'browser/chromeos/login/user_image_loader.cc',

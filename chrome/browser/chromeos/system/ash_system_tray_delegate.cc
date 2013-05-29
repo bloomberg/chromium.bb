@@ -59,6 +59,7 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -585,25 +586,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (UserManager::Get()->GetLoggedInUsers().size() >= 3)
       return;
 
-    // Check whether there're regular users on the list that are not
-    // currently logged in.
-    const UserList& users = UserManager::Get()->GetUsers();
-    bool has_regular_not_logged_in_users = false;
-    for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-      const User* user = (*it);
-      if (user->GetType() == User::USER_TYPE_REGULAR &&
-          !user->is_logged_in()) {
-        has_regular_not_logged_in_users = true;
-        break;
-      }
-    }
-
     // Launch sign in screen to add another user to current session.
-    if (has_regular_not_logged_in_users) {
-      ash::Shell::GetInstance()->
-          desktop_background_controller()->MoveDesktopToLockedContainer();
-      ShowLoginWizard(std::string());
-    }
+    if (UserManager::Get()->GetUsersAdmittedForMultiProfile().size())
+      UserAddingScreen::Get()->Start();
   }
 
   virtual void ShutDown() OVERRIDE {

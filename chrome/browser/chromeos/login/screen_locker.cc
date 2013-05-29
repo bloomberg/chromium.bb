@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_screen_locker.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -59,7 +60,8 @@ const int kUnlockGuardTimeoutMs = 400;
 
 // Observer to start ScreenLocker when the screen lock
 class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
-                           public content::NotificationObserver {
+                           public content::NotificationObserver,
+                           public chromeos::UserAddingScreen::Observer {
  public:
   ScreenLockObserver() : session_started_(false) {
     registrar_.Add(this,
@@ -96,6 +98,12 @@ class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
 
   virtual void LockScreen() OVERRIDE {
     VLOG(1) << "Received LockScreen D-Bus signal from session manager";
+    if (chromeos::UserAddingScreen::Get()->IsRunning()) {
+      VLOG(1) << "Waiting for user adding screen to stop";
+      chromeos::UserAddingScreen::Get()->AddObserver(this);
+      chromeos::UserAddingScreen::Get()->Cancel();
+      return;
+    }
     if (session_started_ &&
         chromeos::UserManager::Get()->CanCurrentUserLock()) {
       chromeos::ScreenLocker::Show();
@@ -114,6 +122,11 @@ class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
   virtual void UnlockScreen() OVERRIDE {
     VLOG(1) << "Received UnlockScreen D-Bus signal from session manager";
     chromeos::ScreenLocker::Hide();
+  }
+
+  virtual void OnUserAddingFinished() OVERRIDE {
+    chromeos::UserAddingScreen::Get()->RemoveObserver(this);
+    LockScreen();
   }
 
  private:

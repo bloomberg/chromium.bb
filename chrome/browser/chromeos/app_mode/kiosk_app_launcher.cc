@@ -255,7 +255,7 @@ void KioskAppLauncher::OnProfilePrepared(Profile* profile) {
   (new chromeos::StartupAppLauncher(profile, app_id_))->Start();
 
   if (LoginDisplayHostImpl::default_host())
-    LoginDisplayHostImpl::default_host()->OnSessionStart();
+    LoginDisplayHostImpl::default_host()->Finalize();
   UserManager::Get()->SessionStarted();
 
   ReportLaunchResult(KioskAppLaunchError::NONE);

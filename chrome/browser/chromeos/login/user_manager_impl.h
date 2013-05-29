@@ -52,6 +52,7 @@ class UserManagerImpl
   virtual void Shutdown() OVERRIDE;
   virtual UserImageManager* GetUserImageManager() OVERRIDE;
   virtual const UserList& GetUsers() const OVERRIDE;
+  virtual UserList GetUsersAdmittedForMultiProfile() const OVERRIDE;
   virtual const UserList& GetLoggedInUsers() const OVERRIDE;
   virtual const UserList& GetLRULoggedInUsers() OVERRIDE;
   virtual void UserLoggedIn(const std::string& email,

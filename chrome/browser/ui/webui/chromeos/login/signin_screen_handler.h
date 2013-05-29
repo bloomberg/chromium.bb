@@ -72,6 +72,9 @@ class SigninScreenHandlerDelegate {
   // Cancels current password changed flow.
   virtual void CancelPasswordChangedFlow() = 0;
 
+  // Cancels user adding.
+  virtual void CancelUserAdding() = 0;
+
   // Create a new Google account.
   virtual void CreateAccount() = 0;
 
@@ -309,6 +312,7 @@ class SigninScreenHandler
   void HandleOpenProxySettings();
   void HandleLoginVisible(const std::string& source);
   void HandleCancelPasswordChangedFlow();
+  void HandleCancelUserAdding();
   void HandleMigrateUserData(const std::string& password);
   void HandleResyncUserData();
   void HandleLoginUIStateChanged(const std::string& source, bool new_value);

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -46,9 +47,9 @@ class LoginDisplayHost {
   // Called when browsing session starts before creating initial browser.
   virtual void BeforeSessionStart() = 0;
 
-  // Called when browsing session starts so
+  // Called when user enters or returns to browsing session so
   // LoginDisplayHost instance may delete itself.
-  virtual void OnSessionStart() = 0;
+  virtual void Finalize() = 0;
 
   // Called when a login has completed successfully.
   virtual void OnCompleteLogin() = 0;
@@ -80,6 +81,11 @@ class LoginDisplayHost {
   // Returns current WizardController, if it exists.
   // Result should not be stored.
   virtual WizardController* GetWizardController() = 0;
+
+  // Starts screen for adding user into session.
+  // |completion_callback| called before display host shutdown.
+  // |completion_callback| can be null.
+  virtual void StartUserAdding(const base::Closure& completion_callback) = 0;
 
   // Starts sign in screen.
   virtual void StartSignInScreen() = 0;

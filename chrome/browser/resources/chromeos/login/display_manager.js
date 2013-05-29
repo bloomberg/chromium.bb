@@ -505,7 +505,7 @@ cr.define('cr.ui.login', function() {
      */
     isSignInToAddScreen: function() {
       return document.documentElement.getAttribute('screen') ==
-          'login-add-user';
+          'user-adding';
     },
 
     /**
@@ -527,6 +527,17 @@ cr.define('cr.ui.login', function() {
    * Initializes display manager.
    */
   DisplayManager.initialize = function() {
+    // Extracting screen type from URL.
+    var hash = window.location.hash;
+    var screenType;
+    if (!hash) {
+      console.error('Screen type not found. Setting default value "login".');
+      screenType = 'login';
+    } else {
+      screenType = hash.substring(1);
+    }
+    document.documentElement.setAttribute('screen', screenType);
+
     var link = $('enterprise-info-hint-link');
     link.addEventListener(
         'click', DisplayManager.handleEnterpriseHintLinkClick);

@@ -82,10 +82,13 @@
 namespace {
 
 // URL which corresponds to the login WebUI.
-const char kLoginURL[] = "chrome://oobe/login";
+const char kLoginURL[] = "chrome://oobe/login#login";
 
 // URL which corresponds to the OOBE WebUI.
-const char kOobeURL[] = "chrome://oobe";
+const char kOobeURL[] = "chrome://oobe#login";
+
+// URL which corresponds to the user adding WebUI.
+const char kUserAddingURL[] = "chrome://oobe/login#user-adding";
 
 // Duration of sign-in transition animation.
 const int kLoginFadeoutTransitionDurationMs = 700;
@@ -302,7 +305,7 @@ void LoginDisplayHostImpl::BeforeSessionStart() {
   session_starting_ = true;
 }
 
-void LoginDisplayHostImpl::OnSessionStart() {
+void LoginDisplayHostImpl::Finalize() {
   DVLOG(1) << "Session starting";
   ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToUnlockedContainer();
@@ -310,9 +313,11 @@ void LoginDisplayHostImpl::OnSessionStart() {
     wizard_controller_->OnSessionStart();
   g_browser_process->platform_part()->profile_helper()->ClearSigninProfile(
       base::Closure());
-  // Display host is deleted once animation is completed
-  // since sign in screen widget has to stay alive.
-  StartAnimation();
+  if (!IsRunningUserAdding()) {
+    // Display host is deleted once animation is completed
+    // since sign in screen widget has to stay alive.
+    StartAnimation();
+  }
   ShutdownDisplayHost(false);
 }
 
@@ -395,6 +400,34 @@ void LoginDisplayHostImpl::StartWizard(
 
 WizardController* LoginDisplayHostImpl::GetWizardController() {
   return wizard_controller_.get();
+}
+
+void LoginDisplayHostImpl::StartUserAdding(
+    const base::Closure& completion_callback) {
+  restore_path_ = RESTORE_ADD_USER_INTO_SESSION;
+  completion_callback_ = completion_callback;
+  LOG(INFO) << "Login WebUI >> user adding";
+  if (!login_window_)
+    LoadURL(GURL(kUserAddingURL));
+
+  // Lock container can be transparent after lock screen animation.
+  aura::Window* lock_container = ash::Shell::GetContainer(
+      ash::Shell::GetPrimaryRootWindow(),
+      ash::internal::kShellWindowId_LockScreenContainersContainer);
+  lock_container->layer()->SetOpacity(1.0);
+
+  ash::Shell::GetInstance()->
+      desktop_background_controller()->MoveDesktopToLockedContainer();
+
+  sign_in_controller_.reset();  // Only one controller in a time.
+  sign_in_controller_.reset(new chromeos::ExistingUserController(this));
+  SetOobeProgressBarVisible(oobe_progress_bar_visible_ = false);
+  SetStatusAreaVisible(true);
+  SetShutdownButtonEnabled(true);
+  sign_in_controller_->Init(
+      chromeos::UserManager::Get()->GetUsersAdmittedForMultiProfile());
+  CHECK(webui_login_display_);
+  GetOobeUI()->ShowSigninScreen(webui_login_display_, webui_login_display_);
 }
 
 void LoginDisplayHostImpl::StartSignInScreen() {
@@ -588,6 +621,9 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   if (post_quit_task)
     base::MessageLoop::current()->Quit();
+
+  if (!completion_callback_.is_null())
+    completion_callback_.Run();
 }
 
 void LoginDisplayHostImpl::StartAnimation() {
@@ -694,6 +730,9 @@ void LoginDisplayHostImpl::StartPostponedWebUI() {
     case RESTORE_SIGN_IN:
       StartSignInScreen();
       break;
+    case RESTORE_ADD_USER_INTO_SESSION:
+      StartUserAdding(completion_callback_);
+      break;
     default:
       NOTREACHED();
       break;
@@ -770,6 +809,10 @@ void LoginDisplayHostImpl::ResetLoginWindowAndView() {
   login_view_ = NULL;
 }
 
+bool LoginDisplayHostImpl::IsRunningUserAdding() {
+  return restore_path_ == RESTORE_ADD_USER_INTO_SESSION;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // external
 
@@ -832,8 +875,8 @@ void ShowLoginWizard(const std::string& first_screen_name) {
       (first_screen_name.empty() && oobe_complete) ||
       first_screen_name == chromeos::WizardController::kLoginScreenName;
 
-  chromeos::LoginDisplayHost* display_host;
-  display_host = new chromeos::LoginDisplayHostImpl(screen_bounds);
+  chromeos::LoginDisplayHost* display_host =
+      new chromeos::LoginDisplayHostImpl(screen_bounds);
 
   if (show_login_screen) {
     // R11 > R12 migration fix. See http://crosbug.com/p/4898.

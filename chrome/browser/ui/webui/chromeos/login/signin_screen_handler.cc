@@ -381,6 +381,7 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("signinButton", IDS_LOGIN_BUTTON);
   builder->Add("shutDown", IDS_SHUTDOWN_BUTTON);
   builder->Add("addUser", IDS_ADD_USER_BUTTON);
+  builder->Add("cancelUserAdding", IDS_CANCEL_USER_ADDING);
   builder->Add("browseAsGuest", IDS_GO_INCOGNITO_BUTTON);
   builder->Add("cancel", IDS_CANCEL);
   builder->Add("signOutUser", IDS_SCREEN_LOCK_SIGN_OUT);
@@ -786,6 +787,8 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("loginVisible", &SigninScreenHandler::HandleLoginVisible);
   AddCallback("cancelPasswordChangedFlow",
               &SigninScreenHandler::HandleCancelPasswordChangedFlow);
+  AddCallback("cancelUserAdding",
+              &SigninScreenHandler::HandleCancelUserAdding);
   AddCallback("migrateUserData", &SigninScreenHandler::HandleMigrateUserData);
   AddCallback("resyncUserData", &SigninScreenHandler::HandleResyncUserData);
   AddCallback("loginUIStateChanged",
@@ -1427,6 +1430,11 @@ void SigninScreenHandler::HandleCancelPasswordChangedFlow() {
   StartClearingCookies(base::Bind(
       &SigninScreenHandler::CancelPasswordChangedFlowInternal,
       weak_factory_.GetWeakPtr()));
+}
+
+void SigninScreenHandler::HandleCancelUserAdding() {
+  if (delegate_)
+    delegate_->CancelUserAdding();
 }
 
 void SigninScreenHandler::HandleMigrateUserData(

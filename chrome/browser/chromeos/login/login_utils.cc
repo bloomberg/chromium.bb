@@ -312,7 +312,7 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   // guarantees that the message loop will be referenced by the
   // browser before it is dereferenced by the login host.
   if (login_host)
-    login_host->OnSessionStart();
+    login_host->Finalize();
   UserManager::Get()->SessionStarted();
 }
 

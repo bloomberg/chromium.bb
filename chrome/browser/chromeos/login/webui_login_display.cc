@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -218,6 +219,14 @@ void WebUILoginDisplay::CancelPasswordChangedFlow() {
   DCHECK(delegate_);
   if (delegate_)
     delegate_->CancelPasswordChangedFlow();
+}
+
+void WebUILoginDisplay::CancelUserAdding() {
+  if (!UserAddingScreen::Get()->IsRunning()) {
+    LOG(ERROR) << "User adding screen not running.";
+    return;
+  }
+  UserAddingScreen::Get()->Cancel();
 }
 
 void WebUILoginDisplay::CreateAccount() {

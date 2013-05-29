@@ -54,6 +54,7 @@ class WebUILoginDisplay : public LoginDisplay,
 
   // SigninScreenHandlerDelegate implementation:
   virtual void CancelPasswordChangedFlow() OVERRIDE;
+  virtual void CancelUserAdding() OVERRIDE;
   virtual void CreateAccount() OVERRIDE;
   virtual void CompleteLogin(const UserContext& user_context) OVERRIDE;
   virtual void Login(const UserContext& user_context) OVERRIDE;

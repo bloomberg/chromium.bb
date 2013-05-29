@@ -69,7 +69,8 @@ html[dir=rtl] .header-bar-item {
 
 #login-header-bar #shutdown-button,
 #login-header-bar #add-user-button,
-#login-header-bar #guest-user-button {
+#login-header-bar #guest-user-button,
+#login-header-bar #cancel-multiple-sign-in-button {
   -webkit-padding-start: 24px;
   background-position: left center;
   background-repeat: no-repeat;
@@ -78,7 +79,8 @@ html[dir=rtl] .header-bar-item {
 
 html[dir=rtl] #login-header-bar #shutdown-button,
 html[dir=rtl] #login-header-bar #add-user-button,
-html[dir=rtl] #login-header-bar #guest-user-button {
+html[dir=rtl] #login-header-bar #guest-user-button,
+html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button {
   background-position: right center;
 }
 
@@ -92,6 +94,11 @@ html[dir=rtl] #login-header-bar #guest-user-button {
 
 #login-header-bar #guest-user-button {
   background-image: url('chrome://theme/IDR_ICON_GUEST_WHITE');
+}
+
+#login-header-bar #cancel-multiple-sign-in-button {
+  /* TODO(dzhioev): replace with appropriate image when possible. */
+  background-image: url('chrome://theme/IDR_PANEL_CLOSE');
 }
 
 .button-restricted {

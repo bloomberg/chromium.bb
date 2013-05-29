@@ -25,6 +25,7 @@ class MockUserManager : public UserManager {
 
   MOCK_METHOD0(Shutdown, void(void));
   MOCK_CONST_METHOD0(GetUsers, const UserList&(void));
+  MOCK_CONST_METHOD0(GetUsersAdmittedForMultiProfile, UserList(void));
   MOCK_CONST_METHOD0(GetLoggedInUsers, const UserList&(void));
   MOCK_METHOD0(GetLRULoggedInUsers, const UserList&(void));
   MOCK_METHOD3(UserLoggedIn, void(

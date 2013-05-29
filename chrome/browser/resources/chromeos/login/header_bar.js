@@ -42,9 +42,11 @@ cr.define('login', function() {
           this.handleGuestClick_);
       $('sign-out-user-button').addEventListener('click',
           this.handleSignoutClick_);
+      $('cancel-multiple-sign-in-button').addEventListener('click',
+          this.handleCancelMultipleSignInClick_);
 
       if (loadTimeData.getBoolean('enableAppMode') &&
-          loadTimeData.getString('screenType') == 'login') {
+          document.documentElement.getAttribute('screen') == 'login') {
         login.AppsMenuButton.decorate($('show-apps-button'));
       }
     },
@@ -131,6 +133,15 @@ cr.define('login', function() {
     },
 
     /**
+     * Cancel user adding button handler.
+     * @private
+     */
+    handleCancelMultipleSignInClick_: function(e) {
+      chrome.send('cancelUserAdding');
+      e.stopPropagation();
+    },
+
+    /**
      * If true then "Browse as Guest" button is shown.
      * @type {boolean}
      */
@@ -195,6 +206,7 @@ cr.define('login', function() {
           $('add-user-button').hidden && $('cancel-add-user-button').hidden;
       $('apps-header-bar-item').hidden = !this.hasApps_ ||
           (!gaiaIsActive && !accountPickerIsActive);
+      $('cancel-multiple-sign-in-item').hidden = !isMultiProfilesUI;
 
       if (!$('apps-header-bar-item').hidden)
         $('show-apps-button').didShow();

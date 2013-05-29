@@ -330,21 +330,6 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
     localized_strings->SetString("bootIntoWallpaper", "off");
   }
 
-  // TODO(nkostylev): Make sure that only one type of login UI
-  // is active at a time.
-  // OobeUI is used for these use cases:
-  // 1. Out-of-box / login
-  // 2. Lock screen.
-  // 3. Multi-profiles sign in (add user to current session).
-  if (LoginDisplayHostImpl::default_host()) {
-    if (!UserManager::Get()->IsUserLoggedIn())
-      localized_strings->SetString("screenType", "login");
-    else
-      localized_strings->SetString("screenType", "login-add-user");
-  } else {
-    localized_strings->SetString("screenType", "lock");
-  }
-
   bool keyboard_driven_oobe = false;
   system::StatisticsProvider::GetInstance()->GetMachineFlag(
       chromeos::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);

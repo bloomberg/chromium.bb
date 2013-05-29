@@ -534,6 +534,9 @@ Press any key to continue exploring.
   <message name="IDS_KIOSK_APPS_BUTTON" desc="Text shown on a button that brings up the kiosk apps menu on login screen">
     Apps
   </message>
+  <message name="IDS_CANCEL_USER_ADDING" desc="Text shown on a button that cancel adding user into multiprofile session.">
+    Cancel multiple sign-in
+  </message>
   <message name="IDS_LOGIN_OOBE_HELP_DIALOG_TITLE" desc="Default title for help dialogs during OOBE/login">
     Help
   </message>
