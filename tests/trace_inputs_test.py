@@ -269,7 +269,7 @@ if sys.platform != 'win32':
 
     @staticmethod
     def _load_context(lines, initial_cwd):
-      context = trace_inputs.Strace.Context(lambda _: False, initial_cwd)
+      context = trace_inputs.Strace.Context(lambda _: False, None, initial_cwd)
       for line in lines:
         context.on_line(*line)
       done = any(p._done for p in context._process_lookup.itervalues())
@@ -331,6 +331,7 @@ if sys.platform != 'win32':
         expected = (
           'Found internal inconsitency in process lifetime detection '
           'while finding the root process',
+          None,
           None,
           None,
           None,

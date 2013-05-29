@@ -499,16 +499,47 @@ def fix_python_path(cmd):
   return out
 
 
-def create_thunk():
+def create_subprocess_thunk():
+  """Creates a small temporary script to start the child process.
+
+  This thunk doesn't block, its unique name is used to identify it as the
+  parent.
+  """
   handle, name = tempfile.mkstemp(prefix='trace_inputs_thunk', suffix='.py')
-  os.write(
-      handle,
-      (
-        'import subprocess\n'
-        'import sys\n'
-        'sys.exit(subprocess.call(sys.argv[2:]))\n'
-      ))
-  os.close(handle)
+  try:
+    os.write(
+        handle,
+        (
+          'import subprocess, sys\n'
+          'sys.exit(subprocess.call(sys.argv[2:]))\n'
+        ))
+  finally:
+    os.close(handle)
+  return name
+
+
+def create_exec_thunk():
+  """Creates a small temporary script to start the child executable.
+
+  Reads from the file handle provided as the fisrt argument to block, then
+  execv() the command to be traced.
+  """
+  handle, name = tempfile.mkstemp(prefix='trace_inputs_thunk', suffix='.py')
+  try:
+    os.write(
+        handle,
+        (
+          'import os, sys\n'
+          'fd = int(sys.argv[1])\n'
+          # This will block until the controlling process writes a byte on the
+          # pipe. It will do so once the tracing tool, e.g. strace, is ready to
+          # trace.
+          'os.read(fd, 1)\n'
+          'os.close(fd)\n'
+          'os.execv(sys.argv[2], sys.argv[2:])\n'
+        ))
+  finally:
+    os.close(handle)
   return name
 
 
@@ -1161,10 +1192,14 @@ class Strace(ApiBase):
 
     Uses late-binding to processes the cwd of each process. The problem is that
     strace generates one log file per process it traced but doesn't give any
-    information about which process was started when and by who. So we don't
-    even know which process is the initial one. So process the logs out of
-    order and use late binding with RelativePath to be able to deduce the
-    initial directory of each process once all the logs are parsed.
+    information about which process was started when and by who. So process the
+    logs out of order and use late binding with RelativePath to be able to
+    deduce the initial directory of each process once all the logs are parsed.
+
+    TODO(maruel): Use the script even in the non-sudo case, so log parsing can
+    be done in two phase: first find the root process, then process the child
+    processes in order. With that, it should be possible to not use RelativePath
+    anymore. This would significantly simplify the code!
     """
     class Process(ApiBase.Context.Process):
       """Represents the state of a process.
@@ -1540,9 +1575,15 @@ class Strace(ApiBase):
         #assert not touch_only, render(filepath)
         self.add_file(filepath, touch_only)
 
-    def __init__(self, blacklist, initial_cwd):
+    def __init__(self, blacklist, root_pid, initial_cwd):
+      """|root_pid| may be None when the root process is not known.
+
+      In that case, a search is done after reading all the logs to figure out
+      the root process.
+      """
       super(Strace.Context, self).__init__(blacklist)
       assert_is_renderable(initial_cwd)
+      self.root_pid = root_pid
       self.initial_cwd = initial_cwd
 
     def render(self):
@@ -1557,18 +1598,28 @@ class Strace(ApiBase):
       self.get_or_set_proc(pid).on_line(line.strip())
 
     def to_results(self):
-      """Finds back the root process and verify consistency."""
-      # TODO(maruel): Absolutely unecessary, fix me.
-      root = [p for p in self._process_lookup.itervalues() if not p.parentid]
-      if len(root) != 1:
+      """If necessary, finds back the root process and verify consistency."""
+      if not self.root_pid:
+        # The non-sudo case. The traced process was started by strace itself,
+        # so the pid of the traced process is not known.
+        root = [p for p in self._process_lookup.itervalues() if not p.parentid]
+        if len(root) == 1:
+          self.root_process = root[0]
+          # Save it for later.
+          self.root_pid = self.root_process.pid
+      else:
+        # The sudo case. The traced process was started manually so its pid is
+        # known.
+        self.root_process = self._process_lookup.get(self.root_pid)
+      if not self.root_process:
         raise TracingFailure(
             'Found internal inconsitency in process lifetime detection '
             'while finding the root process',
             None,
             None,
             None,
-            sorted(p.pid for p in root))
-      self.root_process = root[0]
+            self.root_pid,
+            sorted(self._process_lookup))
       process = self.root_process.to_results_process()
       if sorted(self._process_lookup) != sorted(p.pid for p in process.all):
         raise TracingFailure(
@@ -1609,9 +1660,18 @@ class Strace(ApiBase):
     def __init__(self, logname, use_sudo):
       super(Strace.Tracer, self).__init__(logname)
       self.use_sudo = use_sudo
+      if use_sudo:
+        # TODO(maruel): Use the jump script systematically to make it easy to
+        # figure out the root process, so RelativePath is not necessary anymore.
+        self._script = create_exec_thunk()
 
     def trace(self, cmd, cwd, tracename, output):
-      """Runs strace on an executable."""
+      """Runs strace on an executable.
+
+      When use_sudo=True, it is a 3-phases process: start the thunk, start
+      sudo strace with the pid of the thunk and then have the thunk os.execve()
+      the process to trace.
+      """
       logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
       assert os.path.isabs(cmd[0]), cmd[0]
       assert os.path.isabs(cwd), cwd
@@ -1626,10 +1686,10 @@ class Strace(ApiBase):
       if output:
         stdout = subprocess.PIPE
         stderr = subprocess.STDOUT
+
       # Ensure all file related APIs are hooked.
       traces = ','.join(Strace.Context.traces() + ['file'])
-      trace_cmd = [
-        'strace',
+      flags = [
         # Each child process has its own trace file. It is necessary because
         # strace may generate corrupted log file if multiple processes are
         # heavily doing syscalls simultaneously.
@@ -1647,29 +1707,78 @@ class Strace(ApiBase):
         '-e', 'trace=%s' % traces,
         '-o', self._logname + '.' + tracename,
       ]
-      if self.use_sudo is True:
-        trace_cmd.insert(0, 'sudo')
-      child = subprocess.Popen(
-          trace_cmd + cmd,
-          cwd=cwd,
-          stdin=subprocess.PIPE,
-          stdout=stdout,
-          stderr=stderr)
-      out = child.communicate()[0]
-      # TODO(maruel): Walk the logs and figure out the root process would
-      # simplify parsing the logs a *lot*.
+
+      if self.use_sudo:
+        pipe_r, pipe_w = os.pipe()
+        # Start the child process paused.
+        target_cmd = [sys.executable, self._script, str(pipe_r)] + cmd
+        logging.debug(' '.join(target_cmd))
+        child_proc = subprocess.Popen(
+            target_cmd,
+            stdin=subprocess.PIPE,
+            stdout=stdout,
+            stderr=stderr,
+            cwd=cwd)
+
+        # TODO(maruel): both processes must use the same UID for it to work
+        # without sudo. Look why -p is failing at the moment without sudo.
+        trace_cmd = [
+          'sudo',
+          'strace',
+          '-p', str(child_proc.pid),
+        ] + flags
+        logging.debug(' '.join(trace_cmd))
+        strace_proc = subprocess.Popen(
+            trace_cmd,
+            cwd=cwd,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+
+        line = strace_proc.stderr.readline()
+        if not re.match(r'^Process \d+ attached \- interrupt to quit$', line):
+          # TODO(maruel): Raise an exception.
+          assert False, line
+
+        # Now fire the child process.
+        os.write(pipe_w, 'x')
+
+        out = child_proc.communicate()[0]
+        strace_out = strace_proc.communicate()[0]
+
+        # TODO(maruel): if strace_proc.returncode: Add an exception.
+        saved_out = strace_out if strace_proc.returncode else out
+        root_pid = child_proc.pid
+      else:
+        # Non-sudo case.
+        trace_cmd = [
+          'strace',
+        ] + flags + cmd
+        logging.debug(' '.join(trace_cmd))
+        child_proc = subprocess.Popen(
+            trace_cmd,
+            cwd=cwd,
+            stdin=subprocess.PIPE,
+            stdout=stdout,
+            stderr=stderr)
+        out = child_proc.communicate()[0]
+        # TODO(maruel): Walk the logs and figure out the root process would
+        # simplify parsing the logs a *lot*.
+        saved_out = out
+        # The trace reader will have to figure out.
+        root_pid = None
+
       with self._lock:
         assert tracename not in (i['trace'] for i in self._traces)
         self._traces.append(
           {
             'cmd': cmd,
             'cwd': cwd,
-            'output': out,
-            # The pid of strace process, not very useful.
-            'pid': child.pid,
+            'output': saved_out,
+            'pid': root_pid,
             'trace': tracename,
           })
-      return child.returncode, out
+      return child_proc.returncode, out
 
   def __init__(self, use_sudo=None):
     super(Strace, self).__init__()
@@ -1701,13 +1810,22 @@ class Strace(ApiBase):
         'trace': item['trace'],
       }
       try:
-        context = cls.Context(blacklist, item['cwd'])
+        context = cls.Context(blacklist, item['pid'], item['cwd'])
         for pidfile in glob.iglob('%s.%s.*' % (logname, item['trace'])):
+          logging.debug('Reading %s', pidfile)
           pid = pidfile.rsplit('.', 1)[1]
           if pid.isdigit():
             pid = int(pid)
+            found_line = False
             for line in open(pidfile, 'rb'):
               context.on_line(pid, line)
+              found_line = True
+            if not found_line:
+              # Ensures that a completely empty trace still creates the
+              # corresponding Process instance by logging a dummy line.
+              context.on_line(pid, '')
+          else:
+            logging.warning('Found unexpected file %s', pidfile)
         result['results'] = context.to_results()
       except TracingFailure:
         result['exception'] = sys.exc_info()
@@ -1756,7 +1874,7 @@ class Dtrace(ApiBase):
           '%s(%d, %s)' % (self.__class__.__name__, thunk_pid, initial_cwd))
       super(Dtrace.Context, self).__init__(blacklist)
       assert isinstance(initial_cwd, unicode), initial_cwd
-      # Process ID of the temporary script created by create_thunk().
+      # Process ID of the temporary script created by create_subprocess_thunk().
       self._thunk_pid = thunk_pid
       self._initial_cwd = initial_cwd
       self._line_number = 0
@@ -2015,8 +2133,8 @@ class Dtrace(ApiBase):
     # 0 is for untracked processes and is the default value for items not
     #   in the associative array.
     # 1 is for tracked processes.
-    # 2 is for the script created by create_thunk() only. It is not tracked
-    #   itself but all its decendants are.
+    # 2 is for the script created by create_subprocess_thunk() only. It is not
+    #   tracked itself but all its decendants are.
     #
     # The script will kill itself only once waiting_to_die == 1 and
     # current_processes == 0, so that both getlogin() was called and that
@@ -2309,7 +2427,7 @@ class Dtrace(ApiBase):
       this needs to wait for dtrace to be "warmed up".
       """
       super(Dtrace.Tracer, self).__init__(logname)
-      self._script = create_thunk()
+      self._script = create_subprocess_thunk()
       # This unique dummy temp file is used to signal the dtrace script that it
       # should stop as soon as all the child processes are done. A bit hackish
       # but works fine enough.
@@ -2360,7 +2478,7 @@ class Dtrace(ApiBase):
       Injects the cookie in the script so it knows when to stop.
 
       The script will detect any instance of the script created with
-      create_thunk() and will start tracing it.
+      create_subprocess_thunk() and will start tracing it.
       """
       out = (
           'inline int PID = %d;\n'
@@ -2386,7 +2504,8 @@ class Dtrace(ApiBase):
 
       This dtruss is broken when it starts the process itself or when tracing
       child processes, this code starts a wrapper process
-      generated with create_thunk() which starts the executable to trace.
+      generated with create_subprocess_thunk() which starts the executable to
+      trace.
       """
       logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
       assert os.path.isabs(cmd[0]), cmd[0]
@@ -2431,7 +2550,6 @@ class Dtrace(ApiBase):
           {
             'cmd': cmd,
             'cwd': cwd,
-            # The pid of strace process, not very useful.
             'pid': child.pid,
             'output': out,
             'trace': tracename,
@@ -2581,8 +2699,8 @@ class LogmanTrace(ApiBase):
       # Threads mapping to the corresponding process id.
       self._threads_active = {}
       # Process ID of the tracer, e.g. the temporary script created by
-      # create_thunk(). This is tricky because the process id may have been
-      # reused.
+      # create_subprocess_thunk(). This is tricky because the process id may
+      # have been reused.
       self._thunk_pid = thunk_pid
       self._thunk_cmd = thunk_cmd
       self._trace_name = trace_name
@@ -2768,8 +2886,8 @@ class LogmanTrace(ApiBase):
         # system-wide. self._thunk_pid shall start only one process.
         # This is tricky though because Windows *loves* to reuse process id and
         # it happens often that the process ID of the thunk script created by
-        # create_thunk() is reused. So just detecting the pid here is not
-        # sufficient, we must confirm the command line.
+        # create_subprocess_thunk() is reused. So just detecting the pid here is
+        # not sufficient, we must confirm the command line.
         if command_line[:len(self._thunk_cmd)] != self._thunk_cmd:
           logging.info(
               'Ignoring duplicate pid %d for %s: %s while searching for %s',
@@ -3026,7 +3144,7 @@ class LogmanTrace(ApiBase):
       "logman query providers | findstr /i file"
       """
       super(LogmanTrace.Tracer, self).__init__(logname)
-      self._script = create_thunk()
+      self._script = create_subprocess_thunk()
       cmd_start = [
         'logman.exe',
         'start',
@@ -3078,12 +3196,12 @@ class LogmanTrace(ApiBase):
 
       # Run the child process.
       logging.debug('Running: %s' % cmd)
-      # Use the temporary script generated with create_thunk() so we have a
-      # clear pid owner. Since trace_inputs.py can be used as a library and
-      # could trace multiple processes simultaneously, it makes it more complex
-      # if the executable to be traced is executed directly here. It also solves
-      # issues related to logman.exe that needs to be executed to control the
-      # kernel trace.
+      # Use the temporary script generated with create_subprocess_thunk() so we
+      # have a clear pid owner. Since trace_inputs.py can be used as a library
+      # and could trace multiple processes simultaneously, it makes it more
+      # complex if the executable to be traced is executed directly here. It
+      # also solves issues related to logman.exe that needs to be executed to
+      # control the kernel trace.
       child_cmd = [
         sys.executable,
         self._script,
