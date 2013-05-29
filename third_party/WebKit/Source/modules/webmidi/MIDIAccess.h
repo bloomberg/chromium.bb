@@ -28,32 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIInput_h
-#define MIDIInput_h
+#ifndef MIDIAccess_h
+#define MIDIAccess_h
 
+#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
-#include "modules/webmidi/MIDIPort.h"
+#include "modules/webmidi/MIDIInput.h"
+#include "modules/webmidi/MIDIOutput.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
 class ScriptExecutionContext;
 
-class MIDIInput : public MIDIPort {
+class MIDIAccess : public ActiveDOMObject, public RefCounted<MIDIAccess>, public EventTarget {
 public:
-    static PassRefPtr<MIDIInput> create(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
-    virtual ~MIDIInput() { }
+    virtual ~MIDIAccess();
+    static PassRefPtr<MIDIAccess> create(ScriptExecutionContext*);
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(midimessage);
+    MIDIInputVector inputs() const { return m_inputs; }
+    MIDIOutputVector outputs() const { return m_outputs; }
+
+    using RefCounted<MIDIAccess>::ref;
+    using RefCounted<MIDIAccess>::deref;
+
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE { return eventNames().interfaceForMIDIInput; }
+    virtual const AtomicString& interfaceName() const OVERRIDE { return eventNames().interfaceForMIDIAccess; }
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
+
+    // ActiveDOMObject
+    virtual bool canSuspend() const OVERRIDE { return true; }
 
 private:
-    MIDIInput(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
-};
+    explicit MIDIAccess(ScriptExecutionContext*);
 
-typedef Vector<RefPtr<MIDIInput> > MIDIInputVector;
+    // EventTarget
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
+    virtual EventTargetData* eventTargetData() OVERRIDE { return &m_eventTargetData; }
+    virtual EventTargetData* ensureEventTargetData() OVERRIDE { return &m_eventTargetData; }
+
+    MIDIInputVector m_inputs;
+    MIDIOutputVector m_outputs;
+    EventTargetData m_eventTargetData;
+};
 
 } // namespace WebCore
 
-#endif // MIDIInput_h
+#endif // MIDIAccess_h

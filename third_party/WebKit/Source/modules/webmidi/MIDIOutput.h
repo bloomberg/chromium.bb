@@ -50,6 +50,8 @@ private:
     MIDIOutput(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
 };
 
+typedef Vector<RefPtr<MIDIOutput> > MIDIOutputVector;
+
 } // namespace WebCore
 
 #endif // MIDIOutput_h

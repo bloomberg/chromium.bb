@@ -28,32 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIInput_h
-#define MIDIInput_h
+#include "config.h"
+#include "modules/webmidi/MIDIAccess.h"
 
-#include "core/dom/EventTarget.h"
+#include "core/dom/ExceptionCode.h"
+#include "modules/webmidi/MIDIConnectionEvent.h"
+#include "modules/webmidi/MIDIInput.h"
+#include "modules/webmidi/MIDIOutput.h"
 #include "modules/webmidi/MIDIPort.h"
 
 namespace WebCore {
 
-class ScriptExecutionContext;
+PassRefPtr<MIDIAccess> MIDIAccess::create(ScriptExecutionContext* context)
+{
+    RefPtr<MIDIAccess> midiAccess(adoptRef(new MIDIAccess(context)));
+    midiAccess->suspendIfNeeded();
+    return midiAccess.release();
+}
 
-class MIDIInput : public MIDIPort {
-public:
-    static PassRefPtr<MIDIInput> create(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
-    virtual ~MIDIInput() { }
+MIDIAccess::~MIDIAccess()
+{
+    stop();
+}
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(midimessage);
-
-    // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE { return eventNames().interfaceForMIDIInput; }
-
-private:
-    MIDIInput(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
-};
-
-typedef Vector<RefPtr<MIDIInput> > MIDIInputVector;
+MIDIAccess::MIDIAccess(ScriptExecutionContext* context)
+    : ActiveDOMObject(context)
+{
+}
 
 } // namespace WebCore
-
-#endif // MIDIInput_h

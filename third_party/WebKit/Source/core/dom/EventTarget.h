@@ -52,6 +52,7 @@ namespace WebCore {
     class IDBDatabase;
     class IDBRequest;
     class IDBTransaction;
+    class MIDIAccess;
     class MIDIInput;
     class MIDIPort;
     class MediaController;

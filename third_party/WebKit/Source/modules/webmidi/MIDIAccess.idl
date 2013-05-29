@@ -28,32 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIInput_h
-#define MIDIInput_h
+[
+    NoInterfaceObject,
+    ActiveDOMObject,
+    EventTarget
+] interface MIDIAccess {
+    sequence<MIDIInput> inputs();
+    sequence<MIDIOutput> outputs();
 
-#include "core/dom/EventTarget.h"
-#include "modules/webmidi/MIDIPort.h"
+    attribute EventListener onconnect;
+    attribute EventListener ondisconnect;
 
-namespace WebCore {
-
-class ScriptExecutionContext;
-
-class MIDIInput : public MIDIPort {
-public:
-    static PassRefPtr<MIDIInput> create(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
-    virtual ~MIDIInput() { }
-
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(midimessage);
-
-    // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE { return eventNames().interfaceForMIDIInput; }
-
-private:
-    MIDIInput(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
+    // EventTarget interface
+    void addEventListener(DOMString type,
+                          EventListener listener,
+                          optional boolean useCapture);
+    void removeEventListener(DOMString type,
+                             EventListener listener,
+                             optional boolean useCapture);
+    [RaisesException] boolean dispatchEvent(Event event);
 };
-
-typedef Vector<RefPtr<MIDIInput> > MIDIInputVector;
-
-} // namespace WebCore
-
-#endif // MIDIInput_h
