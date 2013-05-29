@@ -249,7 +249,7 @@ class ThreadProxy : public Proxy,
   bool next_frame_is_newly_committed_frame_on_impl_thread_;
 
   bool throttle_frame_production_;
-  bool render_parent_drives_begin_frame__;
+  bool begin_frame_scheduling_enabled_;
   bool using_synchronous_renderer_compositor_;
   VSyncClient* vsync_client_;
 

@@ -94,8 +94,8 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
   settings.throttle_frame_production =
       !cmd->HasSwitch(switches::kDisableGpuVsync);
-  settings.render_parent_drives_begin_frame_ =
-      cmd->HasSwitch(switches::kEnableVsyncNotification);
+  settings.begin_frame_scheduling_enabled =
+      cmd->HasSwitch(switches::kEnableBeginFrameScheduling);
   settings.using_synchronous_renderer_compositor =
       widget->UsingSynchronousRendererCompositor();
   settings.per_tile_painting_enabled =
@@ -134,8 +134,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.max_untiled_layer_size = gfx::Size(max_untiled_layer_width,
                                            max_untiled_layer_height);
 
-  settings.right_aligned_scheduling_enabled =
-      cmd->HasSwitch(cc::switches::kEnableRightAlignedScheduling);
   settings.impl_side_painting = cc::switches::IsImplSidePaintingEnabled();
   settings.use_color_estimator =
       !cmd->HasSwitch(cc::switches::kDisableColorEstimator);

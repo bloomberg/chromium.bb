@@ -827,8 +827,11 @@ const char kDisableFixedPositionCreatesStackingContext[]
 // Defer image decoding in WebKit until painting.
 const char kEnableDeferredImageDecoding[] = "enable-deferred-image-decoding";
 
-// Use a vsync signal from the browser to the renderer to schedule rendering.
-const char kEnableVsyncNotification[] = "enable-vsync-notification";
+// Use a begin frame signal from browser to renderer to schedule rendering.
+const char kEnableBeginFrameScheduling[] = "enable-begin-frame-scheduling";
+
+// Synchronize delivery and response of input events to and from the renderer.
+const char kEnableBrowserInputController[] = "enable-browser-input-controller";
 
 // Enables or disables history navigation in response to horizontal overscroll.
 // Set the value to '1' to enable the feature, and set to '0' to disable.

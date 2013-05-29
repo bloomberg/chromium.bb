@@ -60,8 +60,8 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layer_tree_host,
       next_frame_is_newly_committed_frame_on_impl_thread_(false),
       throttle_frame_production_(
           layer_tree_host->settings().throttle_frame_production),
-      render_parent_drives_begin_frame__(
-          layer_tree_host->settings().render_parent_drives_begin_frame_),
+      begin_frame_scheduling_enabled_(
+          layer_tree_host->settings().begin_frame_scheduling_enabled),
       using_synchronous_renderer_compositor_(
           layer_tree_host->settings().using_synchronous_renderer_compositor),
       vsync_client_(NULL),
@@ -1116,7 +1116,7 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
           layer_tree_host_->settings().refresh_rate);
   scoped_ptr<FrameRateController> frame_rate_controller;
   if (throttle_frame_production_) {
-    if (render_parent_drives_begin_frame__) {
+    if (begin_frame_scheduling_enabled_) {
       frame_rate_controller.reset(
           new FrameRateController(VSyncTimeSource::Create(
               this,
@@ -1369,7 +1369,7 @@ void ThreadProxy::StartScrollbarAnimationOnImplThread() {
 
 void ThreadProxy::DidReceiveLastInputEventForBeginFrameOnImplThread(
     base::TimeTicks frame_time) {
-  if (render_parent_drives_begin_frame__) {
+  if (begin_frame_scheduling_enabled_) {
     TRACE_EVENT0("cc",
         "ThreadProxy::DidReceiveLastInputEventForBeginFrameOnImplThread");
     BeginFrameOnImplThread(frame_time);

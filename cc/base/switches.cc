@@ -29,9 +29,6 @@ const char kDisableImplSidePainting[] = "disable-impl-side-painting";
 // Paint content on the compositor thread instead of the main thread.
 const char kEnableImplSidePainting[] = "enable-impl-side-painting";
 
-// Try to finish display pipeline before vsync tick
-const char kEnableRightAlignedScheduling[] = "enable-right-aligned-scheduling";
-
 const char kEnableTopControlsPositionCalculation[] =
     "enable-top-controls-position-calculation";
 
