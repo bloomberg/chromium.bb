@@ -193,11 +193,7 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
         return;
 
     // FIXME: Remove this code when we stop doing the 'with' hack above.
-    v8::Local<v8::Value> innerValue;
-    {
-        V8RecursionScope::MicrotaskSuppression scope;
-        innerValue = intermediateFunction->Call(thisObject, 0, 0);
-    }
+    v8::Local<v8::Value> innerValue = V8ScriptRunner::callInternalFunction(intermediateFunction, v8Context, thisObject, 0, 0, isolate);
     if (innerValue.IsEmpty() || !innerValue->IsFunction())
         return;
 
