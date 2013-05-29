@@ -23,7 +23,6 @@
 
 #include <wtf/CurrentTime.h>
 #include "bindings/v8/ScriptController.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/NodeRenderStyle.h"

@@ -43,7 +43,6 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleSheetList.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CharacterData.h"
 #include "core/dom/ContainerNode.h"

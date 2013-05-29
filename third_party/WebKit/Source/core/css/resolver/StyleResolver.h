@@ -29,6 +29,7 @@
 #include "core/css/DocumentRuleSets.h"
 #include "core/css/InspectorCSSOMWrappers.h"
 #include "core/css/MediaQueryExp.h"
+#include "core/css/PseudoStyleRequest.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
 #include "core/css/SelectorChecker.h"
@@ -137,20 +138,6 @@ enum RuleMatchingBehavior {
     MatchAllRules,
     MatchAllRulesExcludingSMIL,
     MatchOnlyUserAgentRules,
-};
-
-class PseudoStyleRequest {
-public:
-    PseudoStyleRequest(PseudoId pseudoId, RenderScrollbar* scrollbar = 0, ScrollbarPart scrollbarPart = NoPart)
-        : pseudoId(pseudoId)
-        , scrollbarPart(scrollbarPart)
-        , scrollbar(scrollbar)
-    {
-    }
-
-    PseudoId pseudoId;
-    ScrollbarPart scrollbarPart;
-    RenderScrollbar* scrollbar;
 };
 
 class MatchRequest {
