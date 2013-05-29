@@ -44,6 +44,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/StyleSheetList.h"
 #include "core/css/WebKitCSSKeyframesRule.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"

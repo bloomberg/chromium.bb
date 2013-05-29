@@ -576,7 +576,6 @@ public:
     bool isSpellCheckingEnabled() const;
 
     PassRefPtr<RenderStyle> styleForRenderer();
-    PassRefPtr<RenderStyle> originalStyleForRenderer();
 
     RenderRegion* renderRegion() const;
     const AtomicString& webkitRegionOverset() const;

@@ -35,6 +35,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/BeforeTextInsertedEvent.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
@@ -1932,7 +1933,7 @@ void HTMLInputElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 PassRefPtr<RenderStyle> HTMLInputElement::customStyleForRenderer()
 {
-    return m_inputType->customStyleForRenderer(originalStyleForRenderer());
+    return m_inputType->customStyleForRenderer(document()->styleResolver()->styleForElement(this));
 }
 #endif
 

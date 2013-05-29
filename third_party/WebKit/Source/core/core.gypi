@@ -658,7 +658,6 @@
             'css/PageRuleCollector.h',
             'css/PropertySetCSSStyleDeclaration.cpp',
             'css/PropertySetCSSStyleDeclaration.h',
-            'css/PseudoStyleRequest.h',
             'css/RGBColor.cpp',
             'css/RGBColor.h',
             'css/Rect.h',

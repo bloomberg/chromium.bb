@@ -26,6 +26,7 @@
 #include "core/html/HTMLOptGroupElement.h"
 
 #include "HTMLNames.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/html/HTMLSelectElement.h"
@@ -112,7 +113,7 @@ void HTMLOptGroupElement::detach()
 
 void HTMLOptGroupElement::updateNonRenderStyle()
 {
-    m_style = originalStyleForRenderer();
+    m_style = document()->styleResolver()->styleForElement(this);
 }
 
 RenderStyle* HTMLOptGroupElement::nonRendererStyle() const

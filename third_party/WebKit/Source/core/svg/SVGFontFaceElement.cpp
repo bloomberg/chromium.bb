@@ -34,6 +34,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/platform/graphics/Font.h"

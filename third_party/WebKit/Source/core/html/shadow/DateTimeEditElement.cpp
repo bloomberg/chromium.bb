@@ -28,6 +28,7 @@
 #include "core/html/shadow/DateTimeEditElement.h"
 
 #include "HTMLNames.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/Text.h"
@@ -40,7 +41,6 @@
 #include "core/platform/text/DateTimeFormat.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/DateMath.h>
 #include <wtf/text/StringBuilder.h>
 
@@ -496,7 +496,7 @@ PassRefPtr<RenderStyle> DateTimeEditElement::customStyleForRenderer()
 {
     // FIXME: This is a kind of layout. We might want to introduce new renderer.
     FontCachePurgePreventer fontCachePurgePreventer;
-    RefPtr<RenderStyle> originalStyle = originalStyleForRenderer();
+    RefPtr<RenderStyle> originalStyle = document()->styleResolver()->styleForElement(this);
     RefPtr<RenderStyle> style = RenderStyle::clone(originalStyle.get());
     float width = 0;
     for (Node* child = fieldsWrapperElement()->firstChild(); child; child = child->nextSibling()) {

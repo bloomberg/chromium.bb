@@ -1354,11 +1354,6 @@ PassRefPtr<RenderStyle> Element::styleForRenderer()
             return style.release();
     }
 
-    return originalStyleForRenderer();
-}
-
-PassRefPtr<RenderStyle> Element::originalStyleForRenderer()
-{
     return document()->styleResolver()->styleForElement(this);
 }
 

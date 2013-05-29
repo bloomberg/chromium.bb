@@ -29,6 +29,7 @@
 #include "HTMLNames.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"

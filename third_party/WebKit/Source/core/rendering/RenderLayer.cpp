@@ -46,9 +46,8 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
-#include "core/css/PseudoStyleRequest.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentEventQueue.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
@@ -56,7 +55,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Frame.h"
