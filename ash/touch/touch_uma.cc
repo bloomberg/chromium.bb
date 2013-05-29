@@ -57,6 +57,7 @@ enum UMAEventType {
   UMA_ET_GESTURE_BEGIN,
   UMA_ET_GESTURE_END,
   UMA_ET_GESTURE_DOUBLE_TAP,
+  UMA_ET_GESTURE_TRIPLE_TAP,
   UMA_ET_GESTURE_TWO_FINGER_TAP,
   UMA_ET_GESTURE_PINCH_BEGIN,
   UMA_ET_GESTURE_PINCH_END,
@@ -201,8 +202,10 @@ UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
       int tap_count = gesture.details().tap_count();
       if (tap_count == 1)
         return UMA_ET_GESTURE_TAP;
-      else if (tap_count == 2)
+      if (tap_count == 2)
         return UMA_ET_GESTURE_DOUBLE_TAP;
+      if (tap_count == 3)
+        return UMA_ET_GESTURE_TRIPLE_TAP;
       NOTREACHED() << "Received tap with tapcount " << tap_count;
       return UMA_ET_UNKNOWN;
     }

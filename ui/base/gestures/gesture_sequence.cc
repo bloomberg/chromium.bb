@@ -847,8 +847,12 @@ bool GestureSequence::Click(const TouchEvent& event,
                             Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK);
   if (point.IsInClickWindow(event)) {
-    bool double_tap = point.IsInDoubleClickWindow(event);
-    AppendClickGestureEvent(point, double_tap ? 2 : 1, gestures);
+    int tap_count = 1;
+    if (point.IsInTripleClickWindow(event))
+      tap_count = 3;
+    else if (point.IsInDoubleClickWindow(event))
+      tap_count = 2;
+    AppendClickGestureEvent(point, tap_count, gestures);
     return true;
   } else if (point.IsInsideManhattanSquare(event) &&
       !GetLongPressTimer()->IsRunning()) {

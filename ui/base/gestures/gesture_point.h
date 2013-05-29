@@ -39,6 +39,7 @@ class GesturePoint {
   // represent a click or scroll etc.)
   bool IsInClickWindow(const TouchEvent& event) const;
   bool IsInDoubleClickWindow(const TouchEvent& event) const;
+  bool IsInTripleClickWindow(const TouchEvent& event) const;
   bool IsInScrollWindow(const TouchEvent& event) const;
   bool IsInFlickWindow(const TouchEvent& event);
   bool IsInHorizontalRailWindow() const;
@@ -85,8 +86,8 @@ class GesturePoint {
  private:
   // Various statistical functions to manipulate gestures.
   bool IsInClickTimeWindow() const;
-  bool IsInSecondClickTimeWindow() const;
-  bool IsSecondClickInsideManhattanSquare(const TouchEvent& event) const;
+  bool IsInClickAggregateTimeWindow(double before, double after) const;
+  bool IsPointInsideManhattanSquare(gfx::Point p1, gfx::Point p2) const;
   bool IsOverMinFlickSpeed();
 
   // Returns -1, 0, 1 for |v| below the negative velocity threshold,
@@ -111,6 +112,9 @@ class GesturePoint {
 
   gfx::Point last_touch_position_;
   double last_touch_time_;
+
+  double second_last_tap_time_;
+  gfx::Point second_last_tap_position_;
 
   double last_tap_time_;
   gfx::Point last_tap_position_;
