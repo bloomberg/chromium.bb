@@ -465,6 +465,7 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 	header.magic = WCAP_HEADER_MAGIC;
 
 	switch (compositor->read_format) {
+	case PIXMAN_x8r8g8b8:
 	case PIXMAN_a8r8g8b8:
 		header.format = WCAP_FORMAT_XRGB8888;
 		break;
