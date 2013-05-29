@@ -541,26 +541,31 @@ int HttpStreamParser::DoReadHeadersComplete(int result) {
 
   if (result == ERR_CONNECTION_CLOSED) {
     // The connection closed before we detected the end of the headers.
-    // parse things as well as we can and let the caller decide what to do.
     if (read_buf_->offset() == 0) {
       // The connection was closed before any data was sent. Likely an error
       // rather than empty HTTP/0.9 response.
       io_state_ = STATE_DONE;
       return ERR_EMPTY_RESPONSE;
-    } else {
-      int end_offset;
-      if (response_header_start_offset_ >= 0) {
-        io_state_ = STATE_READ_BODY_COMPLETE;
-        end_offset = read_buf_->offset();
-      } else {
-        io_state_ = STATE_BODY_PENDING;
-        end_offset = 0;
-      }
-      int rv = DoParseResponseHeaders(end_offset);
-      if (rv < 0)
-        return rv;
-      return result;
+    } else if (request_->url.SchemeIs("https")) {
+      // The connection was closed in the middle of the headers. For HTTPS we
+      // don't parse partial headers. Return a different error code so that we
+      // know that we shouldn't attempt to retry the request.
+      io_state_ = STATE_DONE;
+      return ERR_HEADERS_TRUNCATED;
     }
+    // Parse things as well as we can and let the caller decide what to do.
+    int end_offset;
+    if (response_header_start_offset_ >= 0) {
+      io_state_ = STATE_READ_BODY_COMPLETE;
+      end_offset = read_buf_->offset();
+    } else {
+      io_state_ = STATE_BODY_PENDING;
+      end_offset = 0;
+    }
+    int rv = DoParseResponseHeaders(end_offset);
+    if (rv < 0)
+      return rv;
+    return result;
   }
 
   read_buf_->set_offset(read_buf_->offset() + result);

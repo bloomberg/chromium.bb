@@ -301,4 +301,111 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocket) {
   ASSERT_EQ(kBodySize, rv);
 }
 
+TEST(HttpStreamParser, TruncatedHeaders) {
+  MockRead truncated_status_reads[] = {
+    MockRead(SYNCHRONOUS, 1, "HTTP/1.1 20"),
+    MockRead(SYNCHRONOUS, 0, 2),  // EOF
+  };
+
+  MockRead truncated_after_status_reads[] = {
+    MockRead(SYNCHRONOUS, 1, "HTTP/1.1 200 Ok\r\n"),
+    MockRead(SYNCHRONOUS, 0, 2),  // EOF
+  };
+
+  MockRead truncated_in_header_reads[] = {
+    MockRead(SYNCHRONOUS, 1, "HTTP/1.1 200 Ok\r\nHead"),
+    MockRead(SYNCHRONOUS, 0, 2),  // EOF
+  };
+
+  MockRead truncated_after_header_reads[] = {
+    MockRead(SYNCHRONOUS, 1, "HTTP/1.1 200 Ok\r\nHeader: foo\r\n"),
+    MockRead(SYNCHRONOUS, 0, 2),  // EOF
+  };
+
+  MockRead truncated_after_final_newline_reads[] = {
+    MockRead(SYNCHRONOUS, 1, "HTTP/1.1 200 Ok\r\nHeader: foo\r\n\r"),
+    MockRead(SYNCHRONOUS, 0, 2),  // EOF
+  };
+
+  MockRead not_truncated_reads[] = {
+    MockRead(SYNCHRONOUS, 1, "HTTP/1.1 200 Ok\r\nHeader: foo\r\n\r\n"),
+    MockRead(SYNCHRONOUS, 0, 2),  // EOF
+  };
+
+  MockRead* reads[] = {
+    truncated_status_reads,
+    truncated_after_status_reads,
+    truncated_in_header_reads,
+    truncated_after_header_reads,
+    truncated_after_final_newline_reads,
+    not_truncated_reads,
+  };
+
+  MockWrite writes[] = {
+    MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n\r\n"),
+  };
+
+  enum {
+    HTTP = 0,
+    HTTPS,
+    NUM_PROTOCOLS,
+  };
+
+  for (size_t protocol = 0; protocol < NUM_PROTOCOLS; protocol++) {
+    SCOPED_TRACE(protocol);
+
+    for (size_t i = 0; i < arraysize(reads); i++) {
+      SCOPED_TRACE(i);
+      DeterministicSocketData data(reads[i], 2, writes, arraysize(writes));
+      data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+      data.SetStop(3);
+
+      scoped_ptr<DeterministicMockTCPClientSocket> transport(
+          new DeterministicMockTCPClientSocket(NULL, &data));
+      data.set_delegate(transport->AsWeakPtr());
+
+      TestCompletionCallback callback;
+      int rv = transport->Connect(callback.callback());
+      rv = callback.GetResult(rv);
+      ASSERT_EQ(OK, rv);
+
+      scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
+      socket_handle->set_socket(transport.release());
+
+      HttpRequestInfo request_info;
+      request_info.method = "GET";
+      if (protocol == HTTP) {
+        request_info.url = GURL("http://localhost");
+      } else {
+        request_info.url = GURL("https://localhost");
+      }
+      request_info.load_flags = LOAD_NORMAL;
+
+      scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+      HttpStreamParser parser(socket_handle.get(), &request_info, read_buffer,
+                              BoundNetLog());
+
+      HttpRequestHeaders request_headers;
+      HttpResponseInfo response_info;
+      rv = parser.SendRequest("GET / HTTP/1.1\r\n", request_headers,
+                              &response_info, callback.callback());
+      ASSERT_EQ(OK, rv);
+
+      rv = parser.ReadResponseHeaders(callback.callback());
+      if (i == arraysize(reads) - 1) {
+        EXPECT_EQ(OK, rv);
+        EXPECT_TRUE(response_info.headers.get());
+      } else {
+        if (protocol == HTTP) {
+          EXPECT_EQ(ERR_CONNECTION_CLOSED, rv);
+          EXPECT_TRUE(response_info.headers.get());
+        } else {
+          EXPECT_EQ(ERR_HEADERS_TRUNCATED, rv);
+          EXPECT_FALSE(response_info.headers.get());
+        }
+      }
+    }
+  }
+}
+
 }  // namespace net
