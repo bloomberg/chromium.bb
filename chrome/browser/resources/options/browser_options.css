@@ -159,6 +159,7 @@ input[type='range'] {
 .network-group {
   -webkit-box-orient: horizontal;
   height: 42px;
+  overflow: visible;
 }
 
 list:not([disabled]) > .network-group:hover,
