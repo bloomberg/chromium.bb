@@ -120,7 +120,8 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 
 void WebPluginImpl::destroy() {
   // Tell |container_| to clear references to this plugin's script objects.
-  container_->clearScriptObjects();
+  if (container_)
+    container_->clearScriptObjects();
 
   if (instance_) {
     ::ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(instance_object_);
