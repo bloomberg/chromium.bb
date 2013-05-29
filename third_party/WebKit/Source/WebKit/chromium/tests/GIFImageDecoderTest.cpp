@@ -186,10 +186,10 @@ TEST(GIFImageDecoderTest, brokenSecondFrame)
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
 
-    EXPECT_EQ(0u, decoder->frameCount());
-    ImageFrame* frame = decoder->frameBufferAtIndex(0);
+    // One frame is detected but cannot be decoded.
+    EXPECT_EQ(1u, decoder->frameCount());
+    ImageFrame* frame = decoder->frameBufferAtIndex(1);
     EXPECT_FALSE(frame);
-    EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
 }
 
 TEST(GIFImageDecoderTest, progressiveDecode)
@@ -295,6 +295,28 @@ TEST(GIFImageDecoderTest, frameIsCompleteLoading)
     EXPECT_EQ(2u, decoder->frameCount());
     EXPECT_TRUE(decoder->frameIsCompleteAtIndex(0));
     EXPECT_TRUE(decoder->frameIsCompleteAtIndex(1));
+}
+
+TEST(GIFImageDecoderTest, badTerminator)
+{
+    RefPtr<SharedBuffer> referenceData = readFile("/Source/WebKit/chromium/tests/data/radient.gif");
+    RefPtr<SharedBuffer> testData = readFile("/Source/WebKit/chromium/tests/data/radient-bad-terminator.gif");
+    ASSERT_TRUE(referenceData.get());
+    ASSERT_TRUE(testData.get());
+
+    OwnPtr<GIFImageDecoder> referenceDecoder(createDecoder());
+    referenceDecoder->setData(referenceData.get(), true);
+    EXPECT_EQ(1u, referenceDecoder->frameCount());
+    ImageFrame* referenceFrame = referenceDecoder->frameBufferAtIndex(0);
+    ASSERT(referenceFrame);
+
+    OwnPtr<GIFImageDecoder> testDecoder(createDecoder());
+    testDecoder->setData(testData.get(), true);
+    EXPECT_EQ(1u, testDecoder->frameCount());
+    ImageFrame* testFrame = testDecoder->frameBufferAtIndex(0);
+    ASSERT(testFrame);
+
+    EXPECT_EQ(hashSkBitmap(referenceFrame->getSkBitmap()), hashSkBitmap(testFrame->getSkBitmap()));
 }
 
 #endif
