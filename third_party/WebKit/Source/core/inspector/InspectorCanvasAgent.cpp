@@ -112,7 +112,6 @@ void InspectorCanvasAgent::disable(ErrorString*)
     m_state->setBoolean(CanvasAgentState::canvasAgentEnabled, m_enabled);
     m_instrumentingAgents->setInspectorCanvasAgent(0);
     m_framesWithUninstrumentedCanvases.clear();
-    m_frontend->traceLogsRemoved(0, 0);
 }
 
 void InspectorCanvasAgent::dropTraceLog(ErrorString* errorString, const TraceLogId& traceLogId)
