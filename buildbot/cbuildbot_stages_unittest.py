@@ -631,7 +631,8 @@ class HWTestStageTest(AbstractStageTest):
 
       # Make sure failures are logged correctly.
       if fails:
-        commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag)
+        if self.archive_stage.release_tag:
+          commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag)
         cros_build_lib.PrintBuildbotStepFailure()
         cros_build_lib.Error(mox.IgnoreArg())
       else:
@@ -696,7 +697,6 @@ class HWTestStageTest(AbstractStageTest):
 
   def testHandleLabDownAsWarning(self):
     """Test that buildbot warn when lab is down."""
-    commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag)
     check_lab = lab_status.CheckLabStatus(mox.IgnoreArg())
     check_lab.AndRaise(lab_status.LabIsDownException('Lab is not up.'))
     cros_build_lib.PrintBuildbotStepWarnings()

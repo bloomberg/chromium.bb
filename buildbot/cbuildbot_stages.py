@@ -1723,6 +1723,15 @@ class HWTestStage(ArchivingStage):
     logging.info('Copy of %s completed. Printing below:', result_file_name)
     self._PrintFile(os.path.join(self._options.log_dir, result_file_name))
 
+  @cros_build_lib.MemoizedSingleCall
+  def _CheckAborted(self):
+    aborted = (self.archive_stage.release_tag and
+               commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag))
+    if aborted:
+      cros_build_lib.PrintBuildbotStepText('aborted')
+      cros_build_lib.Warning('HWTests aborted')
+    return aborted
+
   # Disable complaint about calling _HandleStageException.
   # pylint: disable=W0212
   def _HandleStageException(self, exception):
@@ -1735,11 +1744,10 @@ class HWTestStage(ArchivingStage):
     if self.suite_config.critical:
       return super(HWTestStage, self)._HandleStageException(exception)
     is_lab_down = (isinstance(exception, lab_status.LabIsDownException) or
-        isinstance(exception, lab_status.BoardIsDisabledException))
+                   isinstance(exception, lab_status.BoardIsDisabledException))
     is_warning_code = (isinstance(exception, cros_build_lib.RunCommandError) and
-        exception.result.returncode in codes_handled_as_warning or
-        commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag))
-    if is_lab_down or is_warning_code:
+                       exception.result.returncode in codes_handled_as_warning)
+    if is_lab_down or is_warning_code or self._CheckAborted():
       return self._HandleExceptionAsWarning(exception)
     else:
       return super(HWTestStage, self)._HandleStageException(exception)
@@ -1751,8 +1759,7 @@ class HWTestStage(ArchivingStage):
     return super(HWTestStage, self)._HandleStageException(exception)
 
   def PerformStage(self):
-    if (self.archive_stage.release_tag and
-        commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag)):
+    if self._CheckAborted():
       cros_build_lib.Info('Skipping HWTests as they have been aborted.')
       return
 
