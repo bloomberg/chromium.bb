@@ -189,7 +189,7 @@ public:
 };
 
 class CSSParserSelector {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(CSSParserSelector); WTF_MAKE_FAST_ALLOCATED;
 public:
     CSSParserSelector();
     explicit CSSParserSelector(const QualifiedName&);

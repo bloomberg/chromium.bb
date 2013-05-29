@@ -71,6 +71,9 @@ private:
     unsigned length() const;
     void deleteSelectors();
 
+    // Hide.
+    CSSSelectorList& operator=(const CSSSelectorList&);
+
     // End of a multipart selector is indicated by m_isLastInTagHistory bit in the last item.
     // End of the array is indicated by m_isLastInSelectorList bit in the last item.
     CSSSelector* m_selectorArray;
