@@ -81,6 +81,7 @@ ANNOTATE=
 # Note: Ignore BUILDTYPE variable, because the Ninja build doesn't use it.
 BUILDTYPE=
 FORCE=
+GDBEXEPOSTFIX=gdb
 GDBINIT=
 GDBSERVER=
 HELP=
@@ -162,6 +163,9 @@ for opt; do
       ;;
     --toolchain=*)
       TOOLCHAIN=$optarg
+      ;;
+    --ui)
+      GDBEXEPOSTFIX=gdbtui
       ;;
     --verbose)
       VERBOSE=$(( $VERBOSE + 1 ))
@@ -287,6 +291,7 @@ Valid options:
   --pid=<pid>           Specify application process pid.
   --force               Kill any previous debugging session, if any.
   --start               Start package's activity on device.
+  --ui                  Use gdbtui instead of gdb
   --activity=<name>     Activity name for --start [$DEFAULT_ACTIVITY].
   --annotate=<num>      Enable gdb annotation.
   --script=<file>       Specify extra GDB init script.
@@ -527,7 +532,7 @@ fi
 ANDROID_TOOLCHAIN=${ANDROID_TOOLCHAIN%/}
 
 # Find host GDB client binary
-GDB=$(which $ANDROID_TOOLCHAIN/*-gdb 2>/dev/null | head -1)
+GDB=$(which $ANDROID_TOOLCHAIN/*-$GDBEXEPOSTFIX 2>/dev/null | head -1)
 if [ -z "$GDB" ]; then
   panic "Can't find Android gdb client in your path, check your \
 --toolchain path."
