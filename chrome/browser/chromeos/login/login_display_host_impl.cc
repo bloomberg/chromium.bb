@@ -246,7 +246,8 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
 
   // When we wait for WebUI to be initialized we wait for one of
   // these notifications.
-  if (waiting_for_user_pods_ && initialize_webui_hidden_) {
+  if ((waiting_for_user_pods_ || waiting_for_wallpaper_load_)
+      && initialize_webui_hidden_) {
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
