@@ -36,6 +36,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8RecursionScope.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/Frame.h"
@@ -108,21 +109,14 @@ void ScheduledAction::execute(Frame* frame)
 void ScheduledAction::execute(WorkerContext* worker)
 {
     ASSERT(worker->thread()->isCurrentThread());
-
-    V8RecursionScope recursionScope(worker);
-
+    v8::HandleScope handleScope(m_isolate);
+    v8::Handle<v8::Context> context = v8::Local<v8::Context>::New(m_context.get());
+    ASSERT(!context.IsEmpty());
+    v8::Context::Scope scope(context);
     if (!m_function.isEmpty()) {
-        V8GCController::checkMemoryUsage();
-
-        v8::HandleScope handleScope(m_isolate);
-
-        v8::Handle<v8::Context> context = v8::Local<v8::Context>::New(m_context.get());
-        ASSERT(!context.IsEmpty());
-        v8::Context::Scope scope(context);
-
         Vector<v8::Handle<v8::Value> > args;
         createLocalHandlesForArgs(&args);
-        m_function.newLocal(m_isolate)->Call(context->Global(), args.size(), args.data());
+        V8ScriptRunner::callFunction(m_function.newLocal(m_isolate), worker, context->Global(), args.size(), args.data());
     } else
         worker->script()->evaluate(m_code);
 }
