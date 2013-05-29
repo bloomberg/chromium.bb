@@ -12,12 +12,15 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/sync_file_system/drive/metadata_db_migration_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
@@ -330,7 +333,7 @@ TEST_F(DriveMetadataStoreTest, ReadWriteTest) {
   EXPECT_EQ(SYNC_DATABASE_ERROR_NOT_FOUND,
             metadata_store()->ReadEntry(url, &metadata));
 
-  metadata = CreateMetadata("1234567890", "09876543210", true, false);
+  metadata = CreateMetadata("file:1234567890", "09876543210", true, false);
   EXPECT_EQ(SYNC_STATUS_OK, UpdateEntry(url, metadata));
   EXPECT_EQ(SYNC_STATUS_OK, SetLargestChangeStamp(1));
 
@@ -413,7 +416,7 @@ TEST_F(DriveMetadataStoreTest, GetToBeFetchedFilessTest) {
 }
 
 TEST_F(DriveMetadataStoreTest, StoreSyncRootDirectory) {
-  const std::string kResourceId("hoge");
+  const std::string kResourceId("folder:hoge");
 
   InitializeDatabase();
 
@@ -434,8 +437,8 @@ TEST_F(DriveMetadataStoreTest, StoreSyncRootDirectory) {
 TEST_F(DriveMetadataStoreTest, StoreSyncOrigin) {
   const GURL kOrigin1("chrome-extension://example1");
   const GURL kOrigin2("chrome-extension://example2");
-  const std::string kResourceId1("hoge");
-  const std::string kResourceId2("fuga");
+  const std::string kResourceId1("folder:hoge");
+  const std::string kResourceId2("folder:fuga");
 
   InitializeDatabase();
 
@@ -545,9 +548,9 @@ TEST_F(DriveMetadataStoreTest, GetResourceIdForOrigin) {
   const GURL kOrigin1("chrome-extension://example1");
   const GURL kOrigin2("chrome-extension://example2");
   const GURL kOrigin3("chrome-extension://example3");
-  const std::string kResourceId1("hogera");
-  const std::string kResourceId2("fugaga");
-  const std::string kResourceId3("piyopiyo");
+  const std::string kResourceId1("folder:hogera");
+  const std::string kResourceId2("folder:fugaga");
+  const std::string kResourceId3("folder:piyopiyo");
 
   InitializeDatabase();
   EXPECT_EQ(SYNC_STATUS_OK, SetLargestChangeStamp(1));
@@ -588,10 +591,10 @@ TEST_F(DriveMetadataStoreTest, GetResourceIdForOrigin) {
 TEST_F(DriveMetadataStoreTest, MigrationFromV0) {
   const GURL kOrigin1("chrome-extension://example1");
   const GURL kOrigin2("chrome-extension://example2");
-  const std::string kSyncRootResourceId("sync_root_resource_id");
-  const std::string kResourceId1("hoge");
-  const std::string kResourceId2("fuga");
-  const std::string kFileResourceId("piyo");
+  const std::string kSyncRootResourceId("folder:sync_root_resource_id");
+  const std::string kResourceId1("folder:hoge");
+  const std::string kResourceId2("folder:fuga");
+  const std::string kFileResourceId("file:piyo");
   const base::FilePath kFile(FPL("foo bar"));
   const std::string kFileMD5("file_md5");
 

@@ -17,7 +17,9 @@
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "chrome/browser/sync_file_system/drive/metadata_db_migration_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "googleurl/src/gurl.h"
@@ -41,7 +43,7 @@ namespace {
 
 const char* const kServiceName = DriveFileSyncService::kServiceName;
 const char kDatabaseVersionKey[] = "VERSION";
-const int64 kCurrentDatabaseVersion = 1;
+const int64 kCurrentDatabaseVersion = 2;
 const char kChangeStampKey[] = "CHANGE_STAMP";
 const char kSyncRootDirectoryKey[] = "SYNC_ROOT_DIR";
 const char kDriveMetadataKeyPrefix[] = "METADATA: ";
@@ -106,6 +108,12 @@ bool UpdateResourceIdMap(ResourceIdByOrigin* map,
   return true;
 }
 
+std::string RemovePrefix(const std::string& str, const std::string& prefix) {
+  if (StartsWithASCII(str, prefix, true))
+    return str.substr(prefix.size());
+  return str;
+}
+
 }  // namespace
 
 class DriveMetadataDB {
@@ -125,7 +133,7 @@ class DriveMetadataDB {
   SyncStatusCode ReadContents(DriveMetadataDBContents* contents);
 
   SyncStatusCode MigrateDatabaseIfNeeded();
-  SyncStatusCode MigrateFromVersion0Database();
+  SyncStatusCode MigrateFromVersion0To1Database();
 
   SyncStatusCode SetLargestChangestamp(int64 largest_changestamp);
   SyncStatusCode SetSyncRootDirectory(const std::string& resource_id);
@@ -134,7 +142,7 @@ class DriveMetadataDB {
                                         OriginSyncType sync_type,
                                         const std::string& resource_id);
   SyncStatusCode UpdateEntry(const FileSystemURL& url,
-                             const DriveMetadata& metadata);
+                             DriveMetadata metadata);
   SyncStatusCode DeleteEntry(const FileSystemURL& url);
 
   // TODO(calvinlo): consolidate these state transition functions for sync
@@ -443,6 +451,7 @@ void DriveMetadataStore::DeleteEntry(
                    AsWeakPtr(), callback));
     return;
   }
+
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
@@ -816,6 +825,11 @@ SyncStatusCode DriveMetadataDB::ReadContents(
       bool success = metadata.ParseFromString(itr->value().ToString());
       DCHECK(success);
 
+      if (!IsDriveAPIEnabled()) {
+        metadata.set_resource_id(
+            drive::AddWapiIdPrefix(metadata.resource_id(), metadata.type()));
+      }
+
       success = contents->metadata_map[origin].insert(
           std::make_pair(path, metadata)).second;
       DCHECK(success);
@@ -852,14 +866,18 @@ SyncStatusCode DriveMetadataDB::MigrateDatabaseIfNeeded() {
       return SYNC_STATUS_OK;
   }
 
-  if (database_version == 0) {
-    MigrateFromVersion0Database();
-    return SYNC_STATUS_OK;
+  switch (database_version) {
+    case 0:
+      MigrateFromVersion0To1Database();
+      // fall-through
+    case 1:
+      drive::MigrateDatabaseFromV1ToV2(db_.get());
+      return SYNC_STATUS_OK;
   }
   return SYNC_DATABASE_ERROR_FAILED;
 }
 
-SyncStatusCode DriveMetadataDB::MigrateFromVersion0Database() {
+SyncStatusCode DriveMetadataDB::MigrateFromVersion0To1Database() {
   // Version 0 database format:
   //   key: "CHANGE_STAMP"
   //   value: <Largest Changestamp>
@@ -900,8 +918,7 @@ SyncStatusCode DriveMetadataDB::MigrateFromVersion0Database() {
   //   value: <Resource ID of the drive directory for the origin>
 
   leveldb::WriteBatch write_batch;
-  write_batch.Put(kDatabaseVersionKey,
-                  base::Int64ToString(kCurrentDatabaseVersion));
+  write_batch.Put(kDatabaseVersionKey, "1");
 
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
   for (itr->Seek(kDriveMetadataKeyPrefix); itr->Valid(); itr->Next()) {
@@ -942,8 +959,9 @@ SyncStatusCode DriveMetadataDB::SetSyncRootDirectory(
   DCHECK(CalledOnValidThread());
   DCHECK(db_.get());
 
-  leveldb::Status status = db_->Put(
-      leveldb::WriteOptions(), kSyncRootDirectoryKey, resource_id);
+  leveldb::Status status = db_->Put(leveldb::WriteOptions(),
+                                    kSyncRootDirectoryKey,
+                                    drive::RemoveWapiIdPrefix(resource_id));
   return LevelDBStatusToSyncStatusCode(status);
 }
 
@@ -958,7 +976,8 @@ SyncStatusCode DriveMetadataDB::SetOriginRootDirectory(
   if (key.empty())
     return SYNC_DATABASE_ERROR_FAILED;
 
-  leveldb::Status status = db_->Put(leveldb::WriteOptions(), key, resource_id);
+  leveldb::Status status = db_->Put(
+      leveldb::WriteOptions(), key, drive::RemoveWapiIdPrefix(resource_id));
   return LevelDBStatusToSyncStatusCode(status);
 }
 
@@ -968,13 +987,22 @@ SyncStatusCode DriveMetadataDB::GetSyncRootDirectory(std::string* resource_id) {
 
   leveldb::Status status = db_->Get(
       leveldb::ReadOptions(), kSyncRootDirectoryKey, resource_id);
+
+  if (!IsDriveAPIEnabled() && status.ok())
+    *resource_id = drive::AddWapiFolderPrefix(*resource_id);
+
   return LevelDBStatusToSyncStatusCode(status);
 }
 
 SyncStatusCode DriveMetadataDB::UpdateEntry(const FileSystemURL& url,
-                                            const DriveMetadata& metadata) {
+                                            DriveMetadata metadata) {
   DCHECK(CalledOnValidThread());
   DCHECK(db_.get());
+
+  if (!IsDriveAPIEnabled()) {
+    metadata.set_resource_id(
+        drive::RemoveWapiIdPrefix(metadata.resource_id()));
+  }
 
   std::string metadata_key = FileSystemURLToMetadataKey(url);
   std::string value;
@@ -1004,7 +1032,7 @@ SyncStatusCode DriveMetadataDB::UpdateOriginAsIncrementalSync(
   leveldb::WriteBatch batch;
   batch.Delete(CreateKeyForOriginRoot(origin, DISABLED_ORIGIN));
   batch.Put(CreateKeyForOriginRoot(origin, INCREMENTAL_SYNC_ORIGIN),
-            resource_id);
+            drive::RemoveWapiIdPrefix(resource_id));
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
 
   return LevelDBStatusToSyncStatusCode(status);
@@ -1034,7 +1062,7 @@ SyncStatusCode DriveMetadataDB::DisableOrigin(
   batch.Delete(CreateKeyForOriginRoot(origin_to_disable,
                                       INCREMENTAL_SYNC_ORIGIN));
   batch.Put(CreateKeyForOriginRoot(origin_to_disable, DISABLED_ORIGIN),
-            resource_id);
+            drive::RemoveWapiIdPrefix(resource_id));
 
   // Remove entries specified by |origin_to_disable|.
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
@@ -1095,12 +1123,15 @@ SyncStatusCode DriveMetadataDB::GetOrigins(
     std::string key = itr->key().ToString();
     if (!StartsWithASCII(key, kDriveIncrementalSyncOriginKeyPrefix, true))
       break;
-    GURL origin(std::string(
-        key.begin() + arraysize(kDriveIncrementalSyncOriginKeyPrefix) - 1,
-        key.end()));
+    GURL origin(RemovePrefix(key, kDriveIncrementalSyncOriginKeyPrefix));
     DCHECK(origin.is_valid());
+
+    std::string origin_resource_id = IsDriveAPIEnabled()
+        ? itr->value().ToString()
+        : drive::AddWapiFolderPrefix(itr->value().ToString());
+
     bool result = incremental_sync_origins->insert(
-        std::make_pair(origin, itr->value().ToString())).second;
+        std::make_pair(origin, origin_resource_id)).second;
     DCHECK(result);
   }
 
@@ -1110,12 +1141,15 @@ SyncStatusCode DriveMetadataDB::GetOrigins(
     std::string key = itr->key().ToString();
     if (!StartsWithASCII(key, kDriveDisabledOriginKeyPrefix, true))
       break;
-    GURL origin(std::string(
-        key.begin() + arraysize(kDriveDisabledOriginKeyPrefix) - 1,
-        key.end()));
+    GURL origin(RemovePrefix(key, kDriveDisabledOriginKeyPrefix));
     DCHECK(origin.is_valid());
+
+    std::string origin_resource_id = IsDriveAPIEnabled()
+        ? itr->value().ToString()
+        : drive::AddWapiFolderPrefix(itr->value().ToString());
+
     bool result = disabled_origins->insert(
-        std::make_pair(origin, itr->value().ToString())).second;
+        std::make_pair(origin, origin_resource_id)).second;
     DCHECK(result);
   }
 

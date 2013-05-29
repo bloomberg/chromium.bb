@@ -24,8 +24,8 @@ namespace sync_file_system {
 
 namespace {
 
-const char kSyncRootResourceId[] = "sync_root_resource_id";
-const char kParentResourceId[] = "parent_resource_id";
+const char kSyncRootResourceId[] = "folder:sync_root_resource_id";
+const char kParentResourceId[] = "folder:parent_resource_id";
 const char kAppId[] = "app-id";
 const char kAppOrigin[] = "chrome-extension://app-id";
 
@@ -198,8 +198,19 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     std::pair<iterator, bool> inserted =
         resources_.insert(std::make_pair(title, std::string()));
     if (inserted.second) {
-      inserted.first->second =
-          base::StringPrintf("%" PRId64, ++resource_count_);
+      switch (type) {
+        case SYNC_FILE_TYPE_UNKNOWN:
+          NOTREACHED();
+          break;
+        case SYNC_FILE_TYPE_FILE:
+          inserted.first->second =
+              base::StringPrintf("file:%" PRId64, ++resource_count_);
+          break;
+        case SYNC_FILE_TYPE_DIRECTORY:
+          inserted.first->second =
+              base::StringPrintf("folder:%" PRId64, ++resource_count_);
+          break;
+      }
     }
     std::string resource_id = inserted.first->second;
     std::string md5_checksum;
