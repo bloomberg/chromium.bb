@@ -206,8 +206,6 @@
         'glue_serialize_deprecated.h',
         'image_decoder.cc',
         'image_decoder.h',
-        'latin1_string_conversions.cc',
-        'latin1_string_conversions.h',
         'network_list_observer.h',
         'npruntime_util.cc',
         'npruntime_util.h',

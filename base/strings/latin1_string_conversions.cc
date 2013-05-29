@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/latin1_string_conversions.h"
+#include "base/strings/latin1_string_conversions.h"
 
-namespace webkit_glue {
+namespace base {
 
 string16 Latin1OrUTF16ToUTF16(size_t length,
                               const Latin1Char* latin1,
@@ -16,4 +16,4 @@ string16 Latin1OrUTF16ToUTF16(size_t length,
   return string16(utf16, utf16 + length);
 }
 
-}  // namespace webkit_glue
+}  // namespace base

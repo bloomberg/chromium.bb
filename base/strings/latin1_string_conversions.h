@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_LATIN1_STRING_CONVERSIONS_H_
-#define WEBKIT_GLUE_LATIN1_STRING_CONVERSIONS_H_
+#ifndef BASE_STRINGS_LATIN1_STRING_CONVERSIONS_H_
+#define BASE_STRINGS_LATIN1_STRING_CONVERSIONS_H_
 
 #include <string>
 
 #include "base/base_export.h"
 #include "base/string16.h"
-#include "webkit/glue/webkit_glue_export.h"
 
-namespace webkit_glue {
+namespace base {
 
 // This definition of Latin1Char matches the definition of LChar in Blink. We
 // use unsigned char rather than char to make less tempting to mix and match
@@ -24,10 +23,10 @@ typedef unsigned char Latin1Char;
 // WebString::operator string16() to convert one or the other character array
 // to string16. This function is defined here rather than in WebString.h to
 // avoid binary bloat in all the callers of the conversion operator.
-WEBKIT_GLUE_EXPORT string16 Latin1OrUTF16ToUTF16(size_t length,
-                                                 const Latin1Char* latin1,
-                                                 const char16* utf16);
+BASE_EXPORT string16 Latin1OrUTF16ToUTF16(size_t length,
+                                          const Latin1Char* latin1,
+                                          const char16* utf16);
 
-}  // namespace webkit_glue
+}  // namespace base
 
-#endif  // WEBKIT_GLUE_LATIN1_STRING_CONVERSIONS_H_
+#endif  // BASE_STRINGS_LATIN1_STRING_CONVERSIONS_H_
