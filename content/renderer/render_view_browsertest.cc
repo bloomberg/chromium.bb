@@ -1182,7 +1182,13 @@ TEST_F(RenderViewImplTest, MAYBE_OnHandleKeyboardEvent) {
 // keyboard events through the RenderWidget::OnHandleInputEvent() function.
 // This test is for preventing regressions caused only when we use non-US
 // keyboards, such as Issue 10846.
-TEST_F(RenderViewImplTest, InsertCharacters) {
+// see http://crbug.com/244562
+#if defined(OS_WIN)
+#define MAYBE_InsertCharacters DISABLED_InsertCharacters
+#else
+#define MAYBE_InsertCharacters InsertCharacters
+#endif
+TEST_F(RenderViewImplTest, MAYBE_InsertCharacters) {
 #if !defined(OS_MACOSX)
   static const struct {
     MockKeyboard::Layout layout;
