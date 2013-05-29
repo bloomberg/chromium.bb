@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -48,9 +47,9 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
   GtkThemeService* theme_service =
       GtkThemeService::GetFrom(browser_->profile());
 
-  int resource_id = error_->GetBubbleViewIconResourceID();
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  GdkPixbuf* pixbuf = rb.GetNativeImageNamed(resource_id).ToGdkPixbuf();
+  gfx::Image image = error_->GetBubbleViewIcon();
+  CHECK(!image.IsEmpty());
+  GdkPixbuf* pixbuf = image.ToGdkPixbuf();
   GtkWidget* image_view = gtk_image_new_from_pixbuf(pixbuf);
 
   GtkWidget* title_label = theme_service->BuildLabel(

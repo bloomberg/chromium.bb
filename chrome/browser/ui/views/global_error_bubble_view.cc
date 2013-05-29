@@ -70,9 +70,10 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
       gfx::Insets(kAnchorVerticalInset, 0, kAnchorVerticalInset, 0));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  int resource_id = error_->GetBubbleViewIconResourceID();
+  gfx::Image image = error_->GetBubbleViewIcon();
+  CHECK(!image.IsEmpty());
   scoped_ptr<views::ImageView> image_view(new views::ImageView());
-  image_view->SetImage(rb.GetImageNamed(resource_id).ToImageSkia());
+  image_view->SetImage(image.ToImageSkia());
 
   string16 title_string(error_->GetBubbleViewTitle());
   scoped_ptr<views::Label> title_label(new views::Label(title_string));

@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_error/global_error.h"
@@ -26,6 +27,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -35,10 +38,15 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/size.h"
 
 using extensions::Extension;
 
 namespace {
+
+static const int kIconSize = extension_misc::EXTENSION_ICON_SMALL;
 
 static base::LazyInstance<
     std::bitset<IDC_EXTENSION_DISABLED_LAST -
@@ -131,7 +139,8 @@ class ExtensionDisabledGlobalError : public GlobalError,
                                      public ExtensionUninstallDialog::Delegate {
  public:
   ExtensionDisabledGlobalError(ExtensionService* service,
-                               const Extension* extension);
+                               const Extension* extension,
+                               const gfx::Image& icon);
   virtual ~ExtensionDisabledGlobalError();
 
   // GlobalError implementation.
@@ -141,6 +150,7 @@ class ExtensionDisabledGlobalError : public GlobalError,
   virtual string16 MenuItemLabel() OVERRIDE;
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
+  virtual gfx::Image GetBubbleViewIcon() OVERRIDE;
   virtual string16 GetBubbleViewTitle() OVERRIDE;
   virtual std::vector<string16> GetBubbleViewMessages() OVERRIDE;
   virtual string16 GetBubbleViewAcceptButtonLabel() OVERRIDE;
@@ -161,6 +171,7 @@ class ExtensionDisabledGlobalError : public GlobalError,
  private:
   ExtensionService* service_;
   const Extension* extension_;
+  gfx::Image icon_;
 
   // How the user responded to the error; used for metrics.
   enum UserResponse {
@@ -182,11 +193,22 @@ class ExtensionDisabledGlobalError : public GlobalError,
 // TODO(yoz): create error at startup for disabled extensions.
 ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
     ExtensionService* service,
-    const Extension* extension)
+    const Extension* extension,
+    const gfx::Image& icon)
     : service_(service),
       extension_(extension),
+      icon_(icon),
       user_response_(IGNORED),
       menu_command_id_(GetMenuCommandID()) {
+  if (icon_.IsEmpty()) {
+    icon_ = gfx::Image(
+        gfx::ImageSkiaOperations::CreateResizedImage(
+            extension_->is_app() ?
+                extensions::IconsInfo::GetDefaultAppIcon() :
+                extensions::IconsInfo::GetDefaultExtensionIcon(),
+            skia::ImageOperations::RESIZE_BEST,
+            gfx::Size(kIconSize, kIconSize)));
+  }
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(service->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -223,6 +245,10 @@ void ExtensionDisabledGlobalError::ExecuteMenuItem(Browser* browser) {
 
 bool ExtensionDisabledGlobalError::HasBubbleView() {
    return true;
+}
+
+gfx::Image ExtensionDisabledGlobalError::GetBubbleViewIcon() {
+  return icon_;
 }
 
 string16 ExtensionDisabledGlobalError::GetBubbleViewTitle() {
@@ -319,10 +345,28 @@ void ExtensionDisabledGlobalError::Observe(
 
 namespace extensions {
 
+void AddExtensionDisabledErrorWithIcon(base::WeakPtr<ExtensionService> service,
+                                       const std::string& extension_id,
+                                       const gfx::Image& icon) {
+  if (!service.get())
+    return;
+  const Extension* extension = service->GetInstalledExtension(extension_id);
+  if (extension) {
+    GlobalErrorServiceFactory::GetForProfile(service->profile())->
+        AddGlobalError(new ExtensionDisabledGlobalError(
+            service, extension, icon));
+  }
+}
+
 void AddExtensionDisabledError(ExtensionService* service,
                                const Extension* extension) {
-  GlobalErrorServiceFactory::GetForProfile(service->profile())->
-      AddGlobalError(new ExtensionDisabledGlobalError(service, extension));
+  extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
+      extension, kIconSize, ExtensionIconSet::MATCH_BIGGER);
+  gfx::Size size(kIconSize, kIconSize);
+  ImageLoader::Get(service->profile())->LoadImageAsync(
+      extension, image, size,
+      base::Bind(&AddExtensionDisabledErrorWithIcon,
+                 service->AsWeakPtr(), extension->id()));
 }
 
 void ShowExtensionDisabledDialog(ExtensionService* service,

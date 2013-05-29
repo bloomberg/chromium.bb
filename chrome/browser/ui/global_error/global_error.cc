@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 
 GlobalError::GlobalError()
     : has_shown_bubble_view_(false),
@@ -45,10 +47,11 @@ GlobalErrorBubbleViewBase* GlobalError::GetBubbleView() {
   return bubble_view_;
 }
 
-int GlobalError::GetBubbleViewIconResourceID() {
+gfx::Image GlobalError::GetBubbleViewIcon() {
   // If you change this make sure to also change the menu icon and the wrench
   // icon color.
-  return IDR_INPUT_ALERT;
+  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_INPUT_ALERT);
 }
 
 void GlobalError::BubbleViewDidClose(Browser* browser) {

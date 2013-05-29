@@ -23,7 +23,6 @@
 #include "grit/generated_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
 namespace {
@@ -83,9 +82,9 @@ class Bridge : public GlobalErrorBubbleViewBase {
 
   DCHECK(error_);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  [iconView_ setImage:rb.GetNativeImageNamed(
-      error_->GetBubbleViewIconResourceID()).ToNSImage()];
+  gfx::Image image = error_->GetBubbleViewIcon();
+  DCHECK(!image.IsEmpty());
+  [iconView_ setImage:image.ToNSImage()];
 
   [title_ setStringValue:SysUTF16ToNSString(error_->GetBubbleViewTitle())];
   std::vector<string16> messages = error_->GetBubbleViewMessages();
