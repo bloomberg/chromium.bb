@@ -11,7 +11,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationDelegate.h"
+#include "third_party/WebKit/public/platform/WebAnimationDelegate.h"
 
 namespace Webkit {
 class WebGraphicsContext3D;

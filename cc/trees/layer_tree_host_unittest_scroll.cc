@@ -14,7 +14,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerScrollClient.h"
+#include "third_party/WebKit/public/platform/WebLayerScrollClient.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"

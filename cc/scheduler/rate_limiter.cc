@@ -6,7 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/base/thread.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
 

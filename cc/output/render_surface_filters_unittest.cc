@@ -5,8 +5,8 @@
 #include "cc/output/render_surface_filters.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
+#include "third_party/WebKit/public/platform/WebFilterOperation.h"
+#include "third_party/WebKit/public/platform/WebFilterOperations.h"
 
 using WebKit::WebFilterOperation;
 using WebKit::WebFilterOperations;

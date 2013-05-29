@@ -4,7 +4,7 @@
 
 #include "cc/resources/sync_point_helper.h"
 
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
 

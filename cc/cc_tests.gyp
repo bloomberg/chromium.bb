@@ -191,7 +191,6 @@
       'include_dirs': [
         'test',
         '.',
-        '../third_party/WebKit/Source/Platform/chromium',
       ],
       'conditions': [
         ['OS == "android" and gtest_target_type == "shared_library"', {
@@ -233,7 +232,6 @@
       'include_dirs': [
         'test',
         '.',
-        '../third_party/WebKit/Source/Platform/chromium',
       ],
       'conditions': [
         ['OS == "android" and gtest_target_type == "shared_library"', {
@@ -258,7 +256,6 @@
         'test',
         '.',
         '..',
-        '../third_party/WebKit/Source/Platform/chromium',
       ],
       'dependencies': [
         '../skia/skia.gyp:skia',
