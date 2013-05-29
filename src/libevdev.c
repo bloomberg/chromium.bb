@@ -334,10 +334,8 @@ int EvdevReadInfoFromFile(FILE* fp, EvdevInfoPtr info) {
   int ret;
 
   ret = fscanf(fp, "# device: %1024[^\n]\n", info->name);
-  if (ret <= 0) {
-    fprintf(stderr, "Parse device name failed\n");
+  if (ret <= 0)
     return ret;
-  }
 
   ret = EvdevReadBitmask(fp, "bit", info->bitmask, sizeof(info->bitmask));
   if (ret <= 0) {
