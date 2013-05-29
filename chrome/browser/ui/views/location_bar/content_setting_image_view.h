@@ -52,6 +52,14 @@ class ContentSettingImageView : public TouchableLocationBarView,
   void Update(content::WebContents* web_contents);
 
  private:
+  // Number of milliseconds spent animating open; also the time spent animating
+  // closed.
+  static const int kOpenTimeMS;
+
+  // The total animation time, including open and close as well as an
+  // intervening "stay open" period.
+  static const int kAnimationDurationMS;
+
   // ui::AnimationDelegate:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -67,14 +75,16 @@ class ContentSettingImageView : public TouchableLocationBarView,
   // views::WidgetObserver:
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
-  // Invoked when the user clicks on the control.
-  void OnClick(LocationBarView* parent);
+  bool background_showing() const {
+    return slide_animator_.is_animating() || pause_animation_;
+  }
 
-  int GetTextAnimationSize(double state, int text_size);
+  // Invoked when the user clicks on the control.
+  void OnClick();
 
   LocationBarView* parent_;  // Weak, owns us.
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
-  views::HorizontalPainter background_painter_;
+  scoped_ptr<views::Painter> background_painter_;
   views::ImageView* icon_;
   views::Label* text_label_;
   ui::SlideAnimation slide_animator_;
@@ -85,7 +95,6 @@ class ContentSettingImageView : public TouchableLocationBarView,
   // TODO(pkasting): Eliminate these.
   gfx::Font font_;
   int text_size_;
-  int visible_text_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageView);
 };
