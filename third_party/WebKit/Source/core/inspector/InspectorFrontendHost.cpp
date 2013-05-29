@@ -149,11 +149,11 @@ void InspectorFrontendHost::requestSetDockSide(const String& side)
     if (!m_client)
         return;
     if (side == "undocked")
-        m_client->requestSetDockSide(InspectorFrontendClient::UNDOCKED);
+        m_client->requestSetDockSide(InspectorFrontendClient::Undocked);
     else if (side == "right")
-        m_client->requestSetDockSide(InspectorFrontendClient::DOCKED_TO_RIGHT);
+        m_client->requestSetDockSide(InspectorFrontendClient::DockedToRight);
     else if (side == "bottom")
-        m_client->requestSetDockSide(InspectorFrontendClient::DOCKED_TO_BOTTOM);
+        m_client->requestSetDockSide(InspectorFrontendClient::DockedToBottom);
 }
 
 void InspectorFrontendHost::closeWindow()

@@ -94,9 +94,9 @@ void InspectorFrontendClientImpl::requestSetDockSide(DockSide side)
 {
     String sideString = "undocked";
     switch (side) {
-    case DOCKED_TO_RIGHT: sideString = "right"; break;
-    case DOCKED_TO_BOTTOM: sideString = "bottom"; break;
-    case UNDOCKED: sideString = "undocked"; break;
+    case DockedToRight: sideString = "right"; break;
+    case DockedToBottom: sideString = "bottom"; break;
+    case Undocked: sideString = "undocked"; break;
     }
     m_client->requestSetDockSide(sideString);
 }

@@ -42,9 +42,9 @@ class Event;
 class InspectorFrontendClient {
 public:
     enum DockSide {
-        UNDOCKED = 0,
-        DOCKED_TO_RIGHT,
-        DOCKED_TO_BOTTOM
+        Undocked = 0,
+        DockedToRight,
+        DockedToBottom
     };
 
     virtual ~InspectorFrontendClient() { }
