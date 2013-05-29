@@ -137,12 +137,12 @@ class HelperPool(object):
       An appropriately configured HelperPool instance.
     """
     if cros:
-      cros = gerrit.GerritHelper.FromRemote(constants.EXTERNAL_REMOTE)
+      cros = gerrit.GetGerritHelper(constants.EXTERNAL_REMOTE)
     else:
       cros = None
 
     if cros_internal:
-      cros_internal = gerrit.GerritHelper.FromRemote(constants.INTERNAL_REMOTE)
+      cros_internal = gerrit.GetGerritHelper(constants.INTERNAL_REMOTE)
     else:
       cros_internal = None
 
