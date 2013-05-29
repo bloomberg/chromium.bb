@@ -98,6 +98,7 @@ DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
                          base::TimeDelta::FromMilliseconds(kUpdatePeriodMs),
                          this, &DownloadFileImpl::SendUpdate);
   }
+  rate_estimator_.Increment(data_len);
   return file_.AppendDataToFile(data, data_len);
 }
 
@@ -187,7 +188,7 @@ bool DownloadFileImpl::InProgress() const {
 }
 
 int64 DownloadFileImpl::CurrentSpeed() const {
-  return file_.CurrentSpeed();
+  return rate_estimator_.GetCountPerSecond();
 }
 
 bool DownloadFileImpl::GetHash(std::string* hash) {

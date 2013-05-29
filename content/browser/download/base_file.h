@@ -73,9 +73,6 @@ class CONTENT_EXPORT BaseFile {
   // DownloadInterruptReason indicating the result of the operation.
   DownloadInterruptReason AnnotateWithSourceInformation();
 
-  // Calculate and return the current speed in bytes per second.
-  int64 CurrentSpeed() const;
-
   base::FilePath full_path() const { return full_path_; }
   bool in_progress() const { return file_stream_.get() != NULL; }
   int64 bytes_so_far() const { return bytes_so_far_; }

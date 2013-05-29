@@ -418,6 +418,8 @@
     'browser/download/file_metadata_mac.mm',
     'browser/download/mhtml_generation_manager.cc',
     'browser/download/mhtml_generation_manager.h',
+    'browser/download/rate_estimator.cc',
+    'browser/download/rate_estimator.h',
     'browser/download/save_file.cc',
     'browser/download/save_file.h',
     'browser/download/save_file_manager.cc',

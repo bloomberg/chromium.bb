@@ -612,46 +612,6 @@ TEST_F(BaseFileTest, IsEmptyHash) {
   EXPECT_FALSE(BaseFile::IsEmptyHash(std::string()));
 }
 
-// Test that calculating speed after no writes.
-TEST_F(BaseFileTest, SpeedWithoutWrite) {
-  ASSERT_TRUE(InitializeFile());
-  base::TimeTicks current = StartTick() + kElapsedTimeDelta;
-  ASSERT_EQ(0, CurrentSpeedAtTime(current));
-  base_file_->Finish();
-}
-
-// Test that calculating speed after a single write.
-TEST_F(BaseFileTest, SpeedAfterSingleWrite) {
-  ASSERT_TRUE(InitializeFile());
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
-  base::TimeTicks current = StartTick() + kElapsedTimeDelta;
-  int64 expected_speed = kTestDataLength1 / kElapsedTimeSeconds;
-  ASSERT_EQ(expected_speed, CurrentSpeedAtTime(current));
-  base_file_->Finish();
-}
-
-// Test that calculating speed after a multiple writes.
-TEST_F(BaseFileTest, SpeedAfterMultipleWrite) {
-  ASSERT_TRUE(InitializeFile());
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
-  ASSERT_TRUE(AppendDataToFile(kTestData2));
-  ASSERT_TRUE(AppendDataToFile(kTestData3));
-  ASSERT_TRUE(AppendDataToFile(kTestData4));
-  base::TimeTicks current = StartTick() + kElapsedTimeDelta;
-  int64 expected_speed = (kTestDataLength1 + kTestDataLength2 +
-      kTestDataLength3 + kTestDataLength4) / kElapsedTimeSeconds;
-  ASSERT_EQ(expected_speed, CurrentSpeedAtTime(current));
-  base_file_->Finish();
-}
-
-// Test that calculating speed after no delay - should not divide by 0.
-TEST_F(BaseFileTest, SpeedAfterNoElapsedTime) {
-  ASSERT_TRUE(InitializeFile());
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
-  ASSERT_EQ(0, CurrentSpeedAtTime(StartTick()));
-  base_file_->Finish();
-}
-
 // Test that a temporary file is created in the default download directory.
 TEST_F(BaseFileTest, CreatedInDefaultDirectory) {
   ASSERT_TRUE(base_file_->full_path().empty());

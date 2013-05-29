@@ -218,11 +218,6 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformation() {
 }
 #endif
 
-int64 BaseFile::CurrentSpeed() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  return CurrentSpeedAtTime(base::TimeTicks::Now());
-}
-
 bool BaseFile::GetHash(std::string* hash) {
   DCHECK(!detached_);
   hash->assign(reinterpret_cast<const char*>(sha256_hash_),
@@ -337,12 +332,6 @@ void BaseFile::ClearStream() {
   DCHECK(file_stream_.get() != NULL);
   file_stream_.reset();
   bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_OPENED);
-}
-
-int64 BaseFile::CurrentSpeedAtTime(base::TimeTicks current_time) const {
-  base::TimeDelta diff = current_time - start_tick_;
-  int64 diff_ms = diff.InMilliseconds();
-  return diff_ms == 0 ? 0 : bytes_so_far() * 1000 / diff_ms;
 }
 
 DownloadInterruptReason BaseFile::LogNetError(
