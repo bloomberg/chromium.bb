@@ -183,14 +183,15 @@ class InterstitialObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
 };
 
-class TransfersAllRedirectsContentBrowserClient
+// Causes the browser to swap processes on a redirect to an HTTPS URL.
+class TransferHttpsRedirectsContentBrowserClient
     : public chrome::ChromeContentBrowserClient {
  public:
   virtual bool ShouldSwapProcessesForRedirect(
       content::ResourceContext* resource_context,
       const GURL& current_url,
       const GURL& new_url) OVERRIDE {
-    return true;
+    return new_url.SchemeIs(chrome::kHttpsScheme);
   }
 };
 
@@ -376,10 +377,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
                                   ASCIIToUTF16("onbeforeunload=null;"));
 }
 
-// Tests that a cross-process redirect will only cause the beforeunload
-// handler to run once.
-IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterRedirect) {
-  // Create HTTP and HTTPS servers for cross-site transition.
+// Ensure that a transferred cross-process navigation does not generate
+// DidStopLoading events until the navigation commits.  If it did, then
+// ui_test_utils::NavigateToURL would proceed before the URL had committed.
+// http://crbug.com/243957.
+IN_PROC_BROWSER_TEST_F(BrowserTest, NoStopDuringTransferUntilCommit) {
+  // Create HTTP and HTTPS servers for a cross-site transition.
   ASSERT_TRUE(test_server()->Start());
   net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
                                            net::SpawnedTestServer::kLocalhost,
@@ -387,8 +390,43 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterRedirect) {
   ASSERT_TRUE(https_test_server.Start());
 
   // Temporarily replace ContentBrowserClient with one that will cause a
-  // process swap on all redirects.
-  TransfersAllRedirectsContentBrowserClient new_client;
+  // process swap on all redirects to HTTPS URLs.
+  TransferHttpsRedirectsContentBrowserClient new_client;
+  content::ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&new_client);
+
+  GURL init_url(test_server()->GetURL("files/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), init_url);
+
+  // Navigate to a same-site page that redirects, causing a transfer.
+  GURL dest_url(https_test_server.GetURL("files/title2.html"));
+  GURL redirect_url(test_server()->GetURL("server-redirect?" +
+      dest_url.spec()));
+  ui_test_utils::NavigateToURL(browser(), redirect_url);
+
+  // We should immediately see the new committed entry.
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(contents->GetController().GetPendingEntry());
+  EXPECT_EQ(dest_url,
+            contents->GetController().GetLastCommittedEntry()->GetURL());
+
+  // Restore previous browser client.
+  SetBrowserClientForTesting(old_client);
+}
+
+// Tests that a cross-process redirect will only cause the beforeunload
+// handler to run once.
+IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterRedirect) {
+  // Create HTTP and HTTPS servers for a cross-site transition.
+  ASSERT_TRUE(test_server()->Start());
+  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
+                                           net::SpawnedTestServer::kLocalhost,
+                                           base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_test_server.Start());
+
+  // Temporarily replace ContentBrowserClient with one that will cause a
+  // process swap on all redirects to HTTPS URLs.
+  TransferHttpsRedirectsContentBrowserClient new_client;
   content::ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&new_client);
 

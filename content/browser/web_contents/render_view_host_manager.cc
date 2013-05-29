@@ -832,10 +832,6 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
     }
     // Otherwise, it's safe to treat this as a pending cross-site transition.
 
-    // Make sure the old render view stops, in case a load is in progress.
-    render_view_host_->Send(
-        new ViewMsg_Stop(render_view_host_->GetRoutingID()));
-
     // We need to wait until the beforeunload handler has run, unless we are
     // transferring an existing request (in which case it has already run).
     // Suspend the new render view (i.e., don't let it send the cross-site
@@ -846,6 +842,12 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
     bool is_transfer =
         entry.transferred_global_request_id() != GlobalRequestID();
     if (!is_transfer) {
+      // Also make sure the old render view stops, in case a load is in
+      // progress.  (We don't want to do this for transfers, since it will
+      // interrupt the transfer with an unexpected DidStopLoading.)
+      render_view_host_->Send(
+          new ViewMsg_Stop(render_view_host_->GetRoutingID()));
+
       pending_render_view_host_->SetNavigationsSuspended(true,
                                                          base::TimeTicks());
     }

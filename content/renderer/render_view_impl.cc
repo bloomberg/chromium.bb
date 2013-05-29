@@ -5459,9 +5459,6 @@ void RenderViewImpl::OnShouldClose() {
 }
 
 void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
-  // Ensure that no other in-progress navigation continues.
-  OnStop();
-
   // Only run unload if we're not swapped out yet, but send the ack either way.
   if (!is_swapped_out_) {
     // Swap this RenderView out so the tab can navigate to a page rendered by a
@@ -5477,6 +5474,11 @@ void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
 
     // Swap out and stop sending any IPC messages that are not ACKs.
     SetSwappedOut(true);
+
+    // Now that we're swapped out and filtering IPC messages, stop loading to
+    // ensure that no other in-progress navigation continues.  We do this here
+    // to avoid sending a DidStopLoading message to the browser process.
+    OnStop();
 
     // Replace the page with a blank dummy URL. The unload handler will not be
     // run a second time, thanks to a check in FrameLoader::stopLoading.

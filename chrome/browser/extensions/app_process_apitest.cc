@@ -671,13 +671,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromExtension) {
   const Extension* launcher =
       LoadExtension(test_data_dir_.AppendASCII("app_launcher"));
 
-  // There should be three navigations by the time the app page is loaded.
+  // There should be two navigations by the time the app page is loaded.
   // 1. The extension launcher page.
-  // 2. The URL that the extension launches, which redirects.
-  // 3. The app's URL.
+  // 2. The app's URL (which includes a server redirect).
+  // Note that the server redirect does not generate a navigation event.
   content::TestNavigationObserver test_navigation_observer(
       content::NotificationService::AllSources(),
-      3);
+      2);
 
   // Load the launcher extension, which should launch the app.
   ui_test_utils::NavigateToURLWithDisposition(
