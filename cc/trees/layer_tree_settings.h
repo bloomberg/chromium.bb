@@ -5,6 +5,8 @@
 #ifndef CC_TREES_LAYER_TREE_SETTINGS_H_
 #define CC_TREES_LAYER_TREE_SETTINGS_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/layer_tree_debug_state.h"
@@ -60,6 +62,7 @@ class CC_EXPORT LayerTreeSettings {
   bool force_direct_layer_drawing;  // With Skia GPU backend.
   bool strict_layer_property_change_checking;
   bool use_map_image;
+  std::string compositor_name;
 
   LayerTreeDebugState initial_debug_state;
 };

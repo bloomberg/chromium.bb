@@ -201,6 +201,7 @@ void CompositorImpl::SetVisible(bool visible) {
     host_.reset();
   } else if (!host_) {
     cc::LayerTreeSettings settings;
+    settings.compositor_name = "BrowserCompositor";
     settings.refresh_rate = 60.0;
     settings.impl_side_painting = false;
     settings.calculate_top_controls_position = false;

@@ -146,7 +146,7 @@ bool GLRenderer::Initialize() {
   if (!context_->makeContextCurrent())
     return false;
 
-  context_->pushGroupMarkerEXT("CompositorContext");
+  context_->pushGroupMarkerEXT(Settings().compositor_name.c_str());
 
   std::string extensions_string =
       UTF16ToASCII(context_->getString(GL_EXTENSIONS));
