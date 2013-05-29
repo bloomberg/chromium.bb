@@ -108,6 +108,7 @@ class SYNC_EXPORT Entry {
   Id GetPredecessorId() const;
   Id GetSuccessorId() const;
   Id GetFirstChildId() const;
+  int GetTotalNodeCount() const;
 
   // Returns a vector of this node's children's handles.
   // Clears |result| if there are no children.  If this node is of a type that

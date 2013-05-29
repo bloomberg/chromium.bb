@@ -321,6 +321,46 @@ bool Directory::GetChildHandlesByHandle(
   return true;
 }
 
+int Directory::GetTotalNodeCount(
+    BaseTransaction* trans,
+    EntryKernel* kernel) const {
+  if (!SyncAssert(this == trans->directory(), FROM_HERE,
+                  "Directories don't match", trans))
+    return false;
+
+  int count = 1;
+  std::deque<const OrderedChildSet*> child_sets;
+
+  GetChildSetForKernel(trans, kernel, &child_sets);
+  while (!child_sets.empty()) {
+    const OrderedChildSet* set = child_sets.front();
+    child_sets.pop_front();
+    for (OrderedChildSet::const_iterator it = set->begin();
+         it != set->end(); ++it) {
+      count++;
+      GetChildSetForKernel(trans, *it, &child_sets);
+    }
+  }
+
+  return count;
+}
+
+void Directory::GetChildSetForKernel(
+    BaseTransaction* trans,
+    EntryKernel* kernel,
+    std::deque<const OrderedChildSet*>* child_sets) const {
+  if (!kernel->ref(IS_DIR))
+    return;  // Not a directory => no children.
+
+  const OrderedChildSet* descendants =
+      kernel_->parent_child_index->GetChildren(kernel->ref(ID));
+  if (!descendants)
+    return;  // This directory has no children.
+
+  // Add our children to the list of items to be traversed.
+  child_sets->push_back(descendants);
+}
+
 EntryKernel* Directory::GetRootEntry() {
   return GetEntryById(Id());
 }

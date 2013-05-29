@@ -108,6 +108,10 @@ void Entry::GetChildHandles(std::vector<int64>* result) const {
   dir()->GetChildHandlesById(basetrans_, Get(ID), result);
 }
 
+int Entry::GetTotalNodeCount() const {
+  return dir()->GetTotalNodeCount(basetrans_, kernel_);
+}
+
 bool Entry::ShouldMaintainPosition() const {
   return kernel_->ShouldMaintainPosition();
 }

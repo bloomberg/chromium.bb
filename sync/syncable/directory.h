@@ -321,6 +321,9 @@ class SYNC_EXPORT Directory {
   bool GetChildHandlesByHandle(BaseTransaction*, int64 handle,
       ChildHandles* result);
 
+  // Counts all items under the given node, including the node itself.
+  int GetTotalNodeCount(BaseTransaction*, EntryKernel* kernel_) const;
+
   // Returns true iff |id| has children.
   bool HasChildren(BaseTransaction* trans, const Id& id);
 
@@ -453,6 +456,12 @@ class SYNC_EXPORT Directory {
   void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result);
   bool SafeToPurgeFromMemory(WriteTransaction* trans,
                              const EntryKernel* const entry) const;
+
+  // A helper used by GetTotalNodeCount.
+  void GetChildSetForKernel(
+      BaseTransaction*,
+      EntryKernel* kernel_,
+      std::deque<const OrderedChildSet*>* child_sets) const;
 
   Directory& operator = (const Directory&);
 
