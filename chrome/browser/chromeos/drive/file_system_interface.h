@@ -444,9 +444,7 @@ class FileSystemInterface {
   // Gets the cache entry for file corresponding to |resource_id| and |md5|
   // and runs |callback| with true and the found entry if the entry exists
   // in the cache map. Otherwise, runs |callback| with false.
-  // |md5| can be empty if only matching |resource_id| is desired, which may
-  // happen when looking for pinned entries where symlinks' filenames have no
-  // extension and hence no md5.
+  // |md5| can be empty if only matching |resource_id| is desired.
   // |callback| must not be null.
   virtual void GetCacheEntryByResourceId(
       const std::string& resource_id,

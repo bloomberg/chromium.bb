@@ -181,9 +181,8 @@ class FileCacheTest : public testing::Test {
     if (cache_entry_found)
       EXPECT_TRUE(cache_entry.is_dirty());
 
-    // If entry doesn't exist, verify that:
-    // - no files with "<resource_id>.* exists in persistent and tmp dirs
-    // - no "<resource_id>" symlink exists in pinned and outgoing dirs.
+    // If entry doesn't exist, verify that no files with "<resource_id>.*"
+    // exist in persistent and tmp dirs.
     std::vector<PathToVerify> paths_to_verify;
     paths_to_verify.push_back(  // Index 0: CACHE_TYPE_TMP.
         PathToVerify(cache_->GetCacheFilePath(resource_id, "*",
@@ -197,8 +196,7 @@ class FileCacheTest : public testing::Test {
       for (size_t i = 0; i < paths_to_verify.size(); ++i) {
         file_util::FileEnumerator enumerator(
             paths_to_verify[i].path_to_scan.DirName(), false /* not recursive*/,
-            file_util::FileEnumerator::FILES |
-            file_util::FileEnumerator::SHOW_SYM_LINKS,
+            file_util::FileEnumerator::FILES,
             paths_to_verify[i].path_to_scan.BaseName().value());
         EXPECT_TRUE(enumerator.Next().empty());
       }
@@ -219,8 +217,7 @@ class FileCacheTest : public testing::Test {
         const struct PathToVerify& verify = paths_to_verify[i];
         file_util::FileEnumerator enumerator(
             verify.path_to_scan.DirName(), false /* not recursive */,
-            file_util::FileEnumerator::FILES |
-            file_util::FileEnumerator::SHOW_SYM_LINKS,
+            file_util::FileEnumerator::FILES,
             verify.path_to_scan.BaseName().value());
         size_t num_files_found = 0;
         for (base::FilePath current = enumerator.Next(); !current.empty();
@@ -1001,7 +998,7 @@ TEST_F(FileCacheTest, DirtyCacheRepetitive) {
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 FileCache::CACHE_TYPE_PERSISTENT);
 
-  // Commit the file dirty.  Outgoing symlink should be created.
+  // Commit the file dirty.
   TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
@@ -1015,15 +1012,14 @@ TEST_F(FileCacheTest, DirtyCacheRepetitive) {
                   test_util::TEST_CACHE_STATE_PERSISTENT,
                   FileCache::CACHE_TYPE_PERSISTENT);
 
-  // Mark the file dirty again after it's being committed.  Outgoing symlink
-  // should be deleted.
+  // Mark the file dirty again after it's being committed.
   TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 FileCache::CACHE_TYPE_PERSISTENT);
 
-  // Commit the file dirty.  Outgoing symlink should be created again.
+  // Commit the file dirty.
   TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_DIRTY |
@@ -1122,8 +1118,7 @@ TEST_F(FileCacheTest, RemoveFromDirtyCache) {
                   test_util::TEST_CACHE_STATE_PERSISTENT,
                   FileCache::CACHE_TYPE_PERSISTENT);
 
-  // Try to remove the file.  Since file is dirty, it and the corresponding
-  // pinned and outgoing symlinks should not be removed.
+  // Try to remove the file.  Since file is dirty, it should not be removed.
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
 }
 

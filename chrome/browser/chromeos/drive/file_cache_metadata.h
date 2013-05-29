@@ -66,9 +66,7 @@ class FileCacheMetadata {
 
   // Gets the cache entry for file corresponding to |resource_id| and |md5|
   // and returns true if entry exists in cache map.  Otherwise, returns false.
-  // |md5| can be empty if only matching |resource_id| is desired, which may
-  // happen when looking for pinned entries where symlinks' filenames have no
-  // extension and hence no md5.
+  // |md5| can be empty if only matching |resource_id| is desired.
   virtual bool GetCacheEntry(const std::string& resource_id,
                              const std::string& md5,
                              FileCacheEntry* entry) = 0;

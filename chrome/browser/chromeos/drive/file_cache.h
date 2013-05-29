@@ -122,9 +122,7 @@ class FileCache {
   // Gets the cache entry for file corresponding to |resource_id| and |md5|
   // and runs |callback| with true and the entry found if entry exists in cache
   // map.  Otherwise, runs |callback| with false.
-  // |md5| can be empty if only matching |resource_id| is desired, which may
-  // happen when looking for pinned entries where symlinks' filenames have no
-  // extension and hence no md5.
+  // |md5| can be empty if only matching |resource_id| is desired.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void GetCacheEntryOnUIThread(const std::string& resource_id,
@@ -206,11 +204,7 @@ class FileCache {
                                       FileOperationType file_operation_type,
                                       const FileOperationCallback& callback);
 
-  // Modifies cache state, which involves the following:
-  // - moves |source_path| to |dest_path| in persistent dir if
-  //   file is not dirty
-  // - creates symlink in pinned dir that references downloaded or locally
-  //   modified file
+  // Pins the specified entry.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void PinOnUIThread(const std::string& resource_id,
@@ -225,9 +219,7 @@ class FileCache {
                        const std::string& md5,
                        const FileOperationCallback& callback);
 
-  // Modifies cache state, which involves the following:
-  // - moves the local file from pinned directory to unpinned directory.
-  // - update cache metadata.
+  // Unpins the specified entry.
   FileError Unpin(const std::string& resource_id, const std::string& md5);
 
   // Sets the state of the cache entry corresponding to |resource_id| and |md5|
@@ -244,18 +236,14 @@ class FileCache {
   void MarkAsUnmountedOnUIThread(const base::FilePath& file_path,
                                  const FileOperationCallback& callback);
 
-  // Modifies cache state, which involves the following:
-  // - moves |source_path| to |dest_path| in persistent dir, where
-  //   |source_path| has .<md5> extension and |dest_path| has .local extension
-  // - if file is pinned, updates symlink in pinned dir to reference dirty file
+  // Marks the specified entry dirty.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void MarkDirtyOnUIThread(const std::string& resource_id,
                            const std::string& md5,
                            const FileOperationCallback& callback);
 
-  // Modifies cache state, i.e. creates symlink in outgoing
-  // dir to reference dirty file in persistent dir.
+  // Commits changes for the specified dirty entry.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void CommitDirtyOnUIThread(const std::string& resource_id,

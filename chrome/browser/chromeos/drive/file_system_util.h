@@ -146,13 +146,10 @@ std::string EscapeUtf8FileName(const std::string& input);
 base::FilePath GetCacheRootPath(Profile* profile);
 
 // Extracts resource_id, md5, and extra_extension from cache path.
-// Case 1: Pinned and outgoing symlinks only have resource_id.
-// Example: path="/user/GCache/v1/pinned/pdf:a1b2" =>
-//          resource_id="pdf:a1b2", md5="", extra_extension="";
-// Case 2: Normal files have both resource_id and md5.
+// Case 1: Normal files have both resource_id and md5.
 // Example: path="/user/GCache/v1/tmp/pdf:a1b2.01234567" =>
 //          resource_id="pdf:a1b2", md5="01234567", extra_extension="";
-// Case 3: Mounted files have all three parts.
+// Case 2: Mounted files have all three parts.
 // Example: path="/user/GCache/v1/persistent/pdf:a1b2.01234567.mounted" =>
 //          resource_id="pdf:a1b2", md5="01234567", extra_extension="mounted".
 void ParseCacheFilePath(const base::FilePath& path,

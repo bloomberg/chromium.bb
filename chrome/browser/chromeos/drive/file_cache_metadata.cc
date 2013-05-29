@@ -29,8 +29,7 @@ enum DBOpenStatus {
 // A map table of resource ID to file path.
 typedef std::map<std::string, base::FilePath> ResourceIdToFilePathMap;
 
-// Scans cache subdirectory and build or update |cache_map|
-// with found file blobs or symlinks.
+// Scans cache subdirectory and build or update |cache_map| with found files.
 //
 // The resource IDs and file paths of discovered files are collected as a
 // ResourceIdToFilePathMap, if these are processed properly.
@@ -42,12 +41,10 @@ void ScanCacheDirectory(
   DCHECK(cache_map);
   DCHECK(processed_file_map);
 
-  file_util::FileEnumerator enumerator(
-      cache_paths[sub_dir_type],
-      false,  // not recursive
-      file_util::FileEnumerator::FILES |
-      file_util::FileEnumerator::SHOW_SYM_LINKS,
-      util::kWildCard);
+  file_util::FileEnumerator enumerator(cache_paths[sub_dir_type],
+                                       false,  // not recursive
+                                       file_util::FileEnumerator::FILES,
+                                       util::kWildCard);
   for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
     // Extract resource_id and md5 from filename.

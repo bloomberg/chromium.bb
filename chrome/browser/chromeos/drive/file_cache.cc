@@ -110,8 +110,7 @@ void DeleteFilesSelectively(const base::FilePath& path_to_delete_pattern,
   file_util::FileEnumerator enumerator(
       path_to_delete_pattern.DirName(),
       false,  // not recursive
-      file_util::FileEnumerator::FILES |
-      file_util::FileEnumerator::SHOW_SYM_LINKS,
+      file_util::FileEnumerator::FILES,
       path_to_delete_pattern.BaseName().value());
   for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
