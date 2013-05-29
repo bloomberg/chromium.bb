@@ -636,7 +636,7 @@ body[new-ui] .dialog-footer {
   -webkit-margin-start: 20px;
 }
 
-#file-type {
+body:not([new-ui]) #file-type {
   -webkit-margin-end: 10px;
 }
 
