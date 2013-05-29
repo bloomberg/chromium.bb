@@ -400,8 +400,8 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("reportUiEvent",
       base::Bind(&PrintPreviewHandler::HandleReportUiEvent,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("printWithCloudPrint",
-      base::Bind(&PrintPreviewHandler::HandlePrintWithCloudPrint,
+  web_ui()->RegisterMessageCallback("printWithCloudPrintDialog",
+      base::Bind(&PrintPreviewHandler::HandlePrintWithCloudPrintDialog,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("forceOpenNewTab",
         base::Bind(&PrintPreviewHandler::HandleForceOpenNewTab,
@@ -518,7 +518,6 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
   bool print_to_pdf = false;
   bool is_cloud_printer = false;
-  bool is_cloud_dialog = false;
 
   bool open_pdf_in_preview = false;
 #if defined(OS_MACOSX)
@@ -527,7 +526,6 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
   if (!open_pdf_in_preview) {
     settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
-    settings->GetBoolean(printing::kSettingCloudPrintDialog, &is_cloud_dialog);
     is_cloud_printer = settings->HasKey(printing::kSettingCloudPrintId);
   }
 
@@ -553,10 +551,6 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
                          page_count);
     ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
     SendCloudPrintJob(data);
-  } else if (is_cloud_dialog) {
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrintWebDialog",
-                         page_count);
-    PrintWithCloudPrintDialog(data, title);
   } else {
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter", page_count);
     ReportUserActionHistogram(PRINT_TO_PRINTER);
@@ -698,12 +692,17 @@ void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
   token_service_->RequestToken(type);
 }
 
-void PrintPreviewHandler::PrintWithCloudPrintDialog(
-    const base::RefCountedBytes* data,
-    const string16& title) {
+void PrintPreviewHandler::PrintWithCloudPrintDialog() {
   // Record the number of times the user asks to print via cloud print
   // instead of the print preview dialog.
   ReportStats();
+
+  scoped_refptr<base::RefCountedBytes> data;
+  string16 title;
+  if (!GetPreviewDataAndTitle(&data, &title)) {
+    // Nothing to print, no preview available.
+    return;
+  }
 
   gfx::NativeWindow modal_parent = platform_util::GetTopLevel(
       preview_web_contents()->GetView()->GetNativeView());
@@ -759,15 +758,15 @@ void PrintPreviewHandler::HandleManagePrinters(const ListValue* /*args*/) {
   printing::PrinterManagerDialog::ShowPrinterManagerDialog();
 }
 
-void PrintPreviewHandler::HandlePrintWithCloudPrint(
-    const base::ListValue* /*args*/) {
-  scoped_refptr<base::RefCountedBytes> data;
-  string16 title;
-  if (!GetPreviewDataAndTitle(&data, &title)) {
-    // Nothing to print, no preview available.
+void PrintPreviewHandler::HandlePrintWithCloudPrintDialog(
+    const base::ListValue* args) {
+  int page_count = 0;
+  if (!args || !args->GetInteger(0, &page_count))
     return;
-  }
-  PrintWithCloudPrintDialog(data, title);
+  UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrintWebDialog",
+                       page_count);
+
+  PrintWithCloudPrintDialog();
 }
 
 void PrintPreviewHandler::HandleClosePreviewDialog(const ListValue* /*args*/) {

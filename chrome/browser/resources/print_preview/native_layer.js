@@ -286,9 +286,11 @@ cr.define('print_preview', function() {
       chrome.send('showSystemDialog');
     },
 
-    /** Shows Google Cloud Print's web-based print dialog. */
-    startShowCloudPrintDialog: function() {
-      chrome.send('printWithCloudPrint');
+    /** Shows Google Cloud Print's web-based print dialog.
+     * @param {number} pageCount Number of pages to print.
+     */
+    startShowCloudPrintDialog: function(pageCount) {
+      chrome.send('printWithCloudPrintDialog', [pageCount]);
     },
 
     /** Closes the print preview dialog. */

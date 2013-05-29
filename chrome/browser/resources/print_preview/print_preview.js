@@ -817,7 +817,8 @@ cr.define('print_preview', function() {
       setIsVisible($('cloud-print-dialog-throbber'), true);
       this.setIsEnabled_(false);
       this.uiState_ = PrintPreview.UiState_.OPENING_NATIVE_PRINT_DIALOG;
-      this.nativeLayer_.startShowCloudPrintDialog();
+      this.nativeLayer_.startShowCloudPrintDialog(
+          this.printTicketStore_.pageRange.getPageNumberSet().size);
     },
 
     /**

@@ -130,8 +130,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // |args| is unused.
   void HandleManagePrinters(const base::ListValue* args);
 
-  // Asks the browser to show the cloud print dialog. |args| is unused.
-  void HandlePrintWithCloudPrint(const base::ListValue* args);
+  // Asks the browser to show the cloud print dialog. |args| is signle int with
+  // page count.
+  void HandlePrintWithCloudPrintDialog(const base::ListValue* args);
 
   // Asks the browser for several settings that are needed before the first
   // preview is displayed.
@@ -179,8 +180,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void PrintToPdf();
 
   // Asks the browser to show the cloud print dialog.
-  void PrintWithCloudPrintDialog(const base::RefCountedBytes* data,
-                                 const string16& title);
+  void PrintWithCloudPrintDialog();
 
   // Gets the initiator tab for the print preview dialog.
   content::WebContents* GetInitiatorTab() const;

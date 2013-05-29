@@ -1307,21 +1307,28 @@ void PrintWebViewHelper::PrintPages() {
     return DidFinishPrinting(FAIL_PRINT);
   }
 
-#if !defined(OS_CHROMEOS)
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   const PrintMsg_Print_Params& print_params = params.params;
 
+#if !defined(OS_CHROMEOS)
   // TODO(vitalybuka): should be page_count or valid pages from params.pages.
   // See http://crbug.com/161576
   Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
                                                 print_params.document_cookie,
                                                 page_count));
+#endif  // !defined(OS_CHROMEOS)
+
   if (print_params.preview_ui_id < 0) {
     // Printing for system dialog.
     int printed_count = params.pages.empty() ? page_count : params.pages.size();
+#if !defined(OS_CHROMEOS)
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.SystemDialog", printed_count);
-  }
+#else
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrintWebDialog",
+                         printed_count);
 #endif  // !defined(OS_CHROMEOS)
+  }
+
 
   if (!PrintPagesNative(prep_frame_view_->frame(), prep_frame_view_->node(),
                         page_count, prep_frame_view_->GetPrintCanvasSize())) {
