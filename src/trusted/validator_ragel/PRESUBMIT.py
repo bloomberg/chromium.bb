@@ -36,10 +36,23 @@ def CheckChange(input_api, message_constructor):
 
   root_path = changelist.RepositoryRoot()
 
-  assert all(filename.startswith(root_path + os.path.sep)
+  # With SVN you can decide to commit not all modified files but some of them
+  # thus separate GetAllModifiedFiles() and GetModifiedFiles() lists are
+  # provided.  With GIT you must commit all modified files thus only
+  # AffectedFiles() list is provided.
+  if input_api.change.scm == 'svn':
+    assert all(filename.startswith(root_path + os.path.sep)
              for filename in changelist.GetAllModifiedFiles())
-  filenames = [filename[len(root_path + os.path.sep):]
-               for filename in changelist.GetAllModifiedFiles()]
+    all_filenames = [filename[len(root_path + os.path.sep):]
+                     for filename in changelist.GetAllModifiedFiles()]
+
+    assert all(filename.startswith(root_path + os.path.sep)
+             for filename in changelist.GetModifiedFiles())
+    modified_filenames = [filename[len(root_path + os.path.sep):]
+                          for filename in changelist.GetModifiedFiles()]
+  else:
+    all_filenames = changelist.AffectedFiles()
+    modified_filenames = all_filenames
 
   json_filename = os.path.join(
     'src', 'trusted', 'validator_ragel', 'gen', 'protected_files.json')
@@ -52,7 +65,7 @@ def CheckChange(input_api, message_constructor):
 
   canonical_prefix = 'native_client/'
 
-  for filename in sorted(filenames):
+  for filename in sorted(all_filenames):
     canonical_filename = canonical_prefix + filename.replace('\\', '/')
     if canonical_filename in protected_files['validator']:
       file_contents = gclient_utils.FileRead(os.path.join(root_path, filename))
@@ -76,8 +89,7 @@ def CheckChange(input_api, message_constructor):
     if (canonical_filename in protected_files['validator'] or
         canonical_filename in protected_files['generating'] or
         filename == json_filename):
-      if (os.path.join(root_path, filename)
-          not in changelist.GetModifiedFiles()):
+      if filename not in modified_filenames:
         errors.append(message_constructor(
           'File {0} is changed but is excluded from this CL'.format(
             canonical_filename)))
