@@ -744,17 +744,20 @@ class BucketSet(object):
     LOGGER.info('Loading bucket files.')
 
     n = 0
+    skipped = 0
     while True:
       path = '%s.%04d.buckets' % (prefix, n)
-      if not os.path.exists(path):
-        if n > 10:
+      if not os.path.exists(path) or not os.stat(path).st_size:
+        if skipped > 10:
           break
         n += 1
+        skipped += 1
         continue
       LOGGER.info('  %s' % path)
       with open(path, 'r') as f:
         self._load_file(f)
       n += 1
+      skipped = 0
 
   def _load_file(self, bucket_f):
     for line in bucket_f:
@@ -1213,12 +1216,15 @@ class Command(object):
 
     n = int(dump_path[len(dump_path) - 9 : len(dump_path) - 5])
     n += 1
+    skipped = 0
     while True:
       p = '%s.%04d.heap' % (prefix, n)
-      if os.path.exists(p):
+      if os.path.exists(p) and os.stat(p).st_size:
         dump_path_list.append(p)
       else:
-        break
+        if skipped > 10:
+          break
+        skipped += 1
       n += 1
 
     return dump_path_list
