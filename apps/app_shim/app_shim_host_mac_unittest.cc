@@ -5,6 +5,7 @@
 #include "apps/app_shim/app_shim_host_mac.h"
 
 #include "apps/app_shim/app_shim_messages.h"
+#include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/test/base/testing_profile.h"
 #include "ipc/ipc_message.h"
@@ -31,18 +32,9 @@ class TestingAppShimHost : public AppShimHost {
     fails_launch_ = fails_launch;
   }
 
-  const std::string& GetAppId() const {
-    return app_id();
-  }
-
-  const Profile* GetProfile() const {
-    return profile();
-  }
-
  protected:
   virtual Profile* FetchProfileForDirectory(const std::string& profile_dir)
       OVERRIDE;
-  virtual bool LaunchApp(Profile* profile) OVERRIDE;
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
  private:
@@ -75,10 +67,6 @@ bool TestingAppShimHost::Send(IPC::Message* message) {
 Profile* TestingAppShimHost::FetchProfileForDirectory(
     const std::string& profile_dir) {
   return fails_profile_ ? NULL : test_profile_;
-}
-
-bool TestingAppShimHost::LaunchApp(Profile* profile) {
-  return !fails_launch_;
 }
 
 class AppShimHostTest : public testing::Test,
@@ -117,6 +105,7 @@ class AppShimHostTest : public testing::Test,
 
  private:
   virtual void SetUp() OVERRIDE {
+    testing::Test::SetUp();
     profile_.reset(new TestingProfile);
     host_.reset(new TestingAppShimHost(profile()));
   }
@@ -132,19 +121,12 @@ const char kTestProfileDir[] = "Default";
 
 }  // namespace
 
-TEST_F(AppShimHostTest, TestLaunchApp) {
-  host()->ReceiveMessage(
-      new AppShimHostMsg_LaunchApp(kTestProfileDir, kTestAppId));
-  ASSERT_EQ(kTestAppId, host()->GetAppId());
-  ASSERT_EQ(profile(), host()->GetProfile());
-  ASSERT_TRUE(LaunchWasSuccessful());
-}
-
 TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
   apps::AppShimHandler::RegisterHandler(kTestAppId, this);
   EXPECT_TRUE(host()->ReceiveMessage(
       new AppShimHostMsg_LaunchApp(kTestProfileDir, kTestAppId)));
-  EXPECT_EQ(kTestAppId, host()->GetAppId());
+  EXPECT_EQ(kTestAppId,
+            implicit_cast<apps::AppShimHandler::Host*>(host())->GetAppId());
   EXPECT_TRUE(LaunchWasSuccessful());
   EXPECT_EQ(1, launch_count_);
   EXPECT_EQ(0, focus_count_);

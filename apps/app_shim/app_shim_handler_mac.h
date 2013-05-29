@@ -7,6 +7,8 @@
 
 #include <string>
 
+class Profile;
+
 namespace apps {
 
 // Registrar, and interface for services that can handle interactions with OSX
@@ -17,6 +19,10 @@ class AppShimHandler {
    public:
     // Invoked when the app is closed in the browser process.
     virtual void OnAppClosed() = 0;
+
+    // Allows the handler to determine which app this host corresponds to.
+    virtual Profile* GetProfile() const = 0;
+    virtual std::string GetAppId() const = 0;
 
    protected:
     virtual ~Host() {}
@@ -29,9 +35,14 @@ class AppShimHandler {
   // Remove a handler for an |app_mode_id|.
   static void RemoveHandler(const std::string& app_mode_id);
 
-  // Returns the handler registered for the given |app_mode_id|, or NULL if none
-  // is registered.
+  // Returns the handler registered for the given |app_mode_id|. If there is
+  // none registered, it returns the default handler or NULL if there is no
+  // default handler.
   static AppShimHandler* GetForAppMode(const std::string& app_mode_id);
+
+  // Sets the default handler to return when there is no app-specific handler.
+  // Setting this to NULL removes the default handler.
+  static void SetDefaultHandler(AppShimHandler* handler);
 
   // Invoked by the shim host when the shim process is launched. The handler
   // must return true if successful, or false to indicate back to the shim

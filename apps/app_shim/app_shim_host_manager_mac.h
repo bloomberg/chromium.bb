@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_APP_SHIM_HOST_MANAGER_MAC_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_APP_SHIM_HOST_MANAGER_MAC_H_
 
-#include "base/mac/scoped_cftyperef.h"
+#include "apps/app_shim/extension_app_shim_handler_mac.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread.h"
 #include "ipc/ipc_channel_factory.h"
 
 // The AppShimHostManager receives connections from app shims on a UNIX
@@ -33,6 +32,8 @@ class AppShimHostManager
   void ListenOnIOThread();
 
   scoped_ptr<IPC::ChannelFactory> factory_;
+
+  apps::ExtensionAppShimHandler extension_app_shim_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostManager);
 };

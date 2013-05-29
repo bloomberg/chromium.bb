@@ -10,8 +10,6 @@
 #include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
@@ -30,7 +28,6 @@ class Message;
 class AppShimHost : public IPC::Listener,
                     public IPC::Sender,
                     public apps::AppShimHandler::Host,
-                    public content::NotificationObserver,
                     public base::NonThreadSafe {
  public:
   AppShimHost();
@@ -42,12 +39,9 @@ class AppShimHost : public IPC::Listener,
   void ServeChannel(const IPC::ChannelHandle& handle);
 
  protected:
-  const std::string& app_id() const { return app_id_; }
-  const Profile* profile() const { return profile_; }
 
   // Used internally; virtual so they can be mocked for testing.
   virtual Profile* FetchProfileForDirectory(const std::string& profile_dir);
-  virtual bool LaunchApp(Profile* profile);
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -68,17 +62,10 @@ class AppShimHost : public IPC::Listener,
   // Cmd+Tabbed to it.)
   void OnFocus();
 
-  bool LaunchAppImpl(const std::string& profile_dir);
-
-  // The AppShimHost listens to the NOTIFICATION_EXTENSION_HOST_DESTROYED
-  // message to detect when the app closes. When that happens, the AppShimHost
-  // closes the channel, which causes the app shim process to quit.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // apps::AppShimHandler::Host override:
+  // apps::AppShimHandler::Host overrides:
   virtual void OnAppClosed() OVERRIDE;
+  virtual Profile* GetProfile() const OVERRIDE;
+  virtual std::string GetAppId() const OVERRIDE;
 
   // Closes the channel and destroys the AppShimHost.
   void Close();
@@ -86,7 +73,6 @@ class AppShimHost : public IPC::Listener,
   scoped_ptr<IPC::ChannelProxy> channel_;
   std::string app_id_;
   Profile* profile_;
-  content::NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_APP_SHIM_HOST_MAC_H_

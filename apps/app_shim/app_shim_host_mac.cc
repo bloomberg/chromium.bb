@@ -10,16 +10,9 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "ui/base/cocoa/focus_window_set.h"
 
 AppShimHost::AppShimHost()
     : channel_(NULL), profile_(NULL) {
@@ -36,7 +29,16 @@ void AppShimHost::ServeChannel(const IPC::ChannelHandle& handle) {
   DCHECK(CalledOnValidThread());
   DCHECK(!channel_.get());
   channel_.reset(new IPC::ChannelProxy(handle, IPC::Channel::MODE_SERVER, this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::IO)));
+}
+
+Profile* AppShimHost::GetProfile() const {
+  return profile_;
+}
+
+std::string AppShimHost::GetAppId() const {
+  return app_id_;
 }
 
 bool AppShimHost::OnMessageReceived(const IPC::Message& message) {
@@ -62,58 +64,25 @@ bool AppShimHost::Send(IPC::Message* message) {
 
 void AppShimHost::OnLaunchApp(std::string profile_dir, std::string app_id) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!profile_);
+  if (profile_) {
+    // Only one app launch message per channel.
+    Send(new AppShimMsg_LaunchApp_Done(false));
+    return;
+  }
+
+  profile_ = FetchProfileForDirectory(profile_dir);
   app_id_ = app_id;
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
-  bool success =
-      handler ? handler->OnShimLaunch(this) : LaunchAppImpl(profile_dir);
+  bool success = handler && handler->OnShimLaunch(this);
   Send(new AppShimMsg_LaunchApp_Done(success));
 }
 
 void AppShimHost::OnFocus() {
   DCHECK(CalledOnValidThread());
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
-  if (handler) {
+  if (handler)
     handler->OnShimFocus(this);
-    return;
-  }
-
-  if (!profile_)
-    return;
-  extensions::ShellWindowRegistry* registry =
-      extensions::ShellWindowRegistry::Get(profile_);
-  const extensions::ShellWindowRegistry::ShellWindowList windows =
-      registry->GetShellWindowsForApp(app_id_);
-  std::set<gfx::NativeWindow> native_windows;
-  for (extensions::ShellWindowRegistry::ShellWindowList::const_iterator i =
-           windows.begin();
-       i != windows.end();
-       ++i) {
-    native_windows.insert((*i)->GetNativeWindow());
-  }
-  ui::FocusWindowSet(native_windows);
-}
-
-bool AppShimHost::LaunchAppImpl(const std::string& profile_dir) {
-  DCHECK(CalledOnValidThread());
-  if (profile_) {
-    // Only one app launch message per channel.
-    return false;
-  }
-  if (!extensions::Extension::IdIsValid(app_id_)) {
-    LOG(ERROR) << "Bad app ID from app shim launch message.";
-    return false;
-  }
-  Profile* profile = FetchProfileForDirectory(profile_dir);
-  if (!profile)
-    return false;
-
-  if (!LaunchApp(profile))
-    return false;
-
-  profile_ = profile;
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                 content::Source<Profile>(profile_));
-  return true;
 }
 
 Profile* AppShimHost::FetchProfileForDirectory(const std::string& profile_dir) {
@@ -137,50 +106,6 @@ Profile* AppShimHost::FetchProfileForDirectory(const std::string& profile_dir) {
     return NULL;
   }
   return profile;
-}
-
-bool AppShimHost::LaunchApp(Profile* profile) {
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(profile);
-  ExtensionServiceInterface* extension_service =
-      extension_system->extension_service();
-  const extensions::Extension* extension =
-      extension_service->GetExtensionById(
-          app_id_, false);
-  if (!extension) {
-    LOG(ERROR) << "Attempted to launch nonexistent app with id '"
-               << app_id_ << "'.";
-    return false;
-  }
-  // TODO(jeremya): Handle the case that launching the app fails. Probably we
-  // need to watch for 'app successfully launched' or at least 'background page
-  // exists/was created' and time out with failure if we don't see that sign of
-  // life within a certain window.
-  chrome::AppLaunchParams params(profile,
-                                 extension,
-                                 extension_misc::LAUNCH_NONE,
-                                 NEW_WINDOW);
-  chrome::OpenApplication(params);
-  return true;
-}
-
-void AppShimHost::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(content::Source<Profile>(source).ptr() == profile_);
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
-      extensions::ExtensionHost* extension_host =
-          content::Details<extensions::ExtensionHost>(details).ptr();
-      if (app_id_ == extension_host->extension_id())
-        Close();
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected notification sent.";
-      break;
-  }
 }
 
 void AppShimHost::OnAppClosed() {

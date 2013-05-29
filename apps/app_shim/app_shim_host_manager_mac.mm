@@ -4,6 +4,7 @@
 
 #include "apps/app_shim/app_shim_host_manager_mac.h"
 
+#include "apps/app_shim/app_shim_handler_mac.h"
 #include "apps/app_shim/app_shim_host_mac.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -27,6 +28,7 @@ void CreateAppShimHost(const IPC::ChannelHandle& handle) {
 
 AppShimHostManager::AppShimHostManager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  apps::AppShimHandler::SetDefaultHandler(&extension_app_shim_handler_);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&AppShimHostManager::InitOnFileThread,
@@ -34,6 +36,7 @@ AppShimHostManager::AppShimHostManager() {
 }
 
 AppShimHostManager::~AppShimHostManager() {
+  apps::AppShimHandler::SetDefaultHandler(NULL);
 }
 
 void AppShimHostManager::InitOnFileThread() {

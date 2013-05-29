@@ -40,10 +40,16 @@ class AppListServiceMacBrowserTest : public InProcessBrowserTest,
     AppShimHandler::GetForAppMode(app_mode::kAppListModeId)->OnShimClose(this);
   }
 
-  // AppShimHandler::Host override:
+  // AppShimHandler::Host overrides:
   virtual void OnAppClosed() OVERRIDE {
     ++close_count_;
     QuitShim();
+  }
+  virtual Profile* GetProfile() const OVERRIDE {
+    return NULL;  // Currently unused in this test.
+  }
+  virtual std::string GetAppId() const OVERRIDE {
+    return app_mode::kAppListModeId;
   }
 
   int close_count_;

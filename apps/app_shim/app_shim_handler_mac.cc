@@ -25,7 +25,7 @@ class AppShimHandlerRegistry {
     if (it != handlers_.end())
       return it->second;
 
-    return NULL;
+    return default_handler_;
   }
 
   bool SetForAppMode(const std::string& app_mode_id, AppShimHandler* handler) {
@@ -36,14 +36,20 @@ class AppShimHandlerRegistry {
     return inserted_or_removed;
   }
 
+  void SetDefaultHandler(AppShimHandler* handler) {
+    DCHECK_NE(default_handler_ == NULL, handler == NULL);
+    default_handler_ = handler;
+  }
+
  private:
   friend struct DefaultSingletonTraits<AppShimHandlerRegistry>;
   typedef std::map<std::string, AppShimHandler*> HandlerMap;
 
-  AppShimHandlerRegistry() {}
+  AppShimHandlerRegistry() : default_handler_(NULL) {}
   ~AppShimHandlerRegistry() {}
 
   HandlerMap handlers_;
+  AppShimHandler* default_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHandlerRegistry);
 };
@@ -65,6 +71,11 @@ void AppShimHandler::RemoveHandler(const std::string& app_mode_id) {
 // static
 AppShimHandler* AppShimHandler::GetForAppMode(const std::string& app_mode_id) {
   return AppShimHandlerRegistry::GetInstance()->GetForAppMode(app_mode_id);
+}
+
+// static
+void AppShimHandler::SetDefaultHandler(AppShimHandler* handler) {
+  AppShimHandlerRegistry::GetInstance()->SetDefaultHandler(handler);
 }
 
 }  // namespace apps
