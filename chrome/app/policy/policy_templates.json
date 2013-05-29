@@ -995,7 +995,7 @@
       'name': 'ClearSiteDataOnExit',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:11-29', 'chrome_os:0.11-0.29'],
+      'supported_on': ['chrome.*:11-28', 'chrome_os:0.11-0.28'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -3005,7 +3005,7 @@
       'name': 'EnterpriseWebStoreURL',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:17-29', 'chrome_os:0.17-0.29'],
+      'supported_on': ['chrome.*:17-28', 'chrome_os:0.17-0.28'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -3020,7 +3020,7 @@
       'name': 'EnterpriseWebStoreName',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:17-29', 'chrome_os:0.17-0.29'],
+      'supported_on': ['chrome.*:17-28', 'chrome_os:0.17-0.28'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
