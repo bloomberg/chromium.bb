@@ -32,9 +32,8 @@ class ManagedUserNotificationView : public TrayNotificationView {
 
  private:
   void CreateMessageView() {
-    // TODO(antrim): replace to appropriate icon when there is one.
     message_view_ = new LabelTrayView(tray_managed_,
-                                      IDR_AURA_UBER_TRAY_ENTERPRISE_DARK);
+                                      IDR_AURA_UBER_TRAY_MANAGED_USER);
     base::string16 message = Shell::GetInstance()->system_tray_delegate()->
         GetLocallyManagedUserMessage();
     message_view_->SetMessage(message);
@@ -81,8 +80,7 @@ views::View* TrayLocallyManagedUser::CreateDefaultView(
   if (status != ash::user::LOGGED_IN_LOCALLY_MANAGED)
     return NULL;
 
-  // TODO(antrim): replace to appropriate icon when there is one.
-  tray_view_ = new LabelTrayView(this, IDR_AURA_UBER_TRAY_ENTERPRISE_DARK);
+  tray_view_ = new LabelTrayView(this, IDR_AURA_UBER_TRAY_MANAGED_USER);
   UpdateMessage();
   return tray_view_;
 }
