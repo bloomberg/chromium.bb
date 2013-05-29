@@ -1964,7 +1964,7 @@ def CMDformat(parser, args):
     parser.error('Unrecognized args: %s' % ' '.join(args))
 
   # Generate diff for the current branch's changes.
-  diff_cmd = ['diff', '--no-ext-diff']
+  diff_cmd = ['diff', '--no-ext-diff', '--no-prefix']
   if opts.full:
     # Only list the names of modified files.
     diff_cmd.append('--name-only')
