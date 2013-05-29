@@ -7304,12 +7304,3 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN3ash4test11AshTestBase13UpdateDisplayERKSs
    fun:_ZN3ash8internal44MirrorWindowControllerTest_MirrorCursor_Test8TestBodyEv
 }
-{
-   bug_244446
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10extensions19TestExtensionSystem22CreateExtensionServiceEPK11CommandLineRKN4base8FilePathEb
-   fun:_ZN10extensions24TestExtensionEnvironment19GetExtensionServiceEv
-   fun:_ZN10extensions24TestExtensionEnvironment13MakeExtensionERKN4base5ValueE
-   fun:_ZN10extensions12_GLOBAL__N_162DeclarativeContentRulesRegistryTest_ActiveRulesDoesntGrow_Test8TestBodyEv
-}

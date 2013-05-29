@@ -38,9 +38,7 @@ TestExtensionEnvironment::~TestExtensionEnvironment() {
   profile_.reset();
   // Delete the profile, and then cycle the message loop to clear
   // out delayed deletions.
-  base::RunLoop run_loop;
-  loop_.PostTask(FROM_HERE, run_loop.QuitClosure());
-  run_loop.Run();
+  base::RunLoop().RunUntilIdle();
 }
 
 TestingProfile* TestExtensionEnvironment::profile() const {
