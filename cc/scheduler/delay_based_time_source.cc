@@ -212,7 +212,13 @@ base::TimeTicks DelayBasedTimeSource::NextTickTarget(base::TimeTicks now) {
   base::TimeTicks last_effective_tick =
       next_parameters_.tick_target + new_interval * intervals_elapsed;
   base::TimeTicks new_tick_target = last_effective_tick + new_interval;
-  DCHECK(new_tick_target > now);
+  DCHECK(now < new_tick_target)
+      << "now = " << now.ToInternalValue()
+      << "; new_tick_target = " << new_tick_target.ToInternalValue()
+      << "; new_interval = " << new_interval.InMicroseconds()
+      << "; tick_target = " << next_parameters_.tick_target.ToInternalValue()
+      << "; intervals_elapsed = " << intervals_elapsed
+      << "; last_effective_tick = " << last_effective_tick.ToInternalValue();
 
   // Avoid double ticks when:
   // 1) Turning off the timer and turning it right back on.
