@@ -58,6 +58,32 @@
     }
 
     /**
+     * Formats the error type to a human-readable text.
+     *
+     * @param {string} error Translation error type from the browser.
+     * @return {string} The formatted string.
+     */
+    function formatTranslateErrorsType(error) {
+      // This list is from chrome/common/translate_errors.h.  If this header
+      // file is updated, the below list also should be updated.
+      var errorStrs = {
+        0: 'None',
+        1: 'Network',
+        2: 'Initialization Error',
+        3: 'Unknown Language',
+        4: 'Unsupported Language',
+        5: 'Identical Languages',
+        6: 'Translation Error',
+      };
+
+      if (error < 0 || errorStrs.length <= error) {
+        console.error('Invalid error code:', error);
+        return 'Invalid Error Code';
+      }
+      return errorStrs[error];
+    }
+
+    /**
      * Handles the message of 'prefsUpdated' from the browser.
      *
      * @param {Object} detail the object which represents pref values.
@@ -208,6 +234,30 @@
     }
 
     /**
+     * Handles the message of 'translateErrorDetailsAdded' from the
+     * browser.
+     *
+     * @param {Object} details The object which represents the logs.
+     */
+    function onTranslateErrorDetailsAdded(details) {
+      var tr = document.createElement('tr');
+
+      var errorStr = details['error'] + ': ' +
+          formatTranslateErrorsType(details['error']);
+      [
+        createTD(formatDate(new Date(details['time'])),
+                 'error-logs-time'),
+        createTD(details['url'], 'error-logs-url'),
+        createTD(errorStr, 'error-logs-error'),
+      ].forEach(function(td) {
+        tr.appendChild(td);
+      });
+
+      var tbody = $('error-logs').getElementsByTagName('tbody')[0];
+      tbody.appendChild(tr);
+    }
+
+    /**
      * The callback entry point from the browser. This function will be
      * called by the browser.
      *
@@ -222,6 +272,9 @@
         case 'prefsUpdated':
           cr.translateInternals.onPrefsUpdated(detail);
           break;
+        case 'translateErrorDetailsAdded':
+          cr.translateInternals.onTranslateErrorDetailsAdded(detail);
+          break;
         default:
           console.error('Unknown message:', message);
           break;
@@ -233,6 +286,7 @@
       messageHandler: messageHandler,
       onLanguageDetectionInfoAdded: onLanguageDetectionInfoAdded,
       onPrefsUpdated: onPrefsUpdated,
+      onTranslateErrorDetailsAdded: onTranslateErrorDetailsAdded,
     };
   });
 

@@ -22,6 +22,7 @@
 #include "chrome/browser/tab_contents/language_state.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/translate/page_translated_details.h"
+#include "chrome/browser/translate/translate_error_details.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_language_list.h"
 #include "chrome/browser/translate/translate_manager_metrics.h"
@@ -333,6 +334,12 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
             ShortcutConfig(),
             request.source_lang,
             request.target_lang);
+
+        TranslateErrorDetails error_details;
+        error_details.time = base::Time::Now();
+        error_details.url = entry->GetURL();
+        error_details.error = TranslateErrors::NETWORK;
+        NotifyTranslateError(error_details);
       } else {
         // Translate the page.
         DoTranslatePage(web_contents, translate_script_,
@@ -356,6 +363,10 @@ void TranslateManager::NotifyLanguageDetection(
   FOR_EACH_OBSERVER(Observer, observer_list_, OnLanguageDetection(details));
 }
 
+void TranslateManager::NotifyTranslateError(
+    const TranslateErrorDetails& details) {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnTranslateError(details));
+}
 
 TranslateManager::TranslateManager()
   : weak_method_factory_(this),
@@ -636,10 +647,18 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
   TranslateInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents), true,
       (details->error_type == TranslateErrors::NONE) ?
-          TranslateInfoBarDelegate::AFTER_TRANSLATE :
-          TranslateInfoBarDelegate::TRANSLATION_ERROR,
+      TranslateInfoBarDelegate::AFTER_TRANSLATE :
+      TranslateInfoBarDelegate::TRANSLATION_ERROR,
       details->error_type, prefs, ShortcutConfig(), details->source_language,
       details->target_language);
+
+  if (details->error_type != TranslateErrors::NONE) {
+    TranslateErrorDetails error_details;
+    error_details.time = base::Time::Now();
+    error_details.url = web_contents->GetActiveURL();
+    error_details.error = details->error_type;
+    NotifyTranslateError(error_details);
+  }
 }
 
 bool TranslateManager::IsAcceptLanguage(WebContents* web_contents,

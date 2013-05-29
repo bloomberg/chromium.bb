@@ -2231,6 +2231,7 @@
         'browser/toolkit_extra_parts.h',
         'browser/translate/options_menu_model.cc',
         'browser/translate/options_menu_model.h',
+        'browser/translate/translate_error_details.h',
         'browser/translate/translate_infobar_delegate.cc',
         'browser/translate/translate_infobar_delegate.h',
         'browser/translate/translate_language_list.cc',

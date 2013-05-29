@@ -27,6 +27,7 @@ struct LanguageDetectionDetails;
 struct PageTranslatedDetails;
 class PrefService;
 struct ShortcutConfiguration;
+struct TranslateErrorDetails;
 class TranslateInfoBarDelegate;
 class TranslateLanguageList;
 
@@ -119,6 +120,8 @@ class TranslateManager : public content::NotificationObserver,
    public:
     virtual void OnLanguageDetection(
         const LanguageDetectionDetails& details) = 0;
+    virtual void OnTranslateError(
+        const TranslateErrorDetails& details) = 0;
   };
 
   // Adds/removes observer.
@@ -177,6 +180,9 @@ class TranslateManager : public content::NotificationObserver,
 
   // Notifies to the observers when a language is detected.
   void NotifyLanguageDetection(const LanguageDetectionDetails& details);
+
+  // Notifies to the observers when translate failed.
+  void NotifyTranslateError(const TranslateErrorDetails& details);
 
   // Returns the language to translate to. The language returned is the
   // first language found in the following list that is supported by the

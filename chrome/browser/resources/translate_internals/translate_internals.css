@@ -88,3 +88,15 @@ td.detection-logs-url {
 .detection-logs-language {
   width: 10%;
 }
+
+.error-logs-time {
+  width: 20%;
+}
+
+.error-logs-url {
+  width: 40%;
+}
+
+.error-logs-error {
+  width: 40%;
+}

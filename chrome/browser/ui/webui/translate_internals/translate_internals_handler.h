@@ -12,6 +12,7 @@
 #include "webkit/plugins/webplugininfo.h"
 
 struct LanguageDetectionDetails;
+struct TranslateErrorDetails;
 
 namespace base {
 class DictionaryValue;
@@ -32,6 +33,8 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
   // TranslateManager::Observer methods:
   virtual void OnLanguageDetection(
       const LanguageDetectionDetails& details) OVERRIDE;
+  virtual void OnTranslateError(
+      const TranslateErrorDetails& details) OVERRIDE;
 
  private:
   // Handles the Javascript message 'removePrefItem'. This message is sent

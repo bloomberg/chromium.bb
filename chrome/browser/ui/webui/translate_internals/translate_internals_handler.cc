@@ -12,6 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/translate/translate_error_details.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/language_detection_details.h"
 #include "chrome/common/pref_names.h"
@@ -48,6 +49,18 @@ void TranslateInternalsHandler::OnLanguageDetection(
            new base::FundamentalValue(details.is_cld_reliable));
   dict.Set("language", new base::StringValue(details.adopted_language));
   SendMessageToJs("languageDetectionInfoAdded", dict);
+}
+
+void TranslateInternalsHandler::OnTranslateError(
+    const TranslateErrorDetails& details) {
+  base::DictionaryValue dict;
+  dict.Set("time",
+           new base::FundamentalValue(details.time.ToJsTime()));
+  dict.Set("url",
+           new base::StringValue(details.url.spec()));
+  dict.Set("error",
+           new base::FundamentalValue(details.error));
+  SendMessageToJs("translateErrorDetailsAdded", dict);
 }
 
 void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
