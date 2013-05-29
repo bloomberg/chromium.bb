@@ -1402,24 +1402,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     if (!sdch_enabled)
       net::SdchManager::EnableSdchSupport(false);
   }
-  if (sdch_enabled) {
-    // Perform A/B test to measure global impact of SDCH support.
-    // Set up a field trial to see what disabling SDCH does to latency of page
-    // layout globally.
-    base::FieldTrial::Probability kSDCH_DIVISOR = 1000;
-    base::FieldTrial::Probability kSDCH_DISABLE_PROBABILITY = 1;  // 0.1% prob.
-    // After March 31, 2012 builds, it will always be in default group.
-    int sdch_enabled_group = -1;
-    scoped_refptr<base::FieldTrial> sdch_trial(
-        base::FieldTrialList::FactoryGetFieldTrial(
-            "GlobalSdch", kSDCH_DIVISOR, "global_enable_sdch", 2012, 3, 31,
-            &sdch_enabled_group));
-
-    sdch_trial->AppendGroup("global_disable_sdch",
-                            kSDCH_DISABLE_PROBABILITY);
-    if (sdch_enabled_group != sdch_trial->group())
-      net::SdchManager::EnableSdchSupport(false);
-  }
 
   if (parsed_command_line().HasSwitch(switches::kEnableWatchdog))
     InstallJankometer(parsed_command_line());
