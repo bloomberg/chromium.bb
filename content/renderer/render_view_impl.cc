@@ -5603,22 +5603,18 @@ void RenderViewImpl::OnMoveOrResizeStarted() {
     webview()->hidePopups();
 }
 
-void RenderViewImpl::OnResize(const gfx::Size& new_size,
-                              const gfx::Size& physical_backing_size,
-                              float overdraw_bottom_height,
-                              const gfx::Rect& resizer_rect,
-                              bool is_fullscreen) {
+void RenderViewImpl::OnResize(const ViewMsg_Resize_Params& params) {
   if (webview()) {
     webview()->hidePopups();
     if (send_preferred_size_changes_) {
       webview()->mainFrame()->setCanHaveScrollbars(
-          ShouldDisplayScrollbars(new_size.width(), new_size.height()));
+          ShouldDisplayScrollbars(params.new_size.width(),
+                                  params.new_size.height()));
     }
     UpdateScrollState(webview()->mainFrame());
   }
 
-  RenderWidget::OnResize(new_size, physical_backing_size,
-                         overdraw_bottom_height, resizer_rect, is_fullscreen);
+  RenderWidget::OnResize(params);
 }
 
 void RenderViewImpl::WillInitiatePaint() {

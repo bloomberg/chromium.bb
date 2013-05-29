@@ -317,8 +317,14 @@ uint32 RenderViewTest::GetNavigationIPCType() {
 void RenderViewTest::Resize(gfx::Size new_size,
                             gfx::Rect resizer_rect,
                             bool is_fullscreen) {
-  scoped_ptr<IPC::Message> resize_message(new ViewMsg_Resize(
-      0, new_size, new_size, 0.f, resizer_rect, is_fullscreen));
+  ViewMsg_Resize_Params params;
+  params.screen_info = WebKit::WebScreenInfo();
+  params.new_size = new_size;
+  params.physical_backing_size = new_size;
+  params.overdraw_bottom_height = 0.f;
+  params.resizer_rect = resizer_rect;
+  params.is_fullscreen = is_fullscreen;
+  scoped_ptr<IPC::Message> resize_message(new ViewMsg_Resize(0, params));
   OnMessageReceived(*resize_message);
 }
 

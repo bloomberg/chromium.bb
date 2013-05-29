@@ -147,6 +147,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_accelerated_compositing_active_(false),
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
+      screen_info_out_of_date_(false),
       overdraw_bottom_height_(0.f),
       should_auto_resize_(false),
       waiting_for_screen_rects_ack_(false),
@@ -526,6 +527,7 @@ void RenderWidgetHostImpl::WasResized() {
 
   bool size_changed = new_size != current_size_;
   bool side_payload_changed =
+      screen_info_out_of_date_ ||
       old_physical_backing_size != physical_backing_size_ ||
       was_fullscreen != is_fullscreen_ ||
       old_overdraw_bottom_height != overdraw_bottom_height_;
@@ -537,14 +539,24 @@ void RenderWidgetHostImpl::WasResized() {
       !side_payload_changed)
     return;
 
+  if (!screen_info_) {
+    screen_info_.reset(new WebKit::WebScreenInfo);
+    GetWebScreenInfo(screen_info_.get());
+  }
+
   // We don't expect to receive an ACK when the requested size or the physical
   // backing size is empty, or when the main viewport size didn't change.
   if (!new_size.IsEmpty() && !physical_backing_size_.IsEmpty() && size_changed)
     resize_ack_pending_ = true;
 
-  if (!Send(new ViewMsg_Resize(routing_id_, new_size, physical_backing_size_,
-                               overdraw_bottom_height_,
-                               GetRootWindowResizerRect(), is_fullscreen_))) {
+  ViewMsg_Resize_Params params;
+  params.screen_info = *screen_info_;
+  params.new_size = new_size;
+  params.physical_backing_size = physical_backing_size_;
+  params.overdraw_bottom_height = overdraw_bottom_height_;
+  params.resizer_rect = GetRootWindowResizerRect();
+  params.is_fullscreen = is_fullscreen_;
+  if (!Send(new ViewMsg_Resize(routing_id_, params))) {
     resize_ack_pending_ = false;
   } else {
     in_flight_size_ = new_size;
@@ -1334,9 +1346,12 @@ const NativeWebKeyboardEvent*
 }
 
 void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
-  WebKit::WebScreenInfo screen_info;
-  GetWebScreenInfo(&screen_info);
-  Send(new ViewMsg_ScreenInfoChanged(GetRoutingID(), screen_info));
+  // The resize message (which may not happen immediately) will carry with it
+  // the screen info as well as the new size (if the screen has changed scale
+  // factor).
+  screen_info_.reset();
+  screen_info_out_of_date_ = true;
+  WasResized();
 }
 
 void RenderWidgetHostImpl::GetSnapshotFromRenderer(

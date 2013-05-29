@@ -38,6 +38,7 @@
 #include "webkit/glue/webcursor.h"
 
 struct ViewHostMsg_UpdateRect_Params;
+struct ViewMsg_Resize_Params;
 class ViewHostMsg_UpdateRect;
 
 namespace IPC {
@@ -298,11 +299,7 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnSetFocus(bool enable);
   void OnClose();
   void OnCreatingNewAck();
-  virtual void OnResize(const gfx::Size& new_size,
-                        const gfx::Size& physical_backing_size,
-                        float overdraw_bottom_height,
-                        const gfx::Rect& resizer_rect,
-                        bool is_fullscreen);
+  virtual void OnResize(const ViewMsg_Resize_Params& params);
   void OnChangeResizeRect(const gfx::Rect& resizer_rect);
   virtual void OnWasHidden();
   virtual void OnWasShown(bool needs_repainting);
@@ -327,7 +324,6 @@ class CONTENT_EXPORT RenderWidget
   void OnSmoothScrollCompleted();
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();
-  void OnScreenInfoChanged(const WebKit::WebScreenInfo& screen_info);
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
 #if defined(OS_ANDROID)

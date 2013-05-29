@@ -383,8 +383,9 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
     EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
-    EXPECT_EQ("100x100", params.a.ToString());  // dip size
-    EXPECT_EQ("100x100", params.b.ToString());  // backing size
+    EXPECT_EQ("100x100", params.a.new_size.ToString());  // dip size
+    EXPECT_EQ("100x100",
+        params.a.physical_backing_size.ToString());  // backing size
   }
 
   widget_host_->ResetSizeAndRepaintPendingFlags();
@@ -393,22 +394,16 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
   EXPECT_EQ("200x200", view_->GetPhysicalBackingSize().ToString());
   // Extra ScreenInfoChanged message for |parent_view_|.
-  EXPECT_EQ(3u, sink_->message_count());
-  EXPECT_EQ(ViewMsg_ScreenInfoChanged::ID, sink_->GetMessageAt(0)->type());
+  EXPECT_EQ(1u, sink_->message_count());
   {
-    const IPC::Message* msg = sink_->GetMessageAt(1);
-    EXPECT_EQ(ViewMsg_ScreenInfoChanged::ID, msg->type());
-    ViewMsg_ScreenInfoChanged::Param params;
-    ViewMsg_ScreenInfoChanged::Read(msg, &params);
-    EXPECT_EQ(2.0f, params.a.deviceScaleFactor);
-  }
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(2);
+    const IPC::Message* msg = sink_->GetMessageAt(0);
     EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
-    EXPECT_EQ("100x100", params.a.ToString());  // dip size
-    EXPECT_EQ("200x200", params.b.ToString());  // backing size
+    EXPECT_EQ(2.0f, params.a.screen_info.deviceScaleFactor);
+    EXPECT_EQ("100x100", params.a.new_size.ToString());  // dip size
+    EXPECT_EQ("200x200",
+        params.a.physical_backing_size.ToString());  // backing size
   }
 
   widget_host_->ResetSizeAndRepaintPendingFlags();
@@ -416,23 +411,17 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
 
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(1.0f);
   // Extra ScreenInfoChanged message for |parent_view_|.
-  EXPECT_EQ(3u, sink_->message_count());
+  EXPECT_EQ(1u, sink_->message_count());
   EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
-  EXPECT_EQ(ViewMsg_ScreenInfoChanged::ID, sink_->GetMessageAt(0)->type());
   {
-    const IPC::Message* msg = sink_->GetMessageAt(1);
-    EXPECT_EQ(ViewMsg_ScreenInfoChanged::ID, msg->type());
-    ViewMsg_ScreenInfoChanged::Param params;
-    ViewMsg_ScreenInfoChanged::Read(msg, &params);
-    EXPECT_EQ(1.0f, params.a.deviceScaleFactor);
-  }
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(2);
+    const IPC::Message* msg = sink_->GetMessageAt(0);
     EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
-    EXPECT_EQ("100x100", params.a.ToString());  // dip size
-    EXPECT_EQ("100x100", params.b.ToString());  // backing size
+    EXPECT_EQ(1.0f, params.a.screen_info.deviceScaleFactor);
+    EXPECT_EQ("100x100", params.a.new_size.ToString());  // dip size
+    EXPECT_EQ("100x100",
+        params.a.physical_backing_size.ToString());  // backing size
   }
 }
 

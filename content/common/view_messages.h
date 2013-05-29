@@ -804,17 +804,22 @@ IPC_MESSAGE_ROUTED0(ViewMsg_TimezoneChange)
 // Tells the render view to close.
 IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 
-// Tells the render view to change its size.  A ViewHostMsg_PaintRect message
+IPC_STRUCT_BEGIN(ViewMsg_Resize_Params)
+  IPC_STRUCT_MEMBER(WebKit::WebScreenInfo, screen_info)
+  IPC_STRUCT_MEMBER(gfx::Size, new_size)
+  IPC_STRUCT_MEMBER(gfx::Size, physical_backing_size)
+  IPC_STRUCT_MEMBER(float, overdraw_bottom_height)
+  IPC_STRUCT_MEMBER(gfx::Rect, resizer_rect)
+  IPC_STRUCT_MEMBER(bool, is_fullscreen)
+IPC_STRUCT_END()
+
+// Tells the render view to change its size.  A ViewHostMsg_UpdateRect message
 // is generated in response provided new_size is not empty and not equal to
-// the view's current size.  The generated ViewHostMsg_PaintRect message will
+// the view's current size.  The generated ViewHostMsg_UpdateRect message will
 // have the IS_RESIZE_ACK flag set. It also receives the resizer rect so that
 // we don't have to fetch it every time WebKit asks for it.
-IPC_MESSAGE_ROUTED5(ViewMsg_Resize,
-                    gfx::Size /* new_size */,
-                    gfx::Size /* physical_backing_size */,
-                    float /* overdraw_bottom_height */,
-                    gfx::Rect /* resizer_rect */,
-                    bool /* is_fullscreen */)
+IPC_MESSAGE_ROUTED1(ViewMsg_Resize,
+                    ViewMsg_Resize_Params /* params */)
 
 // Tells the render view that the resize rect has changed.
 IPC_MESSAGE_ROUTED1(ViewMsg_ChangeResizeRect,
@@ -826,7 +831,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WasHidden)
 
 // Tells the render view that it is no longer hidden (see WasHidden), and the
 // render view is expected to respond with a full repaint if needs_repainting
-// is true.  In that case, the generated ViewHostMsg_PaintRect message will
+// is true.  In that case, the generated ViewHostMsg_UpdateRect message will
 // have the IS_RESTORE_ACK flag set.  If needs_repainting is false, then this
 // message does not trigger a message in response.
 IPC_MESSAGE_ROUTED1(ViewMsg_WasShown,
@@ -1124,9 +1129,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_Repaint,
 // Notification that a move or resize renderer's containing window has
 // started.
 IPC_MESSAGE_ROUTED0(ViewMsg_MoveOrResizeStarted)
-
-IPC_MESSAGE_ROUTED1(ViewMsg_ScreenInfoChanged,
-                    WebKit::WebScreenInfo /* screen_info */)
 
 IPC_MESSAGE_ROUTED2(ViewMsg_UpdateScreenRects,
                     gfx::Rect /* view_screen_rect */,

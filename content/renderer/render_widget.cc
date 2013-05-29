@@ -339,7 +339,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SmoothScrollCompleted, OnSmoothScrollCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
-    IPC_MESSAGE_HANDLER(ViewMsg_ScreenInfoChanged, OnScreenInfoChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeBatchStateChanged, OnImeBatchStateChanged)
@@ -464,14 +463,13 @@ void RenderWidget::OnCreatingNewAck() {
   CompleteInit();
 }
 
-void RenderWidget::OnResize(const gfx::Size& new_size,
-                            const gfx::Size& physical_backing_size,
-                            float overdraw_bottom_height,
-                            const gfx::Rect& resizer_rect,
-                            bool is_fullscreen) {
-  Resize(new_size, physical_backing_size, overdraw_bottom_height, resizer_rect,
-         is_fullscreen, SEND_RESIZE_ACK);
-  size_browser_expects_ = new_size;
+void RenderWidget::OnResize(const ViewMsg_Resize_Params& params) {
+  screen_info_ = params.screen_info;
+  SetDeviceScaleFactor(screen_info_.deviceScaleFactor);
+  Resize(params.new_size, params.physical_backing_size,
+         params.overdraw_bottom_height, params.resizer_rect,
+         params.is_fullscreen, SEND_RESIZE_ACK);
+  size_browser_expects_ = params.new_size;
 }
 
 void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
@@ -1951,12 +1949,6 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
   if (!webwidget_)
     return;
   webwidget_->setTextDirection(direction);
-}
-
-void RenderWidget::OnScreenInfoChanged(
-    const WebKit::WebScreenInfo& screen_info) {
-  screen_info_ = screen_info;
-  SetDeviceScaleFactor(screen_info.deviceScaleFactor);
 }
 
 void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,

@@ -770,11 +770,7 @@ class CONTENT_EXPORT RenderViewImpl
  protected:
   // RenderWidget overrides:
   virtual void Close() OVERRIDE;
-  virtual void OnResize(const gfx::Size& new_size,
-                        const gfx::Size& physical_backing_size,
-                        float overdraw_bottom_height,
-                        const gfx::Rect& resizer_rect,
-                        bool is_fullscreen) OVERRIDE;
+  virtual void OnResize(const ViewMsg_Resize_Params& params) OVERRIDE;
   virtual void WillInitiatePaint() OVERRIDE;
   virtual void DidInitiatePaint() OVERRIDE;
   virtual void DidFlushPaint() OVERRIDE;

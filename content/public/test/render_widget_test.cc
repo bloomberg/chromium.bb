@@ -153,17 +153,27 @@ void RenderWidgetTest::TestOnResize() {
 
   // The initial bounds is empty, so setting it to the same thing should do
   // nothing.
-  widget->OnResize(gfx::Size(), gfx::Size(), 0, gfx::Rect(), false);
+  ViewMsg_Resize_Params resize_params;
+  resize_params.screen_info = WebKit::WebScreenInfo();
+  resize_params.new_size = gfx::Size();
+  resize_params.physical_backing_size = gfx::Size();
+  resize_params.overdraw_bottom_height = 0.f;
+  resize_params.resizer_rect = gfx::Rect();
+  resize_params.is_fullscreen = false;
+  widget->OnResize(resize_params);
   EXPECT_FALSE(widget->next_paint_is_resize_ack());
 
   // Setting empty physical backing size should not send the ack.
-  widget->OnResize(gfx::Size(10, 10), gfx::Size(), 0, gfx::Rect(), false);
+  resize_params.new_size = gfx::Size(10, 10);
+  widget->OnResize(resize_params);
   EXPECT_FALSE(widget->next_paint_is_resize_ack());
 
   // Setting the bounds to a "real" rect should send the ack.
   render_thread_->sink().ClearMessages();
   gfx::Size size(100, 100);
-  widget->OnResize(size, size, 0, gfx::Rect(), false);
+  resize_params.new_size = size;
+  resize_params.physical_backing_size = size;
+  widget->OnResize(resize_params);
   EXPECT_TRUE(widget->next_paint_is_resize_ack());
   widget->DoDeferredUpdate();
   ProcessPendingMessages();
@@ -173,18 +183,22 @@ void RenderWidgetTest::TestOnResize() {
           render_thread_->sink().GetUniqueMessageMatching(
               ViewHostMsg_UpdateRect::ID));
   ASSERT_TRUE(msg);
-  ViewHostMsg_UpdateRect::Schema::Param params;
-  EXPECT_TRUE(ViewHostMsg_UpdateRect::Read(msg, &params));
-  EXPECT_TRUE(ViewHostMsg_UpdateRect_Flags::is_resize_ack(params.a.flags));
-  EXPECT_EQ(size, params.a.view_size);
+  ViewHostMsg_UpdateRect::Schema::Param update_rect_params;
+  EXPECT_TRUE(ViewHostMsg_UpdateRect::Read(msg, &update_rect_params));
+  EXPECT_TRUE(ViewHostMsg_UpdateRect_Flags::is_resize_ack(
+      update_rect_params.a.flags));
+  EXPECT_EQ(size,
+      update_rect_params.a.view_size);
   render_thread_->sink().ClearMessages();
 
   // Setting the same size again should not send the ack.
-  widget->OnResize(size, size, 0, gfx::Rect(), false);
+  widget->OnResize(resize_params);
   EXPECT_FALSE(widget->next_paint_is_resize_ack());
 
   // Resetting the rect to empty should not send the ack.
-  widget->OnResize(gfx::Size(), gfx::Size(), 0, gfx::Rect(), false);
+  resize_params.new_size = gfx::Size();
+  resize_params.physical_backing_size = gfx::Size();
+  widget->OnResize(resize_params);
   EXPECT_FALSE(widget->next_paint_is_resize_ack());
 }
 

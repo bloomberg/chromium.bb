@@ -738,6 +738,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // True when waiting for RESIZE_ACK.
   bool resize_ack_pending_;
 
+  // Cached copy of the screen info so that it doesn't need to be updated every
+  // time the window is resized.
+  scoped_ptr<WebKit::WebScreenInfo> screen_info_;
+
+  // Set if screen_info_ may have changed and should be recomputed and force a
+  // resize message.
+  bool screen_info_out_of_date_;
+
   // The current size of the RenderWidget.
   gfx::Size current_size_;
 

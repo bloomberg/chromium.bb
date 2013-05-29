@@ -457,15 +457,10 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
       current_device_scale_factor_ == display.device_scale_factor()) {
     return;
   }
-  bool device_scale_factor_changed =
-      current_device_scale_factor_ != display.device_scale_factor();
   current_display_area_ = display.work_area();
   current_device_scale_factor_ = display.device_scale_factor();
-  if (impl) {
+  if (impl)
     impl->NotifyScreenInfoChanged();
-    if (device_scale_factor_changed)
-      impl->WasResized();
-  }
 }
 
 SmoothScrollGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
