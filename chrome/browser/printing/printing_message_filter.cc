@@ -191,7 +191,7 @@ void PrintingMessageFilter::CreatePrintDialogForFile(
       wc->GetBrowserContext(),
       wc->GetView()->GetTopLevelNativeWindow(),
       path,
-      string16(),
+      wc->GetTitle(),
       string16(),
       std::string("application/pdf"),
       false);
