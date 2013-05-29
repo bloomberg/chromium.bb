@@ -89,6 +89,7 @@
 # FIXME: Change this file to use the Host abstractions rather that os, sys, shutils, etc.
 
 import datetime
+import logging
 import mimetypes
 import optparse
 import os
@@ -108,6 +109,9 @@ TEST_STATUS_SUBMITTED = 'submitted'
 CHANGESET_NOT_AVAILABLE = 'Not Available'
 
 
+_log = logging.getLogger(__name__)
+
+
 def main(_argv, _stdout, _stderr):
     options, args = parse_args()
     import_dir = args[0]
@@ -124,8 +128,26 @@ def main(_argv, _stdout, _stderr):
     if not repo_dir in import_dir:
         sys.exit('Repository directory %s must be a parent of %s' % (repo_dir, import_dir))
 
+    configure_logging()
+
     test_importer = TestImporter(Host(), import_dir, repo_dir, options)
     test_importer.do_import()
+
+
+def configure_logging():
+    class LogHandler(logging.StreamHandler):
+
+        def format(self, record):
+            if record.levelno > logging.INFO:
+                return "%s: %s" % (record.levelname, record.getMessage())
+            return record.getMessage()
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    handler = LogHandler()
+    handler.setLevel(logging.INFO)
+    logger.addHandler(handler)
+    return handler
 
 
 def parse_args():
@@ -179,7 +201,7 @@ class TestImporter(object):
     def find_importable_tests(self, directory):
         # FIXME: use filesystem
         for root, dirs, files in os.walk(directory):
-            print 'Scanning ' + root + '...'
+            _log.info('Scanning ' + root + '...')
             total_tests = 0
             reftests = 0
             jstests = 0
@@ -291,11 +313,11 @@ class TestImporter(object):
 
                 if os.path.isdir(orig_filepath):
                     # FIXME: Figure out what is triggering this and what to do about it.
-                    print 'Error: %s refers to a directory' % orig_filepath
+                    _log.error('%s refers to a directory' % orig_filepath)
                     continue
 
                 if not(os.path.exists(orig_filepath)):
-                    print 'Warning: ' + orig_filepath + ' not found. Possible error in the test.'
+                    _log.warning('%s not found. Possible error in the test.', orig_filepath)
                     continue
 
                 new_filepath = os.path.join(new_path, file_to_copy['dest'])
@@ -304,13 +326,13 @@ class TestImporter(object):
                     os.makedirs(os.path.dirname(new_filepath))
 
                 if not self.options.overwrite and os.path.exists(new_filepath):
-                    print 'Skipping import of existing file ' + new_filepath
+                    _log.info('Skipping import of existing file ' + new_filepath)
                 else:
                     # FIXME: Maybe doing a file diff is in order here for existing files?
                     # In other words, there's no sense in overwriting identical files, but
                     # there's no harm in copying the identical thing.
-                    print 'Importing:', orig_filepath
-                    print '       As:', new_filepath
+                    _log.info('Importing: %s', orig_filepath)
+                    _log.info('       As: %s', new_filepath)
 
                 # Only html, xml, or css should be converted
                 # FIXME: Eventually, so should js when support is added for this type of conversion
@@ -337,16 +359,16 @@ class TestImporter(object):
             self.remove_deleted_files(new_path, copied_files)
             self.write_import_log(new_path, copied_files, prefixed_properties)
 
-        print 'Import complete'
+        _log.info('Import complete')
 
-        print 'IMPORTED ' + str(total_imported_tests) + ' TOTAL TESTS'
-        print 'Imported ' + str(total_imported_reftests) + ' reftests'
-        print 'Imported ' + str(total_imported_jstests) + ' JS tests'
-        print 'Imported ' + str(total_imported_tests - total_imported_jstests - total_imported_reftests) + ' pixel/manual tests'
-        print
-        print "Properties needing prefixes (by count):"
+        _log.info('IMPORTED %d TOTAL TESTS', total_imported_tests)
+        _log.info('Imported %d reftests', total_imported_reftests)
+        _log.info('Imported %d JS tests', total_imported_jstests)
+        _log.info('Imported %d pixel/manual tests', total_imported_tests - total_imported_jstests - total_imported_reftests)
+        _log.info('')
+        _log.info('Properties needing prefixes (by count):')
         for prefixed_property in sorted(total_prefixed_properties, key=lambda p: total_prefixed_properties[p]):
-            print "  %s: %s" % (prefixed_property, total_prefixed_properties[prefixed_property])
+            _log.info('  %s: %s', prefixed_property, total_prefixed_properties[prefixed_property])
 
     def setup_destination_directory(self):
         """ Creates a destination directory that mirrors that of the source approved or submitted directory """
@@ -361,7 +383,7 @@ class TestImporter(object):
         if not os.path.exists(destination_directory):
             os.makedirs(destination_directory)
 
-        print 'Tests will be imported into: ' + destination_directory
+        _log.info('Tests will be imported into: %s', destination_directory)
 
     def update_test_status(self):
         """ Sets the test status to either 'approved' or 'submitted' """
@@ -393,7 +415,7 @@ class TestImporter(object):
 
         deleted_files = set(previous_file_list) - set(new_file_list)
         for deleted_file in deleted_files:
-            print 'Deleting file removed from the W3C repo:' + deleted_file
+            _log.info('Deleting file removed from the W3C repo: %s', deleted_file)
             deleted_file = os.path.join(self._webkit_root, deleted_file)
             os.remove(deleted_file)
 

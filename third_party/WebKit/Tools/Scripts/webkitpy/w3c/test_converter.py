@@ -27,10 +27,14 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
+import logging
 import re
 
 from webkitpy.common.host import Host
 from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup, Tag
+
+
+_log = logging.getLogger(__name__)
 
 
 class W3CTestConverter(object):
@@ -108,10 +112,10 @@ class W3CTestConverter(object):
             if tag.name != 'script':
                 attr = 'href'
 
-            if not attr in tag:
+            if not attr in tag.attrMap:
                 # FIXME: Figure out what to do w/ invalid tags. For now, we return False
                 # and leave the document unmodified, which means that it'll probably fail to run.
-                print "Error: missing an attr in %s" % filename
+                _log.error("Missing an attr in %s" % filename)
                 return False
 
             old_path = tag[attr]
@@ -176,7 +180,7 @@ class W3CTestConverter(object):
             # or at the beginning of the string (for inline style attribute)
             pattern = '([\s{]|^)' + unprefixed_property + '(\s+:|:)'
             if re.search(pattern, text):
-                print 'converting %s -> %s' % (unprefixed_property, prefixed_property)
+                _log.info('converting %s -> %s' % (unprefixed_property, prefixed_property))
                 converted_properties.append(prefixed_property)
                 text = re.sub(pattern, prefixed_property + ':', text)
 

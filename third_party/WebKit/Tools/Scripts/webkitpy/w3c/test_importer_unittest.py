@@ -38,6 +38,9 @@ from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.w3c.test_importer import TestImporter
 
 
+DUMMY_SOURCE_DIR = '/w3c'
+DUMMY_REPO_DIR = '/blink/LayoutTests'
+
 class TestImporterTest(unittest.TestCase):
 
     def test_import_dir_with_no_tests_and_no_hg(self):
@@ -45,7 +48,7 @@ class TestImporterTest(unittest.TestCase):
         host = Host()
         host.executive = MockExecutive2(exception=OSError())
 
-        importer = TestImporter(host, None, optparse.Values({"overwrite": False}))
+        importer = TestImporter(host, DUMMY_SOURCE_DIR, DUMMY_REPO_DIR, optparse.Values({"overwrite": False}))
         importer.source_directory = importer.path_from_webkit_root("Tools", "Scripts", "webkitpy", "w3c")
         importer.destination_directory = tempfile.mkdtemp(prefix='csswg')
 
@@ -62,7 +65,7 @@ class TestImporterTest(unittest.TestCase):
         host = Host()
         host.executive = MockExecutive2(exception=ScriptError("abort: no repository found in '/Volumes/Source/src/wk/Tools/Scripts/webkitpy/w3c' (.hg not found)!"))
 
-        importer = TestImporter(host, None, optparse.Values({"overwrite": False}))
+        importer = TestImporter(host, '/w3c', '/blink', optparse.Values({"overwrite": False}))
         importer.source_directory = importer.path_from_webkit_root("Tools", "Scripts", "webkitpy", "w3c")
         importer.destination_directory = tempfile.mkdtemp(prefix='csswg')
 
