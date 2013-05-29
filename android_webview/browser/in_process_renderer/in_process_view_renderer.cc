@@ -49,11 +49,20 @@ namespace {
 class GLStateRestore {
  public:
   GLStateRestore() {
+#if !defined(NDEBUG)
+    {
+      GLint vertex_array_buffer_binding;
+      glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &vertex_array_buffer_binding);
+      DCHECK_EQ(0, vertex_array_buffer_binding);
+
+      GLint index_array_buffer_binding;
+      glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING,
+                    &index_array_buffer_binding);
+      DCHECK_EQ(0, index_array_buffer_binding);
+    }
+#endif  // !defined(NDEBUG)
     glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES,
                   &texture_external_oes_binding_);
-    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &vertex_array_buffer_binding_);
-    glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING,
-                  &index_array_buffer_binding_);
     glGetIntegerv(GL_PACK_ALIGNMENT, &pack_alignment_);
     glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpack_alignment_);
 
@@ -85,15 +94,10 @@ class GLStateRestore {
     glGetBooleanv(GL_SCISSOR_TEST, &scissor_test_);
     glGetIntegerv(GL_SCISSOR_BOX, scissor_box_);
     glGetIntegerv(GL_CURRENT_PROGRAM, &current_program_);
-
-    DCHECK_EQ(0, vertex_array_buffer_binding_);
-    DCHECK_EQ(0, index_array_buffer_binding_);
   }
 
   ~GLStateRestore() {
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_external_oes_binding_);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffer_binding_);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_buffer_binding_);
     glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment_);
     glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment_);
 
@@ -148,12 +152,13 @@ class GLStateRestore {
         scissor_box_[0], scissor_box_[1], scissor_box_[2], scissor_box_[3]);
 
     glUseProgram(current_program_);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   }
 
  private:
   GLint texture_external_oes_binding_;
-  GLint vertex_array_buffer_binding_;
-  GLint index_array_buffer_binding_;
   GLint pack_alignment_;
   GLint unpack_alignment_;
 
