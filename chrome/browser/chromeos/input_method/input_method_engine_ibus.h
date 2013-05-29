@@ -43,6 +43,7 @@ class InputMethodEngineIBus : public InputMethodEngine,
       std::string* error);
 
   // InputMethodEngine overrides.
+  virtual void StartIme() OVERRIDE;
   virtual bool SetComposition(int context_id,
                               const char* text,
                               int selection_start,

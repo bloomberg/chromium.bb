@@ -28,6 +28,11 @@
             ]
           }
         ]
+      }, {
+        "name": "startIme",
+        "type": "function",
+        "description": "Notify to input method engine to be ready to accept events.",
+        "parameters" : []
       }
     ],
     "events": [

@@ -31,6 +31,22 @@ class GetInputMethodFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.get", INPUTMETHODPRIVATE_GET)
 };
 
+// Notify the initialization is done to input method engine.
+// TODO(nona): remove this function.
+class StartImeFunction : public SyncExtensionFunction {
+ public:
+  StartImeFunction();
+
+ protected:
+  virtual ~StartImeFunction();
+
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.startIme",
+                             INPUTMETHODPRIVATE_STARTIME)
+};
+
 class InputMethodAPI : public ProfileKeyedAPI,
                        public extensions::EventRouter::Observer {
  public:

@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
+#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -42,6 +43,25 @@ bool GetInputMethodFunction::RunImpl() {
 #endif
 }
 
+StartImeFunction::StartImeFunction() {
+}
+
+StartImeFunction::~StartImeFunction() {
+}
+
+bool StartImeFunction::RunImpl() {
+#if !defined(OS_CHROMEOS)
+  NOTREACHED();
+  return false;
+#else
+  chromeos::InputMethodEngine* engine =
+      InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
+  if (engine)
+    engine->StartIme();
+  return true;
+#endif
+}
+
 InputMethodAPI::InputMethodAPI(Profile* profile)
     : profile_(profile) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
@@ -49,6 +69,7 @@ InputMethodAPI::InputMethodAPI(Profile* profile)
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<GetInputMethodFunction>();
+  registry->RegisterFunction<StartImeFunction>();
 }
 
 InputMethodAPI::~InputMethodAPI() {
