@@ -1416,9 +1416,8 @@ body[new-ui] #volume-list > .accepts,
 
 /* Text box used for renaming in the detail list. */
 .table-row-cell input.rename {
-  -webkit-margin-start: -3px;
   border-width: 0;
-  line-height: 20px;
+  padding: 2px 0;
 }
 
 input.rename:focus {
