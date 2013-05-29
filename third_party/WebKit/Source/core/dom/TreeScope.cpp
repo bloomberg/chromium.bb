@@ -35,6 +35,7 @@
 #include "core/dom/IdTargetObserverRegistry.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/TreeScopeAdopter.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLLabelElement.h"
@@ -368,6 +369,51 @@ Node* TreeScope::focusedNode()
         }
     }
     return 0;
+}
+
+unsigned short TreeScope::comparePosition(const TreeScope* otherScope) const
+{
+    if (!otherScope)
+        return Node::DOCUMENT_POSITION_DISCONNECTED;
+
+    if (otherScope == this)
+        return Node::DOCUMENT_POSITION_EQUIVALENT;
+
+    Vector<const TreeScope*, 16> chain1;
+    Vector<const TreeScope*, 16> chain2;
+    const TreeScope* current;
+    for (current = this; current; current = current->parentTreeScope())
+        chain1.append(current);
+    for (current = otherScope; current; current = current->parentTreeScope())
+        chain2.append(current);
+
+    unsigned index1 = chain1.size();
+    unsigned index2 = chain2.size();
+    if (chain1[index1 - 1] != chain2[index2 - 1])
+        return Node::DOCUMENT_POSITION_DISCONNECTED | Node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+
+    for (unsigned i = std::min(index1, index2); i; --i) {
+        const TreeScope* child1 = chain1[--index1];
+        const TreeScope* child2 = chain2[--index2];
+        if (child1 != child2) {
+            Node* shadowHost1 = child1->rootNode()->parentOrShadowHostNode();
+            Node* shadowHost2 = child2->rootNode()->parentOrShadowHostNode();
+            if (shadowHost1 != shadowHost2)
+                return shadowHost1->compareDocumentPositionInternal(shadowHost2, Node::TreatShadowTreesAsDisconnected);
+
+            for (const ShadowRoot* child = toShadowRoot(child2->rootNode())->olderShadowRoot(); child; child = child->olderShadowRoot())
+                if (child == child1)
+                    return Node::DOCUMENT_POSITION_FOLLOWING;
+
+            return Node::DOCUMENT_POSITION_PRECEDING;
+        }
+    }
+
+    // There was no difference between the two parent chains, i.e., one was a subset of the other. The shorter
+    // chain is the ancestor.
+    return index1 < index2 ?
+        Node::DOCUMENT_POSITION_FOLLOWING | Node::DOCUMENT_POSITION_CONTAINED_BY :
+        Node::DOCUMENT_POSITION_PRECEDING | Node::DOCUMENT_POSITION_CONTAINS;
 }
 
 void TreeScope::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

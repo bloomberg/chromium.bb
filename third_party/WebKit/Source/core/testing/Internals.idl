@@ -59,6 +59,7 @@
     [RaisesException] boolean hasSelectorForClassInShadow(Element host, DOMString className);
     [RaisesException] boolean hasSelectorForAttributeInShadow(Element host, DOMString attributeName);
     [RaisesException] boolean hasSelectorForPseudoClassInShadow(Element host, DOMString pseudoClass);
+    [RaisesException] unsigned short compareTreeScopePosition(Node treeScope1, Node treeScope2);
 
     // CSS Animation and Transition testing.
     unsigned long numberOfActiveAnimations();

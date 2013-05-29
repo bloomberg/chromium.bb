@@ -128,6 +128,7 @@ public:
     void removedLastRefToScope();
 
     bool isInclusiveAncestorOf(const TreeScope*) const;
+    unsigned short comparePosition(const TreeScope*) const;
 
 protected:
     TreeScope(ContainerNode*, Document*);
