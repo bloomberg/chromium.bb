@@ -99,7 +99,10 @@ class CONTENT_EXPORT BrowserPlugin :
   int guest_route_id() const { return guest_route_id_; }
   // Returns whether the guest process has crashed.
   bool guest_crashed() const { return guest_crashed_; }
-  bool HasGuest() const;
+  // Returns whether this BrowserPlugin has requested an instance ID.
+  bool HasNavigated() const;
+  // Returns whether this BrowserPlugin has allocated an instance ID.
+  bool HasInstanceID() const;
 
   // Attaches the window identified by |window_id| to the the given node
   // encapsulating a BrowserPlugin.

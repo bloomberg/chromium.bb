@@ -137,7 +137,7 @@ BrowserPlugin::~BrowserPlugin() {
   // If the BrowserPlugin has never navigated then the browser process and
   // BrowserPluginManager don't know about it and so there is nothing to do
   // here.
-  if (!HasGuest())
+  if (!HasInstanceID())
     return;
   browser_plugin_manager()->RemoveBrowserPlugin(instance_id_);
   browser_plugin_manager()->Send(
@@ -301,7 +301,7 @@ std::string BrowserPlugin::GetPartitionAttribute() const {
 }
 
 void BrowserPlugin::ParseNameAttribute() {
-  if (!HasGuest())
+  if (!HasInstanceID())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_SetName(render_view_routing_id_,
@@ -321,7 +321,7 @@ bool BrowserPlugin::ParseSrcAttribute(std::string* error_message) {
   // If we haven't created the guest yet, do so now. We will navigate it right
   // after creation. If |src| is empty, we can delay the creation until we
   // actually need it.
-  if (!HasGuest()) {
+  if (!HasInstanceID()) {
     // On initial navigation, we request an instance ID from the browser
     // process. We essentially ignore all subsequent calls to SetSrcAttribute
     // until we receive an instance ID. |before_first_navigation_|
@@ -365,7 +365,7 @@ void BrowserPlugin::UpdateGuestAutoSizeState(bool current_auto_size) {
   // If we haven't yet heard back from the guest about the last resize request,
   // then we don't issue another request until we do in
   // BrowserPlugin::UpdateRect.
-  if (!HasGuest() || !resize_ack_received_)
+  if (!HasInstanceID() || !resize_ack_received_)
     return;
   BrowserPluginHostMsg_AutoSize_Params auto_size_params;
   BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
@@ -840,18 +840,34 @@ bool BrowserPlugin::AttachWindowTo(const WebKit::WebNode& node, int window_id) {
   if (!browser_plugin)
     return false;
 
-  // If the BrowserPlugin already has a guest attached to it then we probably
-  // shouldn't allow attaching a different guest.
+  // If the BrowserPlugin has already begun to navigate then we shouldn't allow
+  // attaching a different guest.
+  //
+  // Navigation happens in two stages.
+  // 1. BrowserPlugin requests an instance ID from the browser process.
+  // 2. The browser process returns an instance ID and BrowserPlugin is
+  //    "Attach"ed to that instance ID.
+  // If the instance ID is new then a new guest will be created.
+  // If the instance ID corresponds to an unattached guest then BrowserPlugin
+  // is attached to that guest.
+  //
+  // Between step 1, and step 2, BrowserPlugin::AttachWindowTo may be called.
+  // The check below ensures that BrowserPlugin:Attach does not get called with
+  // a different instance ID after step 1 has happened.
   // TODO(fsamuel): We may wish to support reattaching guests in the future:
   // http://crbug.com/156219.
-  if (browser_plugin->HasGuest())
+  if (browser_plugin->HasNavigated())
     return false;
 
   browser_plugin->Attach(window_id);
   return true;
 }
 
-bool BrowserPlugin::HasGuest() const {
+bool BrowserPlugin::HasNavigated() const {
+  return !before_first_navigation_;
+}
+
+bool BrowserPlugin::HasInstanceID() const {
   return instance_id_ != browser_plugin::kInstanceIDNone;
 }
 
@@ -897,9 +913,9 @@ bool BrowserPlugin::ParsePartitionAttribute(std::string* error_message) {
 }
 
 bool BrowserPlugin::CanRemovePartitionAttribute(std::string* error_message) {
-  if (HasGuest())
+  if (HasInstanceID())
     *error_message = browser_plugin::kErrorCannotRemovePartition;
-  return !HasGuest();
+  return !HasInstanceID();
 }
 
 void BrowserPlugin::ParseAttributes() {
@@ -1028,7 +1044,7 @@ void BrowserPlugin::WeakCallbackForPersistObject(
 }
 
 void BrowserPlugin::Back() {
-  if (!HasGuest())
+  if (!HasInstanceID())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Go(render_view_routing_id_,
@@ -1036,7 +1052,7 @@ void BrowserPlugin::Back() {
 }
 
 void BrowserPlugin::Forward() {
-  if (!HasGuest())
+  if (!HasInstanceID())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Go(render_view_routing_id_,
@@ -1044,7 +1060,7 @@ void BrowserPlugin::Forward() {
 }
 
 void BrowserPlugin::Go(int relative_index) {
-  if (!HasGuest())
+  if (!HasInstanceID())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Go(render_view_routing_id_,
@@ -1053,7 +1069,7 @@ void BrowserPlugin::Go(int relative_index) {
 }
 
 void BrowserPlugin::TerminateGuest() {
-  if (!HasGuest() || guest_crashed_)
+  if (!HasInstanceID() || guest_crashed_)
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_TerminateGuest(render_view_routing_id_,
@@ -1061,7 +1077,7 @@ void BrowserPlugin::TerminateGuest() {
 }
 
 void BrowserPlugin::Stop() {
-  if (!HasGuest())
+  if (!HasInstanceID())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Stop(render_view_routing_id_,
@@ -1069,7 +1085,7 @@ void BrowserPlugin::Stop() {
 }
 
 void BrowserPlugin::Reload() {
-  if (!HasGuest())
+  if (!HasInstanceID())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Reload(render_view_routing_id_,
@@ -1077,7 +1093,7 @@ void BrowserPlugin::Reload() {
 }
 
 void BrowserPlugin::UpdateGuestFocusState() {
-  if (!HasGuest())
+  if (!HasInstanceID())
     return;
   bool should_be_focused = ShouldGuestBeFocused();
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetFocus(
@@ -1253,7 +1269,7 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   canvas->drawRect(image_data_rect, paint);
   // Stay a solid color if we have never set a non-empty src, or we don't have a
   // backing store.
-  if (!backing_store_.get() || !HasGuest())
+  if (!backing_store_.get() || !HasInstanceID())
     return;
   float inverse_scale_factor =  1.0f / backing_store_->GetScaleFactor();
   canvas->scale(inverse_scale_factor, inverse_scale_factor);
@@ -1322,7 +1338,7 @@ void BrowserPlugin::updateGeometry(
   int old_width = width();
   int old_height = height();
   plugin_rect_ = window_rect;
-  if (!HasGuest())
+  if (!HasInstanceID())
     return;
 
   // In AutoSize mode, guests don't care when the BrowserPlugin container is
@@ -1457,7 +1473,7 @@ void BrowserPlugin::updateVisibility(bool visible) {
     return;
 
   visible_ = visible;
-  if (!HasGuest())
+  if (!HasInstanceID())
     return;
 
   if (compositing_helper_)
@@ -1475,7 +1491,7 @@ bool BrowserPlugin::acceptsInputEvents() {
 
 bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
                                      WebKit::WebCursorInfo& cursor_info) {
-  if (guest_crashed_ || !HasGuest() ||
+  if (guest_crashed_ || !HasInstanceID() ||
       event.type == WebKit::WebInputEvent::ContextMenu)
     return false;
 
@@ -1511,7 +1527,7 @@ bool BrowserPlugin::handleDragStatusUpdate(WebKit::WebDragStatus drag_status,
                                            WebKit::WebDragOperationsMask mask,
                                            const WebKit::WebPoint& position,
                                            const WebKit::WebPoint& screen) {
-  if (guest_crashed_ || !HasGuest())
+  if (guest_crashed_ || !HasInstanceID())
     return false;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_DragStatusUpdate(
