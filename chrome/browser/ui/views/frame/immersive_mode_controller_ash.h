@@ -10,6 +10,7 @@
 #include "base/timer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/focus/focus_manager.h"
@@ -40,7 +41,8 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
                                    public ui::EventHandler,
                                    public ui::ImplicitAnimationObserver,
                                    public views::FocusChangeListener,
-                                   public views::WidgetObserver {
+                                   public views::WidgetObserver,
+                                   public aura::WindowObserver {
  public:
   ImmersiveModeControllerAsh();
   virtual ~ImmersiveModeControllerAsh();
@@ -94,6 +96,13 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
 
   // ui::ImplicitAnimationObserver override:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+
+  // aura::WindowObserver overrides:
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
+  virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE;
+  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
 
   // Testing interface.
   void SetForceHideTabIndicatorsForTest(bool force);
@@ -198,11 +207,16 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   SwipeType GetSwipeType(ui::GestureEvent* event) const;
 
   // True when |location| is "near" to the top container. When the top container
-  // is not closed "near" means within the displayed bounds. When the top
-  // container is closed "near" means either within the displayed bounds or
-  // within a few pixels of it. This allow the container to steal enough pixels
-  // to detect a swipe in.
-  bool IsNearTopContainer(gfx::Point location) const;
+  // is not closed "near" means within the displayed bounds or above it. When
+  // the top container is closed "near" means either within the displayed
+  // bounds, above it, or within a few pixels below it. This allow the container
+  // to steal enough pixels to detect a swipe in and handles the case that there
+  // is a bezel sensor above the top container.
+  bool ShouldHandleEvent(const gfx::Point& location) const;
+
+  // Call Add/RemovePreTargerHandler since either the RootWindow has changed or
+  // the enabled state of observing has changed.
+  void UpdatePreTargetHandler();
 
   // Injected dependencies. Not owned.
   Delegate* delegate_;
@@ -239,12 +253,8 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // and the active widget.
   scoped_ptr<ImmersiveRevealedLock> focus_revealed_lock_;
 
-  // Native window for the browser, needed to clean up observers.
+  // Native window for the browser.
   aura::Window* native_window_;
-
-  // Observer to disable immersive mode when window leaves the maximized state.
-  class WindowObserver;
-  scoped_ptr<WindowObserver> window_observer_;
 
   // Manages widgets which are anchored to the top-of-window views.
   class AnchoredWidgetManager;

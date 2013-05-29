@@ -18,8 +18,8 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
@@ -295,45 +295,6 @@ void ImmersiveModeControllerAsh::AnchoredWidgetManager::
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Observer to watch for window restore. views::Widget does not provide a hook
-// to observe for window restore, so do this at the Aura level.
-class ImmersiveModeControllerAsh::WindowObserver : public aura::WindowObserver {
- public:
-  explicit WindowObserver(ImmersiveModeControllerAsh* controller)
-      : controller_(controller) {
-    controller_->native_window_->AddObserver(this);
-  }
-
-  virtual ~WindowObserver() {
-    controller_->native_window_->RemoveObserver(this);
-  }
-
-  // aura::WindowObserver overrides:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) OVERRIDE {
-    using aura::client::kShowStateKey;
-    if (key == kShowStateKey) {
-      // Disable immersive mode when leaving the fullscreen state.
-      ui::WindowShowState show_state = static_cast<ui::WindowShowState>(
-          window->GetProperty(kShowStateKey));
-      if (controller_->IsEnabled() &&
-          show_state != ui::SHOW_STATE_FULLSCREEN &&
-          show_state != ui::SHOW_STATE_MINIMIZED) {
-        controller_->delegate_->FullscreenStateChanged();
-      }
-      return;
-    }
-  }
-
- private:
-  ImmersiveModeControllerAsh* controller_;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(WindowObserver);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
 ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
     : delegate_(NULL),
       widget_(NULL),
@@ -543,7 +504,7 @@ void ImmersiveModeControllerAsh::OnGestureEvent(ui::GestureEvent* event) {
 
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      if (IsNearTopContainer(event->location())) {
+      if (ShouldHandleEvent(event->location())) {
         gesture_begun_ = true;
         event->SetHandled();
       }
@@ -616,6 +577,36 @@ void ImmersiveModeControllerAsh::OnImplicitAnimationsCompleted() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// aura::WindowObserver overrides:
+void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
+                                                         const void* key,
+                                                         intptr_t old) {
+  using aura::client::kShowStateKey;
+  if (key == kShowStateKey) {
+    // Disable immersive mode when leaving the fullscreen state.
+    ui::WindowShowState show_state = static_cast<ui::WindowShowState>(
+        window->GetProperty(kShowStateKey));
+    if (IsEnabled() &&
+        show_state != ui::SHOW_STATE_FULLSCREEN &&
+        show_state != ui::SHOW_STATE_MINIMIZED) {
+      delegate_->FullscreenStateChanged();
+    }
+  }
+}
+
+void ImmersiveModeControllerAsh::OnWindowAddedToRootWindow(
+    aura::Window* window) {
+  DCHECK_EQ(window, native_window_);
+  UpdatePreTargetHandler();
+}
+
+void ImmersiveModeControllerAsh::OnWindowRemovingFromRootWindow(
+    aura::Window* window) {
+  DCHECK_EQ(window, native_window_);
+  UpdatePreTargetHandler();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Testing interface:
 
 void ImmersiveModeControllerAsh::SetForceHideTabIndicatorsForTest(bool force) {
@@ -661,13 +652,13 @@ void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
     focus_manager->RemoveFocusChangeListener(this);
   }
 
-  if (enable)
-    native_window_->AddPreTargetHandler(this);
-  else
-    native_window_->RemovePreTargetHandler(this);
+  UpdatePreTargetHandler();
 
-  // The window observer adds and removes itself from the native window.
-  window_observer_.reset(enable ? new WindowObserver(this) : NULL);
+  if (enable) {
+    native_window_->AddObserver(this);
+  } else {
+    native_window_->RemoveObserver(this);
+  }
 
   if (enable) {
     registrar_.Add(
@@ -1027,9 +1018,31 @@ ImmersiveModeControllerAsh::SwipeType ImmersiveModeControllerAsh::GetSwipeType(
   return SWIPE_NONE;
 }
 
-bool ImmersiveModeControllerAsh::IsNearTopContainer(gfx::Point location) const {
+bool ImmersiveModeControllerAsh::ShouldHandleEvent(
+    const gfx::Point& location) const {
+  // All of the gestures that are of interest start in a region with left &
+  // right edges agreeing with |top_container_|. When CLOSED it is difficult to
+  // hit the bounds due to small size of the tab strip, so the hit target needs
+  // to be extended on the bottom, thus the inset call. Finally there may be a
+  // bezel sensor off screen logically above |top_container_| thus the test
+  // needs to include gestures starting above.
   gfx::Rect near_bounds = top_container_->GetTargetBoundsInScreen();
   if (reveal_state_ == CLOSED)
     near_bounds.Inset(gfx::Insets(0, 0, -kNearTopContainerDistance, 0));
-  return near_bounds.Contains(location);
+  return near_bounds.Contains(location) ||
+      ((location.y() < near_bounds.y()) &&
+       (location.x() >= near_bounds.x()) &&
+       (location.x() <= near_bounds.right()));
+}
+
+void ImmersiveModeControllerAsh::UpdatePreTargetHandler() {
+  if (!native_window_)
+    return;
+  aura::RootWindow* root_window = native_window_->GetRootWindow();
+  if (!root_window)
+    return;
+  if (observers_enabled_)
+    root_window->AddPreTargetHandler(this);
+  else
+    root_window->RemovePreTargetHandler(this);
 }
