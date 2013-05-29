@@ -1061,7 +1061,7 @@ class ApiBase(object):
       self._lock = threading.RLock()
       self._traces = []
       self._initialized = True
-      self._script = None
+      self._scripts_to_cleanup = []
 
     def trace(self, cmd, cwd, tracename, output):
       """Runs the OS-specific trace program on an executable.
@@ -1092,9 +1092,11 @@ class ApiBase(object):
                   self.__class__.__name__,
               None, None, None)
         try:
-          if self._script:
-            os.remove(self._script)
-            self._script = None
+          while self._scripts_to_cleanup:
+            try:
+              os.remove(self._scripts_to_cleanup.pop())
+            except OSError as e:
+              logging.error('Failed to delete a temporary script: %s', e)
           write_json(self._logname, self._gen_logdata(), False)
         finally:
           self._initialized = False
@@ -1663,7 +1665,8 @@ class Strace(ApiBase):
       if use_sudo:
         # TODO(maruel): Use the jump script systematically to make it easy to
         # figure out the root process, so RelativePath is not necessary anymore.
-        self._script = create_exec_thunk()
+        self._child_script = create_exec_thunk()
+        self._scripts_to_cleanup.append(self._child_script)
 
     def trace(self, cmd, cwd, tracename, output):
       """Runs strace on an executable.
@@ -1711,7 +1714,7 @@ class Strace(ApiBase):
       if self.use_sudo:
         pipe_r, pipe_w = os.pipe()
         # Start the child process paused.
-        target_cmd = [sys.executable, self._script, str(pipe_r)] + cmd
+        target_cmd = [sys.executable, self._child_script, str(pipe_r)] + cmd
         logging.debug(' '.join(target_cmd))
         child_proc = subprocess.Popen(
             target_cmd,
@@ -2427,7 +2430,9 @@ class Dtrace(ApiBase):
       this needs to wait for dtrace to be "warmed up".
       """
       super(Dtrace.Tracer, self).__init__(logname)
-      self._script = create_subprocess_thunk()
+      # This script is used as a signal to figure out the root process.
+      self._signal_script = create_subprocess_thunk()
+      self._scripts_to_cleanup.append(self._signal_script)
       # This unique dummy temp file is used to signal the dtrace script that it
       # should stop as soon as all the child processes are done. A bit hackish
       # but works fine enough.
@@ -2487,7 +2492,7 @@ class Dtrace(ApiBase):
           '\n'
           '%s') % (
               os.getpid(),
-              self._script,
+              self._signal_script,
               self._dummy_file_id,
               self.D_CODE)
       if os.environ.get('TRACE_INPUTS_DTRACE_ENABLE_EXECVE') == '1':
@@ -2526,7 +2531,7 @@ class Dtrace(ApiBase):
         stderr = subprocess.STDOUT
       child_cmd = [
         sys.executable,
-        self._script,
+        self._signal_script,
         tracename,
       ]
       # Call a dummy function so that dtrace knows I'm about to launch a process
@@ -3144,7 +3149,8 @@ class LogmanTrace(ApiBase):
       "logman query providers | findstr /i file"
       """
       super(LogmanTrace.Tracer, self).__init__(logname)
-      self._script = create_subprocess_thunk()
+      self._signal_script = create_subprocess_thunk()
+      self._scripts_to_cleanup.append(self._signal_script)
       cmd_start = [
         'logman.exe',
         'start',
@@ -3204,7 +3210,7 @@ class LogmanTrace(ApiBase):
       # control the kernel trace.
       child_cmd = [
         sys.executable,
-        self._script,
+        self._signal_script,
         tracename,
       ]
       child = subprocess.Popen(
