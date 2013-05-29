@@ -278,10 +278,6 @@ webkit.org/b/60107 [ Win Release ] inspector/console/console-object-constructor-
 webkit.org/b/60107 [ Win Release ] inspector/console/console-log-before-inspector-open.html [ Failure Pass ]
 webkit.org/b/60107 [ Win Release ] inspector/console/console-tests.html [ Failure Pass ]
 
-# The test is too slow, even SLOW does not help.
-webkit.org/b/82894 [ Release ] inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Timeout ]
-webkit.org/b/82894 [ Debug ] inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Skip ]
-
 webkit.org/b/60109 [ Release ] inspector/elements/edit-dom-actions.html [ Slow ]
 webkit.org/b/60109 [ Debug ] inspector/elements/edit-dom-actions.html [ Skip ]
 

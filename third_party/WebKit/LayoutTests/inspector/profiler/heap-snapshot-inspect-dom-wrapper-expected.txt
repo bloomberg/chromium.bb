@@ -4,5 +4,7 @@ finishHeapSnapshot 1
 _callLoadCallbacks
 Error resolving heap snapshot object: Object is not available
 Error resolving heap snapshot object: Object is not available
+Error resolving heap snapshot object: Object is not available
+Error resolving heap snapshot object: Object is not available
 clearProfiles
 

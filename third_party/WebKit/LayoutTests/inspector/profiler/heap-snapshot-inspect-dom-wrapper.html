@@ -15,13 +15,14 @@ function test()
 {
     WebInspector.showPanel("profiles");
     HeapProfilerAgent.takeHeapSnapshot(step0);
+    WebInspector.panels.profiles._createTemporaryProfile("HEAP");
 
     function step0()
     {
         var heapProfileType =  WebInspector.panels.profiles.getProfileType("HEAP");
         var profiles = heapProfileType.getProfiles();
-        WebInspector.panels.profiles._showProfile(profiles[profiles.length - 1]);
         InspectorTest.addSniffer(heapProfileType, "finishHeapSnapshot", step1);
+        WebInspector.panels.profiles._showProfile(profiles[profiles.length - 1]);
     }
 
     function step1(uid)
@@ -38,12 +39,12 @@ function test()
         var snapshot = snapshotProxy._worker._worker._dispatcher._objects[snapshotProxy._objectId];
 
         var bodyWrapperIds = [];
-        for (var it = snapshot._allNodes; it.hasNext(); it.next()) {
-            if (it.node.className === "HTMLBodyElement")
-                bodyWrapperIds.push(it.node.id);
+        for (var it = snapshot._allNodes(); it.hasNext(); it.next()) {
+            if (it.item().name() === "HTMLBodyElement")
+                bodyWrapperIds.push(it.item().id());
         }
         for (var i = 0; i < bodyWrapperIds.length; i++)
-            HeapProfilerAgent.getObjectByHeapObjectId(bodyWrapperIds[i], undefined, didGetObjectByHeapObjectId);
+            HeapProfilerAgent.getObjectByHeapObjectId("" + bodyWrapperIds[i], undefined, didGetObjectByHeapObjectId);
 
         var resolvedObjectsCount = 0;
         var remoteObjects = [];
