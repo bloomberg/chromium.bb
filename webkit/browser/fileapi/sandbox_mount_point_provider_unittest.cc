@@ -110,13 +110,12 @@ class SandboxMountPointProviderTest : public testing::Test {
                    fileapi::FileSystemType type,
                    OpenFileSystemMode mode,
                    base::FilePath* root_path) {
-    base::PlatformFileError* error = new base::PlatformFileError(
-        base::PLATFORM_FILE_OK);
+    base::PlatformFileError error = base::PLATFORM_FILE_OK;
     provider_->OpenFileSystem(
         origin_url, type, mode,
-        base::Bind(&DidOpenFileSystem, error));
+        base::Bind(&DidOpenFileSystem, &error));
     base::MessageLoop::current()->RunUntilIdle();
-    if (*error != base::PLATFORM_FILE_OK)
+    if (error != base::PLATFORM_FILE_OK)
       return false;
     base::FilePath returned_root_path =
         provider_->GetBaseDirectoryForOriginAndType(
