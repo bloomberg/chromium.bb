@@ -137,6 +137,16 @@ examples/demo/pi_generator/index.html
 examples/demo/pi_generator/Makefile
 examples/demo/pi_generator/manifest.json
 examples/demo/pi_generator/pi_generator.cc
+examples/demo/voronoi/Makefile
+examples/demo/voronoi/background.js
+examples/demo/voronoi/common.js
+examples/demo/voronoi/example.js
+examples/demo/voronoi/icon128.png
+examples/demo/voronoi/index.html
+examples/demo/voronoi/manifest.json
+examples/demo/voronoi/threadpool.cc
+examples/demo/voronoi/threadpool.h
+examples/demo/voronoi/voronoi.cc
 examples/favicon.ico
 examples/getting_started/hello_world/background.js
 examples/getting_started/hello_world/common.js
