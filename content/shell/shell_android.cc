@@ -80,8 +80,9 @@ bool Shell::PlatformIsFullscreenForTabOrPending(
 }
 
 void Shell::Close() {
-  // TODO(tedchoc): Implement Close method for android shell
-  NOTIMPLEMENTED();
+  CloseShellView(java_object_.obj());
+  java_object_.Reset();
+  delete this;
 }
 
 // static

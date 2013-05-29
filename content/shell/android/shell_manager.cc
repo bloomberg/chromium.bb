@@ -38,6 +38,12 @@ jobject CreateShellView(Shell* shell) {
   return Java_ShellManager_createShell(env, j_shell_manager).Release();
 }
 
+void CloseShellView(jobject shell_view) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  jobject j_shell_manager = g_global_state.Get().j_shell_manager.obj();
+  Java_ShellManager_closeShell(env, j_shell_manager, shell_view);
+}
+
 // Register native methods
 bool RegisterShellManager(JNIEnv* env) {
   return RegisterNativesImpl(env);

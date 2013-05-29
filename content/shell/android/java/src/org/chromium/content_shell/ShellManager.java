@@ -92,12 +92,7 @@ public class ShellManager extends FrameLayout {
         Shell shellView = (Shell) inflater.inflate(R.layout.shell_view, null);
         shellView.setWindow(mWindow);
 
-        removeAllViews();
-        if (mActiveShell != null) {
-            ContentView contentView = mActiveShell.getContentView();
-            if (contentView != null) contentView.onHide();
-            mActiveShell.setContentViewRenderView(null);
-        }
+        if (mActiveShell != null) closeShell(mActiveShell);
 
         shellView.setContentViewRenderView(mContentViewRenderView);
         addView(shellView, new FrameLayout.LayoutParams(
@@ -110,6 +105,17 @@ public class ShellManager extends FrameLayout {
         }
 
         return shellView;
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void closeShell(Shell shellView) {
+        if (shellView == mActiveShell) mActiveShell = null;
+        ContentView contentView = shellView.getContentView();
+        if (contentView != null) contentView.onHide();
+        shellView.setContentViewRenderView(null);
+        shellView.setWindow(null);
+        removeView(shellView);
     }
 
     private static native void nativeInit(Object shellManagerInstance);
