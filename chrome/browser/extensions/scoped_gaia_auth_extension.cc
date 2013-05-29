@@ -34,7 +34,14 @@ void LoadGaiaAuthExtension(Profile* profile) {
   if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
     base::FilePath auth_extension_path =
         command_line->GetSwitchValuePath(switches::kAuthExtensionPath);
-    component_loader->Add(IDR_GAIA_TEST_AUTH_MANIFEST, auth_extension_path);
+    const std::string extension_id =
+        component_loader->AddOrReplace(auth_extension_path);
+
+    if (extension_id.empty()) {
+        LOG(ERROR) << "Failed to load custom Gaia auth extension given by the "
+            << switches::kAuthExtensionPath << " flag: "
+            << auth_extension_path.value();
+    }
     return;
   }
 
