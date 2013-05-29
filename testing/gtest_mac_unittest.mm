@@ -28,10 +28,10 @@ TEST(GTestMac, ExpectNSEQ) {
 TEST(GTestMac, AssertNSEQ) {
   base::mac::ScopedNSAutoreleasePool pool;
 
-  NSNumber* n1 = [NSNumber numberWithInt:42];
-  NSNumber* n2 = [NSNumber numberWithInt:42];
-  EXPECT_NE(n1, n2);
-  ASSERT_NSEQ(n1, n2);
+  NSString* s1 = [NSString stringWithUTF8String:"a"];
+  NSString* s2 = @"a";
+  EXPECT_NE(s1, s2);
+  ASSERT_NSEQ(s1, s2);
 }
 
 TEST(GTestMac, ExpectNSNE) {
