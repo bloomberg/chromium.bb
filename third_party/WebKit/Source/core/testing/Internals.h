@@ -110,7 +110,6 @@ public:
     bool hasSelectorForClassInShadow(Element* host, const String& className, ExceptionCode&);
     bool hasSelectorForAttributeInShadow(Element* host, const String& attributeName, ExceptionCode&);
     bool hasSelectorForPseudoClassInShadow(Element* host, const String& pseudoClass, ExceptionCode&);
-    unsigned short compareTreeScopePosition(const Node*, const Node*, ExceptionCode&) const;
 
     bool attached(Node*, ExceptionCode&);
 

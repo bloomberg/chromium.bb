@@ -109,7 +109,6 @@ private:
 
     // FIXME: This shouldn't happen. https://bugs.webkit.org/show_bug.cgi?id=88834
     bool isOrphan() const { return !host(); }
-    bool isActive() const;
 
     ShadowRoot* m_prev;
     ShadowRoot* m_next;

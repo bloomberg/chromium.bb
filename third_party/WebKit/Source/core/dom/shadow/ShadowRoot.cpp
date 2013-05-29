@@ -160,14 +160,6 @@ void ShadowRoot::recalcStyle(StyleChange change)
     clearChildNeedsStyleRecalc();
 }
 
-bool ShadowRoot::isActive() const
-{
-    for (ShadowRoot* shadowRoot = youngerShadowRoot(); shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot())
-        if (!ScopeContentDistribution::hasShadowElement(shadowRoot))
-            return false;
-    return true;
-}
-
 void ShadowRoot::setApplyAuthorStyles(bool value)
 {
     if (isOrphan())
@@ -177,10 +169,9 @@ void ShadowRoot::setApplyAuthorStyles(bool value)
         return;
 
     m_applyAuthorStyles = value;
-    if (!isActive())
-        return;
-
-    setNeedsStyleRecalc();
+    // FIXME: Why do we need to recalc style on all other shadow roots too?
+    if (attached())
+        host()->setNeedsStyleRecalc();
 }
 
 void ShadowRoot::setResetStyleInheritance(bool value)
@@ -192,10 +183,9 @@ void ShadowRoot::setResetStyleInheritance(bool value)
         return;
 
     m_resetStyleInheritance = value;
-    if (!isActive())
-        return;
-
-    setNeedsStyleRecalc();
+    // FIXME: Why do we need to recalc style on all other shadow roots too?
+    if (attached())
+        host()->setNeedsStyleRecalc();
 }
 
 void ShadowRoot::attach()
