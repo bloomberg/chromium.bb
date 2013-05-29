@@ -251,6 +251,23 @@ def RunGit(command):
   return RunProcess(command)
 
 
+def CheckRunGit(command):
+  """Run a git subcommand, returning its output and return code. Asserts if
+  the return code of the call is non-zero.
+
+  Args:
+    command: A list containing the args to git.
+
+  Returns:
+    A tuple of the output and return code.
+  """
+  (output, return_code) = RunGit(command)
+
+  assert not return_code, 'An error occurred while running'\
+                          ' "git %s"' % ' '.join(command)
+  return output
+
+
 def BuildWithMake(threads, targets, print_output):
   cmd = ['make', 'BUILDTYPE=Release', '-j%d' % threads] + targets
 
@@ -326,10 +343,7 @@ class GitSourceControl(SourceControl):
     """
     revision_range = '%s..%s' % (revision_range_start, revision_range_end)
     cmd = ['log', '--format=%H', '-10000', '--first-parent', revision_range]
-    (log_output, return_code) = RunGit(cmd)
-
-    assert not return_code, 'An error occurred while running'\
-                            ' "git %s"' % ' '.join(cmd)
+    log_output = CheckRunGit(cmd)
 
     revision_hash_list = log_output.split()
     revision_hash_list.append(revision_range_start)
@@ -389,18 +403,13 @@ class GitSourceControl(SourceControl):
       svn_pattern = 'git-svn-id: %s@%d' % (depot_svn, i)
       cmd = ['log', '--format=%H', '-1', '--grep', svn_pattern, 'origin/master']
 
-      (log_output, return_code) = RunGit(cmd)
+      log_output = CheckRunGit(cmd)
+      log_output = log_output.strip()
 
-      assert not return_code, 'An error occurred while running'\
-                              ' "git %s"' % ' '.join(cmd)
+      if log_output:
+        git_revision = log_output
 
-      if not return_code:
-        log_output = log_output.strip()
-
-        if log_output:
-          git_revision = log_output
-
-          break
+        break
 
     return git_revision
 
@@ -412,11 +421,7 @@ class GitSourceControl(SourceControl):
       True if the current branch on src is 'master'
     """
     cmd = ['rev-parse', '--abbrev-ref', 'HEAD']
-    (log_output, return_code) = RunGit(cmd)
-
-    assert not return_code, 'An error occurred while running'\
-                            ' "git %s"' % ' '.join(cmd)
-
+    log_output = CheckRunGit(cmd)
     log_output = log_output.strip()
 
     return log_output == "master"
@@ -433,11 +438,7 @@ class GitSourceControl(SourceControl):
 
     cmd = ['svn', 'find-rev', revision]
 
-    (output, return_code) = RunGit(cmd)
-
-    assert not return_code, 'An error occurred while running'\
-                            ' "git %s"' % ' '.join(cmd)
-
+    output = CheckRunGit(cmd)
     svn_revision = output.strip()
 
     if IsStringInt(svn_revision):
@@ -467,11 +468,8 @@ class GitSourceControl(SourceControl):
 
     for i in xrange(len(formats)):
       cmd = ['log', '--format=%s' % formats[i], '-1', revision]
-      (output, return_code) = RunGit(cmd)
+      output = CheckRunGit(cmd)
       commit_info[targets[i]] = output.rstrip()
-
-      assert not return_code, 'An error occurred while running'\
-                              ' "git %s"' % ' '.join(cmd)
 
     return commit_info
 
@@ -494,6 +492,23 @@ class GitSourceControl(SourceControl):
 
     return not RunGit(['checkout', bisect_utils.FILE_DEPS_GIT])[1]
 
+  def QueryFileRevisionHistory(self, filename, revision_start, revision_end):
+    """Returns a list of commits that modified this file.
+
+    Args:
+        filename: Name of file.
+        revision_start: Start of revision range.
+        revision_end: End of revision range.
+
+    Returns:
+        Returns a list of commits that touched this file.
+    """
+    cmd = ['log', '--format=%H', '%s^1..%s' % (revision_start, revision_end),
+           filename]
+    output = CheckRunGit(cmd)
+
+    return [o for o in output.split('\n') if o]
+
 class BisectPerformanceMetrics(object):
   """BisectPerformanceMetrics performs a bisection against a list of range
   of revisions to narrow down where performance regressions may have
@@ -507,6 +522,7 @@ class BisectPerformanceMetrics(object):
     self.src_cwd = os.getcwd()
     self.depot_cwd = {}
     self.cleanup_commands = []
+    self.warnings = []
 
     # This always starts true since the script grabs latest first.
     self.was_blink = True
@@ -1044,6 +1060,51 @@ class BisectPerformanceMetrics(object):
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepClosed()
 
+  def NudgeRevisionsIfDEPSChange(self, bad_revision, good_revision):
+    """Checks to see if changes to DEPS file occurred, and that the revision
+    range also includes the change to .DEPS.git. If it doesn't, attempts to
+    expand the revision range to include it.
+
+    Args:
+        bad_rev: First known bad revision.
+        good_revision: Last known good revision.
+
+    Returns:
+        A tuple with the new bad and good revisions.
+    """
+    if self.source_control.IsGit():
+      changes_to_deps = self.source_control.QueryFileRevisionHistory(
+          'DEPS', good_revision, bad_revision)
+
+      if changes_to_deps:
+        # DEPS file was changed, search from the oldest change to DEPS file to
+        # bad_revision to see if there are matching .DEPS.git changes.
+        oldest_deps_change = changes_to_deps[-1]
+        changes_to_gitdeps = self.source_control.QueryFileRevisionHistory(
+            bisect_utils.FILE_DEPS_GIT, oldest_deps_change, bad_revision)
+
+        if len(changes_to_deps) != len(changes_to_gitdeps):
+          # Grab the timestamp of the last DEPS change
+          cmd = ['log', '--format=%ct', '-1', changes_to_deps[0]]
+          output = CheckRunGit(cmd)
+          commit_time = int(output)
+
+          # Try looking for a commit that touches the .DEPS.git file in the
+          # next 15 minutes after the DEPS file change.
+          cmd = ['log', '--format=%H', '-1',
+              '--before=%d' % (commit_time + 900), '--after=%d' % commit_time,
+              'origin/master', bisect_utils.FILE_DEPS_GIT]
+          output = CheckRunGit(cmd)
+          output = output.strip()
+          if output:
+            self.warnings.append('Detected change to DEPS and modified '
+                'revision range to include change to .DEPS.git')
+            return (output, good_revision)
+          else:
+            self.warnings.append('Detected change to DEPS but couldn\'t find '
+                'matching change to .DEPS.git')
+    return (bad_revision, good_revision)
+
   def Run(self, command_to_run, bad_revision_in, good_revision_in, metric):
     """Given known good and bad revisions, run a binary search on all
     intermediate revisions to determine the CL where the performance regression
@@ -1104,6 +1165,9 @@ class BisectPerformanceMetrics(object):
     if good_revision is None:
       results['error'] = 'Could\'t resolve [%s] to SHA1.' % (good_revision_in,)
       return results
+
+    (bad_revision, good_revision) = self.NudgeRevisionsIfDEPSChange(
+        bad_revision, good_revision)
 
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepStart('Gathering Revisions')
@@ -1380,13 +1444,11 @@ class BisectPerformanceMetrics(object):
         deviations = math.fabs(bad_mean - good_mean) / good_std_dev
 
         if deviations < 1.5:
-          print 'Warning: Regression was less than 1.5 standard deviations '\
-                'from "good" value. Results may not be accurate.'
-          print
+          self.warnings.append('Regression was less than 1.5 standard '
+            'deviations from "good" value. Results may not be accurate.')
       elif self.opts.repeat_test_count == 1:
-        print 'Warning: Tests were only set to run once. This may be '\
-              'insufficient to get meaningful results.'
-        print
+        self.warnings.append('Tests were only set to run once. This '
+            'may be insufficient to get meaningful results.')
 
       # Check for any other possible regression ranges
       prev_revision_data = revision_data_sorted[0][1]
@@ -1446,6 +1508,14 @@ class BisectPerformanceMetrics(object):
           print '  %8s  %s' % (
               current_data['depot'], current_id)
           print
+
+      if self.warnings:
+        print
+        print 'The following warnings were generated:'
+        print
+        for w in self.warnings:
+          print '  - %s' % w
+        print
 
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepClosed()
