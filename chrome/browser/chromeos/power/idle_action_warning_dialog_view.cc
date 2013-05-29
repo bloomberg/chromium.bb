@@ -69,9 +69,8 @@ IdleActionWarningDialogView::IdleActionWarningDialogView() : closing_(false) {
   AddChildView(content);
   SetLayoutManager(new views::FillLayout());
 
-  views::Widget::CreateWindowWithContext(this,
-                                         ash::Shell::GetPrimaryRootWindow());
-  GetWidget()->Show();
+  views::DialogDelegate::CreateDialogWidget(
+      this, ash::Shell::GetPrimaryRootWindow(), NULL)->Show();
 }
 
 void IdleActionWarningDialogView::Close() {
