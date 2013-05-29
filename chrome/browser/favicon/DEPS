@@ -3,6 +3,7 @@
   # three basic rules followed by temporary exceptions.  Please don't
   # add to the list of exceptions!
   "-chrome/browser",
+  "+chrome/browser/api",
   "+chrome/browser/common",
   "+chrome/browser/favicon",
 
