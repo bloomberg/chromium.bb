@@ -649,7 +649,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitRegionBreakAfter:
     case CSSPropertyWebkitRegionBreakBefore:
     case CSSPropertyWebkitRegionBreakInside:
-    case CSSPropertyWebkitWrap:
     case CSSPropertyWebkitWrapFlow:
     case CSSPropertyWebkitShapeMargin:
     case CSSPropertyWebkitShapePadding:

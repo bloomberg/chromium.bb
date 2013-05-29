@@ -405,7 +405,7 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitShapePadding: return 349;
     case CSSPropertyWebkitWrapFlow: return 350;
     case CSSPropertyWebkitWrapThrough: return 351;
-    case CSSPropertyWebkitWrap: return 352;
+    // CSSPropertyWebkitWrap was 352.
 #if defined(ENABLE_TOUCH_EVENTS) && ENABLE_TOUCH_EVENTS
     case CSSPropertyWebkitTapHighlightColor: return 353;
 #endif

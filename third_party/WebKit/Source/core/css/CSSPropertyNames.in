@@ -396,7 +396,6 @@ z-index
 -webkit-shape-padding
 -webkit-wrap-flow
 -webkit-wrap-through
--webkit-wrap
 max-zoom condition=CSS_DEVICE_ADAPTATION
 min-zoom condition=CSS_DEVICE_ADAPTATION
 orientation condition=CSS_DEVICE_ADAPTATION

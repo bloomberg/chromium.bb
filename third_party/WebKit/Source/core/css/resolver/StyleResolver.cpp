@@ -2682,7 +2682,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWebkitTextStroke:
     case CSSPropertyWebkitTransition:
     case CSSPropertyWebkitTransformOrigin:
-    case CSSPropertyWebkitWrap:
         ASSERT(isExpandedShorthand(id));
         ASSERT_NOT_REACHED();
         break;

@@ -55,7 +55,6 @@ static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
     };
     setCSSPropertiesEnabled(regionProperites, WTF_ARRAY_LENGTH(regionProperites), RuntimeEnabledFeatures::cssRegionsEnabled());
     CSSPropertyID exclusionProperties[] = {
-        CSSPropertyWebkitWrap,
         CSSPropertyWebkitWrapFlow,
         CSSPropertyWebkitShapeMargin,
         CSSPropertyWebkitShapePadding,

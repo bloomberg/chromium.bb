@@ -201,11 +201,6 @@ String StylePropertySerializer::asText() const
         case CSSPropertyWebkitTransitionDelay:
             shorthandPropertyID = CSSPropertyWebkitTransition;
             break;
-        case CSSPropertyWebkitWrapFlow:
-        case CSSPropertyWebkitShapeMargin:
-        case CSSPropertyWebkitShapePadding:
-            shorthandPropertyID = CSSPropertyWebkitWrap;
-            break;
         default:
             break;
         }
@@ -381,8 +376,6 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
         return getLayeredShorthandValue(webkitTransitionShorthand());
     case CSSPropertyWebkitAnimation:
         return getLayeredShorthandValue(webkitAnimationShorthand());
-    case CSSPropertyWebkitWrap:
-        return getShorthandValue(webkitWrapShorthand());
     case CSSPropertyMarker: {
         RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyMarkerStart);
         if (value)

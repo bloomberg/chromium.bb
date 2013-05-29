@@ -102,7 +102,6 @@ const StylePropertyShorthand& webkitTextEmphasisShorthand();
 const StylePropertyShorthand& webkitTextStrokeShorthand();
 const StylePropertyShorthand& webkitTransitionShorthand();
 const StylePropertyShorthand& webkitTransformOriginShorthand();
-const StylePropertyShorthand& webkitWrapShorthand();
 
 // Returns an empty list if the property is not a shorthand
 const StylePropertyShorthand& shorthandForProperty(CSSPropertyID);

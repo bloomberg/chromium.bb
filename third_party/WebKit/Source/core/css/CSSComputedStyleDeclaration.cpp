@@ -2740,7 +2740,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitTransformOriginX:
         case CSSPropertyWebkitTransformOriginY:
         case CSSPropertyWebkitTransformOriginZ:
-        case CSSPropertyWebkitWrap:
             break;
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
