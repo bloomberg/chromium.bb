@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "chrome/common/instant_restricted_id_cache.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_types.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -66,6 +67,7 @@ class SearchBox : public content::RenderViewObserver,
   bool query_is_restricted() const { return query_is_restricted_; }
   size_t selection_start() const { return selection_start_; }
   size_t selection_end() const { return selection_end_; }
+  bool is_focused() const { return is_focused_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
   bool display_instant_results() const { return display_instant_results_; }
   const string16& omnibox_font() const { return omnibox_font_; }
@@ -135,7 +137,8 @@ class SearchBox : public content::RenderViewObserver,
                          bool verbatim,
                          size_t selection_start,
                          size_t selection_end);
-  void OnKeyCaptureChange(bool is_key_capture_enabled);
+  void OnFocusChanged(OmniboxFocusState new_focus_state,
+                      OmniboxFocusChangeReason reason);
   void OnSetDisplayInstantResults(bool display_instant_results);
   void OnThemeChanged(const ThemeBackgroundInfo& theme_info);
   void OnThemeAreaHeightChanged(int height);
@@ -160,6 +163,7 @@ class SearchBox : public content::RenderViewObserver,
   size_t selection_end_;
   int start_margin_;
   gfx::Rect popup_bounds_;
+  bool is_focused_;
   bool is_key_capture_enabled_;
   ThemeBackgroundInfo theme_info_;
   bool display_instant_results_;

@@ -278,6 +278,7 @@ InstantController::InstantController(BrowserInstantController* browser,
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       last_match_was_search_(false),
       omnibox_focus_state_(OMNIBOX_FOCUS_NONE),
+      omnibox_focus_change_reason_(OMNIBOX_FOCUS_CHANGE_EXPLICIT),
       omnibox_bounds_(-1, -1, 0, 0),
       allow_overlay_to_show_search_suggestions_(false),
       weak_ptr_factory_(this) {
@@ -966,22 +967,11 @@ void InstantController::OmniboxFocusChanged(
   if (!extended_enabled() && !instant_enabled_)
     return;
 
-  // Tell the page if the key capture mode changed unless the focus state
-  // changed because of TYPING. This is because in that case, the browser hasn't
-  // really stopped capturing key strokes.
-  //
-  // (More practically, if we don't do this check, the page would receive
-  // onkeycapturechange before the corresponding onchange, and the page would
-  // have no way of telling whether the keycapturechange happened because of
-  // some actual user action or just because they started typing.)
-  if (extended_enabled() && GetOverlayContents() &&
-      reason != OMNIBOX_FOCUS_CHANGE_TYPING) {
-    const bool is_key_capture_enabled =
-        omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE;
+  if (extended_enabled()) {
     if (overlay_)
-      overlay_->KeyCaptureChanged(is_key_capture_enabled);
+      overlay_->FocusChanged(omnibox_focus_state_, reason);
     if (instant_tab_)
-      instant_tab_->KeyCaptureChanged(is_key_capture_enabled);
+      instant_tab_->FocusChanged(omnibox_focus_state_, reason);
   }
 
   if (state == OMNIBOX_FOCUS_VISIBLE && old_focus_state == OMNIBOX_FOCUS_NONE) {
@@ -1201,8 +1191,7 @@ void InstantController::InstantPageRenderViewCreated(
   // Ensure the searchbox API has the correct initial state.
   if (IsContentsFrom(overlay(), contents)) {
     overlay_->SetDisplayInstantResults(instant_enabled_);
-    overlay_->KeyCaptureChanged(
-        omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
+    overlay_->FocusChanged(omnibox_focus_state_, omnibox_focus_change_reason_);
     overlay_->SetOmniboxBounds(omnibox_bounds_);
     overlay_->InitializeFonts();
   } else if (IsContentsFrom(ntp(), contents)) {
@@ -1618,8 +1607,8 @@ void InstantController::UpdateInfoForInstantTab() {
     instant_tab_->SetOmniboxBounds(omnibox_bounds_);
     instant_tab_->InitializeFonts();
     StartListeningToMostVisitedChanges();
-    instant_tab_->KeyCaptureChanged(
-        omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
+    instant_tab_->FocusChanged(omnibox_focus_state_,
+        omnibox_focus_change_reason_);
   }
 }
 

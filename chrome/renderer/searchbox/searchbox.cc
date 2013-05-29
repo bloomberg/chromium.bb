@@ -34,6 +34,7 @@ SearchBox::SearchBox(content::RenderView* render_view)
       selection_start_(0),
       selection_end_(0),
       start_margin_(0),
+      is_focused_(false),
       is_key_capture_enabled_(false),
       display_instant_results_(false),
       omnibox_font_size_(0),
@@ -172,8 +173,7 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnCancelSelection)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
                         OnSetDisplayInstantResults)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxKeyCaptureChanged,
-                        OnKeyCaptureChange)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFocusChanged, OnFocusChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeChanged,
                         OnThemeChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFontInformation,
@@ -324,12 +324,32 @@ void SearchBox::OnCancelSelection(const string16& query,
   }
 }
 
-void SearchBox::OnKeyCaptureChange(bool is_key_capture_enabled) {
-  if (is_key_capture_enabled != is_key_capture_enabled_ &&
-      render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    is_key_capture_enabled_ = is_key_capture_enabled;
-    DVLOG(1) << render_view() << " OnKeyCaptureChange";
-    extensions_v8::SearchBoxExtension::DispatchKeyCaptureChange(
+void SearchBox::OnFocusChanged(OmniboxFocusState new_focus_state,
+                               OmniboxFocusChangeReason reason) {
+  bool key_capture_enabled = new_focus_state == OMNIBOX_FOCUS_INVISIBLE;
+  if (key_capture_enabled != is_key_capture_enabled_) {
+    // Tell the page if the key capture mode changed unless the focus state
+    // changed because of TYPING. This is because in that case, the browser
+    // hasn't really stopped capturing key strokes.
+    //
+    // (More practically, if we don't do this check, the page would receive
+    // onkeycapturechange before the corresponding onchange, and the page would
+    // have no way of telling whether the keycapturechange happened because of
+    // some actual user action or just because they started typing.)
+    if (reason != OMNIBOX_FOCUS_CHANGE_TYPING &&
+        render_view()->GetWebView() &&
+        render_view()->GetWebView()->mainFrame()) {
+      is_key_capture_enabled_ = key_capture_enabled;
+      DVLOG(1) << render_view() << " OnKeyCaptureChange";
+      extensions_v8::SearchBoxExtension::DispatchKeyCaptureChange(
+          render_view()->GetWebView()->mainFrame());
+    }
+  }
+  bool is_focused = new_focus_state == OMNIBOX_FOCUS_VISIBLE;
+  if (is_focused != is_focused_) {
+    is_focused_ = is_focused;
+    DVLOG(1) << render_view() << " OnFocusChange";
+    extensions_v8::SearchBoxExtension::DispatchFocusChange(
         render_view()->GetWebView()->mainFrame());
   }
 }
@@ -370,6 +390,7 @@ void SearchBox::Reset() {
   selection_end_ = 0;
   popup_bounds_ = gfx::Rect();
   start_margin_ = 0;
+  is_focused_ = false;
   is_key_capture_enabled_ = false;
   theme_info_ = ThemeBackgroundInfo();
   // Don't reset display_instant_results_ to prevent clearing it on committed

@@ -34,21 +34,6 @@ class Image;
 class Rect;
 }
 
-// Reasons why the Omnibox focus state could change.
-enum OmniboxFocusChangeReason {
-  // Includes any explicit changes to focus. (e.g. user clicking to change
-  // focus, user tabbing to change focus, any explicit calls to SetFocus,
-  // etc.)
-  OMNIBOX_FOCUS_CHANGE_EXPLICIT,
-
-  // Focus changed to restore state from a tab the user switched to.
-  OMNIBOX_FOCUS_CHANGE_TAB_SWITCH,
-
-  // Focus changed because user started typing. This only happens when focus
-  // state is INVISIBLE (and this results in a change to VISIBLE).
-  OMNIBOX_FOCUS_CHANGE_TYPING,
-};
-
 // Reasons why the Omnibox could change into keyword mode.
 // These numeric values are used in UMA logs; do not change them.
 enum EnteredKeywordModeMethod {

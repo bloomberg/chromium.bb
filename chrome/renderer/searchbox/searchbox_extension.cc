@@ -448,6 +448,17 @@ static const char kDispatchBarsHiddenEventScript[] =
     "  true;"
     "}";
 
+static const char kDispatchFocusChangedScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.searchBox &&"
+    "    window.chrome.embeddedSearch.searchBox.onfocuschange &&"
+    "    typeof window.chrome.embeddedSearch.searchBox.onfocuschange =="
+    "         'function') {"
+    "  window.chrome.embeddedSearch.searchBox.onfocuschange();"
+    "  true;"
+    "}";
+
 // ----------------------------------------------------------------------------
 
 class SearchBoxExtensionWrapper : public v8::Extension {
@@ -592,6 +603,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static v8::Handle<v8::Value> GetMostVisitedItemData(
     const v8::Arguments& args);
 
+  // Gets whether the omnibox has focus or not.
+  static v8::Handle<v8::Value> IsFocused(const v8::Arguments& args);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
 };
@@ -675,6 +689,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetSuggestionData);
   if (name->Equals(v8::String::New("GetMostVisitedItemData")))
     return v8::FunctionTemplate::New(GetMostVisitedItemData);
+  if (name->Equals(v8::String::New("IsFocused")))
+    return v8::FunctionTemplate::New(IsFocused);
   return v8::Handle<v8::FunctionTemplate>();
 }
 
@@ -1391,6 +1407,17 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItemData(
 }
 
 // static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::IsFocused(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  bool is_focused = SearchBox::Get(render_view)->is_focused();
+  DVLOG(1) << render_view << " IsFocused: " << is_focused;
+  return v8::Boolean::New(is_focused);
+}
+
+// static
 void SearchBoxExtension::DispatchChange(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchChangeEventScript);
 }
@@ -1458,6 +1485,11 @@ void SearchBoxExtension::DispatchMostVisitedChanged(
 // static
 void SearchBoxExtension::DispatchBarsHidden(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchBarsHiddenEventScript);
+}
+
+// static
+void SearchBoxExtension::DispatchFocusChange(WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchFocusChangedScript);
 }
 
 }  // namespace extensions_v8

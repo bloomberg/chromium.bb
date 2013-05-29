@@ -118,7 +118,9 @@ class InstantExtendedTest : public InProcessBrowserTest,
         on_native_suggestions_calls_(0),
         on_change_calls_(0),
         submit_count_(0),
-        on_esc_key_press_event_calls_(0) {
+        on_esc_key_press_event_calls_(0),
+        on_focus_changed_calls_(0),
+        is_focused_(false) {
   }
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -182,7 +184,11 @@ class InstantExtendedTest : public InProcessBrowserTest,
            GetStringFromJS(contents, "apiHandle.value",
                            &query_value_) &&
            GetIntFromJS(contents, "onEscKeyPressedCalls",
-                        &on_esc_key_press_event_calls_);
+                        &on_esc_key_press_event_calls_) &&
+           GetIntFromJS(contents, "onFocusChangedCalls",
+                       &on_focus_changed_calls_) &&
+           GetBoolFromJS(contents, "isFocused",
+                         &is_focused_);
   }
 
   TemplateURL* GetDefaultSearchProviderTemplateURL() {
@@ -234,6 +240,8 @@ class InstantExtendedTest : public InProcessBrowserTest,
   int submit_count_;
   int on_esc_key_press_event_calls_;
   std::string query_value_;
+  int on_focus_changed_calls_;
+  bool is_focused_;
 };
 
 // Test class used to verify chrome-search: scheme and access policy from the
@@ -1967,6 +1975,63 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, EscapeClearsOmnibox) {
   EXPECT_LT(0, on_change_calls_);
   EXPECT_EQ(0, submit_count_);
   EXPECT_LT(0, on_esc_key_press_event_calls_);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, FocusApiRespondsToFocusChange) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  EXPECT_FALSE(is_focused_);
+  EXPECT_EQ(0, on_focus_changed_calls_);
+
+  // Focus the omnibox.
+  FocusOmniboxAndWaitForInstantOverlaySupport();
+  ASSERT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_TRUE(is_focused_);
+  EXPECT_EQ(1, on_focus_changed_calls_);
+
+  // Now unfocus the omnibox.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+  ASSERT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_FALSE(is_focused_);
+  EXPECT_EQ(2, on_focus_changed_calls_);
+
+  // Focus the omnibox again.
+  // The first focus may have worked only due to initial-state anomalies.
+  FocusOmnibox();
+  ASSERT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_TRUE(is_focused_);
+  EXPECT_EQ(3, on_focus_changed_calls_);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, FocusApiIgnoresRedundantFocus) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  EXPECT_FALSE(is_focused_);
+  EXPECT_EQ(0, on_focus_changed_calls_);
+
+  // Focus the Omnibox.
+  FocusOmniboxAndWaitForInstantOverlaySupport();
+  ASSERT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_TRUE(is_focused_);
+  EXPECT_EQ(1, on_focus_changed_calls_);
+
+  // When we focus the omnibox again, nothing should change.
+  FocusOmnibox();
+  ASSERT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_TRUE(is_focused_);
+  EXPECT_EQ(1, on_focus_changed_calls_);
+
+  // Now unfocus the omnibox.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+  ASSERT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_FALSE(is_focused_);
+  EXPECT_EQ(2, on_focus_changed_calls_);
+
+  // When we unfocus again, nothing should change.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+  ASSERT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_FALSE(is_focused_);
+  EXPECT_EQ(2, on_focus_changed_calls_);
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OnDefaultSearchProviderChanged) {

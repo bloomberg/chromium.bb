@@ -94,6 +94,7 @@ if (!chrome.embeddedSearch) {
       native function GetAutocompleteResults();
       native function GetDisplayInstantResults();
       native function GetFontSize();
+      native function IsFocused();
       native function IsKeyCaptureEnabled();
       native function SetQuery();
       native function SetQueryFromAutocompleteResult();
@@ -228,6 +229,7 @@ if (!chrome.embeddedSearch) {
       this.__defineGetter__('startMargin', GetStartMargin);
       this.__defineGetter__('rtl', GetRightToLeft);
       this.__defineGetter__('nativeSuggestions', GetAutocompleteResultsWrapper);
+      this.__defineGetter__('isFocused', IsFocused);
       this.__defineGetter__('isKeyCaptureEnabled', IsKeyCaptureEnabled);
       this.__defineGetter__('displayInstantResults', GetDisplayInstantResults);
       this.__defineGetter__('font', GetFont);
@@ -294,6 +296,7 @@ if (!chrome.embeddedSearch) {
       this.onmarginchange = null;
       this.onnativesuggestions = null;
       this.onbarshidden = null;
+      this.onfocuschange = null;
 
       // DEPRECATED. These methods are from the legacy searchbox API.
       // TODO(jered): Delete these.

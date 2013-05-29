@@ -112,9 +112,9 @@ void InstantPage::SetDisplayInstantResults(bool display_instant_results) {
       routing_id(), display_instant_results));
 }
 
-void InstantPage::KeyCaptureChanged(bool is_key_capture_enabled) {
-  Send(new ChromeViewMsg_SearchBoxKeyCaptureChanged(
-      routing_id(), is_key_capture_enabled));
+void InstantPage::FocusChanged(OmniboxFocusState state,
+                               OmniboxFocusChangeReason reason) {
+  Send(new ChromeViewMsg_SearchBoxFocusChanged(routing_id(), state, reason));
 }
 
 void InstantPage::SendMostVisitedItems(

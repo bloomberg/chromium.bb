@@ -123,6 +123,7 @@ IPC_ENUM_TRAITS(ChromeViewHostMsg_GetPluginInfo_Status::Value)
 IPC_ENUM_TRAITS(InstantCompleteBehavior)
 IPC_ENUM_TRAITS(InstantSizeUnits)
 IPC_ENUM_TRAITS(InstantSuggestionType)
+IPC_ENUM_TRAITS(OmniboxFocusChangeReason)
 IPC_ENUM_TRAITS(OmniboxFocusState)
 IPC_ENUM_TRAITS(search_provider::OSDDType)
 IPC_ENUM_TRAITS(search_provider::InstallState)
@@ -360,8 +361,9 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFontInformation,
                     string16 /* omnibox_font */,
                     size_t /* omnibox_font_size */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxKeyCaptureChanged,
-                    bool /* is_key_capture_enabled */)
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFocusChanged,
+                    OmniboxFocusState /* new_focus_state */,
+                    OmniboxFocusChangeReason /* reason */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                     std::vector<InstantMostVisitedItemIDPair> /* items */)

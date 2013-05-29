@@ -505,6 +505,9 @@ class InstantController : public InstantPage::Delegate,
   // Omnibox focus state.
   OmniboxFocusState omnibox_focus_state_;
 
+  // The reason for the most recent omnibox focus change.
+  OmniboxFocusChangeReason omnibox_focus_change_reason_;
+
   // The search model mode for the active tab.
   SearchMode search_mode_;
 

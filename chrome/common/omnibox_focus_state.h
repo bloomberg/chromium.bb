@@ -20,4 +20,19 @@ enum OmniboxFocusState {
   OMNIBOX_FOCUS_INVISIBLE,
 };
 
+// Reasons why the Omnibox focus state could change.
+enum OmniboxFocusChangeReason {
+  // Includes any explicit changes to focus. (e.g. user clicking to change
+  // focus, user tabbing to change focus, any explicit calls to SetFocus,
+  // etc.)
+  OMNIBOX_FOCUS_CHANGE_EXPLICIT,
+
+  // Focus changed to restore state from a tab the user switched to.
+  OMNIBOX_FOCUS_CHANGE_TAB_SWITCH,
+
+  // Focus changed because user started typing. This only happens when focus
+  // state is INVISIBLE (and this results in a change to VISIBLE).
+  OMNIBOX_FOCUS_CHANGE_TYPING,
+};
+
 #endif  // CHROME_COMMON_OMNIBOX_FOCUS_STATE_H_
