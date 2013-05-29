@@ -842,7 +842,6 @@ bool ChromeRenderViewObserver::HasRefreshMetaTag(WebFrame* frame) {
 
   const WebString tag_name(ASCIIToUTF16("meta"));
   const WebString attribute_name(ASCIIToUTF16("http-equiv"));
-  const WebString attribute_value(ASCIIToUTF16("refresh"));
 
   WebNodeList children = head.childNodes();
   for (size_t i = 0; i < children.length(); ++i) {
@@ -853,7 +852,7 @@ bool ChromeRenderViewObserver::HasRefreshMetaTag(WebFrame* frame) {
     if (!element.hasTagName(tag_name))
       continue;
     WebString value = element.getAttribute(attribute_name);
-    if (value.isNull() || value != attribute_value)
+    if (value.isNull() || !LowerCaseEqualsASCII(value, "refresh"))
       continue;
     return true;
   }

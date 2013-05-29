@@ -31,6 +31,8 @@ const char kNonSecurePrefix[] = "files/translate/";
 const char kSecurePrefix[] = "files/";
 const char kFrenchTestPath[] = "fr_test.html";
 const char kRefreshMetaTagTestPath[] = "refresh_meta_tag.html";
+const char kRefreshMetaTagCaseInsensitiveTestPath[] =
+    "refresh_meta_tag_casei.html";
 const char kRefreshMetaTagAtOnloadTestPath[] =
     "refresh_meta_tag_at_onload.html";
 const char kUpdateLocationTestPath[] = "update_location.html";
@@ -83,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, Translate) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   ASSERT_TRUE(infobar_service);
-  ASSERT_EQ(0U, infobar_service->infobar_count());
+  EXPECT_EQ(0U, infobar_service->infobar_count());
   content::WindowedNotificationObserver infobar(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
       content::NotificationService::AllSources());
@@ -135,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, Translate) {
 
   // Wait for the page title is changed after the test finished.
   const string16 result = watcher.WaitAndGetTitle();
-  EXPECT_TRUE(EqualsASCII(result, "PASS"));
+  EXPECT_EQ("PASS", UTF16ToASCII(result));
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
@@ -149,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   ASSERT_TRUE(infobar_service);
-  ASSERT_EQ(0U, infobar_service->infobar_count());
+  EXPECT_EQ(0U, infobar_service->infobar_count());
 
   // Setup page title observer.
   content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
@@ -162,10 +164,41 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
 
   // Wait for the page title is changed after the test finished.
   const string16 result = watcher.WaitAndGetTitle();
-  EXPECT_TRUE(EqualsASCII(result, "PASS"));
+  EXPECT_EQ("PASS", UTF16ToASCII(result));
 
   // Check there is not infobar.
-  ASSERT_EQ(0U, infobar_service->infobar_count());
+  EXPECT_EQ(0U, infobar_service->infobar_count());
+}
+
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
+                       IgnoreRefreshMetaTagInCaseInsensitive) {
+  ASSERT_TRUE(test_server()->Start());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+
+  // Check infobar count.
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  ASSERT_TRUE(infobar_service);
+  EXPECT_EQ(0U, infobar_service->infobar_count());
+
+  // Setup page title observer.
+  content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+
+  // Visit a test page.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetNonSecureURL(kRefreshMetaTagCaseInsensitiveTestPath));
+
+  // Wait for the page title is changed after the test finished.
+  const string16 result = watcher.WaitAndGetTitle();
+  EXPECT_EQ("PASS", UTF16ToASCII(result));
+
+  // Check there is not infobar.
+  EXPECT_EQ(0U, infobar_service->infobar_count());
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
@@ -179,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   ASSERT_TRUE(infobar_service);
-  ASSERT_EQ(0U, infobar_service->infobar_count());
+  EXPECT_EQ(0U, infobar_service->infobar_count());
 
   // Setup page title observer.
   content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
@@ -192,10 +225,10 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
 
   // Wait for the page title is changed after the test finished.
   const string16 result = watcher.WaitAndGetTitle();
-  EXPECT_TRUE(EqualsASCII(result, "PASS"));
+  EXPECT_EQ("PASS", UTF16ToASCII(result));
 
   // Check there is not infobar.
-  ASSERT_EQ(0U, infobar_service->infobar_count());
+  EXPECT_EQ(0U, infobar_service->infobar_count());
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
@@ -209,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   ASSERT_TRUE(infobar_service);
-  ASSERT_EQ(0U, infobar_service->infobar_count());
+  EXPECT_EQ(0U, infobar_service->infobar_count());
 
   // Setup page title observer.
   content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
@@ -222,10 +255,10 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
 
   // Wait for the page title is changed after the test finished.
   const string16 result = watcher.WaitAndGetTitle();
-  EXPECT_TRUE(EqualsASCII(result, "PASS"));
+  EXPECT_EQ("PASS", UTF16ToASCII(result));
 
   // Check there is not infobar.
-  ASSERT_EQ(0U, infobar_service->infobar_count());
+  EXPECT_EQ(0U, infobar_service->infobar_count());
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
@@ -239,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   ASSERT_TRUE(infobar_service);
-  ASSERT_EQ(0U, infobar_service->infobar_count());
+  EXPECT_EQ(0U, infobar_service->infobar_count());
 
   // Setup page title observer.
   content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
@@ -252,10 +285,10 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
 
   // Wait for the page title is changed after the test finished.
   const string16 result = watcher.WaitAndGetTitle();
-  EXPECT_TRUE(EqualsASCII(result, "PASS"));
+  EXPECT_EQ("PASS", UTF16ToASCII(result));
 
   // Check there is not infobar.
-  ASSERT_EQ(0U, infobar_service->infobar_count());
+  EXPECT_EQ(0U, infobar_service->infobar_count());
 }
 
 #endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_BROWSERTEST_H_
