@@ -257,6 +257,7 @@ TEST_F(ComponentLoaderTest, AddOrReplace) {
   base::FilePath known_extension = GetBasePath()
       .AppendASCII("override_component_extension");
   base::FilePath unknow_extension = extension_path_;
+  base::FilePath invalid_extension = GetBasePath().AppendASCII("bad");
 
   // Replace a default component extension.
   component_loader_.AddOrReplace(known_extension);
@@ -278,6 +279,10 @@ TEST_F(ComponentLoaderTest, AddOrReplace) {
   component_loader_.AddOrReplace(known_extension);
   EXPECT_EQ(default_count + 1, extension_service_.extensions()->size());
   EXPECT_EQ(1u, extension_service_.unloaded_count());
+
+  // Add an invalid component extension.
+  std::string extension_id = component_loader_.AddOrReplace(invalid_extension);
+  EXPECT_TRUE(extension_id.empty());
 }
 
 }  // namespace extensions

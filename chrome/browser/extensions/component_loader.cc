@@ -155,7 +155,7 @@ std::string ComponentLoader::AddOrReplace(const base::FilePath& path) {
   if (!manifest) {
     LOG(ERROR) << "Could not load extension from '" <<
                   absolute_path.value() << "'. " << error;
-    return NULL;
+    return std::string();
   }
   Remove(GenerateId(manifest.get(), absolute_path));
 
