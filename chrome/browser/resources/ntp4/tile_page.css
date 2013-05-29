@@ -161,7 +161,6 @@
   }
 
   90% {
-    -webkit-animation-timing-function: default;
     -webkit-transform: scale(0.3, 0.02);
     opacity: 0.7;
   }
