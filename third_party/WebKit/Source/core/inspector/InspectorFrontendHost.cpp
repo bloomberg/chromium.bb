@@ -39,6 +39,7 @@
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorFrontendClient.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/TextResourceDecoder.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/Frame.h"
@@ -268,7 +269,14 @@ String InspectorFrontendHost::loadResourceSynchronously(const String& url)
     ResourceError error;
     ResourceResponse response;
     m_frontendPage->mainFrame()->loader()->loadResourceSynchronously(request, DoNotAllowStoredCredentials, error, response, data);
-    return String::fromUTF8(data.data(), data.size());
+    WTF::TextEncoding textEncoding(response.textEncodingName());
+    bool useDetector = false;
+    if (!textEncoding.isValid()) {
+        textEncoding = UTF8Encoding();
+        useDetector = true;
+    }
+    RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("text/plain", textEncoding, useDetector);
+    return decoder->decode(data.data(), data.size()) + decoder->flush();
 }
 
 String InspectorFrontendHost::getSelectionBackgroundColor()
