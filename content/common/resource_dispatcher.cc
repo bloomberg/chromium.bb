@@ -257,7 +257,8 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
 ResourceDispatcher::ResourceDispatcher(IPC::Sender* sender)
     : message_sender_(sender),
       weak_factory_(this),
-      delegate_(NULL) {
+      delegate_(NULL),
+      io_timestamp_(base::TimeTicks()) {
 }
 
 ResourceDispatcher::~ResourceDispatcher() {
@@ -334,7 +335,7 @@ void ResourceDispatcher::OnReceivedResponse(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
-  request_info->response_start = base::TimeTicks::Now();
+  request_info->response_start = ConsumeIOTimestamp();
 
   if (delegate_) {
     ResourceLoaderBridge::Peer* new_peer =
@@ -447,7 +448,7 @@ void ResourceDispatcher::OnReceivedRedirect(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
-  request_info->response_start = base::TimeTicks::Now();
+  request_info->response_start = ConsumeIOTimestamp();
 
   int32 routing_id = message.routing_id();
   bool has_new_first_party_for_cookies = false;
@@ -491,7 +492,7 @@ void ResourceDispatcher::OnRequestComplete(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
-  request_info->completion_time = base::TimeTicks::Now();
+  request_info->completion_time = ConsumeIOTimestamp();
   request_info->buffer.reset();
   request_info->buffer_size = 0;
 
@@ -700,6 +701,14 @@ base::TimeTicks ResourceDispatcher::ToRendererCompletionTime(
                           request_info.response_start.ToInternalValue());
   result = std::min(result, request_info.completion_time.ToInternalValue());
   return base::TimeTicks::FromInternalValue(result);
+}
+
+base::TimeTicks ResourceDispatcher::ConsumeIOTimestamp() {
+  if (io_timestamp_ == base::TimeTicks())
+    return base::TimeTicks::Now();
+  base::TimeTicks result = io_timestamp_;
+  io_timestamp_ = base::TimeTicks();
+  return result;
 }
 
 // static

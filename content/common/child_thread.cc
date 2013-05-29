@@ -15,6 +15,7 @@
 #include "content/common/child_histogram_message_filter.h"
 #include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/child_resource_message_filter.h"
 #include "content/common/fileapi/file_system_dispatcher.h"
 #include "content/common/quota_dispatcher.h"
 #include "content/common/resource_dispatcher.h"
@@ -119,11 +120,14 @@ void ChildThread::Init() {
       new ThreadSafeSender(base::MessageLoopProxy::current(),
                            sync_message_filter_);
   histogram_message_filter_ = new ChildHistogramMessageFilter();
+  resource_message_filter_ =
+      new ChildResourceMessageFilter(resource_dispatcher());
 
   channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(sync_message_filter_.get());
   channel_->AddFilter(new tracing::ChildTraceMessageFilter(
       ChildProcess::current()->io_message_loop_proxy()));
+  channel_->AddFilter(resource_message_filter_.get());
 
 #if defined(OS_POSIX)
   // Check that --process-type is specified so we don't do this in unit tests

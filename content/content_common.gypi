@@ -140,6 +140,8 @@
     'common/child_process_sandbox_support_impl_linux.cc',
     'common/child_process_sandbox_support_impl_linux.h',
     'common/child_process_sandbox_support_impl_shm_linux.cc',
+    'common/child_resource_message_filter.cc',
+    'common/child_resource_message_filter.h',
     'common/child_thread.cc',
     'common/child_thread.h',
     'common/clipboard_messages.cc',

@@ -71,6 +71,11 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     delegate_ = delegate;
   }
 
+  // Remembers IO thread timestamp for next resource message.
+  void set_io_timestamp(base::TimeTicks io_timestamp) {
+    io_timestamp_ = io_timestamp;
+  }
+
  private:
   friend class ResourceDispatcherTest;
 
@@ -157,6 +162,11 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       const PendingRequestInfo& request_info,
       const base::TimeTicks& browser_completion_time) const;
 
+  // Returns timestamp provided by IO thread. If no timestamp is supplied,
+  // then current time is returned. Saved timestamp is reset, so following
+  // invocations will return current time until set_io_timestamp is called.
+  base::TimeTicks ConsumeIOTimestamp();
+
   // Returns true if the message passed in is a resource related message.
   static bool IsResourceDispatcherMessage(const IPC::Message& message);
 
@@ -179,6 +189,9 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
 
   ResourceDispatcherDelegate* delegate_;
+
+  // IO thread timestamp for ongoing IPC message.
+  base::TimeTicks io_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcher);
 };

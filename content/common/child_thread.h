@@ -30,6 +30,7 @@ class WebFrame;
 
 namespace content {
 class ChildHistogramMessageFilter;
+class ChildResourceMessageFilter;
 class FileSystemDispatcher;
 class QuotaDispatcher;
 class ResourceDispatcher;
@@ -179,6 +180,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_ptr<QuotaDispatcher> quota_dispatcher_;
 
   scoped_refptr<ChildHistogramMessageFilter> histogram_message_filter_;
+
+  scoped_refptr<ChildResourceMessageFilter> resource_message_filter_;
 
   base::WeakPtrFactory<ChildThread> channel_connected_factory_;
 
