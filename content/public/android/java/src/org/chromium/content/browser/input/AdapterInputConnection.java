@@ -51,12 +51,14 @@ public class AdapterInputConnection extends BaseInputConnection {
         mImeAdapter = imeAdapter;
         mImeAdapter.setInputConnection(this);
         mSingleLine = true;
-        outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
+        outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN
+                | EditorInfo.IME_FLAG_NO_EXTRACT_UI;
         outAttrs.inputType = EditorInfo.TYPE_CLASS_TEXT
                 | EditorInfo.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT;
 
         if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeText) {
             // Normal text field
+            outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_CAP_SENTENCES;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
         } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeTextArea ||
                 imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeContentEditable) {
@@ -73,6 +75,7 @@ public class AdapterInputConnection extends BaseInputConnection {
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_GO;
         } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeSearch) {
             // Search
+            outAttrs.inputType |= EditorInfo.TYPE_TEXT_FLAG_CAP_SENTENCES;
             outAttrs.imeOptions |= EditorInfo.IME_ACTION_SEARCH;
         } else if (imeAdapter.getTextInputType() == ImeAdapter.sTextInputTypeUrl) {
             // Url
