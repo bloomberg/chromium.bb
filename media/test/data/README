@@ -40,3 +40,19 @@ bear-640x360-v_frag-cenc.mp4 - A fragmented MP4 version of the video track of be
 [1] 30313233343536373839303132333435
 [2] ebdd62f16814d27b68ef122afce4ae3c
 
+// Container Tests (additional containers derived from bear.ogv)
+bear.ac3    -- created using "avconv -i bear.ogv -f ac3 -b 192k bear.ac3".
+bear.adts   -- created using "avconv -i bear.ogv -f adts -strict experimental bear.adts".
+bear.aiff   -- created using "avconv -i bear.ogv -f aiff bear.aiff".
+bear.asf    -- created using "avconv -i bear.ogv -f asf bear.asf".
+bear.avi    -- created using "avconv -i bear.ogv -f avi -b 192k bear.avi".
+bear.eac3   -- created using "avconv -i bear.ogv -f eac3 bear.eac3".
+bear.flac   -- created using "avconv -i bear.ogv -f flac bear.flac".
+bear.flv    -- created using "avconv -i bear.ogv -f flv bear.flv".
+bear.h261   -- created using "avconv -i bear.ogv -f h261 -s:0 cif bear.h261".
+bear.h263   -- created using "avconv -i bear.ogv -f h263 -s:0 cif bear.h263".
+bear.m2ts   -- created using "avconv -i bear.ogv -f mpegts bear.m2ts".
+bear.mjpeg  -- created using "avconv -i bear.ogv -f mjpeg bear.mjpeg".
+bear.mpeg   -- created using "avconv -i bear.ogv -f mpeg bear.mpeg".
+bear.rm     -- created using "avconv -i bear.ogv -f rm -b 192k bear.rm".
+bear.swf    -- created using "avconv -i bear.ogv -f swf -an bear.swf".
