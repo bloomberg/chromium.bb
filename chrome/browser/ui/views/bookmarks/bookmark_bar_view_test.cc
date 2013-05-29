@@ -69,6 +69,13 @@ class TestingPageNavigator : public PageNavigator {
   GURL url_;
 };
 
+// TODO(jschuh): Fix bookmark DND tests on Win64. crbug.com/244605
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
+
 }  // namespace
 
 // Base class for event generating bookmark view tests. These test are intended
@@ -574,7 +581,7 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-VIEW_TEST(BookmarkBarViewTest5, DND)
+VIEW_TEST(BookmarkBarViewTest5, MAYBE(DND))
 
 // Tests holding mouse down on overflow button, dragging such that menu pops up
 // then selecting an item.
@@ -710,7 +717,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
 // This test passes locally (on aero and non-aero) but fails on the trybots and
 // buildbot.
 // http://crbug.com/154081
-VIEW_TEST(BookmarkBarViewTest7, DNDToDifferentMenu)
+VIEW_TEST(BookmarkBarViewTest7, MAYBE(DNDToDifferentMenu))
 #endif
 
 // Drags from one menu to next so that original menu closes, then back to
@@ -819,7 +826,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
 // This test passes locally (on aero and non-aero) but fails on the trybots and
 // buildbot.
 // http://crbug.com/154081
-VIEW_TEST(BookmarkBarViewTest8, DNDBackToOriginatingMenu)
+VIEW_TEST(BookmarkBarViewTest8, MAYBE(DNDBackToOriginatingMenu))
 #endif
 
 // Moves the mouse over the scroll button and makes sure we get scrolling.
