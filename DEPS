@@ -410,6 +410,9 @@ deps_os = {
     "src/third_party/WebKit/Source/Platform/chromium/public":
       Var("ios_webkit_trunk") + "/Source/Platform/chromium/public@" +
       Var("ios_webkit_revision"),
+    # Pull only the headers from Blink.
+    "src/third_party/WebKit/public":
+      Var("webkit_trunk") + "/public@" + Var("webkit_revision"),
 
     # Code that's not needed due to not building everything (especially WebKit).
     "src/build/util/support": None,
