@@ -34,10 +34,12 @@ FakeDemuxerStream::FakeDemuxerStream(int num_configs,
       num_buffers_in_one_config_(num_buffers_in_one_config),
       is_encrypted_(is_encrypted),
       num_buffers_left_in_current_config_(num_buffers_in_one_config),
+      num_buffers_returned_(0),
       current_timestamp_(base::TimeDelta::FromMilliseconds(kStartTimestampMs)),
       duration_(base::TimeDelta::FromMilliseconds(kDurationMs)),
       next_coded_size_(kStartWidth, kStartHeight),
-      hold_next_read_(false) {
+      next_read_num_(0),
+      read_to_hold_(-1) {
   DCHECK_GT(num_configs_left_, 0);
   DCHECK_GT(num_buffers_in_one_config_, 0);
   UpdateVideoDecoderConfig();
@@ -51,8 +53,11 @@ void FakeDemuxerStream::Read(const ReadCB& read_cb) {
 
   read_cb_ = BindToCurrentLoop(read_cb);
 
-  if (!hold_next_read_)
-    DoRead();
+  if (read_to_hold_ == next_read_num_)
+    return;
+
+  DCHECK(read_to_hold_ == -1 || read_to_hold_ > next_read_num_);
+  DoRead();
 }
 
 const AudioDecoderConfig& FakeDemuxerStream::audio_decoder_config() {
@@ -78,19 +83,27 @@ void FakeDemuxerStream::EnableBitstreamConverter() {
 
 void FakeDemuxerStream::HoldNextRead() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  hold_next_read_ = true;
+  read_to_hold_ = next_read_num_;
+}
+
+void FakeDemuxerStream::HoldNextConfigChangeRead() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  // Set |read_to_hold_| to be the next config change read.
+  read_to_hold_ = next_read_num_ + num_buffers_in_one_config_ -
+                  next_read_num_ % (num_buffers_in_one_config_ + 1);
 }
 
 void FakeDemuxerStream::SatisfyRead() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(hold_next_read_);
+  DCHECK_EQ(read_to_hold_, next_read_num_);
   DCHECK(!read_cb_.is_null());
 
+  read_to_hold_ = -1;
   DoRead();
 }
 
 void FakeDemuxerStream::Reset() {
-  hold_next_read_ = false;
+  read_to_hold_ = -1;
 
   if (!read_cb_.is_null())
     base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
@@ -108,6 +121,8 @@ void FakeDemuxerStream::UpdateVideoDecoderConfig() {
 void FakeDemuxerStream::DoRead() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(!read_cb_.is_null());
+
+  next_read_num_++;
 
   if (num_buffers_left_in_current_config_ == 0) {
     // End of stream.
@@ -143,6 +158,7 @@ void FakeDemuxerStream::DoRead() {
   if (num_buffers_left_in_current_config_ == 0)
     num_configs_left_--;
 
+  num_buffers_returned_++;
   base::ResetAndReturn(&read_cb_).Run(kOk, buffer);
 }
 

@@ -13,10 +13,10 @@
 
 namespace media {
 
-static const int kNumFramesInOneConfig = 9;
-static const int kNumFramesToReadFirst = 5;
+static const int kNumBuffersInOneConfig = 9;
+static const int kNumBuffersToReadFirst = 5;
 static const int kNumConfigs = 3;
-COMPILE_ASSERT(kNumFramesToReadFirst < kNumFramesInOneConfig,
+COMPILE_ASSERT(kNumBuffersToReadFirst < kNumBuffersInOneConfig,
                do_not_read_too_many_buffers);
 COMPILE_ASSERT(kNumConfigs > 0, need_multiple_configs_to_trigger_config_change);
 
@@ -45,21 +45,14 @@ class FakeDemuxerStreamTest : public testing::Test {
 
   void EnterNormalReadState() {
     stream_.reset(
-        new FakeDemuxerStream(kNumConfigs, kNumFramesInOneConfig, false));
-    for (int i = 0; i < kNumFramesToReadFirst; ++i)
-      ReadAndExpect(OK);
-  }
-
-  void EnterBeforeConfigChangedState() {
-    stream_.reset(
-        new FakeDemuxerStream(kNumConfigs, kNumFramesInOneConfig, false));
-    for (int i = 0; i < kNumFramesInOneConfig; ++i)
+        new FakeDemuxerStream(kNumConfigs, kNumBuffersInOneConfig, false));
+    for (int i = 0; i < kNumBuffersToReadFirst; ++i)
       ReadAndExpect(OK);
   }
 
   void EnterBeforeEOSState() {
-    stream_.reset(new FakeDemuxerStream(1, kNumFramesInOneConfig, false));
-    for (int i = 0; i < kNumFramesInOneConfig; ++i)
+    stream_.reset(new FakeDemuxerStream(1, kNumBuffersInOneConfig, false));
+    for (int i = 0; i < kNumBuffersInOneConfig; ++i)
       ReadAndExpect(OK);
   }
 
@@ -106,6 +99,17 @@ class FakeDemuxerStreamTest : public testing::Test {
     ExpectReadResult(result);
   }
 
+  void ReadUntilPending() {
+    while (1) {
+      read_pending_ = true;
+      stream_->Read(base::Bind(&FakeDemuxerStreamTest::BufferReady,
+                               base::Unretained(this)));
+      message_loop_.RunUntilIdle();
+      if (read_pending_)
+        break;
+    }
+  }
+
   void SatisfyReadAndExpect(ReadResult result) {
     EXPECT_TRUE(read_pending_);
     stream_->SatisfyRead();
@@ -124,18 +128,23 @@ class FakeDemuxerStreamTest : public testing::Test {
   }
 
   void TestRead(int num_configs,
-                int num_frames_in_one_config,
+                int num_buffers_in_one_config,
                 bool is_encrypted) {
     stream_.reset(new FakeDemuxerStream(
-        num_configs, num_frames_in_one_config, is_encrypted));
+        num_configs, num_buffers_in_one_config, is_encrypted));
+
+    int num_buffers_received = 0;
 
     const VideoDecoderConfig& config = stream_->video_decoder_config();
     EXPECT_TRUE(config.IsValidConfig());
     EXPECT_EQ(is_encrypted, config.is_encrypted());
 
     for (int i = 0; i < num_configs; ++i) {
-      for (int j = 0; j < num_frames_in_one_config; ++j)
+      for (int j = 0; j < num_buffers_in_one_config; ++j) {
         ReadAndExpect(OK);
+        num_buffers_received++;
+        EXPECT_EQ(num_buffers_received, stream_->num_buffers_returned());
+      }
 
       if (i == num_configs - 1)
         ReadAndExpect(EOS);
@@ -145,6 +154,8 @@ class FakeDemuxerStreamTest : public testing::Test {
 
     // Will always get EOS after we hit EOS.
     ReadAndExpect(EOS);
+
+    EXPECT_EQ(num_configs * num_buffers_in_one_config, num_buffers_received);
   }
 
   base::MessageLoop message_loop_;
@@ -153,6 +164,7 @@ class FakeDemuxerStreamTest : public testing::Test {
   DemuxerStream::Status status_;
   scoped_refptr<DecoderBuffer> buffer_;
   bool read_pending_;
+  int num_buffers_received_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeDemuxerStreamTest);
@@ -166,7 +178,7 @@ TEST_F(FakeDemuxerStreamTest, Read_MultipleConfigs) {
   TestRead(3, 5, false);
 }
 
-TEST_F(FakeDemuxerStreamTest, Read_OneFramePerConfig) {
+TEST_F(FakeDemuxerStreamTest, Read_OneBufferPerConfig) {
   TestRead(3, 1, false);
 }
 
@@ -182,9 +194,9 @@ TEST_F(FakeDemuxerStreamTest, HoldRead_Normal) {
 }
 
 TEST_F(FakeDemuxerStreamTest, HoldRead_BeforeConfigChanged) {
-  EnterBeforeConfigChangedState();
-  stream_->HoldNextRead();
-  ReadAndExpect(PENDING);
+  EnterNormalReadState();
+  stream_->HoldNextConfigChangeRead();
+  ReadUntilPending();
   SatisfyReadAndExpect(CONFIG_CHANGED);
 }
 
@@ -217,9 +229,9 @@ TEST_F(FakeDemuxerStreamTest, Reset_DuringPendingRead) {
 }
 
 TEST_F(FakeDemuxerStreamTest, Reset_BeforeConfigChanged) {
-  EnterBeforeConfigChangedState();
-  stream_->HoldNextRead();
-  ReadAndExpect(PENDING);
+  EnterNormalReadState();
+  stream_->HoldNextConfigChangeRead();
+  ReadUntilPending();
   Reset();
   ReadAndExpect(CONFIG_CHANGED);
 }

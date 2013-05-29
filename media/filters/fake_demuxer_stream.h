@@ -35,9 +35,16 @@ class MEDIA_EXPORT FakeDemuxerStream : public DemuxerStream {
   virtual Type type() OVERRIDE;
   virtual void EnableBitstreamConverter() OVERRIDE;
 
+  int num_buffers_returned() const { return num_buffers_returned_; }
+
   // Upon the next read, holds the read callback until SatisfyRead() or Reset()
   // is called.
   void HoldNextRead();
+
+  // Upon the next config change read, holds the read callback until
+  // SatisfyRead() or Reset() is called. If there is no config change any more,
+  // no read will be held.
+  void HoldNextConfigChangeRead();
 
   // Satisfies the pending read with the next scheduled status and buffer.
   void SatisfyRead();
@@ -59,6 +66,8 @@ class MEDIA_EXPORT FakeDemuxerStream : public DemuxerStream {
   // Number of frames left with the current decoder config.
   int num_buffers_left_in_current_config_;
 
+  int num_buffers_returned_;
+
   base::TimeDelta current_timestamp_;
   base::TimeDelta duration_;
 
@@ -68,7 +77,11 @@ class MEDIA_EXPORT FakeDemuxerStream : public DemuxerStream {
   VideoDecoderConfig video_decoder_config_;
 
   ReadCB read_cb_;
-  bool hold_next_read_;
+
+  int next_read_num_;
+  // Zero-based number indicating which read operation should be held. -1 means
+  // no read shall be held.
+  int read_to_hold_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDemuxerStream);
 };
