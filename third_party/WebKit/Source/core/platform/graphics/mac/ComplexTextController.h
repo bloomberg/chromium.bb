@@ -129,6 +129,7 @@ private:
     void collectComplexTextRunsForCharacters(const UChar*, unsigned length, unsigned stringLocation, const SimpleFontData*);
     void adjustGlyphsAndAdvances();
 
+    unsigned findNextRunIndex(unsigned runIndex) const;
     unsigned indexOfCurrentRun(unsigned& leftmostGlyph);
     unsigned incrementCurrentRun(unsigned& leftmostGlyph);
 

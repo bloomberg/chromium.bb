@@ -413,6 +413,31 @@ void ComplexTextController::ComplexTextRun::setIsNonMonotonic()
     }
 }
 
+unsigned ComplexTextController::findNextRunIndex(unsigned runIndex) const
+{
+    const unsigned runOffset = stringEnd(*m_complexTextRuns[runIndex]);
+
+    // Finds the run with the lowest stringBegin() offset that starts at or
+    // after |runOffset|.
+    //
+    // Note that this can't just find a run whose stringBegin() equals the
+    // stringEnd() of the previous run because CoreText on Mac OS X 10.6 does
+    // not return runs covering BiDi control chars, so this has to handle the
+    // resulting gaps.
+    unsigned result = 0;
+    unsigned lowestOffset = UINT_MAX;
+    for (unsigned i = 0; i < m_complexTextRuns.size(); ++i) {
+        unsigned offset = stringBegin(*m_complexTextRuns[i]);
+        if (i != runIndex && offset >= runOffset && offset < lowestOffset) {
+            lowestOffset = offset;
+            result = i;
+        }
+    }
+
+    ASSERT(lowestOffset != UINT_MAX);
+    return result;
+}
+
 unsigned ComplexTextController::indexOfCurrentRun(unsigned& leftmostGlyph)
 {
     leftmostGlyph = 0;
@@ -441,14 +466,7 @@ unsigned ComplexTextController::indexOfCurrentRun(unsigned& leftmostGlyph)
     }
 
     while (m_runIndices.size() <= m_currentRun) {
-        unsigned offset = stringEnd(*m_complexTextRuns[m_runIndices.last()]);
-
-        for (unsigned i = 0; i < runCount; ++i) {
-            if (offset == stringBegin(*m_complexTextRuns[i])) {
-                m_runIndices.uncheckedAppend(i);
-                break;
-            }
-        }
+        m_runIndices.uncheckedAppend(findNextRunIndex(m_runIndices.last()));
     }
 
     unsigned currentRunIndex = m_runIndices[m_currentRun];
