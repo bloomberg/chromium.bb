@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/css/WebKitCSSViewportRule.h"
+#include "core/css/CSSViewportRule.h"
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
 
@@ -37,31 +37,31 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
-WebKitCSSViewportRule::WebKitCSSViewportRule(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
+CSSViewportRule::CSSViewportRule(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
     : CSSRule(sheet)
     , m_viewportRule(viewportRule)
 {
 }
 
-WebKitCSSViewportRule::~WebKitCSSViewportRule()
+CSSViewportRule::~CSSViewportRule()
 {
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->clearParentRule();
 }
 
-CSSStyleDeclaration* WebKitCSSViewportRule::style() const
+CSSStyleDeclaration* CSSViewportRule::style() const
 {
     if (!m_propertiesCSSOMWrapper)
-        m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(m_viewportRule->mutableProperties(), const_cast<WebKitCSSViewportRule*>(this));
+        m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(m_viewportRule->mutableProperties(), const_cast<CSSViewportRule*>(this));
 
     return m_propertiesCSSOMWrapper.get();
 }
 
-String WebKitCSSViewportRule::cssText() const
+String CSSViewportRule::cssText() const
 {
     StringBuilder result;
     result.appendLiteral("@-webkit-viewport { ");
@@ -76,7 +76,7 @@ String WebKitCSSViewportRule::cssText() const
     return result.toString();
 }
 
-void WebKitCSSViewportRule::reattach(StyleRuleBase* rule)
+void CSSViewportRule::reattach(StyleRuleBase* rule)
 {
     ASSERT(rule);
     ASSERT_WITH_SECURITY_IMPLICATION(rule->isViewportRule());
@@ -86,7 +86,7 @@ void WebKitCSSViewportRule::reattach(StyleRuleBase* rule)
         m_propertiesCSSOMWrapper->reattach(m_viewportRule->mutableProperties());
 }
 
-void WebKitCSSViewportRule::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+void CSSViewportRule::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     CSSRule::reportMemoryUsage(memoryObjectInfo);

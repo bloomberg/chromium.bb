@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "core/css/WebKitCSSSVGDocumentValue.h"
+#include "core/css/CSSSVGDocumentValue.h"
 
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
@@ -36,18 +36,18 @@
 
 namespace WebCore {
 
-WebKitCSSSVGDocumentValue::WebKitCSSSVGDocumentValue(const String& url)
-    : CSSValue(WebKitCSSSVGDocumentClass)
+CSSSVGDocumentValue::CSSSVGDocumentValue(const String& url)
+    : CSSValue(CSSSVGDocumentClass)
     , m_url(url)
     , m_loadRequested(false)
 {
 }
 
-WebKitCSSSVGDocumentValue::~WebKitCSSSVGDocumentValue()
+CSSSVGDocumentValue::~CSSSVGDocumentValue()
 {
 }
 
-CachedDocument* WebKitCSSSVGDocumentValue::load(CachedResourceLoader* loader)
+CachedDocument* CSSSVGDocumentValue::load(CachedResourceLoader* loader)
 {
     ASSERT(loader);
 
@@ -61,17 +61,17 @@ CachedDocument* WebKitCSSSVGDocumentValue::load(CachedResourceLoader* loader)
     return m_document.get();
 }
 
-String WebKitCSSSVGDocumentValue::customCssText() const
+String CSSSVGDocumentValue::customCssText() const
 {
     return quoteCSSStringIfNeeded(m_url);
 }
 
-bool WebKitCSSSVGDocumentValue::equals(const WebKitCSSSVGDocumentValue& other) const
+bool CSSSVGDocumentValue::equals(const CSSSVGDocumentValue& other) const
 {
     return m_url == other.m_url;
 }
 
-void WebKitCSSSVGDocumentValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+void CSSSVGDocumentValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     info.addMember(m_url, "url");

@@ -45,8 +45,10 @@ namespace WebCore {
 
 class AnimationParseContext;
 class CSSBorderImageSliceValue;
+class CSSMixFunctionValue;
 class CSSPrimitiveValue;
 class CSSSelectorList;
+class CSSShaderValue;
 class CSSValue;
 class CSSValueList;
 class CSSBasicShape;
@@ -65,8 +67,6 @@ class StyleSheetContents;
 class StyledElement;
 
 class WebKitCSSArrayFunctionValue;
-class WebKitCSSMixFunctionValue;
-class WebKitCSSShaderValue;
 
 struct CSSParserLocation;
 
@@ -236,7 +236,7 @@ public:
 
     PassRefPtr<CSSValueList> parseFilter();
     PassRefPtr<WebKitCSSFilterValue> parseBuiltinFilterArguments(CSSParserValueList*, WebKitCSSFilterValue::FilterOperationType);
-    PassRefPtr<WebKitCSSMixFunctionValue> parseMixFunction(CSSParserValue*);
+    PassRefPtr<CSSMixFunctionValue> parseMixFunction(CSSParserValue*);
     PassRefPtr<WebKitCSSArrayFunctionValue> parseCustomFilterArrayFunction(CSSParserValue*);
     PassRefPtr<CSSValueList> parseCustomFilterTransform(CSSParserValueList*);
     PassRefPtr<CSSValueList> parseCustomFilterParameters(CSSParserValueList*);
@@ -244,7 +244,7 @@ public:
     PassRefPtr<WebKitCSSFilterValue> parseCustomFilterFunctionWithInlineSyntax(CSSParserValue*);
     PassRefPtr<WebKitCSSFilterValue> parseCustomFilterFunction(CSSParserValue*);
     bool parseFilterRuleSrc();
-    PassRefPtr<WebKitCSSShaderValue> parseFilterRuleSrcUriAndFormat(CSSParserValueList*);
+    PassRefPtr<CSSShaderValue> parseFilterRuleSrcUriAndFormat(CSSParserValueList*);
 
     static bool isBlendMode(int ident);
     static bool isCompositeOperator(int ident);

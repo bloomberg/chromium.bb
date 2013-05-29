@@ -24,6 +24,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSRuleList.h"
+#include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSToStyleMap.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/DocumentRuleSets.h"
@@ -35,7 +36,6 @@
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
 #include "core/css/SiblingTraversalStrategies.h"
-#include "core/css/WebKitCSSSVGDocumentValue.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
@@ -108,8 +108,6 @@ class StyleSheetList;
 class StyledElement;
 class ViewportStyleResolver;
 class WebKitCSSFilterValue;
-class WebKitCSSShaderValue;
-class WebKitCSSSVGDocumentValue;
 
 class MediaQueryResult {
     WTF_MAKE_NONCOPYABLE(MediaQueryResult); WTF_MAKE_FAST_ALLOCATED;

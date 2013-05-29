@@ -51,8 +51,10 @@
 #include "core/css/CSSParser.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSReflectValue.h"
+#include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
+#include "core/css/CSSShaderValue.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSSupportsRule.h"
 #include "core/css/CSSTimingFunctionValue.h"
@@ -79,10 +81,6 @@
 #include "core/css/StyleSheetList.h"
 #include "core/css/WebKitCSSKeyframeRule.h"
 #include "core/css/WebKitCSSKeyframesRule.h"
-#include "core/css/WebKitCSSMixFunctionValue.h"
-#include "core/css/WebKitCSSRegionRule.h"
-#include "core/css/WebKitCSSSVGDocumentValue.h"
-#include "core/css/WebKitCSSShaderValue.h"
 #include "core/css/resolver/FilterOperationResolver.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/TransformBuilder.h"
@@ -3634,7 +3632,7 @@ void StyleResolver::loadPendingSVGDocuments()
         if (filterOperation->getOperationType() == FilterOperation::REFERENCE) {
             ReferenceFilterOperation* referenceFilter = static_cast<ReferenceFilterOperation*>(filterOperation.get());
 
-            WebKitCSSSVGDocumentValue* value = state.pendingSVGDocuments().get(referenceFilter);
+            CSSSVGDocumentValue* value = state.pendingSVGDocuments().get(referenceFilter);
             if (!value)
                 continue;
             CachedDocument* cachedDocument = value->load(cachedResourceLoader);
@@ -3674,11 +3672,11 @@ void StyleResolver::loadPendingShaders()
                 customFilter->setProgram(styleProgram.release());
             else {
                 if (program->vertexShader() && program->vertexShader()->isPendingShader()) {
-                    WebKitCSSShaderValue* shaderValue = static_cast<StylePendingShader*>(program->vertexShader())->cssShaderValue();
+                    CSSShaderValue* shaderValue = static_cast<StylePendingShader*>(program->vertexShader())->cssShaderValue();
                     program->setVertexShader(shaderValue->cachedShader(cachedResourceLoader));
                 }
                 if (program->fragmentShader() && program->fragmentShader()->isPendingShader()) {
-                    WebKitCSSShaderValue* shaderValue = static_cast<StylePendingShader*>(program->fragmentShader())->cssShaderValue();
+                    CSSShaderValue* shaderValue = static_cast<StylePendingShader*>(program->fragmentShader())->cssShaderValue();
                     program->setFragmentShader(shaderValue->cachedShader(cachedResourceLoader));
                 }
                 m_customFilterProgramCache->add(program);

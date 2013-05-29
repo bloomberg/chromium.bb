@@ -31,12 +31,14 @@
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
+#include "core/css/CSSMixFunctionValue.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSTimingFunctionValue.h"
+#include "core/css/CSSTransformValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/FontFeatureValue.h"
@@ -46,7 +48,6 @@
 #include "core/css/ShadowValue.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StylePropertyShorthand.h"
-#include "core/css/WebKitCSSTransformValue.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -65,7 +66,6 @@
 #include <wtf/text/StringBuilder.h>
 
 #include "core/css/WebKitCSSArrayFunctionValue.h"
-#include "core/css/WebKitCSSMixFunctionValue.h"
 #include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
@@ -733,11 +733,11 @@ static LayoutRect sizingBox(RenderObject* renderer)
     return box->style()->boxSizing() == BORDER_BOX ? box->borderBoxRect() : box->computedCSSContentBoxRect();
 }
 
-static PassRefPtr<WebKitCSSTransformValue> matrixTransformValue(const TransformationMatrix& transform, const RenderStyle* style)
+static PassRefPtr<CSSTransformValue> matrixTransformValue(const TransformationMatrix& transform, const RenderStyle* style)
 {
-    RefPtr<WebKitCSSTransformValue> transformValue;
+    RefPtr<CSSTransformValue> transformValue;
     if (transform.isAffine()) {
-        transformValue = WebKitCSSTransformValue::create(WebKitCSSTransformValue::MatrixTransformOperation);
+        transformValue = CSSTransformValue::create(CSSTransformValue::MatrixTransformOperation);
 
         transformValue->append(cssValuePool().createValue(transform.a(), CSSPrimitiveValue::CSS_NUMBER));
         transformValue->append(cssValuePool().createValue(transform.b(), CSSPrimitiveValue::CSS_NUMBER));
@@ -746,7 +746,7 @@ static PassRefPtr<WebKitCSSTransformValue> matrixTransformValue(const Transforma
         transformValue->append(zoomAdjustedNumberValue(transform.e(), style));
         transformValue->append(zoomAdjustedNumberValue(transform.f(), style));
     } else {
-        transformValue = WebKitCSSTransformValue::create(WebKitCSSTransformValue::Matrix3DTransformOperation);
+        transformValue = CSSTransformValue::create(CSSTransformValue::Matrix3DTransformOperation);
 
         transformValue->append(cssValuePool().createValue(transform.m11(), CSSPrimitiveValue::CSS_NUMBER));
         transformValue->append(cssValuePool().createValue(transform.m12(), CSSPrimitiveValue::CSS_NUMBER));
@@ -939,7 +939,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
             const CustomFilterProgramMixSettings mixSettings = program->mixSettings();
             if (program->fragmentShader()) {
                 if (program->programType() == PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE) {
-                    RefPtr<WebKitCSSMixFunctionValue> mixFunction = WebKitCSSMixFunctionValue::create();
+                    RefPtr<CSSMixFunctionValue> mixFunction = CSSMixFunctionValue::create();
                     mixFunction->append(program->fragmentShader()->cssValue());
                     mixFunction->append(cssValuePool().createValue(mixSettings.blendMode));
                     mixFunction->append(cssValuePool().createValue(mixSettings.compositeOperator));

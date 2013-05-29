@@ -22,8 +22,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebKitCSSSVGDocumentValue_h
-#define WebKitCSSSVGDocumentValue_h
+#ifndef CSSSVGDocumentValue_h
+#define CSSSVGDocumentValue_h
 
 #include "core/css/CSSValue.h"
 #include "core/loader/cache/CachedDocument.h"
@@ -33,10 +33,10 @@ namespace WebCore {
 
 class CachedResourceLoader;
 
-class WebKitCSSSVGDocumentValue : public CSSValue {
+class CSSSVGDocumentValue : public CSSValue {
 public:
-    static PassRefPtr<WebKitCSSSVGDocumentValue> create(const String& url) { return adoptRef(new WebKitCSSSVGDocumentValue(url)); }
-    ~WebKitCSSSVGDocumentValue();
+    static PassRefPtr<CSSSVGDocumentValue> create(const String& url) { return adoptRef(new CSSSVGDocumentValue(url)); }
+    ~CSSSVGDocumentValue();
 
     CachedDocument* cachedSVGDocument() const { return m_document.get(); }
     CachedDocument* load(CachedResourceLoader*);
@@ -44,12 +44,12 @@ public:
     String customCssText() const;
     const String& url() const { return m_url; }
     bool loadRequested() const { return m_loadRequested; }
-    bool equals(const WebKitCSSSVGDocumentValue&) const;
+    bool equals(const CSSSVGDocumentValue&) const;
 
     void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    WebKitCSSSVGDocumentValue(const String& url);
+    CSSSVGDocumentValue(const String& url);
 
     String m_url;
     CachedResourceHandle<CachedDocument> m_document;
@@ -58,4 +58,4 @@ private:
 
 } // namespace WebCore
 
-#endif // WebKitCSSSVGDocumentValue_h
+#endif // CSSSVGDocumentValue_h

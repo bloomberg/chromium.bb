@@ -28,8 +28,9 @@
  */
 
 [
-    EnabledAtRuntime=cssRegions
-] interface WebKitCSSRegionRule : CSSRule {
+    EnabledAtRuntime=cssRegions,
+    InterfaceName=WebKitCSSRegionRule
+] interface CSSRegionRule : CSSRule {
     readonly attribute CSSRuleList cssRules;
 };
 

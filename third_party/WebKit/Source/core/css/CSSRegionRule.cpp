@@ -28,26 +28,37 @@
  * SUCH DAMAGE.
  */
 
-#ifndef WebKitCSSRegionRule_h
-#define WebKitCSSRegionRule_h
+#include "config.h"
 
-#include "core/css/CSSGroupingRule.h"
+#include "core/css/CSSRegionRule.h"
+
+#include "RuntimeEnabledFeatures.h"
+#include "core/css/CSSParser.h"
+#include "core/css/CSSRuleList.h"
+#include "core/css/StyleRule.h"
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
-
-class StyleRuleRegion;
-
-class WebKitCSSRegionRule : public CSSGroupingRule {
-public:
-    static PassRefPtr<WebKitCSSRegionRule> create(StyleRuleRegion* rule, CSSStyleSheet* sheet) { return adoptRef(new WebKitCSSRegionRule(rule, sheet)); }
-
-    virtual CSSRule::Type type() const OVERRIDE { return WEBKIT_REGION_RULE; }
-    virtual String cssText() const OVERRIDE;
-
-private:
-    WebKitCSSRegionRule(StyleRuleRegion*, CSSStyleSheet* parent);
-};
-
+CSSRegionRule::CSSRegionRule(StyleRuleRegion* regionRule, CSSStyleSheet* parent)
+    : CSSGroupingRule(regionRule, parent)
+{
+    ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
 }
 
-#endif // WebKitCSSRegionRule_h
+String CSSRegionRule::cssText() const
+{
+    StringBuilder result;
+    result.appendLiteral("@-webkit-region ");
+
+    // First add the selectors.
+    result.append(toStyleRuleRegion(m_groupRule.get())->selectorList().selectorsText());
+
+    // Then add the rules.
+    result.appendLiteral(" { \n");
+    appendCssTextForItems(result);
+    result.append('}');
+    return result.toString();
+}
+
+} // namespace WebCore

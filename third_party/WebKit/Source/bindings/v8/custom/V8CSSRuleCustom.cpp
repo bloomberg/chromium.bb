@@ -37,15 +37,15 @@
 #include "V8CSSImportRule.h"
 #include "V8CSSMediaRule.h"
 #include "V8CSSPageRule.h"
+#include "V8CSSRegionRule.h"
 #include "V8CSSStyleRule.h"
 #include "V8CSSSupportsRule.h"
 #include "V8WebKitCSSFilterRule.h"
 #include "V8WebKitCSSKeyframeRule.h"
 #include "V8WebKitCSSKeyframesRule.h"
-#include "V8WebKitCSSRegionRule.h"
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
-#include "V8WebKitCSSViewportRule.h"
+#include "V8CSSViewportRule.h"
 #endif
 
 namespace WebCore {
@@ -82,7 +82,7 @@ v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContex
         return wrap(static_cast<WebKitCSSViewportRule*>(impl), creationContext, isolate);
 #endif
     case CSSRule::WEBKIT_REGION_RULE:
-        return wrap(static_cast<WebKitCSSRegionRule*>(impl), creationContext, isolate);
+        return wrap(static_cast<CSSRegionRule*>(impl), creationContext, isolate);
     case CSSRule::HOST_RULE:
         return wrap(static_cast<CSSHostRule*>(impl), creationContext, isolate);
     case CSSRule::WEBKIT_FILTER_RULE:

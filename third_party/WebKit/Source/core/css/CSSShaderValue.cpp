@@ -29,7 +29,7 @@
 
 #include "config.h"
 
-#include "core/css/WebKitCSSShaderValue.h"
+#include "core/css/CSSShaderValue.h"
 
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
@@ -42,23 +42,23 @@
 
 namespace WebCore {
 
-WebKitCSSShaderValue::WebKitCSSShaderValue(const String& url)
-    : CSSValue(WebKitCSSShaderClass)
+CSSShaderValue::CSSShaderValue(const String& url)
+    : CSSValue(CSSShaderClass)
     , m_url(url)
     , m_accessedShader(false)
 {
 }
 
-WebKitCSSShaderValue::~WebKitCSSShaderValue()
+CSSShaderValue::~CSSShaderValue()
 {
 }
 
-KURL WebKitCSSShaderValue::completeURL(CachedResourceLoader* loader) const
+KURL CSSShaderValue::completeURL(CachedResourceLoader* loader) const
 {
     return loader->document()->completeURL(m_url);
 }
 
-StyleCachedShader* WebKitCSSShaderValue::cachedShader(CachedResourceLoader* loader)
+StyleCachedShader* CSSShaderValue::cachedShader(CachedResourceLoader* loader)
 {
     ASSERT(loader);
 
@@ -73,7 +73,7 @@ StyleCachedShader* WebKitCSSShaderValue::cachedShader(CachedResourceLoader* load
     return (m_shader && m_shader->isCachedShader()) ? static_cast<StyleCachedShader*>(m_shader.get()) : 0;
 }
 
-StyleShader* WebKitCSSShaderValue::cachedOrPendingShader()
+StyleShader* CSSShaderValue::cachedOrPendingShader()
 {
     if (!m_shader)
         m_shader = StylePendingShader::create(this);
@@ -81,7 +81,7 @@ StyleShader* WebKitCSSShaderValue::cachedOrPendingShader()
     return m_shader.get();
 }
 
-String WebKitCSSShaderValue::customCssText() const
+String CSSShaderValue::customCssText() const
 {
     StringBuilder result;
     result.appendLiteral("url(");
@@ -95,17 +95,17 @@ String WebKitCSSShaderValue::customCssText() const
     return result.toString();
 }
 
-bool WebKitCSSShaderValue::equals(const WebKitCSSShaderValue& other) const
+bool CSSShaderValue::equals(const CSSShaderValue& other) const
 {
     return m_url == other.m_url;
 }
 
-void WebKitCSSShaderValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+void CSSShaderValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     info.addMember(m_url, "url");
     info.addMember(m_format, "format");
 }
-    
+
 } // namespace WebCore
 

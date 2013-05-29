@@ -29,12 +29,12 @@
 #include "config.h"
 #include "core/css/resolver/FilterOperationResolver.h"
 
+#include "core/css/CSSMixFunctionValue.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSShaderValue.h"
 #include "core/css/ShadowValue.h"
 #include "core/css/WebKitCSSFilterValue.h"
-#include "core/css/WebKitCSSMixFunctionValue.h"
-#include "core/css/WebKitCSSShaderValue.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
@@ -94,7 +94,7 @@ static bool sortParametersByNameComparator(const RefPtr<CustomFilterParameter>& 
     return codePointCompareLessThan(a->name(), b->name());
 }
 
-static StyleShader* cachedOrPendingStyleShaderFromValue(WebKitCSSShaderValue* value, StyleResolverState& state)
+static StyleShader* cachedOrPendingStyleShaderFromValue(CSSShaderValue* value, StyleResolverState& state)
 {
     StyleShader* shader = value->cachedOrPendingShader();
     if (shader && shader->isPendingShader())
@@ -104,8 +104,8 @@ static StyleShader* cachedOrPendingStyleShaderFromValue(WebKitCSSShaderValue* va
 
 static StyleShader* styleShader(CSSValue* value, StyleResolverState& state)
 {
-    if (value->isWebKitCSSShaderValue())
-        return cachedOrPendingStyleShaderFromValue(static_cast<WebKitCSSShaderValue*>(value), state);
+    if (value->isCSSShaderValue())
+        return cachedOrPendingStyleShaderFromValue(static_cast<CSSShaderValue*>(value), state);
     return 0;
 }
 
@@ -170,7 +170,7 @@ static PassRefPtr<CustomFilterParameter> parseCustomFilterParameter(const String
     // then we could safely assume that all the remaining items
     // are transforms. parseCustomFilterTransformParameter will
     // return 0 if that assumption is incorrect.
-    if (values->itemWithoutBoundsCheck(0)->isWebKitCSSTransformValue())
+    if (values->itemWithoutBoundsCheck(0)->isCSSTransformValue())
         return parseCustomFilterTransformParameter(name, values, state);
 
     // We can have only arrays of booleans or numbers, so use the first value to choose between those two.
@@ -232,7 +232,7 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithAtRuleRe
     return 0;
 }
 
-static PassRefPtr<CustomFilterProgram> lookupCustomFilterProgram(WebKitCSSShaderValue* vertexShader, WebKitCSSShaderValue* fragmentShader,
+static PassRefPtr<CustomFilterProgram> lookupCustomFilterProgram(CSSShaderValue* vertexShader, CSSShaderValue* fragmentShader,
     CustomFilterProgramType programType, const CustomFilterProgramMixSettings& mixSettings, CustomFilterMeshType meshType,
     StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
 {
@@ -260,19 +260,19 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
     unsigned shadersListLength = shadersList->length();
     ASSERT(shadersListLength);
 
-    WebKitCSSShaderValue* vertexShader = toWebKitCSSShaderValue(shadersList->itemWithoutBoundsCheck(0));
-    WebKitCSSShaderValue* fragmentShader = 0;
+    CSSShaderValue* vertexShader = toCSSShaderValue(shadersList->itemWithoutBoundsCheck(0));
+    CSSShaderValue* fragmentShader = 0;
     CustomFilterProgramType programType = PROGRAM_TYPE_BLENDS_ELEMENT_TEXTURE;
     CustomFilterProgramMixSettings mixSettings;
 
     if (shadersListLength > 1) {
         CSSValue* fragmentShaderOrMixFunction = shadersList->itemWithoutBoundsCheck(1);
-        if (fragmentShaderOrMixFunction->isWebKitCSSMixFunctionValue()) {
-            WebKitCSSMixFunctionValue* mixFunction = static_cast<WebKitCSSMixFunctionValue*>(fragmentShaderOrMixFunction);
+        if (fragmentShaderOrMixFunction->isCSSMixFunctionValue()) {
+            CSSMixFunctionValue* mixFunction = static_cast<CSSMixFunctionValue*>(fragmentShaderOrMixFunction);
             CSSValueListIterator iterator(mixFunction);
 
             ASSERT(mixFunction->length());
-            fragmentShader = toWebKitCSSShaderValue(iterator.value());
+            fragmentShader = toCSSShaderValue(iterator.value());
             iterator.advance();
 
             ASSERT(mixFunction->length() <= 3);
@@ -288,7 +288,7 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
             }
         } else {
             programType = PROGRAM_TYPE_NO_ELEMENT_TEXTURE;
-            fragmentShader = toWebKitCSSShaderValue(fragmentShaderOrMixFunction);
+            fragmentShader = toCSSShaderValue(fragmentShaderOrMixFunction);
         }
     }
 
@@ -406,10 +406,10 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
                 continue;
             CSSValue* argument = filterValue->itemWithoutBoundsCheck(0);
 
-            if (!argument->isWebKitCSSSVGDocumentValue())
+            if (!argument->isCSSSVGDocumentValue())
                 continue;
 
-            WebKitCSSSVGDocumentValue* svgDocumentValue = static_cast<WebKitCSSSVGDocumentValue*>(argument);
+            CSSSVGDocumentValue* svgDocumentValue = static_cast<CSSSVGDocumentValue*>(argument);
             KURL url = state.document()->completeURL(svgDocumentValue->url());
 
             RefPtr<ReferenceFilterOperation> operation = ReferenceFilterOperation::create(svgDocumentValue->url(), url.fragmentIdentifier(), operationType);

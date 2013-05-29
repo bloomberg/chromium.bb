@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (C) 2012 Adobe Systems Incorporated. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,54 +27,35 @@
  * SUCH DAMAGE.
  */
 
-#ifndef WebKitCSSShaderValue_h
-#define WebKitCSSShaderValue_h
+#ifndef CSSMixFunctionValue_h
+#define CSSMixFunctionValue_h
 
-#include "core/css/CSSValue.h"
+#include "core/css/CSSValueList.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-class CachedResourceLoader;
-class KURL;
-class StyleCachedShader;
-class StyleShader;
-
-class WebKitCSSShaderValue : public CSSValue {
+class CSSMixFunctionValue : public CSSValueList {
 public:
-    static PassRefPtr<WebKitCSSShaderValue> create(const String& url) { return adoptRef(new WebKitCSSShaderValue(url)); }
-    ~WebKitCSSShaderValue();
-
-    const String& format() const { return m_format; }
-    void setFormat(const String& format) { m_format = format; }
-
-    KURL completeURL(CachedResourceLoader*) const;
-    StyleCachedShader* cachedShader(CachedResourceLoader*);
-    StyleShader* cachedOrPendingShader();
+    static PassRefPtr<CSSMixFunctionValue> create()
+    {
+        return adoptRef(new CSSMixFunctionValue());
+    }
 
     String customCssText() const;
 
-    bool equals(const WebKitCSSShaderValue&) const;
+    PassRefPtr<CSSMixFunctionValue> cloneForCSSOM() const;
+
+    bool equals(const CSSMixFunctionValue&) const;
 
     void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    WebKitCSSShaderValue(const String& url);
-
-    String m_url;
-    String m_format;
-    RefPtr<StyleShader> m_shader;
-    bool m_accessedShader;
+    CSSMixFunctionValue();
+    CSSMixFunctionValue(const CSSMixFunctionValue& cloneFrom);
 };
-
-// This will catch anyone doing an unnecessary cast.
-WebKitCSSShaderValue* toWebKitCSSShaderValue(const WebKitCSSShaderValue*);
-
-inline WebKitCSSShaderValue* toWebKitCSSShaderValue(CSSValue* value)
-{
-    return value->isWebKitCSSShaderValue() ? static_cast<WebKitCSSShaderValue*>(value) : 0;
-}
 
 } // namespace WebCore
 
 
-#endif // WebKitCSSShaderValue_h
+#endif

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2012 Intel Corporation. All rights reserved.
+ * Copyright (C) 2011 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (C) 2012 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,7 +14,7 @@
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER “AS IS” AND ANY
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE
@@ -27,8 +28,26 @@
  * SUCH DAMAGE.
  */
 
-[
-    Conditional=CSS_DEVICE_ADAPTATION
-] interface WebKitCSSViewportRule : CSSRule {
-    readonly attribute CSSStyleDeclaration style;
+#ifndef CSSRegionRule_h
+#define CSSRegionRule_h
+
+#include "core/css/CSSGroupingRule.h"
+
+namespace WebCore {
+
+class StyleRuleRegion;
+
+class CSSRegionRule : public CSSGroupingRule {
+public:
+    static PassRefPtr<CSSRegionRule> create(StyleRuleRegion* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSRegionRule(rule, sheet)); }
+
+    virtual CSSRule::Type type() const OVERRIDE { return WEBKIT_REGION_RULE; }
+    virtual String cssText() const OVERRIDE;
+
+private:
+    CSSRegionRule(StyleRuleRegion*, CSSStyleSheet* parent);
 };
+
+}
+
+#endif // CSSRegionRule_h

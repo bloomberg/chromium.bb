@@ -24,8 +24,8 @@
 
 #include "CSSPropertyNames.h"
 
+#include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSValueList.h"
-#include "core/css/WebKitCSSSVGDocumentValue.h"
 #include "core/dom/Element.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
@@ -43,7 +43,7 @@ class RenderRegion;
 class StyledElement;
 
 typedef HashMap<CSSPropertyID, RefPtr<CSSValue> > PendingImagePropertyMap;
-typedef HashMap<FilterOperation*, RefPtr<WebKitCSSSVGDocumentValue> > PendingSVGDocumentMap;
+typedef HashMap<FilterOperation*, RefPtr<CSSSVGDocumentValue> > PendingSVGDocumentMap;
 
 class StyleResolverState {
 WTF_MAKE_NONCOPYABLE(StyleResolverState);

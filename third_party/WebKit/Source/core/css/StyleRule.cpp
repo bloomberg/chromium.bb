@@ -29,18 +29,18 @@
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/CSSPageRule.h"
+#include "core/css/CSSRegionRule.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSSupportsRule.h"
 #include "core/css/CSSUnknownRule.h"
+#include "core/css/CSSViewportRule.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/WebKitCSSFilterRule.h"
 #include "core/css/WebKitCSSKeyframeRule.h"
 #include "core/css/WebKitCSSKeyframesRule.h"
-#include "core/css/WebKitCSSRegionRule.h"
-#include "core/css/WebKitCSSViewportRule.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/MemoryInstrumentationVector.h>
+#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 
@@ -212,7 +212,7 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
         rule = CSSSupportsRule::create(static_cast<StyleRuleSupports*>(self), parentSheet);
         break;
     case Region:
-        rule = WebKitCSSRegionRule::create(static_cast<StyleRuleRegion*>(self), parentSheet);
+        rule = CSSRegionRule::create(static_cast<StyleRuleRegion*>(self), parentSheet);
         break;
     case Import:
         rule = CSSImportRule::create(static_cast<StyleRuleImport*>(self), parentSheet);

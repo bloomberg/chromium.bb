@@ -13,7 +13,7 @@
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER “AS IS” AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE
@@ -27,7 +27,43 @@
  * SUCH DAMAGE.
  */
 
-[
-] interface WebKitCSSMixFunctionValue : CSSValueList {
-};
+#include "config.h"
+#include "core/css/CSSMixFunctionValue.h"
+
+#include "core/dom/WebCoreMemoryInstrumentation.h"
+
+namespace WebCore {
+
+CSSMixFunctionValue::CSSMixFunctionValue()
+    : CSSValueList(CSSMixFunctionValueClass, SpaceSeparator)
+{
+}
+
+CSSMixFunctionValue::CSSMixFunctionValue(const CSSMixFunctionValue& cloneFrom)
+    : CSSValueList(cloneFrom)
+{
+}
+
+String CSSMixFunctionValue::customCssText() const
+{
+    return "mix(" + CSSValueList::customCssText() + ")";
+}
+
+PassRefPtr<CSSMixFunctionValue> CSSMixFunctionValue::cloneForCSSOM() const
+{
+    return adoptRef(new CSSMixFunctionValue(*this));
+}
+
+bool CSSMixFunctionValue::equals(const CSSMixFunctionValue& other) const
+{
+    return CSSValueList::equals(other);
+}
+
+void CSSMixFunctionValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+{
+    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
+    CSSValueList::reportDescendantMemoryUsage(memoryObjectInfo);
+}
+
+} // namespace WebCore
 

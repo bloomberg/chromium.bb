@@ -42,12 +42,16 @@
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
+#include "core/css/CSSMixFunctionValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSReflectValue.h"
+#include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSSelector.h"
+#include "core/css/CSSShaderValue.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSTimingFunctionValue.h"
+#include "core/css/CSSTransformValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
@@ -68,10 +72,6 @@
 #include "core/css/WebKitCSSFilterValue.h"
 #include "core/css/WebKitCSSKeyframeRule.h"
 #include "core/css/WebKitCSSKeyframesRule.h"
-#include "core/css/WebKitCSSMixFunctionValue.h"
-#include "core/css/WebKitCSSSVGDocumentValue.h"
-#include "core/css/WebKitCSSShaderValue.h"
-#include "core/css/WebKitCSSTransformValue.h"
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -1091,7 +1091,7 @@ static bool parseKeywordValue(MutableStylePropertySet* declaration, CSSPropertyI
 }
 
 template <typename CharacterType>
-static bool parseTransformArguments(WebKitCSSTransformValue* transformValue, CharacterType* characters, unsigned length, unsigned start, unsigned expectedCount)
+static bool parseTransformArguments(CSSTransformValue* transformValue, CharacterType* characters, unsigned length, unsigned start, unsigned expectedCount)
 {
     while (expectedCount) {
         size_t end = WTF::find(characters, length, expectedCount == 1 ? ')' : ',', start);
@@ -1124,27 +1124,27 @@ static bool parseTranslateTransformValue(MutableStylePropertySet* properties, CS
     UChar c9 = toASCIILower(string[9]);
     UChar c10 = toASCIILower(string[10]);
 
-    WebKitCSSTransformValue::TransformOperationType transformType;
+    CSSTransformValue::TransformOperationType transformType;
     unsigned expectedArgumentCount = 1;
     unsigned argumentStart = 11;
     if (c9 == 'x' && c10 == '(')
-        transformType = WebKitCSSTransformValue::TranslateXTransformOperation;
+        transformType = CSSTransformValue::TranslateXTransformOperation;
     else if (c9 == 'y' && c10 == '(')
-        transformType = WebKitCSSTransformValue::TranslateYTransformOperation;
+        transformType = CSSTransformValue::TranslateYTransformOperation;
     else if (c9 == 'z' && c10 == '(')
-        transformType = WebKitCSSTransformValue::TranslateZTransformOperation;
+        transformType = CSSTransformValue::TranslateZTransformOperation;
     else if (c9 == '(') {
-        transformType = WebKitCSSTransformValue::TranslateTransformOperation;
+        transformType = CSSTransformValue::TranslateTransformOperation;
         expectedArgumentCount = 2;
         argumentStart = 10;
     } else if (c9 == '3' && c10 == 'd' && string[11] == '(') {
-        transformType = WebKitCSSTransformValue::Translate3DTransformOperation;
+        transformType = CSSTransformValue::Translate3DTransformOperation;
         expectedArgumentCount = 3;
         argumentStart = 12;
     } else
         return false;
 
-    RefPtr<WebKitCSSTransformValue> transformValue = WebKitCSSTransformValue::create(transformType);
+    RefPtr<CSSTransformValue> transformValue = CSSTransformValue::create(transformType);
     bool success;
     if (string.is8Bit())
         success = parseTransformArguments(transformValue.get(), string.characters8(), string.length(), argumentStart, expectedArgumentCount);
@@ -7671,7 +7671,7 @@ PassRefPtr<CSSValue> CSSParser::parseImageSet(CSSParserValueList* valueList)
 class TransformOperationInfo {
 public:
     TransformOperationInfo(const CSSParserString& name)
-        : m_type(WebKitCSSTransformValue::UnknownTransformOperation)
+        : m_type(CSSTransformValue::UnknownTransformOperation)
         , m_argCount(1)
         , m_allowSingleArgument(false)
         , m_unit(CSSParser::FUnknown)
@@ -7699,7 +7699,7 @@ public:
                 & ((characters[3] == 'w') || (characters[3] == 'W'))
                 & (characters[4] == '(')) {
                 m_unit = CSSParser::FAngle;
-                m_type = WebKitCSSTransformValue::SkewTransformOperation;
+                m_type = CSSTransformValue::SkewTransformOperation;
                 m_allowSingleArgument = true;
                 m_argCount = 3;
             }
@@ -7713,7 +7713,7 @@ public:
                     & ((characters[4] == 'e') || (characters[4] == 'E'))
                     & (characters[5] == '(')) {
                     m_unit = CSSParser::FNumber;
-                    m_type = WebKitCSSTransformValue::ScaleTransformOperation;
+                    m_type = CSSTransformValue::ScaleTransformOperation;
                     m_allowSingleArgument = true;
                     m_argCount = 3;
                 }
@@ -7724,10 +7724,10 @@ public:
                        & (characters[5] == '(')) {
                 if ((characters[4] == 'x') || (characters[4] == 'X')) {
                     m_unit = CSSParser::FAngle;
-                    m_type = WebKitCSSTransformValue::SkewXTransformOperation;
+                    m_type = CSSTransformValue::SkewXTransformOperation;
                 } else if ((characters[4] == 'y') || (characters[4] == 'Y')) {
                     m_unit = CSSParser::FAngle;
-                    m_type = WebKitCSSTransformValue::SkewYTransformOperation;
+                    m_type = CSSTransformValue::SkewYTransformOperation;
                 }
             }
             break;
@@ -7741,7 +7741,7 @@ public:
                     & ((characters[5] == 'x') || (characters[5] == 'X'))
                     & (characters[6] == '(')) {
                     m_unit = CSSParser::FNumber;
-                    m_type = WebKitCSSTransformValue::MatrixTransformOperation;
+                    m_type = CSSTransformValue::MatrixTransformOperation;
                     m_argCount = 11;
                 }
             } else if ((characters[0] == 'r') || (characters[0] == 'R')) {
@@ -7752,7 +7752,7 @@ public:
                     & ((characters[5] == 'e') || (characters[5] == 'E'))
                     & (characters[6] == '(')) {
                     m_unit = CSSParser::FAngle;
-                    m_type = WebKitCSSTransformValue::RotateTransformOperation;
+                    m_type = CSSTransformValue::RotateTransformOperation;
                 }
             } else if (((characters[0] == 's') || (characters[0] == 'S'))
                        & ((characters[1] == 'c') || (characters[1] == 'C'))
@@ -7762,13 +7762,13 @@ public:
                        & (characters[6] == '(')) {
                 if ((characters[5] == 'x') || (characters[5] == 'X')) {
                     m_unit = CSSParser::FNumber;
-                    m_type = WebKitCSSTransformValue::ScaleXTransformOperation;
+                    m_type = CSSTransformValue::ScaleXTransformOperation;
                 } else if ((characters[5] == 'y') || (characters[5] == 'Y')) {
                     m_unit = CSSParser::FNumber;
-                    m_type = WebKitCSSTransformValue::ScaleYTransformOperation;
+                    m_type = CSSTransformValue::ScaleYTransformOperation;
                 } else if ((characters[5] == 'z') || (characters[5] == 'Z')) {
                     m_unit = CSSParser::FNumber;
-                    m_type = WebKitCSSTransformValue::ScaleZTransformOperation;
+                    m_type = CSSTransformValue::ScaleZTransformOperation;
                 }
             }
             break;
@@ -7783,7 +7783,7 @@ public:
                     & ((characters[6] == 'd') || (characters[6] == 'D'))
                     & (characters[7] == '(')) {
                     m_unit = CSSParser::FNumber;
-                    m_type = WebKitCSSTransformValue::Scale3DTransformOperation;
+                    m_type = CSSTransformValue::Scale3DTransformOperation;
                     m_argCount = 5;
                 }
             } else if (((characters[0] == 'r') || (characters[0] == 'R'))
@@ -7795,13 +7795,13 @@ public:
                        & (characters[7] == '(')) {
                 if ((characters[6] == 'x') || (characters[6] == 'X')) {
                     m_unit = CSSParser::FAngle;
-                    m_type = WebKitCSSTransformValue::RotateXTransformOperation;
+                    m_type = CSSTransformValue::RotateXTransformOperation;
                 } else if ((characters[6] == 'y') || (characters[6] == 'Y')) {
                     m_unit = CSSParser::FAngle;
-                    m_type = WebKitCSSTransformValue::RotateYTransformOperation;
+                    m_type = CSSTransformValue::RotateYTransformOperation;
                 } else if ((characters[6] == 'z') || (characters[6] == 'Z')) {
                     m_unit = CSSParser::FAngle;
-                    m_type = WebKitCSSTransformValue::RotateZTransformOperation;
+                    m_type = CSSTransformValue::RotateZTransformOperation;
                 }
             }
             break;
@@ -7817,7 +7817,7 @@ public:
                     & ((characters[7] == 'd') || (characters[7] == 'D'))
                     & (characters[8] == '(')) {
                     m_unit = CSSParser::FNumber;
-                    m_type = WebKitCSSTransformValue::Matrix3DTransformOperation;
+                    m_type = CSSTransformValue::Matrix3DTransformOperation;
                     m_argCount = 31;
                 }
             } else if (((characters[0] == 'r') || (characters[0] == 'R'))
@@ -7830,7 +7830,7 @@ public:
                        & ((characters[7] == 'd') || (characters[7] == 'D'))
                        & (characters[8] == '(')) {
                 m_unit = CSSParser::FNumber;
-                m_type = WebKitCSSTransformValue::Rotate3DTransformOperation;
+                m_type = CSSTransformValue::Rotate3DTransformOperation;
                 m_argCount = 7;
             }
             break;
@@ -7847,7 +7847,7 @@ public:
                 & ((characters[8] == 'e') || (characters[8] == 'E'))
                 & (characters[9] == '(')) {
                 m_unit = CSSParser::FLength | CSSParser::FPercent;
-                m_type = WebKitCSSTransformValue::TranslateTransformOperation;
+                m_type = CSSTransformValue::TranslateTransformOperation;
                 m_allowSingleArgument = true;
                 m_argCount = 3;
             }
@@ -7866,13 +7866,13 @@ public:
                 & (characters[10] == '(')) {
                 if ((characters[9] == 'x') || (characters[9] == 'X')) {
                     m_unit = CSSParser::FLength | CSSParser::FPercent;
-                    m_type = WebKitCSSTransformValue::TranslateXTransformOperation;
+                    m_type = CSSTransformValue::TranslateXTransformOperation;
                 } else if ((characters[9] == 'y') || (characters[9] == 'Y')) {
                     m_unit = CSSParser::FLength | CSSParser::FPercent;
-                    m_type = WebKitCSSTransformValue::TranslateYTransformOperation;
+                    m_type = CSSTransformValue::TranslateYTransformOperation;
                 } else if ((characters[9] == 'z') || (characters[9] == 'Z')) {
                     m_unit = CSSParser::FLength | CSSParser::FPercent;
-                    m_type = WebKitCSSTransformValue::TranslateZTransformOperation;
+                    m_type = CSSTransformValue::TranslateZTransformOperation;
                 }
             }
             break;
@@ -7891,7 +7891,7 @@ public:
                     & ((characters[10] == 'e') || (characters[10] == 'E'))
                     & (characters[11] == '(')) {
                     m_unit = CSSParser::FNumber;
-                    m_type = WebKitCSSTransformValue::PerspectiveTransformOperation;
+                    m_type = CSSTransformValue::PerspectiveTransformOperation;
                 }
             } else if (((characters[0] == 't') || (characters[0] == 'T'))
                        & ((characters[1] == 'r') || (characters[1] == 'R'))
@@ -7906,22 +7906,22 @@ public:
                        & ((characters[10] == 'd') || (characters[10] == 'D'))
                        & (characters[11] == '(')) {
                 m_unit = CSSParser::FLength | CSSParser::FPercent;
-                m_type = WebKitCSSTransformValue::Translate3DTransformOperation;
+                m_type = CSSTransformValue::Translate3DTransformOperation;
                 m_argCount = 5;
             }
             break;
         } // end switch ()
     }
 
-    WebKitCSSTransformValue::TransformOperationType type() const { return m_type; }
+    CSSTransformValue::TransformOperationType type() const { return m_type; }
     unsigned argCount() const { return m_argCount; }
     CSSParser::Units unit() const { return m_unit; }
 
-    bool unknown() const { return m_type == WebKitCSSTransformValue::UnknownTransformOperation; }
+    bool unknown() const { return m_type == CSSTransformValue::UnknownTransformOperation; }
     bool hasCorrectArgCount(unsigned argCount) { return m_argCount == argCount || (m_allowSingleArgument && argCount == 1); }
 
 private:
-    WebKitCSSTransformValue::TransformOperationType m_type;
+    CSSTransformValue::TransformOperationType m_type;
     unsigned m_argCount;
     bool m_allowSingleArgument;
     CSSParser::Units m_unit;
@@ -7963,10 +7963,10 @@ PassRefPtr<CSSValue> CSSParser::parseTransformValue(CSSParserValue *value)
         return 0;
 
     // The transform is a list of functional primitives that specify transform operations.
-    // We collect a list of WebKitCSSTransformValues, where each value specifies a single operation.
+    // We collect a list of CSSTransformValues, where each value specifies a single operation.
 
-    // Create the new WebKitCSSTransformValue for this operation and add it to our list.
-    RefPtr<WebKitCSSTransformValue> transformValue = WebKitCSSTransformValue::create(info.type());
+    // Create the new CSSTransformValue for this operation and add it to our list.
+    RefPtr<CSSTransformValue> transformValue = CSSTransformValue::create(info.type());
 
     // Snag our values.
     CSSParserValue* a = args->current();
@@ -7974,19 +7974,19 @@ PassRefPtr<CSSValue> CSSParser::parseTransformValue(CSSParserValue *value)
     while (a) {
         CSSParser::Units unit = info.unit();
 
-        if (info.type() == WebKitCSSTransformValue::Rotate3DTransformOperation && argNumber == 3) {
+        if (info.type() == CSSTransformValue::Rotate3DTransformOperation && argNumber == 3) {
             // 4th param of rotate3d() is an angle rather than a bare number, validate it as such
             if (!validUnit(a, FAngle, CSSStrictMode))
                 return 0;
-        } else if (info.type() == WebKitCSSTransformValue::Translate3DTransformOperation && argNumber == 2) {
+        } else if (info.type() == CSSTransformValue::Translate3DTransformOperation && argNumber == 2) {
             // 3rd param of translate3d() cannot be a percentage
             if (!validUnit(a, FLength, CSSStrictMode))
                 return 0;
-        } else if (info.type() == WebKitCSSTransformValue::TranslateZTransformOperation && !argNumber) {
+        } else if (info.type() == CSSTransformValue::TranslateZTransformOperation && !argNumber) {
             // 1st param of translateZ() cannot be a percentage
             if (!validUnit(a, FLength, CSSStrictMode))
                 return 0;
-        } else if (info.type() == WebKitCSSTransformValue::PerspectiveTransformOperation && !argNumber) {
+        } else if (info.type() == CSSTransformValue::PerspectiveTransformOperation && !argNumber) {
             // 1st param of perspective() must be a non-negative number (deprecated) or length.
             if (!validUnit(a, FNumber | FLength | FNonNeg, CSSStrictMode))
                 return 0;
@@ -8095,7 +8095,7 @@ PassRefPtr<WebKitCSSArrayFunctionValue> CSSParser::parseCustomFilterArrayFunctio
     return arrayFunction;
 }
 
-PassRefPtr<WebKitCSSMixFunctionValue> CSSParser::parseMixFunction(CSSParserValue* value)
+PassRefPtr<CSSMixFunctionValue> CSSParser::parseMixFunction(CSSParserValue* value)
 {
     ASSERT(value->unit == CSSParserValue::Function && value->function);
 
@@ -8110,7 +8110,7 @@ PassRefPtr<WebKitCSSMixFunctionValue> CSSParser::parseMixFunction(CSSParserValue
     if (numArgs < 1 || numArgs > 3)
         return 0;
 
-    RefPtr<WebKitCSSMixFunctionValue> mixFunction = WebKitCSSMixFunctionValue::create();
+    RefPtr<CSSMixFunctionValue> mixFunction = CSSMixFunctionValue::create();
 
     bool hasBlendMode = false;
     bool hasAlphaCompositing = false;
@@ -8122,7 +8122,7 @@ PassRefPtr<WebKitCSSMixFunctionValue> CSSParser::parseMixFunction(CSSParserValue
         if (!argNumber) {
             if (arg->unit == CSSPrimitiveValue::CSS_URI) {
                 KURL shaderURL = completeURL(arg->string);
-                value = WebKitCSSShaderValue::create(shaderURL.string());
+                value = CSSShaderValue::create(shaderURL.string());
             }
         } else if (argNumber == 1 || argNumber == 2) {
             if (!hasBlendMode && isBlendMode(arg->id)) {
@@ -8300,7 +8300,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunctionWithInlineS
             value = cssValuePool().createIdentifierValue(CSSValueNone);
         else if (arg->unit == CSSPrimitiveValue::CSS_URI) {
             KURL shaderURL = completeURL(arg->string);
-            value = WebKitCSSShaderValue::create(shaderURL.string());
+            value = CSSShaderValue::create(shaderURL.string());
             hadAtLeastOneCustomShader = true;
         } else if (argsList->currentIndex() == 1 && arg->unit == CSSParserValue::Function) {
             if (!(value = parseMixFunction(arg)))
@@ -8405,11 +8405,11 @@ PassRefPtr<CSSValueList> CSSParser::parseCustomFilterTransform(CSSParserValueLis
     return list.release();
 }
 
-PassRefPtr<WebKitCSSShaderValue> CSSParser::parseFilterRuleSrcUriAndFormat(CSSParserValueList* valueList)
+PassRefPtr<CSSShaderValue> CSSParser::parseFilterRuleSrcUriAndFormat(CSSParserValueList* valueList)
 {
     CSSParserValue* value = valueList->current();
     ASSERT(value && value->unit == CSSPrimitiveValue::CSS_URI);
-    RefPtr<WebKitCSSShaderValue> shaderValue = WebKitCSSShaderValue::create(completeURL(value->string));
+    RefPtr<CSSShaderValue> shaderValue = CSSShaderValue::create(completeURL(value->string));
 
     value = valueList->next();
     if (value && value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "format(")) {
@@ -8437,7 +8437,7 @@ bool CSSParser::parseFilterRuleSrc()
         if (value->unit != CSSPrimitiveValue::CSS_URI)
             return false;
 
-        RefPtr<WebKitCSSShaderValue> shaderValue = parseFilterRuleSrcUriAndFormat(m_valueList.get());
+        RefPtr<CSSShaderValue> shaderValue = parseFilterRuleSrcUriAndFormat(m_valueList.get());
         if (!shaderValue)
             return false;
         srcList->append(shaderValue.release());
@@ -8576,7 +8576,7 @@ PassRefPtr<CSSValueList> CSSParser::parseFilter()
         if (value->unit == CSSPrimitiveValue::CSS_URI) {
             RefPtr<WebKitCSSFilterValue> referenceFilterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::ReferenceFilterOperation);
             list->append(referenceFilterValue);
-            referenceFilterValue->append(WebKitCSSSVGDocumentValue::create(value->string));
+            referenceFilterValue->append(CSSSVGDocumentValue::create(value->string));
         } else {
             const CSSParserString name = value->function->name;
             unsigned maximumArgumentCount = 1;

@@ -543,9 +543,9 @@ sub GetIndexedGetterFunction
 {
     my $interface = shift;
 
-    # FIXME: Expose indexed getter of WebKitCSSMixFunctionValue by removing this special case
-    # because CSSValueList(which is parent of WebKitCSSMixFunctionValue) has indexed property getter.
-    if ($interface->name eq "WebKitCSSMixFunctionValue") {
+    # FIXME: Expose indexed getter of CSSMixFunctionValue by removing this special case
+    # because CSSValueList(which is parent of CSSMixFunctionValue) has indexed property getter.
+    if ($interface->name eq "CSSMixFunctionValue") {
         return 0;
     }
 

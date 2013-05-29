@@ -83,17 +83,17 @@ public:
     bool isCubicBezierTimingFunctionValue() const { return m_classType == CubicBezierTimingFunctionClass; }
     bool isLinearTimingFunctionValue() const { return m_classType == LinearTimingFunctionClass; }
     bool isStepsTimingFunctionValue() const { return m_classType == StepsTimingFunctionClass; }
-    bool isWebKitCSSTransformValue() const { return m_classType == WebKitCSSTransformClass; }
+    bool isCSSTransformValue() const { return m_classType == CSSTransformClass; }
     bool isCSSLineBoxContainValue() const { return m_classType == LineBoxContainClass; }
     bool isCalculationValue() const {return m_classType == CalculationClass; }
     bool isWebKitCSSFilterValue() const { return m_classType == WebKitCSSFilterClass; }
     bool isWebKitCSSArrayFunctionValue() const { return m_classType == WebKitCSSArrayFunctionValueClass; }
-    bool isWebKitCSSMixFunctionValue() const { return m_classType == WebKitCSSMixFunctionValueClass; }
-    bool isWebKitCSSShaderValue() const { return m_classType == WebKitCSSShaderClass; }
+    bool isCSSMixFunctionValue() const { return m_classType == CSSMixFunctionValueClass; }
+    bool isCSSShaderValue() const { return m_classType == CSSShaderClass; }
     bool isVariableValue() const { return m_classType == VariableClass; }
     bool isSVGColor() const { return m_classType == SVGColorClass || m_classType == SVGPaintClass; }
     bool isSVGPaint() const { return m_classType == SVGPaintClass; }
-    bool isWebKitCSSSVGDocumentValue() const { return m_classType == WebKitCSSSVGDocumentClass; }
+    bool isCSSSVGDocumentValue() const { return m_classType == CSSSVGDocumentClass; }
     
     bool isCSSOMSafe() const { return m_isCSSOMSafe; }
     bool isSubtypeExposedToCSSOM() const
@@ -148,21 +148,21 @@ protected:
         UnicodeRangeClass,
         LineBoxContainClass,
         CalculationClass,
-        WebKitCSSShaderClass,
+        CSSShaderClass,
         VariableClass,
 
         // SVG classes.
         SVGColorClass,
         SVGPaintClass,
-        WebKitCSSSVGDocumentClass,
+        CSSSVGDocumentClass,
 
         // List class types must appear after ValueListClass.
         ValueListClass,
         ImageSetClass,
         WebKitCSSFilterClass,
         WebKitCSSArrayFunctionValueClass,
-        WebKitCSSMixFunctionValueClass,
-        WebKitCSSTransformClass,
+        CSSMixFunctionValueClass,
+        CSSTransformClass,
         // Do not append non-list class types here.
     };
 

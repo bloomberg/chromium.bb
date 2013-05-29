@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "core/css/WebKitCSSTransformValue.h"
+#include "core/css/CSSTransformValue.h"
 
 #include "core/css/CSSValueList.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -59,43 +59,43 @@ const char* const transformNamePrefixes[] = {
     "matrix3d("
 };
 
-static inline String transformValueToCssString(WebKitCSSTransformValue::TransformOperationType operation, const String& value)
+static inline String transformValueToCssString(CSSTransformValue::TransformOperationType operation, const String& value)
 {
-    if (operation != WebKitCSSTransformValue::UnknownTransformOperation) {
+    if (operation != CSSTransformValue::UnknownTransformOperation) {
         ASSERT_WITH_SECURITY_IMPLICATION(static_cast<size_t>(operation) < WTF_ARRAY_LENGTH(transformNamePrefixes));
         return transformNamePrefixes[operation] + value + ")";
     }
     return String();
 }
 
-WebKitCSSTransformValue::WebKitCSSTransformValue(TransformOperationType op)
-    : CSSValueList(WebKitCSSTransformClass, CommaSeparator)
+CSSTransformValue::CSSTransformValue(TransformOperationType op)
+    : CSSValueList(CSSTransformClass, CommaSeparator)
     , m_type(op)
 {
 }
 
-String WebKitCSSTransformValue::customCssText() const
+String CSSTransformValue::customCssText() const
 {
     return transformValueToCssString(m_type, CSSValueList::customCssText());
 }
 
-String WebKitCSSTransformValue::customSerializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
+String CSSTransformValue::customSerializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
     return transformValueToCssString(m_type, CSSValueList::customSerializeResolvingVariables(variables));
 }
 
-WebKitCSSTransformValue::WebKitCSSTransformValue(const WebKitCSSTransformValue& cloneFrom)
+CSSTransformValue::CSSTransformValue(const CSSTransformValue& cloneFrom)
     : CSSValueList(cloneFrom)
     , m_type(cloneFrom.m_type)
 {
 }
 
-PassRefPtr<WebKitCSSTransformValue> WebKitCSSTransformValue::cloneForCSSOM() const
+PassRefPtr<CSSTransformValue> CSSTransformValue::cloneForCSSOM() const
 {
-    return adoptRef(new WebKitCSSTransformValue(*this));
+    return adoptRef(new CSSTransformValue(*this));
 }
 
-void WebKitCSSTransformValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+void CSSTransformValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     CSSValueList::reportDescendantMemoryUsage(memoryObjectInfo);

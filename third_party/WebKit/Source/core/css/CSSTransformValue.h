@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebKitCSSTransformValue_h
-#define WebKitCSSTransformValue_h
+#ifndef CSSTransformValue_h
+#define CSSTransformValue_h
 
 #include "core/css/CSSValueList.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class WebKitCSSTransformValue : public CSSValueList {
+class CSSTransformValue : public CSSValueList {
 public:
     // NOTE: these have to match the values in the IDL
     enum TransformOperationType {
@@ -60,24 +60,24 @@ public:
         Matrix3DTransformOperation
     };
 
-    static PassRefPtr<WebKitCSSTransformValue> create(TransformOperationType type)
+    static PassRefPtr<CSSTransformValue> create(TransformOperationType type)
     {
-        return adoptRef(new WebKitCSSTransformValue(type));
+        return adoptRef(new CSSTransformValue(type));
     }
 
     String customCssText() const;
-    bool equals(const WebKitCSSTransformValue& other) const { return m_type == other.m_type && CSSValueList::equals(other); }
+    bool equals(const CSSTransformValue& other) const { return m_type == other.m_type && CSSValueList::equals(other); }
     String customSerializeResolvingVariables(const HashMap<AtomicString, String>&) const;
 
     TransformOperationType operationType() const { return m_type; }
-    
-    PassRefPtr<WebKitCSSTransformValue> cloneForCSSOM() const;
+
+    PassRefPtr<CSSTransformValue> cloneForCSSOM() const;
 
     void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    WebKitCSSTransformValue(TransformOperationType);
-    WebKitCSSTransformValue(const WebKitCSSTransformValue& cloneFrom);
+    CSSTransformValue(TransformOperationType);
+    CSSTransformValue(const CSSTransformValue& cloneFrom);
 
     TransformOperationType m_type;
 };

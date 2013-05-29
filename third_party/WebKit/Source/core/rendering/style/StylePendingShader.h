@@ -30,8 +30,8 @@
 #ifndef StylePendingShader_h
 #define StylePendingShader_h
 
+#include "core/css/CSSShaderValue.h"
 #include "core/css/CSSValue.h"
-#include "core/css/WebKitCSSShaderValue.h"
 #include "core/rendering/style/StyleShader.h"
 #include <wtf/PassRefPtr.h>
 
@@ -41,18 +41,18 @@ class WebKitCSSShaderValue;
 
 class StylePendingShader : public StyleShader {
 public:
-    static PassRefPtr<StylePendingShader> create(WebKitCSSShaderValue* value) { return adoptRef(new StylePendingShader(value)); }
+    static PassRefPtr<StylePendingShader> create(CSSShaderValue* value) { return adoptRef(new StylePendingShader(value)); }
     
     virtual PassRefPtr<CSSValue> cssValue() const { return m_value; }
-    WebKitCSSShaderValue* cssShaderValue() const { return m_value; }
+    CSSShaderValue* cssShaderValue() const { return m_value; }
 private:
-    StylePendingShader(WebKitCSSShaderValue* value)
+    StylePendingShader(CSSShaderValue* value)
         : m_value(value)
     {
          m_isPendingShader = true;
     }
     
-    WebKitCSSShaderValue* m_value; // Not retained; it owns us.
+    CSSShaderValue* m_value; // Not retained; it owns us.
 };
 
 }

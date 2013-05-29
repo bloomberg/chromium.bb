@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (C) 2011 Adobe Systems Incorporated. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,43 +27,54 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/css/WebKitCSSMixFunctionValue.h"
+#ifndef CSSShaderValue_h
+#define CSSShaderValue_h
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSValue.h"
 
 namespace WebCore {
-    
-WebKitCSSMixFunctionValue::WebKitCSSMixFunctionValue()
-    : CSSValueList(WebKitCSSMixFunctionValueClass, SpaceSeparator)
-{
-}
 
-WebKitCSSMixFunctionValue::WebKitCSSMixFunctionValue(const WebKitCSSMixFunctionValue& cloneFrom)
-    : CSSValueList(cloneFrom)
-{
-}
+class CachedResourceLoader;
+class KURL;
+class StyleCachedShader;
+class StyleShader;
 
-String WebKitCSSMixFunctionValue::customCssText() const
-{
-    return "mix(" + CSSValueList::customCssText() + ")";
-}
+class CSSShaderValue : public CSSValue {
+public:
+    static PassRefPtr<CSSShaderValue> create(const String& url) { return adoptRef(new CSSShaderValue(url)); }
+    ~CSSShaderValue();
 
-PassRefPtr<WebKitCSSMixFunctionValue> WebKitCSSMixFunctionValue::cloneForCSSOM() const
-{
-    return adoptRef(new WebKitCSSMixFunctionValue(*this));
-}
+    const String& format() const { return m_format; }
+    void setFormat(const String& format) { m_format = format; }
 
-bool WebKitCSSMixFunctionValue::equals(const WebKitCSSMixFunctionValue& other) const
-{
-    return CSSValueList::equals(other);
-}
+    KURL completeURL(CachedResourceLoader*) const;
+    StyleCachedShader* cachedShader(CachedResourceLoader*);
+    StyleShader* cachedOrPendingShader();
 
-void WebKitCSSMixFunctionValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+    String customCssText() const;
+
+    bool equals(const CSSShaderValue&) const;
+
+    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
+
+private:
+    CSSShaderValue(const String& url);
+
+    String m_url;
+    String m_format;
+    RefPtr<StyleShader> m_shader;
+    bool m_accessedShader;
+};
+
+// This will catch anyone doing an unnecessary cast.
+CSSShaderValue* toCSSShaderValue(const CSSShaderValue*);
+
+inline CSSShaderValue* toCSSShaderValue(CSSValue* value)
 {
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    CSSValueList::reportDescendantMemoryUsage(memoryObjectInfo);
+    return value->isCSSShaderValue() ? static_cast<CSSShaderValue*>(value) : 0;
 }
 
 } // namespace WebCore
 
+
+#endif // CSSShaderValue_h
