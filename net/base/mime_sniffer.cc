@@ -240,6 +240,21 @@ static const MagicNumber kExtraMagicNumbers[] = {
   MAGIC_NUMBER("application/x-shockwave-flash", "CWS")
   MAGIC_NUMBER("application/x-shockwave-flash", "FWS")
   MAGIC_NUMBER("video/x-flv", "FLV")
+
+  // RAW image types.
+  MAGIC_NUMBER("image/x-canon-cr2", "II\x2a\x00\x10\x00\x00\x00CR")
+  MAGIC_NUMBER("image/x-canon-crw", "II\x1a\x00\x00\x00HEAPCCDR")
+  MAGIC_NUMBER("image/x-minolta-mrw", "\x00MRM")
+  MAGIC_NUMBER("image/x-olympus-orf", "MMOR")  // big-endian
+  MAGIC_NUMBER("image/x-olympus-orf", "IIRO")  // little-endian
+  MAGIC_NUMBER("image/x-olympus-orf", "IIRS")  // little-endian
+  MAGIC_NUMBER("image/x-fuji-raf", "FUJIFILMCCD-RAW ")
+  MAGIC_NUMBER("image/x-panasonic-raw",
+               "IIU\x00\x08\x00\x00\x00")  // Panasonic .raw
+  MAGIC_NUMBER("image/x-panasonic-raw",
+               "IIU\x00\x18\x00\x00\x00")  // Panasonic .rw2
+  MAGIC_NUMBER("image/x-phaseone-raw", "MMMMRaw")
+  MAGIC_NUMBER("image/x-x3f", "FOVb")
 };
 
 // Our HTML sniffer differs slightly from Mozilla.  For example, Mozilla will

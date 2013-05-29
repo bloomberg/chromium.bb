@@ -15,16 +15,38 @@ namespace chrome {
 namespace {
 
 const base::FilePath::CharType* const kExtraSupportedExtensions[] = {
-  // RAW Picture file types.
+  // RAW picture file types.
   // Some of which are just image/tiff.
   FILE_PATH_LITERAL("3fr"),  // (Hasselblad)
   FILE_PATH_LITERAL("arw"),  // (Sony)
+  FILE_PATH_LITERAL("dcr"),  // (Kodak)
   FILE_PATH_LITERAL("dng"),  // (Adobe, Leica, Ricoh, Samsung)
+  FILE_PATH_LITERAL("erf"),  // (Epson)
+  FILE_PATH_LITERAL("k25"),  // (Kodak)
+  FILE_PATH_LITERAL("kdc"),  // (Kodak)
   FILE_PATH_LITERAL("mef"),  // (Mamiya)
+  FILE_PATH_LITERAL("mos"),  // (Leaf)
   FILE_PATH_LITERAL("nef"),  // (Nikon)
   FILE_PATH_LITERAL("pef"),  // (Pentax)
   FILE_PATH_LITERAL("sr2"),  // (Sony)
   FILE_PATH_LITERAL("srf"),  // (Sony)
+
+  // More RAW picture file types.
+  FILE_PATH_LITERAL("cr2"),  // (Canon - image/x-canon-cr2)
+  // Note, some .crw files are just TIFFs.
+  FILE_PATH_LITERAL("crw"),  // (Canon - image/x-canon-crw)
+  FILE_PATH_LITERAL("mrw"),  // (Minolta - image/x-minolta-mrw)
+  FILE_PATH_LITERAL("orf"),  // (Olympus - image/x-olympus-orf)
+  FILE_PATH_LITERAL("raf"),  // (Fuji)
+  FILE_PATH_LITERAL("rw2"),  // (Panasonic - image/x-panasonic-raw)
+  FILE_PATH_LITERAL("x3f"),  // (Sigma - image/x-x3f)
+
+  // There exists many file formats all with the .raw extension. For now, only
+  // the following types are supported:
+  // - TIFF files with .raw extension - image/tiff
+  // - Leica / Panasonic RAW files - image/x-panasonic-raw
+  // - Phase One RAW files - image/x-phaseone-raw
+  FILE_PATH_LITERAL("raw"),
 
   // Video files types.
   FILE_PATH_LITERAL("3gp"),
