@@ -45,7 +45,19 @@
 #include "net/cookies/parsed_cookie.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
+
+// TODO(jww): We are collecting several UMA statistics in this file, and they
+// relate to http://crbug.com/238041. We are measuring stats related to control
+// characters in cookies because, currently, we allow control characters in a
+// variety of scenarios where various RFCs theoretically disallow them. These
+// control characters have the potential to cause problems with certain web
+// servers that reject HTTP requests that contain cookies with control
+// characters. We are measuring whether disallowing such cookies would have a
+// notable impact on our users. We want to collect these stats through 1 stable
+// release, so these UMA stats should remain at least through the M29
+// branch-point.
 
 namespace {
 
@@ -182,20 +194,26 @@ CookiePriority ParsedCookie::Priority() const {
 }
 
 bool ParsedCookie::SetName(const std::string& name) {
-  if (!IsValidToken(name))
+  if (!IsValidToken(name)) {
+    UMA_HISTOGRAM_BOOLEAN("Cookies.SetNameInvalidToken", true);
     return false;
+  }
   if (pairs_.empty())
     pairs_.push_back(std::make_pair("", ""));
   pairs_[0].first = name;
+  UMA_HISTOGRAM_BOOLEAN("Cookies.SetNameInvalidToken", false);
   return true;
 }
 
 bool ParsedCookie::SetValue(const std::string& value) {
-  if (!IsValidCookieValue(value))
+  if (!IsValidCookieValue(value)) {
+    UMA_HISTOGRAM_BOOLEAN("Cookies.SetValueInvalidCookieValue", true);
     return false;
+  }
   if (pairs_.empty())
     pairs_.push_back(std::make_pair("", ""));
   pairs_[0].second = value;
+  UMA_HISTOGRAM_BOOLEAN("Cookies.SetValueInvalidCookieValue", false);
   return true;
 }
 
@@ -337,6 +355,9 @@ std::string ParsedCookie::ParseValueString(const std::string& value) {
 
 // Parse all token/value pairs and populate pairs_.
 void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
+  bool parsed_invalid_control_char = false;
+  bool parsed_invalid_token = false;
+
   pairs_.clear();
 
   // Ok, here we go.  We should be expecting to be starting somewhere
@@ -384,6 +405,11 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
     // OK, we're finished with a Token/Value.
     pair.second = std::string(value_start, value_end);
 
+    if (!IsValidCookieAttributeValue(pair.second))
+      parsed_invalid_control_char = true;
+    if (!IsValidToken(pair.second))
+      parsed_invalid_token = true;
+
     // From RFC2109: "Attributes (names) (attr) are case-insensitive."
     if (pair_num != 0)
       StringToLowerASCII(&pair.first);
@@ -394,6 +420,10 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
     if (it != end)
       ++it;
   }
+
+  UMA_HISTOGRAM_BOOLEAN("Cookies.ParsedInvalidControlCharacter",
+                        parsed_invalid_control_char);
+  UMA_HISTOGRAM_BOOLEAN("Cookies.ParsedInvalidToken", parsed_invalid_token);
 }
 
 void ParsedCookie::SetupAttributes() {
@@ -444,8 +474,11 @@ bool ParsedCookie::SetBool(size_t* index,
 bool ParsedCookie::SetAttributePair(size_t* index,
                                     const std::string& key,
                                     const std::string& value) {
-  if (!IsValidToken(key) || !IsValidCookieAttributeValue(value))
+  if (!IsValidToken(key) || !IsValidCookieAttributeValue(value)) {
+    UMA_HISTOGRAM_BOOLEAN("Cookies.SetAttributePairInvalidChars", true);
     return false;
+  }
+  UMA_HISTOGRAM_BOOLEAN("Cookies.SetAttributePairInvalidChars", false);
   if (!IsValid())
     return false;
   if (*index) {
