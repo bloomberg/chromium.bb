@@ -45,13 +45,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   virtual void ViewClosed() OVERRIDE {
     DCHECK(runner_);
-    AutofillDialogControllerImpl::ViewClosed();
     runner_->Quit();
-  }
-
-  void RunMessageLoop() {
-    DCHECK(runner_);
-    runner_->Run();
+    AutofillDialogControllerImpl::ViewClosed();
   }
 
   AutofillDialogCocoa* GetView() {
@@ -96,6 +91,11 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
 
   TestAutofillDialogController* controller() { return controller_; }
 
+  void RunMessageLoop() {
+    DCHECK(runner_);
+    runner_->Run();
+  }
+
  private:
   // The controller owns itself.
   TestAutofillDialogController* controller_;
@@ -107,19 +107,12 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogCocoaBrowserTest);
 };
 
-// The following test fails under ASAN due to a read-after-free.
-// http://crbug.com/234008
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_DisplayUI DISABLED_DisplayUI
-#else
-#define MAYBE_DisplayUI DisplayUI
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillDialogCocoaBrowserTest, MAYBE_DisplayUI) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogCocoaBrowserTest, DisplayUI) {
   controller()->Show();
   controller()->OnCancel();
   controller()->Hide();
 
-  controller()->RunMessageLoop();
+  RunMessageLoop();
 }
 
 }  // namespace
