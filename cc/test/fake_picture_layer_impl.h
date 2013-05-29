@@ -28,6 +28,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   using PictureLayerImpl::AddTiling;
   using PictureLayerImpl::CleanUpTilingsOnActiveLayer;
+  using PictureLayerImpl::CanHaveTilings;
 
   PictureLayerImpl* twin_layer() { return twin_layer_; }
   PictureLayerTilingSet* tilings() { return tilings_.get(); }

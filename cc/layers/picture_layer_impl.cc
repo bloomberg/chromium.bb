@@ -682,7 +682,7 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
                                                    rect);
          iter;
          ++iter) {
-      if (!iter->tile_version().IsReadyToDraw())
+      if (!*iter || !iter->tile_version().IsReadyToDraw())
         continue;
       missing_region.Subtract(iter.geometry_rect());
       iter->mark_required_for_activation();

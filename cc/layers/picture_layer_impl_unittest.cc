@@ -58,8 +58,6 @@ class PictureLayerImplTest : public testing::Test {
         host_impl_.active_tree()->LayerById(id_));
 
     SetupPendingTree(pending_pile);
-    pending_layer_ = static_cast<FakePictureLayerImpl*>(
-        host_impl_.pending_tree()->LayerById(id_));
     pending_layer_->UpdateTwinLayer();
   }
 
@@ -86,6 +84,9 @@ class PictureLayerImplTest : public testing::Test {
         FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
     pending_layer->SetDrawsContent(true);
     pending_tree->SetRootLayer(pending_layer.PassAs<LayerImpl>());
+
+    pending_layer_ = static_cast<FakePictureLayerImpl*>(
+        host_impl_.pending_tree()->LayerById(id_));
   }
 
   static void VerifyAllTilesExistAndHavePile(
@@ -804,6 +805,26 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
 
   ASSERT_EQ(1U, quad_culler.quad_list().size());
   EXPECT_EQ(DrawQuad::PICTURE_CONTENT, quad_culler.quad_list()[0]->material);
+}
+
+TEST_F(PictureLayerImplTest, MarkRequiredNullTiles) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(1000, 1000);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+  // Layers with entirely empty piles can't get tilings.
+  pending_pile->AddRecordingAt(0, 0);
+
+  SetupPendingTree(pending_pile);
+
+  ASSERT_TRUE(pending_layer_->CanHaveTilings());
+  pending_layer_->AddTiling(1.0f);
+  pending_layer_->AddTiling(2.0f);
+
+  // It should be safe to call this (and MarkVisibleResourcesAsRequired)
+  // on a layer with no recordings.
+  host_impl_.pending_tree()->UpdateDrawProperties();
 }
 
 }  // namespace
