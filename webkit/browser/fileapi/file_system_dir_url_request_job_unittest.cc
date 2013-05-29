@@ -53,9 +53,10 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     file_system_context_ = CreateFileSystemContextForTesting(
         NULL, temp_dir_.path());
 
-    file_system_context_->sandbox_provider()->ValidateFileSystemRoot(
-        GURL("http://remote/"), kFileSystemTypeTemporary, true,  // create
-        base::Bind(&FileSystemDirURLRequestJobTest::OnValidateFileSystem,
+    file_system_context_->sandbox_provider()->OpenFileSystem(
+        GURL("http://remote/"), kFileSystemTypeTemporary,
+        OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        base::Bind(&FileSystemDirURLRequestJobTest::OnOpenFileSystem,
                    weak_factory_.GetWeakPtr()));
     base::MessageLoop::current()->RunUntilIdle();
 
@@ -72,7 +73,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     ClearUnusedJob();
   }
 
-  void OnValidateFileSystem(base::PlatformFileError result) {
+  void OnOpenFileSystem(base::PlatformFileError result) {
     ASSERT_EQ(base::PLATFORM_FILE_OK, result);
   }
 

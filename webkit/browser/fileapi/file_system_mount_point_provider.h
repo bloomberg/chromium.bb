@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
+#include "webkit/browser/fileapi/open_file_system_mode.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
@@ -40,9 +41,9 @@ class RemoteFileSystemProxyInterface;
 //
 class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
  public:
-  // Callback for ValidateFileSystemRoot.
+  // Callback for OpenFileSystem.
   typedef base::Callback<void(base::PlatformFileError error)>
-      ValidateFileSystemCallback;
+      OpenFileSystemCallback;
   typedef base::Callback<void(base::PlatformFileError error)>
       DeleteFileSystemCallback;
   virtual ~FileSystemMountPointProvider() {}
@@ -51,16 +52,17 @@ class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
   // One mount point provider may be able to handle multiple filesystem types.
   virtual bool CanHandleType(FileSystemType type) const = 0;
 
-  // Validates the filesystem for the given |origin_url| and |type|.
+  // Initializes the filesystem for the given |origin_url| and |type|.
   // This verifies if it is allowed to request (or create) the filesystem
   // and if it can access (or create) the root directory of the mount point.
-  // If |create| is true this may also create the root directory for
+  // If |mode| is CREATE_IF_NONEXISTENT calling this may also create
+  // the root directory (and/or related database entries etc) for
   // the filesystem if it doesn't exist.
-  virtual void ValidateFileSystemRoot(
+  virtual void OpenFileSystem(
       const GURL& origin_url,
       FileSystemType type,
-      bool create,
-      const ValidateFileSystemCallback& callback) = 0;
+      OpenFileSystemMode mode,
+      const OpenFileSystemCallback& callback) = 0;
 
   // Returns the specialized FileSystemFileUtil for this mount point.
   // It is ok to return NULL if the filesystem doesn't support synchronous

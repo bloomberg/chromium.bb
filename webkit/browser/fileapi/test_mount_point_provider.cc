@@ -91,11 +91,11 @@ bool TestMountPointProvider::CanHandleType(FileSystemType type) const {
   return (type == kFileSystemTypeTest);
 }
 
-void TestMountPointProvider::ValidateFileSystemRoot(
+void TestMountPointProvider::OpenFileSystem(
     const GURL& origin_url,
     FileSystemType type,
-    bool create,
-    const ValidateFileSystemCallback& callback) {
+    OpenFileSystemMode mode,
+    const OpenFileSystemCallback& callback) {
   callback.Run(base::PLATFORM_FILE_OK);
 }
 

@@ -19,11 +19,11 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
 
   // FileSystemMountPointProvider implementation.
   virtual bool CanHandleType(FileSystemType type) const OVERRIDE;
-  virtual void ValidateFileSystemRoot(
+  virtual void OpenFileSystem(
       const GURL& origin_url,
       FileSystemType type,
-      bool create,
-      const ValidateFileSystemCallback& callback) OVERRIDE;
+      OpenFileSystemMode mode,
+      const OpenFileSystemCallback& callback) OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(

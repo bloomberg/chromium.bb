@@ -72,11 +72,11 @@ bool MediaFileSystemMountPointProvider::CanHandleType(
   }
 }
 
-void MediaFileSystemMountPointProvider::ValidateFileSystemRoot(
+void MediaFileSystemMountPointProvider::OpenFileSystem(
     const GURL& origin_url,
     fileapi::FileSystemType type,
-    bool create,
-    const ValidateFileSystemCallback& callback) {
+    fileapi::OpenFileSystemMode mode,
+    const OpenFileSystemCallback& callback) {
   // We never allow opening a new isolated FileSystem via usual OpenFileSystem.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,

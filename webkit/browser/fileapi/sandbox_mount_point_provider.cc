@@ -94,23 +94,24 @@ class ObfuscatedOriginEnumerator
   scoped_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enum_;
 };
 
-void DidValidateFileSystemRoot(
+void DidOpenFileSystem(
     base::WeakPtr<SandboxMountPointProvider> mount_point_provider,
-    const FileSystemMountPointProvider::ValidateFileSystemCallback& callback,
+    const FileSystemMountPointProvider::OpenFileSystemCallback& callback,
     base::PlatformFileError* error) {
   if (mount_point_provider)
     mount_point_provider.get()->CollectOpenFileSystemMetrics(*error);
   callback.Run(*error);
 }
 
-void ValidateRootOnFileThread(
+void OpenFileSystemOnFileThread(
     ObfuscatedFileUtil* file_util,
     const GURL& origin_url,
     FileSystemType type,
-    bool create,
+    OpenFileSystemMode mode,
     base::PlatformFileError* error_ptr) {
   DCHECK(error_ptr);
 
+  const bool create = (mode == OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
   base::FilePath root_path =
       file_util->GetDirectoryForOriginAndType(
           origin_url, type, create, error_ptr);
@@ -197,9 +198,10 @@ bool SandboxMountPointProvider::CanHandleType(FileSystemType type) const {
   return IsSandboxType(type);
 }
 
-void SandboxMountPointProvider::ValidateFileSystemRoot(
-    const GURL& origin_url, fileapi::FileSystemType type, bool create,
-    const ValidateFileSystemCallback& callback) {
+void SandboxMountPointProvider::OpenFileSystem(
+    const GURL& origin_url, fileapi::FileSystemType type,
+    OpenFileSystemMode mode,
+    const OpenFileSystemCallback& callback) {
   if (file_system_options_.is_incognito() &&
       !(type == kFileSystemTypeTemporary &&
         enable_temporary_file_system_in_incognito_)) {
@@ -222,11 +224,11 @@ void SandboxMountPointProvider::ValidateFileSystemRoot(
   base::PlatformFileError* error_ptr = new base::PlatformFileError;
   file_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&ValidateRootOnFileThread,
+      base::Bind(&OpenFileSystemOnFileThread,
                  sandbox_sync_file_util(),
-                 origin_url, type, create,
+                 origin_url, type, mode,
                  base::Unretained(error_ptr)),
-      base::Bind(&DidValidateFileSystemRoot,
+      base::Bind(&DidOpenFileSystem,
                  weak_factory_.GetWeakPtr(),
                  callback, base::Owned(error_ptr)));
 

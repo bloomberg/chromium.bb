@@ -249,7 +249,8 @@ PlatformFileError CannedSyncableFileSystem::OpenFileSystem() {
   EXPECT_TRUE(is_filesystem_set_up_);
   EXPECT_FALSE(is_filesystem_opened_);
   file_system_context_->OpenSyncableFileSystem(
-      service_name_, origin_, type_, true /* create */,
+      service_name_, origin_, type_,
+      fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&CannedSyncableFileSystem::DidOpenFileSystem,
                  base::Unretained(this)));
   base::MessageLoop::current()->Run();

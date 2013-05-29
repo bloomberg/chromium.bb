@@ -71,8 +71,8 @@ FileSystemURL CreateFileSystemURL(const char* path) {
       kOrigin, kFileSystemTypeTemporary, base::FilePath::FromUTF8Unsafe(path));
 }
 
-void DidValidateFileSystemRoot(base::PlatformFileError* error_out,
-                               base::PlatformFileError error) {
+void DidOpenFileSystem(base::PlatformFileError* error_out,
+                       base::PlatformFileError error) {
   *error_out = error;
 }
 
@@ -108,13 +108,13 @@ class SandboxMountPointProviderTest : public testing::Test {
 
   bool GetRootPath(const GURL& origin_url,
                    fileapi::FileSystemType type,
-                   bool create,
+                   OpenFileSystemMode mode,
                    base::FilePath* root_path) {
     base::PlatformFileError* error = new base::PlatformFileError(
         base::PLATFORM_FILE_OK);
-    provider_->ValidateFileSystemRoot(
-        origin_url, type, create,
-        base::Bind(&DidValidateFileSystemRoot, error));
+    provider_->OpenFileSystem(
+        origin_url, type, mode,
+        base::Bind(&DidOpenFileSystem, error));
     base::MessageLoop::current()->RunUntilIdle();
     if (*error != base::PLATFORM_FILE_OK)
       return false;
@@ -285,7 +285,8 @@ TEST_F(SandboxMountPointProviderTest, GetRootPathCreateAndExamine) {
     base::FilePath root_path;
     EXPECT_TRUE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
                             kRootPathTestCases[i].type,
-                            true /* create */, &root_path));
+                            OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                            &root_path));
 
     base::FilePath expected = file_system_path().AppendASCII(
         kRootPathTestCases[i].expected_path);
@@ -304,7 +305,8 @@ TEST_F(SandboxMountPointProviderTest, GetRootPathCreateAndExamine) {
     base::FilePath root_path;
     EXPECT_TRUE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
                             kRootPathTestCases[i].type,
-                            false /* create */, &root_path));
+                            OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
+                            &root_path));
     ASSERT_TRUE(returned_root_path.size() > i);
     EXPECT_EQ(returned_root_path[i].value(), root_path.value());
   }
@@ -319,13 +321,15 @@ TEST_F(SandboxMountPointProviderTest,
   GURL origin_url("http://foo.com:1/");
 
   base::FilePath root_path1;
-  EXPECT_TRUE(GetRootPath(origin_url,
-                          kFileSystemTypeTemporary, true, &root_path1));
+  EXPECT_TRUE(GetRootPath(origin_url, kFileSystemTypeTemporary,
+                          OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                          &root_path1));
 
   SetUpNewProvider(CreateDisallowFileAccessOptions());
   base::FilePath root_path2;
-  EXPECT_TRUE(GetRootPath(origin_url,
-                          kFileSystemTypeTemporary, false, &root_path2));
+  EXPECT_TRUE(GetRootPath(origin_url, kFileSystemTypeTemporary,
+                          OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
+                          &root_path2));
 
   EXPECT_EQ(root_path1.value(), root_path2.value());
 }
@@ -339,7 +343,8 @@ TEST_F(SandboxMountPointProviderTest, GetRootPathGetWithoutCreate) {
                  << kRootPathTestCases[i].expected_path);
     EXPECT_FALSE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
                              kRootPathTestCases[i].type,
-                             false /* create */, NULL));
+                             OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
+                             NULL));
   }
 }
 
@@ -350,9 +355,11 @@ TEST_F(SandboxMountPointProviderTest, GetRootPathInIncognito) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPath (incognito) #" << i << " "
                  << kRootPathTestCases[i].expected_path);
-    EXPECT_FALSE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
-                             kRootPathTestCases[i].type,
-                             true /* create */, NULL));
+    EXPECT_FALSE(
+        GetRootPath(GURL(kRootPathTestCases[i].origin_url),
+                    kRootPathTestCases[i].type,
+                    OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                    NULL));
   }
 }
 
@@ -361,9 +368,11 @@ TEST_F(SandboxMountPointProviderTest, GetRootPathFileURI) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathFileURITestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPathFileURI (disallow) #"
                  << i << " " << kRootPathFileURITestCases[i].expected_path);
-    EXPECT_FALSE(GetRootPath(GURL(kRootPathFileURITestCases[i].origin_url),
-                             kRootPathFileURITestCases[i].type,
-                             true /* create */, NULL));
+    EXPECT_FALSE(
+        GetRootPath(GURL(kRootPathFileURITestCases[i].origin_url),
+                    kRootPathFileURITestCases[i].type,
+                    OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                    NULL));
   }
 }
 
@@ -375,7 +384,8 @@ TEST_F(SandboxMountPointProviderTest, GetRootPathFileURIWithAllowFlag) {
     base::FilePath root_path;
     EXPECT_TRUE(GetRootPath(GURL(kRootPathFileURITestCases[i].origin_url),
                             kRootPathFileURITestCases[i].type,
-                            true /* create */, &root_path));
+                            OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                            &root_path));
     base::FilePath expected = file_system_path().AppendASCII(
         kRootPathFileURITestCases[i].expected_path);
     EXPECT_EQ(expected.value(), root_path.value());

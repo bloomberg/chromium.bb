@@ -339,7 +339,8 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   BrowserContext::GetStoragePartition(profile_, site_instance)->
       GetFileSystemContext()->OpenFileSystem(
-          source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
+          source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal,
+          fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
           base::Bind(
               &RunOpenFileSystemCallback,
               base::Bind(&FileBrowserHandlerInternalSelectFileFunction::

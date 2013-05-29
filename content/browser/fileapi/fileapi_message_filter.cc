@@ -195,7 +195,11 @@ void FileAPIMessageFilter::OnOpen(
   } else if (type == fileapi::kFileSystemTypePersistent) {
     RecordAction(UserMetricsAction("OpenFileSystemPersistent"));
   }
-  context_->OpenFileSystem(origin_url, type, create, base::Bind(
+  // TODO(kinuko): Use this mode for IPC too.
+  fileapi::OpenFileSystemMode mode =
+      create ? fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT
+             : fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT;
+  context_->OpenFileSystem(origin_url, type, mode, base::Bind(
       &FileAPIMessageFilter::DidOpenFileSystem, this, request_id));
 }
 

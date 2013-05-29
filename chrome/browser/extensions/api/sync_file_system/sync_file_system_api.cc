@@ -160,7 +160,7 @@ void SyncFileSystemRequestFileSystemFunction::DidInitializeFileSystemContext(
            service_name,
            source_url().GetOrigin(),
            fileapi::kFileSystemTypeSyncable,
-           true, /* create */
+           fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
            base::Bind(&self::DidOpenFileSystem, this)));
 }
 

@@ -824,7 +824,8 @@ bool ExtensionTaskExecutor::ExecuteAndNotify(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&fileapi::FileSystemContext::OpenFileSystem,
                  file_system_context_handler,
-                 origin_url, fileapi::kFileSystemTypeExternal, false, // create
+                 origin_url, fileapi::kFileSystemTypeExternal,
+                 fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
                  ExecuteTasksFileSystemCallbackDispatcher::CreateCallback(
                      this,
                      file_system_context_handler,

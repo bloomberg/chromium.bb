@@ -616,7 +616,8 @@ void RequestLocalFileSystemFunction::RequestOnFileThread(
     int child_id) {
   GURL origin_url = source_url.GetOrigin();
   file_system_context->OpenFileSystem(
-      origin_url, fileapi::kFileSystemTypeExternal, false,  // create
+      origin_url, fileapi::kFileSystemTypeExternal,
+      fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
       LocalFileSystemCallbackDispatcher::CreateCallback(
           this,
           file_system_context,

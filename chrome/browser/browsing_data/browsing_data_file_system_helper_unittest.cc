@@ -100,25 +100,26 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   }
 
   // Callback that should be executed in response to
-  // fileapi::SandboxMountPointProvider::ValidateFileSystemRoot
-  void ValidateFileSystemCallback(base::PlatformFileError error) {
-    validate_file_system_result_ = error;
+  // fileapi::SandboxMountPointProvider::OpenFileSystem.
+  void OpenFileSystemCallback(base::PlatformFileError error) {
+    open_file_system_result_ = error;
     Notify();
   }
 
-  // Calls fileapi::SandboxMountPointProvider::ValidateFileSystemRootAndGetURL
+  // Calls fileapi::SandboxMountPointProvider::OpenFileSystem
   // to verify the existence of a file system for a specified type and origin,
   // blocks until a response is available, then returns the result
   // synchronously to it's caller.
   bool FileSystemContainsOriginAndType(const GURL& origin,
                                        fileapi::FileSystemType type) {
-    sandbox_->ValidateFileSystemRoot(
-        origin, type, false,
+    sandbox_->OpenFileSystem(
+        origin, type,
+        fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
         base::Bind(
-            &BrowsingDataFileSystemHelperTest::ValidateFileSystemCallback,
+            &BrowsingDataFileSystemHelperTest::OpenFileSystemCallback,
             base::Unretained(this)));
     BlockUntilNotified();
-    return validate_file_system_result_ == base::PLATFORM_FILE_OK;
+    return open_file_system_result_ == base::PLATFORM_FILE_OK;
   }
 
   // Callback that should be executed in response to StartFetching(), and stores
@@ -186,7 +187,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
 
 
   // Temporary storage to pass information back from callbacks.
-  base::PlatformFileError validate_file_system_result_;
+  base::PlatformFileError open_file_system_result_;
   ScopedFileSystemInfoList file_system_info_list_;
 
   scoped_refptr<BrowsingDataFileSystemHelper> helper_;

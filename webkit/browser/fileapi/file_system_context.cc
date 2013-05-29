@@ -213,7 +213,7 @@ FileSystemContext::external_provider() const {
 void FileSystemContext::OpenFileSystem(
     const GURL& origin_url,
     FileSystemType type,
-    bool create,
+    OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
   DCHECK(!callback.is_null());
 
@@ -227,8 +227,8 @@ void FileSystemContext::OpenFileSystem(
   GURL root_url = GetFileSystemRootURI(origin_url, type);
   std::string name = GetFileSystemName(origin_url, type);
 
-  mount_point_provider->ValidateFileSystemRoot(
-      origin_url, type, create,
+  mount_point_provider->OpenFileSystem(
+      origin_url, type, mode,
       base::Bind(&DidOpenFileSystem, callback, root_url, name));
 }
 
@@ -236,7 +236,7 @@ void FileSystemContext::OpenSyncableFileSystem(
     const std::string& mount_name,
     const GURL& origin_url,
     FileSystemType type,
-    bool create,
+    OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
   DCHECK(!callback.is_null());
 
@@ -249,8 +249,8 @@ void FileSystemContext::OpenSyncableFileSystem(
   FileSystemMountPointProvider* mount_point_provider =
       GetMountPointProvider(type);
   DCHECK(mount_point_provider);
-  mount_point_provider->ValidateFileSystemRoot(
-      origin_url, type, create,
+  mount_point_provider->OpenFileSystem(
+      origin_url, type, mode,
       base::Bind(&DidOpenFileSystem, callback, root_url, name));
 }
 

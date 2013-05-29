@@ -56,11 +56,11 @@ bool IsolatedMountPointProvider::CanHandleType(FileSystemType type) const {
   }
 }
 
-void IsolatedMountPointProvider::ValidateFileSystemRoot(
+void IsolatedMountPointProvider::OpenFileSystem(
     const GURL& origin_url,
     FileSystemType type,
-    bool create,
-    const ValidateFileSystemCallback& callback) {
+    OpenFileSystemMode mode,
+    const OpenFileSystemCallback& callback) {
   // We never allow opening a new isolated FileSystem via usual OpenFileSystem.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,

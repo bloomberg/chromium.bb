@@ -90,11 +90,11 @@ bool CrosMountPointProvider::CanHandleType(fileapi::FileSystemType type) const {
   }
 }
 
-void CrosMountPointProvider::ValidateFileSystemRoot(
+void CrosMountPointProvider::OpenFileSystem(
     const GURL& origin_url,
     fileapi::FileSystemType type,
-    bool create,
-    const ValidateFileSystemCallback& callback) {
+    fileapi::OpenFileSystemMode mode,
+    const OpenFileSystemCallback& callback) {
   DCHECK(fileapi::IsolatedContext::IsIsolatedType(type));
   // Nothing to validate for external filesystem.
   callback.Run(base::PLATFORM_FILE_OK);

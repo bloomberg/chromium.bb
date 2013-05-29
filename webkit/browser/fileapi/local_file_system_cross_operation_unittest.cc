@@ -71,12 +71,16 @@ class CrossOperationTestHelper {
     // Prepare the origin's root directory.
     FileSystemMountPointProvider* mount_point_provider =
         file_system_context_->GetMountPointProvider(src_type_);
-    mount_point_provider->ValidateFileSystemRoot(
-        origin_, src_type_, true /* create */, base::Bind(&ExpectOk));
+    mount_point_provider->OpenFileSystem(
+        origin_, src_type_,
+        OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        base::Bind(&ExpectOk));
     mount_point_provider =
         file_system_context_->GetMountPointProvider(dest_type_);
-    mount_point_provider->ValidateFileSystemRoot(
-        origin_, dest_type_, true /* create */, base::Bind(&ExpectOk));
+    mount_point_provider->OpenFileSystem(
+        origin_, dest_type_,
+        OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        base::Bind(&ExpectOk));
     base::MessageLoop::current()->RunUntilIdle();
 
     // Grant relatively big quota initially.

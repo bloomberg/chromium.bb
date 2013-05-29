@@ -770,7 +770,7 @@ class HTML5FileWriter {
     fs_->OpenFileSystem(
         GURL(origin_),
         fileapi::kFileSystemTypeTemporary,
-        kCreateFileSystem,
+        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&HTML5FileWriter::OpenFileSystemCallback,
                    base::Unretained(this)));
     return events_listener_->WaitFor(profile_, kHTML5FileWritten, filename_);
@@ -780,7 +780,6 @@ class HTML5FileWriter {
   static const char kHTML5FileWritten[];
   static const char kURLRequestContextToreDown[];
   static const bool kExclusive = true;
-  static const bool kCreateFileSystem = true;
 
   GURL blob_url() const { return GURL("blob:" + filename_); }
 

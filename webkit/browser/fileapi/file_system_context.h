@@ -16,6 +16,7 @@
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/open_file_system_mode.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/storage/webkit_storage_export.h"
@@ -157,18 +158,19 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   void OpenFileSystem(
       const GURL& origin_url,
       FileSystemType type,
-      bool create,
+      OpenFileSystemMode mode,
       const OpenFileSystemCallback& callback);
 
   // Opens a syncable filesystem for the given |origin_url|.
   // The file system is internally mounted as an external file system at the
   // given |mount_name|.
   // Currently only kFileSystemTypeSyncable type is supported.
+  // TODO(kinuko): Deprecate this method. (http://crbug.com/177137)
   void OpenSyncableFileSystem(
       const std::string& mount_name,
       const GURL& origin_url,
       FileSystemType type,
-      bool create,
+      OpenFileSystemMode mode,
       const OpenFileSystemCallback& callback);
 
   // Deletes the filesystem for the given |origin_url| and |type|. This should

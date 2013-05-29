@@ -99,9 +99,12 @@ void SimpleFileSystem::OpenFileSystem(
     return;
   }
 
+  fileapi::OpenFileSystemMode mode =
+      create ? fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT
+             : fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT;
   GURL origin_url(frame->document().securityOrigin().toString());
   file_system_context_->OpenFileSystem(
-      origin_url, static_cast<fileapi::FileSystemType>(type), create,
+      origin_url, static_cast<fileapi::FileSystemType>(type), mode,
       OpenFileSystemHandler(callbacks));
 }
 

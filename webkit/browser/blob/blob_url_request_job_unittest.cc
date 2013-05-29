@@ -172,7 +172,7 @@ class BlobURLRequestJobTest : public testing::Test {
     file_system_context_->OpenFileSystem(
         GURL(kFileSystemURLOrigin),
         kFileSystemType,
-        true,  // create
+        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&BlobURLRequestJobTest::OnValidateFileSystem,
                    base::Unretained(this)));
     base::MessageLoop::current()->RunUntilIdle();

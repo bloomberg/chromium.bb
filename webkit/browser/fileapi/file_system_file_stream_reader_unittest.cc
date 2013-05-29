@@ -70,9 +70,10 @@ class FileSystemFileStreamReaderTest : public testing::Test {
     file_system_context_ = CreateFileSystemContextForTesting(
         NULL, temp_dir_.path());
 
-    file_system_context_->sandbox_provider()->ValidateFileSystemRoot(
-        GURL(kURLOrigin), kFileSystemTypeTemporary, true,  // create
-        base::Bind(&OnValidateFileSystem));
+    file_system_context_->sandbox_provider()->OpenFileSystem(
+        GURL(kURLOrigin), kFileSystemTypeTemporary,
+        OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        base::Bind(&OnOpenFileSystem));
     base::MessageLoop::current()->RunUntilIdle();
 
     WriteFile(kTestFileName, kTestData, kTestDataSize,
@@ -133,7 +134,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
   }
 
  private:
-  static void OnValidateFileSystem(base::PlatformFileError result) {
+  static void OnOpenFileSystem(base::PlatformFileError result) {
     ASSERT_EQ(base::PLATFORM_FILE_OK, result);
   }
 

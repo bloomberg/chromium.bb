@@ -35,7 +35,7 @@ class FileAccessPermissions;
 class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
     : public fileapi::ExternalFileSystemMountPointProvider {
  public:
-  using fileapi::FileSystemMountPointProvider::ValidateFileSystemCallback;
+  using fileapi::FileSystemMountPointProvider::OpenFileSystemCallback;
   using fileapi::FileSystemMountPointProvider::DeleteFileSystemCallback;
 
   // CrosMountPointProvider will take an ownership of a |mount_points|
@@ -54,11 +54,11 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
 
   // fileapi::FileSystemMountPointProvider overrides.
   virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;
-  virtual void ValidateFileSystemRoot(
+  virtual void OpenFileSystem(
       const GURL& origin_url,
       fileapi::FileSystemType type,
-      bool create,
-      const ValidateFileSystemCallback& callback) OVERRIDE;
+      fileapi::OpenFileSystemMode mode,
+      const OpenFileSystemCallback& callback) OVERRIDE;
   virtual fileapi::FileSystemFileUtil* GetFileUtil(
       fileapi::FileSystemType type) OVERRIDE;
   virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(

@@ -30,11 +30,11 @@ class MediaFileSystemMountPointProvider
 
   // FileSystemMountPointProvider implementation.
   virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;
-  virtual void ValidateFileSystemRoot(
+  virtual void OpenFileSystem(
       const GURL& origin_url,
       fileapi::FileSystemType type,
-      bool create,
-      const ValidateFileSystemCallback& callback) OVERRIDE;
+      fileapi::OpenFileSystemMode mode,
+      const OpenFileSystemCallback& callback) OVERRIDE;
   virtual fileapi::FileSystemFileUtil* GetFileUtil(
       fileapi::FileSystemType type) OVERRIDE;
   virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(
