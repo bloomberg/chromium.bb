@@ -1558,6 +1558,9 @@ crbug.com/242876 [ Mac ] webaudio/javascriptaudionode.html [ Crash ]
 
 crbug.com/243226 [ SnowLeopard ] inspector/debugger/pause-in-inline-script.html [ Timeout ]
 
+# Seems to be flaky on all platforms
+crbug.com/244921 http/tests/navigation/back-twice-without-commit.html [ Failure Pass ]
+
 # Copy of ContentShellTestExpectations
 crbug.com/178709 plugins/document-open.html [ Failure ]
 crbug.com/178719 plugins/reloadplugins-and-pages.html [ Timeout ]
