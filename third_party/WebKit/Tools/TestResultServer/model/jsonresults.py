@@ -436,7 +436,7 @@ class JsonResults(object):
             aggregated_json = incremental_json
         else:
             if aggregated_json[builder][BUILD_NUMBERS_KEY][0] == incremental_json[builder][BUILD_NUMBERS_KEY][0]:
-                logging.error("Incremental JSON's build number is the latest build number in the aggregated JSON: %d." % aggregated_json[builder][BUILD_NUMBERS_KEY][0])
+                logging.error("Incremental JSON's build number is the latest build number in the aggregated JSON: %s." % str(aggregated_json[builder][BUILD_NUMBERS_KEY][0]))
                 return None
 
             logging.info("Merging json results.")

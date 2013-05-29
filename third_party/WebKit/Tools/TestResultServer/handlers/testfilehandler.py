@@ -44,6 +44,8 @@ PARAM_BUILDER = "builder"
 PARAM_DIR = "dir"
 PARAM_FILE = "file"
 PARAM_NAME = "name"
+PARAM_BEFORE = "before"
+PARAM_NUM_FILES = "numfiles"
 PARAM_KEY = "key"
 PARAM_TEST_TYPE = "testtype"
 PARAM_TEST_LIST_JSON = "testlistjson"
@@ -68,22 +70,24 @@ class DeleteFile(webapp.RequestHandler):
         builder = self.request.get(PARAM_BUILDER)
         test_type = self.request.get(PARAM_TEST_TYPE)
         name = self.request.get(PARAM_NAME)
+        num_files = self.request.get(PARAM_NUM_FILES)
+        before = self.request.get(PARAM_BEFORE)
 
         logging.debug(
-            "Deleting File, master: %s, builder: %s, test_type: %s, name: %s, key: %s.",
-            master, builder, test_type, name, key)
+            "Deleting File, master: %s, builder: %s, test_type: %s, name: %s, before: %s, key: %s.",
+            master, builder, test_type, name, before, key)
 
-        TestFile.delete_file(key, master, builder, test_type, name, 100)
+        limit = int(num_files) if num_files else 1
+        num_deleted = TestFile.delete_file(key, master, builder, test_type, name, before, limit)
 
-        # Display file list after deleting the file.
-        self.redirect("/testfile?master=%s&builder=%s&testtype=%s&name=%s"
-            % (master, builder, test_type, name))
+        self.response.set_status(200)
+        self.response.out.write("Deleted %d files." % num_deleted)
 
 
 class GetFile(webapp.RequestHandler):
     """Get file content or list of files for given builder and name."""
 
-    def _get_file_list(self, master, builder, test_type, name, callback_name=None):
+    def _get_file_list(self, master, builder, test_type, name, before, limit, callback_name=None):
         """Get and display a list of files that matches builder and file name.
 
         Args:
@@ -93,7 +97,7 @@ class GetFile(webapp.RequestHandler):
         """
 
         files = TestFile.get_files(
-            master, builder, test_type, name, load_data=False, limit=100)
+            master, builder, test_type, name, before, load_data=False, limit=limit)
         if not files:
             logging.info("File not found, master: %s, builder: %s, test_type: %s, name: %s.",
                          master, builder, test_type, name)
@@ -181,25 +185,23 @@ class GetFile(webapp.RequestHandler):
         builder = self.request.get(PARAM_BUILDER)
         test_type = self.request.get(PARAM_TEST_TYPE)
         name = self.request.get(PARAM_NAME)
-        dir = self.request.get(PARAM_DIR)
+        before = self.request.get(PARAM_BEFORE)
+        num_files = self.request.get(PARAM_NUM_FILES)
         test_list_json = self.request.get(PARAM_TEST_LIST_JSON)
         callback_name = self.request.get(PARAM_CALLBACK)
 
         logging.debug(
-            "Getting files, master %s, builder: %s, test_type: %s, name: %s.",
-            master, builder, test_type, name)
-
-        if not key:
-            # If parameter "dir" is specified or there is no builder or filename
-            # specified in the request, return list of files, otherwise, return
-            # file content.
-            if dir or not builder or not name:
-                return self._get_file_list(master, builder, test_type, name, callback_name)
+            "Getting files, master %s, builder: %s, test_type: %s, name: %s, before: %s.",
+            master, builder, test_type, name, before)
 
         if key:
             json, date = self._get_file_content_from_key(key)
-        elif name == "results.json" and test_list_json:
+        elif test_list_json:
             json, date = self._get_test_list_json(master, builder, test_type)
+        elif num_files or not master or not builder or not test_type or not name:
+            limit = int(num_files) if num_files else 100
+            self._get_file_list(master, builder, test_type, name, before, limit, callback_name)
+            return
         else:
             json, date = self._get_file_content(master, builder, test_type, name)
 
@@ -248,8 +250,11 @@ class Upload(webapp.RequestHandler):
                     update_succeeded = True
                 else:
                     update_succeeded = JsonResults.update(master, builder, test_type, file.value, is_full_results_format=False)
+            elif file.filename == "times_ms.json":
+                # We never look at historical times_ms.json files, so we can overwrite the existing one if it exists.
+                update_succeeded = TestFile.overwrite_or_add_file(master, builder, test_type, file.filename, file.value)
             else:
-                update_succeeded = bool(TestFile.add_file(master, builder, test_type, file.filename, file.value))
+                update_succeeded = TestFile.add_file(master, builder, test_type, file.filename, file.value)
                 # FIXME: Upload full_results.json files for non-layout tests as well and stop supporting the
                 # incremental_results.json file format.
                 if file.filename == "full_results.json" and test_type == "layout-tests":

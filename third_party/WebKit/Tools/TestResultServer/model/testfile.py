@@ -40,29 +40,30 @@ class TestFile(DataStoreFile):
     test_type = db.StringProperty()
 
     @classmethod
-    def delete_file(cls, key, master, builder, test_type, name, limit):
+    def delete_file(cls, key, master, builder, test_type, name, before, limit):
         if key:
             file = db.get(key)
             if not file:
                 logging.warning("File not found, key: %s.", key)
-                return False
+                return 0
 
             file._delete_all()
-        else:
-            files = cls.get_files(master, builder, test_type, name, limit)
-            if not files:
-                logging.warning(
-                    "File not found, master: %s, builder: %s, test_type:%s, name: %s.",
-                    builder, test_type, name)
-                return False
+            return 1
 
-            for file in files:
-                file._delete_all()
+        files = cls.get_files(master, builder, test_type, name, before, load_data=False, limit=limit)
+        if not files:
+            logging.warning(
+                "File not found, master: %s, builder: %s, test_type:%s, name: %s, before: %s.",
+                master, builder, test_type, name, before)
+            return 0
 
-        return True
+        for file in files:
+            file._delete_all()
+
+        return len(files)
 
     @classmethod
-    def get_files(cls, master, builder, test_type, name, load_data=True, limit=1):
+    def get_files(cls, master, builder, test_type, name, before=None, load_data=True, limit=1):
         query = TestFile.all()
         if master:
             query = query.filter("master =", master)
@@ -72,6 +73,9 @@ class TestFile(DataStoreFile):
             query = query.filter("test_type =", test_type)
         if name:
             query = query.filter("name =", name)
+        if before:
+            date = datetime.strptime(before, "%Y-%m-%dT%H:%M:%SZ")
+            query = query.filter("date <", date)
 
         files = query.order("-date").fetch(limit)
         if load_data:
@@ -79,6 +83,13 @@ class TestFile(DataStoreFile):
                 file.load_data()
 
         return files
+
+    @classmethod
+    def overwrite_or_add_file(cls, master, builder, test_type, name, data):
+        files = TestFile.get_files(master, builder, test_type, name)
+        if not files:
+            return cls.add_file(master, builder, test_type, name, data)
+        return files[0].save(data)
 
     @classmethod
     def add_file(cls, master, builder, test_type, name, data):
@@ -89,13 +100,13 @@ class TestFile(DataStoreFile):
         file.name = name
 
         if not file.save(data):
-            return None
+            return False
 
         logging.info(
             "File saved, master: %s, builder: %s, test_type: %s, name: %s, key: %s.",
             master, builder, test_type, file.name, str(file.data_keys))
 
-        return file
+        return True
 
     def save(self, data):
         if not self.save_data(data):

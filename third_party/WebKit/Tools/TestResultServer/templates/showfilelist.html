@@ -37,11 +37,21 @@
                 </a>
                 {% endif %}
             </td>
-            <td><a href="/testfile?builder={{ file.builder }}&name={{ file.name }}" >
+            <td><a href="/testfile?builder={{ file.builder }}&name={{ file.name }}&master={{ file.master }}&testtype={{ file.test_type }}" >
                 {{ file.name }}
                 </a>
             </td>
-            <td>{{ file.date|date:"d-M-Y H:i:s" }}
+            <td>
+                <script>
+                    // This date format needs to match the format string used in model/testfile.py:get_files.
+                    var beforeQueryParameter = 'before={{ file.date|date:"Y-m-d\TH:i:s" }}Z';
+                    var url = location.toString();
+                    if (url.indexOf('before') == -1)
+                        url += (url.indexOf('?') == -1 ? '?' : '&') + beforeQueryParameter;
+                    else
+                        url = url.replace(/before=[^&]*/, beforeQueryParameter);
+                    document.write('<a href="' + url + '">' + new Date('{{ file.date|date:"c" }}').toLocaleString() + '</a>')
+                </script>
             </td>
             {% if admin %}
             <td><a href="/testfile/delete?key={{ file.key }}&builder={{ builder }}&name={{ name }}" >
