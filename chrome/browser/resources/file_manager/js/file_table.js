@@ -148,8 +148,14 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
   self.setRenderFunction(self.renderTableRow_.bind(self,
       self.getRenderFunction()));
 
-  if (util.platform.newUI())
+  if (util.platform.newUI()) {
     ScrollBar.createVertical(self, self.list);
+    // Keep focus on the file list when clicking on the header.
+    self.header.addEventListener('mousedown', function(e) {
+      self.list.focus();
+      e.preventDefault();
+    });
+  }
 
   var handleSelectionChange = function() {
     var selectAll = self.querySelector('#select-all-checkbox');
