@@ -210,7 +210,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutofilled) {
 // We should be able to extract a radio or a checkbox field that has been
 // autofilled.
 TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
-  LoadHTML("<INPUT type=\"checkbox\" id=\"checkbox\" value=\"mail\"/>"
+  LoadHTML("<INPUT type=\"checkbox\" id=\"checkbox\" value=\"mail\" checked/>"
            "<INPUT type=\"radio\" id=\"radio\" value=\"male\"/>");
 
   WebFrame* frame = GetMainFrame();
@@ -228,6 +228,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
   expected.form_control_type = "checkbox";
   expected.is_autofilled = true;
   expected.is_checkable = true;
+  expected.is_checked = true;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 
   web_element = frame->document().getElementById("radio");
@@ -239,6 +240,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
   expected.form_control_type = "radio";
   expected.is_autofilled = true;
   expected.is_checkable = true;
+  expected.is_checked = false;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 }
 

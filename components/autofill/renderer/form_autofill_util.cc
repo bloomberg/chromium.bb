@@ -716,6 +716,7 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
     field->is_focusable = input_element->isFocusable();
     field->should_autocomplete = input_element->autoComplete();
     field->is_checkable = IsCheckableElement(input_element);
+    field->is_checked = input_element->isChecked();
   } else if (extract_mask & EXTRACT_OPTIONS) {
     // Set option strings on the field if available.
     DCHECK(IsSelectElement(element));
