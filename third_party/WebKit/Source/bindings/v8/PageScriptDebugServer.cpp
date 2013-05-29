@@ -37,6 +37,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWindowShell.h"
 #include "bindings/v8/V8RecursionScope.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/page/Frame.h"
@@ -99,11 +100,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
     v8::Local<v8::Context> context = shell->context();
     v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.get()->Get(v8::String::NewSymbol("getScripts")));
     v8::Handle<v8::Value> argv[] = { context->GetEmbedderData(0) };
-    v8::Handle<v8::Value> value;
-    {
-        V8RecursionScope::MicrotaskSuppression scope;
-        value = getScriptsFunction->Call(m_debuggerScript.get(), 1, argv);
-    }
+    v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, context, m_debuggerScript.get(), 1, argv, m_isolate);
     if (value.IsEmpty())
         return;
     ASSERT(!value->IsUndefined() && value->IsArray());
