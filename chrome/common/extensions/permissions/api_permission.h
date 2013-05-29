@@ -92,6 +92,7 @@ class APIPermission {
     kMediaGalleriesPrivate,
     kMediaPlayerPrivate,
     kMetricsPrivate,
+    kMusicManagerPrivate,
     kNativeMessaging,
     kNetworkingPrivate,
     kNotification,

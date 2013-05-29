@@ -151,6 +151,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kMetricsPrivate, "metricsPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
+    { APIPermission::kMusicManagerPrivate, "musicManagerPrivate",
+      APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kSystemPrivate, "systemPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kCloudPrintPrivate, "cloudPrintPrivate",

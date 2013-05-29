@@ -71,6 +71,7 @@
           'media_galleries_private.idl',
           'media_player_private.json',
           'metrics_private.json',
+          'music_manager_private.idl',
           'networking_private.json',
           'notifications.idl',
           'omnibox.json',
