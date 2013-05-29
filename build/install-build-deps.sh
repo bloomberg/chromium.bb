@@ -21,6 +21,12 @@ usage() {
   exit 1
 }
 
+# Checks whether a particular package is available in the repos.
+# USAGE: $ package_exists <package name>
+package_exists() {
+  apt-cache pkgnames | grep -x "$1" > /dev/null 2>&1
+}
+
 while test "$1" != ""
 do
   case "$1" in
@@ -123,24 +129,24 @@ arm_list="libc6-armel-cross libc6-dev-armel-cross libgcc1-armel-cross
 
 
 # Some package names have changed over time
-if apt-cache show ttf-mscorefonts-installer >/dev/null 2>&1; then
+if package_exists ttf-mscorefonts-installer; then
   dev_list="${dev_list} ttf-mscorefonts-installer"
 else
   dev_list="${dev_list} msttcorefonts"
 fi
-if apt-cache show libnspr4-dbg >/dev/null 2>&1; then
+if package_exists libnspr4-dbg; then
   dbg_list="${dbg_list} libnspr4-dbg libnss3-dbg"
   lib_list="${lib_list} libnspr4 libnss3"
 else
   dbg_list="${dbg_list} libnspr4-0d-dbg libnss3-1d-dbg"
   lib_list="${lib_list} libnspr4-0d libnss3-1d"
 fi
-if apt-cache show libjpeg-dev >/dev/null 2>&1; then
+if package_exists libjpeg-dev; then
   dev_list="${dev_list} libjpeg-dev"
 else
   dev_list="${dev_list} libjpeg62-dev"
 fi
-if [ "$(apt-cache pkgnames libudev1 2>&1)" == "libudev1" ] ; then
+if package_exists libudev1; then
   dev_list="${dev_list} libudev1"
 else
   dev_list="${dev_list} libudev0"
@@ -149,7 +155,7 @@ fi
 
 # Some packages are only needed, if the distribution actually supports
 # installing them.
-if apt-cache show appmenu-gtk >/dev/null 2>&1; then
+if package_exists appmenu-gtk; then
   lib_list="$lib_list appmenu-gtk"
 fi
 
