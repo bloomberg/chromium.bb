@@ -82,6 +82,9 @@ class InputMethodWin : public InputMethodBase {
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
 
+  // Enables or disables the IME according to the current text input type.
+  void UpdateIMEState();
+
   // The HWND this InputMethod is bound to.
   HWND hwnd_;
 
