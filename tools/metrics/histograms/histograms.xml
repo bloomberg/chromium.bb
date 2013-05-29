@@ -2178,6 +2178,24 @@ other types of suffix sets.
   <summary>The version of glibc used. (Linux only)</summary>
 </histogram>
 
+<histogram name="Media.AcceleratedCompositingActive" enum="BooleanSuccess">
+  <summary>
+    Whether accelerated compositing was used for HTML5 media rendering.
+  </summary>
+</histogram>
+
+<histogram name="Media.AudioBitsPerChannel">
+  <summary>Bits per channel of HTML5 audio sample data.</summary>
+</histogram>
+
+<histogram name="Media.AudioChannelLayout" enum="ChannelLayout">
+  <summary>Audio channel layout in HTML5 media.</summary>
+</histogram>
+
+<histogram name="Media.AudioCodec" enum="AudioCodec">
+  <summary>Audio codec used in HTML5 media.</summary>
+</histogram>
+
 <histogram name="Media.AudioInputController" units="ms">
   <summary>Measures the time taken for AudioInputController::</summary>
 </histogram>
@@ -2197,6 +2215,65 @@ other types of suffix sets.
   <summary>Captures statistics for various AudioRendererImpl events.</summary>
 </histogram>
 
+<histogram name="Media.AudioRendererMissedDeadline" units="%">
+  <summary>
+    Percentage of AudioSyncReader::Read() calls where the renderer missed its
+    realtime deadline.
+  </summary>
+</histogram>
+
+<histogram name="Media.AudioSamplesPerSecond" enum="AudioSampleRate">
+  <summary>Audio samples per second in HTML5 media.</summary>
+</histogram>
+
+<histogram name="Media.AudioSamplesPerSecondUnexpected" units="Hz">
+  <summary>
+    Audio samples per second in HTML5 media (atypical values, in Hz).
+  </summary>
+</histogram>
+
+<histogram name="Media.CacheUseful" enum="BooleanSuccess">
+  <summary>
+    Whether a media response might be used to satisfy a future request.
+  </summary>
+</histogram>
+
+<histogram name="Media.ChromeCast.DelayedAndDroppedFramesPer5Sec"
+    units="frames/5s">
+  <summary>
+    The average number of delayed and dropped frames for the ChromeCast
+    application.  Reported every 5 seconds.
+  </summary>
+</histogram>
+
+<histogram name="Media.ChromeCast.DisplayedFramesPerSecond" units="frames/s">
+  <summary>
+    The average number of displayed frames for the ChromeCast application.
+    Reported every 5 seconds.
+  </summary>
+</histogram>
+
+<histogram name="Media.ChromeCast.TimeToBufferAv" units="ms">
+  <summary>
+    Time needed to pre-buffer A/V data before the actual playback for the
+    ChromeCast application.
+  </summary>
+</histogram>
+
+<histogram name="Media.ChromeCast.TimeToBufferAvAfterAbort" units="ms">
+  <summary>
+    Time needed to buffer A/V data after an abort for the ChromeCast
+    application.
+  </summary>
+</histogram>
+
+<histogram name="Media.ChromeCast.TimeToBufferAvAfterUnderrun" units="ms">
+  <summary>
+    Time needed to buffer A/V data after an underrun for the ChromeCast
+    application.
+  </summary>
+</histogram>
+
 <histogram name="Media.DetectedAudioCodec" enum="FFmpegCodecs">
   <summary>Audio codec used in HTML5 media.</summary>
 </histogram>
@@ -2207,6 +2284,226 @@ other types of suffix sets.
 
 <histogram name="Media.DetectedVideoCodec" enum="FFmpegCodecs">
   <summary>Video codec used in HTML5 media.</summary>
+</histogram>
+
+<histogram name="Media.Duration" units="ms">
+  <summary>Duration in milliseconds of HTML5 media (when known).</summary>
+</histogram>
+
+<histogram name="Media.EME.ClearKey.addKey" enum="MediaKeyException">
+  <summary>addKey result using the Clear Key key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.ClearKey.cancelKeyRequest" enum="MediaKeyException">
+  <summary>cancelKeyRequest result using the Clear Key key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.ClearKey.DecryptError">
+  <summary>
+    Decryption error event count using the Clear Key key system.
+  </summary>
+</histogram>
+
+<histogram name="Media.EME.ClearKey.generateKeyRequest"
+    enum="MediaKeyException">
+  <summary>generateKeyRequest result using the Clear Key key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.ClearKey.KeyAdded">
+  <summary>KeyAdded event count using the Clear Key key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.ClearKey.KeyError" enum="MediaKeyError">
+  <summary>KeyError event count using the Clear Key key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.NeedKey">
+  <summary>EME NeedKey event count.</summary>
+</histogram>
+
+<histogram name="Media.EME.Unknown.addKey" enum="MediaKeyException">
+  <summary>addKey result using an unknown key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Unknown.cancelKeyRequest" enum="MediaKeyException">
+  <summary>cancelKeyRequest result using an unknown key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Unknown.DecryptError">
+  <summary>Decryption error event count using an unknown key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Unknown.generateKeyRequest" enum="MediaKeyException">
+  <summary>generateKeyRequest result using an unknown key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Unknown.KeyAdded">
+  <summary>KeyAdded event count using an unknown key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Unknown.KeyError" enum="MediaKeyError">
+  <summary>KeyError event count using an unknown key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Widevine.addKey" enum="MediaKeyException">
+  <summary>addKey result using the Widevine key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Widevine.cancelKeyRequest" enum="MediaKeyException">
+  <summary>cancelKeyRequest result using the Widevine key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Widevine.DecryptError">
+  <summary>Decryption error event count using the Widevine key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Widevine.generateKeyRequest"
+    enum="MediaKeyException">
+  <summary>generateKeyRequest result using the Widevine key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Widevine.KeyAdded">
+  <summary>KeyAdded event count using the Widevine key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Widevine.KeyError" enum="MediaKeyError">
+  <summary>KeyError event count using the Widevine key system.</summary>
+</histogram>
+
+<histogram name="Media.FallbackHardwareAudioBitsPerChannel">
+  <summary>
+    Bits per channel of the hardware audio device which failed to open in low
+    latency mode and required high latency fallback.
+  </summary>
+</histogram>
+
+<histogram name="Media.FallbackHardwareAudioChannelCount">
+  <summary>
+    Channel count of the hardware audio device which failed to open in low
+    latency mode and required high latency fallback.
+  </summary>
+</histogram>
+
+<histogram name="Media.FallbackHardwareAudioChannelLayout" enum="ChannelLayout">
+  <summary>
+    Channel layout of the hardware audio device which failed to open in low
+    latency mode and required high latency fallback.
+  </summary>
+</histogram>
+
+<histogram name="Media.FallbackHardwareAudioSamplesPerSecond"
+    enum="AudioSampleRate">
+  <summary>
+    Samples per second of the hardware audio device which failed to open in low
+    latency mode and required high latency fallback.
+  </summary>
+</histogram>
+
+<histogram name="Media.FallbackHardwareAudioSamplesPerSecondUnexpected"
+    units="Hz">
+  <summary>
+    Samples per second of the hardware audio device (atypical values, in Hz)
+    which failed to open in low latency mode and required high latency fallback.
+  </summary>
+</histogram>
+
+<histogram name="Media.FallbackToHighLatencyAudioPath" enum="BooleanSuccess">
+  <summary>
+    Whether Chrome had to fallback to the high latency audio path or not.
+  </summary>
+</histogram>
+
+<histogram name="Media.Fling.DelayedAndDroppedFramesPer5Sec" units="frames/5s">
+  <summary>
+    The average number of delayed and dropped frames for the Fling application.
+    Reported every 5 seconds.
+  </summary>
+</histogram>
+
+<histogram name="Media.Fling.DisplayedFramesPerSecond" units="frames/s">
+  <summary>
+    The average number of displayed frames for the Fling application.  Reported
+    every 5 seconds.
+  </summary>
+</histogram>
+
+<histogram name="Media.Fling.TimeToBufferAv" units="ms">
+  <summary>
+    Time needed to pre-buffer A/V data before the actual playback for the Fling
+    application.
+  </summary>
+</histogram>
+
+<histogram name="Media.Fling.TimeToBufferAvAfterAbort" units="ms">
+  <summary>
+    Time needed to buffer A/V data after an abort for the Fling application.
+  </summary>
+</histogram>
+
+<histogram name="Media.Fling.TimeToBufferAvAfterUnderrun" units="ms">
+  <summary>
+    Time needed to buffer A/V data after an underrun for the Fling application.
+  </summary>
+</histogram>
+
+<histogram name="Media.GpuVideoDecoderInitializeStatus" enum="PipelineStatus">
+  <summary>Results of attempts to GpuVideoDecoder::Initialize().</summary>
+</histogram>
+
+<histogram name="Media.HardwareAudioBitsPerChannel">
+  <summary>Bits per channel of the hardware audio device.</summary>
+</histogram>
+
+<histogram name="Media.HardwareAudioChannelCount">
+  <summary>Channel count of the hardware audio device.</summary>
+</histogram>
+
+<histogram name="Media.HardwareAudioChannelLayout" enum="ChannelLayout">
+  <summary>Channel layout of the hardware audio device.</summary>
+</histogram>
+
+<histogram name="Media.HardwareAudioSamplesPerSecond" enum="AudioSampleRate">
+  <summary>Samples per second of the hardware audio device.</summary>
+</histogram>
+
+<histogram name="Media.HardwareAudioSamplesPerSecondUnexpected" units="Hz">
+  <summary>
+    Samples per second of the hardware audio device (atypical values, in Hz).
+  </summary>
+</histogram>
+
+<histogram name="Media.LinuxAudioIO" enum="LinuxAudioIO">
+  <summary>
+    Audio IO layer used by the Linux OS, sampled once at startup of the browser.
+  </summary>
+</histogram>
+
+<histogram name="Media.Netflix.AudioBitrate" units="kbps">
+  <summary>
+    The audio bit rate as reported by the Netflix application.  May be reported
+    multiple times as network conditions change during playback.
+  </summary>
+</histogram>
+
+<histogram name="Media.Netflix.AudioNumChannels" units="channels">
+  <summary>
+    The number of audio channels as reported by the Netflix application. May be
+    reported multiple times as network conditions change during playback.
+  </summary>
+</histogram>
+
+<histogram name="Media.Netflix.VideoBitrate" units="kbps">
+  <summary>
+    Video bit rate as reported by the Netflix application.  May be reported
+    multiple times as network conditions change during playback.
+  </summary>
+</histogram>
+
+<histogram name="Media.Netflix.VideoHeight" units="pixels">
+  <summary>
+    Video height as reported by the Netflix application.  May be reported
+    multiple times as network conditions change during playback.
+  </summary>
 </histogram>
 
 <histogram name="Media.PepperVideoDecoderError" enum="PepperVideoDecodeError">
@@ -2229,9 +2526,90 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Media.TimeToPipelineStarted" units="ms">
+  <summary>
+    Time in milliseconds from HTML5 media pipeline creation to playing event.
+  </summary>
+</histogram>
+
+<histogram name="Media.TotalMBytes" units="MB">
+  <summary>Size of HTML5 media (when known), in MB.</summary>
+</histogram>
+
+<histogram name="Media.UncacheableReason" enum="UncacheableReason">
+  <summary>
+    Reasons a media response won't be used to satisfy a future request.
+  </summary>
+</histogram>
+
+<histogram name="Media.URLScheme" enum="URLSchemeForHistogram">
+  <summary>
+    URL scheme used with HTML5 media. (each URL provides one sample)
+  </summary>
+</histogram>
+
 <histogram name="Media.VAVDAH264.DecoderFailure" enum="VAVDAH264DecoderFailure">
   <summary>
     Error codes reported by video decode using VA-API hardware video decoder.
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCodec" enum="VideoCodec">
+  <summary>Video codec used in HTML5 media.</summary>
+</histogram>
+
+<histogram name="Media.VideoCodecProfile" enum="VideoCodecProfile">
+  <summary>Video codec profile used in HTML5 media.</summary>
+</histogram>
+
+<histogram name="Media.VideoCodedAspectRatio">
+  <summary>Coded aspect ratio of HTML5 video.</summary>
+</histogram>
+
+<histogram name="Media.VideoCodedWidth">
+  <summary>Coded width of HTML5 video.</summary>
+</histogram>
+
+<histogram name="Media.VideoVisibleAspectRatio">
+  <summary>Visible aspect ratio of HTML5 video.</summary>
+</histogram>
+
+<histogram name="Media.VideoVisibleWidth">
+  <summary>Visible width of HTML5 video.</summary>
+</histogram>
+
+<histogram name="Media.YouTube.DelayedAndDroppedFramesPer5Sec"
+    units="frames/5s">
+  <summary>
+    The average number of delayed and dropped frames for the YouTube
+    application.  Reported every 5 seconds.
+  </summary>
+</histogram>
+
+<histogram name="Media.YouTube.DisplayedFramesPerSecond" units="frames/s">
+  <summary>
+    The average number of displayed frames for the YouTube application. Reported
+    every 5 seconds.
+  </summary>
+</histogram>
+
+<histogram name="Media.YouTube.TimeToBufferAv" units="ms">
+  <summary>
+    Time needed to pre-buffer A/V data before the actual playback for the
+    YouTube application.
+  </summary>
+</histogram>
+
+<histogram name="Media.YouTube.TimeToBufferAvAfterAbort" units="ms">
+  <summary>
+    Time needed to buffer A/V data after an abort for the YouTube application.
+  </summary>
+</histogram>
+
+<histogram name="Media.YouTube.TimeToBufferAvAfterUnderrun" units="ms">
+  <summary>
+    Time needed to buffer A/V data after an underrun for the YouTube
+    application.
   </summary>
 </histogram>
 
@@ -9395,6 +9773,68 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.AudioCaptureTime" units="milliseconds">
+  <summary>Duration in milliseconds of WebRTC audio capture session.</summary>
+</histogram>
+
+<histogram name="WebRTC.AudioInputChannelLayout" enum="ChannelLayout">
+  <summary>Audio input channel layout in WebRTC.</summary>
+</histogram>
+
+<histogram name="WebRTC.AudioInputFramesPerBuffer" enum="AudioFramesPerBuffer">
+  <summary>Size of WebRTC audio input buffers (in audio frames).</summary>
+</histogram>
+
+<histogram name="WebRTC.AudioInputFramesPerBufferUnexpected"
+    units="audio frames">
+  <summary>
+    Size of WebRTC audio input buffers (atypical values, in audio frames).
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.AudioInputSampleRate" enum="AudioSampleRate">
+  <summary>Audio input sample rate for WebRTC (in Hz).</summary>
+</histogram>
+
+<histogram name="WebRTC.AudioInputSampleRateUnexpected" units="Hz">
+  <summary>
+    Audio input sample rate for WebRTC (atypical values, in Hz).
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.AudioOutputChannelLayout" enum="ChannelLayout">
+  <summary>Audio output channel layout in WebRTC.</summary>
+</histogram>
+
+<histogram name="WebRTC.AudioOutputFramesPerBuffer" enum="AudioFramesPerBuffer">
+  <summary>Size of WebRTC audio output buffers (in audio frames).</summary>
+</histogram>
+
+<histogram name="WebRTC.AudioOutputFramesPerBufferUnexpected"
+    units="audio frames">
+  <summary>
+    Size of WebRTC audio output buffers (atypical values, in audio frames).
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.AudioOutputSampleRate" enum="AudioSampleRate">
+  <summary>Audio output sample rate for WebRTC (in Hz).</summary>
+</histogram>
+
+<histogram name="WebRTC.AudioOutputSampleRateUnexpected" units="Hz">
+  <summary>
+    Audio output sample rate for WebRTC (atypical values, in Hz).
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.AudioRenderTime" units="milliseconds">
+  <summary>Duration in milliseconds of WebRTC audio render session.</summary>
+</histogram>
+
+<histogram name="WebRTC.webkitApiCount" enum="JavaScriptAPIName">
+  <summary>Counts number of calls to WebRTC APIs from JavaScript.</summary>
+</histogram>
+
 <histogram name="WinTimeTicks.FailedToChangeCores" enum="WindowsVersion">
   <summary>
     Incremented each time the TimeTicks field trial runs on a machine with
@@ -9529,9 +9969,51 @@ other types of suffix sets.
   </int>
 </enum>
 
+<enum name="AudioCodec" type="int">
+  <int value="0" label="kUnknownAudioCodec"/>
+  <int value="1" label="kCodecAAC"/>
+  <int value="2" label="kCodecMP3"/>
+  <int value="3" label="kCodecPCM"/>
+  <int value="4" label="kCodecVorbis"/>
+  <int value="5" label="kCodecFLAC"/>
+  <int value="6" label="kCodecAMR_NB"/>
+  <int value="7" label="kCodecAMR_WB"/>
+  <int value="8" label="kCodecPCM_MULAW"/>
+  <int value="9" label="kCodecGSM_MS"/>
+  <int value="10" label="kCodecPCM_S16BE"/>
+  <int value="11" label="kCodecPCM_S24BE"/>
+  <int value="12" label="kCodecOpus"/>
+</enum>
+
+<enum name="AudioFramesPerBuffer" type="int">
+  <int value="0" label="k160"/>
+  <int value="1" label="k320"/>
+  <int value="2" label="k440"/>
+  <int value="3" label="k480"/>
+  <int value="4" label="k640"/>
+  <int value="5" label="k880"/>
+  <int value="6" label="k960"/>
+  <int value="7" label="k1440"/>
+  <int value="8" label="k1920"/>
+</enum>
+
 <enum name="AudioRendererEvents" type="int">
   <int value="0" label="Initialized"/>
   <int value="1" label="Runtime error"/>
+</enum>
+
+<enum name="AudioSampleRate" type="int">
+  <int value="0" label="k8000Hz"/>
+  <int value="1" label="k16000Hz"/>
+  <int value="2" label="k32000Hz"/>
+  <int value="3" label="k48000Hz"/>
+  <int value="4" label="k96000Hz"/>
+  <int value="5" label="k11025Hz"/>
+  <int value="6" label="k22050Hz"/>
+  <int value="7" label="k44100Hz"/>
+  <int value="8" label="k88200Hz"/>
+  <int value="9" label="k176400Hz"/>
+  <int value="10" label="k192000Hz"/>
 </enum>
 
 <enum name="AutocheckoutBubble" type="int">
@@ -9859,6 +10341,39 @@ other types of suffix sets.
 <enum name="BooleanWiped" type="int">
   <int value="0" label="Re-enabled"/>
   <int value="1" label="Wiped out"/>
+</enum>
+
+<enum name="ChannelLayout" type="int">
+  <int value="0" label="CHANNEL_LAYOUT_NONE"/>
+  <int value="1" label="CHANNEL_LAYOUT_UNSUPPORTED"/>
+  <int value="2" label="CHANNEL_LAYOUT_MONO"/>
+  <int value="3" label="CHANNEL_LAYOUT_STEREO"/>
+  <int value="4" label="CHANNEL_LAYOUT_2_1"/>
+  <int value="5" label="CHANNEL_LAYOUT_SURROUND"/>
+  <int value="6" label="CHANNEL_LAYOUT_4POINT0"/>
+  <int value="7" label="CHANNEL_LAYOUT_2_2"/>
+  <int value="8" label="CHANNEL_LAYOUT_QUAD"/>
+  <int value="9" label="CHANNEL_LAYOUT_5POINT0"/>
+  <int value="10" label="CHANNEL_LAYOUT_5POINT1"/>
+  <int value="11" label="CHANNEL_LAYOUT_5POINT0_BACK"/>
+  <int value="12" label="CHANNEL_LAYOUT_5POINT1_BACK"/>
+  <int value="13" label="CHANNEL_LAYOUT_7POINT0"/>
+  <int value="14" label="CHANNEL_LAYOUT_7POINT1"/>
+  <int value="15" label="CHANNEL_LAYOUT_7POINT1_WIDE"/>
+  <int value="16" label="CHANNEL_LAYOUT_STEREO_DOWNMIX"/>
+  <int value="17" label="CHANNEL_LAYOUT_2POINT1"/>
+  <int value="18" label="CHANNEL_LAYOUT_3_1"/>
+  <int value="19" label="CHANNEL_LAYOUT_4_1"/>
+  <int value="20" label="CHANNEL_LAYOUT_6_0"/>
+  <int value="21" label="CHANNEL_LAYOUT_6_0_FRONT"/>
+  <int value="22" label="CHANNEL_LAYOUT_HEXAGONAL"/>
+  <int value="23" label="CHANNEL_LAYOUT_6_1"/>
+  <int value="24" label="CHANNEL_LAYOUT_6_1_BACK"/>
+  <int value="25" label="CHANNEL_LAYOUT_6_1_FRONT"/>
+  <int value="26" label="CHANNEL_LAYOUT_7_0_FRONT"/>
+  <int value="27" label="CHANNEL_LAYOUT_7_1_WIDE_BACK"/>
+  <int value="28" label="CHANNEL_LAYOUT_OCTAGONAL"/>
+  <int value="29" label="CHANNEL_LAYOUT_DISCRETE"/>
 </enum>
 
 <enum name="ClipboardAction" type="int">
@@ -11898,6 +12413,13 @@ other types of suffix sets.
   <int value="5" label="IPV6_INTERFACE_ARRAY_TOO_SHORT"/>
 </enum>
 
+<enum name="JavaScriptAPIName" type="int">
+  <int value="0" label="GetUserMedia"/>
+  <int value="1" label="PeerConnection00"/>
+  <int value="2" label="DeprecatedPeerConnection"/>
+  <int value="3" label="RTCPeerConnection"/>
+</enum>
+
 <enum name="LanguageCode" type="int">
   <summary>ISO 639 Language Codes.</summary>
   <int value="24929" label="Afar"/>
@@ -12469,6 +12991,12 @@ other types of suffix sets.
   <int value="3" label="Failure Threshold Reached"/>
 </enum>
 
+<enum name="LinuxAudioIO" type="int">
+  <int value="0" label="PulseAudio"/>
+  <int value="1" label="ALSA"/>
+  <int value="2" label="Cras"/>
+</enum>
+
 <enum name="LinuxGlibcVersion" type="int">
   <int value="0" label="Not Parseable"/>
   <int value="1" label="Unknown"/>
@@ -12539,6 +13067,22 @@ other types of suffix sets.
   <int value="35" label="WAV / WAVE (Waveform Audio)"/>
   <int value="36" label="Matroska / WebM"/>
   <int value="37" label="WTV (Windows Television)"/>
+</enum>
+
+<enum name="MediaKeyError" type="int">
+  <int value="1" label="kUnknownError"/>
+  <int value="2" label="kClientError"/>
+  <int value="3" label="kServiceError"/>
+  <int value="4" label="kOutputError"/>
+  <int value="5" label="kHardwareChangeError"/>
+  <int value="6" label="kDomainError"/>
+</enum>
+
+<enum name="MediaKeyException" type="int">
+  <int value="0" label="kUnknownResultId"/>
+  <int value="1" label="kSuccess"/>
+  <int value="2" label="kKeySystemNotSupported"/>
+  <int value="3" label="kInvalidPlayerState"/>
 </enum>
 
 <enum name="MouseEventFollowedByClick" type="int">
@@ -13149,6 +13693,25 @@ other types of suffix sets.
   <int value="6" label="Rotate redo"/>
   <int value="7" label="Share"/>
   <int value="8" label="Other"/>
+</enum>
+
+<enum name="PipelineStatus" type="int">
+  <int value="0" label="PIPELINE_OK"/>
+  <int value="1" label="PIPELINE_ERROR_URL_NOT_FOUND"/>
+  <int value="2" label="PIPELINE_ERROR_NETWORK"/>
+  <int value="3" label="PIPELINE_ERROR_DECODE"/>
+  <int value="4" label="PIPELINE_ERROR_DECRYPT"/>
+  <int value="5" label="PIPELINE_ERROR_ABORT"/>
+  <int value="6" label="PIPELINE_ERROR_INITIALIZATION_FAILED"/>
+  <int value="7" label="PIPELINE_ERROR_REQUIRED_FILTER_MISSING"/>
+  <int value="8" label="PIPELINE_ERROR_COULD_NOT_RENDER"/>
+  <int value="9" label="PIPELINE_ERROR_READ"/>
+  <int value="10" label="PIPELINE_ERROR_OPERATION_PENDING"/>
+  <int value="11" label="PIPELINE_ERROR_INVALID_STATE"/>
+  <int value="12" label="DEMUXER_ERROR_COULD_NOT_OPEN"/>
+  <int value="13" label="DEMUXER_ERROR_COULD_NOT_PARSE"/>
+  <int value="14" label="DEMUXER_ERROR_NO_SUPPORTED_STREAMS"/>
+  <int value="15" label="DECODER_ERROR_NOT_SUPPORTED"/>
 </enum>
 
 <enum name="PlatformFileError" type="int">
@@ -14133,6 +14696,17 @@ other types of suffix sets.
   <int value="2" label="unexpected other schemes"/>
 </enum>
 
+<enum name="UncacheableReason" type="int">
+  <int value="0" label="kNoData"/>
+  <int value="1" label="kPre11PartialResponse"/>
+  <int value="2" label="kNoStrongValidatorOnPartialResponse"/>
+  <int value="3" label="kShortMaxAge"/>
+  <int value="4" label="kExpiresTooSoon"/>
+  <int value="5" label="kHasMustRevalidate"/>
+  <int value="6" label="kNoCache"/>
+  <int value="7" label="kNoStore"/>
+</enum>
+
 <enum name="UniformityTrialGroupNotActive" type="int">
   <int value="0" label="Invalid"/>
   <int value="1" label="Group not reported"/>
@@ -14193,12 +14767,52 @@ other types of suffix sets.
   <int value="42" label="kErrorCodeUpdateCanceledByChannelChange"/>
 </enum>
 
+<enum name="URLSchemeForHistogram" type="int">
+  <int value="0" label="kUnknownURLScheme"/>
+  <int value="1" label="kMissingURLScheme"/>
+  <int value="2" label="kHttpURLScheme"/>
+  <int value="3" label="kHttpsURLScheme"/>
+  <int value="4" label="kFtpURLScheme"/>
+  <int value="5" label="kChromeExtensionURLScheme"/>
+  <int value="6" label="kJavascriptURLScheme"/>
+  <int value="7" label="kFileURLScheme"/>
+  <int value="8" label="kBlobURLScheme"/>
+  <int value="9" label="kDataURLScheme"/>
+</enum>
+
 <enum name="VAVDAH264DecoderFailure" type="int">
   <int value="0" label="FRAME_MBS_ONLY_FLAG_NOT_ONE"/>
   <int value="1" label="GAPS_IN_FRAME_NUM"/>
   <int value="2" label="MID_STREAM_RESOLUTION_CHANGE"/>
   <int value="3" label="INTERLACED_STREAM"/>
   <int value="4" label="VAAPI_ERROR"/>
+</enum>
+
+<enum name="VideoCodec" type="int">
+  <int value="0" label="kUnknownVideoCodec"/>
+  <int value="1" label="kCodecH264"/>
+  <int value="2" label="kCodecVC1"/>
+  <int value="3" label="kCodecMPEG2"/>
+  <int value="4" label="kCodecMPEG4"/>
+  <int value="5" label="kCodecTheora"/>
+  <int value="6" label="kCodecVP8"/>
+  <int value="7" label="kCodecVP9"/>
+</enum>
+
+<enum name="VideoCodecProfile" type="int">
+  <int value="0" label="H.264 Baseline"/>
+  <int value="1" label="H.264 Main"/>
+  <int value="2" label="H.264 Extended"/>
+  <int value="3" label="H.264 High"/>
+  <int value="4" label="H.264 High10"/>
+  <int value="5" label="H.264 High422"/>
+  <int value="6" label="H.264 High444"/>
+  <int value="7" label="H.264 ScalableBaseline"/>
+  <int value="8" label="H.264 ScalableHigh"/>
+  <int value="9" label="H.264 StereoHigh"/>
+  <int value="10" label="H.264 MultiviewHigh"/>
+  <int value="11" label="VP8"/>
+  <int value="12" label="VP9"/>
 </enum>
 
 <enum name="ViewFileType" type="int">
