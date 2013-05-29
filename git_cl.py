@@ -1238,11 +1238,8 @@ def RietveldUpload(options, args, cl):
   if cl.GetIssue():
     if options.title:
       upload_args.extend(['--title', options.title])
-    elif options.message:
-      # TODO(rogerta): for now, the -m option will also set the --title option
-      # for upload.py.  Soon this will be changed to set the --message option.
-      # Will wait until people are used to typing -t instead of -m.
-      upload_args.extend(['--title', options.message])
+    if options.message:
+      upload_args.extend(['--message', options.message])
     upload_args.extend(['--issue', str(cl.GetIssue())])
     print ("This branch is associated with issue %s. "
            "Adding patch to that issue." % cl.GetIssue())
@@ -1361,14 +1358,6 @@ def CMDupload(parser, args):
 
   if options.target_branch and not settings.GetIsGerrit():
     parser.error('Use --target_branch for non gerrit repository.')
-
-  # Print warning if the user used the -m/--message argument.  This will soon
-  # change to -t/--title.
-  if options.message:
-    print >> sys.stderr, (
-        '\nWARNING: Use -t or --title to set the title of the patchset.\n'
-        'In the near future, -m or --message will send a message instead.\n'
-        'See http://goo.gl/JGg0Z for details.\n')
 
   if is_dirty_git_tree('upload'):
     return 1
