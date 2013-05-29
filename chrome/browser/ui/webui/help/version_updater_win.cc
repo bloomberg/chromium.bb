@@ -59,8 +59,11 @@ class VersionUpdaterWin : public VersionUpdater,
   // result case can now be completeb on the UI thread.
   void GotInstalledVersion(const Version& version);
 
-  // Little helper function to reset google_updater_.
-  void SetGoogleUpdater();
+  // Little helper function to create google_updater_.
+  void CreateGoogleUpdater();
+
+  // Helper function to clear google_updater_.
+  void ClearGoogleUpdater();
 
   // Returns a window that can be used for elevation.
   HWND GetElevationParent();
@@ -121,14 +124,13 @@ class VersionReader
 
 VersionUpdaterWin::VersionUpdaterWin()
     : weak_factory_(this) {
-  SetGoogleUpdater();
+  CreateGoogleUpdater();
 }
 
 VersionUpdaterWin::~VersionUpdaterWin() {
   // The Google Updater will hold a pointer to the listener until it reports
   // status, so that pointer must be cleared when the listener is destoyed.
-  if (google_updater_)
-    google_updater_->set_status_listener(NULL);
+  ClearGoogleUpdater();
 }
 
 void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback) {
@@ -144,7 +146,7 @@ void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback) {
         !base::win::UserAccountControlIsEnabled())) {
     // This could happen if the page got refreshed after results were returned.
     if (!google_updater_)
-      SetGoogleUpdater();
+      CreateGoogleUpdater();
     UpdateStatus(UPGRADE_CHECK_STARTED, GOOGLE_UPDATE_NO_ERROR, string16());
     // Specify false to not upgrade yet.
     google_updater_->CheckForUpdate(false, GetElevationParent());
@@ -159,7 +161,7 @@ void VersionUpdaterWin::OnReportResults(
     GoogleUpdateUpgradeResult result, GoogleUpdateErrorCode error_code,
     const string16& error_message, const string16& version) {
   // Drop the last reference to the object so that it gets cleaned up here.
-  google_updater_ = NULL;
+  ClearGoogleUpdater();
   UpdateStatus(result, error_code, error_message);
 }
 
@@ -188,7 +190,7 @@ void VersionUpdaterWin::UpdateStatus(GoogleUpdateUpgradeResult result,
       content::RecordAction(
           UserMetricsAction("UpgradeCheck_UpgradeIsAvailable"));
       DCHECK(!google_updater_);  // Should have been nulled out already.
-      SetGoogleUpdater();
+      CreateGoogleUpdater();
       UpdateStatus(UPGRADE_STARTED, GOOGLE_UPDATE_NO_ERROR, string16());
       // Specify true to upgrade now.
       google_updater_->CheckForUpdate(true, GetElevationParent());
@@ -256,9 +258,17 @@ void VersionUpdaterWin::GotInstalledVersion(const Version& version) {
   }
 }
 
-void VersionUpdaterWin::SetGoogleUpdater() {
+void VersionUpdaterWin::CreateGoogleUpdater() {
+  ClearGoogleUpdater();
   google_updater_ = new GoogleUpdate();
   google_updater_->set_status_listener(this);
+}
+
+void VersionUpdaterWin::ClearGoogleUpdater() {
+  if (google_updater_) {
+    google_updater_->set_status_listener(NULL);
+    google_updater_ = NULL;
+  }
 }
 
 BOOL CALLBACK WindowEnumeration(HWND window, LPARAM param) {
