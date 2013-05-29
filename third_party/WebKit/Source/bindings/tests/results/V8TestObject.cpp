@@ -4304,12 +4304,12 @@ v8::Handle<v8::Value> V8TestObject::namedPropertyGetter(v8::Local<v8::String> na
     return v8String(element, info.GetIsolate());
 }
 
-static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestObject", v8::Persistent<v8::FunctionTemplate>(), V8TestObject::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestObject", v8::Local<v8::FunctionTemplate>(), V8TestObject::internalFieldCount,
         V8TestObjectAttrs, WTF_ARRAY_LENGTH(V8TestObjectAttrs),
         V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
@@ -4413,18 +4413,18 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Pe
     return desc;
 }
 
-v8::Persistent<v8::FunctionTemplate> V8TestObject::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestObject::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&info);
     if (result != data->templateMap(currentWorldType).end())
-        return result->value;
+        return result->value.newLocal(isolate);
 
-    v8::HandleScope handleScope;
-    v8::Persistent<v8::FunctionTemplate> templ =
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::FunctionTemplate> templ =
         ConfigureV8TestObjectTemplate(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);
-    data->templateMap(currentWorldType).add(&info, templ);
-    return templ;
+    data->templateMap(currentWorldType).add(&info, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
+    return handleScope.Close(templ);
 }
 
 bool V8TestObject::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)

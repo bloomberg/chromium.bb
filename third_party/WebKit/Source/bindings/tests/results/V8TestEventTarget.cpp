@@ -164,7 +164,6 @@ v8::Handle<v8::Value> V8TestEventTarget::indexedPropertyGetter(uint32_t index, c
 
 v8::Handle<v8::Boolean> V8TestEventTarget::indexedPropertyDeleter(unsigned index, const v8::AccessorInfo& info)
 {
-
     TestEventTarget* collection = toNative(info.Holder());
     ExceptionCode ec = 0;
     bool result = collection->anonymousIndexedDeleter(index, ec);
@@ -208,19 +207,18 @@ v8::Handle<v8::Value> V8TestEventTarget::namedPropertySetter(v8::Local<v8::Strin
 
 v8::Handle<v8::Boolean> V8TestEventTarget::namedPropertyDeleter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
-
     TestEventTarget* collection = toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
     bool result = collection->anonymousNamedDeleter(propertyName);
     return v8Boolean(result);
 }
 
-static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v8::Persistent<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestEventTarget", v8::Persistent<v8::FunctionTemplate>(), V8TestEventTarget::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestEventTarget", v8::Local<v8::FunctionTemplate>(), V8TestEventTarget::internalFieldCount,
         0, 0,
         V8TestEventTargetMethods, WTF_ARRAY_LENGTH(V8TestEventTargetMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
@@ -243,18 +241,18 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v
     return desc;
 }
 
-v8::Persistent<v8::FunctionTemplate> V8TestEventTarget::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestEventTarget::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&info);
     if (result != data->templateMap(currentWorldType).end())
-        return result->value;
+        return result->value.newLocal(isolate);
 
-    v8::HandleScope handleScope;
-    v8::Persistent<v8::FunctionTemplate> templ =
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::FunctionTemplate> templ =
         ConfigureV8TestEventTargetTemplate(data->rawTemplate(&info, currentWorldType), isolate, currentWorldType);
-    data->templateMap(currentWorldType).add(&info, templ);
-    return templ;
+    data->templateMap(currentWorldType).add(&info, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
+    return handleScope.Close(templ);
 }
 
 bool V8TestEventTarget::HasInstance(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)

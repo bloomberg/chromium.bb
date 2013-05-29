@@ -107,7 +107,7 @@ public:
 
     static void batchConfigureCallbacks(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, v8::PropertyAttribute, const BatchedMethod*, size_t callbackCount, v8::Isolate*, WrapperWorldType);
 
-    static v8::Local<v8::Signature> configureTemplate(v8::Persistent<v8::FunctionTemplate>, const char* interfaceName, v8::Persistent<v8::FunctionTemplate> parentClass, size_t fieldCount, const BatchedAttribute*, size_t attributeCount, const BatchedMethod*, size_t callbackCount, v8::Isolate*, WrapperWorldType);
+    static v8::Local<v8::Signature> configureTemplate(v8::Handle<v8::FunctionTemplate>, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass, size_t fieldCount, const BatchedAttribute*, size_t attributeCount, const BatchedMethod*, size_t callbackCount, v8::Isolate*, WrapperWorldType);
 };
 
 } // namespace WebCore

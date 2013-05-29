@@ -135,29 +135,29 @@ bool V8PerIsolateData::hasPrivateTemplate(WrapperWorldType currentWorldType, voi
     return m_templatesForNonMainWorld.find(privatePointer) != m_templatesForNonMainWorld.end();
 }
 
-v8::Persistent<v8::FunctionTemplate> V8PerIsolateData::privateTemplate(WrapperWorldType currentWorldType, void* privatePointer, v8::InvocationCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplate(WrapperWorldType currentWorldType, void* privatePointer, v8::InvocationCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
 {
     v8::Persistent<v8::FunctionTemplate> privateTemplate;
     TemplateMap& templates = templateMap(currentWorldType);
     TemplateMap::iterator result = templates.find(privatePointer);
     if (result != templates.end())
-        return result->value;
-    v8::Persistent<v8::FunctionTemplate> newPrivateTemplate(m_isolate, v8::FunctionTemplate::New(callback, data, signature, length));
-    templates.add(privatePointer, newPrivateTemplate);
-    return newPrivateTemplate;
+        return result->value.newLocal(m_isolate);
+    v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(callback, data, signature, length);
+    templates.add(privatePointer, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
+    return templ;
 }
 
-v8::Persistent<v8::FunctionTemplate> V8PerIsolateData::rawTemplate(WrapperTypeInfo* info, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::rawTemplate(WrapperTypeInfo* info, WrapperWorldType currentWorldType)
 {
     TemplateMap& templates = rawTemplateMap(currentWorldType);
     TemplateMap::iterator result = templates.find(info);
     if (result != templates.end())
-        return result->value;
+        return result->value.newLocal(m_isolate);
 
-    v8::HandleScope handleScope;
-    v8::Persistent<v8::FunctionTemplate> templ = createRawTemplate(m_isolate);
-    templates.add(info, templ);
-    return templ;
+    v8::HandleScope handleScope(m_isolate);
+    v8::Handle<v8::FunctionTemplate> templ = createRawTemplate(m_isolate);
+    templates.add(info, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
+    return handleScope.Close(templ);
 }
 
 v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
@@ -175,7 +175,8 @@ bool V8PerIsolateData::hasInstance(WrapperTypeInfo* info, v8::Handle<v8::Value> 
     TemplateMap::iterator result = templates.find(info);
     if (result == templates.end())
         return false;
-    return result->value->HasInstance(value);
+    v8::HandleScope handleScope(m_isolate);
+    return result->value.newLocal(m_isolate)->HasInstance(value);
 }
 
 void V8PerIsolateData::visitExternalStrings(ExternalStringVisitor* visitor)

@@ -32,7 +32,7 @@ class V8TestException {
 public:
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
     static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
-    static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
+    static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static TestException* toNative(v8::Handle<v8::Object> object)
     {
         return reinterpret_cast<TestException*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));

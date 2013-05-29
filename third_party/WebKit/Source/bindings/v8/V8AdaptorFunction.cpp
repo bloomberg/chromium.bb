@@ -38,20 +38,20 @@ namespace WebCore {
 
 WrapperTypeInfo V8AdaptorFunction::info = { V8AdaptorFunction::getTemplate, 0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype };
 
-v8::Persistent<v8::FunctionTemplate> V8AdaptorFunction::getTemplate(v8::Isolate* isolate, WrapperWorldType worldType)
+v8::Handle<v8::FunctionTemplate> V8AdaptorFunction::getTemplate(v8::Isolate* isolate, WrapperWorldType worldType)
 {
     ASSERT(isolate);
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->rawTemplateMap(worldType).find(&info);
     if (result != data->rawTemplateMap(worldType).end())
-        return result->value;
+        return result->value.newLocal(isolate);
     // The lifetime is of newTemplate is delegated to the TemplateMap thus this won't be leaked.
-    v8::Persistent<v8::FunctionTemplate> newTemplate(isolate, v8::FunctionTemplate::New());
-    data->rawTemplateMap(worldType).add(&info, configureTemplate(newTemplate));
+    v8::Handle<v8::FunctionTemplate> newTemplate = configureTemplate(v8::FunctionTemplate::New());
+    data->rawTemplateMap(worldType).add(&info, UnsafePersistent<v8::FunctionTemplate>(isolate, newTemplate));
     return newTemplate;
 }
 
-v8::Persistent<v8::FunctionTemplate> V8AdaptorFunction::configureTemplate(v8::Persistent<v8::FunctionTemplate> functionTemplate)
+v8::Handle<v8::FunctionTemplate> V8AdaptorFunction::configureTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate)
 {
     functionTemplate->SetCallHandler(&V8AdaptorFunction::invocationCallback);
     return functionTemplate;

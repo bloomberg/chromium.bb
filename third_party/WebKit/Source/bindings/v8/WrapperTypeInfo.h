@@ -55,7 +55,7 @@ namespace WebCore {
         WorkerWorld
     };
 
-    typedef v8::Persistent<v8::FunctionTemplate> (*GetTemplateFunction)(v8::Isolate*, WrapperWorldType);
+    typedef v8::Handle<v8::FunctionTemplate> (*GetTemplateFunction)(v8::Isolate*, WrapperWorldType);
     typedef void (*DerefObjectFunction)(void*);
     typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
     typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
@@ -93,7 +93,7 @@ namespace WebCore {
             return false;
         }
         
-        v8::Persistent<v8::FunctionTemplate> getTemplate(v8::Isolate* isolate, WrapperWorldType worldType) { return getTemplateFunction(isolate, worldType); }
+        v8::Handle<v8::FunctionTemplate> getTemplate(v8::Isolate* isolate, WrapperWorldType worldType) { return getTemplateFunction(isolate, worldType); }
         
         void derefObject(void* object)
         {

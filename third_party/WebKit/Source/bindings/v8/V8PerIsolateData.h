@@ -27,6 +27,7 @@
 #define V8PerIsolateData_h
 
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include <v8.h>
 #include "wtf/Forward.h"
@@ -63,7 +64,7 @@ public:
     }
     static void dispose(v8::Isolate*);
 
-    typedef HashMap<void*, v8::Persistent<v8::FunctionTemplate> > TemplateMap;
+    typedef HashMap<void*, UnsafePersistent<v8::FunctionTemplate> > TemplateMap;
 
     TemplateMap& rawTemplateMap(WrapperWorldType worldType)
     {
@@ -136,9 +137,9 @@ public:
     bool shouldCollectGarbageSoon() const { return m_shouldCollectGarbageSoon; }
 
     bool hasPrivateTemplate(WrapperWorldType, void* privatePointer);
-    v8::Persistent<v8::FunctionTemplate> privateTemplate(WrapperWorldType, void* privatePointer, v8::InvocationCallback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature>, int length = 0);
+    v8::Handle<v8::FunctionTemplate> privateTemplate(WrapperWorldType, void* privatePointer, v8::InvocationCallback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature>, int length = 0);
 
-    v8::Persistent<v8::FunctionTemplate> rawTemplate(WrapperTypeInfo*, WrapperWorldType);
+    v8::Handle<v8::FunctionTemplate> rawTemplate(WrapperTypeInfo*, WrapperWorldType);
 
     bool hasInstance(WrapperTypeInfo*, v8::Handle<v8::Value>, WrapperWorldType);
 

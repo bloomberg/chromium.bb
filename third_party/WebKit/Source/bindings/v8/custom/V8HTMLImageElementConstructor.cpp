@@ -82,13 +82,13 @@ static v8::Handle<v8::Value> v8HTMLImageElementConstructorMethodCustom(const v8:
     return wrapper;
 }
 
-v8::Persistent<v8::FunctionTemplate> V8HTMLImageElementConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType worldType)
+v8::Handle<v8::FunctionTemplate> V8HTMLImageElementConstructor::GetTemplate(v8::Isolate* isolate, WrapperWorldType worldType)
 {
     static v8::Persistent<v8::FunctionTemplate> cachedTemplate;
     if (!cachedTemplate.IsEmpty())
-        return cachedTemplate;
+        return v8::Local<v8::FunctionTemplate>::New(isolate, cachedTemplate);
 
-    v8::HandleScope scope;
+    v8::HandleScope scope(isolate);
     v8::Local<v8::FunctionTemplate> result = v8::FunctionTemplate::New(v8HTMLImageElementConstructorMethodCustom);
 
     v8::Local<v8::ObjectTemplate> instance = result->InstanceTemplate();
@@ -97,7 +97,7 @@ v8::Persistent<v8::FunctionTemplate> V8HTMLImageElementConstructor::GetTemplate(
     result->Inherit(V8HTMLImageElement::GetTemplate(isolate, worldType));
 
     cachedTemplate.Reset(isolate, result);
-    return cachedTemplate;
+    return scope.Close(v8::Local<v8::FunctionTemplate>::New(isolate, cachedTemplate));
 }
 
 } // namespace WebCore

@@ -33,7 +33,7 @@ class V8TestNode {
 public:
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
     static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
-    static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
+    static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static TestNode* toNative(v8::Handle<v8::Object> object)
     {
         return reinterpret_cast<TestNode*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));

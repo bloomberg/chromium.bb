@@ -58,7 +58,7 @@ void V8DOMConfiguration::batchConfigureCallbacks(v8::Handle<v8::ObjectTemplate> 
     }
 }
 
-v8::Local<v8::Signature> V8DOMConfiguration::configureTemplate(v8::Persistent<v8::FunctionTemplate> functionDescriptor, const char* interfaceName, v8::Persistent<v8::FunctionTemplate> parentClass,
+v8::Local<v8::Signature> V8DOMConfiguration::configureTemplate(v8::Handle<v8::FunctionTemplate> functionDescriptor, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass,
     size_t fieldCount, const BatchedAttribute* attributes, size_t attributeCount, const BatchedMethod* callbacks, size_t callbackCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionDescriptor->SetClassName(v8::String::NewSymbol(interfaceName));
