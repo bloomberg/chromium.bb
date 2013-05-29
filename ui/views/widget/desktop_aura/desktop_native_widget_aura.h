@@ -10,6 +10,7 @@
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/client/focus_change_observer.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -44,7 +45,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
       public aura::client::ActivationChangeObserver,
       public aura::client::FocusChangeObserver,
       public views::internal::InputMethodDelegate,
-      public aura::client::DragDropDelegate {
+      public aura::client::DragDropDelegate,
+      public aura::RootWindowObserver {
  public:
   explicit DesktopNativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~DesktopNativeWidgetAura();
@@ -192,6 +194,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
+
+  // Overridden from aura::RootWindowObserver:
+  virtual void OnRootWindowHostCloseRequested(
+      const aura::RootWindow* root) OVERRIDE;
 
  private:
   // See class documentation for Widget in widget.h for a note about ownership.

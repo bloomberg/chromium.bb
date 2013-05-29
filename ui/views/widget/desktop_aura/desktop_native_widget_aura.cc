@@ -178,6 +178,8 @@ DesktopNativeWidgetAura::~DesktopNativeWidgetAura() {
     CloseNow();
 
   stacking_client_.reset();  // Uses root_window_ at destruction.
+
+  root_window_->RemoveRootWindowObserver(this);
   root_window_.reset();  // Uses input_method_event_filter_ at destruction.
   input_method_event_filter_.reset();
 }
@@ -235,6 +237,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
                                     this, params.bounds);
   root_window_.reset(
       desktop_root_window_host_->Init(window_, params));
+  root_window_->AddRootWindowObserver(this);
+
   stacking_client_.reset(
       new DesktopNativeWidgetAuraStackingClient(root_window_.get()));
   drop_helper_.reset(new DropHelper(
@@ -840,6 +844,14 @@ int DesktopNativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != NULL);
   return drop_helper_->OnDrop(event.data(), event.location(),
       last_drop_operation_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopNativeWidgetAura, aura::RootWindowObserver implementation:
+
+void DesktopNativeWidgetAura::OnRootWindowHostCloseRequested(
+    const aura::RootWindow* root) {
+  Close();
 }
 
 }  // namespace views
