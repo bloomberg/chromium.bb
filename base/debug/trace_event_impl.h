@@ -463,6 +463,8 @@ class BASE_EXPORT TraceLog {
   void EnableIncludedCategoryGroup(int category_index);
 
   static void SetCategoryGroupEnabled(int category_index, bool enabled);
+  static bool IsCategoryGroupEnabled(
+      const unsigned char* category_group_enabled);
 
   // The pointer returned from GetCategoryGroupEnabledInternal() points to a
   // value with zero or more of the following bits. Used in this class only.

@@ -836,12 +836,18 @@ void TraceLog::EnableIncludedCategoryGroup(int category_index) {
 }
 
 void TraceLog::SetCategoryGroupEnabled(int category_index, bool is_enabled) {
-  g_category_group_enabled[category_index] =
-      is_enabled ? TraceLog::CATEGORY_ENABLED : 0;
+  g_category_group_enabled[category_index] = is_enabled ? CATEGORY_ENABLED : 0;
 
 #if defined(OS_ANDROID)
   ApplyATraceEnabledFlag(&g_category_group_enabled[category_index]);
 #endif
+}
+
+bool TraceLog::IsCategoryGroupEnabled(
+    const unsigned char* category_group_enabled) {
+  // On Android, ATrace and normal trace can be enabled independently.
+  // This function checks if the normal trace is enabled.
+  return *category_group_enabled & CATEGORY_ENABLED;
 }
 
 void TraceLog::EnableIncludedCategoryGroups() {
@@ -1116,7 +1122,7 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 
   do {
     AutoLock lock(lock_);
-    if (*category_group_enabled != CATEGORY_ENABLED)
+    if (!IsCategoryGroupEnabled(category_group_enabled))
       return;
 
     event_callback_copy = event_callback_;
