@@ -84,13 +84,14 @@ void ManagedModePolicyProvider::InitDefaults() {
     return;
 
   DictionaryValue* dict = new DictionaryValue;
+  dict->SetBoolean(policy::key::kAllowDeletingBrowserHistory, false);
   dict->SetInteger(policy::key::kContentPackDefaultFilteringBehavior,
                    ManagedModeURLFilter::ALLOW);
   dict->SetBoolean(policy::key::kForceSafeSearch, true);
-  dict->SetBoolean(policy::key::kSigninAllowed, false);
-  dict->SetBoolean(policy::key::kAllowDeletingBrowserHistory, false);
+  dict->SetBoolean(policy::key::kHideWebStoreIcon, true);
   dict->SetInteger(policy::key::kIncognitoModeAvailability,
                    IncognitoModePrefs::DISABLED);
+  dict->SetBoolean(policy::key::kSigninAllowed, false);
 
   store_->SetValue(kPolicies, dict);
   UpdatePolicyFromCache();
