@@ -99,12 +99,15 @@ struct StringStats {
     unsigned long long m_totalUpconvertedData;
 };
 
-#define STRING_STATS_ADD_8BIT_STRING(length) StringImpl::stringStats().add8BitString(length)
-#define STRING_STATS_ADD_8BIT_STRING2(length, isSubString) StringImpl::stringStats().add8BitString(length, isSubString)
-#define STRING_STATS_ADD_16BIT_STRING(length) StringImpl::stringStats().add16BitString(length)
-#define STRING_STATS_ADD_16BIT_STRING2(length, isSubString) StringImpl::stringStats().add16BitString(length, isSubString)
+void addStringForStats(StringImpl*);
+void removeStringForStats(StringImpl*);
+
+#define STRING_STATS_ADD_8BIT_STRING(length) StringImpl::stringStats().add8BitString(length); addStringForStats(this)
+#define STRING_STATS_ADD_8BIT_STRING2(length, isSubString) StringImpl::stringStats().add8BitString(length, isSubString); addStringForStats(this)
+#define STRING_STATS_ADD_16BIT_STRING(length) StringImpl::stringStats().add16BitString(length); addStringForStats(this)
+#define STRING_STATS_ADD_16BIT_STRING2(length, isSubString) StringImpl::stringStats().add16BitString(length, isSubString); addStringForStats(this)
 #define STRING_STATS_ADD_UPCONVERTED_STRING(length) StringImpl::stringStats().addUpconvertedString(length)
-#define STRING_STATS_REMOVE_STRING(string) StringImpl::stringStats().removeString(string)
+#define STRING_STATS_REMOVE_STRING(string) StringImpl::stringStats().removeString(string); removeStringForStats(this)
 #else
 #define STRING_STATS_ADD_8BIT_STRING(length) ((void)0)
 #define STRING_STATS_ADD_8BIT_STRING2(length, isSubString) ((void)0)

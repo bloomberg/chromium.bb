@@ -23,19 +23,20 @@
  */
 
 #include "config.h"
-#include "StringImpl.h"
+#include "wtf/text/StringImpl.h"
 
-#include "AtomicString.h"
-#include "StringBuffer.h"
-#include "StringHash.h"
-#include <wtf/ProcessID.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/WTFThreadData.h>
-#include <wtf/unicode/CharacterNames.h>
+#include "wtf/ProcessID.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/WTFThreadData.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/StringBuffer.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/unicode/CharacterNames.h"
 
 #ifdef STRING_STATS
+#include "wtf/DataLog.h"
+#include "wtf/MainThread.h"
 #include <unistd.h>
-#include <wtf/DataLog.h>
 #endif
 
 using namespace std;
@@ -47,6 +48,122 @@ using namespace Unicode;
 COMPILE_ASSERT(sizeof(StringImpl) == 2 * sizeof(int) + 3 * sizeof(void*), StringImpl_should_stay_small);
 
 #ifdef STRING_STATS
+
+static Mutex& statsMutex()
+{
+    DEFINE_STATIC_LOCAL(Mutex, mutex, ());
+    return mutex;
+}
+
+static HashSet<void*>& liveStrings()
+{
+    // Notice that we can't use HashSet<StringImpl*> because then HashSet would dedup identical strings.
+    DEFINE_STATIC_LOCAL(HashSet<void*>, strings, ());
+    return strings;
+}
+
+void addStringForStats(StringImpl* string)
+{
+    MutexLocker locker(statsMutex());
+    liveStrings().add(string);
+}
+
+void removeStringForStats(StringImpl* string)
+{
+    MutexLocker locker(statsMutex());
+    liveStrings().remove(string);
+}
+
+static void fillWithSnippet(const StringImpl* string, Vector<char>& snippet)
+{
+    snippet.clear();
+    size_t i;
+    for (i = 0; i < string->length() && i < 64; ++i) {
+        UChar c = (*string)[i];
+        if (isASCIIPrintable(c))
+            snippet.append(c);
+    }
+    if (i < string->length()) {
+        snippet.append('.');
+        snippet.append('.');
+        snippet.append('.');
+    }
+    snippet.append('\0');
+}
+
+struct PerStringStats {
+    PerStringStats()
+        : m_numberOfCopies(0)
+        , m_length(0)
+        , m_numberOfAtomicCopies(0)
+    {
+    }
+
+    void add(const StringImpl* string)
+    {
+        ++m_numberOfCopies;
+        if (!m_length) {
+            m_length = string->length();
+            fillWithSnippet(string, m_snippet);
+        }
+        if (string->isAtomic())
+            ++m_numberOfAtomicCopies;
+    }
+
+    size_t potentialSavings() const
+    {
+        return (m_numberOfCopies - 1) * m_length;
+    }
+
+    void print()
+    {
+        dataLogF("%8u copies (%1u atomic) of length %8u (potential savings: %8u) %s\n", m_numberOfCopies, m_numberOfAtomicCopies, m_length, potentialSavings(), m_snippet.data());
+    }
+
+    unsigned m_numberOfCopies;
+    unsigned m_length;
+    unsigned m_numberOfAtomicCopies;
+    Vector<char> m_snippet;
+};
+
+bool operator<(const PerStringStats& a, const PerStringStats& b)
+{
+    if (a.potentialSavings() != b.potentialSavings())
+        return a.potentialSavings() < b.potentialSavings();
+    if (a.m_numberOfCopies != b.m_numberOfCopies)
+        return a.m_numberOfCopies < b.m_numberOfCopies;
+    if (a.m_length != b.m_length)
+        return a.m_length < b.m_length;
+    return a.m_numberOfAtomicCopies < b.m_numberOfAtomicCopies;
+}
+
+static void printLiveStringStats(void*)
+{
+    MutexLocker locker(statsMutex());
+    HashSet<void*>& strings = liveStrings();
+
+    HashMap<StringImpl*, PerStringStats> stats;
+    for (HashSet<void*>::iterator iter = strings.begin(); iter != strings.end(); ++iter) {
+        StringImpl* string = static_cast<StringImpl*>(*iter);
+        HashMap<StringImpl*, PerStringStats>::iterator entry = stats.find(string);
+        PerStringStats value = entry == stats.end() ? PerStringStats() : entry->value;
+        value.add(string);
+        stats.set(string, value);
+    }
+
+    Vector<PerStringStats> all;
+    size_t totalPotentialSavings = 0;
+    for (HashMap<StringImpl*, PerStringStats>::iterator iter = stats.begin(); iter != stats.end(); ++iter) {
+        all.append(iter->value);
+        totalPotentialSavings += iter->value.potentialSavings();
+    }
+    std::sort(all.begin(), all.end());
+    std::reverse(all.begin(), all.end());
+    for (size_t i = 0; i < 20 && i < all.size(); ++i)
+        all[i].print();
+    dataLogF("         Total potential savings: %u characters\n", totalPotentialSavings);
+}
+
 StringStats StringImpl::m_stringStats;
 
 unsigned StringStats::s_stringRemovesTillPrintStats = StringStats::s_printStringStatsFrequency;
@@ -103,6 +220,8 @@ void StringStats::printStats()
     unsigned long long totalSavedBytes = m_total8BitData - m_totalUpconvertedData;
     double percentSavings = totalSavedBytes ? ((double)totalSavedBytes * 100) / (double)(totalDataBytes + totalSavedBytes) : 0.0;
     dataLogF("         Total savings %12llu bytes (%5.2f%%)\n", totalSavedBytes, percentSavings);
+
+    callOnMainThread(printLiveStringStats, 0);
 }
 #endif
 
