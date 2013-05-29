@@ -40,6 +40,7 @@
 #include "core/rendering/RenderView.h"
 #include <public/Platform.h>
 #include <public/WebLayer.h>
+#include <public/WebLayerPositionConstraint.h>
 #include <public/WebLayerTreeView.h>
 #include <public/WebUnitTestSupport.h>
 
@@ -139,6 +140,25 @@ TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingByDefault)
     ASSERT_FALSE(rootScrollLayer->haveWheelEventHandlers());
 }
 
+static WebLayer* webLayerFromElement(Element* element)
+{
+    if (!element)
+        return 0;
+    RenderObject* renderer = element->renderer();
+    if (!renderer || !renderer->isBoxModelObject())
+        return 0;
+    RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
+    if (!layer)
+        return 0;
+    RenderLayerBacking* backing = layer->backing();
+    if (!backing)
+        return 0;
+    GraphicsLayer* graphicsLayer = backing->graphicsLayer();
+    if (!graphicsLayer)
+        return 0;
+    return graphicsLayer->platformLayer();
+}
+
 TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingForFixedPosition)
 {
     registerMockedHttpURLLoad("fixed-position.html");
@@ -148,21 +168,79 @@ TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingForFixedPosition)
     WebLayer* rootScrollLayer = getRootScrollLayer();
     ASSERT_FALSE(rootScrollLayer->shouldScrollOnMainThread());
 
-    // Verify the properties of the fixed position element starting from the RenderObject all the
-    // way to the WebLayer.
-    Element* fixedElement = m_webViewImpl->mainFrameImpl()->frame()->document()->getElementById("fixed");
-    ASSERT(fixedElement);
-
-    RenderObject* renderer = fixedElement->renderer();
-    ASSERT_TRUE(renderer->isBoxModelObject());
-    ASSERT_TRUE(renderer->hasLayer());
-
-    RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
-    ASSERT_TRUE(layer->isComposited());
-
-    RenderLayerBacking* layerBacking = layer->backing();
-    WebLayer* webLayer = static_cast<WebLayer*>(layerBacking->graphicsLayer()->platformLayer());
-    ASSERT_TRUE(webLayer->fixedToContainerLayer());
+    Document* document = m_webViewImpl->mainFrameImpl()->frame()->document();
+    {
+        Element* element = document->getElementById("div-tl");
+        ASSERT_TRUE(element);
+        WebLayer* layer = webLayerFromElement(element);
+        ASSERT_TRUE(layer);
+        WebLayerPositionConstraint constraint = layer->positionConstraint();
+        ASSERT_TRUE(constraint.isFixedPosition);
+        ASSERT_TRUE(!constraint.isFixedToRightEdge && !constraint.isFixedToBottomEdge);
+    }
+    {
+        Element* element = document->getElementById("div-tr");
+        ASSERT_TRUE(element);
+        WebLayer* layer = webLayerFromElement(element);
+        ASSERT_TRUE(layer);
+        WebLayerPositionConstraint constraint = layer->positionConstraint();
+        ASSERT_TRUE(constraint.isFixedPosition);
+        ASSERT_TRUE(constraint.isFixedToRightEdge && !constraint.isFixedToBottomEdge);
+    }
+    {
+        Element* element = document->getElementById("div-bl");
+        ASSERT_TRUE(element);
+        WebLayer* layer = webLayerFromElement(element);
+        ASSERT_TRUE(layer);
+        WebLayerPositionConstraint constraint = layer->positionConstraint();
+        ASSERT_TRUE(constraint.isFixedPosition);
+        ASSERT_TRUE(!constraint.isFixedToRightEdge && constraint.isFixedToBottomEdge);
+    }
+    {
+        Element* element = document->getElementById("div-br");
+        ASSERT_TRUE(element);
+        WebLayer* layer = webLayerFromElement(element);
+        ASSERT_TRUE(layer);
+        WebLayerPositionConstraint constraint = layer->positionConstraint();
+        ASSERT_TRUE(constraint.isFixedPosition);
+        ASSERT_TRUE(constraint.isFixedToRightEdge && constraint.isFixedToBottomEdge);
+    }
+    {
+        Element* element = document->getElementById("span-tl");
+        ASSERT_TRUE(element);
+        WebLayer* layer = webLayerFromElement(element);
+        ASSERT_TRUE(layer);
+        WebLayerPositionConstraint constraint = layer->positionConstraint();
+        ASSERT_TRUE(constraint.isFixedPosition);
+        ASSERT_TRUE(!constraint.isFixedToRightEdge && !constraint.isFixedToBottomEdge);
+    }
+    {
+        Element* element = document->getElementById("span-tr");
+        ASSERT_TRUE(element);
+        WebLayer* layer = webLayerFromElement(element);
+        ASSERT_TRUE(layer);
+        WebLayerPositionConstraint constraint = layer->positionConstraint();
+        ASSERT_TRUE(constraint.isFixedPosition);
+        ASSERT_TRUE(constraint.isFixedToRightEdge && !constraint.isFixedToBottomEdge);
+    }
+    {
+        Element* element = document->getElementById("span-bl");
+        ASSERT_TRUE(element);
+        WebLayer* layer = webLayerFromElement(element);
+        ASSERT_TRUE(layer);
+        WebLayerPositionConstraint constraint = layer->positionConstraint();
+        ASSERT_TRUE(constraint.isFixedPosition);
+        ASSERT_TRUE(!constraint.isFixedToRightEdge && constraint.isFixedToBottomEdge);
+    }
+    {
+        Element* element = document->getElementById("span-br");
+        ASSERT_TRUE(element);
+        WebLayer* layer = webLayerFromElement(element);
+        ASSERT_TRUE(layer);
+        WebLayerPositionConstraint constraint = layer->positionConstraint();
+        ASSERT_TRUE(constraint.isFixedPosition);
+        ASSERT_TRUE(constraint.isFixedToRightEdge && constraint.isFixedToBottomEdge);
+    }
 }
 
 TEST_F(ScrollingCoordinatorChromiumTest, nonFastScrollableRegion)
