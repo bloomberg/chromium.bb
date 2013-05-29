@@ -101,10 +101,6 @@ void WebRtcAudioDeviceImpl::CaptureData(const int16* audio_data,
   uint32_t new_mic_level = 0;
 
   int samples_per_sec = input_sample_rate();
-  if (samples_per_sec == 44100) {
-    // Even if the hardware runs at 44.1kHz, we use 44.0 internally.
-    samples_per_sec = 44000;
-  }
   const int samples_per_10_msec = (samples_per_sec / 100);
   int bytes_per_sample = input_audio_parameters.bits_per_sample() / 8;
   const int bytes_per_10_msec =
@@ -171,10 +167,6 @@ void WebRtcAudioDeviceImpl::RenderData(uint8* audio_data,
   DCHECK_LE(channels, output_channels());
 
   int samples_per_sec = output_sample_rate();
-  if (samples_per_sec == 44100) {
-    // Even if the hardware runs at 44.1kHz, we use 44.0 internally.
-    samples_per_sec = 44000;
-  }
   int samples_per_10_msec = (samples_per_sec / 100);
   int bytes_per_sample = output_audio_parameters_.bits_per_sample() / 8;
   const int bytes_per_10_msec =

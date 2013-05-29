@@ -46,7 +46,7 @@ const int kValidOutputRates[] = {44100};
 enum AudioFramesPerBuffer {
   k160,
   k320,
-  k440,  // WebRTC works internally with 440 audio frames at 44.1kHz.
+  k440,
   k480,
   k640,
   k880,
@@ -58,11 +58,14 @@ enum AudioFramesPerBuffer {
 
 // Helper method to convert integral values to their respective enum values
 // above, or kUnexpectedAudioBufferSize if no match exists.
+// We map 441 to k440 to avoid changes in the XML part for histograms.
+// It is still possible to map the histogram result to the actual buffer size.
+// See http://crbug.com/243450 for details.
 AudioFramesPerBuffer AsAudioFramesPerBuffer(int frames_per_buffer) {
   switch (frames_per_buffer) {
     case 160: return k160;
     case 320: return k320;
-    case 440: return k440;
+    case 441: return k440;
     case 480: return k480;
     case 640: return k640;
     case 880: return k880;
@@ -147,23 +150,12 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   }
 
   // Set up audio parameters for the source, i.e., the WebRTC client.
+
   // The WebRTC client only supports multiples of 10ms as buffer size where
   // 10ms is preferred for lowest possible delay.
-
   media::AudioParameters source_params;
-  int buffer_size = 0;
-
-  if (sample_rate % 8000 == 0) {
-    buffer_size = (sample_rate / 100);
-  } else if (sample_rate == 44100) {
-    // The resampler in WebRTC does not support 441 as input. We hard code
-    // the size to 440 (~0.9977ms) instead and rely on the internal jitter
-    // buffer in WebRTC to deal with the resulting drift.
-    // TODO(henrika): ensure that WebRTC supports 44100Hz and use 441 instead.
-    buffer_size = 440;
-  } else {
-    return false;
-  }
+  int buffer_size = (sample_rate / 100);
+  DVLOG(1) << "Using WebRTC output buffer size: " << buffer_size;
 
   int channels = ChannelLayoutToChannelCount(channel_layout);
   source_params.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,

@@ -35,34 +35,17 @@ static int kValidInputRates[] = {44100};
 static int GetBufferSizeForSampleRate(int sample_rate) {
   int buffer_size = 0;
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  // Use different buffer sizes depending on the current hardware sample rate.
-  if (sample_rate == 44100) {
-    // We do run at 44.1kHz at the actual audio layer, but ask for frames
-    // at 44.0kHz to ensure that we can feed them to the webrtc::VoiceEngine.
-    buffer_size = 440;
-  } else {
-    buffer_size = (sample_rate / 100);
-    DCHECK_EQ(buffer_size * 100, sample_rate) <<
-        "Sample rate not supported";
-  }
+  // Use a buffer size of 10ms.
+  buffer_size = (sample_rate / 100);
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   // Based on tests using the current ALSA implementation in Chrome, we have
   // found that the best combination is 20ms on the input side and 10ms on the
   // output side.
-  // TODO(henrika): It might be possible to reduce the input buffer
-  // size and reduce the delay even more.
-  if (sample_rate == 44100)
-    buffer_size = 2 * 440;
-  else
-    buffer_size = 2 * sample_rate / 100;
+  buffer_size = 2 * sample_rate / 100;
 #elif defined(OS_ANDROID)
   // TODO(leozwang): Tune and adjust buffer size on Android.
-  if (sample_rate == 44100)
-    buffer_size = 2 * 440;
-  else
     buffer_size = 2 * sample_rate / 100;
 #endif
-
   return buffer_size;
 }
 
@@ -76,10 +59,7 @@ class WebRtcAudioCapturer::ConfiguredBuffer :
   bool Initialize(int sample_rate,
                   media::ChannelLayout channel_layout) {
     int buffer_size = GetBufferSizeForSampleRate(sample_rate);
-    if (!buffer_size) {
-      DLOG(ERROR) << "Unsupported sample-rate: " << sample_rate;
-      return false;
-    }
+    DVLOG(1) << "Using WebRTC input buffer size: " << buffer_size;
 
     media::AudioParameters::Format format =
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY;
