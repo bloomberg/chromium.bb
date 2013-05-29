@@ -79,7 +79,7 @@ class DisplayView : public ash::internal::ActionableView {
   // Returns the name of the currently connected external display.
   base::string16 GetExternalDisplayName() const {
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-    int64 external_id = display_manager->mirrored_display_id();
+    int64 external_id = display_manager->mirrored_display().id();
 
     if (external_id == gfx::Display::kInvalidDisplayID) {
       int64 internal_display_id = gfx::Display::InternalDisplayId();

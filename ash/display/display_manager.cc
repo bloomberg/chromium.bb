@@ -250,6 +250,7 @@ void DisplayManager::SetOverscanInsets(int64 display_id,
        iter != displays_.end(); ++iter) {
     display_info_list.push_back(GetDisplayInfo(iter->id()));
   }
+  AddMirrorDisplayInfoIfAny(&display_info_list);
   UpdateDisplays(display_info_list);
 }
 
@@ -260,6 +261,7 @@ void DisplayManager::ClearCustomOverscanInsets(int64 display_id) {
        iter != displays_.end(); ++iter) {
     display_info_list.push_back(GetDisplayInfo(iter->id()));
   }
+  AddMirrorDisplayInfoIfAny(&display_info_list);
   UpdateDisplays(display_info_list);
 }
 
@@ -278,6 +280,7 @@ void DisplayManager::SetDisplayRotation(int64 display_id,
     }
     display_info_list.push_back(info);
   }
+  AddMirrorDisplayInfoIfAny(&display_info_list);
   UpdateDisplays(display_info_list);
 }
 
@@ -305,6 +308,7 @@ void DisplayManager::SetDisplayUIScale(int64 display_id,
     }
     display_info_list.push_back(info);
   }
+  AddMirrorDisplayInfoIfAny(&display_info_list);
   UpdateDisplays(display_info_list);
 }
 
@@ -411,6 +415,7 @@ void DisplayManager::UpdateDisplays() {
        iter != displays_.end(); ++iter) {
     display_info_list.push_back(GetDisplayInfo(iter->id()));
   }
+  AddMirrorDisplayInfoIfAny(&display_info_list);
   UpdateDisplays(display_info_list);
 }
 
@@ -432,16 +437,22 @@ void DisplayManager::UpdateDisplays(
   bool update_mouse_location = false;
 
   scoped_ptr<MirrorWindowUpdater> mirror_window_updater;
-  // TODO(oshima): We may want to use external as the source.
+  // Use the internal display or 1st as the mirror source, then scale
+  // the root window so that it matches the external display's
+  // resolution. This is necessary in order for scaling to work while
+  // mirrored.
   int mirrored_display_id = gfx::Display::kInvalidDisplayID;
-  if (software_mirroring_enabled_ && updated_display_info_list.size() == 2)
-    mirrored_display_id = updated_display_info_list[1].id();
+  if (software_mirroring_enabled_ && new_display_info_list.size() == 2)
+    mirrored_display_id = new_display_info_list[1].id();
 
   while (curr_iter != displays_.end() ||
          new_info_iter != new_display_info_list.end()) {
     if (new_info_iter != new_display_info_list.end() &&
         mirrored_display_id == new_info_iter->id()) {
-      InsertAndUpdateDisplayInfo(*new_info_iter);
+      DisplayInfo info = *new_info_iter;
+      info.SetOverscanInsets(true, gfx::Insets());
+      InsertAndUpdateDisplayInfo(info);
+
       mirrored_display_ = CreateDisplayFromDisplayInfoById(new_info_iter->id());
       mirror_window_updater.reset(
           new MirrorWindowCreator(display_info_[new_info_iter->id()]));
@@ -557,6 +568,7 @@ void DisplayManager::UpdateDisplays(
        iter != changed_display_indices.end(); ++iter) {
     Shell::GetInstance()->screen()->NotifyBoundsChanged(displays_[*iter]);
   }
+  mirror_window_updater.reset();
   display_controller->NotifyDisplayConfigurationChanged();
   if (update_mouse_location)
     display_controller->EnsurePointerInDisplays();
@@ -648,7 +660,7 @@ const gfx::Display& DisplayManager::GetDisplayMatching(
 const DisplayInfo& DisplayManager::GetDisplayInfo(int64 display_id) const {
   std::map<int64, DisplayInfo>::const_iterator iter =
       display_info_.find(display_id);
-  CHECK(iter != display_info_.end());
+  CHECK(iter != display_info_.end()) << display_id;
   return iter->second;
 }
 
@@ -708,6 +720,7 @@ void DisplayManager::AddRemoveDisplay() {
             "%d+%d-500x400", host_bounds.x(), host_bounds.bottom())));
   }
   num_connected_displays_ = new_display_info_list.size();
+  mirrored_display_ = gfx::Display();
   UpdateDisplays(new_display_info_list);
 }
 
@@ -721,6 +734,7 @@ void DisplayManager::ToggleDisplayScaleFactor() {
         display_info.device_scale_factor() == 1.0f ? 2.0f : 1.0f);
     new_display_info_list.push_back(display_info);
   }
+  AddMirrorDisplayInfoIfAny(&new_display_info_list);
   UpdateDisplays(new_display_info_list);
 }
 
@@ -732,9 +746,14 @@ void DisplayManager::OnRootWindowResized(const aura::RootWindow* root,
     display_info_[display.id()].SetBounds(
         gfx::Rect(root->GetHostOrigin(), root->GetHostSize()));
     const gfx::Size& new_root_size = root->bounds().size();
+    // It's tricky to support resizing mirror window on desktop.
+    if (software_mirroring_enabled_ && mirrored_display_.id() == display.id())
+      return;
     if (old_size != new_root_size) {
       display.SetSize(display_info_[display.id()].size_in_pixel());
       Shell::GetInstance()->screen()->NotifyBoundsChanged(display);
+      Shell::GetInstance()->mirror_window_controller()->
+          UpdateWindow();
     }
   }
 }
@@ -796,6 +815,12 @@ gfx::Display& DisplayManager::FindDisplayForId(int64 id) {
   }
   DLOG(WARNING) << "Could not find display:" << id;
   return GetInvalidDisplay();
+}
+
+void DisplayManager::AddMirrorDisplayInfoIfAny(
+    std::vector<DisplayInfo>* display_info_list) {
+  if (software_mirroring_enabled_ && mirrored_display_.is_valid())
+    display_info_list->push_back(GetDisplayInfo(mirrored_display_.id()));
 }
 
 void DisplayManager::AddDisplayFromSpec(const std::string& spec) {

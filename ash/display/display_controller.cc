@@ -8,10 +8,10 @@
 #include <cmath>
 #include <map>
 
-#include "ash/ash_root_window_transformer.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_pref_util.h"
+#include "ash/display/root_window_transformers.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
@@ -33,6 +33,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tracker.h"
@@ -168,7 +169,7 @@ void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
                      100 * display.device_scale_factor());
 #endif
   scoped_ptr<aura::RootWindowTransformer> transformer(
-      new AshRootWindowTransformer(root, display));
+      internal::CreateRootWindowTransformerForDisplay(root, display));
   root->SetRootWindowTransformer(transformer.Pass());
 }
 
@@ -600,8 +601,10 @@ DisplayLayout DisplayController::GetCurrentDisplayLayout() const {
 DisplayIdPair DisplayController::GetCurrentDisplayIdPair() const {
   internal::DisplayManager* display_manager = GetDisplayManager();
   const gfx::Display& primary = GetPrimaryDisplay();
-  if (display_manager->IsMirrored())
-    return std::make_pair(primary.id(), display_manager->mirrored_display_id());
+  if (display_manager->IsMirrored()) {
+    return std::make_pair(primary.id(),
+                          display_manager->mirrored_display().id());
+  }
 
   const gfx::Display& secondary = ScreenAsh::GetSecondaryDisplay();
   if (primary.IsInternal() ||

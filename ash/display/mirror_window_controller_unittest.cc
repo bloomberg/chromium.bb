@@ -22,12 +22,14 @@ typedef test::AshTestBase MirrorWindowControllerTest;
 
 #if defined(OS_WIN)
 // Software mirroring does not work on win.
-#define MAYBE_MirrorCursor DISABLED_MirrorCursor
+#define MAYBE_MirrorCursorBasic DISABLED_MirrorCursorBasic
+#define MAYBE_MirrorCursorLocations DISABLED_MirrorCursorLocations
 #else
-#define MAYBE_MirrorCursor MirrorCursor
+#define MAYBE_MirrorCursorBasic MirrorCursorBasic
+#define MAYBE_MirrorCursorLocations MirrorCursorLocations
 #endif
 
-TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursor) {
+TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorBasic) {
   test::MirrorWindowTestApi test_api;
   aura::test::TestWindowDelegate test_window_delegate;
   test_window_delegate.set_window_component(HTTOP);
@@ -54,6 +56,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursor) {
   gfx::Point hot_point = test_api.GetCursorHotPoint();
   gfx::Point cursor_window_origin =
       test_api.GetCursorWindow()->bounds().origin();
+  EXPECT_EQ("4,4", hot_point.ToString());
   EXPECT_EQ(10 - hot_point.x(), cursor_window_origin.x());
   EXPECT_EQ(10 - hot_point.y(), cursor_window_origin.y());
   EXPECT_EQ(ui::kCursorNull, test_api.GetCurrentCursorType());
@@ -81,6 +84,49 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursor) {
   EXPECT_EQ(300 - hot_point.y(), cursor_window_origin.y());
   EXPECT_EQ(ui::kCursorNull, test_api.GetCurrentCursorType());
   EXPECT_TRUE(test_api.GetCursorWindow()->IsVisible());
+}
+
+// Make sure that the mirror cursor's location is same as
+// the source display's host location in the mirror root window's
+// coordinates.
+TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorLocations) {
+  test::MirrorWindowTestApi test_api;
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  display_manager->SetSoftwareMirroring(true);
+
+  // Test with device scale factor.
+  UpdateDisplay("400x600*2,400x600");
+
+  aura::RootWindow* root = Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::test::EventGenerator generator(root);
+  generator.MoveMouseToInHost(10, 20);
+
+  gfx::Point hot_point = test_api.GetCursorHotPoint();
+  EXPECT_EQ("8,9", hot_point.ToString());
+  gfx::Point cursor_window_origin =
+      test_api.GetCursorWindow()->bounds().origin();
+  EXPECT_EQ(10 - hot_point.x(), cursor_window_origin.x());
+  EXPECT_EQ(20 - hot_point.y(), cursor_window_origin.y());
+
+  // Test with ui scale
+  UpdateDisplay("400x600*0.5,400x600");
+  generator.MoveMouseToInHost(20, 30);
+
+  hot_point = test_api.GetCursorHotPoint();
+  EXPECT_EQ("4,4", hot_point.ToString());
+  cursor_window_origin = test_api.GetCursorWindow()->bounds().origin();
+  EXPECT_EQ(20 - hot_point.x(), cursor_window_origin.x());
+  EXPECT_EQ(30 - hot_point.y(), cursor_window_origin.y());
+
+  // Test with rotation
+  UpdateDisplay("400x600/r,400x600");
+  generator.MoveMouseToInHost(30, 40);
+
+  hot_point = test_api.GetCursorHotPoint();
+  EXPECT_EQ("4,4", hot_point.ToString());
+  cursor_window_origin = test_api.GetCursorWindow()->bounds().origin();
+  EXPECT_EQ(30 - hot_point.x(), cursor_window_origin.x());
+  EXPECT_EQ(40 - hot_point.y(), cursor_window_origin.y());
 }
 
 }  // namsspace internal

@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include"ash/ash_root_window_transformer.h"
+#include "ash/display/root_window_transformers.h"
 
 #include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
@@ -291,8 +291,8 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_TouchScaleAndMagnify) {
   generator.PressMoveAndReleaseTouchTo(50, 50);
   // Default test touches have radius_x/y = 1.0, with device scale
   // factor = 2, the scaled radius_x/y should be 0.5.
-  EXPECT_FLOAT_EQ(0.2, event_handler.touch_radius_x());
-  EXPECT_FLOAT_EQ(0.2, event_handler.touch_radius_y());
+  EXPECT_FLOAT_EQ(0.2f, event_handler.touch_radius_x());
+  EXPECT_FLOAT_EQ(0.2f, event_handler.touch_radius_y());
 
   generator.ScrollSequence(gfx::Point(0,0),
                            base::TimeDelta::FromMilliseconds(100),

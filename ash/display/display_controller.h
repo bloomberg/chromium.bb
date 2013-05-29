@@ -89,7 +89,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
    public:
     // Invoked when the display configuration change is requested,
     // but before the change is applied to aura/ash.
-    virtual void OnDisplayConfigurationChanging() = 0;
+    virtual void OnDisplayConfigurationChanging() {}
 
     // Invoked when the all display configuration changes
     // have been applied.

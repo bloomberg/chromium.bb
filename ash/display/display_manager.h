@@ -143,7 +143,7 @@ class ASH_EXPORT DisplayManager :
 
   // Returns the mirroring status.
   bool IsMirrored() const;
-  int64 mirrored_display_id() const { return mirrored_display_.id(); }
+  const gfx::Display& mirrored_display() const { return mirrored_display_; }
 
   // Returns the display object nearest given |window|.
   const gfx::Display& GetDisplayNearestPoint(
@@ -209,6 +209,10 @@ class ASH_EXPORT DisplayManager :
 
   gfx::Display& FindDisplayForRootWindow(const aura::RootWindow* root);
   gfx::Display& FindDisplayForId(int64 id);
+
+  // Add the mirror display's display info if the software based
+  // mirroring is in use.
+  void AddMirrorDisplayInfoIfAny(std::vector<DisplayInfo>* display_info_list);
 
   // Refer to |CreateDisplayFromSpec| API for the format of |spec|.
   void AddDisplayFromSpec(const std::string& spec);

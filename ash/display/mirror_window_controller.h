@@ -37,6 +37,11 @@ class MirrorWindowController {
   // Creates the new root window if one doesn't exist.
   void UpdateWindow(const DisplayInfo& display_info);
 
+  // Same as above, but using existing display info
+  // for the mirrored display.
+  void UpdateWindow();
+
+  // Close the mirror window.
   void Close();
 
   // Updates the mirrored cursor location,shape and
