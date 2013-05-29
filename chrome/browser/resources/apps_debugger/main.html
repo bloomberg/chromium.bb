@@ -41,6 +41,7 @@ found in the LICENSE file.
           </div>
           <div id="tabs-header-container">
             <tabs id="tabs" tabindex="0">
+              <tab i18n-content="appsDevtoolUnpacked"></tab>
               <tab i18n-content="appsDevtoolApps"></tab>
               <tab i18n-content="appsDevtoolExtensions"></tab>
             </tabs>
@@ -48,19 +49,25 @@ found in the LICENSE file.
           <div id="header-bottom-gradient"></div>
         </div>
         <tabpanels id="tab-panels">
-          <!-- Apps Tab -->
-          <tabpanel id="apps-tab">
-            <div id="app-settings-list" class="empty-extension-list">
+          <!-- Unpacked -->
+          <tabpanel id="unpacked-tab">
+            <div id="unpacked-list" class="empty-extension-list"></div>
+            <div id="no-unpacked">
+              <span id="no-unpacked-message"
+                  i18n-content="appsDevtoolNoUnpacked"></span>
             </div>
+          </tabpanel>
+          <!-- Apps Tab -->
+          <tabpanel id="packed-apps-tab">
+            <div id="packed-app-list" class="empty-extension-list"></div>
             <div id="no-apps">
               <span id="no-apps-message"
                   i18n-content="appsDevtoolNoApps"></span>
             </div>
           </tabpanel>
           <!-- Extensions Tab -->
-          <tabpanel id="extensions-tab">
-            <div id="extension-settings-list" class="empty-extension-list">
-            </div>
+          <tabpanel id="packed-extensions-tab">
+            <div id="packed-extension-list" class="empty-extension-list"></div>
             <div id="no-extensions">
               <span id="no-extensions-message"
                   i18n-content="appsDevtoolNoExtensions"></span>

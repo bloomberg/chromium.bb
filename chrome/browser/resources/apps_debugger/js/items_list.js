@@ -5,14 +5,17 @@
 cr.define('apps_dev_tool', function() {
   'use strict';
 
-  // The list of all apps & extensions.
+  // The list of all packed/unpacked apps and extensions.
   var completeList = [];
 
-  // The list of all apps.
-  var appList = [];
+  // The list of all packed apps.
+  var packedAppList = [];
 
-  // The list of all extensions.
-  var extensionList = [];
+  // The list of all packed extensions.
+  var packedExtensionList = [];
+
+  // The list of all unpacked apps or extensions.
+  var unpackedList = [];
 
   /** const*/ var AppsDevTool = apps_dev_tool.AppsDevTool;
 
@@ -52,10 +55,13 @@ cr.define('apps_dev_tool', function() {
    * Refreshes the app.
    */
   function reloadAppDisplay() {
-    var extensions = new ItemsList($('extension-settings-list'), extensionList);
-    var apps = new ItemsList($('app-settings-list'), appList);
+    var extensions = new ItemsList($('packed-extension-list'),
+                                   packedExtensionList);
+    var apps = new ItemsList($('packed-app-list'), packedAppList);
+    var unpacked = new ItemsList($('unpacked-list'), unpackedList);
     extensions.showItemNodes();
     apps.showItemNodes();
+    unpacked.showItemNodes();
   }
 
   /**
@@ -63,17 +69,20 @@ cr.define('apps_dev_tool', function() {
    * @param {string} filter Curent string in the search box.
    */
   function rebuildAppList(filter) {
-    appList = [];
-    extensionList = [];
+    packedAppList = [];
+    packedExtensionList = [];
+    unpackedList = [];
 
     for (var i = 0; i < completeList.length; i++) {
       var item = completeList[i];
       if (filter && item.name.toLowerCase().search(filter.toLowerCase()) < 0)
         continue;
-      if (item.isApp)
-        appList.push(item);
+      if (item.is_unpacked)
+        unpackedList.push(item);
+      else if (item.isApp)
+        packedAppList.push(item);
       else
-        extensionList.push(item);
+        packedExtensionList.push(item);
     }
   }
 

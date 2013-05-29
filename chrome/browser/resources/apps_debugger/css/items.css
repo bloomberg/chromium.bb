@@ -120,7 +120,8 @@ html[dir='rtl'] #search {
 }
 
 #no-extensions-message,
-#no-apps-message {
+#no-apps-message,
+#no-unpacked-message {
   font-weight: bold;
 }
 
@@ -129,14 +130,17 @@ html[dir='rtl'] #search {
 }
 
 #no-extensions,
-#no-apps {
-  margin: 10px 10px;
+#no-apps,
+#no-unpacked {
+  margin: 10px;
 }
 
 .loading #no-extensions,
 .loading #no-apps,
-#extension-settings-list:not(.empty-item-list) ~ #no-extensions,
-#app-settings-list:not(.empty-item-list) ~ #no-apps,
+.loading #no-unpacked,
+#packed-extension-list:not(.empty-item-list) ~ #no-extensions,
+#packed-app-list:not(.empty-item-list) ~ #no-apps,
+#unpacked-list:not(.empty-item-list) ~ #no-unpacked,
 .empty-item-list {
   display: none;
 }
