@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
-#include "chrome/browser/ui/webui/extensions/extension_activity_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
@@ -411,11 +410,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 
 #if defined(ENABLE_EXTENSIONS)
-  if (url.host() == chrome::kChromeUIExtensionActivityHost &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionActivityUI)) {
-    return &NewWebUI<ExtensionActivityUI>;
-  }
   if (url.host() == chrome::kChromeUIExtensionInfoHost &&
       extensions::FeatureSwitch::script_badges()->IsEnabled()) {
     return &NewWebUI<ExtensionInfoUI>;

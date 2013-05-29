@@ -164,23 +164,6 @@ cr.define('options', function() {
         e.preventDefault();
       });
 
-      if (extension.allow_activity) {
-        var activity = node.querySelector('.activity-link');
-        activity.addEventListener('click', function(e) {
-          chrome.send('navigateToUrl', [
-            'chrome://extension-activity?extensionId=' + extension.id,
-            '_blank',
-            e.button,
-            e.altKey,
-            e.ctrlKey,
-            e.metaKey,
-            e.shiftKey
-          ]);
-          e.preventDefault();
-        });
-        activity.hidden = false;
-      }
-
       // The 'View in Web Store/View Web Site' link.
       if (extension.homepageUrl) {
         var siteLink = node.querySelector('.site-link');

@@ -160,9 +160,6 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("wantsFileAccess", extension->wants_file_access());
   extension_data->SetBoolean("allowFileAccess",
                              extension_service_->AllowFileAccess(extension));
-  extension_data->SetBoolean("allow_activity",
-      enabled && CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionActivityUI));
   extension_data->SetBoolean("allow_reload",
       Manifest::IsUnpackedLocation(extension->location()));
   extension_data->SetBoolean("is_hosted_app", extension->is_hosted_app());
@@ -308,8 +305,6 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS_LINK));
   source->AddString("extensionSettingsPermissions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_PERMISSIONS_LINK));
-  source->AddString("extensionSettingsActivity",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ACTIVITY_LINK));
   source->AddString("extensionSettingsVisitWebsite",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VISIT_WEBSITE));
   source->AddString("extensionSettingsVisitWebStore",

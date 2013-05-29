@@ -814,13 +814,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableCssShaders)
   },
   {
-    "enable-extension-activity-ui",
-    IDS_FLAGS_ENABLE_EXTENSION_ACTIVITY_UI_NAME,
-    IDS_FLAGS_ENABLE_EXTENSION_ACTIVITY_UI_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableExtensionActivityUI)
-  },
-  {
     "disable-ntp-other-sessions-menu",
     IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_NAME,
     IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_DESCRIPTION,

@@ -5514,9 +5514,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSIONS_PERMISSIONS_LINK" desc="The link text for the Permissions link.">
         Permissions
       </message>
-      <message name="IDS_EXTENSIONS_ACTIVITY_LINK" desc="The link for showing extension activity.">
-        Activity
-      </message>
       <message name="IDS_EXTENSIONS_SHOW_BUTTON" desc="The text for the Show link.">
         Show button
       </message>
@@ -5662,23 +5659,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSIONS_HIDE_DETAILS" desc="Tooltip for the button next to an extension that hides details">
         Hide Details
-      </message>
-
-      <!-- chrome://extension-activity page -->
-      <message name="IDS_EXTENSION_ACTIVITY_TITLE" desc="Title for the extension-activity tab.">
-        Extension Activity
-      </message>
-      <message name="IDS_EXTENSION_ACTIVITY_API_CALL" desc="Text for the label next to an activity message that represents a call to the extension API.">
-        API Call
-      </message>
-      <message name="IDS_EXTENSION_ACTIVITY_API_BLOCK" desc="Text for the label next to an activity message that represents a blocked call to the extension API.">
-        Blocked API Call
-      </message>
-      <message name="IDS_EXTENSION_ACTIVITY_CONTENT_SCRIPT" desc="Text for the label next to an activity message that represents a content script injection.">
-        Content Script
-      </message>
-      <message name="IDS_EXTENSION_ACTIVITY_EVENT_DISPATCH" desc="Text for the label next to an activity message that represents an extension event callback.">
-        API Event
       </message>
 
       <!-- chrome://extension-info bubble -->
@@ -6890,12 +6870,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_CSS_SHADERS_DESCRIPTION" desc="Description for the flag to enable CSS Shaders.">
         Enable filter effects on DOM elements using custom GLSL shaders. More info at https://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#feCustomElement.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_EXTENSION_ACTIVITY_UI_NAME" desc="Name for the flag to enable the extension activity UI.">
-        Enable extension activity UI
-      </message>
-      <message name="IDS_FLAGS_ENABLE_EXTENSION_ACTIVITY_UI_DESCRIPTION" desc="Description for the flag to enable the extension activity UI.">
-        Enable experimental UI that shows a log of extension activity.
       </message>
       <message name="IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_NAME" desc="Name for the flag to disable the 'Other devices' menu on the NTP.">
         Disable NTP 'Other devices' menu.

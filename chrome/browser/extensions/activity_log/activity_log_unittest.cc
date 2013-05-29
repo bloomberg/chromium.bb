@@ -42,7 +42,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
         ExtensionSystem::Get(profile_))->CreateExtensionService(
             &command_line, base::FilePath(), false);
     CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExtensionActivityUI);
+        switches::kEnableExtensionActivityLogging);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogTesting);
     ActivityLog::RecomputeLoggingIsEnabled();

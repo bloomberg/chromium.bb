@@ -59,9 +59,7 @@ class LogIsEnabled {
 
   void ComputeIsEnabled() {
     enabled_ = CommandLine::ForCurrentProcess()->
-        HasSwitch(switches::kEnableExtensionActivityLogging) ||
-        CommandLine::ForCurrentProcess()->
-        HasSwitch(switches::kEnableExtensionActivityUI);
+        HasSwitch(switches::kEnableExtensionActivityLogging);
   }
 
   static LogIsEnabled* GetInstance() {
@@ -146,8 +144,6 @@ ActivityLog::ActivityLog(Profile* profile) : profile_(profile) {
   // enable-extension-activity-logging and enable-extension-activity-ui
   log_activity_to_stdout_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExtensionActivityLogging);
-  log_activity_to_ui_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExtensionActivityUI);
 
   // enable-extension-activity-log-testing
   // This controls whether arguments are collected.

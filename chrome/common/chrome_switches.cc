@@ -537,9 +537,6 @@ const char kEnableExtensionActivityLogging[] =
 const char kEnableExtensionActivityLogTesting[] =
     "enable-extension-activity-log-testing";
 
-// Enables the extension activity UI.
-const char kEnableExtensionActivityUI[]     = "enable-extension-activity-ui";
-
 // Enables or disables showing extensions in the action box.
 const char kExtensionsInActionBox[]         = "extensions-in-action-box";
 

@@ -2033,8 +2033,6 @@
         'browser/ui/webui/downloads_ui.h',
         'browser/ui/webui/extensions/command_handler.cc',
         'browser/ui/webui/extensions/command_handler.h',
-        'browser/ui/webui/extensions/extension_activity_ui.cc',
-        'browser/ui/webui/extensions/extension_activity_ui.h',
         'browser/ui/webui/extensions/extension_icon_source.cc',
         'browser/ui/webui/extensions/extension_icon_source.h',
         'browser/ui/webui/extensions/extension_info_ui.cc',
