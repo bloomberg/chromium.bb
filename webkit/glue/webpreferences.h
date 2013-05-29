@@ -142,7 +142,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool device_supports_touch;
   bool device_supports_mouse;
   bool touch_adjustment_enabled;
-  bool touch_drag_drop_enabled;
   bool fixed_position_creates_stacking_context;
   bool sync_xhr_in_documents_enabled;
   bool deferred_image_decoding_enabled;

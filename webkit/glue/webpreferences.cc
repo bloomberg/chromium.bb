@@ -103,7 +103,6 @@ WebPreferences::WebPreferences()
       device_supports_touch(false),
       device_supports_mouse(true),
       touch_adjustment_enabled(true),
-      touch_drag_drop_enabled(false),
       fixed_position_creates_stacking_context(false),
       sync_xhr_in_documents_enabled(true),
       deferred_image_decoding_enabled(false),
@@ -436,7 +435,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setDeviceSupportsTouch(prefs.device_supports_touch);
   settings->setDeviceSupportsMouse(prefs.device_supports_mouse);
   settings->setEnableTouchAdjustment(prefs.touch_adjustment_enabled);
-  settings->setTouchDragDropEnabled(prefs.touch_drag_drop_enabled);
 
   settings->setFixedPositionCreatesStackingContext(
       prefs.fixed_position_creates_stacking_context);
