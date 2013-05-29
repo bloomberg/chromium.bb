@@ -226,10 +226,9 @@
         'cc_test_support',
       ],
       'sources': [
-        'base/worker_pool_perftest.cc',
-        'test/cc_test_suite.cc',
-        'test/run_all_unittests.cc',
         'trees/layer_tree_host_perftest.cc',
+        'test/run_all_unittests.cc',
+        'test/cc_test_suite.cc',
       ],
       'include_dirs': [
         'test',
