@@ -8,13 +8,17 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/threading/non_thread_safe.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
+class TemplateURLService;
 
 // This class allows resetting certain aspects of a profile to default values.
 // It is used in case the profile has been damaged due to malware or bad user
 // settings.
-class ProfileResetter : public base::NonThreadSafe {
+class ProfileResetter : public base::NonThreadSafe,
+                        public content::NotificationObserver {
  public:
   // Flags indicating what aspects of a profile shall be reset.
   enum Resettable {
@@ -43,7 +47,7 @@ class ProfileResetter : public base::NonThreadSafe {
                  type_ResettableFlags_doesnt_match_Resettable);
 
   explicit ProfileResetter(Profile* profile);
-  ~ProfileResetter();
+  virtual ~ProfileResetter();
 
   // Resets |resettable_flags| and calls |callback| on the UI thread on
   // completion. If |resettable_flags| contains EXTENSIONS, these are handled
@@ -66,7 +70,13 @@ class ProfileResetter : public base::NonThreadSafe {
   void ResetExtensions(ExtensionHandling extension_handling);
   void ResetStartPage();
 
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   Profile* profile_;
+  TemplateURLService* template_url_service_;
 
   // Flags of a Resetable indicating which reset operations we are still waiting
   // for.
@@ -74,6 +84,8 @@ class ProfileResetter : public base::NonThreadSafe {
 
   // Called on UI thread when reset has been completed.
   base::Closure callback_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileResetter);
 };

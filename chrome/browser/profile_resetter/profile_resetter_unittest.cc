@@ -39,6 +39,7 @@ class ProfileResetterTest : public testing::Test {
  protected:
   ProfileResetterTest();
   ~ProfileResetterTest();
+
   // testing::Test:
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
@@ -64,7 +65,6 @@ void ProfileResetterTest::TearDown() {
 }
 
 TEST_F(ProfileResetterTest, ResetDefaultSearchEngine) {
-  test_util_.VerifyLoad();
   resetter_->Reset(
       ProfileResetter::DEFAULT_SEARCH_ENGINE,
       ProfileResetter::DISABLE_EXTENSIONS,
@@ -144,7 +144,6 @@ TEST_F(ProfileResetterTest, ResetStartPage) {
 
 TEST_F(ProfileResetterTest, ResetExtensionsAll) {
   // mock_object_ is a StrictMock, so we verify that it is called only once.
-  test_util_.VerifyLoad();
   resetter_->Reset(
       ProfileResetter::ALL,
       ProfileResetter::UNINSTALL_EXTENSIONS,

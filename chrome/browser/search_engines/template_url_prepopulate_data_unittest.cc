@@ -6,6 +6,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/search_engines/prepopulated_engines.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
@@ -179,6 +180,52 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile, &t_urls.get(),
                                                      &default_index);
   EXPECT_EQ(2u, t_urls.size());
+}
+
+TEST(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
+  TestingProfile profile;
+  TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
+  prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
+                     Value::CreateIntegerValue(1));
+  ListValue* overrides = new ListValue;
+  DictionaryValue* entry(new DictionaryValue);
+  // Set only the minimal required settings for a search provider configuration.
+  entry->SetString("name", "foo");
+  entry->SetString("keyword", "fook");
+  entry->SetString("search_url", "http://foo.com/s?q={searchTerms}");
+  entry->SetString("favicon_url", "http://foi.com/favicon.ico");
+  entry->SetString("encoding", "UTF-8");
+  entry->SetInteger("id", 1001);
+  overrides->Append(entry);
+  prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides);
+
+  int version = TemplateURLPrepopulateData::GetDataVersion(prefs);
+  EXPECT_EQ(1, version);
+
+  // This call removes the above search engine.
+  TemplateURLPrepopulateData::ClearPrepopulatedEnginesInPrefs(&profile);
+
+  version = TemplateURLPrepopulateData::GetDataVersion(prefs);
+  EXPECT_EQ(TemplateURLPrepopulateData::kCurrentDataVersion, version);
+
+  ScopedVector<TemplateURL> t_urls;
+  size_t default_index;
+  TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile, &t_urls.get(),
+                                                     &default_index);
+  ASSERT_FALSE(t_urls.empty());
+  for (size_t i = 0; i < t_urls.size(); ++i) {
+    EXPECT_NE(ASCIIToUTF16("foo"), t_urls[i]->short_name());
+    EXPECT_NE(ASCIIToUTF16("fook"), t_urls[i]->keyword());
+    EXPECT_NE("foi.com", t_urls[i]->favicon_url().host());
+    EXPECT_NE("foo.com", t_urls[i]->url_ref().GetHost());
+    EXPECT_NE(1001, t_urls[i]->prepopulate_id());
+  }
+  // Ensures the default URL is Google and has the optional fields filled.
+  EXPECT_EQ(ASCIIToUTF16("Google"), t_urls[default_index]->short_name());
+  EXPECT_FALSE(t_urls[default_index]->suggestions_url().empty());
+  EXPECT_FALSE(t_urls[default_index]->instant_url().empty());
+  EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
+      TemplateURLPrepopulateData::GetEngineType(t_urls[default_index]->url()));
 }
 
 // Verifies that built-in search providers are processed correctly.

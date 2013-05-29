@@ -54,6 +54,9 @@ void GetPrepopulatedEngines(Profile* profile,
                             std::vector<TemplateURL*>* t_urls,
                             size_t* default_search_provider_index);
 
+// Removes prepopulated engines and their version stored in user prefs.
+void ClearPrepopulatedEnginesInPrefs(Profile* profile);
+
 // Returns the default search provider specified by the prepopulate data.
 // The caller owns the returned value, which may be NULL.
 // If |profile| is NULL, any search provider overrides from the preferences are

@@ -50,6 +50,21 @@ void GetSearchProvidersUsingKeywordResult(
     int* new_resource_keyword_version,
     std::set<std::string>* removed_keyword_guids);
 
+// Like GetSearchProvidersUsingKeywordResult(), but allows the caller to pass in
+// engines in |template_urls| instead of getting them via processing a web data
+// service request.
+// |resource_keyword_version| should contain the version number of the current
+// keyword data, i.e. the version number of the most recent prepopulate data
+// that has been merged into the current keyword data.  On exit, this will be
+// set as in GetSearchProvidersUsingKeywordResult().
+void GetSearchProvidersUsingLoadedEngines(
+    WebDataService* service,
+    Profile* profile,
+    TemplateURLService::TemplateURLVector* template_urls,
+    TemplateURL** default_search_provider,
+    int* resource_keyword_version,
+    std::set<std::string>* removed_keyword_guids);
+
 // Due to a bug, the |input_encodings| field of TemplateURLData could have
 // contained duplicate entries.  This removes those entries and returns whether
 // any were found.

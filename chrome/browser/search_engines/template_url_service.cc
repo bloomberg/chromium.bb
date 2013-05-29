@@ -671,6 +671,53 @@ TemplateURL* TemplateURLService::FindNewDefaultSearchProvider() {
   return FirstPotentialDefaultEngine(template_urls_);
 }
 
+void TemplateURLService::ResetNonExtensionURLs() {
+  // Can't clean DB if it hasn't been loaded.
+  DCHECK(loaded());
+  ClearDefaultProviderFromPrefs();
+
+  TemplateURLVector entries_to_process;
+  for (TemplateURLVector::const_iterator i = template_urls_.begin();
+       i != template_urls_.end(); ++i) {
+    if (!(*i)->IsExtensionKeyword())
+      entries_to_process.push_back(*i);
+  }
+  // Clear default provider to be able to delete it.
+  default_search_provider_ = NULL;
+  // Remove non-extension keywords.
+  for (TemplateURLVector::const_iterator i = entries_to_process.begin();
+       i != entries_to_process.end(); ++i)
+    RemoveNoNotify(*i);
+
+  // Store the remaining engines in entries_to_process and merge them with
+  // prepopulated ones.
+  entries_to_process.clear();
+  entries_to_process.swap(template_urls_);
+  provider_map_.reset(new SearchHostToURLsMap);
+  UIThreadSearchTermsData search_terms_data(profile_);
+  provider_map_->Init(TemplateURLVector(), search_terms_data);
+
+  TemplateURL* default_search_provider = NULL;
+  // Force GetSearchProvidersUsingLoadedEngines() to include the prepopulated
+  // engines in the list by claiming we are currently on version 0, ensuring
+  // that the prepopulate data version will be newer.
+  int new_resource_keyword_version = 0;
+  GetSearchProvidersUsingLoadedEngines(service_.get(), profile_,
+                                       &entries_to_process,
+                                       &default_search_provider,
+                                       &new_resource_keyword_version,
+                                       &pre_sync_deletes_);
+  // Setup search engines and a default one.
+  AddTemplateURLsAndSetupDefaultEngine(&entries_to_process,
+                                       default_search_provider);
+
+  if (new_resource_keyword_version)
+    service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
+
+  EnsureDefaultSearchProviderExists();
+  NotifyObservers();
+}
+
 void TemplateURLService::AddObserver(TemplateURLServiceObserver* observer) {
   model_observers_.AddObserver(observer);
 }
@@ -714,7 +761,6 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   // initial_default_search_provider_ is only needed before we've finished
   // loading. Now that we've loaded we can nuke it.
   initial_default_search_provider_.reset();
-  is_default_search_managed_ = false;
 
   TemplateURLVector template_urls;
   TemplateURL* default_search_provider = NULL;
@@ -723,81 +769,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
       &template_urls, &default_search_provider, &new_resource_keyword_version,
       &pre_sync_deletes_);
 
-  bool database_specified_a_default = (default_search_provider != NULL);
-
-  // Check if default search provider is now managed.
-  scoped_ptr<TemplateURL> default_from_prefs;
-  LoadDefaultSearchProviderFromPrefs(&default_from_prefs,
-                                     &is_default_search_managed_);
-
-  // Remove entries that were created because of policy as they may have
-  // changed since the database was saved.
-  RemoveProvidersCreatedByPolicy(&template_urls,
-                                 &default_search_provider,
-                                 default_from_prefs.get());
-
-  PatchMissingSyncGUIDs(&template_urls);
-
-  if (is_default_search_managed_) {
-    SetTemplateURLs(template_urls);
-
-    if (TemplateURLsHaveSamePrefs(default_search_provider,
-                                  default_from_prefs.get())) {
-      // The value from the preferences was previously stored in the database.
-      // Reuse it.
-    } else {
-      // The value from the preferences takes over.
-      default_search_provider = NULL;
-      if (default_from_prefs.get()) {
-        TemplateURLData data(default_from_prefs->data());
-        data.created_by_policy = true;
-        data.id = kInvalidTemplateURLID;
-        default_search_provider = new TemplateURL(profile_, data);
-        if (!AddNoNotify(default_search_provider, true))
-          default_search_provider = NULL;
-      }
-    }
-    // Note that this saves the default search provider to prefs.
-    if (!default_search_provider ||
-        (!default_search_provider->IsExtensionKeyword() &&
-         default_search_provider->SupportsReplacement())) {
-      bool success = SetDefaultSearchProviderNoNotify(default_search_provider);
-      DCHECK(success);
-    }
-  } else {
-    // If we had a managed default, replace it with the synced default if
-    // applicable, or the first provider of the list.
-    TemplateURL* synced_default = GetPendingSyncedDefaultSearchProvider();
-    if (synced_default) {
-      default_search_provider = synced_default;
-      pending_synced_default_search_ = false;
-    } else if (database_specified_a_default &&
-               default_search_provider == NULL) {
-      UMA_HISTOGRAM_ENUMERATION(kFirstPotentialEngineHistogramName,
-          FIRST_POTENTIAL_CALLSITE_ON_LOAD, FIRST_POTENTIAL_CALLSITE_MAX);
-      default_search_provider = FirstPotentialDefaultEngine(template_urls);
-    }
-
-    // If the default search provider existed previously, then just
-    // set the member variable. Otherwise, we'll set it using the method
-    // to ensure that it is saved properly after its id is set.
-    if (default_search_provider &&
-        (default_search_provider->id() != kInvalidTemplateURLID)) {
-      default_search_provider_ = default_search_provider;
-      default_search_provider = NULL;
-    }
-    SetTemplateURLs(template_urls);
-
-    if (default_search_provider) {
-      // Note that this saves the default search provider to prefs.
-      SetDefaultSearchProvider(default_search_provider);
-    } else {
-      // Always save the default search provider to prefs. That way we don't
-      // have to worry about it being out of sync.
-      if (default_search_provider_)
-        SaveDefaultSearchProviderToPrefs(default_search_provider_);
-    }
-  }
+  AddTemplateURLsAndSetupDefaultEngine(&template_urls, default_search_provider);
 
   // This initializes provider_map_ which should be done before
   // calling UpdateKeywordSearchTermsForURL.
@@ -811,26 +783,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   if (new_resource_keyword_version)
     service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
 
-  if (!is_default_search_managed_) {
-    bool has_default_search_provider = default_search_provider_ != NULL &&
-        default_search_provider_->SupportsReplacement();
-    UMA_HISTOGRAM_BOOLEAN(kHasDSPHistogramName,
-                          has_default_search_provider);
-    // Ensure that default search provider exists. See http://crbug.com/116952.
-    if (!has_default_search_provider) {
-      bool success =
-          SetDefaultSearchProviderNoNotify(FindNewDefaultSearchProvider());
-      DCHECK(success);
-    }
-    // Don't log anything if the user has a NULL default search provider. A
-    // logged value of 0 indicates a custom default search provider.
-    if (default_search_provider_) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kDSPHistogramName,
-          default_search_provider_->prepopulate_id(),
-          TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
-    }
-  }
+  EnsureDefaultSearchProviderExists();
 
   NotifyObservers();
   NotifyLoaded();
@@ -1721,6 +1674,16 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
   return true;
 }
 
+void TemplateURLService::ClearDefaultProviderFromPrefs() {
+  // We overwrite user preferences. If the default search engine is managed,
+  // there is no effect.
+  SaveDefaultSearchProviderToPrefs(NULL);
+  // Default value for kDefaultSearchProviderEnabled is true.
+  PrefService* prefs = GetPrefs();
+  if (prefs)
+    prefs->SetBoolean(prefs::kDefaultSearchProviderEnabled, true);
+}
+
 bool TemplateURLService::CanReplaceKeywordForHost(
     const std::string& host,
     TemplateURL** to_replace) {
@@ -2494,6 +2457,112 @@ void TemplateURLService::PatchMissingSyncGUIDs(
       template_url->data_.sync_guid = base::GenerateGUID();
       if (service_.get())
         service_->UpdateKeyword(template_url->data());
+    }
+  }
+}
+
+void TemplateURLService::AddTemplateURLsAndSetupDefaultEngine(
+    TemplateURLVector* template_urls,
+    TemplateURL* default_search_provider) {
+  DCHECK(template_urls);
+  is_default_search_managed_ = false;
+  bool database_specified_a_default = (default_search_provider != NULL);
+
+  // Check if default search provider is now managed.
+  scoped_ptr<TemplateURL> default_from_prefs;
+  LoadDefaultSearchProviderFromPrefs(&default_from_prefs,
+                                     &is_default_search_managed_);
+
+  // Remove entries that were created because of policy as they may have
+  // changed since the database was saved.
+  RemoveProvidersCreatedByPolicy(template_urls,
+                                 &default_search_provider,
+                                 default_from_prefs.get());
+
+  PatchMissingSyncGUIDs(template_urls);
+
+  if (is_default_search_managed_) {
+    SetTemplateURLs(*template_urls);
+
+    if (TemplateURLsHaveSamePrefs(default_search_provider,
+                                  default_from_prefs.get())) {
+      // The value from the preferences was previously stored in the database.
+      // Reuse it.
+    } else {
+      // The value from the preferences takes over.
+      default_search_provider = NULL;
+      if (default_from_prefs.get()) {
+        TemplateURLData data(default_from_prefs->data());
+        data.created_by_policy = true;
+        data.id = kInvalidTemplateURLID;
+        default_search_provider = new TemplateURL(profile_, data);
+        if (!AddNoNotify(default_search_provider, true))
+          default_search_provider = NULL;
+      }
+    }
+    // Note that this saves the default search provider to prefs.
+    if (!default_search_provider ||
+        (!default_search_provider->IsExtensionKeyword() &&
+            default_search_provider->SupportsReplacement())) {
+      bool success = SetDefaultSearchProviderNoNotify(default_search_provider);
+      DCHECK(success);
+    }
+  } else {
+    // If we had a managed default, replace it with the synced default if
+    // applicable, or the first provider of the list.
+    TemplateURL* synced_default = GetPendingSyncedDefaultSearchProvider();
+    if (synced_default) {
+      default_search_provider = synced_default;
+      pending_synced_default_search_ = false;
+    } else if (database_specified_a_default &&
+        default_search_provider == NULL) {
+      UMA_HISTOGRAM_ENUMERATION(kFirstPotentialEngineHistogramName,
+                                FIRST_POTENTIAL_CALLSITE_ON_LOAD,
+                                FIRST_POTENTIAL_CALLSITE_MAX);
+      default_search_provider = FirstPotentialDefaultEngine(*template_urls);
+    }
+
+    // If the default search provider existed previously, then just
+    // set the member variable. Otherwise, we'll set it using the method
+    // to ensure that it is saved properly after its id is set.
+    if (default_search_provider &&
+        (default_search_provider->id() != kInvalidTemplateURLID)) {
+      default_search_provider_ = default_search_provider;
+      default_search_provider = NULL;
+    }
+    SetTemplateURLs(*template_urls);
+
+    if (default_search_provider) {
+      // Note that this saves the default search provider to prefs.
+      SetDefaultSearchProvider(default_search_provider);
+    } else {
+      // Always save the default search provider to prefs. That way we don't
+      // have to worry about it being out of sync.
+      if (default_search_provider_)
+        SaveDefaultSearchProviderToPrefs(default_search_provider_);
+    }
+  }
+}
+
+void TemplateURLService::EnsureDefaultSearchProviderExists() {
+  if (!is_default_search_managed_) {
+    bool has_default_search_provider = default_search_provider_ &&
+        default_search_provider_->SupportsReplacement();
+    UMA_HISTOGRAM_BOOLEAN(kHasDSPHistogramName,
+                          has_default_search_provider);
+    // Ensure that default search provider exists. See http://crbug.com/116952.
+    if (!has_default_search_provider) {
+      bool success =
+          SetDefaultSearchProviderNoNotify(FindNewDefaultSearchProvider());
+      DCHECK(success);
+    }
+    // Don't log anything if the user has a NULL default search provider. A
+    // logged value of 0 indicates a custom default search provider.
+    if (default_search_provider_) {
+      UMA_HISTOGRAM_ENUMERATION(
+          kDSPHistogramName,
+          default_search_provider_->prepopulate_id(),
+          TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
     }
   }
 }

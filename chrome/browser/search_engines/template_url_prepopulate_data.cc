@@ -1197,6 +1197,16 @@ void GetPrepopulatedTemplateFromPrefs(Profile* profile,
   }
 }
 
+void ClearPrepopulatedEnginesInPrefs(Profile* profile) {
+  if (!profile)
+    return;
+
+  PrefService* prefs = profile->GetPrefs();
+  DCHECK(prefs);
+  prefs->ClearPref(prefs::kSearchProviderOverrides);
+  prefs->ClearPref(prefs::kSearchProviderOverridesVersion);
+}
+
 // The caller owns the returned TemplateURL.
 TemplateURL* MakePrepopulatedTemplateURLFromPrepopulateEngine(
     Profile* profile,

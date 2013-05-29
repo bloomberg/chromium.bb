@@ -5,14 +5,24 @@
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 ProfileResetter::ProfileResetter(Profile* profile)
     : profile_(profile),
+      template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
       pending_reset_flags_(0) {
   DCHECK(CalledOnValidThread());
+  DCHECK(profile_);
+  DCHECK(template_url_service_);
+  registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
+                 content::Source<TemplateURLService>(template_url_service_));
 }
 
 ProfileResetter::~ProfileResetter() {}
@@ -81,16 +91,32 @@ void ProfileResetter::MarkAsDone(Resettable resettable) {
 
   pending_reset_flags_ &= ~resettable;
 
-  if (!pending_reset_flags_)
+  if (!pending_reset_flags_) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      callback_);
+    callback_.Reset();
+  }
 }
 
 void ProfileResetter::ResetDefaultSearchEngine() {
   DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
-  // TODO(battre/vabr): Implement
-  MarkAsDone(DEFAULT_SEARCH_ENGINE);
+
+  // If TemplateURLServiceFactory is ready we can clean it right now.
+  // Otherwise, load it and continue from ProfileResetter::Observe.
+  if (template_url_service_->loaded()) {
+    // Reset Google search URL.
+    PrefService* prefs = profile_->GetPrefs();
+    DCHECK(prefs);
+    prefs->ClearPref(prefs::kLastPromptedGoogleURL);
+    GoogleURLTracker::RequestServerCheck(profile_);
+
+    TemplateURLPrepopulateData::ClearPrepopulatedEnginesInPrefs(profile_);
+    template_url_service_->ResetNonExtensionURLs();
+
+    MarkAsDone(DEFAULT_SEARCH_ENGINE);
+  } else {
+    template_url_service_->Load();
+  }
 }
 
 void ProfileResetter::ResetHomepage() {
@@ -132,4 +158,14 @@ void ProfileResetter::ResetStartPage() {
   prefs->ClearPref(prefs::kURLsToRestoreOnStartup);
   prefs->SetBoolean(prefs::kRestoreOnStartupMigrated, true);
   MarkAsDone(STARTUP_PAGE);
+}
+
+void ProfileResetter::Observe(int type,
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
+  DCHECK(CalledOnValidThread());
+  // TemplateURLService has loaded. If we need to clean search engines, it's
+  // time to go on.
+  if (pending_reset_flags_ & DEFAULT_SEARCH_ENGINE)
+    ResetDefaultSearchEngine();
 }
