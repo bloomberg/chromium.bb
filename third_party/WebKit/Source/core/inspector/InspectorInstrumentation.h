@@ -134,6 +134,8 @@ inline bool hasFrontends() { return FrontendCounter::s_frontendCounter; }
 void registerInstrumentingAgents(InstrumentingAgents*);
 void unregisterInstrumentingAgents(InstrumentingAgents*);
 
+InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCookie&);
+
 InstrumentingAgents* instrumentingAgentsForPage(Page*);
 InstrumentingAgents* instrumentingAgentsForFrame(Frame*);
 InstrumentingAgents* instrumentingAgentsForScriptExecutionContext(ScriptExecutionContext*);
