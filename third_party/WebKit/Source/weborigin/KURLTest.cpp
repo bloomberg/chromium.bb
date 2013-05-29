@@ -32,10 +32,9 @@
 // original KURL's.
 
 #include "config.h"
+#include "weborigin/KURL.h"
 
 #include <gtest/gtest.h>
-
-#include "core/platform/KURL.h"
 
 namespace WTF {
 

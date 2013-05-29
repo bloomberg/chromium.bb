@@ -27,6 +27,7 @@
 #ifndef SchemeRegistry_h
 #define SchemeRegistry_h
 
+#include "weborigin/WebOriginExport.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
@@ -35,7 +36,7 @@ namespace WebCore {
 
 typedef HashSet<String, CaseFoldingHash> URLSchemesMap;
 
-class SchemeRegistry {
+class WEBORIGIN_EXPORT SchemeRegistry {
 public:
     static void registerURLSchemeAsLocal(const String&);
     static void removeURLSchemeRegisteredAsLocal(const String&);

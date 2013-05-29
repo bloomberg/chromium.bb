@@ -233,6 +233,7 @@
             'tests/ListHashSet.cpp',
             'tests/MathExtras.cpp',
             'tests/MemoryInstrumentationTest.cpp',
+            'tests/RunAllTests.cpp',
             'tests/SaturatedArithmeticOperations.cpp',
             'tests/StringBuilder.cpp',
             'tests/StringHasher.cpp',

@@ -26,6 +26,7 @@
 #ifndef KURL_h
 #define KURL_h
 
+#include "weborigin/WebOriginExport.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -41,7 +42,7 @@ struct KURLHash;
 
 enum ParsedURLStringTag { ParsedURLString };
 
-class KURL {
+class WEBORIGIN_EXPORT KURL {
 public:
     KURL()
         : m_isValid(false)
@@ -153,7 +154,7 @@ public:
     void setFragmentIdentifier(const String&);
     void removeFragmentIdentifier();
 
-    friend bool equalIgnoringFragmentIdentifier(const KURL&, const KURL&);
+    WEBORIGIN_EXPORT friend bool equalIgnoringFragmentIdentifier(const KURL&, const KURL&);
 
     unsigned hostStart() const;
     unsigned hostEnd() const;
@@ -195,34 +196,34 @@ private:
     OwnPtr<KURL> m_innerURL;
 };
 
-bool operator==(const KURL&, const KURL&);
-bool operator==(const KURL&, const String&);
-bool operator==(const String&, const KURL&);
-bool operator!=(const KURL&, const KURL&);
-bool operator!=(const KURL&, const String&);
-bool operator!=(const String&, const KURL&);
+WEBORIGIN_EXPORT bool operator==(const KURL&, const KURL&);
+WEBORIGIN_EXPORT bool operator==(const KURL&, const String&);
+WEBORIGIN_EXPORT bool operator==(const String&, const KURL&);
+WEBORIGIN_EXPORT bool operator!=(const KURL&, const KURL&);
+WEBORIGIN_EXPORT bool operator!=(const KURL&, const String&);
+WEBORIGIN_EXPORT bool operator!=(const String&, const KURL&);
 
-bool equalIgnoringFragmentIdentifier(const KURL&, const KURL&);
+WEBORIGIN_EXPORT bool equalIgnoringFragmentIdentifier(const KURL&, const KURL&);
 
-const KURL& blankURL();
+WEBORIGIN_EXPORT const KURL& blankURL();
 
 // Functions to do URL operations on strings.
 // These are operations that aren't faster on a parsed URL.
 // These are also different from the KURL functions in that they don't require the string to be a valid and parsable URL.
 // This is especially important because valid javascript URLs are not necessarily considered valid by KURL.
 
-bool protocolIs(const String& url, const char* protocol);
-bool protocolIsJavaScript(const String& url);
+WEBORIGIN_EXPORT bool protocolIs(const String& url, const char* protocol);
+WEBORIGIN_EXPORT bool protocolIsJavaScript(const String& url);
 
-bool isValidProtocol(const String&);
+WEBORIGIN_EXPORT bool isValidProtocol(const String&);
 
 // Unescapes the given string using URL escaping rules, given an optional
 // encoding (defaulting to UTF-8 otherwise). DANGER: If the URL has "%00"
 // in it, the resulting string will have embedded null characters!
-String decodeURLEscapeSequences(const String&);
-String decodeURLEscapeSequences(const String&, const WTF::TextEncoding&);
+WEBORIGIN_EXPORT String decodeURLEscapeSequences(const String&);
+WEBORIGIN_EXPORT String decodeURLEscapeSequences(const String&, const WTF::TextEncoding&);
 
-String encodeWithURLEscapeSequences(const String&);
+WEBORIGIN_EXPORT String encodeWithURLEscapeSequences(const String&);
 
 // Inlines.
 

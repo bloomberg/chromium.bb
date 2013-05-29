@@ -33,22 +33,24 @@
     'weborigin.gypi',
   ],
   'targets': [{
-    'target_name': 'weborigin',
-    'type': '<(component)',
+    'target_name': 'weborigin_unittests',
+    'type': 'executable',
     'dependencies': [
-      '../config.gyp:config',
+      'weborigin.gyp:weborigin',
       '../wtf/wtf.gyp:wtf',
-      '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
-      '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
-      '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-    ],
-    'defines': [
-      'WEBORIGIN_IMPLEMENTATION=1',
+      '../wtf/wtf_tests.gyp:run_all_tests',
+      '../config.gyp:unittest_config',
+      '<(DEPTH)/url/url.gyp:url',
     ],
     'sources': [
-      '<@(weborigin_files)',
+      '<@(weborigin_test_files)',
     ],
-    # Disable c4267 warnings until we fix size_t to int truncations.
-    'msvs_disabled_warnings': [ 4267, 4334, ]
+    'conditions': [
+      ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and linux_use_tcmalloc==1', {
+        'dependencies': [
+          '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+        ]
+      }]
+    ]
   }],
 }

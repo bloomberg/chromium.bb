@@ -39,8 +39,9 @@
             'target_name': 'all_blink',
             'type': 'none',
             'dependencies': [
-                '../Source/wtf/wtf_tests.gyp:wtf_unittests',
                 '../Source/WebKit/chromium/WebKitUnitTests.gyp:webkit_unit_tests',
+                '../Source/weborigin/weborigin_tests.gyp:weborigin_unittests',
+                '../Source/wtf/wtf_tests.gyp:wtf_unittests',
                 '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree',
             ],
             'conditions': [

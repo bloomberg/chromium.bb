@@ -30,6 +30,7 @@
 #define SecurityPolicy_h
 
 #include "weborigin/ReferrerPolicy.h"
+#include "weborigin/WebOriginExport.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -37,7 +38,7 @@ namespace WebCore {
 class KURL;
 class SecurityOrigin;
 
-class SecurityPolicy {
+class WEBORIGIN_EXPORT SecurityPolicy {
 public:
     // True if the referrer should be omitted according to the
     // ReferrerPolicyDefault. If you intend to send a referrer header, you

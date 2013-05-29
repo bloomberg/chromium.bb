@@ -30,11 +30,13 @@
 #define DatabaseIdentifier_h
 
 #include "weborigin/SecurityOrigin.h"
+#include "weborigin/WebOriginExport.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-PassRefPtr<SecurityOrigin> createSecurityOriginFromDatabaseIdentifier(const String&);
-String createDatabaseIdentifierFromSecurityOrigin(const SecurityOrigin*);
+WEBORIGIN_EXPORT PassRefPtr<SecurityOrigin> createSecurityOriginFromDatabaseIdentifier(const String&);
+WEBORIGIN_EXPORT String createDatabaseIdentifierFromSecurityOrigin(const SecurityOrigin*);
 
 } // namespace WebCore
 

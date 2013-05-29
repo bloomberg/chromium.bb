@@ -26,14 +26,15 @@
 #ifndef KnownPorts_h
 #define KnownPorts_h
 
+#include "weborigin/WebOriginExport.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class KURL;
 
-bool isDefaultPortForProtocol(unsigned short port, const String& protocol);
-bool portAllowed(const KURL&); // Blacklist ports that should never be used for Web resources.
+WEBORIGIN_EXPORT bool isDefaultPortForProtocol(unsigned short port, const String& protocol);
+WEBORIGIN_EXPORT bool portAllowed(const KURL&); // Blacklist ports that should never be used for Web resources.
 
 } // namespace WebCore
 

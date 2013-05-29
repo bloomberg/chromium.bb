@@ -59,15 +59,15 @@
 #ifndef ThreadSafeRefCounted_h
 #define ThreadSafeRefCounted_h
 
-#include <wtf/Platform.h>
-
-#include <wtf/Atomics.h>
-#include <wtf/DynamicAnnotations.h>
-#include <wtf/ThreadingPrimitives.h>
+#include "wtf/Atomics.h"
+#include "wtf/DynamicAnnotations.h"
+#include "wtf/Platform.h"
+#include "wtf/ThreadingPrimitives.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 
-class ThreadSafeRefCountedBase {
+class WTF_EXPORT ThreadSafeRefCountedBase {
     WTF_MAKE_NONCOPYABLE(ThreadSafeRefCountedBase);
     WTF_MAKE_FAST_ALLOCATED;
 public:

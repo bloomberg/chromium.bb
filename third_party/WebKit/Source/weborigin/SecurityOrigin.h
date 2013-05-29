@@ -29,6 +29,7 @@
 #ifndef SecurityOrigin_h
 #define SecurityOrigin_h
 
+#include "weborigin/WebOriginExport.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -37,7 +38,7 @@ namespace WebCore {
 class KURL;
 class SecurityOriginCache;
 
-class SecurityOrigin : public ThreadSafeRefCounted<SecurityOrigin> {
+class WEBORIGIN_EXPORT SecurityOrigin : public ThreadSafeRefCounted<SecurityOrigin> {
 public:
     enum Policy {
         AlwaysDeny = 0,

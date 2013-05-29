@@ -19,6 +19,10 @@
       'SecurityOriginHash.h',
       'SecurityPolicy.cpp',
       'SecurityPolicy.h',
+      'WebOriginExport.h',
+    ],
+    'weborigin_test_files': [
+      'KURLTest.cpp',
     ],
   },
 }
