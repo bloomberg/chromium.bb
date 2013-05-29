@@ -372,8 +372,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     Add(IDR_SETTINGS_APP_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("settings_app")));
 #endif
-    Add(IDR_IDENTITY_API_SCOPE_APPROVAL_MANIFEST,
-        base::FilePath(FILE_PATH_LITERAL("identity_scope_approval_dialog")));
   }
 
 #if defined(OS_CHROMEOS)
