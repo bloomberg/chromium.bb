@@ -150,51 +150,37 @@ bool GetInfoFromDataURL(const GURL& url,
 
 typedef ResourceDevToolsInfo::HeadersVector HeadersVector;
 
-// Given a base time and a second time, returns the time from the base time to
-// the second time, in milliseconds.  If the second time is null, returns -1.
-// The base time must not be null.
-int TimeTicksToOffset(base::TimeTicks base_time, base::TimeTicks time) {
-  if (time.is_null())
-    return -1;
-  DCHECK(!base_time.is_null());
-  return static_cast<int>((time - base_time).InMillisecondsRoundedUp());
-}
-
 // Converts timing data from |load_timing| to the format used by WebKit.
 void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
                            WebURLLoadTiming* url_timing) {
   DCHECK(!load_timing.request_start.is_null());
 
+  const TimeTicks kNullTicks;
   url_timing->initialize();
   url_timing->setRequestTime(
-      (load_timing.request_start - TimeTicks()).InSecondsF());
-  url_timing->setProxyStart(TimeTicksToOffset(load_timing.request_start,
-                                              load_timing.proxy_resolve_start));
-  url_timing->setProxyEnd(TimeTicksToOffset(load_timing.request_start,
-                                            load_timing.proxy_resolve_end));
-  url_timing->setDNSStart(TimeTicksToOffset(
-      load_timing.request_start,
-      load_timing.connect_timing.dns_start));
-  url_timing->setDNSEnd(TimeTicksToOffset(load_timing.request_start,
-                                          load_timing.connect_timing.dns_end));
+      (load_timing.request_start - kNullTicks).InSecondsF());
+  url_timing->setProxyStart(
+      (load_timing.proxy_resolve_start - kNullTicks).InSecondsF());
+  url_timing->setProxyEnd(
+      (load_timing.proxy_resolve_end - kNullTicks).InSecondsF());
+  url_timing->setDNSStart(
+      (load_timing.connect_timing.dns_start - kNullTicks).InSecondsF());
+  url_timing->setDNSEnd(
+      (load_timing.connect_timing.dns_end - kNullTicks).InSecondsF());
   url_timing->setConnectStart(
-      TimeTicksToOffset(load_timing.request_start,
-                        load_timing.connect_timing.connect_start));
+      (load_timing.connect_timing.connect_start - kNullTicks).InSecondsF());
   url_timing->setConnectEnd(
-      TimeTicksToOffset(load_timing.request_start,
-                        load_timing.connect_timing.connect_end));
+      (load_timing.connect_timing.connect_end - kNullTicks).InSecondsF());
   url_timing->setSSLStart(
-      TimeTicksToOffset(load_timing.request_start,
-                        load_timing.connect_timing.ssl_start));
-  url_timing->setSSLEnd(TimeTicksToOffset(load_timing.request_start,
-                                          load_timing.connect_timing.ssl_end));
-  url_timing->setSendStart(TimeTicksToOffset(load_timing.request_start,
-                                             load_timing.send_start));
-  url_timing->setSendEnd(TimeTicksToOffset(load_timing.request_start,
-                                           load_timing.send_end));
+      (load_timing.connect_timing.ssl_start - kNullTicks).InSecondsF());
+  url_timing->setSSLEnd(
+      (load_timing.connect_timing.ssl_end - kNullTicks).InSecondsF());
+  url_timing->setSendStart(
+      (load_timing.send_start - kNullTicks).InSecondsF());
+  url_timing->setSendEnd(
+      (load_timing.send_end - kNullTicks).InSecondsF());
   url_timing->setReceiveHeadersEnd(
-      TimeTicksToOffset(load_timing.request_start,
-                        load_timing.receive_headers_end));
+      (load_timing.receive_headers_end - kNullTicks).InSecondsF());
 }
 
 void PopulateURLResponse(
