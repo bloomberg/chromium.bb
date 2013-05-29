@@ -130,7 +130,7 @@ bool SpellCheck::OnControlMessageReceived(const IPC::Message& message) {
 }
 
 void SpellCheck::OnInit(IPC::PlatformFileForTransit bdict_file,
-                        const std::vector<std::string>& custom_words,
+                        const std::set<std::string>& custom_words,
                         const std::string& language,
                         bool auto_spell_correct) {
   Init(IPC::PlatformFileForTransitToPlatformFile(bdict_file),
@@ -167,7 +167,7 @@ void SpellCheck::OnRequestDocumentMarkers() {
 // TODO(groby): Make sure we always have a spelling engine, even before Init()
 // is called.
 void SpellCheck::Init(base::PlatformFile file,
-                      const std::vector<std::string>& custom_words,
+                      const std::set<std::string>& custom_words,
                       const std::string& language) {
   spellcheck_.Init(file, language);
   custom_dictionary_.Init(custom_words);

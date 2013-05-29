@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/test/integration/dictionary_helper.h"
 
+#include <algorithm>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -22,7 +24,6 @@ class DictionarySyncIntegrationTestHelper {
   static bool ApplyChange(
       SpellcheckCustomDictionary* dictionary,
       SpellcheckCustomDictionary::Change& change) {
-    std::sort(dictionary->words_.begin(), dictionary->words_.end());
     int result = change.Sanitize(dictionary->GetWords());
     dictionary->Apply(change);
     dictionary->Notify(change);
@@ -37,15 +38,6 @@ class DictionarySyncIntegrationTestHelper {
 namespace dictionary_helper {
 namespace {
 
-bool DictionaryHasWord(
-    const SpellcheckCustomDictionary* dictionary,
-    const std::string& word) {
-  return dictionary->GetWords().end() != std::find(
-      dictionary->GetWords().begin(),
-      dictionary->GetWords().end(),
-      word);
-}
-
 SpellcheckCustomDictionary* GetDictionary(int index) {
   return SpellcheckServiceFactory::GetForProfile(
       sync_datatype_helper::test()->GetProfile(index))->GetCustomDictionary();
@@ -54,14 +46,6 @@ SpellcheckCustomDictionary* GetDictionary(int index) {
 SpellcheckCustomDictionary* GetVerifierDictionary() {
   return SpellcheckServiceFactory::GetForProfile(
       sync_datatype_helper::test()->verifier())->GetCustomDictionary();
-}
-
-bool HaveWord(int index, std::string word) {
-  return DictionaryHasWord(GetDictionary(index), word);
-}
-
-bool HaveWordInVerifier(std::string word) {
-  return DictionaryHasWord(GetVerifierDictionary(), word);
 }
 
 void LoadDictionary(SpellcheckCustomDictionary* dictionary) {
@@ -74,17 +58,6 @@ void LoadDictionary(SpellcheckCustomDictionary* dictionary) {
   content::RunThisRunLoop(&run_loop);
   dictionary->RemoveObserver(&observer);
   ASSERT_TRUE(dictionary->IsLoaded());
-}
-
-bool HaveWordMatches(const std::string& word) {
-  bool reference = sync_datatype_helper::test()->use_verifier() ?
-      HaveWordInVerifier(word) : HaveWord(0, word);
-  for (int i = 0; i < sync_datatype_helper::test()->num_clients(); ++i) {
-    if (reference != HaveWord(i, word)) {
-      return false;
-    }
-  }
-  return true;
 }
 
 }  // namespace
@@ -106,35 +79,28 @@ size_t GetVerifierDictionarySize() {
 }
 
 bool DictionariesMatch() {
-  chrome::spellcheck_common::WordList reference =
-      sync_datatype_helper::test()->use_verifier() ?
-      GetVerifierDictionary()->GetWords() : GetDictionary(0)->GetWords();
+  const chrome::spellcheck_common::WordSet& reference =
+      sync_datatype_helper::test()->use_verifier()
+          ? GetVerifierDictionary()->GetWords()
+          : GetDictionary(0)->GetWords();
   for (int i = 0; i < sync_datatype_helper::test()->num_clients(); ++i) {
-    if (reference.size() != GetDictionary(i)->GetWords().size())
+    const chrome::spellcheck_common::WordSet& dictionary =
+        GetDictionary(i)->GetWords();
+    if (reference.size() != dictionary.size() ||
+        !std::equal(reference.begin(), reference.end(), dictionary.begin())) {
       return false;
-  }
-  for (chrome::spellcheck_common::WordList::iterator it = reference.begin();
-       it != reference.end();
-       ++it) {
-    if (!HaveWordMatches(*it))
-      return false;
+    }
   }
   return true;
 }
 
 bool DictionaryMatchesVerifier(int index) {
-  chrome::spellcheck_common::WordList expected =
+  const chrome::spellcheck_common::WordSet& expected =
       GetVerifierDictionary()->GetWords();
-  chrome::spellcheck_common::WordList actual = GetDictionary(index)->GetWords();
-  if (expected.size() != actual.size())
-    return false;
-  for (chrome::spellcheck_common::WordList::iterator it = expected.begin();
-       it != expected.end();
-       ++it) {
-    if (actual.end() == std::find(actual.begin(), actual.end(), *it))
-      return false;
-  }
-  return true;
+  const chrome::spellcheck_common::WordSet& actual =
+      GetDictionary(index)->GetWords();
+  return expected.size() == actual.size() &&
+         std::equal(expected.begin(), expected.end(), actual.begin());
 }
 
 bool AddWord(int index, const std::string& word) {

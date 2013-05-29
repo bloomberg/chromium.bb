@@ -67,8 +67,7 @@ class SpellCheckTest : public testing::Test {
     spell_check_->spellcheck_.platform_spelling_engine_.reset(
         new HunspellEngine);
 #endif
-    spell_check_->Init(
-        file, std::vector<std::string>(), language);
+    spell_check_->Init(file, std::set<std::string>(), language);
   }
 
   void EnableAutoCorrect(bool enable_autocorrect) {

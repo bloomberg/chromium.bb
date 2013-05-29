@@ -45,7 +45,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
     // invalid words from words to be added, removing missing words from words
     // to be removed, and sorting both lists of words. Assumes that |words| is
     // sorted. Returns a bitmap of |ChangeSanitationResult| values.
-    int Sanitize(const chrome::spellcheck_common::WordList& words);
+    int Sanitize(const chrome::spellcheck_common::WordSet& words);
 
     // Returns the words to be added in this change.
     const chrome::spellcheck_common::WordList& to_add() const;
@@ -78,7 +78,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   virtual ~SpellcheckCustomDictionary();
 
   // Returns the in-memory cache of words in the custom dictionary.
-  const chrome::spellcheck_common::WordList& GetWords() const;
+  const chrome::spellcheck_common::WordSet& GetWords() const;
 
   // Adds |word| to the dictionary, schedules a write to disk, and notifies
   // observers of the change. Returns true if |word| is valid and not a
@@ -89,6 +89,9 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   // observers of the change. Returns true if |word| was found. Otherwise
   // returns false.
   bool RemoveWord(const std::string& word);
+
+  // Returns true if the dictionary contains |word|. Otherwise returns false.
+  bool HasWord(const std::string& word);
 
   // Adds |observer| to be notified of dictionary events and changes.
   void AddObserver(Observer* observer);
@@ -158,7 +161,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   void Notify(const Change& dictionary_change);
 
   // In-memory cache of the custom words file.
-  chrome::spellcheck_common::WordList words_;
+  chrome::spellcheck_common::WordSet words_;
 
   // A path for custom dictionary.
   base::FilePath custom_dictionary_path_;

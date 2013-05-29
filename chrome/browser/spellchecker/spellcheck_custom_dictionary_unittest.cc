@@ -31,6 +31,7 @@ using base::HistogramSamples;
 using base::StatisticsRecorder;
 using content::BrowserThread;
 using chrome::spellcheck_common::WordList;
+using chrome::spellcheck_common::WordSet;
 
 namespace {
 
@@ -40,9 +41,8 @@ syncer::SyncDataList GetAllSyncDataNoLimit(
     const SpellcheckCustomDictionary* dictionary) {
   syncer::SyncDataList data;
   std::string word;
-  for (WordList::const_iterator it = dictionary->GetWords().begin();
-       it != dictionary->GetWords().end();
-       ++it) {
+  const WordSet& words = dictionary->GetWords();
+  for (WordSet::const_iterator it = words.begin(); it != words.end(); ++it) {
     word = *it;
     sync_pb::EntitySpecifics specifics;
     specifics.mutable_dictionary()->set_word(word);
@@ -225,27 +225,23 @@ TEST_F(SpellcheckCustomDictionaryTest, MultiProfile) {
   SpellcheckCustomDictionary* custom_dictionary2 =
       spellcheck_service2->GetCustomDictionary();
 
-  WordList expected1;
-  WordList expected2;
+  WordSet expected1;
+  WordSet expected2;
 
   custom_dictionary->AddWord("foo");
   custom_dictionary->AddWord("bar");
-  expected1.push_back("foo");
-  expected1.push_back("bar");
+  expected1.insert("foo");
+  expected1.insert("bar");
 
   custom_dictionary2->AddWord("hoge");
   custom_dictionary2->AddWord("fuga");
-  expected2.push_back("hoge");
-  expected2.push_back("fuga");
+  expected2.insert("hoge");
+  expected2.insert("fuga");
 
-  WordList actual1 = custom_dictionary->GetWords();
-  std::sort(actual1.begin(), actual1.end());
-  std::sort(expected1.begin(), expected1.end());
+  WordSet actual1 = custom_dictionary->GetWords();
   EXPECT_EQ(actual1, expected1);
 
-  WordList actual2 = custom_dictionary2->GetWords();
-  std::sort(actual2.begin(), actual2.end());
-  std::sort(expected2.begin(), expected2.end());
+  WordSet actual2 = custom_dictionary2->GetWords();
   EXPECT_EQ(actual2, expected2);
 }
 
@@ -330,14 +326,14 @@ TEST_F(SpellcheckCustomDictionaryTest,
   syncer::SyncDataList data = dictionary->GetAllSyncData(syncer::DICTIONARY);
   EXPECT_TRUE(data.empty());
 
-  EXPECT_TRUE(dictionary->AddWord("foo"));
   EXPECT_TRUE(dictionary->AddWord("bar"));
+  EXPECT_TRUE(dictionary->AddWord("foo"));
 
   data = dictionary->GetAllSyncData(syncer::DICTIONARY);
   EXPECT_EQ(2UL, data.size());
   std::vector<std::string> words;
-  words.push_back("foo");
   words.push_back("bar");
+  words.push_back("foo");
   for (size_t i = 0; i < data.size(); i++) {
     EXPECT_TRUE(data[i].GetSpecifics().has_dictionary());
     EXPECT_EQ(syncer::DICTIONARY, data[i].GetDataType());
@@ -345,8 +341,8 @@ TEST_F(SpellcheckCustomDictionaryTest,
     EXPECT_EQ(words[i], data[i].GetSpecifics().dictionary().word());
   }
 
-  EXPECT_TRUE(dictionary->RemoveWord("foo"));
   EXPECT_TRUE(dictionary->RemoveWord("bar"));
+  EXPECT_TRUE(dictionary->RemoveWord("foo"));
 
   data = dictionary->GetAllSyncData(syncer::DICTIONARY);
   EXPECT_TRUE(data.empty());
@@ -452,11 +448,11 @@ TEST_F(SpellcheckCustomDictionaryTest, ProcessSyncChanges) {
 
   EXPECT_FALSE(dictionary->ProcessSyncChanges(FROM_HERE, changes).IsSet());
 
-  const chrome::spellcheck_common::WordList& words = dictionary->GetWords();
+  const WordSet& words = dictionary->GetWords();
   EXPECT_EQ(2UL, words.size());
-  EXPECT_EQ(words.end(), std::find(words.begin(), words.end(), "bar"));
-  EXPECT_NE(words.end(), std::find(words.begin(), words.end(), "foo"));
-  EXPECT_NE(words.end(), std::find(words.begin(), words.end(), "baz"));
+  EXPECT_EQ(0UL, words.count("bar"));
+  EXPECT_EQ(1UL, words.count("foo"));
+  EXPECT_EQ(1UL, words.count("baz"));
 }
 
 TEST_F(SpellcheckCustomDictionaryTest, MergeDataAndStartSyncing) {
@@ -499,12 +495,9 @@ TEST_F(SpellcheckCustomDictionaryTest, MergeDataAndStartSyncing) {
   EXPECT_EQ(0, error_counter);
   EXPECT_TRUE(custom_dictionary->IsSyncing());
 
-  WordList words = custom_dictionary->GetWords();
-  WordList words2 = custom_dictionary2->GetWords();
+  WordSet words = custom_dictionary->GetWords();
+  WordSet words2 = custom_dictionary2->GetWords();
   EXPECT_EQ(words.size(), words2.size());
-
-  std::sort(words.begin(), words.end());
-  std::sort(words2.begin(), words2.end());
   EXPECT_EQ(words, words2);
 }
 
@@ -1125,4 +1118,17 @@ TEST_F(SpellcheckCustomDictionaryTest, RecordSizeStatsCorrectly) {
 
   samples2->Subtract(*baseline);
   EXPECT_EQ(2,samples2->sum());
+}
+
+TEST_F(SpellcheckCustomDictionaryTest, HasWord) {
+  SpellcheckService* spellcheck_service =
+      SpellcheckServiceFactory::GetForProfile(profile_.get());
+  SpellcheckCustomDictionary* custom_dictionary =
+      spellcheck_service->GetCustomDictionary();
+  OnLoaded(*custom_dictionary, WordList());
+  EXPECT_FALSE(custom_dictionary->HasWord("foo"));
+  EXPECT_FALSE(custom_dictionary->HasWord("bar"));
+  custom_dictionary->AddWord("foo");
+  EXPECT_TRUE(custom_dictionary->HasWord("foo"));
+  EXPECT_FALSE(custom_dictionary->HasWord("bar"));
 }

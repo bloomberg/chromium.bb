@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_SPELLCHECK_COMMON_H_
 #define CHROME_COMMON_SPELLCHECK_COMMON_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -40,6 +41,7 @@ static const size_t MAX_SYNCABLE_DICTIONARY_WORDS = 1300;
 static const size_t MAX_CUSTOM_DICTIONARY_WORD_BYTES = 99;
 
 typedef std::vector<std::string> WordList;
+typedef std::set<std::string> WordSet;
 
 base::FilePath GetVersionedFileName(const std::string& input_language,
                                     const base::FilePath& dict_dir);

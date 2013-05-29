@@ -33,12 +33,12 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableSpellCheck,
                      bool)
 
-// Passes some initialization params to the renderer's spellchecker. This can
-// be called directly after startup or in (async) response to a
-// RequestDictionary ViewHost message.
+// Passes some initialization params from the browser to the renderer's
+// spellchecker. This can be called directly after startup or in (async)
+// response to a RequestDictionary ViewHost message.
 IPC_MESSAGE_CONTROL4(SpellCheckMsg_Init,
                      IPC::PlatformFileForTransit /* bdict_file */,
-                     std::vector<std::string> /* custom_dict_words */,
+                     std::set<std::string> /* custom_dict_words */,
                      std::string /* language */,
                      bool /* auto spell correct */)
 

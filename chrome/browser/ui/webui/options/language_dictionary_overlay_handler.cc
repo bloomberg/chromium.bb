@@ -91,7 +91,11 @@ void LanguageDictionaryOverlayHandler::ResetDictionaryWords() {
   }
 
   ListValue list_value;
-  list_value.AppendStrings(dictionary_->GetWords());
+  const chrome::spellcheck_common::WordSet& words = dictionary_->GetWords();
+  for (chrome::spellcheck_common::WordSet::const_iterator it = words.begin();
+       it != words.end(); ++it) {
+    list_value.AppendString(*it);
+  }
   web_ui()->CallJavascriptFunction("EditDictionaryOverlay.setWordList",
                                    list_value);
 }

@@ -45,7 +45,7 @@ class SpellCheck : public content::RenderProcessObserver,
 
   // TODO: Try to move that all to SpellcheckLanguage.
   void Init(base::PlatformFile file,
-            const std::vector<std::string>& custom_words,
+            const std::set<std::string>& custom_words,
             const std::string& language);
 
   // If there is no dictionary file, then this requests one from the browser
@@ -119,7 +119,7 @@ class SpellCheck : public content::RenderProcessObserver,
 
   // Message handlers.
   void OnInit(IPC::PlatformFileForTransit bdict_file,
-              const std::vector<std::string>& custom_words,
+              const std::set<std::string>& custom_words,
               const std::string& language,
               bool auto_spell_correct);
   void OnCustomDictionaryChanged(

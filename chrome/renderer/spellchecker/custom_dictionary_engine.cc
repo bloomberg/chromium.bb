@@ -13,13 +13,12 @@ CustomDictionaryEngine::CustomDictionaryEngine() {
 CustomDictionaryEngine::~CustomDictionaryEngine() {
 }
 
-void CustomDictionaryEngine::Init(
-    const std::vector<std::string>& custom_words) {
+void CustomDictionaryEngine::Init(const std::set<std::string>& custom_words) {
   // SpellingMenuOberver calls UTF16ToUTF8(word) to convert words for storage,
   // synchronization, and use in the custom dictionary engine. Since
   // (UTF8ToUTF16(UTF16ToUTF8(word)) == word) holds, the engine does not need to
   // normalize the strings.
-  for (std::vector<std::string>::const_iterator it = custom_words.begin();
+  for (std::set<std::string>::const_iterator it = custom_words.begin();
        it != custom_words.end();
        ++it) {
     dictionary_.insert(UTF8ToUTF16(*it));
