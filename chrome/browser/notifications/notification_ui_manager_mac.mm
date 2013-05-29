@@ -11,6 +11,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "ui/message_center/message_center_util.h"
 
 @class NSUserNotificationCenter;
@@ -159,6 +160,25 @@ void NotificationUIManagerMac::Add(const Notification& notification,
 
     [GetNotificationCenter() deliverNotification:ns_notification];
   }
+}
+
+std::set<std::string>
+NotificationUIManagerMac::GetAllIdsByProfileAndSourceOrigin(
+    Profile* profile, const GURL& source_origin) {
+  std::set<std::string> notification_ids =
+      BalloonNotificationUIManager::GetAllIdsByProfileAndSourceOrigin(
+          profile, source_origin);
+
+  for (NotificationMap::iterator it = notification_map_.begin();
+       it != notification_map_.end(); ++it) {
+    ControllerNotification* controller_notification = it->second;
+    Notification* model = controller_notification->model;
+    if (model->origin_url() == source_origin &&
+        profile->IsSameProfile(controller_notification->profile)) {
+      notification_ids.insert(model->notification_id());
+    }
+  }
+  return notification_ids;
 }
 
 bool NotificationUIManagerMac::CancelById(const std::string& notification_id) {

@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "ui/message_center/message_center_util.h"
 
 // static

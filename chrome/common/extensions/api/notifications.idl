@@ -67,6 +67,8 @@ namespace notifications {
 
   callback ClearCallback = void (boolean wasCleared);
 
+  callback GetAllCallback = void (object notifications);
+
   interface Functions {
     // Creates and displays a notification having the contents in |options|,
     // identified by the id |notificationId|. If |notificationId| is empty,
@@ -89,6 +91,10 @@ namespace notifications {
     // corresponding notification. |callback| indicates whether a matching
     // notification existed.
     static void clear(DOMString notificationId, ClearCallback callback);
+
+    // |callback| is executed with the set of notification_ids currently in
+    // the system.
+    static void getAll(GetAllCallback callback);
   };
 
   interface Events {

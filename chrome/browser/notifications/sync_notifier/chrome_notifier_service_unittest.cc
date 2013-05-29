@@ -11,6 +11,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
+#include "chrome/browser/profiles/profile.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error_factory.h"
@@ -122,6 +123,7 @@ class StubNotificationUIManager : public NotificationUIManager {
       OVERRIDE {
     // Make a deep copy of the notification that we can inspect.
     notification_ = notification;
+    profile_ = profile;
   }
 
   // Returns true if any notifications match the supplied ID, either currently
@@ -134,6 +136,18 @@ class StubNotificationUIManager : public NotificationUIManager {
   // displayed or in the queue.  Returns true if anything was removed.
   virtual bool CancelById(const std::string& notification_id) OVERRIDE {
     return false;
+  }
+
+  // Adds the notification_id for each outstanding notification to the set
+  // |notification_ids| (must not be NULL).
+  virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
+      Profile* profile,
+      const GURL& source) OVERRIDE {
+    std::set<std::string> notification_ids;
+    if (source == notification_.origin_url() &&
+        profile->IsSameProfile(profile_))
+      notification_ids.insert(notification_.notification_id());
+    return notification_ids;
   }
 
   // Removes notifications matching the |source_origin| (which could be an
@@ -157,6 +171,7 @@ class StubNotificationUIManager : public NotificationUIManager {
  private:
   DISALLOW_COPY_AND_ASSIGN(StubNotificationUIManager);
   Notification notification_;
+  Profile* profile_;
 };
 
 // Dummy SyncChangeProcessor used to help review what SyncChanges are pushed

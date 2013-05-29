@@ -8,6 +8,7 @@
 #import <AppKit/AppKit.h>
 
 #include <map>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_nsobject.h"
@@ -33,6 +34,8 @@ class NotificationUIManagerMac : public BalloonNotificationUIManager {
   // NotificationUIManager:
   virtual void Add(const Notification& notification,
                    Profile* profile) OVERRIDE;
+  virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
+      Profile* profile, const GURL& source_origin) OVERRIDE;
   virtual bool CancelById(const std::string& notification_id) OVERRIDE;
   virtual bool CancelAllBySourceOrigin(const GURL& source_origin) OVERRIDE;
   virtual bool CancelAllByProfile(Profile* profile) OVERRIDE;

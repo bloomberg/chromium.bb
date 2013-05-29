@@ -29,6 +29,23 @@ namespace {
 
 const char kResultKey[] = "result";
 
+// Given an extension id and another id, returns an id that is unique
+// relative to other extensions.
+std::string CreateScopedIdentifier(const std::string& extension_id,
+                                   const std::string& id) {
+  return extension_id + "-" + id;
+}
+
+// Removes the unique internal identifier to send the ID as the
+// extension expects it.
+std::string StripScopeFromIdentifier(const std::string& extension_id,
+                                     const std::string& id) {
+  size_t index_of_separator = extension_id.length() + 1;
+  DCHECK_LT(index_of_separator, id.length());
+
+  return id.substr(index_of_separator);
+}
+
 class NotificationsApiDelegate : public NotificationDelegate {
  public:
   NotificationsApiDelegate(ApiFunction* api_function,
@@ -44,13 +61,6 @@ class NotificationsApiDelegate : public NotificationDelegate {
     DCHECK(api_function_);
     if (api_function_->render_view_host())
       process_id_ = api_function->render_view_host()->GetProcess()->GetID();
-  }
-
-  // Given an extension id and another id, returns an id that is unique
-  // relative to other extensions.
-  static std::string CreateScopedIdentifier(const std::string& extension_id,
-                                            const std::string& id) {
-    return extension_id + "-" + id;
   }
 
   virtual void Display() OVERRIDE { }
@@ -135,10 +145,7 @@ bool NotificationsApiFunction::IsNotificationsApiAvailable() {
   // We need to check this explicitly rather than letting
   // _permission_features.json enforce it, because we're sharing the
   // chrome.notifications permissions namespace with WebKit notifications.
-  if (!(GetExtension()->is_platform_app() || GetExtension()->is_extension()))
-    return false;
-
-  return true;
+  return GetExtension()->is_platform_app() || GetExtension()->is_extension();
 }
 
 NotificationsApiFunction::NotificationsApiFunction() {
@@ -333,9 +340,8 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
   params_ = api::notifications::Update::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  if (g_browser_process->notification_ui_manager()->
-      DoesIdExist(NotificationsApiDelegate::CreateScopedIdentifier(
-          extension_->id(), params_->notification_id))) {
+  if (g_browser_process->notification_ui_manager()->DoesIdExist(
+          CreateScopedIdentifier(extension_->id(), params_->notification_id))) {
     CreateNotification(params_->notification_id, &params_->options);
     SetResult(Value::CreateBooleanValue(true));
   } else {
@@ -357,11 +363,35 @@ bool NotificationsClearFunction::RunNotificationsApi() {
   params_ = api::notifications::Clear::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  bool cancel_result = g_browser_process->notification_ui_manager()->
-      CancelById(NotificationsApiDelegate::CreateScopedIdentifier(
-          extension_->id(), params_->notification_id));
+  bool cancel_result = g_browser_process->notification_ui_manager()->CancelById(
+      CreateScopedIdentifier(extension_->id(), params_->notification_id));
 
   SetResult(Value::CreateBooleanValue(cancel_result));
+  SendResponse(true);
+
+  return true;
+}
+
+NotificationsGetAllFunction::NotificationsGetAllFunction() {}
+
+NotificationsGetAllFunction::~NotificationsGetAllFunction() {}
+
+bool NotificationsGetAllFunction::RunNotificationsApi() {
+  NotificationUIManager* notification_ui_manager =
+      g_browser_process->notification_ui_manager();
+  std::set<std::string> notification_ids =
+      notification_ui_manager->GetAllIdsByProfileAndSourceOrigin(
+          profile_, extension_->url());
+
+  scoped_ptr<DictionaryValue> result(new DictionaryValue());
+
+  for (std::set<std::string>::iterator iter = notification_ids.begin();
+       iter != notification_ids.end(); iter++) {
+    result->SetBooleanWithoutPathExpansion(
+        StripScopeFromIdentifier(extension_->id(), *iter), true);
+  }
+
+  SetResult(result.release());
   SendResponse(true);
 
   return true;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -12,6 +13,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
 
 // TODO(kbr): remove: http://crbug.com/222296
@@ -258,6 +260,78 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestMultipleItemNotification) {
   ASSERT_EQ(base::Value::TYPE_STRING, result->GetType());
   ASSERT_TRUE(result->GetAsString(&notification_id));
   ASSERT_TRUE(notification_id.length() > 0);
+}
+
+#if defined(OS_LINUX)
+#define MAYBE_TestGetAll DISABLED_TestGetAll
+#else
+#define MAYBE_TestGetAll TestGetAll
+#endif
+
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestGetAll) {
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+
+  {
+    scoped_refptr<extensions::NotificationsGetAllFunction>
+        notification_get_all_function(
+            new extensions::NotificationsGetAllFunction());
+    notification_get_all_function->set_extension(empty_extension.get());
+    notification_get_all_function->set_has_callback(true);
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_get_all_function, "[]", browser(), utils::NONE));
+
+    base::DictionaryValue* return_value;
+    ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
+    ASSERT_TRUE(result->GetAsDictionary(&return_value));
+    ASSERT_TRUE(return_value->size() == 0);
+  }
+
+  const unsigned int kNotificationsToCreate = 4;
+
+  for (unsigned int i = 0; i < kNotificationsToCreate; i++) {
+    scoped_refptr<extensions::NotificationsCreateFunction>
+        notification_create_function(
+            new extensions::NotificationsCreateFunction());
+
+    notification_create_function->set_extension(empty_extension.get());
+    notification_create_function->set_has_callback(true);
+
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_create_function,
+        base::StringPrintf("[\"identifier-%u\", "
+                           "{"
+                           "\"type\": \"basic\","
+                           "\"iconUrl\": \"an/image/that/does/not/exist.png\","
+                           "\"title\": \"Title\","
+                           "\"message\": \"Message.\","
+                           "\"priority\": 1,"
+                           "\"eventTime\": 1361488019.9999999"
+                           "}]",
+                           i),
+        browser(),
+        utils::NONE));
+  }
+
+  {
+    scoped_refptr<extensions::NotificationsGetAllFunction>
+        notification_get_all_function(
+            new extensions::NotificationsGetAllFunction());
+    notification_get_all_function->set_extension(empty_extension.get());
+    notification_get_all_function->set_has_callback(true);
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        notification_get_all_function, "[]", browser(), utils::NONE));
+
+    base::DictionaryValue* return_value;
+    ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
+    ASSERT_TRUE(result->GetAsDictionary(&return_value));
+    ASSERT_EQ(return_value->size(), kNotificationsToCreate);
+    bool dictionary_bool = false;
+    for (unsigned int i = 0; i < kNotificationsToCreate; i++) {
+      std::string id = base::StringPrintf("identifier-%u", i);
+      ASSERT_TRUE(return_value->GetBoolean(id, &dictionary_bool));
+      ASSERT_TRUE(dictionary_bool);
+    }
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestEvents) {

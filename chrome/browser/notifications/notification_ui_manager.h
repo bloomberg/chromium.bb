@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -35,6 +36,12 @@ class NotificationUIManager {
   // Removes any notifications matching the supplied ID, either currently
   // displayed or in the queue.  Returns true if anything was removed.
   virtual bool CancelById(const std::string& notification_id) = 0;
+
+  // Adds the notification_id for each outstanding notification to the set
+  // |notification_ids| (must not be NULL).
+  virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
+      Profile* profile,
+      const GURL& source) = 0;
 
   // Removes notifications matching the |source_origin| (which could be an
   // extension ID). Returns true if anything was removed.

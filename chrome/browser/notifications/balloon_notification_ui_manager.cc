@@ -13,6 +13,7 @@
 #include "chrome/browser/idle.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
@@ -57,6 +58,26 @@ bool BalloonNotificationUIManager::CancelById(const std::string& id) {
     return true;
   // If it has been shown, remove it from the balloon collections.
   return balloon_collection_->RemoveById(id);
+}
+
+std::set<std::string>
+BalloonNotificationUIManager::GetAllIdsByProfileAndSourceOrigin(
+    Profile* profile,
+    const GURL& source) {
+  std::set<std::string> notification_ids =
+      NotificationUIManagerImpl::GetAllIdsByProfileAndSourceOrigin(profile,
+                                                                   source);
+
+  const BalloonCollection::Balloons& balloons =
+      balloon_collection_->GetActiveBalloons();
+  for (BalloonCollection::Balloons::const_iterator iter = balloons.begin();
+       iter != balloons.end(); ++iter) {
+    if (profile->IsSameProfile((*iter)->profile()) &&
+        source == (*iter)->notification().origin_url()) {
+      notification_ids.insert((*iter)->notification().notification_id());
+    }
+  }
+  return notification_ids;
 }
 
 bool BalloonNotificationUIManager::CancelAllBySourceOrigin(const GURL& source) {
