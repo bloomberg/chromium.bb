@@ -13,8 +13,8 @@
 
 namespace ash {
 
-const int VideoDetector::kMinUpdateWidth = 300;
-const int VideoDetector::kMinUpdateHeight = 225;
+const int VideoDetector::kMinUpdateWidth = 333;
+const int VideoDetector::kMinUpdateHeight = 250;
 const int VideoDetector::kMinFramesPerSecond = 15;
 const double VideoDetector::kNotifyIntervalSec = 1.0;
 
