@@ -8,10 +8,14 @@ import itertools
 import json
 import logging
 import operator
+import re
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import gob_util
 from chromite.lib import patch as cros_patch
+
+gob_util.LOGGER = cros_build_lib.logger
 
 
 class GerritException(Exception):
@@ -467,6 +471,135 @@ class GerritHelper(object):
     self._SqlQuery(query, dryrun=dryrun, is_command=True)
 
 
+class GerritOnBorgHelper(GerritHelper):
+  """Helper class to manage interaction with the gerrit-on-borg service."""
+
+  def __init__(self, host, remote, **kwds):
+    kwds['ssh_port'] = 0
+    kwds['ssh_user'] = None
+    super(GerritOnBorgHelper, self).__init__(host, remote, **kwds)
+
+  @property
+  def base_ssh_prefix(self):
+    raise NotImplementedError(
+        'The base_ssh_prefix is undefined for GerritOnBorg.')
+
+  @property
+  def ssh_prefix(self):
+    raise NotImplementedError(
+        'The ssh_prefix property is undefined for GerritOnBorg.')
+
+  @property
+  def ssh_url(self):
+    raise NotImplementedError(
+        'The ssh_url property is undefined for GerritOnBorg.')
+
+  @property
+  def version(self):
+    raise NotImplementedError('Cannot get gerrit version from gerrit-on-borg.')
+
+  def SetReviewers(self, change, add=(), remove=(), project=None):
+    if add:
+      gob_util.AddReviewers(self.host, change, add)
+    if remove:
+      gob_util.RemoveReviewers(self.host, change, remove)
+
+  def GrabPatchFromGerrit(self, project, change, commit, must_match=True):
+    query = { 'project': project, 'commit': commit, 'must_match': must_match }
+    return self.QuerySingleRecord(change, **query)
+
+  def IsChangeCommitted(self, change, dryrun=False, must_match=False):
+    change = gob_util.GetChange(self.host, change)
+    if not change:
+      if must_match:
+        raise QueryHasNoResults('Could not query for change %s' % change)
+      return
+    return change.get('status') == 'MERGED'
+
+  def GetLatestSHA1ForBranch(self, project, branch):
+    url = 'https://%s/a/%s' % (self.host, project)
+    cmd = ['git', 'ls-remote', url, 'refs/heads/%s' % branch]
+    try:
+      result = cros_build_lib.RunCommandWithRetries(
+          3, cmd, redirect_stdout=True, print_cmd=self.print_cmd)
+      if result:
+        return result.output.split()[0]
+    except cros_build_lib.RunCommandError as e:
+      logging.error('Command "%s" failed.' % ' '.join(cmd))
+
+  def QuerySingleRecord(self, change=None, **query_kwds):
+    dryrun = query_kwds.get('dryrun')
+    must_match = query_kwds.pop('must_match', True)
+    results = self.Query(change, **query_kwds)
+    if dryrun:
+      return None
+    elif not results:
+      if must_match:
+        raise QueryHasNoResults('Query %s had no results' % (change,))
+      return None
+    elif len(results) != 1:
+      raise QueryNotSpecific('Query %s returned too many results: %s'
+                             % (change, json.dumps(results, indent=2)))
+    return results[0]
+
+  def Query(self, change=None, sort=None, current_patch=True, options=(),
+            dryrun=False, raw=False, _resume_sortkey=None, **query_kwds):
+    if options:
+      raise GerritException('"options" argument unsupported on gerrit-on-borg.')
+    if change and not query_kwds:
+      if dryrun:
+        logging.info('Would have run gob_util.GetChange(%s, %s)' % (
+            self.host, change))
+        return
+      return gob_util.GetChange(self.host, change)
+    if change and query_kwds.get('change'):
+      raise GerritException('Bad query params: provided a change-id-like query, '
+                            'and a "change" search parameter')
+    if _resume_sortkey:
+      query_kwds['resume_sortkey'] = _resume_sortkey
+    o_params = ['DETAILED_ACCOUNTS']
+    if current_patch:
+      o_params.extend('CURRENT_REVISION', 'DETAILED_LABELS')
+    if dryrun:
+      logging.info(
+          'Would have run gob_util.QueryChanges(%s, %s, first_param=%s limit=%d)'
+          % (self.host, repr(query_kwds), change, self._GERRIT_MAX_QUERY_RETURN))
+      return
+
+    moar = gob_util.QueryChanges(
+        self.host, query_kwds, first_param=change,
+        limit=self._GERRIT_MAX_QUERY_RETURN, o_params=o_params)
+    result = list(moar)
+    while moar and moar[-1].get('_more_changes'):
+      query_kwds['resume_sortkey'] = result[-1].get['_sortkey']
+      moar = gob_util.QueryChanges(self.host, query_kwds, first_param=change,
+                                   limit=self._GERRIT_MAX_QUERY_RETURN)
+      result.extend(moar)
+    if sort:
+      result = sorted(result, key=operator.itemgetter(sort))
+    if raw:
+      return result
+    return [cros_patch.GerritPatch.FromGerritOnBorgQuery(
+        x, self.remote, self.host) for x in result]
+
+  def QueryMultipleCurrentPatchset(self, changes):
+    if not changes:
+      return
+    results = gob_util.MultiQueryChanges(self.host, [({}, c) for c in changes],
+                                         limit=self._GERRIT_MAX_QUERY_RETURN)
+    for change, result in itertools.izip(changes, results):
+      if not result:
+        raise GerritException('Change %s not found on server %s.'
+                              % (change, self.host))
+      elif len(result) > 1:
+        raise GerritException(
+            'Query for change %s returned multiple results.' % change)
+      yield change, result[0]
+
+  def RemoveCommitReady(self, change, dryrun=False):
+    gob_util.ResetReviewLabels(self.host, change, label='Commit-Queue')
+
+
 def GetGerritPatchInfo(patches):
   """Query Gerrit server for patch information.
 
@@ -496,13 +629,13 @@ def GetGerritPatchInfo(patches):
     # while this may seem silly, we do this to preclude the potential
     # of a conflict between gerrit instances.  Since change-id is
     # effectively user controlled, better safe than sorry.
-    helper = GerritHelper.FromRemote(constants.INTERNAL_REMOTE)
+    helper = GetGerritHelper(constants.INTERNAL_REMOTE)
     raw_ids = [x[1:] for x in internal_patches]
     parsed_patches.update(('*' + k, v) for k, v in
         helper.QueryMultipleCurrentPatchset(raw_ids))
 
   if external_patches:
-    helper = GerritHelper.FromRemote(constants.EXTERNAL_REMOTE)
+    helper = GetGerritHelper(constants.EXTERNAL_REMOTE)
     parsed_patches.update(
         helper.QueryMultipleCurrentPatchset(external_patches))
 
@@ -520,13 +653,19 @@ def GetGerritPatchInfo(patches):
   return results
 
 
+def GetGerritHelper(remote, **kwargs):
+  """Return a GerritHelper instance for interacting with the given remote."""
+  helper_cls = GerritOnBorgHelper if constants.USE_GOB else GerritHelper
+  return helper_cls.FromRemote(remote, **kwargs)
+
+
 def GetGerritHelperForChange(change):
   """Return a usable GerritHelper instance for this change.
 
   If you need a GerritHelper for a specific change, get it via this
   function.
   """
-  return GerritHelper.FromRemote(change.remote)
+  return GetGerritHelper(change.remote)
 
 
 def GetChangeRef(change_number, patchset=None):

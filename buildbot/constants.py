@@ -35,32 +35,40 @@ CHROMIUM_EMAIL = '@chromium.org'
 CORP_DOMAIN = 'corp.google.com'
 GOLO_DOMAIN = 'golo.chromium.org'
 
-GOB_URL = 'https://%s.googlesource.com'
-GOB_REVIEW_URL = 'https://%s-review.googlesource.com'
+GOB_HOST = '%s.googlesource.com'
 
-PUBLIC_GOB_HOST = 'chromium'
-PUBLIC_GOB_URL = GOB_URL % PUBLIC_GOB_HOST
-PUBLIC_GOB_REVIEW_URL = GOB_REVIEW_URL % PUBLIC_GOB_HOST
+PUBLIC_GOB_INSTANCE = 'chromium'
+PUBLIC_GERRIT_INSTANCE = 'chromium-review'
+PUBLIC_GOB_HOST = GOB_HOST % PUBLIC_GOB_INSTANCE
+PUBLIC_GERRIT_HOST = GOB_HOST % PUBLIC_GERRIT_INSTANCE
+PUBLIC_GOB_URL = 'https://%s' % PUBLIC_GOB_HOST
+PUBLIC_GERRIT_URL = 'https://%s' % PUBLIC_GERRIT_HOST
 
-INTERNAL_GOB_HOST = 'chrome-internal'
-INTERNAL_GOB_URL = GOB_URL % INTERNAL_GOB_HOST
-INTERNAL_GOB_REVIEW_URL = GOB_REVIEW_URL % INTERNAL_GOB_HOST
-
-GERRIT_PORT = '29418'
-GERRIT_INT_PORT = '29419'
-
-GERRIT_HOST = 'gerrit.chromium.org'
-GERRIT_INT_HOST = 'gerrit-int.chromium.org'
-GIT_HOST = 'git.chromium.org'
+INTERNAL_GOB_INSTANCE = 'chrome-internal'
+INTERNAL_GERRIT_INSTANCE = 'chrome-internal-review'
+INTERNAL_GOB_HOST = GOB_HOST % INTERNAL_GOB_INSTANCE
+INTERNAL_GERRIT_HOST = GOB_HOST % INTERNAL_GERRIT_INSTANCE
+INTERNAL_GOB_URL = 'https://%s' % INTERNAL_GOB_HOST
+INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 
 # TODO(szager): Deprecate these variables in favor of (PUBLIC|INTERNAL)_GOB_*
 # once the migration to git-on-borg is complete.  Leaving them intact now to
 # make the transition easier.
 if USE_GOB:
+  GERRIT_PORT = '0'
+  GERRIT_INT_PORT = '0'
+  GERRIT_HOST = PUBLIC_GERRIT_HOST
+  GERRIT_INT_HOST = INTERNAL_GERRIT_HOST
+  GIT_HOST = PUBLIC_GOB_HOST
   GERRIT_SSH_URL = PUBLIC_GOB_URL
   GERRIT_INT_SSH_URL = INTERNAL_GOB_URL
   GIT_HTTP_URL = PUBLIC_GOB_URL
 else:
+  GERRIT_PORT = '29418'
+  GERRIT_INT_PORT = '29419'
+  GERRIT_HOST = 'gerrit.chromium.org'
+  GERRIT_INT_HOST = 'gerrit-int.chromium.org'
+  GIT_HOST = 'git.chromium.org'
   GERRIT_SSH_URL = 'ssh://%s:%s' % (GERRIT_HOST, GERRIT_PORT)
   GERRIT_INT_SSH_URL = 'ssh://%s:%s' % (GERRIT_INT_HOST, GERRIT_INT_PORT)
   GIT_HTTP_URL = 'http://%s/git' % GIT_HOST
@@ -258,7 +266,19 @@ DEFAULT_CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
 
 # Default filter rules for verifying that Gerrit returned results that matched
 # our query. This used for working around Gerrit bugs.
-DEFAULT_CQ_READY_FIELDS = {'SUBM': '0', 'CRVW': '2', 'VRIF': '1', 'COMR': '1'}
+DEFAULT_CQ_READY_FIELDS = {
+    'SUBM': '0',
+    'CRVW': '2',
+    'VRIF': '1',
+    'COMR': '1',
+}
+
+GERRIT_ON_BORG_LABELS = {
+    'Code-Review': 'CRVW',
+    'Commit-Queue': 'COMR',
+    'Verified': 'VRIF',
+}
+
 
 # Some files need permissions set for several distinct groups. A google storage
 # acl (xml) file will be necessary in those cases. Make available well known
