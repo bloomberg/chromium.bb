@@ -32,7 +32,8 @@ void RegisterToExtensionWebRequestEventRouterOnIO(
 }  // namespace
 
 RulesRegistryService::RulesRegistryService(Profile* profile)
-    : profile_(profile) {
+    : content_rules_registry_(NULL),
+      profile_(profile) {
   if (profile) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                    content::Source<Profile>(profile->GetOriginalProfile()));
