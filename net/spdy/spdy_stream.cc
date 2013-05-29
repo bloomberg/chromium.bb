@@ -144,7 +144,7 @@ void SpdyStream::PushedStreamReplayData() {
 
   // TODO(akalin): This call may delete this object. Figure out what
   // to do in that case.
-  int rv = delegate_->OnResponseReceived(*response_, response_time_, OK);
+  int rv = delegate_->OnResponseHeadersReceived(*response_, response_time_, OK);
   if (rv == ERR_INCOMPLETE_SPDY_HEADERS) {
     // We don't have complete headers.  Assume we're waiting for another
     // HEADERS frame.  Since we don't have headers, we had better not have
@@ -368,7 +368,7 @@ void SpdyStream::SetRequestTime(base::Time t) {
   request_time_ = t;
 }
 
-int SpdyStream::OnResponseReceived(const SpdyHeaderBlock& response) {
+int SpdyStream::OnResponseHeadersReceived(const SpdyHeaderBlock& response) {
   int rv = OK;
 
   metrics_.StartStream();
@@ -406,10 +406,11 @@ int SpdyStream::OnResponseReceived(const SpdyHeaderBlock& response) {
 
   if (delegate_) {
     // May delete this object.
-    rv = delegate_->OnResponseReceived(*response_, response_time_, rv);
+    rv = delegate_->OnResponseHeadersReceived(*response_, response_time_, rv);
   }
-  // If delegate_ is not yet attached, we'll call OnResponseReceived after the
-  // delegate gets attached to the stream.
+  // If delegate_ is not yet attached, we'll call
+  // OnResponseHeadersReceived after the delegate gets attached to the
+  // stream.
 
   return rv;
 }
@@ -446,7 +447,7 @@ int SpdyStream::OnHeaders(const SpdyHeaderBlock& headers) {
   int rv = OK;
   if (delegate_) {
     // May delete this object.
-    rv = delegate_->OnResponseReceived(*response_, response_time_, rv);
+    rv = delegate_->OnResponseHeadersReceived(*response_, response_time_, rv);
     // ERR_INCOMPLETE_SPDY_HEADERS means that we are waiting for more
     // headers before the response header block is complete.
     if (rv == ERR_INCOMPLETE_SPDY_HEADERS)
@@ -576,9 +577,9 @@ int SpdyStream::SendRequestHeaders(scoped_ptr<SpdyHeaderBlock> headers,
   return DoLoop(OK);
 }
 
-void SpdyStream::SendStreamData(IOBuffer* data,
-                                int length,
-                                SpdySendStatus send_status) {
+void SpdyStream::SendData(IOBuffer* data,
+                          int length,
+                          SpdySendStatus send_status) {
   CHECK_NE(type_, SPDY_PUSH_STREAM);
   CHECK_EQ(send_status_, MORE_DATA_TO_SEND);
   CHECK_GE(io_state_, STATE_SEND_BODY);
@@ -667,6 +668,9 @@ int SpdyStream::DoLoop(int result) {
         CHECK_EQ(result, OK);
         result = DoSendRequestHeadersComplete();
         break;
+      // TODO(akalin): Remove the states STATE_SEND_BODY through
+      // STATE_WAITING_FOR_RESPONSE; we can infer correct behavior
+      // from |type_| and |send_status_|.
       case STATE_SEND_BODY:
         CHECK_EQ(result, OK);
         result = DoSendBody();
@@ -681,7 +685,7 @@ int SpdyStream::DoLoop(int result) {
         result = ERR_IO_PENDING;
         break;
       // State machine 2: connection is established.
-      // In STATE_OPEN, OnResponseReceived has already been called.
+      // In STATE_OPEN, OnResponseHeadersReceived has already been called.
       // OnDataReceived, OnClose and OnFrameWriteComplete can be called.
       // Only OnFrameWriteComplete calls DoLoop().
       //
@@ -816,8 +820,6 @@ int SpdyStream::DoSendRequestHeadersComplete() {
   if (!delegate_)
     return ERR_UNEXPECTED;
 
-  delegate_->OnSendRequestHeadersComplete();
-
   switch (type_) {
     case SPDY_BIDIRECTIONAL_STREAM:
       DCHECK_EQ(send_status_, MORE_DATA_TO_SEND);
@@ -837,6 +839,8 @@ int SpdyStream::DoSendRequestHeadersComplete() {
       return ERR_UNEXPECTED;
   }
 
+  delegate_->OnRequestHeadersSent();
+
   return OK;
 }
 
@@ -845,8 +849,6 @@ int SpdyStream::DoSendRequestHeadersComplete() {
 int SpdyStream::DoSendBody() {
   DCHECK_NE(type_, SPDY_PUSH_STREAM);
   io_state_ = STATE_SEND_BODY_COMPLETE;
-  CHECK(delegate_);
-  delegate_->OnSendBody();
   return ERR_IO_PENDING;
 }
 
@@ -857,11 +859,11 @@ int SpdyStream::DoSendBodyComplete(int result) {
   if (result != OK)
     return result;
 
-  delegate_->OnSendBodyComplete();
-
   io_state_ =
       (send_status_ == MORE_DATA_TO_SEND) ?
       STATE_SEND_BODY : STATE_WAITING_FOR_RESPONSE;
+
+  delegate_->OnDataSent();
 
   return OK;
 }

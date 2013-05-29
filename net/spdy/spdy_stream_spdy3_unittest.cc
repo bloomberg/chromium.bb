@@ -188,7 +188,7 @@ TEST_F(SpdyStreamSpdy3Test, PushedStream) {
   response[":host"] = url.host();
   response[":scheme"] = url.scheme();
   response[":path"] = url.path();
-  stream.OnResponseReceived(response);
+  stream.OnResponseHeadersReceived(response);
 
   // Send some basic headers.
   SpdyHeaderBlock headers;

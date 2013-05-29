@@ -71,7 +71,7 @@ int SpdyWebSocketStream::SendData(const char* data, int length) {
   pending_send_data_length_ = static_cast<size_t>(length);
   scoped_refptr<IOBuffer> buf(new IOBuffer(length));
   memcpy(buf->data(), data, length);
-  stream_->SendStreamData(buf.get(), length, MORE_DATA_TO_SEND);
+  stream_->SendData(buf.get(), length, MORE_DATA_TO_SEND);
   return ERR_IO_PENDING;
 }
 
@@ -82,20 +82,12 @@ void SpdyWebSocketStream::Close() {
   }
 }
 
-void SpdyWebSocketStream::OnSendRequestHeadersComplete() {
+void SpdyWebSocketStream::OnRequestHeadersSent() {
   DCHECK(delegate_);
   delegate_->OnSentSpdyHeaders();
 }
 
-void SpdyWebSocketStream::OnSendBody() {
-  CHECK(false);
-}
-
-void SpdyWebSocketStream::OnSendBodyComplete() {
-  CHECK(false);
-}
-
-int SpdyWebSocketStream::OnResponseReceived(
+int SpdyWebSocketStream::OnResponseHeadersReceived(
     const SpdyHeaderBlock& response,
     base::Time response_time, int status) {
   DCHECK(delegate_);

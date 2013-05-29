@@ -26,12 +26,10 @@ class ClosingDelegate : public SpdyStream::Delegate {
   virtual ~ClosingDelegate();
 
   // SpdyStream::Delegate implementation.
-  virtual void OnSendRequestHeadersComplete() OVERRIDE;
-  virtual void OnSendBody() OVERRIDE;
-  virtual void OnSendBodyComplete() OVERRIDE;
-  virtual int OnResponseReceived(const SpdyHeaderBlock& response,
-                                 base::Time response_time,
-                                 int status) OVERRIDE;
+  virtual void OnRequestHeadersSent() OVERRIDE;
+  virtual int OnResponseHeadersReceived(const SpdyHeaderBlock& response,
+                                        base::Time response_time,
+                                        int status) OVERRIDE;
   virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
   virtual void OnDataSent() OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
@@ -50,12 +48,10 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   explicit StreamDelegateBase(const base::WeakPtr<SpdyStream>& stream);
   virtual ~StreamDelegateBase();
 
-  virtual void OnSendRequestHeadersComplete() OVERRIDE;
-  virtual void OnSendBody() = 0;
-  virtual void OnSendBodyComplete() = 0;
-  virtual int OnResponseReceived(const SpdyHeaderBlock& response,
-                                 base::Time response_time,
-                                 int status) OVERRIDE;
+  virtual void OnRequestHeadersSent() OVERRIDE;
+  virtual int OnResponseHeadersReceived(const SpdyHeaderBlock& response,
+                                        base::Time response_time,
+                                        int status) OVERRIDE;
   virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
   virtual void OnDataSent() OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;
@@ -96,12 +92,9 @@ class StreamDelegateDoNothing : public StreamDelegateBase {
  public:
   StreamDelegateDoNothing(const base::WeakPtr<SpdyStream>& stream);
   virtual ~StreamDelegateDoNothing();
-
-  virtual void OnSendBody() OVERRIDE;
-  virtual void OnSendBodyComplete() OVERRIDE;
 };
 
-// Test delegate that sends data immediately in OnResponseReceived().
+// Test delegate that sends data immediately in OnResponseHeadersReceived().
 class StreamDelegateSendImmediate : public StreamDelegateBase {
  public:
   // |data| can be NULL.
@@ -109,11 +102,9 @@ class StreamDelegateSendImmediate : public StreamDelegateBase {
                               base::StringPiece data);
   virtual ~StreamDelegateSendImmediate();
 
-  virtual void OnSendBody() OVERRIDE;
-  virtual void OnSendBodyComplete() OVERRIDE;
-  virtual int OnResponseReceived(const SpdyHeaderBlock& response,
-                                 base::Time response_time,
-                                 int status) OVERRIDE;
+  virtual int OnResponseHeadersReceived(const SpdyHeaderBlock& response,
+                                        base::Time response_time,
+                                        int status) OVERRIDE;
 
  private:
   base::StringPiece data_;
@@ -126,8 +117,7 @@ class StreamDelegateWithBody : public StreamDelegateBase {
                          base::StringPiece data);
   virtual ~StreamDelegateWithBody();
 
-  virtual void OnSendBody() OVERRIDE;
-  virtual void OnSendBodyComplete() OVERRIDE;
+  virtual void OnRequestHeadersSent() OVERRIDE;
 
  private:
   scoped_refptr<StringIOBuffer> buf_;

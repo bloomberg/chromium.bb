@@ -91,12 +91,10 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE;
 
   // SpdyStream::Delegate implementation.
-  virtual void OnSendRequestHeadersComplete() OVERRIDE;
-  virtual void OnSendBody() OVERRIDE;
-  virtual void OnSendBodyComplete() OVERRIDE;
-  virtual int OnResponseReceived(const SpdyHeaderBlock& response,
-                                 base::Time response_time,
-                                 int status) OVERRIDE;
+  virtual void OnRequestHeadersSent() OVERRIDE;
+  virtual int OnResponseHeadersReceived(const SpdyHeaderBlock& response,
+                                        base::Time response_time,
+                                        int status) OVERRIDE;
   virtual int OnDataReceived(scoped_ptr<SpdyBuffer> buffer) OVERRIDE;
   virtual void OnDataSent() OVERRIDE;
   virtual void OnClose(int status) OVERRIDE;

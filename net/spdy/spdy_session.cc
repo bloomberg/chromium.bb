@@ -1599,7 +1599,7 @@ bool SpdySession::Respond(const SpdyHeaderBlock& headers, SpdyStream* stream) {
   int rv = OK;
   SpdyStreamId stream_id = stream->stream_id();
   // May invalidate |stream|.
-  rv = stream->OnResponseReceived(headers);
+  rv = stream->OnResponseHeadersReceived(headers);
   if (rv < 0) {
     DCHECK_NE(rv, ERR_IO_PENDING);
     CloseActiveStream(stream_id, rv);

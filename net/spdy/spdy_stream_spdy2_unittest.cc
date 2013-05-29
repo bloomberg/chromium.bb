@@ -176,7 +176,7 @@ TEST_F(SpdyStreamSpdy2Test, PushedStream) {
   // Set a couple of headers.
   SpdyHeaderBlock response;
   response["url"] = kStreamUrl;
-  stream.OnResponseReceived(response);
+  stream.OnResponseHeadersReceived(response);
 
   // Send some basic headers.
   SpdyHeaderBlock headers;

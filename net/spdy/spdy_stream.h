@@ -71,23 +71,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
     // Called when the request headers have been sent. Never called
     // for push streams.
-    virtual void OnSendRequestHeadersComplete() = 0;
-
-    // Called when the stream is ready to send body data.  The
-    // delegate must call SendStreamData() on the stream, either
-    // immediately or asynchronously (e.g., if the data to be send has
-    // to be read asynchronously).
-    //
-    // Called only for request/response streams when
-    // SendRequestHeaders() is called with MORE_DATA_TO_SEND.
-    //
-    // TODO(akalin): Unify this with OnSendRequestHeadersComplete().
-    virtual void OnSendBody() = 0;
-
-    // Called when body data has been sent.
-    //
-    // TODO(akalin): Unify this with OnDataSent().
-    virtual void OnSendBodyComplete() = 0;
+    virtual void OnRequestHeadersSent() = 0;
 
     // Called when the SYN_STREAM, SYN_REPLY, or HEADERS frames are received.
     // Normal streams will receive a SYN_REPLY and optional HEADERS frames.
@@ -95,9 +79,9 @@ class NET_EXPORT_PRIVATE SpdyStream {
     // Because a stream may have a SYN_* frame and multiple HEADERS frames,
     // this callback may be called multiple times.
     // |status| indicates network error. Returns network error code.
-    virtual int OnResponseReceived(const SpdyHeaderBlock& response,
-                                   base::Time response_time,
-                                   int status) = 0;
+    virtual int OnResponseHeadersReceived(const SpdyHeaderBlock& response,
+                                          base::Time response_time,
+                                          int status) = 0;
 
     // Called when data is received. |buffer| may be NULL, which
     // signals EOF.  Must return OK if the data was received
@@ -130,8 +114,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   ~SpdyStream();
 
-  // Set new |delegate|. |delegate| must not be NULL.
-  // If it already received SYN_REPLY or data, OnResponseReceived() or
+  // Set new |delegate|. |delegate| must not be NULL.  If it already
+  // received SYN_REPLY or data, OnResponseHeadersReceived() or
   // OnDataReceived() will be called.
   void SetDelegate(Delegate* delegate);
   Delegate* GetDelegate() { return delegate_; }
@@ -247,15 +231,16 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // Called by the SpdySession when a response (e.g. a SYN_STREAM or
   // SYN_REPLY) has been received for this stream. This is the entry
   // point for a push stream. Returns a status code.
-  int OnResponseReceived(const SpdyHeaderBlock& response);
+  int OnResponseHeadersReceived(const SpdyHeaderBlock& response);
 
   // Called by the SpdySession when late-bound headers are received for a
   // stream. Returns a status code.
   int OnHeaders(const SpdyHeaderBlock& headers);
 
-  // Called by the SpdySession when response data has been received for this
-  // stream.  This callback may be called multiple times as data arrives
-  // from the network, and will never be called prior to OnResponseReceived.
+  // Called by the SpdySession when response data has been received
+  // for this stream.  This callback may be called multiple times as
+  // data arrives from the network, and will never be called prior to
+  // OnResponseHeadersReceived.
   //
   // |buffer| contains the data received, or NULL if the stream is
   //          being closed.  The stream must copy any data from this
@@ -303,8 +288,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // streams, which must not send anything.
 
   // Sends the request headers. The delegate is called back via
-  // OnSendRequestHeadersComplete() when the request headers have
-  // completed sending. |send_status| must be MORE_DATA_TO_SEND for
+  // OnRequestHeadersSent() when the request headers have completed
+  // sending. |send_status| must be MORE_DATA_TO_SEND for
   // bidirectional streams; for request/response streams, it must be
   // MORE_DATA_TO_SEND if the request has data to upload, or
   // NO_MORE_DATA_TO_SEND if not.
@@ -312,13 +297,11 @@ class NET_EXPORT_PRIVATE SpdyStream {
                          SpdySendStatus send_status);
 
   // Sends a DATA frame. The delegate will be notified via
-  // OnSendBodyComplete() (if the response hasn't been received yet)
-  // or OnDataSent() (if the response has been received) when the send
-  // is complete. |send_status| must be MORE_DATA_TO_SEND for
-  // bidirectional streams; for request/response streams, it must be
-  // MORE_DATA_TO_SEND if there is more data to upload, or
-  // NO_MORE_DATA_TO_SEND if not.
-  void SendStreamData(IOBuffer* data, int length, SpdySendStatus send_status);
+  // OnDataSent() when the send is complete. |send_status| must be
+  // MORE_DATA_TO_SEND for bidirectional streams; for request/response
+  // streams, it must be MORE_DATA_TO_SEND if there is more data to
+  // upload, or NO_MORE_DATA_TO_SEND if not.
+  void SendData(IOBuffer* data, int length, SpdySendStatus send_status);
 
   // Fills SSL info in |ssl_info| and returns true when SSL is in use.
   bool GetSSLInfo(SSLInfo* ssl_info,

@@ -33,11 +33,10 @@ SpdyHttpStream::SpdyHttpStream(SpdySession* spdy_session,
       closed_stream_status_(ERR_FAILED),
       closed_stream_id_(0),
       request_info_(NULL),
-      has_upload_data_(false),
       response_info_(NULL),
       response_headers_received_(false),
       user_buffer_len_(0),
-      raw_request_body_buf_size_(0),
+      request_body_buf_size_(0),
       buffered_read_callback_pending_(false),
       more_read_data_pending_(false),
       direct_(direct) {}
@@ -98,7 +97,7 @@ const HttpResponseInfo* SpdyHttpStream::GetResponseInfo() const {
 }
 
 UploadProgress SpdyHttpStream::GetUploadProgress() const {
-  if (!request_info_ || !request_info_->upload_data_stream)
+  if (!HasUploadData())
     return UploadProgress();
 
   return UploadProgress(request_info_->upload_data_stream->position(),
@@ -219,16 +218,13 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   if (response_info_)
     response_info_->request_time = request_time;
 
-  CHECK(!has_upload_data_);
-  has_upload_data_ = request_info_->upload_data_stream &&
-      (request_info_->upload_data_stream->size() ||
-       request_info_->upload_data_stream->is_chunked());
-  if (has_upload_data_) {
+  CHECK(!request_body_buf_);
+  if (HasUploadData()) {
     // Use kMaxSpdyFrameChunkSize as the buffer size, since the request
     // body data is written with this size at a time.
-    raw_request_body_buf_ = new IOBufferWithSize(kMaxSpdyFrameChunkSize);
+    request_body_buf_ = new IOBufferWithSize(kMaxSpdyFrameChunkSize);
     // The request body buffer is empty at first.
-    raw_request_body_buf_size_ = 0;
+    request_body_buf_size_ = 0;
   }
 
   CHECK(!callback.is_null());
@@ -274,7 +270,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     result =
         stream_->SendRequestHeaders(
             headers.Pass(),
-            has_upload_data_ ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
+            HasUploadData() ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
   }
 
   if (result == ERR_IO_PENDING) {
@@ -292,31 +288,17 @@ void SpdyHttpStream::Cancel() {
   }
 }
 
-void SpdyHttpStream::OnSendRequestHeadersComplete() {
+void SpdyHttpStream::OnRequestHeadersSent() {
   if (!callback_.is_null())
     DoCallback(OK);
-}
 
-void SpdyHttpStream::OnSendBody() {
-  CHECK(request_info_ && request_info_->upload_data_stream);
-  if (raw_request_body_buf_size_ > 0) {
-    SendRequestBodyData();
-  } else {
-    // We shouldn't be called if there's no more data to read.
-    CHECK(!request_info_->upload_data_stream->IsEOF());
+  if (HasUploadData())
     ReadAndSendRequestBodyData();
-  }
 }
 
-void SpdyHttpStream::OnSendBodyComplete() {
-  // |status| is the number of bytes written to the SPDY stream.
-  CHECK(request_info_ && request_info_->upload_data_stream);
-  raw_request_body_buf_size_ = 0;
-}
-
-int SpdyHttpStream::OnResponseReceived(const SpdyHeaderBlock& response,
-                                       base::Time response_time,
-                                       int status) {
+int SpdyHttpStream::OnResponseHeadersReceived(const SpdyHeaderBlock& response,
+                                              base::Time response_time,
+                                              int status) {
   if (!response_info_) {
     DCHECK_EQ(stream_->type(), SPDY_PUSH_STREAM);
     push_response_info_.reset(new HttpResponseInfo);
@@ -399,9 +381,8 @@ int SpdyHttpStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
 }
 
 void SpdyHttpStream::OnDataSent() {
-  // For HTTP streams, no data is sent from the client while in the OPEN state,
-  // so it is never called.
-  CHECK(false);
+  request_body_buf_size_ = 0;
+  ReadAndSendRequestBodyData();
 }
 
 void SpdyHttpStream::OnClose(int status) {
@@ -420,6 +401,14 @@ void SpdyHttpStream::OnClose(int status) {
     DoCallback(status);
 }
 
+bool SpdyHttpStream::HasUploadData() const {
+  CHECK(request_info_);
+  return
+      request_info_->upload_data_stream &&
+      ((request_info_->upload_data_stream->size() > 0) ||
+       request_info_->upload_data_stream->is_chunked());
+}
+
 void SpdyHttpStream::OnStreamCreated(
     const CompletionCallback& callback,
     int rv) {
@@ -431,12 +420,15 @@ void SpdyHttpStream::OnStreamCreated(
 }
 
 void SpdyHttpStream::ReadAndSendRequestBodyData() {
-  CHECK(request_info_ && request_info_->upload_data_stream);
-  CHECK_EQ(raw_request_body_buf_size_, 0);
+  CHECK(HasUploadData());
+  CHECK_EQ(request_body_buf_size_, 0);
+
+  if (request_info_->upload_data_stream->IsEOF())
+    return;
 
   // Read the data from the request body stream.
   const int rv = request_info_->upload_data_stream->Read(
-      raw_request_body_buf_, raw_request_body_buf_->size(),
+      request_body_buf_, request_body_buf_->size(),
       base::Bind(
           &SpdyHttpStream::OnRequestBodyReadCompleted,
           weak_factory_.GetWeakPtr()));
@@ -450,20 +442,16 @@ void SpdyHttpStream::ReadAndSendRequestBodyData() {
 
 void SpdyHttpStream::OnRequestBodyReadCompleted(int status) {
   CHECK_GE(status, 0);
-  raw_request_body_buf_size_ = status;
-  SendRequestBodyData();
-}
-
-void SpdyHttpStream::SendRequestBodyData() {
+  request_body_buf_size_ = status;
   const bool eof = request_info_->upload_data_stream->IsEOF();
   if (eof) {
-    CHECK_GE(raw_request_body_buf_size_, 0);
+    CHECK_GE(request_body_buf_size_, 0);
   } else {
-    CHECK_GT(raw_request_body_buf_size_, 0);
+    CHECK_GT(request_body_buf_size_, 0);
   }
-  stream_->SendStreamData(raw_request_body_buf_,
-                          raw_request_body_buf_size_,
-                          eof ? NO_MORE_DATA_TO_SEND : MORE_DATA_TO_SEND);
+  stream_->SendData(request_body_buf_,
+                    request_body_buf_size_,
+                    eof ? NO_MORE_DATA_TO_SEND : MORE_DATA_TO_SEND);
 }
 
 void SpdyHttpStream::ScheduleBufferedReadCallback() {
