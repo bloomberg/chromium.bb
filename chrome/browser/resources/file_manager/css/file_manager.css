@@ -274,7 +274,6 @@ body[new-ui] .dialog-sidebar-header #app-name {
 
 body[new-ui] .dialog-sidebar-contents {
   -webkit-box-flex: 1;
-  border-top: 1px solid rgb(210, 210, 210);
   display: -webkit-box;
   position: relative;
 }
