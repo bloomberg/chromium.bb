@@ -246,7 +246,7 @@ def main(argv):
   # TOODO Raise the coverage requirement once we get coverage to a reasonable
   # number.
   if platform.startswith('linux-'):
-    coverage_target = 50
+    coverage_target = 49
   else:
     coverage_target = 12
 
