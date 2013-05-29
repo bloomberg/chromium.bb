@@ -1036,13 +1036,13 @@ class Dump(object):
 
       submatched_dict = submatched.groupdict()
       region_info = { 'vma': current_vma }
-      if 'TYPE' in submatched_dict:
+      if submatched_dict.get('TYPE'):
         region_info['type'] = submatched_dict['TYPE'].strip()
-      if 'COMMITTED' in submatched_dict:
+      if submatched_dict.get('COMMITTED'):
         region_info['committed'] = int(submatched_dict['COMMITTED'])
-      if 'RESERVED' in submatched_dict:
+      if submatched_dict.get('RESERVED'):
         region_info['reserved'] = int(submatched_dict['RESERVED'])
-      if 'BUCKETID' in submatched_dict:
+      if submatched_dict.get('BUCKETID'):
         region_info['bucket_id'] = int(submatched_dict['BUCKETID'])
 
       self._map[(int(matched.group(2), 16),
