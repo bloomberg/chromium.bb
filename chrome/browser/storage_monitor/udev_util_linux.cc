@@ -8,6 +8,14 @@
 
 namespace chrome {
 
+void UdevDeleter::operator()(struct udev* udev) {
+  udev_unref(udev);
+}
+
+void UdevDeviceDeleter::operator()(struct udev_device* device) {
+  udev_device_unref(device);
+}
+
 std::string GetUdevDevicePropertyValue(struct udev_device* udev_device,
                                        const char* key) {
   const char* value = udev_device_get_property_value(udev_device, key);

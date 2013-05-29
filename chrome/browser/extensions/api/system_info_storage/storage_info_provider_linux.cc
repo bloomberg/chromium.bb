@@ -11,6 +11,7 @@ namespace extensions {
 
 using api::experimental_system_info_storage::StorageUnitInfo;
 using api::experimental_system_info_storage::ParseStorageUnitType;
+using chrome::GetUdevDevicePropertyValue;
 using chrome::ScopedUdevDeviceObject;
 
 namespace {
@@ -84,12 +85,12 @@ bool StorageInfoProviderLinux::QueryStorageType(const std::string& mount_path,
 
   // Create a udev device from a block device number.
   ScopedUdevDeviceObject device(udev_device_new_from_devnum(
-        udev_context_, 'b', stat_info.st_dev));
+        udev_context_.get(), 'b', stat_info.st_dev));
   if (!device)
     return false;
-  if (GetUdevDevicePropertyValue(device, "ID_BUS") == "usb") {
+  if (GetUdevDevicePropertyValue(device.get(), "ID_BUS") == "usb") {
     *type = systeminfo::kStorageTypeRemovable;
-  } else if (GetUdevDevicePropertyValue(device, "ID_TYPE") == "disk") {
+  } else if (GetUdevDevicePropertyValue(device.get(), "ID_TYPE") == "disk") {
     *type = systeminfo::kStorageTypeFixed;
   } else {
     *type = systeminfo::kStorageTypeUnknown;

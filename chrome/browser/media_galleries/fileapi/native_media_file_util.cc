@@ -5,7 +5,6 @@
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 
 #include "base/file_util.h"
-#include "base/memory/scoped_generic_obj.h"
 #include "base/string_util.h"
 #include "chrome/browser/media_galleries/fileapi/filtering_file_enumerator.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
@@ -29,16 +28,15 @@ namespace chrome {
 namespace {
 
 // Modelled after ScopedFILEClose.
-class ScopedPlatformFileClose {
- public:
-  void operator()(base::PlatformFile file) const {
-    if (file != base::kInvalidPlatformFileValue)
-      base::ClosePlatformFile(file);
+struct ScopedPlatformFileClose {
+  void operator()(base::PlatformFile* file) {
+    if (file && *file != base::kInvalidPlatformFileValue)
+      base::ClosePlatformFile(*file);
   }
 };
 
-typedef ScopedGenericObj<base::PlatformFile,
-                         ScopedPlatformFileClose> ScopedPlatformFile;
+typedef scoped_ptr<base::PlatformFile, ScopedPlatformFileClose>
+    ScopedPlatformFile;
 
 // Returns true if the current thread is capable of doing IO.
 bool IsOnTaskRunnerThread(fileapi::FileSystemOperationContext* context) {
@@ -279,7 +277,7 @@ base::PlatformFileError NativeMediaFileUtil::IsMediaFile(
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
-  ScopedPlatformFile scoped_platform_file(file_handle);
+  ScopedPlatformFile scoped_platform_file(&file_handle);
   char buffer[net::kMaxBytesToSniff];
 
   // Read as much as net::SniffMimeTypeFromLocalData() will bother looking at.

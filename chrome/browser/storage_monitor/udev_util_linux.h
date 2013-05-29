@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "base/memory/scoped_generic_obj.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class FilePath;
@@ -17,25 +17,18 @@ class FilePath;
 
 namespace chrome {
 
-// ScopedGenericObj functor for UdevObjectRelease().
-class ScopedReleaseUdevObject {
- public:
-  void operator()(struct udev* udev) const {
-    udev_unref(udev);
-  }
+// Deleter for ScopedUdevObject.
+struct UdevDeleter {
+  void operator()(struct udev* udev);
 };
-typedef ScopedGenericObj<struct udev*,
-                         ScopedReleaseUdevObject> ScopedUdevObject;
+typedef scoped_ptr<struct udev, UdevDeleter> ScopedUdevObject;
 
-// ScopedGenericObj functor for UdevDeviceObjectRelease().
-class ScopedReleaseUdevDeviceObject {
- public:
-  void operator()(struct udev_device* device) const {
-    udev_device_unref(device);
-  }
+// Deleter for ScopedUdevDeviceObject().
+struct UdevDeviceDeleter {
+  void operator()(struct udev_device* device);
 };
-typedef ScopedGenericObj<struct udev_device*,
-                         ScopedReleaseUdevDeviceObject> ScopedUdevDeviceObject;
+typedef scoped_ptr<struct udev_device, UdevDeviceDeleter>
+    ScopedUdevDeviceObject;
 
 // Wrapper function for udev_device_get_property_value() that also checks for
 // valid but empty values.

@@ -160,27 +160,30 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
     return storage_info.Pass();  // Not a supported type.
 
   ScopedUdevDeviceObject device(
-      udev_device_new_from_devnum(udev_obj, device_type, device_stat.st_rdev));
+      udev_device_new_from_devnum(udev_obj.get(), device_type,
+                                  device_stat.st_rdev));
   if (!device.get())
     return storage_info.Pass();
 
-  string16 volume_label = UTF8ToUTF16(GetUdevDevicePropertyValue(device,
+  string16 volume_label = UTF8ToUTF16(GetUdevDevicePropertyValue(device.get(),
                                                                  kLabel));
-  string16 vendor_name = UTF8ToUTF16(GetUdevDevicePropertyValue(device,
+  string16 vendor_name = UTF8ToUTF16(GetUdevDevicePropertyValue(device.get(),
                                                                 kVendor));
-  string16 model_name = UTF8ToUTF16(GetUdevDevicePropertyValue(device, kModel));
+  string16 model_name = UTF8ToUTF16(GetUdevDevicePropertyValue(device.get(),
+                                                               kModel));
 
-  std::string unique_id = MakeDeviceUniqueId(device);
+  std::string unique_id = MakeDeviceUniqueId(device.get());
 
   // Keep track of device info details to see how often we get invalid values.
   MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, volume_label);
 
-  const char* value = udev_device_get_sysattr_value(device, kRemovableSysAttr);
+  const char* value =
+      udev_device_get_sysattr_value(device.get(), kRemovableSysAttr);
   if (!value) {
     // |parent_device| is owned by |device| and does not need to be cleaned
     // up.
     struct udev_device* parent_device =
-        udev_device_get_parent_with_subsystem_devtype(device,
+        udev_device_get_parent_with_subsystem_devtype(device.get(),
                                                       kBlockSubsystemKey,
                                                       kDiskDeviceTypeKey);
     value = udev_device_get_sysattr_value(parent_device, kRemovableSysAttr);
@@ -204,7 +207,7 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
       volume_label,
       vendor_name,
       model_name,
-      GetDeviceStorageSize(device_path, device)));
+      GetDeviceStorageSize(device_path, device.get())));
   return storage_info.Pass();
 }
 
