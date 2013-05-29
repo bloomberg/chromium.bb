@@ -292,6 +292,8 @@ void SpdyHttpStream::OnRequestHeadersSent() {
   if (!callback_.is_null())
     DoCallback(OK);
 
+  // TODO(akalin): Do this immediately after sending the request
+  // headers.
   if (HasUploadData())
     ReadAndSendRequestBodyData();
 }

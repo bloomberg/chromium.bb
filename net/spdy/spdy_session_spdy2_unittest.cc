@@ -165,12 +165,16 @@ TEST_F(SpdySessionSpdy2Test, GoAway) {
 
   GURL url("http://www.google.com");
   base::WeakPtr<SpdyStream> spdy_stream1 =
-      CreateStreamSynchronously(
-          SPDY_BIDIRECTIONAL_STREAM, session, url, MEDIUM, BoundNetLog());
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
+                                session, url, MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegate1(spdy_stream1);
+  spdy_stream1->SetDelegate(&delegate1);
 
   base::WeakPtr<SpdyStream> spdy_stream2 =
-      CreateStreamSynchronously(
-          SPDY_BIDIRECTIONAL_STREAM, session, url, MEDIUM, BoundNetLog());
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
+                                session, url, MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegate2(spdy_stream2);
+  spdy_stream2->SetDelegate(&delegate2);
 
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
   (*headers)["method"] = "GET";
@@ -1170,15 +1174,15 @@ TEST_F(SpdySessionSpdy2Test, OutOfOrderSynStreams) {
   GURL url("http://www.google.com");
 
   base::WeakPtr<SpdyStream> spdy_stream1 =
-      CreateStreamSynchronously(
-          SPDY_BIDIRECTIONAL_STREAM, session, url, LOWEST, BoundNetLog());
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
+                                session, url, LOWEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != NULL);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
   base::WeakPtr<SpdyStream> spdy_stream2 =
-      CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM,
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
                                 session, url, HIGHEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream2.get() != NULL);
   EXPECT_EQ(0u, spdy_stream2->stream_id());
@@ -2128,8 +2132,10 @@ TEST_F(SpdySessionSpdy2Test, GoAwayWhileInDoLoop) {
 
   GURL url1("http://www.google.com");
   base::WeakPtr<SpdyStream> spdy_stream1 =
-      CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM,
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
                                 session, url1, MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegate1(spdy_stream1);
+  spdy_stream1->SetDelegate(&delegate1);
   session = NULL;
   ASSERT_TRUE(spdy_stream1.get() != NULL);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
@@ -2351,10 +2357,12 @@ TEST_F(SpdySessionSpdy2Test, CloseOneIdleConnectionFailsWhenSessionInUse) {
 
   TestCompletionCallback callback1;
   base::WeakPtr<SpdyStream> spdy_stream1 =
-      CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM,
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
                                 session1, url1, DEFAULT_PRIORITY,
                                 BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get());
+  test::StreamDelegateDoNothing delegate1(spdy_stream1);
+  spdy_stream1->SetDelegate(&delegate1);
 
   scoped_ptr<SpdyHeaderBlock> headers(
       spdy_util_.ConstructGetHeaderBlock(url1.spec()));

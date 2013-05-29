@@ -278,10 +278,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // OnClose() method.
   bool closed() const { return io_state_ == STATE_DONE; }
 
-  // TODO(satorux): This is only for testing. We should be able to remove
-  // this once crbug.com/113107 is addressed.
-  bool body_sent() const { return io_state_ > STATE_SEND_BODY_COMPLETE; }
-
   // Interface for the delegate to use.
 
   // Only one send can be in flight at a time, except for push
@@ -349,9 +345,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
     STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE,
     STATE_SEND_REQUEST_HEADERS,
     STATE_SEND_REQUEST_HEADERS_COMPLETE,
-    STATE_SEND_BODY,
-    STATE_SEND_BODY_COMPLETE,
-    STATE_WAITING_FOR_RESPONSE,
     STATE_OPEN,
     STATE_DONE
   };
@@ -368,18 +361,9 @@ class NET_EXPORT_PRIVATE SpdyStream {
   int DoSendDomainBoundCertComplete(int result);
   int DoSendRequestHeaders();
   int DoSendRequestHeadersComplete();
-  int DoSendBody();
-  int DoSendBodyComplete(int result);
   int DoReadHeaders();
   int DoReadHeadersComplete(int result);
   int DoOpen();
-
-  // Does the bookkeeping necessary after a frame has just been
-  // sent. If there's more data to be sent, |state_| is set to
-  // |io_pending_state|, the next frame is queued up, and
-  // ERR_IO_PENDING is returned. Otherwise, returns OK if successful
-  // or an error if not.
-  int ProcessJustCompletedFrame(int result, State io_pending_state);
 
   // Update the histograms.  Can safely be called repeatedly, but should only
   // be called after the stream has completed.
@@ -400,7 +384,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Queues the send for next frame of the remaining data in
   // |pending_send_data_|. Must be called only when
-  // |pending_send_data_| and |pending_send_flags_| are set.
+  // |pending_send_data_| is set.
   void QueueNextDataFrame();
 
   const SpdyStreamType type_;

@@ -2446,8 +2446,9 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlStallResume) {
   // TODO(satorux): This is because of the weirdness in reading the request
   // body in OnSendBodyComplete(). See crbug.com/113107.
   EXPECT_TRUE(upload_data_stream.IsEOF());
-  // But the body is not yet fully sent (kUploadData is not yet sent).
-  EXPECT_FALSE(stream->stream()->body_sent());
+  // But the body is not yet fully sent (kUploadData is not yet sent)
+  // since we're send-stalled.
+  EXPECT_TRUE(stream->stream()->send_stalled_by_flow_control());
 
   data.ForceNextRead();   // Read in WINDOW_UPDATE frame.
   rv = callback.WaitForResult();
@@ -2548,8 +2549,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlStallResumeAfterSettings) {
   // TODO(satorux): This is because of the weirdness in reading the request
   // body in OnSendBodyComplete(). See crbug.com/113107.
   EXPECT_TRUE(upload_data_stream.IsEOF());
-  // But the body is not yet fully sent (kUploadData is not yet sent).
-  EXPECT_FALSE(stream->stream()->body_sent());
+  // But the body is not yet fully sent (kUploadData is not yet sent)
+  // since we're send-stalled.
   EXPECT_TRUE(stream->stream()->send_stalled_by_flow_control());
 
   data.ForceNextRead();   // Read in SETTINGS frame to unstall.
@@ -2658,8 +2659,9 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlNegativeSendWindowSize) {
   // TODO(satorux): This is because of the weirdness in reading the request
   // body in OnSendBodyComplete(). See crbug.com/113107.
   EXPECT_TRUE(upload_data_stream.IsEOF());
-  // But the body is not yet fully sent (kUploadData is not yet sent).
-  EXPECT_FALSE(stream->stream()->body_sent());
+  // But the body is not yet fully sent (kUploadData is not yet sent)
+  // since we're send-stalled.
+  EXPECT_TRUE(stream->stream()->send_stalled_by_flow_control());
 
   data.ForceNextRead();   // Read in WINDOW_UPDATE or SETTINGS frame.
   rv = callback.WaitForResult();

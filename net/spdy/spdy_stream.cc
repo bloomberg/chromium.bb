@@ -105,7 +105,7 @@ SpdyStream::SpdyStream(SpdyStreamType type,
           NO_MORE_DATA_TO_SEND : MORE_DATA_TO_SEND),
       request_time_(base::Time::Now()),
       response_(new SpdyHeaderBlock),
-      io_state_(STATE_NONE),
+      io_state_((type_ == SPDY_PUSH_STREAM) ? STATE_OPEN : STATE_NONE),
       response_status_(OK),
       net_log_(net_log),
       send_bytes_(0),
@@ -113,6 +113,9 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       domain_bound_cert_type_(CLIENT_CERT_INVALID_TYPE),
       just_completed_frame_type_(DATA),
       just_completed_frame_size_(0) {
+  CHECK(type_ == SPDY_BIDIRECTIONAL_STREAM ||
+        type_ == SPDY_REQUEST_RESPONSE_STREAM ||
+        type_ == SPDY_PUSH_STREAM);
 }
 
 SpdyStream::~SpdyStream() {
@@ -177,7 +180,7 @@ void SpdyStream::PushedStreamReplayData() {
 
 scoped_ptr<SpdyFrame> SpdyStream::ProduceSynStreamFrame() {
   CHECK_EQ(io_state_, STATE_SEND_REQUEST_HEADERS_COMPLETE);
-  CHECK(request_.get());
+  CHECK(request_);
   CHECK_GT(stream_id_, 0u);
 
   SpdyControlFlags flags =
@@ -373,19 +376,43 @@ int SpdyStream::OnResponseHeadersReceived(const SpdyHeaderBlock& response) {
 
   metrics_.StartStream();
 
+  // TODO(akalin): This should be handled as a protocol error.
   DCHECK(response_->empty());
   *response_ = response;  // TODO(ukai): avoid copy.
 
   recv_first_byte_time_ = base::TimeTicks::Now();
   response_time_ = base::Time::Now();
 
-  // If we receive a response before we are in STATE_WAITING_FOR_RESPONSE, then
-  // the server has sent the SYN_REPLY too early.
-  if (type_ != SPDY_PUSH_STREAM && io_state_ != STATE_WAITING_FOR_RESPONSE)
-    return ERR_SPDY_PROTOCOL_ERROR;
-  if (type_ == SPDY_PUSH_STREAM)
-    CHECK_EQ(io_state_, STATE_NONE);
-  io_state_ = STATE_OPEN;
+  // Check to make sure that we don't receive the response headers
+  // before we're ready for it.
+  switch (type_) {
+    case SPDY_BIDIRECTIONAL_STREAM:
+      // For a bidirectional stream, we're ready for the response
+      // headers once we've finished sending the request headers.
+      if (io_state_ < STATE_OPEN)
+        return ERR_SPDY_PROTOCOL_ERROR;
+      break;
+
+    case SPDY_REQUEST_RESPONSE_STREAM:
+      // For a request/response stream, we're ready for the response
+      // headers once we've finished sending the request headers and
+      // the request body (if we have one).
+      if ((io_state_ < STATE_OPEN) ||
+          (send_status_ == MORE_DATA_TO_SEND) ||
+          pending_send_data_)
+        return ERR_SPDY_PROTOCOL_ERROR;
+      break;
+
+    case SPDY_PUSH_STREAM:
+      // For a push stream, we're ready immediately.
+      DCHECK_EQ(send_status_, NO_MORE_DATA_TO_SEND);
+      DCHECK_EQ(io_state_, STATE_OPEN);
+      break;
+  }
+
+  DCHECK_EQ(io_state_, STATE_OPEN);
+
+  // TODO(akalin): Merge the code below with the code in OnHeaders().
 
   // Append all the headers into the response header block.
   for (SpdyHeaderBlock::const_iterator it = response.begin();
@@ -582,7 +609,7 @@ void SpdyStream::SendData(IOBuffer* data,
                           SpdySendStatus send_status) {
   CHECK_NE(type_, SPDY_PUSH_STREAM);
   CHECK_EQ(send_status_, MORE_DATA_TO_SEND);
-  CHECK_GE(io_state_, STATE_SEND_BODY);
+  CHECK_GE(io_state_, STATE_SEND_REQUEST_HEADERS_COMPLETE);
   CHECK(!pending_send_data_);
   pending_send_data_ = new DrainableIOBuffer(data, length);
   send_status_ = send_status;
@@ -620,7 +647,7 @@ base::WeakPtr<SpdyStream> SpdyStream::GetWeakPtr() {
 bool SpdyStream::HasUrl() const {
   if (type_ == SPDY_PUSH_STREAM)
     return response_received();
-  return request_.get() != NULL;
+  return request_ != NULL;
 }
 
 GURL SpdyStream::GetUrl() const {
@@ -645,7 +672,6 @@ int SpdyStream::DoLoop(int result) {
     State state = io_state_;
     io_state_ = STATE_NONE;
     switch (state) {
-      // State machine 1: Send headers and body.
       case STATE_GET_DOMAIN_BOUND_CERT:
         CHECK_EQ(result, OK);
         result = DoGetDomainBoundCert();
@@ -668,35 +694,15 @@ int SpdyStream::DoLoop(int result) {
         CHECK_EQ(result, OK);
         result = DoSendRequestHeadersComplete();
         break;
-      // TODO(akalin): Remove the states STATE_SEND_BODY through
-      // STATE_WAITING_FOR_RESPONSE; we can infer correct behavior
-      // from |type_| and |send_status_|.
-      case STATE_SEND_BODY:
-        CHECK_EQ(result, OK);
-        result = DoSendBody();
-        break;
-      case STATE_SEND_BODY_COMPLETE:
-        result = DoSendBodyComplete(result);
-        break;
-      // This is an intermediary waiting state. This state is reached when all
-      // data has been sent, but no data has been received.
-      case STATE_WAITING_FOR_RESPONSE:
-        io_state_ = STATE_WAITING_FOR_RESPONSE;
-        result = ERR_IO_PENDING;
-        break;
-      // State machine 2: connection is established.
-      // In STATE_OPEN, OnResponseHeadersReceived has already been called.
-      // OnDataReceived, OnClose and OnFrameWriteComplete can be called.
-      // Only OnFrameWriteComplete calls DoLoop().
+
+      // For request/response streams, no data is sent from the client
+      // while in the OPEN state, so OnFrameWriteComplete is never
+      // called here.  The HTTP body is handled in the OnDataReceived
+      // callback, which does not call into DoLoop.
       //
-      // For HTTP streams, no data is sent from the client while in the OPEN
-      // state, so OnFrameWriteComplete is never called here.  The HTTP body is
-      // handled in the OnDataReceived callback, which does not call into
-      // DoLoop.
-      //
-      // For WebSocket streams, which are bi-directional, we'll send and
-      // receive data once the connection is established.  Received data is
-      // handled in OnDataReceived.  Sent data is handled in
+      // For bidirectional streams, we'll send and receive data once
+      // the connection is established.  Received data is handled in
+      // OnDataReceived.  Sent data is handled in
       // OnFrameWriteComplete, which calls DoOpen().
       case STATE_OPEN:
         CHECK_EQ(result, OK);
@@ -720,7 +726,7 @@ int SpdyStream::DoLoop(int result) {
 }
 
 int SpdyStream::DoGetDomainBoundCert() {
-  CHECK(request_.get());
+  CHECK(request_);
   DCHECK_NE(type_, SPDY_PUSH_STREAM);
   GURL url = GetUrl();
   if (!session_->NeedsCredentials() || !url.SchemeIs("https")) {
@@ -760,7 +766,7 @@ int SpdyStream::DoGetDomainBoundCertComplete(int result) {
 }
 
 int SpdyStream::DoSendDomainBoundCert() {
-  CHECK(request_.get());
+  CHECK(request_);
   DCHECK_NE(type_, SPDY_PUSH_STREAM);
   io_state_ = STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE;
 
@@ -813,78 +819,57 @@ int SpdyStream::DoSendRequestHeaders() {
   return ERR_IO_PENDING;
 }
 
+namespace {
+
+// Assuming we're in STATE_OPEN, maps the given type (which must not
+// be SPDY_PUSH_STREAM) and send status to a result to return from
+// DoSendRequestHeadersComplete() or DoOpen().
+int GetOpenStateResult(SpdyStreamType type, SpdySendStatus send_status) {
+  switch (type) {
+    case SPDY_BIDIRECTIONAL_STREAM:
+      // For bidirectional streams, there's nothing else to do.
+      DCHECK_EQ(send_status, MORE_DATA_TO_SEND);
+      return OK;
+
+    case SPDY_REQUEST_RESPONSE_STREAM:
+      // For request/response streams, wait for the delegate to send
+      // data if there's request data to send; we'll get called back
+      // when the send finishes.
+      if (send_status == MORE_DATA_TO_SEND)
+        return ERR_IO_PENDING;
+
+      return OK;
+
+    case SPDY_PUSH_STREAM:
+      // This should never be called for push streams.
+      break;
+  }
+
+  CHECK(false);
+  return ERR_UNEXPECTED;
+}
+
+}  // namespace
+
 int SpdyStream::DoSendRequestHeadersComplete() {
   DCHECK_NE(type_, SPDY_PUSH_STREAM);
   DCHECK_EQ(just_completed_frame_type_, SYN_STREAM);
   DCHECK_NE(stream_id_, 0u);
-  if (!delegate_)
-    return ERR_UNEXPECTED;
 
-  switch (type_) {
-    case SPDY_BIDIRECTIONAL_STREAM:
-      DCHECK_EQ(send_status_, MORE_DATA_TO_SEND);
-      io_state_ = STATE_WAITING_FOR_RESPONSE;
-      break;
+  io_state_ = STATE_OPEN;
 
-    case SPDY_REQUEST_RESPONSE_STREAM:
-      io_state_ =
-          (send_status_ == MORE_DATA_TO_SEND) ?
-          STATE_SEND_BODY : STATE_WAITING_FOR_RESPONSE;
-      break;
+  // Do this before calling into the |delegate_| as that call may
+  // delete us.
+  int result = GetOpenStateResult(type_, send_status_);
 
-    case SPDY_PUSH_STREAM:
-      // Fall through.
-    default:
-      NOTREACHED();
-      return ERR_UNEXPECTED;
-  }
-
+  CHECK(delegate_);
   delegate_->OnRequestHeadersSent();
 
-  return OK;
-}
-
-// DoSendBody is called to send the optional body for the request.  This call
-// will also be called as each write of a chunk of the body completes.
-int SpdyStream::DoSendBody() {
-  DCHECK_NE(type_, SPDY_PUSH_STREAM);
-  io_state_ = STATE_SEND_BODY_COMPLETE;
-  return ERR_IO_PENDING;
-}
-
-int SpdyStream::DoSendBodyComplete(int result) {
-  DCHECK_NE(type_, SPDY_PUSH_STREAM);
-  result = ProcessJustCompletedFrame(result, STATE_SEND_BODY_COMPLETE);
-
-  if (result != OK)
-    return result;
-
-  io_state_ =
-      (send_status_ == MORE_DATA_TO_SEND) ?
-      STATE_SEND_BODY : STATE_WAITING_FOR_RESPONSE;
-
-  delegate_->OnDataSent();
-
-  return OK;
+  return result;
 }
 
 int SpdyStream::DoOpen() {
-  int result = ProcessJustCompletedFrame(OK, STATE_OPEN);
-
-  if (result != OK)
-    return result;
-
-  // Set |io_state_| first as |delegate_| may check it.
-  io_state_ = STATE_OPEN;
-
-  delegate_->OnDataSent();
-
-  return OK;
-}
-
-int SpdyStream::ProcessJustCompletedFrame(int result, State io_pending_state) {
-  if (result != OK)
-    return result;
+  DCHECK_NE(type_, SPDY_PUSH_STREAM);
 
   if (just_completed_frame_type_ != DATA) {
     NOTREACHED();
@@ -903,23 +888,27 @@ int SpdyStream::ProcessJustCompletedFrame(int result, State io_pending_state) {
     return ERR_UNEXPECTED;
   }
 
+  // Set |io_state_| first as |delegate_| may check it.
+  io_state_ = STATE_OPEN;
+
   send_bytes_ += frame_payload_size;
 
   pending_send_data_->DidConsume(frame_payload_size);
   if (pending_send_data_->BytesRemaining() > 0) {
-    io_state_ = io_pending_state;
     QueueNextDataFrame();
     return ERR_IO_PENDING;
   }
 
   pending_send_data_ = NULL;
 
-  if (!delegate_) {
-    NOTREACHED();
-    return ERR_UNEXPECTED;
-  }
+  // Do this before calling into the |delegate_| as that call may
+  // delete us.
+  int result = GetOpenStateResult(type_, send_status_);
 
-  return OK;
+  CHECK(delegate_);
+  delegate_->OnDataSent();
+
+  return result;
 }
 
 void SpdyStream::UpdateHistograms() {
