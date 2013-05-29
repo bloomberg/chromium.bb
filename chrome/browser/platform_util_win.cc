@@ -84,9 +84,7 @@ void ShowItemInFolderOnFileThread(const base::FilePath& full_path) {
   if (FAILED(hr))
     return;
 
-  const ITEMIDLIST* highlight[] = {
-    {file_item},
-  };
+  const ITEMIDLIST* highlight[] = { file_item };
 
   hr = (*open_folder_and_select_itemsPtr)(dir_item, arraysize(highlight),
                                           highlight, NULL);
