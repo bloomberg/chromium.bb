@@ -39,10 +39,10 @@ class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
  protected:
   CubicBezierTimingFunction(double x1, double y1, double x2, double y2);
 
-  SkScalar x1_;
-  SkScalar y1_;
-  SkScalar x2_;
-  SkScalar y2_;
+  double x1_;
+  double y1_;
+  double x2_;
+  double y2_;
 
  private:
   DISALLOW_ASSIGN(CubicBezierTimingFunction);

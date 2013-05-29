@@ -2,83 +2,65 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
+#include "base/logging.h"
 #include "cc/animation/timing_function.h"
 
-#include "third_party/skia/include/core/SkMath.h"
+namespace cc {
 
-// TODO(danakj) These methods come from SkInterpolator.cpp. When such a method
-// is available in the public Skia API, we should switch to using that.
-// http://crbug.com/159735
 namespace {
 
-// Dot14 has 14 bits for decimal places, and the remainder for whole numbers.
-typedef int Dot14;
-#define DOT14_ONE (1 << 14)
-#define DOT14_HALF (1 << 13)
+static const double BEZIER_EPSILON = 1e-7;
+static const int MAX_STEPS = 30;
 
-static inline Dot14 Dot14Mul(Dot14 a, Dot14 b) {
-  return (a * b + DOT14_HALF) >> 14;
+static double eval_bezier(double x1, double x2, double t) {
+  const double x1_times_3 = 3.0 * x1;
+  const double x2_times_3 = 3.0 * x2;
+  const double h3 = x1_times_3;
+  const double h1 = x1_times_3 - x2_times_3 + 1.0;
+  const double h2 = x2_times_3 - 6.0 * x1;
+  return t * (t * (t * h1 + h2) + h3);
 }
 
-static inline Dot14 EvalCubic(Dot14 t, Dot14 A, Dot14 B, Dot14 C) {
-  return Dot14Mul(Dot14Mul(Dot14Mul(C, t) + B, t) + A, t);
-}
+static double bezier_interp(double x1,
+                            double y1,
+                            double x2,
+                            double y2,
+                            double x) {
+  DCHECK_GE(1.0, x1);
+  DCHECK_LE(0.0, x1);
+  DCHECK_GE(1.0, x2);
+  DCHECK_LE(0.0, x2);
 
-static inline Dot14 PinAndConvert(SkScalar x) {
-  if (x <= 0)
-    return 0;
-  if (x >= SK_Scalar1)
-    return DOT14_ONE;
-  return SkScalarToFixed(x) >> 2;
-}
+  x1 = std::min(std::max(x1, 0.0), 1.0);
+  x2 = std::min(std::max(x2, 0.0), 1.0);
+  x = std::min(std::max(x, 0.0), 1.0);
 
-SkScalar SkUnitCubicInterp(SkScalar bx,
-                           SkScalar by,
-                           SkScalar cx,
-                           SkScalar cy,
-                           SkScalar value) {
-  Dot14 x = PinAndConvert(value);
-
-  if (x == 0)
-    return 0;
-  if (x == DOT14_ONE)
-    return SK_Scalar1;
-
-  Dot14 b = PinAndConvert(bx);
-  Dot14 c = PinAndConvert(cx);
-
-  // Now compute our coefficients from the control points.
-  //  t   -> 3b
-  //  t^2 -> 3c - 6b
-  //  t^3 -> 3b - 3c + 1
-  Dot14 A = 3 * b;
-  Dot14 B = 3 * (c - 2 * b);
-  Dot14 C = 3 * (b - c) + DOT14_ONE;
-
-  // Now search for a t value given x.
-  Dot14 t = DOT14_HALF;
-  Dot14 dt = DOT14_HALF;
-  for (int i = 0; i < 13; i++) {
-    dt >>= 1;
-    Dot14 guess = EvalCubic(t, A, B, C);
-    if (x < guess)
-      t -= dt;
-    else
-      t += dt;
+  // Step 1. Find the t corresponding to the given x. I.e., we want t such that
+  // eval_bezier(x1, x2, t) = x. There is a unique solution if x1 and x2 lie
+  // within (0, 1).
+  //
+  // We're just going to do bisection for now (for simplicity), but we could
+  // easily do some newton steps if this turns out to be a bottleneck.
+  double t = 0.0;
+  double step = 1.0;
+  for (int i = 0; i < MAX_STEPS; ++i, step *= 0.5) {
+    const double error = eval_bezier(x1, x2, t) - x;
+    if (fabs(error) < BEZIER_EPSILON)
+      break;
+    t += error > 0.0 ? -step : step;
   }
 
-  // Now we have t, so compute the coefficient for Y and evaluate.
-  b = PinAndConvert(by);
-  c = PinAndConvert(cy);
-  A = 3 * b;
-  B = 3 * (c - 2 * b);
-  C = 3 * (b - c) + DOT14_ONE;
-  return SkFixedToScalar(EvalCubic(t, A, B, C) << 2);
+  // We should have terminated the above loop because we got close to x, not
+  // because we exceeded MAX_STEPS. Do a DCHECK here to confirm.
+  DCHECK_GT(BEZIER_EPSILON, fabs(eval_bezier(x1, x2, t) - x));
+
+  // Step 2. Return the interpolated y values at the t we computed above.
+  return eval_bezier(y1, y2, t);
 }
 
 }  // namespace
-
-namespace cc {
 
 TimingFunction::TimingFunction() {}
 
@@ -89,10 +71,7 @@ double TimingFunction::Duration() const {
 }
 
 scoped_ptr<CubicBezierTimingFunction> CubicBezierTimingFunction::Create(
-    double x1,
-    double y1,
-    double x2,
-    double y2) {
+    double x1, double y1, double x2, double y2) {
   return make_scoped_ptr(new CubicBezierTimingFunction(x1, y1, x2, y2));
 }
 
@@ -100,16 +79,12 @@ CubicBezierTimingFunction::CubicBezierTimingFunction(double x1,
                                                      double y1,
                                                      double x2,
                                                      double y2)
-    : x1_(SkDoubleToScalar(x1)),
-      y1_(SkDoubleToScalar(y1)),
-      x2_(SkDoubleToScalar(x2)),
-      y2_(SkDoubleToScalar(y2)) {}
+    : x1_(x1), y1_(y1), x2_(x2), y2_(y2) {}
 
 CubicBezierTimingFunction::~CubicBezierTimingFunction() {}
 
 float CubicBezierTimingFunction::GetValue(double x) const {
-  SkScalar value = SkUnitCubicInterp(x1_, y1_, x2_, y2_, x);
-  return SkScalarToFloat(value);
+  return static_cast<float>(bezier_interp(x1_, y1_, x2_, y2_, x));
 }
 
 scoped_ptr<AnimationCurve> CubicBezierTimingFunction::Clone() const {

@@ -37,5 +37,35 @@ TEST(TimingFunctionTest, CubicBezierTimingFunction) {
   EXPECT_NEAR(function->GetValue(1), 1, epsilon);
 }
 
+// Tests that the bezier timing function works with knots with y not in (0, 1).
+TEST(TimingFunctionTest, CubicBezierTimingFunctionUnclampedYValues) {
+  scoped_ptr<CubicBezierTimingFunction> function =
+      CubicBezierTimingFunction::Create(0.5, -1.0, 0.5, 2.0);
+
+  double epsilon = 0.00015;
+
+  EXPECT_NEAR(function->GetValue(0.0), 0.0, epsilon);
+  EXPECT_NEAR(function->GetValue(0.05), -0.08954, epsilon);
+  EXPECT_NEAR(function->GetValue(0.1), -0.15613, epsilon);
+  EXPECT_NEAR(function->GetValue(0.15), -0.19641, epsilon);
+  EXPECT_NEAR(function->GetValue(0.2), -0.20651, epsilon);
+  EXPECT_NEAR(function->GetValue(0.25), -0.18232, epsilon);
+  EXPECT_NEAR(function->GetValue(0.3), -0.11992, epsilon);
+  EXPECT_NEAR(function->GetValue(0.35), -0.01672, epsilon);
+  EXPECT_NEAR(function->GetValue(0.4), 0.12660, epsilon);
+  EXPECT_NEAR(function->GetValue(0.45), 0.30349, epsilon);
+  EXPECT_NEAR(function->GetValue(0.5), 0.50000, epsilon);
+  EXPECT_NEAR(function->GetValue(0.55), 0.69651, epsilon);
+  EXPECT_NEAR(function->GetValue(0.6), 0.87340, epsilon);
+  EXPECT_NEAR(function->GetValue(0.65), 1.01672, epsilon);
+  EXPECT_NEAR(function->GetValue(0.7), 1.11992, epsilon);
+  EXPECT_NEAR(function->GetValue(0.75), 1.18232, epsilon);
+  EXPECT_NEAR(function->GetValue(0.8), 1.20651, epsilon);
+  EXPECT_NEAR(function->GetValue(0.85), 1.19641, epsilon);
+  EXPECT_NEAR(function->GetValue(0.9), 1.15613, epsilon);
+  EXPECT_NEAR(function->GetValue(0.95), 1.08954, epsilon);
+  EXPECT_NEAR(function->GetValue(1.0), 1.0, epsilon);
+}
+
 }  // namespace
 }  // namespace cc
