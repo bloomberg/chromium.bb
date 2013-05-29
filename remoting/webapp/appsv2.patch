@@ -25,7 +25,7 @@ index 83c9844..98f63c3 100644
      onDone(hostId);
    };
    try {
--    this.plugin_.getDaemonConfig(onConfig);
+-    this.hostDispatcher_.getDaemonVersion(printVersion);
 +    onConfig('{}');
    } catch (err) {
      onDone(null);

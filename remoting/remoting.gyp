@@ -21,7 +21,6 @@
 
     'remoting_multi_process%': '<(remoting_multi_process)',
     'remoting_rdp_session%': 1,
-    'remoting_use_apps_v2%': 0,
 
     # The |major|, |build| and |patch| versions are inherited from Chrome.
     # Since Chrome's |minor| version is always '0', we replace it with a
@@ -2026,6 +2025,15 @@
     {
       'target_name': 'remoting_webapp',
       'type': 'none',
+      'variables': {
+        'remoting_webapp_patch_files': [
+          'webapp/appsv2.patch',
+        ],
+        'remoting_webapp_apps_v2_js_files': [
+          'webapp/background.js',
+          'webapp/identity.js',
+        ],
+      },
       'dependencies': [
         'remoting_resources',
         'remoting_host_plugin',
@@ -2034,13 +2042,12 @@
         'webapp/build-webapp.py',
         '<(remoting_version_path)',
         '<(chrome_version_path)',
-        '<@(remoting_webapp_patch_files)',
+        '<@(remoting_webapp_apps_v2_js_files)',
         '<@(remoting_webapp_files)',
         '<@(remoting_webapp_js_files)',
-        '<@(remoting_webapp_apps_v2_js_files)',
         '<@(remoting_webapp_locale_files)',
+        '<@(remoting_webapp_patch_files)',
       ],
-
       'conditions': [
         ['enable_remoting_host==1', {
           'variables': {
@@ -2059,30 +2066,7 @@
             'remoting_host_plugin_manifest',
           ],
         }],
-        ['remoting_use_apps_v2==1', {
-          'variables': {
-            'remoting_webapp_patch_files': [
-              'webapp/appsv2.patch',
-            ],
-            'remoting_webapp_apps_v2_js_files': [
-              'webapp/background.js',
-              'webapp/identity.js',
-            ],
-          },
-        }, {
-          'variables': {
-            'remoting_webapp_patch_files': [],
-            'remoting_webapp_apps_v2_js_files': [],
-          },
-        }],
       ],
-
-      # Can't use a 'copies' because we need to manipulate
-      # the manifest file to get the right plugin name.
-      # Also we need to move the plugin into the me2mom
-      # folder, which means 2 copies, and gyp doesn't
-      # seem to guarantee the ordering of 2 copies statements
-      # when the actual project is generated.
       'actions': [
         {
           'action_name': 'Build Remoting WebApp',
@@ -2090,12 +2074,10 @@
           'zip_path': '<(PRODUCT_DIR)/remoting-webapp.zip',
           'inputs': [
             'webapp/build-webapp.py',
-            '<(remoting_version_path)',
             '<(chrome_version_path)',
-            '<@(remoting_webapp_patch_files)',
+            '<(remoting_version_path)',
             '<@(remoting_webapp_files)',
             '<@(remoting_webapp_js_files)',
-            '<@(remoting_webapp_apps_v2_js_files)',
             '<@(remoting_webapp_locale_files)',
           ],
           'conditions': [
@@ -2119,14 +2101,67 @@
             '<(plugin_path)',
             '<@(remoting_webapp_files)',
             '<@(remoting_webapp_js_files)',
-            '<@(remoting_webapp_apps_v2_js_files)',
             '--locales',
             '<@(remoting_webapp_locale_files)',
-            '--patches',
-            '<@(remoting_webapp_patch_files)',
           ],
           'msvs_cygwin_shell': 1,
         },
+      ],
+      'target_conditions': [
+        # We cannot currently build the appsv2 version of WebApp on Windows as
+        # there isn't a version of the "patch" tool available on windows. We 
+        # should remove this condition when we remove the reliance on the 'patch'.
+
+        # We define this in a 'target_conditions' section because 'plugin_path'
+        # is defined in a 'conditions' section so its value is not available
+        # when gyp processes the 'actions' in a 'conditions" section.
+        ['OS != "win"', {
+          'actions': [
+            {
+              'action_name': 'Build Remoting WebApp V2',
+              'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp.v2',
+              'zip_path': '<(PRODUCT_DIR)/remoting-webapp.v2.zip',
+              'inputs': [
+                'webapp/build-webapp.py',
+                '<(chrome_version_path)',
+                '<(remoting_version_path)',
+                '<@(remoting_webapp_apps_v2_js_files)',
+                '<@(remoting_webapp_files)',
+                '<@(remoting_webapp_js_files)',
+                '<@(remoting_webapp_locale_files)',
+                '<@(remoting_webapp_patch_files)',
+              ],
+              'conditions': [
+                ['enable_remoting_host==1', {
+                  'inputs': [
+                    '<(plugin_path)',
+                  ],
+                }],
+              ],
+              'outputs': [
+                '<(_output_dir)',
+                '<(_zip_path)',
+              ],
+              'action': [
+                'python', 'webapp/build-webapp.py',
+                '<(buildtype)',
+                '<(version_full)',
+                '<(host_plugin_mime_type)',
+                '<(_output_dir)',
+                '<(_zip_path)',
+                '<(plugin_path)',
+                '<@(remoting_webapp_apps_v2_js_files)',
+                '<@(remoting_webapp_files)',
+                '<@(remoting_webapp_js_files)',
+                '--locales',
+                '<@(remoting_webapp_locale_files)',
+                '--patches',
+                '<@(remoting_webapp_patch_files)',
+              ],    
+              'msvs_cygwin_shell': 1,
+            },
+          ],
+        }],
       ],
     }, # end of target 'remoting_webapp'
 
