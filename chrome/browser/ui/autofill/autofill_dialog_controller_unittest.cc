@@ -308,6 +308,19 @@ class AutofillDialogControllerTest : public testing::Test {
     test_web_contents_.reset(
         content::WebContentsTester::CreateTestWebContents(profile(), NULL));
 
+    SetUpControllerWithFormData(form_data);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    if (controller_)
+      controller_->ViewClosed();
+  }
+
+ protected:
+  void SetUpControllerWithFormData(const FormData& form_data) {
+    if (controller_)
+      controller_->ViewClosed();
+
     base::Callback<void(const FormStructure*, const std::string&)> callback =
         base::Bind(&AutofillDialogControllerTest::FinishedCallback,
                    base::Unretained(this));
@@ -323,12 +336,6 @@ class AutofillDialogControllerTest : public testing::Test {
     controller_->OnUserNameFetchSuccess(kFakeEmail);
   }
 
-  virtual void TearDown() OVERRIDE {
-    if (controller_)
-      controller_->ViewClosed();
-  }
-
- protected:
   void FillCreditCardInputs() {
     DetailOutputMap cc_outputs;
     const DetailInputs& cc_inputs =
@@ -811,6 +818,43 @@ TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
   EXPECT_EQ("CA", UTF16ToUTF8(form_structure()->field(3)->value));
   EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure()->field(2)->type());
   EXPECT_EQ(ADDRESS_HOME_STATE, form_structure()->field(3)->type());
+}
+
+// Tests that shipping and billing telephone fields are supported, and filled
+// in by their respective profiles. http://crbug.com/244515
+TEST_F(AutofillDialogControllerTest, DISABLED_BillingVsShippingPhoneNumber) {
+  FormFieldData shipping_tel;
+  shipping_tel.autocomplete_attribute = "shipping tel";
+  FormFieldData billing_tel;
+  billing_tel.autocomplete_attribute = "billing tel";
+
+  FormData form_data;
+  form_data.fields.push_back(shipping_tel);
+  form_data.fields.push_back(billing_tel);
+  SetUpControllerWithFormData(form_data);
+
+  // The profile that will be chosen for the shipping section.
+  AutofillProfile shipping_profile(test::GetVerifiedProfile());
+  // The profile that will be chosen for the billing section.
+  AutofillProfile billing_profile(test::GetVerifiedProfile2());
+  CreditCard credit_card(test::GetVerifiedCreditCard());
+  controller()->GetTestingManager()->AddTestingProfile(&shipping_profile);
+  controller()->GetTestingManager()->AddTestingProfile(&billing_profile);
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
+  ui::MenuModel* billing_model =
+      controller()->MenuModelForSection(SECTION_BILLING);
+  billing_model->ActivatedAt(1);
+
+  controller()->OnAccept();
+  ASSERT_EQ(2U, form_structure()->field_count());
+  EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER, form_structure()->field(0)->type());
+  EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER, form_structure()->field(1)->type());
+  EXPECT_EQ(shipping_profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
+            form_structure()->field(0)->value);
+  EXPECT_EQ(billing_profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
+            form_structure()->field(1)->value);
+  EXPECT_NE(form_structure()->field(1)->value,
+            form_structure()->field(0)->value);
 }
 
 TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
