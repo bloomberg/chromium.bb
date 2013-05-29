@@ -179,14 +179,6 @@ class NET_EXPORT TransportSecurityState
   void AddOrUpdateEnabledHosts(const std::string& hashed_host,
                                const DomainState& state);
 
-  // Inserts |state| into |forced_hosts_| under the key |hashed_host|.
-  // |hashed_host| is already in the internal representation
-  // HashHost(CanonicalizeHost(host)).
-  // Note: This is only used for serializing/deserializing the
-  // TransportSecurityState.
-  void AddOrUpdateForcedHosts(const std::string& hashed_host,
-                              const DomainState& state);
-
   // Deletes all dynamic data (e.g. HSTS or HPKP data) created since a given
   // time.
   //
@@ -309,10 +301,6 @@ class NET_EXPORT TransportSecurityState
 
   // The set of hosts that have enabled TransportSecurity.
   DomainStateMap enabled_hosts_;
-
-  // Extra entries, provided by the user at run-time, to treat as if they
-  // were static.
-  DomainStateMap forced_hosts_;
 
   Delegate* delegate_;
 

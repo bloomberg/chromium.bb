@@ -204,25 +204,16 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
   return true;
 }
 
-bool TransportSecurityPersister::DeserializeFromCommandLine(
-    const std::string& serialized) {
-  // Purposefully ignore |dirty| because we do not want to persist entries
-  // deserialized in this way.
-  bool dirty;
-  return Deserialize(serialized, true, &dirty, transport_security_state_);
-}
-
 bool TransportSecurityPersister::LoadEntries(const std::string& serialized,
                                              bool* dirty) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   transport_security_state_->ClearDynamicData();
-  return Deserialize(serialized, false, dirty, transport_security_state_);
+  return Deserialize(serialized, dirty, transport_security_state_);
 }
 
 // static
 bool TransportSecurityPersister::Deserialize(const std::string& serialized,
-                                             bool forced,
                                              bool* dirty,
                                              TransportSecurityState* state) {
   scoped_ptr<Value> value(base::JSONReader::Read(serialized));
@@ -307,10 +298,7 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
       continue;
     }
 
-    if (forced)
-      state->AddOrUpdateForcedHosts(hashed, domain_state);
-    else
-      state->AddOrUpdateEnabledHosts(hashed, domain_state);
+    state->AddOrUpdateEnabledHosts(hashed, domain_state);
   }
 
   *dirty = dirtied;

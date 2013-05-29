@@ -225,7 +225,6 @@ extern const char kHomePage[];
 extern const char kHostRules[];
 extern const char kHostResolverParallelism[];
 extern const char kHostResolverRetryAttempts[];
-extern const char kHstsHosts[];
 extern const char kIgnoreUrlFetcherCertRequests[];
 extern const char kIncognito[];
 extern const char kInstallFromWebstore[];

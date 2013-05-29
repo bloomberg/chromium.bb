@@ -688,9 +688,6 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
       new TransportSecurityPersister(transport_security_state_.get(),
                                      profile_params_->path,
                                      is_incognito()));
-  const std::string& serialized =
-      command_line.GetSwitchValueASCII(switches::kHstsHosts);
-  transport_security_persister_.get()->DeserializeFromCommandLine(serialized);
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;

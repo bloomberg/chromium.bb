@@ -756,12 +756,6 @@ bool TransportSecurityState::GetStaticDomainState(
     std::string host_sub_chunk(&canonicalized_host[i],
                                canonicalized_host.size() - i);
     out->domain = DNSDomainToString(host_sub_chunk);
-    std::string hashed_host(HashHost(host_sub_chunk));
-    if (forced_hosts_.find(hashed_host) != forced_hosts_.end()) {
-      *out = forced_hosts_[hashed_host];
-      out->domain = DNSDomainToString(host_sub_chunk);
-      return true;
-    }
     bool ret;
     if (is_build_timely &&
         HasPreload(kPreloadedSTS, kNumPreloadedSTS, canonicalized_host, i, out,
@@ -782,11 +776,6 @@ bool TransportSecurityState::GetStaticDomainState(
 void TransportSecurityState::AddOrUpdateEnabledHosts(
     const std::string& hashed_host, const DomainState& state) {
   enabled_hosts_[hashed_host] = state;
-}
-
-void TransportSecurityState::AddOrUpdateForcedHosts(
-    const std::string& hashed_host, const DomainState& state) {
-  forced_hosts_[hashed_host] = state;
 }
 
 TransportSecurityState::DomainState::DomainState()

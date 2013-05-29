@@ -817,12 +817,6 @@ const char kHostResolverParallelism[]       = "host-resolver-parallelism";
 // to disable host resolver retry attempts.
 const char kHostResolverRetryAttempts[]     = "host-resolver-retry-attempts";
 
-// Takes the JSON-formatted HSTS specification and loads it as if it were a
-// preloaded HSTS entry. Takes precedence over both website-specified rules and
-// built-in rules. The JSON format is the same as that persisted in
-// <profile_dir>/Default/TransportSecurity
-const char kHstsHosts[]                     = "hsts-hosts";
-
 // Causes net::URLFetchers to ignore requests for SSL client certificates,
 // causing them to attempt an unauthenticated SSL/TLS session. This is intended
 // for use when testing various service URLs (eg: kPromoServerURL, kInstantURL,

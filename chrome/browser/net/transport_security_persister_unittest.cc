@@ -210,25 +210,3 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
   EXPECT_EQ(0, memcmp(domain_state.dynamic_spki_hashes[0].data(), sha1.data(),
                       sha1.size()));
 }
-
-TEST_F(TransportSecurityPersisterTest, ForcePreloads) {
-  // The static state for docs.google.com, defined in
-  // net/http/transport_security_state_static.h, has pins and mode strict.
-  // This new policy overrides that with no pins and a weaker mode. We apply
-  // this new policy with |DeserializeFromCommandLine| and expect that the
-  // new policy is in effect, overriding the static policy.
-  std::string preload("{"
-                      "\"4AGT3lHihuMSd5rUj7B4u6At0jlSH3HFePovjPR+oLE=\": {"
-                      "\"created\": 0.0,"
-                      "\"expiry\": 2000000000.0,"
-                      "\"include_subdomains\": false,"
-                      "\"mode\": \"pinning-only\""
-                      "}}");
-
-  EXPECT_TRUE(persister_->DeserializeFromCommandLine(preload));
-
-  TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(state_.GetDomainState("docs.google.com", true, &domain_state));
-  EXPECT_FALSE(domain_state.HasPublicKeyPins());
-  EXPECT_FALSE(domain_state.ShouldUpgradeToSSL());
-}
