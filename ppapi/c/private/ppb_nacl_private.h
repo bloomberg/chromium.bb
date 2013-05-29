@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Mon Apr 22 22:25:20 2013. */
+/* From private/ppb_nacl_private.idl modified Fri May 17 13:21:13 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -12,7 +12,6 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/c/pp_var.h"
 
 #define PPB_NACL_PRIVATE_INTERFACE_1_0 "PPB_NaCl_Private;1.0"
 #define PPB_NACL_PRIVATE_INTERFACE PPB_NACL_PRIVATE_INTERFACE_1_0
@@ -52,19 +51,6 @@ typedef enum {
    */
   PP_NACL_MANIFEST_MISSING_ARCH = 0
 } PP_NaClError;
-/**
- * @}
- */
-
-/**
- * @addtogroup Structs
- * @{
- */
-struct PP_NaClExecutableMetadata {
-  /** File path of NaCl executable. This is created by the OpenNaClExecutableFd
-   *  function. It is the caller's responsiblity to release it. */
-  struct PP_Var file_path;
-};
 /**
  * @}
  */
@@ -149,10 +135,10 @@ struct PPB_NaCl_Private_1_0 {
    * corresponding to the file URL and returns a file descriptor, or an invalid
    * handle on failure. |metadata| is left unchanged on failure.
    */
-  PP_FileHandle (*OpenNaClExecutable)(
-      PP_Instance instance,
-      const char* file_url,
-      struct PP_NaClExecutableMetadata* metadata);
+  PP_FileHandle (*OpenNaClExecutable)(PP_Instance instance,
+                                      const char* file_url,
+                                      uint64_t* file_token_lo,
+                                      uint64_t* file_token_hi);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

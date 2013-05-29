@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "crypto/hmac.h"
 
+struct NaClFileToken;
 struct NaClValidationCache;
 class NaClValidationDB;
 class NaClValidationQuery;
@@ -22,6 +23,9 @@ class NaClValidationQueryContext {
                              const std::string& nacl_version);
 
   NaClValidationQuery* CreateQuery();
+
+  bool ResolveFileToken(struct NaClFileToken* file_token, int32* fd,
+                        std::string* path);
 
  private:
   NaClValidationDB* db_;

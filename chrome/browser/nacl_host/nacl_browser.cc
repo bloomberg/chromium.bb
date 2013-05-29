@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
+#include "base/rand_util.h"
 #include "base/strings/string_split.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
@@ -35,6 +36,16 @@ enum ValidationCacheStatus {
   CACHE_HIT,
   CACHE_MAX
 };
+
+// Keep the cache bounded to an arbitrary size.  If it's too small, useful
+// entries could be evicted when multiple .nexes are loaded at once.  On the
+// other hand, entries are not always claimed (and hence removed), so the size
+// of the cache will likely saturate at its maximum size.
+// Entries may not be claimed for two main reasons. 1) the NaCl process could
+// be killed while it is loading.  2) the trusted NaCl plugin opens files using
+// the code path but doesn't resolve them.
+// TODO(ncbray) don't cache files that the plugin will not resolve.
+const int kFilePathCacheSize = 100;
 
 const base::FilePath::StringType NaClIrtName() {
   base::FilePath::StringType irt_name(FILE_PATH_LITERAL("nacl_irt_"));
@@ -106,6 +117,40 @@ void LogCacheSet(ValidationCacheStatus status) {
 
 }  // namespace
 
+namespace nacl {
+
+void OpenNaClExecutableImpl(const base::FilePath& file_path,
+                            base::PlatformFile* file) {
+  // Get a file descriptor. On Windows, we need 'GENERIC_EXECUTE' in order to
+  // memory map the executable.
+  // IMPORTANT: This file descriptor must not have write access - that could
+  // allow a NaCl inner sandbox escape.
+  base::PlatformFileError error_code;
+  *file = base::CreatePlatformFile(
+      file_path,
+      (base::PLATFORM_FILE_OPEN |
+       base::PLATFORM_FILE_READ |
+       base::PLATFORM_FILE_EXECUTE),  // Windows only flag.
+      NULL,
+      &error_code);
+  if (error_code != base::PLATFORM_FILE_OK) {
+    *file = base::kInvalidPlatformFileValue;
+    return;
+  }
+  // Check that the file does not reference a directory. Returning a descriptor
+  // to an extension directory could allow an outer sandbox escape. openat(...)
+  // could be used to traverse into the file system.
+  base::PlatformFileInfo file_info;
+  if (!base::GetPlatformFileInfo(*file, &file_info) ||
+      file_info.is_directory) {
+    base::ClosePlatformFile(*file);
+    *file = base::kInvalidPlatformFileValue;
+    return;
+  }
+}
+
+}
+
 NaClBrowser::NaClBrowser()
     : weak_factory_(this),
       irt_platform_file_(base::kInvalidPlatformFileValue),
@@ -119,6 +164,7 @@ NaClBrowser::NaClBrowser()
                       kValidationCacheEnabledByDefault)),
       validation_cache_is_modified_(false),
       validation_cache_state_(NaClResourceUninitialized),
+      path_cache_(kFilePathCacheSize),
       ok_(true) {
   InitIrtFilePath();
   InitValidationCacheFilePath();
@@ -371,6 +417,41 @@ void NaClBrowser::WaitForResources(const base::Closure& reply) {
 const base::FilePath& NaClBrowser::GetIrtFilePath() {
   return irt_filepath_;
 }
+
+void NaClBrowser::PutFilePath(const base::FilePath& path, uint64* file_token_lo,
+                              uint64* file_token_hi) {
+  while (true) {
+    uint64 file_token[2] = {base::RandUint64(), base::RandUint64()};
+    // A zero file_token indicates there is no file_token, if we get zero, ask
+    // for another number.
+    if (file_token[0] != 0 || file_token[1] != 0) {
+      // If the file_token is in use, ask for another number.
+      std::string key(reinterpret_cast<char*>(file_token), sizeof(file_token));
+      PathCacheType::iterator iter = path_cache_.Peek(key);
+      if (iter == path_cache_.end()) {
+        path_cache_.Put(key, path);
+        *file_token_lo = file_token[0];
+        *file_token_hi = file_token[1];
+        break;
+      }
+    }
+  }
+}
+
+bool NaClBrowser::GetFilePath(uint64 file_token_lo, uint64 file_token_hi,
+                              base::FilePath* path) {
+  uint64 file_token[2] = {file_token_lo, file_token_hi};
+  std::string key(reinterpret_cast<char*>(file_token), sizeof(file_token));
+  PathCacheType::iterator iter = path_cache_.Peek(key);
+  if (iter == path_cache_.end()) {
+    *path = base::FilePath(FILE_PATH_LITERAL(""));
+    return false;
+  }
+  *path = iter->second;
+  path_cache_.Erase(iter);
+  return true;
+}
+
 
 bool NaClBrowser::QueryKnownToValidate(const std::string& signature,
                                        bool off_the_record) {

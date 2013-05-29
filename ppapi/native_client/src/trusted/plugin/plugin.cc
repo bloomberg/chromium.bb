@@ -802,16 +802,16 @@ void Plugin::HistogramStartupTimeMedium(const std::string& name, float dt) {
 void Plugin::NexeFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NexeFileDidOpen (pp_error=%"NACL_PRId32")\n",
                  pp_error));
-  int32_t file_desc = nexe_downloader_.GetPOSIXFileDescriptor();
+  struct NaClFileInfo info = nexe_downloader_.GetFileInfo();
   PLUGIN_PRINTF(("Plugin::NexeFileDidOpen (file_desc=%"NACL_PRId32")\n",
-                 file_desc));
+                 info.desc));
   HistogramHTTPStatusCode(
       is_installed_ ?
           "NaCl.HttpStatusCodeClass.Nexe.InstalledApp" :
           "NaCl.HttpStatusCodeClass.Nexe.NotInstalledApp",
       nexe_downloader_.status_code());
   ErrorInfo error_info;
-  if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
+  if (pp_error != PP_OK || info.desc == NACL_NO_FILE_DESC) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
     } else if (pp_error == PP_ERROR_NOACCESS) {
@@ -824,7 +824,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
     }
     return;
   }
-  int32_t file_desc_ok_to_close = DUP(file_desc);
+  int32_t file_desc_ok_to_close = DUP(info.desc);
   if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
     error_info.SetReport(ERROR_NEXE_FH_DUP,
                          "could not duplicate loaded file handle.");
@@ -1083,10 +1083,10 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   // The manifest file was successfully opened.  Set the src property on the
   // plugin now, so that the full url is available to error handlers.
   set_manifest_url(nexe_downloader_.url());
-  int32_t file_desc = nexe_downloader_.GetPOSIXFileDescriptor();
+  struct NaClFileInfo info = nexe_downloader_.GetFileInfo();
   PLUGIN_PRINTF(("Plugin::NaClManifestFileDidOpen (file_desc=%"
-                 NACL_PRId32")\n", file_desc));
-  if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
+                 NACL_PRId32")\n", info.desc));
+  if (pp_error != PP_OK || info.desc == NACL_NO_FILE_DESC) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
     } else if (pp_error == PP_ERROR_NOACCESS) {
@@ -1102,7 +1102,7 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
   }
   // SlurpFile closes the file descriptor after reading (or on error).
   // Duplicate our file descriptor since it will be handled by the browser.
-  int dup_file_desc = DUP(file_desc);
+  int dup_file_desc = DUP(info.desc);
   nacl::string json_buffer;
   file_utils::StatusCode status = file_utils::SlurpFile(
       dup_file_desc, json_buffer, kNaClManifestMaxFileBytes);
@@ -1274,27 +1274,31 @@ void Plugin::UrlDidOpenForStreamAsFile(int32_t pp_error,
                  static_cast<void*>(url_downloader)));
   url_downloaders_.erase(url_downloader);
   nacl::scoped_ptr<FileDownloader> scoped_url_downloader(url_downloader);
-  int32_t file_desc = scoped_url_downloader->GetPOSIXFileDescriptor();
+  struct NaClFileInfo info = scoped_url_downloader->GetFileInfo();
 
   if (pp_error != PP_OK) {
     PP_RunCompletionCallback(&callback, pp_error);
-  } else if (file_desc > NACL_NO_FILE_DESC) {
-    url_fd_map_[url_downloader->url_to_open()] = file_desc;
+  } else if (info.desc > NACL_NO_FILE_DESC) {
+    url_file_info_map_[url_downloader->url_to_open()] = info;
     PP_RunCompletionCallback(&callback, PP_OK);
   } else {
     PP_RunCompletionCallback(&callback, PP_ERROR_FAILED);
   }
 }
 
-int32_t Plugin::GetPOSIXFileDesc(const nacl::string& url) {
-  PLUGIN_PRINTF(("Plugin::GetFileDesc (url=%s)\n", url.c_str()));
-  int32_t file_desc_ok_to_close = NACL_NO_FILE_DESC;
-  std::map<nacl::string, int32_t>::iterator it = url_fd_map_.find(url);
-  if (it != url_fd_map_.end())
-    file_desc_ok_to_close = DUP(it->second);
-  return file_desc_ok_to_close;
+struct NaClFileInfo Plugin::GetFileInfo(const nacl::string& url) {
+  struct NaClFileInfo info;
+  memset(&info, 0, sizeof(info));
+  std::map<nacl::string, struct NaClFileInfo>::iterator it =
+      url_file_info_map_.find(url);
+  if (it != url_file_info_map_.end()) {
+    info = it->second;
+    info.desc = DUP(info.desc);
+  } else {
+    info.desc = -1;
+  }
+  return info;
 }
-
 
 bool Plugin::StreamAsFile(const nacl::string& url,
                           PP_CompletionCallback callback) {
@@ -1574,25 +1578,18 @@ bool Plugin::OpenURLFast(const nacl::string& url,
   if (!DocumentCanRequest(url))
     return false;
 
-  PP_NaClExecutableMetadata file_metadata;
+  uint64_t file_token_lo = 0;
+  uint64_t file_token_hi = 0;
   PP_FileHandle file_handle =
       nacl_interface()->OpenNaClExecutable(pp_instance(),
                                            url.c_str(),
-                                           &file_metadata);
+                                           &file_token_lo, &file_token_hi);
   // We shouldn't hit this if the file URL is in an installed app.
   if (file_handle == PP_kInvalidFileHandle)
     return false;
 
-  // Release the PP_Var in the metadata struct.
-  pp::Module* module = pp::Module::Get();
-  const PPB_Var* var_interface =
-      static_cast<const PPB_Var*>(
-          module->GetBrowserInterface(PPB_VAR_INTERFACE));
-  var_interface->Release(file_metadata.file_path);
-
   // FileDownloader takes ownership of the file handle.
-  // TODO(bbudge) Consume metadata once we have the final format.
-  downloader->OpenFast(url, file_handle);
+  downloader->OpenFast(url, file_handle, file_token_lo, file_token_hi);
   return true;
 }
 

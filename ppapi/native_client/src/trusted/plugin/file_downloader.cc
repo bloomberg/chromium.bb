@@ -5,6 +5,7 @@
 #include "native_client/src/trusted/plugin/file_downloader.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <string>
 
 #include "native_client/src/include/portability_io.h"
@@ -21,8 +22,17 @@
 #include "ppapi/cpp/url_response_info.h"
 
 namespace {
+
 const int32_t kExtensionUrlRequestStatusOk = 200;
 const int32_t kDataUriRequestStatusOk = 0;
+
+struct NaClFileInfo NoFileInfo() {
+  struct NaClFileInfo info;
+  memset(&info, 0, sizeof(info));
+  info.desc = -1;
+  return info;
+}
+
 }
 
 namespace plugin {
@@ -145,7 +155,8 @@ bool FileDownloader::Open(
 }
 
 void FileDownloader::OpenFast(const nacl::string& url,
-                              PP_FileHandle file_handle) {
+                              PP_FileHandle file_handle,
+                              uint64_t file_token_lo, uint64_t file_token_hi) {
   PLUGIN_PRINTF(("FileDownloader::OpenFast (url=%s)\n", url.c_str()));
   CHECK(instance_ != NULL);
   open_time_ = NaClGetTimeOfDayMicroseconds();
@@ -154,9 +165,12 @@ void FileDownloader::OpenFast(const nacl::string& url,
   url_ = url;
   mode_ = DOWNLOAD_NONE;
   file_handle_ = file_handle;
+  file_token_.lo = file_token_lo;
+  file_token_.hi = file_token_hi;
 }
 
-int32_t FileDownloader::GetPOSIXFileDescriptor() {
+struct NaClFileInfo FileDownloader::GetFileInfo() {
+  struct NaClFileInfo info = NoFileInfo();
   int32_t file_desc = NACL_NO_FILE_DESC;
   if (not_streaming() && file_handle_ != PP_kInvalidFileHandle) {
 #if NACL_WINDOWS
@@ -165,13 +179,14 @@ int32_t FileDownloader::GetPOSIXFileDescriptor() {
 #else
     file_desc = file_handle_;
 #endif
+    info.file_token = file_token_;
   } else {
     if (!streaming_to_file()) {
-      return NACL_NO_FILE_DESC;
+      return NoFileInfo();
     }
     // Use the trusted interface to get the file descriptor.
     if (file_io_trusted_interface_ == NULL) {
-      return NACL_NO_FILE_DESC;
+      return NoFileInfo();
     }
     file_desc = file_io_trusted_interface_->GetOSFileDescriptor(
         file_reader_.pp_resource());
@@ -183,12 +198,13 @@ int32_t FileDownloader::GetPOSIXFileDescriptor() {
   if (posix_desc == -1) {
     // Close the Windows HANDLE if it can't be converted.
     CloseHandle(reinterpret_cast<HANDLE>(file_desc));
-    return NACL_NO_FILE_DESC;
+    return NoFileInfo();
   }
   file_desc = posix_desc;
 #endif
 
-  return file_desc;
+  info.desc = file_desc;
+  return info;
 }
 
 int64_t FileDownloader::TimeSinceOpenMilliseconds() const {

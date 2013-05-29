@@ -272,28 +272,28 @@ PP_NaClResult ReportNaClError(PP_Instance instance,
 
 PP_FileHandle OpenNaClExecutable(PP_Instance instance,
                                  const char* file_url,
-                                 PP_NaClExecutableMetadata* metadata) {
+                                 uint64_t* nonce_lo,
+                                 uint64_t* nonce_hi) {
   IPC::PlatformFileForTransit out_fd = IPC::InvalidPlatformFileForTransit();
   IPC::Sender* sender = content::RenderThread::Get();
   if (sender == NULL)
     sender = g_background_thread_sender.Pointer()->get();
 
-  metadata->file_path = PP_MakeUndefined();
+  *nonce_lo = 0;
+  *nonce_hi = 0;
   base::FilePath file_path;
   if (!sender->Send(
       new ChromeViewHostMsg_OpenNaClExecutable(GetRoutingID(instance),
                                                GURL(file_url),
-                                               &file_path,
-                                               &out_fd))) {
+                                               &out_fd,
+                                               nonce_lo,
+                                               nonce_hi))) {
     return base::kInvalidPlatformFileValue;
   }
 
   if (out_fd == IPC::InvalidPlatformFileForTransit()) {
     return base::kInvalidPlatformFileValue;
   }
-
-  metadata->file_path =
-      ppapi::StringVar::StringToPPVar(file_path.AsUTF8Unsafe());
 
   base::PlatformFile handle =
       IPC::PlatformFileForTransitToPlatformFile(out_fd);
