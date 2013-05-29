@@ -36,10 +36,11 @@ class MediaDecoderJob {
  public:
   virtual ~MediaDecoderJob();
 
-  // Callback when a decoder job finishes its work. Args: presentation time,
-  // timestamp when the data is rendered, whether decoder is reaching EOS.
-  typedef base::Callback<void(const base::TimeDelta&, const base::Time&, bool)>
-      DecoderCallback;
+  // Callback when a decoder job finishes its work. Args: whether decode
+  // finished successfully, presentation time, timestamp when the data is
+  // rendered, whether decoder is reaching EOS.
+  typedef base::Callback<void(bool, const base::TimeDelta&,
+                              const base::Time&, bool)> DecoderCallback;
 
   // Called by MediaSourcePlayer to decode some data.
   void Decode(
@@ -155,7 +156,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
 
   // Called when the decoder finishes its task.
   void MediaDecoderCallback(
-        bool is_audio, const base::TimeDelta& presentation_timestamp,
+        bool is_audio, bool decode_succeeded,
+        const base::TimeDelta& presentation_timestamp,
         const base::Time& wallclock_time, bool end_of_stream);
 
   // Handle pending events when all the decoder jobs finished.

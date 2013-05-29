@@ -27,6 +27,10 @@ class MediaCodecBridge {
 
     private static final String TAG = "MediaCodecBridge";
 
+    // Error code for MediaCodecBridge. Keep this value in sync with
+    // INFO_MEDIA_CODEC_ERROR in media_codec_bridge.h.
+    private static final int MEDIA_CODEC_ERROR = -1000;
+
     private ByteBuffer[] mInputBuffers;
     private ByteBuffer[] mOutputBuffers;
 
@@ -41,8 +45,8 @@ class MediaCodecBridge {
         private final long mPresentationTimeMicroseconds;
         private final int mNumBytes;
 
-        private DequeueOutputResult(
-            int index, int flags, int offset, long presentationTimeMicroseconds, int numBytes) {
+        private DequeueOutputResult(int index, int flags, int offset,
+                long presentationTimeMicroseconds, int numBytes) {
             mIndex = index;
             mFlags = flags;
             mOffset = offset;
@@ -149,7 +153,12 @@ class MediaCodecBridge {
     @CalledByNative
     private DequeueOutputResult dequeueOutputBuffer(long timeoutUs) {
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
-        int index = mMediaCodec.dequeueOutputBuffer(info, timeoutUs);
+        int index = MEDIA_CODEC_ERROR;
+        try {
+            index = mMediaCodec.dequeueOutputBuffer(info, timeoutUs);
+        } catch(IllegalStateException e) {
+            Log.e(TAG, "Cannot dequeue output buffer " + e.toString());
+        }
         return new DequeueOutputResult(
                 index, info.flags, info.offset, info.presentationTimeUs, info.size);
     }

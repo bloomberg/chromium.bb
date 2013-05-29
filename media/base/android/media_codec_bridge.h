@@ -28,6 +28,7 @@ class MEDIA_EXPORT MediaCodecBridge {
     INFO_OUTPUT_BUFFERS_CHANGED = -3,
     INFO_OUTPUT_FORMAT_CHANGED = -2,
     INFO_TRY_AGAIN_LATER = -1,
+    INFO_MEDIA_CODEC_ERROR = -1000,
   };
 
   static const base::TimeDelta kTimeOutInfinity;

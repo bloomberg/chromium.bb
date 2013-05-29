@@ -91,6 +91,7 @@ void MediaDecoderJob::DecodeInternal(
   size_t size = 0;
   base::TimeDelta presentation_timestamp;
   bool end_of_stream = false;
+  bool decode_succeeded = true;
 
   int outputBufferIndex = media_codec_bridge_->DequeueOutputBuffer(
       timeout, &offset, &size, &presentation_timestamp, &end_of_stream);
@@ -102,6 +103,9 @@ void MediaDecoderJob::DecodeInternal(
       // TODO(qinmin): figure out what we should do if format changes.
       break;
     case MediaCodecBridge::INFO_TRY_AGAIN_LATER:
+      break;
+    case MediaCodecBridge::INFO_MEDIA_CODEC_ERROR:
+      decode_succeeded = false;
       break;
     default:
       DCHECK_LE(0, outputBufferIndex);
@@ -130,8 +134,8 @@ void MediaDecoderJob::DecodeInternal(
       return;
   }
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      callback, start_presentation_timestamp, start_wallclock_time,
-      end_of_stream));
+      callback, decode_succeeded, start_presentation_timestamp,
+      start_wallclock_time, end_of_stream));
 }
 
 void MediaDecoderJob::ReleaseOutputBuffer(
@@ -146,7 +150,8 @@ void MediaDecoderJob::ReleaseOutputBuffer(
   }
   media_codec_bridge_->ReleaseOutputBuffer(outputBufferIndex, !is_audio_);
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      callback, presentation_timestamp, base::Time::Now(), end_of_stream));
+      callback, true, presentation_timestamp, base::Time::Now(),
+      end_of_stream));
 }
 
 void MediaDecoderJob::Flush() {
@@ -421,10 +426,17 @@ void MediaSourcePlayer::ProcessPendingEvents() {
 }
 
 void MediaSourcePlayer::MediaDecoderCallback(
-    bool is_audio, const base::TimeDelta& presentation_timestamp,
+    bool is_audio, bool decode_succeeded,
+    const base::TimeDelta& presentation_timestamp,
     const base::Time& wallclock_time, bool end_of_stream) {
   if (active_decoding_tasks_ > 0)
     active_decoding_tasks_--;
+
+  if (!decode_succeeded) {
+    Release();
+    OnMediaError(MEDIA_ERROR_DECODE);
+    return;
+  }
 
   if (pending_event_ != NO_EVENT_PENDING) {
     ProcessPendingEvents();
