@@ -115,7 +115,7 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
 
     // In beforeunload/unload handlers, we want to avoid sleeps which do tight loops of calling Date.getTime().
     if (event->type() == eventNames().beforeunloadEvent || event->type() == eventNames().unloadEvent)
-        DateExtension::get()->setAllowSleep(false);
+        DateExtension::get()->setAllowSleep(false, v8Context->GetIsolate());
 
     {
         // Catch exceptions thrown in the event handler so they do not propagate to javascript code that caused the event to fire.
@@ -150,7 +150,7 @@ void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context
     }
 
     if (event->type() == eventNames().beforeunloadEvent || event->type() == eventNames().unloadEvent)
-        DateExtension::get()->setAllowSleep(true);
+        DateExtension::get()->setAllowSleep(true, v8Context->GetIsolate());
 
     ASSERT(!handleOutOfMemory() || returnValue.IsEmpty());
 

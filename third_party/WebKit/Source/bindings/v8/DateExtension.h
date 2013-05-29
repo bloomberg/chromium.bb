@@ -39,7 +39,7 @@ namespace WebCore {
 class DateExtension : public v8::Extension {
 public:
     static DateExtension* get();
-    void setAllowSleep(bool allow);
+    void setAllowSleep(bool, v8::Isolate*);
 
 private:
     DateExtension();
