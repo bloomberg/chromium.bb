@@ -121,11 +121,7 @@ namespace WebCore {
         void setTitle(const StringWithDirection&);
         const String& overrideEncoding() const { return m_overrideEncoding; }
 
-        bool scheduleArchiveLoad(ResourceLoader*, const ResourceRequest&);
-
-#ifndef NDEBUG
-        bool isSubstituteLoadPending(ResourceLoader*) const;
-#endif
+        bool scheduleArchiveLoad(CachedResource*, const ResourceRequest&);
         void cancelPendingSubstituteLoad(ResourceLoader*);
 
         bool shouldContinueForNavigationPolicy(const ResourceRequest&);
@@ -205,7 +201,6 @@ namespace WebCore {
 
         void prepareSubframeArchiveLoadIfNeeded();
         void addAllArchiveResources(MHTMLArchive*);
-        ArchiveResource* archiveResourceForURL(const KURL&) const;
 
         void willSendRequest(ResourceRequest&, const ResourceResponse&);
         void finishedLoading(double finishTime);
@@ -229,9 +224,6 @@ namespace WebCore {
         void handleSubstituteDataLoadSoon();
         void handleSubstituteDataLoadNow(DocumentLoaderTimer*);
         void startDataLoadTimer();
-
-        void deliverSubstituteResourcesAfterDelay();
-        void substituteResourceDeliveryTimerFired(Timer<DocumentLoader>*);
                 
         Frame* m_frame;
         RefPtr<CachedResourceLoader> m_cachedResourceLoader;
@@ -281,10 +273,6 @@ namespace WebCore {
         // The action that triggered loading - we keep this around for the
         // benefit of the various policy handlers.
         NavigationAction m_triggeringAction;
-        
-        typedef HashMap<RefPtr<ResourceLoader>, RefPtr<SubstituteResource> > SubstituteResourceMap;
-        SubstituteResourceMap m_pendingSubstituteResources;
-        Timer<DocumentLoader> m_substituteResourceDeliveryTimer;
 
         OwnPtr<ArchiveResourceCollection> m_archiveResourceCollection;
         RefPtr<MHTMLArchive> m_archive;

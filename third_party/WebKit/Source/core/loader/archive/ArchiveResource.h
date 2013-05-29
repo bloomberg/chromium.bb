@@ -44,17 +44,12 @@ public:
     const String& textEncoding() const { return m_textEncoding; }
     const String& frameName() const { return m_frameName; }
 
-    void ignoreWhenUnarchiving() { m_shouldIgnoreWhenUnarchiving = true; }
-    bool shouldIgnoreWhenUnarchiving() const { return m_shouldIgnoreWhenUnarchiving; }
-
 private:
     ArchiveResource(PassRefPtr<SharedBuffer>, const KURL&, const String& mimeType, const String& textEncoding, const String& frameName, const ResourceResponse&);
 
     String m_mimeType;
     String m_textEncoding;
     String m_frameName;
-
-    bool m_shouldIgnoreWhenUnarchiving;
 };
 
 }

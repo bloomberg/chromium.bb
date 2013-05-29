@@ -38,7 +38,6 @@ inline ArchiveResource::ArchiveResource(PassRefPtr<SharedBuffer> data, const KUR
     , m_mimeType(mimeType)
     , m_textEncoding(textEncoding)
     , m_frameName(frameName)
-    , m_shouldIgnoreWhenUnarchiving(false)
 {
 }
 

@@ -399,7 +399,8 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::requestResource(Cache
         if (request.options().securityCheck == DoSecurityCheck && (frameLoader->state() == FrameStateProvisional || !frameLoader->activeDocumentLoader() || frameLoader->activeDocumentLoader()->isStopping()))
             return 0;
 
-        resource->load(this, request.options());
+        if (!m_documentLoader->scheduleArchiveLoad(resource.get(), request.resourceRequest()))
+            resource->load(this, request.options());
 
         // We don't support immediate loads, but we do support immediate failure.
         if (resource->errorOccurred()) {

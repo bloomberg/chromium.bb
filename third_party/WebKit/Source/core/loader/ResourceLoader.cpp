@@ -42,7 +42,6 @@
 #include "core/platform/Logging.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceHandle.h"
-#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
@@ -129,7 +128,6 @@ bool ResourceLoader::init(const ResourceRequest& r)
     ASSERT(!m_handle);
     ASSERT(m_request.isNull());
     ASSERT(m_deferredRequest.isNull());
-    ASSERT(!m_documentLoader->isSubstituteLoadPending(this));
     
     ResourceRequest clientRequest(r);
 
@@ -152,9 +150,6 @@ void ResourceLoader::start()
     ASSERT(!m_handle);
     ASSERT(!m_request.isNull());
     ASSERT(m_deferredRequest.isNull());
-
-    if (m_documentLoader->scheduleArchiveLoad(this, m_request))
-        return;
 
     m_documentLoader->applicationCacheHost()->willStartLoadingResource(m_request);
 
@@ -247,7 +242,6 @@ void ResourceLoader::cancel(const ResourceError& error)
         m_state = Finishing;
     m_resource->setResourceError(nonNullError);
 
-    m_documentLoader->cancelPendingSubstituteLoad(this);
     if (m_handle) {
         m_handle->cancel();
         m_handle = 0;
