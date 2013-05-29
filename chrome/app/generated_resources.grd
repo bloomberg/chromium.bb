@@ -7206,6 +7206,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Make the menu button touch-draggable so that users can execute a menu item (e.g., New Tab, Settings,...) by a single touch.
         If the popup list is too long to display at once, touch-dragging at the top or the bottom scrolls the list.
       </message>
+      <if expr="is_macosx">
+        <message name="IDS_FLAGS_ENABLE_APP_LIST_SHIM_NAME" desc="Name of the flag to enable the app launcher app bundle.">
+          Enable App Launcher OSX app bundle.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_APP_LIST_SHIM_DESCRIPTION" desc="Description of the flag to enable the app launcher app bundle.">
+          Enable to ensure an OSX app bundle for the App Launcher exists under the Applications folder.
+        </message>
+      </if>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

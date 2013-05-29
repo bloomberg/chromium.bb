@@ -1519,11 +1519,10 @@ const char kPasswordStore[]                 = "password-store";
 #endif  // OS_POSIX
 
 #if defined(OS_MACOSX)
-// Enables the app list OSX .app shim, for showing the app list. Takes an
-// optional argument: --enable-app-list-shim=0 will delete a previously created
-// .app folder for the app list shim. Any other argument, or no argument, will
-// create it.
-extern const char kEnableAppListShim[]      = "enable-app-list-shim";
+// Enables the app list OSX .app shim, for showing the app list. If the flag is
+// not present, Chrome will check if the shim exists at startup, and delete it
+// if it does.
+const char kEnableAppListShim[]             = "enable-app-list-shim";
 
 // Enables the tabs expose feature ( http://crbug.com/50307 ).
 const char kEnableExposeForTabs[]           = "enable-expose-for-tabs";

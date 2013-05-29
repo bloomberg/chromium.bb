@@ -1463,6 +1463,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableResetProfileSettings)
   },
+#if defined(OS_MACOSX)
+  {
+    "enable-app-list-shim",
+    IDS_FLAGS_ENABLE_APP_LIST_SHIM_NAME,
+    IDS_FLAGS_ENABLE_APP_LIST_SHIM_DESCRIPTION,
+    kOsMac,
+    SINGLE_VALUE_TYPE(switches::kEnableAppListShim)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

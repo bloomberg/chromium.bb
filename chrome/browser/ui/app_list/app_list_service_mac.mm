@@ -140,8 +140,8 @@ void CreateAppListShim(const base::FilePath& profile_path) {
 // If disabling with --enable-app-list-shim=0, and there is one, delete it.
 void CheckAppListShimOnFileThread(const base::FilePath& profile_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  const bool enable = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kEnableAppListShim).c_str()[0] != '0';
+  const bool enable =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppListShim);
   base::FilePath install_path = web_app::GetAppInstallPath(
       GetAppListShortcutInfo(profile_path));
   if (enable == file_util::PathExists(install_path))
@@ -214,8 +214,7 @@ void AppListServiceMac::Init(Profile* initial_profile) {
   // a profile has not yet been determined so |initial_profile| will be NULL.
   if (initial_profile) {
     static bool checked_shim = false;
-    if (!checked_shim && CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableAppListShim)) {
+    if (!checked_shim) {
       checked_shim = true;
       content::BrowserThread::PostTask(
           content::BrowserThread::FILE, FROM_HERE,
