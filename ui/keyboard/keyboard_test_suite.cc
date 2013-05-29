@@ -5,7 +5,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/compositor/compositor_setup.h"
-#include "ui/compositor/test/compositor_test_support.h"
 #include "ui/test/test_suite.h"
 
 class KeyboardTestSuite : public ui::test::UITestSuite {
@@ -25,12 +24,10 @@ class KeyboardTestSuite : public ui::test::UITestSuite {
 void KeyboardTestSuite::Initialize() {
   ui::test::UITestSuite::Initialize();
 
-  ui::CompositorTestSupport::Initialize();
   ui::SetupTestCompositor();
 }
 
 void KeyboardTestSuite::Shutdown() {
-  ui::CompositorTestSupport::Terminate();
   ui::test::UITestSuite::Shutdown();
 }
 

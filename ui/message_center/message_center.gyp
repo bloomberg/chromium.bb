@@ -157,7 +157,6 @@
             # Compositor is needed by message_center_view_unittest.cc
             # and for the fonts used by bounded_label_unittest.cc.
             '../compositor/compositor.gyp:compositor',
-            '../compositor/compositor.gyp:compositor_test_support',
             '../views/views.gyp:views',
             '../views/views.gyp:views_test_support',
           ],

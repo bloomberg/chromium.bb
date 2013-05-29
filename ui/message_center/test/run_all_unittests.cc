@@ -7,7 +7,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor_setup.h"
-#include "ui/compositor/test/compositor_test_support.h"
 #include "ui/test/test_suite.h"
 #include "ui/views/view.h"
 
@@ -29,17 +28,12 @@ void MessageCenterTestSuite::Initialize() {
   ui::test::UITestSuite::Initialize();
 
 #if !defined(OS_MACOSX)
-  ui::CompositorTestSupport::Initialize();
   ui::SetupTestCompositor();
 #endif
 }
 
 void MessageCenterTestSuite::Shutdown() {
   ui::test::UITestSuite::Shutdown();
-
-#if !defined(OS_MACOSX)
-  ui::CompositorTestSupport::Terminate();
-#endif
 }
 
 int main(int argc, char** argv) {

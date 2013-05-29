@@ -63,7 +63,6 @@
             '../../base/base.gyp:test_support_base',
             '../aura/aura.gyp:aura_test_support',
             '../compositor/compositor.gyp:compositor',
-            '../compositor/compositor.gyp:compositor_test_support',
           ],
         }],
       ],

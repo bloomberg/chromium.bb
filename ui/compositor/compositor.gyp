@@ -79,27 +79,16 @@
       'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
-        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/ui/gl/gl.gyp:gl',
+        '<(DEPTH)/ui/ui.gyp:ui',
+        'compositor',
       ],
       'sources': [
-        'test/compositor_test_support.cc',
-        'test/compositor_test_support.h',
         'test/test_layers.cc',
         'test/test_layers.h',
         'test/test_suite.cc',
         'test/test_suite.h',
-      ],
-      'conditions': [
-        ['os_posix == 1 and OS != "mac"', {
-          'conditions': [
-            ['linux_use_tcmalloc==1', {
-              'dependencies': [
-                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }],
       ],
     },
     {
@@ -142,6 +131,15 @@
         ['OS=="linux"', {
           'dependencies': [
             '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
+          ],
+        }],
+        ['os_posix == 1 and OS != "mac"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+              ],
+            }],
           ],
         }],
       ],

@@ -27,7 +27,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/test/compositor_test_support.h"
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/focus/accelerator_handler.h"
