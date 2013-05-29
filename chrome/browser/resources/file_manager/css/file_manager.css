@@ -1753,6 +1753,7 @@ body[new-ui] #list-container list:focus li.table-row[selected] .file-checkbox {
 body[new-ui] #list-container li.table-row {
   border-style: none;
   height: 29px;
+  line-height: 29px;
   margin: 0;
   padding-bottom: 0;
   padding-top: 0;
