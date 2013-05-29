@@ -50,8 +50,8 @@ class CompositorOutputSurface
   // cc::OutputSurface implementation.
   virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
   virtual void SendFrameToParentCompositor(cc::CompositorFrame*) OVERRIDE;
-  virtual void PostSubBuffer(gfx::Rect rect, const cc::LatencyInfo&) OVERRIDE;
-  virtual void SwapBuffers(const cc::LatencyInfo&) OVERRIDE;
+  virtual void PostSubBuffer(gfx::Rect rect, const ui::LatencyInfo&) OVERRIDE;
+  virtual void SwapBuffers(const ui::LatencyInfo&) OVERRIDE;
 #if defined(OS_ANDROID)
   virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
 #endif

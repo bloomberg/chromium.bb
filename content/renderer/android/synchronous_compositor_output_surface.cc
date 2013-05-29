@@ -138,7 +138,7 @@ void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(
 }
 
 void SynchronousCompositorOutputSurface::SwapBuffers(
-    const cc::LatencyInfo& info) {
+    const ui::LatencyInfo& info) {
   context3d()->shallowFlushCHROMIUM();
   did_swap_buffer_ = true;
 }

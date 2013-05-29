@@ -11,6 +11,8 @@
 #include "cc/output/software_output_device.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
+namespace ui { struct LatencyInfo; }
+
 namespace gfx {
 class Rect;
 class Size;
@@ -21,7 +23,6 @@ namespace cc {
 class CompositorFrame;
 class OutputSurfaceClient;
 class OutputSurfaceCallbacks;
-struct LatencyInfo;
 
 // Represents the output surface for a compositor. The compositor owns
 // and manages its destruction. Its lifetime is:
@@ -91,8 +92,8 @@ class CC_EXPORT OutputSurface {
 
   virtual void BindFramebuffer();
 
-  virtual void PostSubBuffer(gfx::Rect rect, const LatencyInfo&);
-  virtual void SwapBuffers(const LatencyInfo&);
+  virtual void PostSubBuffer(gfx::Rect rect, const ui::LatencyInfo&);
+  virtual void SwapBuffers(const ui::LatencyInfo&);
 
   // Notifies frame-rate smoothness preference. If true, all non-critical
   // processing should be stopped, or lowered in priority.

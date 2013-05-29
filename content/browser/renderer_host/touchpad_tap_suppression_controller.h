@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_RENDERER_HOST_TOUCHPAD_TAP_SUPPRESSION_CONTROLLER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/debug/latency_info.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/tap_suppression_controller_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"

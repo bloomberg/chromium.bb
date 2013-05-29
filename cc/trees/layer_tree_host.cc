@@ -596,7 +596,7 @@ void LayerTreeHost::SetVisible(bool visible) {
   proxy_->SetVisible(visible);
 }
 
-void LayerTreeHost::SetLatencyInfo(const LatencyInfo& latency_info) {
+void LayerTreeHost::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
   latency_info_.MergeWith(latency_info);
 }
 

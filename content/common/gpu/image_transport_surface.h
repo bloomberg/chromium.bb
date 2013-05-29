@@ -12,10 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/debug/latency_info.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
+#include "ui/base/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -65,7 +65,7 @@ class ImageTransportSurface {
   virtual void OnResizeViewACK() = 0;
   virtual void OnResize(gfx::Size size, float scale_factor) = 0;
   virtual void SetLatencyInfo(
-      const cc::LatencyInfo& latency_info) = 0;
+      const ui::LatencyInfo& latency_info) = 0;
 
   // Creates a surface with the given attributes.
   static scoped_refptr<gfx::GLSurface> CreateSurface(
@@ -127,7 +127,7 @@ class ImageTransportHelper
   void SendUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval);
 
-  void SendLatencyInfo(const cc::LatencyInfo& latency_info);
+  void SendLatencyInfo(const ui::LatencyInfo& latency_info);
 
   // Whether or not we should execute more commands.
   void SetScheduled(bool is_scheduled);
@@ -160,7 +160,7 @@ class ImageTransportHelper
   // Backbuffer resize callback.
   void Resize(gfx::Size size, float scale_factor);
 
-  void SetLatencyInfo(const cc::LatencyInfo& latency_info);
+  void SetLatencyInfo(const ui::LatencyInfo& latency_info);
 
   // Weak pointers that point to objects that outlive this helper.
   ImageTransportSurface* surface_;
@@ -199,7 +199,7 @@ class PassThroughImageTransportSurface
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void SetLatencyInfo(
-      const cc::LatencyInfo& latency_info) OVERRIDE;
+      const ui::LatencyInfo& latency_info) OVERRIDE;
 
  protected:
   virtual ~PassThroughImageTransportSurface();
@@ -215,7 +215,7 @@ class PassThroughImageTransportSurface
   bool did_set_swap_interval_;
   bool did_unschedule_;
   bool is_swap_buffers_pending_;
-  cc::LatencyInfo latency_info_;
+  ui::LatencyInfo latency_info_;
 
   DISALLOW_COPY_AND_ASSIGN(PassThroughImageTransportSurface);
 };

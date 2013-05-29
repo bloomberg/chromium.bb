@@ -18,7 +18,6 @@
 #include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
-#include "cc/debug/latency_info.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/top_controls_state.h"
@@ -33,6 +32,7 @@
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "ui/base/latency_info.h"
 #include "ui/gfx/rect.h"
 
 namespace WebKit { class WebGraphicsContext3D; }
@@ -216,7 +216,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void ApplyScrollAndScale(const ScrollAndScaleSet& info);
 
   void SetImplTransform(const gfx::Transform& transform);
-  void SetLatencyInfo(const LatencyInfo& latency_info);
+  void SetLatencyInfo(const ui::LatencyInfo& latency_info);
 
   void StartRateLimiter(WebKit::WebGraphicsContext3D* context3d);
   void StopRateLimiter(WebKit::WebGraphicsContext3D* context3d);
@@ -347,7 +347,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   bool in_paint_layer_contents_;
 
-  LatencyInfo latency_info_;
+  ui::LatencyInfo latency_info_;
 
   static const int kTotalFramesToUseForLCDTextMetrics = 50;
   int total_frames_used_for_lcd_text_metrics_;

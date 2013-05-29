@@ -268,7 +268,7 @@ class GLRendererTest : public testing::Test {
 
   virtual void SetUp() { renderer_.Initialize(); }
 
-  void SwapBuffers() { renderer_.SwapBuffers(LatencyInfo()); }
+  void SwapBuffers() { renderer_.SwapBuffers(ui::LatencyInfo()); }
 
   FrameCountingMemoryAllocationSettingContext* Context() {
     return static_cast<FrameCountingMemoryAllocationSettingContext*>(
@@ -1482,8 +1482,8 @@ class MockOutputSurface : public OutputSurface {
   MOCK_METHOD0(DiscardBackbuffer, void());
   MOCK_METHOD2(Reshape, void(gfx::Size size, float scale_factor));
   MOCK_METHOD0(BindFramebuffer, void());
-  MOCK_METHOD2(PostSubBuffer, void(gfx::Rect rect, const LatencyInfo&));
-  MOCK_METHOD1(SwapBuffers, void(const LatencyInfo&));
+  MOCK_METHOD2(PostSubBuffer, void(gfx::Rect rect, const ui::LatencyInfo&));
+  MOCK_METHOD1(SwapBuffers, void(const ui::LatencyInfo&));
 };
 
 class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
@@ -1494,7 +1494,7 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
 
   virtual void SetUp() { EXPECT_TRUE(renderer_.Initialize()); }
 
-  void SwapBuffers() { renderer_.SwapBuffers(LatencyInfo()); }
+  void SwapBuffers() { renderer_.SwapBuffers(ui::LatencyInfo()); }
 
   void DrawFrame() {
     gfx::Rect viewport_rect(DeviceViewportSize());
@@ -1536,31 +1536,31 @@ TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap) {
   DrawFrame();
 
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_.SwapBuffers(LatencyInfo());
+  renderer_.SwapBuffers(ui::LatencyInfo());
 }
 
 TEST_F(MockOutputSurfaceTest, DrawFrameAndResizeAndSwap) {
   DrawFrame();
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_.SwapBuffers(LatencyInfo());
+  renderer_.SwapBuffers(ui::LatencyInfo());
 
   set_viewport_and_scale(gfx::Size(2, 2), 2.f);
   renderer_.ViewportChanged();
 
   DrawFrame();
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_.SwapBuffers(LatencyInfo());
+  renderer_.SwapBuffers(ui::LatencyInfo());
 
   DrawFrame();
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_.SwapBuffers(LatencyInfo());
+  renderer_.SwapBuffers(ui::LatencyInfo());
 
   set_viewport_and_scale(gfx::Size(1, 1), 1.f);
   renderer_.ViewportChanged();
 
   DrawFrame();
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_.SwapBuffers(LatencyInfo());
+  renderer_.SwapBuffers(ui::LatencyInfo());
 }
 
 class MockOutputSurfaceTestWithPartialSwap : public MockOutputSurfaceTest {
@@ -1576,7 +1576,7 @@ TEST_F(MockOutputSurfaceTestWithPartialSwap, DrawFrameAndSwap) {
   DrawFrame();
 
   EXPECT_CALL(output_surface_, PostSubBuffer(_, _)).Times(1);
-  renderer_.SwapBuffers(LatencyInfo());
+  renderer_.SwapBuffers(ui::LatencyInfo());
 }
 
 class MockOutputSurfaceTestWithSendCompositorFrame

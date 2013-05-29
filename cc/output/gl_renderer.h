@@ -61,7 +61,7 @@ class CC_EXPORT GLRenderer
 
   virtual void DoNoOp() OVERRIDE;
   // Puts backbuffer onscreen.
-  virtual void SwapBuffers(const LatencyInfo& latency_info) OVERRIDE;
+  virtual void SwapBuffers(const ui::LatencyInfo& latency_info) OVERRIDE;
 
   virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) OVERRIDE;
 

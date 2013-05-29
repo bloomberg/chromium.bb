@@ -17,10 +17,13 @@
 
 class SkPicture;
 
+namespace ui {
+struct LatencyInfo;
+}
+
 namespace cc {
 class InputHandler;
 class LayerTreeHost;
-struct LatencyInfo;
 }
 
 namespace content {
@@ -48,7 +51,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
                               bool animate);
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
-  void SetLatencyInfo(const cc::LatencyInfo& latency_info);
+  void SetLatencyInfo(const ui::LatencyInfo& latency_info);
 
   // WebLayerTreeView implementation.
   virtual void setSurfaceReady();

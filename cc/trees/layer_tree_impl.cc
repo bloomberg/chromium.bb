@@ -554,11 +554,11 @@ void LayerTreeImpl::UpdateRootScrollLayerSizeDelta() {
       scrollable_viewport_size - original_viewport_size);
 }
 
-void LayerTreeImpl::SetLatencyInfo(const LatencyInfo& latency_info) {
+void LayerTreeImpl::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
   latency_info_.MergeWith(latency_info);
 }
 
-const LatencyInfo& LayerTreeImpl::GetLatencyInfo() {
+const ui::LatencyInfo& LayerTreeImpl::GetLatencyInfo() {
   return latency_info_;
 }
 

@@ -985,7 +985,7 @@ void RenderWidgetHostImpl::ForwardWheelEvent(
 
 void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
     const WebMouseWheelEvent& wheel_event,
-    const cc::LatencyInfo& latency_info) {
+    const ui::LatencyInfo& latency_info) {
   TRACE_EVENT0("renderer_host",
                "RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo");
   if (ignore_input_events_ || process_->IgnoreInputEvents())
@@ -1048,7 +1048,7 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
-  cc::LatencyInfo latency_info = NewInputLatencyInfo();
+  ui::LatencyInfo latency_info = NewInputLatencyInfo();
 
   if (!IsInOverscrollGesture() &&
       !gesture_event_filter_->ShouldForward(
@@ -1203,16 +1203,17 @@ int64 RenderWidgetHostImpl::GetLatencyComponentId() {
   return GetRoutingID() | (static_cast<int64>(GetProcess()->GetID()) << 32);
 }
 
-cc::LatencyInfo RenderWidgetHostImpl::NewInputLatencyInfo() {
-  cc::LatencyInfo info;
-  info.AddLatencyNumber(
-      cc::kInputEvent, GetLatencyComponentId(), ++last_input_number_);
+ui::LatencyInfo RenderWidgetHostImpl::NewInputLatencyInfo() {
+  ui::LatencyInfo info;
+  info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_COMPONENT,
+                        GetLatencyComponentId(),
+                        ++last_input_number_);
   return info;
 }
 
 void RenderWidgetHostImpl::SendInputEvent(const WebInputEvent& input_event,
                                           int event_size,
-                                          const cc::LatencyInfo& latency_info,
+                                          const ui::LatencyInfo& latency_info,
                                           bool is_keyboard_shortcut) {
   input_event_start_time_ = TimeTicks::Now();
   Send(new InputMsg_HandleInputEvent(
@@ -1222,7 +1223,7 @@ void RenderWidgetHostImpl::SendInputEvent(const WebInputEvent& input_event,
 
 void RenderWidgetHostImpl::ForwardInputEvent(
     const WebInputEvent& input_event, int event_size,
-    const cc::LatencyInfo& latency_info, bool is_keyboard_shortcut) {
+    const ui::LatencyInfo& latency_info, bool is_keyboard_shortcut) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::ForwardInputEvent");
 
   if (!process_->HasConnection())
@@ -2485,7 +2486,7 @@ void RenderWidgetHostImpl::DetachDelegate() {
   delegate_ = NULL;
 }
 
-void RenderWidgetHostImpl::FrameSwapped(const cc::LatencyInfo& latency_info) {
+void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
 }
 
 }  // namespace content

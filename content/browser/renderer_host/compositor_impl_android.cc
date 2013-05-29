@@ -49,8 +49,8 @@ class DirectOutputSurface : public cc::OutputSurface {
       : cc::OutputSurface(context3d.Pass()) {}
 
   virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE {}
-  virtual void PostSubBuffer(gfx::Rect rect, const cc::LatencyInfo&) OVERRIDE {}
-  virtual void SwapBuffers(const cc::LatencyInfo&) OVERRIDE {
+  virtual void PostSubBuffer(gfx::Rect rect, const ui::LatencyInfo&) OVERRIDE {}
+  virtual void SwapBuffers(const ui::LatencyInfo&) OVERRIDE {
     context3d()->shallowFlushCHROMIUM();
   }
 };

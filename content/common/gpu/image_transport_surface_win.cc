@@ -48,7 +48,7 @@ class PbufferImageTransportSurface
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
-  virtual void SetLatencyInfo(const cc::LatencyInfo&) OVERRIDE;
+  virtual void SetLatencyInfo(const ui::LatencyInfo&) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
 
  private:
@@ -69,7 +69,7 @@ class PbufferImageTransportSurface
   // Size to resize to when the surface becomes visible.
   gfx::Size visible_size_;
 
-  cc::LatencyInfo latency_info_;
+  ui::LatencyInfo latency_info_;
 
   scoped_ptr<ImageTransportHelper> helper_;
 
@@ -231,7 +231,7 @@ void PbufferImageTransportSurface::OnResize(gfx::Size size,
 }
 
 void PbufferImageTransportSurface::SetLatencyInfo(
-    const cc::LatencyInfo& latency_info) {
+    const ui::LatencyInfo& latency_info) {
   latency_info_ = latency_info;
 }
 

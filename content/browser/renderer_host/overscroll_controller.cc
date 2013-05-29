@@ -27,7 +27,7 @@ OverscrollController::~OverscrollController() {
 
 bool OverscrollController::WillDispatchEvent(
     const WebKit::WebInputEvent& event,
-    const cc::LatencyInfo& latency_info) {
+    const ui::LatencyInfo& latency_info) {
   if (scroll_state_ != STATE_UNKNOWN) {
     if (event.type == WebKit::WebInputEvent::GestureScrollEnd) {
       scroll_state_ = STATE_UNKNOWN;

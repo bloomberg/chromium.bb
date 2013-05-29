@@ -716,7 +716,7 @@ void RenderWidget::OnViewContextSwapBuffersComplete() {
 }
 
 void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
-                                      const cc::LatencyInfo& latency_info,
+                                      const ui::LatencyInfo& latency_info,
                                       bool is_keyboard_shortcut) {
   handling_input_event_ = true;
   if (!input_event) {

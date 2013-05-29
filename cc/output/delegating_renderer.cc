@@ -156,7 +156,7 @@ void DelegatingRenderer::DrawFrame(
   resource_provider_->PrepareSendToParent(resources, &out_data.resource_list);
 }
 
-void DelegatingRenderer::SwapBuffers(const LatencyInfo& latency_info) {
+void DelegatingRenderer::SwapBuffers(const ui::LatencyInfo& latency_info) {
   TRACE_EVENT0("cc", "DelegatingRenderer::SwapBuffers");
 
   output_surface_->SendFrameToParentCompositor(&frame_for_swap_buffers_);

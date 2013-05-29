@@ -12,7 +12,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "cc/debug/latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_manager.h"
@@ -25,6 +24,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/base/video_decoder_config.h"
+#include "ui/base/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_surface.h"
@@ -59,7 +59,7 @@ class GpuCommandBufferStub
     virtual ~DestructionObserver() {}
   };
 
-  typedef base::Callback<void(const cc::LatencyInfo&)>
+  typedef base::Callback<void(const ui::LatencyInfo&)>
       LatencyInfoCallback;
 
   GpuCommandBufferStub(
@@ -183,7 +183,7 @@ class GpuCommandBufferStub
 
   void OnCommandProcessed();
   void OnParseError();
-  void OnSetLatencyInfo(const cc::LatencyInfo& latency_info);
+  void OnSetLatencyInfo(const ui::LatencyInfo& latency_info);
 
   void ReportState();
 

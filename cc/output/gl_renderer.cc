@@ -1960,7 +1960,7 @@ void GLRenderer::Finish() {
   context_->finish();
 }
 
-void GLRenderer::SwapBuffers(const LatencyInfo& latency_info) {
+void GLRenderer::SwapBuffers(const ui::LatencyInfo& latency_info) {
   DCHECK(visible_);
   DCHECK(!is_backbuffer_discarded_);
 

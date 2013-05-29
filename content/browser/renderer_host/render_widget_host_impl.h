@@ -23,7 +23,6 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
-#include "cc/debug/latency_info.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/smooth_scroll_gesture_controller.h"
 #include "content/common/view_message_enums.h"
@@ -32,6 +31,7 @@
 #include "content/public/common/page_zoom.h"
 #include "ipc/ipc_listener.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 
 class WebCursor;
@@ -479,7 +479,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // other way around.
   bool should_auto_resize() { return should_auto_resize_; }
 
-  void FrameSwapped(const cc::LatencyInfo& latency_info);
+  void FrameSwapped(const ui::LatencyInfo& latency_info);
 
   // Returns the ID that uniquely describes this component to the latency
   // subsystem.
@@ -491,12 +491,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Transmits the given input event. This is an internal helper for
   // |ForwardInputEvent()| and should not be used directly from elsewhere.
   void SendInputEvent(const WebKit::WebInputEvent& input_event,
-                      int event_size, const cc::LatencyInfo& latency_info,
+                      int event_size, const ui::LatencyInfo& latency_info,
                       bool is_keyboard_shortcut);
 
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(const WebKit::WebInputEvent& input_event,
-                         int event_size, const cc::LatencyInfo& latency_info,
+                         int event_size, const ui::LatencyInfo& latency_info,
                          bool is_keyboard_shortcut);
 
   // Internal forwarding implementations that take a LatencyInfo.
@@ -504,10 +504,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
       const MouseEventWithLatencyInfo& mouse_event);
   virtual void ForwardWheelEventWithLatencyInfo(
       const WebKit::WebMouseWheelEvent& wheel_event,
-      const cc::LatencyInfo& latency_info);
+      const ui::LatencyInfo& latency_info);
 
   // Create a LatencyInfo struct for a new input event that was just received.
-  cc::LatencyInfo NewInputLatencyInfo();
+  ui::LatencyInfo NewInputLatencyInfo();
 
   // Called when we receive a notification indicating that the renderer
   // process has gone. This will reset our state so that our state will be

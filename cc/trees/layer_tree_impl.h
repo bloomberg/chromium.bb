@@ -10,8 +10,8 @@
 
 #include "base/hash_tables.h"
 #include "base/values.h"
-#include "cc/debug/latency_info.h"
 #include "cc/layers/layer_impl.h"
+#include "ui/base/latency_info.h"
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
@@ -186,8 +186,8 @@ class CC_EXPORT LayerTreeImpl {
   void SetRootLayerScrollOffsetDelegate(
       LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate);
 
-  void SetLatencyInfo(const LatencyInfo& latency_info);
-  const LatencyInfo& GetLatencyInfo();
+  void SetLatencyInfo(const ui::LatencyInfo& latency_info);
+  const ui::LatencyInfo& GetLatencyInfo();
   void ClearLatencyInfo();
 
   void WillModifyTilePriorities();
@@ -233,7 +233,7 @@ class CC_EXPORT LayerTreeImpl {
   // structural differences relative to the active tree.
   bool needs_full_tree_sync_;
 
-  LatencyInfo latency_info_;
+  ui::LatencyInfo latency_info_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);
 };

@@ -12,7 +12,7 @@ namespace WebKit {
 class WebInputEvent;
 }
 
-namespace cc {
+namespace ui {
 struct LatencyInfo;
 }
 
@@ -30,7 +30,7 @@ class IdleUserDetector : public RenderViewObserver {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnHandleInputEvent(const WebKit::WebInputEvent* event,
-                          const cc::LatencyInfo& latency_info,
+                          const ui::LatencyInfo& latency_info,
                           bool is_keyboard_shortcut);
 
   DISALLOW_COPY_AND_ASSIGN(IdleUserDetector);

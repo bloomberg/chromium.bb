@@ -60,8 +60,6 @@
       'debug/fake_web_graphics_context_3d.h',
       'debug/frame_rate_counter.cc',
       'debug/frame_rate_counter.h',
-      'debug/latency_info.cc',
-      'debug/latency_info.h',
       'debug/layer_tree_debug_state.cc',
       'debug/layer_tree_debug_state.h',
       'debug/overdraw_metrics.cc',

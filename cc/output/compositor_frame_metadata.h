@@ -6,7 +6,7 @@
 #define CC_OUTPUT_COMPOSITOR_FRAME_METADATA_H_
 
 #include "cc/base/cc_export.h"
-#include "cc/debug/latency_info.h"
+#include "ui/base/latency_info.h"
 #include "ui/gfx/size_f.h"
 #include "ui/gfx/vector2d_f.h"
 
@@ -38,7 +38,7 @@ class CC_EXPORT CompositorFrameMetadata {
   gfx::Vector2dF location_bar_content_translation;
   float overdraw_bottom_height;
 
-  LatencyInfo latency_info;
+  ui::LatencyInfo latency_info;
 };
 
 }  // namespace cc

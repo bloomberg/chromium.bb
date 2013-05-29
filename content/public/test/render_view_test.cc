@@ -217,14 +217,14 @@ void RenderViewTest::SendWebKeyboardEvent(
     const WebKit::WebKeyboardEvent& key_event) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(
-      InputMsg_HandleInputEvent(0, &key_event, cc::LatencyInfo(), false));
+      InputMsg_HandleInputEvent(0, &key_event, ui::LatencyInfo(), false));
 }
 
 void RenderViewTest::SendWebMouseEvent(
     const WebKit::WebMouseEvent& mouse_event) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(
-      InputMsg_HandleInputEvent(0, &mouse_event, cc::LatencyInfo(), false));
+      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
 }
 
 const char* const kGetCoordinatesScript =
@@ -283,7 +283,7 @@ bool RenderViewTest::SimulateElementClick(const std::string& element_id) {
   mouse_event.y = bounds.CenterPoint().y();
   mouse_event.clickCount = 1;
   scoped_ptr<IPC::Message> input_message(
-      new InputMsg_HandleInputEvent(0, &mouse_event, cc::LatencyInfo(), false));
+      new InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(*input_message);
   return true;

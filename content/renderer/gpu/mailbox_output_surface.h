@@ -34,8 +34,8 @@ class MailboxOutputSurface : public CompositorOutputSurface {
   virtual void DiscardBackbuffer() OVERRIDE;
   virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void BindFramebuffer() OVERRIDE;
-  virtual void PostSubBuffer(gfx::Rect rect, const cc::LatencyInfo&) OVERRIDE;
-  virtual void SwapBuffers(const cc::LatencyInfo&) OVERRIDE;
+  virtual void PostSubBuffer(gfx::Rect rect, const ui::LatencyInfo&) OVERRIDE;
+  virtual void SwapBuffers(const ui::LatencyInfo&) OVERRIDE;
 
  private:
   // CompositorOutputSurface overrides.

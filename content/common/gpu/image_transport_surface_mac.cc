@@ -60,7 +60,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
-  virtual void SetLatencyInfo(const cc::LatencyInfo&) OVERRIDE;
+  virtual void SetLatencyInfo(const ui::LatencyInfo&) OVERRIDE;
 
  private:
   virtual ~IOSurfaceImageTransportSurface() OVERRIDE;
@@ -97,7 +97,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   // Whether we unscheduled command buffer because of pending SwapBuffers.
   bool did_unschedule_;
 
-  cc::LatencyInfo latency_info_;
+  ui::LatencyInfo latency_info_;
 
   scoped_ptr<ImageTransportHelper> helper_;
 
@@ -309,7 +309,7 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size,
 }
 
 void IOSurfaceImageTransportSurface::SetLatencyInfo(
-    const cc::LatencyInfo& latency_info) {
+    const ui::LatencyInfo& latency_info) {
   latency_info_ = latency_info;
 }
 

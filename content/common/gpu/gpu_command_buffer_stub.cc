@@ -572,7 +572,7 @@ void GpuCommandBufferStub::OnInitialize(
 }
 
 void GpuCommandBufferStub::OnSetLatencyInfo(
-    const cc::LatencyInfo& latency_info) {
+    const ui::LatencyInfo& latency_info) {
   if (!latency_info_callback_.is_null())
     latency_info_callback_.Run(latency_info);
 }

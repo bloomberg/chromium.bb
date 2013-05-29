@@ -7,7 +7,6 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/string16.h"
-#include "cc/debug/latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/edit_command.h"
@@ -15,6 +14,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/base/latency_info.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -37,7 +37,7 @@ IPC_STRUCT_TRAITS_END()
 // Sends an input event to the render widget.
 IPC_MESSAGE_ROUTED3(InputMsg_HandleInputEvent,
                     IPC::WebInputEventPointer /* event */,
-                    cc::LatencyInfo /* latency_info */,
+                    ui::LatencyInfo /* latency_info */,
                     bool /* is_keyboard_shortcut */)
 
 // Sends the cursor visibility state to the render widget.

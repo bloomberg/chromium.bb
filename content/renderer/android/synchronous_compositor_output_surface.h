@@ -37,7 +37,7 @@ class SynchronousCompositorOutputSurface
   virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void SendFrameToParentCompositor(cc::CompositorFrame* frame) OVERRIDE;
   virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
-  virtual void SwapBuffers(const cc::LatencyInfo& info) OVERRIDE;
+  virtual void SwapBuffers(const ui::LatencyInfo& info) OVERRIDE;
 
   // SynchronousCompositor.
   virtual void SetClient(SynchronousCompositorClient* compositor_client)

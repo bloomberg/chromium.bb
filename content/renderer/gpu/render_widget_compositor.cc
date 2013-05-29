@@ -359,7 +359,7 @@ void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {
 }
 
 void RenderWidgetCompositor::SetLatencyInfo(
-    const cc::LatencyInfo& latency_info) {
+    const ui::LatencyInfo& latency_info) {
   layer_tree_host_->SetLatencyInfo(latency_info);
 }
 

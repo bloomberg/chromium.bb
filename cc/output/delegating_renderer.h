@@ -32,7 +32,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
 
   virtual void Finish() OVERRIDE {}
 
-  virtual void SwapBuffers(const LatencyInfo& latency_info) OVERRIDE;
+  virtual void SwapBuffers(const ui::LatencyInfo& latency_info) OVERRIDE;
 
   virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) OVERRIDE;
 

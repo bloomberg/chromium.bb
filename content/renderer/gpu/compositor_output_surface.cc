@@ -100,7 +100,7 @@ void CompositorOutputSurface::SendFrameToParentCompositor(
 }
 
 void CompositorOutputSurface::SwapBuffers(
-    const cc::LatencyInfo& latency_info) {
+    const ui::LatencyInfo& latency_info) {
   WebGraphicsContext3DCommandBufferImpl* command_buffer =
       static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
   CommandBufferProxyImpl* command_buffer_proxy =
@@ -112,7 +112,7 @@ void CompositorOutputSurface::SwapBuffers(
 }
 
 void CompositorOutputSurface::PostSubBuffer(
-    gfx::Rect rect, const cc::LatencyInfo& latency_info) {
+    gfx::Rect rect, const ui::LatencyInfo& latency_info) {
   WebGraphicsContext3DCommandBufferImpl* command_buffer =
       static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
   CommandBufferProxyImpl* command_buffer_proxy =

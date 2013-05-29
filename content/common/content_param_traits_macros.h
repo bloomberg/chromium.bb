@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/base/latency_info.h"
 #include "webkit/glue/resource_type.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -18,5 +19,17 @@
 
 IPC_ENUM_TRAITS(ResourceType::Type)
 IPC_ENUM_TRAITS(WebKit::WebInputEvent::Type)
+IPC_ENUM_TRAITS(ui::LatencyComponentType)
+
+IPC_STRUCT_TRAITS_BEGIN(ui::LatencyInfo::LatencyComponent)
+  IPC_STRUCT_TRAITS_MEMBER(sequence_number)
+  IPC_STRUCT_TRAITS_MEMBER(event_time)
+  IPC_STRUCT_TRAITS_MEMBER(event_count)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ui::LatencyInfo)
+  IPC_STRUCT_TRAITS_MEMBER(latency_components)
+  IPC_STRUCT_TRAITS_MEMBER(swap_timestamp)
+IPC_STRUCT_TRAITS_END()
 
 #endif  // CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_

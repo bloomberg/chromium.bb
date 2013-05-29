@@ -54,7 +54,7 @@ ImageTransportHelper::ImageTransportHelper(ImageTransportSurface* surface,
 ImageTransportHelper::~ImageTransportHelper() {
   if (stub_) {
     stub_->SetLatencyInfoCallback(
-        base::Callback<void(const cc::LatencyInfo&)>());
+        base::Callback<void(const ui::LatencyInfo&)>());
   }
   manager_->RemoveRoute(route_id_);
 }
@@ -128,7 +128,7 @@ void ImageTransportHelper::SendUpdateVSyncParameters(
 }
 
 void ImageTransportHelper::SendLatencyInfo(
-    const cc::LatencyInfo& latency_info) {
+    const ui::LatencyInfo& latency_info) {
   manager_->Send(new GpuHostMsg_FrameDrawn(latency_info));
 }
 
@@ -201,7 +201,7 @@ void ImageTransportHelper::Resize(gfx::Size size, float scale_factor) {
 }
 
 void ImageTransportHelper::SetLatencyInfo(
-    const cc::LatencyInfo& latency_info) {
+    const ui::LatencyInfo& latency_info) {
   surface_->SetLatencyInfo(latency_info);
 }
 
@@ -242,7 +242,7 @@ bool PassThroughImageTransportSurface::DeferDraws() {
 }
 
 void PassThroughImageTransportSurface::SetLatencyInfo(
-    const cc::LatencyInfo& latency_info) {
+    const ui::LatencyInfo& latency_info) {
   latency_info_ = latency_info;
 }
 

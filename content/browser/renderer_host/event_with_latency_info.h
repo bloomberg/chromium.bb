@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_EVENT_WITH_LATENCY_INFO_H_
 #define CONTENT_BROWSER_RENDERER_HOST_EVENT_WITH_LATENCY_INFO_H_
 
-#include <cc/debug/latency_info.h>
+#include "ui/base/latency_info.h"
 
 namespace WebKit {
 class WebGestureEvent;
@@ -19,9 +19,9 @@ template <typename T>
 class EventWithLatencyInfo {
  public:
   T event;
-  cc::LatencyInfo latency;
+  ui::LatencyInfo latency;
 
-  EventWithLatencyInfo(const T& e, const cc::LatencyInfo& l)
+  EventWithLatencyInfo(const T& e, const ui::LatencyInfo& l)
       : event(e), latency(l) {}
 
   EventWithLatencyInfo() {}
