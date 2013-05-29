@@ -78,10 +78,6 @@ private:
     DocumentLoadTiming* documentLoadTiming() const;
     ResourceLoadTiming* resourceLoadTiming() const;
 
-#ifndef ENABLE_DOUBLE_RESOURCE_LOAD_TIMING
-    unsigned long long resourceLoadTimeRelativeToAbsolute(int) const;
-#endif
-
     unsigned long long monotonicTimeToIntegerMilliseconds(double) const;
 };
 

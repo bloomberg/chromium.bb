@@ -72,10 +72,6 @@ private:
     PerformanceResourceTiming(const AtomicString& initatorType, const ResourceRequest&, const ResourceResponse&, double initiationTime, double finishTime, Document*);
     ~PerformanceResourceTiming();
 
-#ifndef ENABLE_DOUBLE_RESOURCE_LOAD_TIMING
-    double resourceTimeToDocumentMilliseconds(int deltaMilliseconds) const;
-#endif
-
     AtomicString m_initiatorType;
     RefPtr<ResourceLoadTiming> m_timing;
     double m_finishTime;

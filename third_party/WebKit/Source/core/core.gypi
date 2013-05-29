@@ -3053,7 +3053,6 @@
             'platform/network/ResourceHandle.cpp',
             'platform/network/ResourceHandleClient.cpp',
             'platform/network/ResourceHandleInternal.h',
-            'platform/network/ResourceLoadTiming.cpp',
             'platform/network/ResourceRequest.cpp',
             'platform/network/ResourceRequest.h',
             'platform/network/ResourceResponse.cpp',

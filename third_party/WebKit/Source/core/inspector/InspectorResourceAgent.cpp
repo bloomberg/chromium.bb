@@ -108,10 +108,8 @@ static PassRefPtr<InspectorObject> buildObjectForHeaders(const HTTPHeaderMap& he
 
 static PassRefPtr<TypeBuilder::Network::ResourceTiming> buildObjectForTiming(const ResourceLoadTiming& timing, DocumentLoader* loader)
 {
-#ifdef ENABLE_DOUBLE_RESOURCE_LOAD_TIMING
-    double requestTime = timing.requestTime;
     return TypeBuilder::Network::ResourceTiming::create()
-        .setRequestTime(loader->timing()->monotonicTimeToPseudoWallTime(requestTime))
+        .setRequestTime(loader->timing()->monotonicTimeToPseudoWallTime(timing.requestTime))
         .setProxyStart(timing.calculateMillisecondDelta(timing.proxyStart))
         .setProxyEnd(timing.calculateMillisecondDelta(timing.proxyEnd))
         .setDnsStart(timing.calculateMillisecondDelta(timing.dnsStart))
@@ -124,22 +122,6 @@ static PassRefPtr<TypeBuilder::Network::ResourceTiming> buildObjectForTiming(con
         .setSendEnd(timing.calculateMillisecondDelta(timing.sendEnd))
         .setReceiveHeadersEnd(timing.calculateMillisecondDelta(timing.receiveHeadersEnd))
         .release();
-#else
-    return TypeBuilder::Network::ResourceTiming::create()
-        .setRequestTime(loader->timing()->monotonicTimeToPseudoWallTime(timing.convertResourceLoadTimeToMonotonicTime(0)))
-        .setProxyStart(timing.proxyStart)
-        .setProxyEnd(timing.proxyEnd)
-        .setDnsStart(timing.dnsStart)
-        .setDnsEnd(timing.dnsEnd)
-        .setConnectStart(timing.connectStart)
-        .setConnectEnd(timing.connectEnd)
-        .setSslStart(timing.sslStart)
-        .setSslEnd(timing.sslEnd)
-        .setSendStart(timing.sendStart)
-        .setSendEnd(timing.sendEnd)
-        .setReceiveHeadersEnd(timing.receiveHeadersEnd)
-        .release();
-#endif
 }
 
 static PassRefPtr<TypeBuilder::Network::Request> buildObjectForResourceRequest(const ResourceRequest& request)
