@@ -109,9 +109,9 @@ class TestGitCl(TestCase):
     return result
 
   @classmethod
-  def _upload_calls(cls, similarity, find_copies):
+  def _upload_calls(cls, similarity, find_copies, private):
     return (cls._git_base_calls(similarity, find_copies) +
-            cls._git_upload_calls())
+            cls._git_upload_calls(private))
 
   @classmethod
   def _upload_no_rev_calls(cls, similarity, find_copies):
@@ -186,26 +186,33 @@ class TestGitCl(TestCase):
     ]
 
   @classmethod
-  def _git_upload_calls(cls):
+  def _git_upload_calls(cls, private):
+    if private:
+      private_call = []
+    else:
+      private_call = [
+          ((['git', '--no-pager', 'config', 'rietveld.private'],), '')]
+
     return [
-      ((['git', '--no-pager', 'config', 'core.editor'],), ''),
-      ((['git', '--no-pager', 'config', 'rietveld.cc'],), ''),
-      ((['git', '--no-pager', 'config', 'branch.master.base-url'],), ''),
-      ((['git', '--no-pager',
-         'config', '--local', '--get-regexp', '^svn-remote\\.'],),
-        (('', None), 0)),
-      ((['git', '--no-pager', 'rev-parse', '--show-cdup'],), ''),
-      ((['git', '--no-pager', 'svn', 'info'],), ''),
-      ((['git', '--no-pager',
-         'config', 'branch.master.rietveldissue', '1'],), ''),
-      ((['git', '--no-pager', 'config', 'branch.master.rietveldserver',
-          'https://codereview.example.com'],), ''),
-      ((['git', '--no-pager',
-         'config', 'branch.master.rietveldpatchset', '2'],), ''),
-      ((['git', '--no-pager', 'rev-parse', 'HEAD'],), 'hash'),
-      ((['git', '--no-pager', 'symbolic-ref', 'HEAD'],), 'hash'),
-      ((['git', '--no-pager',
-         'config', 'branch.hash.last-upload-hash', 'hash'],), ''),
+        ((['git', '--no-pager', 'config', 'core.editor'],), ''),
+        ((['git', '--no-pager', 'config', 'rietveld.cc'],), '')
+    ] + private_call + [
+        ((['git', '--no-pager', 'config', 'branch.master.base-url'],), ''),
+        ((['git', '--no-pager',
+           'config', '--local', '--get-regexp', '^svn-remote\\.'],),
+         (('', None), 0)),
+        ((['git', '--no-pager', 'rev-parse', '--show-cdup'],), ''),
+        ((['git', '--no-pager', 'svn', 'info'],), ''),
+        ((['git', '--no-pager',
+           'config', 'branch.master.rietveldissue', '1'],), ''),
+        ((['git', '--no-pager', 'config', 'branch.master.rietveldserver',
+           'https://codereview.example.com'],), ''),
+        ((['git', '--no-pager',
+           'config', 'branch.master.rietveldpatchset', '2'],), ''),
+        ((['git', '--no-pager', 'rev-parse', 'HEAD'],), 'hash'),
+        ((['git', '--no-pager', 'symbolic-ref', 'HEAD'],), 'hash'),
+        ((['git', '--no-pager',
+           'config', 'branch.hash.last-upload-hash', 'hash'],), ''),
     ]
 
   @staticmethod
@@ -336,7 +343,7 @@ class TestGitCl(TestCase):
   ]
 
   @staticmethod
-  def _cmd_line(description, args, similarity, find_copies):
+  def _cmd_line(description, args, similarity, find_copies, private):
     """Returns the upload command line passed to upload.RealMain()."""
     return [
         'upload', '--assume_yes', '--server',
@@ -344,6 +351,7 @@ class TestGitCl(TestCase):
         '--message', description
     ] + args + [
         '--cc', 'joe@example.com',
+    ] + (['--private'] if private else []) + [
         '--git_similarity', similarity or '50'
     ] + (['--git_no_find_copies'] if find_copies == False else []) + [
         'fake_ancestor_sha', 'HEAD'
@@ -355,7 +363,8 @@ class TestGitCl(TestCase):
       expected_description,
       returned_description,
       final_description,
-      reviewers):
+      reviewers,
+      private=False):
     """Generic reviewer test framework."""
     try:
       similarity = upload_args[upload_args.index('--similarity')+1]
@@ -369,7 +378,9 @@ class TestGitCl(TestCase):
     else:
       find_copies = None
 
-    self.calls = self._upload_calls(similarity, find_copies)
+    private = '--private' in upload_args
+
+    self.calls = self._upload_calls(similarity, find_copies, private)
     def RunEditor(desc, _, **kwargs):
       self.assertEquals(
           '# Enter a description of the change.\n'
@@ -381,7 +392,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
     def check_upload(args):
       cmd_line = self._cmd_line(final_description, reviewers, similarity,
-                                find_copies)
+                                find_copies, private)
       self.assertEquals(cmd_line, args)
       return 1, 2
     self.mock(git_cl.upload, 'RealMain', check_upload)
@@ -406,6 +417,14 @@ class TestGitCl(TestCase):
   def test_keep_find_copies(self):
     self._run_reviewer_test(
         ['--no-find-copies'],
+        'desc\n\nBUG=',
+        '# Blah blah comment.\ndesc\n\nBUG=\n',
+        'desc\n\nBUG=',
+        [])
+
+  def test_private(self):
+    self._run_reviewer_test(
+        ['--private'],
         'desc\n\nBUG=',
         '# Blah blah comment.\ndesc\n\nBUG=\n',
         'desc\n\nBUG=',
@@ -631,6 +650,8 @@ class TestGitCl(TestCase):
            'gerrit.chromium.org'],), ''),
         ((['git', '--no-pager', 'config', '--unset-all', 'rietveld.cc'],), ''),
         ((['git', '--no-pager', 'config', '--unset-all',
+           'rietveld.private'],), ''),
+        ((['git', '--no-pager', 'config', '--unset-all',
            'rietveld.tree-status-url'],), ''),
         ((['git', '--no-pager', 'config', '--unset-all',
            'rietveld.viewvc-url'],), ''),
@@ -654,6 +675,8 @@ class TestGitCl(TestCase):
          ''),
         ((['git', '--no-pager', 'config', 'rietveld.cc'],), ''),
         (('CC list:',), ''),
+        ((['git', '--no-pager', 'config', 'rietveld.private'],), ''),
+        (('Private flag (rietveld only):',), ''),
         ((['git', '--no-pager', 'config', 'rietveld.tree-status-url'],), ''),
         (('Tree status URL:',), ''),
         ((['git', '--no-pager', 'config', 'rietveld.viewvc-url'],), ''),

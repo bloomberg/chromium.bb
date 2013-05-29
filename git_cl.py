@@ -367,6 +367,9 @@ class Settings(object):
   def GetDefaultCCList(self):
     return self._GetConfig('rietveld.cc', error_ok=True)
 
+  def GetDefaultPrivateFlag(self):
+    return self._GetConfig('rietveld.private', error_ok=True)
+
   def GetIsGerrit(self):
     """Return true if this repo is assosiated with gerrit code review system."""
     if self.is_gerrit is None:
@@ -807,6 +810,8 @@ def GetCodereviewSettingsInteractively():
         RunGit(['config', 'rietveld.' + name, new_val])
 
   SetProperty(settings.GetDefaultCCList(), 'CC list', 'cc', False)
+  SetProperty(settings.GetDefaultPrivateFlag(),
+              'Private flag (rietveld only)', 'private', False)
   SetProperty(settings.GetTreeStatusUrl(error_ok=True), 'Tree status URL',
               'tree-status-url', False)
   SetProperty(settings.GetViewVCUrl(), 'ViewVC URL', 'viewvc-url', True)
@@ -944,6 +949,7 @@ def LoadCodereviewSettingsFromFile(fileobj):
   # Only server setting is required. Other settings can be absent.
   # In that case, we ignore errors raised during option deletion attempt.
   SetProperty('cc', 'CC_LIST', unset_error_ok=True)
+  SetProperty('private', 'PRIVATE', unset_error_ok=True)
   SetProperty('tree-status-url', 'STATUS', unset_error_ok=True)
   SetProperty('viewvc-url', 'VIEW_VC', unset_error_ok=True)
 
@@ -1268,6 +1274,9 @@ def RietveldUpload(options, args, cl):
     if cc:
       upload_args.extend(['--cc', cc])
 
+  if options.private or settings.GetDefaultPrivateFlag() == "True":
+    upload_args.append('--private')
+
   upload_args.extend(['--git_similarity', str(options.similarity)])
   if not options.find_copies:
     upload_args.extend(['--git_no_find_copies'])
@@ -1350,6 +1359,8 @@ def CMDupload(parser, args):
                     help="Emulate Subversion's auto properties feature.")
   parser.add_option('-c', '--use-commit-queue', action='store_true',
                     help='tell the commit queue to commit this patchset')
+  parser.add_option('--private', action='store_true',
+                    help='set the review private (rietveld only)')
   parser.add_option('--target_branch',
                     help='When uploading to gerrit, remote branch to '
                          'use for CL.  Default: master')
