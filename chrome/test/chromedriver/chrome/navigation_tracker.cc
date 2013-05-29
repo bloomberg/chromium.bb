@@ -126,7 +126,40 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
 
 Status NavigationTracker::OnCommandSuccess(DevToolsClient* client,
                                            const std::string& method) {
-  if (method == "Page.navigate")
-    loading_state_ = kLoading;
+  if (method == "Page.navigate" && loading_state_ != kLoading) {
+    // At this point the browser has initiated the navigation, but besides that,
+    // it is unknown what will happen.
+    //
+    // There are a few cases (perhaps more):
+    // 1 The RenderViewHost has already queued ViewMsg_Navigate and loading
+    //   will start shortly.
+    // 2 The RenderViewHost has already queued ViewMsg_Navigate and loading
+    //   will never start because it is just an in-page fragment navigation.
+    // 3 The RenderViewHost is suspended and hasn't queued ViewMsg_Navigate
+    //   yet. This happens for cross-site navigations. The RenderViewHost
+    //   will not queue ViewMsg_Navigate until it is ready to unload the
+    //   previous page (after running unload handlers and such).
+    //
+    // To determine whether a load is expected, do a round trip to the
+    // renderer to ask what the URL is.
+    // If case #1, by the time the command returns, the frame started to load
+    // event will also have been received, since the DevTools command will
+    // be queued behind ViewMsg_Navigate.
+    // If case #2, by the time the command returns, the navigation will
+    // have already happened, although no frame start/stop events will have
+    // been received.
+    // If case #3, the URL will be blank if the navigation hasn't been started
+    // yet. In that case, expect a load to happen in the future.
+    base::DictionaryValue params;
+    params.SetString("expression", "document.URL");
+    scoped_ptr<base::DictionaryValue> result;
+    Status status = client_->SendCommandAndGetResult(
+        "Runtime.evaluate", params, &result);
+    std::string url;
+    if (status.IsError() || !result->GetString("result.value", &url))
+      return Status(kUnknownError, "cannot determine loading status", status);
+    if (url.empty())
+      loading_state_ = kLoading;
+  }
   return Status(kOk);
 }
