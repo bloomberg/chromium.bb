@@ -1,7 +1,6 @@
 include_rules = [
   # Common is for library/utility code shared by multiple parts of chrome
-  # browser. So it should not depend on other parts of the browser except API.
+  # browser. It should not depend on other parts of the browser.
   "-chrome/browser",
-  "+chrome/browser/api",
   "+chrome/browser/common",
 ]

@@ -31,8 +31,6 @@ specific_include_rules = {
     #
     # Do not add to the list of temporarily-allowed dependencies below,
     # and please do not introduce more #includes of these files.
-    "!chrome/browser/api/infobars/confirm_infobar_delegate.h",
-    "!chrome/browser/api/infobars/infobar_service.h",
     "!chrome/browser/autofill/autofill_cc_infobar_delegate.h",
     "!chrome/browser/autofill/personal_data_manager_factory.h",
     "!chrome/browser/password_manager/encryptor.h",
