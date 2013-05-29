@@ -7037,6 +7037,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_FULLSCREEN_APP_DESCRIPTION" desc="Description for the flag to disable auto run kiosk applications in full screen.">
           Disables making kiosk applications run in full screen automatically..
         </message>
+        <message name="IDS_FLAGS_ENABLE_KIOSK_APP_SETTINGS_NAME" desc="Name for the flag to enable kiosk app settings UI.">
+          Enable kiosk app settings UI.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_KIOSK_APP_SETTINGS_DESCRIPTION" desc="Description for the flag to enable kiosk app settings UI.">
+          Enable kiosk app management in settings.
+        </message>
       </if>
       <message name="IDS_FLAGS_FULL_HISTORY_SYNC_NAME" desc="Name of the flag to disable full history sync.">
         Disable full history sync
@@ -14851,7 +14857,7 @@ You need to be signed in to use this feature.
     <message name="IDS_PROFILES_REMOVE_SHORTCUT" desc="Remove Shortcut button">
       Remove the desktop shortcut for this user
     </message>
-      
+
     <!-- Limited-user creation wizard dialogs -->
     <message name="IDS_NEW_LIMITED_USER_LEARN_MORE_TITLE" desc="Title for the 'Learn more' dialog for the limited user feature.">
       What is a limited user?

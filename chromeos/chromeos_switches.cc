@@ -100,8 +100,13 @@ const char kEnableTouchpadThreeFingerClick[]
 const char kEnableTouchpadThreeFingerSwipe[]
     = "enable-touchpad-three-finger-swipe";
 
-// Enable Kiosk mode for ChromeOS.
+// Enable Kiosk mode for ChromeOS. Note this switch refers to retail mode rather
+// than the kiosk app mode.
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
+
+// Enable kiosk app settings UI.
+// TODO(xiyuan): Remove this flag after http://crbug.com/228860.
+const char kEnableKioskAppSettings[]        = "enable-kiosk-app-settings";
 
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[]       = "enable-request-tablet-site";
@@ -186,5 +191,5 @@ const char kStubCrosSettings[]              = "stub-cros-settings";
 const char kUseNewNetworkConfigurationHandlers[] =
     "use-new-network-configuration-handlers";
 
-} // namespace switches
+}  // namespace switches
 }  // namespace chromeos
