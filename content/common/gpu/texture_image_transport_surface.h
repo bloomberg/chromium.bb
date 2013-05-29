@@ -12,7 +12,6 @@
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "gpu/command_buffer/service/texture_definition.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
@@ -33,7 +32,6 @@ class TextureImageTransportSurface
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual bool DeferDraws() OVERRIDE;
-  virtual bool Resize(const gfx::Size& size) OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
@@ -42,7 +40,6 @@ class TextureImageTransportSurface
   virtual std::string GetExtensions() OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
-  virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual bool SetBackbufferAllocation(bool allocated) OVERRIDE;
   virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
   virtual void* GetShareHandle() OVERRIDE;
@@ -64,31 +61,32 @@ class TextureImageTransportSurface
  private:
 
   gfx::Size backbuffer_size() const {
-    return gfx::Size(backbuffer_->level_infos()[0][0].width,
-                     backbuffer_->level_infos()[0][0].height);
+    DCHECK(backbuffer_);
+    GLsizei width = 0;
+    GLsizei height = 0;
+    backbuffer_->texture()->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height);
+    return gfx::Size(width, height);
   }
 
   virtual ~TextureImageTransportSurface();
   void CreateBackTexture();
   void AttachBackTextureToFBO();
   void ReleaseBackTexture();
+  void ReleaseFrontTexture();
   void BufferPresentedImpl(const std::string& mailbox_name);
-  void ProduceTexture();
-  void ConsumeTexture();
-
-  static gpu::gles2::TextureDefinition* CreateTextureDefinition(gfx::Size size,
-                                                                int service_id);
 
   // The framebuffer that represents this surface (service id). Allocated lazily
   // in OnMakeCurrent.
   uint32 fbo_id_;
 
   // The current backbuffer.
-  scoped_ptr<gpu::gles2::TextureDefinition> backbuffer_;
+  scoped_refptr<gpu::gles2::TextureRef> backbuffer_;
+  scoped_refptr<gpu::gles2::TextureRef> frontbuffer_;
 
   // The mailbox name for the current backbuffer texture. Needs to be unique per
   // GL texture and is invalid while service_id is zero.
-  gpu::gles2::MailboxName mailbox_name_;
+  gpu::gles2::MailboxName back_mailbox_name_;
+  gpu::gles2::MailboxName front_mailbox_name_;
 
   // The current size of the GLSurface. Used to disambiguate from the current
   // texture size which might be outdated (since we use two buffers).
@@ -107,9 +105,6 @@ class TextureImageTransportSurface
   // The offscreen surface used to make the context current. However note that
   // the actual rendering is always redirected to an FBO.
   scoped_refptr<gfx::GLSurface> surface_;
-
-  // Holds a reference to the underlying context for cleanup.
-  scoped_refptr<gfx::GLContext> context_;
 
   // Whether a SwapBuffers is pending.
   bool is_swap_buffers_pending_;

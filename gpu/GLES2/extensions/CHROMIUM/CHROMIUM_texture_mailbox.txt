@@ -20,9 +20,9 @@ Overview
     objects in different contexts where the contexts would not normally share
     texture resources. Three new functions are exported. glGenMailboxCHROMIUM
     generates a name that can be used to identify texture image data outside
-    the scope of a context group. glProduceMailboxCHROMIUM moves texture image
-    data out of a texture object and into a mailbox. glConsumeMailboxCHROMIUM
-    moves texture image data out of a mailbox and into a texture object.
+    the scope of a context group. glProduceMailboxCHROMIUM associates a texture
+    object with a global mailbox name. glConsumeMailboxCHROMIUM associates the
+    texture object referenced by a mailbox name to a texture name.
 
 New Procedures and Functions
 
@@ -38,18 +38,19 @@ New Procedures and Functions
 
     void glProduceTextureCHROMIUM (GLenum target, const GLbyte *mailbox)
 
-    Moves the image data and parameters of the currently bound texture object
-    into the mailbox. The texture object is redefined as though all its levels
-    had been resized to zero by zero and the texture object is therefore
-    incomplete.  The texture object parameters are undefined. The texture
-    object is no longer immutable. If the mailbox previously contained image
-    data, the old image data is deleted.
+    Associates the currently bound texture object with the mailbox name. A
+    given texture object can be associated with several mailbox names. If a
+    mailbox name was previously associated with a texture object, that
+    previous association is broken. The currently bound texture object is not
+    modified by the operation.
 
-    If glProduceTextureCHROMIUM generates an error, the associated image data
-    and state is preserved in the texture object.
+    If glProduceTextureCHROMIUM generates an error, the mailbox name keeps its
+    current association, if any.
 
-    The mailbox is emptied and the texture image data deleted if the context
-    is destroyed before being consumed. See glConsumeTextureCHROMIUM.
+    The mailbox does not keep a reference to the texture object. When the
+    texture object is destroyed (deleted from all context groups, and unbound
+    from all texture units and framebuffer attachments), the mailbox is
+    disassociated from the texture object.
 
     <target> uses the same parameters as TexImage2D.
 
@@ -57,10 +58,6 @@ New Procedures and Functions
     glGenMailboxCHROMIUM.
 
     INVALID_OPERATION is generated if <target> is not a valid target.
-
-    INVALID_OPERATION is generated if the texture is attached to a framebuffer.
-
-    INVALID_OPERATION is generated if the texture is immutable.
 
     INVALID_OPERATION is generated if <mailbox> is invalid.
 
@@ -71,30 +68,32 @@ New Procedures and Functions
 
     <mailbox> identifies a GL_MAILBOX_SIZE_CHROMIUM byte sized name returned by
     glGenMailboxCHROMIUM.
+    
+    Deletes the currently bound texture object, and redefines its texture name
+    to point to the texture object associated with the mailbox name. All the
+    contexts that have consumed the texture object, as well as produced it share
+    the texture object, as if the contexts were part of the share group. The
+    texture object is deleted once all contexts have deleted the texture name
+    associated with the texture object, and detached it from all framebuffer
+    objects as well as texture unit bindings. See Appendix C of the OpenGL ES
+    2.0 specification for details relative to visibility in one context of
+    changes to the shared texture object in another context.
 
-    Redefines the image data and parameters of the currently bound texture
-    object with the image data and parameters in the mailbox and empties the
-    mailbox. All levels are redefined, and the immutable state is set according
-    to the contents of the mailbox.
-
-    If glConsumeTextureCHROMIUM generates an error, the associated image data
-    is preserved in the texture object.
+    If glConsumeTextureCHROMIUM generates an error, the currently bound texture
+    object is preserved.
 
     INVALID_OPERATION is generated if <target> is not a valid target.
 
-    INVALID_OPERATION is generated if <mailbox> is empty.
-
-    INVALID_OPERATION is generated if <mailbox> is not in the scope of the
-    context.
-
     INVALID_OPERATION is generated if <mailbox> is invalid.
 
-    INVALID_OPERATION is generated if the texture is attached to a framebuffer.
+    INVALID_OPERATION is generated if <mailbox> is not associated with a texture
+    object.
 
-    INVALID_OPERATION is generated if the texture is immutable.
+    INVALID_OPERATION is generated if the texture object associated with
+    <mailbox> has a different target than <target>.
 
-    INVALID_OPERATION is generated if the image data is invalid in the current
-    context.
+    INVALID_OPERATION is generated if the currently bound texture was previously
+    deleted (for example in another context), hence doesn't have a name.
 
 New Tokens
 
@@ -117,3 +116,5 @@ New State
 Revision History
 
     4/25/2011    Documented the extension
+    5/23/2013    Major revision in Produce/Consume semantics, introducing
+                 sharing.

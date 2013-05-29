@@ -112,8 +112,6 @@
     'command_buffer/service/shader_translator_cache.cc',
     'command_buffer/service/stream_texture.h',
     'command_buffer/service/stream_texture_manager.h',
-    'command_buffer/service/texture_definition.cc',
-    'command_buffer/service/texture_definition.h',
     'command_buffer/service/texture_manager.h',
     'command_buffer/service/texture_manager.cc',
     'command_buffer/service/transfer_buffer_manager.cc',

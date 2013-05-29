@@ -23,10 +23,16 @@ class RenderbufferManager;
 class GPU_EXPORT Renderbuffer
     : public base::RefCounted<Renderbuffer> {
  public:
-  Renderbuffer(RenderbufferManager* manager, GLuint service_id);
+  Renderbuffer(RenderbufferManager* manager,
+               GLuint client_id,
+               GLuint service_id);
 
   GLuint service_id() const {
     return service_id_;
+  }
+
+  GLuint client_id() const {
+    return client_id_;
   }
 
   bool cleared() const {
@@ -50,7 +56,7 @@ class GPU_EXPORT Renderbuffer
   }
 
   bool IsDeleted() const {
-    return deleted_;
+    return client_id_ == 0;
   }
 
   void MarkAsValid() {
@@ -85,13 +91,14 @@ class GPU_EXPORT Renderbuffer
   }
 
   void MarkAsDeleted() {
-    deleted_ = true;
+    client_id_ = 0;
   }
 
   // RenderbufferManager that owns this Renderbuffer.
   RenderbufferManager* manager_;
 
-  bool deleted_;
+  // Client side renderbuffer id.
+  GLuint client_id_;
 
   // Service side renderbuffer id.
   GLuint service_id_;
@@ -151,9 +158,6 @@ class GPU_EXPORT RenderbufferManager {
 
   // Removes a renderbuffer for the given renderbuffer id.
   void RemoveRenderbuffer(GLuint client_id);
-
-  // Gets a client id for a given service id.
-  bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
   size_t mem_represented() const {
     return memory_tracker_->GetMemRepresented();

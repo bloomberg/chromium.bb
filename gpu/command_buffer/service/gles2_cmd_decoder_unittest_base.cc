@@ -175,6 +175,9 @@ void GLES2DecoderTestBase::InitDecoder(
       .Times(1)
       .RetiresOnSaturation();
 
+  EXPECT_CALL(*gl_, BindFramebufferEXT(GL_FRAMEBUFFER, 0))
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetIntegerv(GL_ALPHA_BITS, _))
        .WillOnce(SetArgumentPointee<1>(has_alpha ? 8 : 0))
        .RetiresOnSaturation();

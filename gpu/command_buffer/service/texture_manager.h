@@ -27,7 +27,7 @@ class Display;
 class ErrorState;
 class FeatureInfo;
 class FramebufferManager;
-class TextureDefinition;
+class MailboxManager;
 class TextureManager;
 class TextureRef;
 
@@ -170,6 +170,7 @@ class GPU_EXPORT Texture {
   }
 
  private:
+  friend class MailboxManager;
   friend class TextureManager;
   friend class TextureRef;
   friend class TextureTestHelper;
@@ -304,6 +305,8 @@ class GPU_EXPORT Texture {
       const FeatureInfo* feature_info,
       GLenum target, GLint level, std::string* signature) const;
 
+  void SetMailboxManager(MailboxManager* mailbox_manager);
+
   // Updates the unsafe textures count in all the managers referencing this
   // texture.
   void UpdateSafeToRenderFrom(bool cleared);
@@ -322,6 +325,8 @@ class GPU_EXPORT Texture {
   // Increment the framebuffer state change count in all the managers
   // referencing this texture.
   void IncAllFramebufferStateChangeCount();
+
+  MailboxManager* mailbox_manager_;
 
   // Info about each face and level of texture.
   std::vector<std::vector<LevelInfo> > level_infos_;
@@ -397,11 +402,13 @@ class GPU_EXPORT Texture {
 // Multiple TextureRef can point to the same texture with cross-context sharing.
 class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
  public:
-  TextureRef(TextureManager* manager, Texture* texture);
+  TextureRef(TextureManager* manager, GLuint client_id, Texture* texture);
   static scoped_refptr<TextureRef> Create(TextureManager* manager,
+                                          GLuint client_id,
                                           GLuint service_id);
   const Texture* texture() const { return texture_; }
   Texture* texture() { return texture_; }
+  GLuint client_id() const { return client_id_; }
   GLuint service_id() const { return texture_->service_id(); }
 
   // Sets the async transfer state for this texture. Only a single TextureRef
@@ -424,9 +431,11 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   AsyncPixelTransferState* async_transfer_state() const {
     return async_transfer_state_.get();
   }
+  void reset_client_id() { client_id_ = 0; }
 
   TextureManager* manager_;
   Texture* texture_;
+  GLuint client_id_;
 
   // State to facilitate async transfers on this texture.
   scoped_ptr<AsyncPixelTransferState> async_transfer_state_;
@@ -543,15 +552,10 @@ class GPU_EXPORT TextureManager {
         params.type, true /* cleared */ );
   }
 
-  // Save the texture definition and leave it undefined.
-  TextureDefinition* Save(TextureRef* ref);
+  Texture* Produce(TextureRef* ref);
 
-  // Redefine all the levels from the texture definition.
-  bool Restore(
-      const char* function_name,
-      GLES2Decoder* decoder,
-      TextureRef* ref,
-      TextureDefinition* definition);
+  // Maps an existing texture into the texture manager, at a given client ID.
+  TextureRef* Consume(GLuint client_id, Texture* texture);
 
   // Sets a mip as cleared.
   void SetLevelCleared(TextureRef* ref, GLenum target,
@@ -584,8 +588,9 @@ class GPU_EXPORT TextureManager {
   // Removes a texture info.
   void RemoveTexture(GLuint client_id);
 
-  // Gets a client id for a given service id.
-  bool GetClientId(GLuint service_id, GLuint* client_id) const;
+  // Gets a Texture for a given service id (note: it assumes the texture object
+  // is still mapped in this TextureManager).
+  Texture* GetTextureForServiceId(GLuint service_id) const;
 
   TextureRef* GetDefaultTextureInfo(GLenum target) {
     switch (target) {

@@ -167,5 +167,104 @@ TEST_F(GLTextureMailboxTest, ConsumeTextureValidatesKey) {
   EXPECT_EQ(source_pixel, ReadTexel(tex, 0, 0));
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 }
+
+TEST_F(GLTextureMailboxTest, SharedTextures) {
+  gl1_.MakeCurrent();
+  GLuint tex1;
+  glGenTextures(1, &tex1);
+
+  glBindTexture(GL_TEXTURE_2D, tex1);
+  uint32 source_pixel = 0xFF0000FF;
+  glTexImage2D(GL_TEXTURE_2D,
+               0,
+               GL_RGBA,
+               1, 1,
+               0,
+               GL_RGBA,
+               GL_UNSIGNED_BYTE,
+               &source_pixel);
+  GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
+  glGenMailboxCHROMIUM(mailbox);
+
+  glProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+  glFlush();
+
+  gl2_.MakeCurrent();
+  GLuint tex2;
+  glGenTextures(1, &tex2);
+
+  glBindTexture(GL_TEXTURE_2D, tex2);
+  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  // Change texture in context 2.
+  source_pixel = 0xFF00FF00;
+  glTexSubImage2D(GL_TEXTURE_2D,
+                  0,
+                  0, 0,
+                  1, 1,
+                  GL_RGBA,
+                  GL_UNSIGNED_BYTE,
+                  &source_pixel);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+  glFlush();
+
+  // Check it in context 1.
+  gl1_.MakeCurrent();
+  EXPECT_EQ(source_pixel, ReadTexel(tex1, 0, 0));
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  // Change parameters (note: ReadTexel will reset those).
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                  GL_LINEAR_MIPMAP_NEAREST);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+  glFlush();
+
+  // Check in context 2.
+  gl2_.MakeCurrent();
+  GLint parameter = 0;
+  glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, &parameter);
+  EXPECT_EQ(GL_REPEAT, parameter);
+  parameter = 0;
+  glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &parameter);
+  EXPECT_EQ(GL_LINEAR, parameter);
+  parameter = 0;
+  glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, &parameter);
+  EXPECT_EQ(GL_LINEAR_MIPMAP_NEAREST, parameter);
+
+  // Delete texture in context 1.
+  gl1_.MakeCurrent();
+  glDeleteTextures(1, &tex1);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  // Check texture still exists in context 2.
+  gl2_.MakeCurrent();
+  EXPECT_EQ(source_pixel, ReadTexel(tex2, 0, 0));
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  // The mailbox should still exist too.
+  GLuint tex3;
+  glGenTextures(1, &tex3);
+  glBindTexture(GL_TEXTURE_2D, tex3);
+  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  // Delete both textures.
+  glDeleteTextures(1, &tex2);
+  glDeleteTextures(1, &tex3);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  // Mailbox should be gone now.
+  glGenTextures(1, &tex2);
+  glBindTexture(GL_TEXTURE_2D, tex2);
+  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
+  glDeleteTextures(1, &tex2);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+}
+
 }  // namespace gpu
 

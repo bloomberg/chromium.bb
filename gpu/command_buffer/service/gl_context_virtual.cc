@@ -72,8 +72,8 @@ void GLContextVirtual::ReleaseCurrent(gfx::GLSurface* surface) {
 bool GLContextVirtual::IsCurrent(gfx::GLSurface* surface) {
   // If it's a real surface it needs to be current.
   if (surface &&
-      !surface->GetBackingFrameBufferObject() &&
-      !surface->IsOffscreen())
+      !surface->IsOffscreen() &&
+      !surface->GetBackingFrameBufferObject())
     return shared_context_->IsCurrent(surface);
 
   // Otherwise, only insure the context itself is current.

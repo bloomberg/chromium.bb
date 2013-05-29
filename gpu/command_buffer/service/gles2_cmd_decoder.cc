@@ -52,7 +52,6 @@
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/stream_texture.h"
 #include "gpu/command_buffer/service/stream_texture_manager.h"
-#include "gpu/command_buffer/service/texture_definition.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
@@ -2261,25 +2260,6 @@ bool GLES2DecoderImpl::Initialize(
   if (!attrib_parser.Parse(attribs))
     return false;
 
-  // These are NOT if the back buffer has these proprorties. They are
-  // if we want the command buffer to enforce them regardless of what
-  // the real backbuffer is assuming the real back buffer gives us more than
-  // we ask for. In other words, if we ask for RGB and we get RGBA then we'll
-  // make it appear RGB. If on the other hand we ask for RGBA nd get RGB we
-  // can't do anything about that.
-
-  GLint v = 0;
-  glGetIntegerv(GL_ALPHA_BITS, &v);
-  // This checks if the user requested RGBA and we have RGBA then RGBA. If the
-  // user requested RGB then RGB. If the user did not specify a preference than
-  // use whatever we were given. Same for DEPTH and STENCIL.
-  back_buffer_color_format_ =
-      (attrib_parser.alpha_size_ != 0 && v > 0) ? GL_RGBA : GL_RGB;
-  glGetIntegerv(GL_DEPTH_BITS, &v);
-  back_buffer_has_depth_ = attrib_parser.depth_size_ != 0 && v > 0;
-  glGetIntegerv(GL_STENCIL_BITS, &v);
-  back_buffer_has_stencil_ = attrib_parser.stencil_size_ != 0 && v > 0;
-
   if (offscreen) {
     if (attrib_parser.samples_ > 0 && attrib_parser.sample_buffers_ > 0 &&
         features().chromium_framebuffer_multisample) {
@@ -2408,6 +2388,26 @@ bool GLES2DecoderImpl::Initialize(
     // Bind to the new default frame buffer (the offscreen target frame buffer).
     // This should now be associated with ID zero.
     DoBindFramebuffer(GL_FRAMEBUFFER, 0);
+  } else {
+    glBindFramebufferEXT(GL_FRAMEBUFFER, GetBackbufferServiceId());
+    // These are NOT if the back buffer has these proprorties. They are
+    // if we want the command buffer to enforce them regardless of what
+    // the real backbuffer is assuming the real back buffer gives us more than
+    // we ask for. In other words, if we ask for RGB and we get RGBA then we'll
+    // make it appear RGB. If on the other hand we ask for RGBA nd get RGB we
+    // can't do anything about that.
+
+    GLint v = 0;
+    glGetIntegerv(GL_ALPHA_BITS, &v);
+    // This checks if the user requested RGBA and we have RGBA then RGBA. If the
+    // user requested RGB then RGB. If the user did not specify a preference
+    // than use whatever we were given. Same for DEPTH and STENCIL.
+    back_buffer_color_format_ =
+        (attrib_parser.alpha_size_ != 0 && v > 0) ? GL_RGBA : GL_RGB;
+    glGetIntegerv(GL_DEPTH_BITS, &v);
+    back_buffer_has_depth_ = attrib_parser.depth_size_ != 0 && v > 0;
+    glGetIntegerv(GL_STENCIL_BITS, &v);
+    back_buffer_has_stencil_ = attrib_parser.stencil_size_ != 0 && v > 0;
   }
 
   // OpenGL ES 2.0 implicitly enables the desktop GL capability
@@ -3234,10 +3234,10 @@ bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
     parent_->children_.erase(it);
     // First check the texture has been mapped into the parent. This might not
     // be the case if initialization failed midway through.
-    GLuint service_id = offscreen_saved_color_texture_->id();
-    GLuint client_id = 0;
-    if (parent_->texture_manager()->GetClientId(service_id, &client_id)) {
-      parent_->texture_manager()->RemoveTexture(client_id);
+    if (offscreen_saved_color_texture_info_ &&
+        offscreen_saved_color_texture_info_->client_id()) {
+      parent_->texture_manager()->RemoveTexture(
+          offscreen_saved_color_texture_info_->client_id());
     }
   }
 
@@ -3704,9 +3704,8 @@ void GLES2DecoderImpl::RestoreFramebufferBindings() const {
 }
 
 void GLES2DecoderImpl::RestoreTextureState(unsigned service_id) const {
-  GLuint client_id = 0;
-  if (texture_manager()->GetClientId(service_id, &client_id)) {
-    Texture* texture = GetTexture(client_id)->texture();
+  Texture* texture = texture_manager()->GetTextureForServiceId(service_id);
+  if (texture) {
     GLenum target = texture->target();
     glBindTexture(target, service_id);
     glTexParameteri(
@@ -4213,10 +4212,7 @@ bool GLES2DecoderImpl::GetHelper(
         Renderbuffer* renderbuffer =
             GetRenderbufferInfoForTarget(GL_RENDERBUFFER);
         if (renderbuffer) {
-          GLuint client_id = 0;
-          renderbuffer_manager()->GetClientId(
-              renderbuffer->service_id(), &client_id);
-          *params = client_id;
+          *params = renderbuffer->client_id();
         } else {
           *params = 0;
         }
@@ -4253,10 +4249,7 @@ bool GLES2DecoderImpl::GetHelper(
       if (params) {
         TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
         if (unit.bound_texture_2d) {
-          GLuint client_id = 0;
-          texture_manager()->GetClientId(
-              unit.bound_texture_2d->service_id(), &client_id);
-          *params = client_id;
+          *params = unit.bound_texture_2d->client_id();
         } else {
           *params = 0;
         }
@@ -4267,10 +4260,7 @@ bool GLES2DecoderImpl::GetHelper(
       if (params) {
         TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
         if (unit.bound_texture_cube_map) {
-          GLuint client_id = 0;
-          texture_manager()->GetClientId(
-              unit.bound_texture_cube_map->service_id(), &client_id);
-          *params = client_id;
+          *params = unit.bound_texture_cube_map->client_id();
         } else {
           *params = 0;
         }
@@ -4281,10 +4271,7 @@ bool GLES2DecoderImpl::GetHelper(
       if (params) {
         TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
         if (unit.bound_texture_external_oes) {
-          GLuint client_id = 0;
-          texture_manager()->GetClientId(
-              unit.bound_texture_external_oes->service_id(), &client_id);
-          *params = client_id;
+          *params = unit.bound_texture_external_oes->client_id();
         } else {
           *params = 0;
         }
@@ -4295,10 +4282,7 @@ bool GLES2DecoderImpl::GetHelper(
       if (params) {
         TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
         if (unit.bound_texture_rectangle_arb) {
-          GLuint client_id = 0;
-          texture_manager()->GetClientId(
-              unit.bound_texture_rectangle_arb->service_id(), &client_id);
-          *params = client_id;
+          *params = unit.bound_texture_rectangle_arb->client_id();
         } else {
           *params = 0;
         }
@@ -4932,25 +4916,12 @@ void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
         "glFramebufferAttachmentParameteriv", "no framebuffer bound");
     return;
   }
-  glGetFramebufferAttachmentParameterivEXT(target, attachment, pname, params);
   if (pname == GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME) {
-    GLint type = 0;
-    GLuint client_id = 0;
-    glGetFramebufferAttachmentParameterivEXT(
-        target, attachment, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &type);
-    switch (type) {
-      case GL_RENDERBUFFER: {
-        renderbuffer_manager()->GetClientId(*params, &client_id);
-        break;
-      }
-      case GL_TEXTURE: {
-        texture_manager()->GetClientId(*params, &client_id);
-        break;
-      }
-      default:
-        break;
-    }
-    *params = client_id;
+    const Framebuffer::Attachment* attachment_object =
+        framebuffer->GetAttachment(attachment);
+    *params = attachment_object ? attachment_object->object_name() : 0;
+  } else {
+    glGetFramebufferAttachmentParameterivEXT(target, attachment, pname, params);
   }
 }
 
@@ -9858,8 +9829,8 @@ void GLES2DecoderImpl::DoProduceTextureCHROMIUM(GLenum target,
     return;
   }
 
-  TextureDefinition* definition = texture_manager()->Save(texture_ref);
-  if (!definition) {
+  Texture* produced = texture_manager()->Produce(texture_ref);
+  if (!produced) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glProduceTextureCHROMIUM", "invalid texture");
@@ -9869,18 +9840,12 @@ void GLES2DecoderImpl::DoProduceTextureCHROMIUM(GLenum target,
   if (!group_->mailbox_manager()->ProduceTexture(
       target,
       *reinterpret_cast<const MailboxName*>(mailbox),
-      definition,
-      texture_manager())) {
-    bool success = texture_manager()->Restore(
-        "glProductTextureCHROMIUM", this, texture_ref, definition);
-    DCHECK(success);
+      produced)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glProduceTextureCHROMIUM", "invalid mailbox name");
     return;
   }
-
-  glBindTexture(texture_ref->texture()->target(), texture_ref->service_id());
 }
 
 void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
@@ -9889,31 +9854,60 @@ void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
       "context", logger_.GetLogPrefix(),
       "mailbox[0]", static_cast<unsigned char>(mailbox[0]));
 
-  TextureRef* texture_ref = GetTextureInfoForTarget(target);
+  scoped_refptr<TextureRef> texture_ref =
+      GetTextureInfoForTargetUnlessDefault(target);
   if (!texture_ref) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glConsumeTextureCHROMIUM", "unknown texture for target");
     return;
   }
-
-  scoped_ptr<TextureDefinition> definition(
+  GLuint client_id = texture_ref->client_id();
+  if (!client_id) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        "glConsumeTextureCHROMIUM", "unknown texture for target");
+    return;
+  }
+  Texture* texture =
       group_->mailbox_manager()->ConsumeTexture(
       target,
-      *reinterpret_cast<const MailboxName*>(mailbox)));
-  if (!definition.get()) {
+      *reinterpret_cast<const MailboxName*>(mailbox));
+  if (!texture) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glConsumeTextureCHROMIUM", "invalid mailbox name");
     return;
   }
-
-  if (!texture_manager()->Restore(
-      "glConsumeTextureCHROMIUM", this, texture_ref, definition.release())) {
+  if (texture->target() != target) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
-        "glConsumeTextureCHROMIUM", "invalid texture");
+        "glConsumeTextureCHROMIUM", "invalid target");
     return;
+  }
+
+  DeleteTexturesHelper(1, &client_id);
+  texture_ref = texture_manager()->Consume(client_id, texture);
+  glBindTexture(target, texture_ref->service_id());
+
+  TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
+  unit.bind_target = target;
+  switch (target) {
+    case GL_TEXTURE_2D:
+      unit.bound_texture_2d = texture_ref;
+      break;
+    case GL_TEXTURE_CUBE_MAP:
+      unit.bound_texture_cube_map = texture_ref;
+      break;
+    case GL_TEXTURE_EXTERNAL_OES:
+      unit.bound_texture_external_oes = texture_ref;
+      break;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      unit.bound_texture_rectangle_arb = texture_ref;
+      break;
+    default:
+      NOTREACHED();  // Validation should prevent us getting here.
+      break;
   }
 }
 

@@ -2087,18 +2087,6 @@ TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithRenderbuffer) {
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
-      GL_FRAMEBUFFER,
-      GL_COLOR_ATTACHMENT0,
-      GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, _))
-      .WillOnce(SetArgumentPointee<3>(kServiceRenderbufferId))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
-      GL_FRAMEBUFFER,
-      GL_COLOR_ATTACHMENT0,
-      GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, _))
-      .WillOnce(SetArgumentPointee<3>(GL_RENDERBUFFER))
-      .RetiresOnSaturation();
   GetFramebufferAttachmentParameteriv::Result* result =
       static_cast<GetFramebufferAttachmentParameteriv::Result*>(
           shared_memory_address_);
@@ -2136,18 +2124,6 @@ TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithTexture) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
-       GL_FRAMEBUFFER,
-       GL_COLOR_ATTACHMENT0,
-       GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, _))
-      .WillOnce(SetArgumentPointee<3>(kServiceTextureId))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
-      GL_FRAMEBUFFER,
-      GL_COLOR_ATTACHMENT0,
-      GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, _))
-      .WillOnce(SetArgumentPointee<3>(GL_TEXTURE))
       .RetiresOnSaturation();
   GetFramebufferAttachmentParameteriv::Result* result =
       static_cast<GetFramebufferAttachmentParameteriv::Result*>(
@@ -5971,19 +5947,17 @@ TEST_F(GLES2DecoderManualInitTest, ProduceAndConsumeStreamTextureCHROMIUM) {
 
   EXPECT_EQ(kServiceTextureId, texture_ref->service_id());
 
-  // Assigns and binds new service side texture ID.
-  EXPECT_CALL(*gl_, GenTextures(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kNewServiceId))
-      .Times(1)
-      .RetiresOnSaturation();
-
   ProduceTextureCHROMIUM produce_cmd;
   produce_cmd.Init(
       GL_TEXTURE_EXTERNAL_OES, kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(produce_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Create new texture for consume.
+  EXPECT_CALL(*gl_, GenTextures(_, _))
+      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  DoBindTexture(GL_TEXTURE_EXTERNAL_OES, kNewClientId, kNewServiceId);
 
   // Assigns and binds original service size texture ID.
   EXPECT_CALL(*gl_, DeleteTextures(1, _))
@@ -5992,30 +5966,6 @@ TEST_F(GLES2DecoderManualInitTest, ProduceAndConsumeStreamTextureCHROMIUM) {
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kServiceTextureId))
       .Times(1)
       .RetiresOnSaturation();
-
-  // TextureManager::Restore will set TexParameters.
-  EXPECT_CALL(*gl_, TexParameteri(
-      GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, TexParameteri(
-      GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, TexParameteri(
-      GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, TexParameteri(
-      GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE))
-      .Times(1)
-      .RetiresOnSaturation();
-  #if 0
-  EXPECT_CALL(*gl_, TexParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_USAGE_ANGLE, GL_NONE))
-      .Times(1)
-      .RetiresOnSaturation();
-  #endif
 
   // Shared mem got clobbered from GetError() above.
   memcpy(shared_memory_address_, mailbox, sizeof(mailbox));
@@ -7405,40 +7355,39 @@ TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(kServiceTextureId, texture->service_id());
 
-  // Assigns and binds new service side texture ID.
-  EXPECT_CALL(*gl_, GenTextures(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kNewServiceId))
-      .Times(1)
-      .RetiresOnSaturation();
-
   ProduceTextureCHROMIUM produce_cmd;
   produce_cmd.Init(GL_TEXTURE_2D, kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(produce_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  // Texture is zero-by-zero.
+  // Texture didn't change.
   GLsizei width;
   GLsizei height;
   GLenum type;
   GLenum internal_format;
 
   EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
-  EXPECT_EQ(0, width);
-  EXPECT_EQ(0, height);
+  EXPECT_EQ(3, width);
+  EXPECT_EQ(1, height);
   EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
   EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
 
   EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
-  EXPECT_EQ(0, width);
-  EXPECT_EQ(0, height);
+  EXPECT_EQ(2, width);
+  EXPECT_EQ(4, height);
   EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 1, &type, &internal_format));
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
   EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
 
-  // Service ID has changed.
-  EXPECT_EQ(kNewServiceId, texture->service_id());
+  // Service ID has not changed.
+  EXPECT_EQ(kServiceTextureId, texture->service_id());
+
+  // Create new texture for consume.
+  EXPECT_CALL(*gl_, GenTextures(_, _))
+      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  DoBindTexture(GL_TEXTURE_2D, kNewClientId, kNewServiceId);
 
   // Assigns and binds original service size texture ID.
   EXPECT_CALL(*gl_, DeleteTextures(1, _))
@@ -7448,33 +7397,11 @@ TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
       .Times(1)
       .RetiresOnSaturation();
 
-  // TextureManager::Restore will set TexParameters.
-  EXPECT_CALL(*gl_, TexParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, TexParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, TexParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, TexParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT))
-      .Times(1)
-      .RetiresOnSaturation();
-  #if 0
-  EXPECT_CALL(*gl_, TexParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_USAGE_ANGLE, GL_NONE))
-      .Times(1)
-      .RetiresOnSaturation();
-  #endif
-
+  memcpy(shared_memory_address_, mailbox, sizeof(mailbox));
   ConsumeTextureCHROMIUM consume_cmd;
   consume_cmd.Init(GL_TEXTURE_2D, kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(consume_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Texture is redefined.
   EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));

@@ -9,10 +9,10 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/test_helper.h"
-#include "gpu/command_buffer/service/texture_definition.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
@@ -109,12 +109,12 @@ TEST_F(TextureManagerTest, Basic) {
   // Check we can create texture.
   manager_->CreateTexture(kClient1Id, kService1Id);
   // Check texture got created.
-  TextureRef* texture = manager_->GetTexture(kClient1Id);
+  scoped_refptr<TextureRef> texture = manager_->GetTexture(kClient1Id);
   ASSERT_TRUE(texture != NULL);
   EXPECT_EQ(kService1Id, texture->service_id());
-  GLuint client_id = 0;
-  EXPECT_TRUE(manager_->GetClientId(texture->service_id(), &client_id));
-  EXPECT_EQ(kClient1Id, client_id);
+  EXPECT_EQ(kClient1Id, texture->client_id());
+  EXPECT_EQ(texture->texture(), manager_->GetTextureForServiceId(
+      texture->service_id()));
   // Check we get nothing for a non-existent texture.
   EXPECT_TRUE(manager_->GetTexture(kClient2Id) == NULL);
   // Check trying to a remove non-existent textures does not crash.
@@ -126,6 +126,7 @@ TEST_F(TextureManagerTest, Basic) {
   // Check we can't get the texture after we remove it.
   manager_->RemoveTexture(kClient1Id);
   EXPECT_TRUE(manager_->GetTexture(kClient1Id) == NULL);
+  EXPECT_EQ(0u, texture->client_id());
 }
 
 TEST_F(TextureManagerTest, SetParameter) {
@@ -393,10 +394,9 @@ class TextureTestBase : public testing::Test {
 
   virtual void TearDown() {
     if (texture_ref_.get()) {
-      GLuint client_id = 0;
       // If it's not in the manager then setting texture_ref_ to NULL will
       // delete the texture.
-      if (!manager_->GetClientId(texture_ref_->service_id(), &client_id)) {
+      if (!texture_ref_->client_id()) {
         // Check that it gets deleted when the last reference is released.
         EXPECT_CALL(*gl_,
             DeleteTextures(1, ::testing::Pointee(texture_ref_->service_id())))
@@ -1326,7 +1326,7 @@ TEST_F(TextureTest, AddToSignature) {
   EXPECT_EQ(11u, string_set.size());
 }
 
-class SaveRestoreTextureTest : public TextureTest {
+class ProduceConsumeTextureTest : public TextureTest {
  public:
   virtual void SetUp() {
     TextureTest::SetUpBase(NULL, "GL_OES_EGL_image_external");
@@ -1339,10 +1339,9 @@ class SaveRestoreTextureTest : public TextureTest {
 
   virtual void TearDown() {
     if (texture2_.get()) {
-      GLuint client_id = 0;
       // If it's not in the manager then setting texture2_ to NULL will
       // delete the texture.
-      if (!manager_->GetClientId(texture2_->service_id(), &client_id)) {
+      if (!texture2_->client_id()) {
         // Check that it gets deleted when the last reference is released.
         EXPECT_CALL(
             *gl_,
@@ -1430,39 +1429,27 @@ class SaveRestoreTextureTest : public TextureTest {
     return info;
   }
 
-  TextureDefinition* Save(TextureRef* texture_ref) {
-    EXPECT_CALL(*gl_, GenTextures(_, _))
-        .WillOnce(SetArgumentPointee<1>(kEmptyTextureServiceId));
-    TextureDefinition* definition = manager_->Save(texture_ref);
-    EXPECT_TRUE(definition != NULL);
-    return definition;
+  Texture* Produce(TextureRef* texture_ref) {
+    Texture* texture = manager_->Produce(texture_ref);
+    EXPECT_TRUE(texture != NULL);
+    return texture;
   }
 
-  void Restore(TextureRef* texture_ref, TextureDefinition* definition) {
-    EXPECT_CALL(*gl_, DeleteTextures(1, Pointee(texture_ref->service_id())))
-        .Times(1).RetiresOnSaturation();
-    EXPECT_CALL(*gl_,
-                BindTexture(definition->target(), definition->service_id()))
-        .Times(1).RetiresOnSaturation();
-    EXPECT_CALL(*gl_, TexParameteri(_, _, _)).Times(AtLeast(1));
-
-    EXPECT_TRUE(manager_->Restore("TextureTest", decoder_.get(),
-                                  texture_ref, definition));
+  void Consume(GLuint client_id, Texture* texture) {
+    EXPECT_TRUE(manager_->Consume(client_id, texture));
   }
 
   scoped_refptr<TextureRef> texture2_;
 
  private:
-  static const GLuint kEmptyTextureServiceId;
   static const GLuint kClient2Id;
   static const GLuint kService2Id;
 };
 
-const GLuint SaveRestoreTextureTest::kClient2Id = 2;
-const GLuint SaveRestoreTextureTest::kService2Id = 12;
-const GLuint SaveRestoreTextureTest::kEmptyTextureServiceId = 13;
+const GLuint ProduceConsumeTextureTest::kClient2Id = 2;
+const GLuint ProduceConsumeTextureTest::kService2Id = 12;
 
-TEST_F(SaveRestoreTextureTest, SaveRestore2D) {
+TEST_F(ProduceConsumeTextureTest, ProduceConsume2D) {
   manager_->SetTarget(texture_ref_, GL_TEXTURE_2D);
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
@@ -1473,13 +1460,11 @@ TEST_F(SaveRestoreTextureTest, SaveRestore2D) {
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   LevelInfo level1 = GetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1);
   LevelInfo level2 = GetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 2);
-  scoped_ptr<TextureDefinition> definition(Save(texture_ref_));
-  const TextureDefinition::LevelInfos& infos = definition->level_infos();
-  EXPECT_EQ(1U, infos.size());
-  EXPECT_EQ(3U, infos[0].size());
+  Texture* produced_texture = Produce(texture_ref_);
+  EXPECT_EQ(produced_texture, texture);
 
   // Make this texture bigger with more levels, and make sure they get
-  // clobbered correctly during Restore().
+  // clobbered correctly during Consume().
   manager_->SetTarget(texture2_, GL_TEXTURE_2D);
   SetLevelInfo(
       texture2_,
@@ -1489,18 +1474,26 @@ TEST_F(SaveRestoreTextureTest, SaveRestore2D) {
   texture = texture2_->texture();
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_EQ(1024U + 256U + 64U + 16U + 4U, texture->estimated_size());
-  Restore(texture2_, definition.release());
-  EXPECT_EQ(level0, GetLevelInfo(texture2_.get(), GL_TEXTURE_2D, 0));
-  EXPECT_EQ(level1, GetLevelInfo(texture2_.get(), GL_TEXTURE_2D, 1));
-  EXPECT_EQ(level2, GetLevelInfo(texture2_.get(), GL_TEXTURE_2D, 2));
+
+  GLuint client_id = texture2_->client_id();
+  manager_->RemoveTexture(client_id);
+  Consume(client_id, produced_texture);
+  scoped_refptr<TextureRef> restored_texture = manager_->GetTexture(client_id);
+  EXPECT_EQ(produced_texture, restored_texture->texture());
+  EXPECT_EQ(level0, GetLevelInfo(restored_texture.get(), GL_TEXTURE_2D, 0));
+  EXPECT_EQ(level1, GetLevelInfo(restored_texture.get(), GL_TEXTURE_2D, 1));
+  EXPECT_EQ(level2, GetLevelInfo(restored_texture.get(), GL_TEXTURE_2D, 2));
+  texture = restored_texture->texture();
   EXPECT_EQ(64U + 16U + 4U, texture->estimated_size());
   GLint w, h;
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 3, &w, &h));
-  EXPECT_EQ(0, w);
-  EXPECT_EQ(0, h);
+  EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, 3, &w, &h));
+
+  // However the old texture ref still exists if it was referenced somewhere.
+  EXPECT_EQ(1024U + 256U + 64U + 16U + 4U,
+            texture2_->texture()->estimated_size());
 }
 
-TEST_F(SaveRestoreTextureTest, SaveRestoreClearRectangle) {
+TEST_F(ProduceConsumeTextureTest, ProduceConsumeClearRectangle) {
   manager_->SetTarget(texture_ref_, GL_TEXTURE_RECTANGLE_ARB);
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_RECTANGLE_ARB), texture->target());
@@ -1508,38 +1501,46 @@ TEST_F(SaveRestoreTextureTest, SaveRestoreClearRectangle) {
       GL_TEXTURE_RECTANGLE_ARB, GL_RGBA, 1, 1, 1, 0, GL_UNSIGNED_BYTE, false);
   SetLevelInfo(texture_ref_, 0, level0);
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
-  scoped_ptr<TextureDefinition> definition(Save(texture_ref_));
-  const TextureDefinition::LevelInfos& infos = definition->level_infos();
-  EXPECT_EQ(1U, infos.size());
-  EXPECT_EQ(1U, infos[0].size());
-  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_RECTANGLE_ARB), infos[0][0].target);
-  manager_->SetTarget(texture2_, GL_TEXTURE_RECTANGLE_ARB);
-  Restore(texture2_, definition.release());
+  Texture* produced_texture = Produce(texture_ref_);
+  EXPECT_EQ(produced_texture, texture);
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_RECTANGLE_ARB),
+            produced_texture->target());
+
+  GLuint client_id = texture2_->client_id();
+  manager_->RemoveTexture(client_id);
+  Consume(client_id, produced_texture);
+  scoped_refptr<TextureRef> restored_texture = manager_->GetTexture(client_id);
+  EXPECT_EQ(produced_texture, restored_texture->texture());
 
   // See if we can clear the previously uncleared level now.
-  EXPECT_EQ(level0, GetLevelInfo(texture2_.get(), GL_TEXTURE_RECTANGLE_ARB, 0));
+  EXPECT_EQ(level0,
+            GetLevelInfo(restored_texture.get(), GL_TEXTURE_RECTANGLE_ARB, 0));
   EXPECT_CALL(*decoder_, ClearLevel(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(Return(true));
   EXPECT_TRUE(manager_->ClearTextureLevel(
-      decoder_.get(), texture2_, GL_TEXTURE_RECTANGLE_ARB, 0));
+      decoder_.get(), restored_texture, GL_TEXTURE_RECTANGLE_ARB, 0));
 }
 
-TEST_F(SaveRestoreTextureTest, SaveRestoreStreamTexture) {
+TEST_F(ProduceConsumeTextureTest, ProduceConsumeStreamTexture) {
   manager_->SetTarget(texture_ref_, GL_TEXTURE_EXTERNAL_OES);
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES), texture->target());
   manager_->SetStreamTexture(texture_ref_, true);
   GLuint service_id = texture->service_id();
-  scoped_ptr<TextureDefinition> definition(Save(texture_ref_));
-  EXPECT_FALSE(texture->IsStreamTexture());
-  manager_->SetTarget(texture2_, GL_TEXTURE_EXTERNAL_OES);
-  Restore(texture2_, definition.release());
-  EXPECT_TRUE(texture2_->texture()->IsStreamTexture());
-  EXPECT_TRUE(texture2_->texture()->IsImmutable());
-  EXPECT_EQ(service_id, texture2_->service_id());
+  Texture* produced_texture = Produce(texture_ref_);
+  EXPECT_TRUE(texture->IsStreamTexture());
+
+  GLuint client_id = texture2_->client_id();
+  manager_->RemoveTexture(client_id);
+  Consume(client_id, produced_texture);
+  scoped_refptr<TextureRef> restored_texture = manager_->GetTexture(client_id);
+  EXPECT_EQ(produced_texture, restored_texture->texture());
+  EXPECT_TRUE(restored_texture->texture()->IsStreamTexture());
+  EXPECT_TRUE(restored_texture->texture()->IsImmutable());
+  EXPECT_EQ(service_id, restored_texture->service_id());
 }
 
-TEST_F(SaveRestoreTextureTest, SaveRestoreCube) {
+TEST_F(ProduceConsumeTextureTest, ProduceConsumeCube) {
   manager_->SetTarget(texture_ref_, GL_TEXTURE_CUBE_MAP);
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_CUBE_MAP), texture->target());
@@ -1562,16 +1563,18 @@ TEST_F(SaveRestoreTextureTest, SaveRestoreCube) {
   SetLevelInfo(texture_ref_, 0, face0);
   SetLevelInfo(texture_ref_, 0, face5);
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
-  scoped_ptr<TextureDefinition> definition(Save(texture_ref_));
-  const TextureDefinition::LevelInfos& infos = definition->level_infos();
-  EXPECT_EQ(6U, infos.size());
-  EXPECT_EQ(1U, infos[0].size());
-  manager_->SetTarget(texture2_, GL_TEXTURE_CUBE_MAP);
-  Restore(texture2_, definition.release());
+  Texture* produced_texture = Produce(texture_ref_);
+  EXPECT_EQ(produced_texture, texture);
+
+  GLuint client_id = texture2_->client_id();
+  manager_->RemoveTexture(client_id);
+  Consume(client_id, produced_texture);
+  scoped_refptr<TextureRef> restored_texture = manager_->GetTexture(client_id);
+  EXPECT_EQ(produced_texture, restored_texture->texture());
   EXPECT_EQ(face0,
-            GetLevelInfo(texture2_.get(), GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0));
+            GetLevelInfo(restored_texture, GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0));
   EXPECT_EQ(face5,
-            GetLevelInfo(texture2_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0));
+            GetLevelInfo(restored_texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0));
 }
 
 class CountingMemoryTracker : public MemoryTracker {
@@ -1653,8 +1656,8 @@ class SharedTextureTest : public testing::Test {
 
 TEST_F(SharedTextureTest, DeleteTextures) {
   scoped_refptr<TextureRef> ref1 = texture_manager1_->CreateTexture(10, 10);
-  scoped_refptr<TextureRef> ref2 = new TextureRef(texture_manager2_.get(),
-                                                  ref1->texture());
+  scoped_refptr<TextureRef> ref2 =
+      texture_manager2_->Consume(20, ref1->texture());
   EXPECT_CALL(*gl_, DeleteTextures(1, _))
       .Times(0);
   ref1 = NULL;
@@ -1665,6 +1668,7 @@ TEST_F(SharedTextureTest, DeleteTextures) {
       .Times(1)
       .RetiresOnSaturation();
   ref2 = NULL;
+  texture_manager2_->RemoveTexture(20);
   testing::Mock::VerifyAndClearExpectations(gl_.get());
 }
 
@@ -1676,7 +1680,7 @@ TEST_F(SharedTextureTest, TextureSafetyAccounting) {
   EXPECT_FALSE(texture_manager2_->HaveUnsafeTextures());
   EXPECT_FALSE(texture_manager2_->HaveUnclearedMips());
 
-  // Newly created texture is unrenderable.
+  // Newly created texture is renderable.
   scoped_refptr<TextureRef> ref1 = texture_manager1_->CreateTexture(10, 10);
   EXPECT_FALSE(texture_manager1_->HaveUnrenderableTextures());
   EXPECT_FALSE(texture_manager1_->HaveUnsafeTextures());
@@ -1684,8 +1688,8 @@ TEST_F(SharedTextureTest, TextureSafetyAccounting) {
 
   // Associate new texture ref to other texture manager, should account for it
   // too.
-  scoped_refptr<TextureRef> ref2 = new TextureRef(texture_manager2_.get(),
-                                                  ref1->texture());
+  scoped_refptr<TextureRef> ref2 =
+      texture_manager2_->Consume(20, ref1->texture());
   EXPECT_FALSE(texture_manager2_->HaveUnrenderableTextures());
   EXPECT_FALSE(texture_manager2_->HaveUnsafeTextures());
   EXPECT_FALSE(texture_manager2_->HaveUnclearedMips());
@@ -1720,6 +1724,7 @@ TEST_F(SharedTextureTest, TextureSafetyAccounting) {
       .Times(1)
       .RetiresOnSaturation();
   texture_manager1_->RemoveTexture(10);
+  texture_manager2_->RemoveTexture(20);
 }
 
 TEST_F(SharedTextureTest, FBOCompletenessCheck) {
@@ -1746,8 +1751,8 @@ TEST_F(SharedTextureTest, FBOCompletenessCheck) {
   EXPECT_TRUE(framebuffer_manager1.IsComplete(framebuffer1));
 
   // Share texture with manager 2.
-  scoped_refptr<TextureRef> ref2 = new TextureRef(texture_manager2_.get(),
-                                                  ref1->texture());
+  scoped_refptr<TextureRef> ref2 =
+      texture_manager2_->Consume(20, ref1->texture());
   framebuffer_manager2.CreateFramebuffer(20, 20);
   scoped_refptr<Framebuffer> framebuffer2 =
       framebuffer_manager2.GetFramebuffer(20);
@@ -1778,6 +1783,7 @@ TEST_F(SharedTextureTest, FBOCompletenessCheck) {
       .Times(1)
       .RetiresOnSaturation();
   texture_manager1_->RemoveTexture(10);
+  texture_manager2_->RemoveTexture(20);
 }
 
 TEST_F(SharedTextureTest, Memory) {
@@ -1796,8 +1802,8 @@ TEST_F(SharedTextureTest, Memory) {
 
   // Associate new texture ref to other texture manager, it doesn't account for
   // the texture memory, the first memory tracker still has it.
-  scoped_refptr<TextureRef> ref2 = new TextureRef(texture_manager2_.get(),
-                                                  ref1->texture());
+  scoped_refptr<TextureRef> ref2 =
+      texture_manager2_->Consume(20, ref1->texture());
   EXPECT_EQ(initial_memory1 + ref1->texture()->estimated_size(),
             memory_tracker1_->GetSize(MemoryTracker::kUnmanaged));
   EXPECT_EQ(initial_memory2,
@@ -1815,6 +1821,7 @@ TEST_F(SharedTextureTest, Memory) {
       .Times(1)
       .RetiresOnSaturation();
   ref2 = NULL;
+  texture_manager2_->RemoveTexture(20);
   EXPECT_EQ(initial_memory2,
             memory_tracker2_->GetSize(MemoryTracker::kUnmanaged));
 }

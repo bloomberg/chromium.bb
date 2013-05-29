@@ -51,9 +51,11 @@ void Renderbuffer::AddToSignature(
       internal_format_, samples_, width_, height_);
 }
 
-Renderbuffer::Renderbuffer(RenderbufferManager* manager, GLuint service_id)
+Renderbuffer::Renderbuffer(RenderbufferManager* manager,
+                           GLuint client_id,
+                           GLuint service_id)
     : manager_(manager),
-      deleted_(false),
+      client_id_(client_id),
       service_id_(service_id),
       cleared_(true),
       has_been_bound_(false),
@@ -122,7 +124,8 @@ void RenderbufferManager::SetCleared(Renderbuffer* renderbuffer,
 
 void RenderbufferManager::CreateRenderbuffer(
     GLuint client_id, GLuint service_id) {
-  scoped_refptr<Renderbuffer> renderbuffer(new Renderbuffer(this, service_id));
+  scoped_refptr<Renderbuffer> renderbuffer(
+      new Renderbuffer(this, client_id, service_id));
   std::pair<RenderbufferMap::iterator, bool> result =
       renderbuffers_.insert(std::make_pair(client_id, renderbuffer));
   DCHECK(result.second);
@@ -144,19 +147,6 @@ void RenderbufferManager::RemoveRenderbuffer(GLuint client_id) {
     renderbuffer->MarkAsDeleted();
     renderbuffers_.erase(it);
   }
-}
-
-bool RenderbufferManager::GetClientId(
-    GLuint service_id, GLuint* client_id) const {
-  // This doesn't need to be fast. It's only used during slow queries.
-  for (RenderbufferMap::const_iterator it = renderbuffers_.begin();
-       it != renderbuffers_.end(); ++it) {
-    if (it->second->service_id() == service_id) {
-      *client_id = it->first;
-      return true;
-    }
-  }
-  return false;
 }
 
 bool RenderbufferManager::ComputeEstimatedRenderbufferSize(

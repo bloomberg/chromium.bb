@@ -80,13 +80,11 @@ TEST_F(RenderbufferManagerTest, Basic) {
   // Check we can create renderbuffer.
   manager_->CreateRenderbuffer(kClient1Id, kService1Id);
   // Check renderbuffer got created.
-  Renderbuffer* renderbuffer1 =
+  scoped_refptr<Renderbuffer> renderbuffer1 =
       manager_->GetRenderbuffer(kClient1Id);
   ASSERT_TRUE(renderbuffer1 != NULL);
   EXPECT_FALSE(manager_->HaveUnclearedRenderbuffers());
-  GLuint client_id = 0;
-  EXPECT_TRUE(manager_->GetClientId(renderbuffer1->service_id(), &client_id));
-  EXPECT_EQ(kClient1Id, client_id);
+  EXPECT_EQ(kClient1Id, renderbuffer1->client_id());
   // Check we get nothing for a non-existent renderbuffer.
   EXPECT_TRUE(manager_->GetRenderbuffer(kClient2Id) == NULL);
   // Check trying to a remove non-existent renderbuffers does not crash.
@@ -99,6 +97,7 @@ TEST_F(RenderbufferManagerTest, Basic) {
   manager_->RemoveRenderbuffer(kClient1Id);
   EXPECT_TRUE(manager_->GetRenderbuffer(kClient1Id) == NULL);
   EXPECT_FALSE(manager_->HaveUnclearedRenderbuffers());
+  EXPECT_EQ(0u, renderbuffer1->client_id());
 }
 
 TEST_F(RenderbufferManagerTest, Destroy) {

@@ -55,6 +55,10 @@ class RenderbufferAttachment
     return renderbuffer_->samples();
   }
 
+  virtual GLuint object_name() const OVERRIDE {
+    return renderbuffer_->client_id();
+  }
+
   virtual bool cleared() const OVERRIDE {
     return renderbuffer_->cleared();
   }
@@ -147,6 +151,10 @@ class TextureAttachment
 
   virtual GLsizei samples() const OVERRIDE {
     return 0;
+  }
+
+  virtual GLuint object_name() const OVERRIDE {
+    return texture_ref_->client_id();
   }
 
   virtual bool cleared() const OVERRIDE {
