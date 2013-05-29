@@ -1381,7 +1381,7 @@ TEST_F(FileSystemTest, GetFileByResourceId) {
   entry.reset();
   file_system_->GetFileByResourceId(
       resource_id,
-      DriveClientContext(USER_INITIATED),
+      ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry),
       google_apis::GetContentCallback());
@@ -1493,7 +1493,7 @@ TEST_F(FileSystemTest, GetFileByResourceId_FromCache) {
   entry.reset();
   file_system_->GetFileByResourceId(
       resource_id,
-      DriveClientContext(USER_INITIATED),
+      ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry),
       google_apis::GetContentCallback());

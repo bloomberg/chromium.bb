@@ -81,7 +81,7 @@ class MockFileSystem : public FileSystemInterface {
   MOCK_METHOD4(
       GetFileByResourceId,
       void(const std::string& resource_id,
-           const DriveClientContext& context,
+           const ClientContext& context,
            const GetFileCallback& get_file_callback,
            const google_apis::GetContentCallback& get_content_callback));
   MOCK_METHOD4(
@@ -92,7 +92,7 @@ class MockFileSystem : public FileSystemInterface {
            const FileOperationCallback& completion_callback));
   MOCK_METHOD3(UpdateFileByResourceId,
                void(const std::string& resource_id,
-                    const DriveClientContext& context,
+                    const ClientContext& context,
                     const FileOperationCallback& callback));
   MOCK_METHOD2(GetResourceEntryByPath,
                void(const base::FilePath& file_path,

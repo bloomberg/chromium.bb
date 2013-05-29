@@ -158,7 +158,7 @@ void Operations::TouchFile(const base::FilePath& file_path,
 
 void Operations::EnsureFileDownloaded(
     const base::FilePath& file_path,
-    DriveClientContext context,
+    const ClientContext& context,
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const GetFileCallback& completion_callback) {
@@ -172,7 +172,7 @@ void Operations::EnsureFileDownloaded(
 
 void Operations::UpdateFileByResourceId(
     const std::string& resource_id,
-    DriveClientContext context,
+    const ClientContext& context,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

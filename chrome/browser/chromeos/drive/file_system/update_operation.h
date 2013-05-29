@@ -50,11 +50,11 @@ class UpdateOperation {
   //
   // |callback| must not be null.
   void UpdateFileByResourceId(const std::string& resource_id,
-                              DriveClientContext context,
+                              const ClientContext& context,
                               const FileOperationCallback& callback);
 
  private:
-  void UpdateFileAfterGetLocalState(DriveClientContext context,
+  void UpdateFileAfterGetLocalState(const ClientContext& context,
                                     const FileOperationCallback& callback,
                                     const ResourceEntry* entry,
                                     const base::FilePath* drive_file_path,

@@ -184,7 +184,7 @@ void SyncClient::StartTask(SyncType type, const std::string& resource_id) {
 
         file_system_->GetFileByResourceId(
             resource_id,
-            DriveClientContext(BACKGROUND),
+            ClientContext(BACKGROUND),
             base::Bind(&SyncClient::OnFetchFileComplete,
                        weak_ptr_factory_.GetWeakPtr(),
                        resource_id),
@@ -198,7 +198,7 @@ void SyncClient::StartTask(SyncType type, const std::string& resource_id) {
       DVLOG(1) << "Uploading " << resource_id;
       file_system_->UpdateFileByResourceId(
           resource_id,
-          DriveClientContext(BACKGROUND),
+          ClientContext(BACKGROUND),
           base::Bind(&SyncClient::OnUploadFileComplete,
                      weak_ptr_factory_.GetWeakPtr(),
                      resource_id));

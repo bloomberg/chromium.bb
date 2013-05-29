@@ -112,7 +112,7 @@ class FileSystem : public FileSystemInterface,
                              const GetFileCallback& callback) OVERRIDE;
   virtual void GetFileByResourceId(
       const std::string& resource_id,
-      const DriveClientContext& context,
+      const ClientContext& context,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback) OVERRIDE;
   virtual void GetFileContentByPath(
@@ -122,7 +122,7 @@ class FileSystem : public FileSystemInterface,
       const FileOperationCallback& completion_callback) OVERRIDE;
   virtual void UpdateFileByResourceId(
       const std::string& resource_id,
-      const DriveClientContext& context,
+      const ClientContext& context,
       const FileOperationCallback& callback) OVERRIDE;
   virtual void GetResourceEntryByPath(
       const base::FilePath& file_path,
@@ -305,7 +305,7 @@ class FileSystem : public FileSystemInterface,
   // |get_file_callback| must not be null.
   // |get_content_callback| may be null.
   void GetFileByResourceIdAfterGetEntry(
-      const DriveClientContext& context,
+      const ClientContext& context,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback,
       FileError error,

@@ -179,7 +179,7 @@ void CreateFileOperation::CreateFileAfterCheckPreCondition(
       file_path,
       file_path.BaseName().value(),
       *mime_type,
-      DriveClientContext(USER_INITIATED),
+      ClientContext(USER_INITIATED),
       base::Bind(&CreateFileOperation::CreateFileAfterUpload,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));

@@ -82,7 +82,7 @@ const int JobScheduler::kMaxJobCount[] = {
 
 JobScheduler::JobEntry::JobEntry(JobType type)
     : job_info(type),
-      context(DriveClientContext(USER_INITIATED)),
+      context(ClientContext(USER_INITIATED)),
       retry_count(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -284,7 +284,7 @@ void JobScheduler::ContinueGetResourceList(
 
 void JobScheduler::GetResourceEntry(
     const std::string& resource_id,
-    const DriveClientContext& context,
+    const ClientContext& context,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -467,7 +467,7 @@ JobID JobScheduler::DownloadFile(
     const base::FilePath& virtual_path,
     const base::FilePath& local_cache_path,
     const GURL& download_url,
-    const DriveClientContext& context,
+    const ClientContext& context,
     const google_apis::DownloadActionCallback& download_action_callback,
     const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -500,7 +500,7 @@ void JobScheduler::UploadNewFile(
     const base::FilePath& local_file_path,
     const std::string& title,
     const std::string& content_type,
-    const DriveClientContext& context,
+    const ClientContext& context,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -539,7 +539,7 @@ void JobScheduler::UploadExistingFile(
     const base::FilePath& local_file_path,
     const std::string& content_type,
     const std::string& etag,
-    const DriveClientContext& context,
+    const ClientContext& context,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -577,7 +577,7 @@ void JobScheduler::CreateFile(
     const base::FilePath& drive_file_path,
     const std::string& title,
     const std::string& content_type,
-    const DriveClientContext& context,
+    const ClientContext& context,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

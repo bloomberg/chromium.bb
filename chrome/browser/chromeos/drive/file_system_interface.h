@@ -126,8 +126,8 @@ enum ContextType {
   NUM_CONTEXT_TYPES,
 };
 
-struct DriveClientContext {
-  explicit DriveClientContext(ContextType in_type) : type(in_type) {}
+struct ClientContext {
+  explicit ClientContext(ContextType in_type) : type(in_type) {}
   ContextType type;
 };
 
@@ -327,7 +327,7 @@ class FileSystemInterface {
   // |get_content_callback| may be null.
   virtual void GetFileByResourceId(
       const std::string& resource_id,
-      const DriveClientContext& context,
+      const ClientContext& context,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback) = 0;
 
@@ -358,7 +358,7 @@ class FileSystemInterface {
   // |callback| must not be null.
   virtual void UpdateFileByResourceId(
       const std::string& resource_id,
-      const DriveClientContext& context,
+      const ClientContext& context,
       const FileOperationCallback& callback) = 0;
 
   // Finds an entry (a file or a directory) by |file_path|. This call will also

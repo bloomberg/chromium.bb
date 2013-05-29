@@ -124,7 +124,7 @@ class Operations {
   // |completion_callback| must not be null.
   void EnsureFileDownloaded(
       const base::FilePath& file_path,
-      DriveClientContext context,
+      const ClientContext& context,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const GetFileCallback& completion_callback);
@@ -132,7 +132,7 @@ class Operations {
   // Wrapper function for update_operation_.
   // |callback| must not be null.
   void UpdateFileByResourceId(const std::string& resource_id,
-                              DriveClientContext context,
+                              const ClientContext& context,
                               const FileOperationCallback& callback);
 
   // Wrapper function for search_operation_.

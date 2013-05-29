@@ -316,7 +316,7 @@ TEST_F(JobSchedulerTest, GetResourceEntry) {
 
   scheduler_->GetResourceEntry(
       "file:2_file_resource_id",  // resource ID
-      DriveClientContext(USER_INITIATED),
+      ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
@@ -440,25 +440,25 @@ TEST_F(JobSchedulerTest, GetResourceEntryPriority) {
 
   scheduler_->GetResourceEntry(
       resource_1,  // resource ID
-      DriveClientContext(USER_INITIATED),
+      ClientContext(USER_INITIATED),
       base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
                  &resource_ids,
                  resource_1));
   scheduler_->GetResourceEntry(
       resource_2,  // resource ID
-      DriveClientContext(BACKGROUND),
+      ClientContext(BACKGROUND),
       base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
                  &resource_ids,
                  resource_2));
   scheduler_->GetResourceEntry(
       resource_3,  // resource ID
-      DriveClientContext(BACKGROUND),
+      ClientContext(BACKGROUND),
       base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
                  &resource_ids,
                  resource_3));
   scheduler_->GetResourceEntry(
       resource_4,  // resource ID
-      DriveClientContext(USER_INITIATED),
+      ClientContext(USER_INITIATED),
       base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
                  &resource_ids,
                  resource_4));
@@ -482,7 +482,7 @@ TEST_F(JobSchedulerTest, GetResourceEntryNoConnection) {
 
   scheduler_->GetResourceEntry(
       resource,  // resource ID
-      DriveClientContext(BACKGROUND),
+      ClientContext(BACKGROUND),
       base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
                  &resource_ids,
                  resource));
@@ -518,7 +518,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
-      DriveClientContext(BACKGROUND),
+      ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(
           &download_error, &output_file_path),
       google_apis::GetContentCallback());
@@ -571,7 +571,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxDisabled) {
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
-      DriveClientContext(BACKGROUND),
+      ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(
           &download_error, &output_file_path),
       google_apis::GetContentCallback());
@@ -624,7 +624,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularEnabled) {
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
-      DriveClientContext(BACKGROUND),
+      ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(
           &download_error, &output_file_path),
       google_apis::GetContentCallback());
@@ -669,7 +669,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxEnabled) {
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
-      DriveClientContext(BACKGROUND),
+      ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(
           &download_error, &output_file_path),
       google_apis::GetContentCallback());
@@ -733,7 +733,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       temp_dir.path().AppendASCII("whatever.txt"),
       GURL("https://file_content_url/"),
-      DriveClientContext(BACKGROUND),
+      ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&error, &path),
       google_apis::GetContentCallback());
 
@@ -828,7 +828,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
       base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
       temp_dir.path().AppendASCII("whatever.txt"),
       GURL("https://file_content_url/"),
-      DriveClientContext(BACKGROUND),
+      ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&error, &path),
       google_apis::GetContentCallback());
   google_apis::test_util::RunBlockingPoolTask();
@@ -853,7 +853,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
       path,
       "dummy title",
       "plain/plain",
-      DriveClientContext(BACKGROUND),
+      ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&upload_error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 

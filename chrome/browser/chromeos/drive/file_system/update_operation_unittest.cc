@@ -81,7 +81,7 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_PersistentFile) {
   error = FILE_ERROR_FAILED;
   operation_->UpdateFileByResourceId(
       kResourceId,
-      DriveClientContext(USER_INITIATED),
+      ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -106,7 +106,7 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_NonexistentFile) {
   FileError error = FILE_ERROR_OK;
   operation_->UpdateFileByResourceId(
       "file:nonexistent_resource_id",
-      DriveClientContext(USER_INITIATED),
+      ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);

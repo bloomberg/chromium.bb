@@ -61,7 +61,7 @@ class DummyFileSystem : public FileSystemInterface {
                              const GetFileCallback& callback) OVERRIDE {}
   virtual void GetFileByResourceId(
       const std::string& resource_id,
-      const DriveClientContext& context,
+      const ClientContext& context,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback) OVERRIDE {}
   virtual void GetFileContentByPath(
@@ -71,7 +71,7 @@ class DummyFileSystem : public FileSystemInterface {
       const FileOperationCallback& completion_callback) OVERRIDE {}
   virtual void UpdateFileByResourceId(
       const std::string& resource_id,
-      const DriveClientContext& context,
+      const ClientContext& context,
       const FileOperationCallback& callback) OVERRIDE {}
   virtual void GetResourceEntryByPath(
       const base::FilePath& file_path,

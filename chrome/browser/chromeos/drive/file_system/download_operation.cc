@@ -238,14 +238,14 @@ class DownloadOperation::DownloadCallback {
 };
 
 struct DownloadOperation::DownloadParams {
-  DownloadParams(const DriveClientContext& context,
+  DownloadParams(const ClientContext& context,
                  const GURL& download_url)
       : context(context),
         download_url(download_url),
         entry(new ResourceEntry) {
   }
 
-  DriveClientContext context;
+  ClientContext context;
   GURL download_url;
   scoped_ptr<ResourceEntry> entry;
   base::FilePath drive_file_path;
@@ -271,7 +271,7 @@ DownloadOperation::~DownloadOperation() {
 
 void DownloadOperation::EnsureFileDownloaded(
     const base::FilePath& file_path,
-    DriveClientContext context,
+    const ClientContext& context,
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const GetFileCallback& completion_callback) {
@@ -303,7 +303,7 @@ void DownloadOperation::EnsureFileDownloaded(
 
 void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
     const base::FilePath& file_path,
-    DriveClientContext context,
+    const ClientContext& context,
     const DownloadCallback& callback,
     scoped_ptr<ResourceEntry> entry,
     base::FilePath* cache_file_path,
@@ -345,7 +345,7 @@ void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
 }
 
 void DownloadOperation::EnsureFileDownloadedAfterGetResourceEntry(
-    DriveClientContext context,
+    const ClientContext& context,
     const DownloadCallback& callback,
     google_apis::GDataErrorCode gdata_error,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {

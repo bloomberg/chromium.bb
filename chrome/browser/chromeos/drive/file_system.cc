@@ -383,7 +383,7 @@ void FileSystem::GetFileByPath(const base::FilePath& file_path,
 
   operations_.EnsureFileDownloaded(
       file_path,
-      DriveClientContext(USER_INITIATED),
+      ClientContext(USER_INITIATED),
       GetFileContentInitializedCallback(),
       google_apis::GetContentCallback(),
       callback);
@@ -391,7 +391,7 @@ void FileSystem::GetFileByPath(const base::FilePath& file_path,
 
 void FileSystem::GetFileByResourceId(
     const std::string& resource_id,
-    const DriveClientContext& context,
+    const ClientContext& context,
     const GetFileCallback& get_file_callback,
     const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -408,7 +408,7 @@ void FileSystem::GetFileByResourceId(
 }
 
 void FileSystem::GetFileByResourceIdAfterGetEntry(
-    const DriveClientContext& context,
+    const ClientContext& context,
     const GetFileCallback& get_file_callback,
     const google_apis::GetContentCallback& get_content_callback,
     FileError error,
@@ -443,7 +443,7 @@ void FileSystem::GetFileContentByPath(
 
   operations_.EnsureFileDownloaded(
       file_path,
-      DriveClientContext(USER_INITIATED),
+      ClientContext(USER_INITIATED),
       initialized_callback,
       get_content_callback,
       base::Bind(&GetFileCallbackToFileOperationCallbackAdapter,
@@ -670,7 +670,7 @@ void FileSystem::RefreshDirectoryAfterGetResourceEntry(
 
 void FileSystem::UpdateFileByResourceId(
     const std::string& resource_id,
-    const DriveClientContext& context,
+    const ClientContext& context,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -890,7 +890,7 @@ void FileSystem::OpenFile(const base::FilePath& file_path,
 
   operations_.EnsureFileDownloaded(
       file_path,
-      DriveClientContext(USER_INITIATED),
+      ClientContext(USER_INITIATED),
       GetFileContentInitializedCallback(),
       google_apis::GetContentCallback(),
       base::Bind(&FileSystem::OpenFileAfterFileDownloaded,

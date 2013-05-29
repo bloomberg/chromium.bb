@@ -94,7 +94,7 @@ class JobScheduler
 
   // Adds a GetResourceEntry operation to the queue.
   void GetResourceEntry(const std::string& resource_id,
-                        const DriveClientContext& context,
+                        const ClientContext& context,
                         const google_apis::GetResourceEntryCallback& callback);
 
 
@@ -147,7 +147,7 @@ class JobScheduler
       const base::FilePath& virtual_path,
       const base::FilePath& local_cache_path,
       const GURL& download_url,
-      const DriveClientContext& context,
+      const ClientContext& context,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback);
 
@@ -157,7 +157,7 @@ class JobScheduler
                      const base::FilePath& local_file_path,
                      const std::string& title,
                      const std::string& content_type,
-                     const DriveClientContext& context,
+                     const ClientContext& context,
                      const google_apis::GetResourceEntryCallback& callback);
 
   // Adds an UploadExistingFile operation to the queue.
@@ -167,7 +167,7 @@ class JobScheduler
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const std::string& etag,
-      const DriveClientContext& context,
+      const ClientContext& context,
       const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a CreateFile operation to the queue.
@@ -175,7 +175,7 @@ class JobScheduler
                   const base::FilePath& drive_file_path,
                   const std::string& title,
                   const std::string& content_type,
-                  const DriveClientContext& context,
+                  const ClientContext& context,
                   const google_apis::GetResourceEntryCallback& callback);
 
  private:
@@ -197,7 +197,7 @@ class JobScheduler
     JobInfo job_info;
 
     // Context of the job.
-    DriveClientContext context;
+    ClientContext context;
 
     int retry_count;
 

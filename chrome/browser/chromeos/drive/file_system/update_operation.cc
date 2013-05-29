@@ -89,7 +89,7 @@ UpdateOperation::~UpdateOperation() {
 
 void UpdateOperation::UpdateFileByResourceId(
     const std::string& resource_id,
-    DriveClientContext context,
+    const ClientContext& context,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -117,7 +117,7 @@ void UpdateOperation::UpdateFileByResourceId(
 }
 
 void UpdateOperation::UpdateFileAfterGetLocalState(
-    DriveClientContext context,
+    const ClientContext& context,
     const FileOperationCallback& callback,
     const ResourceEntry* entry,
     const base::FilePath* drive_file_path,

@@ -63,7 +63,7 @@ class DownloadOperation {
   // |completion_callback| must not be null.
   void EnsureFileDownloaded(
       const base::FilePath& file_path,
-      DriveClientContext context,
+      const ClientContext& context,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const GetFileCallback& completion_callback);
@@ -79,7 +79,7 @@ class DownloadOperation {
   // check.
   void EnsureFileDownloadedAfterCheckPreCondition(
       const base::FilePath& file_path,
-      DriveClientContext context,
+      const ClientContext& context,
       const DownloadCallback& callback,
       scoped_ptr<ResourceEntry> entry,
       base::FilePath* cache_file_path,
@@ -88,7 +88,7 @@ class DownloadOperation {
   // Part of EnsureFileDownloaded(). Called upon the completion of fetching
   // ResourceEntry from the server.
   void EnsureFileDownloadedAfterGetResourceEntry(
-      DriveClientContext context,
+      const ClientContext& context,
       const DownloadCallback& callback,
       google_apis::GDataErrorCode gdata_error,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
