@@ -10,7 +10,7 @@ race:base/tools_sanity_unittest.cc
 race:base/threading/watchdog_unittest.cc
 
 # Races in libevent, http://crbug.com/23244
-race:libevent.c
+race:libevent/event.c
 
 # http://crbug.com/84094
 race:sqlite3StatusSet
@@ -22,7 +22,6 @@ race:pcache1AllocPage
 race:tracked_objects::ThreadData::ShutdownSingleThreadedCleanup
 
 # http://crbug.com/115540
-race:base::Thread::ThreadMain
 race:content::BrowserThread::GetCurrentThreadIdentifier
 
 # http://crbug.com/120808
@@ -58,3 +57,9 @@ race:PassRefPtr
 
 # http://crbug.com/224617
 race:base::debug::TraceEventTestFixture_TraceSampling_Test::TestBody
+
+# http://crbug.com/244368
+race:skia::BeginPlatformPaint
+
+# http://crbug.com/244385
+race:unixTempFileDir
