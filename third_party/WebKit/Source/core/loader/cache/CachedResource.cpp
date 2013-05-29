@@ -250,8 +250,11 @@ void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const Reso
     }
 
     m_loader = ResourceLoader::create(cachedResourceLoader->documentLoader(), this, request, options);
-    if (m_loader)
-        m_status = Pending;
+    if (!m_loader) {
+        failBeforeStarting();
+        return;
+    }
+    m_status = Pending;
 }
 
 void CachedResource::checkNotify()

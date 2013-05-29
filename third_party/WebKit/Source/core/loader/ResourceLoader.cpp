@@ -243,7 +243,8 @@ void ResourceLoader::cancel(const ResourceError& error)
     RefPtr<ResourceLoader> protector(this);
 
     LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().string().latin1().data());
-    m_state = Finishing;
+    if (m_state == Initialized)
+        m_state = Finishing;
     m_resource->setResourceError(nonNullError);
 
     m_documentLoader->cancelPendingSubstituteLoad(this);
@@ -255,7 +256,8 @@ void ResourceLoader::cancel(const ResourceError& error)
     if (m_options.sendLoadCallbacks == SendCallbacks && m_identifier && !m_notifiedLoadComplete)
         frameLoader()->notifier()->didFailToLoad(this, nonNullError);
 
-    m_resource->error(CachedResource::LoadError);
+    if (m_state == Finishing)
+        m_resource->error(CachedResource::LoadError);
     if (m_state != Terminated)
         releaseResources();
 }
