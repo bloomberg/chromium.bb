@@ -19,6 +19,9 @@
 //    void SpawnWorker() { Worker::StartNew(weak_factory_.GetWeakPtr()); }
 //    void WorkComplete(const Result& result) { ... }
 //   private:
+//    // Member variables should appear before the WeakPtrFactory, to ensure
+//    // that any WeakPtrs to Controller are invalidated before its members
+//    // variable's destructors are executed, rendering them invalid.
 //    WeakPtrFactory<Controller> weak_factory_;
 //  };
 //
@@ -44,17 +47,18 @@
 
 // ------------------------- IMPORTANT: Thread-safety -------------------------
 
-// Weak pointers must always be dereferenced and invalidated on the same thread
-// otherwise checking the pointer would be racey.  WeakPtrFactory enforces this
-// by binding itself to the current thread when a WeakPtr is first created
-// and un-binding only when those pointers are invalidated.  WeakPtrs may still
-// be handed off to other threads, however, so long as they are only actually
-// dereferenced on the originating thread. This includes posting tasks to the
-// thread using base::Bind() to invoke a method on the object via the WeakPtr.
-
-// Calling SupportsWeakPtr::DetachFromThread() can work around the limitations
-// above and cancel the thread binding of the object and all WeakPtrs pointing
-// to it, but it's not recommended and unsafe.  See crbug.com/232143.
+// Weak pointers may be passed safely between threads, but must always be
+// dereferenced and invalidated on the same thread otherwise checking the
+// pointer would be racey.
+//
+// To ensure correct use, the first time a WeakPtr issued by a WeakPtrFactory
+// is dereferenced, the factory and its WeakPtrs become bound to the calling
+// thread, and cannot be dereferenced or invalidated on any other thread. Bound
+// WeakPtrs can still be handed off to other threads, e.g. to use to post tasks
+// back to object on the bound thread.
+//
+// Invalidating the factory's WeakPtrs un-binds it from the thread, allowing it
+// to be passed for a different thread to use or delete it.
 
 #ifndef BASE_MEMORY_WEAK_PTR_H_
 #define BASE_MEMORY_WEAK_PTR_H_
@@ -77,7 +81,7 @@ namespace internal {
 
 class BASE_EXPORT WeakReference {
  public:
-  // While Flag is bound to a specific thread, it may be deleted from another
+  // Although Flag is bound to a specific thread, it may be deleted from another
   // via base::WeakPtr::~WeakPtr().
   class Flag : public RefCountedThreadSafe<Flag> {
    public:
@@ -86,7 +90,8 @@ class BASE_EXPORT WeakReference {
     void Invalidate();
     bool IsValid() const;
 
-    void DetachFromThread() { thread_checker_.DetachFromThread(); }
+    // Remove this when crbug.com/234964 is addressed.
+    void DetachFromThreadHack() { thread_checker_.DetachFromThread(); }
 
    private:
     friend class base::RefCountedThreadSafe<Flag>;
@@ -120,10 +125,9 @@ class BASE_EXPORT WeakReferenceOwner {
 
   void Invalidate();
 
-  // Indicates that this object will be used on another thread from now on.
-  // Do not use this in new code. See crbug.com/232143.
-  void DetachFromThread() {
-    if (flag_) flag_->DetachFromThread();
+  // Remove this when crbug.com/234964 is addressed.
+  void DetachFromThreadHack() {
+    if (flag_) flag_->DetachFromThreadHack();
   }
 
  private:
@@ -269,13 +273,6 @@ class WeakPtrFactory {
     return weak_reference_owner_.HasRefs();
   }
 
-  // Indicates that this object will be used on another thread from now on.
-  // Do not use this in new code. See crbug.com/232143.
-  void DetachFromThread() {
-    DCHECK(ptr_);
-    weak_reference_owner_.DetachFromThread();
-  }
-
  private:
   internal::WeakReferenceOwner weak_reference_owner_;
   T* ptr_;
@@ -296,10 +293,12 @@ class SupportsWeakPtr : public internal::SupportsWeakPtrBase {
     return WeakPtr<T>(weak_reference_owner_.GetRef(), static_cast<T*>(this));
   }
 
-  // Indicates that this object will be used on another thread from now on.
-  // Do not use this in new code. See crbug.com/232143.
-  void DetachFromThread() {
-    weak_reference_owner_.DetachFromThread();
+  // Removes the binding, if any, from this object to a particular thread.
+  // This is used in WebGraphicsContext3DInProcessCommandBufferImpl to work-
+  // around access to cmmand buffer objects by more than one thread.
+  // Remove this when crbug.com/234964 is addressed.
+  void DetachFromThreadHack() {
+    weak_reference_owner_.DetachFromThreadHack();
   }
 
  protected:

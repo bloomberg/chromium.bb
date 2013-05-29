@@ -41,11 +41,6 @@ DhcpProxyScriptAdapterFetcher::DhcpProxyScriptAdapterFetcher(
 
 DhcpProxyScriptAdapterFetcher::~DhcpProxyScriptAdapterFetcher() {
   Cancel();
-
-  // The WeakPtr we passed to the worker thread may be destroyed on the
-  // worker thread.  This detaches any outstanding WeakPtr state from
-  // the current thread.
-  base::SupportsWeakPtr<DhcpProxyScriptAdapterFetcher>::DetachFromThread();
 }
 
 void DhcpProxyScriptAdapterFetcher::Fetch(

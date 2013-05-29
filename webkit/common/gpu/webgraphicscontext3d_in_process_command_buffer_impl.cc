@@ -270,10 +270,11 @@ static bool g_use_virtualized_gl_context = false;
 
 namespace {
 
-// Also calls DetachFromThread on all GLES2Decoders before the lock is released
-// to maintain the invariant that all decoders are unbounded while the lock is
-// not held. This is to workaround DumpRenderTree uses WGC3DIPCBI with shared
-// resources on different threads.
+// Also calls DetachFromThreadHack on all GLES2Decoders before the lock is
+// released to maintain the invariant that all decoders are unbound while the
+// lock is not held. This is to workaround DumpRenderTree using WGC3DIPCBI with
+// shared resources on different threads.
+// Remove this as part of crbug.com/234964.
 class AutoLockAndDecoderDetachThread {
  public:
   AutoLockAndDecoderDetachThread(base::Lock& lock,
@@ -294,7 +295,7 @@ AutoLockAndDecoderDetachThread::AutoLockAndDecoderDetachThread(
 
 void DetachThread(GLInProcessContext* context) {
   if (context->GetDecoder())
-    context->GetDecoder()->DetachFromThread();
+    context->GetDecoder()->DetachFromThreadHack();
 }
 
 AutoLockAndDecoderDetachThread::~AutoLockAndDecoderDetachThread() {
