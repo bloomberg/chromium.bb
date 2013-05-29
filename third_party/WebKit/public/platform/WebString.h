@@ -76,6 +76,7 @@ public:
     WEBKIT_EXPORT bool equals(const WebString& s) const;
 
     WEBKIT_EXPORT size_t length() const;
+    WEBKIT_EXPORT const WebUChar* data() const;
 
     // Caller must check bounds.
     WEBKIT_EXPORT WebUChar at(unsigned) const;
@@ -161,7 +162,6 @@ public:
 
 private:
     void assign(WebStringPrivate*);
-    WEBKIT_EXPORT const WebUChar* data() const;
 
     WebStringPrivate* m_private;
 };
