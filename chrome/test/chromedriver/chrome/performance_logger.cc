@@ -44,13 +44,12 @@ Status PerformanceLogger::OnConnected(DevToolsClient* client) {
   return Status(kOk);
 }
 
-void PerformanceLogger::OnEvent(
+Status PerformanceLogger::OnEvent(
     DevToolsClient* client,
     const std::string& method,
     const base::DictionaryValue& params) {
-  if (!ShouldLogEvent(method)) {
-    return;
-  }
+  if (!ShouldLogEvent(method))
+    return Status(kOk);
 
   base::DictionaryValue log_message_dict;
   log_message_dict.SetString("webview", client->GetId());
@@ -62,4 +61,5 @@ void PerformanceLogger::OnEvent(
   base::JSONWriter::Write(&log_message_dict, &log_message_json);
 
   log_->AddEntry(Log::kLog, log_message_json);
+  return Status(kOk);
 }

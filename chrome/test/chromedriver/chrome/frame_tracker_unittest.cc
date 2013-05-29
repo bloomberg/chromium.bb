@@ -21,7 +21,9 @@ TEST(FrameTracker, GetContextIdForFrame) {
   const char context[] = "{\"id\":100,\"frameId\":\"f\"}";
   base::DictionaryValue params;
   params.Set("context", base::JSONReader::Read(context));
-  tracker.OnEvent(&client, "Runtime.executionContextCreated", params);
+  ASSERT_EQ(kOk,
+            tracker.OnEvent(&client, "Runtime.executionContextCreated", params)
+                .code());
   ASSERT_EQ(kNoSuchExecutionContext,
             tracker.GetContextIdForFrame("foo", &context_id).code());
   ASSERT_EQ(-1, context_id);
@@ -30,10 +32,12 @@ TEST(FrameTracker, GetContextIdForFrame) {
 
   base::DictionaryValue nav_params;
   nav_params.SetString("frame.parentId", "1");
-  tracker.OnEvent(&client, "Page.frameNavigated", nav_params);
+  ASSERT_EQ(kOk,
+            tracker.OnEvent(&client, "Page.frameNavigated", nav_params).code());
   ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
   nav_params.Clear();
-  tracker.OnEvent(&client, "Page.frameNavigated", nav_params);
+  ASSERT_EQ(kOk,
+            tracker.OnEvent(&client, "Page.frameNavigated", nav_params).code());
   ASSERT_EQ(kNoSuchExecutionContext,
             tracker.GetContextIdForFrame("f", &context_id).code());
 }
@@ -45,13 +49,17 @@ TEST(FrameTracker, CanUpdateFrameContextId) {
   const char context[] = "{\"id\":1,\"frameId\":\"f\"}";
   base::DictionaryValue params;
   params.Set("context", base::JSONReader::Read(context));
-  tracker.OnEvent(&client, "Runtime.executionContextCreated", params);
+  ASSERT_EQ(kOk,
+            tracker.OnEvent(&client, "Runtime.executionContextCreated", params)
+                .code());
   int context_id = -1;
   ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
   ASSERT_EQ(1, context_id);
 
   params.SetInteger("context.id", 2);
-  tracker.OnEvent(&client, "Runtime.executionContextCreated", params);
+  ASSERT_EQ(kOk,
+            tracker.OnEvent(&client, "Runtime.executionContextCreated", params)
+                .code());
   ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsOk());
   ASSERT_EQ(2, context_id);
 }

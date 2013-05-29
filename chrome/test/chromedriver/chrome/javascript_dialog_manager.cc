@@ -4,7 +4,6 @@
 
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 
-#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -55,18 +54,19 @@ Status JavaScriptDialogManager::OnConnected(DevToolsClient* client) {
   return client_->SendCommand("Page.enable", params);
 }
 
-void JavaScriptDialogManager::OnEvent(DevToolsClient* client,
-                                      const std::string& method,
-                                      const base::DictionaryValue& params) {
+Status JavaScriptDialogManager::OnEvent(DevToolsClient* client,
+                                        const std::string& method,
+                                        const base::DictionaryValue& params) {
   if (method == "Page.javascriptDialogOpening") {
     std::string message;
-    if (!params.GetString("message", &message)) {
-      LOG(ERROR) << "dialog event missing or invalid 'message'";
-    }
+    if (!params.GetString("message", &message))
+      return Status(kUnknownError, "dialog event missing or invalid 'message'");
+
     unhandled_dialog_queue_.push_back(message);
   } else if (method == "Page.javascriptDialogClosing") {
     // Inspector only sends this event when all dialogs have been closed.
     // Clear the unhandled queue in case the user closed a dialog manually.
     unhandled_dialog_queue_.clear();
   }
+  return Status(kOk);
 }

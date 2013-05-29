@@ -152,7 +152,7 @@ Status DevToolsClientImpl::SendCommandAndGetResult(
 }
 
 void DevToolsClientImpl::AddListener(DevToolsEventListener* listener) {
-  DCHECK(listener);
+  CHECK(listener);
   listeners_.push_back(listener);
 }
 
@@ -342,8 +342,10 @@ Status DevToolsClientImpl::EnsureListenersNotifiedOfEvent() {
   while (unnotified_event_listeners_.size()) {
     DevToolsEventListener* listener = unnotified_event_listeners_.front();
     unnotified_event_listeners_.pop_front();
-    listener->OnEvent(this,
-                      unnotified_event_->method, *unnotified_event_->params);
+    Status status = listener->OnEvent(
+        this, unnotified_event_->method, *unnotified_event_->params);
+    if (status.IsError())
+      return status;
   }
   return Status(kOk);
 }

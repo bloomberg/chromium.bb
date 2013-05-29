@@ -31,9 +31,9 @@ class FakeDevToolsClient : public StubDevToolsClient {
     return command;
   }
 
-  void TriggerEvent(const std::string& method) {
+  Status TriggerEvent(const std::string& method) {
     base::DictionaryValue empty_params;
-    listener_->OnEvent(this, method, empty_params);
+    return listener_->OnEvent(this, method, empty_params);
   }
 
   // Overridden from DevToolsClient:
@@ -142,9 +142,10 @@ TEST(PerformanceLogger, OneWebView) {
   client.AddListener(&logger);
   logger.OnConnected(&client);
   ExpectEnableDomains(client);
-  client.TriggerEvent("Network.gaga");
-  client.TriggerEvent("Page.ulala");
-  client.TriggerEvent("Console.bad");  // Ignore -- different domain.
+  ASSERT_EQ(kOk, client.TriggerEvent("Network.gaga").code());
+  ASSERT_EQ(kOk, client.TriggerEvent("Page.ulala").code());
+  // Ignore -- different domain.
+  ASSERT_EQ(kOk, client.TriggerEvent("Console.bad").code());
 
   ASSERT_EQ(2u, log.entries.size());
   ValidateLogEntry(log.entries[0], "webview-1", "Network.gaga");
@@ -168,8 +169,8 @@ TEST(PerformanceLogger, TwoWebViews) {
   ExpectEnableDomains(client1);
   EXPECT_STREQ("", client2.PopSentCommand().c_str());
 
-  client1.TriggerEvent("Page.gaga1");
-  client2.TriggerEvent("Timeline.gaga2");
+  ASSERT_EQ(kOk, client1.TriggerEvent("Page.gaga1").code());
+  ASSERT_EQ(kOk, client2.TriggerEvent("Timeline.gaga2").code());
 
   ASSERT_EQ(2u, log.entries.size());
   ValidateLogEntry(log.entries[0], "webview-1", "Page.gaga1");

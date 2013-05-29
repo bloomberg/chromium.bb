@@ -7,13 +7,11 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
 DomTracker::DomTracker(DevToolsClient* client) {
-  DCHECK(client);
   client->AddListener(this);
 }
 
@@ -35,36 +33,37 @@ Status DomTracker::OnConnected(DevToolsClient* client) {
   return client->SendCommand("DOM.getDocument", params);
 }
 
-void DomTracker::OnEvent(DevToolsClient* client,
-                         const std::string& method,
-                         const base::DictionaryValue& params) {
+Status DomTracker::OnEvent(DevToolsClient* client,
+                           const std::string& method,
+                           const base::DictionaryValue& params) {
   if (method == "DOM.setChildNodes") {
     const base::Value* nodes;
-    if (!params.Get("nodes", &nodes)) {
-      LOG(ERROR) << "DOM.setChildNodes missing 'nodes'";
-      return;
-    }
+    if (!params.Get("nodes", &nodes))
+      return Status(kUnknownError, "DOM.setChildNodes missing 'nodes'");
+
     if (!ProcessNodeList(nodes)) {
       std::string json;
       base::JSONWriter::Write(nodes, &json);
-      LOG(ERROR) << "DOM.setChildNodes has invalid 'nodes': " << json;
+      return Status(kUnknownError,
+                    "DOM.setChildNodes has invalid 'nodes': " + json);
     }
   } else if (method == "DOM.childNodeInserted") {
     const base::Value* node;
-    if (!params.Get("node", &node)) {
-      LOG(ERROR) << "DOM.childNodeInserted missing 'node'";
-      return;
-    }
+    if (!params.Get("node", &node))
+      return Status(kUnknownError, "DOM.childNodeInserted missing 'node'");
+
     if (!ProcessNode(node)) {
       std::string json;
       base::JSONWriter::Write(node, &json);
-      LOG(ERROR) << "DOM.childNodeInserted has invalid 'node': " << json;
+      return Status(kUnknownError,
+                    "DOM.childNodeInserted has invalid 'node': " + json);
     }
   } else if (method == "DOM.documentUpdated") {
     node_to_frame_map_.clear();
     base::DictionaryValue params;
     client->SendCommand("DOM.getDocument", params);
   }
+  return Status(kOk);
 }
 
 bool DomTracker::ProcessNodeList(const base::Value* nodes) {

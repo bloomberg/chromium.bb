@@ -29,9 +29,11 @@ TEST(NavigationTracker, FrameLoadStartStop) {
   NavigationTracker tracker(&client);
 
   base::DictionaryValue params;
-  tracker.OnEvent(&client, "Page.frameStartedLoading", params);
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStartedLoading", params).code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
-  tracker.OnEvent(&client, "Page.frameStoppedLoading", params);
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStoppedLoading", params).code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
 
@@ -44,13 +46,21 @@ TEST(NavigationTracker, NavigationScheduledThenLoaded) {
   params_scheduled.SetInteger("delay", 0);
   params_scheduled.SetString("frameId", "f");
 
-  tracker.OnEvent(&client, "Page.frameScheduledNavigation", params_scheduled);
+  ASSERT_EQ(
+      kOk,
+      tracker.OnEvent(
+          &client, "Page.frameScheduledNavigation", params_scheduled).code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
-  tracker.OnEvent(&client, "Page.frameStartedLoading", params);
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStartedLoading", params).code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
-  tracker.OnEvent(&client, "Page.frameClearedScheduledNavigation", params);
+  ASSERT_EQ(
+      kOk,
+      tracker.OnEvent(&client, "Page.frameClearedScheduledNavigation", params)
+          .code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
-  tracker.OnEvent(&client, "Page.frameStoppedLoading", params);
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStoppedLoading", params).code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
 
@@ -61,7 +71,10 @@ TEST(NavigationTracker, NavigationScheduledForOtherFrame) {
   params_scheduled.SetInteger("delay", 0);
   params_scheduled.SetString("frameId", "other");
 
-  tracker.OnEvent(&client, "Page.frameScheduledNavigation", params_scheduled);
+  ASSERT_EQ(
+      kOk,
+      tracker.OnEvent(
+          &client, "Page.frameScheduledNavigation", params_scheduled).code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
 
@@ -74,9 +87,15 @@ TEST(NavigationTracker, NavigationScheduledThenCancelled) {
   params_scheduled.SetInteger("delay", 0);
   params_scheduled.SetString("frameId", "f");
 
-  tracker.OnEvent(&client, "Page.frameScheduledNavigation", params_scheduled);
+  ASSERT_EQ(
+      kOk,
+      tracker.OnEvent(
+          &client, "Page.frameScheduledNavigation", params_scheduled).code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
-  tracker.OnEvent(&client, "Page.frameClearedScheduledNavigation", params);
+  ASSERT_EQ(
+      kOk,
+      tracker.OnEvent(&client, "Page.frameClearedScheduledNavigation", params)
+          .code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
 
@@ -87,7 +106,10 @@ TEST(NavigationTracker, NavigationScheduledTooFarAway) {
   base::DictionaryValue params_scheduled;
   params_scheduled.SetInteger("delay", 10);
   params_scheduled.SetString("frameId", "f");
-  tracker.OnEvent(&client, "Page.frameScheduledNavigation", params_scheduled);
+  ASSERT_EQ(
+      kOk,
+      tracker.OnEvent(
+          &client, "Page.frameScheduledNavigation", params_scheduled).code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
 
@@ -98,15 +120,22 @@ TEST(NavigationTracker, DiscardScheduledNavigationsOnMainFrameCommit) {
   base::DictionaryValue params_scheduled;
   params_scheduled.SetString("frameId", "subframe");
   params_scheduled.SetInteger("delay", 0);
-  tracker.OnEvent(&client, "Page.frameScheduledNavigation", params_scheduled);
+  ASSERT_EQ(
+      kOk,
+      tracker.OnEvent(
+          &client, "Page.frameScheduledNavigation", params_scheduled).code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "subframe", true));
 
   base::DictionaryValue params_navigated;
   params_navigated.SetString("frame.parentId", "something");
-  tracker.OnEvent(&client, "Page.frameNavigated", params_navigated);
+  ASSERT_EQ(
+      kOk,
+      tracker.OnEvent(&client, "Page.frameNavigated", params_navigated).code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "subframe", true));
   params_navigated.Clear();
-  tracker.OnEvent(&client, "Page.frameNavigated", params_navigated);
+  ASSERT_EQ(
+      kOk,
+      tracker.OnEvent(&client, "Page.frameNavigated", params_navigated).code());
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "subframe", false));
 }
 
@@ -154,8 +183,10 @@ class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
     if (send_event_first_.length()) {
-      listeners_.front()->OnEvent(this,
-                                  send_event_first_, *send_event_first_params_);
+      Status status = listeners_.front()
+          ->OnEvent(this, send_event_first_, *send_event_first_params_);
+      if (status.IsError())
+        return status;
     }
 
     base::DictionaryValue result_dict;

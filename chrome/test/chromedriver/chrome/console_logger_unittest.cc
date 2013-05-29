@@ -30,9 +30,9 @@ class FakeDevToolsClient : public StubDevToolsClient {
     return command;
   }
 
-  void TriggerEvent(const std::string& method,
+  Status TriggerEvent(const std::string& method,
                     const base::DictionaryValue& params) {
-    listener_->OnEvent(this, method, params);
+    return listener_->OnEvent(this, method, params);
   }
 
   // Overridden from DevToolsClient:
@@ -130,36 +130,37 @@ TEST(ConsoleLogger, ConsoleMessages) {
 
   base::DictionaryValue params1;  // All fields are set.
   ConsoleLogParams(&params1, "source1", "url1", "debug", 10, 1, "text1");
-  client.TriggerEvent("Console.messageAdded", params1);
-  client.TriggerEvent("Console.gaga", params1);  // Ignored -- wrong method.
+  ASSERT_EQ(kOk, client.TriggerEvent("Console.messageAdded", params1).code());
+  // Ignored -- wrong method.
+  ASSERT_EQ(kOk, client.TriggerEvent("Console.gaga", params1).code());
 
   base::DictionaryValue params2;  // All optionals are not set.
   ConsoleLogParams(&params2, "source2", NULL, "log", -1, -1, "text2");
-  client.TriggerEvent("Console.messageAdded", params2);
+  ASSERT_EQ(kOk, client.TriggerEvent("Console.messageAdded", params2).code());
 
   base::DictionaryValue params3;  // Line without column, no source.
   ConsoleLogParams(&params3, NULL, "url3", "warning", 30, -1, "text3");
-  client.TriggerEvent("Console.messageAdded", params3);
+  ASSERT_EQ(kOk, client.TriggerEvent("Console.messageAdded", params3).code());
 
   base::DictionaryValue params4;  // Column without line.
   ConsoleLogParams(&params4, "source4", "url4", "error", -1, 4, "text4");
-  client.TriggerEvent("Console.messageAdded", params4);
+  ASSERT_EQ(kOk, client.TriggerEvent("Console.messageAdded", params4).code());
 
   base::DictionaryValue params5;  // Bad level name.
   ConsoleLogParams(&params5, "source5", "url5", "gaga", 50, 5, "ulala");
-  client.TriggerEvent("Console.messageAdded", params5);
+  ASSERT_EQ(kOk, client.TriggerEvent("Console.messageAdded", params5).code());
 
   base::DictionaryValue params6;  // Unset level.
   ConsoleLogParams(&params6, "source6", "url6", NULL, 60, 6, NULL);
-  client.TriggerEvent("Console.messageAdded", params6);
+  ASSERT_EQ(kOk, client.TriggerEvent("Console.messageAdded", params6).code());
 
   base::DictionaryValue params7;  // No text.
   ConsoleLogParams(&params7, "source7", "url7", "log", -1, -1, NULL);
-  client.TriggerEvent("Console.messageAdded", params7);
+  ASSERT_EQ(kOk, client.TriggerEvent("Console.messageAdded", params7).code());
 
   base::DictionaryValue params8;  // No message object.
   params8.SetInteger("gaga", 8);
-  client.TriggerEvent("Console.messageAdded", params8);
+  ASSERT_EQ(kOk, client.TriggerEvent("Console.messageAdded", params8).code());
 
   EXPECT_STREQ("", client.PopSentCommand().c_str());  // No other commands sent.
 

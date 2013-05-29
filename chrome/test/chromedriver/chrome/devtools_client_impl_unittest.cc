@@ -344,12 +344,13 @@ class MockListener : public DevToolsEventListener {
     return Status(kOk);
   }
 
-  virtual void OnEvent(DevToolsClient* client,
-                       const std::string& method,
-                       const base::DictionaryValue& params) OVERRIDE {
+  virtual Status OnEvent(DevToolsClient* client,
+                         const std::string& method,
+                         const base::DictionaryValue& params) OVERRIDE {
     called_ = true;
     EXPECT_STREQ("method", method.c_str());
     EXPECT_TRUE(params.HasKey("key"));
+    return Status(kOk);
   }
 
  private:
@@ -688,13 +689,14 @@ class OnConnectedListener : public DevToolsEventListener {
     return client_->SendCommand(method_, params);
   }
 
-  virtual void OnEvent(DevToolsClient* client,
-                       const std::string& method,
-                       const base::DictionaryValue& params) OVERRIDE {
+  virtual Status OnEvent(DevToolsClient* client,
+                         const std::string& method,
+                         const base::DictionaryValue& params) OVERRIDE {
     EXPECT_EQ(client_, client);
     EXPECT_STREQ("onconnected-id", client->GetId().c_str());
     EXPECT_TRUE(on_connected_called_);
     on_event_called_ = true;
+    return Status(kOk);
   }
 
  private:
@@ -846,10 +848,11 @@ class OtherEventListener : public DevToolsEventListener {
   virtual Status OnConnected(DevToolsClient* client) OVERRIDE {
     return Status(kOk);
   }
-  virtual void OnEvent(DevToolsClient* client,
-                       const std::string& method,
-                       const base::DictionaryValue& params) OVERRIDE {
+  virtual Status OnEvent(DevToolsClient* client,
+                         const std::string& method,
+                         const base::DictionaryValue& params) OVERRIDE {
     received_event_ = true;
+    return Status(kOk);
   }
 
   bool received_event_;
@@ -868,12 +871,13 @@ class OnEventListener : public DevToolsEventListener {
     return Status(kOk);
   }
 
-  virtual void OnEvent(DevToolsClient* client,
-                       const std::string& method,
-                       const base::DictionaryValue& params) OVERRIDE {
-    ASSERT_EQ(client_, client);
+  virtual Status OnEvent(DevToolsClient* client,
+                         const std::string& method,
+                         const base::DictionaryValue& params) OVERRIDE {
+    EXPECT_EQ(client_, client);
     client_->SendCommand("method", params);
     EXPECT_TRUE(other_listener_->received_event_);
+    return Status(kOk);
   }
 
  private:
@@ -995,9 +999,9 @@ class MockDevToolsEventListener : public DevToolsEventListener {
     return Status(kOk);
   }
 
-  virtual void OnEvent(DevToolsClient* client,
-                       const std::string& method,
-                       const base::DictionaryValue& params) OVERRIDE {
+  virtual Status OnEvent(DevToolsClient* client,
+                         const std::string& method,
+                         const base::DictionaryValue& params) OVERRIDE {
     id_++;
     Status status = client->SendCommand("hello", params);
     id_--;
@@ -1006,6 +1010,7 @@ class MockDevToolsEventListener : public DevToolsEventListener {
     } else {
       EXPECT_EQ(kOk, status.code());
     }
+    return Status(kOk);
   }
 
  private:
@@ -1080,10 +1085,11 @@ class MockCommandListener : public DevToolsEventListener {
   MockCommandListener() {}
   virtual ~MockCommandListener() {}
 
-  virtual void OnEvent(DevToolsClient* client,
-                       const std::string& method,
-                       const base::DictionaryValue& params) OVERRIDE {
+  virtual Status OnEvent(DevToolsClient* client,
+                         const std::string& method,
+                         const base::DictionaryValue& params) OVERRIDE {
     msgs_.push_back(method);
+    return Status(kOk);
   }
 
   virtual Status OnCommandSuccess(DevToolsClient* client,

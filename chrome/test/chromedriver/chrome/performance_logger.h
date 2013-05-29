@@ -23,9 +23,9 @@ class PerformanceLogger : public DevToolsEventListener {
   explicit PerformanceLogger(Log* log);
 
   virtual Status OnConnected(DevToolsClient* client) OVERRIDE;
-  virtual void OnEvent(DevToolsClient* client,
-                       const std::string& method,
-                       const base::DictionaryValue& params) OVERRIDE;
+  virtual Status OnEvent(DevToolsClient* client,
+                         const std::string& method,
+                         const base::DictionaryValue& params) OVERRIDE;
 
  private:
   Log* log_;

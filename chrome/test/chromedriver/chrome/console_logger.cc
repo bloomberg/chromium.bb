@@ -40,12 +40,11 @@ Status ConsoleLogger::OnConnected(DevToolsClient* client) {
   return client->SendCommand("Console.enable", params);
 }
 
-void ConsoleLogger::OnEvent(
-    DevToolsClient* client,
-    const std::string& method,
-    const base::DictionaryValue& params) {
+Status ConsoleLogger::OnEvent(DevToolsClient* client,
+                              const std::string& method,
+                              const base::DictionaryValue& params) {
   if (!StartsWithASCII(method, "Console.messageAdded", true))
-    return;
+    return Status(kOk);
 
   // If the event has proper structure and fields, log formatted.
   // Else it's a weird message that we don't know how to format, log full JSON.
@@ -83,7 +82,7 @@ void ConsoleLogger::OnEvent(
       if (message_dict->GetString("level", &level_name)) {
         if (ConsoleLevelToLogLevel(level_name, &level)) {
           log_->AddEntry(level, message.str());  // Found all expected fields.
-          return;
+          return Status(kOk);
         }
       }
     }
@@ -93,4 +92,5 @@ void ConsoleLogger::OnEvent(
   std::string message_json;
   base::JSONWriter::Write(&params, &message_json);
   log_->AddEntry(Log::kWarning, message_json);
+  return Status(kOk);
 }

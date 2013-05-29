@@ -12,9 +12,11 @@ Status DevToolsEventListener::OnConnected(DevToolsClient* client) {
   return Status(kOk);
 }
 
-void DevToolsEventListener::OnEvent(DevToolsClient* client,
-                                    const std::string& method,
-                                    const base::DictionaryValue& params) {}
+Status DevToolsEventListener::OnEvent(DevToolsClient* client,
+                                      const std::string& method,
+                                      const base::DictionaryValue& params) {
+  return Status(kOk);
+}
 
 Status DevToolsEventListener::OnCommandSuccess(
     DevToolsClient* client,

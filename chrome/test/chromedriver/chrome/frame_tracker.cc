@@ -7,13 +7,11 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
 FrameTracker::FrameTracker(DevToolsClient* client) {
-  DCHECK(client);
   client->AddListener(this);
 }
 
@@ -39,24 +37,25 @@ Status FrameTracker::OnConnected(DevToolsClient* client) {
   return client->SendCommand("Page.enable", params);
 }
 
-void FrameTracker::OnEvent(DevToolsClient* client,
-                           const std::string& method,
-                           const base::DictionaryValue& params) {
+Status FrameTracker::OnEvent(DevToolsClient* client,
+                             const std::string& method,
+                             const base::DictionaryValue& params) {
   if (method == "Runtime.executionContextCreated") {
     const base::DictionaryValue* context;
     if (!params.GetDictionary("context", &context)) {
-      LOG(ERROR) << "Runtime.executionContextCreated missing dict 'context'";
-      return;
+      return Status(kUnknownError,
+                    "Runtime.executionContextCreated missing dict 'context'");
     }
+
     int context_id;
     std::string frame_id;
     if (!context->GetInteger("id", &context_id) ||
         !context->GetString("frameId", &frame_id)) {
       std::string json;
       base::JSONWriter::Write(context, &json);
-      LOG(ERROR) << "Runtime.executionContextCreated has invalid 'context': "
-                 << json;
-      return;
+      return Status(
+          kUnknownError,
+          "Runtime.executionContextCreated has invalid 'context': " + json);
     }
     frame_to_context_map_[frame_id] = context_id;
   } else if (method == "Page.frameNavigated") {
@@ -64,4 +63,5 @@ void FrameTracker::OnEvent(DevToolsClient* client,
     if (!params.Get("frame.parentId", &unused_value))
       frame_to_context_map_.clear();
   }
+  return Status(kOk);
 }

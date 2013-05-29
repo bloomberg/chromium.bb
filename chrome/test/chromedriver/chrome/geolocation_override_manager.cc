@@ -4,7 +4,6 @@
 
 #include "chrome/test/chromedriver/chrome/geolocation_override_manager.h"
 
-#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/geoposition.h"
@@ -28,18 +27,16 @@ Status GeolocationOverrideManager::OnConnected(DevToolsClient* client) {
   return ApplyOverrideIfNeeded();
 }
 
-void GeolocationOverrideManager::OnEvent(DevToolsClient* client,
-                                         const std::string& method,
-                                         const base::DictionaryValue& params) {
+Status GeolocationOverrideManager::OnEvent(
+    DevToolsClient* client,
+    const std::string& method,
+    const base::DictionaryValue& params) {
   if (method == "Page.frameNavigated") {
     const base::Value* unused_value;
-    if (!params.Get("frame.parentId", &unused_value)) {
-      Status status = ApplyOverrideIfNeeded();
-      if (status.IsError()) {
-        LOG(ERROR) << "Unable to apply override: " << status.message();
-      }
-    }
+    if (!params.Get("frame.parentId", &unused_value))
+      return ApplyOverrideIfNeeded();
   }
+  return Status(kOk);
 }
 
 Status GeolocationOverrideManager::ApplyOverrideIfNeeded() {

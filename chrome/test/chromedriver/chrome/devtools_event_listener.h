@@ -24,9 +24,9 @@ class DevToolsEventListener {
   virtual Status OnConnected(DevToolsClient* client);
 
   // Called when an event is received.
-  virtual void OnEvent(DevToolsClient* client,
-                       const std::string& method,
-                       const base::DictionaryValue& params);
+  virtual Status OnEvent(DevToolsClient* client,
+                         const std::string& method,
+                         const base::DictionaryValue& params);
 
   // Called when a command success response is received.
   virtual Status OnCommandSuccess(DevToolsClient* client,
