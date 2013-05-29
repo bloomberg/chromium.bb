@@ -30,6 +30,7 @@
 {
   'variables': {
     'jni_generator': '<(DEPTH)/base/android/jni_generator/jni_generator.py',
+    'jni_generator_jarjar_file%': '',
   },
   'rules': [
     {
@@ -49,6 +50,8 @@
         '<(SHARED_INTERMEDIATE_DIR)/<(jni_gen_package)/jni',
         '--optimize_generation',
         '<(optimize_jni_generation)',
+        '--jarjar',
+        '<(jni_generator_jarjar_file)',
       ],
       'message': 'Generating JNI bindings from <(RULE_INPUT_PATH)',
       'process_outputs_as_sources': 1,

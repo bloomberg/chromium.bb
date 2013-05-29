@@ -119,6 +119,7 @@ class JniParams(object):
   _fully_qualified_class = ''
   _package = ''
   _inner_classes = []
+  _remappings = []
 
   @staticmethod
   def SetFullyQualifiedClass(fully_qualified_class):
@@ -173,14 +174,14 @@ class JniParams(object):
       return prefix + pod_param_map[param]
     if '/' in param:
       # Coming from javap, use the fully qualified param directly.
-      return prefix + 'L' + param + ';'
+      return prefix + 'L' + JniParams.RemapClassName(param) + ';'
     for qualified_name in (object_param_list +
                            [JniParams._fully_qualified_class] +
                            JniParams._inner_classes):
       if (qualified_name.endswith('/' + param) or
           qualified_name.endswith('$' + param.replace('.', '$')) or
           qualified_name == 'L' + param):
-        return prefix + qualified_name + ';'
+        return prefix + JniParams.RemapClassName(qualified_name) + ';'
 
     # Is it from an import? (e.g. referecing Class from import pkg.Class;
     # note that referencing an inner class Inner from import pkg.Class.Inner
@@ -194,7 +195,7 @@ class JniParams(object):
                             'and used by JNI (%s). Please import the outer '
                             'class and use Outer.Inner instead.' %
                             (qualified_name, param))
-        return prefix + qualified_name + ';'
+        return prefix + JniParams.RemapClassName(qualified_name) + ';'
 
     # Is it an inner class from an outer class import? (e.g. referencing
     # Class.Inner from import pkg.Class).
@@ -204,10 +205,12 @@ class JniParams(object):
       inner = components[-1]
       for qualified_name in JniParams._imports:
         if qualified_name.endswith('/' + outer):
-          return prefix + qualified_name + '$' + inner + ';'
+          return (prefix + JniParams.RemapClassName(qualified_name) +
+                  '$' + inner + ';')
 
     # Type not found, falling back to same package as this class.
-    return prefix + 'L' + JniParams._package + '/' + param + ';'
+    return (prefix + 'L' +
+            JniParams.RemapClassName(JniParams._package + '/' + param) + ';')
 
   @staticmethod
   def Signature(params, returns, wrap):
@@ -237,6 +240,31 @@ class JniParams(object):
       )
       ret += [param]
     return ret
+
+  @staticmethod
+  def RemapClassName(class_name):
+    """Remaps class names using the jarjar mapping table."""
+    for old, new in JniParams._remappings:
+      if old in class_name:
+        return class_name.replace(old, new, 1)
+    return class_name
+
+  @staticmethod
+  def SetJarJarMappings(mappings):
+    """Parse jarjar mappings from a string."""
+    JniParams._remappings = []
+    for line in mappings.splitlines():
+      keyword, src, dest = line.split()
+      if keyword != 'rule':
+        continue
+      assert src.endswith('.**')
+      src = src[:-2].replace('.', '/')
+      dest = dest.replace('.', '/')
+      if dest.endswith('@0'):
+        JniParams._remappings.append((src, dest[:-2] + src))
+      else:
+        assert dest.endswith('@1')
+        JniParams._remappings.append((src, dest[:-2]))
 
 
 def ExtractJNINamespace(contents):
@@ -860,7 +888,7 @@ const char k${JAVA_CLASS}ClassPath[] = "${JNI_CLASS_PATH}";""")
     for clazz in all_classes:
       values = {
           'JAVA_CLASS': clazz,
-          'JNI_CLASS_PATH': all_classes[clazz],
+          'JNI_CLASS_PATH': JniParams.RemapClassName(all_classes[clazz]),
       }
       ret += [template.substitute(values)]
     ret += ''
@@ -1014,6 +1042,8 @@ See SampleForTests.java for more details.
                            default=0, help='Whether we should optimize JNI '
                            'generation by not regenerating files if they have '
                            'not changed.')
+  option_parser.add_option('--jarjar',
+                           help='Path to optional jarjar rules file.')
   options, args = option_parser.parse_args(argv)
   if options.jar_file:
     input_file = ExtractJarInputFile(options.jar_file, options.input_file,
@@ -1024,6 +1054,9 @@ See SampleForTests.java for more details.
   if options.output_dir:
     root_name = os.path.splitext(os.path.basename(input_file))[0]
     output_file = os.path.join(options.output_dir, root_name) + '_jni.h'
+  if options.jarjar:
+    with open(options.jarjar) as f:
+      JniParams.SetJarJarMappings(f.read())
   GenerateJNIHeader(input_file, output_file, options.namespace,
                     options.optimize_generation)
 
