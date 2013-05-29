@@ -330,6 +330,11 @@ transform_rect(struct weston_output *output, pixman_box32_t *r)
         default:
                 break;
         }
+
+	r->x1 *= output->scale;
+	r->y1 *= output->scale;
+	r->x2 *= output->scale;
+	r->y2 *= output->scale;
 }
 
 static void
