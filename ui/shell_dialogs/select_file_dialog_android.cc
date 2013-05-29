@@ -62,15 +62,20 @@ void SelectFileDialogImpl::SelectFileImpl(
     void* params) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  std::vector<string16> accept_types =
-      *(reinterpret_cast<std::vector<string16>*>(params));
+  ScopedJavaLocalRef<jstring> capture_value;
+  std::vector<string16> accept_types;
+  if (params) {
+    accept_types = *(reinterpret_cast<std::vector<string16>*>(params));
 
-  // The last string in params is expected to be the string with capture value.
-  ScopedJavaLocalRef<jstring> capture_value =
-      base::android::ConvertUTF16ToJavaString(env,
+    // The last string in params is expected to be the string
+    // with capture value.
+    capture_value = base::android::ConvertUTF16ToJavaString(env,
           StringToLowerASCII(accept_types.back()));
-  base::android::CheckException(env);
-  accept_types.pop_back();
+    base::android::CheckException(env);
+    accept_types.pop_back();
+  } else {
+    capture_value = base::android::ConvertUTF8ToJavaString(env, "filesystem");
+  }
 
   // The rest params elements are expected to be accept_types.
   ScopedJavaLocalRef<jobjectArray> accept_types_java =
