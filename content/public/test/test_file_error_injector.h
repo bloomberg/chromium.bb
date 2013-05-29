@@ -74,7 +74,7 @@ class TestFileErrorInjector
   // creator goes out of scope.
   // TODO(rdsmith): Allow multiple calls for different download managers.
   static scoped_refptr<TestFileErrorInjector> Create(
-      scoped_refptr<DownloadManager> download_manager);
+      DownloadManager* download_manager);
 
   // Adds an error.
   // Must be called before |InjectErrors()| for a particular download file.
@@ -112,8 +112,7 @@ class TestFileErrorInjector
 
   typedef std::set<GURL> FileSet;
 
-  TestFileErrorInjector(
-      scoped_refptr<DownloadManager> download_manager);
+  explicit TestFileErrorInjector(DownloadManager* download_manager);
 
   virtual ~TestFileErrorInjector();
 
@@ -140,7 +139,7 @@ class TestFileErrorInjector
   DownloadFileWithErrorsFactory* created_factory_;
 
   // The download manager we set the factory on.
-  scoped_refptr<DownloadManagerImpl> download_manager_;
+  DownloadManagerImpl* download_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFileErrorInjector);
 };

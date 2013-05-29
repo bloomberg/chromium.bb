@@ -9,7 +9,7 @@
 #include <set>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/test/mock_download_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,34 +20,22 @@ class DownloadIdTest : public testing::Test {
  public:
   DownloadIdTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {
-    num_managers_ = ARRAYSIZE_UNSAFE(download_managers_);
-    std::vector<MockDownloadManager*> managers;
-    managers.resize(num_managers_);
-    size_t i;
-    // Create the download managers.
-    for (i = 0; i < num_managers_; ++i) {
-      managers[i] = new MockDownloadManager();
+    const size_t num_managers_ = 2;
+    for (size_t i = 0; i < num_managers_; ++i) {
+      download_managers_.push_back(new MockDownloadManager());
     }
-    // Sort by pointer value.
-    std::sort(managers.begin(), managers.end());
-    // Assign to |download_managers_|.
-    for (i = 0; i < num_managers_; ++i) {
-      download_managers_[i] = managers[i];
-      managers[i] = NULL;
-    }
-  }
 
-  virtual ~DownloadIdTest() {
-    for (size_t i = 0; i < num_managers_; ++i)
-      download_managers_[i] = NULL;  // Releases & deletes.
+    // These pointers will be used as Domains for DownloadIds. Domain affects
+    // the comparison of two DownloadIds, so we keep them sorted and use
+    // that property when testing.
+    std::sort(download_managers_.begin(), download_managers_.end());
   }
 
  protected:
-  scoped_refptr<DownloadManager> download_managers_[2];
+  ScopedVector<DownloadManager> download_managers_;
   base::MessageLoopForUI message_loop_;
   // Necessary to delete |DownloadManager|s.
   BrowserThreadImpl ui_thread_;
-  size_t num_managers_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadIdTest);
 };
@@ -89,7 +77,7 @@ TEST_F(DownloadIdTest, NotEqualsIndex) {
 
 TEST_F(DownloadIdTest, NotEqualsManager) {
   // Because it's sorted above, &download_managers_[1] > &download_managers_[0].
-  EXPECT_LT(download_managers_[0].get(), download_managers_[1].get());
+  EXPECT_LT(download_managers_[0], download_managers_[1]);
   DownloadId id1(download_managers_[0], 23);
   DownloadId id2(download_managers_[1], 23);
   DownloadId id3(download_managers_[1], 22);

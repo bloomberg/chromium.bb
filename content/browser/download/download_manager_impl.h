@@ -36,6 +36,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // Caller guarantees that |net_log| will remain valid
   // for the lifetime of DownloadManagerImpl (until Shutdown() is called).
   DownloadManagerImpl(net::NetLog* net_log, BrowserContext* browser_context);
+  virtual ~DownloadManagerImpl();
 
   // Implementation functions (not part of the DownloadManager interface).
 
@@ -102,10 +103,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   friend class DownloadManagerTest;
   friend class DownloadTest;
 
-  friend class base::RefCountedThreadSafe<DownloadManagerImpl>;
-
-  virtual ~DownloadManagerImpl();
-
   // Create a new active item based on the info.  Separate from
   // StartDownload() for testing.
   DownloadItemImpl* CreateActiveItem(DownloadId id,
@@ -165,6 +162,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   DownloadManagerDelegate* delegate_;
 
   net::NetLog* net_log_;
+
+  base::WeakPtrFactory<DownloadManagerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerImpl);
 };

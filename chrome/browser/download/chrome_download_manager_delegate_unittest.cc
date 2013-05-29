@@ -169,7 +169,7 @@ class ChromeDownloadManagerDelegateTest :
   base::ScopedTempDir test_download_dir_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  scoped_refptr<content::MockDownloadManager> download_manager_;
+  scoped_ptr<content::MockDownloadManager> download_manager_;
   scoped_refptr<TestChromeDownloadManagerDelegate> delegate_;
   MockWebContentsDelegate web_contents_delegate_;
 };

@@ -56,9 +56,10 @@ struct DownloadCreateInfo;
 struct DownloadRetrieveInfo;
 
 // Browser's download manager: manages all downloads and destination view.
-class CONTENT_EXPORT DownloadManager
-    : public base::RefCountedThreadSafe<DownloadManager> {
+class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
  public:
+  virtual ~DownloadManager() {}
+
   // Sets/Gets the delegate for this DownloadManager. The delegate has to live
   // past its Shutdown method being called (by the DownloadManager).
   virtual void SetDelegate(DownloadManagerDelegate* delegate) = 0;
@@ -169,12 +170,6 @@ class CONTENT_EXPORT DownloadManager
   // Get the download item for |id| if present, no matter what type of download
   // it is or state it's in.
   virtual DownloadItem* GetDownload(int id) = 0;
-
- protected:
-  virtual ~DownloadManager() {}
-
- private:
-  friend class base::RefCountedThreadSafe<DownloadManager>;
 };
 
 }  // namespace content

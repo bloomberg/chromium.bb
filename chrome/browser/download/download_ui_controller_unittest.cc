@@ -69,7 +69,7 @@ class DownloadUIControllerTest : public testing::Test {
   content::DownloadItem* received_item() { return received_item_; }
 
  private:
-  scoped_refptr<MockDownloadManager> manager_;
+  scoped_ptr<MockDownloadManager> manager_;
   content::DownloadManager::Observer* manager_observer_;
   content::DownloadItem::Observer* item_observer_;
   content::DownloadItem* received_item_;
@@ -85,7 +85,7 @@ DownloadUIControllerTest::DownloadUIControllerTest()
 }
 
 void DownloadUIControllerTest::SetUp() {
-  manager_ = new testing::StrictMock<MockDownloadManager>();
+  manager_.reset(new testing::StrictMock<MockDownloadManager>());
   EXPECT_CALL(*manager_, AddObserver(_))
       .WillOnce(SaveArg<0>(&manager_observer_));
   EXPECT_CALL(*manager_, RemoveObserver(_))

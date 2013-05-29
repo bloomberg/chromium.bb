@@ -444,7 +444,7 @@ class DownloadManagerTest : public testing::Test {
   // then create a DownloadManager that points
   // at all of those.
   virtual void SetUp() {
-    DCHECK(!download_manager_.get());
+    DCHECK(!download_manager_);
 
     mock_download_item_factory_ = (new MockDownloadItemFactory())->AsWeakPtr();
     mock_download_file_factory_ = (new MockDownloadFileFactory())->AsWeakPtr();
@@ -456,8 +456,8 @@ class DownloadManagerTest : public testing::Test {
     EXPECT_CALL(*mock_browser_context_.get(), IsOffTheRecord())
         .WillRepeatedly(Return(false));
 
-    download_manager_ = new DownloadManagerImpl(
-        NULL, mock_browser_context_.get());
+    download_manager_.reset(new DownloadManagerImpl(
+                                NULL, mock_browser_context_.get()));
     download_manager_->SetDownloadItemFactoryForTesting(
         scoped_ptr<DownloadItemFactory>(
             mock_download_item_factory_.get()).Pass());
@@ -481,7 +481,7 @@ class DownloadManagerTest : public testing::Test {
         .WillOnce(Return());
 
     download_manager_->Shutdown();
-    download_manager_ = NULL;
+    download_manager_.reset();
     message_loop_.RunUntilIdle();
     ASSERT_EQ(NULL, mock_download_item_factory_.get());
     ASSERT_EQ(NULL, mock_download_file_factory_.get());
@@ -555,7 +555,7 @@ class DownloadManagerTest : public testing::Test {
 
  protected:
   // Key test variable; we'll keep it available to sub-classes.
-  scoped_refptr<DownloadManagerImpl> download_manager_;
+  scoped_ptr<DownloadManagerImpl> download_manager_;
   base::WeakPtr<MockDownloadFileFactory> mock_download_file_factory_;
 
   // Target detetermined callback.

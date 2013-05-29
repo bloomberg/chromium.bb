@@ -60,7 +60,7 @@ class DownloadHandlerTest : public testing::Test {
     file_write_helper_.reset(new FileWriteHelper(&file_system_));
     download_handler_.reset(
         new DownloadHandler(file_write_helper_.get(), &file_system_));
-    download_handler_->Initialize(download_manager_, temp_dir_.path());
+    download_handler_->Initialize(download_manager_.get(), temp_dir_.path());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -70,7 +70,7 @@ class DownloadHandlerTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
-  scoped_refptr<content::MockDownloadManager> download_manager_;
+  scoped_ptr<content::MockDownloadManager> download_manager_;
   MockFileSystem file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DownloadHandler> download_handler_;

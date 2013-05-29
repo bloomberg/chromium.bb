@@ -2642,8 +2642,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
   base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
-  scoped_refptr<DownloadManager> download_manager =
-      DownloadManagerForBrowser(browser());
+  DownloadManager* download_manager = DownloadManagerForBrowser(browser());
   scoped_ptr<content::DownloadTestObserver> observer(
       new content::DownloadTestObserverTerminal(
           download_manager,

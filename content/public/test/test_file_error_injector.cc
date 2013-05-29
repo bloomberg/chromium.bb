@@ -338,12 +338,11 @@ void DownloadFileWithErrorsFactory::ClearErrors() {
 }
 
 TestFileErrorInjector::TestFileErrorInjector(
-    scoped_refptr<DownloadManager> download_manager)
+    DownloadManager* download_manager)
     : created_factory_(NULL),
       // This code is only used for browser_tests, so a
       // DownloadManager is always a DownloadManagerImpl.
-      download_manager_(
-          static_cast<DownloadManagerImpl*>(download_manager.get())) {
+      download_manager_(static_cast<DownloadManagerImpl*>(download_manager)) {
   // Record the value of the pointer, for later validation.
   created_factory_ =
       new DownloadFileWithErrorsFactory(
@@ -446,7 +445,7 @@ void TestFileErrorInjector::RecordDownloadFileDestruction(const GURL& url) {
 
 // static
 scoped_refptr<TestFileErrorInjector> TestFileErrorInjector::Create(
-    scoped_refptr<DownloadManager> download_manager) {
+    DownloadManager* download_manager) {
   static bool visited = false;
   DCHECK(!visited);  // Only allowed to be called once.
   visited = true;

@@ -239,7 +239,8 @@ DownloadManagerImpl::DownloadManagerImpl(
       shutdown_needed_(true),
       browser_context_(browser_context),
       delegate_(NULL),
-      net_log_(net_log) {
+      net_log_(net_log),
+      weak_factory_(this) {
   DCHECK(browser_context);
 }
 
@@ -449,7 +450,7 @@ void DownloadManagerImpl::CheckForFileRemoval(DownloadItemImpl* download_item) {
     delegate_->CheckForFileExistence(
         download_item,
         base::Bind(&DownloadManagerImpl::OnFileExistenceChecked,
-                   this, download_item->GetId()));
+                   weak_factory_.GetWeakPtr(), download_item->GetId()));
   }
 }
 

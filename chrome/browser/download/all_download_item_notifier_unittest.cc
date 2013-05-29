@@ -70,7 +70,7 @@ class AllDownloadItemNotifierTest : public testing::Test {
 
  private:
   NiceMock<content::MockDownloadItem> item_;
-  scoped_refptr<content::MockDownloadManager> download_manager_;
+  scoped_ptr<content::MockDownloadManager> download_manager_;
   scoped_ptr<AllDownloadItemNotifier> notifier_;
   NiceMock<MockNotifierObserver> observer_;
 

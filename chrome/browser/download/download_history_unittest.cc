@@ -413,7 +413,7 @@ class DownloadHistoryTest : public testing::Test {
   base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;
   std::vector<NiceMockDownloadItem*> items_;
-  scoped_refptr<content::MockDownloadManager> manager_;
+  scoped_ptr<content::MockDownloadManager> manager_;
   FakeHistoryAdapter* history_;
   scoped_ptr<DownloadHistory> download_history_;
   content::DownloadManager::Observer* manager_observer_;

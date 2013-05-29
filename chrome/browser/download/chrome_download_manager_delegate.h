@@ -104,7 +104,7 @@ class ChromeDownloadManagerDelegate
 
   // So that test classes that inherit from this for override purposes
   // can call back into the DownloadManager.
-  scoped_refptr<content::DownloadManager> download_manager_;
+  content::DownloadManager* download_manager_;
 
   virtual safe_browsing::DownloadProtectionService*
       GetDownloadProtectionService();

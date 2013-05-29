@@ -43,7 +43,7 @@ class DownloadShelfTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<content::MockDownloadItem> download_item_;
-  scoped_refptr<content::MockDownloadManager> download_manager_;
+  scoped_ptr<content::MockDownloadManager> download_manager_;
   TestDownloadShelf shelf_;
 };
 
@@ -63,7 +63,8 @@ DownloadShelfTest::DownloadShelfTest()
   ON_CALL(*download_item_, ShouldOpenFileBasedOnExtension())
       .WillByDefault(Return(false));
 
-  download_manager_ = new ::testing::NiceMock<content::MockDownloadManager>();
+  download_manager_.reset(
+      new ::testing::NiceMock<content::MockDownloadManager>());
   ON_CALL(*download_manager_, GetDownload(_))
       .WillByDefault(Return(download_item_.get()));
 
