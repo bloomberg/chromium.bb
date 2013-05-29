@@ -1403,6 +1403,10 @@ body[new-ui] #volume-list > .accepts,
   -webkit-margin-end: 10px;
 }
 
+body[new-ui] .table-row-cell .selection-label {
+  height: 15px;
+}
+
 .table-row-cell .filename-label,
 .thumbnail-item .filename-label,
 /* Show ellipsis in cells. The name column has different structure and overrides
@@ -1723,21 +1727,49 @@ body[new-ui] #select-all-checkbox {
   opacity: 0.6;
 }
 
-body[new-ui] #list-container .table-header #select-all-checkbox:not(:checked),
-body[new-ui] #list-container li.table-row:hover .file-checkbox,
 body[new-ui] #list-container li.table-row:hover .pin,
 body[new-ui] #list-container li.thumbnail-item:hover .file-checkbox {
   opacity: 0.4;
 }
 
-#list-container li.table-row[selected] .file-checkbox,
 #list-container li.table-row[selected] .pin,
 #list-container li.thumbnail-item[selected] .file-checkbox {
   opacity: 1.0 !important;
 }
 
+body[new-ui] #list-container .table-header #select-all-checkbox,
+body[new-ui] #list-container li.table-row .file-checkbox {
+  -webkit-appearance: none;
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/select_checkbox.png') 1x,
+    url('../images/files/ui/new-ui/2x/select_checkbox.png') 2x);
+  background-position: center;
+  background-repeat: no-repeat;
+  border-style: none;
+  height: 15px;
+  opacity: 1.0;
+  width: 15px;
+}
+
+body[new-ui] #list-container .table-header #select-all-checkbox::after,
+body[new-ui] #list-container li.table-row .file-checkbox::after {
+  content: none;
+}
+
+body[new-ui] #list-container .table-header #select-all-checkbox:checked,
+body[new-ui] #list-container li.table-row .file-checkbox:checked {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/select_checkbox_checked.png') 1x,
+    url('../images/files/ui/new-ui/2x/select_checkbox_checked.png') 2x);
+}
+
+body[new-ui] #list-container .table-header #select-all-checkbox:checked,
+body[new-ui] #list-container list li.table-row[selected] .file-checkbox {
+  -webkit-filter: brightness(0) opacity(40%);
+}
+
 body[new-ui] #list-container list:focus li.table-row[selected] .file-checkbox {
-  -webkit-filter: contrast(300%) invert(100%);
+  -webkit-filter: brightness(0) invert();
 }
 
 #list-container li.table-row,
