@@ -232,16 +232,13 @@ void CursorLoaderX11::LoadAnimatedCursor(int id,
     int x_offset = frame_width * frame;
     DCHECK_LE(x_offset + frame_width, total_width);
 
-    SkBitmap cropped;
-    SkIRect rect = SkIRect::MakeXYWH(x_offset, 0, frame_width, frame_height);
-    bitmap.extractSubset(&cropped, rect);
+    SkBitmap cropped = SkBitmapOperations::CreateTiledBitmap(
+        bitmap, x_offset, 0, frame_width, frame_height);
     DCHECK_EQ(frame_width, cropped.width());
     DCHECK_EQ(frame_height, cropped.height());
 
-    if (scale() != 1.f)
-      ScaleCursorImageAndHotpoint(scale(), &cropped, &hotpoint);
-
     XcursorImage* x_image = SkBitmapToXcursorImage(&cropped, hotpoint);
+
     x_image->delay = frame_delay_ms;
     x_images->images[frame] = x_image;
   }
