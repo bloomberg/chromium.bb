@@ -170,14 +170,16 @@ class GClientSmoke(GClientSmokeBase):
     """testHelp: make sure no new command was added."""
     result = self.gclient(['help'])
     # Roughly, not too short, not too long.
-    self.assertTrue(1000 < len(result[0]) and len(result[0]) < 2000)
+    self.assertTrue(1000 < len(result[0]) and len(result[0]) < 2100,
+                    'Too much written to stdout: %d bytes' % len(result[0]))
     self.assertEquals(0, len(result[1]))
     self.assertEquals(0, result[2])
 
   def testUnknown(self):
     result = self.gclient(['foo'])
     # Roughly, not too short, not too long.
-    self.assertTrue(1000 < len(result[0]) and len(result[0]) < 2000)
+    self.assertTrue(1000 < len(result[0]) and len(result[0]) < 2100,
+                    'Too much written to stdout: %d bytes' % len(result[0]))
     self.assertEquals(0, len(result[1]))
     self.assertEquals(0, result[2])
 
