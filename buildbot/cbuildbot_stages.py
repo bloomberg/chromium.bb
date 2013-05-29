@@ -1753,7 +1753,7 @@ class HWTestStage(ArchivingStage):
       return super(HWTestStage, self)._HandleStageException(exception)
 
   def DealWithTimeout(self, exception):
-    if not self.suite_config.critical:
+    if not self.suite_config.critical and not self.suite_config.fatal_timeouts:
       return self._HandleExceptionAsWarning(exception)
 
     return super(HWTestStage, self)._HandleStageException(exception)

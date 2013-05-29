@@ -486,7 +486,7 @@ class HWTestConfig(object):
   def DefaultListCQ(cls, **dargs):
     """Returns the default list for cq tests with overrides."""
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=50 * 60,
-                        file_bugs=False)
+                        fatal_timeouts=True, file_bugs=False)
     # Allows dargs overrides to default_dict for cq.
     default_dict.update(dargs)
     return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
@@ -494,7 +494,7 @@ class HWTestConfig(object):
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, copy_perf_results=False,
                timeout=DEFAULT_HW_TEST_TIMEOUT, async=False, critical=False,
-               file_bugs=False):
+               fatal_timeouts=False, file_bugs=False):
     """Constructor -- see members above."""
     self.suite = suite
     self.num = num
@@ -503,6 +503,7 @@ class HWTestConfig(object):
     self.timeout = timeout
     self.async = async
     self.critical = critical
+    self.fatal_timeouts = fatal_timeouts
     self.file_bugs = file_bugs
 
 
