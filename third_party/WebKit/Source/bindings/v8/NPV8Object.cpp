@@ -511,7 +511,7 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
         V8NPObject* object = reinterpret_cast<V8NPObject*>(npObject);
 
         v8::HandleScope handleScope;
-        v8::Handle<v8::Context> context = toV8Context(npp, npObject);
+        v8::Local<v8::Context> context = toV8Context(npp, npObject);
         if (context.IsEmpty())
             return false;
         v8::Context::Scope scope(context);
@@ -532,12 +532,12 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
             "  return props;"
             "});";
         v8::Handle<v8::String> source = v8::String::New(enumeratorCode);
-        v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(source, context->GetIsolate());
+        v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(source, context->GetIsolate(), context);
         ASSERT(!result.IsEmpty());
         ASSERT(result->IsFunction());
         v8::Handle<v8::Function> enumerator = v8::Handle<v8::Function>::Cast(result);
         v8::Handle<v8::Value> argv[] = { obj };
-        v8::Local<v8::Value> propsObj = enumerator->Call(v8::Handle<v8::Object>::Cast(result), ARRAYSIZE_UNSAFE(argv), argv);
+        v8::Local<v8::Value> propsObj = V8ScriptRunner::callInternalFunction(enumerator, context, v8::Handle<v8::Object>::Cast(result), WTF_ARRAY_LENGTH(argv), argv, context->GetIsolate());
         if (propsObj.IsEmpty())
             return false;
 
