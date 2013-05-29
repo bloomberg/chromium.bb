@@ -1,6 +1,3 @@
-# http://crbug.com/163314
-IndexedDBTest.*
-
 # Flaky, see http://crbug.com/227278
 WebContentsVideoCaptureDeviceTest.WebContentsDestroyed
 CompositingIOSurfaceTransformerTest.*
