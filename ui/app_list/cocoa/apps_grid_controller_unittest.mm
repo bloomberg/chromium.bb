@@ -260,9 +260,9 @@ TEST_F(AppsGridControllerTest, FirstPageKeyboardNavigation) {
 
 // Tests keyboard navigation across pages.
 TEST_F(AppsGridControllerTest, CrossPageKeyboardNavigation) {
-  model()->PopulateApps(2 * kItemsPerPage);
+  model()->PopulateApps(kItemsPerPage + 10);
   EXPECT_EQ(kItemsPerPage, [[GetPageAt(0) content] count]);
-  EXPECT_EQ(kItemsPerPage, [[GetPageAt(1) content] count]);
+  EXPECT_EQ(10u, [[GetPageAt(1) content] count]);
 
   // Moving Left, Up, or PageUp from the top-left corner of the first page does
   // nothing.
@@ -274,77 +274,62 @@ TEST_F(AppsGridControllerTest, CrossPageKeyboardNavigation) {
   SimulateKeyAction(@selector(scrollPageUp:));
   EXPECT_EQ(0u, [apps_grid_controller_ selectedItemIndex]);
 
-  // Moving Right from the right side wraps to the next row.
+  // Moving Right from the right side goes to the next page. Moving Left goes
+  // back to the first page.
   [apps_grid_controller_ selectItemAtIndex:3];
-  SimulateKeyAction(@selector(moveRight:));
-  EXPECT_EQ(4u, [apps_grid_controller_ selectedItemIndex]);
-
-  // Moving Down from the bottom goes to the next page and selects the same
-  // column. Moving Up again goes back to the first page.
-  [apps_grid_controller_ selectItemAtIndex:13];
-  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
-  SimulateKeyAction(@selector(moveDown:));
-  EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
-  EXPECT_EQ(kItemsPerPage + 1, [apps_grid_controller_ selectedItemIndex]);
-  SimulateKeyAction(@selector(moveUp:));
-  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
-  EXPECT_EQ(13u, [apps_grid_controller_ selectedItemIndex]);
-
-  // Moving Right from the bottom-right corner goes to the next page.
-  // Moving Left again goes back to the first page.
-  [apps_grid_controller_ selectItemAtIndex:15];
-  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
   SimulateKeyAction(@selector(moveRight:));
   EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
   EXPECT_EQ(kItemsPerPage, [apps_grid_controller_ selectedItemIndex]);
   SimulateKeyAction(@selector(moveLeft:));
   EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
-  EXPECT_EQ(15u, [apps_grid_controller_ selectedItemIndex]);
+  EXPECT_EQ(3u, [apps_grid_controller_ selectedItemIndex]);
+
+  // Moving Down from the bottom does nothing.
+  [apps_grid_controller_ selectItemAtIndex:13];
+  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
+  SimulateKeyAction(@selector(moveDown:));
+  EXPECT_EQ(13u, [apps_grid_controller_ selectedItemIndex]);
+
+  // Moving Right into a non-existent square on the next page will select the
+  // last item.
+  [apps_grid_controller_ selectItemAtIndex:15];
+  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
+  SimulateKeyAction(@selector(moveRight:));
+  EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(kItemsPerPage + 9, [apps_grid_controller_ selectedItemIndex]);
 
   // PageDown and PageUp switches pages while maintaining the same selection
   // position.
-  [apps_grid_controller_ selectItemAtIndex:10];
+  [apps_grid_controller_ selectItemAtIndex:6];
   EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
   SimulateKeyAction(@selector(scrollPageDown:));
   EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
-  EXPECT_EQ(kItemsPerPage + 10, [apps_grid_controller_ selectedItemIndex]);
+  EXPECT_EQ(kItemsPerPage + 6, [apps_grid_controller_ selectedItemIndex]);
   SimulateKeyAction(@selector(scrollPageUp:));
   EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
-  EXPECT_EQ(10u, [apps_grid_controller_ selectedItemIndex]);
+  EXPECT_EQ(6u, [apps_grid_controller_ selectedItemIndex]);
+
+  // PageDown into a non-existent square on the next page will select the last
+  // item.
+  [apps_grid_controller_ selectItemAtIndex:11];
+  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
+  SimulateKeyAction(@selector(scrollPageDown:));
+  EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
+  EXPECT_EQ(kItemsPerPage + 9, [apps_grid_controller_ selectedItemIndex]);
 
   // Moving Right, Down, or PageDown from the bottom-right corner of the last
-  // page does nothing.
-  [apps_grid_controller_ selectItemAtIndex:(2 * kItemsPerPage - 1)];
+  // page (not the last item) does nothing.
+  [apps_grid_controller_ selectItemAtIndex:kItemsPerPage + 9];
   EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
   SimulateKeyAction(@selector(moveRight:));
-  EXPECT_EQ(kItemsPerPage + 15, [apps_grid_controller_ selectedItemIndex]);
+  EXPECT_EQ(kItemsPerPage + 9, [apps_grid_controller_ selectedItemIndex]);
   SimulateKeyAction(@selector(moveDown:));
-  EXPECT_EQ(kItemsPerPage + 15, [apps_grid_controller_ selectedItemIndex]);
+  EXPECT_EQ(kItemsPerPage + 9, [apps_grid_controller_ selectedItemIndex]);
   SimulateKeyAction(@selector(scrollPageDown:));
-  EXPECT_EQ(kItemsPerPage + 15, [apps_grid_controller_ selectedItemIndex]);
-
-  // Moving down on the bottom of the last page does nothing.
-  [apps_grid_controller_ selectItemAtIndex:(2 * kItemsPerPage - 4)];
-  EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
-  SimulateKeyAction(@selector(moveDown:));
-  EXPECT_EQ(kItemsPerPage + 12, [apps_grid_controller_ selectedItemIndex]);
-
-  // Remove some items from the last page.
-  ReplaceTestModel(kItemsPerPage + 8);
-  EXPECT_EQ(8u, [[GetPageAt(1) content] count]);
-  EXPECT_EQ(NSNotFound, [apps_grid_controller_ selectedItemIndex]);
-
-  // PageUp/Down to an invalid selection does nothing.
-  [apps_grid_controller_ selectItemAtIndex:10];
-  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
-  SimulateKeyAction(@selector(scrollPageUp:));
-  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
-  EXPECT_EQ(10u, [apps_grid_controller_ selectedItemIndex]);
-  SimulateKeyAction(@selector(scrollPageDown:));
-  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
-  EXPECT_EQ(10u, [apps_grid_controller_ selectedItemIndex]);
+  EXPECT_EQ(kItemsPerPage + 9, [apps_grid_controller_ selectedItemIndex]);
 
   // After page switch, arrow keys select first item on current page.
+  [apps_grid_controller_ scrollToPage:0];
   [apps_grid_controller_ scrollToPage:1];
   EXPECT_EQ(NSNotFound, [apps_grid_controller_ selectedItemIndex]);
   SimulateKeyAction(@selector(moveUp:));

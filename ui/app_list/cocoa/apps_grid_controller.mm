@@ -603,9 +603,18 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
     return YES;
   }
 
-  if ((indexDelta < 0 && static_cast<NSUInteger>(-indexDelta) > oldIndex) ||
-      oldIndex + indexDelta >= [items_ count]) {
+  // Can't select a negative index.
+  if (indexDelta < 0 && static_cast<NSUInteger>(-indexDelta) > oldIndex)
     return NO;
+
+  // Can't select an index greater or equal to the number of items.
+  if (oldIndex + indexDelta >= [items_ count]) {
+    if (visiblePage_ == [pages_ count] - 1)
+      return NO;
+
+    // If we're not on the last page, then select the last item.
+    [self selectItemAtIndex:[items_ count] - 1];
+    return YES;
   }
 
   [self selectItemAtIndex:oldIndex + indexDelta];
@@ -629,17 +638,34 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
     return YES;
   }
 
-  if (command == @selector(moveLeft:))
-    return [self moveSelectionByDelta:-1];
+  NSUInteger oldIndex = [self selectedItemIndex];
+  // If nothing is currently selected, select the first item on the page.
+  if (oldIndex == NSNotFound) {
+    [self selectItemAtIndex:visiblePage_ * kItemsPerPage];
+    return YES;
+  }
 
-  if (command == @selector(moveRight:))
-    return [self moveSelectionByDelta:1];
+  if (command == @selector(moveLeft:)) {
+    return oldIndex % kFixedColumns == 0 ?
+        [self moveSelectionByDelta:-kItemsPerPage + kFixedColumns - 1] :
+        [self moveSelectionByDelta:-1];
+  }
 
-  if (command == @selector(moveUp:))
-    return [self moveSelectionByDelta:-kFixedColumns];
+  if (command == @selector(moveRight:)) {
+    return oldIndex % kFixedColumns == kFixedColumns - 1 ?
+        [self moveSelectionByDelta:+kItemsPerPage - kFixedColumns + 1] :
+        [self moveSelectionByDelta:1];
+  }
 
-  if (command == @selector(moveDown:))
-    return [self moveSelectionByDelta:kFixedColumns];
+  if (command == @selector(moveUp:)) {
+    return oldIndex / kFixedColumns % kFixedRows == 0 ?
+        NO : [self moveSelectionByDelta:-kFixedColumns];
+  }
+
+  if (command == @selector(moveDown:)) {
+    return oldIndex / kFixedColumns % kFixedRows == kFixedRows - 1 ?
+        NO : [self moveSelectionByDelta:kFixedColumns];
+  }
 
   if (command == @selector(pageUp:) ||
       command == @selector(scrollPageUp:))
