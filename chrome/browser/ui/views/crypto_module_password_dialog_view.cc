@@ -156,7 +156,7 @@ void ShowCryptoModulePasswordDialog(
     const CryptoModulePasswordCallback& callback) {
   CryptoModulePasswordDialogView* dialog =
       new CryptoModulePasswordDialogView(slot_name, reason, server, callback);
-  views::Widget::CreateWindow(dialog)->Show();
+  views::DialogDelegate::CreateDialogWidget(dialog, NULL, NULL)->Show();
 }
 
 }  // namespace chrome
