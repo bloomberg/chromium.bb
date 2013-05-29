@@ -618,7 +618,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
          event.key_code() == ui::VKEY_RIGHT) ||
         (direction == base::i18n::RIGHT_TO_LEFT &&
          event.key_code() == ui::VKEY_LEFT)) {
-      return model()->CommitSuggestedText(true);
+      return model()->CommitSuggestedText();
     }
   }
 

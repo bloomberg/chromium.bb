@@ -2154,7 +2154,7 @@ bool OmniboxViewWin::OnKeyDownOnlyWritable(TCHAR key,
         GetSel(selection);
         return (selection.cpMin == selection.cpMax) &&
             (selection.cpMin == GetTextLength()) &&
-            model()->CommitSuggestedText(true);
+            model()->CommitSuggestedText();
       }
 
     case VK_RETURN:

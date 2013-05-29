@@ -1170,7 +1170,7 @@ void OmniboxViewGtk::HandleViewMoveCursor(
       OnAfterPossibleChange();
       handled = true;
     } else if (count == count_towards_end && !IsCaretAtEnd()) {
-      handled = model()->CommitSuggestedText(true);
+      handled = model()->CommitSuggestedText();
     }
   } else if (step == GTK_MOVEMENT_PAGES) {  // Page up and down.
     // Multiply by count for the direction (if we move too much that's ok).
@@ -1549,7 +1549,7 @@ void OmniboxViewGtk::HandleViewMoveFocus(GtkWidget* widget,
     handled = true;
 
   if (!handled && gtk_widget_get_visible(instant_view_))
-    handled = model()->CommitSuggestedText(true);
+    handled = model()->CommitSuggestedText();
 
   if (handled) {
     static guint signal_id = g_signal_lookup("move-focus", GTK_TYPE_WIDGET);

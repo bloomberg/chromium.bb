@@ -11,8 +11,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
 class OmniboxControllerTest : public testing::Test {
  protected:
   OmniboxControllerTest();
@@ -91,7 +89,4 @@ TEST_F(OmniboxControllerTest, CheckDefaultAutocompleteProviders) {
   chrome::EnableInstantExtendedAPIForTesting();
   CreateController();
   AssertProviders(providers_with_instant_extended);
-
 }
-
-}  // namespace

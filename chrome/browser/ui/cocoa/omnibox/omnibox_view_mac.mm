@@ -693,7 +693,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
     // Only commit suggested text if the cursor is all the way to the right and
     // there is no selection.
     if (suggest_text_.length() > 0 && IsCaretAtEnd()) {
-      model()->CommitSuggestedText(true);
+      model()->CommitSuggestedText();
       return true;
     }
   }

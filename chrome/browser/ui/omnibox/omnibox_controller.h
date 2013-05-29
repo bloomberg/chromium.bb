@@ -8,12 +8,14 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 
 struct AutocompleteMatch;
 class AutocompleteResult;
 class GURL;
+class InstantController;
 class OmniboxEditModel;
 class OmniboxPopupModel;
 class Profile;
@@ -33,8 +35,15 @@ class Rect;
 class OmniboxController : public AutocompleteControllerDelegate {
 
  public:
-  OmniboxController(OmniboxEditModel* omnibox_edit_model, Profile* profile);
+  OmniboxController(OmniboxEditModel* omnibox_edit_model,
+                    Profile* profile);
   virtual ~OmniboxController();
+
+  void StartAutocomplete(string16 user_text,
+                         size_t cursor_position,
+                         bool prevent_inline_autocomplete,
+                         bool prefer_keyword,
+                         bool allow_exact_keyword_match) const;
 
   // AutocompleteControllerDelegate:
   virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
@@ -42,6 +51,16 @@ class OmniboxController : public AutocompleteControllerDelegate {
   AutocompleteController* autocomplete_controller() {
     return autocomplete_controller_.get();
   }
+
+  bool DoInstant(const AutocompleteMatch& match,
+                 string16 user_text,
+                 string16 full_text,
+                 size_t selection_start,
+                 size_t selection_end,
+                 bool user_input_in_progress,
+                 bool in_escape_handler,
+                 bool just_deleted_text,
+                 bool keyword_is_selected);
 
   void set_popup_model(OmniboxPopupModel* popup_model) {
     popup_ = popup_model;
@@ -67,6 +86,17 @@ class OmniboxController : public AutocompleteControllerDelegate {
   void OnPopupBoundsChanged(const gfx::Rect& bounds);
 
  private:
+
+  // Returns true if a verbatim query should be used for Instant. A verbatim
+  // query is forced in certain situations, such as pressing delete at the end
+  // of the edit.
+  bool UseVerbatimInstant(bool just_deleted_text) const;
+
+  // Access the instant controller from the OmniboxEditModel. We need to do this
+  // because the only valid pointer to InstantController is kept in Browser,
+  // which OmniboxEditModel has some ways of reaching.
+  InstantController* GetInstantController() const;
+
   // Weak, it owns us.
   // TODO(beaudoin): Consider defining a delegate to ease unit testing.
   OmniboxEditModel* omnibox_edit_model_;

@@ -66,10 +66,6 @@ class BrowserInstantController : public content::NotificationObserver,
   // Invoked by |instant_| to autocomplete the |suggestion| into the omnibox.
   void SetInstantSuggestion(const InstantSuggestion& suggestion);
 
-  // Invoked by |instant_| to commit the omnibox's suggested text.
-  // Call-through to OmniboxEditModel::CommitSuggestedText.
-  void CommitSuggestedText(bool skip_inline_autocomplete);
-
   // Invoked by |instant_| to get the bounds that the overlay is placed at,
   // in screen coordinates.
   gfx::Rect GetInstantBounds();
