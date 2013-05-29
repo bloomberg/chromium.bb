@@ -85,7 +85,7 @@ mkpath($outputDir);
 
 if (length($fontNamesIn)) {
     my $names = new IO::File;
-    my $familyNamesFileBase = "WebKitFontFamily";
+    my $familyNamesFileBase = "FontFamily";
 
     open($names, $fontNamesIn) or die "Failed to open file: $fontNamesIn";
 
@@ -99,7 +99,7 @@ if (length($fontNamesIn)) {
     open F, ">$header" or die "Unable to open $header for writing.";
 
     printLicenseHeader($F);
-    printHeaderHead($F, "CSS", $familyNamesFileBase, "#include <wtf/text/AtomicString.h>");
+    printHeaderHead($F, "CSS", $familyNamesFileBase, "#include \"wtf/text/AtomicString.h\"");
 
     printMacros($F, "extern const WTF::AtomicString", "", \%parameters);
     print F "#endif\n\n";
@@ -539,7 +539,7 @@ sub printCppHead
     print F "#endif\n\n";
 
     print F "#include \"${nsName}Names.h\"\n\n";
-    print F "#include <wtf/StaticConstructors.h>\n";
+    print F "#include \"wtf/StaticConstructors.h\"\n";
 
     print F "namespace WebCore {\n\n";
     print F "namespace ${nsName}Names {\n\n";

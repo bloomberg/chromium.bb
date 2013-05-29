@@ -25,7 +25,7 @@
 #ifndef FontDescription_h
 #define FontDescription_h
 
-#include "WebKitFontFamilyNames.h"
+#include "FontFamilyNames.h"
 #include "core/platform/graphics/FontFamily.h"
 #include "core/platform/graphics/FontFeatureSettings.h"
 #include "core/platform/graphics/FontOrientation.h"
@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-using namespace WebKitFontFamilyNames;
+using namespace FontFamilyNames;
 
 enum FontWeight {
     FontWeight100,

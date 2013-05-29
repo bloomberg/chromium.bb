@@ -31,8 +31,8 @@
 #include "core/page/Frame.h"
 
 #include "CSSPropertyNames.h"
+#include "FontFamilyNames.h"
 #include "HTMLNames.h"
-#include "WebKitFontFamilyNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
 #include "bindings/v8/ScriptController.h"
@@ -146,7 +146,7 @@ void init()
     MathMLNames::init();
     XMLNSNames::init();
     XMLNames::init();
-    WebKitFontFamilyNames::init();
+    FontFamilyNames::init();
     MediaFeatureNames::init();
     WTF::StringStatics::init();
     QualifiedName::init();

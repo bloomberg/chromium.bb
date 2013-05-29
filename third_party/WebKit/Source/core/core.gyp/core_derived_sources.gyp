@@ -291,16 +291,16 @@
           'msvs_cygwin_shell': 1,
         },
         {
-          'action_name': 'WebKitFontFamilyNames',
+          'action_name': 'FontFamilyNames',
           'inputs': [
             '../scripts/Hasher.pm',
             '../scripts/StaticString.pm',
             '../scripts/make_names.pl',
-            '../css/WebKitFontFamilyNames.in',
+            '../css/FontFamilyNames.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/WebKitFontFamilyNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/WebKitFontFamilyNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/FontFamilyNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/FontFamilyNames.h',
           ],
           'action': [
             'python',

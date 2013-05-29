@@ -251,7 +251,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLElementFactory.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/WebKitFontFamilyNames.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/FontFamilyNames.cpp',
 
         # Generated from HTMLEntityNames.in
         '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLEntityTable.cpp',
