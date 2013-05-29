@@ -219,11 +219,8 @@ bool MimeUtil::GetMimeTypeFromExtensionHelper(
   // Finally, we scan a secondary hard-coded list to catch types that we can
   // deduce but that we also want to allow the OS to override.
 
-#if defined(OS_WIN)
-  string ext_narrow_str = WideToUTF8(ext);
-#elif defined(OS_POSIX)
-  const string& ext_narrow_str = ext;
-#endif
+  base::FilePath path_ext(ext);
+  const string ext_narrow_str = path_ext.AsUTF8Unsafe();
   const char* mime_type;
 
   mime_type = FindMimeType(primary_mappings, arraysize(primary_mappings),
