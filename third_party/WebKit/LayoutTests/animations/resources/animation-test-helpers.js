@@ -577,6 +577,15 @@ var dontUsePauseAPI = false;
 var shouldBeTransitioning = 'should-be-transitioning';
 var shouldNotBeTransitioning = 'should-not-be-transitioning';
 
+function waitForAnimationsToStart(callback)
+{
+    if (!window.internals || internals.numberOfActiveAnimations() > 0) {
+        callback();
+    } else {
+        setTimeout(waitForAnimationsToStart.bind(this, callback), 0);
+    }
+}
+
 // FIXME: remove deprecatedEvent, disablePauseAnimationAPI and doPixelTest
 function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnimationAPI, doPixelTest)
 {
@@ -638,11 +647,10 @@ function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnim
         if (!started) {
             started = true;
             trigger();
-            animStartTime = performance.now();
-            // delay to give hardware animations a chance to start
-            setTimeout(function() {
+            waitForAnimationsToStart(function() {
+                animStartTime = performance.now();
                 startTest(checks);
-            }, 0);
+            });
         }
     }, false);
 }
