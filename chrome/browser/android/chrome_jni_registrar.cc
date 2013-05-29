@@ -42,7 +42,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "NavigationInterception",
     navigation_interception::RegisterNavigationInterceptionJni },
   { "WebContentsDelegateAndroid",
-    components::RegisterWebContentsDelegateAndroidJni },
+    web_contents_delegate_android::RegisterWebContentsDelegateAndroidJni },
   { "RegisterAuxiliaryProfileLoader", autofill::RegisterAutofillAndroidJni },
   // Register JNI for chrome classes.
   { "ApplicationLifetime", RegisterApplicationLifetimeAndroid },

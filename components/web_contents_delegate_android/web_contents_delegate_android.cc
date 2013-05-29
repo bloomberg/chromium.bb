@@ -32,7 +32,7 @@ using content::ColorChooser;
 using content::WebContents;
 using content::WebContentsDelegate;
 
-namespace components {
+namespace web_contents_delegate_android {
 
 WebContentsDelegateAndroid::WebContentsDelegateAndroid(JNIEnv* env, jobject obj)
     : weak_java_delegate_(env, obj) {
@@ -339,4 +339,4 @@ bool RegisterWebContentsDelegateAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace components
+}  // namespace web_contents_delegate_android

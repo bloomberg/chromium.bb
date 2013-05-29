@@ -15,7 +15,7 @@ import org.chromium.ui.ColorPickerDialog;
  * ColorChooserAndroid communicates with the java ColorPickerDialog and the
  * native color_chooser_android.cc
  */
-@JNINamespace("components")
+@JNINamespace("web_contents_delegate_android")
 public class ColorChooserAndroid {
     private final ColorPickerDialog mDialog;
     private final int mNativeColorChooserAndroid;

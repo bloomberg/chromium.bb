@@ -32,7 +32,7 @@ namespace android {
 // Should contain any WebContentsDelegate implementations required by
 // the Chromium Android port but not to be shared with WebView.
 class ChromeWebContentsDelegateAndroid
-    : public components::WebContentsDelegateAndroid,
+    : public web_contents_delegate_android::WebContentsDelegateAndroid,
       public content::NotificationObserver {
  public:
   ChromeWebContentsDelegateAndroid(JNIEnv* env, jobject obj);

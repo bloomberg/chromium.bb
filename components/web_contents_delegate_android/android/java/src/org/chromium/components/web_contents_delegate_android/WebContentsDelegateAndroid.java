@@ -14,7 +14,7 @@ import org.chromium.content.browser.ContentViewCore;
 /**
  * Java peer of the native class of the same name.
  */
-@JNINamespace("components")
+@JNINamespace("web_contents_delegate_android")
 public class WebContentsDelegateAndroid {
 
     // Equivalent of WebCore::WebConsoleMessage::LevelTip.

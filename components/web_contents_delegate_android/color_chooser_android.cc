@@ -9,7 +9,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "jni/ColorChooserAndroid_jni.h"
 
-namespace components {
+namespace web_contents_delegate_android {
 
 ColorChooserAndroid::ColorChooserAndroid(content::WebContents* web_contents,
                                          SkColor initial_color)
@@ -54,4 +54,4 @@ bool RegisterColorChooserAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace components
+}  // namespace web_contents_delegate_android

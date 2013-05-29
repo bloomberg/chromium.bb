@@ -9,7 +9,7 @@
 #include "components/web_contents_delegate_android/color_chooser_android.h"
 #include "components/web_contents_delegate_android/web_contents_delegate_android.h"
 
-namespace components {
+namespace web_contents_delegate_android {
 
 static base::android::RegistrationMethod kComponentRegisteredMethods[] = {
   { "ColorChooserAndroid", RegisterColorChooserAndroid },
@@ -21,5 +21,5 @@ bool RegisterWebContentsDelegateAndroidJni(JNIEnv* env) {
       kComponentRegisteredMethods, arraysize(kComponentRegisteredMethods));
 }
 
-} // namespace components
+} // namespace web_contents_delegate_android
 

@@ -15,9 +15,9 @@ using base::android::ScopedJavaLocalRef;
 
 namespace content {
 class WebContents;
-}  // namespace content
+}
 
-namespace components {
+namespace web_contents_delegate_android {
 
 // Glues the Java (ColorPickerChooser.java) picker with the native part.
 class ColorChooserAndroid : public content::ColorChooser {
@@ -45,6 +45,6 @@ class ColorChooserAndroid : public content::ColorChooser {
 // Native JNI methods
 bool RegisterColorChooserAndroid(JNIEnv* env);
 
-}  // namespace components
+}  // namespace web_contents_delegate_android
 
 #endif  // COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_COLOR_CHOOSER_ANDROID_H_

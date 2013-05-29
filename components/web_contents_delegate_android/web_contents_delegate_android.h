@@ -19,9 +19,9 @@ class WebContents;
 class WebContentsDelegate;
 struct NativeWebKeyboardEvent;
 struct OpenURLParams;
-}  // namespace content
+}
 
-namespace components {
+namespace web_contents_delegate_android {
 
 enum WebContentsDelegateLogLevel {
   // Equivalent of WebCore::WebConsoleMessage::LevelDebug.
@@ -107,6 +107,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
 
 bool RegisterWebContentsDelegateAndroid(JNIEnv* env);
 
-}  // namespace components
+}  // namespace web_contents_delegate_android
 
 #endif  // COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_WEB_CONTENTS_DELEGATE_ANDROID_H_
