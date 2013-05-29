@@ -27,7 +27,7 @@
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/linux_dumper.h"
 #include "breakpad/src/client/linux/minidump_writer/minidump_writer.h"
-#include "chrome/app/breakpad_linux.h"
+#include "chrome/app/breakpad_linux_impl.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,6 +60,7 @@ void CrashDumpTask(CrashHandlerHostLinux* handler, BreakpadInfo* info) {
   delete[] info->crash_url;
   delete[] info->guid;
   delete[] info->distro;
+  delete info->crash_keys;
   delete info;
 }
 
@@ -128,14 +129,8 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   //
   // The message sender is in chrome/app/breakpad_linux.cc.
 
-#if !defined(ADDRESS_SANITIZER)
-  const size_t kIovSize = 8;
-#else
-  const size_t kIovSize = 9;
-#endif
-
   struct msghdr msg = {0};
-  struct iovec iov[kIovSize];
+  struct iovec iov[kCrashIovSize];
 
   // Freed in WriteDumpFile();
   char* crash_context = new char[kCrashContextSize];
@@ -146,6 +141,13 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 #if defined(ADDRESS_SANITIZER)
   asan_report_str_ = new char[kMaxAsanReportSize + 1];
 #endif
+
+  // Freed in CrashDumpTask().
+  CrashKeyStorage* crash_keys = new CrashKeyStorage;
+  google_breakpad::SerializedNonAllocatingMap* serialized_crash_keys;
+  size_t crash_keys_size = crash_keys->Serialize(
+      const_cast<const google_breakpad::SerializedNonAllocatingMap**>(
+          &serialized_crash_keys));
 
   char* tid_buf_addr = NULL;
   int tid_fd = -1;
@@ -162,7 +164,8 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 #if defined(ADDRESS_SANITIZER)
       kMaxAsanReportSize + 1 +
 #endif
-      sizeof(oom_size);
+      sizeof(oom_size) +
+      crash_keys_size;
   iov[0].iov_base = crash_context;
   iov[0].iov_len = kCrashContextSize;
   iov[1].iov_base = guid;
@@ -179,12 +182,14 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   iov[6].iov_len = sizeof(uptime);
   iov[7].iov_base = &oom_size;
   iov[7].iov_len = sizeof(oom_size);
+  iov[8].iov_base = serialized_crash_keys;
+  iov[8].iov_len = crash_keys_size;
 #if defined(ADDRESS_SANITIZER)
-  iov[8].iov_base = asan_report_str_;
-  iov[8].iov_len = kMaxAsanReportSize + 1;
+  iov[9].iov_base = asan_report_str_;
+  iov[9].iov_len = kMaxAsanReportSize + 1;
 #endif
   msg.msg_iov = iov;
-  msg.msg_iovlen = kIovSize;
+  msg.msg_iovlen = kCrashIovSize;
   msg.msg_control = control;
   msg.msg_controllen = kControlMsgSize;
 
@@ -345,6 +350,8 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 #else
   info->upload = (getenv(env_vars::kHeadless) == NULL);
 #endif
+
+  info->crash_keys = crash_keys;
 
 #if defined(ADDRESS_SANITIZER)
   info->asan_report_str = asan_report_str_;

@@ -23,6 +23,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/files/file_path.h"
 #include "base/linux_util.h"
 #include "base/path_service.h"
@@ -35,11 +36,13 @@
 #include "breakpad/src/client/linux/minidump_writer/directory_reader.h"
 #include "breakpad/src/common/linux/linux_libc_support.h"
 #include "breakpad/src/common/memory.h"
+#include "chrome/app/breakpad_linux_impl.h"
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info_posix.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/dump_without_crashing.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
@@ -84,12 +87,15 @@ bool g_is_crash_reporter_enabled = false;
 uint64_t g_process_start_time = 0;
 char* g_crash_log_path = NULL;
 ExceptionHandler* g_breakpad = NULL;
+
 #if defined(ADDRESS_SANITIZER)
 const char* g_asan_report_str = NULL;
 #endif
 #if defined(OS_ANDROID)
 char* g_process_type = NULL;
 #endif
+
+CrashKeyStorage* g_crash_keys = NULL;
 
 // Writes the value |v| as 16 hex characters to the memory pointed at by
 // |output|.
@@ -483,6 +489,7 @@ bool CrashDone(const MinidumpDescriptor& minidump,
   info.process_start_time = g_process_start_time;
   info.oom_size = base::g_oom_size;
   info.pid = 0;
+  info.crash_keys = g_crash_keys;
   HandleCrashDump(info);
 #if defined(OS_ANDROID)
   return FinalizeCrashDoneAndroid();
@@ -663,15 +670,9 @@ bool NonBrowserCrashHandler(const void* crash_context,
   static const unsigned kControlMsgSpaceSize = CMSG_SPACE(kControlMsgSize);
   static const unsigned kControlMsgLenSize = CMSG_LEN(kControlMsgSize);
 
-#if !defined(ADDRESS_SANITIZER)
-  const size_t kIovSize = 8;
-#else
-  // Additional field to pass the AddressSanitizer log to the crash handler.
-  const size_t kIovSize = 9;
-#endif
   struct kernel_msghdr msg;
   my_memset(&msg, 0, sizeof(struct kernel_msghdr));
-  struct kernel_iovec iov[kIovSize];
+  struct kernel_iovec iov[kCrashIovSize];
   iov[0].iov_base = const_cast<void*>(crash_context);
   iov[0].iov_len = crash_context_size;
   iov[1].iov_base = guid;
@@ -688,13 +689,18 @@ bool NonBrowserCrashHandler(const void* crash_context,
   iov[6].iov_len = sizeof(g_process_start_time);
   iov[7].iov_base = &base::g_oom_size;
   iov[7].iov_len = sizeof(base::g_oom_size);
+  google_breakpad::SerializedNonAllocatingMap* serialized_map;
+  iov[8].iov_len = g_crash_keys->Serialize(
+      const_cast<const google_breakpad::SerializedNonAllocatingMap**>(
+          &serialized_map));
+  iov[8].iov_base = serialized_map;
 #if defined(ADDRESS_SANITIZER)
-  iov[8].iov_base = const_cast<char*>(g_asan_report_str);
-  iov[8].iov_len = kMaxAsanReportSize + 1;
+  iov[9].iov_base = const_cast<char*>(g_asan_report_str);
+  iov[9].iov_len = kMaxAsanReportSize + 1;
 #endif
 
   msg.msg_iov = iov;
-  msg.msg_iovlen = kIovSize;
+  msg.msg_iovlen = kCrashIovSize;
   char cmsg[kControlMsgSpaceSize];
   my_memset(cmsg, 0, kControlMsgSpaceSize);
   msg.msg_control = cmsg;
@@ -739,6 +745,15 @@ void EnableNonBrowserCrashDumping() {
   g_breakpad->set_crash_handler(NonBrowserCrashHandler);
 }
 #endif  // defined(OS_ANDROID)
+
+void SetCrashKeyValue(const base::StringPiece& key,
+                      const base::StringPiece& value) {
+  g_crash_keys->SetKeyValue(key.data(), value.data());
+}
+
+void ClearCrashKey(const base::StringPiece& key) {
+  g_crash_keys->RemoveKey(key.data());
+}
 
 }  // namespace
 
@@ -971,6 +986,11 @@ void HandleCrashDump(const BreakpadInfo& info) {
   //   zero or one:
   //   Content-Disposition: form-data; name="oom-size" \r\n \r\n
   //   1234567890 \r\n
+  //   BOUNDARY \r\n
+  //
+  //   zero or more (up to CrashKeyStorage::num_entries = 64):
+  //   Content-Disposition: form-data; name=crash-key-name \r\n
+  //   crash-key-value \r\n
   //   BOUNDARY \r\n
   //
   //   Content-Disposition: form-data; name="dump"; filename="dump" \r\n
@@ -1209,6 +1229,16 @@ void HandleCrashDump(const BreakpadInfo& info) {
                        oom_size_str, oom_size_len);
     writer.AddBoundary();
     writer.Flush();
+  }
+
+  if (info.crash_keys) {
+    CrashKeyStorage::Iterator crash_key_iterator(*info.crash_keys);
+    const CrashKeyStorage::Entry* entry;
+    while ((entry = crash_key_iterator.Next())) {
+      writer.AddPairString(entry->key, entry->value);
+      writer.AddBoundary();
+      writer.Flush();
+    }
   }
 
   writer.AddFileContents(g_dump_msg, dump_data, dump_size);
@@ -1473,6 +1503,11 @@ void InitCrashReporter() {
   // Register the callback for AddressSanitizer error reporting.
   __asan_set_error_report_callback(AsanLinuxBreakpadCallback);
 #endif
+
+  g_crash_keys = new CrashKeyStorage;
+  crash_keys::RegisterChromeCrashKeys();
+  base::debug::SetCrashKeyReportingFunctions(
+      &SetCrashKeyValue, &ClearCrashKey);
 }
 
 #if defined(OS_ANDROID)
