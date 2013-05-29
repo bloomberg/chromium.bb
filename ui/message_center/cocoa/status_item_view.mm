@@ -12,14 +12,28 @@
 
 namespace {
 
-// The width of the status bar.
-const CGFloat kStatusItemLength = 45;
+// The width of the status bar item when it's just the icon.
+const CGFloat kStatusItemLength = 26;
 
-// The amount of space between the edge of the status item and where the icon
-// should start drawing.
-const CGFloat kInset = 6;
+// The amount of space between the left and right edges and the content of the
+// status item.
+const CGFloat kMargin = 5;
+
+// The amount of space between the icon and the unread count number.
+const CGFloat kUnreadCountPadding = 3;
+
+// The lower-left Y coordinate of the unread count number.
+const CGFloat kUnreadCountMinY = 4;
 
 }  // namespace
+
+@interface MCStatusItemView (Private)
+// Whether or not the status item should be drawn highlighted.
+- (BOOL)shouldHighlight;
+
+// Returns an autoreleased, styled string for the unread count.
+- (NSAttributedString*)unreadCountString;
+@end
 
 @implementation MCStatusItemView
 
@@ -46,6 +60,21 @@ const CGFloat kInset = 6;
 
 - (void)setUnreadCount:(size_t)unreadCount {
   unreadCount_ = unreadCount;
+
+  NSRect frame = [self frame];
+  frame.size.width = kStatusItemLength;
+  NSAttributedString* countString = [self unreadCountString];
+  if (countString) {
+    // Get the subpixel bounding rectangle for the string. -size doesn't yield
+    // correct results for pixel-precise drawing, since it doesn't use the
+    // device metrics.
+    NSRect boundingRect =
+        [countString boundingRectWithSize:NSZeroSize
+                                  options:NSStringDrawingUsesDeviceMetrics];
+    frame.size.width += roundf(NSWidth(boundingRect)) + kMargin;
+  }
+  [self setFrame:frame];
+
   [self setNeedsDisplay:YES];
 }
 
@@ -87,7 +116,7 @@ const CGFloat kInset = 6;
   NSRect frame = [self bounds];
 
   // Draw the background color.
-  BOOL highlight = highlight_ || inMouseEventSequence_;
+  BOOL highlight = [self shouldHighlight];
   [statusItem_ drawStatusBarBackgroundInRect:frame
                                withHighlight:highlight];
 
@@ -96,7 +125,7 @@ const CGFloat kInset = 6;
   NSImage* image = rb.GetNativeImageNamed(
       highlight ? IDR_TRAY_ICON_PRESSED : IDR_TRAY_ICON_REGULAR).ToNSImage();
   NSSize size = [image size];
-  NSRect drawRect = NSMakeRect(kInset,
+  NSRect drawRect = NSMakeRect(kMargin,
                                floorf((NSHeight(frame) - size.height) / 2),
                                size.width,
                                size.height);
@@ -106,31 +135,38 @@ const CGFloat kInset = 6;
            fraction:1.0];
 
   // Draw the unread count.
-  if (unreadCount_ > 0) {
-    NSString* count = nil;
-    if (unreadCount_ > 9)
-      count = @"9+";
-    else
-      count = [NSString stringWithFormat:@"%"PRIuS, unreadCount_];
-
-    NSColor* fontColor = highlight ? [NSColor whiteColor]
-                                   : [NSColor blackColor];
-    NSDictionary* attributes = @{
-        NSFontAttributeName: [NSFont fontWithName:@"Helvetica-Bold" size:12],
-        NSForegroundColorAttributeName: fontColor,
-    };
-
-    // Center the string inside the remaining space of the status item.
-    NSSize stringSize = [count sizeWithAttributes:attributes];
-    NSRect iconSlice, textSlice;
-    NSDivideRect(frame, &iconSlice, &textSlice, NSMaxX(drawRect), NSMinXEdge);
+  NSAttributedString* countString = [self unreadCountString];
+  if (countString) {
     NSPoint countPoint = NSMakePoint(
-        floorf(NSMinX(textSlice) + (NSWidth(textSlice) - stringSize.width) / 2),
-        floorf(NSMinY(textSlice) +
-               (NSHeight(textSlice) - stringSize.height) / 2));
-
-    [count drawAtPoint:countPoint withAttributes:attributes];
+        NSMaxX(drawRect) + kUnreadCountPadding, kUnreadCountMinY);
+    [countString drawAtPoint:countPoint];
   }
+}
+
+// Private /////////////////////////////////////////////////////////////////////
+
+- (BOOL)shouldHighlight {
+  return highlight_ || inMouseEventSequence_;
+}
+
+- (NSAttributedString*)unreadCountString {
+  if (unreadCount_ == 0)
+    return nil;
+
+  NSString* count = nil;
+  if (unreadCount_ > 9)
+    count = @"9+";
+  else
+    count = [NSString stringWithFormat:@"%"PRIuS, unreadCount_];
+
+  NSColor* fontColor = [self shouldHighlight] ? [NSColor whiteColor]
+                                              : [NSColor blackColor];
+  NSDictionary* attributes = @{
+      NSFontAttributeName: [NSFont fontWithName:@"Helvetica-Bold" size:12],
+      NSForegroundColorAttributeName: fontColor,
+  };
+  return [[[NSAttributedString alloc] initWithString:count
+                                          attributes:attributes] autorelease];
 }
 
 @end
