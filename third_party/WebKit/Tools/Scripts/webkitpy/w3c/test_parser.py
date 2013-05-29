@@ -46,9 +46,17 @@ class TestParser(object):
         self.load_file(filename)
 
     def load_file(self, filename):
-        if self.filesystem.exists(filename):
-            self.test_doc = Parser(self.filesystem.read_binary_file(filename))
+        if self.filesystem.isfile(filename):
+            try:
+                self.test_doc = Parser(self.filesystem.read_binary_file(filename))
+            except:
+                # FIXME: Figure out what to do if we can't parse the file.
+                print "Error: failed to parse %s" % filename
+                self.test_doc is None
         else:
+            if self.filesystem.isdir(filename):
+                # FIXME: Figure out what is triggering this and what to do about it.
+                print "Error: trying to load %s, which is a directory" % filename
             self.test_doc = None
         self.ref_doc = None
 
@@ -73,7 +81,13 @@ class TestParser(object):
             if len(matches) > 1:
                 print 'Warning: Webkit does not support multiple references. Importing the first ref defined in ' + self.filesystem.basename(self.filename)
 
-            ref_file = self.filesystem.join(self.filesystem.dirname(self.filename), matches[0]['href'])
+            try:
+                ref_file = self.filesystem.join(self.filesystem.dirname(self.filename), matches[0]['href'])
+            except KeyError as e:
+                # FIXME: Figure out what to do w/ invalid test files.
+                print "Error: %s has a reference link but is missing the 'href'" % (self.filesystem)
+                return None
+
             if self.ref_doc is None:
                 self.ref_doc = self.load_file(ref_file)
 

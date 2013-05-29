@@ -110,51 +110,51 @@ CHANGESET_NOT_AVAILABLE = 'Not Available'
 
 def main(_argv, _stdout, _stderr):
     options, args = parse_args()
-    import_dir = validate_import_directory(args[0])
-    test_importer = TestImporter(Host(), import_dir, options)
+    import_dir = args[0]
+    if len(args) == 1:
+        repo_dir = os.path.dirname(import_dir)
+    else:
+        repo_dir = args[1]
+
+    if not os.path.exists(import_dir):
+        sys.exit('Source directory %s not found!' % import_dir)
+
+    if not os.path.exists(repo_dir):
+        sys.exit('Repository directory %s not found!' % repo_dir)
+    if not repo_dir in import_dir:
+        sys.exit('Repository directory %s must be a parent of %s' % (repo_dir, import_dir))
+
+    test_importer = TestImporter(Host(), import_dir, repo_dir, options)
     test_importer.do_import()
 
 
 def parse_args():
-    parser = optparse.OptionParser(usage='usage: %prog [options] w3c_test_directory')
+    parser = optparse.OptionParser(usage='usage: %prog [options] w3c_test_directory [repo_directory]')
     parser.add_option('-n', '--no-overwrite', dest='overwrite', action='store_false', default=True,
         help='Flag to prevent duplicate test files from overwriting existing tests. By default, they will be overwritten')
     parser.add_option('-a', '--all', action='store_true', default=False,
         help='Import all tests including reftests, JS tests, and manual/pixel tests. By default, only reftests and JS tests are imported')
 
     options, args = parser.parse_args()
-    if len(args) != 1:
+    if len(args) not in (1, 2):
         parser.error('Incorrect number of arguments')
     return options, args
 
 
-def validate_import_directory(import_dir):
-    if not os.path.exists(import_dir):
-        sys.exit('Source directory %s not found!' % import_dir)
-
-    # Make sure the tests are officially submitted to the W3C, either approved or
-    # submitted following their directory naming conventions
-    if import_dir.find('approved') == -1 and import_dir.find('submitted') == -1:
-        # If not pointed directly to the approved directory or to any submitted
-        # directory, check for a submitted subdirectory and go with that
-        import_dir = os.path.join(import_dir, 'submitted')
-        if not os.path.exists(os.path.join(import_dir)):
-            sys.exit('Unable to import tests that aren\'t approved or submitted to the W3C')
-
-    return import_dir
-
-
 class TestImporter(object):
 
-    def __init__(self, host, source_directory, options):
+    def __init__(self, host, source_directory, repo_dir, options):
         self.host = host
         self.source_directory = source_directory
         self.options = options
 
         self.filesystem = self.host.filesystem
-        self._webkit_root = __file__.split(self.filesystem.sep + 'Tools')[0]
 
-        self.destination_directory = self.path_from_webkit_root("LayoutTests", "csswg")
+        self._webkit_root = __file__.split(self.filesystem.sep + 'Tools')[0]
+        self.repo_dir = repo_dir
+        subdirs = os.path.dirname(os.path.relpath(source_directory, repo_dir))
+
+        self.destination_directory = os.path.join(self.path_from_webkit_root("LayoutTests"), 'w3c', subdirs)
 
         self.changeset = CHANGESET_NOT_AVAILABLE
         self.test_status = TEST_STATUS_UNKNOWN
@@ -185,7 +185,9 @@ class TestImporter(object):
             jstests = 0
 
             # "archive" and "data" dirs are internal csswg things that live in every approved directory.
-            DIRS_TO_SKIP = ('.git', '.hg', 'data', 'archive')
+            # FIXME: skip 'incoming' tests for now, but we should rework the 'test_status' concept and
+            # support reading them as well.
+            DIRS_TO_SKIP = ('.git', '.hg', 'data', 'archive', 'incoming')
             for d in DIRS_TO_SKIP:
                 if d in dirs:
                     dirs.remove(d)
@@ -257,9 +259,6 @@ class TestImporter(object):
                     'reftests': reftests, 'jstests': jstests, 'total_tests': total_tests})
 
     def import_tests(self):
-        if self.import_list:
-            self.setup_destination_directory()
-
         converter = W3CTestConverter()
         total_imported_tests = 0
         total_imported_reftests = 0
@@ -267,7 +266,6 @@ class TestImporter(object):
         total_prefixed_properties = {}
 
         for dir_to_copy in self.import_list:
-
             total_imported_tests += dir_to_copy['total_tests']
             total_imported_reftests += dir_to_copy['reftests']
             total_imported_jstests += dir_to_copy['jstests']
@@ -277,15 +275,11 @@ class TestImporter(object):
             if not dir_to_copy['copy_list']:
                 continue
 
-            # Build the subpath starting with the approved/submitted directory
             orig_path = dir_to_copy['dirname']
-            start = orig_path.find(self.test_status)
-            new_subpath = orig_path[start:len(orig_path)]
 
-            # Append the new subpath to the destination_directory
-            new_path = os.path.join(self.destination_directory, new_subpath)
+            subpath = os.path.relpath(orig_path, self.repo_dir)
+            new_path = os.path.join(self.destination_directory, subpath)
 
-            # Create the destination subdirectories if not there
             if not(os.path.exists(new_path)):
                 os.makedirs(new_path)
 
@@ -295,7 +289,10 @@ class TestImporter(object):
                 # FIXME: Split this block into a separate function.
                 orig_filepath = os.path.normpath(file_to_copy['src'])
 
-                assert(not os.path.isdir(orig_filepath))
+                if os.path.isdir(orig_filepath):
+                    # FIXME: Figure out what is triggering this and what to do about it.
+                    print 'Error: %s refers to a directory' % orig_filepath
+                    continue
 
                 if not(os.path.exists(orig_filepath)):
                     print 'Warning: ' + orig_filepath + ' not found. Possible error in the test.'
@@ -357,7 +354,7 @@ class TestImporter(object):
         self.update_test_status()
 
         start = self.source_directory.find(self.test_status)
-        new_subpath = self.source_directory[start:len(self.source_directory)]
+        new_subpath = self.source_directory[len(self.repo_dir):]
 
         destination_directory = os.path.join(self.destination_directory, new_subpath)
 

@@ -73,19 +73,19 @@ class W3CTestConverter(object):
         Returns the list of modified properties and the modified text if the file was modifed, None otherwise."""
         contents = self._filesystem.read_binary_file(filename)
         if filename.endswith('.css'):
-            return self.convert_css(contents)
-        return self.convert_html(new_path, contents)
+            return self.convert_css(contents, filename)
+        return self.convert_html(new_path, contents, filename)
 
-    def convert_css(self, contents):
-        return self.add_webkit_prefix_to_unprefixed_properties(contents)
+    def convert_css(self, contents, filename):
+        return self.add_webkit_prefix_to_unprefixed_properties(contents, filename)
 
-    def convert_html(self, new_path, contents):
+    def convert_html(self, new_path, contents, filename):
         doc = BeautifulSoup(contents)
-        did_modify_paths = self.convert_testharness_paths(doc, new_path)
-        converted_properties_and_content = self.convert_prefixed_properties(doc)
+        did_modify_paths = self.convert_testharness_paths(doc, new_path, filename)
+        converted_properties_and_content = self.convert_prefixed_properties(doc, filename)
         return converted_properties_and_content if (did_modify_paths or converted_properties_and_content[0]) else None
 
-    def convert_testharness_paths(self, doc, new_path):
+    def convert_testharness_paths(self, doc, new_path, filename):
         """ Update links to testharness.js in the BeautifulSoup |doc| to point to the copy in |new_path|.
 
         Returns whether the document was modified."""
@@ -108,6 +108,12 @@ class W3CTestConverter(object):
             if tag.name != 'script':
                 attr = 'href'
 
+            if not attr in tag:
+                # FIXME: Figure out what to do w/ invalid tags. For now, we return False
+                # and leave the document unmodified, which means that it'll probably fail to run.
+                print "Error: missing an attr in %s" % filename
+                return False
+
             old_path = tag[attr]
             new_tag = Tag(doc, tag.name, tag.attrs)
             new_tag[attr] = re.sub(pattern, resources_relpath + '/testharness', old_path)
@@ -116,7 +122,7 @@ class W3CTestConverter(object):
 
         return True
 
-    def convert_prefixed_properties(self, doc):
+    def convert_prefixed_properties(self, doc, filename):
         """ Searches a BeautifulSoup |doc| for any CSS properties requiring the -webkit- prefix and converts them.
 
         Returns the list of converted properties and the modified document as a string """
@@ -139,7 +145,7 @@ class W3CTestConverter(object):
             else:
                 style_text = tag['style']
 
-            updated_style_text = self.add_webkit_prefix_to_unprefixed_properties(style_text)
+            updated_style_text = self.add_webkit_prefix_to_unprefixed_properties(style_text, filename)
 
             # Rewrite tag only if changes were made.
             if updated_style_text[0]:
@@ -152,7 +158,7 @@ class W3CTestConverter(object):
 
         return (converted_properties, doc.prettify())
 
-    def add_webkit_prefix_to_unprefixed_properties(self, text):
+    def add_webkit_prefix_to_unprefixed_properties(self, text, filename):
         """ Searches |text| for instances of properties requiring the -webkit- prefix and adds the prefix to them.
 
         Returns the list of converted properties and the modified text."""
