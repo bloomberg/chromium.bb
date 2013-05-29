@@ -5,6 +5,8 @@
 #include "base/process/process_metrics.h"
 
 #include <dirent.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -156,44 +158,12 @@ bool ProcessMetrics::GetMemoryBytes(size_t* private_bytes,
   return true;
 }
 
-// Private and Shared working set sizes are obtained from /proc/<pid>/statm.
 bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
-  // Use statm instead of smaps because smaps is:
-  // a) Large and slow to parse.
-  // b) Unavailable in the SUID sandbox.
-
-  // First we need to get the page size, since everything is measured in pages.
-  // For details, see: man 5 proc.
-  const int page_size_kb = getpagesize() / 1024;
-  if (page_size_kb <= 0)
-    return false;
-
-  std::string statm;
-  {
-    FilePath statm_file = internal::GetProcPidDir(process_).Append("statm");
-    // Synchronously reading files in /proc is safe.
-    ThreadRestrictions::ScopedAllowIO allow_io;
-    bool ret = file_util::ReadFileToString(statm_file, &statm);
-    if (!ret || statm.length() == 0)
-      return false;
-  }
-
-  std::vector<std::string> statm_vec;
-  SplitString(statm, ' ', &statm_vec);
-  if (statm_vec.size() != 7)
-    return false;  // Not the format we expect.
-
-  int statm_rss, statm_shared;
-  StringToInt(statm_vec[1], &statm_rss);
-  StringToInt(statm_vec[2], &statm_shared);
-
-  ws_usage->priv = (statm_rss - statm_shared) * page_size_kb;
-  ws_usage->shared = statm_shared * page_size_kb;
-
-  // Sharable is not calculated, as it does not provide interesting data.
-  ws_usage->shareable = 0;
-
-  return true;
+#if defined(OS_CHROMEOS)
+  if (GetWorkingSetKBytesTotmaps(ws_usage))
+    return true;
+#endif
+  return GetWorkingSetKBytesStatm(ws_usage);
 }
 
 double ProcessMetrics::GetCPUUsage() {
@@ -290,6 +260,96 @@ ProcessMetrics::ProcessMetrics(ProcessHandle process)
       last_system_time_(0),
       last_cpu_(0) {
   processor_count_ = base::SysInfo::NumberOfProcessors();
+}
+
+#if defined(OS_CHROMEOS)
+// Private, Shared and Proportional working set sizes are obtained from
+// /proc/<pid>/totmaps
+bool ProcessMetrics::GetWorkingSetKBytesTotmaps(WorkingSetKBytes *ws_usage)
+  const {
+  // The format of /proc/<pid>/totmaps is:
+  //
+  // Rss:                6120 kB
+  // Pss:                3335 kB
+  // Shared_Clean:       1008 kB
+  // Shared_Dirty:       4012 kB
+  // Private_Clean:         4 kB
+  // Private_Dirty:      1096 kB
+  // ...
+  const size_t kPssIndex = 4;
+  const size_t kPrivate_CleanIndex = 13;
+  const size_t kPrivate_DirtyIndex = 16;
+
+  std::string totmaps_data;
+  {
+    FilePath totmaps_file = internal::GetProcPidDir(process_).Append("totmaps");
+    ThreadRestrictions::ScopedAllowIO allow_io;
+    bool ret = file_util::ReadFileToString(totmaps_file, &totmaps_data);
+    if (!ret || totmaps_data.length() == 0)
+      return false;
+  }
+
+  std::vector<std::string> totmaps_fields;
+  SplitStringAlongWhitespace(totmaps_data, &totmaps_fields);
+
+  DCHECK_EQ("Pss:", totmaps_fields[kPssIndex-1]);
+  DCHECK_EQ("Private_Clean:", totmaps_fields[kPrivate_CleanIndex-1]);
+  DCHECK_EQ("Private_Dirty:", totmaps_fields[kPrivate_DirtyIndex-1]);
+
+  int pss, private_clean, private_dirty;
+  bool ret = true;
+  ret &= StringToInt(totmaps_fields[kPssIndex], &pss);
+  ret &= StringToInt(totmaps_fields[kPrivate_CleanIndex], &private_clean);
+  ret &= StringToInt(totmaps_fields[kPrivate_DirtyIndex], &private_dirty);
+
+  ws_usage->priv = private_clean + private_dirty;
+  ws_usage->shared = pss;
+  ws_usage->shareable = 0;
+
+  return ret;
+}
+#endif
+
+// Private and Shared working set sizes are obtained from /proc/<pid>/statm.
+bool ProcessMetrics::GetWorkingSetKBytesStatm(WorkingSetKBytes* ws_usage)
+    const {
+  // Use statm instead of smaps because smaps is:
+  // a) Large and slow to parse.
+  // b) Unavailable in the SUID sandbox.
+
+  // First we need to get the page size, since everything is measured in pages.
+  // For details, see: man 5 proc.
+  const int page_size_kb = getpagesize() / 1024;
+  if (page_size_kb <= 0)
+    return false;
+
+  std::string statm;
+  {
+    FilePath statm_file = internal::GetProcPidDir(process_).Append("statm");
+    // Synchronously reading files in /proc is safe.
+    ThreadRestrictions::ScopedAllowIO allow_io;
+    bool ret = file_util::ReadFileToString(statm_file, &statm);
+    if (!ret || statm.length() == 0)
+      return false;
+  }
+
+  std::vector<std::string> statm_vec;
+  SplitString(statm, ' ', &statm_vec);
+  if (statm_vec.size() != 7)
+    return false;  // Not the format we expect.
+
+  int statm_rss, statm_shared;
+  bool ret = true;
+  ret &= StringToInt(statm_vec[1], &statm_rss);
+  ret &= StringToInt(statm_vec[2], &statm_shared);
+
+  ws_usage->priv = (statm_rss - statm_shared) * page_size_kb;
+  ws_usage->shared = statm_shared * page_size_kb;
+
+  // Sharable is not calculated, as it does not provide interesting data.
+  ws_usage->shareable = 0;
+
+  return ret;
 }
 
 size_t GetSystemCommitCharge() {
