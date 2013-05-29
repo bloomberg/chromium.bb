@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/string16.h"
 #include "base/supports_user_data.h"
@@ -67,12 +68,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
     MAX_DOWNLOAD_STATE
   };
 
-  // Reason for deleting the download.  Passed to Delete().
-  enum DeleteReason {
-    DELETE_DUE_TO_BROWSER_SHUTDOWN = 0,
-    DELETE_DUE_TO_USER_DISCARD
-  };
-
   // How the final target path should be used.
   enum TargetDisposition {
     TARGET_DISPOSITION_OVERWRITE, // Overwrite if the target already exists.
@@ -80,6 +75,9 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
                                   // target. Implies
                                   // TARGET_DISPOSITION_OVERWRITE.
   };
+
+  // Callback used with AcquireFileAndDeleteDownload().
+  typedef base::Callback<void(const base::FilePath&)> AcquireFileCallback;
 
   static const char kEmptyFileHash[];
 
@@ -111,7 +109,14 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // User Actions --------------------------------------------------------------
 
   // Called when the user has validated the download of a dangerous file.
-  virtual void DangerousDownloadValidated() = 0;
+  virtual void ValidateDangerousDownload() = 0;
+
+  // Called to acquire a dangerous download and remove the DownloadItem from
+  // views and history. |callback| will be invoked on the UI thread with the
+  // path to the downloaded file. The caller is responsible for cleanup.
+  // Note: It is important for |callback| to be valid since the downloaded file
+  // will not be cleaned up if the callback fails.
+  virtual void StealDangerousDownload(const AcquireFileCallback& callback) = 0;
 
   // Pause a download.  Will have no effect if the download is already
   // paused.
@@ -132,11 +137,9 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // when resuming a download (assuming the server supports byte ranges).
   virtual void Cancel(bool user_cancel) = 0;
 
-  // Deletes the file from disk and removes the download from the views and
-  // history.
-  virtual void Delete(DeleteReason reason) = 0;
-
-  // Removes the download from the views and history.
+  // Removes the download from the views and history. If the download was
+  // in-progress or interrupted, then the intermediate file will also be
+  // deleted.
   virtual void Remove() = 0;
 
   // Open the file associated with this download.  If the download is
@@ -241,7 +244,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual bool GetFileExternallyRemoved() const = 0;
 
   // True if the file that will be written by the download is dangerous
-  // and we will require a call to DangerousDownloadValidated() to complete.
+  // and we will require a call to ValidateDangerousDownload() to complete.
   // False if the download is safe or that function has been called.
   virtual bool IsDangerous() const = 0;
 

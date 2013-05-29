@@ -1073,7 +1073,7 @@ void DownloadsAcceptDangerFunction::DangerPromptCallback(
     DownloadItem* download_item = GetDownloadIfInProgress(
         profile(), include_incognito(), download_id);
     if (download_item)
-      download_item->DangerousDownloadValidated();
+      download_item->ValidateDangerousDownload();
   }
   SendResponse(error_.empty());
 }

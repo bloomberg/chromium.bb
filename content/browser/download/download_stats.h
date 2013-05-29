@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 
 namespace base {
@@ -92,6 +93,14 @@ enum DownloadSource {
   DOWNLOAD_SOURCE_LAST_ENTRY
 };
 
+enum DownloadDiscardReason {
+  // The download is being discarded due to a user action.
+  DOWNLOAD_DISCARD_DUE_TO_USER_ACTION,
+
+  // The download is being discarded due to the browser being shut down.
+  DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN
+};
+
 // Increment one of the above counts.
 void RecordDownloadCount(DownloadCountTypes type);
 
@@ -105,6 +114,13 @@ void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len);
 void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64 received,
                                int64 total);
+
+// Record a dangerous download accept event.
+void RecordDangerousDownloadAccept(DownloadDangerType danger_type);
+
+// Record a dangerous download discard event.
+void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
+                                    DownloadDangerType danger_type);
 
 // Records the mime type of the download.
 void RecordDownloadMimeType(const std::string& mime_type);

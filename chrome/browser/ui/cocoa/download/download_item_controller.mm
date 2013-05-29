@@ -306,16 +306,14 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.save_download",
                            base::Time::Now() - creationTime_);
   // This will change the state and notify us.
-  bridge_->download_model()->download()->DangerousDownloadValidated();
+  bridge_->download_model()->download()->ValidateDangerousDownload();
 }
 
 - (IBAction)discardDownload:(id)sender {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
                            base::Time::Now() - creationTime_);
   DownloadItem* download = bridge_->download_model()->download();
-  if (download->IsPartialDownload())
-    download->Cancel(true);
-  download->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+  download->Remove();
   // WARNING: we are deleted at this point.  Don't access 'this'.
 }
 

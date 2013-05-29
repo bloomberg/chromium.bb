@@ -372,7 +372,7 @@ void DownloadsDOMHandler::HandleDiscardDangerous(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_DISCARD_DANGEROUS);
   content::DownloadItem* file = GetDownloadByValue(args);
   if (file)
-    file->Delete(content::DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+    file->Remove();
 }
 
 void DownloadsDOMHandler::HandleShow(const base::ListValue* args) {
@@ -513,7 +513,7 @@ void DownloadsDOMHandler::DangerPromptAccepted(int download_id) {
   if (!item || (item->GetState() != content::DownloadItem::IN_PROGRESS))
     return;
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
-  item->DangerousDownloadValidated();
+  item->ValidateDangerousDownload();
 }
 
 bool DownloadsDOMHandler::IsDeletingHistoryAllowed() {

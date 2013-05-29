@@ -364,9 +364,9 @@ void DownloadControllerAndroidImpl::DangerousDownloadValidated(
   if (!item)
     return;
   if (accept)
-    item->DangerousDownloadValidated();
+    item->ValidateDangerousDownload();
   else
-    item->Delete(content::DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+    item->Remove();
 }
 
 DownloadControllerAndroidImpl::DownloadInfoAndroid::DownloadInfoAndroid(

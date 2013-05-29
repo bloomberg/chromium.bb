@@ -90,11 +90,12 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void AddObserver(DownloadItem::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(DownloadItem::Observer* observer) OVERRIDE;
   virtual void UpdateObservers() OVERRIDE;
-  virtual void DangerousDownloadValidated() OVERRIDE;
+  virtual void ValidateDangerousDownload() OVERRIDE;
+  virtual void StealDangerousDownload(const AcquireFileCallback& callback)
+      OVERRIDE;
   virtual void Pause() OVERRIDE;
   virtual void Resume() OVERRIDE;
   virtual void Cancel(bool user_cancel) OVERRIDE;
-  virtual void Delete(DeleteReason reason) OVERRIDE;
   virtual void Remove() OVERRIDE;
   virtual void OpenDownload() OVERRIDE;
   virtual void ShowDownloadInShell() OVERRIDE;

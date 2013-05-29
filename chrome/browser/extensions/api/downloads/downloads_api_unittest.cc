@@ -1099,7 +1099,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   // Once the download item is deleted, we should return kInvalidOperationError.
   int id = download_item->GetId();
-  download_item->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+  download_item->Remove();
   download_item = NULL;
   EXPECT_EQ(static_cast<DownloadItem*>(NULL),
             GetCurrentManager()->GetDownload(id));
@@ -2369,7 +2369,7 @@ IN_PROC_BROWSER_TEST_F(
                          "    \"current\":false}}]",
                          result_id)));
 
-  item->DangerousDownloadValidated();
+  item->ValidateDangerousDownload();
   ASSERT_TRUE(WaitFor(events::kOnDownloadChanged,
       base::StringPrintf("[{\"id\": %d,"
                          "  \"dangerAccepted\": {"

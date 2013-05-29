@@ -93,7 +93,8 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD0(ShouldOpenFileBasedOnExtension, bool());
   MOCK_METHOD0(OpenDownload, void());
   MOCK_METHOD0(ShowDownloadInShell, void());
-  MOCK_METHOD0(DangerousDownloadValidated, void());
+  MOCK_METHOD0(ValidateDangerousDownload, void());
+  MOCK_METHOD1(StealDangerousDownload, void(const AcquireFileCallback&));
   MOCK_METHOD3(UpdateProgress, void(int64, int64, const std::string&));
   MOCK_METHOD1(Cancel, void(bool));
   MOCK_METHOD0(MarkAsComplete, void());
@@ -107,7 +108,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
 
   MOCK_METHOD2(MockStart, void(DownloadFile*, DownloadRequestHandleInterface*));
 
-  MOCK_METHOD1(Delete, void(DeleteReason));
   MOCK_METHOD0(Remove, void());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));
   MOCK_CONST_METHOD0(CurrentSpeed, int64());
@@ -472,10 +472,8 @@ class DownloadManagerTest : public testing::Test {
   virtual void TearDown() {
     while (MockDownloadItemImpl*
            item = mock_download_item_factory_->PopItem()) {
-      EXPECT_CALL(*item, IsDangerous())
-          .WillOnce(Return(false));
-      EXPECT_CALL(*item, IsPartialDownload())
-          .WillOnce(Return(false));
+      EXPECT_CALL(*item, GetState())
+          .WillOnce(Return(DownloadItem::CANCELLED));
     }
     EXPECT_CALL(GetMockObserver(), ManagerGoingDown(download_manager_.get()))
         .WillOnce(Return());

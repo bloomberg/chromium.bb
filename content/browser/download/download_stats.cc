@@ -145,6 +145,28 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
   UMA_HISTOGRAM_BOOLEAN("Download.InterruptedUnknownSize", unknown_size);
 }
 
+void RecordDangerousDownloadAccept(DownloadDangerType danger_type) {
+  UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",
+                            danger_type,
+                            DOWNLOAD_DANGER_TYPE_MAX);
+}
+
+void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
+                                    DownloadDangerType danger_type) {
+  switch (reason) {
+    case DOWNLOAD_DISCARD_DUE_TO_USER_ACTION:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Download.UserDiscard", danger_type, DOWNLOAD_DANGER_TYPE_MAX);
+      break;
+    case DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Download.Discard", danger_type, DOWNLOAD_DANGER_TYPE_MAX);
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 void RecordDownloadWriteSize(size_t data_len) {
   RecordDownloadCount(WRITE_SIZE_COUNT);
   int max = 1024 * 1024;  // One Megabyte.

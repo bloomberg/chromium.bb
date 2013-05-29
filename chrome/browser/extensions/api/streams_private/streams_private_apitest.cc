@@ -187,7 +187,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
                                      DownloadManager* manager) {
     scoped_refptr<content::DownloadTestFlushObserver> flush_observer(
         new content::DownloadTestFlushObserver(manager));
-    download->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+    download->Remove();
     flush_observer->WaitForFlush();
   }
 

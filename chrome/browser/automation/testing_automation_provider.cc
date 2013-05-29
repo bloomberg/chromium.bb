@@ -2641,11 +2641,11 @@ void TestingAutomationProvider::PerformActionOnDownload(
   } else if (action == "decline_dangerous_download") {
     new AutomationProviderDownloadModelChangedObserver(
         this, reply_message, download_manager);
-    selected_item->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+    selected_item->Remove();
   } else if (action == "save_dangerous_download") {
     selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
         this, reply_message, false, browser->profile()->IsOffTheRecord()));
-    selected_item->DangerousDownloadValidated();
+    selected_item->ValidateDangerousDownload();
   } else if (action == "pause") {
     if (!selected_item->IsInProgress() || selected_item->IsPaused()) {
       // Action would be a no-op; respond right from here.  No-op implies

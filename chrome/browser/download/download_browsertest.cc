@@ -1782,7 +1782,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
   std::vector<DownloadItem*> downloads;
   DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
-  downloads[0]->DangerousDownloadValidated();
+  downloads[0]->ValidateDangerousDownload();
   download_observer->WaitForFinished();
 
   // Get history details and confirm it's what you expect.

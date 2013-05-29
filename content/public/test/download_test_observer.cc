@@ -141,7 +141,7 @@ void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
       !ContainsKey(dangerous_downloads_seen_, download->GetId())) {
     dangerous_downloads_seen_.insert(download->GetId());
 
-    // Calling DangerousDownloadValidated() at this point will
+    // Calling ValidateDangerousDownload() at this point will
     // cause the download to be completed twice.  Do what the real UI
     // code does: make the call as a delayed task.
     switch (dangerous_download_action_) {
@@ -222,7 +222,7 @@ void DownloadTestObserver::AcceptDangerousDownload(int32 download_id) {
     return;
   DownloadItem* download = download_manager_->GetDownload(download_id);
   if (download && (download->GetState() == DownloadItem::IN_PROGRESS))
-    download->DangerousDownloadValidated();
+    download->ValidateDangerousDownload();
 }
 
 void DownloadTestObserver::DenyDangerousDownload(int32 download_id) {
@@ -232,8 +232,7 @@ void DownloadTestObserver::DenyDangerousDownload(int32 download_id) {
     return;
   DownloadItem* download = download_manager_->GetDownload(download_id);
   if (download && (download->GetState() == DownloadItem::IN_PROGRESS)) {
-    download->Cancel(true);
-    download->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+    download->Remove();
   }
 }
 

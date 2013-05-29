@@ -918,13 +918,11 @@ gboolean DownloadItemGtk::OnDangerousPromptExpose(GtkWidget* widget,
 void DownloadItemGtk::OnDangerousAccept(GtkWidget* button) {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.save_download",
                            base::Time::Now() - creation_time_);
-  download()->DangerousDownloadValidated();
+  download()->ValidateDangerousDownload();
 }
 
 void DownloadItemGtk::OnDangerousDecline(GtkWidget* button) {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
                            base::Time::Now() - creation_time_);
-  if (download()->IsPartialDownload())
-    download()->Cancel(true);
-  download()->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+  download()->Remove();
 }

@@ -335,35 +335,16 @@ void DownloadManagerImpl::Shutdown() {
   FOR_EACH_OBSERVER(Observer, observers_, ManagerGoingDown(this));
   // TODO(benjhayden): Consider clearing observers_.
 
-  // Go through all downloads in downloads_.  Dangerous ones we need to
-  // remove on disk, and in progress ones we need to cancel.
-  for (DownloadMap::iterator it = downloads_.begin(); it != downloads_.end();) {
+  // If there are in-progress downloads, cancel them. This also goes for
+  // dangerous downloads which will remain in history if they aren't explicitly
+  // accepted or discarded. Canceling will remove the intermediate download
+  // file.
+  for (DownloadMap::iterator it = downloads_.begin(); it != downloads_.end();
+       ++it) {
     DownloadItemImpl* download = it->second;
-
-    // Save iterator from potential erases in this set done by called code.
-    // Iterators after an erasure point are still valid for lists and
-    // associative containers such as sets.
-    it++;
-
-    if (download->IsDangerous() && download->IsPartialDownload()) {
-      // The user hasn't accepted it, so we need to remove it
-      // from the disk.  This may or may not result in it being
-      // removed from the DownloadManager queues and deleted
-      // (specifically, DownloadManager::DownloadRemoved only
-      // removes and deletes it if it's known to the history service)
-      // so the only thing we know after calling this function is that
-      // the download was deleted if-and-only-if it was removed
-      // from all queues.
-      download->Delete(DownloadItem::DELETE_DUE_TO_BROWSER_SHUTDOWN);
-    } else if (download->IsPartialDownload()) {
+    if (download->GetState() == DownloadItem::IN_PROGRESS)
       download->Cancel(false);
-    }
   }
-
-  // At this point, all dangerous downloads have had their files removed
-  // and all in progress downloads have been cancelled.  We can now delete
-  // anything left.
-
   STLDeleteValues(&downloads_);
   downloads_.clear();
 

@@ -137,10 +137,10 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
       }
       break;
     case DISCARD:
-      download_item_->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+      download_item_->Remove();
       break;
     case KEEP:
-      download_item_->DangerousDownloadValidated();
+      download_item_->ValidateDangerousDownload();
       break;
     case LEARN_MORE_SCANNING: {
 #if defined(FULL_SAFE_BROWSING)

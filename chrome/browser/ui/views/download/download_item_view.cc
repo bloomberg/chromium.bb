@@ -524,9 +524,7 @@ void DownloadItemView::ButtonPressed(
   if (sender == discard_button_) {
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
                              base::Time::Now() - creation_time_);
-    if (download()->IsPartialDownload())
-      download()->Cancel(true);
-    download()->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+    download()->Remove();
     // WARNING: we are deleted at this point.  Don't access 'this'.
   } else if (save_button_ && sender == save_button_) {
     // The user has confirmed a dangerous download.  We'd record how quickly the
@@ -534,7 +532,7 @@ void DownloadItemView::ButtonPressed(
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.save_download",
                              base::Time::Now() - creation_time_);
     // This will change the state and notify us.
-    download()->DangerousDownloadValidated();
+    download()->ValidateDangerousDownload();
   }
 }
 

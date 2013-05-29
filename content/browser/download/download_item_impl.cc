@@ -68,9 +68,12 @@ void DeleteDownloadedFile(const base::FilePath& path) {
 // Wrapper around DownloadFile::Detach and DownloadFile::Cancel that
 // takes ownership of the DownloadFile and hence implicitly destroys it
 // at the end of the function.
-static void DownloadFileDetach(scoped_ptr<DownloadFile> download_file) {
+static base::FilePath DownloadFileDetach(
+    scoped_ptr<DownloadFile> download_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::FilePath full_path = download_file->FullPath();
   download_file->Detach();
+  return full_path;
 }
 
 static void DownloadFileCancel(scoped_ptr<DownloadFile> download_file) {
@@ -275,7 +278,7 @@ void DownloadItemImpl::UpdateObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadUpdated(this));
 }
 
-void DownloadItemImpl::DangerousDownloadValidated() {
+void DownloadItemImpl::ValidateDangerousDownload() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(IN_PROGRESS, GetState());
   DCHECK(IsDangerous());
@@ -285,9 +288,7 @@ void DownloadItemImpl::DangerousDownloadValidated() {
   if (GetState() != IN_PROGRESS)
     return;
 
-  UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",
-                            GetDangerType(),
-                            DOWNLOAD_DANGER_TYPE_MAX);
+  RecordDangerousDownloadAccept(GetDangerType());
 
   danger_type_ = DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
 
@@ -298,6 +299,25 @@ void DownloadItemImpl::DangerousDownloadValidated() {
   UpdateObservers();
 
   MaybeCompleteDownload();
+}
+
+void DownloadItemImpl::StealDangerousDownload(
+    const AcquireFileCallback& callback) {
+  VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(IsDangerous());
+  if (download_file_) {
+    BrowserThread::PostTaskAndReplyWithResult(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&DownloadFileDetach, base::Passed(&download_file_)),
+        callback);
+  } else {
+    callback.Run(current_path_);
+  }
+  current_path_.clear();
+  Remove();
+  // We have now been deleted.
 }
 
 void DownloadItemImpl::Pause() {
@@ -350,9 +370,15 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
     return;
   }
 
-  last_reason_ = user_cancel ?
-      DOWNLOAD_INTERRUPT_REASON_USER_CANCELED :
-      DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
+  if (IsDangerous()) {
+    RecordDangerousDownloadDiscard(
+        user_cancel ? DOWNLOAD_DISCARD_DUE_TO_USER_ACTION
+                    : DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN,
+        GetDangerType());
+  }
+
+  last_reason_ = user_cancel ? DOWNLOAD_INTERRUPT_REASON_USER_CANCELED
+                             : DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
 
   RecordDownloadCount(CANCELLED_COUNT);
 
@@ -379,36 +405,6 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
   }
 
   TransitionTo(CANCELLED_INTERNAL);
-}
-
-void DownloadItemImpl::Delete(DeleteReason reason) {
-  VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  switch (reason) {
-    case DELETE_DUE_TO_USER_DISCARD:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Download.UserDiscard", GetDangerType(),
-          DOWNLOAD_DANGER_TYPE_MAX);
-      break;
-    case DELETE_DUE_TO_BROWSER_SHUTDOWN:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Download.Discard", GetDangerType(),
-          DOWNLOAD_DANGER_TYPE_MAX);
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  // Delete the file if it exists and is not owned by a DownloadFile object.
-  // (In the latter case the DownloadFile object will delete it on cancel.)
-  if (!current_path_.empty() && download_file_.get() == NULL) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&DeleteDownloadedFile, current_path_));
-    current_path_.clear();
-  }
-  Remove();
-  // We have now been deleted.
 }
 
 void DownloadItemImpl::Remove() {
@@ -1399,9 +1395,11 @@ void DownloadItemImpl::ReleaseDownloadFile(bool destroy_file) {
     current_path_.clear();
   } else {
     BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        // Will be deleted at end of task execution.
-        base::Bind(&DownloadFileDetach, base::Passed(&download_file_)));
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&DownloadFileDetach),
+                   // Will be deleted at end of task execution.
+                   base::Passed(&download_file_)));
   }
   // Don't accept any more messages from the DownloadFile, and null
   // out any previous "all data received".  This also breaks links to
