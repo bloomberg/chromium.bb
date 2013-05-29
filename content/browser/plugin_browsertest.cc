@@ -136,14 +136,14 @@ IN_PROC_BROWSER_TEST_F(PluginTest, UnloadNoCrash) {
 // Tests if a plugin executing a self deleting script using NPN_GetURL
 // works without crashing or hanging
 // Flaky: http://crbug.com/59327
-IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginGetUrl) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginGetUrl)) {
   LoadAndWait(GetURL("self_delete_plugin_geturl.html"));
 }
 
 // Tests if a plugin executing a self deleting script using Invoke
 // works without crashing or hanging
 // Flaky. See http://crbug.com/30702
-IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInvoke) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginInvoke)) {
   LoadAndWait(GetURL("self_delete_plugin_invoke.html"));
 }
 
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, NPObjectSetException) {
 // This was never ported to Mac. The only thing remaining is to make
 // SimulateMouseClick get to Mac plugins, currently it doesn't work.
 IN_PROC_BROWSER_TEST_F(PluginTest,
-                       SelfDeletePluginInvokeInSynchronousMouseUp) {
+                       MAYBE(SelfDeletePluginInvokeInSynchronousMouseUp)) {
   NavigateToURL(shell(), GetURL("execute_script_delete_in_mouse_up.html"));
 
   string16 expected_title(ASCIIToUTF16("OK"));
@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest,
 #endif
 
 // Flaky, http://crbug.com/60071.
-IN_PROC_BROWSER_TEST_F(PluginTest, GetURLRequest404Response) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(GetURLRequest404Response)) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath().AppendASCII("npapi").
                        AppendASCII("plugin_url_request_404.html")));
@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, GetURLRequest404Response) {
 // Tests if a plugin executing a self deleting script using Invoke with
 // a modal dialog showing works without crashing or hanging
 // Disabled, flakily exceeds timeout, http://crbug.com/46257.
-IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInvokeAlert) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginInvokeAlert)) {
   // Navigate asynchronously because if we waitd until it completes, there's a
   // race condition where the alert can come up before we start watching for it.
   shell()->LoadURL(GetURL("self_delete_plugin_invoke_alert.html"));
@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInvokeAlert) {
 }
 
 // Test passing arguments to a plugin.
-IN_PROC_BROWSER_TEST_F(PluginTest, Arguments) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Arguments)) {
   LoadAndWait(GetURL("arguments.html"));
 }
 
