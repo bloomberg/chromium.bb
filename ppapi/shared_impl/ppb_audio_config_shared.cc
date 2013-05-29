@@ -8,6 +8,14 @@
 
 namespace ppapi {
 
+// Rounds up requested_size to the nearest multiple of minimum_size.
+static uint32_t CalculateMultipleOfSampleFrameCount(uint32_t minimum_size,
+                                                    uint32_t requested_size) {
+  const uint32_t multiple = (requested_size + minimum_size - 1) / minimum_size;
+  return std::min(minimum_size * multiple,
+                  static_cast<uint32_t>(PP_AUDIOMAXSAMPLEFRAMECOUNT));
+}
+
 PPB_AudioConfig_Shared::PPB_AudioConfig_Shared(ResourceObjectType type,
                                                PP_Instance instance)
     : Resource(type, instance),
@@ -62,31 +70,57 @@ uint32_t PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_1(
   if (sample_frame_count < PP_AUDIOMINSAMPLEFRAMECOUNT)
     sample_frame_count = PP_AUDIOMINSAMPLEFRAMECOUNT;
 
+  // If hardware information isn't available we're connected to a fake audio
+  // output stream on the browser side, so we can use whatever sample count the
+  // client wants.
+  if (!hardware_sample_frame_count || !hardware_sample_rate)
+    return sample_frame_count;
+
+  // Note: All the values below were determined through experimentation to
+  // minimize jitter and back-to-back callbacks from the browser.  Please take
+  // care when modifying these values as they impact a large number of users.
+  // TODO(dalecurtis): Land jitter test and add documentation for updating this.
+
   // If client is using same sample rate as audio hardware, then recommend a
   // multiple of the audio hardware's sample frame count.
-  if (hardware_sample_rate == sample_rate && hardware_sample_frame_count > 0) {
-    // Round up input sample_frame_count to nearest multiple.
-    uint32_t multiple = (sample_frame_count + hardware_sample_frame_count - 1) /
-        hardware_sample_frame_count;
-    uint32_t recommendation = hardware_sample_frame_count * multiple;
-    if (recommendation > PP_AUDIOMAXSAMPLEFRAMECOUNT)
-      recommendation = PP_AUDIOMAXSAMPLEFRAMECOUNT;
-    return recommendation;
+  if (hardware_sample_rate == sample_rate) {
+    return CalculateMultipleOfSampleFrameCount(
+        hardware_sample_frame_count, sample_frame_count);
   }
 
-  // Otherwise, recommend a conservative 50ms buffer based on sample rate.
-  const uint32_t kDefault50msAt44100kHz = 2205;
-  const uint32_t kDefault50msAt48000kHz = 2400;
-  switch (sample_rate) {
-    case PP_AUDIOSAMPLERATE_44100:
-      return kDefault50msAt44100kHz;
-    case PP_AUDIOSAMPLERATE_48000:
-      return kDefault50msAt48000kHz;
-    case PP_AUDIOSAMPLERATE_NONE:
-      return 0;
+  // Should track the value reported by XP and ALSA backends.
+  const uint32_t kHighLatencySampleFrameCount = 2048;
+
+  // If the hardware requires a high latency buffer or we're at a low sample
+  // rate w/ a buffer that's larger than 10ms, choose the nearest multiple of
+  // the high latency sample frame count.  An example of too low and too large
+  // is 16kHz and a sample frame count greater than 160 frames.
+  if (hardware_sample_frame_count >= kHighLatencySampleFrameCount ||
+      (hardware_sample_rate < 44100 &&
+       hardware_sample_frame_count > hardware_sample_rate / 100u)) {
+    return CalculateMultipleOfSampleFrameCount(
+        sample_frame_count,
+        std::max(kHighLatencySampleFrameCount, hardware_sample_frame_count));
   }
-  // Unable to make a recommendation.
-  return 0;
+
+  // All low latency clients should be able to handle a 512 frame buffer with
+  // resampling from 44.1kHz and 48kHz to higher sample rates.
+  // TODO(dalecurtis): We may need to investigate making the callback thread
+  // high priority to handle buffers at the absolute minimum w/o glitching.
+  const uint32_t kLowLatencySampleFrameCount = 512;
+
+  // Special case for 48kHz -> 44.1kHz and buffer sizes greater than 10ms.  In
+  // testing most buffer sizes > 10ms led to glitching, so we choose a size we
+  // know won't cause jitter.
+  int min_sample_frame_count = kLowLatencySampleFrameCount;
+  if (hardware_sample_rate == 44100 && sample_rate == 48000 &&
+      hardware_sample_frame_count > hardware_sample_rate / 100u) {
+    min_sample_frame_count = std::max(
+        2 * kLowLatencySampleFrameCount, hardware_sample_frame_count);
+  }
+
+  return CalculateMultipleOfSampleFrameCount(
+      min_sample_frame_count, sample_frame_count);
 }
 
 // static
@@ -116,6 +150,8 @@ bool PPB_AudioConfig_Shared::Init(PP_AudioSampleRate sample_rate,
                                   uint32_t sample_frame_count) {
   // TODO(brettw): Currently we don't actually check what the hardware
   // supports, so just allow sample rates of the "guaranteed working" ones.
+  // TODO(dalecurtis): If sample rates are added RecommendSampleFrameCount_1_1()
+  // must be updated to account for the new rates.
   if (sample_rate != PP_AUDIOSAMPLERATE_44100 &&
       sample_rate != PP_AUDIOSAMPLERATE_48000)
     return false;
