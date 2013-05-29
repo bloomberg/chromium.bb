@@ -35,9 +35,7 @@ interface HTMLFrameElement : HTMLElement {
     // Extensions
     readonly attribute DOMWindow contentWindow;
 
-#if defined(ENABLE_SVG) && ENABLE_SVG
     [CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();
-#endif
 
     [TreatNullAs=NullString, CustomSetter] attribute DOMString location;
 

@@ -32,8 +32,6 @@
 [Custom] getter Node (DOMString name);
 [Custom] setter Node (DOMString name, Node value);
 
-#if defined(ENABLE_SVG) && ENABLE_SVG
 [CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();
-#endif
 };
 

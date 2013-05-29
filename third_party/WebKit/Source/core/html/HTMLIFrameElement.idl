@@ -39,8 +39,6 @@ interface HTMLIFrameElement : HTMLElement {
     // Extensions
     readonly attribute DOMWindow contentWindow;
 
-#if defined(ENABLE_SVG) && ENABLE_SVG
     [CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();
-#endif
 };
 

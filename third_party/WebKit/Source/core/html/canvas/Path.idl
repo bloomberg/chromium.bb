@@ -30,9 +30,7 @@
     EnabledAtRuntime=canvasPath,
     Constructor,
     Constructor(Path path),
-#if defined(ENABLE_SVG) && ENABLE_SVG
     Constructor(DOMString text),
-#endif
     ImplementedAs=DOMPath
 ] interface Path {
 
