@@ -88,10 +88,9 @@ class CopyOrMoveFileValidatorTestHelper {
 
   void SetMediaCopyOrMoveFileValidatorFactory(
       scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
-    FileSystemMountPointProvider* mount_point_provider =
-        file_system_context_->GetMountPointProvider(kWithValidatorType);
-    mount_point_provider->InitializeCopyOrMoveFileValidatorFactory(
-        kWithValidatorType, factory.Pass());
+    TestMountPointProvider* provider = static_cast<TestMountPointProvider*>(
+        file_system_context_->GetMountPointProvider(kWithValidatorType));
+    provider->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
   }
 
   void CopyTest(base::PlatformFileError expected) {
@@ -180,7 +179,8 @@ class TestCopyOrMoveFileValidatorFactory
     : public CopyOrMoveFileValidatorFactory {
  public:
   // A factory that creates validators that accept everything or nothing.
-  TestCopyOrMoveFileValidatorFactory(bool all_valid) : all_valid_(all_valid) {}
+  explicit TestCopyOrMoveFileValidatorFactory(bool all_valid)
+      : all_valid_(all_valid) {}
   virtual ~TestCopyOrMoveFileValidatorFactory() {}
 
   virtual CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
@@ -192,7 +192,7 @@ class TestCopyOrMoveFileValidatorFactory
  private:
   class TestCopyOrMoveFileValidator : public CopyOrMoveFileValidator {
    public:
-    TestCopyOrMoveFileValidator(bool all_valid)
+    explicit TestCopyOrMoveFileValidator(bool all_valid)
         : result_(all_valid ? base::PLATFORM_FILE_OK
                             : base::PLATFORM_FILE_ERROR_SECURITY) {
     }

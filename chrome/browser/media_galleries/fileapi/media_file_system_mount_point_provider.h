@@ -43,9 +43,6 @@ class MediaFileSystemMountPointProvider
   GetCopyOrMoveFileValidatorFactory(
       fileapi::FileSystemType type,
       base::PlatformFileError* error_code) OVERRIDE;
-  virtual void InitializeCopyOrMoveFileValidatorFactory(
-      fileapi::FileSystemType type,
-      scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory> factory) OVERRIDE;
   virtual fileapi::FilePermissionPolicy GetPermissionPolicy(
       const fileapi::FileSystemURL& url, int permissions) const OVERRIDE;
   virtual fileapi::FileSystemOperation* CreateFileSystemOperation(

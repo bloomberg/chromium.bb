@@ -122,7 +122,7 @@ TestMountPointProvider::GetCopyOrMoveFileValidatorFactory(
 }
 
 void TestMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
-    FileSystemType type, scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
+    scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
   if (!require_copy_or_move_validator_) {
     DCHECK(!factory);
     return;

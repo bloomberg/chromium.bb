@@ -219,12 +219,6 @@ CrosMountPointProvider::GetCopyOrMoveFileValidatorFactory(
   return NULL;
 }
 
-void CrosMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
-    fileapi::FileSystemType type,
-    scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory> factory) {
-  DCHECK(!factory);
-}
-
 fileapi::FilePermissionPolicy CrosMountPointProvider::GetPermissionPolicy(
     const fileapi::FileSystemURL& url, int permissions) const {
   if (url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal &&

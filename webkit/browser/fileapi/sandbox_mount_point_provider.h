@@ -93,9 +93,6 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type,
       base::PlatformFileError* error_code) OVERRIDE;
-  virtual void InitializeCopyOrMoveFileValidatorFactory(
-      FileSystemType type,
-      scoped_ptr<CopyOrMoveFileValidatorFactory> factory) OVERRIDE;
   virtual FilePermissionPolicy GetPermissionPolicy(
       const FileSystemURL& url,
       int permissions) const OVERRIDE;

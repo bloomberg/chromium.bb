@@ -264,12 +264,6 @@ SandboxMountPointProvider::GetCopyOrMoveFileValidatorFactory(
   return NULL;
 }
 
-void SandboxMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
-    FileSystemType type,
-    scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
-  DCHECK(!factory);
-}
-
 FilePermissionPolicy SandboxMountPointProvider::GetPermissionPolicy(
     const FileSystemURL& url, int permissions) const {
   if (!CanHandleType(url.type()) || !IsAllowedScheme(url.origin()))

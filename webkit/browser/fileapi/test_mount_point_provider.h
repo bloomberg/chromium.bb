@@ -45,9 +45,6 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type,
       base::PlatformFileError* error_code) OVERRIDE;
-  virtual void InitializeCopyOrMoveFileValidatorFactory(
-      FileSystemType type,
-      scoped_ptr<CopyOrMoveFileValidatorFactory> factory) OVERRIDE;
   virtual FilePermissionPolicy GetPermissionPolicy(
       const FileSystemURL& url,
       int permissions) const OVERRIDE;
@@ -70,6 +67,11 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
       FileSystemType type,
       FileSystemContext* context,
       const DeleteFileSystemCallback& callback) OVERRIDE;
+
+  // Initialize the CopyOrMoveFileValidatorFactory. Invalid to call more than
+  // once.
+  void InitializeCopyOrMoveFileValidatorFactory(
+      scoped_ptr<CopyOrMoveFileValidatorFactory> factory);
 
   const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
 

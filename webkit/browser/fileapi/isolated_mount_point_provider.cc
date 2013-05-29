@@ -105,12 +105,6 @@ IsolatedMountPointProvider::GetCopyOrMoveFileValidatorFactory(
   return NULL;
 }
 
-void IsolatedMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
-    FileSystemType type,
-    scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
-  DCHECK(!factory);
-}
-
 FilePermissionPolicy IsolatedMountPointProvider::GetPermissionPolicy(
     const FileSystemURL& url, int permissions) const {
   if (url.type() == kFileSystemTypeDragged && url.path().empty()) {

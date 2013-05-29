@@ -130,21 +130,6 @@ MediaFileSystemMountPointProvider::GetCopyOrMoveFileValidatorFactory(
   return NULL;
 }
 
-void
-MediaFileSystemMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
-    fileapi::FileSystemType type,
-    scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory> factory) {
-  switch (type) {
-    case fileapi::kFileSystemTypeNativeMedia:
-    case fileapi::kFileSystemTypeDeviceMedia:
-      if (!media_copy_or_move_file_validator_factory_)
-        media_copy_or_move_file_validator_factory_.reset(factory.release());
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
 fileapi::FilePermissionPolicy
 MediaFileSystemMountPointProvider::GetPermissionPolicy(
     const FileSystemURL& url, int permissions) const {

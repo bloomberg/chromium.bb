@@ -78,12 +78,6 @@ class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type, base::PlatformFileError* error_code) = 0;
 
-  // Initialize the CopyOrMoveFileValidatorFactory. Invalid to call more than
-  // once.
-  virtual void InitializeCopyOrMoveFileValidatorFactory(
-      FileSystemType type,
-      scoped_ptr<CopyOrMoveFileValidatorFactory> factory) = 0;
-
   // Returns file permission policy we should apply for the given |url|.
   virtual FilePermissionPolicy GetPermissionPolicy(
       const FileSystemURL& url,
