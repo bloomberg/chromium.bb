@@ -553,7 +553,13 @@ struct InstalledExtensionInfo {
   // True if the extension is being updated; false if it is being installed.
   bool is_update;
 
-  InstalledExtensionInfo(const Extension* extension, bool is_update);
+  // The name of the extension prior to this update. Will be empty if
+  // |is_update| is false.
+  std::string old_name;
+
+  InstalledExtensionInfo(const Extension* extension,
+                         bool is_update,
+                         const std::string& old_name);
 };
 
 struct UnloadedExtensionInfo {

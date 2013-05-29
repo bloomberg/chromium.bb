@@ -129,55 +129,15 @@ std::vector<base::FilePath> MatchingShortcutsForProfileAndExtension(
   return shortcut_paths;
 }
 
-}  // namespace
-
-namespace web_app {
-
-namespace internals {
-
-// Saves |image| to |icon_file| if the file is outdated and refresh shell's
-// icon cache to ensure correct icon is displayed. Returns true if icon_file
-// is up to date or successfully updated.
-bool CheckAndSaveIcon(const base::FilePath& icon_file,
-                      const gfx::ImageFamily& image) {
-  if (ShouldUpdateIcon(icon_file, image)) {
-    if (SaveIconWithCheckSum(icon_file, image)) {
-      // Refresh shell's icon cache. This call is quite disruptive as user would
-      // see explorer rebuilding the icon cache. It would be great that we find
-      // a better way to achieve this.
-      SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST | SHCNF_FLUSHNOWAIT,
-                     NULL, NULL);
-    } else {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool CreatePlatformShortcuts(
+// Creates application shortcuts in a given set of paths.
+// |shortcut_paths| is a list of directories in which shortcuts should be
+// created.
+// Returns true on success, false on failure.
+// Must be called on the FILE thread.
+bool CreateShortcutsInPaths(
     const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
-    const ShellIntegration::ShortcutLocations& creation_locations) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-
-  // Shortcut paths under which to create shortcuts.
-  std::vector<base::FilePath> shortcut_paths =
-      GetShortcutPaths(creation_locations);
-
-  bool pin_to_taskbar = creation_locations.in_quick_launch_bar &&
-                        (base::win::GetVersion() >= base::win::VERSION_WIN7);
-
-  // Create/update the shortcut in the web app path for the "Pin To Taskbar"
-  // option in Win7. We use the web app path shortcut because we will overwrite
-  // it rather than appending unique numbers if the shortcut already exists.
-  // This prevents pinned apps from having unique numbers in their names.
-  if (pin_to_taskbar)
-    shortcut_paths.push_back(web_app_path);
-
-  if (shortcut_paths.empty())
-    return false;
-
+    const std::vector<base::FilePath>& shortcut_paths) {
   // Ensure web_app_path exists.
   if (!file_util::PathExists(web_app_path) &&
       !file_util::CreateDirectory(web_app_path)) {
@@ -257,26 +217,170 @@ bool CreatePlatformShortcuts(
         base::win::SHORTCUT_CREATE_ALWAYS) && success;
   }
 
-  if (success && pin_to_taskbar) {
+  return success;
+}
+
+// Gets the directories with shortcuts for an app, and deletes the shortcuts.
+// This will search the standard locations for shortcuts named |title| that open
+// in the profile with |profile_path|.
+// |was_pinned_to_taskbar| will be set to true if there was previously a
+// shortcut pinned to the taskbar for this app; false otherwise.
+// |shortcut_paths| will be populated with a list of directories where shortcuts
+// for this app were found (and deleted). This will delete duplicate shortcuts,
+// but only return each path once, even if it contained multiple deleted
+// shortcuts. Both of these may be NULL.
+void GetShortcutLocationsAndDeleteShortcuts(
+    const base::FilePath& web_app_path,
+    const base::FilePath& profile_path,
+    const string16& title,
+    bool* was_pinned_to_taskbar,
+    std::vector<base::FilePath>* shortcut_paths) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+
+  // Get all possible locations for shortcuts.
+  ShellIntegration::ShortcutLocations all_shortcut_locations;
+  all_shortcut_locations.in_applications_menu = true;
+  all_shortcut_locations.in_quick_launch_bar = true;
+  all_shortcut_locations.on_desktop = true;
+  // Delete shortcuts from the Chrome Apps subdirectory.
+  // This matches the subdir name set by CreateApplicationShortcutView::Accept
+  // for Chrome apps (not URL apps, but this function does not apply for them).
+  all_shortcut_locations.applications_menu_subdir =
+      web_app::GetAppShortcutsSubdirName();
+  std::vector<base::FilePath> all_paths = web_app::internals::GetShortcutPaths(
+      all_shortcut_locations);
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
+    all_paths.push_back(web_app_path);
+
+  if (was_pinned_to_taskbar) {
+    // Determine if there is a link to this app in the TaskBar pin directory.
+    base::FilePath taskbar_pin_path;
+    if (PathService::Get(base::DIR_TASKBAR_PINS, &taskbar_pin_path)) {
+      std::vector<base::FilePath> taskbar_pin_files =
+          MatchingShortcutsForProfileAndExtension(taskbar_pin_path,
+                                                  profile_path, title);
+      *was_pinned_to_taskbar = !taskbar_pin_files.empty();
+    } else {
+      *was_pinned_to_taskbar = false;
+    }
+  }
+
+  for (std::vector<base::FilePath>::const_iterator i = all_paths.begin();
+       i != all_paths.end(); ++i) {
+    std::vector<base::FilePath> shortcut_files =
+        MatchingShortcutsForProfileAndExtension(*i, profile_path, title);
+    if (shortcut_paths && !shortcut_files.empty()) {
+      shortcut_paths->push_back(*i);
+    }
+    for (std::vector<base::FilePath>::const_iterator j = shortcut_files.begin();
+         j != shortcut_files.end(); ++j) {
+      // Any shortcut could have been pinned, either by chrome or the user, so
+      // they are all unpinned.
+      base::win::TaskbarUnpinShortcutLink(j->value().c_str());
+      file_util::Delete(*j, false);
+    }
+  }
+}
+
+}  // namespace
+
+namespace web_app {
+
+namespace internals {
+
+// Saves |image| to |icon_file| if the file is outdated and refresh shell's
+// icon cache to ensure correct icon is displayed. Returns true if icon_file
+// is up to date or successfully updated.
+bool CheckAndSaveIcon(const base::FilePath& icon_file,
+                      const gfx::ImageFamily& image) {
+  if (ShouldUpdateIcon(icon_file, image)) {
+    if (SaveIconWithCheckSum(icon_file, image)) {
+      // Refresh shell's icon cache. This call is quite disruptive as user would
+      // see explorer rebuilding the icon cache. It would be great that we find
+      // a better way to achieve this.
+      SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST | SHCNF_FLUSHNOWAIT,
+                     NULL, NULL);
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool CreatePlatformShortcuts(
+    const base::FilePath& web_app_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+
+  // Shortcut paths under which to create shortcuts.
+  std::vector<base::FilePath> shortcut_paths =
+      GetShortcutPaths(creation_locations);
+
+  bool pin_to_taskbar = creation_locations.in_quick_launch_bar &&
+                        (base::win::GetVersion() >= base::win::VERSION_WIN7);
+
+  // Create/update the shortcut in the web app path for the "Pin To Taskbar"
+  // option in Win7. We use the web app path shortcut because we will overwrite
+  // it rather than appending unique numbers if the shortcut already exists.
+  // This prevents pinned apps from having unique numbers in their names.
+  if (pin_to_taskbar)
+    shortcut_paths.push_back(web_app_path);
+
+  if (shortcut_paths.empty())
+    return false;
+
+  if (!CreateShortcutsInPaths(web_app_path, shortcut_info, shortcut_paths))
+    return false;
+
+  if (pin_to_taskbar) {
+    base::FilePath file_name =
+        web_app::internals::GetSanitizedFileName(shortcut_info.title);
     // Use the web app path shortcut for pinning to avoid having unique numbers
     // in the application name.
     base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
         AddExtension(installer::kLnkExt);
-    success = base::win::TaskbarPinShortcutLink(
-        shortcut_to_pin.value().c_str()) && success;
+    if (!base::win::TaskbarPinShortcutLink(shortcut_to_pin.value().c_str()))
+      return false;
   }
 
-  return success;
+  return true;
 }
 
 void UpdatePlatformShortcuts(
     const base::FilePath& web_app_path,
+    const string16& old_app_title,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   // Generates file name to use with persisted ico and shortcut file.
   base::FilePath file_name =
       web_app::internals::GetSanitizedFileName(shortcut_info.title);
+
+  if (old_app_title != shortcut_info.title) {
+    // The app's title has changed. Delete all existing app shortcuts and
+    // recreate them in any locations they already existed (but do not add them
+    // to locations where they do not currently exist).
+    bool was_pinned_to_taskbar;
+    std::vector<base::FilePath> shortcut_paths;
+    GetShortcutLocationsAndDeleteShortcuts(
+        web_app_path, shortcut_info.profile_path, old_app_title,
+        &was_pinned_to_taskbar, &shortcut_paths);
+    CreateShortcutsInPaths(web_app_path, shortcut_info, shortcut_paths);
+    // If the shortcut was pinned to the taskbar,
+    // GetShortcutLocationsAndDeleteShortcuts will have deleted it. In that
+    // case, re-pin it.
+    if (was_pinned_to_taskbar) {
+      base::FilePath file_name =
+          web_app::internals::GetSanitizedFileName(shortcut_info.title);
+      // Use the web app path shortcut for pinning to avoid having unique
+      // numbers in the application name.
+      base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
+          AddExtension(installer::kLnkExt);
+      base::win::TaskbarPinShortcutLink(shortcut_to_pin.value().c_str());
+    }
+  }
 
   // If an icon file exists, and is out of date, replace it with the new icon
   // and let the shell know the icon has been modified.
@@ -290,41 +394,14 @@ void UpdatePlatformShortcuts(
 void DeletePlatformShortcuts(
     const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-
-  // Get all possible locations for shortcuts.
-  ShellIntegration::ShortcutLocations all_shortcut_locations;
-  all_shortcut_locations.in_applications_menu = true;
-  all_shortcut_locations.in_quick_launch_bar = true;
-  all_shortcut_locations.on_desktop = true;
-  // Delete shortcuts from the Chrome Apps subdirectory.
-  // This matches the subdir name set by CreateApplicationShortcutView::Accept
-  // for Chrome apps (not URL apps, but this function does not apply for them).
-  string16 start_menu_subdir = GetAppShortcutsSubdirName();
-  all_shortcut_locations.applications_menu_subdir = start_menu_subdir;
-  std::vector<base::FilePath> shortcut_paths = GetShortcutPaths(
-      all_shortcut_locations);
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
-    shortcut_paths.push_back(web_app_path);
-
-  for (std::vector<base::FilePath>::const_iterator i = shortcut_paths.begin();
-       i != shortcut_paths.end(); ++i) {
-    std::vector<base::FilePath> shortcut_files =
-        MatchingShortcutsForProfileAndExtension(*i, shortcut_info.profile_path,
-            shortcut_info.title);
-    for (std::vector<base::FilePath>::const_iterator j = shortcut_files.begin();
-         j != shortcut_files.end(); ++j) {
-      // Any shortcut could have been pinned, either by chrome or the user, so
-      // they are all unpinned.
-      base::win::TaskbarUnpinShortcutLink(j->value().c_str());
-      file_util::Delete(*j, false);
-    }
-  }
+  GetShortcutLocationsAndDeleteShortcuts(
+      web_app_path, shortcut_info.profile_path, shortcut_info.title, NULL,
+      NULL);
 
   // If there are no more shortcuts in the Chrome Apps subdirectory, remove it.
   base::FilePath chrome_apps_dir;
   if (PathService::Get(base::DIR_START_MENU, &chrome_apps_dir)) {
-    chrome_apps_dir = chrome_apps_dir.Append(start_menu_subdir);
+    chrome_apps_dir = chrome_apps_dir.Append(GetAppShortcutsSubdirName());
     if (file_util::IsDirectoryEmpty(chrome_apps_dir))
       file_util::Delete(chrome_apps_dir, false);
   }

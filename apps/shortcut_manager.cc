@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -61,7 +63,9 @@ void ShortcutManager::Observe(int type,
         base::Callback<void(const ShellIntegration::ShortcutInfo&)>
             create_or_update;
         if (installed_info->is_update) {
-          create_or_update = base::Bind(&web_app::UpdateAllShortcuts);
+          string16 old_title = UTF8ToUTF16(installed_info->old_name);
+          create_or_update = base::Bind(&web_app::UpdateAllShortcuts,
+                                        old_title);
         } else {
           create_or_update = base::Bind(&CreateShortcutsInApplicationsMenu);
         }

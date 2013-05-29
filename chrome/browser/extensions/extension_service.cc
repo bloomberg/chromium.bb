@@ -2429,8 +2429,15 @@ void ExtensionService::FinishDelayedInstallation(
 }
 
 void ExtensionService::FinishInstallation(const Extension* extension) {
-  bool is_update = GetInstalledExtension(extension->id()) != NULL;
-  extensions::InstalledExtensionInfo details(extension, is_update);
+  const extensions::Extension* existing_extension =
+      GetInstalledExtension(extension->id());
+  bool is_update = false;
+  std::string old_name;
+  if (existing_extension) {
+    is_update = true;
+    old_name = existing_extension->name();
+  }
+  extensions::InstalledExtensionInfo details(extension, is_update, old_name);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_INSTALLED,
       content::Source<Profile>(profile_),

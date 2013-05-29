@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/web_application_info.h"
@@ -63,8 +64,10 @@ void DeleteAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Updates shortcuts for web application based on given shortcut data. This
 // refreshes existing shortcuts and their icons, but does not create new ones.
+// |old_app_title| contains the title of the app prior to this update.
 // |shortcut_info| contains information about the shortcuts to update.
-void UpdateAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
+void UpdateAllShortcuts(const string16& old_app_title,
+                        const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Creates a shortcut. Must be called on the file thread. This is used to
 // implement CreateShortcuts() above, and can also be used directly from the
@@ -128,6 +131,7 @@ void DeletePlatformShortcuts(
 // is executed on the FILE thread.
 void UpdatePlatformShortcuts(
     const base::FilePath& shortcut_data_path,
+    const string16& old_app_title,
     const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Sanitizes |name| and returns a version of it that is safe to use as an

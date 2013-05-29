@@ -621,6 +621,7 @@ class ExtensionServiceTest
                 .ptr();
         installed_ = installed_info->extension;
         was_update_ = installed_info->is_update;
+        old_name_ = installed_info->old_name;
         break;
       }
 
@@ -713,11 +714,25 @@ class ExtensionServiceTest
                              Extension::NO_FLAGS);
   }
 
+  // Attempts to install an extension. Use INSTALL_FAILED if the installation
+  // is expected to fail.
+  // If |install_state| is INSTALL_UPDATED, and |expected_old_name| is
+  // non-empty, expects that the existing extension's title was
+  // |expected_old_name|.
+  const Extension* InstallCRX(const base::FilePath& path,
+                              InstallState install_state,
+                              int creation_flags,
+                              const std::string& expected_old_name) {
+    StartCRXInstall(path, creation_flags);
+    return WaitForCrxInstall(path, install_state, expected_old_name);
+  }
+
+  // Attempts to install an extension. Use INSTALL_FAILED if the installation
+  // is expected to fail.
   const Extension* InstallCRX(const base::FilePath& path,
                               InstallState install_state,
                               int creation_flags) {
-    StartCRXInstall(path, creation_flags);
-    return WaitForCrxInstall(path, install_state);
+    return InstallCRX(path, install_state, creation_flags, "");
   }
 
   // Attempts to install an extension. Use INSTALL_FAILED if the installation
@@ -751,6 +766,18 @@ class ExtensionServiceTest
   // Returns an Extension pointer if the install succeeded, NULL otherwise.
   const Extension* WaitForCrxInstall(const base::FilePath& path,
                                      InstallState install_state) {
+    return WaitForCrxInstall(path, install_state, "");
+  }
+
+  // Wait for a CrxInstaller to finish. Used by InstallCRX. Set the
+  // |install_state| to INSTALL_FAILED if the installation is expected to fail.
+  // If |install_state| is INSTALL_UPDATED, and |expected_old_name| is
+  // non-empty, expects that the existing extension's title was
+  // |expected_old_name|.
+  // Returns an Extension pointer if the install succeeded, NULL otherwise.
+  const Extension* WaitForCrxInstall(const base::FilePath& path,
+                                     InstallState install_state,
+                                     const std::string& expected_old_name) {
     loop_.RunUntilIdle();
     std::vector<string16> errors = GetErrors();
     const Extension* extension = NULL;
@@ -762,6 +789,9 @@ class ExtensionServiceTest
       // If and only if INSTALL_UPDATED, it should have the is_update flag.
       EXPECT_EQ(install_state == INSTALL_UPDATED, was_update_)
           << path.value();
+      // If INSTALL_UPDATED, old_name_ should match the given string.
+      if (install_state == INSTALL_UPDATED && !expected_old_name.empty())
+        EXPECT_EQ(expected_old_name, old_name_);
       EXPECT_EQ(0u, errors.size()) << path.value();
 
       if (install_state == INSTALL_WITHOUT_LOAD) {
@@ -787,6 +817,7 @@ class ExtensionServiceTest
 
     installed_ = NULL;
     was_update_ = false;
+    old_name_ = "";
     loaded_.clear();
     ExtensionErrorReporter::GetInstance()->ClearErrors();
     return extension;
@@ -1087,6 +1118,7 @@ class ExtensionServiceTest
   std::string unloaded_id_;
   const Extension* installed_;
   bool was_update_;
+  std::string old_name_;
   FeatureSwitch::ScopedOverride override_external_install_prompt_;
 
  private:
@@ -2515,12 +2547,14 @@ TEST_F(ExtensionServiceTest, UpgradeSignedGood) {
   ASSERT_EQ("1.0.0.0", extension->version()->GetString());
   ASSERT_EQ(0u, GetErrors().size());
 
-  // Upgrade to version 1.0.0.1
+  // Upgrade to version 1.0.0.1.
+  // Also test that the extension's old and new title are correctly retrieved.
   path = data_dir_.AppendASCII("good2.crx");
-  InstallCRX(path, INSTALL_UPDATED);
+  InstallCRX(path, INSTALL_UPDATED, Extension::NO_FLAGS, "My extension 1");
   extension = service_->GetExtensionById(id, false);
 
   ASSERT_EQ("1.0.0.1", extension->version()->GetString());
+  ASSERT_EQ("My updated extension 1", extension->name());
   ASSERT_EQ(0u, GetErrors().size());
 }
 
