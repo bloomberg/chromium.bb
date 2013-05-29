@@ -44,6 +44,16 @@ function waitForVideo(videoElement) {
   detectVideoIn(videoElement, function () { eventOccured(); });
 }
 
+function waitForConnectionToStabilize(peerConnection) {
+  addExpectedEvent();
+  var waitForStabilization = setInterval(function() {
+    if (peerConnection.signalingState == 'stable') {
+      clearInterval(waitForStabilization);
+      eventOccured();
+    }
+  }, 100);
+}
+
 function addExpectedEvent() {
   ++gNumberOfExpectedEvents;
 }

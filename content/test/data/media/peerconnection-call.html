@@ -27,10 +27,13 @@
   }
 
   // First calls without streams on any connections, and then adds a stream
-  // to peer connection 1 which gets sent to peer connection 2.
-  function makeEmptyCallThenAddOneStreamAndRenegotiate(constraints) {
+  // to peer connection 1 which gets sent to peer connection 2. We must wait
+  // for the first negotiation to complete before starting the second one, which
+  // is why we wait until the connection is stable before re-negotiating.
+  function callEmptyThenAddOneStreamAndRenegotiate(constraints) {
     createConnections(null);
     negotiate();
+    waitForConnectionToStabilize(gFirstConnection);
     navigator.webkitGetUserMedia(constraints,
       addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
     // Only the first connection is sending here.
@@ -52,7 +55,7 @@
   function callWithDataOnly() {
     createConnections({optional:[{RtpDataChannels: true}]});
     setupDataChannel();
-    gFirstConnection.createOffer(onOfferCreated);
+    negotiate();
   }
 
   // Test call with audio, video and a data channel.
@@ -70,7 +73,7 @@
   function callWithDataAndLaterAddMedia() {
     createConnections({optional:[{RtpDataChannels: true}]});
     setupDataChannel();
-    gFirstConnection.createOffer(onOfferCreated);
+    negotiate();
 
     // Set an event handler for when the data channel has been closed.
     setAllEventsOccuredHandler(function() {
@@ -208,7 +211,7 @@
     firstDataChannel.onmessage = function(event) {
       expectEquals(event.data, sendDataString);
       firstDataChannel.close();
-      gFirstConnection.createOffer(onOfferCreated);
+      negotiate();
     }
 
     // When |firstDataChannel| transition to closed state, the test pass.
@@ -291,6 +294,11 @@
   }
 
   function negotiate() {
+    // Not stable = negotiation is ongoing. The behavior of re-negotiating while
+    // a negotiation is ongoing is more or less undefined, so avoid this.
+    if (gFirstConnection.signalingState != 'stable')
+      throw 'You can only negotiate when the connection is stable!';
+
     gFirstConnection.createOffer(onOfferCreated);
   }
 
