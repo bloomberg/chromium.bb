@@ -83,6 +83,7 @@
         '../aura/aura.gyp:aura',
         '../aura/aura.gyp:aura_test_support',
         '../compositor/compositor.gyp:compositor',
+        '../compositor/compositor.gyp:compositor_test_support',
         '../ui.gyp:run_ui_unittests',
         '../ui.gyp:ui',
         'keyboard',

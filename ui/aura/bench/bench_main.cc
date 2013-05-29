@@ -25,6 +25,7 @@
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/debug_utils.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/test/compositor_test_support.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -301,6 +302,7 @@ int main(int argc, char** argv) {
   ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  ui::CompositorTestSupport::Initialize();
   aura::Env::GetInstance();
   scoped_ptr<aura::TestScreen> test_screen(
       aura::TestScreen::CreateFullscreen());
@@ -358,6 +360,8 @@ int main(int argc, char** argv) {
   base::MessageLoopForUI::current()->Run();
   focus_client.reset();
   root_window.reset();
+
+  ui::CompositorTestSupport::Terminate();
 
   return 0;
 }
