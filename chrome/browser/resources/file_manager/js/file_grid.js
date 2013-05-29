@@ -173,7 +173,7 @@ FileGrid.Item.decorate = function(li, entry, grid) {
   li.__proto__ = FileGrid.Item.prototype;
   FileGrid.decorateThumbnail(li, entry, grid.metadataCache_, true);
 
-  if (grid.selectionModel.multiple) {
+  if (!util.platform.newUI() && grid.selectionModel.multiple) {
     var checkBox = li.ownerDocument.createElement('input');
     filelist.decorateSelectionCheckbox(checkBox, entry, grid);
     checkBox.classList.add('white');

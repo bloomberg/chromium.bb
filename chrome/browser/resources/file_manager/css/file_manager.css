@@ -1192,7 +1192,7 @@ body[new-ui] .img-container > img:not(.cached) {
   cursor: auto;
   display: -webkit-box;
   left: 0;
-  padding: 0 5px;
+  padding: 0 10px;
   position: absolute;
   right: 0;
 }
@@ -1205,16 +1205,24 @@ body[new-ui] .img-container > img:not(.cached) {
 
 /* The item width and margins are chosen so that the standard File Open/Save
    dialogs have three nicely aligned columns of thumbnails. */
-.thumbnail-grid .thumbnail-item {
-  border: 2px solid transparent;  /* Selection will make the border visible. */
-  margin-left: 8px;
+body:not([new-ui]) .thumbnail-grid .thumbnail-item {
+  -webkit-margin-start: 8px;
+  border: 1px solid transparent;  /* Selection will make the border visible. */
   margin-top: 7px;
   padding: 0;
   position: relative;
   text-align: center;
 }
 
-.thumbnail-grid .thumbnail-frame {
+body[new-ui] .thumbnail-grid .thumbnail-item {
+  -webkit-margin-start: 8px;
+  border: 3px solid transparent;  /* Selection will make the border visible. */
+  margin-top: 7px;
+  padding: 0;
+  position: relative;
+}
+
+body:not([new-ui]) .thumbnail-grid .thumbnail-frame {
   background-image: -webkit-image-set(
     url('../images/files/ui/hashed_bg.gif') 1x,
     url('../images/files/ui/2x/hashed_bg.gif') 2x);
@@ -1228,7 +1236,10 @@ body[new-ui] .img-container > img:not(.cached) {
 
 body[new-ui] .thumbnail-grid .thumbnail-frame {
   background-color: rgb(245, 245, 245);
-  background-image: none;
+  height: 180px;
+  overflow: hidden;
+  position: relative;
+  width: 240px;
 }
 
 .thumbnail-grid .thumbnail-item[selected] .thumbnail-frame,
@@ -1242,13 +1253,18 @@ body:not([new-ui]) .thumbnail-grid .thumbnail-item:hover .thumbnail-frame {
   width: 100%;
 }
 
-.thumbnail-grid .thumbnail-bottom {
+body .thumbnail-grid .thumbnail-bottom {
   background: rgba(0, 0, 0, 0.75);
   color: #eee;
   height: 30px;
 }
 
-.thumbnail-item .thumbnail-bottom .file-checkbox {
+body[new-ui] .thumbnail-grid .thumbnail-bottom {
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+}
+
+body:not([new-ui]) .thumbnail-item .thumbnail-bottom .file-checkbox {
   left: 9px;
   position: absolute;
   top: 10px;
@@ -1257,20 +1273,25 @@ body:not([new-ui]) .thumbnail-grid .thumbnail-item:hover .thumbnail-frame {
 /* Show the file name differently if the checkbox is present */
 .thumbnail-bottom.show-checkbox {
   -webkit-box-pack: start;
-  padding-left: 28px;
-  text-align: left;
+  -webkit-padding-start: 28px;
+  text-align: start;
 }
 
 /* In the full page mode we can afford to show thumbnails as large as 320x240
    with no downscaling. */
 body[type='full-page'] .thumbnail-grid .thumbnail-item {
-  margin-left: 21px;
+  -webkit-margin-start: 21px;
   margin-top: 20px;
 }
 
-body[type='full-page'] .thumbnail-grid .thumbnail-frame {
+body[type='full-page']:not([new-ui]) .thumbnail-grid .thumbnail-frame {
   height: 240px;
   padding-bottom: 34px;  /* .thumbnail-bottom height */
+  width: 320px;
+}
+
+body[type='full-page'][new-ui] .thumbnail-grid .thumbnail-frame {
+  height: 240px;
   width: 320px;
 }
 
