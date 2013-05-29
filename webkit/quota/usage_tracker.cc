@@ -364,7 +364,7 @@ void ClientUsageTracker::SetUsageCacheEnabled(const GURL& origin,
 
 void ClientUsageTracker::DidGetOriginsForGlobalUsage(
     const GlobalUsageCallback& callback,
-    const std::set<GURL>& origins, StorageType type) {
+    const std::set<GURL>& origins) {
   OriginSetByHost origins_by_host;
   for (std::set<GURL>::const_iterator itr = origins.begin();
        itr != origins.end(); ++itr)
@@ -415,8 +415,7 @@ void ClientUsageTracker::AccumulateHostUsage(
 
 void ClientUsageTracker::DidGetOriginsForHostUsage(
     const std::string& host,
-    const std::set<GURL>& origins,
-    StorageType type) {
+    const std::set<GURL>& origins) {
   GetUsageForOrigins(host, origins);
 }
 

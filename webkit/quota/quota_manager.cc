@@ -642,7 +642,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
     DeleteSoon();
   }
 
-  void DidGetOriginsForHost(const std::set<GURL>& origins, StorageType type) {
+  void DidGetOriginsForHost(const std::set<GURL>& origins) {
     DCHECK_GT(remaining_clients_, 0);
 
     origins_.insert(origins.begin(), origins.end());

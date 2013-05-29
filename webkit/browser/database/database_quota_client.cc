@@ -66,9 +66,8 @@ void GetOriginsForHostOnDBThread(
 
 void DidGetOrigins(
     const QuotaClient::GetOriginsCallback& callback,
-    std::set<GURL>* origins_ptr,
-    quota::StorageType type) {
-  callback.Run(*origins_ptr, type);
+    std::set<GURL>* origins_ptr) {
+  callback.Run(*origins_ptr);
 }
 
 void DidDeleteOriginData(
@@ -151,7 +150,7 @@ void DatabaseQuotaClient::GetOriginsForType(
 
   // All databases are in the temp namespace for now.
   if (type != quota::kStorageTypeTemporary) {
-    callback.Run(std::set<GURL>(), type);
+    callback.Run(std::set<GURL>());
     return;
   }
 
@@ -163,8 +162,7 @@ void DatabaseQuotaClient::GetOriginsForType(
                  base::Unretained(origins_ptr)),
       base::Bind(&DidGetOrigins,
                  callback,
-                 base::Owned(origins_ptr),
-                 type));
+                 base::Owned(origins_ptr)));
 }
 
 void DatabaseQuotaClient::GetOriginsForHost(
@@ -176,7 +174,7 @@ void DatabaseQuotaClient::GetOriginsForHost(
 
   // All databases are in the temp namespace for now.
   if (type != quota::kStorageTypeTemporary) {
-    callback.Run(std::set<GURL>(), type);
+    callback.Run(std::set<GURL>());
     return;
   }
 
@@ -189,8 +187,7 @@ void DatabaseQuotaClient::GetOriginsForHost(
                  host),
       base::Bind(&DidGetOrigins,
                  callback,
-                 base::Owned(origins_ptr),
-                 type));
+                 base::Owned(origins_ptr)));
 }
 
 void DatabaseQuotaClient::DeleteOriginData(

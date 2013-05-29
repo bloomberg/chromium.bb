@@ -140,7 +140,7 @@ void MockStorageClient::RunGetOriginsForType(
     if (type == iter->first.second)
       origins.insert(iter->first.first);
   }
-  callback.Run(origins, type);
+  callback.Run(origins);
 }
 
 void MockStorageClient::RunGetOriginsForHost(
@@ -153,7 +153,7 @@ void MockStorageClient::RunGetOriginsForHost(
     if (type == iter->first.second && host == host_or_spec)
       origins.insert(iter->first.first);
   }
-  callback.Run(origins, type);
+  callback.Run(origins);
 }
 
 void MockStorageClient::RunDeleteOriginData(

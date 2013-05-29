@@ -89,7 +89,6 @@ class IndexedDBQuotaClientTest : public testing::Test {
       quota::QuotaClient* client,
       quota::StorageType type) {
     origins_.clear();
-    type_ = quota::kStorageTypeTemporary;
     client->GetOriginsForType(
         type,
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
@@ -103,7 +102,6 @@ class IndexedDBQuotaClientTest : public testing::Test {
       quota::StorageType type,
       const std::string& host) {
     origins_.clear();
-    type_ = quota::kStorageTypeTemporary;
     client->GetOriginsForHost(
         type, host,
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
@@ -147,10 +145,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
     usage_ = usage;
   }
 
-  void OnGetOriginsComplete(const std::set<GURL>& origins,
-      quota::StorageType type) {
+  void OnGetOriginsComplete(const std::set<GURL>& origins) {
     origins_ = origins;
-    type_ = type;
   }
 
   void OnDeleteOriginComplete(quota::QuotaStatusCode code) {
@@ -160,7 +156,6 @@ class IndexedDBQuotaClientTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   int64 usage_;
   std::set<GURL> origins_;
-  quota::StorageType type_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
   base::MessageLoop message_loop_;

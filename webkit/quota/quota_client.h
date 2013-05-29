@@ -22,10 +22,10 @@ namespace quota {
 // All the methods are assumed to be called on the IO thread in the browser.
 class WEBKIT_STORAGE_EXPORT QuotaClient {
  public:
-  typedef base::Callback<void(int64)> GetUsageCallback;  // NOLINT
-  typedef base::Callback<void(const std::set<GURL>&, StorageType)>
+  typedef base::Callback<void(int64 usage)> GetUsageCallback;
+  typedef base::Callback<void(const std::set<GURL>& origins)>
       GetOriginsCallback;
-  typedef base::Callback<void(QuotaStatusCode)> DeletionCallback;
+  typedef base::Callback<void(QuotaStatusCode status)> DeletionCallback;
 
   virtual ~QuotaClient() {}
 

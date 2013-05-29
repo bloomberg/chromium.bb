@@ -127,16 +127,14 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   };
 
   void DidGetOriginsForGlobalUsage(const GlobalUsageCallback& callback,
-                                   const std::set<GURL>& origins,
-                                   StorageType type);
+                                   const std::set<GURL>& origins);
   void AccumulateHostUsage(AccumulateInfo* info,
                            const GlobalUsageCallback& callback,
                            int64 cached_usage,
                            int64 non_cached_usage);
 
   void DidGetOriginsForHostUsage(const std::string& host,
-                                 const std::set<GURL>& origins,
-                                 StorageType type);
+                                 const std::set<GURL>& origins);
 
   void GetUsageForOrigins(const std::string& host,
                           const std::set<GURL>& origins);

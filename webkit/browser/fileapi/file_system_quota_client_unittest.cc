@@ -234,10 +234,8 @@ class FileSystemQuotaClientTest : public testing::Test {
     usage_ = usage;
   }
 
-  void OnGetOrigins(const std::set<GURL>& origins,
-      quota::StorageType type) {
+  void OnGetOrigins(const std::set<GURL>& origins) {
     origins_ = origins;
-    type_ = type;
   }
 
   void OnGetAdditionalUsage(int64 usage_unused) {
@@ -255,7 +253,6 @@ class FileSystemQuotaClientTest : public testing::Test {
   int64 usage_;
   int additional_callback_count_;
   std::set<GURL> origins_;
-  quota::StorageType type_;
   quota::QuotaStatusCode deletion_status_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaClientTest);

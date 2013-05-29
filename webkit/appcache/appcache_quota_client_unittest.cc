@@ -142,11 +142,9 @@ class AppCacheQuotaClientTest : public testing::Test {
     usage_ = usage;
   }
 
-  void OnGetOriginsComplete(const std::set<GURL>& origins,
-                            quota::StorageType type) {
+  void OnGetOriginsComplete(const std::set<GURL>& origins) {
     ++num_get_origins_completions_;
     origins_ = origins;
-    type_ = type;
   }
 
   void OnDeleteOriginDataComplete(quota::QuotaStatusCode status) {
@@ -157,7 +155,6 @@ class AppCacheQuotaClientTest : public testing::Test {
   base::MessageLoop message_loop_;
   int64 usage_;
   std::set<GURL> origins_;
-  quota::StorageType type_;
   quota::QuotaStatusCode delete_status_;
   int num_get_origin_usage_completions_;
   int num_get_origins_completions_;

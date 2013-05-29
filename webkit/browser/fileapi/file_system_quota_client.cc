@@ -60,9 +60,8 @@ void GetOriginsForHostOnFileThread(
 
 void DidGetOrigins(
     const quota::QuotaClient::GetOriginsCallback& callback,
-    std::set<GURL>* origins_ptr,
-    StorageType storage_type) {
-  callback.Run(*origins_ptr, storage_type);
+    std::set<GURL>* origins_ptr) {
+  callback.Run(*origins_ptr);
 }
 
 quota::QuotaStatusCode DeleteOriginOnFileThread(
@@ -137,7 +136,7 @@ void FileSystemQuotaClient::GetOriginsForType(
   if (is_incognito_) {
     // We don't support FileSystem in incognito mode yet.
     std::set<GURL> origins;
-    callback.Run(origins, storage_type);
+    callback.Run(origins);
     return;
   }
 
@@ -150,8 +149,7 @@ void FileSystemQuotaClient::GetOriginsForType(
                  base::Unretained(origins_ptr)),
       base::Bind(&DidGetOrigins,
                  callback,
-                 base::Owned(origins_ptr),
-                 storage_type));
+                 base::Owned(origins_ptr)));
 }
 
 void FileSystemQuotaClient::GetOriginsForHost(
@@ -163,7 +161,7 @@ void FileSystemQuotaClient::GetOriginsForHost(
   if (is_incognito_) {
     // We don't support FileSystem in incognito mode yet.
     std::set<GURL> origins;
-    callback.Run(origins, storage_type);
+    callback.Run(origins);
     return;
   }
 
@@ -177,8 +175,7 @@ void FileSystemQuotaClient::GetOriginsForHost(
                  base::Unretained(origins_ptr)),
       base::Bind(&DidGetOrigins,
                  callback,
-                 base::Owned(origins_ptr),
-                 storage_type));
+                 base::Owned(origins_ptr)));
 }
 
 void FileSystemQuotaClient::DeleteOriginData(

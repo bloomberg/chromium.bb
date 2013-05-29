@@ -43,10 +43,9 @@ void GetAllOriginsOnWebKitThread(
 
 void DidGetOrigins(
     const IndexedDBQuotaClient::GetOriginsCallback& callback,
-    const std::set<GURL>* origins,
-    quota::StorageType storage_type) {
+    const std::set<GURL>* origins) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  callback.Run(*origins, storage_type);
+  callback.Run(*origins);
 }
 
 void GetOriginsForHostOnWebKitThread(
@@ -114,7 +113,7 @@ void IndexedDBQuotaClient::GetOriginsForType(
 
   // All databases are in the temp namespace for now.
   if (type != quota::kStorageTypeTemporary) {
-    callback.Run(std::set<GURL>(), type);
+    callback.Run(std::set<GURL>());
     return;
   }
 
@@ -126,8 +125,7 @@ void IndexedDBQuotaClient::GetOriginsForType(
                  base::Unretained(origins_to_return)),
       base::Bind(&DidGetOrigins,
                  callback,
-                 base::Owned(origins_to_return),
-                 type));
+                 base::Owned(origins_to_return)));
 }
 
 void IndexedDBQuotaClient::GetOriginsForHost(
@@ -139,7 +137,7 @@ void IndexedDBQuotaClient::GetOriginsForHost(
 
   // All databases are in the temp namespace for now.
   if (type != quota::kStorageTypeTemporary) {
-    callback.Run(std::set<GURL>(), type);
+    callback.Run(std::set<GURL>());
     return;
   }
 
@@ -152,8 +150,7 @@ void IndexedDBQuotaClient::GetOriginsForHost(
                  base::Unretained(origins_to_return)),
       base::Bind(&DidGetOrigins,
                  callback,
-                 base::Owned(origins_to_return),
-                 type));
+                 base::Owned(origins_to_return)));
 }
 
 void IndexedDBQuotaClient::DeleteOriginData(

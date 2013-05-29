@@ -106,7 +106,7 @@ void AppCacheQuotaClient::GetOriginsForHost(
     const GetOriginsCallback& callback) {
   DCHECK(!callback.is_null());
   if (host.empty()) {
-    callback.Run(std::set<GURL>(), type);
+    callback.Run(std::set<GURL>());
     return;
   }
   GetOriginsHelper(type, host, callback);
@@ -162,7 +162,7 @@ void AppCacheQuotaClient::GetOriginsHelper(
   DCHECK(!quota_manager_is_destroyed_);
 
   if (!service_) {
-    callback.Run(std::set<GURL>(), type);
+    callback.Run(std::set<GURL>());
     return;
   }
 
@@ -174,7 +174,7 @@ void AppCacheQuotaClient::GetOriginsHelper(
   }
 
   if (type != quota::kStorageTypeTemporary) {
-    callback.Run(std::set<GURL>(), type);
+    callback.Run(std::set<GURL>());
     return;
   }
 
@@ -185,7 +185,7 @@ void AppCacheQuotaClient::GetOriginsHelper(
     if (opt_host.empty() || iter->first.host() == opt_host)
       origins.insert(iter->first);
   }
-  callback.Run(origins, type);
+  callback.Run(origins);
 }
 
 void AppCacheQuotaClient::ProcessPendingRequests() {

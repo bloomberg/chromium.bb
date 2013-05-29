@@ -63,7 +63,7 @@ class MockQuotaClient : public QuotaClient {
       origins.insert(itr->first);
     }
     base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, origins, type));
+                                           base::Bind(callback, origins));
   }
 
   virtual void GetOriginsForHost(StorageType type,
@@ -77,7 +77,7 @@ class MockQuotaClient : public QuotaClient {
         origins.insert(itr->first);
     }
     base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, origins, type));
+                                           base::Bind(callback, origins));
   }
 
   virtual void DeleteOriginData(const GURL& origin,
