@@ -29,6 +29,7 @@
     'config/gpu_info.h',
     'config/gpu_info_collector_android.cc',
     'config/gpu_info_collector_mac.mm',
+    'config/gpu_info_collector_ozone.cc',
     'config/gpu_info_collector_win.cc',
     'config/gpu_info_collector_x11.cc',
     'config/gpu_info_collector.cc',
