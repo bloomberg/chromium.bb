@@ -39,9 +39,6 @@ void ChromeShellDelegate::OpenFileManager(bool as_dialog) {
 void ChromeShellDelegate::OpenCrosh() {
 }
 
-void ChromeShellDelegate::OpenMobileSetup(const std::string& service_path) {
-}
-
 void ChromeShellDelegate::ShowKeyboardOverlay() {
 }
 

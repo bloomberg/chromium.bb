@@ -763,10 +763,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       NetworkConfigView::Show(cros_network, GetNativeWindow());
       return;
     }
-    if (network->type() == flimflam::kTypeCellular &&
-        (network->activation_state() != flimflam::kActivationStateActivated ||
-         network->cellular_out_of_credits())) {
-      ash::Shell::GetInstance()->delegate()->OpenMobileSetup(network_id);
+    if (network->type() == flimflam::kTypeCellular) {
+      if (network->activation_state() != flimflam::kActivationStateActivated)
+        network_connect::ActivateCellular(network_id);
+      else if (network->cellular_out_of_credits())
+        network_connect::ShowMobileSetup(network_id);
       return;
     }
     // No special configure or setup for |network_id|, show the settings UI.

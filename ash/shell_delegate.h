@@ -141,9 +141,6 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user opens Crosh.
   virtual void OpenCrosh() = 0;
 
-  // Invoked when the user needs to set up mobile networking.
-  virtual void OpenMobileSetup(const std::string& service_path) = 0;
-
   // Invoked when the user uses Shift+Ctrl+T to restore the closed tab.
   virtual void RestoreTab() = 0;
 

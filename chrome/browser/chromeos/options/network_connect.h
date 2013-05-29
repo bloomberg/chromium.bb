@@ -18,6 +18,15 @@ enum ConnectResult {
   CONNECT_STARTED
 };
 
+// Activate the cellular network associated with |service_path| if direct
+// activation is supported, otherwise call ShowMobileSetup.
+void ActivateCellular(const std::string& service_path);
+
+// Shows the mobile setup dialog which handles:
+// * Activation for non direct-activation networks
+// * Showing network plan info
+void ShowMobileSetup(const std::string& service_path);
+
 // Attempts to connect to the network specified by |service_path|.
 // Returns one of the following results:
 //  NETWORK_NOT_FOUND if the network does not exist.

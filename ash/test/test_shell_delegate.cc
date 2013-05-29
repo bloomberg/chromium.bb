@@ -77,9 +77,6 @@ void TestShellDelegate::OpenFileManager(bool as_dialog) {
 void TestShellDelegate::OpenCrosh() {
 }
 
-void TestShellDelegate::OpenMobileSetup(const std::string& service_path) {
-}
-
 void TestShellDelegate::RestoreTab() {
 }
 

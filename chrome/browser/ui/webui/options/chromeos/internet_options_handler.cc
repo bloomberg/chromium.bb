@@ -533,26 +533,6 @@ void PopulateVPNDetails(
                      hostname_ui_data);
 }
 
-// Activate the cellular device pointed to by the service path.
-void Activate(std::string service_path) {
-  chromeos::Network* network = NULL;
-  if (!service_path.empty()) {
-    network = chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-        FindNetworkByPath(service_path);
-  } else {
-    NOTREACHED();
-    return;
-  }
-
-  if (network->type() != chromeos::TYPE_CELLULAR)
-    return;
-
-  chromeos::CellularNetwork* cellular =
-      static_cast<chromeos::CellularNetwork*>(network);
-  if (cellular->activation_state() != chromeos::ACTIVATION_STATE_ACTIVATED)
-    cellular->StartActivation();
-}
-
 // Given a list of supported carrier's by the device, return the index of
 // the carrier the device is currently using.
 int FindCurrentCarrierIndex(const base::ListValue* carriers,
@@ -923,12 +903,7 @@ void InternetOptionsHandler::ShowMorePlanInfoCallback(const ListValue* args) {
     NOTREACHED();
     return;
   }
-
-  const chromeos::CellularNetwork* cellular =
-      cros_->FindCellularNetworkByPath(service_path);
-  if (!cellular)
-    return;
-  ash::Shell::GetInstance()->delegate()->OpenMobileSetup(service_path);
+  chromeos::network_connect::ShowMobileSetup(service_path);
 }
 
 void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {
@@ -940,7 +915,7 @@ void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {
     NOTREACHED();
     return;
   }
-  ash::Shell::GetInstance()->delegate()->OpenMobileSetup(service_path);
+  chromeos::network_connect::ShowMobileSetup(service_path);
 }
 
 void InternetOptionsHandler::SetApnCallback(const ListValue* args) {
@@ -971,7 +946,7 @@ void InternetOptionsHandler::CarrierStatusCallback(
     const std::string& error_message) {
   if ((error == chromeos::NETWORK_METHOD_ERROR_NONE) &&
       cros_->CellularDeviceUsesDirectActivation()) {
-    Activate(service_path);
+    chromeos::network_connect::ActivateCellular(service_path);
     UpdateConnectionData(cros_->FindNetworkByPath(service_path));
   }
 
@@ -1667,17 +1642,10 @@ void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {
   } else if (command == kTagDisconnect && type != chromeos::TYPE_ETHERNET) {
     cros_->DisconnectFromNetwork(network);
   } else if (command == kTagActivate && type == chromeos::TYPE_CELLULAR) {
-    if (!cros_->CellularDeviceUsesDirectActivation()) {
-      ash::Shell::GetInstance()->delegate()->OpenMobileSetup(
-          network->service_path());
-    } else {
-      Activate(service_path);
-      // Update network properties after we start activation. The Activate
-      // call is a blocking call, which blocks on finishing the "start" of
-      // the activation, hence when we query for network properties after
-      // this call is done, we will have the "activating" activation state.
-      UpdateConnectionData(network);
-    }
+    chromeos::network_connect::ActivateCellular(service_path);
+    // Activation may update network properties (e.g. ActivationState), so
+    // request them here in case they change.
+    UpdateConnectionData(network);
   } else {
     VLOG(1) << "Unknown command: " << command;
     NOTREACHED();

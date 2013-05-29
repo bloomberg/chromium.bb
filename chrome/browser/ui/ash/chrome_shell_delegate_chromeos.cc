@@ -5,17 +5,12 @@
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
 #include "ash/keyboard_overlay/keyboard_overlay_view.h"
-#include "ash/system/chromeos/network/network_observer.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
@@ -38,7 +33,6 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -49,8 +43,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
   return CommandLine::ForCurrentProcess()->HasSwitch(
@@ -117,34 +109,6 @@ void ChromeShellDelegate::OpenCrosh() {
   browser->window()->Show();
   browser->window()->Activate();
   page->GetView()->Focus();
-}
-
-void ChromeShellDelegate::OpenMobileSetup(const std::string& service_path) {
-  // TODO(stevenjb): Replace with non-NetworkLibrary UI.
-  chromeos::NetworkLibrary* cros =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  const chromeos::CellularNetwork* cellular =
-      cros->FindCellularNetworkByPath(service_path);
-  if (cellular && !cellular->activated() &&
-      cellular->activate_over_non_cellular_network() &&
-      (!cros->connected_network() || !cros->connected_network()->online())) {
-    chromeos::NetworkTechnology technology = cellular->network_technology();
-    ash::NetworkObserver::NetworkType network_type =
-        (technology == chromeos::NETWORK_TECHNOLOGY_LTE ||
-         technology == chromeos::NETWORK_TECHNOLOGY_LTE_ADVANCED)
-        ? ash::NetworkObserver::NETWORK_CELLULAR_LTE
-        : ash::NetworkObserver::NETWORK_CELLULAR;
-    ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
-        NULL,
-        ash::NetworkObserver::ERROR_CONNECT_FAILED,
-        network_type,
-        l10n_util::GetStringUTF16(IDS_NETWORK_ACTIVATION_ERROR_TITLE),
-        l10n_util::GetStringFUTF16(IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION,
-                                   UTF8ToUTF16((cellular->name()))),
-        std::vector<string16>());
-    return;
-  }
-  MobileSetupDialog::Show(service_path);
 }
 
 void ChromeShellDelegate::ToggleHighContrast() {
