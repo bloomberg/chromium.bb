@@ -1715,8 +1715,11 @@ unsigned RenderText::renderedTextLength() const
 
 int RenderText::previousOffset(int current) const
 {
-    StringImpl* si = m_text.impl();
-    TextBreakIterator* iterator = cursorMovementIterator(si->characters(), si->length());
+    if (isAllASCII() || m_text.is8Bit())
+        return current - 1;
+
+    StringImpl* textImpl = m_text.impl();
+    TextBreakIterator* iterator = cursorMovementIterator(textImpl->characters16(), textImpl->length());
     if (!iterator)
         return current - 1;
 
@@ -1868,15 +1871,17 @@ int RenderText::previousOffsetForBackwardDeletion(int current) const
 
 int RenderText::nextOffset(int current) const
 {
-    StringImpl* si = m_text.impl();
-    TextBreakIterator* iterator = cursorMovementIterator(si->characters(), si->length());
+    if (isAllASCII() || m_text.is8Bit())
+        return current + 1;
+
+    StringImpl* textImpl = m_text.impl();
+    TextBreakIterator* iterator = cursorMovementIterator(textImpl->characters16(), textImpl->length());
     if (!iterator)
         return current + 1;
 
     long result = textBreakFollowing(iterator, current);
     if (result == TextBreakDone)
         result = current + 1;
-
 
     return result;
 }
