@@ -95,9 +95,10 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
   void LoadPolicyWithCachedClient();
 
   // Callback invoked once a profile is created, so we can complete the
-  // credentials transfer and load policy.
-  void CompleteSigninForNewProfile(Profile* profile,
-                                   Profile::CreateStatus status);
+  // credentials transfer, load policy, and open the first window.
+  void CompleteInitForNewProfile(chrome::HostDesktopType desktop_type,
+                                 Profile* profile,
+                                 Profile::CreateStatus status);
 
   // Cancels the in-progress signin for this profile.
   void CancelSigninAndDelete();

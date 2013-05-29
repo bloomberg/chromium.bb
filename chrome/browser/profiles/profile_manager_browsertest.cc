@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
   base::FilePath singleton_profile_path = cache.GetPathOfProfileAtIndex(0);
   EXPECT_FALSE(singleton_profile_path.empty());
   profile_manager->ScheduleProfileForDeletion(singleton_profile_path,
-                                              chrome::HOST_DESKTOP_TYPE_NATIVE);
+                                              ProfileManager::CreateCallback());
 
   // Spin things till profile is actually deleted.
   content::RunAllPendingInMessageLoop();
@@ -142,9 +142,9 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
   EXPECT_FALSE(profile_path1.empty());
   EXPECT_FALSE(profile_path2.empty());
   profile_manager->ScheduleProfileForDeletion(profile_path1,
-                                              chrome::HOST_DESKTOP_TYPE_NATIVE);
+                                              ProfileManager::CreateCallback());
   profile_manager->ScheduleProfileForDeletion(profile_path2,
-                                              chrome::HOST_DESKTOP_TYPE_NATIVE);
+                                              ProfileManager::CreateCallback());
 
   // Spin things so deletion can take place.
   content::RunAllPendingInMessageLoop();
@@ -175,7 +175,6 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
       string16(), // name
       string16(), // icon url
       base::Bind(ProfileCreationComplete),
-      chrome::GetActiveDesktop(),
       false);
   // Wait for profile to finish loading.
   content::RunMessageLoop();

@@ -34,7 +34,6 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -145,16 +144,6 @@ void CreateDesktopShortcutForProfile(Profile* profile,
       g_browser_process->profile_manager()->profile_shortcut_manager();
   if (shortcut_manager)
     shortcut_manager->CreateProfileShortcut(profile->GetPath());
-}
-
-void OnProfileCreated(
-    const std::vector<ProfileManager::CreateCallback>& callbacks,
-    Profile* profile,
-    Profile::CreateStatus status) {
-  std::vector<ProfileManager::CreateCallback>::const_iterator it;
-  for (it = callbacks.begin(); it != callbacks.end(); ++it) {
-    it->Run(profile, status);
-  }
 }
 
 }  // namespace
@@ -1135,8 +1124,50 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
   }
 
   ProfileManager::CreateMultiProfileAsync(
-      name, icon, base::Bind(&OnProfileCreated, callbacks),
-      desktop_type, managed_user);
+      name, icon, base::Bind(&BrowserOptionsHandler::OnProfileCreated,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             desktop_type, managed_user, callbacks),
+      managed_user);
+}
+
+void BrowserOptionsHandler::OnProfileCreated(
+    chrome::HostDesktopType desktop_type,
+    bool is_managed,
+    const std::vector<ProfileManager::CreateCallback>& callbacks,
+    Profile* profile,
+    Profile::CreateStatus status) {
+  std::vector<ProfileManager::CreateCallback>::const_iterator it;
+  for (it = callbacks.begin(); it != callbacks.end(); ++it) {
+    it->Run(profile, status);
+  }
+
+  switch (status) {
+    case Profile::CREATE_STATUS_FAIL: {
+      web_ui()->CallJavascriptFunction(
+          "BrowserOptions.showCreateProfileLocalError");
+      break;
+    }
+    case Profile::CREATE_STATUS_CREATED: {
+      // Do nothing for an intermediate status.
+      break;
+    }
+    case Profile::CREATE_STATUS_INITIALIZED: {
+      base::FundamentalValue is_managed_value(is_managed);
+      web_ui()->CallJavascriptFunction(
+          "BrowserOptions.showCreateProfileSuccess",
+          is_managed_value);
+
+      // Opening the new window must be the last action, after all callbacks
+      // have been run, to give them a chance to initialize the profile.
+      ProfileManager::FindOrCreateNewWindowForProfile(
+          profile,
+          chrome::startup::IS_PROCESS_STARTUP,
+          chrome::startup::IS_FIRST_RUN,
+          desktop_type,
+          false);
+      break;
+    }
+  }
 }
 
 void BrowserOptionsHandler::ObserveThemeChanged() {

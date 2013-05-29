@@ -60,6 +60,20 @@ bool GetProfilePathFromArgs(const ListValue* args,
   return base::GetValueAsFilePath(*file_path_value, profile_file_path);
 }
 
+void OnNewDefaultProfileCreated(
+    chrome::HostDesktopType desktop_type,
+    Profile* profile,
+    Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED) {
+    ProfileManager::FindOrCreateNewWindowForProfile(
+      profile,
+      chrome::startup::IS_PROCESS_STARTUP,
+      chrome::startup::IS_FIRST_RUN,
+      desktop_type,
+      false);
+  }
+}
+
 }  // namespace
 
 ManageProfileHandler::ManageProfileHandler()
@@ -88,6 +102,7 @@ void ManageProfileHandler::GetLocalizedValues(
     { "createProfileTitle", IDS_PROFILES_CREATE_TITLE },
     { "createProfileInstructions", IDS_PROFILES_CREATE_INSTRUCTIONS },
     { "createProfileConfirm", IDS_PROFILES_CREATE_CONFIRM },
+    { "createProfileLocalError", IDS_PROFILES_CREATE_LOCAL_ERROR },
     { "createProfileShortcut", IDS_PROFILES_CREATE_SHORTCUT },
     { "removeProfileShortcut", IDS_PROFILES_REMOVE_SHORTCUT },
   };
@@ -327,7 +342,8 @@ void ManageProfileHandler::DeleteProfile(const ListValue* args) {
     desktop_type = browser->host_desktop_type();
 
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-      profile_file_path, desktop_type);
+      profile_file_path,
+      base::Bind(&OnNewDefaultProfileCreated, desktop_type));
 }
 
 #if defined(ENABLE_SETTINGS_APP)

@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_BROWSER_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_BROWSER_OPTIONS_HANDLER_H_
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
@@ -149,6 +152,15 @@ class BrowserOptionsHandler
   //      (optional, boolean)
   //   3: a flag stating whether the user should be managed (optional, boolean)
   void CreateProfile(const base::ListValue* args);
+
+  // Handles final tasks when a new profile has been created, running any queued
+  // callbacks and updating the UI.
+  void OnProfileCreated(
+      chrome::HostDesktopType desktop_type,
+      bool is_managed,
+      const std::vector<ProfileManager::CreateCallback>& callbacks,
+      Profile* profile,
+      Profile::CreateStatus status);
 
   void ObserveThemeChanged();
   void ThemesReset(const base::ListValue* args);

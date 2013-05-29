@@ -188,13 +188,13 @@ void OneClickSigninSyncStarter::CreateNewSignedInProfile() {
   ProfileManager::CreateMultiProfileAsync(
       UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
       UTF8ToUTF16(ProfileInfoCache::GetDefaultAvatarIconUrl(icon_index)),
-      base::Bind(&OneClickSigninSyncStarter::CompleteSigninForNewProfile,
-                 weak_pointer_factory_.GetWeakPtr()),
-      desktop_type_,
+      base::Bind(&OneClickSigninSyncStarter::CompleteInitForNewProfile,
+                 weak_pointer_factory_.GetWeakPtr(), desktop_type_),
       false);
 }
 
-void OneClickSigninSyncStarter::CompleteSigninForNewProfile(
+void OneClickSigninSyncStarter::CompleteInitForNewProfile(
+    chrome::HostDesktopType desktop_type,
     Profile* new_profile,
     Profile::CreateStatus status) {
   DCHECK_NE(profile_, new_profile);
@@ -235,6 +235,14 @@ void OneClickSigninSyncStarter::CompleteSigninForNewProfile(
     // Load policy for the just-created profile - once policy has finished
     // loading the signin process will complete.
     LoadPolicyWithCachedClient();
+
+    // Open the profile's first window, after all initialization.
+    ProfileManager::FindOrCreateNewWindowForProfile(
+      new_profile,
+      chrome::startup::IS_PROCESS_STARTUP,
+      chrome::startup::IS_FIRST_RUN,
+      desktop_type,
+      false);
   }
 }
 #endif

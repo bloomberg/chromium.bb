@@ -1057,6 +1057,24 @@ cr.define('options', function() {
     },
 
     /**
+     * Reports a local error (e.g., disk full) to the "create" overlay during
+     * profile creation.
+     * @private
+     */
+    showCreateProfileLocalError_: function() {
+      CreateProfileOverlay.onLocalError();
+    },
+
+    /**
+    * Reports successful profile creation to the "create" overlay.
+    * @param {boolean} isLimited True if the new profile is for a limited user.
+    * @private
+    */
+    showCreateProfileSuccess_: function(isLimited) {
+      CreateProfileOverlay.onSuccess(isLimited);
+    },
+
+    /**
      * Returns the currently active profile for this browser window.
      * @return {Object} A profile info object.
      * @private
@@ -1436,6 +1454,8 @@ cr.define('options', function() {
     'setupPageZoomSelector',
     'setupProxySettingsSection',
     'showBluetoothSettings',
+    'showCreateProfileLocalError',
+    'showCreateProfileSuccess',
     'showMouseControls',
     'showTouchpadControls',
     'updateAccountPicture',

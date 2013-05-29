@@ -52,7 +52,7 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   //   ProfileManager::CreateMultiProfileAsync(
   //       name, icon,
   //       managed_user_registration_service->GetRegistrationAndInitCallback(),
-  //       desktop_type, managed_user);
+  //       managed_user);
   ProfileManager::CreateCallback GetRegistrationAndInitCallback();
 
   // ProfileKeyedService implementation:

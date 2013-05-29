@@ -48,6 +48,14 @@ cr.define('options', function() {
       self.registerCommonEventHandlers_('manage',
                                         self.submitManageChanges_.bind(self));
 
+      // Override the create-profile-ok handler, to avoid closing the overlay
+      // until we finish creating the profile.
+      $('create-profile-ok').onclick = function(event) {
+        ManageProfileOverlay.getInstance().hideErrorBubble_('create');
+        $('create-profile-ok').disabled = true;
+        self.submitCreateProfile_();
+      };
+
       if (loadTimeData.getBoolean('managedUsersEnabled')) {
         $('create-profile-limited-container').hidden = false;
       }
@@ -229,14 +237,18 @@ cr.define('options', function() {
      * @param {string} mode A label that specifies the type of dialog
      *     box which is currently being viewed (i.e. 'create' or
      *     'manage').
+     * @param {boolean} disableOKButton True if the dialog's OK button should be
+     *     disabled when the error bubble is shown. It will be re-enabled when
+     *     the error bubble is hidden.
      * @private
      */
-    showErrorBubble_: function(errorText, mode) {
+    showErrorBubble_: function(errorText, mode, disableOKButton) {
       var nameErrorEl = $(mode + '-profile-error-bubble');
       nameErrorEl.hidden = false;
       nameErrorEl.textContent = loadTimeData.getString(errorText);
 
-      $(mode + '-profile-ok').disabled = true;
+      if (disableOKButton)
+        $(mode + '-profile-ok').disabled = true;
     },
 
     /**
@@ -266,7 +278,7 @@ cr.define('options', function() {
       if (newName == oldName) {
         this.hideErrorBubble_(mode);
       } else if (this.profileNames_[newName] != undefined) {
-        this.showErrorBubble_('manageProfilesDuplicateNameError', mode);
+        this.showErrorBubble_('manageProfilesDuplicateNameError', mode, true);
       } else {
         this.hideErrorBubble_(mode);
 
@@ -300,6 +312,8 @@ cr.define('options', function() {
       var iconUrl = $('create-profile-icon-grid').selectedItem;
       var createShortcut = $('create-shortcut').checked;
       var isManaged = $('create-profile-limited').checked;
+
+      // 'createProfile' is handled by the BrowserOptionsHandler.
       chrome.send('createProfile',
                   [name, iconUrl, createShortcut, isManaged]);
     },
@@ -418,7 +432,7 @@ cr.define('options', function() {
       $('manage-profile-overlay-delete').hidden = true;
       $('create-profile-instructions').textContent =
          loadTimeData.getStringF('createProfileInstructions');
-      ManageProfileOverlay.getInstance().hideErrorBubble_('create');
+      this.hideErrorBubble_();
 
       var shortcutsEnabled = loadTimeData.getBoolean('profileShortcutsEnabled');
       $('create-shortcut-container').hidden = !shortcutsEnabled;
@@ -427,6 +441,42 @@ cr.define('options', function() {
       $('create-profile-name-label').hidden = true;
       $('create-profile-name').hidden = true;
       $('create-profile-ok').disabled = true;
+    },
+
+    /** @override */
+    showErrorBubble_: function(errorText) {
+      ManageProfileOverlay.getInstance().showErrorBubble_(errorText,
+                                                          'create',
+                                                          false);
+    },
+
+    /** @override */
+    hideErrorBubble_: function() {
+      ManageProfileOverlay.getInstance().hideErrorBubble_('create');
+    },
+
+    /**
+     * Shows an error message describing a local error (most likely a disk
+     * error) when creating a new profile. Called by BrowserOptions via the
+     * BrowserOptionsHandler.
+     * @private
+     */
+    onLocalError_: function() {
+      $('create-profile-ok').disabled = false;
+      this.showErrorBubble_('createProfileLocalError');
+    },
+
+    /**
+     * For new limited users, shows a confirmation page after successfully
+     * creating a new profile; otherwise, the handler will open a new window.
+     * @private
+     */
+    onSuccess_: function(isManaged) {
+      OptionsPage.closeOverlay();
+      $('create-profile-ok').disabled = false;
+      if (isManaged) {
+        // TODO(pamg): Fill out this stub.
+      }
     },
 
     /**
@@ -448,6 +498,8 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations.
   [
+    'onLocalError',
+    'onSuccess',
     'updateSignedInStatus',
   ].forEach(function(name) {
     CreateProfileOverlay[name] = function() {

@@ -14855,6 +14855,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_PROFILES_CREATE_CONFIRM" desc="Create button confirmation">
       Create
     </message>
+    <message name="IDS_PROFILES_CREATE_LOCAL_ERROR" desc="Message shown when a local error (for example, a disk error) occurs during profile creation.">
+      Oops! The new profile couldn't be created. Check your hard drive space and permissions and try again.
+    </message>
     <message name="IDS_PROFILES_CREATE_LIMITED_SIGNED_IN_LABEL" desc="Label for the 'Limited user' checkbox in the create-profile dialog when the current user is signed in. This will be followed by a 'Learn more' link.">
       This is a limited user managed by <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex>.</ph>
     </message>
@@ -14883,7 +14886,7 @@ As the manager of a limited user in Chrome on this device, you can determine the
 
 First, create a limited user in Chrome on this device. You can then configure the limited user's settings online anytime, from any device.
     </message>
-    <message name="IDS_NEW_LIMITED_USER_LEARN_MORE_DONE_BUTTON" desc="The text of the 'OK' button on the 'Learn more' dialog for the limited user feature.">
+    <message name="IDS_NEW_LIMITED_USER_LEARN_MORE_DONE_BUTTON" desc="Text for the 'OK' button on the 'Learn more' dialog for the limited user feature.">
       OK, got it!
     </message>
 

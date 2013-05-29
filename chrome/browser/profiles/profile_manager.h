@@ -191,7 +191,6 @@ class ProfileManager : public base::NonThreadSafe,
       const string16& name,
       const string16& icon_url,
       const CreateCallback& callback,
-      chrome::HostDesktopType desktop_type,
       bool is_managed);
 
   // Register multi-profile related preferences in Local State.
@@ -205,9 +204,11 @@ class ProfileManager : public base::NonThreadSafe,
   // profile specfic desktop shortcuts.
   ProfileShortcutManager* profile_shortcut_manager();
 
-  // Schedules the profile at the given path to be deleted on shutdown.
+  // Schedules the profile at the given path to be deleted on shutdown. If we're
+  // deleting the last profile, a new one will be created in its place, and in
+  // that case the callback will be called when profile creation is complete.
   void ScheduleProfileForDeletion(const base::FilePath& profile_dir,
-                                  chrome::HostDesktopType desktop_type);
+                                  const CreateCallback& callback);
 
   // Checks if multiple profiles is enabled.
   static bool IsMultipleProfilesEnabled();
