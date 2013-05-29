@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html i18n-values="dir:textdirection;">
 <!--
 
 Copyright (c) 2012 The Chromium Authors. All rights reserved.
@@ -8,14 +8,14 @@ found in the LICENSE file.
 -->
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="css/items.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/chrome_shared.css">
-    <link rel="stylesheet" href="css/pack_item_overlay.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/alert_overlay.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/tabs.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/overlay.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/trash.css">
     <link rel="stylesheet" href="../uber/uber_shared.css">
+    <link rel="stylesheet" href="css/pack_item_overlay.css">
+    <link rel="stylesheet" href="css/items.css">
 
     <script src="js/main_scripts.js"></script>
   </head>
@@ -25,22 +25,27 @@ found in the LICENSE file.
       <include src="../../../../ui/webui/resources/html/alert_overlay.html">
     </div>
     <div class="page" id="extension-settings">
-      <h1 i18n-content="appsDevtoolTitle"></h1>
       <tabbox id="tab-box">
-        <tabs id="tabs">
-          <tab i18n-content="appsDevtoolApps"></tab>
-          <tab i18n-content="appsDevtoolExtensions"></tab>
-        </tabs>
-        <div id="developer-controls">
-          <button id="load-unpacked"
-              i18n-content="appsDevtoolLoadUnpackedButton"></button>
-          <button id="pack-item"
-              i18n-content="appsDevtoolPackButton"></button>
-          <button id= "update-items-now"
-              i18n-content="appsDevtoolUpdateButton"></button>
-          <input id="search" type="text"
-              i18n-values=".placeholder:appsDevtoolSearch" spellcheck="false">
-          <hr>
+        <div id="header">
+          <div id="developer-controls">
+            <button id="load-unpacked"
+                i18n-content="appsDevtoolLoadUnpackedButton"></button>
+            <button id="pack-item" i18n-content="appsDevtoolPackButton">
+            </button>
+            <button id="update-items-now"
+                i18n-content="appsDevtoolUpdateButton">
+            </button>
+            <h1 id="header-title" i18n-content="appsDevtoolTitle"></h1>
+            <input id="search" type="text"
+                i18n-values=".placeholder:appsDevtoolSearch" spellcheck="false">
+          </div>
+          <div id="tabs-header-container">
+            <tabs id="tabs" tabindex="0">
+              <tab i18n-content="appsDevtoolApps"></tab>
+              <tab i18n-content="appsDevtoolExtensions"></tab>
+            </tabs>
+          </div>
+          <div id="header-bottom-gradient"></div>
         </div>
         <tabpanels id="tab-panels">
           <!-- Apps Tab -->

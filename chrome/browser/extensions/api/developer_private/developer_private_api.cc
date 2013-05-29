@@ -49,6 +49,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/webui/web_ui_util.h"
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
@@ -1097,6 +1098,8 @@ DeveloperPrivateChoosePathFunction::~DeveloperPrivateChoosePathFunction() {}
 bool DeveloperPrivateGetStringsFunction::RunImpl() {
   DictionaryValue* dict = new DictionaryValue();
   SetResult(dict);
+
+  webui::SetFontAndTextDirection(dict);
 
   #define   SET_STRING(id, idr) \
     dict->SetString(id, l10n_util::GetStringUTF16(idr))

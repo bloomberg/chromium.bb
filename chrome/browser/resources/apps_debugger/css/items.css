@@ -17,16 +17,106 @@ hr {
 
 /* Override the visual style of tabs. */
 
+#tabs-header-container {
+  border-bottom: 1px solid #e0e0e0;
+  height: calc(100% - 53px);
+}
+
+#tabs {
+  border-bottom: none;
+  margin: 5px auto 0;
+  padding: 0 5px;
+  width: 800px;
+}
+
 tabs tab {
+  border-color: #e0e0e0;
   min-width: 150px;
   padding: 5px 20px;
+}
+
+tabs > [selected] {
+  background: white;
+  border-color: #e0e0e0;
+}
+
+html.focus-outline-visible tabs:focus > [selected] {
+  background: white;
+  border-color: rgb(160, 160, 255);
+  outline: none;
+}
+
+tabs > :not([selected]) {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: #e0e0e0;
+}
+
+tabs > :not([selected]):hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+tabpanels {
+  height: 100%;
+  padding: 0;
+  width: 100%;
+}
+
+tabpanel {
+  margin: 0 auto;
+  padding-top: 80px;
+  width: 800px;
+}
+
+/* Header */
+
+#header {
+  background-color: rgba(255, 255, 255, 0.9);
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+}
+
+#developer-controls {
+  margin-top: 0;
+  max-width: none;
+  padding: 3px 10px 8px;
+  width: calc(100% - 20px);
+}
+
+#header-title {
+  -webkit-margin-start: 50px;
+  display: inline-block;
+  font-size: 1.2em;
+  position: relative;
+  top: 3px;
+}
+
+#header-bottom-gradient {
+  background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0));
+  height: 30px;
+  position: fixed;
+  top: 79px;
+  width: 100%;
+}
+
+#search {
+  float: right;
+  margin-top: 7px;
+  padding: 4px;
+  width: 200px;
+}
+
+html[dir='rtl'] #search {
+  float: left;
 }
 
 /* Contents */
 
 #extension-settings {
-  margin: 30px;
-  max-width: 800px;
+  margin: 0;
+  max-width: 100%;
+  padding: 10px 0;
 }
 
 #no-extensions-message,
@@ -36,19 +126,6 @@ tabs tab {
 
 .empty-item-list {
   height: 3em;
-}
-
-#developer-controls {
-  margin-top: 15px;
-  max-width: 750px;
-}
-
-#search {
-  float: right;
-}
-
-html[dir='rtl'] #search {
-  float: left;
 }
 
 #no-extensions,

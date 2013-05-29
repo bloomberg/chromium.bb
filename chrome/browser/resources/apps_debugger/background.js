@@ -8,8 +8,11 @@ chrome.app.runtime.onLaunched.addListener(function() {
     mainWindow.focus();
   } else {
     chrome.app.window.create('main.html', {
-      width: 768,
-      height: 1024,
+      id: 'apps_debugger',
+      minHeight: 600,
+      minWidth: 800,
+      height: 600,
+      width: 800,
     }, function(win) {
       mainWindow = win;
     });

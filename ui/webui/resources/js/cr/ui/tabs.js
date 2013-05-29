@@ -10,7 +10,9 @@ cr.define('cr.ui', function() {
    * @return {TabBox} The tab box if found.
    */
   function getTabBox(el) {
-    return el.parentElement && el.parentElement.parentElement;
+    return findAncestor(el, function(node) {
+      return node.tagName == 'TABBOX';
+    });
   }
 
   /**
@@ -39,12 +41,13 @@ cr.define('cr.ui', function() {
       TABPANEL: TabPanel
     };
 
-    var child;
-    for (var i = 0; child = this.children[i]; i++) {
-      var constr = map[child.tagName];
-      if (constr)
+    Object.keys(map).forEach(function(tagName) {
+      var children = this.getElementsByTagName(tagName);
+      var constr = map[tagName];
+      for (var i = 0; child = children[i]; i++) {
         cr.ui.decorate(child, constr);
-    }
+      }
+    }.bind(this));
   }
 
   /**
@@ -53,10 +56,18 @@ cr.define('cr.ui', function() {
    * @this {TabBox}
    */
   function selectedIndexSetHook(selectedIndex) {
-    var child, tabChild;
-    for (var i = 0; child = this.children[i]; i++) {
-      for (var j = 0; tabChild = child.children[j]; j++) {
-        tabChild.selected = j == selectedIndex;
+    var child, tabChild, element;
+    element = this.querySelector('tabs');
+    if (element) {
+      for (var i = 0; child = element.children[i]; i++) {
+        child.selected = i == selectedIndex;
+      }
+    }
+
+    element = this.querySelector('tabpanels');
+    if (element) {
+      for (var i = 0; child = element.children[i]; i++) {
+        child.selected = i == selectedIndex;
       }
     }
   }
@@ -113,7 +124,7 @@ cr.define('cr.ui', function() {
     decorate: function() {
       decorateChildren.call(this);
 
-      // Make the Tabs element fousable.
+      // Make the Tabs element focusable.
       this.tabIndex = 0;
       this.addEventListener('keydown', this.handleKeyDown_.bind(this));
 
@@ -149,8 +160,9 @@ cr.define('cr.ui', function() {
         delta *= -1;
 
       var count = this.children.length;
-      var index = this.parentElement.selectedIndex;
-      this.parentElement.selectedIndex = (index + delta + count) % count;
+      var tabbox = getTabBox(this);
+      var index = tabbox.selectedIndex;
+      tabbox.selectedIndex = (index + delta + count) % count;
 
       // Show focus outline since we used the keyboard.
       this.focusOutlineManager_.visible = true;
