@@ -127,7 +127,8 @@ scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrumentAmex() {
       "default_instrument_id",
       GetTestAddress(),
       WalletItems::MaskedInstrument::AMEX,
-      WalletItems::MaskedInstrument::VALID);
+      // Amex cards are marked with status AMEX_NOT_SUPPORTED by the server.
+      WalletItems::MaskedInstrument::AMEX_NOT_SUPPORTED);
 }
 
 scoped_ptr<WalletItems::MaskedInstrument> GetTestNonDefaultMaskedInstrument() {

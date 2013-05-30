@@ -275,10 +275,15 @@ std::string SectionToPrefString(DialogSection section) {
 // Check if a given MaskedInstrument is allowed for the purchase.
 bool IsInstrumentAllowed(
     const wallet::WalletItems::MaskedInstrument& instrument) {
-  return (instrument.status() == wallet::WalletItems::MaskedInstrument::VALID ||
-      instrument.status() == wallet::WalletItems::MaskedInstrument::PENDING) &&
-      instrument.type() != wallet::WalletItems::MaskedInstrument::AMEX &&
-      instrument.type() != wallet::WalletItems::MaskedInstrument::UNKNOWN;
+  switch (instrument.status()) {
+    case wallet::WalletItems::MaskedInstrument::VALID:
+    case wallet::WalletItems::MaskedInstrument::PENDING:
+    case wallet::WalletItems::MaskedInstrument::EXPIRED:
+    case wallet::WalletItems::MaskedInstrument::BILLING_INCOMPLETE:
+      return true;
+    default:
+      return false;
+  }
 }
 
 // Signals that the user has opted in to geolocation services.  Factored out
