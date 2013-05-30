@@ -5,6 +5,8 @@
 #ifndef BASE_ALLOCATOR_ALLOCATOR_SHIM_H_
 #define BASE_ALLOCATOR_ALLOCATOR_SHIM_H_
 
+#include <stddef.h>
+
 namespace base {
 namespace allocator {
 

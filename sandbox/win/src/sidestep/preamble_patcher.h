@@ -7,6 +7,8 @@
 #ifndef SANDBOX_SRC_SIDESTEP_PREAMBLE_PATCHER_H__
 #define SANDBOX_SRC_SIDESTEP_PREAMBLE_PATCHER_H__
 
+#include <stddef.h>
+
 namespace sidestep {
 
 // Maximum size of the preamble stub. We overwrite at least the first 5
