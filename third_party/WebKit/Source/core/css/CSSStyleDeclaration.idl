@@ -35,8 +35,8 @@
 
     readonly attribute unsigned long    length;
     getter DOMString          item([Default=Undefined] optional unsigned long index);
-    [ImplementedAs=anonymousNamedGetter, TreatReturnedNullStringAs=Null] getter (DOMString or float) (DOMString name);
-    [ImplementedAs=anonymousNamedSetter, RaisesException] setter void (DOMString propertyName, [TreatNullAs=NullString] DOMString propertyValue);
+    [Custom] getter (DOMString or float) (DOMString name);
+    [Custom] setter void (DOMString propertyName, [TreatNullAs=NullString] DOMString propertyValue);
     readonly attribute CSSRule          parentRule;
 };
 
