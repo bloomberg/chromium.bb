@@ -46,6 +46,7 @@
 #include "core/platform/chromium/FramelessScrollViewClient.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
@@ -442,6 +443,8 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
         return;
 
     gc->setFillColor(textColor, ColorSpaceDeviceRGB);
+
+    FontCachePurgePreventer fontCachePurgePreventer;
 
     Font itemFont = getRowFont(rowIndex);
     // FIXME: http://crbug.com/19872 We should get the padding of individual option
