@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/PageRuntimeAgent.h"
 
+#include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/inspector/InjectedScript.h"

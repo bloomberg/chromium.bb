@@ -99,7 +99,7 @@ void InspectorFrontendClientLocal::windowObjectCleared()
 {
     if (m_frontendHost)
         m_frontendHost->disconnectClient();
-    ScriptState* frontendScriptState = scriptStateFromPage(debuggerWorld(), m_frontendPage);
+    ScriptState* frontendScriptState = mainWorldScriptState(m_frontendPage->mainFrame());
     m_frontendHost = InspectorFrontendHost::create(this, m_frontendPage);
     ScriptGlobalObject::set(frontendScriptState, "InspectorFrontendHost", m_frontendHost.get());
 }

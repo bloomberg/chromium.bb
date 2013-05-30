@@ -34,6 +34,7 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #include "InspectorFrontend.h"
+#include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "bindings/v8/ScriptObject.h"

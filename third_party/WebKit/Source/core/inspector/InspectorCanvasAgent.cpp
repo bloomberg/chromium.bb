@@ -211,7 +211,9 @@ ScriptObject InspectorCanvasAgent::notifyRenderingContextWasWrapped(const Script
 {
     ASSERT(m_frontend);
     ScriptState* scriptState = wrappedContext.scriptState();
-    DOMWindow* domWindow = scriptState ? domWindowFromScriptState(scriptState) : 0;
+    DOMWindow* domWindow = 0;
+    if (scriptState)
+        domWindow = scriptState->domWindow();
     Frame* frame = domWindow ? domWindow->frame() : 0;
     if (frame && !m_framesWithUninstrumentedCanvases.contains(frame))
         m_framesWithUninstrumentedCanvases.set(frame, false);

@@ -121,7 +121,7 @@ void InjectedScriptManager::discardInjectedScriptsFor(DOMWindow* window)
     IdToInjectedScriptMap::iterator end = m_idToInjectedScript.end();
     for (IdToInjectedScriptMap::iterator it = m_idToInjectedScript.begin(); it != end; ++it) {
         ScriptState* scriptState = it->value.scriptState();
-        if (window != domWindowFromScriptState(scriptState))
+        if (window != scriptState->domWindow())
             continue;
         m_scriptStateToId.remove(scriptState);
         idsToRemove.append(it->key);
@@ -134,7 +134,7 @@ void InjectedScriptManager::discardInjectedScriptsFor(DOMWindow* window)
     Vector<ScriptState*> scriptStatesToRemove;
     for (ScriptStateToId::iterator it = m_scriptStateToId.begin(); it != m_scriptStateToId.end(); ++it) {
         ScriptState* scriptState = it->key;
-        if (window == domWindowFromScriptState(scriptState))
+        if (window == scriptState->domWindow())
             scriptStatesToRemove.append(scriptState);
     }
     for (size_t i = 0; i < scriptStatesToRemove.size(); i++)

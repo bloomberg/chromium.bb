@@ -262,7 +262,7 @@ void ConsoleMessage::windowCleared(DOMWindow* window)
 {
     if (!m_arguments)
         return;
-    if (domWindowFromScriptState(m_arguments->globalState()) != window)
+    if (m_arguments->globalState()->domWindow() != window)
         return;
     if (!m_message)
         m_message = "<message collected>";
