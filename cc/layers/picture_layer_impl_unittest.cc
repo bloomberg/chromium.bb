@@ -825,6 +825,71 @@ TEST_F(PictureLayerImplTest, MarkRequiredNullTiles) {
   // It should be safe to call this (and MarkVisibleResourcesAsRequired)
   // on a layer with no recordings.
   host_impl_.pending_tree()->UpdateDrawProperties();
+  pending_layer_->MarkVisibleResourcesAsRequired();
+}
+
+TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(200, 100);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  SetupPendingTree(pending_pile);
+
+  pending_layer_->set_fixed_tile_size(tile_size);
+  ASSERT_TRUE(pending_layer_->CanHaveTilings());
+  PictureLayerTiling* tiling = pending_layer_->AddTiling(1.f);
+  host_impl_.pending_tree()->UpdateDrawProperties();
+  EXPECT_EQ(tiling->resolution(), HIGH_RESOLUTION);
+
+  // Fake set priorities.
+  int tile_count = 0;
+  for (PictureLayerTiling::CoverageIterator iter(
+           tiling,
+           pending_layer_->contents_scale_x(),
+           gfx::Rect(pending_layer_->visible_content_rect()));
+       iter;
+       ++iter) {
+    if (!*iter)
+      continue;
+    Tile* tile = *iter;
+    TilePriority priority;
+    priority.resolution = HIGH_RESOLUTION;
+    if (++tile_count % 2) {
+      priority.time_to_visible_in_seconds = 0.f;
+      priority.distance_to_visible_in_pixels = 0.f;
+    } else {
+      priority.time_to_visible_in_seconds = 1.f;
+      priority.distance_to_visible_in_pixels = 1.f;
+    }
+    tile->SetPriority(PENDING_TREE, priority);
+  }
+
+  pending_layer_->MarkVisibleResourcesAsRequired();
+
+  int num_visible = 0;
+  int num_offscreen = 0;
+
+  for (PictureLayerTiling::CoverageIterator iter(
+           tiling,
+           pending_layer_->contents_scale_x(),
+           gfx::Rect(pending_layer_->visible_content_rect()));
+       iter;
+       ++iter) {
+    if (!*iter)
+      continue;
+    const Tile* tile = *iter;
+    if (tile->priority(PENDING_TREE).distance_to_visible_in_pixels == 0.f) {
+      EXPECT_TRUE(tile->required_for_activation());
+      num_visible++;
+    } else {
+      EXPECT_FALSE(tile->required_for_activation());
+      num_offscreen++;
+    }
+  }
+
+  EXPECT_GT(num_visible, 0);
+  EXPECT_GT(num_offscreen, 0);
 }
 
 }  // namespace

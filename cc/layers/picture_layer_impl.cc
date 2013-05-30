@@ -684,11 +684,15 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
          ++iter) {
       if (!*iter || !iter->tile_version().IsReadyToDraw())
         continue;
+
+      // This iteration is over the visible content rect which is potentially
+      // less conservative than projecting the viewport into the layer.
+      // Ignore tiles that are know to be outside the viewport.
+      if (iter->priority(PENDING_TREE).distance_to_visible_in_pixels != 0)
+        continue;
+
       missing_region.Subtract(iter.geometry_rect());
       iter->mark_required_for_activation();
-
-      DCHECK_EQ(iter->priority(PENDING_TREE).distance_to_visible_in_pixels, 0);
-      DCHECK_EQ(iter->priority(PENDING_TREE).time_to_visible_in_seconds, 0);
     }
   }
 
@@ -699,15 +703,21 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
        iter;
        ++iter) {
     // A null tile (i.e. missing recording) can just be skipped.
+    if (!*iter)
+      continue;
+
+    // This iteration is over the visible content rect which is potentially
+    // less conservative than projecting the viewport into the layer.
+    // Ignore tiles that are know to be outside the viewport.
+    if (iter->priority(PENDING_TREE).distance_to_visible_in_pixels != 0)
+      continue;
+
     // If the missing region doesn't cover it, this tile is fully
     // covered by acceptable tiles at other scales.
-    if (!*iter || !missing_region.Intersects(iter.geometry_rect()))
+    if (!missing_region.Intersects(iter.geometry_rect()))
       continue;
-    iter->mark_required_for_activation();
 
-    // These must be true for this tile to end up in the NOW_BIN in TileManager.
-    DCHECK_EQ(iter->priority(PENDING_TREE).distance_to_visible_in_pixels, 0);
-    DCHECK_EQ(iter->priority(PENDING_TREE).time_to_visible_in_seconds, 0);
+    iter->mark_required_for_activation();
   }
 }
 
