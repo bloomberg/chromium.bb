@@ -64,6 +64,7 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual bool OnShimLaunch(apps::AppShimHandler::Host* host) OVERRIDE;
   virtual void OnShimClose(apps::AppShimHandler::Host* host) OVERRIDE;
   virtual void OnShimFocus(apps::AppShimHandler::Host* host) OVERRIDE;
+  virtual void OnShimQuit(apps::AppShimHandler::Host* host) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<AppListServiceMac>;
@@ -282,6 +283,10 @@ void AppListServiceMac::OnShimClose(apps::AppShimHandler::Host* host) {
 }
 
 void AppListServiceMac::OnShimFocus(apps::AppShimHandler::Host* host) {
+  DismissAppList();
+}
+
+void AppListServiceMac::OnShimQuit(apps::AppShimHandler::Host* host) {
   DismissAppList();
 }
 

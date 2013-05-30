@@ -17,6 +17,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
@@ -36,6 +37,21 @@ base::Thread* g_io_thread = NULL;
 
 }  // namespace
 
+class AppShimController;
+
+@interface AppShimDelegate : NSObject<NSApplicationDelegate> {
+ @private
+  AppShimController* appShimController_;  // Weak. Owns us.
+  BOOL terminateNow_;
+  BOOL terminateRequested_;
+}
+
+- (id)initWithController:(AppShimController*)controller;
+
+- (void)terminateNow;
+
+@end
+
 // The AppShimController is responsible for communication with the main Chrome
 // process, and generally controls the lifetime of the app shim process.
 class AppShimController : public IPC::Listener {
@@ -44,6 +60,9 @@ class AppShimController : public IPC::Listener {
 
   // Connects to Chrome and sends a LaunchApp message.
   void Init();
+
+  // Sends a QuitApp message to Chrome.
+  void QuitApp();
 
  private:
   // IPC::Listener implemetation.
@@ -58,10 +77,11 @@ class AppShimController : public IPC::Listener {
   // dock or by Cmd+Tabbing to it.
   void OnDidActivateApplication();
 
-  // Quits the app shim process.
-  void Quit();
+  // Terminates the app shim process.
+  void Close();
 
   IPC::ChannelProxy* channel_;
+  scoped_nsobject<AppShimDelegate> nsapp_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimController);
 };
@@ -77,7 +97,7 @@ void AppShimController::Init() {
   base::FilePath user_data_dir;
   if (!chrome::GetUserDataDirectoryForBrowserBundle(chrome_bundle,
                                                     &user_data_dir)) {
-    Quit();
+    Close();
     return;
   }
 
@@ -89,6 +109,14 @@ void AppShimController::Init() {
 
   channel_->Send(new AppShimHostMsg_LaunchApp(
       g_info->profile_dir.value(), g_info->app_mode_id));
+
+  nsapp_delegate_.reset([[AppShimDelegate alloc] initWithController:this]);
+  DCHECK(![NSApp delegate]);
+  [NSApp setDelegate:nsapp_delegate_];
+}
+
+void AppShimController::QuitApp() {
+  channel_->Send(new AppShimHostMsg_QuitApp);
 }
 
 bool AppShimController::OnMessageReceived(const IPC::Message& message) {
@@ -103,12 +131,12 @@ bool AppShimController::OnMessageReceived(const IPC::Message& message) {
 
 void AppShimController::OnChannelError() {
   LOG(ERROR) << "App shim channel error.";
-  Quit();
+  Close();
 }
 
 void AppShimController::OnLaunchAppDone(bool success) {
   if (!success) {
-    Quit();
+    Close();
     return;
   }
   [[[NSWorkspace sharedWorkspace] notificationCenter]
@@ -123,13 +151,45 @@ void AppShimController::OnLaunchAppDone(bool success) {
   }];
 }
 
-void AppShimController::Quit() {
-  [NSApp terminate:nil];
+void AppShimController::Close() {
+  [nsapp_delegate_ terminateNow];
 }
 
 void AppShimController::OnDidActivateApplication() {
   channel_->Send(new AppShimHostMsg_FocusApp);
 }
+
+@implementation AppShimDelegate
+
+- (id)initWithController:(AppShimController*)controller {
+  if ((self = [super init])) {
+    appShimController_ = controller;
+  }
+  return self;
+}
+
+- (NSApplicationTerminateReply)
+    applicationShouldTerminate:(NSApplication*)sender {
+  if (terminateNow_)
+    return NSTerminateNow;
+
+  appShimController_->QuitApp();
+  // Wait for the channel to close before terminating.
+  terminateRequested_ = YES;
+  return NSTerminateLater;
+}
+
+- (void)terminateNow {
+  if (terminateRequested_) {
+    [NSApp replyToApplicationShouldTerminate:NSTerminateNow];
+    return;
+  }
+
+  terminateNow_ = YES;
+  [NSApp terminate:nil];
+}
+
+@end
 
 //-----------------------------------------------------------------------------
 

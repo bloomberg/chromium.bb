@@ -62,6 +62,9 @@ class AppShimHost : public IPC::Listener,
   // Cmd+Tabbed to it.)
   void OnFocus();
 
+  // Called when the app shim process notifies that the app should quit.
+  void OnQuit();
+
   // apps::AppShimHandler::Host overrides:
   virtual void OnAppClosed() OVERRIDE;
   virtual Profile* GetProfile() const OVERRIDE;

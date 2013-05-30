@@ -47,6 +47,7 @@ bool AppShimHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AppShimHost, message)
     IPC_MESSAGE_HANDLER(AppShimHostMsg_LaunchApp, OnLaunchApp)
     IPC_MESSAGE_HANDLER(AppShimHostMsg_FocusApp, OnFocus)
+    IPC_MESSAGE_HANDLER(AppShimHostMsg_QuitApp, OnQuit)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -83,6 +84,13 @@ void AppShimHost::OnFocus() {
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
   if (handler)
     handler->OnShimFocus(this);
+}
+
+void AppShimHost::OnQuit() {
+  DCHECK(CalledOnValidThread());
+  apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
+  if (handler)
+    handler->OnShimQuit(this);
 }
 
 Profile* AppShimHost::FetchProfileForDirectory(const std::string& profile_dir) {

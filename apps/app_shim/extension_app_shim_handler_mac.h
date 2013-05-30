@@ -28,6 +28,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
   virtual bool OnShimLaunch(Host* host) OVERRIDE;
   virtual void OnShimClose(Host* host) OVERRIDE;
   virtual void OnShimFocus(Host* host) OVERRIDE;
+  virtual void OnShimQuit(Host* host) OVERRIDE;
 
  protected:
   typedef std::map<std::pair<Profile*, std::string>, AppShimHandler::Host*>

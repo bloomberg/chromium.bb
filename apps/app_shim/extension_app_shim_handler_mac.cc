@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "ui/base/cocoa/focus_window_set.h"
 
@@ -73,11 +74,24 @@ void ExtensionAppShimHandler::OnShimFocus(Host* host) {
   const extensions::ShellWindowRegistry::ShellWindowList windows =
       registry->GetShellWindowsForApp(host->GetAppId());
   std::set<gfx::NativeWindow> native_windows;
-  for (extensions::ShellWindowRegistry::const_iterator i = windows.begin();
-       i != windows.end(); ++i) {
-    native_windows.insert((*i)->GetNativeWindow());
+  for (extensions::ShellWindowRegistry::const_iterator it = windows.begin();
+       it != windows.end(); ++it) {
+    native_windows.insert((*it)->GetNativeWindow());
   }
   ui::FocusWindowSet(native_windows);
+}
+
+void ExtensionAppShimHandler::OnShimQuit(Host* host) {
+  if (!host->GetProfile())
+    return;
+
+  extensions::ShellWindowRegistry::ShellWindowList windows =
+      extensions::ShellWindowRegistry::Get(host->GetProfile())->
+          GetShellWindowsForApp(host->GetAppId());
+  for (extensions::ShellWindowRegistry::const_iterator it = windows.begin();
+       it != windows.end(); ++it) {
+    (*it)->GetBaseWindow()->Close();
+  }
 }
 
 bool ExtensionAppShimHandler::LaunchApp(Profile* profile,

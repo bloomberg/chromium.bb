@@ -11,6 +11,7 @@ include_rules = [
   "+chrome/browser/profiles",
   "+chrome/browser/shell_integration.h",
   "+chrome/browser/ui/extensions/application_launch.h",
+  "+chrome/browser/ui/extensions/native_app_window.h",
   "+chrome/browser/ui/extensions/shell_window.h",
   "+chrome/browser/ui/host_desktop.h",
   "+chrome/browser/ui/web_applications/web_app_ui.h",

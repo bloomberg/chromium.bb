@@ -55,6 +55,9 @@ class AppShimHandler {
   // Invoked by the shim host when the shim process receives a focus event.
   virtual void OnShimFocus(Host* host) = 0;
 
+  // Invoked by the shim host when the shim process receives a quit event.
+  virtual void OnShimQuit(Host* host) = 0;
+
  protected:
   AppShimHandler() {}
   virtual ~AppShimHandler() {}

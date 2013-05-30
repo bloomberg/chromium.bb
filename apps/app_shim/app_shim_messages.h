@@ -25,3 +25,9 @@ IPC_MESSAGE_CONTROL2(AppShimHostMsg_LaunchApp,
 // clicking on the app's icon in the dock or by selecting it with Cmd+Tab. In
 // response, Chrome brings the app's windows to the foreground.
 IPC_MESSAGE_CONTROL0(AppShimHostMsg_FocusApp)
+
+// Sent when the shim process receives a request to terminate. Once all of the
+// app's windows have closed, and the extension is unloaded, the AppShimHost
+// closes the channel. The shim process then completes the terminate request
+// and exits.
+IPC_MESSAGE_CONTROL0(AppShimHostMsg_QuitApp)

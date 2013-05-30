@@ -72,7 +72,10 @@ Profile* TestingAppShimHost::FetchProfileForDirectory(
 class AppShimHostTest : public testing::Test,
                         public apps::AppShimHandler {
  public:
-  AppShimHostTest() : launch_count_(0), close_count_(0), focus_count_(0) {}
+  AppShimHostTest() : launch_count_(0),
+                      close_count_(0),
+                      focus_count_(0),
+                      quit_count_(0) {}
 
   TestingAppShimHost* host() { return host_.get(); }
   TestingProfile* profile() { return profile_.get(); }
@@ -98,10 +101,12 @@ class AppShimHostTest : public testing::Test,
 
   virtual void OnShimClose(Host* host) OVERRIDE { ++close_count_; }
   virtual void OnShimFocus(Host* host) OVERRIDE { ++focus_count_; }
+  virtual void OnShimQuit(Host* host) OVERRIDE { ++quit_count_; }
 
   int launch_count_;
   int close_count_;
   int focus_count_;
+  int quit_count_;
 
  private:
   virtual void SetUp() OVERRIDE {
@@ -134,6 +139,9 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
 
   EXPECT_TRUE(host()->ReceiveMessage(new AppShimHostMsg_FocusApp()));
   EXPECT_EQ(1, focus_count_);
+
+  EXPECT_TRUE(host()->ReceiveMessage(new AppShimHostMsg_QuitApp()));
+  EXPECT_EQ(1, quit_count_);
 
   SimulateDisconnect();
   EXPECT_EQ(1, close_count_);
