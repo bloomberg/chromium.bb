@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/win/windows_version.h"
 #include "remoting/host/client_session_control.h"
 
 namespace remoting {
@@ -25,6 +26,11 @@ CurtainModeWin::CurtainModeWin() {
 }
 
 bool CurtainModeWin::Activate() {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    LOG(ERROR) << "Curtain mode is not supported on Windows XP/2003";
+    return false;
+  }
+
   DWORD session_id;
   if (!ProcessIdToSessionId(GetCurrentProcessId(), &session_id)) {
     LOG_GETLASTERROR(ERROR) << "Failed to map the current PID to session ID";
