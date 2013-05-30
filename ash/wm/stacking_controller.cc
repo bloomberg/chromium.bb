@@ -119,22 +119,22 @@ aura::Window* StackingController::GetSystemModalContainer(
 
   // If screen lock is not active and user session is active,
   // all modal windows are placed into the normal modal container.
-  if (!Shell::GetInstance()->session_state_delegate()->IsScreenLocked() &&
-      Shell::GetInstance()->session_state_delegate()->
-          IsActiveUserSessionStarted()) {
+  // In case of missing transient parent (it could happen for alerts from
+  // background pages) assume that the window belongs to user session.
+  SessionStateDelegate* session_state_delegate =
+      Shell::GetInstance()->session_state_delegate();
+  if ((!session_state_delegate->IsScreenLocked() &&
+       session_state_delegate->IsActiveUserSessionStarted()) ||
+      !window->transient_parent()) {
     return GetContainerById(root,
                             internal::kShellWindowId_SystemModalContainer);
   }
 
   // Otherwise those that originate from LockScreen container and above are
   // placed in the screen lock modal container.
-  aura::Window* lock_container =
-      GetContainerById(root, internal::kShellWindowId_LockScreenContainer);
-  int lock_container_id = lock_container->id();
   int window_container_id = window->transient_parent()->parent()->id();
-
   aura::Window* container = NULL;
-  if (window_container_id < lock_container_id) {
+  if (window_container_id < internal::kShellWindowId_LockScreenContainer) {
     container = GetContainerById(
         root, internal::kShellWindowId_SystemModalContainer);
   } else {

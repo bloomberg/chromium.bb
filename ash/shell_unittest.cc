@@ -25,6 +25,7 @@
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 
 using aura::RootWindow;
 
@@ -207,6 +208,16 @@ TEST_F(ShellTest, CreateModalWindow) {
   widget->Close();
 }
 
+class TestModalDialogDelegate : public views::DialogDelegateView {
+ public:
+  TestModalDialogDelegate() {}
+
+  // Overridden from views::WidgetDelegate:
+  virtual ui::ModalType GetModalType() const OVERRIDE {
+    return ui::MODAL_TYPE_SYSTEM;
+  }
+};
+
 TEST_F(ShellTest, CreateLockScreenModalWindow) {
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
@@ -214,6 +225,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
   // Create a normal window.
   views::Widget* widget = CreateTestWindow(widget_params);
   widget->Show();
+  EXPECT_TRUE(widget->GetNativeView()->HasFocus());
 
   // It should be in default container.
   EXPECT_TRUE(GetDefaultContainer()->Contains(
@@ -227,6 +239,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
       ash::internal::kShellWindowId_LockScreenContainer)->
       AddChild(lock_widget->GetNativeView());
   lock_widget->Show();
+  EXPECT_TRUE(lock_widget->GetNativeView()->HasFocus());
 
   // It should be in LockScreen container.
   aura::Window* lock_screen = Shell::GetContainer(
@@ -238,6 +251,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
   views::Widget* lock_modal_widget = views::Widget::CreateWindowWithParent(
       new ModalWindow(), lock_widget->GetNativeView());
   lock_modal_widget->Show();
+  EXPECT_TRUE(lock_modal_widget->GetNativeView()->HasFocus());
 
   // It should be in LockScreen modal container.
   aura::Window* lock_modal_container = Shell::GetContainer(
@@ -250,6 +264,9 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
   views::Widget* modal_widget = views::Widget::CreateWindowWithParent(
       new ModalWindow(), widget->GetNativeView());
   modal_widget->Show();
+  // Window on lock screen shouldn't lost focus.
+  EXPECT_FALSE(modal_widget->GetNativeView()->HasFocus());
+  EXPECT_TRUE(lock_modal_widget->GetNativeView()->HasFocus());
 
   // It should be in non-LockScreen modal container.
   aura::Window* modal_container = Shell::GetContainer(
@@ -257,6 +274,16 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
       ash::internal::kShellWindowId_SystemModalContainer);
   EXPECT_EQ(modal_container, modal_widget->GetNativeWindow()->parent());
 
+  // Modal dialog without parent, caused crash see crbug.com/226141
+  views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
+      new TestModalDialogDelegate(), CurrentContext(), NULL);
+
+  modal_dialog->Show();
+  EXPECT_FALSE(modal_dialog->GetNativeView()->HasFocus());
+  EXPECT_TRUE(lock_modal_widget->GetNativeView()->HasFocus());
+
+  modal_dialog->Close();
+  modal_widget->Close();
   modal_widget->Close();
   lock_modal_widget->Close();
   lock_widget->Close();

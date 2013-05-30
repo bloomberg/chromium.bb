@@ -1555,6 +1555,11 @@ bool BrowserView::CanActivate() const {
   if (!AppModalDialogQueue::GetInstance()->active_dialog())
     return true;
 
+#if defined(USE_AURA) && defined(OS_CHROMEOS)
+  // On Aura window manager controls all windows so settings focus via PostTask
+  // will make only worse because posted task will keep trying to steal focus.
+  AppModalDialogQueue::GetInstance()->ActivateModalDialog();
+#else
   // If another browser is app modal, flash and activate the modal browser. This
   // has to be done in a post task, otherwise if the user clicked on a window
   // that doesn't have the modal dialog the windows keep trying to get the focus
@@ -1563,6 +1568,7 @@ bool BrowserView::CanActivate() const {
       FROM_HERE,
       base::Bind(&BrowserView::ActivateAppModalDialog,
                  activate_modal_dialog_factory_.GetWeakPtr()));
+#endif
   return false;
 }
 
