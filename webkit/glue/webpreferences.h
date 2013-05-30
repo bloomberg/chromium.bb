@@ -8,8 +8,8 @@
 // WebKit::WebSettings, content/common/view_messages.h, browser/tab_contents/
 // render_view_host_delegate_helper.cc, and browser/profiles/profile.cc.
 
-#ifndef WEBKIT_COMMON_WEBPREFERENCES_H__
-#define WEBKIT_COMMON_WEBPREFERENCES_H__
+#ifndef WEBKIT_GLUE_WEBPREFERENCES_H__
+#define WEBKIT_GLUE_WEBPREFERENCES_H__
 
 #include <map>
 #include <string>
@@ -46,6 +46,9 @@ enum EditingBehavior {
 // default used on WebKit's side to get/set a font setting when no script is
 // specified.
 WEBKIT_GLUE_EXPORT extern const char kCommonScript[];
+
+WEBKIT_GLUE_EXPORT void ApplyWebPreferences(const WebPreferences& prefs,
+                                            WebKit::WebView* web_view);
 
 }  // namespace webkit_glue
 
@@ -178,4 +181,4 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   ~WebPreferences();
 };
 
-#endif  // WEBKIT_COMMON_WEBPREFERENCES_H__
+#endif  // WEBKIT_GLUE_WEBPREFERENCES_H__

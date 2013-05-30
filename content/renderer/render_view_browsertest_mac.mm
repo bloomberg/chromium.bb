@@ -8,7 +8,7 @@
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/common/webpreferences.h"
+#include "webkit/glue/webpreferences.h"
 
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>  // for the kVK_* constants.

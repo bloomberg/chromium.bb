@@ -28,7 +28,7 @@
 #include "content/shell/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/webkit_test_controller.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/common/webpreferences.h"
+#include "webkit/glue/webpreferences.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"

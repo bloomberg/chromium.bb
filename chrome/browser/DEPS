@@ -70,6 +70,7 @@ include_rules = [
   "+webkit/glue/webdropdata.h",
   "+webkit/glue/webkit_glue.h",
   "+webkit/glue/webmenuitem.h",
+  "+webkit/glue/webpreferences.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   "-chrome/browser/ui/views",

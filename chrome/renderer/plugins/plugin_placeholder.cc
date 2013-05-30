@@ -39,6 +39,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
+#include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)

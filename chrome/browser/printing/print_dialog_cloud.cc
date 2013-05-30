@@ -38,7 +38,7 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/common/webpreferences.h"
+#include "webkit/glue/webpreferences.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"

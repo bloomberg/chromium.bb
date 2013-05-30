@@ -26,7 +26,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/base/test/data/resource.h"
-#include "webkit/common/webpreferences.h"
+#include "webkit/glue/webpreferences.h"
 
 using content::BrowserThread;
 using content::WebContentsTester;

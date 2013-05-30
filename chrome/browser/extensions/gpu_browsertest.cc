@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/render_view_host.h"
-#include "webkit/common/webpreferences.h"
+#include "webkit/glue/webpreferences.h"
 
 // Tests that GPU acceleration is disabled for extension background
 // pages. See crbug.com/163698 .

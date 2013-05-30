@@ -18,8 +18,8 @@
 #include "content/test/test_web_contents.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/rect.h"
-#include "webkit/common/webpreferences.h"
 #include "webkit/dom_storage/dom_storage_types.h"
+#include "webkit/glue/webpreferences.h"
 
 namespace content {
 

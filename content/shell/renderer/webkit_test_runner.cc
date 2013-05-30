@@ -57,8 +57,8 @@
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h"
 #include "ui/gfx/rect.h"
 #include "webkit/base/file_path_string_conversions.h"
-#include "webkit/common/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/webpreferences.h"
 #include "webkit/mocks/test_media_stream_client.h"
 
 using WebKit::Platform;

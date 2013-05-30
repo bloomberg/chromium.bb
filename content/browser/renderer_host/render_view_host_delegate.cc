@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 
 #include "googleurl/src/gurl.h"
-#include "webkit/common/webpreferences.h"
+#include "webkit/glue/webpreferences.h"
 
 namespace content {
 

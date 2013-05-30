@@ -3,7 +3,7 @@ include_rules = [
   "+gpu",
   "+media/audio",
   "+skia",
-  "+webkit/common/webpreferences.h",
+  "+webkit/glue",
 
   # The untrusted build references the NaCl integrated runtime (IRT).
   "+native_client/src/untrusted/irt",

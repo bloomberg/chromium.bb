@@ -27,7 +27,7 @@
 #include "grit/platform_locale_settings.h"
 #include "third_party/icu/public/common/unicode/uchar.h"
 #include "third_party/icu/public/common/unicode/uscript.h"
-#include "webkit/common/webpreferences.h"
+#include "webkit/glue/webpreferences.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(ENABLE_THEMES)
 #include "chrome/browser/themes/theme_service.h"

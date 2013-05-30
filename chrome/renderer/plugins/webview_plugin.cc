@@ -18,8 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/common/webpreferences.h"
-#include "webkit/renderer/webpreferences_renderer.h"
+#include "webkit/glue/webpreferences.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebCursorInfo;

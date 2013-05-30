@@ -83,7 +83,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/gl/gl_switches.h"
-#include "webkit/common/webpreferences.h"
+#include "webkit/glue/webpreferences.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/content_view_core.h"
