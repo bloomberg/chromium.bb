@@ -61,9 +61,15 @@ enum {
   if (shouldTrackSwipe) {
     MCPopupController* controller =
         base::mac::ObjCCastStrict<MCPopupController>([self windowController]);
+    BOOL directionInverted = [event isDirectionInvertedFromDevice];
 
     auto handler = ^(CGFloat gestureAmount, NSEventPhase phase,
                      BOOL isComplete, BOOL* stop) {
+        // The swipe direction should match the direction the user's fingers
+        // are moving, not the interpreted scroll direction.
+        if (directionInverted)
+          gestureAmount *= -1;
+
         if (phase == NSEventPhaseBegan) {
           [controller notificationSwipeStarted];
           return;
@@ -75,7 +81,7 @@ enum {
         if (ended || isComplete)
           [controller notificationSwipeEnded:ended complete:isComplete];
     };
-    [event trackSwipeEventWithOptions:0
+    [event trackSwipeEventWithOptions:NSEventSwipeTrackingLockDirection
              dampenAmountThresholdMin:-1
                                   max:1
                          usingHandler:handler];
@@ -188,11 +194,19 @@ enum {
 - (void)closeWithAnimation {
   if (isClosing_)
     return;
+
   isClosing_ = YES;
 
+  // If the notification was swiped closed, do not animate it as the
+  // notification has already faded out.
+  if (swipeGestureEnded_) {
+    [self close];
+    return;
+  }
+
   NSDictionary* animationDict = @{
-    NSViewAnimationTargetKey:   [self window],
-    NSViewAnimationEffectKey:   NSViewAnimationFadeOutEffect
+    NSViewAnimationTargetKey : [self window],
+    NSViewAnimationEffectKey : NSViewAnimationFadeOutEffect
   };
   boundsAnimation_.reset([[NSViewAnimation alloc]
       initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
@@ -215,8 +229,8 @@ enum {
   bounds_ = newBounds;
 
   NSDictionary* animationDict = @{
-    NSViewAnimationTargetKey:   [self window],
-    NSViewAnimationEndFrameKey: [NSValue valueWithRect:newBounds]
+      NSViewAnimationTargetKey : [self window],
+    NSViewAnimationEndFrameKey : [NSValue valueWithRect:newBounds]
   };
   boundsAnimation_.reset([[NSViewAnimation alloc]
       initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
