@@ -1409,13 +1409,6 @@
             ],
           },
         ],
-        [ 'OS == "linux"', {
-            'dependencies': [
-              '../build/linux/system.gyp:dbus',
-              '../dbus/dbus.gyp:dbus',
-            ],
-          },
-        ],
       ],
       'target_conditions': [
         # These source files are excluded by default platform rules, but they
@@ -2054,13 +2047,6 @@
               }],
             ],
         }],
-        [ 'OS == "linux"', {
-            'dependencies': [
-              '../build/linux/system.gyp:dbus',
-              '../dbus/dbus.gyp:dbus_test_support',
-            ],
-          },
-        ],
         [ 'OS == "android"', {
             'dependencies': [
               '../third_party/openssl/openssl.gyp:openssl',
