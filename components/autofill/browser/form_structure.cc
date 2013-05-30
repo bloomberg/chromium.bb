@@ -658,7 +658,7 @@ bool FormStructure::IsAutocheckoutEnabled() const {
   return !autocheckout_url_prefix_.empty();
 }
 
-bool FormStructure::ShouldSkipField(const FormFieldData field) const {
+bool FormStructure::ShouldSkipField(const FormFieldData& field) const {
   return (field.is_checkable || field.form_control_type == "password") &&
       !IsAutocheckoutEnabled();
 }
