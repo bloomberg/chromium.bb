@@ -4,6 +4,7 @@
 
 #import "chrome/browser/web_applications/web_app_mac.h"
 
+#import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
 #include "base/file_util.h"
@@ -22,67 +23,98 @@
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "third_party/icon_family/IconFamily.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image_family.h"
 
 namespace {
 
-// Get the 100% image representation for |image|.
-// This returns the representation with the same width and height as |image|
-// itself. If there is no such representation, returns nil.
-NSBitmapImageRep* NSImageGet100PRepresentation(NSImage* image) {
-  NSSize image_size = [image size];
-  for (NSBitmapImageRep* image_rep in [image representations]) {
-    NSSize image_rep_size = [image_rep size];
-    if (image_rep_size.width == image_size.width &&
-        image_rep_size.height == image_size.height) {
-      return image_rep;
+class ScopedCarbonHandle {
+ public:
+  ScopedCarbonHandle(size_t initial_size) : handle_(NewHandle(initial_size)) {
+    DCHECK(handle_);
+    DCHECK_EQ(noErr, MemError());
+  }
+  ~ScopedCarbonHandle() { DisposeHandle(handle_); }
+
+  Handle Get() { return handle_; }
+  char* Data() { return *handle_; }
+  size_t HandleSize() const { return GetHandleSize(handle_); }
+
+  IconFamilyHandle GetAsIconFamilyHandle() {
+    return reinterpret_cast<IconFamilyHandle>(handle_);
+  }
+
+  bool WriteDataToFile(const base::FilePath& path) {
+    NSData* data = [NSData dataWithBytes:Data()
+                                  length:HandleSize()];
+    return [data writeToFile:base::mac::FilePathToNSString(path)
+                  atomically:NO];
+  }
+
+ private:
+  Handle handle_;
+};
+
+void ConvertSkiaToARGB(const SkBitmap& bitmap, ScopedCarbonHandle* handle) {
+  CHECK_EQ(4u * bitmap.width() * bitmap.height(), handle->HandleSize());
+
+  char* argb = handle->Data();
+  SkAutoLockPixels lock(bitmap);
+  for (int y = 0; y < bitmap.height(); ++y) {
+    for (int x = 0; x < bitmap.width(); ++x) {
+      SkColor pixel = bitmap.getColor(x, y);
+      argb[0] = SkColorGetA(pixel);
+      argb[1] = SkColorGetR(pixel);
+      argb[2] = SkColorGetG(pixel);
+      argb[3] = SkColorGetB(pixel);
+      argb += 4;
     }
   }
-  return nil;
 }
 
-// Adds |image_rep| to |icon_family|. Returns true on success, false on failure.
-bool AddBitmapImageRepToIconFamily(IconFamily* icon_family,
-                                   NSBitmapImageRep* image_rep) {
-  NSSize size = [image_rep size];
-  if (size.width != size.height)
+// Adds |image| to |icon_family|. Returns true on success, false on failure.
+bool AddGfxImageToIconFamily(IconFamilyHandle icon_family,
+                             const gfx::Image& image) {
+  // When called via ShowCreateChromeAppShortcutsDialog the ImageFamily will
+  // have all the representations desired here for mac, from the kDesiredSizes
+  // array in web_app_ui.cc.
+  SkBitmap bitmap = image.AsBitmap();
+  if (bitmap.config() != SkBitmap::kARGB_8888_Config ||
+      bitmap.width() != bitmap.height()) {
     return false;
+  }
 
-  switch (static_cast<int>(size.width)) {
+  OSType icon_type;
+  switch (bitmap.width()) {
     case 512:
-      return [icon_family setIconFamilyElement:kIconServices512PixelDataARGB
-                            fromBitmapImageRep:image_rep];
+      icon_type = kIconServices512PixelDataARGB;
+      break;
     case 256:
-      return [icon_family setIconFamilyElement:kIconServices256PixelDataARGB
-                            fromBitmapImageRep:image_rep];
+      icon_type = kIconServices256PixelDataARGB;
+      break;
     case 128:
-      return [icon_family setIconFamilyElement:kThumbnail32BitData
-                            fromBitmapImageRep:image_rep] &&
-             [icon_family setIconFamilyElement:kThumbnail8BitMask
-                            fromBitmapImageRep:image_rep];
+      icon_type = kIconServices128PixelDataARGB;
+      break;
+    case 48:
+      icon_type = kIconServices48PixelDataARGB;
+      break;
     case 32:
-      return [icon_family setIconFamilyElement:kLarge32BitData
-                            fromBitmapImageRep:image_rep] &&
-             [icon_family setIconFamilyElement:kLarge8BitData
-                            fromBitmapImageRep:image_rep] &&
-             [icon_family setIconFamilyElement:kLarge8BitMask
-                            fromBitmapImageRep:image_rep] &&
-             [icon_family setIconFamilyElement:kLarge1BitMask
-                            fromBitmapImageRep:image_rep];
+      icon_type = kIconServices32PixelDataARGB;
+      break;
     case 16:
-      return [icon_family setIconFamilyElement:kSmall32BitData
-                            fromBitmapImageRep:image_rep] &&
-             [icon_family setIconFamilyElement:kSmall8BitData
-                            fromBitmapImageRep:image_rep] &&
-             [icon_family setIconFamilyElement:kSmall8BitMask
-                            fromBitmapImageRep:image_rep] &&
-             [icon_family setIconFamilyElement:kSmall1BitMask
-                            fromBitmapImageRep:image_rep];
+      icon_type = kIconServices16PixelDataARGB;
+      break;
     default:
       return false;
   }
+
+  ScopedCarbonHandle raw_data(bitmap.getSize());
+  ConvertSkiaToARGB(bitmap, &raw_data);
+  OSErr result = SetIconFamilyData(icon_family, icon_type, raw_data.Get());
+  DCHECK_EQ(noErr, result);
+  return result == noErr;
 }
 
 base::FilePath GetWritableApplicationsDirectory() {
@@ -97,7 +129,6 @@ base::FilePath GetWritableApplicationsDirectory() {
 }
 
 }  // namespace
-
 
 namespace web_app {
 
@@ -237,19 +268,16 @@ bool WebAppShortcutCreator::UpdateIcon(const base::FilePath& app_path) const {
   if (info_.favicon.empty())
     return true;
 
-  scoped_nsobject<IconFamily> icon_family([[IconFamily alloc] init]);
+  ScopedCarbonHandle icon_family(0);
   bool image_added = false;
   for (gfx::ImageFamily::const_iterator it = info_.favicon.begin();
        it != info_.favicon.end(); ++it) {
     if (it->IsEmpty())
       continue;
-    NSBitmapImageRep* image_rep = NSImageGet100PRepresentation(it->ToNSImage());
-    if (!image_rep)
-      continue;
 
     // Missing an icon size is not fatal so don't fail if adding the bitmap
     // doesn't work.
-    if (!AddBitmapImageRepToIconFamily(icon_family, image_rep))
+    if (!AddGfxImageToIconFamily(icon_family.GetAsIconFamilyHandle(), *it))
       continue;
 
     image_added = true;
@@ -262,8 +290,8 @@ bool WebAppShortcutCreator::UpdateIcon(const base::FilePath& app_path) const {
       app_path.Append("Contents").Append("Resources");
   if (!file_util::CreateDirectory(resources_path))
     return false;
-  base::FilePath icon_path = resources_path.Append("app.icns");
-  return [icon_family writeToFile:base::mac::FilePathToNSString(icon_path)];
+
+  return icon_family.WriteDataToFile(resources_path.Append("app.icns"));
 }
 
 NSString* WebAppShortcutCreator::GetBundleIdentifier(NSDictionary* plist) const

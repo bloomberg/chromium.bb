@@ -2937,9 +2937,6 @@
               '$(SDKROOT)/System/Library/Frameworks/SecurityInterface.framework',
             ],
           },
-          'dependencies': [
-            '../third_party/icon_family/icon_family.gyp:icon_family',
-          ],
           'sources': [
             # Build the necessary GTM sources
             '../third_party/GTM/Foundation/GTMServiceManagement.h',
