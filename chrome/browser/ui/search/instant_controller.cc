@@ -1322,6 +1322,21 @@ void InstantController::SetSuggestions(
     return;
 
   if (suggestion.behavior == INSTANT_COMPLETE_REPLACE) {
+    if (omnibox_focus_state_ == OMNIBOX_FOCUS_NONE) {
+      // TODO(samarth,skanuj): setValue() needs to be handled differently when
+      // the omnibox doesn't have focus. Instead of setting temporary text, we
+      // should be setting search terms on the appropriate NavigationEntry.
+      // (Among other things, this ensures that URL-shaped values will get the
+      // additional security token.)
+      //
+      // Note that this also breaks clicking on a suggestion corresponding to
+      // gray-text completion: we can't distinguish between the user
+      // clicking on white space (where we don't accept the gray text) and the
+      // user clicking on the suggestion (when we do accept the gray text).
+      // This needs to be fixed before we can turn on Instant again.
+      return;
+    }
+
     // We don't get an Update() when changing the omnibox due to a REPLACE
     // suggestion (so that we don't inadvertently cause the overlay to change
     // what it's showing, as the user arrows up/down through the page-provided
@@ -1407,7 +1422,9 @@ void InstantController::FocusOmnibox(const content::WebContents* contents,
   // doing nothing instead of crashing the browser process (intentional no-op).
   switch (state) {
     case OMNIBOX_FOCUS_VISIBLE:
-      browser_->FocusOmnibox(true);
+      // TODO(samarth): re-enable this once setValue() correctly handles
+      // URL-shaped queries.
+      // browser_->FocusOmnibox(true);
       break;
     case OMNIBOX_FOCUS_INVISIBLE:
       browser_->FocusOmnibox(false);
