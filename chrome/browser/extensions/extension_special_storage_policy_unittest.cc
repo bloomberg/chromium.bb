@@ -262,6 +262,17 @@ TEST_F(ExtensionSpecialStoragePolicyTest, CanQueryDiskSize) {
   EXPECT_TRUE(policy_->CanQueryDiskSize(unlimited_app->url()));
 }
 
+TEST_F(ExtensionSpecialStoragePolicyTest, HasIsolatedStorage) {
+  const GURL kHttpUrl("http://foo");
+  const GURL kExtensionUrl("chrome-extension://bar");
+  scoped_refptr<Extension> app(CreateRegularApp());
+  policy_->GrantRightsForExtension(app);
+
+  EXPECT_FALSE(policy_->HasIsolatedStorage(kHttpUrl));
+  EXPECT_FALSE(policy_->HasIsolatedStorage(kExtensionUrl));
+  EXPECT_TRUE(policy_->HasIsolatedStorage(app->url()));
+}
+
 TEST_F(ExtensionSpecialStoragePolicyTest, OverlappingApps) {
   scoped_refptr<Extension> protected_app(CreateProtectedApp());
   scoped_refptr<Extension> unlimited_app(CreateUnlimitedApp());

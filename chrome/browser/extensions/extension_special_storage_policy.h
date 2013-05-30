@@ -33,6 +33,7 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   virtual bool IsStorageSessionOnly(const GURL& origin) OVERRIDE;
   virtual bool CanQueryDiskSize(const GURL& origin) OVERRIDE;
   virtual bool IsFileHandler(const std::string& extension_id) OVERRIDE;
+  virtual bool HasIsolatedStorage(const GURL& origin) OVERRIDE;
   virtual bool HasSessionOnlyOrigins() OVERRIDE;
 
   // Methods used by the ExtensionService to populate this class.
@@ -81,6 +82,7 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   SpecialCollection installed_apps_;
   SpecialCollection unlimited_extensions_;
   SpecialCollection file_handler_extensions_;
+  SpecialCollection isolated_extensions_;
   scoped_refptr<CookieSettings> cookie_settings_;
 };
 

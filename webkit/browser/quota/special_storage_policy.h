@@ -56,6 +56,9 @@ class WEBKIT_STORAGE_EXPORT SpecialStoragePolicy
   // file handler.
   virtual bool IsFileHandler(const std::string& extension_id) = 0;
 
+  // Checks if the origin contains per-site isolated storage.
+  virtual bool HasIsolatedStorage(const GURL& origin) = 0;
+
   // Some origins are only allowed to store session-only data which is deleted
   // when the session ends.
   virtual bool IsStorageSessionOnly(const GURL& origin) = 0;

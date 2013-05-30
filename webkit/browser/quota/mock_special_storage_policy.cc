@@ -4,6 +4,8 @@
 
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
+#include "base/stl_util.h"
+
 namespace quota {
 
 MockSpecialStoragePolicy::MockSpecialStoragePolicy()
@@ -11,25 +13,29 @@ MockSpecialStoragePolicy::MockSpecialStoragePolicy()
 }
 
 bool MockSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
-  return protected_.find(origin) != protected_.end();
+  return ContainsKey(protected_, origin);
 }
 
 bool MockSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
   if (all_unlimited_)
     return true;
-  return unlimited_.find(origin) != unlimited_.end();
+  return ContainsKey(unlimited_, origin);
 }
 
 bool MockSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
-  return session_only_.find(origin) != session_only_.end();
+  return ContainsKey(session_only_, origin);
 }
 
 bool MockSpecialStoragePolicy::CanQueryDiskSize(const GURL& origin) {
-  return can_query_disk_size_.find(origin) != can_query_disk_size_.end();
+  return ContainsKey(can_query_disk_size_, origin);
 }
 
 bool MockSpecialStoragePolicy::IsFileHandler(const std::string& extension_id) {
-  return file_handlers_.find(extension_id) != file_handlers_.end();
+  return ContainsKey(file_handlers_, extension_id);
+}
+
+bool MockSpecialStoragePolicy::HasIsolatedStorage(const GURL& origin) {
+  return ContainsKey(isolated_, origin);
 }
 
 bool MockSpecialStoragePolicy::HasSessionOnlyOrigins() {
