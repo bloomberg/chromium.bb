@@ -1,0 +1,964 @@
+/*
+* Copyright (C) 2013 Google Inc. All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are
+* met:
+*
+*     * Redistributions of source code must retain the above copyright
+* notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above
+* copyright notice, this list of conditions and the following disclaimer
+* in the documentation and/or other materials provided with the
+* distribution.
+*     * Neither the name of Google Inc. nor the names of its
+* contributors may be used to endorse or promote products derived from
+* this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+* A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+* OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+* LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+* DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+* THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+#include "config.h"
+#include "core/inspector/InspectorInstrumentation.h"
+
+#include "core/inspector/InspectorAgent.h"
+#include "core/inspector/InspectorApplicationCacheAgent.h"
+#include "core/inspector/InspectorCSSAgent.h"
+#include "core/inspector/InspectorCanvasAgent.h"
+#include "core/inspector/InspectorConsoleAgent.h"
+#include "core/inspector/InspectorConsoleInstrumentation.h"
+#include "core/inspector/InspectorDOMAgent.h"
+#include "core/inspector/InspectorDOMDebuggerAgent.h"
+#include "core/inspector/InspectorDOMStorageAgent.h"
+#include "core/inspector/InspectorDatabaseAgent.h"
+#include "core/inspector/InspectorDatabaseInstrumentation.h"
+#include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/InspectorLayerTreeAgent.h"
+#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorProfilerAgent.h"
+#include "core/inspector/InspectorResourceAgent.h"
+#include "core/inspector/InspectorTimelineAgent.h"
+#include "core/inspector/InspectorWorkerAgent.h"
+#include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/PageDebuggerAgent.h"
+#include "core/inspector/PageRuntimeAgent.h"
+#include "core/inspector/WorkerRuntimeAgent.h"
+
+namespace WebCore {
+
+namespace InspectorInstrumentation {
+
+void didClearWindowObjectInWorldImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, DOMWrapperWorld* world)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->didClearWindowObjectInWorld(frame, world);
+    if (InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent())
+        inspectorAgent->didClearWindowObjectInWorld(frame, world);
+    if (PageDebuggerAgent* debuggerAgent = instrumentingAgents->pageDebuggerAgent())
+        debuggerAgent->didClearWindowObjectInWorld(frame, world);
+    if (PageRuntimeAgent* pageRuntimeAgent = instrumentingAgents->pageRuntimeAgent())
+        pageRuntimeAgent->didClearWindowObjectInWorld(frame, world);
+}
+
+void willInsertDOMNodeImpl(InstrumentingAgents* instrumentingAgents, Node* parent)
+{
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->willInsertDOMNode(parent);
+}
+
+void didInsertDOMNodeImpl(InstrumentingAgents* instrumentingAgents, Node* node)
+{
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->didInsertDOMNode(node);
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->didInsertDOMNode(node);
+}
+
+void willRemoveDOMNodeImpl(InstrumentingAgents* instrumentingAgents, Node* node)
+{
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->willRemoveDOMNode(node);
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->willRemoveDOMNode(node);
+}
+
+void willModifyDOMAttrImpl(InstrumentingAgents* instrumentingAgents, Element* element, const AtomicString& oldValue, const AtomicString& newValue)
+{
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->willModifyDOMAttr(element, oldValue, newValue);
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->willModifyDOMAttr(element, oldValue, newValue);
+}
+
+void didModifyDOMAttrImpl(InstrumentingAgents* instrumentingAgents, Element* element, const AtomicString& name, const AtomicString& value)
+{
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->didModifyDOMAttr(element, name, value);
+}
+
+void didRemoveDOMAttrImpl(InstrumentingAgents* instrumentingAgents, Element* element, const AtomicString& name)
+{
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->didRemoveDOMAttr(element, name);
+}
+
+void characterDataModifiedImpl(InstrumentingAgents* instrumentingAgents, CharacterData* characterData)
+{
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->characterDataModified(characterData);
+}
+
+void didInvalidateStyleAttrImpl(InstrumentingAgents* instrumentingAgents, Node* node)
+{
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->didInvalidateStyleAttr(node);
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->didInvalidateStyleAttr(node);
+}
+
+void activeStyleSheetsUpdatedImpl(InstrumentingAgents* instrumentingAgents, Document* document, const Vector<RefPtr<StyleSheet> >& newSheets)
+{
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
+        cssAgent->activeStyleSheetsUpdated(document, newSheets);
+}
+
+void frameWindowDiscardedImpl(InstrumentingAgents* instrumentingAgents, DOMWindow* domWindow)
+{
+    if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
+        consoleAgent->frameWindowDiscarded(domWindow);
+}
+
+void mediaQueryResultChangedImpl(InstrumentingAgents* instrumentingAgents)
+{
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
+        cssAgent->mediaQueryResultChanged();
+}
+
+void didPushShadowRootImpl(InstrumentingAgents* instrumentingAgents, Element* host, ShadowRoot* root)
+{
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->didPushShadowRoot(host, root);
+}
+
+void willPopShadowRootImpl(InstrumentingAgents* instrumentingAgents, Element* host, ShadowRoot* root)
+{
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->willPopShadowRoot(host, root);
+}
+
+void didCreateNamedFlowImpl(InstrumentingAgents* instrumentingAgents, Document* document, NamedFlow* namedFlow)
+{
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
+        cssAgent->didCreateNamedFlow(document, namedFlow);
+}
+
+void willRemoveNamedFlowImpl(InstrumentingAgents* instrumentingAgents, Document* document, NamedFlow* namedFlow)
+{
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
+        cssAgent->willRemoveNamedFlow(document, namedFlow);
+}
+
+void didUpdateRegionLayoutImpl(InstrumentingAgents* instrumentingAgents, Document* document, NamedFlow* namedFlow)
+{
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
+        cssAgent->didUpdateRegionLayout(document, namedFlow);
+}
+
+void willSendXMLHttpRequestImpl(InstrumentingAgents* instrumentingAgents, const String& url)
+{
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->willSendXMLHttpRequest(url);
+}
+
+void didScheduleResourceRequestImpl(InstrumentingAgents* instrumentingAgents, Document* document, const String& url)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didScheduleResourceRequest(document, url);
+}
+
+void didInstallTimerImpl(InstrumentingAgents* instrumentingAgents, ScriptExecutionContext* context, int timerId, int timeout, bool singleShot)
+{
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->didInstallTimer(context, timerId, timeout, singleShot);
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didInstallTimer(context, timerId, timeout, singleShot);
+}
+
+void didRemoveTimerImpl(InstrumentingAgents* instrumentingAgents, ScriptExecutionContext* context, int timerId)
+{
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->didRemoveTimer(context, timerId);
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didRemoveTimer(context, timerId);
+}
+
+InspectorInstrumentationCookie willCallFunctionImpl(InstrumentingAgents* instrumentingAgents, ScriptExecutionContext* context, const String& scriptName, int scriptLine)
+{
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willCallFunction(context, scriptName, scriptLine))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didCallFunctionImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didCallFunction();
+}
+
+InspectorInstrumentationCookie willDispatchXHRReadyStateChangeEventImpl(InstrumentingAgents* instrumentingAgents, ScriptExecutionContext* context, XMLHttpRequest* request)
+{
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willDispatchXHRReadyStateChangeEvent(context, request))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didDispatchXHRReadyStateChangeEventImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didDispatchXHRReadyStateChangeEvent();
+}
+
+InspectorInstrumentationCookie willDispatchEventImpl(InstrumentingAgents* instrumentingAgents, Document* document, const Event& event, DOMWindow* window, Node* node, const EventPath& eventPath)
+{
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willDispatchEvent(document, event, window, node, eventPath))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didDispatchEventImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didDispatchEvent();
+}
+
+InspectorInstrumentationCookie willHandleEventImpl(InstrumentingAgents* instrumentingAgents, Event* event)
+{
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->willHandleEvent(event);
+    return InspectorInstrumentationCookie(instrumentingAgents, 0);
+}
+
+void didHandleEventImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorDebuggerAgent* debuggerAgent = cookie.instrumentingAgents()->inspectorDebuggerAgent())
+        debuggerAgent->didHandleEvent();
+}
+
+InspectorInstrumentationCookie willDispatchEventOnWindowImpl(InstrumentingAgents* instrumentingAgents, const Event& event, DOMWindow* window)
+{
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willDispatchEventOnWindow(event, window))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didDispatchEventOnWindowImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didDispatchEventOnWindow();
+}
+
+InspectorInstrumentationCookie willEvaluateScriptImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, const String& url, int lineNumber)
+{
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willEvaluateScript(frame, url, lineNumber))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didEvaluateScriptImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didEvaluateScript();
+}
+
+void scriptsEnabledImpl(InstrumentingAgents* instrumentingAgents, bool isEnabled)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->scriptsEnabled(isEnabled);
+}
+
+void didCreateIsolatedContextImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, ScriptState* scriptState, SecurityOrigin* origin)
+{
+    if (PageRuntimeAgent* runtimeAgent = instrumentingAgents->pageRuntimeAgent())
+        runtimeAgent->didCreateIsolatedContext(frame, scriptState, origin);
+}
+
+InspectorInstrumentationCookie willFireTimerImpl(InstrumentingAgents* instrumentingAgents, ScriptExecutionContext* context, int timerId)
+{
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->willFireTimer(context, timerId);
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willFireTimer(context, timerId))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didFireTimerImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorDebuggerAgent* debuggerAgent = cookie.instrumentingAgents()->inspectorDebuggerAgent())
+        debuggerAgent->didFireTimer();
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didFireTimer();
+}
+
+void didInvalidateLayoutImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didInvalidateLayout(frame);
+}
+
+InspectorInstrumentationCookie willLayoutImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
+{
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willLayout(frame))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didLayoutImpl(const InspectorInstrumentationCookie& cookie, RenderObject* root)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didLayout(root);
+    if (InspectorPageAgent* pageAgent = cookie.instrumentingAgents()->inspectorPageAgent())
+        pageAgent->didLayout(root);
+}
+
+void didScrollImpl(InstrumentingAgents* instrumentingAgents)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->didScroll();
+}
+
+void didResizeMainFrameImpl(InstrumentingAgents* instrumentingAgents)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->didResizeMainFrame();
+}
+
+InspectorInstrumentationCookie willDispatchXHRLoadEventImpl(InstrumentingAgents* instrumentingAgents, ScriptExecutionContext* context, XMLHttpRequest* request)
+{
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willDispatchXHRLoadEvent(context, request))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didDispatchXHRLoadEventImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didDispatchXHRLoadEvent();
+}
+
+void willScrollLayerImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->willScrollLayer(frame);
+}
+
+void didScrollLayerImpl(InstrumentingAgents* instrumentingAgents)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didScrollLayer();
+}
+
+void willPaintImpl(InstrumentingAgents* instrumentingAgents, RenderObject* renderer)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->willPaint(renderer);
+}
+
+void didPaintImpl(InstrumentingAgents* instrumentingAgents, RenderObject* renderer, GraphicsContext* context, const LayoutRect& rect)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didPaint(renderer, context, rect);
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->didPaint(renderer, context, rect);
+}
+
+InspectorInstrumentationCookie willRecalculateStyleImpl(InstrumentingAgents* instrumentingAgents, Document* document)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->willRecalculateStyle(document);
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willRecalculateStyle(document))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didRecalculateStyleImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didRecalculateStyle();
+    if (InspectorResourceAgent* resourceAgent = cookie.instrumentingAgents()->inspectorResourceAgent())
+        resourceAgent->didRecalculateStyle();
+    if (InspectorPageAgent* pageAgent = cookie.instrumentingAgents()->inspectorPageAgent())
+        pageAgent->didRecalculateStyle();
+}
+
+void didRecalculateStyleForElementImpl(InstrumentingAgents* instrumentingAgents)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didRecalculateStyleForElement();
+}
+
+void didScheduleStyleRecalculationImpl(InstrumentingAgents* instrumentingAgents, Document* document)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didScheduleStyleRecalculation(document);
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didScheduleStyleRecalculation(document);
+}
+
+InspectorInstrumentationCookie willMatchRuleImpl(InstrumentingAgents* instrumentingAgents, StyleRule* rule, InspectorCSSOMWrappers& inspectorCSSOMWrappers, DocumentStyleSheetCollection* sheetCollection)
+{
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
+        cssAgent->willMatchRule(rule, inspectorCSSOMWrappers, sheetCollection);
+    return InspectorInstrumentationCookie(instrumentingAgents, 0);
+}
+
+void didMatchRuleImpl(const InspectorInstrumentationCookie& cookie, bool matched)
+{
+    if (InspectorCSSAgent* cssAgent = cookie.instrumentingAgents()->inspectorCSSAgent())
+        cssAgent->didMatchRule(matched);
+}
+
+InspectorInstrumentationCookie willProcessRuleImpl(InstrumentingAgents* instrumentingAgents, StyleRule* rule, StyleResolver* styleResolver)
+{
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
+        cssAgent->willProcessRule(rule, styleResolver);
+    return InspectorInstrumentationCookie(instrumentingAgents, 0);
+}
+
+void didProcessRuleImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorCSSAgent* cssAgent = cookie.instrumentingAgents()->inspectorCSSAgent())
+        cssAgent->didProcessRule();
+}
+
+void applyUserAgentOverrideImpl(InstrumentingAgents* instrumentingAgents, String* userAgent)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->applyUserAgentOverride(userAgent);
+}
+
+void applyScreenWidthOverrideImpl(InstrumentingAgents* instrumentingAgents, long* width)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->applyScreenWidthOverride(width);
+}
+
+void applyScreenHeightOverrideImpl(InstrumentingAgents* instrumentingAgents, long* height)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->applyScreenHeightOverride(height);
+}
+
+void applyEmulatedMediaImpl(InstrumentingAgents* instrumentingAgents, String* media)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->applyEmulatedMedia(media);
+}
+
+void willSendRequestImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->willSendRequest(identifier, loader, request, redirectResponse);
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->willSendRequest(identifier, loader, request, redirectResponse);
+}
+
+void markResourceAsCachedImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->markResourceAsCached(identifier);
+}
+
+void didLoadResourceFromMemoryCacheImpl(InstrumentingAgents* instrumentingAgents, DocumentLoader* loader, CachedResource* resource)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didLoadResourceFromMemoryCache(loader, resource);
+}
+
+InspectorInstrumentationCookie willReceiveResourceDataImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, unsigned long identifier, int length)
+{
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willReceiveResourceData(frame, identifier, length))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didReceiveResourceDataImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didReceiveResourceData();
+}
+
+InspectorInstrumentationCookie willReceiveResourceResponseImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, unsigned long identifier, const ResourceResponse& response)
+{
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willReceiveResourceResponse(frame, identifier, response))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didReceiveResourceResponseImpl(const InspectorInstrumentationCookie& cookie, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didReceiveResourceResponse(identifier, loader, response, resourceLoader);
+    if (InspectorResourceAgent* resourceAgent = cookie.instrumentingAgents()->inspectorResourceAgent())
+        resourceAgent->didReceiveResourceResponse(identifier, loader, response, resourceLoader);
+    if (InspectorConsoleAgent* consoleAgent = cookie.instrumentingAgents()->inspectorConsoleAgent())
+        consoleAgent->didReceiveResourceResponse(identifier, loader, response, resourceLoader); // This should come AFTER resource notification, front-end relies on this.
+}
+
+void didReceiveDataImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didReceiveData(identifier, data, dataLength, encodedDataLength);
+}
+
+void didFinishLoadingImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, double monotonicFinishTime)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didFinishLoading(identifier, loader, monotonicFinishTime);
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didFinishLoading(identifier, loader, monotonicFinishTime);
+}
+
+void didFailLoadingImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, const ResourceError& error)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didFailLoading(identifier, loader, error);
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didFailLoading(identifier, loader, error);
+    if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
+        consoleAgent->didFailLoading(identifier, loader, error); // This should come AFTER resource notification, front-end relies on this.
+}
+
+void documentThreadableLoaderStartedLoadingForClientImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, ThreadableLoaderClient* client)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->documentThreadableLoaderStartedLoadingForClient(identifier, client);
+}
+
+void willLoadXHRImpl(InstrumentingAgents* instrumentingAgents, ThreadableLoaderClient* client, const String& method, const KURL& url, bool async, PassRefPtr<FormData> formData, const HTTPHeaderMap& headers, bool includeCredentials)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->willLoadXHR(client, method, url, async, formData, headers, includeCredentials);
+}
+
+void didFailXHRLoadingImpl(InstrumentingAgents* instrumentingAgents, ThreadableLoaderClient* client)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didFailXHRLoading(client);
+}
+
+void didFinishXHRLoadingImpl(InstrumentingAgents* instrumentingAgents, ThreadableLoaderClient* client, unsigned long identifier, const String& sourceString, const String& url, const String& sendURL, unsigned sendLineNumber)
+{
+    if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
+        consoleAgent->didFinishXHRLoading(client, identifier, sourceString, url, sendURL, sendLineNumber);
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didFinishXHRLoading(client, identifier, sourceString, url, sendURL, sendLineNumber);
+}
+
+void didReceiveXHRResponseImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didReceiveXHRResponse(identifier);
+}
+
+void willLoadXHRSynchronouslyImpl(InstrumentingAgents* instrumentingAgents)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->willLoadXHRSynchronously();
+}
+
+void didLoadXHRSynchronouslyImpl(InstrumentingAgents* instrumentingAgents)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didLoadXHRSynchronously();
+}
+
+void scriptImportedImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, const String& sourceString)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->scriptImported(identifier, sourceString);
+}
+
+void scriptExecutionBlockedByCSPImpl(InstrumentingAgents* instrumentingAgents, const String& directiveText)
+{
+    if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
+        debuggerAgent->scriptExecutionBlockedByCSP(directiveText);
+}
+
+void didReceiveScriptResponseImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didReceiveScriptResponse(identifier);
+}
+
+void domContentLoadedEventFiredImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->domContentLoadedEventFired(frame);
+    if (InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent())
+        inspectorAgent->domContentLoadedEventFired(frame);
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->domContentLoadedEventFired(frame);
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->domContentLoadedEventFired(frame);
+}
+
+void loadEventFiredImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
+{
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->loadEventFired(frame);
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->loadEventFired(frame);
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->loadEventFired(frame);
+}
+
+void frameDetachedFromParentImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
+{
+    if (InspectorCanvasAgent* canvasAgent = instrumentingAgents->inspectorCanvasAgent())
+        canvasAgent->frameDetachedFromParent(frame);
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->frameDetachedFromParent(frame);
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
+        cssAgent->frameDetachedFromParent(frame);
+}
+
+void didCommitLoadImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, DocumentLoader* loader)
+{
+    if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
+        consoleAgent->didCommitLoad(frame, loader);
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didCommitLoad(frame, loader);
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
+        cssAgent->didCommitLoad(frame, loader);
+    if (InspectorDatabaseAgent* databaseAgent = instrumentingAgents->inspectorDatabaseAgent())
+        databaseAgent->didCommitLoad(frame, loader);
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->didCommitLoad(frame, loader);
+    if (InspectorLayerTreeAgent* layerTreeAgent = instrumentingAgents->inspectorLayerTreeAgent())
+        layerTreeAgent->didCommitLoad(frame, loader);
+    if (InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent())
+        inspectorAgent->didCommitLoad(frame, loader);
+    if (InspectorCanvasAgent* canvasAgent = instrumentingAgents->inspectorCanvasAgent())
+        canvasAgent->didCommitLoad(frame, loader);
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->didCommitLoad(frame, loader);
+}
+
+void frameDocumentUpdatedImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
+{
+    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
+        domAgent->frameDocumentUpdated(frame);
+}
+
+void loaderDetachedFromFrameImpl(InstrumentingAgents* instrumentingAgents, DocumentLoader* loader)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->loaderDetachedFromFrame(loader);
+}
+
+void frameStartedLoadingImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->frameStartedLoading(frame);
+}
+
+void frameStoppedLoadingImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->frameStoppedLoading(frame);
+}
+
+void frameScheduledNavigationImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, double delay)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->frameScheduledNavigation(frame, delay);
+}
+
+void frameClearedScheduledNavigationImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->frameClearedScheduledNavigation(frame);
+}
+
+InspectorInstrumentationCookie willRunJavaScriptDialogImpl(InstrumentingAgents* instrumentingAgents, const String& message)
+{
+    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
+        pageAgent->willRunJavaScriptDialog(message);
+    return InspectorInstrumentationCookie(instrumentingAgents, 0);
+}
+
+void didRunJavaScriptDialogImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorPageAgent* pageAgent = cookie.instrumentingAgents()->inspectorPageAgent())
+        pageAgent->didRunJavaScriptDialog();
+}
+
+InspectorInstrumentationCookie willWriteHTMLImpl(InstrumentingAgents* instrumentingAgents, Document* document, unsigned startLine)
+{
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willWriteHTML(document, startLine))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didWriteHTMLImpl(const InspectorInstrumentationCookie& cookie, unsigned endLine)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didWriteHTML(endLine);
+}
+
+void didRequestAnimationFrameImpl(InstrumentingAgents* instrumentingAgents, Document* document, int callbackId)
+{
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->didRequestAnimationFrame(document, callbackId);
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didRequestAnimationFrame(document, callbackId);
+}
+
+void didCancelAnimationFrameImpl(InstrumentingAgents* instrumentingAgents, Document* document, int callbackId)
+{
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->didCancelAnimationFrame(document, callbackId);
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didCancelAnimationFrame(document, callbackId);
+}
+
+InspectorInstrumentationCookie willFireAnimationFrameImpl(InstrumentingAgents* instrumentingAgents, Document* document, int callbackId)
+{
+    if (InspectorDOMDebuggerAgent* domDebuggerAgent = instrumentingAgents->inspectorDOMDebuggerAgent())
+        domDebuggerAgent->willFireAnimationFrame(document, callbackId);
+    int timelineAgentId = 0;
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent()) {
+        if (timelineAgent->willFireAnimationFrame(document, callbackId))
+            timelineAgentId = timelineAgent->id();
+    }
+    return InspectorInstrumentationCookie(instrumentingAgents, timelineAgentId);
+}
+
+void didFireAnimationFrameImpl(const InspectorInstrumentationCookie& cookie)
+{
+    if (InspectorTimelineAgent* timelineAgent = retrieveTimelineAgent(cookie))
+        timelineAgent->didFireAnimationFrame();
+}
+
+// FIXME: Drop this once we no longer generate stacks outside of Inspector.
+void addMessageToConsoleImpl(InstrumentingAgents* instrumentingAgents, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier)
+{
+    if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
+        consoleAgent->addMessageToConsole(source, type, level, message, callStack, requestIdentifier);
+    if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
+        debuggerAgent->addMessageToConsole(source, type, level, message, callStack, requestIdentifier);
+}
+
+void addMessageToConsoleImpl(InstrumentingAgents* instrumentingAgents, MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtr<ScriptArguments> arguments, unsigned long requestIdentifier)
+{
+    if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
+        consoleAgent->addMessageToConsole(source, type, level, message, state, arguments, requestIdentifier);
+    if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
+        debuggerAgent->addMessageToConsole(source, type, level, message, state, arguments, requestIdentifier);
+}
+
+void addMessageToConsoleImpl(InstrumentingAgents* instrumentingAgents, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, ScriptState* state, unsigned long requestIdentifier)
+{
+    if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
+        consoleAgent->addMessageToConsole(source, type, level, message, scriptId, lineNumber, state, requestIdentifier);
+}
+
+void consoleCountImpl(InstrumentingAgents* instrumentingAgents, ScriptState* state, PassRefPtr<ScriptArguments> arguments)
+{
+    if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
+        consoleAgent->consoleCount(state, arguments);
+}
+
+void startConsoleTimingImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, const String& title)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->startConsoleTiming(frame, title);
+    if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
+        consoleAgent->startConsoleTiming(frame, title);
+}
+
+void stopConsoleTimingImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, const String& title, PassRefPtr<ScriptCallStack> stack)
+{
+    if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())
+        consoleAgent->stopConsoleTiming(frame, title, stack);
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->stopConsoleTiming(frame, title, stack);
+}
+
+void consoleTimeStampImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, PassRefPtr<ScriptArguments> arguments)
+{
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->consoleTimeStamp(frame, arguments);
+}
+
+void addStartProfilingMessageToConsoleImpl(InstrumentingAgents* instrumentingAgents, const String& title, unsigned lineNumber, const String& sourceURL)
+{
+    if (InspectorProfilerAgent* profilerAgent = instrumentingAgents->inspectorProfilerAgent())
+        profilerAgent->addStartProfilingMessageToConsole(title, lineNumber, sourceURL);
+}
+
+void addProfileImpl(InstrumentingAgents* instrumentingAgents, PassRefPtr<ScriptProfile> profile, PassRefPtr<ScriptCallStack> callStack)
+{
+    if (InspectorProfilerAgent* profilerAgent = instrumentingAgents->inspectorProfilerAgent())
+        profilerAgent->addProfile(profile, callStack);
+}
+
+void didOpenDatabaseImpl(InstrumentingAgents* instrumentingAgents, PassRefPtr<Database> database, const String& domain, const String& name, const String& version)
+{
+    if (InspectorDatabaseAgent* databaseAgent = instrumentingAgents->inspectorDatabaseAgent())
+        databaseAgent->didOpenDatabase(database, domain, name, version);
+}
+
+void didDispatchDOMStorageEventImpl(InstrumentingAgents* instrumentingAgents, const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin)
+{
+    if (InspectorDOMStorageAgent* domStorageAgent = instrumentingAgents->inspectorDOMStorageAgent())
+        domStorageAgent->didDispatchDOMStorageEvent(key, oldValue, newValue, storageType, securityOrigin);
+}
+
+void didStartWorkerContextImpl(InstrumentingAgents* instrumentingAgents, WorkerContextProxy* workerContextProxy, const KURL& url)
+{
+    if (InspectorWorkerAgent* workerAgent = instrumentingAgents->inspectorWorkerAgent())
+        workerAgent->didStartWorkerContext(workerContextProxy, url);
+}
+
+void willEvaluateWorkerScriptImpl(InstrumentingAgents* instrumentingAgents, WorkerContext* workerContext, int workerThreadStartMode)
+{
+    if (WorkerRuntimeAgent* runtimeAgent = instrumentingAgents->workerRuntimeAgent())
+        runtimeAgent->willEvaluateWorkerScript(workerContext, workerThreadStartMode);
+}
+
+void workerContextTerminatedImpl(InstrumentingAgents* instrumentingAgents, WorkerContextProxy* proxy)
+{
+    if (InspectorWorkerAgent* workerAgent = instrumentingAgents->inspectorWorkerAgent())
+        workerAgent->workerContextTerminated(proxy);
+}
+
+void didCreateWebSocketImpl(InstrumentingAgents* instrumentingAgents, Document* document, unsigned long identifier, const KURL& requestURL, const String& protocol)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didCreateWebSocket(document, identifier, requestURL, protocol);
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didCreateWebSocket(document, identifier, requestURL, protocol);
+}
+
+void willSendWebSocketHandshakeRequestImpl(InstrumentingAgents* instrumentingAgents, Document* document, unsigned long identifier, const WebSocketHandshakeRequest& request)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->willSendWebSocketHandshakeRequest(document, identifier, request);
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->willSendWebSocketHandshakeRequest(document, identifier, request);
+}
+
+void didReceiveWebSocketHandshakeResponseImpl(InstrumentingAgents* instrumentingAgents, Document* document, unsigned long identifier, const WebSocketHandshakeResponse& response)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didReceiveWebSocketHandshakeResponse(document, identifier, response);
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didReceiveWebSocketHandshakeResponse(document, identifier, response);
+}
+
+void didCloseWebSocketImpl(InstrumentingAgents* instrumentingAgents, Document* document, unsigned long identifier)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didCloseWebSocket(document, identifier);
+    if (InspectorTimelineAgent* timelineAgent = instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->didCloseWebSocket(document, identifier);
+}
+
+void didReceiveWebSocketFrameImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, const WebSocketFrame& frame)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didReceiveWebSocketFrame(identifier, frame);
+}
+
+void didSendWebSocketFrameImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, const WebSocketFrame& frame)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didSendWebSocketFrame(identifier, frame);
+}
+
+void didReceiveWebSocketFrameErrorImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, const String& errorMessage)
+{
+    if (InspectorResourceAgent* resourceAgent = instrumentingAgents->inspectorResourceAgent())
+        resourceAgent->didReceiveWebSocketFrameError(identifier, errorMessage);
+}
+
+void networkStateChangedImpl(InstrumentingAgents* instrumentingAgents)
+{
+    if (InspectorApplicationCacheAgent* applicationCacheAgent = instrumentingAgents->inspectorApplicationCacheAgent())
+        applicationCacheAgent->networkStateChanged();
+}
+
+void updateApplicationCacheStatusImpl(InstrumentingAgents* instrumentingAgents, Frame* frame)
+{
+    if (InspectorApplicationCacheAgent* applicationCacheAgent = instrumentingAgents->inspectorApplicationCacheAgent())
+        applicationCacheAgent->updateApplicationCacheStatus(frame);
+}
+
+void layerTreeDidChangeImpl(InstrumentingAgents* instrumentingAgents)
+{
+    if (InspectorLayerTreeAgent* layerTreeAgent = instrumentingAgents->inspectorLayerTreeAgent())
+        layerTreeAgent->layerTreeDidChange();
+}
+
+void renderLayerDestroyedImpl(InstrumentingAgents* instrumentingAgents, const RenderLayer* renderLayer)
+{
+    if (InspectorLayerTreeAgent* layerTreeAgent = instrumentingAgents->inspectorLayerTreeAgent())
+        layerTreeAgent->renderLayerDestroyed(renderLayer);
+}
+
+void pseudoElementDestroyedImpl(InstrumentingAgents* instrumentingAgents, PseudoElement* pseudoElement)
+{
+    if (InspectorLayerTreeAgent* layerTreeAgent = instrumentingAgents->inspectorLayerTreeAgent())
+        layerTreeAgent->pseudoElementDestroyed(pseudoElement);
+}
+
+} // namespace InspectorInstrumentation
+
+} // namespace WebCore

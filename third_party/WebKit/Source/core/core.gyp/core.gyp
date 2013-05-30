@@ -104,35 +104,6 @@
       ]
     },
     {
-      'target_name': 'inspector_instrumentation_sources',
-      'type': 'none',
-      'dependencies': [],
-      'actions': [
-        {
-          'action_name': 'generateInspectorInstrumentation',
-          'inputs': [
-            # The python script in action below.
-            '../inspector/CodeGeneratorInstrumentation.py',
-            # Input file for the script.
-            '../inspector/InspectorInstrumentation.idl',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationInl.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorInstrumentationImpl.cpp',
-          ],
-          'action': [
-            'python',
-            '../inspector/CodeGeneratorInstrumentation.py',
-            '../inspector/InspectorInstrumentation.idl',
-            '--output_h_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
-            '--output_cpp_dir', '<(SHARED_INTERMEDIATE_DIR)/webcore',
-          ],
-          'message': 'Generating Inspector instrumentation code from InspectorInstrumentation.idl',
-          'msvs_cygwin_shell': 1,
-        }
-      ]
-    },
-    {
       'target_name': 'generate_inspector_protocol_version',
       'type': 'none',
       'actions': [
@@ -209,7 +180,6 @@
         'core_derived_sources.gyp:make_derived_sources',
         'inspector_overlay_page',
         'inspector_protocol_sources',
-        'inspector_instrumentation_sources',
         'injected_canvas_script_source',
         'injected_script_source',
         'debugger_script_source',
@@ -293,14 +263,10 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSGrammar.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/XPathGrammar.cpp',
 
-        # Additional .cpp files from the inspector_protocol_sources list.
+        # Additional .cpp files from the core_inspector_sources list.
         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorFrontend.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendDispatcher.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorTypeBuilder.cpp',
-
-        # Additional .cpp files from the inspector_instrumentation_sources list.
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationInl.h',
-        '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorInstrumentationImpl.cpp',
 
         # Additional .cpp files for SVG.
         '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGElementFactory.cpp',
