@@ -10,7 +10,7 @@
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "content/public/browser/browser_message_filter.h"
 
-struct SpellCheckMarker;
+class SpellCheckMarker;
 struct SpellCheckResult;
 
 // A message filter implementation that receives spell checker requests from
@@ -36,7 +36,7 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
   void OnCallSpellingService(int route_id,
                              int identifier,
                              const string16& text,
-                             const std::vector<SpellCheckMarker>& markers);
+                             std::vector<SpellCheckMarker> markers);
 
   // A callback function called when the Spelling service finishes checking
   // text. Sends the given results to a renderer.

@@ -75,7 +75,8 @@ void SpellCheckProvider::RequestTextChecking(
   Send(new SpellCheckHostMsg_RequestTextCheck(
       routing_id(),
       text_check_completions_.Add(completion),
-      text));
+      text,
+      markers));
 #else
   Send(new SpellCheckHostMsg_CallSpellingService(
       routing_id(),

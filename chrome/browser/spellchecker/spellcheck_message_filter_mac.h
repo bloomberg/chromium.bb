@@ -44,7 +44,8 @@ class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
   void OnUpdateSpellingPanelWithMisspelledWord(const string16& word);
   void OnRequestTextCheck(int route_id,
                           int identifier,
-                          const string16& text);
+                          const string16& text,
+                          std::vector<SpellCheckMarker> markers);
 
   int ToDocumentTag(int route_id);
   void RetireDocumentTag(int route_id);

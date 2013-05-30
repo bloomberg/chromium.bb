@@ -14,7 +14,7 @@
 
 class RenderView;
 class SpellCheck;
-struct SpellCheckMarker;
+class SpellCheckMarker;
 struct SpellCheckResult;
 
 namespace WebKit {

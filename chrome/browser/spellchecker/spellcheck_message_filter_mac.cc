@@ -4,9 +4,14 @@
 
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 
+#include <algorithm>
+#include <functional>
+
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
@@ -32,7 +37,8 @@ class SpellingRequest {
   void RequestCheck(const string16& text,
                     int route_id,
                     int identifier,
-                    int document_tag);
+                    int document_tag,
+                    const std::vector<SpellCheckMarker>& markers);
  private:
   // Request server-side checking.
   void RequestRemoteCheck(const string16& text);
@@ -65,6 +71,7 @@ class SpellingRequest {
   int route_id_;
   int identifier_;
   int document_tag_;
+  std::vector<SpellCheckMarker> markers_;
 };
 
 SpellingRequest::SpellingRequest(SpellingServiceClient* client,
@@ -81,16 +88,19 @@ SpellingRequest::SpellingRequest(SpellingServiceClient* client,
   destination_->AddRef();
 }
 
-void SpellingRequest::RequestCheck(const string16& text,
-                                   int route_id,
-                                   int identifier,
-                                   int document_tag) {
+void SpellingRequest::RequestCheck(
+    const string16& text,
+    int route_id,
+    int identifier,
+    int document_tag,
+    const std::vector<SpellCheckMarker>& markers) {
   DCHECK(!text.empty());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   route_id_ = route_id;
   identifier_ = identifier;
   document_tag_ = document_tag;
+  markers_ = markers;
 
   // Send the remote query out.
   RequestRemoteCheck(text);
@@ -155,6 +165,16 @@ void SpellingRequest::OnRemoteCheckCompleted(
   remote_success_ = success;
   remote_results_ = results;
   remote_pending_ = false;
+
+  SpellcheckService* spellcheck_service =
+      SpellcheckServiceFactory::GetForRenderProcessId(render_process_id_);
+  if (spellcheck_service) {
+    spellcheck_service->GetFeedbackSender()->OnSpellcheckResults(
+        &remote_results_,
+        render_process_id_,
+        text,
+        markers_);
+  }
 
   OnCheckCompleted();
 }
@@ -253,11 +273,22 @@ void SpellCheckMessageFilterMac::OnUpdateSpellingPanelWithMisspelledWord(
 void SpellCheckMessageFilterMac::OnRequestTextCheck(
     int route_id,
     int identifier,
-    const string16& text) {
+    const string16& text,
+    std::vector<SpellCheckMarker> markers) {
+  DCHECK(!text.empty());
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  // Erase invalid markers (with offsets out of boundaries of text length).
+  markers.erase(
+      std::remove_if(
+          markers.begin(),
+          markers.end(),
+          std::not1(SpellCheckMarker::IsValidPredicate(text.length()))),
+      markers.end());
   // SpellingRequest self-destructs.
   SpellingRequest* request =
     new SpellingRequest(client_.get(), this, render_process_id_);
-  request->RequestCheck(text, route_id, identifier, ToDocumentTag(route_id));
+  request->RequestCheck(
+      text, route_id, identifier, ToDocumentTag(route_id), markers);
 }
 
 int SpellCheckMessageFilterMac::ToDocumentTag(int route_id) {

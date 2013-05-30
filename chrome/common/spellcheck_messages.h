@@ -130,10 +130,11 @@ IPC_SYNC_MESSAGE_CONTROL1_1(SpellCheckHostMsg_FillSuggestionList,
                             string16 /* word */,
                             std::vector<string16> /* suggestions */)
 
-IPC_MESSAGE_CONTROL3(SpellCheckHostMsg_RequestTextCheck,
+IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_RequestTextCheck,
                      int /* route_id for response */,
                      int /* request identifier given by WebKit */,
-                     string16 /* sentence */)
+                     string16 /* sentence */,
+                     std::vector<SpellCheckMarker> /* markers */)
 
 IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_ToggleSpellCheck,
                     bool /* enabled */,

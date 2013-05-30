@@ -17,8 +17,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+class SpellCheckMarker;
 class SpellingServiceFeedbackTest;
-struct SpellCheckMarker;
 struct SpellCheckResult;
 
 namespace net {

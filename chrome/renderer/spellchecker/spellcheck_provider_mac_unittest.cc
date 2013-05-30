@@ -24,6 +24,7 @@ struct MessageParameters {
   int router_id;
   int request_id;
   string16 text;
+  std::vector<SpellCheckMarker> markers;
 };
 
 MessageParameters ReadRequestTextCheck(IPC::Message* message) {
@@ -32,7 +33,8 @@ MessageParameters ReadRequestTextCheck(IPC::Message* message) {
       message,
       &parameters.router_id,
       &parameters.request_id,
-      &parameters.text);
+      &parameters.text,
+      &parameters.markers);
   EXPECT_TRUE(ok);
   return parameters;
 }
