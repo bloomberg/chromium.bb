@@ -211,6 +211,7 @@
         'system/chromeos/network/network_icon_animation.cc',
         'system/chromeos/network/network_icon_animation.h',
         'system/chromeos/network/network_icon_animation_observer.h',
+        'system/chromeos/network/network_observer.cc',
         'system/chromeos/network/network_observer.h',
         'system/chromeos/network/network_state_list_detailed_view.cc',
         'system/chromeos/network/network_state_list_detailed_view.h',

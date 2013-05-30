@@ -15,7 +15,6 @@
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace ash {
-namespace internal {
 
 // This class observes NetworkStateHandler and generates notifications
 // on connection failures.
@@ -53,7 +52,6 @@ class ASH_EXPORT NetworkStateNotifier :
   DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_

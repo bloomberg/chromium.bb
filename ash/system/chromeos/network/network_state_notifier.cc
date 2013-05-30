@@ -25,25 +25,6 @@ namespace {
 
 const int kMinTimeBetweenOutOfCreditsNotifySeconds = 10 * 60;
 
-ash::NetworkObserver::NetworkType GetAshNetworkType(
-    const NetworkState* network) {
-  const std::string& type = network->type();
-  if (type == flimflam::kTypeCellular) {
-    if (network->technology() == flimflam::kNetworkTechnologyLte ||
-        network->technology() == flimflam::kNetworkTechnologyLteAdvanced)
-      return ash::NetworkObserver::NETWORK_CELLULAR_LTE;
-    else
-      return ash::NetworkObserver::NETWORK_CELLULAR;
-  }
-  if (type == flimflam::kTypeEthernet)
-     return ash::NetworkObserver::NETWORK_ETHERNET;
-  if (type == flimflam::kTypeWifi)
-     return ash::NetworkObserver::NETWORK_WIFI;
-  if (type == flimflam::kTypeBluetooth)
-     return ash::NetworkObserver::NETWORK_BLUETOOTH;
-  return ash::NetworkObserver::NETWORK_UNKNOWN;
-}
-
 string16 GetErrorString(const std::string& error) {
   if (error == flimflam::kErrorOutOfRange)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE);
@@ -104,16 +85,18 @@ string16 GetErrorString(const std::string& error) {
 }  // namespace
 
 namespace ash {
-namespace internal {
 
 NetworkStateNotifier::NetworkStateNotifier()
     : cellular_out_of_credits_(false) {
-  NetworkHandler::Get()->network_state_handler()->AddObserver(this);
-  InitializeNetworks();
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->AddObserver(this);
+    InitializeNetworks();
+  }
 }
 
 NetworkStateNotifier::~NetworkStateNotifier() {
-  NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
+  if (NetworkHandler::IsInitialized())
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
 }
 
 void NetworkStateNotifier::DefaultNetworkChanged(const NetworkState* network) {
@@ -155,10 +138,11 @@ void NetworkStateNotifier::NetworkConnectionStateChanged(
   NET_LOG_EVENT("ConnectionFailure", network->path());
 
   std::vector<string16> no_links;
-  ash::NetworkObserver::NetworkType network_type = GetAshNetworkType(network);
   string16 error = GetErrorString(network->error());
   ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
-      this, ash::NetworkObserver::ERROR_CONNECT_FAILED, network_type,
+      this,
+      NetworkObserver::ERROR_CONNECT_FAILED,
+      NetworkObserver::GetNetworkTypeForNetworkState(network),
       l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE),
       l10n_util::GetStringFUTF16(
             IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS,
@@ -180,15 +164,15 @@ void NetworkStateNotifier::NetworkPropertiesUpdated(
       base::TimeDelta dtime = base::Time::Now() - out_of_credits_notify_time_;
       if (dtime.InSeconds() > kMinTimeBetweenOutOfCreditsNotifySeconds) {
         out_of_credits_notify_time_ = base::Time::Now();
-        ash::NetworkObserver::NetworkType network_type =
-            GetAshNetworkType(network);
         std::vector<string16> links;
         links.push_back(
             l10n_util::GetStringFUTF16(IDS_NETWORK_OUT_OF_CREDITS_LINK,
                                        UTF8ToUTF16(network->name())));
         ash::Shell::GetInstance()->system_tray_notifier()->
             NotifySetNetworkMessage(
-                this, ash::NetworkObserver::ERROR_OUT_OF_CREDITS, network_type,
+                this,
+                NetworkObserver::ERROR_OUT_OF_CREDITS,
+                NetworkObserver::GetNetworkTypeForNetworkState(network),
                 l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE),
                 l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_BODY),
                 links);
@@ -200,7 +184,7 @@ void NetworkStateNotifier::NetworkPropertiesUpdated(
 void NetworkStateNotifier::NotificationLinkClicked(
     NetworkObserver::MessageType message_type,
     size_t link_index) {
-  if (message_type == ash::NetworkObserver::ERROR_OUT_OF_CREDITS) {
+  if (message_type == NetworkObserver::ERROR_OUT_OF_CREDITS) {
     if (!cellular_network_.empty()) {
       // This will trigger the activation / portal code.
       Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
@@ -228,5 +212,4 @@ void NetworkStateNotifier::InitializeNetworks() {
     last_active_network_ = default_network->path();
 }
 
-}  // namespace internal
 }  // namespace ash

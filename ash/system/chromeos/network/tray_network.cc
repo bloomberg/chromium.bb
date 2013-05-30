@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
-#include "ash/system/chromeos/network/network_state_notifier.h"
 #include "ash/system/chromeos/network/network_tray_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -34,11 +33,12 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
-using ash::internal::TrayNetwork;
-using ash::NetworkObserver;
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
+
+namespace ash {
+namespace internal {
 
 namespace {
 
@@ -62,9 +62,6 @@ int GetMessageIcon(NetworkObserver::MessageType message_type,
 }
 
 }  // namespace
-
-namespace ash {
-namespace internal {
 
 namespace tray {
 
@@ -403,13 +400,10 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
       messages_(new tray::NetworkMessages()),
       request_wifi_view_(false) {
   network_state_observer_.reset(new TrayNetworkStateObserver(this));
-  if (NetworkHandler::IsInitialized())
-    network_state_notifier_.reset(new NetworkStateNotifier());
   Shell::GetInstance()->system_tray_notifier()->AddNetworkObserver(this);
 }
 
 TrayNetwork::~TrayNetwork() {
-  network_state_notifier_.reset();
   Shell::GetInstance()->system_tray_notifier()->RemoveNetworkObserver(this);
 }
 

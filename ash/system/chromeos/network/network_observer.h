@@ -9,6 +9,10 @@
 
 #include "base/string16.h"
 
+namespace chromeos {
+class NetworkState;
+}
+
 namespace ash {
 
 struct NetworkIconInfo;
@@ -54,6 +58,10 @@ class NetworkObserver {
   // NOTE: Toggling is asynchronous and subsequent calls to query the current
   // state may return the old value.
   virtual void RequestToggleWifi() = 0;
+
+  // Helper function to get the network type from NetworkState.
+  static NetworkType GetNetworkTypeForNetworkState(
+      const chromeos::NetworkState* network);
 };
 
 }  // namespace ash

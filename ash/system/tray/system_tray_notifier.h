@@ -35,6 +35,10 @@
 
 namespace ash {
 
+#if defined(OS_CHROMEOS)
+class NetworkStateNotifier;
+#endif
+
 class ASH_EXPORT SystemTrayNotifier {
 public:
   SystemTrayNotifier();
@@ -129,6 +133,10 @@ public:
   void NotifyScreenCaptureStart(const base::Closure& stop_callback,
                                 const base::string16& sharing_app_name);
   void NotifyScreenCaptureStop();
+
+  NetworkStateNotifier* network_state_notifier() {
+    return network_state_notifier_.get();
+  }
 #endif
 
  private:
@@ -150,6 +158,7 @@ public:
   ObserverList<SmsObserver> sms_observers_;
   ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
   ObserverList<ScreenCaptureObserver> screen_capture_observers_;
+  scoped_ptr<NetworkStateNotifier> network_state_notifier_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayNotifier);

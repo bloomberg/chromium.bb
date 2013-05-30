@@ -34,8 +34,6 @@ using chromeos::ShillServiceClient;
 namespace ash {
 namespace test {
 
-using internal::NetworkStateNotifier;
-
 class NetworkStateNotifierTest : public AshTestBase {
  public:
   NetworkStateNotifierTest() {}
