@@ -5,6 +5,7 @@ Before:
     (GraphicsLayer
       (bounds 785.00 802.00)
       (contentsOpaque 1)
+      (drawsContent 1)
       (children 3
         (GraphicsLayer
           (position 17.00 119.00)
@@ -46,6 +47,7 @@ After:
     (GraphicsLayer
       (bounds 785.00 802.00)
       (contentsOpaque 1)
+      (drawsContent 1)
       (children 3
         (GraphicsLayer
           (position 17.00 119.00)

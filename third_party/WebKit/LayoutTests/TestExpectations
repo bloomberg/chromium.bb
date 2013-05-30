@@ -1870,6 +1870,9 @@ crbug.com/244225 inspector-protocol/dom/setFileInputFiles.html [ Skip ]
 # Uses setTimeout trying to catch a specific frame.
 crbug.com/244276 [ Mac ] fast/images/gif-loop-count.html [ ImageOnlyFailure Pass ]
 
+# Wrong fixed-position layout
+crbug.com/243967 compositing/gestures/gesture-tapHighlight-simple-div-boxshadow-fixed-nested2.html [ ImageOnlyFailure ]
+
 # DCHECK in SkFixed.h
 crbug.com/243309 [ Mac Debug ] accessibility/content-changed-notification-causes-crash.html [ Crash Pass ]
 crbug.com/243309 [ Mac Debug ] fast/css/font-size-nan.svg [ Crash Pass ]

@@ -2043,6 +2043,8 @@ bool FrameView::isTransparent() const
 void FrameView::setTransparent(bool isTransparent)
 {
     m_isTransparent = isTransparent;
+    if (renderView() && renderView()->layer()->backing())
+        renderView()->layer()->backing()->updateContentsOpaque();
 }
 
 bool FrameView::hasOpaqueBackground() const
@@ -2062,6 +2064,8 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
     else
         m_baseBackgroundColor = backgroundColor;
 
+    if (renderView() && renderView()->layer()->backing())
+        renderView()->layer()->backing()->updateContentsOpaque();
     recalculateScrollbarOverlayStyle();
 }
 

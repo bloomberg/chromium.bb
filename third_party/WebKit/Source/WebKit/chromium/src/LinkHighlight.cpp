@@ -27,7 +27,6 @@
 
 #include "LinkHighlight.h"
 
-#include "NonCompositedContentHost.h"
 #include "SkMatrix44.h"
 #include "WebFrameImpl.h"
 #include "WebKit.h"
@@ -66,7 +65,6 @@ LinkHighlight::LinkHighlight(Node* node, WebViewImpl* owningWebViewImpl)
     : m_node(node)
     , m_owningWebViewImpl(owningWebViewImpl)
     , m_currentGraphicsLayer(0)
-    , m_usingNonCompositedContentHost(false)
     , m_geometryNeedsUpdate(false)
     , m_isAnimating(false)
     , m_startTime(monotonicallyIncreasingTime())
@@ -129,13 +127,6 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
         return 0;
 
     GraphicsLayerChromium* newGraphicsLayer = static_cast<GraphicsLayerChromium*>(renderLayer->backing()->graphicsLayer());
-    m_clipLayer->setSublayerTransform(SkMatrix44());
-    m_usingNonCompositedContentHost = !newGraphicsLayer->drawsContent();
-    if (m_usingNonCompositedContentHost ) {
-        m_clipLayer->setSublayerTransform(newGraphicsLayer->platformLayer()->transform());
-        newGraphicsLayer = static_cast<GraphicsLayerChromium*>(m_owningWebViewImpl->nonCompositedContentHost()->topLevelRootLayer());
-    }
-
     if (m_currentGraphicsLayer != newGraphicsLayer) {
         if (m_currentGraphicsLayer)
             clearGraphicsLayerLinkHighlightPointer();
@@ -147,10 +138,11 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
     return renderLayer;
 }
 
-static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, RenderObject* targetRenderer, RenderObject* compositedRenderer, FloatQuad& compositedSpaceQuad)
+static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, RenderObject* targetRenderer, RenderLayer* compositedLayer, FloatQuad& compositedSpaceQuad)
 {
     ASSERT(targetRenderer);
-    ASSERT(compositedRenderer);
+    ASSERT(compositedLayer);
+    RenderLayerModelObject* compositedRenderer = compositedLayer->renderer();
 
     for (unsigned i = 0; i < 4; ++i) {
         IntPoint point;
@@ -164,6 +156,7 @@ static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpace
         point = targetRenderer->frame()->view()->contentsToWindow(point);
         point = compositedRenderer->frame()->view()->windowToContents(point);
         FloatPoint floatPoint = compositedRenderer->absoluteToLocal(point, UseTransforms);
+        floatPoint.moveBy(-compositedLayer->backing()->compositedBounds().location());
 
         switch (i) {
         case 0: compositedSpaceQuad.setP1(floatPoint); break;
@@ -196,35 +189,11 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositin
     m_node->renderer()->absoluteQuads(quads);
     ASSERT(quads.size());
 
-    FloatRect positionAdjust;
-    if (!m_usingNonCompositedContentHost) {
-        const RenderStyle* style = m_node->renderer()->style();
-        // If we have a box shadow, and are non-relative, then must manually adjust
-        // for its size.
-        if (const ShadowData* shadow = style->boxShadow()) {
-            int outlineSize = m_node->renderer()->outlineStyleForRepaint()->outlineSize();
-            shadow->adjustRectForShadow(positionAdjust, outlineSize);
-        }
-
-        // If absolute or fixed, need to subtract out our fixed positioning.
-        // FIXME: should we use RenderLayer::staticBlockPosition() here instead?
-        // Perhaps consider this if out-of-flow elements cause further problems.
-        if (m_node->renderer()->isOutOfFlowPositioned()) {
-            FloatPoint delta(style->left().getFloatValue(), style->top().getFloatValue());
-            positionAdjust.moveBy(delta);
-        }
-    }
-
     Path newPath;
     for (unsigned quadIndex = 0; quadIndex < quads.size(); ++quadIndex) {
-
-        FloatQuad localQuad = m_node->renderer()->absoluteToLocalQuad(quads[quadIndex], UseTransforms);
-        localQuad.move(-positionAdjust.location().x(), -positionAdjust.location().y());
-        FloatQuad absoluteQuad = m_node->renderer()->localToAbsoluteQuad(localQuad, UseTransforms);
-
         // Transform node quads in target absolute coords to local coordinates in the compositor layer.
         FloatQuad transformedQuad;
-        convertTargetSpaceQuadToCompositedLayer(absoluteQuad, m_node->renderer(), compositingLayer->renderer(), transformedQuad);
+        convertTargetSpaceQuadToCompositedLayer(quads[quadIndex], m_node->renderer(), compositingLayer, transformedQuad);
 
         // FIXME: for now, we'll only use rounded paths if we have a single node quad. The reason for this is that
         // we may sometimes get a chain of adjacent boxes (e.g. for text nodes) which end up looking like sausage

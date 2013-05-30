@@ -1142,10 +1142,8 @@ void RenderLayerCompositor::frameViewDidScroll()
     // If there's a scrolling coordinator that manages scrolling for this frame view,
     // it will also manage updating the scroll layer position.
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator()) {
-        if (scrollingCoordinator->coordinatesScrollingForFrameView(frameView))
-            return;
         if (Settings* settings = m_renderView->document()->settings()) {
-            if (settings->compositedScrollingForFramesEnabled())
+            if (isMainFrame() || settings->compositedScrollingForFramesEnabled())
                 scrollingCoordinator->scrollableAreaScrollLayerDidChange(frameView);
         }
     }
@@ -1509,7 +1507,6 @@ bool RenderLayerCompositor::requiresOwnBackingStore(const RenderLayer* layer, co
     RenderObject* renderer = layer->renderer();
     if (compositingAncestorLayer
         && !(compositingAncestorLayer->backing()->graphicsLayer()->drawsContent()
-            || compositingAncestorLayer->backing()->paintsIntoWindow()
             || compositingAncestorLayer->backing()->paintsIntoCompositedAncestor()))
         return true;
 
@@ -2483,7 +2480,6 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
     }
 
     m_rootLayerAttachment = attachment;
-    rootLayerAttachmentChanged();
 }
 
 void RenderLayerCompositor::detachRootLayer()
@@ -2518,7 +2514,6 @@ void RenderLayerCompositor::detachRootLayer()
     }
 
     m_rootLayerAttachment = RootLayerUnattached;
-    rootLayerAttachmentChanged();
 }
 
 void RenderLayerCompositor::updateRootLayerAttachment()
@@ -2529,15 +2524,6 @@ void RenderLayerCompositor::updateRootLayerAttachment()
 bool RenderLayerCompositor::isMainFrame() const
 {
     return !m_renderView->document()->ownerElement();
-}
-
-void RenderLayerCompositor::rootLayerAttachmentChanged()
-{
-    // The attachment can affect whether the RenderView layer's paintsIntoWindow() behavior,
-    // so call updateGraphicsLayerGeometry() to udpate that.
-    RenderLayer* layer = m_renderView->layer();
-    if (RenderLayerBacking* backing = layer ? layer->backing() : 0)
-        backing->updateDrawsContent();
 }
 
 // IFrames are special, because we hook compositing layers together across iframe boundaries

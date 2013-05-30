@@ -6,6 +6,7 @@ Layer tree when the fixed elements are in-view (both fixed elements should have 
     (GraphicsLayer
       (bounds 785.00 4016.00)
       (contentsOpaque 1)
+      (drawsContent 1)
       (children 2
         (GraphicsLayer
           (position 100.00 50.00)

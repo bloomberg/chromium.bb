@@ -90,7 +90,6 @@ private:
     OwnPtr<WebAnimation> m_animation;
     WebViewImpl* m_owningWebViewImpl;
     WebCore::GraphicsLayerChromium* m_currentGraphicsLayer;
-    bool m_usingNonCompositedContentHost;
 
     bool m_geometryNeedsUpdate;
     bool m_isAnimating;

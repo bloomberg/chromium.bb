@@ -430,10 +430,8 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&)
         }
 
         if (RenderLayer* compositingLayer = layer->enclosingCompositingLayerForRepaint()) {
-            if (!compositingLayer->backing()->paintsIntoWindow()) {
-                frameView()->setCannotBlitToWindow();
-                break;
-            }
+            frameView()->setCannotBlitToWindow();
+            break;
         }
     }
 
@@ -1081,6 +1079,17 @@ RenderBlock::IntervalArena* RenderView::intervalArena()
     if (!m_intervalArena)
         m_intervalArena = IntervalArena::create();
     return m_intervalArena.get();
+}
+
+bool RenderView::backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const
+{
+    // FIXME: Remove this main frame check. Same concept applies to subframes too.
+    Page* page = document()->page();
+    Frame* mainFrame = page ? page->mainFrame() : 0;
+    if (!m_frameView || m_frameView->frame() != mainFrame)
+        return false;
+
+    return m_frameView->hasOpaqueBackground();
 }
 
 void RenderView::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

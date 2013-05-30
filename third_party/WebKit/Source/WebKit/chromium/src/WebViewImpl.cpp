@@ -57,7 +57,6 @@
 #include "GraphicsLayerFactoryChromium.h"
 #include "HTMLNames.h"
 #include "LinkHighlight.h"
-#include "NonCompositedContentHost.h"
 #include "PageWidgetDelegate.h"
 #include "PopupContainer.h"
 #include "PrerendererClientImpl.h"
@@ -1760,6 +1759,8 @@ void WebViewImpl::layout()
 {
     TRACE_EVENT0("webkit", "WebViewImpl::layout");
     PageWidgetDelegate::layout(m_page.get());
+    if (m_layerTreeView)
+        m_layerTreeView->setBackgroundColor(backgroundColor());
 
     if (m_linkHighlight)
         m_linkHighlight->updateGeometry();
@@ -2903,8 +2904,7 @@ void WebViewImpl::enableFixedLayoutMode(bool enable)
 
     frame->view()->setUseFixedLayout(enable);
 
-    // Also notify the base layer, which RenderLayerCompositor does not see.
-    if (m_nonCompositedContentHost)
+    if (m_isAcceleratedCompositingActive)
         updateLayerTreeViewport();
 }
 
@@ -3508,9 +3508,6 @@ void WebViewImpl::setIsTransparent(bool isTransparent)
 
     // Future frames check this to know whether to be transparent.
     m_isTransparent = isTransparent;
-
-    if (m_nonCompositedContentHost)
-        m_nonCompositedContentHost->setOpaque(!isTransparent);
 }
 
 bool WebViewImpl::isTransparent() const
@@ -3604,6 +3601,14 @@ void WebViewImpl::layoutUpdated(WebFrameImpl* webframe)
 {
     if (!m_client || webframe != mainFrameImpl())
         return;
+
+    if (m_layerTreeViewCommitsDeferred) {
+        // If we finished a layout while in deferred commit mode,
+        // that means it's time to start producing frames again so un-defer.
+        if (m_layerTreeView)
+            m_layerTreeView->setDeferCommits(false);
+        m_layerTreeViewCommitsDeferred = false;
+    }
 
     if (m_shouldAutoResize && mainFrameImpl()->frame() && mainFrameImpl()->frame()->view()) {
         WebSize frameSize = mainFrameImpl()->frame()->view()->frameRect().size();
@@ -3797,16 +3802,6 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
     m_rootLayer = layer ? layer->platformLayer() : 0;
 
     setIsAcceleratedCompositingActive(layer);
-    if (m_nonCompositedContentHost) {
-        GraphicsLayer* scrollLayer = 0;
-        if (layer) {
-            Document* document = page()->mainFrame()->document();
-            RenderView* renderView = document->renderView();
-            RenderLayerCompositor* compositor = renderView->compositor();
-            scrollLayer = compositor->scrollLayer();
-        }
-        m_nonCompositedContentHost->setScrollLayer(scrollLayer);
-    }
 
     if (m_layerTreeView) {
         if (m_rootLayer)
@@ -3830,38 +3825,11 @@ void WebViewImpl::scrollRootLayerRect(const IntSize&, const IntRect&)
 
 void WebViewImpl::invalidateRect(const IntRect& rect)
 {
-    if (m_layerTreeViewCommitsDeferred) {
-        // If we receive an invalidation from WebKit while in deferred commit mode,
-        // that means it's time to start producing frames again so un-defer.
-        if (m_layerTreeView)
-            m_layerTreeView->setDeferCommits(false);
-        m_layerTreeViewCommitsDeferred = false;
-    }
     if (m_isAcceleratedCompositingActive) {
         ASSERT(m_layerTreeView);
-
-        if (!page())
-            return;
-
-        FrameView* view = page()->mainFrame()->view();
-        IntRect dirtyRect = view->windowToContents(rect);
         updateLayerTreeViewport();
-        m_nonCompositedContentHost->invalidateRect(dirtyRect);
     } else if (m_client)
         m_client->didInvalidateRect(rect);
-}
-
-NonCompositedContentHost* WebViewImpl::nonCompositedContentHost()
-{
-    return m_nonCompositedContentHost.get();
-}
-
-void WebViewImpl::setBackgroundColor(const WebCore::Color& color)
-{
-    WebCore::Color documentBackgroundColor = color.isValid() ? color : WebCore::Color::white;
-    WebColor webDocumentBackgroundColor = documentBackgroundColor.rgb();
-    m_nonCompositedContentHost->setBackgroundColor(documentBackgroundColor);
-    m_layerTreeView->setBackgroundColor(webDocumentBackgroundColor);
 }
 
 WebCore::GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
@@ -3890,22 +3858,6 @@ void WebViewImpl::scheduleAnimation()
             m_client->scheduleAnimation();
     } else
             m_client->scheduleAnimation();
-}
-
-void WebViewImpl::paintRootLayer(GraphicsContext& context, const IntRect& contentRect)
-{
-    double paintStart = currentTime();
-    if (!page())
-        return;
-    FrameView* view = page()->mainFrame()->view();
-    context.setUseHighResMarkers(page()->deviceScaleFactor() > 1.5f);
-    view->paintContents(&context, contentRect);
-    double paintEnd = currentTime();
-    double pixelsPerSec = (contentRect.width() * contentRect.height()) / (paintEnd - paintStart);
-    WebKit::Platform::current()->histogramCustomCounts("Renderer4.AccelRootPaintDurationMS", (paintEnd - paintStart) * 1000, 0, 120, 30);
-    WebKit::Platform::current()->histogramCustomCounts("Renderer4.AccelRootPaintMegapixPerSecond", pixelsPerSec / 1000000, 10, 210, 30);
-
-    setBackgroundColor(view->documentBackgroundColor());
 }
 
 void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
@@ -3940,10 +3892,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
     } else {
         TRACE_EVENT0("webkit", "WebViewImpl::setIsAcceleratedCompositingActive(true)");
 
-        m_nonCompositedContentHost = NonCompositedContentHost::create(this, graphicsLayerFactory());
-        m_nonCompositedContentHost->setShowDebugBorders(page()->settings()->showDebugBorders());
-        m_nonCompositedContentHost->setOpaque(!isTransparent());
-
         m_client->initializeLayerTreeView();
         m_layerTreeView = m_client->layerTreeView();
         if (m_layerTreeView) {
@@ -3953,6 +3901,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             m_layerTreeView->setVisible(visible);
             m_layerTreeView->setDeviceScaleFactor(page()->deviceScaleFactor());
             m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), minimumPageScaleFactor(), maximumPageScaleFactor());
+            m_layerTreeView->setBackgroundColor(backgroundColor());
             m_layerTreeView->setHasTransparentBackground(isTransparent());
             updateLayerTreeViewport();
             m_client->didActivateCompositor(0);
@@ -3965,7 +3914,6 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             m_layerTreeView->setShowDebugBorders(m_showDebugBorders);
             m_layerTreeView->setContinuousPaintingEnabled(m_continuousPaintingEnabled);
         } else {
-            m_nonCompositedContentHost.clear();
             m_isAcceleratedCompositingActive = false;
             m_client->didDeactivateCompositor();
             m_compositorCreationFailed = true;
@@ -4029,11 +3977,9 @@ void WebViewImpl::didExitCompositingMode()
 
 void WebViewImpl::updateLayerTreeViewport()
 {
-    if (!page() || !m_nonCompositedContentHost || !m_layerTreeView)
+    if (!page() || !m_layerTreeView)
         return;
 
-    FrameView* view = page()->mainFrame()->view();
-    m_nonCompositedContentHost->setViewport(m_size, view->contentsSize(), view->scrollPosition(), view->scrollOrigin());
     m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), minimumPageScaleFactor(), maximumPageScaleFactor());
 }
 

@@ -7,6 +7,7 @@ After (should not be empty):
     (GraphicsLayer
       (bounds 785.00 4016.00)
       (contentsOpaque 1)
+      (drawsContent 1)
       (children 1
         (GraphicsLayer
           (position 480.00 30.00)

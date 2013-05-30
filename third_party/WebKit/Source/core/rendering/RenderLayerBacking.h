@@ -72,7 +72,9 @@ public:
     void updateGraphicsLayerGeometry(); // make private
     // Update contents and clipping structure.
     void updateDrawsContent();
-    
+    // Update whether layer needs blending.
+    void updateContentsOpaque();
+
     GraphicsLayer* graphicsLayer() const { return m_graphicsLayer.get(); }
 
     // Layer to clip children
@@ -100,14 +102,6 @@ public:
     GraphicsLayer* parentForSublayers() const;
     GraphicsLayer* childForSuperlayers() const;
 
-    // RenderLayers with backing normally short-circuit paintLayer() because
-    // their content is rendered via callbacks from GraphicsLayer. However, the document
-    // layer is special, because it has a GraphicsLayer to act as a container for the GraphicsLayers
-    // for descendants, but its contents usually render into the window (in which case this returns true).
-    // This returns false for other layers, and when the document layer actually needs to paint into its backing store
-    // for some reason.
-    bool paintsIntoWindow() const;
-    
     // Returns true for a composited layer that has no backing store of its own, so
     // paints into some ancestor layer.
     bool paintsIntoCompositedAncestor() const { return !m_requiresOwnBackingStore; }

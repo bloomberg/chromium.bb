@@ -195,8 +195,10 @@ void RenderLayerBacking::createPrimaryGraphicsLayer()
     
     m_graphicsLayer = createGraphicsLayer(layerName, m_owningLayer->compositingReasons());
 
+#if !OS(ANDROID)
     if (m_isMainFrameRenderViewLayer)
-        m_graphicsLayer->setContentsOpaque(true);
+        m_graphicsLayer->contentLayer()->setDrawCheckerboardForMissingTiles(true);
+#endif
 
     updateOpacity(renderer()->style());
     updateTransform(renderer()->style());
@@ -266,6 +268,13 @@ void RenderLayerBacking::updateFilters(const RenderStyle* style)
 
 void RenderLayerBacking::updateLayerBlendMode(const RenderStyle*)
 {
+}
+
+void RenderLayerBacking::updateContentsOpaque()
+{
+    // For non-root layers, background is always painted by the primary graphics layer.
+    ASSERT(m_isMainFrameRenderViewLayer || !m_backgroundLayer);
+    m_graphicsLayer->setContentsOpaque(m_owningLayer->backgroundIsKnownToBeOpaqueInRect(compositedBounds()));
 }
 
 static bool hasNonZeroTransformOrigin(const RenderObject* renderer)
@@ -379,7 +388,7 @@ void RenderLayerBacking::updateAfterLayout(UpdateAfterLayoutFlags flags)
         }
     }
     
-    if (flags & NeedsFullRepaint && !paintsIntoWindow() && !paintsIntoCompositedAncestor())
+    if (flags & NeedsFullRepaint && !paintsIntoCompositedAncestor())
         setContentsNeedDisplay();
 }
 
@@ -572,11 +581,6 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
         if (m_boundsConstrainedByClipping)
             m_graphicsLayer->setNeedsDisplay();
     }
-    if (!m_isMainFrameRenderViewLayer) {
-        // For non-root layers, background is always painted by the primary graphics layer.
-        ASSERT(!m_backgroundLayer);
-        m_graphicsLayer->setContentsOpaque(m_owningLayer->backgroundIsKnownToBeOpaqueInRect(localCompositingBounds));
-    }
 
     // If we have a layer that clips children, position it.
     IntRect clippingBox;
@@ -726,6 +730,7 @@ void RenderLayerBacking::updateGraphicsLayerGeometry()
     updateContentsRect(isSimpleContainer);
     updateBackgroundColor(isSimpleContainer);
     updateDrawsContent(isSimpleContainer);
+    updateContentsOpaque();
     updateAfterWidgetResize();
     registerScrollingLayers();
 
@@ -1330,7 +1335,7 @@ bool RenderLayerBacking::hasVisibleNonCompositingDescendantLayers() const
 
 bool RenderLayerBacking::containsPaintedContent() const
 {
-    if (isSimpleContainerCompositingLayer() || paintsIntoWindow() || paintsIntoCompositedAncestor() || m_artificiallyInflatedBounds || m_owningLayer->isReflection())
+    if (isSimpleContainerCompositingLayer() || paintsIntoCompositedAncestor() || m_artificiallyInflatedBounds || m_owningLayer->isReflection())
         return false;
 
     if (isDirectlyCompositedImage())
@@ -1513,15 +1518,6 @@ GraphicsLayer* RenderLayerBacking::childForSuperlayers() const
     return m_graphicsLayer.get();
 }
 
-bool RenderLayerBacking::paintsIntoWindow() const
-{
-    if (m_owningLayer->isRootLayer()) {
-        return compositor()->rootLayerAttachment() != RenderLayerCompositor::RootLayerAttachedViaEnclosingFrame;
-    }
-    
-    return false;
-}
-
 void RenderLayerBacking::setRequiresOwnBackingStore(bool requiresOwnBacking)
 {
     if (requiresOwnBacking == m_requiresOwnBackingStore)
@@ -1602,7 +1598,7 @@ void RenderLayerBacking::paintIntoLayer(const GraphicsLayer* graphicsLayer, Grap
                     const IntRect& paintDirtyRect, // In the coords of rootLayer.
                     PaintBehavior paintBehavior, GraphicsLayerPaintingPhase paintingPhase)
 {
-    if (paintsIntoWindow() || paintsIntoCompositedAncestor()) {
+    if (paintsIntoCompositedAncestor()) {
         ASSERT_NOT_REACHED();
         return;
     }

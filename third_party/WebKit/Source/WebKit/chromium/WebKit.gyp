@@ -339,8 +339,6 @@
                 'src/InspectorFrontendClientImpl.h',
                 'src/LinkHighlight.cpp',
                 'src/LinkHighlight.h',
-                'src/NonCompositedContentHost.cpp',
-                'src/NonCompositedContentHost.h',
                 'src/PrerendererClientImpl.h',
                 'src/PrerendererClientImpl.cpp',
                 'src/android/WebInputEventFactory.cpp',
