@@ -1091,6 +1091,9 @@ filter:
         parser->m_inFilterRule = false;
         $$ = parser->createFilterRule($4);
     }
+  | before_filter_rule WEBKIT_FILTER_RULE_SYM at_rule_recovery {
+        $$ = 0;
+    }
     ;
 
 combinator:
