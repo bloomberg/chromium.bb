@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/chromeos/drive/file_system/operations.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
@@ -47,20 +47,20 @@ class SearchOperation {
   // |callback| must not be null.
   void Search(const std::string& search_query,
               const GURL& next_feed,
-              const SearchOperationCallback& callback);
+              const SearchCallback& callback);
 
  private:
   // Part of Search(). This is called after the ResourceList is fetched from
   // the server.
   void SearchAfterGetResourceList(
-      const SearchOperationCallback& callback,
+      const SearchCallback& callback,
       google_apis::GDataErrorCode gdata_error,
       scoped_ptr<google_apis::ResourceList> resource_list);
 
   // Part of Search(). This is called after the RefreshEntryOnBlockingPool
   // is completed.
   void SearchAfterRefreshEntry(
-      const SearchOperationCallback& callback,
+      const SearchCallback& callback,
       const GURL& next_feed,
       scoped_ptr<std::vector<SearchResultInfo> > result,
       FileError error);

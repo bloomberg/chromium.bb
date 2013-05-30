@@ -17,6 +17,15 @@
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/create_directory_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/download_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/move_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/search_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/touch_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -93,15 +102,7 @@ void FileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   SetupChangeListLoader();
-
-  // Allocate the file system operation handlers.
-  operations_.Init(this,  // OperationObserver
-                   scheduler_,
-                   resource_metadata_,
-                   cache_,
-                   this,  // FileSystemInterface
-                   drive_service_,
-                   blocking_task_runner_);
+  SetupOperations();
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableDriveHostedFiles);
@@ -128,6 +129,34 @@ void FileSystem::SetupChangeListLoader() {
   change_list_loader_.reset(new internal::ChangeListLoader(
       blocking_task_runner_, resource_metadata_, scheduler_));
   change_list_loader_->AddObserver(this);
+}
+
+void FileSystem::SetupOperations() {
+  file_system::OperationObserver* observer = this;
+  copy_operation_.reset(
+      new file_system::CopyOperation(blocking_task_runner_,
+                                     observer,
+                                     scheduler_,
+                                     resource_metadata_,
+                                     cache_,
+                                     this,
+                                     drive_service_));
+  create_directory_operation_.reset(new file_system::CreateDirectoryOperation(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_));
+  create_file_operation_.reset(new file_system::CreateFileOperation(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
+  move_operation_.reset(new file_system::MoveOperation(
+      observer, scheduler_, resource_metadata_));
+  remove_operation_.reset(new file_system::RemoveOperation(
+      observer, scheduler_, resource_metadata_, cache_));
+  touch_operation_.reset(new file_system::TouchOperation(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_));
+  download_operation_.reset(new file_system::DownloadOperation(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
+  update_operation_.reset(new file_system::UpdateOperation(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
+  search_operation_.reset(new file_system::SearchOperation(
+      blocking_task_runner_, scheduler_, resource_metadata_));
 }
 
 void FileSystem::CheckForUpdates() {
@@ -200,20 +229,22 @@ void FileSystem::TransferFileFromRemoteToLocal(
     const base::FilePath& remote_src_file_path,
     const base::FilePath& local_dest_file_path,
     const FileOperationCallback& callback) {
-
-  operations_.TransferFileFromRemoteToLocal(remote_src_file_path,
-                                            local_dest_file_path,
-                                            callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  copy_operation_->TransferFileFromRemoteToLocal(remote_src_file_path,
+                                                 local_dest_file_path,
+                                                 callback);
 }
 
 void FileSystem::TransferFileFromLocalToRemote(
     const base::FilePath& local_src_file_path,
     const base::FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
-
-  operations_.TransferFileFromLocalToRemote(local_src_file_path,
-                                            remote_dest_file_path,
-                                            callback);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  copy_operation_->TransferFileFromLocalToRemote(local_src_file_path,
+                                                 remote_dest_file_path,
+                                                 callback);
 }
 
 void FileSystem::Copy(const base::FilePath& src_file_path,
@@ -221,7 +252,7 @@ void FileSystem::Copy(const base::FilePath& src_file_path,
                       const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  operations_.Copy(src_file_path, dest_file_path, callback);
+  copy_operation_->Copy(src_file_path, dest_file_path, callback);
 }
 
 void FileSystem::Move(const base::FilePath& src_file_path,
@@ -229,7 +260,7 @@ void FileSystem::Move(const base::FilePath& src_file_path,
                       const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  operations_.Move(src_file_path, dest_file_path, callback);
+  move_operation_->Move(src_file_path, dest_file_path, callback);
 }
 
 void FileSystem::Remove(const base::FilePath& file_path,
@@ -237,7 +268,7 @@ void FileSystem::Remove(const base::FilePath& file_path,
                         const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  operations_.Remove(file_path, is_recursive, callback);
+  remove_operation_->Remove(file_path, is_recursive, callback);
 }
 
 void FileSystem::CreateDirectory(
@@ -269,7 +300,7 @@ void FileSystem::CreateDirectoryAfterLoad(
     return;
   }
 
-  operations_.CreateDirectory(
+  create_directory_operation_->CreateDirectory(
       directory_path, is_exclusive, is_recursive, callback);
 }
 
@@ -278,8 +309,7 @@ void FileSystem::CreateFile(const base::FilePath& file_path,
                             const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-
-  operations_.CreateFile(file_path, is_exclusive, callback);
+  create_file_operation_->CreateFile(file_path, is_exclusive, callback);
 }
 
 void FileSystem::TouchFile(const base::FilePath& file_path,
@@ -290,8 +320,7 @@ void FileSystem::TouchFile(const base::FilePath& file_path,
   DCHECK(!last_access_time.is_null());
   DCHECK(!last_modified_time.is_null());
   DCHECK(!callback.is_null());
-
-  operations_.TouchFile(
+  touch_operation_->TouchFile(
       file_path, last_access_time, last_modified_time, callback);
 }
 
@@ -365,7 +394,7 @@ void FileSystem::GetFileByPath(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  operations_.EnsureFileDownloadedByPath(
+  download_operation_->EnsureFileDownloadedByPath(
       file_path,
       ClientContext(USER_INITIATED),
       GetFileContentInitializedCallback(),
@@ -382,7 +411,7 @@ void FileSystem::GetFileByResourceId(
   DCHECK(!resource_id.empty());
   DCHECK(!get_file_callback.is_null());
 
-  operations_.EnsureFileDownloadedByResourceId(
+  download_operation_->EnsureFileDownloadedByResourceId(
       resource_id,
       context,
       GetFileContentInitializedCallback(),
@@ -400,7 +429,7 @@ void FileSystem::GetFileContentByPath(
   DCHECK(!get_content_callback.is_null());
   DCHECK(!completion_callback.is_null());
 
-  operations_.EnsureFileDownloadedByPath(
+  download_operation_->EnsureFileDownloadedByPath(
       file_path,
       ClientContext(USER_INITIATED),
       initialized_callback,
@@ -633,8 +662,7 @@ void FileSystem::UpdateFileByResourceId(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-
-  operations_.UpdateFileByResourceId(resource_id, context, callback);
+  update_operation_->UpdateFileByResourceId(resource_id, context, callback);
 }
 
 void FileSystem::GetAvailableSpace(
@@ -672,8 +700,7 @@ void FileSystem::Search(const std::string& search_query,
                         const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-
-  operations_.Search(search_query, next_feed, callback);
+  search_operation_->Search(search_query, next_feed, callback);
 }
 
 void FileSystem::SearchMetadata(const std::string& query,
@@ -847,7 +874,7 @@ void FileSystem::OpenFile(const base::FilePath& file_path,
   }
   open_files_.insert(file_path);
 
-  operations_.EnsureFileDownloadedByPath(
+  download_operation_->EnsureFileDownloadedByPath(
       file_path,
       ClientContext(USER_INITIATED),
       GetFileContentInitializedCallback(),

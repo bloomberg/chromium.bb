@@ -13,7 +13,6 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
-#include "chrome/browser/chromeos/drive/file_system/operations.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
@@ -43,6 +42,19 @@ namespace internal {
 class ChangeListLoader;
 class ResourceMetadata;
 }  // namespace internal
+
+namespace file_system {
+class CopyOperation;
+class CreateDirectoryOperation;
+class CreateFileOperation;
+class DownloadOperation;
+class MoveOperation;
+class OperationObserver;
+class RemoveOperation;
+class SearchOperation;
+class TouchOperation;
+class UpdateOperation;
+}  // namespace file_system
 
 // The production implementation of FileSystemInterface.
 class FileSystem : public FileSystemInterface,
@@ -174,6 +186,9 @@ class FileSystem : public FileSystemInterface,
 
   // Sets up ChangeListLoader.
   void SetupChangeListLoader();
+
+  // Sets up file_system::XXXOperation instances.
+  void SetupOperations();
 
   // Called on preference change.
   void OnDisableDriveHostedFilesChanged();
@@ -366,7 +381,16 @@ class FileSystem : public FileSystemInterface,
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  file_system::Operations operations_;
+  // Implementation of each file system operation.
+  scoped_ptr<file_system::CopyOperation> copy_operation_;
+  scoped_ptr<file_system::CreateDirectoryOperation> create_directory_operation_;
+  scoped_ptr<file_system::CreateFileOperation> create_file_operation_;
+  scoped_ptr<file_system::MoveOperation> move_operation_;
+  scoped_ptr<file_system::RemoveOperation> remove_operation_;
+  scoped_ptr<file_system::TouchOperation> touch_operation_;
+  scoped_ptr<file_system::DownloadOperation> download_operation_;
+  scoped_ptr<file_system::UpdateOperation> update_operation_;
+  scoped_ptr<file_system::SearchOperation> search_operation_;
 
   // Polling interval for checking updates in seconds.
   int polling_interval_sec_;

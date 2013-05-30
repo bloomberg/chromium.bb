@@ -248,8 +248,6 @@
         'browser/chromeos/drive/file_system/move_operation.cc',
         'browser/chromeos/drive/file_system/move_operation.h',
         'browser/chromeos/drive/file_system/operation_observer.h',
-        'browser/chromeos/drive/file_system/operations.cc',
-        'browser/chromeos/drive/file_system/operations.h',
         'browser/chromeos/drive/file_system/remove_operation.cc',
         'browser/chromeos/drive/file_system/remove_operation.h',
         'browser/chromeos/drive/file_system/search_operation.cc',

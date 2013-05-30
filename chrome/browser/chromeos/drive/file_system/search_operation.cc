@@ -85,7 +85,7 @@ SearchOperation::~SearchOperation() {
 
 void SearchOperation::Search(const std::string& search_query,
                              const GURL& next_feed,
-                             const SearchOperationCallback& callback) {
+                             const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -105,7 +105,7 @@ void SearchOperation::Search(const std::string& search_query,
 }
 
 void SearchOperation::SearchAfterGetResourceList(
-    const SearchOperationCallback& callback,
+    const SearchCallback& callback,
     google_apis::GDataErrorCode gdata_error,
     scoped_ptr<google_apis::ResourceList> resource_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -150,7 +150,7 @@ void SearchOperation::SearchAfterGetResourceList(
 }
 
 void SearchOperation::SearchAfterRefreshEntry(
-    const SearchOperationCallback& callback,
+    const SearchCallback& callback,
     const GURL& next_feed,
     scoped_ptr<std::vector<SearchResultInfo> > result,
     FileError error) {
