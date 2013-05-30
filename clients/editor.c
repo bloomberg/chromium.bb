@@ -837,15 +837,18 @@ text_entry_delete_text(struct text_entry *entry,
 {
 	uint32_t l;
 
-	if (entry->cursor > index)
-		entry->cursor -= length;
-
-	entry->anchor = entry->cursor;
 
 	l = strlen(entry->text + index + length);
 	memmove(entry->text + index,
 		entry->text + index + length,
 		l + 1);
+
+	if (entry->cursor > (index + length))
+		entry->cursor -= length;
+	else if (entry->cursor > index)
+		entry->cursor = index;
+
+	entry->anchor = entry->cursor;
 
 	text_entry_update_layout(entry);
 
