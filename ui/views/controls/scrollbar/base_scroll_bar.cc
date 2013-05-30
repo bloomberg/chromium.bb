@@ -40,6 +40,7 @@ BaseScrollBar::BaseScrollBar(bool horizontal, BaseScrollBarThumb* thumb)
       thumb_(thumb),
       contents_size_(0),
       contents_scroll_offset_(0),
+      viewport_size_(0),
       thumb_track_state_(CustomButton::STATE_NORMAL),
       last_scroll_amount_(SCROLL_NONE),
       repeater_(base::Bind(&BaseScrollBar::TrackClicked,
@@ -383,6 +384,8 @@ void BaseScrollBar::Update(int viewport_size, int content_size,
   // calculations throughout this code.
   contents_size_ = std::max(1, content_size);
 
+  viewport_size_ = std::max(1, viewport_size);
+
   if (content_size < 0)
     content_size = 0;
   if (contents_scroll_offset < 0)
@@ -427,6 +430,10 @@ int BaseScrollBar::GetScrollIncrement(bool is_page, bool is_positive) {
 ///////////////////////////////////////////////////////////////////////////////
 // BaseScrollBar, private:
 
+int BaseScrollBar::GetThumbSizeForTest() {
+  return thumb_->GetSize();
+}
+
 void BaseScrollBar::ProcessPressEvent(const ui::LocatedEvent& event) {
   SetThumbTrackState(CustomButton::STATE_PRESSED);
   gfx::Rect thumb_bounds = thumb_->bounds();
@@ -468,6 +475,13 @@ int BaseScrollBar::GetTrackSize() const {
 }
 
 int BaseScrollBar::CalculateThumbPosition(int contents_scroll_offset) const {
+  // In some combination of viewport_size and contents_size_, the result of
+  // simple division can be rounded and there could be 1 pixel gap even when the
+  // contents scroll down to the bottom. See crbug.com/244671
+  if (contents_scroll_offset + viewport_size_ == contents_size_) {
+    int track_size = GetTrackSize();
+    return track_size - (viewport_size_ * GetTrackSize() / contents_size_);
+  }
   return (contents_scroll_offset * GetTrackSize()) / contents_size_;
 }
 
