@@ -32,6 +32,7 @@
 #include "bindings/v8/V8AdaptorFunction.h"
 
 #include "bindings/v8/V8PerIsolateData.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -66,8 +67,8 @@ v8::Handle<v8::Value> V8AdaptorFunction::invocationCallback(const v8::Arguments&
     for (int i = 0; i < args.Length(); ++i)
         argArray.append(args[i]);
     if (args.IsConstructCall())
-        return wrapped->CallAsConstructor(argArray.size(), argArray.data());
-    return wrapped->CallAsFunction(args.This(), argArray.size(), argArray.data());
+        return V8ScriptRunner::callAsConstructor(wrapped, argArray.size(), argArray.data());
+    return V8ScriptRunner::callAsFunction(wrapped, args.This(), argArray.size(), argArray.data());
 }
 
 v8::Handle<v8::Function> V8AdaptorFunction::wrap(v8::Handle<v8::Object> object, const AtomicString& name, v8::Isolate* isolate)

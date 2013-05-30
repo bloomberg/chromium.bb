@@ -44,6 +44,8 @@ public:
     static v8::Local<v8::Value> compileAndRunInternalScript(v8::Handle<v8::String>, v8::Isolate*, v8::Local<v8::Context> = v8::Local<v8::Context>(), const String& = String(), const TextPosition& = TextPosition(), v8::ScriptData* = 0);
     static v8::Local<v8::Value> callInternalFunction(v8::Handle<v8::Function>, v8::Local<v8::Context>, v8::Handle<v8::Object>, int argc, v8::Handle<v8::Value> args[], v8::Isolate*);
     static v8::Local<v8::Value> callFunction(v8::Handle<v8::Function>, ScriptExecutionContext*, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[]);
+    static v8::Local<v8::Value> callAsFunction(v8::Handle<v8::Object>, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[]);
+    static v8::Local<v8::Value> callAsConstructor(v8::Handle<v8::Object>, int argc, v8::Handle<v8::Value> args[]);
 };
 
 } // namespace WebCore

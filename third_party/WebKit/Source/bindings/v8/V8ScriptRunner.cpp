@@ -169,4 +169,20 @@ v8::Local<v8::Value> V8ScriptRunner::callInternalFunction(v8::Handle<v8::Functio
     return result;
 }
 
+v8::Local<v8::Value> V8ScriptRunner::callAsFunction(v8::Handle<v8::Object> object, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> args[])
+{
+    V8RecursionScope::MicrotaskSuppression recursionScope;
+    v8::Local<v8::Value> result = object->CallAsFunction(receiver, argc, args);
+    crashIfV8IsDead();
+    return result;
+}
+
+v8::Local<v8::Value> V8ScriptRunner::callAsConstructor(v8::Handle<v8::Object> object, int argc, v8::Handle<v8::Value> args[])
+{
+    V8RecursionScope::MicrotaskSuppression recursionScope;
+    v8::Local<v8::Value> result = object->CallAsConstructor(argc, args);
+    crashIfV8IsDead();
+    return result;
+}
+
 } // namespace WebCore
