@@ -1194,8 +1194,11 @@ void ExynosVideoDecodeAccelerator::DequeueMfc() {
   while (mfc_input_buffer_queued_count_ > 0) {
     DCHECK(mfc_input_streamon_);
     memset(&dqbuf, 0, sizeof(dqbuf));
+    memset(planes, 0, sizeof(planes));
     dqbuf.type   = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
     dqbuf.memory = V4L2_MEMORY_MMAP;
+    dqbuf.m.planes = planes;
+    dqbuf.length = 1;
     if (ioctl(mfc_fd_, VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
         // EAGAIN if we're just out of buffers to dequeue.
@@ -1327,11 +1330,15 @@ void ExynosVideoDecodeAccelerator::DequeueGsc() {
   // Dequeue completed GSC input (VIDEO_OUTPUT) buffers, and recycle to the free
   // list.  Also recycle the corresponding MFC output buffers at this time.
   struct v4l2_buffer dqbuf;
+  struct v4l2_plane planes[2];
   while (gsc_input_buffer_queued_count_ > 0) {
     DCHECK(gsc_input_streamon_);
     memset(&dqbuf, 0, sizeof(dqbuf));
+    memset(planes, 0, sizeof(planes));
     dqbuf.type   = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
     dqbuf.memory = V4L2_MEMORY_DMABUF;
+    dqbuf.m.planes = planes;
+    dqbuf.length = 2;
     if (ioctl(gsc_fd_, VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
         // EAGAIN if we're just out of buffers to dequeue.
@@ -1359,8 +1366,11 @@ void ExynosVideoDecodeAccelerator::DequeueGsc() {
   while (gsc_output_buffer_queued_count_ > 0) {
     DCHECK(gsc_output_streamon_);
     memset(&dqbuf, 0, sizeof(dqbuf));
+    memset(planes, 0, sizeof(planes));
     dqbuf.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     dqbuf.memory = V4L2_MEMORY_DMABUF;
+    dqbuf.m.planes = planes;
+    dqbuf.length = 1;
     if (ioctl(gsc_fd_, VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
         // EAGAIN if we're just out of buffers to dequeue.
@@ -2060,7 +2070,12 @@ bool ExynosVideoDecodeAccelerator::CreateGscInputBuffers() {
   memset(&control, 0, sizeof(control));
   control.id = V4L2_CID_GLOBAL_ALPHA;
   control.value = 255;
-  IOCTL_OR_ERROR_RETURN_FALSE(gsc_fd_, VIDIOC_S_CTRL, &control);
+  if (HANDLE_EINTR(ioctl(gsc_fd_, VIDIOC_S_CTRL, &control)) != 0) {
+    memset(&control, 0, sizeof(control));
+    control.id = V4L2_CID_ALPHA_COMPONENT;
+    control.value = 255;
+    IOCTL_OR_ERROR_RETURN_FALSE(gsc_fd_, VIDIOC_S_CTRL, &control);
+  }
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
