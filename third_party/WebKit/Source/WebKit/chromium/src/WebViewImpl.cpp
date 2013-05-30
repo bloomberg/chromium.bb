@@ -304,10 +304,6 @@ void WebViewImpl::initializeMainFrame(WebFrameClient* frameClient)
     RefPtr<WebFrameImpl> frame = WebFrameImpl::create(frameClient);
 
     frame->initializeAsMainFrame(page());
-
-    // Restrict the access to the local file system
-    // (see WebView.mm WebView::_commonInitializationWithFrameName).
-    SecurityPolicy::setLocalLoadPolicy(SecurityPolicy::AllowLocalLoadsForLocalOnly);
 }
 
 void WebViewImpl::initializeHelperPluginFrame(WebFrameClient* client)

@@ -50,16 +50,6 @@ public:
     // referrer header should be omitted.
     static String generateReferrerHeader(ReferrerPolicy, const KURL&, const String& referrer);
 
-    enum LocalLoadPolicy {
-        AllowLocalLoadsForAll, // No restriction on local loads.
-        AllowLocalLoadsForLocalAndSubstituteData,
-        AllowLocalLoadsForLocalOnly,
-    };
-
-    static void setLocalLoadPolicy(LocalLoadPolicy);
-    static bool restrictAccessToLocal();
-    static bool allowSubstituteDataAccessToLocal();
-
     static void addOriginAccessWhitelistEntry(const SecurityOrigin& sourceOrigin, const String& destinationProtocol, const String& destinationDomain, bool allowDestinationSubdomains);
     static void removeOriginAccessWhitelistEntry(const SecurityOrigin& sourceOrigin, const String& destinationProtocol, const String& destinationDomain, bool allowDestinationSubdomains);
     static void resetOriginAccessWhitelists();

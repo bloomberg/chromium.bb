@@ -39,8 +39,6 @@
 
 namespace WebCore {
 
-static SecurityPolicy::LocalLoadPolicy localLoadPolicy = SecurityPolicy::AllowLocalLoadsForLocalOnly;
-
 typedef Vector<OriginAccessEntry> OriginAccessWhiteList;
 typedef HashMap<String, OwnPtr<OriginAccessWhiteList> > OriginAccessMap;
 
@@ -89,21 +87,6 @@ String SecurityPolicy::generateReferrerHeader(ReferrerPolicy referrerPolicy, con
     }
 
     return shouldHideReferrer(url, referrer) ? String() : referrer;
-}
-
-void SecurityPolicy::setLocalLoadPolicy(LocalLoadPolicy policy)
-{
-    localLoadPolicy = policy;
-}
-
-bool SecurityPolicy::restrictAccessToLocal()
-{
-    return localLoadPolicy != SecurityPolicy::AllowLocalLoadsForAll;
-}
-
-bool SecurityPolicy::allowSubstituteDataAccessToLocal()
-{
-    return localLoadPolicy != SecurityPolicy::AllowLocalLoadsForLocalOnly;
 }
 
 bool SecurityPolicy::isAccessWhiteListed(const SecurityOrigin* activeOrigin, const SecurityOrigin* targetOrigin)

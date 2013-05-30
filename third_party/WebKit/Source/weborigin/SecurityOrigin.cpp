@@ -369,7 +369,7 @@ bool SecurityOrigin::canDisplay(const KURL& url) const
     if (SchemeRegistry::shouldTreatURLSchemeAsDisplayIsolated(protocol))
         return m_protocol == protocol || SecurityPolicy::isAccessToURLWhiteListed(this, url);
 
-    if (SecurityPolicy::restrictAccessToLocal() && SchemeRegistry::shouldTreatURLSchemeAsLocal(protocol))
+    if (SchemeRegistry::shouldTreatURLSchemeAsLocal(protocol))
         return canLoadLocalResources() || SecurityPolicy::isAccessToURLWhiteListed(this, url);
 
     return true;

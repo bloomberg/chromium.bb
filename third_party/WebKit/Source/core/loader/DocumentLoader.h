@@ -255,7 +255,6 @@ namespace WebCore {
     
         ResourceError m_mainDocumentError;    
 
-        bool m_originalSubstituteDataWasValid;
         bool m_committed;
         bool m_isStopping;
         bool m_gotFirstByte;
