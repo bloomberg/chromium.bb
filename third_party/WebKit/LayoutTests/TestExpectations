@@ -1724,8 +1724,8 @@ crbug.com/243658 [ Lion ] fast/writing-mode/vertical-font-vmtx-units-per-em.html
 crbug.com/243663 [ Win7 ] compositing/animation/animated-composited-inside-hidden.html [ Failure ]
 crbug.com/243663 [ Mac ] compositing/animation/computed-style-during-delay.html [ Timeout ]
 crbug.com/243663 [ Win7 ] compositing/animation/computed-style-during-delay.html [ Pass Failure ]
-crbug.com/243663 [ Win7 Debug ] compositing/reflections/nested-reflection-transition.html [ Failure ]
-crbug.com/243663 [ SnowLeopard Win7 Debug ] compositing/transitions/scale-transition-no-start.html [ Failure ]
+crbug.com/243663 [ Win7 ] compositing/reflections/nested-reflection-transition.html [ ImageOnlyFailure Pass ]
+crbug.com/243663 [ SnowLeopard Win7 ] compositing/transitions/scale-transition-no-start.html [ Failure Pass ]
 crbug.com/243683 [ Linux ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Pass Failure ]
 crbug.com/243353 animations/play-state-suspend.html [ Failure Timeout Pass ]
 crbug.com/243353 animations/play-state.html [ Failure Timeout Pass ]
@@ -1822,4 +1822,5 @@ crbug.com/244479 [ Win7 Debug ] inspector/profiler/heap-snapshot-summary-expansi
 crbug.com/244481 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-canvas.html [ Timeout ]
 
 crbug.com/244678 [ Win7 Debug ] animations/3d/matrix-transform-type-animation.html [ Failure Timeout ]
-crbug.com/244761 inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Failure Pass Slow ]
+crbug.com/244761 inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Failure Pass Timeout ]
+crbug.com/245154 editing/selection/move-by-character-brute-force.html [ Pass Timeout ]
