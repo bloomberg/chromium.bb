@@ -123,11 +123,4 @@ void V8HTMLOptionsCollection::lengthAttrSetterCustom(v8::Local<v8::String> name,
     setDOMException(ec, info.GetIsolate());
 }
 
-v8::Handle<v8::Value> V8HTMLOptionsCollection::indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    HTMLOptionsCollection* collection = V8HTMLOptionsCollection::toNative(info.Holder());
-    HTMLSelectElement* base = toHTMLSelectElement(collection->ownerNode());
-    return toOptionsCollectionSetter(index, value, base, info.GetIsolate());
-}
-
 } // namespace WebCore

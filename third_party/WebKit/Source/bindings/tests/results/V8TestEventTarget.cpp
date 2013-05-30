@@ -199,7 +199,11 @@ v8::Handle<v8::Value> V8TestEventTarget::namedPropertySetter(v8::Local<v8::Strin
     TestEventTarget* collection = toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, propertyName, name);
     V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, propertyValue, value);
-    bool result = collection->anonymousNamedSetter(propertyName, propertyValue);
+    bool result;
+    if (value->IsUndefined())
+        result = collection->anonymousNamedSetterUndefined(propertyName);
+    else
+        result = collection->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
         return v8Undefined();
     return value;

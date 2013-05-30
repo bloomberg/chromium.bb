@@ -56,6 +56,7 @@ namespace WebCore {
         String anonymousIndexedGetter(unsigned, ExceptionCode&);
         String anonymousNamedGetter(const AtomicString&, ExceptionCode&);
         bool anonymousNamedSetter(const AtomicString& name, const AtomicString& value, ExceptionCode&);
+        bool anonymousIndexedSetter(unsigned, const AtomicString&, ExceptionCode&);
         bool anonymousNamedDeleter(const AtomicString&, ExceptionCode&);
         bool anonymousIndexedDeleter(unsigned, ExceptionCode&);
 

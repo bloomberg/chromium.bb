@@ -108,4 +108,23 @@ void HTMLOptionsCollection::anonymousNamedGetter(const AtomicString& name, bool&
     returnValue0 = NamedNodesCollection::create(namedItems);
 }
 
+bool HTMLOptionsCollection::anonymousIndexedSetterRemove(unsigned index, ExceptionCode& ec)
+{
+    HTMLSelectElement* base = toHTMLSelectElement(ownerNode());
+    base->remove(index);
+    return true;
+}
+
+bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionCode& ec)
+{
+    HTMLSelectElement* base = toHTMLSelectElement(ownerNode());
+    if (!value) {
+        ec = TYPE_MISMATCH_ERR;
+        return true;
+    }
+    base->setOption(index, value.get(), ec);
+    return true;
+}
+
 } //namespace
+

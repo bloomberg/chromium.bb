@@ -1573,4 +1573,14 @@ void HTMLSelectElement::finishParsingChildren()
     updateListItemSelectedStates();
 }
 
+bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionCode& ec)
+{
+    if (!value) {
+        ec = TYPE_MISMATCH_ERR;
+        return false;
+    }
+    setOption(index, value.get(), ec);
+    return true;
+}
+
 } // namespace

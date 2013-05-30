@@ -3170,6 +3170,31 @@ sub GenerateIsNullExpression
     }
 }
 
+sub GenerateIfElseStatement
+{
+    my $type = shift;
+    my $outputVariableName = shift;
+    my $conditions = shift;
+    my $statements = shift;
+
+    my $code = "";
+    if (@$conditions == 1) {
+        $code .= "    ${type} ${outputVariableName} = " . $statements->[0] . "\n";
+    } else {
+        $code .= "    ${type} ${outputVariableName};\n";
+        for my $i (0 .. @$conditions - 1) {
+            my $token = "else if";
+            $token = "if" if $i == 0;
+            $token = "else" if $i == @$conditions - 1;
+            $code .= "    ${token}";
+            $code .= " (" . $conditions->[$i] . ")" if $conditions->[$i];
+            $code .= "\n";
+            $code .= "        ${outputVariableName} = " . $statements->[$i] . "\n";
+        }
+    }
+    return $code;
+}
+
 sub GenerateImplementationIndexedPropertyAccessors
 {
     my $interface = shift;
@@ -3183,9 +3208,11 @@ sub GenerateImplementationIndexedPropertyAccessors
         GenerateImplementationIndexedPropertyGetter($interface, $indexedGetterFunction);
     }
 
-    # FIXME: Support generated indexed setter bindings.
     my $indexedSetterFunction = GetIndexedSetterFunction($interface);
     my $hasCustomIndexedSetter = $indexedSetterFunction ? $indexedSetterFunction->signature->extendedAttributes->{"Custom"} : 0;
+    if ($indexedSetterFunction && !$hasCustomIndexedSetter) {
+        GenerateImplementationIndexedPropertySetter($interface, $indexedSetterFunction);
+    }
 
     my $indexedDeleterFunction = GetIndexedDeleterFunction($interface);
     my $hasCustomIndexedDeleter = $indexedDeleterFunction ? $indexedDeleterFunction->signature->extendedAttributes->{"Custom"} : 0;
@@ -3271,6 +3298,57 @@ sub GenerateImplementationIndexedPropertyGetter
     }
     $getterCode .= "}\n\n";
     $implementation{nameSpaceWebCore}->add($getterCode);
+}
+
+sub GenerateImplementationIndexedPropertySetter
+{
+    my $interface = shift;
+    my $indexedSetterFunction = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+    my $methodName = GetImplName($indexedSetterFunction->signature);
+
+    AddToImplIncludes("bindings/v8/V8Collection.h");
+    my $type = $indexedSetterFunction->parameters->[1]->type;
+    my $raisesExceptions = $indexedSetterFunction->signature->extendedAttributes->{"RaisesException"};
+    my $treatNullAs = $indexedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
+    my $treatUndefinedAs = $indexedSetterFunction->parameters->[1]->extendedAttributes->{"TreatUndefinedAs"};
+    my $code = "v8::Handle<v8::Value> ${v8ClassName}::indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n";
+    $code .= "{\n";
+    $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
+    $code .= GenerateNativeValueDefinition($indexedSetterFunction, $indexedSetterFunction->parameters->[1], "value", "propertyValue", "info.GetIsolate()");
+
+    my $extraArguments = "";
+    if ($raisesExceptions) {
+        $code .= "    ExceptionCode ec = 0;\n";
+        $extraArguments = ", ec";
+    }
+    my $passNativeValue = "propertyValue";
+    $passNativeValue .= ".release()" if (IsRefPtrType($type));
+
+    my @conditions = ();
+    my @statements = ();
+    if ($treatNullAs && $treatNullAs ne "NullString") {
+        push @conditions, "value->IsNull()";
+        push @statements, "collection->${treatNullAs}(index$extraArguments);";
+    }
+    if ($treatUndefinedAs && $treatUndefinedAs ne "NullString") {
+        push @conditions, "value->IsUndefined()";
+        push @statements, "collection->${treatUndefinedAs}(index$extraArguments);";
+    }
+    push @conditions, "";
+    push @statements, "collection->${methodName}(index, $passNativeValue$extraArguments);";
+    $code .= GenerateIfElseStatement("bool", "result", \@conditions, \@statements);
+
+    $code .= "    if (!result)\n";
+    $code .= "        return v8Undefined();\n";
+    if ($raisesExceptions) {
+        $code .= "    if (ec)\n";
+        $code .= "        return setDOMException(ec, info.GetIsolate());\n";
+    }
+    $code .= "    return value;\n";
+    $code .= "}\n\n";
+    $implementation{nameSpaceWebCore}->add($code);
 }
 
 sub GenerateImplementationNamedPropertyAccessors
@@ -3419,6 +3497,34 @@ sub GenerateImplementationNamedPropertyGetter
     $implementation{nameSpaceWebCore}->add($code);
 }
 
+sub GenerateNativeValueDefinition
+{
+    my $function = shift;
+    my $parameter = shift;
+    my $jsValue = shift;
+    my $nativeValueName = shift;
+    my $getIsolate = shift;
+
+    my $treatNullAs = $parameter->extendedAttributes->{"TreatNullAs"} || "";
+    my $treatUndefinedAs = $parameter->extendedAttributes->{"TreatUndefinedAs"} || "";
+    my $code = "";
+    my $nativeType = GetNativeType($parameter->type);
+    my $nativeValue = JSValueToNative($parameter->type, $function->signature->extendedAttributes, $jsValue, $getIsolate);
+    if ($parameter->type eq "DOMString") {
+        my $nullCheck = "";
+        if ($treatNullAs eq "NullString") {
+            $nullCheck = "WithUndefinedOrNullCheck";
+            if ($treatUndefinedAs eq "NullString") {
+                $nullCheck = "WithNullCheck";
+            }
+        }
+        $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<${nullCheck}>, ${nativeValueName}, ${jsValue});\n";
+    } else {
+        $code .= "    ${nativeType} ${nativeValueName} = ${nativeValue};\n";
+    }
+    return $code;
+}
+
 sub GenerateImplementationNamedPropertySetter
 {
     my $interface = shift;
@@ -3428,10 +3534,9 @@ sub GenerateImplementationNamedPropertySetter
     my $methodName = GetImplName($namedSetterFunction->signature);
 
     AddToImplIncludes("bindings/v8/V8Collection.h");
-    my $type = $namedSetterFunction->parameters->[1]->type;
-    my $nativeType = GetNativeType($type);
     my $raisesExceptions = $namedSetterFunction->signature->extendedAttributes->{"RaisesException"};
-    my $nativeValue = JSValueToNative($type, $namedSetterFunction->signature->extendedAttributes, "value", "info.GetIsolate()");
+    my $treatNullAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
+    my $treatUndefinedAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatUndefinedAs"};
 
     my $code = "v8::Handle<v8::Value> ${v8ClassName}::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n";
     $code .= "{\n";
@@ -3442,23 +3547,28 @@ sub GenerateImplementationNamedPropertySetter
         $code .= "        return v8Undefined();\n";
     }
     $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
-    $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, propertyName, name);\n";
+    $code .= GenerateNativeValueDefinition($namedSetterFunction, $namedSetterFunction->parameters->[0], "name", "propertyName", "info.GetIsolate()");
+    $code .= GenerateNativeValueDefinition($namedSetterFunction, $namedSetterFunction->parameters->[1], "value", "propertyValue", "info.GetIsolate()");
     my $extraArguments = "";
     if ($raisesExceptions) {
         $code .= "    ExceptionCode ec = 0;\n";
         $extraArguments = ", ec";
     }
-    if ($type eq "DOMString") {
-        my $nullCheck = "";
-        my $treatNullAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
-        if ($treatNullAs && $treatNullAs eq "NullString") {
-            $nullCheck = "WithNullCheck";
-        }
-        $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<${nullCheck}>, propertyValue, value);\n";
-    } else {
-        $code .= "    $nativeType propertyValue = $nativeValue;\n";
+
+    my @conditions = ();
+    my @statements = ();
+    if ($treatNullAs && $treatNullAs ne "NullString") {
+        push @conditions, "value->IsNull()";
+        push @statements, "collection->${treatNullAs}(propertyName$extraArguments);";
     }
-    $code .= "    bool result = collection->${methodName}(propertyName, propertyValue$extraArguments);\n";
+    if ($treatUndefinedAs && $treatUndefinedAs ne "NullString") {
+        push @conditions, "value->IsUndefined()";
+        push @statements, "collection->${treatUndefinedAs}(propertyName$extraArguments);";
+    }
+    push @conditions, "";
+    push @statements, "collection->${methodName}(propertyName, propertyValue$extraArguments);";
+    $code .= GenerateIfElseStatement("bool", "result", \@conditions, \@statements);
+
     $code .= "    if (!result)\n";
     $code .= "        return v8Undefined();\n";
     if ($raisesExceptions) {

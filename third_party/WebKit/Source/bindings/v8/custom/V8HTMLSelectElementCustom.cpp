@@ -44,12 +44,6 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> V8HTMLSelectElement::indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    HTMLSelectElement* select = V8HTMLSelectElement::toNative(info.Holder());
-    return toOptionsCollectionSetter(index, value, select, info.GetIsolate());
-}
-
 v8::Handle<v8::Value> V8HTMLSelectElement::removeMethodCustom(const v8::Arguments& args)
 {
     HTMLSelectElement* imp = V8HTMLSelectElement::toNative(args.Holder());

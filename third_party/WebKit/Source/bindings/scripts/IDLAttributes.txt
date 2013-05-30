@@ -73,9 +73,9 @@ Replaceable
 SetterCallWith=ScriptExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SetterRaisesException
 StrictTypeChecking
-TreatNullAs=NullString
+TreatNullAs=*
 TreatReturnedNullStringAs=Null|Undefined
-TreatUndefinedAs=NullString
+TreatUndefinedAs=*
 URL
 Unforgeable
 WrapAsFunction

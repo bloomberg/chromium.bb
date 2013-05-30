@@ -25,7 +25,7 @@
     attribute long selectedIndex;
     [CustomSetter, SetterRaisesException] attribute unsigned long length;
     [ImplementedAs=item] getter Node(unsigned long index);
-    [Custom] setter boolean (unsigned long index, Node value);
+    [ImplementedAs=anonymousIndexedSetter, RaisesException] setter HTMLOptionElement (unsigned long index, [TreatNullAs=anonymousIndexedSetterRemove, TreatUndefinedAs=anonymousIndexedSetterRemove] HTMLOptionElement value);
     [ImplementedAs=anonymousNamedGetter] getter (NodeList or Node)(DOMString name);
 
     [Custom] Node namedItem([Default=Undefined] optional DOMString name);

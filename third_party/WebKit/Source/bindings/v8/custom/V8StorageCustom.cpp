@@ -81,31 +81,4 @@ v8::Handle<v8::Integer> V8Storage::namedPropertyQuery(v8::Local<v8::String> v8Na
     return v8Integer(0, info.GetIsolate());
 }
 
-static v8::Handle<v8::Value> storageSetter(v8::Local<v8::String> v8Name, v8::Local<v8::Value> v8Value, const v8::AccessorInfo& info)
-{
-    Storage* storage = V8Storage::toNative(info.Holder());
-    String name = toWebCoreString(v8Name);
-    String value = toWebCoreString(v8Value);
-
-    // Silently ignore length (rather than letting the bindings raise an exception).
-    if (name == "length")
-        return v8Value;
-
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(v8Name).IsEmpty())
-        return v8Undefined();
-
-    ExceptionCode ec = 0;
-    storage->setItem(name, value, ec);
-    if (ec)
-        return setDOMException(ec, info.GetIsolate());
-
-    return v8Value;
-}
-
-v8::Handle<v8::Value> V8Storage::indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
-{
-    v8::Handle<v8::Integer> indexV8 = v8Integer(index, info.GetIsolate());
-    return storageSetter(indexV8->ToString(), value, info);
-}
-
 } // namespace WebCore

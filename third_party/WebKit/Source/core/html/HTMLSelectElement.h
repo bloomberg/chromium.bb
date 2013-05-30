@@ -105,6 +105,7 @@ public:
     // For use in the implementation of HTMLOptionElement.
     void optionSelectionStateChanged(HTMLOptionElement*, bool optionIsSelected);
     bool isParsingInProgress() const { return m_isParsingInProgress; }
+    bool anonymousIndexedSetter(unsigned, PassRefPtr<HTMLOptionElement>, ExceptionCode&);
 
 protected:
     HTMLSelectElement(const QualifiedName&, Document*, HTMLFormElement*, bool createdByParser);

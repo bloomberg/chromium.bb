@@ -46,6 +46,8 @@ public:
 
     void setLength(unsigned, ExceptionCode&);
     void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<NodeList>&, bool&, RefPtr<Node>&);
+    bool anonymousIndexedSetter(unsigned, PassRefPtr<HTMLOptionElement>, ExceptionCode&);
+    bool anonymousIndexedSetterRemove(unsigned, ExceptionCode&);
 
 private:
     HTMLOptionsCollection(Node*);

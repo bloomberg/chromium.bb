@@ -79,6 +79,11 @@ bool Storage::anonymousNamedSetter(const AtomicString& name, const AtomicString&
     return true;
 }
 
+bool Storage::anonymousIndexedSetter(unsigned index, const AtomicString& value, ExceptionCode& ec)
+{
+    return anonymousNamedSetter(String::number(index), value, ec);
+}
+
 bool Storage::anonymousNamedDeleter(const AtomicString& name, ExceptionCode& ec)
 {
     bool found = contains(name, ec);
