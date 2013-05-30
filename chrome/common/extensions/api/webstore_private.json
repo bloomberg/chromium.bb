@@ -124,7 +124,7 @@
               {
                 "name": "result",
                 "type": "string",
-                "description": "A string result code, which will be empty upon success. The possible values in the case of errors include 'unknown_error', 'user_cancelled', 'manifest_error', 'icon_error', 'invalid_id', 'permission_denied', and 'invalid_icon_url'."
+                "description": "A string result code, which will be empty upon success. The possible values in the case of errors include 'unknown_error', 'user_cancelled', 'manifest_error', 'icon_error', 'invalid_id', 'permission_denied', 'invalid_icon_url', 'signin_failed', and 'already_installed'."
               }
             ]
           }

@@ -52,17 +52,20 @@ namespace extensions {
 namespace {
 
 // Holds the Approvals between the time we prompt and start the installs.
-struct PendingApprovals {
-  typedef ScopedVector<WebstoreInstaller::Approval> ApprovalList;
-
+class PendingApprovals {
+ public:
   PendingApprovals();
   ~PendingApprovals();
 
   void PushApproval(scoped_ptr<WebstoreInstaller::Approval> approval);
   scoped_ptr<WebstoreInstaller::Approval> PopApproval(
       Profile* profile, const std::string& id);
+ private:
+  typedef ScopedVector<WebstoreInstaller::Approval> ApprovalList;
 
-  ApprovalList approvals;
+  ApprovalList approvals_;
+
+  DISALLOW_COPY_AND_ASSIGN(PendingApprovals);
 };
 
 PendingApprovals::PendingApprovals() {}
@@ -70,23 +73,75 @@ PendingApprovals::~PendingApprovals() {}
 
 void PendingApprovals::PushApproval(
     scoped_ptr<WebstoreInstaller::Approval> approval) {
-  approvals.push_back(approval.release());
+  approvals_.push_back(approval.release());
 }
 
 scoped_ptr<WebstoreInstaller::Approval> PendingApprovals::PopApproval(
     Profile* profile, const std::string& id) {
-  for (size_t i = 0; i < approvals.size(); ++i) {
-    WebstoreInstaller::Approval* approval = approvals[i];
+  for (size_t i = 0; i < approvals_.size(); ++i) {
+    WebstoreInstaller::Approval* approval = approvals_[i];
     if (approval->extension_id == id &&
         profile->IsSameProfile(approval->profile)) {
-      approvals.weak_erase(approvals.begin() + i);
+      approvals_.weak_erase(approvals_.begin() + i);
       return scoped_ptr<WebstoreInstaller::Approval>(approval);
     }
   }
   return scoped_ptr<WebstoreInstaller::Approval>(NULL);
 }
 
+// Uniquely holds the profile and extension id of an install between the time we
+// prompt and complete the installs.
+class PendingInstalls {
+ public:
+  PendingInstalls();
+  ~PendingInstalls();
+
+  bool InsertInstall(Profile* profile, const std::string& id);
+  void EraseInstall(Profile* profile, const std::string& id);
+ private:
+  typedef std::pair<Profile*, std::string> ProfileAndExtensionId;
+  typedef std::vector<ProfileAndExtensionId> InstallList;
+
+  InstallList::iterator FindInstall(Profile* profile, const std::string& id);
+
+  InstallList installs_;
+
+  DISALLOW_COPY_AND_ASSIGN(PendingInstalls);
+};
+
+PendingInstalls::PendingInstalls() {}
+PendingInstalls::~PendingInstalls() {}
+
+// Returns true and inserts the profile/id pair if it is not present. Otherwise
+// returns false.
+bool PendingInstalls::InsertInstall(Profile* profile, const std::string& id) {
+  if (FindInstall(profile, id) != installs_.end())
+    return false;
+  installs_.push_back(make_pair(profile, id));
+  return true;
+}
+
+// Removes the given profile/id pair.
+void PendingInstalls::EraseInstall(Profile* profile, const std::string& id) {
+  InstallList::iterator it = FindInstall(profile, id);
+  if (it != installs_.end())
+    installs_.erase(it);
+}
+
+PendingInstalls::InstallList::iterator PendingInstalls::FindInstall(
+    Profile* profile,
+    const std::string& id) {
+  for (size_t i = 0; i < installs_.size(); ++i) {
+    ProfileAndExtensionId install = installs_[i];
+    if (install.second == id && profile->IsSameProfile(install.first))
+      return (installs_.begin() + i);
+  }
+  return installs_.end();
+}
+
 static base::LazyInstance<PendingApprovals> g_pending_approvals =
+    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<PendingInstalls> g_pending_installs =
     LAZY_INSTANCE_INITIALIZER;
 
 const char kAppInstallBubbleKey[] = "appInstallBubble";
@@ -101,7 +156,7 @@ const char kManifestKey[] = "manifest";
 // A preference set by the web store to indicate login information for
 // purchased apps.
 const char kWebstoreLogin[] = "extensions.webstore_login";
-
+const char kAlreadyInstalledError[] = "This item is already installed";
 const char kCannotSpecifyIconDataAndUrlError[] =
     "You cannot specify both icon data and an icon url";
 const char kInvalidIconUrlError[] = "Invalid icon url";
@@ -277,6 +332,15 @@ bool BeginInstallWithManifestFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(
         kEnableLauncherKey, &enable_launcher_));
 
+  ExtensionService* service =
+    extensions::ExtensionSystem::Get(profile_)->extension_service();
+  if (service->GetInstalledExtension(id_) ||
+      !g_pending_installs.Get().InsertInstall(profile_, id_)) {
+    SetResultCode(ALREADY_INSTALLED);
+    error_ = kAlreadyInstalledError;
+    return false;
+  }
+
   net::URLRequestContextGetter* context_getter = NULL;
   if (!icon_url.is_empty())
     context_getter = profile()->GetRequestContext();
@@ -325,6 +389,9 @@ void BeginInstallWithManifestFunction::SetResultCode(ResultCode code) {
       break;
     case SIGNIN_FAILED:
       SetResult(Value::CreateStringValue("signin_failed"));
+      break;
+    case ALREADY_INSTALLED:
+      SetResult(Value::CreateStringValue("already_installed"));
       break;
     default:
       CHECK(false);
@@ -388,6 +455,7 @@ void BeginInstallWithManifestFunction::OnWebstoreParseFailure(
       CHECK(false);
   }
   error_ = error_message;
+  g_pending_installs.Get().EraseInstall(profile_, id);
   SendResponse(false);
 
   // Matches the AddRef in RunImpl().
@@ -402,6 +470,7 @@ void BeginInstallWithManifestFunction::SigninFailed(
 
   SetResultCode(SIGNIN_FAILED);
   error_ = error.ToString();
+  g_pending_installs.Get().EraseInstall(profile_, id_);
   SendResponse(false);
 
   // Matches the AddRef in RunImpl().
@@ -455,6 +524,7 @@ void BeginInstallWithManifestFunction::InstallUIProceed() {
 void BeginInstallWithManifestFunction::InstallUIAbort(bool user_initiated) {
   error_ = kUserCancelledError;
   SetResultCode(USER_CANCELLED);
+  g_pending_installs.Get().EraseInstall(profile_, id_);
   SendResponse(false);
 
   // The web store install histograms are a subset of the install histograms.
@@ -552,6 +622,7 @@ void CompleteInstallFunction::OnExtensionInstallSuccess(
     test_webstore_installer_delegate->OnExtensionInstallSuccess(id);
 
   LOG(INFO) << "Install success, sending response";
+  g_pending_installs.Get().EraseInstall(profile_, id);
   SendResponse(true);
 
   // Matches the AddRef in RunImpl().
@@ -572,6 +643,7 @@ void CompleteInstallFunction::OnExtensionInstallFailure(
 
   error_ = error;
   LOG(INFO) << "Install failed, sending response";
+  g_pending_installs.Get().EraseInstall(profile_, id);
   SendResponse(false);
 
   // Matches the AddRef in RunImpl().

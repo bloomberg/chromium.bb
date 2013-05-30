@@ -41,6 +41,7 @@ var img = null;
 function getIconData(callback) {
   if (cachedIcon) {
     callback(cachedIcon);
+    return;
   }
   var canvas = document.createElement("canvas");
   canvas.style.display = "none";
@@ -68,4 +69,28 @@ function getManifest(alternativePath) {
            false);
   xhr.send(null);
   return xhr.responseText;
+}
+
+// Installs the extension with the given |installOptions|, calls
+// |whileInstalled| and then uninstalls the extension.
+function installAndCleanUp(installOptions, whileInstalled) {
+  // Begin installing.
+  chrome.webstorePrivate.beginInstallWithManifest3(
+      installOptions,
+      callbackPass(function(result) {
+        assertNoLastError();
+        assertEq("", result);
+
+        // Now complete the installation.
+        chrome.webstorePrivate.completeInstall(
+            extensionId,
+            callbackPass(function(result) {
+              assertNoLastError();
+              assertEq(undefined, result);
+
+              whileInstalled();
+
+              chrome.management.uninstall(extensionId, {}, callbackPass());
+            }));
+      }));
 }

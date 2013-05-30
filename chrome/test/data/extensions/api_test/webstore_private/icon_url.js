@@ -9,6 +9,16 @@ function makeAbsoluteUrl(path) {
   return parts.join("/");
 }
 
+// The |absoluteIconUrl| parameter controls whether to use a relative or
+// absolute url for the test.
+function runSuccessTest(absoluteIconUrl, manifest) {
+  var iconPath = "extension/icon.png";
+  var iconUrl = absoluteIconUrl ? makeAbsoluteUrl(iconPath) : iconPath;
+  installAndCleanUp(
+      {'id': extensionId,'iconUrl': iconUrl, 'manifest': manifest },
+      function() {});
+}
+
 var tests = [
   function IconUrlFailure() {
     var manifest = getManifest();
@@ -22,18 +32,12 @@ var tests = [
 
   function IconUrlSuccess() {
     var manifest = getManifest();
+    runSuccessTest(false, manifest);
+  },
 
-    // The |absoluteIconUrl| parameter controls whether to use a relative or
-    // absolute url for the test.
-    function runSuccessTest(absoluteIconUrl) {
-      var iconPath = "extension/icon.png";
-      var iconUrl = absoluteIconUrl ? makeAbsoluteUrl(iconPath) : iconPath;
-      chrome.webstorePrivate.beginInstallWithManifest3(
-          {'id': extensionId,'iconUrl': iconUrl, 'manifest': manifest },
-          callbackPass());
-    }
-    runSuccessTest(true);
-    runSuccessTest(false);
+  function IconUrlSuccessAbsoluteUrl() {
+    var manifest = getManifest();
+    runSuccessTest(true, manifest);
   }
 ];
 

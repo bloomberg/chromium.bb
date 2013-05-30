@@ -106,7 +106,10 @@ class BeginInstallWithManifestFunction
     INVALID_ICON_URL,
 
     // Signin has failed.
-    SIGNIN_FAILED
+    SIGNIN_FAILED,
+
+    // An extension with the same extension id has already been installed.
+    ALREADY_INSTALLED,
   };
 
   BeginInstallWithManifestFunction();

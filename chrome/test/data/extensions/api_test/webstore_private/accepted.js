@@ -40,17 +40,35 @@ var tests = [
 
     var manifest = getManifest();
     getIconData(function(icon) {
+        installAndCleanUp(
+            {'id': extensionId, 'iconData': icon, 'manifest': manifest},
+            function() {});
+    });
+  },
 
-      // Begin installing.
-      chrome.webstorePrivate.beginInstallWithManifest3(
-          {'id': extensionId,'iconData': icon, 'manifest': manifest },
-          function(result) {
-        assertNoLastError();
-        assertEq(result, "");
+  function duplicateInstall() {
+    // See things through all the way to a successful install.
+    listenOnce(chrome.management.onInstalled, function(info) {
+      assertEq(info.id, extensionId);
+    });
 
-        // Now complete the installation.
-        chrome.webstorePrivate.completeInstall(extensionId, callbackPass());
-      });
+    var manifest = getManifest();
+    getIconData(function(icon) {
+        installAndCleanUp(
+            {'id': extensionId, 'iconData': icon, 'manifest': manifest},
+            function() {
+              // Kick off a serial second install. This should fail.
+              var expectedError = "This item is already installed";
+              chrome.webstorePrivate.beginInstallWithManifest3(
+                  {'id': extensionId, 'iconData': icon, 'manifest': manifest},
+                  callbackFail(expectedError));
+            });
+
+        // Kick off a simultaneous second install. This should fail.
+        var expectedError = "This item is already installed";
+        chrome.webstorePrivate.beginInstallWithManifest3(
+            {'id': extensionId, 'iconData': icon, 'manifest': manifest},
+            callbackFail(expectedError));
     });
   }
 ];
