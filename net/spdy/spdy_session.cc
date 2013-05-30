@@ -678,12 +678,12 @@ int SpdySession::GetProtocolVersion() const {
 bool SpdySession::CloseOneIdleConnection() {
   if (!spdy_session_pool_ || num_active_streams() > 0)
     return false;
-  bool ret = HasOneRef();
+  base::WeakPtr<SpdySession> weak_ptr = weak_factory_.GetWeakPtr();
   // Will remove a reference to this.
   RemoveFromPool();
-  // Since the underlying socket is only returned when |this| is destroyed
-  // we should only return true if RemoveFromPool() removed the last ref.
-  return ret;
+  // Since the underlying socket is only returned when |this| is destroyed,
+  // we should only return true if |this| no longer exists.
+  return weak_ptr.get() == NULL;
 }
 
 void SpdySession::EnqueueStreamWrite(

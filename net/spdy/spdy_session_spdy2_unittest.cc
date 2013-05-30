@@ -2252,6 +2252,91 @@ TEST_F(SpdySessionSpdy2Test, CloseOneIdleConnection) {
   EXPECT_FALSE(pool->IsStalled());
 }
 
+// Tests the case of a non-SPDY request closing an idle SPDY session when no
+// pointers to the idle session are currently held, in the case the SPDY session
+// has an alias.
+TEST_F(SpdySessionSpdy2Test, CloseOneIdleConnectionWithAlias) {
+  ClientSocketPoolManager::set_max_sockets_per_group(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+  ClientSocketPoolManager::set_max_sockets_per_pool(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  session_deps_.host_resolver->rules()->AddIPLiteralRule(
+      "1.com", "192.168.0.2", std::string());
+  session_deps_.host_resolver->rules()->AddIPLiteralRule(
+      "2.com", "192.168.0.2", std::string());
+  // Not strictly needed.
+  session_deps_.host_resolver->rules()->AddIPLiteralRule(
+      "3.com", "192.168.0.3", std::string());
+
+  CreateNetworkSession();
+
+  TransportClientSocketPool* pool =
+      http_session_->GetTransportSocketPool(
+          HttpNetworkSession::NORMAL_SOCKET_POOL);
+
+  // Create an idle SPDY session.
+  SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
+                      kPrivacyModeDisabled);
+  scoped_refptr<SpdySession> session1 = GetSession(key1);
+  EXPECT_EQ(
+      OK,
+      InitializeSession(http_session_.get(), session1.get(),
+                        key1.host_port_pair()));
+  EXPECT_FALSE(pool->IsStalled());
+
+  // Set up an alias for the idle SPDY session, increasing its ref count to 2.
+  SpdySessionKey key2(HostPortPair("2.com", 80), ProxyServer::Direct(),
+                      kPrivacyModeDisabled);
+  SpdySessionPoolPeer pool_peer(spdy_session_pool_);
+  HostResolver::RequestInfo info(key2.host_port_pair());
+  AddressList addresses;
+  // Pre-populate the DNS cache, since a synchronous resolution is required in
+  // order to create the alias.
+  session_deps_.host_resolver->Resolve(
+      info, &addresses, CompletionCallback(), NULL, BoundNetLog());
+  // Add the alias for the first session's key.  Has to be done manually since
+  // the usual process is bypassed.
+  pool_peer.AddAlias(addresses.front(), key1);
+  // Get a session for |key2|, which should return the session created earlier.
+  scoped_refptr<SpdySession> session2 =
+      spdy_session_pool_->Get(key2, BoundNetLog());
+  ASSERT_EQ(session1.get(), session2.get());
+  EXPECT_FALSE(pool->IsStalled());
+
+  // Release both the pointers to the session so it can be closed.
+  session1 = NULL;
+  session2 = NULL;
+
+  // Trying to create a new connection should cause the pool to be stalled, and
+  // post a task asynchronously to try and close the session.
+  TestCompletionCallback callback3;
+  HostPortPair host_port3("3.com", 80);
+  scoped_refptr<TransportSocketParams> params3(
+      new TransportSocketParams(host_port3, DEFAULT_PRIORITY, false, false,
+                                OnHostResolutionCallback()));
+  scoped_ptr<ClientSocketHandle> connection3(new ClientSocketHandle);
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection3->Init(host_port3.ToString(), params3, DEFAULT_PRIORITY,
+                              callback3.callback(), pool, BoundNetLog()));
+  EXPECT_TRUE(pool->IsStalled());
+
+  // The socket pool should close the connection asynchronously and establish a
+  // new connection.
+  EXPECT_EQ(OK, callback3.WaitForResult());
+  EXPECT_FALSE(pool->IsStalled());
+}
+
 // Tests the case of a non-SPDY request closing an idle SPDY session when a
 // pointer to the idle session is still held.
 TEST_F(SpdySessionSpdy2Test, CloseOneIdleConnectionSessionStillHeld) {
