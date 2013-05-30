@@ -284,6 +284,7 @@ class MockProviderVisitor
       : ids_found_(0),
         fake_base_path_(fake_base_path),
         expected_creation_flags_(Extension::NO_FLAGS) {
+    profile_.reset(new TestingProfile);
   }
 
   MockProviderVisitor(base::FilePath fake_base_path,
@@ -298,6 +299,7 @@ class MockProviderVisitor
     provider_.reset(new extensions::ExternalProviderImpl(
         this,
         new extensions::ExternalTestingLoader(json_data, fake_base_path_),
+        profile_.get(),
         Manifest::EXTERNAL_PREF,
         Manifest::EXTERNAL_PREF_DOWNLOAD,
         Extension::NO_FLAGS));
@@ -407,6 +409,7 @@ class MockProviderVisitor
   int expected_creation_flags_;
   scoped_ptr<extensions::ExternalProviderImpl> provider_;
   scoped_ptr<DictionaryValue> prefs_;
+  scoped_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProviderVisitor);
 };
@@ -4578,6 +4581,19 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
   {
     ScopedBrowserLocale guard("en-US");
     EXPECT_EQ(2, visitor.Visit(json_data));
+  }
+
+  // Test keep_if_present.
+  json_data =
+      "{"
+      "  \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
+      "    \"external_crx\": \"RandomExtension.crx\","
+      "    \"external_version\": \"1.0\","
+      "    \"keep_if_present\": true"
+      "  }"
+      "}";
+  {
+    EXPECT_EQ(0, visitor.Visit(json_data));
   }
 
   // Test is_bookmark_app.

@@ -38,6 +38,7 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   // be initialized as Manifest::INVALID_LOCATION.
   ExternalProviderImpl(VisitorInterface* service,
                        ExternalLoader* loader,
+                       Profile* profile,
                        Manifest::Location crx_location,
                        Manifest::Location download_location,
                        int creation_flags);
@@ -71,6 +72,7 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   static const char kSupportedLocales[];
   static const char kIsBookmarkApp[];
   static const char kIsFromWebstore[];
+  static const char kKeepIfPresent[];
 
   void set_auto_acknowledge(bool auto_acknowledge) {
     auto_acknowledge_ = auto_acknowledge;
@@ -99,6 +101,9 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   // The loader that loads the list of external extensions and reports them
   // via |SetPrefs|.
   scoped_refptr<ExternalLoader> loader_;
+
+  // The profile that will be used to install external extensions.
+  Profile* profile_;
 
   // Creation flags to use for the extension.  These flags will be used
   // when calling Extension::Create() by the crx installer.

@@ -57,6 +57,7 @@ class MockExternalPolicyProviderVisitor
     provider_.reset(new ExternalProviderImpl(
         this,
         new ExternalPolicyLoader(profile_.get()),
+        profile_.get(),
         Manifest::INVALID_LOCATION,
         Manifest::EXTERNAL_POLICY_DOWNLOAD,
         Extension::NO_FLAGS));
