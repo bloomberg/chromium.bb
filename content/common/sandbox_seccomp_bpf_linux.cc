@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <linux/audit.h>
 #include <linux/filter.h>
+#include <linux/net.h>
 #include <signal.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -1324,17 +1325,37 @@ ErrorCode RestrictFcntlCommands(Sandbox* sandbox) {
          sandbox->Trap(CrashSIGSYS_Handler, NULL))))))))));
 }
 
+#if defined(__i386__)
+ErrorCode RestrictSocketcallCommand(Sandbox* sandbox) {
+  // Allow the same individual syscalls as we do on ARM or x86_64.
+  // The main difference is that we're unable to restrict the first parameter
+  // to socketpair(2). Whilst initially sounding bad, it's noteworthy that very
+  // few protocols actually support socketpair(2). The scary call that we're
+  // worried about, socket(2), remains blocked.
+  return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       SYS_SOCKETPAIR, ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       SYS_SEND, ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       SYS_RECV, ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       SYS_SENDTO, ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       SYS_RECVFROM, ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       SYS_SHUTDOWN, ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       SYS_SENDMSG, ErrorCode(ErrorCode::ERR_ALLOWED),
+         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                       SYS_RECVMSG, ErrorCode(ErrorCode::ERR_ALLOWED),
+         ErrorCode(EPERM)))))))));
+}
+#endif
+
 ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
   if (IsBaselinePolicyAllowed(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
-
-#if defined(__i386__)
-  // socketcall(2) should be tightened.
-  if (IsSocketCall(sysno)) {
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
-#endif
 
 #if defined(__x86_64__) || defined(__arm__)
   if (sysno == __NR_socketpair) {
@@ -1397,6 +1418,11 @@ ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
       IsDeniedGetOrModifySocket(sysno)) {
     return ErrorCode(EPERM);
   }
+
+#if defined(__i386__)
+  if (IsSocketCall(sysno))
+    return RestrictSocketcallCommand(sandbox);
+#endif
 
   if (IsBaselinePolicyWatched(sysno)) {
     // Previously unseen syscalls. TODO(jln): some of these should
