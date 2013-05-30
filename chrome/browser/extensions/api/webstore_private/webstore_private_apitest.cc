@@ -189,7 +189,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 }
 
 // Test cases where the user accepts the install confirmation dialog.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
+// Disabled due to flaky crashes, especially on ASAN bots:
+// [ http://crbug.com/245357 ].
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
+                       DISABLED_InstallAccepted) {
   ASSERT_TRUE(RunInstallTest("accepted.html", "extension.crx"));
 }
 
