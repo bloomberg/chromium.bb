@@ -8,6 +8,27 @@
       <message desc="Toast when the browser is unable to open a file for upload. [CHAR-LIMIT=32]" name="IDS_OPENING_FILE_ERROR">
         Failed to open selected file
       </message>
+      <message desc="Text for ColorPicker button to go to advanced view. [CHAR-LIMIT=20]" name="IDS_COLOR_PICKER_BUTTON_MORE">
+        More
+      </message>
+      <message desc="Label for hue slider in ColorPicker." name="IDS_COLOR_PICKER_HUE">
+        Hue
+      </message>
+      <message desc="Label for saturation slider in ColorPicker." name="IDS_COLOR_PICKER_SATURATION">
+        Saturation
+      </message>
+      <message desc="Label for lightness slider in ColorPicker" name="IDS_COLOR_PICKER_LIGHTNESS">
+        Lightness
+      </message>
+      <message desc="Label for button in ColorPicker dialog for user to accept the currently chosen color. [CHAR-LIMIT=20]" name="IDS_COLOR_PICKER_BUTTON_SET">       
+        Set
+      </message>
+      <message desc="Label for button in ColorPicker dialog for user to cancel picking a color. [CHAR-LIMIT=20]" name="IDS_COLOR_PICKER_BUTTON_CANCEL">
+        Cancel
+      </message>
+      <message desc="Title of ColorPicker dialog. [CHAR-LIMIT=20]" name="IDS_COLOR_PICKER_DIALOG_TITLE">
+        Select color
+      </message>
     </messages>
   </release>
   <translations>
