@@ -535,6 +535,12 @@ ui::Layer* View::RecreateLayer() {
     return NULL;
 
   CreateLayer();
+
+  // TODO(pkotwicz): Remove this once ReorderLayers() stacks layers not attached
+  // to a view above layers attached to a view.
+  if (layer->parent())
+    layer->parent()->StackAtTop(layer);
+
   layer_->set_scale_content(layer->scale_content());
   return layer;
 }
@@ -1452,8 +1458,8 @@ void View::ReorderLayers() {
   while (v && !v->layer())
     v = v->parent();
 
-  Widget* widget = GetWidget();
   if (!v) {
+    Widget* widget = GetWidget();
     if (widget) {
       ui::Layer* layer = widget->GetLayer();
       if (layer)
@@ -1462,29 +1468,15 @@ void View::ReorderLayers() {
   } else {
     v->ReorderChildLayers(v->layer());
   }
-
-  if (widget) {
-    // Reorder the widget's child NativeViews in case a child NativeView is
-    // associated with a view (eg via a NativeViewHost). Always do the
-    // reordering because the associated NativeView's layer (if it has one)
-    // is parented to the widget's layer regardless of whether the host view has
-    // an ancestor with a layer.
-    widget->ReorderNativeViews();
-  }
 }
 
 void View::ReorderChildLayers(ui::Layer* parent_layer) {
   if (layer() && layer() != parent_layer) {
     DCHECK_EQ(parent_layer, layer()->parent());
-    parent_layer->StackAtBottom(layer());
+    parent_layer->StackAtTop(layer());
   } else {
-    // Iterate backwards through the children so that a child with a layer
-    // which is further to the back is stacked above one which is further to
-    // the front.
-    for (Views::const_reverse_iterator it(children_.rbegin());
-         it != children_.rend(); ++it) {
-      (*it)->ReorderChildLayers(parent_layer);
-    }
+    for (Views::const_iterator i(children_.begin()); i != children_.end(); ++i)
+      (*i)->ReorderChildLayers(parent_layer);
   }
 }
 

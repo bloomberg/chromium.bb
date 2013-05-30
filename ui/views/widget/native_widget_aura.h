@@ -29,7 +29,6 @@ namespace views {
 class DropHelper;
 class NativeWidgetAuraWindowObserver;
 class TooltipManagerAura;
-class WindowReorderer;
 
 class VIEWS_EXPORT NativeWidgetAura
     : public internal::NativeWidgetPrivate,
@@ -59,7 +58,6 @@ class VIEWS_EXPORT NativeWidgetAura
   virtual const ui::Compositor* GetCompositor() const OVERRIDE;
   virtual ui::Compositor* GetCompositor() OVERRIDE;
   virtual ui::Layer* GetLayer() OVERRIDE;
-  virtual void ReorderNativeViews() OVERRIDE;
   virtual void ViewRemoved(View* view) OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) const OVERRIDE;
@@ -206,10 +204,6 @@ class VIEWS_EXPORT NativeWidgetAura
   ui::WindowShowState saved_window_state_;
 
   scoped_ptr<TooltipManagerAura> tooltip_manager_;
-
-  // Reorders child windows of |window_| associated with a view based on the
-  // order of the associated views in the widget's view hierarchy.
-  scoped_ptr<WindowReorderer> window_reorderer_;
 
   scoped_ptr<NativeWidgetAuraWindowObserver> active_window_observer_;
 

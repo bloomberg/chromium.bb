@@ -37,7 +37,6 @@ class DesktopRootWindowHost;
 class DropHelper;
 class NativeWidgetAuraWindowObserver;
 class TooltipManagerAura;
-class WindowReorderer;
 
 class VIEWS_EXPORT DesktopNativeWidgetAura
     : public internal::NativeWidgetPrivate,
@@ -83,7 +82,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual const ui::Compositor* GetCompositor() const OVERRIDE;
   virtual ui::Compositor* GetCompositor() OVERRIDE;
   virtual ui::Layer* GetLayer() OVERRIDE;
-  virtual void ReorderNativeViews() OVERRIDE;
   virtual void ViewRemoved(View* view) OVERRIDE;
   virtual void SetNativeWindowProperty(const char* name, void* value) OVERRIDE;
   virtual void* GetNativeWindowProperty(const char* name) const OVERRIDE;
@@ -245,10 +243,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   bool restore_focus_on_activate_;
 
   scoped_ptr<corewm::ShadowController> shadow_controller_;
-
-  // Reorders child windows of |window_| associated with a view based on the
-  // order of the associated views in the widget's view hierarchy.
-  scoped_ptr<WindowReorderer> window_reorderer_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAura);
 };

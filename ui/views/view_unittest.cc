@@ -3367,7 +3367,7 @@ TEST_F(ViewLayerTest, AcquireLayer) {
 }
 
 // Verify that new layer scales content only if the old layer does.
-TEST_F(ViewLayerTest, RecreateLayerScaling) {
+TEST_F(ViewLayerTest, RecreateLayer) {
   scoped_ptr<View> v(new View());
   v->SetPaintToLayer(true);
   // Set to non default value.
@@ -3375,67 +3375,6 @@ TEST_F(ViewLayerTest, RecreateLayerScaling) {
   scoped_ptr<ui::Layer> old_layer(v->RecreateLayer());
   ui::Layer* new_layer = v->layer();
   EXPECT_FALSE(new_layer->scale_content());
-}
-
-// Verify the z-order of the layers as a result of calling RecreateLayer().
-TEST_F(ViewLayerTest, RecreateLayerZOrder) {
-  scoped_ptr<View> v(new View());
-  v->SetPaintToLayer(true);
-
-  View* v1 = new View();
-  v1->SetPaintToLayer(true);
-  v->AddChildView(v1);
-  View* v2 = new View();
-  v2->SetPaintToLayer(true);
-  v->AddChildView(v2);
-
-  // Test the initial z-order.
-  const std::vector<ui::Layer*>& child_layers_pre = v->layer()->children();
-  ASSERT_EQ(2u, child_layers_pre.size());
-  EXPECT_EQ(v1->layer(), child_layers_pre[0]);
-  EXPECT_EQ(v2->layer(), child_layers_pre[1]);
-
-  scoped_ptr<ui::Layer> v1_old_layer(v1->RecreateLayer());
-
-  // Test the new layer order. |v1_old_layer| should be above the layers
-  // for |v1| and |v2|.
-  const std::vector<ui::Layer*>& child_layers_post = v->layer()->children();
-  ASSERT_EQ(3u, child_layers_post.size());
-  EXPECT_EQ(v1->layer(), child_layers_post[0]);
-  EXPECT_EQ(v2->layer(), child_layers_post[1]);
-  EXPECT_EQ(v1_old_layer, child_layers_post[2]);
-}
-
-// Verify the z-order of the layers as a result of calling RecreateLayer when
-// the widget is the parent with the layer.
-TEST_F(ViewLayerTest, RecreateLayerZOrderWidgetParent) {
-  View* v = new View();
-  widget()->SetContentsView(v);
-
-  View* v1 = new View();
-  v1->SetPaintToLayer(true);
-  v->AddChildView(v1);
-  View* v2 = new View();
-  v2->SetPaintToLayer(true);
-  v->AddChildView(v2);
-
-  ui::Layer* root_layer = GetRootLayer();
-
-  // Test the initial z-order.
-  const std::vector<ui::Layer*>& child_layers_pre = root_layer->children();
-  ASSERT_EQ(2u, child_layers_pre.size());
-  EXPECT_EQ(v1->layer(), child_layers_pre[0]);
-  EXPECT_EQ(v2->layer(), child_layers_pre[1]);
-
-  scoped_ptr<ui::Layer> v1_old_layer(v1->RecreateLayer());
-
-  // Test the new layer order. |v1_old_layer| should be above the layers
-  // for |v1| and |v2|.
-  const std::vector<ui::Layer*>& child_layers_post = root_layer->children();
-  ASSERT_EQ(3u, child_layers_post.size());
-  EXPECT_EQ(v1->layer(), child_layers_post[0]);
-  EXPECT_EQ(v2->layer(), child_layers_post[1]);
-  EXPECT_EQ(v1_old_layer, child_layers_post[2]);
 }
 
 #endif  // USE_AURA

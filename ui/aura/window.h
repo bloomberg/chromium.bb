@@ -175,9 +175,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // see WindowTest.StackingMadrigal for details.
   void StackChildAbove(Window* child, Window* target);
 
-  // Stacks the specified child of this window at the bottom of the z-order.
-  void StackChildAtBottom(Window* child);
-
   // Stacks |child| below |target|. Does nothing if |child| is already below
   // |target|.
   void StackChildBelow(Window* child, Window* target);

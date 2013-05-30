@@ -1104,11 +1104,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void ReorderLayers();
 
   // This reorders the immediate children of |*parent_layer| to match the
-  // order of the view tree. Child layers which are owned by a view are
-  // reordered so that they are below any child layers not owned by a view.
-  // Widget::ReorderNativeViews() should be called to reorder any child layers
-  // with an associated view. Widget::ReorderNativeViews() may reorder layers
-  // below layers owned by a view.
+  // order of the view tree.
   virtual void ReorderChildLayers(ui::Layer* parent_layer);
 
   // Input ---------------------------------------------------------------------

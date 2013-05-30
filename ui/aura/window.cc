@@ -340,12 +340,6 @@ void Window::StackChildAbove(Window* child, Window* target) {
   StackChildRelativeTo(child, target, STACK_ABOVE);
 }
 
-void Window::StackChildAtBottom(Window* child) {
-  if (children_.size() <= 1 || child == children_.front())
-    return;  // At the bottom already.
-  StackChildBelow(child, children_.front());
-}
-
 void Window::StackChildBelow(Window* child, Window* target) {
   StackChildRelativeTo(child, target, STACK_BELOW);
 }

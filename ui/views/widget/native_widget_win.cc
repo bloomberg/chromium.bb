@@ -161,9 +161,6 @@ ui::Layer* NativeWidgetWin::GetLayer() {
   return NULL;
 }
 
-void NativeWidgetWin::ReorderNativeViews() {
-}
-
 void NativeWidgetWin::ViewRemoved(View* view) {
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(view);

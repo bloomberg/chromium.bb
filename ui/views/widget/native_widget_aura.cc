@@ -39,7 +39,6 @@
 #include "ui/views/widget/tooltip_manager_aura.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/views/widget/window_reorderer.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
@@ -173,9 +172,6 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
                        GetWidget()->widget_delegate()->CanMaximize());
   window_->SetProperty(aura::client::kCanResizeKey,
                        GetWidget()->widget_delegate()->CanResize());
-
-  window_reorderer_.reset(new WindowReorderer(window_,
-      GetWidget()->GetRootView()));
 }
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
@@ -225,10 +221,6 @@ ui::Compositor* NativeWidgetAura::GetCompositor() {
 
 ui::Layer* NativeWidgetAura::GetLayer() {
   return window_->layer();
-}
-
-void NativeWidgetAura::ReorderNativeViews() {
-  window_reorderer_->ReorderChildWindows();
 }
 
 void NativeWidgetAura::ViewRemoved(View* view) {
