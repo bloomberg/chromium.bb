@@ -3,7 +3,12 @@
 # found in the LICENSE file.
 
 import ctypes
+import os
+import subprocess
 import sys
+import tempfile
+
+import objdump_parser
 
 
 # Some constants from validator.h
@@ -165,6 +170,55 @@ def ValidateChunk(
       None)
 
   return bool(result)
+
+
+def DisassembleChunk(data, bitness):
+  """Disassemble chunk assuming it consists of valid instructions.
+
+  Args:
+    data: raw data as python string.
+    bitness: 32 or 64
+
+  Returns:
+    List of objdump_parser.Instruction tuples. If data can't be disassembled
+    (either contains invalid instructions or ends in a middle of instruction)
+    exception is raised.
+  """
+  # TODO(shcherbina):
+  # Replace this shameless plug with python interface to RDFA decoder once
+  # https://code.google.com/p/nativeclient/issues/detail?id=3456 is done.
+
+  arch = {32: '-Mi386', 64: '-Mx86-64'}[bitness]
+
+  tmp = tempfile.NamedTemporaryFile(mode='wb', delete=False)
+  try:
+    tmp.write(data)
+    tmp.close()
+
+    objdump_proc = subprocess.Popen(
+        ['objdump',
+         '-mi386', arch, '--disassemble-all', '--target=binary', tmp.name],
+        stdout=subprocess.PIPE)
+
+    instructions = []
+    total_bytes = 0
+    for line in objdump_parser.SkipHeader(objdump_proc.stdout):
+      print repr(line)
+      insn = objdump_parser.ParseLine(line)
+      insn = objdump_parser.CanonicalizeInstruction(insn)
+      instructions.append(insn)
+      total_bytes += len(insn.bytes)
+
+    assert len(data) == total_bytes
+
+    return_code = objdump_proc.wait()
+    assert return_code == 0, 'error running objdump'
+
+    return instructions
+
+  finally:
+    tmp.close()
+    os.remove(tmp.name)
 
 
 def main():
