@@ -1,0 +1,11 @@
+include_rules = [
+  # The public interfaces cannot reference Chromium code, so all allowances
+  # that the top-level DEPS file introduces are removed here. This list should
+  # be kept in sync with src/DEPS.
+  "-base",
+  "-build",
+  "-googleurl",
+  "-library_loaders",
+  "-testing",
+  "-third_party/icu/public",
+]

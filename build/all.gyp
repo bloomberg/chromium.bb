@@ -67,6 +67,10 @@
             '../webkit/webkit.gyp:*',
             '<(libjpeg_gyp_path):*',
           ],
+        }, { #  'OS=="ios"'
+          'dependencies': [
+            '../ios/consumer/ios_consumer.gyp:*',
+          ],
         }],
         ['os_posix==1 and OS!="android" and OS!="ios"', {
           'dependencies': [
