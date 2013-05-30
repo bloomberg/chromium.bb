@@ -1248,7 +1248,7 @@ bool IsBaselinePolicyWatched(int sysno) {
   }
 }
 
-ErrorCode RestrictMmapFlags(Sandbox *sandbox) {
+ErrorCode RestrictMmapFlags(Sandbox* sandbox) {
   // The flags you see are actually the allowed ones, and the variable is a
   // "denied" mask because of the negation operator.
   // Significantly, we don't permit MAP_HUGETLB, or the newer flags such as
@@ -1261,7 +1261,7 @@ ErrorCode RestrictMmapFlags(Sandbox *sandbox) {
                        ErrorCode(ErrorCode::ERR_ALLOWED));
 }
 
-ErrorCode RestrictMprotectFlags(Sandbox *sandbox) {
+ErrorCode RestrictMprotectFlags(Sandbox* sandbox) {
   // The flags you see are actually the allowed ones, and the variable is a
   // "denied" mask because of the negation operator.
   // Significantly, we don't permit weird undocumented flags such as
@@ -1273,7 +1273,7 @@ ErrorCode RestrictMprotectFlags(Sandbox *sandbox) {
                        ErrorCode(ErrorCode::ERR_ALLOWED));
 }
 
-ErrorCode RestrictFcntlCommands(Sandbox *sandbox) {
+ErrorCode RestrictFcntlCommands(Sandbox* sandbox) {
   // For now, we're only sure this will work on x64. This is because of the
   // use of TP_64BIT for a "long" argument. Ideally, the seccomp API would
   // have a TP_LONG or TP_SIZET type.
@@ -1324,7 +1324,7 @@ ErrorCode RestrictFcntlCommands(Sandbox *sandbox) {
          sandbox->Trap(CrashSIGSYS_Handler, NULL))))))))));
 }
 
-ErrorCode BaselinePolicy(Sandbox *sandbox, int sysno) {
+ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
   if (IsBaselinePolicyAllowed(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
@@ -1408,8 +1408,8 @@ ErrorCode BaselinePolicy(Sandbox *sandbox, int sysno) {
 }
 
 // Main policy for x86_64/i386. Extended by ArmMaliGpuProcessPolicy.
-ErrorCode GpuProcessPolicy(Sandbox *sandbox, int sysno,
-                           void *broker_process) {
+ErrorCode GpuProcessPolicy(Sandbox* sandbox, int sysno,
+                           void* broker_process) {
   switch(sysno) {
     case __NR_ioctl:
 #if defined(__i386__) || defined(__x86_64__)
@@ -1444,7 +1444,7 @@ ErrorCode GpuProcessPolicy(Sandbox *sandbox, int sysno,
 // x86_64/i386.
 // A GPU broker policy is the same as a GPU policy with open and
 // openat allowed.
-ErrorCode GpuBrokerProcessPolicy(Sandbox *sandbox, int sysno, void *aux) {
+ErrorCode GpuBrokerProcessPolicy(Sandbox* sandbox, int sysno, void* aux) {
   // "aux" would typically be NULL, when called from
   // "EnableGpuBrokerPolicyCallBack"
   switch(sysno) {
@@ -1458,8 +1458,8 @@ ErrorCode GpuBrokerProcessPolicy(Sandbox *sandbox, int sysno, void *aux) {
 }
 
 // ARM Mali GPU process sandbox, inheriting from GpuProcessPolicy.
-ErrorCode ArmMaliGpuProcessPolicy(Sandbox *sandbox, int sysno,
-                                  void *broker_process) {
+ErrorCode ArmMaliGpuProcessPolicy(Sandbox* sandbox, int sysno,
+                                  void* broker_process) {
   switch(sysno) {
 #if defined(__arm__)
     // ARM GPU sandbox is started earlier so we need to allow networking
@@ -1485,8 +1485,8 @@ ErrorCode ArmMaliGpuProcessPolicy(Sandbox *sandbox, int sysno,
 
 // A GPU broker policy is the same as a GPU policy with open and
 // openat allowed.
-ErrorCode ArmMaliGpuBrokerProcessPolicy(Sandbox *sandbox,
-                                        int sysno, void *aux) {
+ErrorCode ArmMaliGpuBrokerProcessPolicy(Sandbox* sandbox,
+                                        int sysno, void* aux) {
   // "aux" would typically be NULL, when called from
   // "EnableGpuBrokerPolicyCallBack"
   switch(sysno) {
@@ -1514,13 +1514,17 @@ ErrorCode RestrictCloneToThreadsAndEPERMFork(Sandbox* sandbox) {
            sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
                          CLONE_PARENT_SETTID | SIGCHLD,
                          ErrorCode(EPERM),
-           sandbox->Trap(SIGSYSCloneFailure, NULL)));
+           // ARM
+           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID | SIGCHLD,
+                         ErrorCode(EPERM),
+           sandbox->Trap(SIGSYSCloneFailure, NULL))));
   } else {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
 }
 
-ErrorCode RestrictPrctl(Sandbox *sandbox) {
+ErrorCode RestrictPrctl(Sandbox* sandbox) {
   // Allow PR_SET_NAME, PR_SET_DUMPABLE, PR_GET_DUMPABLE. Will need to add
   // seccomp compositing in the future.
   // PR_SET_PTRACER is used by breakpad but not needed anymore.
@@ -1533,7 +1537,7 @@ ErrorCode RestrictPrctl(Sandbox *sandbox) {
          sandbox->Trap(SIGSYSPrctlFailure, NULL))));
 }
 
-ErrorCode RestrictIoctl(Sandbox *sandbox) {
+ErrorCode RestrictIoctl(Sandbox* sandbox) {
   // Allow TCGETS and FIONREAD, trap to SIGSYSIoctlFailure otherwise.
   return sandbox->Cond(1, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL, TCGETS,
                        ErrorCode(ErrorCode::ERR_ALLOWED),
@@ -1542,7 +1546,7 @@ ErrorCode RestrictIoctl(Sandbox *sandbox) {
                        sandbox->Trap(SIGSYSIoctlFailure, NULL)));
 }
 
-ErrorCode RendererOrWorkerProcessPolicy(Sandbox *sandbox, int sysno, void *) {
+ErrorCode RendererOrWorkerProcessPolicy(Sandbox* sandbox, int sysno, void*) {
   switch (sysno) {
     case __NR_clone:
       return RestrictCloneToThreadsAndEPERMFork(sandbox);
@@ -1593,13 +1597,10 @@ ErrorCode RendererOrWorkerProcessPolicy(Sandbox *sandbox, int sysno, void *) {
   }
 }
 
-ErrorCode FlashProcessPolicy(Sandbox *sandbox, int sysno, void *) {
+ErrorCode FlashProcessPolicy(Sandbox* sandbox, int sysno, void*) {
   switch (sysno) {
     case __NR_clone:
-#if defined(__x86_64__)
-      // TODO(jorgelo): enable this on other platforms.
       return RestrictCloneToThreadsAndEPERMFork(sandbox);
-#endif
     case __NR_sched_get_priority_max:
     case __NR_sched_get_priority_min:
     case __NR_sched_getaffinity:
@@ -1627,7 +1628,7 @@ ErrorCode FlashProcessPolicy(Sandbox *sandbox, int sysno, void *) {
   }
 }
 
-ErrorCode BlacklistDebugAndNumaPolicy(Sandbox *sandbox, int sysno, void *) {
+ErrorCode BlacklistDebugAndNumaPolicy(Sandbox* sandbox, int sysno, void*) {
   if (!Sandbox::IsValidSyscallNumber(sysno)) {
     // TODO(jln) we should not have to do that in a trivial policy.
     return ErrorCode(ENOSYS);
@@ -1642,7 +1643,7 @@ ErrorCode BlacklistDebugAndNumaPolicy(Sandbox *sandbox, int sysno, void *) {
 // Allow all syscalls.
 // This will still deny x32 or IA32 calls in 64 bits mode or
 // 64 bits system calls in compatibility mode.
-ErrorCode AllowAllPolicy(Sandbox *, int sysno, void *) {
+ErrorCode AllowAllPolicy(Sandbox*, int sysno, void*) {
   if (!Sandbox::IsValidSyscallNumber(sysno)) {
     // TODO(jln) we should not have to do that in a trivial policy.
     return ErrorCode(ENOSYS);
