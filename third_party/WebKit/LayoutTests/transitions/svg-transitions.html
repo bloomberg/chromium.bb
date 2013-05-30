@@ -146,6 +146,8 @@
       document.getElementById('container').className = 'animating';
   }
 
+  // Disable logging since this test contains known failures.
+  log = function() {};
   runTransitionTest(expectedValues, setupTest, usePauseAPI);
   </script>
 </head>

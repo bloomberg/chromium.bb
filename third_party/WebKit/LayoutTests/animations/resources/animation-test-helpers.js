@@ -209,6 +209,7 @@ function filterParametersMatch(paramList1, paramList2, tolerance)
 
 function checkExpectedValue(expected, index)
 {
+    log('Checking expectation: ' + JSON.stringify(expected[index]));
     var animationName = expected[index][0];
     var time = expected[index][1];
     var elementId = expected[index][2];
@@ -295,6 +296,7 @@ function parseCrossFade(s)
 function checkExpectedTransitionValue(expected, index)
 {
     expected[index].shift();
+    log('Checking expectation: ' + JSON.stringify(expected[index]));
     var time = expected[index][0];
     var elementId = expected[index][1];
     var property = expected[index][2];
@@ -521,7 +523,10 @@ function comparePropertyValue(property, computedValue, expectedValue, tolerance)
 
 function endTest()
 {
+    log('Ending test');
     var resultElement = useResultElement ? document.getElementById('result') : document.documentElement;
+    if (result.indexOf('FAIL') >= 0 && log.length > 0)
+        result += '<br>Log:<br>' + logMessages.join('<br>');
     resultElement.innerHTML = result;
 
     if (window.testRunner)
@@ -533,12 +538,14 @@ function runChecksWithRAF(checks)
     var finished = true;
     var time = performance.now() - animStartTime;
 
+    log('RAF callback, animation time: ' + time);
     for (var k in checks) {
         var checkTime = Number(k);
         if (checkTime > time) {
             finished = false;
             break;
         }
+        log('Running checks for time: ' + checkTime + ', delay: ' + (time - checkTime));
         checks[k].forEach(function(check) { check(); });
         delete checks[k];
     }
@@ -552,6 +559,7 @@ function runChecksWithRAF(checks)
 function runChecksWithPauseAPI(checks) {
     for (var k in checks) {
         var timeMs = Number(k);
+        log('Pausing at time: ' + timeMs + ', active animations: ' + internals.numberOfActiveAnimations());
         internals.pauseAnimations(timeMs / 1000);
         checks[k].forEach(function(check) { check(); });
     }
@@ -562,10 +570,13 @@ function startTest(checks)
 {
     if (hasPauseAnimationAPI)
         runChecksWithPauseAPI(checks);
-    else
+    else {
+        result += 'Warning this test is running in real-time and may be flaky.<br>';
         runChecksWithRAF(checks);
+    }
 }
 
+var logMessages = [];
 var useResultElement = false;
 var result = "";
 var hasPauseAnimationAPI;
@@ -576,6 +587,11 @@ var usePauseAPI = true;
 var dontUsePauseAPI = false;
 var shouldBeTransitioning = 'should-be-transitioning';
 var shouldNotBeTransitioning = 'should-not-be-transitioning';
+
+function log(message)
+{
+    logMessages.push(performance.now() + ' - ' + message);
+}
 
 function waitForAnimationsToStart(callback)
 {
@@ -589,8 +605,7 @@ function waitForAnimationsToStart(callback)
 // FIXME: remove deprecatedEvent, disablePauseAnimationAPI and doPixelTest
 function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnimationAPI, doPixelTest)
 {
-    if (disablePauseAnimationAPI)
-        result += 'Warning this test is running in real-time and may be flaky.<br>';
+    log('runAnimationTest');
     if (deprecatedEvent)
         throw 'Event argument is deprecated!';
     if (!expected)
@@ -645,9 +660,11 @@ function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnim
     var event = isTransitionsTest ? 'load' : 'webkitAnimationStart';
     target.addEventListener(event, function() {
         if (!started) {
+            log('First ' + event + ' event fired');
             started = true;
             trigger();
             waitForAnimationsToStart(function() {
+                log('Finished waiting for animations to start');
                 animStartTime = performance.now();
                 startTest(checks);
             });
