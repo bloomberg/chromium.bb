@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/itunes/itunes_file_util.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_validator_factory.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_file_util.h"
@@ -45,7 +46,8 @@ const char MediaFileSystemMountPointProvider::kMTPDeviceDelegateURLKey[] =
 MediaFileSystemMountPointProvider::MediaFileSystemMountPointProvider(
     const base::FilePath& profile_path)
     : profile_path_(profile_path),
-      media_path_filter_(new MediaPathFilter()),
+      media_path_filter_(new MediaPathFilter),
+      media_copy_or_move_file_validator_factory_(new MediaFileValidatorFactory),
       native_media_file_util_(
           new fileapi::AsyncFileUtilAdapter(new NativeMediaFileUtil())),
       device_media_async_file_util_(
@@ -119,6 +121,7 @@ MediaFileSystemMountPointProvider::GetCopyOrMoveFileValidatorFactory(
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
     case fileapi::kFileSystemTypeDeviceMedia:
+    case fileapi::kFileSystemTypeItunes:
       if (!media_copy_or_move_file_validator_factory_) {
         *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
         return NULL;

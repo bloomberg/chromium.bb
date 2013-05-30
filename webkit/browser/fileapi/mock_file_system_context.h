@@ -6,6 +6,7 @@
 #define WEBKIT_BROWSER_FILEAPI_MOCK_FILE_SYSTEM_CONTEXT_H_
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_vector.h"
 
 namespace quota {
 class QuotaManagerProxy;
@@ -15,9 +16,17 @@ class SpecialStoragePolicy;
 namespace fileapi {
 
 class FileSystemContext;
+class FileSystemMountPointProvider;
 
 FileSystemContext* CreateFileSystemContextForTesting(
     quota::QuotaManagerProxy* quota_manager_proxy,
+    const base::FilePath& base_path);
+
+// The caller is responsible for including TestMountPointProvider in
+// |additional_providers| if needed.
+FileSystemContext* CreateFileSystemContextWithAdditionalProvidersForTesting(
+    quota::QuotaManagerProxy* quota_manager_proxy,
+    ScopedVector<FileSystemMountPointProvider> additional_providers,
     const base::FilePath& base_path);
 
 }  // namespace fileapi
