@@ -1,0 +1,4 @@
+CONSOLE MESSAGE: line 1: testUnique
+CONSOLE MESSAGE: line 1: testDouble
+CONSOLE MESSAGE: line 1: testDouble
+

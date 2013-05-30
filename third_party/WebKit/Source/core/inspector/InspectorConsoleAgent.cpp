@@ -96,6 +96,7 @@ void InspectorConsoleAgent::enable(ErrorString*)
 
     if (m_expiredConsoleMessageCount) {
         ConsoleMessage expiredMessage(!isWorkerAgent(), OtherMessageSource, LogMessageType, WarningMessageLevel, String::format("%d console messages are not shown.", m_expiredConsoleMessageCount));
+        expiredMessage.setTimestamp(0);
         expiredMessage.addToFrontend(m_frontend, m_injectedScriptManager, false);
     }
 
@@ -269,8 +270,6 @@ void InspectorConsoleAgent::didFinishXHRLoading(ThreadableLoaderClient*, unsigne
         String message = "XHR finished loading: \"" + url + "\".";
         addMessageToConsole(NetworkMessageSource, LogMessageType, DebugMessageLevel, message, sendURL, sendLineNumber, 0, requestIdentifier);
     }
-
-
 }
 
 void InspectorConsoleAgent::didReceiveResourceResponse(unsigned long requestIdentifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader*)

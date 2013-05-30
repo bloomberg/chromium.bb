@@ -44,7 +44,8 @@
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/Console.h"
-#include <wtf/MainThread.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 
@@ -57,6 +58,7 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     , m_line(0)
     , m_repeatCount(1)
     , m_requestId(IdentifiersFactory::requestId(0))
+    , m_timestamp(WTF::currentTime())
 {
     autogenerateMetadata(canGenerateCallStack);
 }
@@ -70,6 +72,7 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     , m_line(line)
     , m_repeatCount(1)
     , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
+    , m_timestamp(WTF::currentTime())
 {
     autogenerateMetadata(canGenerateCallStack, state);
 }
@@ -83,6 +86,7 @@ ConsoleMessage::ConsoleMessage(bool, MessageSource source, MessageType type, Mes
     , m_line(0)
     , m_repeatCount(1)
     , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
+    , m_timestamp(WTF::currentTime())
 {
     if (callStack && callStack->size()) {
         const ScriptCallFrame& frame = callStack->at(0);
@@ -102,6 +106,7 @@ ConsoleMessage::ConsoleMessage(bool canGenerateCallStack, MessageSource source, 
     , m_line(0)
     , m_repeatCount(1)
     , m_requestId(IdentifiersFactory::requestId(requestIdentifier))
+    , m_timestamp(WTF::currentTime())
 {
     autogenerateMetadata(canGenerateCallStack, state);
 }
@@ -186,7 +191,8 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
     RefPtr<TypeBuilder::Console::ConsoleMessage> jsonObj = TypeBuilder::Console::ConsoleMessage::create()
         .setSource(messageSourceValue(m_source))
         .setLevel(messageLevelValue(m_level))
-        .setText(m_message);
+        .setText(m_message)
+        .setTimestamp(m_timestamp);
     // FIXME: only send out type for ConsoleAPI source messages.
     jsonObj->setType(messageTypeValue(m_type));
     jsonObj->setLine(static_cast<int>(m_line));
@@ -225,9 +231,15 @@ void ConsoleMessage::addToFrontend(InspectorFrontend::Console* frontend, Injecte
     frontend->messageAdded(jsonObj);
 }
 
+void ConsoleMessage::incrementCount()
+{
+    m_timestamp = WTF::currentTime();
+    ++m_repeatCount;
+}
+
 void ConsoleMessage::updateRepeatCountInConsole(InspectorFrontend::Console* frontend)
 {
-    frontend->messageRepeatCountUpdated(m_repeatCount);
+    frontend->messageRepeatCountUpdated(m_repeatCount, m_timestamp);
 }
 
 bool ConsoleMessage::isEqual(ConsoleMessage* msg) const

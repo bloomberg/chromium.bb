@@ -1,0 +1,53 @@
+<html>
+<head>
+<script type="text/javascript" src="../http/tests/inspector-protocol/resources/protocol-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.assert = function(result, message)
+    {
+        if (!result) {
+            InspectorTest.log("FAIL: " + message);
+            InspectorTest.completeTest();
+        }
+    };
+
+    var messages = [];
+
+    function messageAdded(data)
+    {
+        var payload = data.params.message;
+
+        if (messages.length > 0)
+            InspectorTest.assert(payload.timestamp > messages[messages.length - 1].timestamp, "Timestamp should increase over time.");
+
+        messages.push(payload);
+        InspectorTest.assert(payload.timestamp, "No timestamp found in message.");
+
+        InspectorTest.assert(Math.abs(new Date().getTime() / 1000 - payload.timestamp) < 60, "Timestamp shouldn't differ very much from current time (one minute interval).");
+    }
+
+    function messageRepeatCountUpdated(data)
+    {
+        InspectorTest.assert(data.params.timestamp, "No timestamp found on repeat count update.");
+
+        var updatedTimestamp = data.params.timestamp;
+
+        InspectorTest.assert(updatedTimestamp > messages[messages.length - 1].timestamp, "Timestamp should increase over time.");
+
+        InspectorTest.completeTest();
+    }
+
+    InspectorTest.eventHandler["Console.messageAdded"] = messageAdded;
+    InspectorTest.eventHandler["Console.messageRepeatCountUpdated"] = messageRepeatCountUpdated;
+    InspectorTest.sendCommand("Console.enable", {});
+
+    InspectorTest.sendCommand("Runtime.evaluate", { expression: "console.log('testUnique');console.log('testDouble');console.log('testDouble');" });
+}
+
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>

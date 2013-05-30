@@ -60,7 +60,8 @@ public:
 
     void addToFrontend(InspectorFrontend::Console*, InjectedScriptManager*, bool generatePreview);
     void updateRepeatCountInConsole(InspectorFrontend::Console*);
-    void incrementCount() { ++m_repeatCount; }
+    void incrementCount();
+    void setTimestamp(double timestamp) { m_timestamp = timestamp; }
     bool isEqual(ConsoleMessage* msg) const;
 
     MessageSource source() const { return m_source; }
@@ -84,6 +85,7 @@ private:
     unsigned m_line;
     unsigned m_repeatCount;
     String m_requestId;
+    double m_timestamp;
 };
 
 } // namespace WebCore
