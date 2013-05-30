@@ -8,6 +8,7 @@
 #
 #===------------------------------------------------------------------------===#
 import bisect
+import getopt
 import os
 import re
 import subprocess
@@ -15,9 +16,8 @@ import sys
 
 llvm_symbolizer = None
 symbolizers = {}
-filetypes = {}
-vmaddrs = {}
 DEBUG = False
+demangle = False;
 
 
 # FIXME: merge the code that calls fix_filename().
@@ -60,7 +60,7 @@ class LLVMSymbolizer(Symbolizer):
       return None
     cmd = [self.symbolizer_path,
            '--use-symbol-table=true',
-           '--demangle=false',
+           '--demangle=%s' % demangle,
            '--functions=true',
            '--inlining=true']
     if DEBUG:
@@ -97,13 +97,11 @@ class LLVMSymbolizer(Symbolizer):
 
 
 def LLVMSymbolizerFactory(system):
-  if system == 'Linux':
-    symbolizer_path = os.getenv('LLVM_SYMBOLIZER_PATH')
-    if not symbolizer_path:
-      # Assume llvm-symbolizer is in PATH.
-      symbolizer_path = 'llvm-symbolizer'
-    return LLVMSymbolizer(symbolizer_path)
-  return None
+  symbolizer_path = os.getenv('LLVM_SYMBOLIZER_PATH')
+  if not symbolizer_path:
+    # Assume llvm-symbolizer is in PATH.
+    symbolizer_path = 'llvm-symbolizer'
+  return LLVMSymbolizer(symbolizer_path)
 
 
 class Addr2LineSymbolizer(Symbolizer):
@@ -113,12 +111,14 @@ class Addr2LineSymbolizer(Symbolizer):
     self.pipe = self.open_addr2line()
 
   def open_addr2line(self):
-    cmd = ['addr2line', '-f', '-e', self.binary]
+    cmd = ['addr2line', '-f']
+    if demangle:
+      cmd += ['--demangle']
+    cmd += ['-e', self.binary]
     if DEBUG:
       print ' '.join(cmd)
     return subprocess.Popen(cmd,
-                            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                            stderr=open(os.devnull, 'w'))
+                            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
   def symbolize(self, addr, binary, offset):
     """Overrides Symbolizer.symbolize."""
@@ -144,42 +144,10 @@ class DarwinSymbolizer(Symbolizer):
       self.arch = 'x86_64'
     else:
       self.arch = 'i386'
-    self.vmaddr = None
     self.pipe = None
 
-  def get_binary_vmaddr(self):
-    """Get the slide value to be added to the address.
-
-    We're looking for the following piece in otool -l output:
-      Load command 0
-      cmd LC_SEGMENT
-      cmdsize 736
-      segname __TEXT
-      vmaddr 0x00000000
-    """
-    if self.vmaddr:
-      return self.vmaddr
-    cmdline = ['otool', '-l', self.binary]
-    pipe = subprocess.Popen(cmdline,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE)
-    is_text = False
-    vmaddr = 0
-    for line in pipe.stdout:
-      line = line.strip()
-      if line.startswith('segname'):
-        is_text = (line == 'segname __TEXT')
-        continue
-      if line.startswith('vmaddr') and is_text:
-        sv = line.split(' ')
-        vmaddr = int(sv[-1], 16)
-        break
-    self.vmaddr = vmaddr
-    return self.vmaddr
-
   def write_addr_to_pipe(self, offset):
-    slide = self.get_binary_vmaddr()
-    print >> self.pipe.stdin, '0x%x' % (int(offset, 16) + slide)
+    print >> self.pipe.stdin, '0x%x' % int(offset, 16)
 
   def open_atos(self):
     if DEBUG:
@@ -386,5 +354,9 @@ class SymbolizationLoop(object):
 
 
 if __name__ == '__main__':
+  opts, args = getopt.getopt(sys.argv[1:], "d", ["demangle"])
+  for o, a in opts:
+    if o in ("-d", "--demangle"):
+      demangle = True;
   loop = SymbolizationLoop()
   loop.process_stdin()
