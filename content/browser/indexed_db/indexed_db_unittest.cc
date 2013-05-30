@@ -55,9 +55,10 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
 
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
-    IndexedDBContextImpl* idb_context = static_cast<IndexedDBContextImpl*>(
-        BrowserContext::GetDefaultStoragePartition(&browser_context)
-            ->GetIndexedDBContext());
+    IndexedDBContextImpl* idb_context =
+        static_cast<IndexedDBContextImpl*>(
+            BrowserContext::GetDefaultStoragePartition(&browser_context)->
+                GetIndexedDBContext());
 
     // Override the storage policy with our own.
     idb_context->special_storage_policy_ = special_storage_policy;
@@ -98,9 +99,10 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
 
     // Create some indexedDB paths.
     // With the levelDB backend, these are directories.
-    IndexedDBContextImpl* idb_context = static_cast<IndexedDBContextImpl*>(
-        BrowserContext::GetDefaultStoragePartition(&browser_context)
-            ->GetIndexedDBContext());
+    IndexedDBContextImpl* idb_context =
+        static_cast<IndexedDBContextImpl*>(
+            BrowserContext::GetDefaultStoragePartition(&browser_context)->
+                GetIndexedDBContext());
 
     // Override the storage policy with our own.
     idb_context->special_storage_policy_ = special_storage_policy;
@@ -126,16 +128,20 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   EXPECT_TRUE(file_util::DirectoryExists(session_only_path));
 }
 
-class MockWebIDBDatabase : public WebKit::WebIDBDatabase {
+class MockWebIDBDatabase : public WebKit::WebIDBDatabase
+{
  public:
   MockWebIDBDatabase(bool expect_force_close)
-      : expect_force_close_(expect_force_close), force_close_called_(false) {}
+      : expect_force_close_(expect_force_close),
+        force_close_called_(false) {}
 
-  virtual ~MockWebIDBDatabase() {
+  virtual ~MockWebIDBDatabase()
+  {
     EXPECT_TRUE(force_close_called_ == expect_force_close_);
   }
 
-  virtual void forceClose() {
+  virtual void forceClose()
+  {
     ASSERT_TRUE(expect_force_close_);
     force_close_called_ = true;
   }
@@ -144,6 +150,7 @@ class MockWebIDBDatabase : public WebKit::WebIDBDatabase {
   bool expect_force_close_;
   bool force_close_called_;
 };
+
 
 TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
   base::ScopedTempDir temp_dir;
@@ -158,9 +165,10 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
     const GURL kTestOrigin("http://test/");
 
-    IndexedDBContextImpl* idb_context = static_cast<IndexedDBContextImpl*>(
-        BrowserContext::GetDefaultStoragePartition(&browser_context)
-            ->GetIndexedDBContext());
+    IndexedDBContextImpl* idb_context =
+        static_cast<IndexedDBContextImpl*>(
+            BrowserContext::GetDefaultStoragePartition(&browser_context)->
+                GetIndexedDBContext());
 
     idb_context->quota_manager_proxy_ = NULL;
     idb_context->set_data_path_for_testing(temp_dir.path());

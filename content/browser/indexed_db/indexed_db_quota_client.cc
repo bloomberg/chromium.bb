@@ -26,33 +26,36 @@ quota::QuotaStatusCode DeleteOriginDataOnWebKitThread(
   return quota::kQuotaStatusOk;
 }
 
-int64 GetOriginUsageOnWebKitThread(IndexedDBContextImpl* context,
-                                   const GURL& origin) {
+int64 GetOriginUsageOnWebKitThread(
+    IndexedDBContextImpl* context,
+    const GURL& origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   return context->GetOriginDiskUsage(origin);
 }
 
-void GetAllOriginsOnWebKitThread(IndexedDBContextImpl* context,
-                                 std::set<GURL>* origins_to_return) {
+void GetAllOriginsOnWebKitThread(
+    IndexedDBContextImpl* context,
+    std::set<GURL>* origins_to_return) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   std::vector<GURL> all_origins = context->GetAllOrigins();
   origins_to_return->insert(all_origins.begin(), all_origins.end());
 }
 
-void DidGetOrigins(const IndexedDBQuotaClient::GetOriginsCallback& callback,
-                   const std::set<GURL>* origins) {
+void DidGetOrigins(
+    const IndexedDBQuotaClient::GetOriginsCallback& callback,
+    const std::set<GURL>* origins) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   callback.Run(*origins);
 }
 
-void GetOriginsForHostOnWebKitThread(IndexedDBContextImpl* context,
-                                     const std::string& host,
-                                     std::set<GURL>* origins_to_return) {
+void GetOriginsForHostOnWebKitThread(
+    IndexedDBContextImpl* context,
+    const std::string& host,
+    std::set<GURL>* origins_to_return) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   std::vector<GURL> all_origins = context->GetAllOrigins();
   for (std::vector<GURL>::const_iterator iter = all_origins.begin();
-       iter != all_origins.end();
-       ++iter) {
+       iter != all_origins.end(); ++iter) {
     if (host == net::GetHostOrSpecFromURL(*iter))
       origins_to_return->insert(*iter);
   }
@@ -66,17 +69,24 @@ IndexedDBQuotaClient::IndexedDBQuotaClient(
     base::MessageLoopProxy* webkit_thread_message_loop,
     IndexedDBContextImpl* indexed_db_context)
     : webkit_thread_message_loop_(webkit_thread_message_loop),
-      indexed_db_context_(indexed_db_context) {}
+      indexed_db_context_(indexed_db_context) {
+}
 
-IndexedDBQuotaClient::~IndexedDBQuotaClient() {}
+IndexedDBQuotaClient::~IndexedDBQuotaClient() {
+}
 
-QuotaClient::ID IndexedDBQuotaClient::id() const { return kIndexedDatabase; }
+QuotaClient::ID IndexedDBQuotaClient::id() const {
+  return kIndexedDatabase;
+}
 
-void IndexedDBQuotaClient::OnQuotaManagerDestroyed() { delete this; }
+void IndexedDBQuotaClient::OnQuotaManagerDestroyed() {
+  delete this;
+}
 
-void IndexedDBQuotaClient::GetOriginUsage(const GURL& origin_url,
-                                          quota::StorageType type,
-                                          const GetUsageCallback& callback) {
+void IndexedDBQuotaClient::GetOriginUsage(
+    const GURL& origin_url,
+    quota::StorageType type,
+    const GetUsageCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(indexed_db_context_.get());
 
@@ -89,8 +99,9 @@ void IndexedDBQuotaClient::GetOriginUsage(const GURL& origin_url,
   base::PostTaskAndReplyWithResult(
       webkit_thread_message_loop_,
       FROM_HERE,
-      base::Bind(
-          &GetOriginUsageOnWebKitThread, indexed_db_context_, origin_url),
+      base::Bind(&GetOriginUsageOnWebKitThread,
+                 indexed_db_context_,
+                 origin_url),
       callback);
 }
 
@@ -112,7 +123,9 @@ void IndexedDBQuotaClient::GetOriginsForType(
       base::Bind(&GetAllOriginsOnWebKitThread,
                  indexed_db_context_,
                  base::Unretained(origins_to_return)),
-      base::Bind(&DidGetOrigins, callback, base::Owned(origins_to_return)));
+      base::Bind(&DidGetOrigins,
+                 callback,
+                 base::Owned(origins_to_return)));
 }
 
 void IndexedDBQuotaClient::GetOriginsForHost(
@@ -135,12 +148,15 @@ void IndexedDBQuotaClient::GetOriginsForHost(
                  indexed_db_context_,
                  host,
                  base::Unretained(origins_to_return)),
-      base::Bind(&DidGetOrigins, callback, base::Owned(origins_to_return)));
+      base::Bind(&DidGetOrigins,
+                 callback,
+                 base::Owned(origins_to_return)));
 }
 
-void IndexedDBQuotaClient::DeleteOriginData(const GURL& origin,
-                                            quota::StorageType type,
-                                            const DeletionCallback& callback) {
+void IndexedDBQuotaClient::DeleteOriginData(
+    const GURL& origin,
+    quota::StorageType type,
+    const DeletionCallback& callback) {
   if (type != quota::kStorageTypeTemporary) {
     callback.Run(quota::kQuotaErrorNotSupported);
     return;
@@ -149,7 +165,9 @@ void IndexedDBQuotaClient::DeleteOriginData(const GURL& origin,
   base::PostTaskAndReplyWithResult(
       webkit_thread_message_loop_,
       FROM_HERE,
-      base::Bind(&DeleteOriginDataOnWebKitThread, indexed_db_context_, origin),
+      base::Bind(&DeleteOriginDataOnWebKitThread,
+                 indexed_db_context_,
+                 origin),
       callback);
 }
 
