@@ -9,6 +9,9 @@ import tempfile
 
 Import('env')
 
+if env.UnderWindowsCoverage():
+  Return()
+
 redir_test_nexe = env.ComponentProgram('redir_test', 'redir_test.c',
                                        EXTRA_LIBS=['${NONIRT_LIBS}'])
 

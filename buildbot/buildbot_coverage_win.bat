@@ -11,11 +11,11 @@ call buildbot\msvs_env.bat %BITS%
 call vcvarsall.bat %VCBITS%
 
 :: Standard script emits its own annotator tags.
-python buildbot/buildbot_standard.py coverage %BITS% newlib --coverage
+call python.bat buildbot/buildbot_standard.py coverage %BITS% newlib --coverage
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 echo @@@BUILD_STEP summarize coverage@@@
-python tools/coverage_summary.py win-x86-%BITS%
+call python.bat tools/coverage_summary.py win-x86-%BITS%
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 :: Stop here and don't archive if on trybots.

@@ -1013,5 +1013,7 @@ node = env.CommandTest(
   filter_group_only='true',
   stdout_golden=env.File('nacl_error_log_test.stdout'))
 
+is_broken = env.Bit('host_windows') and env.Bit('coverage_enabled')
 env.AddNodeToTestSuite(node, ['small_tests'],
-                       'run_nacl_error_log_test')
+                       'run_nacl_error_log_test',
+                       is_broken=is_broken)

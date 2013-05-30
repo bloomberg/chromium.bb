@@ -8,6 +8,9 @@ Import('env')
 if 'TRUSTED_ENV' not in env:
   Return()
 
+if env.UnderWindowsCoverage():
+  Return()
+
 if env.Bit('target_arm') or env.Bit('target_mips32'):
   if env.UsingEmulator():
     # These tests do not work under qemu.

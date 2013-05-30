@@ -8,6 +8,9 @@ Import('env')
 if not env.AllowInlineAssembly():
   Return()
 
+if env.UnderWindowsCoverage():
+  Return()
+
 test_prog = env.ComponentProgram(
     'debugger_test', 'debugger_test.c',
     EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])

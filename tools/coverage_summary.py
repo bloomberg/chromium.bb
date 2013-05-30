@@ -90,6 +90,12 @@ def CoverageParse(lines, ignore_set):
     # If we are starting a new file, clear running totals
     if words[0] == 'SF':
       filename = words[1]
+      if sys.platform == 'win32':
+        if filename.startswith('/cygdrive/c/'):
+          filename = 'C:/' + filename[len('/cygdrive/c/'):]
+        if filename.startswith('/cygdrive/e/'):
+          filename = 'E:/' + filename[len('/cygdrive/e/'):]
+        filename = os.path.normpath(filename)
       total = 0
       used  = 0
       continue

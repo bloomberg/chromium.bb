@@ -2891,6 +2891,14 @@ That means the linker supports the -Trodata-segment switch."""
 
 nacl_env.AddMethod(IsNewLinker)
 
+def UnderWindowsCoverage(env):
+  """Return True if using running on coverage under windows."""
+  if 'TRUSTED_ENV' not in env:
+    return False
+  return env['TRUSTED_ENV'].Bit('coverage_enabled') and env.Bit('host_windows')
+
+nacl_env.AddMethod(UnderWindowsCoverage)
+
 def RodataSwitch(env, value, via_compiler=True):
   """Return string of arguments to place the rodata segment at |value|.
 If |via_compiler| is False, this is going directly to the linker, rather
@@ -3628,11 +3636,12 @@ windows_coverage_env = windows_debug_env.Clone(
     COVERAGE_ANALYZER_DIR=r'..\third_party\coverage_analyzer\bin',
     COVERAGE_ANALYZER='$COVERAGE_ANALYZER_DIR\coverage_analyzer.exe',
 )
-# TODO(bradnelson): switch nacl to common testing process so this won't be
-#    needed.
+# TODO(bradnelson): Switch nacl to common testing process so this won't be
+#                   needed. Ignoring instrumentation failure as that's easier
+#                   than trying to gate out the ones with asm we can't handle.
 windows_coverage_env['LINKCOM'] = windows_coverage_env.Action([
     windows_coverage_env.get('LINKCOM', []),
-    '$COVERAGE_VSINSTR /COVERAGE ${TARGET}'])
+    '-$COVERAGE_VSINSTR /COVERAGE ${TARGET}'])
 windows_coverage_env.Append(LINKFLAGS = ['/NODEFAULTLIB:msvcrt'])
 AddDualLibrary(windows_coverage_env)
 environment_list.append(windows_coverage_env)
