@@ -111,6 +111,8 @@ const CGFloat kTrayBottomMargin = 75;
       [[scrollView_ documentView] addSubview:[controller view]];
 
       [notifications_ addObject:controller];  // Transfer ownership.
+      messageCenter_->DisplayedNotification((*it)->id());
+
       notification = controller.get();
     } else {
       notification = existing->second;

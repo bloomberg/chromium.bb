@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 
 @class MCPopupCollection;
@@ -42,6 +43,9 @@ class MessageCenterTrayBridge :
   message_center::MessageCenter* message_center() { return message_center_; }
 
  private:
+  // Updates the unread count on the status item.
+  void UpdateStatusItem();
+
   // The global, singleton message center model object. Weak.
   message_center::MessageCenter* message_center_;
 
@@ -51,11 +55,18 @@ class MessageCenterTrayBridge :
   // Obj-C window controller for the notification tray.
   scoped_nsobject<MCTrayController> tray_controller_;
 
+  // Whether or not the |tray_controller_| needs to be updated the next time
+  // it is opened.
+  bool updates_pending_;
+
   // View that is displayed on the system menu bar item.
   scoped_nsobject<MCStatusItemView> status_item_view_;
 
   // Obj-C controller for the on-screen popup notifications.
   scoped_nsobject<MCPopupCollection> popup_collection_;
+
+  // Weak pointer factory to posts tasks to self.
+  base::WeakPtrFactory<MessageCenterTrayBridge> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterTrayBridge);
 };

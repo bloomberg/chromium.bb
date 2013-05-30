@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/cocoa/notifications/message_center_tray_bridge.h"
 
+#include "base/bind.h"
 #include "base/i18n/number_formatting.h"
+#include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "grit/chromium_strings.h"
 #include "grit/ui_strings.h"
@@ -27,7 +29,9 @@ MessageCenterTrayDelegate* CreateMessageCenterTray() {
 MessageCenterTrayBridge::MessageCenterTrayBridge(
     message_center::MessageCenter* message_center)
     : message_center_(message_center),
-      tray_(new message_center::MessageCenterTray(this, message_center)) {
+      tray_(new message_center::MessageCenterTray(this, message_center)),
+      updates_pending_(false),
+      weak_ptr_factory_(this) {
   tray_controller_.reset(
       [[MCTrayController alloc] initWithMessageCenterTray:tray_.get()]);
 
@@ -35,33 +39,23 @@ MessageCenterTrayBridge::MessageCenterTrayBridge(
   status_item_view_.reset(
       [[MCStatusItemView alloc] initWithStatusItem:
           [status_bar statusItemWithLength:NSVariableStatusItemLength]]);
-  [status_item_view_ setCallback:^{
-      if ([[tray_controller_ window] isVisible])
-        tray_->HideMessageCenterBubble();
-      else
-        tray_->ShowMessageCenterBubble();
-  }];
+  [status_item_view_ setCallback:^{ tray_->ToggleMessageCenterBubble(); }];
 }
 
 MessageCenterTrayBridge::~MessageCenterTrayBridge() {
 }
 
 void MessageCenterTrayBridge::OnMessageCenterTrayChanged() {
-  size_t unread_count = message_center_->UnreadNotificationCount();
-  [status_item_view_ setUnreadCount:unread_count];
+  // Update the status item on the next run of the message loop so that if a
+  // popup is displayed, the item doesn't flash the unread count.
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&MessageCenterTrayBridge::UpdateStatusItem,
+                 weak_ptr_factory_.GetWeakPtr()));
 
-  string16 product_name = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-  if (unread_count > 0) {
-    string16 unread_count_string = base::FormatNumber(unread_count);
-    [status_item_view_ setToolTip:
-        l10n_util::GetNSStringF(IDS_MESSAGE_CENTER_TOOLTIP_UNREAD,
-            product_name, unread_count_string)];
-  } else {
-    [status_item_view_ setToolTip:
-        l10n_util::GetNSStringF(IDS_MESSAGE_CENTER_TOOLTIP, product_name)];
-  }
-
-  [tray_controller_ onMessageCenterTrayChanged];
+  if (tray_->message_center_visible())
+    [tray_controller_ onMessageCenterTrayChanged];
+  else
+    updates_pending_ = true;
 }
 
 bool MessageCenterTrayBridge::ShowPopups() {
@@ -80,6 +74,12 @@ void MessageCenterTrayBridge::UpdatePopups() {
 }
 
 bool MessageCenterTrayBridge::ShowMessageCenter() {
+  if (updates_pending_) {
+    [tray_controller_ onMessageCenterTrayChanged];
+    UpdateStatusItem();
+    updates_pending_ = false;
+  }
+
   [status_item_view_ setHighlight:YES];
   NSRect frame = [[status_item_view_ window] frame];
   [tray_controller_ showTrayAt:NSMakePoint(NSMinX(frame), NSMinY(frame))];
@@ -89,4 +89,20 @@ bool MessageCenterTrayBridge::ShowMessageCenter() {
 void MessageCenterTrayBridge::HideMessageCenter() {
   [status_item_view_ setHighlight:NO];
   [tray_controller_ close];
+}
+
+void MessageCenterTrayBridge::UpdateStatusItem() {
+  size_t unread_count = message_center_->UnreadNotificationCount();
+  [status_item_view_ setUnreadCount:unread_count];
+
+  string16 product_name = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+  if (unread_count > 0) {
+    string16 unread_count_string = base::FormatNumber(unread_count);
+    [status_item_view_ setToolTip:
+        l10n_util::GetNSStringF(IDS_MESSAGE_CENTER_TOOLTIP_UNREAD,
+            product_name, unread_count_string)];
+  } else {
+    [status_item_view_ setToolTip:
+        l10n_util::GetNSStringF(IDS_MESSAGE_CENTER_TOOLTIP, product_name)];
+  }
 }

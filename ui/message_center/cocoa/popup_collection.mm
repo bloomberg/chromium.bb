@@ -182,6 +182,7 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
     bounds.origin.y = y;
     [popup showWithAnimation:bounds];
     [popups_ addObject:popup];
+    messageCenter_->DisplayedNotification(notification->id());
     return YES;
   }
 
