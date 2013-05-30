@@ -22,7 +22,6 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/compositor/test/compositor_test_support.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 

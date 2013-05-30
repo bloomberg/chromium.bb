@@ -143,7 +143,6 @@
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../compositor/compositor.gyp:compositor',
-        '../compositor/compositor.gyp:compositor_test_support',
         '../ui.gyp:run_ui_unittests',
         'app_list',
       ],

@@ -1006,7 +1006,6 @@
         ['use_aura==1', {
           'dependencies': [
             '../compositor/compositor.gyp:compositor',
-            '../compositor/compositor.gyp:compositor_test_support',
           ],
         }],
         ['OS=="win"', {
