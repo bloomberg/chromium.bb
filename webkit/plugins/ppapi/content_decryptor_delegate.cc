@@ -628,7 +628,7 @@ void ContentDecryptorDelegate::KeyAdded(PP_Var key_system_var,
   StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
   if (!key_system_string || !session_id_string) {
     key_error_cb_.Run(
-        std::string(), std::string(), media::Decryptor::kUnknownError, 0);
+        std::string(), std::string(), media::MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -658,7 +658,7 @@ void ContentDecryptorDelegate::KeyMessage(PP_Var key_system_var,
 
   if (!key_system_string || !session_id_string || !default_url_string) {
     key_error_cb_.Run(
-        std::string(), std::string(), media::Decryptor::kUnknownError, 0);
+        std::string(), std::string(), media::MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -679,14 +679,14 @@ void ContentDecryptorDelegate::KeyError(PP_Var key_system_var,
   StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
   if (!key_system_string || !session_id_string) {
     key_error_cb_.Run(
-        std::string(), std::string(), media::Decryptor::kUnknownError, 0);
+        std::string(), std::string(), media::MediaKeys::kUnknownError, 0);
     return;
   }
 
   key_error_cb_.Run(
       key_system_string->value(),
       session_id_string->value(),
-      static_cast<media::Decryptor::KeyError>(media_error),
+      static_cast<media::MediaKeys::KeyError>(media_error),
       system_code);
 }
 

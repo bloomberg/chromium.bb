@@ -30,6 +30,7 @@
 #include "googleurl/src/gurl.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
+#include "media/base/media_keys.h"
 #include "media/base/pipeline.h"
 #include "media/base/text_track.h"
 #include "media/filters/gpu_video_decoder.h"
@@ -201,7 +202,7 @@ class WebMediaPlayerImpl
   void OnKeyAdded(const std::string& key_system, const std::string& session_id);
   void OnKeyError(const std::string& key_system,
                   const std::string& session_id,
-                  media::Decryptor::KeyError error_code,
+                  media::MediaKeys::KeyError error_code,
                   int system_code);
   void OnKeyMessage(const std::string& key_system,
                     const std::string& session_id,

@@ -973,7 +973,7 @@ WebMediaPlayerImpl::OnTextTrack(media::TextKind kind,
 
 #define COMPILE_ASSERT_MATCHING_ENUM(name) \
   COMPILE_ASSERT(static_cast<int>(WebKit::WebMediaPlayerClient::name) == \
-                 static_cast<int>(media::Decryptor::k ## name), \
+                 static_cast<int>(media::MediaKeys::k ## name), \
                  mismatching_enums)
 COMPILE_ASSERT_MATCHING_ENUM(UnknownError);
 COMPILE_ASSERT_MATCHING_ENUM(ClientError);
@@ -985,12 +985,12 @@ COMPILE_ASSERT_MATCHING_ENUM(DomainError);
 
 void WebMediaPlayerImpl::OnKeyError(const std::string& key_system,
                                     const std::string& session_id,
-                                    media::Decryptor::KeyError error_code,
+                                    media::MediaKeys::KeyError error_code,
                                     int system_code) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   EmeUMAHistogramEnumeration(
-      key_system, "KeyError", error_code, media::Decryptor::kMaxKeyError);
+      key_system, "KeyError", error_code, media::MediaKeys::kMaxKeyError);
 
   GetClient()->keyError(
       WebString::fromUTF8(key_system),

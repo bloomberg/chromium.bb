@@ -441,7 +441,7 @@ void MediaSourceDelegate::OnDemuxerOpened() {
 
 void MediaSourceDelegate::OnKeyError(const std::string& key_system,
                                      const std::string& session_id,
-                                     media::Decryptor::KeyError error_code,
+                                     media::MediaKeys::KeyError error_code,
                                      int system_code) {
   if (!client_)
     return;

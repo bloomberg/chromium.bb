@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_keys.h"
 #include "media/base/test_data_util.h"
 #include "media/crypto/aes_decryptor.h"
 #include "media/filters/chunk_demuxer.h"
@@ -71,7 +72,7 @@ class FakeEncryptedMedia {
     // Errors are not expected unless overridden.
     virtual void KeyError(const std::string& key_system,
                           const std::string& session_id,
-                          AesDecryptor::KeyError error_code,
+                          MediaKeys::KeyError error_code,
                           int system_code) {
       FAIL() << "Unexpected Key Error";
     }
@@ -111,7 +112,7 @@ class FakeEncryptedMedia {
 
   void KeyError(const std::string& key_system,
                 const std::string& session_id,
-                AesDecryptor::KeyError error_code,
+                MediaKeys::KeyError error_code,
                 int system_code) {
     app_->KeyError(key_system, session_id, error_code, system_code);
   }

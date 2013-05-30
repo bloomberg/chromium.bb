@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/decryptor.h"
+#include "media/base/media_keys.h"
 
 namespace WebKit {
 class WebFrame;
@@ -23,7 +24,8 @@ namespace webkit_media {
 // forwards decryptor calls to it.
 // TODO(xhwang): Currently we don't support run-time switching among decryptor
 // objects. Fix this when needed.
-class ProxyDecryptor {
+// TODO(xhwang): The ProxyDecryptor is not a Decryptor. Find a better name!
+class ProxyDecryptor : public media::MediaKeys {
  public:
   ProxyDecryptor(WebKit::WebMediaPlayerClient* web_media_player_client,
                  WebKit::WebFrame* web_frame,
@@ -39,15 +41,17 @@ class ProxyDecryptor {
   // NULL immediately and reset.
   void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
 
-  bool GenerateKeyRequest(const std::string& key_system,
-                          const std::string& type,
-                          const uint8* init_data, int init_data_length);
-  void AddKey(const std::string& key_system,
-              const uint8* key, int key_length,
-              const uint8* init_data, int init_data_length,
-              const std::string& session_id);
-  void CancelKeyRequest(const std::string& key_system,
-                        const std::string& session_id);
+  // MediaKeys implementation.
+  virtual bool GenerateKeyRequest(const std::string& key_system,
+                                  const std::string& type,
+                                  const uint8* init_data,
+                                  int init_data_length) OVERRIDE;
+  virtual void AddKey(const std::string& key_system,
+                      const uint8* key, int key_length,
+                      const uint8* init_data, int init_data_length,
+                      const std::string& session_id) OVERRIDE;
+  virtual void CancelKeyRequest(const std::string& key_system,
+                                const std::string& session_id) OVERRIDE;
 
  private:
   // Helper functions to create decryptors to handle the given |key_system|.
@@ -61,7 +65,7 @@ class ProxyDecryptor {
   void KeyAdded(const std::string& key_system, const std::string& session_id);
   void KeyError(const std::string& key_system,
                 const std::string& session_id,
-                media::Decryptor::KeyError error_code,
+                media::MediaKeys::KeyError error_code,
                 int system_code);
   void KeyMessage(const std::string& key_system,
                   const std::string& session_id,

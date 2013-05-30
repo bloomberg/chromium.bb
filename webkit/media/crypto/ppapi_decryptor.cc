@@ -105,6 +105,10 @@ void PpapiDecryptor::CancelKeyRequest(const std::string& key_system,
     ReportFailureToCallPlugin(key_system, session_id);
 }
 
+media::MediaKeys* PpapiDecryptor::GetMediaKeys() {
+  return this;
+}
+
 void PpapiDecryptor::RegisterNewKeyCB(StreamType stream_type,
                                       const NewKeyCB& new_key_cb) {
   switch (stream_type) {
@@ -264,7 +268,7 @@ void PpapiDecryptor::KeyAdded(const std::string& key_system,
 
 void PpapiDecryptor::KeyError(const std::string& key_system,
                               const std::string& session_id,
-                              media::Decryptor::KeyError error_code,
+                              media::MediaKeys::KeyError error_code,
                               int system_code) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
   key_error_cb_.Run(key_system, session_id, error_code, system_code);

@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
+#include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
 
 namespace base {
@@ -28,7 +29,7 @@ namespace webkit_media {
 // PpapiDecryptor implements media::Decryptor and forwards all calls to the
 // PluginInstance.
 // This class should always be created & destroyed on the main renderer thread.
-class PpapiDecryptor : public media::Decryptor {
+class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
  public:
   PpapiDecryptor(
       const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance,
@@ -38,19 +39,20 @@ class PpapiDecryptor : public media::Decryptor {
       const media::NeedKeyCB& need_key_cb);
   virtual ~PpapiDecryptor();
 
-  // media::Decryptor implementation.
+  // media::MediaKeys implementation.
   virtual bool GenerateKeyRequest(const std::string& key_system,
                                   const std::string& type,
                                   const uint8* init_data,
                                   int init_data_length) OVERRIDE;
   virtual void AddKey(const std::string& key_system,
-                      const uint8* key,
-                      int key_length,
-                      const uint8* init_data,
-                      int init_data_length,
+                      const uint8* key, int key_length,
+                      const uint8* init_data, int init_data_length,
                       const std::string& session_id) OVERRIDE;
   virtual void CancelKeyRequest(const std::string& key_system,
                                 const std::string& session_id) OVERRIDE;
+
+  // media::Decryptor implementation.
+  virtual media::MediaKeys* GetMediaKeys() OVERRIDE;
   virtual void RegisterNewKeyCB(StreamType stream_type,
                                 const NewKeyCB& key_added_cb) OVERRIDE;
   virtual void Decrypt(StreamType stream_type,
@@ -80,7 +82,7 @@ class PpapiDecryptor : public media::Decryptor {
   void KeyAdded(const std::string& key_system, const std::string& session_id);
   void KeyError(const std::string& key_system,
                 const std::string& session_id,
-                media::Decryptor::KeyError error_code,
+                media::MediaKeys::KeyError error_code,
                 int system_code);
   void KeyMessage(const std::string& key_system,
                   const std::string& session_id,

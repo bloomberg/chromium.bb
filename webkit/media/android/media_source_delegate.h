@@ -12,6 +12,7 @@
 #include "base/time.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer.h"
+#include "media/base/media_keys.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
 #include "media/base/text_track.h"
@@ -110,7 +111,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void OnKeyAdded(const std::string& key_system, const std::string& session_id);
   void OnKeyError(const std::string& key_system,
                   const std::string& session_id,
-                  media::Decryptor::KeyError error_code,
+                  media::MediaKeys::KeyError error_code,
                   int system_code);
   void OnKeyMessage(const std::string& key_system,
                     const std::string& session_id,

@@ -9,6 +9,7 @@
 #include "base/md5.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/filter_collection.h"
+#include "media/base/media_keys.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
 #include "media/filters/video_renderer_base.h"

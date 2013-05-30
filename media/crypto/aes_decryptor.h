@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_export.h"
+#include "media/base/media_keys.h"
 
 namespace crypto {
 class SymmetricKey;
@@ -24,7 +25,7 @@ namespace media {
 
 // Decrypts an AES encrypted buffer into an unencrypted buffer. The AES
 // encryption must be CTR with a key size of 128bits.
-class MEDIA_EXPORT AesDecryptor : public Decryptor {
+class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
  public:
   AesDecryptor(const KeyAddedCB& key_added_cb,
                const KeyErrorCB& key_error_cb,
@@ -32,19 +33,20 @@ class MEDIA_EXPORT AesDecryptor : public Decryptor {
                const NeedKeyCB& need_key_cb);
   virtual ~AesDecryptor();
 
-  // Decryptor implementation.
+  // MediaKeys implementation.
   virtual bool GenerateKeyRequest(const std::string& key_system,
                                   const std::string& type,
                                   const uint8* init_data,
                                   int init_data_length) OVERRIDE;
   virtual void AddKey(const std::string& key_system,
-                      const uint8* key,
-                      int key_length,
-                      const uint8* init_data,
-                      int init_data_length,
+                      const uint8* key, int key_length,
+                      const uint8* init_data, int init_data_length,
                       const std::string& session_id) OVERRIDE;
   virtual void CancelKeyRequest(const std::string& key_system,
                                 const std::string& session_id) OVERRIDE;
+
+  // Decryptor implementation.
+  virtual MediaKeys* GetMediaKeys() OVERRIDE;
   virtual void RegisterNewKeyCB(StreamType stream_type,
                                 const NewKeyCB& key_added_cb) OVERRIDE;
   virtual void Decrypt(StreamType stream_type,

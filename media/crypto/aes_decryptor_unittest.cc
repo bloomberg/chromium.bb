@@ -261,7 +261,7 @@ class AesDecryptorTest : public testing::Test {
   void AddKeyAndExpectToFail(const uint8* key_id, int key_id_size,
                              const uint8* key, int key_size) {
     EXPECT_CALL(*this, KeyError(kClearKeySystem, session_id_string_,
-                                Decryptor::kUnknownError, 0));
+                                MediaKeys::kUnknownError, 0));
     decryptor_.AddKey(kClearKeySystem, key, key_size, key_id, key_id_size,
                       session_id_string_);
   }
@@ -314,7 +314,7 @@ class AesDecryptorTest : public testing::Test {
 
   MOCK_METHOD2(KeyAdded, void(const std::string&, const std::string&));
   MOCK_METHOD4(KeyError, void(const std::string&, const std::string&,
-                              Decryptor::KeyError, int));
+                              MediaKeys::KeyError, int));
   MOCK_METHOD4(KeyMessage, void(const std::string& key_system,
                                 const std::string& session_id,
                                 const std::string& message,

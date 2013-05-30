@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
+#include "media/base/media_keys.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ui/gfx/size.h"

@@ -160,18 +160,8 @@ class MockDecryptor : public Decryptor {
   MockDecryptor();
   virtual ~MockDecryptor();
 
-  MOCK_METHOD4(GenerateKeyRequest, bool(const std::string& key_system,
-                                        const std::string& type,
-                                        const uint8* init_data,
-                                        int init_data_length));
-  MOCK_METHOD6(AddKey, void(const std::string& key_system,
-                            const uint8* key,
-                            int key_length,
-                            const uint8* init_data,
-                            int init_data_length,
-                            const std::string& session_id));
-  MOCK_METHOD2(CancelKeyRequest, void(const std::string& key_system,
-                                      const std::string& session_id));
+  MOCK_METHOD0(GetMediaKeys, MediaKeys*(void));
+
   MOCK_METHOD2(RegisterNewKeyCB, void(StreamType stream_type,
                                       const NewKeyCB& new_key_cb));
   MOCK_METHOD3(Decrypt, void(StreamType stream_type,

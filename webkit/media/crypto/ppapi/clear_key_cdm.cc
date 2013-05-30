@@ -168,7 +168,7 @@ void ClearKeyCdm::Client::KeyAdded(const std::string& key_system,
 
 void ClearKeyCdm::Client::KeyError(const std::string& key_system,
                                    const std::string& session_id,
-                                   media::Decryptor::KeyError error_code,
+                                   media::MediaKeys::KeyError error_code,
                                    int system_code) {
   status_ = kKeyError;
   session_id_ = session_id;

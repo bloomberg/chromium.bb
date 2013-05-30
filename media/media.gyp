@@ -264,6 +264,8 @@
         'base/filter_collection.h',
         'base/media.cc',
         'base/media.h',
+        'base/media_keys.cc',
+        'base/media_keys.h',
         'base/media_log.cc',
         'base/media_log.h',
         'base/media_log_event.h',

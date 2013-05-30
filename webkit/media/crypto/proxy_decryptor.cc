@@ -121,13 +121,13 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
     decryptor_ = CreateDecryptor(key_system);
     if (!decryptor_) {
       key_error_cb_.Run(
-          key_system, std::string(), media::Decryptor::kClientError, 0);
+          key_system, std::string(), media::MediaKeys::kClientError, 0);
       return false;
     }
   }
 
-  if (!decryptor_->GenerateKeyRequest(key_system, type,
-                                      init_data, init_data_length)) {
+  if (!decryptor_->GetMediaKeys()->GenerateKeyRequest(
+      key_system, type, init_data, init_data_length)) {
     decryptor_.reset();
     return false;
   }
@@ -147,8 +147,8 @@ void ProxyDecryptor::AddKey(const std::string& key_system,
   DVLOG(1) << "AddKey()";
 
   // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
-  decryptor_->AddKey(key_system, key, key_length, init_data, init_data_length,
-                     session_id);
+  decryptor_->GetMediaKeys()->AddKey(
+      key_system, key, key_length, init_data, init_data_length, session_id);
 }
 
 void ProxyDecryptor::CancelKeyRequest(const std::string& key_system,
@@ -156,7 +156,7 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& key_system,
   DVLOG(1) << "CancelKeyRequest()";
 
   // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
-  decryptor_->CancelKeyRequest(key_system, session_id);
+  decryptor_->GetMediaKeys()->CancelKeyRequest(key_system, session_id);
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -210,7 +210,7 @@ void ProxyDecryptor::KeyAdded(const std::string& key_system,
 
 void ProxyDecryptor::KeyError(const std::string& key_system,
                               const std::string& session_id,
-                              media::Decryptor::KeyError error_code,
+                              media::MediaKeys::KeyError error_code,
                               int system_code) {
   key_error_cb_.Run(key_system, session_id, error_code, system_code);
 }

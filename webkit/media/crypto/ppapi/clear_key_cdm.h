@@ -88,7 +88,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
     void KeyAdded(const std::string& key_system, const std::string& session_id);
     void KeyError(const std::string& key_system,
                   const std::string& session_id,
-                  media::Decryptor::KeyError error_code,
+                  media::MediaKeys::KeyError error_code,
                   int system_code);
     void KeyMessage(const std::string& key_system,
                     const std::string& session_id,
