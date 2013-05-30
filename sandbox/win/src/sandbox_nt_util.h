@@ -34,7 +34,7 @@ void __cdecl operator delete(void* memory, void* buffer,
 // returning a bool, while VERIFY_SUCCESS_NT expects an action returning
 // NTSTATUS.
 #ifndef NDEBUG
-#define DCHECK_NT(condition) { (condition) ? 0 : __debugbreak(); }
+#define DCHECK_NT(condition) { (condition) ? (void)0 : __debugbreak(); }
 #define VERIFY(action) DCHECK_NT(action)
 #define VERIFY_SUCCESS(action) DCHECK_NT(NT_SUCCESS(action))
 #else
