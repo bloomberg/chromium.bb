@@ -15,7 +15,10 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
-class TaskbarWindowThumbnailerWin;
+#if defined(OS_WIN)
+#include "chrome/browser/ui/views/panels/taskbar_window_thumbnailer_win.h"
+#endif
+
 namespace ui {
 class LinearAnimation;
 }
@@ -29,6 +32,9 @@ class PanelStackView : public NativePanelStackWindow,
                        public views::WidgetObserver,
                        public views::WidgetDelegateView,
                        public views::WidgetFocusChangeListener,
+#if defined(OS_WIN)
+                       public TaskbarWindowThumbnailerDelegateWin,
+#endif
                        public ui::AnimationDelegate {
  public:
   explicit PanelStackView(NativePanelStackWindowDelegate* delegate);
@@ -69,8 +75,6 @@ class PanelStackView : public NativePanelStackWindow,
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
-  virtual void OnWidgetActivationChanged(views::Widget* widget,
-                                         bool active) OVERRIDE;
 
   // Overridden from views::WidgetFocusChangeListener:
   virtual void OnNativeFocusChange(gfx::NativeView focused_before,
@@ -82,6 +86,9 @@ class PanelStackView : public NativePanelStackWindow,
 
   // Updates the bounds of panels as specified in batch update data.
   void UpdatePanelsBounds();
+
+  // Notifies the delegate that the updates of the panel bounds are completed.
+  void NotifyBoundsUpdateCompleted();
 
   // Computes/updates the minimum bounds that could fit all panels.
   gfx::Rect GetStackWindowBounds() const;
@@ -97,9 +104,12 @@ class PanelStackView : public NativePanelStackWindow,
                                             PanelStackView* stack_window);
 
 #if defined(OS_WIN)
-  // Capture the thumbnail of the whole stack and provide it to live preview
-  // (available since Windows 7).
-  void CaptureThumbnailForLivePreview();
+  // Overridden from TaskbarWindowThumbnailerDelegateWin:
+  virtual std::vector<HWND> GetSnapshotWindowHandles() const OVERRIDE;
+
+  // Updates the live preview snapshot when something changes, like
+  // adding/removing/moving/resizing a stacked panel.
+  void RefreshLivePreviewThumbnail();
 
   // Updates the bounds of the widget window in a deferred way.
   void DeferUpdateNativeWindowBounds(HDWP defer_window_pos_info,
@@ -121,7 +131,9 @@ class PanelStackView : public NativePanelStackWindow,
   bool is_drawing_attention_;
 
 #if defined(OS_WIN)
-  // Used to provide custom taskbar thumbnail for Windows 7 and later.
+  // The custom live preview snapshot is always provided for the stack window.
+  // This is because the system might not show the snapshot correctly for
+  // a small window, like collapsed panel.
   scoped_ptr<TaskbarWindowThumbnailerWin> thumbnailer_;
 #endif
 

@@ -19,7 +19,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/views/panels/taskbar_window_thumbnailer_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
@@ -152,7 +151,7 @@ void PanelStackView::EndBatchUpdatePanelBounds() {
     }
 
     bounds_updates_started_ = false;
-    delegate_->PanelBoundsBatchUpdateCompleted();
+    NotifyBoundsUpdateCompleted();
     return;
   }
 
@@ -163,16 +162,25 @@ void PanelStackView::EndBatchUpdatePanelBounds() {
   bounds_animator_->Start();
 }
 
+void PanelStackView::NotifyBoundsUpdateCompleted() {
+  delegate_->PanelBoundsBatchUpdateCompleted();
+
+#if defined(OS_WIN)
+  // Refresh the thumbnail each time when any bounds updates are done.
+  RefreshLivePreviewThumbnail();
+#endif
+}
+
 bool PanelStackView::IsAnimatingPanelBounds() const {
   return bounds_updates_started_ && animate_bounds_updates_;
 }
 
 void PanelStackView::Minimize() {
 #if defined(OS_WIN)
-  // When the owner stack window is minimized by the system, its live preview
-  // is lost. We need to set it explicitly. This has to be done before the
-  // minimization.
-  CaptureThumbnailForLivePreview();
+  // When the stack window is minimized by the system, its snapshot could not
+  // be obtained. We need to capture the snapshot before the minimization.
+  if (thumbnailer_)
+    thumbnailer_->CaptureSnapshot();
 #endif
 
   window_->Minimize();
@@ -190,6 +198,10 @@ void PanelStackView::DrawSystemAttention(bool draw_attention) {
   is_drawing_attention_ = draw_attention;
 
 #if defined(OS_WIN)
+  // Refresh the thumbnail when a panel could change something for the
+  // attention.
+  RefreshLivePreviewThumbnail();
+
   if (draw_attention) {
     // The default implementation of Widget::FlashFrame only flashes 5 times.
     // We need more than that.
@@ -270,14 +282,6 @@ void PanelStackView::OnWidgetDestroying(views::Widget* widget) {
     window_ = NULL;
 }
 
-void PanelStackView::OnWidgetActivationChanged(views::Widget* widget,
-                                               bool active) {
-#if defined(OS_WIN)
-  if (active && thumbnailer_)
-    thumbnailer_->Stop();
-#endif
-}
-
 void PanelStackView::OnNativeFocusChange(gfx::NativeView focused_before,
                                          gfx::NativeView focused_now) {
   // When the user selects the stacked panels via ALT-TAB or WIN-TAB, the
@@ -306,7 +310,7 @@ void PanelStackView::AnimationEnded(const ui::Animation* animation) {
   }
   bounds_updates_.clear();
 
-  delegate_->PanelBoundsBatchUpdateCompleted();
+  NotifyBoundsUpdateCompleted();
 }
 
 void PanelStackView::AnimationProgressed(const ui::Animation* animation) {
@@ -378,6 +382,12 @@ gfx::Rect PanelStackView::GetStackWindowBounds() const {
 
 void PanelStackView::UpdateStackWindowBounds() {
   window_->SetBounds(GetStackWindowBounds());
+
+#if defined(OS_WIN)
+  // Refresh the thumbnail each time whne the stack window is changed, due to
+  // adding or removing a panel.
+  RefreshLivePreviewThumbnail();
+#endif
 }
 
 // static
@@ -440,6 +450,12 @@ views::Widget* PanelStackView::CreateWindowWithBounds(const gfx::Rect& bounds) {
       ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
                                                 panel->profile()->GetPath()),
       views::HWNDForWidget(window));
+
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
+    HWND native_window = views::HWNDForWidget(window);
+    thumbnailer_.reset(new TaskbarWindowThumbnailerWin(native_window, this));
+    thumbnailer_->Start();
+  }
 #endif
 
   return window;
@@ -455,19 +471,7 @@ void PanelStackView::EnsureWindowCreated() {
 }
 
 #if defined(OS_WIN)
-void PanelStackView::CaptureThumbnailForLivePreview() {
-  // Live preview is only available since Windows 7.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
-  HWND native_window = views::HWNDForWidget(window_);
-
-  if (!thumbnailer_.get()) {
-    DCHECK(native_window);
-    thumbnailer_.reset(new TaskbarWindowThumbnailerWin(native_window));
-    ui::HWNDSubclass::AddFilterToTarget(native_window, thumbnailer_.get());
-  }
-
+std::vector<HWND> PanelStackView::GetSnapshotWindowHandles() const {
   std::vector<HWND> native_panel_windows;
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
@@ -476,7 +480,13 @@ void PanelStackView::CaptureThumbnailForLivePreview() {
         views::HWNDForWidget(
             static_cast<PanelView*>(panel->native_panel())->window()));
   }
-  thumbnailer_->Start(native_panel_windows);
+  return native_panel_windows;
+}
+
+void PanelStackView::RefreshLivePreviewThumbnail() {
+  if (!thumbnailer_.get())
+    return;
+  thumbnailer_->InvalidateSnapshot();
 }
 
 void PanelStackView::DeferUpdateNativeWindowBounds(HDWP defer_window_pos_info,

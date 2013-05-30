@@ -604,6 +604,9 @@ void PanelView::PanelExpansionStateChanging(Panel::ExpansionState old_state,
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
+  if (panel_->collection()->type() != PanelCollection::DOCKED)
+    return;
+
   bool is_minimized = old_state != Panel::EXPANDED;
   bool will_be_minimized = new_state != Panel::EXPANDED;
   if (is_minimized == will_be_minimized)
@@ -613,8 +616,7 @@ void PanelView::PanelExpansionStateChanging(Panel::ExpansionState old_state,
 
   if (!thumbnailer_.get()) {
     DCHECK(native_window);
-    thumbnailer_.reset(new TaskbarWindowThumbnailerWin(native_window));
-    ui::HWNDSubclass::AddFilterToTarget(native_window, thumbnailer_.get());
+    thumbnailer_.reset(new TaskbarWindowThumbnailerWin(native_window, NULL));
   }
 
   // Cache the image at this point.
@@ -628,8 +630,9 @@ void PanelView::PanelExpansionStateChanging(Panel::ExpansionState old_state,
                      RDW_NOCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
     }
 
-    std::vector<HWND> snapshot_hwnds;
-    thumbnailer_->Start(snapshot_hwnds);
+    // Start the thumbnailer and capture the snapshot now.
+    thumbnailer_->Start();
+    thumbnailer_->CaptureSnapshot();
   } else {
     force_to_paint_as_inactive_ = false;
     thumbnailer_->Stop();

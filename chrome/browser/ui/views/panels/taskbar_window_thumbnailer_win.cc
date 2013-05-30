@@ -50,26 +50,36 @@ void EnableCustomThumbnail(HWND hwnd, bool enable) {
 }  // namespace
 
 
-TaskbarWindowThumbnailerWin::TaskbarWindowThumbnailerWin(HWND hwnd)
-    : hwnd_(hwnd) {
+TaskbarWindowThumbnailerWin::TaskbarWindowThumbnailerWin(
+    HWND hwnd, TaskbarWindowThumbnailerDelegateWin* delegate)
+    : hwnd_(hwnd),
+      delegate_(delegate) {
+  ui::HWNDSubclass::AddFilterToTarget(hwnd_, this);
 }
 
 TaskbarWindowThumbnailerWin::~TaskbarWindowThumbnailerWin() {
+  ui::HWNDSubclass::RemoveFilterFromAllTargets(this);
 }
 
-void TaskbarWindowThumbnailerWin::Start(
-    const std::vector<HWND>& snapshot_hwnds) {
-  snapshot_hwnds_ = snapshot_hwnds;
-  if (snapshot_hwnds_.empty())
-    snapshot_hwnds_.push_back(hwnd_);
-  capture_bitmap_.reset(CaptureWindowImage());
-  if (capture_bitmap_)
-    EnableCustomThumbnail(hwnd_, true);
+void TaskbarWindowThumbnailerWin::Start() {
+  EnableCustomThumbnail(hwnd_, true);
 }
 
 void TaskbarWindowThumbnailerWin::Stop() {
   capture_bitmap_.reset();
   EnableCustomThumbnail(hwnd_, false);
+}
+
+void TaskbarWindowThumbnailerWin::CaptureSnapshot() {
+  if (!capture_bitmap_)
+    capture_bitmap_.reset(CaptureWindowImage());
+}
+
+void TaskbarWindowThumbnailerWin::InvalidateSnapshot() {
+  capture_bitmap_.reset();
+
+  // The snapshot feeded to the system could be cached. Invalidate it.
+  ::DwmInvalidateIconicBitmaps(hwnd_);
 }
 
 bool TaskbarWindowThumbnailerWin::FilterMessage(HWND hwnd,
@@ -91,7 +101,7 @@ bool TaskbarWindowThumbnailerWin::FilterMessage(HWND hwnd,
 
 bool TaskbarWindowThumbnailerWin::OnDwmSendIconicThumbnail(
     int width, int height, LRESULT* l_result) {
-  DCHECK(capture_bitmap_.get());
+  CaptureSnapshot();
 
   SkBitmap* thumbnail_bitmap = capture_bitmap_.get();
 
@@ -119,26 +129,32 @@ bool TaskbarWindowThumbnailerWin::OnDwmSendIconicThumbnail(
 
 bool TaskbarWindowThumbnailerWin::OnDwmSendIconicLivePreviewBitmap(
     LRESULT* l_result) {
-  scoped_ptr<SkBitmap> live_bitmap(CaptureWindowImage());
-  HBITMAP native_bitmap = GetNativeBitmapFromSkBitmap(*live_bitmap);
+  CaptureSnapshot();
+
+  HBITMAP native_bitmap = GetNativeBitmapFromSkBitmap(*capture_bitmap_);
   ::DwmSetIconicLivePreviewBitmap(hwnd_, native_bitmap, NULL, 0);
   ::DeleteObject(native_bitmap);
-
   *l_result = 0;
   return true;
 }
 
 SkBitmap* TaskbarWindowThumbnailerWin::CaptureWindowImage() const {
+  std::vector<HWND> snapshot_hwnds;
+  if (delegate_)
+    snapshot_hwnds = delegate_->GetSnapshotWindowHandles();
+  if (snapshot_hwnds.empty())
+    snapshot_hwnds.push_back(hwnd_);
+
   int enclosing_x = 0;
   int enclosing_y = 0;
   int enclosing_right = 0;
   int enclosing_bottom = 0;
-  for (std::vector<HWND>::const_iterator iter = snapshot_hwnds_.begin();
-       iter != snapshot_hwnds_.end(); ++iter) {
+  for (std::vector<HWND>::const_iterator iter = snapshot_hwnds.begin();
+       iter != snapshot_hwnds.end(); ++iter) {
     RECT bounds;
     if (!::GetWindowRect(*iter, &bounds))
       continue;
-    if (iter == snapshot_hwnds_.begin()) {
+    if (iter == snapshot_hwnds.begin()) {
       enclosing_x = bounds.left;
       enclosing_y = bounds.top;
       enclosing_right = bounds.right;
@@ -164,8 +180,8 @@ SkBitmap* TaskbarWindowThumbnailerWin::CaptureWindowImage() const {
   {
     skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     HDC target_dc = scoped_platform_paint.GetPlatformSurface();
-    for (std::vector<HWND>::const_iterator iter = snapshot_hwnds_.begin();
-         iter != snapshot_hwnds_.end(); ++iter) {
+    for (std::vector<HWND>::const_iterator iter = snapshot_hwnds.begin();
+         iter != snapshot_hwnds.end(); ++iter) {
       HWND current_hwnd = *iter;
       RECT current_bounds;
       if (!::GetWindowRect(current_hwnd, &current_bounds))
