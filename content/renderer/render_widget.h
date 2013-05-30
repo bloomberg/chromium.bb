@@ -74,6 +74,7 @@ namespace content {
 struct GpuRenderingStats;
 class RenderWidgetCompositor;
 class RenderWidgetTest;
+class SynchronousCompositorImpl;
 
 // RenderWidget provides a communication bridge between a WebWidget and
 // a RenderWidgetHost, the latter of which lives in a different process.
@@ -495,6 +496,11 @@ class CONTENT_EXPORT RenderWidget
   WebGraphicsContext3DCommandBufferImpl* CreateGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
+#if defined(OS_ANDROID)
+  // Lazily creates the synchronous compositor on first call.
+  SynchronousCompositorImpl* GetSynchronousCompositor();
+#endif
+
   bool OnSnapshotHelper(const gfx::Rect& src_subrect, SkBitmap* bitmap);
 
   // Routing ID that allows us to communicate to the parent browser process
@@ -508,6 +514,11 @@ class CONTENT_EXPORT RenderWidget
 
   // This is lazily constructed and must not outlive webwidget_.
   scoped_ptr<RenderWidgetCompositor> compositor_;
+
+#if defined(OS_ANDROID)
+  // This is lazily constructed.
+  scoped_ptr<SynchronousCompositorImpl> synchronous_compositor_;
+#endif
 
   // Set to the ID of the view that initiated creating this view, if any. When
   // the view was initiated by the browser (the common case), this will be

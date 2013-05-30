@@ -5,6 +5,9 @@
 #ifndef CC_INPUT_LAYER_SCROLL_OFFSET_DELEGATE_H_
 #define CC_INPUT_LAYER_SCROLL_OFFSET_DELEGATE_H_
 
+#include "base/basictypes.h"
+#include "ui/gfx/vector2d_f.h"
+
 namespace cc {
 
 // The LayerScrollOffsetDelegate allows for the embedder to take ownership of

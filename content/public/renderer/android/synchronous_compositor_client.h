@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSTIOR_CLIENT_H_
-#define CONTENT_PUBLIC_RENDERER_ANDROID_SYNCRHONOUS_COMPOSITOR_CLIENT_H_
+#ifndef CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_CLIENT_H_
+#define CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_CLIENT_H_
+
+#include "base/basictypes.h"
 
 namespace content {
 
@@ -25,9 +27,13 @@ class SynchronousCompositorClient {
   virtual void SetContinuousInvalidate(bool invalidate) = 0;
 
  protected:
+  SynchronousCompositorClient() {}
   virtual ~SynchronousCompositorClient() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorClient);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSTIOR_CLIENT_H_
+#endif  // CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_CLIENT_H_

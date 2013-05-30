@@ -87,12 +87,11 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
 };
 
 SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
-    int32 routing_id)
-    : cc::OutputSurface(CreateWebGraphicsContext3D(),
-                        scoped_ptr<cc::SoftwareOutputDevice>(
-                            new SoftwareDevice(this))),
-      compositor_client_(NULL),
-      routing_id_(routing_id),
+    SynchronousCompositorOutputSurfaceDelegate* delegate)
+    : cc::OutputSurface(
+          CreateWebGraphicsContext3D(),
+          scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
+      delegate_(delegate),
       needs_begin_frame_(false),
       did_swap_buffer_(false),
       current_sw_canvas_(NULL) {
@@ -101,8 +100,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
 
 SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() {
   DCHECK(CalledOnValidThread());
-  if (compositor_client_)
-    compositor_client_->DidDestroyCompositor(this);
+  delegate_->DidDestroySynchronousOutputSurface();
 }
 
 bool SynchronousCompositorOutputSurface::ForcedDrawToSoftwareDevice() const {
@@ -114,8 +112,7 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   DCHECK(CalledOnValidThread());
   if (!cc::OutputSurface::BindToClient(surface_client))
     return false;
-  GetContentClient()->renderer()->DidCreateSynchronousCompositor(routing_id_,
-                                                                 this);
+  delegate_->DidCreateSynchronousOutputSurface();
   return true;
 }
 
@@ -134,20 +131,13 @@ void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(
     bool enable) {
   DCHECK(CalledOnValidThread());
   needs_begin_frame_ = enable;
-  UpdateCompositorClientSettings();
+  delegate_->SetContinuousInvalidate(needs_begin_frame_);
 }
 
 void SynchronousCompositorOutputSurface::SwapBuffers(
     const ui::LatencyInfo& info) {
   context3d()->shallowFlushCHROMIUM();
   did_swap_buffer_ = true;
-}
-
-void SynchronousCompositorOutputSurface::SetClient(
-    SynchronousCompositorClient* compositor_client) {
-  DCHECK(CalledOnValidThread());
-  compositor_client_ = compositor_client;
-  UpdateCompositorClientSettings();
 }
 
 bool SynchronousCompositorOutputSurface::IsHwReady() {
@@ -200,12 +190,6 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   client_->SetNeedsRedrawRect(damage_area);
   if (needs_begin_frame_)
     client_->BeginFrame(base::TimeTicks::Now());
-}
-
-void SynchronousCompositorOutputSurface::UpdateCompositorClientSettings() {
-  if (compositor_client_) {
-    compositor_client_->SetContinuousInvalidate(needs_begin_frame_);
-  }
 }
 
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading

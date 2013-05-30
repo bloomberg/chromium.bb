@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #ifndef CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
-#define CONTENT_RENDERER_ANDOIRD_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
+#define CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -14,21 +14,36 @@
 namespace content {
 
 class SynchronousCompositorClient;
+class SynchronousCompositorOutputSurfaceDelegate;
 class WebGraphicsContext3DCommandBufferImpl;
+
+class SynchronousCompositorOutputSurfaceDelegate {
+ public:
+  virtual void SetContinuousInvalidate(bool enable) = 0;
+  virtual void DidCreateSynchronousOutputSurface() = 0;
+  virtual void DidDestroySynchronousOutputSurface() = 0;
+
+ protected:
+  SynchronousCompositorOutputSurfaceDelegate() {}
+  virtual ~SynchronousCompositorOutputSurfaceDelegate() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorOutputSurfaceDelegate);
+};
 
 // Specialization of the output surface that adapts it to implement the
 // content::SynchronousCompositor public API. This class effects an "inversion
 // of control" - enabling drawing to be  orchestrated by the embedding
 // layer, instead of driven by the compositor internals - hence it holds two
-// 'client' pointers (including |client_| in the OutputSurface baseclass) which
-// represent the consumers of the two roles in plays.
+// 'client' pointers (|client_| in the OutputSurface baseclass and |delegate_|)
+// which represent the consumers of the two roles in plays.
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when BindToClient is called.
 class SynchronousCompositorOutputSurface
-    : NON_EXPORTED_BASE(public cc::OutputSurface),
-      NON_EXPORTED_BASE(public SynchronousCompositor) {
+    : NON_EXPORTED_BASE(public cc::OutputSurface) {
  public:
-  explicit SynchronousCompositorOutputSurface(int32 routing_id);
+  explicit SynchronousCompositorOutputSurface(
+      SynchronousCompositorOutputSurfaceDelegate* delegate);
   virtual ~SynchronousCompositorOutputSurface();
 
   // OutputSurface.
@@ -39,15 +54,12 @@ class SynchronousCompositorOutputSurface
   virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
   virtual void SwapBuffers(const ui::LatencyInfo& info) OVERRIDE;
 
-  // SynchronousCompositor.
-  virtual void SetClient(SynchronousCompositorClient* compositor_client)
-      OVERRIDE;
-  virtual bool IsHwReady() OVERRIDE;
-  virtual bool DemandDrawSw(SkCanvas* canvas) OVERRIDE;
-  virtual bool DemandDrawHw(
-      gfx::Size view_size,
-      const gfx::Transform& transform,
-      gfx::Rect clip) OVERRIDE;
+  // Partial SynchronousCompositor API implementation.
+  bool IsHwReady();
+  bool DemandDrawSw(SkCanvas* canvas);
+  bool DemandDrawHw(gfx::Size view_size,
+                    const gfx::Transform& transform,
+                    gfx::Rect clip);
 
  private:
   class SoftwareDevice;
@@ -58,8 +70,7 @@ class SynchronousCompositorOutputSurface
   void NotifyCompositorSettingsChanged();
   bool CalledOnValidThread() const;
 
-  SynchronousCompositorClient* compositor_client_;
-  int routing_id_;
+  SynchronousCompositorOutputSurfaceDelegate* delegate_;
   bool needs_begin_frame_;
   bool did_swap_buffer_;
 

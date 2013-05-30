@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSTIOR_
-#define CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_
+#ifndef CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_
+#define CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_
 
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -18,7 +18,7 @@ namespace content {
 
 class SynchronousCompositorClient;
 
-// Interface for embedders that which to direct compositing operations
+// Interface for embedders that wish to direct compositing operations
 // synchronously under their own control. Only meaningful when the
 // kEnableSyncrhonousRendererCompositor flag is specified.
 class SynchronousCompositor {
@@ -29,7 +29,7 @@ class SynchronousCompositor {
   // the caller.
   virtual void SetClient(SynchronousCompositorClient* client) = 0;
 
-  // Returns true is the compositor is fully initialized and ready to receive
+  // Returns true if the compositor is fully initialized and ready to receive
   // calls to DemandDrawHw().
   virtual bool IsHwReady() = 0;
 
@@ -50,4 +50,4 @@ class SynchronousCompositor {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSTIOR_
+#endif  // CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_
