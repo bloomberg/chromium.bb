@@ -9,7 +9,6 @@
 #include <string.h>
 
 #include "base/string16.h"
-#include "url/url_export.h"
 #include "url/url_parse.h"
 
 namespace url_canon {
@@ -187,7 +186,7 @@ class RawCanonOutputW : public RawCanonOutputT<char16, fixed_capacity> {};
 //
 // Embedders will want to see the unit test for the ICU version.
 
-class URL_EXPORT CharsetConverter {
+class CharsetConverter {
  public:
   CharsetConverter() {}
   virtual ~CharsetConverter() {}
@@ -225,12 +224,12 @@ class URL_EXPORT CharsetConverter {
 //
 // Therefore, callers should not use the buffer, since it may actuall be empty,
 // use the computed pointer and |*output_len| instead.
-URL_EXPORT const char* RemoveURLWhitespace(const char* input, int input_len,
-                                           CanonOutputT<char>* buffer,
-                                           int* output_len);
-URL_EXPORT const char16* RemoveURLWhitespace(const char16* input, int input_len,
-                                             CanonOutputT<char16>* buffer,
-                                             int* output_len);
+const char* RemoveURLWhitespace(const char* input, int input_len,
+                                CanonOutputT<char>* buffer,
+                                int* output_len);
+const char16* RemoveURLWhitespace(const char16* input, int input_len,
+                                  CanonOutputT<char16>* buffer,
+                                  int* output_len);
 
 // IDN ------------------------------------------------------------------------
 
@@ -243,9 +242,7 @@ URL_EXPORT const char16* RemoveURLWhitespace(const char16* input, int input_len,
 // the length of the output will be set to the length of the new host name.
 //
 // On error, returns false. The output in this case is undefined.
-URL_EXPORT bool IDNToASCII(const char16* src,
-                           int src_len,
-                           CanonOutputW* output);
+bool IDNToASCII(const char16* src, int src_len, CanonOutputW* output);
 
 // Piece-by-piece canonicalizers ----------------------------------------------
 //
@@ -271,14 +268,14 @@ URL_EXPORT bool IDNToASCII(const char16* src,
 // URLs.
 //
 // The 8-bit version requires UTF-8 encoding.
-URL_EXPORT bool CanonicalizeScheme(const char* spec,
-                                   const url_parse::Component& scheme,
-                                   CanonOutput* output,
-                                   url_parse::Component* out_scheme);
-URL_EXPORT bool CanonicalizeScheme(const char16* spec,
-                                   const url_parse::Component& scheme,
-                                   CanonOutput* output,
-                                   url_parse::Component* out_scheme);
+bool CanonicalizeScheme(const char* spec,
+                        const url_parse::Component& scheme,
+                        CanonOutput* output,
+                        url_parse::Component* out_scheme);
+bool CanonicalizeScheme(const char16* spec,
+                        const url_parse::Component& scheme,
+                        CanonOutput* output,
+                        url_parse::Component* out_scheme);
 
 // User info: username/password. If present, this will add the delimiters so
 // the output will be "<username>:<password>@" or "<username>@". Empty
@@ -290,20 +287,20 @@ URL_EXPORT bool CanonicalizeScheme(const char16* spec,
 // is legal as long as the two components don't overlap.
 //
 // The 8-bit version requires UTF-8 encoding.
-URL_EXPORT bool CanonicalizeUserInfo(const char* username_source,
-                                     const url_parse::Component& username,
-                                     const char* password_source,
-                                     const url_parse::Component& password,
-                                     CanonOutput* output,
-                                     url_parse::Component* out_username,
-                                     url_parse::Component* out_password);
-URL_EXPORT bool CanonicalizeUserInfo(const char16* username_source,
-                                     const url_parse::Component& username,
-                                     const char16* password_source,
-                                     const url_parse::Component& password,
-                                     CanonOutput* output,
-                                     url_parse::Component* out_username,
-                                     url_parse::Component* out_password);
+bool CanonicalizeUserInfo(const char* username_source,
+                          const url_parse::Component& username,
+                          const char* password_source,
+                          const url_parse::Component& password,
+                          CanonOutput* output,
+                          url_parse::Component* out_username,
+                          url_parse::Component* out_password);
+bool CanonicalizeUserInfo(const char16* username_source,
+                          const url_parse::Component& username,
+                          const char16* password_source,
+                          const url_parse::Component& password,
+                          CanonOutput* output,
+                          url_parse::Component* out_username,
+                          url_parse::Component* out_password);
 
 
 // This structure holds detailed state exported from the IP/Host canonicalizers.
@@ -356,27 +353,27 @@ struct CanonHostInfo {
 //
 // The 8-bit version requires UTF-8 encoding.  Use this version when you only
 // need to know whether canonicalization succeeded.
-URL_EXPORT bool CanonicalizeHost(const char* spec,
-                                 const url_parse::Component& host,
-                                 CanonOutput* output,
-                                 url_parse::Component* out_host);
-URL_EXPORT bool CanonicalizeHost(const char16* spec,
-                                 const url_parse::Component& host,
-                                 CanonOutput* output,
-                                 url_parse::Component* out_host);
+bool CanonicalizeHost(const char* spec,
+                      const url_parse::Component& host,
+                      CanonOutput* output,
+                      url_parse::Component* out_host);
+bool CanonicalizeHost(const char16* spec,
+                      const url_parse::Component& host,
+                      CanonOutput* output,
+                      url_parse::Component* out_host);
 
 // Extended version of CanonicalizeHost, which returns additional information.
 // Use this when you need to know whether the hostname was an IP address.
 // A successful return is indicated by host_info->family != BROKEN.  See the
 // definition of CanonHostInfo above for details.
-URL_EXPORT void CanonicalizeHostVerbose(const char* spec,
-                                        const url_parse::Component& host,
-                                        CanonOutput* output,
-                                        CanonHostInfo* host_info);
-URL_EXPORT void CanonicalizeHostVerbose(const char16* spec,
-                                        const url_parse::Component& host,
-                                        CanonOutput* output,
-                                        CanonHostInfo* host_info);
+void CanonicalizeHostVerbose(const char* spec,
+                             const url_parse::Component& host,
+                             CanonOutput* output,
+                             CanonHostInfo* host_info);
+void CanonicalizeHostVerbose(const char16* spec,
+                             const url_parse::Component& host,
+                             CanonOutput* output,
+                             CanonHostInfo* host_info);
 
 
 // IP addresses.
@@ -389,34 +386,34 @@ URL_EXPORT void CanonicalizeHostVerbose(const char16* spec,
 // This is called AUTOMATICALLY from the host canonicalizer, which ensures that
 // the input is unescaped and name-prepped, etc. It should not normally be
 // necessary or wise to call this directly.
-URL_EXPORT void CanonicalizeIPAddress(const char* spec,
-                                      const url_parse::Component& host,
-                                      CanonOutput* output,
-                                      CanonHostInfo* host_info);
-URL_EXPORT void CanonicalizeIPAddress(const char16* spec,
-                                      const url_parse::Component& host,
-                                      CanonOutput* output,
-                                      CanonHostInfo* host_info);
+void CanonicalizeIPAddress(const char* spec,
+                           const url_parse::Component& host,
+                           CanonOutput* output,
+                           CanonHostInfo* host_info);
+void CanonicalizeIPAddress(const char16* spec,
+                           const url_parse::Component& host,
+                           CanonOutput* output,
+                           CanonHostInfo* host_info);
 
 // Port: this function will add the colon for the port if a port is present.
 // The caller can pass url_parse::PORT_UNSPECIFIED as the
 // default_port_for_scheme argument if there is no default port.
 //
 // The 8-bit version requires UTF-8 encoding.
-URL_EXPORT bool CanonicalizePort(const char* spec,
-                                 const url_parse::Component& port,
-                                 int default_port_for_scheme,
-                                 CanonOutput* output,
-                                 url_parse::Component* out_port);
-URL_EXPORT bool CanonicalizePort(const char16* spec,
-                                 const url_parse::Component& port,
-                                 int default_port_for_scheme,
-                                 CanonOutput* output,
-                                 url_parse::Component* out_port);
+bool CanonicalizePort(const char* spec,
+                      const url_parse::Component& port,
+                      int default_port_for_scheme,
+                      CanonOutput* output,
+                      url_parse::Component* out_port);
+bool CanonicalizePort(const char16* spec,
+                      const url_parse::Component& port,
+                      int default_port_for_scheme,
+                      CanonOutput* output,
+                      url_parse::Component* out_port);
 
 // Returns the default port for the given canonical scheme, or PORT_UNSPECIFIED
 // if the scheme is unknown.
-URL_EXPORT int DefaultPortForScheme(const char* scheme, int scheme_len);
+int DefaultPortForScheme(const char* scheme, int scheme_len);
 
 // Path. If the input does not begin in a slash (including if the input is
 // empty), we'll prepend a slash to the path to make it canonical.
@@ -427,14 +424,14 @@ URL_EXPORT int DefaultPortForScheme(const char* scheme, int scheme_len);
 // an issue. Somebody giving us an 8-bit path is responsible for generating
 // the path that the server expects (we'll escape high-bit characters), so
 // if something is invalid, it's their problem.
-URL_EXPORT bool CanonicalizePath(const char* spec,
-                                 const url_parse::Component& path,
-                                 CanonOutput* output,
-                                 url_parse::Component* out_path);
-URL_EXPORT bool CanonicalizePath(const char16* spec,
-                                 const url_parse::Component& path,
-                                 CanonOutput* output,
-                                 url_parse::Component* out_path);
+bool CanonicalizePath(const char* spec,
+                      const url_parse::Component& path,
+                      CanonOutput* output,
+                      url_parse::Component* out_path);
+bool CanonicalizePath(const char16* spec,
+                      const url_parse::Component& path,
+                      CanonOutput* output,
+                      url_parse::Component* out_path);
 
 // Canonicalizes the input as a file path. This is like CanonicalizePath except
 // that it also handles Windows drive specs. For example, the path can begin
@@ -442,14 +439,14 @@ URL_EXPORT bool CanonicalizePath(const char16* spec,
 // The string will be appended to |*output| and |*out_path| will be updated.
 //
 // The 8-bit version requires UTF-8 encoding.
-URL_EXPORT bool FileCanonicalizePath(const char* spec,
-                                     const url_parse::Component& path,
-                                     CanonOutput* output,
-                                     url_parse::Component* out_path);
-URL_EXPORT bool FileCanonicalizePath(const char16* spec,
-                                     const url_parse::Component& path,
-                                     CanonOutput* output,
-                                     url_parse::Component* out_path);
+bool FileCanonicalizePath(const char* spec,
+                          const url_parse::Component& path,
+                          CanonOutput* output,
+                          url_parse::Component* out_path);
+bool FileCanonicalizePath(const char16* spec,
+                          const url_parse::Component& path,
+                          CanonOutput* output,
+                          url_parse::Component* out_path);
 
 // Query: Prepends the ? if needed.
 //
@@ -463,16 +460,16 @@ URL_EXPORT bool FileCanonicalizePath(const char16* spec,
 // if necessary, for ASCII input, no conversions are necessary.
 //
 // The converter can be NULL. In this case, the output encoding will be UTF-8.
-URL_EXPORT void CanonicalizeQuery(const char* spec,
-                                  const url_parse::Component& query,
-                                  CharsetConverter* converter,
-                                  CanonOutput* output,
-                                  url_parse::Component* out_query);
-URL_EXPORT void CanonicalizeQuery(const char16* spec,
-                                  const url_parse::Component& query,
-                                  CharsetConverter* converter,
-                                  CanonOutput* output,
-                                  url_parse::Component* out_query);
+void CanonicalizeQuery(const char* spec,
+                       const url_parse::Component& query,
+                       CharsetConverter* converter,
+                       CanonOutput* output,
+                       url_parse::Component* out_query);
+void CanonicalizeQuery(const char16* spec,
+                       const url_parse::Component& query,
+                       CharsetConverter* converter,
+                       CanonOutput* output,
+                       url_parse::Component* out_query);
 
 // Ref: Prepends the # if needed. The output will be UTF-8 (this is the only
 // canonicalizer that does not produce ASCII output). The output is
@@ -480,14 +477,14 @@ URL_EXPORT void CanonicalizeQuery(const char16* spec,
 //
 // This function will not fail. If the input is invalid UTF-8/UTF-16, we'll use
 // the "Unicode replacement character" for the confusing bits and copy the rest.
-URL_EXPORT void CanonicalizeRef(const char* spec,
-                                const url_parse::Component& path,
-                                CanonOutput* output,
-                                url_parse::Component* out_path);
-URL_EXPORT void CanonicalizeRef(const char16* spec,
-                                const url_parse::Component& path,
-                                CanonOutput* output,
-                                url_parse::Component* out_path);
+void CanonicalizeRef(const char* spec,
+                     const url_parse::Component& path,
+                     CanonOutput* output,
+                     url_parse::Component* out_path);
+void CanonicalizeRef(const char16* spec,
+                     const url_parse::Component& path,
+                     CanonOutput* output,
+                     url_parse::Component* out_path);
 
 // Full canonicalizer ---------------------------------------------------------
 //
@@ -500,75 +497,75 @@ URL_EXPORT void CanonicalizeRef(const char16* spec,
 // The 8-bit versions require UTF-8 encoding.
 
 // Use for standard URLs with authorities and paths.
-URL_EXPORT bool CanonicalizeStandardURL(const char* spec,
-                                        int spec_len,
-                                        const url_parse::Parsed& parsed,
-                                        CharsetConverter* query_converter,
-                                        CanonOutput* output,
-                                        url_parse::Parsed* new_parsed);
-URL_EXPORT bool CanonicalizeStandardURL(const char16* spec,
-                                        int spec_len,
-                                        const url_parse::Parsed& parsed,
-                                        CharsetConverter* query_converter,
-                                        CanonOutput* output,
-                                        url_parse::Parsed* new_parsed);
+bool CanonicalizeStandardURL(const char* spec,
+                             int spec_len,
+                             const url_parse::Parsed& parsed,
+                             CharsetConverter* query_converter,
+                             CanonOutput* output,
+                             url_parse::Parsed* new_parsed);
+bool CanonicalizeStandardURL(const char16* spec,
+                             int spec_len,
+                             const url_parse::Parsed& parsed,
+                             CharsetConverter* query_converter,
+                             CanonOutput* output,
+                             url_parse::Parsed* new_parsed);
 
 // Use for file URLs.
-URL_EXPORT bool CanonicalizeFileURL(const char* spec,
-                                    int spec_len,
-                                    const url_parse::Parsed& parsed,
-                                    CharsetConverter* query_converter,
-                                    CanonOutput* output,
-                                    url_parse::Parsed* new_parsed);
-URL_EXPORT bool CanonicalizeFileURL(const char16* spec,
-                                    int spec_len,
-                                    const url_parse::Parsed& parsed,
-                                    CharsetConverter* query_converter,
-                                    CanonOutput* output,
-                                    url_parse::Parsed* new_parsed);
+bool CanonicalizeFileURL(const char* spec,
+                         int spec_len,
+                         const url_parse::Parsed& parsed,
+                         CharsetConverter* query_converter,
+                         CanonOutput* output,
+                         url_parse::Parsed* new_parsed);
+bool CanonicalizeFileURL(const char16* spec,
+                         int spec_len,
+                         const url_parse::Parsed& parsed,
+                         CharsetConverter* query_converter,
+                         CanonOutput* output,
+                         url_parse::Parsed* new_parsed);
 
 // Use for filesystem URLs.
-URL_EXPORT bool CanonicalizeFileSystemURL(const char* spec,
-                                          int spec_len,
-                                          const url_parse::Parsed& parsed,
-                                          CharsetConverter* query_converter,
-                                          CanonOutput* output,
-                                          url_parse::Parsed* new_parsed);
-URL_EXPORT bool CanonicalizeFileSystemURL(const char16* spec,
-                                          int spec_len,
-                                          const url_parse::Parsed& parsed,
-                                          CharsetConverter* query_converter,
-                                          CanonOutput* output,
-                                          url_parse::Parsed* new_parsed);
+bool CanonicalizeFileSystemURL(const char* spec,
+                               int spec_len,
+                               const url_parse::Parsed& parsed,
+                               CharsetConverter* query_converter,
+                               CanonOutput* output,
+                               url_parse::Parsed* new_parsed);
+bool CanonicalizeFileSystemURL(const char16* spec,
+                               int spec_len,
+                               const url_parse::Parsed& parsed,
+                               CharsetConverter* query_converter,
+                               CanonOutput* output,
+                               url_parse::Parsed* new_parsed);
 
 // Use for path URLs such as javascript. This does not modify the path in any
 // way, for example, by escaping it.
-URL_EXPORT bool CanonicalizePathURL(const char* spec,
-                                    int spec_len,
-                                    const url_parse::Parsed& parsed,
-                                    CanonOutput* output,
-                                    url_parse::Parsed* new_parsed);
-URL_EXPORT bool CanonicalizePathURL(const char16* spec,
-                                    int spec_len,
-                                    const url_parse::Parsed& parsed,
-                                    CanonOutput* output,
-                                    url_parse::Parsed* new_parsed);
+bool CanonicalizePathURL(const char* spec,
+                         int spec_len,
+                         const url_parse::Parsed& parsed,
+                         CanonOutput* output,
+                         url_parse::Parsed* new_parsed);
+bool CanonicalizePathURL(const char16* spec,
+                         int spec_len,
+                         const url_parse::Parsed& parsed,
+                         CanonOutput* output,
+                         url_parse::Parsed* new_parsed);
 
 // Use for mailto URLs. This "canonicalizes" the url into a path and query
 // component. It does not attempt to merge "to" fields. It uses UTF-8 for
 // the query encoding if there is a query. This is because a mailto URL is
 // really intended for an external mail program, and the encoding of a page,
 // etc. which would influence a query encoding normally are irrelevant.
-URL_EXPORT bool CanonicalizeMailtoURL(const char* spec,
-                                      int spec_len,
-                                      const url_parse::Parsed& parsed,
-                                      CanonOutput* output,
-                                      url_parse::Parsed* new_parsed);
-URL_EXPORT bool CanonicalizeMailtoURL(const char16* spec,
-                                      int spec_len,
-                                      const url_parse::Parsed& parsed,
-                                      CanonOutput* output,
-                                      url_parse::Parsed* new_parsed);
+bool CanonicalizeMailtoURL(const char* spec,
+                           int spec_len,
+                           const url_parse::Parsed& parsed,
+                           CanonOutput* output,
+                           url_parse::Parsed* new_parsed);
+bool CanonicalizeMailtoURL(const char16* spec,
+                           int spec_len,
+                           const url_parse::Parsed& parsed,
+                           CanonOutput* output,
+                           url_parse::Parsed* new_parsed);
 
 // Part replacer --------------------------------------------------------------
 
@@ -753,74 +750,74 @@ class Replacements {
 };
 
 // The base must be an 8-bit canonical URL.
-URL_EXPORT bool ReplaceStandardURL(const char* base,
-                                   const url_parse::Parsed& base_parsed,
-                                   const Replacements<char>& replacements,
-                                   CharsetConverter* query_converter,
-                                   CanonOutput* output,
-                                   url_parse::Parsed* new_parsed);
-URL_EXPORT bool ReplaceStandardURL(const char* base,
-                                   const url_parse::Parsed& base_parsed,
-                                   const Replacements<char16>& replacements,
-                                   CharsetConverter* query_converter,
-                                   CanonOutput* output,
-                                   url_parse::Parsed* new_parsed);
+bool ReplaceStandardURL(const char* base,
+                        const url_parse::Parsed& base_parsed,
+                        const Replacements<char>& replacements,
+                        CharsetConverter* query_converter,
+                        CanonOutput* output,
+                        url_parse::Parsed* new_parsed);
+bool ReplaceStandardURL(const char* base,
+                        const url_parse::Parsed& base_parsed,
+                        const Replacements<char16>& replacements,
+                        CharsetConverter* query_converter,
+                        CanonOutput* output,
+                        url_parse::Parsed* new_parsed);
 
 // Filesystem URLs can only have the path, query, or ref replaced.
 // All other components will be ignored.
-URL_EXPORT bool ReplaceFileSystemURL(const char* base,
-                                     const url_parse::Parsed& base_parsed,
-                                     const Replacements<char>& replacements,
-                                     CharsetConverter* query_converter,
-                                     CanonOutput* output,
-                                     url_parse::Parsed* new_parsed);
-URL_EXPORT bool ReplaceFileSystemURL(const char* base,
-                                     const url_parse::Parsed& base_parsed,
-                                     const Replacements<char16>& replacements,
-                                     CharsetConverter* query_converter,
-                                     CanonOutput* output,
-                                     url_parse::Parsed* new_parsed);
+bool ReplaceFileSystemURL(const char* base,
+                          const url_parse::Parsed& base_parsed,
+                          const Replacements<char>& replacements,
+                          CharsetConverter* query_converter,
+                          CanonOutput* output,
+                          url_parse::Parsed* new_parsed);
+bool ReplaceFileSystemURL(const char* base,
+                          const url_parse::Parsed& base_parsed,
+                          const Replacements<char16>& replacements,
+                          CharsetConverter* query_converter,
+                          CanonOutput* output,
+                          url_parse::Parsed* new_parsed);
 
 // Replacing some parts of a file URL is not permitted. Everything except
 // the host, path, query, and ref will be ignored.
-URL_EXPORT bool ReplaceFileURL(const char* base,
-                               const url_parse::Parsed& base_parsed,
-                               const Replacements<char>& replacements,
-                               CharsetConverter* query_converter,
-                               CanonOutput* output,
-                               url_parse::Parsed* new_parsed);
-URL_EXPORT bool ReplaceFileURL(const char* base,
-                               const url_parse::Parsed& base_parsed,
-                               const Replacements<char16>& replacements,
-                               CharsetConverter* query_converter,
-                               CanonOutput* output,
-                               url_parse::Parsed* new_parsed);
+bool ReplaceFileURL(const char* base,
+                    const url_parse::Parsed& base_parsed,
+                    const Replacements<char>& replacements,
+                    CharsetConverter* query_converter,
+                    CanonOutput* output,
+                    url_parse::Parsed* new_parsed);
+bool ReplaceFileURL(const char* base,
+                    const url_parse::Parsed& base_parsed,
+                    const Replacements<char16>& replacements,
+                    CharsetConverter* query_converter,
+                    CanonOutput* output,
+                    url_parse::Parsed* new_parsed);
 
 // Path URLs can only have the scheme and path replaced. All other components
 // will be ignored.
-URL_EXPORT bool ReplacePathURL(const char* base,
-                               const url_parse::Parsed& base_parsed,
-                               const Replacements<char>& replacements,
-                               CanonOutput* output,
-                               url_parse::Parsed* new_parsed);
-URL_EXPORT bool ReplacePathURL(const char* base,
-                               const url_parse::Parsed& base_parsed,
-                               const Replacements<char16>& replacements,
-                               CanonOutput* output,
-                               url_parse::Parsed* new_parsed);
+bool ReplacePathURL(const char* base,
+                    const url_parse::Parsed& base_parsed,
+                    const Replacements<char>& replacements,
+                    CanonOutput* output,
+                    url_parse::Parsed* new_parsed);
+bool ReplacePathURL(const char* base,
+                    const url_parse::Parsed& base_parsed,
+                    const Replacements<char16>& replacements,
+                    CanonOutput* output,
+                    url_parse::Parsed* new_parsed);
 
 // Mailto URLs can only have the scheme, path, and query replaced.
 // All other components will be ignored.
-URL_EXPORT bool ReplaceMailtoURL(const char* base,
-                                 const url_parse::Parsed& base_parsed,
-                                 const Replacements<char>& replacements,
-                                 CanonOutput* output,
-                                 url_parse::Parsed* new_parsed);
-URL_EXPORT bool ReplaceMailtoURL(const char* base,
-                                 const url_parse::Parsed& base_parsed,
-                                 const Replacements<char16>& replacements,
-                                 CanonOutput* output,
-                                 url_parse::Parsed* new_parsed);
+bool ReplaceMailtoURL(const char* base,
+                      const url_parse::Parsed& base_parsed,
+                      const Replacements<char>& replacements,
+                      CanonOutput* output,
+                      url_parse::Parsed* new_parsed);
+bool ReplaceMailtoURL(const char* base,
+                      const url_parse::Parsed& base_parsed,
+                      const Replacements<char16>& replacements,
+                      CanonOutput* output,
+                      url_parse::Parsed* new_parsed);
 
 // Relative URL ---------------------------------------------------------------
 
@@ -835,20 +832,20 @@ URL_EXPORT bool ReplaceMailtoURL(const char* base,
 // not). Failure means that the combination of URLs doesn't make any sense.
 //
 // The base URL should always be canonical, therefore is ASCII.
-URL_EXPORT bool IsRelativeURL(const char* base,
-                              const url_parse::Parsed& base_parsed,
-                              const char* fragment,
-                              int fragment_len,
-                              bool is_base_hierarchical,
-                              bool* is_relative,
-                              url_parse::Component* relative_component);
-URL_EXPORT bool IsRelativeURL(const char* base,
-                              const url_parse::Parsed& base_parsed,
-                              const char16* fragment,
-                              int fragment_len,
-                              bool is_base_hierarchical,
-                              bool* is_relative,
-                              url_parse::Component* relative_component);
+bool IsRelativeURL(const char* base,
+                   const url_parse::Parsed& base_parsed,
+                   const char* fragment,
+                   int fragment_len,
+                   bool is_base_hierarchical,
+                   bool* is_relative,
+                   url_parse::Component* relative_component);
+bool IsRelativeURL(const char* base,
+                   const url_parse::Parsed& base_parsed,
+                   const char16* fragment,
+                   int fragment_len,
+                   bool is_base_hierarchical,
+                   bool* is_relative,
+                   url_parse::Component* relative_component);
 
 // Given a canonical parsed source URL, a URL fragment known to be relative,
 // and the identified relevant portion of the relative URL (computed by
@@ -868,24 +865,22 @@ URL_EXPORT bool IsRelativeURL(const char* base,
 // Returns true on success. On failure, the output will be "something
 // reasonable" that will be consistent and valid, just probably not what
 // was intended by the web page author or caller.
-URL_EXPORT bool ResolveRelativeURL(
-    const char* base_url,
-    const url_parse::Parsed& base_parsed,
-    bool base_is_file,
-    const char* relative_url,
-    const url_parse::Component& relative_component,
-    CharsetConverter* query_converter,
-    CanonOutput* output,
-    url_parse::Parsed* out_parsed);
-URL_EXPORT bool ResolveRelativeURL(
-    const char* base_url,
-    const url_parse::Parsed& base_parsed,
-    bool base_is_file,
-    const char16* relative_url,
-    const url_parse::Component& relative_component,
-    CharsetConverter* query_converter,
-    CanonOutput* output,
-    url_parse::Parsed* out_parsed);
+bool ResolveRelativeURL(const char* base_url,
+                        const url_parse::Parsed& base_parsed,
+                        bool base_is_file,
+                        const char* relative_url,
+                        const url_parse::Component& relative_component,
+                        CharsetConverter* query_converter,
+                        CanonOutput* output,
+                        url_parse::Parsed* out_parsed);
+bool ResolveRelativeURL(const char* base_url,
+                        const url_parse::Parsed& base_parsed,
+                        bool base_is_file,
+                        const char16* relative_url,
+                        const url_parse::Component& relative_component,
+                        CharsetConverter* query_converter,
+                        CanonOutput* output,
+                        url_parse::Parsed* out_parsed);
 
 }  // namespace url_canon
 
