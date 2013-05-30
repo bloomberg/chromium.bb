@@ -11,9 +11,10 @@
 #include "base/string16.h"
 #include "url/url_canon.h"
 #include "url/url_canon_stdstring.h"
+#include "url/url_export.h"
 #include "url/url_parse.h"
 
-class GURL {
+class URL_EXPORT GURL {
  public:
   typedef url_canon::StdStringReplacements<std::string> Replacements;
   typedef url_canon::StdStringReplacements<string16> ReplacementsW;
@@ -32,10 +33,8 @@ class GURL {
   // encode the query parameters. It is probably sufficient for the narrow
   // version to assume the query parameter encoding should be the same as the
   // input encoding.
-  explicit GURL(const std::string& url_string
-                /*, output_param_encoding*/);
-  explicit GURL(const string16& url_string
-                /*, output_param_encoding*/);
+  explicit GURL(const std::string& url_string /*, output_param_encoding*/);
+  explicit GURL(const string16& url_string /*, output_param_encoding*/);
 
   // Constructor for URLs that have already been parsed and canonicalized. This
   // is used for conversions from KURL, for example. The caller must supply all
@@ -361,6 +360,6 @@ class GURL {
 };
 
 // Stream operator so GURL can be used in assertion statements.
-std::ostream& operator<<(std::ostream& out, const GURL& url);
+URL_EXPORT std::ostream& operator<<(std::ostream& out, const GURL& url);
 
 #endif  // URL_GURL_H_

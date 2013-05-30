@@ -9,6 +9,7 @@
 
 #include "base/string16.h"
 #include "url/url_canon.h"
+#include "url/url_export.h"
 #include "url/url_parse.h"
 
 namespace url_util {
@@ -26,13 +27,13 @@ namespace url_util {
 // "noop", unless Shutdown() was called in the mean time. This will also be a
 // "noop" if other calls to the library have forced an initialization
 // beforehand.
-void Initialize();
+URL_EXPORT void Initialize();
 
 // Cleanup is not required, except some strings may leak. For most user
 // applications, this is fine. If you're using it in a library that may get
 // loaded and unloaded, you'll want to unload to properly clean up your
 // library.
-void Shutdown();
+URL_EXPORT void Shutdown();
 
 // Schemes --------------------------------------------------------------------
 
@@ -40,7 +41,7 @@ void Shutdown();
 // schemes. This function is not threadsafe and can not be called concurrently
 // with any other url_util function. It will assert if the list of standard
 // schemes has been locked (see LockStandardSchemes).
-void AddStandardScheme(const char* new_scheme);
+URL_EXPORT void AddStandardScheme(const char* new_scheme);
 
 // Sets a flag to prevent future calls to AddStandardScheme from succeeding.
 //
@@ -54,7 +55,7 @@ void AddStandardScheme(const char* new_scheme);
 // We could have had AddStandardScheme use a lock instead, but that would add
 // some platform-specific dependencies we don't otherwise have now, and is
 // overkill considering the normal usage is so simple.
-void LockStandardSchemes();
+URL_EXPORT void LockStandardSchemes();
 
 // Locates the scheme in the given string and places it into |found_scheme|,
 // which may be NULL to indicate the caller does not care about the range.
@@ -62,14 +63,14 @@ void LockStandardSchemes();
 // Returns whether the given |compare| scheme matches the scheme found in the
 // input (if any). The |compare| scheme must be a valid canonical scheme or
 // the result of the comparison is undefined.
-bool FindAndCompareScheme(const char* str,
-                          int str_len,
-                          const char* compare,
-                          url_parse::Component* found_scheme);
-bool FindAndCompareScheme(const char16* str,
-                          int str_len,
-                          const char* compare,
-                          url_parse::Component* found_scheme);
+URL_EXPORT bool FindAndCompareScheme(const char* str,
+                                     int str_len,
+                                     const char* compare,
+                                     url_parse::Component* found_scheme);
+URL_EXPORT bool FindAndCompareScheme(const char16* str,
+                                     int str_len,
+                                     const char* compare,
+                                     url_parse::Component* found_scheme);
 inline bool FindAndCompareScheme(const std::string& str,
                                  const char* compare,
                                  url_parse::Component* found_scheme) {
@@ -85,10 +86,10 @@ inline bool FindAndCompareScheme(const string16& str,
 
 // Returns true if the given string represents a standard URL. This means that
 // either the scheme is in the list of known standard schemes.
-bool IsStandard(const char* spec,
-                const url_parse::Component& scheme);
-bool IsStandard(const char16* spec,
-                const url_parse::Component& scheme);
+URL_EXPORT bool IsStandard(const char* spec,
+                           const url_parse::Component& scheme);
+URL_EXPORT bool IsStandard(const char16* spec,
+                           const url_parse::Component& scheme);
 
 // TODO(brettw) remove this. This is a temporary compatibility hack to avoid
 // breaking the WebKit build when this version is synced via Chrome.
@@ -109,16 +110,16 @@ inline bool IsStandard(const char* spec, int spec_len,
 // Returns true if a valid URL was produced, false if not. On failure, the
 // output and parsed structures will still be filled and will be consistent,
 // but they will not represent a loadable URL.
-bool Canonicalize(const char* spec,
-                  int spec_len,
-                  url_canon::CharsetConverter* charset_converter,
-                  url_canon::CanonOutput* output,
-                  url_parse::Parsed* output_parsed);
-bool Canonicalize(const char16* spec,
-                  int spec_len,
-                  url_canon::CharsetConverter* charset_converter,
-                  url_canon::CanonOutput* output,
-                  url_parse::Parsed* output_parsed);
+URL_EXPORT bool Canonicalize(const char* spec,
+                             int spec_len,
+                             url_canon::CharsetConverter* charset_converter,
+                             url_canon::CanonOutput* output,
+                             url_parse::Parsed* output_parsed);
+URL_EXPORT bool Canonicalize(const char16* spec,
+                             int spec_len,
+                             url_canon::CharsetConverter* charset_converter,
+                             url_canon::CanonOutput* output,
+                             url_parse::Parsed* output_parsed);
 
 // Resolves a potentially relative URL relative to the given parsed base URL.
 // The base MUST be valid. The resulting canonical URL and parsed information
@@ -130,28 +131,28 @@ bool Canonicalize(const char16* spec,
 //
 // Returns true if the output is valid, false if the input could not produce
 // a valid URL.
-bool ResolveRelative(const char* base_spec,
-                     int base_spec_len,
-                     const url_parse::Parsed& base_parsed,
-                     const char* relative,
-                     int relative_length,
-                     url_canon::CharsetConverter* charset_converter,
-                     url_canon::CanonOutput* output,
-                     url_parse::Parsed* output_parsed);
-bool ResolveRelative(const char* base_spec,
-                     int base_spec_len,
-                     const url_parse::Parsed& base_parsed,
-                     const char16* relative,
-                     int relative_length,
-                     url_canon::CharsetConverter* charset_converter,
-                     url_canon::CanonOutput* output,
-                     url_parse::Parsed* output_parsed);
+URL_EXPORT bool ResolveRelative(const char* base_spec,
+                                int base_spec_len,
+                                const url_parse::Parsed& base_parsed,
+                                const char* relative,
+                                int relative_length,
+                                url_canon::CharsetConverter* charset_converter,
+                                url_canon::CanonOutput* output,
+                                url_parse::Parsed* output_parsed);
+URL_EXPORT bool ResolveRelative(const char* base_spec,
+                                int base_spec_len,
+                                const url_parse::Parsed& base_parsed,
+                                const char16* relative,
+                                int relative_length,
+                                url_canon::CharsetConverter* charset_converter,
+                                url_canon::CanonOutput* output,
+                                url_parse::Parsed* output_parsed);
 
 // Replaces components in the given VALID input url. The new canonical URL info
 // is written to output and out_parsed.
 //
 // Returns true if the resulting URL is valid.
-bool ReplaceComponents(
+URL_EXPORT bool ReplaceComponents(
     const char* spec,
     int spec_len,
     const url_parse::Parsed& parsed,
@@ -159,7 +160,7 @@ bool ReplaceComponents(
     url_canon::CharsetConverter* charset_converter,
     url_canon::CanonOutput* output,
     url_parse::Parsed* out_parsed);
-bool ReplaceComponents(
+URL_EXPORT bool ReplaceComponents(
     const char* spec,
     int spec_len,
     const url_parse::Parsed& parsed,
@@ -176,25 +177,25 @@ bool ReplaceComponents(
 //
 // The versions of this function that don't take a b_end assume that the b
 // string is NULL terminated.
-bool LowerCaseEqualsASCII(const char* a_begin,
-                          const char* a_end,
-                          const char* b);
-bool LowerCaseEqualsASCII(const char* a_begin,
-                          const char* a_end,
-                          const char* b_begin,
-                          const char* b_end);
-bool LowerCaseEqualsASCII(const char16* a_begin,
-                          const char16* a_end,
-                          const char* b);
+URL_EXPORT bool LowerCaseEqualsASCII(const char* a_begin,
+                                     const char* a_end,
+                                     const char* b);
+URL_EXPORT bool LowerCaseEqualsASCII(const char* a_begin,
+                                     const char* a_end,
+                                     const char* b_begin,
+                                     const char* b_end);
+URL_EXPORT bool LowerCaseEqualsASCII(const char16* a_begin,
+                                     const char16* a_end,
+                                     const char* b);
 
 // Unescapes the given string using URL escaping rules.
-void DecodeURLEscapeSequences(const char* input, int length,
-                              url_canon::CanonOutputW* output);
+URL_EXPORT void DecodeURLEscapeSequences(const char* input, int length,
+                                         url_canon::CanonOutputW* output);
 
 // Escapes the given string as defined by the JS method encodeURIComponent.  See
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/encodeURIComponent
-void EncodeURIComponent(const char* input, int length,
-                        url_canon::CanonOutput* output);
+URL_EXPORT void EncodeURIComponent(const char* input, int length,
+                                   url_canon::CanonOutput* output);
 
 
 }  // namespace url_util
