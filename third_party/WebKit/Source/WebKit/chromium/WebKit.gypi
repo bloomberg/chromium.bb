@@ -48,7 +48,7 @@
             'tests/FrameTestHelpers.h',
             'tests/GIFImageDecoderTest.cpp',
             'tests/GraphicsContextTest.cpp',
-            'tests/GraphicsLayerChromiumTest.cpp',
+            'tests/GraphicsLayerTest.cpp',
             'tests/IDBAbortOnCorruptTest.cpp',
             'tests/IDBBackingStoreTest.cpp',
             'tests/IDBBindingUtilitiesTest.cpp',

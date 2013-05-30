@@ -27,7 +27,6 @@
 #include <gtest/gtest.h>
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include <public/WebImageLayer.h>
 #include <wtf/PassOwnPtr.h>
@@ -107,10 +106,16 @@ private:
     RefPtr<NativeImageSkia> m_nativeImage;
 };
 
+class GraphicsLayerForTesting : public GraphicsLayer {
+public:
+    explicit GraphicsLayerForTesting(GraphicsLayerClient* client)
+        : GraphicsLayer(client) { };
+};
+
 TEST(ImageLayerChromiumTest, opaqueImages)
 {
     MockGraphicsLayerClient client;
-    OwnPtr<GraphicsLayerChromium> graphicsLayer = adoptPtr(new GraphicsLayerChromium(&client));
+    OwnPtr<GraphicsLayerForTesting> graphicsLayer = adoptPtr(new GraphicsLayerForTesting(&client));
     ASSERT_TRUE(graphicsLayer.get());
 
     RefPtr<Image> opaqueImage = TestImage::create(IntSize(100, 100), true);

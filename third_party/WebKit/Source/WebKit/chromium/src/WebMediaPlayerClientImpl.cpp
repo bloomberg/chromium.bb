@@ -24,9 +24,9 @@
 #include "core/platform/audio/AudioSourceProvider.h"
 #include "core/platform/audio/AudioSourceProviderClient.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/MediaPlayer.h"
-#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
@@ -254,11 +254,11 @@ void WebMediaPlayerClientImpl::setWebLayer(WebLayer* layer)
         m_mediaPlayer->setNeedsStyleRecalc();
 
     if (m_videoLayer)
-        GraphicsLayerChromium::unregisterContentsLayer(m_videoLayer);
+        GraphicsLayer::unregisterContentsLayer(m_videoLayer);
     m_videoLayer = layer;
     if (m_videoLayer) {
         m_videoLayer->setOpaque(m_opaque);
-        GraphicsLayerChromium::registerContentsLayer(m_videoLayer);
+        GraphicsLayer::registerContentsLayer(m_videoLayer);
     }
 }
 

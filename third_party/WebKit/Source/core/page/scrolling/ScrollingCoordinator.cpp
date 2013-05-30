@@ -39,7 +39,6 @@
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/Region.h"
-#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
@@ -86,9 +85,9 @@ ScrollingCoordinator::~ScrollingCoordinator()
 {
     ASSERT(!m_page);
     for (ScrollbarMap::iterator it = m_horizontalScrollbars.begin(); it != m_horizontalScrollbars.end(); ++it)
-        GraphicsLayerChromium::unregisterContentsLayer(it->value->layer());
+        GraphicsLayer::unregisterContentsLayer(it->value->layer());
     for (ScrollbarMap::iterator it = m_verticalScrollbars.begin(); it != m_verticalScrollbars.end(); ++it)
-        GraphicsLayerChromium::unregisterContentsLayer(it->value->layer());
+        GraphicsLayer::unregisterContentsLayer(it->value->layer());
 
 }
 
@@ -177,7 +176,7 @@ void ScrollingCoordinator::removeWebScrollbarLayer(ScrollableArea* scrollableAre
 {
     ScrollbarMap& scrollbars = orientation == HorizontalScrollbar ? m_horizontalScrollbars : m_verticalScrollbars;
     if (OwnPtr<WebScrollbarLayer> scrollbarLayer = scrollbars.take(scrollableArea))
-        GraphicsLayerChromium::unregisterContentsLayer(scrollbarLayer->layer());
+        GraphicsLayer::unregisterContentsLayer(scrollbarLayer->layer());
 }
 
 static PassOwnPtr<WebScrollbarLayer> createScrollbarLayer(Scrollbar* scrollbar)
@@ -188,7 +187,7 @@ static PassOwnPtr<WebScrollbarLayer> createScrollbarLayer(Scrollbar* scrollbar)
     OwnPtr<WebKit::WebScrollbarThemeGeometry> geometry(WebKit::WebScrollbarThemeGeometryNative::create(themeComposite));
 
     OwnPtr<WebScrollbarLayer> scrollbarLayer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createScrollbarLayer(new WebKit::WebScrollbarImpl(scrollbar), painter, geometry.leakPtr()));
-    GraphicsLayerChromium::registerContentsLayer(scrollbarLayer->layer());
+    GraphicsLayer::registerContentsLayer(scrollbarLayer->layer());
     return scrollbarLayer.release();
 }
 
@@ -272,7 +271,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
 
 void ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* scrollableArea)
 {
-    GraphicsLayerChromium* scrollLayer = static_cast<GraphicsLayerChromium*>(scrollLayerForScrollableArea(scrollableArea));
+    GraphicsLayer* scrollLayer = scrollLayerForScrollableArea(scrollableArea);
     if (scrollLayer)
         scrollLayer->setScrollableArea(scrollableArea);
 

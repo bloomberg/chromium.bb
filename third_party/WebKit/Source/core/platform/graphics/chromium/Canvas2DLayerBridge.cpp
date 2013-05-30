@@ -32,8 +32,8 @@
 #include "SkSurface.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/chromium/Canvas2DLayerManager.h"
-#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebGraphicsContext3D.h>
@@ -71,12 +71,12 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
     }
 #endif
     m_layer->setOpaque(opacityMode == Opaque);
-    GraphicsLayerChromium::registerContentsLayer(m_layer->layer());
+    GraphicsLayer::registerContentsLayer(m_layer->layer());
 }
 
 Canvas2DLayerBridge::~Canvas2DLayerBridge()
 {
-    GraphicsLayerChromium::unregisterContentsLayer(m_layer->layer());
+    GraphicsLayer::unregisterContentsLayer(m_layer->layer());
     Canvas2DLayerManager::get().layerToBeDestroyed(this);
     m_canvas->setNotificationClient(0);
 #if ENABLE(CANVAS_USES_MAILBOX)

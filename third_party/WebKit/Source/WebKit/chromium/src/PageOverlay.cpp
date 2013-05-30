@@ -36,7 +36,6 @@
 #include "core/page/Settings.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
-#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include <public/WebLayer.h>
 
 using namespace WebCore;
@@ -124,7 +123,7 @@ void PageOverlay::update()
     m_viewImpl->setOverlayLayer(m_layer.get());
     m_layer->setNeedsDisplay();
 
-    WebLayer* platformLayer = static_cast<GraphicsLayerChromium*>(m_layer.get())->platformLayer();
+    WebLayer* platformLayer = m_layer->platformLayer();
     platformLayer->setShouldScrollOnMainThread(true);
 }
 

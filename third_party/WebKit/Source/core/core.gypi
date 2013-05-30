@@ -2750,8 +2750,6 @@
             'platform/graphics/chromium/FontUtilsChromiumWin.cpp',
             'platform/graphics/chromium/FontUtilsChromiumWin.h',
             'platform/graphics/chromium/GlyphPageTreeNodeChromiumWin.cpp',
-            'platform/graphics/chromium/GraphicsLayerChromium.cpp',
-            'platform/graphics/chromium/GraphicsLayerChromium.h',
             'platform/graphics/chromium/IconChromium.cpp',
             'platform/graphics/chromium/IconChromiumAndroid.cpp',
             'platform/graphics/chromium/ImageBufferDataSkia.h',

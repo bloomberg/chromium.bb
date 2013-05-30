@@ -182,7 +182,7 @@ TEST(LinkHighlightTest, resetDuringNodeRemoval)
     webViewImpl->enableTapHighlight(platformEvent);
     ASSERT_TRUE(webViewImpl->linkHighlight());
 
-    GraphicsLayerChromium* highlightLayer = webViewImpl->linkHighlight()->currentGraphicsLayerForTesting();
+    GraphicsLayer* highlightLayer = webViewImpl->linkHighlight()->currentGraphicsLayerForTesting();
     ASSERT_TRUE(highlightLayer);
     EXPECT_TRUE(highlightLayer->linkHighlight());
 

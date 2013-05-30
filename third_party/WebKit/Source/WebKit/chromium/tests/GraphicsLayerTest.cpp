@@ -24,14 +24,15 @@
 
 #include "config.h"
 
-#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
-
-#include <gtest/gtest.h>
-#include "core/platform/ScrollableArea.h"
 #include "core/platform/graphics/GraphicsLayer.h"
+
+#include "core/platform/ScrollableArea.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
 #include "core/platform/graphics/transforms/RotateTransformOperation.h"
 #include "core/platform/graphics/transforms/TranslateTransformOperation.h"
+#include "wtf/PassOwnPtr.h"
+
+#include <gtest/gtest.h>
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebFloatAnimationCurve.h>
@@ -39,7 +40,6 @@
 #include <public/WebLayer.h>
 #include <public/WebLayerTreeView.h>
 #include <public/WebUnitTestSupport.h>
-#include <wtf/PassOwnPtr.h>
 
 using namespace WebCore;
 using namespace WebKit;
@@ -47,16 +47,22 @@ using namespace WebKit;
 namespace {
 
 class MockGraphicsLayerClient : public GraphicsLayerClient {
-  public:
+public:
     virtual void notifyAnimationStarted(const GraphicsLayer*, double time) OVERRIDE { }
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) OVERRIDE { }
 };
 
-class GraphicsLayerChromiumTest : public testing::Test {
+class GraphicsLayerForTesting : public GraphicsLayer {
 public:
-    GraphicsLayerChromiumTest()
+    explicit GraphicsLayerForTesting(GraphicsLayerClient* client)
+        : GraphicsLayer(client) { };
+};
+
+class GraphicsLayerTest : public testing::Test {
+public:
+    GraphicsLayerTest()
     {
-        m_graphicsLayer = adoptPtr(new GraphicsLayerChromium(&m_client));
+        m_graphicsLayer = adoptPtr(new GraphicsLayerForTesting(&m_client));
         m_platformLayer = m_graphicsLayer->platformLayer();
         m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting(WebUnitTestSupport::TestViewTypeUnitTest));
         ASSERT(m_layerTreeView);
@@ -64,7 +70,7 @@ public:
         m_layerTreeView->setViewportSize(WebSize(1, 1), WebSize(1, 1));
     }
 
-    virtual ~GraphicsLayerChromiumTest()
+    virtual ~GraphicsLayerTest()
     {
         m_graphicsLayer.clear();
         m_layerTreeView.clear();
@@ -72,14 +78,14 @@ public:
 
 protected:
     WebLayer* m_platformLayer;
-    OwnPtr<GraphicsLayerChromium> m_graphicsLayer;
+    OwnPtr<GraphicsLayerForTesting> m_graphicsLayer;
 
 private:
     OwnPtr<WebLayerTreeView> m_layerTreeView;
     MockGraphicsLayerClient m_client;
 };
 
-TEST_F(GraphicsLayerChromiumTest, updateLayerPreserves3DWithAnimations)
+TEST_F(GraphicsLayerTest, updateLayerPreserves3DWithAnimations)
 {
     ASSERT_FALSE(m_platformLayer->hasActiveAnimation());
 
@@ -131,7 +137,7 @@ private:
     IntPoint m_scrollPosition;
 };
 
-TEST_F(GraphicsLayerChromiumTest, applyScrollToScrollableArea)
+TEST_F(GraphicsLayerTest, applyScrollToScrollableArea)
 {
     FakeScrollableArea scrollableArea;
     m_graphicsLayer->setScrollableArea(&scrollableArea);
@@ -142,7 +148,7 @@ TEST_F(GraphicsLayerChromiumTest, applyScrollToScrollableArea)
     EXPECT_EQ(scrollPosition, WebPoint(scrollableArea.scrollPosition()));
 }
 
-TEST_F(GraphicsLayerChromiumTest, DISABLED_setContentsToSolidColor)
+TEST_F(GraphicsLayerTest, DISABLED_setContentsToSolidColor)
 {
     m_graphicsLayer->setContentsToSolidColor(Color::transparent);
     EXPECT_FALSE(m_graphicsLayer->contentsLayer());

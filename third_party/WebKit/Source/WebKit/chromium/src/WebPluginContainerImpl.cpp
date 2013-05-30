@@ -72,7 +72,7 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 #include "core/plugins/IFrameShimSupport.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBox.h"
@@ -293,9 +293,9 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
     if (!m_webLayer || !layer)
         m_element->setNeedsStyleRecalc(WebCore::SyntheticStyleChange);
     if (m_webLayer)
-        GraphicsLayerChromium::unregisterContentsLayer(m_webLayer);
+        GraphicsLayer::unregisterContentsLayer(m_webLayer);
     if (layer)
-        GraphicsLayerChromium::registerContentsLayer(layer);
+        GraphicsLayer::registerContentsLayer(layer);
     m_webLayer = layer;
 }
 
@@ -639,7 +639,7 @@ WebPluginContainerImpl::~WebPluginContainerImpl()
         m_pluginLoadObservers[i]->clearPluginContainer();
     m_webPlugin->destroy();
     if (m_webLayer)
-        GraphicsLayerChromium::unregisterContentsLayer(m_webLayer);
+        GraphicsLayer::unregisterContentsLayer(m_webLayer);
 }
 
 void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)

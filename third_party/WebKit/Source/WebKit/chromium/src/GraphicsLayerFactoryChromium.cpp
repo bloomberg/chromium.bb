@@ -27,7 +27,7 @@
 #include "GraphicsLayerFactoryChromium.h"
 
 #include "WebViewImpl.h"
-#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 
 using namespace WebCore;
 
@@ -44,7 +44,7 @@ GraphicsLayerFactoryChromium::~GraphicsLayerFactoryChromium()
 
 PassOwnPtr<GraphicsLayer> GraphicsLayerFactoryChromium::createGraphicsLayer(GraphicsLayerClient* client)
 {
-    OwnPtr<GraphicsLayerChromium> layer = adoptPtr(new GraphicsLayerChromium(client));
+    OwnPtr<GraphicsLayer> layer = adoptPtr(new GraphicsLayer(client));
     m_webView->registerForAnimations(layer->platformLayer());
     return layer.release();
 }

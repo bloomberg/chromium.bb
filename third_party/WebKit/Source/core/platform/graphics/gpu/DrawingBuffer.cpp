@@ -36,7 +36,7 @@
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebExternalTextureLayer.h>
@@ -372,7 +372,7 @@ PlatformLayer* DrawingBuffer::platformLayer()
 
         m_layer->setOpaque(!m_attributes.alpha);
         m_layer->setPremultipliedAlpha(m_attributes.premultipliedAlpha);
-        GraphicsLayerChromium::registerContentsLayer(m_layer->layer());
+        GraphicsLayer::registerContentsLayer(m_layer->layer());
     }
 
     return m_layer->layer();
@@ -481,7 +481,7 @@ void DrawingBuffer::releaseResources()
 #endif  // ENABLE(CANVAS_USES_MAILBOX)
 
     if (m_layer) {
-        GraphicsLayerChromium::unregisterContentsLayer(m_layer->layer());
+        GraphicsLayer::unregisterContentsLayer(m_layer->layer());
         m_layer.clear();
     }
 }

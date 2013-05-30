@@ -126,7 +126,7 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
     if (!renderLayer || !renderLayer->isComposited())
         return 0;
 
-    GraphicsLayerChromium* newGraphicsLayer = static_cast<GraphicsLayerChromium*>(renderLayer->backing()->graphicsLayer());
+    GraphicsLayer* newGraphicsLayer = renderLayer->backing()->graphicsLayer();
     if (m_currentGraphicsLayer != newGraphicsLayer) {
         if (m_currentGraphicsLayer)
             clearGraphicsLayerLinkHighlightPointer();

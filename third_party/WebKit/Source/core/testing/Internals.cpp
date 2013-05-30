@@ -112,7 +112,6 @@
 
 #include "core/page/PagePopupController.h"
 #include "core/platform/graphics/GraphicsLayer.h"
-#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/rendering/RenderLayerBacking.h"

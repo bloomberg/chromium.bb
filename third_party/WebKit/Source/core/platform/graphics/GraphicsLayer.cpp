@@ -34,6 +34,7 @@
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsLayerFactory.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/chromium/AnimationTranslationUtil.h"
 #include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
@@ -102,6 +103,11 @@ void KeyframeValueList::insert(PassOwnPtr<const AnimationValue> value)
     m_values.append(value);
 }
 
+PassOwnPtr<GraphicsLayer> GraphicsLayer::create(GraphicsLayerFactory* factory, GraphicsLayerClient* client)
+{
+    return factory->createGraphicsLayer(client);
+}
+
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     : m_client(client)
     , m_anchorPoint(0.5f, 0.5f, 0)
@@ -133,15 +139,15 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     if (m_client)
         m_client->verifyNotPainting();
 #endif
+
+    m_opaqueRectTrackingContentLayerDelegate = adoptPtr(new OpaqueRectTrackingContentLayerDelegate(this));
+    m_layer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(m_opaqueRectTrackingContentLayerDelegate.get()));
+    m_layer->layer()->setDrawsContent(m_drawsContent && m_contentsVisible);
+    m_layer->layer()->setScrollClient(this);
+    m_layer->setAutomaticallyComputeRasterScale(true);
 }
 
 GraphicsLayer::~GraphicsLayer()
-{
-    resetTrackedRepaints();
-    ASSERT(!m_parent); // willBeDestroyed should have been called already.
-}
-
-void GraphicsLayer::willBeDestroyed()
 {
     if (m_linkHighlight) {
         m_linkHighlight->clearCurrentGraphicsLayer();
@@ -161,6 +167,9 @@ void GraphicsLayer::willBeDestroyed()
 
     removeAllChildren();
     removeFromParent();
+
+    resetTrackedRepaints();
+    ASSERT(!m_parent);
 }
 
 void GraphicsLayer::setParent(GraphicsLayer* layer)
@@ -646,7 +655,7 @@ void GraphicsLayer::updateLayerPreserves3D()
     if (m_preserves3D && !m_transformLayer) {
         m_transformLayer = adoptPtr(Platform::current()->compositorSupport()->createLayer());
         m_transformLayer->setPreserves3D(true);
-        setAnimationDelegateForLayer(m_transformLayer.get());
+        m_transformLayer->setAnimationDelegate(this);
         m_layer->layer()->transferAnimationsTo(m_transformLayer.get());
 
         // Copy the position from this layer.
@@ -676,7 +685,7 @@ void GraphicsLayer::updateLayerPreserves3D()
         if (parent())
             parent()->platformLayer()->replaceChild(m_transformLayer.get(), m_layer->layer());
 
-        setAnimationDelegateForLayer(m_layer->layer());
+        m_layer->layer()->setAnimationDelegate(this);
         m_transformLayer->transferAnimationsTo(m_layer->layer());
 
         // Release the transform layer.
@@ -1269,7 +1278,7 @@ void GraphicsLayer::setContentsToMedia(PlatformLayer* layer)
 
 bool GraphicsLayer::addAnimation(const KeyframeValueList& values, const IntSize& boxSize, const CSSAnimationData* animation, const String& animationName, double timeOffset)
 {
-    setAnimationDelegateForLayer(platformLayer());
+    platformLayer()->setAnimationDelegate(this);
 
     int animationId = 0;
 
@@ -1439,6 +1448,29 @@ void GraphicsLayer::setLinkHighlight(LinkHighlightClient* linkHighlight)
 {
     m_linkHighlight = linkHighlight;
     updateChildList();
+}
+
+void GraphicsLayer::paint(GraphicsContext& context, const IntRect& clip)
+{
+    paintGraphicsLayerContents(context, clip);
+}
+
+
+void GraphicsLayer::notifyAnimationStarted(double startTime)
+{
+    if (m_client)
+        m_client->notifyAnimationStarted(this, startTime);
+}
+
+void GraphicsLayer::notifyAnimationFinished(double)
+{
+    // Do nothing.
+}
+
+void GraphicsLayer::didScroll()
+{
+    if (m_scrollableArea)
+        m_scrollableArea->scrollToOffsetWithoutAnimation(m_scrollableArea->minimumScrollPosition() + toIntSize(m_layer->layer()->scrollPosition()));
 }
 
 } // namespace WebCore
