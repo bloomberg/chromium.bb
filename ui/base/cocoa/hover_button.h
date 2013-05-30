@@ -26,7 +26,7 @@ UI_EXPORT
   HoverState hoverState_;
 
  @private
-  // Tracking area for button mouseover states.
+  // Tracking area for button mouseover states. Nil if not enabled.
   ui::ScopedCrTrackingArea trackingArea_;
 }
 

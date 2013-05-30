@@ -29,11 +29,13 @@
 }
 
 - (void)mouseEntered:(NSEvent*)theEvent {
-  self.hoverState = kHoverStateMouseOver;
+  if (trackingArea_.get())
+    self.hoverState = kHoverStateMouseOver;
 }
 
 - (void)mouseExited:(NSEvent*)theEvent {
-  self.hoverState = kHoverStateNone;
+  if (trackingArea_.get())
+    self.hoverState = kHoverStateNone;
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
