@@ -760,6 +760,12 @@
             '../../base/allocator/allocator.gyp:allocator',
           ],
         }],
+        ['OS=="linux" and linux_use_tcmalloc==1', {
+           # See http://crbug.com/162998#c4 for why this is needed.
+          'dependencies': [
+            '../../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
         [ 'use_aura==1', {
           'dependencies': [
             '../aura/aura.gyp:aura_test_support',
