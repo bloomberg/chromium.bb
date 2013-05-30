@@ -29,6 +29,7 @@
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
+#include "chrome/common/extensions/manifest_handlers/nacl_modules_handler.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
 #include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
@@ -62,6 +63,7 @@ void RegisterChromeManifestHandlers() {
   (new KioskEnabledHandler)->Register();
   (new ManagedModeHandler)->Register();
   (new MimeTypesHandlerParser)->Register();
+  (new NaClModulesHandler)->Register();
   (new OAuth2ManifestHandler)->Register();
   (new OfflineEnabledHandler)->Register();
   (new OmniboxHandler)->Register();

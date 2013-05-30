@@ -49,6 +49,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
+#include "chrome/browser/extensions/plugin_manager.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
@@ -211,6 +212,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::MediaPlayerAPI::GetFactoryInstance();
 #endif
   extensions::OmniboxAPI::GetFactoryInstance();
+#if defined(ENABLE_PLUGINS)
+  extensions::PluginManager::GetFactoryInstance();
+#endif  // defined(ENABLE_PLUGINS)
   extensions::PreferenceAPI::GetFactoryInstance();
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::PushMessagingAPI::GetFactoryInstance();

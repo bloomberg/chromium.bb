@@ -15,7 +15,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -64,7 +63,6 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/update_observer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -74,10 +72,8 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -97,12 +93,10 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
-#include "content/public/common/pepper_plugin_info.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "googleurl/src/gurl.h"
@@ -122,7 +116,6 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DevToolsAgentHost;
-using content::PluginService;
 using extensions::CrxInstaller;
 using extensions::Extension;
 using extensions::ExtensionIdSet;
@@ -157,8 +150,6 @@ static const int kUpdateIdleDelay = 5;
 // Wait this many seconds before trying to garbage collect extensions again.
 static const int kGarbageCollectRetryDelay = 30;
 
-const char* kNaClPluginMimeType = "application/x-nacl";
-
 static bool IsSyncableExtension(const Extension& extension) {
   return extension.GetSyncType() == Extension::SYNC_TYPE_EXTENSION;
 }
@@ -176,12 +167,6 @@ ExtensionService::ExtensionRuntimeData::ExtensionRuntimeData()
 }
 
 ExtensionService::ExtensionRuntimeData::~ExtensionRuntimeData() {
-}
-
-ExtensionService::NaClModuleInfo::NaClModuleInfo() {
-}
-
-ExtensionService::NaClModuleInfo::~NaClModuleInfo() {
 }
 
 // ExtensionService.
@@ -1090,45 +1075,6 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     ThumbnailSource* thumbnail_source = new ThumbnailSource(profile_);
     content::URLDataSource::Add(profile_, thumbnail_source);
   }
-
-#if defined(ENABLE_PLUGINS)
-  // TODO(mpcomplete): This ends up affecting all profiles. See crbug.com/80757.
-  bool plugins_changed = false;
-  if (extensions::PluginInfo::HasPlugins(extension)) {
-    const extensions::PluginInfo::PluginVector* plugins =
-      extensions::PluginInfo::GetPlugins(extension);
-    CHECK(plugins);
-    plugins_changed = true;
-    for (extensions::PluginInfo::PluginVector::const_iterator plugin =
-             plugins->begin();
-         plugin != plugins->end(); ++plugin) {
-      PluginService::GetInstance()->RefreshPlugins();
-      PluginService::GetInstance()->AddExtraPluginPath(plugin->path);
-      ChromePluginServiceFilter* filter =
-          ChromePluginServiceFilter::GetInstance();
-      if (plugin->is_public) {
-        filter->RestrictPluginToProfileAndOrigin(
-            plugin->path, profile_, GURL());
-      } else {
-        filter->RestrictPluginToProfileAndOrigin(
-            plugin->path, profile_, extension->url());
-      }
-    }
-  }
-
-  bool nacl_modules_changed = false;
-  for (size_t i = 0; i < extension->nacl_modules().size(); ++i) {
-    const Extension::NaClModuleInfo& module = extension->nacl_modules()[i];
-    RegisterNaClModule(module.url, module.mime_type);
-    nacl_modules_changed = true;
-  }
-
-  if (nacl_modules_changed)
-    UpdatePluginListWithNaClModules();
-
-  if (plugins_changed || nacl_modules_changed)
-    PluginService::GetInstance()->PurgePluginListCache(profile_, false);
-#endif  // defined(ENABLE_PLUGINS)
 }
 
 void ExtensionService::NotifyExtensionUnloaded(
@@ -1180,36 +1126,6 @@ void ExtensionService::NotifyExtensionUnloaded(
 #endif
 
   UpdateActiveExtensionsInCrashReporter();
-
-#if defined(ENABLE_PLUGINS)
-  bool plugins_changed = false;
-  if (extensions::PluginInfo::HasPlugins(extension)) {
-    const extensions::PluginInfo::PluginVector* plugins =
-      extensions::PluginInfo::GetPlugins(extension);
-    plugins_changed = true;
-    for (extensions::PluginInfo::PluginVector::const_iterator plugin =
-             plugins->begin();
-         plugin != plugins->end(); ++plugin) {
-      PluginService::GetInstance()->ForcePluginShutdown(plugin->path);
-      PluginService::GetInstance()->RefreshPlugins();
-      PluginService::GetInstance()->RemoveExtraPluginPath(plugin->path);
-      ChromePluginServiceFilter::GetInstance()->UnrestrictPlugin(plugin->path);
-    }
-  }
-
-  bool nacl_modules_changed = false;
-  for (size_t i = 0; i < extension->nacl_modules().size(); ++i) {
-    const Extension::NaClModuleInfo& module = extension->nacl_modules()[i];
-    UnregisterNaClModule(module.url);
-    nacl_modules_changed = true;
-  }
-
-  if (nacl_modules_changed)
-    UpdatePluginListWithNaClModules();
-
-  if (plugins_changed || nacl_modules_changed)
-    PluginService::GetInstance()->PurgePluginListCache(profile_, false);
-#endif  // defined(ENABLE_PLUGINS)
 }
 
 Profile* ExtensionService::profile() {
@@ -2825,80 +2741,6 @@ bool ExtensionService::HasUsedWebRequest(const Extension* extension) const {
 void ExtensionService::SetHasUsedWebRequest(const Extension* extension,
                                             bool value) {
   extension_runtime_data_[extension->id()].has_used_webrequest = value;
-}
-
-void ExtensionService::RegisterNaClModule(const GURL& url,
-                                          const std::string& mime_type) {
-  NaClModuleInfo info;
-  info.url = url;
-  info.mime_type = mime_type;
-
-  DCHECK(FindNaClModule(url) == nacl_module_list_.end());
-  nacl_module_list_.push_front(info);
-}
-
-void ExtensionService::UnregisterNaClModule(const GURL& url) {
-  NaClModuleInfoList::iterator iter = FindNaClModule(url);
-  DCHECK(iter != nacl_module_list_.end());
-  nacl_module_list_.erase(iter);
-}
-
-void ExtensionService::UpdatePluginListWithNaClModules() {
-  // An extension has been added which has a nacl_module component, which means
-  // there is a MIME type that module wants to handle, so we need to add that
-  // MIME type to plugins which handle NaCl modules in order to allow the
-  // individual modules to handle these types.
-  base::FilePath path;
-  if (!PathService::Get(chrome::FILE_NACL_PLUGIN, &path))
-    return;
-  const content::PepperPluginInfo* pepper_info =
-      PluginService::GetInstance()->GetRegisteredPpapiPluginInfo(path);
-  if (!pepper_info)
-    return;
-
-  std::vector<webkit::WebPluginMimeType>::const_iterator mime_iter;
-  // Check each MIME type the plugins handle for the NaCl MIME type.
-  for (mime_iter = pepper_info->mime_types.begin();
-       mime_iter != pepper_info->mime_types.end(); ++mime_iter) {
-    if (mime_iter->mime_type == kNaClPluginMimeType) {
-      // This plugin handles "application/x-nacl".
-
-      PluginService::GetInstance()->
-          UnregisterInternalPlugin(pepper_info->path);
-
-      webkit::WebPluginInfo info = pepper_info->ToWebPluginInfo();
-
-      for (ExtensionService::NaClModuleInfoList::const_iterator iter =
-          nacl_module_list_.begin();
-          iter != nacl_module_list_.end(); ++iter) {
-        // Add the MIME type specified in the extension to this NaCl plugin,
-        // With an extra "nacl" argument to specify the location of the NaCl
-        // manifest file.
-        webkit::WebPluginMimeType mime_type_info;
-        mime_type_info.mime_type = iter->mime_type;
-        mime_type_info.additional_param_names.push_back(UTF8ToUTF16("nacl"));
-        mime_type_info.additional_param_values.push_back(
-            UTF8ToUTF16(iter->url.spec()));
-        info.mime_types.push_back(mime_type_info);
-      }
-
-      PluginService::GetInstance()->RefreshPlugins();
-      PluginService::GetInstance()->RegisterInternalPlugin(info, true);
-      // This plugin has been modified, no need to check the rest of its
-      // types, but continue checking other plugins.
-      break;
-    }
-  }
-}
-
-ExtensionService::NaClModuleInfoList::iterator
-    ExtensionService::FindNaClModule(const GURL& url) {
-  for (NaClModuleInfoList::iterator iter = nacl_module_list_.begin();
-       iter != nacl_module_list_.end(); ++iter) {
-    if (iter->url == url)
-      return iter;
-  }
-  return nacl_module_list_.end();
 }
 
 void ExtensionService::DoPostLoadTasks(const Extension* extension) {

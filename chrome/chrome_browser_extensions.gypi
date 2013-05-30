@@ -695,6 +695,8 @@
         'browser/extensions/permissions_updater.h',
         'browser/extensions/platform_app_launcher.cc',
         'browser/extensions/platform_app_launcher.h',
+        'browser/extensions/plugin_manager.cc',
+        'browser/extensions/plugin_manager.h',
         'browser/extensions/process_map.cc',
         'browser/extensions/process_map.h',
         'browser/extensions/requirements_checker.cc',

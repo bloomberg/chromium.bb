@@ -108,12 +108,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     SYNC_TYPE_APP
   };
 
-  // An NaCl module included in the extension.
-  struct NaClModuleInfo {
-    GURL url;
-    std::string mime_type;
-  };
-
   // A base class for parsed manifest data that APIs want to store on
   // the extension. Related to base::SupportsUserData, but with an immutable
   // thread-safe interface to match Extension.
@@ -314,9 +308,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool converted_from_user_script() const {
     return converted_from_user_script_;
   }
-  const std::vector<NaClModuleInfo>& nacl_modules() const {
-    return nacl_modules_;
-  }
   PermissionsData* permissions_data() { return permissions_data_.get(); }
   const PermissionsData* permissions_data() const {
     return permissions_data_.get();
@@ -409,7 +400,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadSharedFeatures(string16* error);
   bool LoadDescription(string16* error);
   bool LoadManifestVersion(string16* error);
-  bool LoadNaClModules(string16* error);
 
   // Returns true if the extension has more than one "UI surface". For example,
   // an extension that has a browser action and a page action.
@@ -468,9 +458,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // True if the extension was generated from a user script. (We show slightly
   // different UI if so).
   bool converted_from_user_script_;
-
-  // Optional list of NaCl modules and associated properties.
-  std::vector<NaClModuleInfo> nacl_modules_;
 
   // The public key used to sign the contents of the crx package.
   std::string public_key_;

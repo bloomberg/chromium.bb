@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_H_
 
-#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -692,15 +691,6 @@ class ExtensionService
   };
   typedef std::map<std::string, ExtensionRuntimeData> ExtensionRuntimeDataMap;
 
-  struct NaClModuleInfo {
-    NaClModuleInfo();
-    ~NaClModuleInfo();
-
-    GURL url;
-    std::string mime_type;
-  };
-  typedef std::list<NaClModuleInfo> NaClModuleInfoList;
-
   // Signals *ready_ and sends a notification to the listeners.
   void SetReadyAndNotifyListeners();
 
@@ -772,21 +762,6 @@ class ExtensionService
 
   // Helper that updates the active extension list used for crash reporting.
   void UpdateActiveExtensionsInCrashReporter();
-
-  // We implement some Pepper plug-ins using NaCl to take advantage of NaCl's
-  // strong sandbox. Typically, these NaCl modules are stored in extensions
-  // and registered here. Not all NaCl modules need to register for a MIME
-  // type, just the ones that are responsible for rendering a particular MIME
-  // type, like application/pdf. Note: We only register NaCl modules in the
-  // browser process.
-  void RegisterNaClModule(const GURL& url, const std::string& mime_type);
-  void UnregisterNaClModule(const GURL& url);
-
-  // Call UpdatePluginListWithNaClModules() after registering or unregistering
-  // a NaCl module to see those changes reflected in the PluginList.
-  void UpdatePluginListWithNaClModules();
-
-  NaClModuleInfoList::iterator FindNaClModule(const GURL& url);
 
   // Performs tasks requested to occur after |extension| loads.
   void DoPostLoadTasks(const extensions::Extension* extension);
@@ -963,8 +938,6 @@ class ExtensionService
   // Used for specially handling external extensions that are installed the
   // first time.
   bool is_first_run_;
-
-  NaClModuleInfoList nacl_module_list_;
 
   extensions::AppSyncBundle app_sync_bundle_;
   extensions::ExtensionSyncBundle extension_sync_bundle_;

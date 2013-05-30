@@ -1029,8 +1029,7 @@ bool Extension::LoadLaunchURL(string16* error) {
 
 bool Extension::LoadSharedFeatures(string16* error) {
   if (!LoadDescription(error) ||
-      !ManifestHandler::ParseExtension(this, error) ||
-      !LoadNaClModules(error))
+      !ManifestHandler::ParseExtension(this, error))
     return false;
 
   return true;
@@ -1066,46 +1065,6 @@ bool Extension::LoadManifestVersion(string16* error) {
         errors::kInvalidManifestVersionOld,
         base::IntToString(kModernManifestVersion));
     return false;
-  }
-
-  return true;
-}
-
-bool Extension::LoadNaClModules(string16* error) {
-  if (!manifest_->HasKey(keys::kNaClModules))
-    return true;
-  const ListValue* list_value = NULL;
-  if (!manifest_->GetList(keys::kNaClModules, &list_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidNaClModules);
-    return false;
-  }
-
-  for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    const DictionaryValue* module_value = NULL;
-    if (!list_value->GetDictionary(i, &module_value)) {
-      *error = ASCIIToUTF16(errors::kInvalidNaClModules);
-      return false;
-    }
-
-    // Get nacl_modules[i].path.
-    std::string path_str;
-    if (!module_value->GetString(keys::kNaClModulesPath, &path_str)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidNaClModulesPath, base::IntToString(i));
-      return false;
-    }
-
-    // Get nacl_modules[i].mime_type.
-    std::string mime_type;
-    if (!module_value->GetString(keys::kNaClModulesMIMEType, &mime_type)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidNaClModulesMIMEType, base::IntToString(i));
-      return false;
-    }
-
-    nacl_modules_.push_back(NaClModuleInfo());
-    nacl_modules_.back().url = GetResourceURL(path_str);
-    nacl_modules_.back().mime_type = mime_type;
   }
 
   return true;
