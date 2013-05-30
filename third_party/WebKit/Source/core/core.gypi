@@ -3653,7 +3653,6 @@
             'tests/HeapGraphSerializerTest.cpp',
             'tests/LayoutUnit.cpp',
             'tests/LinkRelAttribute.cpp',
-            'tests/WebSocketPerMessageDeflateTest.cpp'
         ],
         'scripts_for_in_files': [
             'scripts/in_file.py',

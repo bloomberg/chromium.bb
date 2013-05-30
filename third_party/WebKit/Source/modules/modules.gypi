@@ -662,5 +662,10 @@
       'websockets/WorkerThreadableWebSocketChannel.cpp',
       'websockets/WorkerThreadableWebSocketChannel.h',
     ],
+    'modules_unittest_files': [
+      'websockets/WebSocketDeflaterTest.cpp',
+      'websockets/WebSocketExtensionDispatcherTest.cpp',
+      'websockets/WebSocketPerMessageDeflateTest.cpp',
+    ],
   },
 }

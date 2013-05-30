@@ -34,6 +34,7 @@
         'WebKit.gypi',
         '../../wtf/wtf.gypi',
         '../../core/core.gypi',
+        '../../modules/modules.gypi',
     ],
     'targets': [
         {
@@ -80,6 +81,7 @@
                     ],
                     'sources': [
                         '<@(core_unittest_files)',
+                        '<@(modules_unittest_files)',
                         '<@(webkit_unittest_files)',
                     ],
                     'conditions': [

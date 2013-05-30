@@ -96,8 +96,6 @@
             'tests/WebPageSerializerTest.cpp',
             'tests/WebPluginContainerTest.cpp',
             'tests/WebUserGestureTokenTest.cpp',
-            'tests/WebSocketDeflaterTest.cpp',
-            'tests/WebSocketExtensionDispatcherTest.cpp',
             'tests/WebURLRequestTest.cpp',
             'tests/WebURLResponseTest.cpp',
             'tests/WebViewTest.cpp',

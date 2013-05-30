@@ -24,15 +24,13 @@
  */
 
 #include "config.h"
-
 #include "modules/websockets/WebSocketExtensionDispatcher.h"
 
 #include "modules/websockets/WebSocketExtensionParser.h"
 #include "modules/websockets/WebSocketExtensionProcessor.h"
-
+#include "wtf/text/CString.h"
+#include "wtf/text/StringHash.h"
 #include <gtest/gtest.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringHash.h>
 
 using namespace WebCore;
 

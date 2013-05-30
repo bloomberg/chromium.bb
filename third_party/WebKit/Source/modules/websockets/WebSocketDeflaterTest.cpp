@@ -24,11 +24,10 @@
  */
 
 #include "config.h"
-
 #include "modules/websockets/WebSocketDeflater.h"
 
+#include "wtf/Vector.h"
 #include <gtest/gtest.h>
-#include <wtf/Vector.h>
 
 using namespace WebCore;
 
