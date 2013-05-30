@@ -214,7 +214,8 @@ text_input_delete_surrounding_text(void *data,
 		return;
 	}
 
-	if (entry->pending_commit.delete_index + length > text_length) {
+	if (length > text_length ||
+	    entry->pending_commit.delete_index + length > text_length) {
 		fprintf(stderr, "Invalid length %d\n", length);
 		entry->pending_commit.delete_length = 0;
 		return;
@@ -837,6 +838,9 @@ text_entry_delete_text(struct text_entry *entry,
 {
 	uint32_t l;
 
+	assert(index <= strlen(entry->text));
+	assert(index + length <= strlen(entry->text));
+	assert(index + length >= length);
 
 	l = strlen(entry->text + index + length);
 	memmove(entry->text + index,
