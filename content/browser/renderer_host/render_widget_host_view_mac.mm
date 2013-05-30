@@ -1728,6 +1728,12 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
       // The cursor is over a nonWebContentView - ignore this mouse event.
       return YES;
     }
+    if ([view isKindOfClass:[self class]] && ![view isEqual:self]) {
+      // The cursor is over an overlapping render widget. This check is done by
+      // both views so the one that's returned by -hitTest: will end up
+      // processing the event.
+      return YES;
+    }
     view = [view superview];
   }
   return NO;
