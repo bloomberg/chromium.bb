@@ -1685,7 +1685,6 @@ webkit.org/b/106606 [ Release ] fast/canvas/webgl/context-release-upon-reload.ht
 crbug.com/243248 [ Mac ] fast/events/attempt-scroll-with-no-scrollbars.html [ Failure Pass ]
 crbug.com/243249 [ Mac ] http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
 crbug.com/111316 fast/dom/call-a-constructor-as-a-function.html [ Failure ]
-crbug.com/243285 virtual/softwarecompositing/layer-creation/animation-overlap-with-children.html [ Failure ]
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-color.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-hue.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-luminosity.html [ Crash ]

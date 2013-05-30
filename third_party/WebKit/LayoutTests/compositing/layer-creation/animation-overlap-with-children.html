@@ -60,14 +60,8 @@
       
     function runTest()
     {
-      var box = document.getElementById('to-animate');
-      box.addEventListener('webkitAnimationStart', animationStarted, false);
-      box.classList.add('animating');
-    }
-    
-    function animationStarted()
-    {
       if (window.testRunner) {
+        window.internals.pauseAnimations(0.0);
         document.getElementById('layers').innerText = window.internals.layerTreeAsText(document);
         testRunner.notifyDone();
       }
@@ -77,7 +71,7 @@
 </head>
 <body>
 
-  <div id="to-animate" class="container">
+  <div id="to-animate" class="container animating">
     <div class="composited banner"></div>
     <div class="test1 box">Should be composited</div>
     <div class="test2 box">Should not be composited</div>
