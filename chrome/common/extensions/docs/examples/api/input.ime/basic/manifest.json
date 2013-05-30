@@ -15,7 +15,7 @@
       "type": "ime",
       "id": "test",
       "description": "Test IME",  // A user visible description
-      "language": "en",  // The primary language this IME is used for
+      "language": "en-US",  // The primary language this IME is used for
       "layouts": ["us::eng"]  // The supported keyboard layouts for this IME
     }
   ]
