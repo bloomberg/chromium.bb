@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -29,41 +30,6 @@
 #include "content/public/browser/web_contents.h"
 
 using content::RenderViewHost;
-
-// Declare things that are part of the 10.7 SDK.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-enum {
-  NSEventPhaseNone        = 0, // event not associated with a phase.
-  NSEventPhaseBegan       = 0x1 << 0,
-  NSEventPhaseStationary  = 0x1 << 1,
-  NSEventPhaseChanged     = 0x1 << 2,
-  NSEventPhaseEnded       = 0x1 << 3,
-  NSEventPhaseCancelled   = 0x1 << 4,
-};
-typedef NSUInteger NSEventPhase;
-
-enum {
-  NSEventSwipeTrackingLockDirection = 0x1 << 0,
-  NSEventSwipeTrackingClampGestureAmount = 0x1 << 1
-};
-typedef NSUInteger NSEventSwipeTrackingOptions;
-
-@interface NSEvent (LionAPI)
-+ (BOOL)isSwipeTrackingFromScrollEventsEnabled;
-
-- (NSEventPhase)phase;
-- (CGFloat)scrollingDeltaX;
-- (CGFloat)scrollingDeltaY;
-- (void)trackSwipeEventWithOptions:(NSEventSwipeTrackingOptions)options
-          dampenAmountThresholdMin:(CGFloat)minDampenThreshold
-                               max:(CGFloat)maxDampenThreshold
-                      usingHandler:(void (^)(CGFloat gestureAmount,
-                                             NSEventPhase phase,
-                                             BOOL isComplete,
-                                             BOOL *stop))trackingHandler;
-@end
-#endif  // 10.7
 
 @interface ChromeRenderWidgetHostViewMacDelegate ()
 - (BOOL)maybeHandleHistorySwiping:(NSEvent*)theEvent;

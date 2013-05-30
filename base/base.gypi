@@ -257,6 +257,7 @@
           'mac/scoped_nsexception_enabler.mm',
           'mac/scoped_sending_event.h',
           'mac/scoped_sending_event.mm',
+          'mac/sdk_forward_declarations.h',
           'memory/aligned_memory.cc',
           'memory/aligned_memory.h',
           'memory/discardable_memory.cc',

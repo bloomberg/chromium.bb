@@ -7,6 +7,7 @@
 #include <cmath>
 
 #import "base/mac/foundation_util.h"
+#import "base/mac/sdk_forward_declarations.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #import "ui/message_center/cocoa/notification_controller.h"
 #import "ui/message_center/cocoa/popup_collection.h"
@@ -17,35 +18,6 @@
 enum {
   NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8
 };
-
-enum {
-  NSEventPhaseNone        = 0, // event not associated with a phase.
-  NSEventPhaseBegan       = 0x1 << 0,
-  NSEventPhaseStationary  = 0x1 << 1,
-  NSEventPhaseChanged     = 0x1 << 2,
-  NSEventPhaseEnded       = 0x1 << 3,
-  NSEventPhaseCancelled   = 0x1 << 4,
-};
-typedef NSUInteger NSEventPhase;
-
-enum {
-  NSEventSwipeTrackingLockDirection = 0x1 << 0,
-  NSEventSwipeTrackingClampGestureAmount = 0x1 << 1
-};
-typedef NSUInteger NSEventSwipeTrackingOptions;
-
-@interface NSEvent (LionAPI)
-- (NSEventPhase)phase;
-- (CGFloat)scrollingDeltaX;
-- (CGFloat)scrollingDeltaY;
-- (void)trackSwipeEventWithOptions:(NSEventSwipeTrackingOptions)options
-          dampenAmountThresholdMin:(CGFloat)minDampenThreshold
-                               max:(CGFloat)maxDampenThreshold
-                      usingHandler:(void (^)(CGFloat gestureAmount,
-                                             NSEventPhase phase,
-                                             BOOL isComplete,
-                                             BOOL* stop))trackingHandler;
-@end
 #endif  // MAC_OS_X_VERSION_10_7
 
 ////////////////////////////////////////////////////////////////////////////////
