@@ -1563,7 +1563,7 @@ crbug.com/238858 virtual/gpu/fast/hidpi/image-set-in-content-dynamic.html [ Pass
 crbug.com/238858 [ Linux ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ Pass Timeout ]
 crbug.com/238858 [ Win ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ Pass Timeout ImageOnlyFailure ]
 crbug.com/238858 crbug.com/244369 virtual/gpu/fast/hidpi/image-set-simple.html [ Crash Pass Timeout ]
-crbug.com/238858 [ Win7 Debug ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Pass Timeout ]
+crbug.com/238858 crbug.com/244116 [ Win7 ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Crash ImageOnlyFailure Pass Timeout ]
 crbug.com/238858 virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure Timeout Pass ]
 
 crbug.com/239077 fast/canvas/webgl/index-validation-with-resized-buffer.html [ Crash ]
@@ -1859,7 +1859,6 @@ crbug.com/243800 [ Linux ]  inspector/profiler/cpu-profiler-agent-crash-on-start
 crbug.com/244114 [ Win Release ] svg/css/font-face-variant-crash.html [ Crash Pass ]
 
 crbug.com/244114 [ Win Debug ] svg/css/font-face-variant-crash.html [ Pass Timeout ]
-crbug.com/244116 [ Win Release ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ Crash Pass ]
 
 # Test depends on timezone.
 crbug.com/244179 fast/js/date-parse-test.html [ Failure Pass ]
