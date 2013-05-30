@@ -1852,6 +1852,7 @@ crbug.com/245160 [ Lion Debug ] webaudio/audionode.html [ Crash Failure ]
 crbug.com/245160 [ Lion Debug ] webaudio/gain-basic.html [ Crash Failure ]
 crbug.com/245160 [ Lion Debug ] webaudio/mediastreamaudiosourcenode.html [ Crash Failure ]
 crbug.com/245189 [ Win7 Release ] virtual/deferred/fast/images/gif-loop-count.html [ Pass Timeout ]
+crbug.com/245203 [ Win7 Release ] compositing/culling/clear-fixed-iframe.html [ Pass Timeout ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
