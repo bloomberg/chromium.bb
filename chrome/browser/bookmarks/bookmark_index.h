@@ -13,12 +13,9 @@
 #include "base/string16.h"
 
 class BookmarkNode;
+struct BookmarkTitleMatch;
 class QueryNode;
 class QueryParser;
-
-namespace bookmark_utils {
-struct TitleMatch;
-}
 
 namespace content {
 class BrowserContext;
@@ -50,7 +47,7 @@ class BookmarkIndex {
   void GetBookmarksWithTitlesMatching(
       const string16& query,
       size_t max_count,
-      std::vector<bookmark_utils::TitleMatch>* results);
+      std::vector<BookmarkTitleMatch>* results);
 
  private:
   typedef std::set<const BookmarkNode*> NodeSet;
@@ -88,7 +85,7 @@ class BookmarkIndex {
   void AddMatchToResults(const BookmarkNode* node,
                          QueryParser* parser,
                          const std::vector<QueryNode*>& query_nodes,
-                         std::vector<bookmark_utils::TitleMatch>* results);
+                         std::vector<BookmarkTitleMatch>* results);
 
   // Populates |matches| for the specified term. If |first_term| is true, this
   // is the first term in the query. Returns true if there is at least one node

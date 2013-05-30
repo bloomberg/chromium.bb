@@ -14,7 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/bookmarks/bookmark_title_match.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
@@ -54,7 +54,7 @@ class BookmarkIndexTest : public testing::Test {
 
   void ExpectMatches(const std::string& query,
                      const std::vector<std::string>& expected_titles) {
-    std::vector<bookmark_utils::TitleMatch> matches;
+    std::vector<BookmarkTitleMatch> matches;
     model_->GetBookmarksWithTitlesMatching(ASCIIToUTF16(query), 1000, &matches);
     ASSERT_EQ(expected_titles.size(), matches.size());
     for (size_t i = 0; i < expected_titles.size(); ++i) {
@@ -71,14 +71,14 @@ class BookmarkIndexTest : public testing::Test {
   }
 
   void ExtractMatchPositions(const std::string& string,
-                             Snippet::MatchPositions* matches) {
+                             BookmarkTitleMatch::MatchPositions* matches) {
     std::vector<std::string> match_strings;
     base::SplitString(string, ':', &match_strings);
     for (size_t i = 0; i < match_strings.size(); ++i) {
       std::vector<std::string> chunks;
       base::SplitString(match_strings[i], ',', &chunks);
       ASSERT_EQ(2U, chunks.size());
-      matches->push_back(Snippet::MatchPosition());
+      matches->push_back(BookmarkTitleMatch::MatchPosition());
       int chunks0, chunks1;
       base::StringToInt(chunks[0], &chunks0);
       base::StringToInt(chunks[1], &chunks1);
@@ -87,12 +87,13 @@ class BookmarkIndexTest : public testing::Test {
     }
   }
 
-  void ExpectMatchPositions(const std::string& query,
-                            const Snippet::MatchPositions& expected_positions) {
-    std::vector<bookmark_utils::TitleMatch> matches;
+  void ExpectMatchPositions(
+      const std::string& query,
+      const BookmarkTitleMatch::MatchPositions& expected_positions) {
+    std::vector<BookmarkTitleMatch> matches;
     model_->GetBookmarksWithTitlesMatching(ASCIIToUTF16(query), 1000, &matches);
     ASSERT_EQ(1U, matches.size());
-    const bookmark_utils::TitleMatch& match = matches[0];
+    const BookmarkTitleMatch& match = matches[0];
     ASSERT_EQ(expected_positions.size(), match.match_positions.size());
     for (size_t i = 0; i < expected_positions.size(); ++i) {
       EXPECT_EQ(expected_positions[i].first, match.match_positions[i].first);
@@ -178,7 +179,7 @@ TEST_F(BookmarkIndexTest, MatchPositions) {
     titles.push_back(data[i].title);
     AddBookmarksWithTitles(titles);
 
-    Snippet::MatchPositions expected_matches;
+    BookmarkTitleMatch::MatchPositions expected_matches;
     ExtractMatchPositions(data[i].expected, &expected_matches);
     ExpectMatchPositions(data[i].query, expected_matches);
 
@@ -212,7 +213,7 @@ TEST_F(BookmarkIndexTest, HonorMax) {
   const char* input[] = { "abcd", "abcde" };
   AddBookmarksWithTitles(input, ARRAYSIZE_UNSAFE(input));
 
-  std::vector<bookmark_utils::TitleMatch> matches;
+  std::vector<BookmarkTitleMatch> matches;
   model_->GetBookmarksWithTitlesMatching(ASCIIToUTF16("ABc"), 1, &matches);
   EXPECT_EQ(1U, matches.size());
 }
@@ -224,7 +225,7 @@ TEST_F(BookmarkIndexTest, EmptyMatchOnMultiwideLowercaseString) {
                                           WideToUTF16(L"\u0130 i"),
                                           GURL("http://www.google.com"));
 
-  std::vector<bookmark_utils::TitleMatch> matches;
+  std::vector<BookmarkTitleMatch> matches;
   model_->GetBookmarksWithTitlesMatching(ASCIIToUTF16("i"), 100, &matches);
   ASSERT_EQ(1U, matches.size());
   EXPECT_TRUE(matches[0].node == n1);
@@ -291,7 +292,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   EXPECT_EQ(data[3].title, UTF16ToUTF8(result4.title()));
 
   // Populate match nodes.
-  std::vector<bookmark_utils::TitleMatch> matches;
+  std::vector<BookmarkTitleMatch> matches;
   model->GetBookmarksWithTitlesMatching(ASCIIToUTF16("google"), 4, &matches);
 
   // The resulting order should be:

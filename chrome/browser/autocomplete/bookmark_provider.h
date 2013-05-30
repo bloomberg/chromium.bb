@@ -10,10 +10,10 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/snippet.h"
 
 class BookmarkModel;
+struct BookmarkTitleMatch;
 class Profile;
 
 // This class is an autocomplete provider which quickly (and synchronously)
@@ -50,8 +50,7 @@ class BookmarkProvider : public AutocompleteProvider {
   // Compose an AutocompleteMatch based on |title_match| that has 1) the URL of
   // title_match's bookmark, and 2) the bookmark's title, not the URL's page
   // title, as the description.
-  AutocompleteMatch TitleMatchToACMatch(
-      const bookmark_utils::TitleMatch& title_match);
+  AutocompleteMatch TitleMatchToACMatch(const BookmarkTitleMatch& title_match);
 
   // Converts |positions| into ACMatchClassifications and returns the
   // classifications. |text_length| is used to determine the need to add an

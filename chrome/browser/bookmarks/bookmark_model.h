@@ -31,14 +31,11 @@ class BookmarkLoadDetails;
 class BookmarkModel;
 class BookmarkModelObserver;
 class BookmarkStorage;
+struct BookmarkTitleMatch;
 class Profile;
 
 namespace base {
 class SequencedTaskRunner;
-}
-
-namespace bookmark_utils {
-struct TitleMatch;
 }
 
 namespace chrome {
@@ -383,7 +380,7 @@ class BookmarkModel : public content::NotificationObserver,
   void GetBookmarksWithTitlesMatching(
       const string16& text,
       size_t max_count,
-      std::vector<bookmark_utils::TitleMatch>* matches);
+      std::vector<BookmarkTitleMatch>* matches);
 
   // Sets the store to NULL, making it so the BookmarkModel does not persist
   // any changes to disk. This is only useful during testing to speed up

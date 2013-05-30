@@ -20,6 +20,7 @@
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
+#include "chrome/browser/bookmarks/bookmark_title_match.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/favicon/favicon_changed_details.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -658,7 +659,7 @@ void BookmarkModel::ResetDateFolderModified(const BookmarkNode* node) {
 void BookmarkModel::GetBookmarksWithTitlesMatching(
     const string16& text,
     size_t max_count,
-    std::vector<bookmark_utils::TitleMatch>* matches) {
+    std::vector<BookmarkTitleMatch>* matches) {
   if (!loaded_)
     return;
 

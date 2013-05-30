@@ -11,7 +11,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/bookmarks/bookmark_title_match.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/query_parser.h"
@@ -78,7 +78,7 @@ void BookmarkIndex::Remove(const BookmarkNode* node) {
 void BookmarkIndex::GetBookmarksWithTitlesMatching(
     const string16& query,
     size_t max_count,
-    std::vector<bookmark_utils::TitleMatch>* results) {
+    std::vector<BookmarkTitleMatch>* results) {
   std::vector<string16> terms = ExtractQueryWords(query);
   if (terms.empty())
     return;
@@ -149,8 +149,8 @@ void BookmarkIndex::AddMatchToResults(
     const BookmarkNode* node,
     QueryParser* parser,
     const std::vector<QueryNode*>& query_nodes,
-    std::vector<bookmark_utils::TitleMatch>* results) {
-  bookmark_utils::TitleMatch title_match;
+    std::vector<BookmarkTitleMatch>* results) {
+  BookmarkTitleMatch title_match;
   // Check that the result matches the query.  The previous search
   // was a simple per-word search, while the more complex matching
   // of QueryParser may filter it out.  For example, the query

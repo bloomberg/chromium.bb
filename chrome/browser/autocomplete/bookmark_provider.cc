@@ -14,11 +14,12 @@
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_title_match.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "net/base/net_util.h"
 
-typedef std::vector<bookmark_utils::TitleMatch> TitleMatches;
+typedef std::vector<BookmarkTitleMatch> TitleMatches;
 
 // BookmarkProvider ------------------------------------------------------------
 
@@ -156,7 +157,7 @@ class ScoringFunctor {
 }  // namespace
 
 AutocompleteMatch BookmarkProvider::TitleMatchToACMatch(
-    const bookmark_utils::TitleMatch& title_match) {
+    const BookmarkTitleMatch& title_match) {
   // The AutocompleteMatch we construct is non-deletable because the only
   // way to support this would be to delete the underlying bookmark, which is
   // unlikely to be what the user intends.

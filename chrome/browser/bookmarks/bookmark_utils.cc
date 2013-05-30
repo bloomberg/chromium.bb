@@ -232,12 +232,6 @@ void GetMostRecentlyAddedEntries(BookmarkModel* model,
   }
 }
 
-TitleMatch::TitleMatch()
-    : node(NULL) {
-}
-
-TitleMatch::~TitleMatch() {}
-
 bool MoreRecentlyAdded(const BookmarkNode* n1, const BookmarkNode* n2) {
   return n1->date_added() > n2->date_added();
 }

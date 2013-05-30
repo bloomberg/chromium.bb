@@ -265,6 +265,8 @@
         'browser/bookmarks/bookmark_service.h',
         'browser/bookmarks/bookmark_storage.cc',
         'browser/bookmarks/bookmark_storage.h',
+        'browser/bookmarks/bookmark_title_match.cc',
+        'browser/bookmarks/bookmark_title_match.h',
         'browser/bookmarks/bookmark_utils.cc',
         'browser/bookmarks/bookmark_utils.h',
         'browser/bookmarks/imported_bookmark_entry.cc',

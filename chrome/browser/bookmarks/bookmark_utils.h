@@ -11,7 +11,6 @@
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/history/snippet.h"
 
 class BookmarkModel;
 class BookmarkNode;
@@ -58,18 +57,6 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
 void GetMostRecentlyAddedEntries(BookmarkModel* model,
                                  size_t count,
                                  std::vector<const BookmarkNode*>* nodes);
-
-// Used by GetBookmarksMatchingText to return a matching node and the location
-// of the match in the title.
-struct TitleMatch {
-  TitleMatch();
-  ~TitleMatch();
-
-  const BookmarkNode* node;
-
-  // Location of the matching words in the title of the node.
-  Snippet::MatchPositions match_positions;
-};
 
 // Returns true if |n1| was added more recently than |n2|.
 bool MoreRecentlyAdded(const BookmarkNode* n1, const BookmarkNode* n2);
