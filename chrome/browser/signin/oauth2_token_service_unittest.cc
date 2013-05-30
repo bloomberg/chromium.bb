@@ -404,7 +404,7 @@ TEST_F(OAuth2TokenServiceTest, RetryingConsumer) {
   EXPECT_EQ(0, consumer.number_of_errors_);
 
   net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  EXPECT_TRUE(fetcher);
+  ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
   fetcher->SetResponseString(std::string());
   fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -412,10 +412,59 @@ TEST_F(OAuth2TokenServiceTest, RetryingConsumer) {
   EXPECT_EQ(1, consumer.number_of_errors_);
 
   fetcher = factory_.GetFetcherByID(0);
-  EXPECT_TRUE(fetcher);
+  ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
   fetcher->SetResponseString(std::string());
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(0, consumer.number_of_successful_tokens_);
   EXPECT_EQ(2, consumer.number_of_errors_);
+}
+
+TEST_F(OAuth2TokenServiceTest, InvalidateToken) {
+  std::set<std::string> scopes;
+  oauth2_service_->set_refresh_token("refreshToken");
+
+  // First request.
+  scoped_ptr<OAuth2TokenService::Request> request(
+      oauth2_service_->StartRequest(scopes, &consumer_));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  EXPECT_TRUE(fetcher);
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString(GetValidTokenResponse("token", 3600));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ("token", consumer_.last_token_);
+
+  // Second request, should return the same token without needing a network
+  // request.
+  scoped_ptr<OAuth2TokenService::Request> request2(
+      oauth2_service_->StartRequest(scopes, &consumer_));
+  message_loop_.RunUntilIdle();
+
+  // No new network fetcher.
+  EXPECT_EQ(fetcher, factory_.GetFetcherByID(0));
+  EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ("token", consumer_.last_token_);
+
+  // Invalidating the token should return a new token on the next request.
+  oauth2_service_->InvalidateToken(scopes, consumer_.last_token_);
+  scoped_ptr<OAuth2TokenService::Request> request3(
+      oauth2_service_->StartRequest(scopes, &consumer_));
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  fetcher = factory_.GetFetcherByID(0);
+  EXPECT_TRUE(fetcher);
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString(GetValidTokenResponse("token2", 3600));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_EQ(3, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ("token2", consumer_.last_token_);
 }

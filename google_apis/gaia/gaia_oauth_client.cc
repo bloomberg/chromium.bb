@@ -203,7 +203,7 @@ void GaiaOAuthClient::Core::HandleResponse(
     // If we don't have an access token yet and the the error was not
     // RC_BAD_REQUEST, we may need to retry.
     if ((source->GetMaxRetriesOn5xx() != -1) &&
-        (num_retries_ > source->GetMaxRetriesOn5xx())) {
+        (num_retries_ >= source->GetMaxRetriesOn5xx())) {
       // Retry limit reached. Give up.
       delegate_->OnNetworkError(source->GetResponseCode());
     } else {
