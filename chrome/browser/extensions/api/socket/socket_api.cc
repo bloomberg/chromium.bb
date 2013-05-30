@@ -616,38 +616,40 @@ bool SocketGetInfoFunction::Prepare() {
 }
 
 void SocketGetInfoFunction::Work() {
-  api::socket::SocketInfo info;
   Socket* socket = GetSocket(params_->socket_id);
-  if (socket) {
-    // This represents what we know about the socket, and does not call through
-    // to the system.
-    if (socket->GetSocketType() == Socket::TYPE_TCP)
-      info.socket_type = extensions::api::socket::SOCKET_TYPE_TCP;
-    else
-      info.socket_type = extensions::api::socket::SOCKET_TYPE_UDP;
-    info.connected = socket->IsConnected();
-
-    // Grab the peer address as known by the OS. This and the call below will
-    // always succeed while the socket is connected, even if the socket has
-    // been remotely closed by the peer; only reading the socket will reveal
-    // that it should be closed locally.
-    net::IPEndPoint peerAddress;
-    if (socket->GetPeerAddress(&peerAddress)) {
-      info.peer_address.reset(
-          new std::string(peerAddress.ToStringWithoutPort()));
-      info.peer_port.reset(new int(peerAddress.port()));
-    }
-
-    // Grab the local address as known by the OS.
-    net::IPEndPoint localAddress;
-    if (socket->GetLocalAddress(&localAddress)) {
-      info.local_address.reset(
-          new std::string(localAddress.ToStringWithoutPort()));
-      info.local_port.reset(new int(localAddress.port()));
-    }
-  } else {
+  if (!socket) {
     error_ = kSocketNotFoundError;
+    return;
   }
+
+  api::socket::SocketInfo info;
+  // This represents what we know about the socket, and does not call through
+  // to the system.
+  if (socket->GetSocketType() == Socket::TYPE_TCP)
+    info.socket_type = extensions::api::socket::SOCKET_TYPE_TCP;
+  else
+    info.socket_type = extensions::api::socket::SOCKET_TYPE_UDP;
+  info.connected = socket->IsConnected();
+
+  // Grab the peer address as known by the OS. This and the call below will
+  // always succeed while the socket is connected, even if the socket has
+  // been remotely closed by the peer; only reading the socket will reveal
+  // that it should be closed locally.
+  net::IPEndPoint peerAddress;
+  if (socket->GetPeerAddress(&peerAddress)) {
+    info.peer_address.reset(
+        new std::string(peerAddress.ToStringWithoutPort()));
+    info.peer_port.reset(new int(peerAddress.port()));
+  }
+
+  // Grab the local address as known by the OS.
+  net::IPEndPoint localAddress;
+  if (socket->GetLocalAddress(&localAddress)) {
+    info.local_address.reset(
+        new std::string(localAddress.ToStringWithoutPort()));
+    info.local_port.reset(new int(localAddress.port()));
+  }
+
   SetResult(info.ToValue().release());
 }
 

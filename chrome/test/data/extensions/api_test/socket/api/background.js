@@ -55,8 +55,10 @@ var testSocketCreation = function() {
       }
 
       socket.destroy(socketInfo.socketId);
-
-      chrome.test.succeed();
+      socket.getInfo(socketInfo.socketId, function(info) {
+        chrome.test.assertEq(undefined, info);
+        chrome.test.succeed();
+      });
     }
 
     chrome.test.assertTrue(socketInfo.socketId > 0);
