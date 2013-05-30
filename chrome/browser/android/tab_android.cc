@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/browser_tab_contents.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
-#include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "components/autofill/browser/autofill_external_delegate.h"
@@ -86,7 +85,6 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
   PrefsTabHelper::CreateForWebContents(contents);
   prerender::PrerenderTabHelper::CreateForWebContents(contents);
   SSLTabHelper::CreateForWebContents(contents);
-  TabContentsSyncedTabDelegate::CreateForWebContents(contents);
   TabSpecificContentSettings::CreateForWebContents(contents);
   TranslateTabHelper::CreateForWebContents(contents);
   WindowAndroidHelper::CreateForWebContents(contents);
@@ -104,12 +102,16 @@ WebContents* TabAndroid::InitWebContentsFromView(JNIEnv* env,
   WebContents* web_contents = content_view_core->GetWebContents();
   DCHECK(web_contents);
   InitTabHelpers(web_contents);
+  // Make sure tab id is same as web contents id. This means tab id can change
+  // based on when web_contents are attached to tab.
+  // TODO(shashishekhar): Add a new notification for this, so any
+  // observers can make appropriate state changes.
+  tab_id_.set_id(SessionTabHelper::FromWebContents(web_contents)
+                     ->session_id().id());
   return web_contents;
 }
 
-TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
-    : tab_id_(-1),
-      weak_java_tab_(env, obj) {
+TabAndroid::TabAndroid(JNIEnv* env, jobject obj) : weak_java_tab_(env, obj) {
   Java_TabBase_setNativePtr(env, obj, reinterpret_cast<jint>(this));
 }
 

@@ -51,6 +51,7 @@ class SyncedTabDelegate {
       GetBlockedNavigations() const = 0;
 
   virtual bool IsPinned() const = 0;
+  virtual bool HasWebContents() const = 0;
 };
 
 }  // namespace browser_sync

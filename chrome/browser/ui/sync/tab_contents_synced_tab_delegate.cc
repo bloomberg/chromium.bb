@@ -103,3 +103,5 @@ bool TabContentsSyncedTabDelegate::IsPinned() const {
   // We might not have a parent window, e.g. Developer Tools.
   return window ? window->IsTabPinned(this) : false;
 }
+
+bool TabContentsSyncedTabDelegate::HasWebContents() const { return true; }

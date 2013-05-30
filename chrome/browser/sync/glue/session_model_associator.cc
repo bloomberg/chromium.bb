@@ -213,10 +213,10 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
 
         if (reload_tabs) {
           SyncedTabDelegate* tab = (*i)->GetTabAt(j);
-          // It's possible for GetTabAt to return a null tab if it's not in
-          // memory. We can assume this means the tab already existed but hasn't
-          // changed, so no need to reassociate.
-          if (tab && !AssociateTab(*tab, error)) {
+          // It's possible for GetTabAt to return a tab which has no web
+          // contents. We can assume this means the tab already existed but
+          // hasn't changed, so no need to reassociate.
+          if (tab->HasWebContents() && !AssociateTab(*tab, error)) {
             // Association failed. Either we need to re-associate, or this is an
             // unrecoverable error.
             return false;

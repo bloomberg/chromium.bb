@@ -33,10 +33,13 @@ class TestTabModel : public TabModel {
   virtual content::WebContents* GetWebContentsAt(int index) const OVERRIDE {
     return NULL;
   }
-  virtual SessionID::id_type GetTabIdAt(int index) const OVERRIDE { return 0; }
   virtual void CreateTab(content::WebContents* web_contents) OVERRIDE {}
   virtual bool IsSessionRestoreInProgress() const OVERRIDE { return false; }
   virtual void OpenClearBrowsingData() const OVERRIDE {}
+  virtual browser_sync::SyncedTabDelegate* GetTabAt(int index) const OVERRIDE {
+    return NULL;
+  }
+
 };
 
 TEST_F(TabModelTest, TestProfileHandling) {

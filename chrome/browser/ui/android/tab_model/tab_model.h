@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "content/public/browser/notification_observer.h"
@@ -15,6 +16,7 @@
 namespace browser_sync {
 class SyncedWindowDelegate;
 class SyncedWindowDelegateAndroid;
+class SyncedTabDelegate;
 }
 
 namespace content {
@@ -46,7 +48,7 @@ class TabModel : public content::NotificationObserver,
   virtual int GetTabCount() const = 0;
   virtual int GetActiveIndex() const = 0;
   virtual content::WebContents* GetWebContentsAt(int index) const = 0;
-  virtual SessionID::id_type GetTabIdAt(int index) const = 0;
+  virtual browser_sync::SyncedTabDelegate* GetTabAt(int index) const = 0;
 
   // Used for restoring tabs from synced foreign sessions.
   virtual void CreateTab(content::WebContents* web_contents) = 0;

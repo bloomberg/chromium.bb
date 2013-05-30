@@ -2081,6 +2081,8 @@
         'browser/sync/glue/synced_session.h',
         'browser/sync/glue/synced_session_tracker.cc',
         'browser/sync/glue/synced_session_tracker.h',
+        'browser/sync/glue/synced_tab_delegate_android.cc',
+        'browser/sync/glue/synced_tab_delegate_android.h',
         'browser/sync/glue/synced_window_delegate.h',
         'browser/sync/glue/synced_window_delegate_android.cc',
         'browser/sync/glue/synced_window_delegate_android.h',

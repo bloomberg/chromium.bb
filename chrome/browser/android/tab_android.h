@@ -10,6 +10,7 @@
 #include "base/android/jni_helper.h"
 #include "base/callback_forward.h"
 #include "base/string16.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 
 class GURL;
@@ -41,9 +42,7 @@ class TabAndroid {
 
   virtual ToolbarModel::SecurityLevel GetSecurityLevel();
 
-  int id() const {
-    return tab_id_;
-  }
+  const SessionID& id() const { return tab_id_; }
 
   virtual void OnReceivedHttpAuthRequest(jobject auth_handler,
                                          const string16& host,
@@ -78,10 +77,10 @@ class TabAndroid {
 
   static void InitTabHelpers(content::WebContents* web_contents);
 
-  static content::WebContents* InitWebContentsFromView(JNIEnv* env,
-                                                       jobject content_view);
+  content::WebContents* InitWebContentsFromView(JNIEnv* env,
+                                                jobject content_view);
 
-  int tab_id_;
+  SessionID tab_id_;
 
  private:
   JavaObjectWeakGlobalRef weak_java_tab_;
