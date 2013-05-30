@@ -87,7 +87,7 @@ static inline bool isCSSTokenAString(int yytype)
 
 %}
 
-%expect 10
+%expect 11
 
 %nonassoc LOWEST_PREC
 
@@ -590,7 +590,7 @@ maybe_media_value:
     ;
 
 media_query_exp:
-    maybe_media_restrictor maybe_space '(' maybe_space media_feature maybe_space maybe_media_value ')' {
+    maybe_media_restrictor maybe_space '(' maybe_space media_feature maybe_space maybe_media_value ')' maybe_space {
         // If restrictor is specified, media query expression is invalid.
         // Create empty media query expression and continue parsing media query.
         if ($1 != MediaQuery::None)
@@ -1090,9 +1090,6 @@ filter:
     '{' at_rule_body_start maybe_space_before_declaration declaration_list closing_brace {
         parser->m_inFilterRule = false;
         $$ = parser->createFilterRule($4);
-    }
-  | before_filter_rule WEBKIT_FILTER_RULE_SYM at_rule_recovery {
-        $$ = 0;
     }
     ;
 
