@@ -288,14 +288,6 @@ void FrameLoaderClientImpl::dispatchWillSendRequest(
     DocumentLoader* loader, unsigned long identifier, ResourceRequest& request,
     const ResourceResponse& redirectResponse)
 {
-    if (loader) {
-        // Avoid repeating a form submission when navigating back or forward.
-        if (loader == loader->frameLoader()->provisionalDocumentLoader()
-            && request.httpMethod() == "POST"
-            && isBackForwardLoadType(loader->frameLoader()->loadType()))
-            request.setCachePolicy(ReturnCacheDataDontLoad);
-    }
-
     // FrameLoader::loadEmptyDocumentSynchronously() creates an empty document
     // with no URL.  We don't like that, so we'll rename it to about:blank.
     if (request.url().isEmpty())

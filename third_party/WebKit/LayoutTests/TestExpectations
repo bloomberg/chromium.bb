@@ -588,13 +588,6 @@ crbug.com/9797 crbug.com/9798 [ Win ] http/tests/xmlhttprequest/state-after-netw
 # This test definitely times out (i.e. is not just slow).
 crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-text.html [ Pass Timeout ]
 
-# New failures from WebKit merge 42725:42805
-# WebKit change http://trac.webkit.org/changeset/42785
-# added a test which submits a form and then uses history.back()
-# to go back. in test_shell history.back() does not go back,
-# so the test timeouts.
-crbug.com/11001 http/tests/history/back-to-post.php [ Timeout ]
-
 # Flaky timeouts first appearing at r27764 (webkit 48947)
 crbug.com/9798 [ Win ] http/tests/cookies/multiple-cookies.html [ Pass Timeout ]
 
