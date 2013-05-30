@@ -381,7 +381,7 @@ void FileSystem::GetFileByPath(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  operations_.EnsureFileDownloaded(
+  operations_.EnsureFileDownloadedByPath(
       file_path,
       ClientContext(USER_INITIATED),
       GetFileContentInitializedCallback(),
@@ -398,33 +398,8 @@ void FileSystem::GetFileByResourceId(
   DCHECK(!resource_id.empty());
   DCHECK(!get_file_callback.is_null());
 
-  resource_metadata_->GetResourceEntryByIdOnUIThread(
+  operations_.EnsureFileDownloadedByResourceId(
       resource_id,
-      base::Bind(&FileSystem::GetFileByResourceIdAfterGetEntry,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 context,
-                 get_file_callback,
-                 get_content_callback));
-}
-
-void FileSystem::GetFileByResourceIdAfterGetEntry(
-    const ClientContext& context,
-    const GetFileCallback& get_file_callback,
-    const google_apis::GetContentCallback& get_content_callback,
-    FileError error,
-    const base::FilePath& file_path,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!get_file_callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    get_file_callback.Run(FILE_ERROR_NOT_FOUND, base::FilePath(),
-                          scoped_ptr<ResourceEntry>());
-    return;
-  }
-
-  operations_.EnsureFileDownloaded(
-      file_path,
       context,
       GetFileContentInitializedCallback(),
       get_content_callback,
@@ -441,7 +416,7 @@ void FileSystem::GetFileContentByPath(
   DCHECK(!get_content_callback.is_null());
   DCHECK(!completion_callback.is_null());
 
-  operations_.EnsureFileDownloaded(
+  operations_.EnsureFileDownloadedByPath(
       file_path,
       ClientContext(USER_INITIATED),
       initialized_callback,
@@ -888,7 +863,7 @@ void FileSystem::OpenFile(const base::FilePath& file_path,
   }
   open_files_.insert(file_path);
 
-  operations_.EnsureFileDownloaded(
+  operations_.EnsureFileDownloadedByPath(
       file_path,
       ClientContext(USER_INITIATED),
       GetFileContentInitializedCallback(),

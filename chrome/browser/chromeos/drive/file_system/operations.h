@@ -122,7 +122,16 @@ class Operations {
 
   // Wrapper function for download_operation_.
   // |completion_callback| must not be null.
-  void EnsureFileDownloaded(
+  void EnsureFileDownloadedByResourceId(
+      const std::string& resource_id,
+      const ClientContext& context,
+      const GetFileContentInitializedCallback& initialized_callback,
+      const google_apis::GetContentCallback& get_content_callback,
+      const GetFileCallback& completion_callback);
+
+  // Wrapper function for download_operation_.
+  // |completion_callback| must not be null.
+  void EnsureFileDownloadedByPath(
       const base::FilePath& file_path,
       const ClientContext& context,
       const GetFileContentInitializedCallback& initialized_callback,

@@ -300,18 +300,6 @@ class FileSystem : public FileSystemInterface,
       const base::FilePath& file_path,
       scoped_ptr<ResourceEntry> entry);
 
-  // Part of GetFileByResourceId(). Called after
-  // ResourceMetadata::GetResourceEntryById() is complete.
-  // |get_file_callback| must not be null.
-  // |get_content_callback| may be null.
-  void GetFileByResourceIdAfterGetEntry(
-      const ClientContext& context,
-      const GetFileCallback& get_file_callback,
-      const google_apis::GetContentCallback& get_content_callback,
-      FileError error,
-      const base::FilePath& file_path,
-      scoped_ptr<ResourceEntry> entry);
-
   // Part of RefreshDirectory(). Called after
   // GetResourceEntryByPath() is complete.
   void RefreshDirectoryAfterGetResourceEntry(

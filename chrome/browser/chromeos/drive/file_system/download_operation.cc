@@ -37,52 +37,72 @@ namespace {
 FileError CheckPreConditionForEnsureFileDownloaded(
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
-    const base::FilePath& file_path,
-    base::FilePath* cache_file_path,
-    ResourceEntry* entry) {
+    const ResourceEntry& entry,
+    base::FilePath* cache_file_path) {
   DCHECK(metadata);
   DCHECK(cache);
   DCHECK(cache_file_path);
-  DCHECK(entry);
 
-  FileError error = metadata->GetResourceEntryByPath(file_path, entry);
-  if (error != FILE_ERROR_OK)
-    return error;
-
-  if (entry->file_info().is_directory())
+  if (entry.file_info().is_directory())
     return FILE_ERROR_NOT_A_FILE;
 
   // The file's entry should have its file specific info.
-  DCHECK(entry->has_file_specific_info());
+  DCHECK(entry.has_file_specific_info());
 
   // For a hosted document, we create a special JSON file to represent the
   // document instead of fetching the document content in one of the exported
   // formats. The JSON file contains the edit URL and resource ID of the
   // document.
-  if (entry->file_specific_info().is_hosted_document()) {
+  if (entry.file_specific_info().is_hosted_document()) {
     base::FilePath gdoc_file_path;
     if (!file_util::CreateTemporaryFileInDir(
             cache->GetCacheDirectoryPath(
                 internal::FileCache::CACHE_TYPE_TMP_DOCUMENTS),
             &gdoc_file_path) ||
         !util::CreateGDocFile(gdoc_file_path,
-                              GURL(entry->file_specific_info().alternate_url()),
-                              entry->resource_id()))
+                              GURL(entry.file_specific_info().alternate_url()),
+                              entry.resource_id()))
       return FILE_ERROR_FAILED;
 
     *cache_file_path = gdoc_file_path;
     return FILE_ERROR_OK;
   }
 
-  // Look up if there exists the cache file.
-  FileError cache_error = cache->GetFile(
-      entry->resource_id(),
-      entry->file_specific_info().file_md5(),
-      cache_file_path);
-  DCHECK((cache_error == FILE_ERROR_OK && !cache_file_path->empty()) ||
-         (cache_error == FILE_ERROR_NOT_FOUND && cache_file_path->empty()));
+  // Get the cache file path if available.
+  cache->GetFile(entry.resource_id(),
+                 entry.file_specific_info().file_md5(),
+                 cache_file_path);
+  return FILE_ERROR_OK;
+}
 
-  return error;
+// Calls CheckPreConditionForEnsureFileDownloaded() with the entry specified by
+// the given ID.
+FileError CheckPreConditionForEnsureFileDownloadedByResourceId(
+    internal::ResourceMetadata* metadata,
+    internal::FileCache* cache,
+    const std::string& resource_id,
+    base::FilePath* cache_file_path,
+    ResourceEntry* entry) {
+  FileError error = metadata->GetResourceEntryById(resource_id, NULL, entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+  return CheckPreConditionForEnsureFileDownloaded(
+      metadata, cache, *entry, cache_file_path);
+}
+
+// Calls CheckPreConditionForEnsureFileDownloaded() with the entry specified by
+// the given file path.
+FileError CheckPreConditionForEnsureFileDownloadedByPath(
+    internal::ResourceMetadata* metadata,
+    internal::FileCache* cache,
+    const base::FilePath& file_path,
+    base::FilePath* cache_file_path,
+    ResourceEntry* entry) {
+  FileError error = metadata->GetResourceEntryByPath(file_path, entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+  return CheckPreConditionForEnsureFileDownloaded(
+      metadata, cache, *entry, cache_file_path);
 }
 
 // Creates a file with unique name in |dir| and stores the path to |temp_file|.
@@ -269,7 +289,38 @@ DownloadOperation::DownloadOperation(
 DownloadOperation::~DownloadOperation() {
 }
 
-void DownloadOperation::EnsureFileDownloaded(
+void DownloadOperation::EnsureFileDownloadedByResourceId(
+    const std::string& resource_id,
+    const ClientContext& context,
+    const GetFileContentInitializedCallback& initialized_callback,
+    const google_apis::GetContentCallback& get_content_callback,
+    const GetFileCallback& completion_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!completion_callback.is_null());
+
+  DownloadCallback callback(
+      initialized_callback, get_content_callback, completion_callback);
+
+  ResourceEntry* entry = new ResourceEntry;
+  base::FilePath* cache_file_path = new base::FilePath;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&CheckPreConditionForEnsureFileDownloadedByResourceId,
+                 base::Unretained(metadata_),
+                 base::Unretained(cache_),
+                 resource_id,
+                 cache_file_path,
+                 entry),
+      base::Bind(&DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 context,
+                 callback,
+                 base::Passed(make_scoped_ptr(entry)),
+                 base::Owned(cache_file_path)));
+}
+
+void DownloadOperation::EnsureFileDownloadedByPath(
     const base::FilePath& file_path,
     const ClientContext& context,
     const GetFileContentInitializedCallback& initialized_callback,
@@ -286,7 +337,7 @@ void DownloadOperation::EnsureFileDownloaded(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&CheckPreConditionForEnsureFileDownloaded,
+      base::Bind(&CheckPreConditionForEnsureFileDownloadedByPath,
                  base::Unretained(metadata_),
                  base::Unretained(cache_),
                  file_path,
@@ -294,7 +345,6 @@ void DownloadOperation::EnsureFileDownloaded(
                  entry),
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition,
                  weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
                  context,
                  callback,
                  base::Passed(make_scoped_ptr(entry)),
@@ -302,7 +352,6 @@ void DownloadOperation::EnsureFileDownloaded(
 }
 
 void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
-    const base::FilePath& file_path,
     const ClientContext& context,
     const DownloadCallback& callback,
     scoped_ptr<ResourceEntry> entry,

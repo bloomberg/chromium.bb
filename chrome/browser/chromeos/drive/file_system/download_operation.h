@@ -45,9 +45,10 @@ class DownloadOperation {
                     internal::FileCache* cache);
   ~DownloadOperation();
 
-  // Ensures that the file content is locally downloaded.
-  // For hosted documents, this method may create a JSON file representing the
-  // file.
+  // Ensures that the file content specified by |resource_id| is locally
+  // downloaded.
+  // For hosted documents, this method may create a JSON file representing th
+  // e file.
   // For regular files, if the locally cached file is found, returns it.
   // If not found, start to download the file from the server.
   // When a JSON file is created, the cache file is found or downloading is
@@ -61,7 +62,16 @@ class DownloadOperation {
   // |initialized_callback| and |get_content_callback| can be null if not
   // needed.
   // |completion_callback| must not be null.
-  void EnsureFileDownloaded(
+  void EnsureFileDownloadedByResourceId(
+      const std::string& resource_id,
+      const ClientContext& context,
+      const GetFileContentInitializedCallback& initialized_callback,
+      const google_apis::GetContentCallback& get_content_callback,
+      const GetFileCallback& completion_callback);
+
+  // Does the same thing as EnsureFileDownloadedByResourceId for the file
+  // specified by |file_path|.
+  void EnsureFileDownloadedByPath(
       const base::FilePath& file_path,
       const ClientContext& context,
       const GetFileContentInitializedCallback& initialized_callback,
@@ -78,7 +88,6 @@ class DownloadOperation {
   // Part of EnsureFileDownloaded(). Called upon the completion of precondition
   // check.
   void EnsureFileDownloadedAfterCheckPreCondition(
-      const base::FilePath& file_path,
       const ClientContext& context,
       const DownloadCallback& callback,
       scoped_ptr<ResourceEntry> entry,

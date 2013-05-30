@@ -156,7 +156,21 @@ void Operations::TouchFile(const base::FilePath& file_path,
       file_path, last_access_time, last_modified_time, callback);
 }
 
-void Operations::EnsureFileDownloaded(
+void Operations::EnsureFileDownloadedByResourceId(
+    const std::string& resource_id,
+    const ClientContext& context,
+    const GetFileContentInitializedCallback& initialized_callback,
+    const google_apis::GetContentCallback& get_content_callback,
+    const GetFileCallback& completion_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!completion_callback.is_null());
+
+  download_operation_->EnsureFileDownloadedByResourceId(
+      resource_id, context, initialized_callback, get_content_callback,
+      completion_callback);
+}
+
+void Operations::EnsureFileDownloadedByPath(
     const base::FilePath& file_path,
     const ClientContext& context,
     const GetFileContentInitializedCallback& initialized_callback,
@@ -165,7 +179,7 @@ void Operations::EnsureFileDownloaded(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!completion_callback.is_null());
 
-  download_operation_->EnsureFileDownloaded(
+  download_operation_->EnsureFileDownloadedByPath(
       file_path, context, initialized_callback, get_content_callback,
       completion_callback);
 }
