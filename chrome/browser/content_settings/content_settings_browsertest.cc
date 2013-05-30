@@ -409,6 +409,8 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, MAYBE_LoadAllBlockedPlugins) {
 }
 
 // If this flakes, use http://crbug.com/113057.
+// TODO(jschuh): Hanging plugin tests. crbug.com/244653
+#if !defined(OS_WIN) && !defined(ARCH_CPU_X86_64)
 IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, NoCallbackAtLoad) {
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
@@ -434,6 +436,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, NoCallbackAtLoad) {
 
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, DeleteSelfAtLoad) {
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(

@@ -27,6 +27,13 @@ namespace utils = extension_function_test_utils;
 
 namespace {
 
+// TODO(jschuh): Hanging plugin tests. crbug.com/244653
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
+
 const std::string kHostname = "127.0.0.1";
 const int kPort = 8888;
 
@@ -258,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketMulticast) {
 }
 
 #if !defined(DISABLE_NACL)
-IN_PROC_BROWSER_TEST_F(SocketPpapiTest, UDP) {
+IN_PROC_BROWSER_TEST_F(SocketPpapiTest, MAYBE(UDP)) {
   scoped_ptr<net::SpawnedTestServer> test_server(
       new net::SpawnedTestServer(
           net::SpawnedTestServer::TYPE_UDP_ECHO,
@@ -287,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(SocketPpapiTest, UDP) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(SocketPpapiTest, TCP) {
+IN_PROC_BROWSER_TEST_F(SocketPpapiTest, MAYBE(TCP)) {
   scoped_ptr<net::SpawnedTestServer> test_server(
       new net::SpawnedTestServer(
           net::SpawnedTestServer::TYPE_TCP_ECHO,
@@ -316,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(SocketPpapiTest, TCP) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(SocketPpapiTest, TCPServer) {
+IN_PROC_BROWSER_TEST_F(SocketPpapiTest, MAYBE(TCPServer)) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
   ExtensionTestMessageListener listener("info_please", true);
@@ -330,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(SocketPpapiTest, TCPServer) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(SocketPpapiTest, Multicast) {
+IN_PROC_BROWSER_TEST_F(SocketPpapiTest, MAYBE(Multicast)) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
   ExtensionTestMessageListener listener("info_please", true);

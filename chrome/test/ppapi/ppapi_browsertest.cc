@@ -580,6 +580,8 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, PostMessage) {
       LIST_TEST(PostMessage_NonMainThread)
   );
 }
+// TODO(jschuh): Hanging plugin tests. crbug.com/244653
+#if !defined(OS_WIN) && !defined(ARCH_CPU_X86_64)
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, PostMessage) {
   RunTestViaHTTP(
       LIST_TEST(PostMessage_SendInInit)
@@ -608,6 +610,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(PostMessage)) {
       LIST_TEST(PostMessage_NonMainThread)
   );
 }
+#endif
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, PostMessage) {
   RunTestViaHTTP(
       LIST_TEST(PostMessage_SendInInit)
