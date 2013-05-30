@@ -17,6 +17,7 @@ import json_schema
 import model
 import optparse
 import os
+import schema_loader
 import sys
 import urlparse
 from highlighters import (
@@ -212,9 +213,9 @@ updateEverything();
       (api_def, file_path) = self._LoadModel(filedir, filename)
       namespace = api_model.AddNamespace(api_def, file_path)
       type_generator = cpp_type_generator.CppTypeGenerator(
-           namespace,
-           compiler.TypeNamespaceResolver(filedir),
-           namespace.unix_name)
+           api_model,
+           schema_loader.SchemaLoader(filedir),
+           namespace)
 
       # Get the model's dependencies.
       for dependency in api_def.get('dependencies', []):
@@ -229,12 +230,13 @@ updateEverything();
               cpp_util.Classname(referenced_namespace.name).lower())
 
       # Generate code
+      cpp_namespace = 'generated_api_schemas'
       if file_ext == '.h':
-        cpp_code = (h_generator.HGenerator(namespace, type_generator)
-            .Generate().Render())
+        cpp_code = (h_generator.HGenerator(type_generator, cpp_namespace)
+            .Generate(namespace).Render())
       elif file_ext == '.cc':
-        cpp_code = (cc_generator.CCGenerator(namespace, type_generator)
-            .Generate().Render())
+        cpp_code = (cc_generator.CCGenerator(type_generator, cpp_namespace)
+            .Generate(namespace).Render())
       else:
         self.send_error(404, "File not found: %s" % request_path)
         return
