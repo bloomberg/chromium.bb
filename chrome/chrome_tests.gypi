@@ -2332,7 +2332,6 @@
         'test/perf/generate_profile.h',
         'test/perf/indexeddb_uitest.cc',
         'test/perf/memory_test.cc',
-        'test/perf/page_cycler_test.cc',
         'test/perf/perf_ui_test_suite.cc',
         'test/perf/run_all_perfuitests.cc',
         'test/perf/shutdown_test.cc',
