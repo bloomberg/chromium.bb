@@ -1755,6 +1755,10 @@ body[new-ui] #list-container li.table-row .file-checkbox {
   width: 15px;
 }
 
+body[new-ui] #list-container li.table-row .file-checkbox {
+  vertical-align: top;
+}
+
 body[new-ui] #list-container .table-header #select-all-checkbox::after,
 body[new-ui] #list-container li.table-row .file-checkbox::after {
   content: none;
