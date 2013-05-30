@@ -1079,14 +1079,22 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
         "Failed to process output. Unexpected decoder state: " << state_,
         PLATFORM_FAILURE,);
     hr = decoder_->ProcessInput(0, sample, 0);
-    // If we continue to get the MF_E_NOTACCEPTING error and there is an output
-    // sample waiting to be consumed, we add the input sample to the queue and
-    // return. This is because we only support 1 pending output sample at any
+    // If we continue to get the MF_E_NOTACCEPTING error we do the following:-
+    // 1. Add the input sample to the pending queue.
+    // 2. If we don't have any output samples we post the
+    //    DecodePendingInputBuffers task to process the pending input samples.
+    //    If we have an output sample then the above task is posted when the
+    //    output samples are sent to the client.
+    // This is because we only support 1 pending output sample at any
     // given time due to the limitation with the Microsoft media foundation
     // decoder where it recycles the output Decoder surfaces.
-    // This input sample will be processed once the output sample is processed.
-    if (hr == MF_E_NOTACCEPTING && !pending_output_samples_.empty()) {
+    if (hr == MF_E_NOTACCEPTING) {
       pending_input_buffers_.push_back(sample);
+      if (pending_output_samples_.empty()) {
+        base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+            &DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+            base::AsWeakPtr(this)));
+      }
       return;
     }
   }
