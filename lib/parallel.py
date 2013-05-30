@@ -61,12 +61,18 @@ class _BackgroundTask(multiprocessing.Process):
   # Interval we check for updates from print statements.
   PRINT_INTERVAL = 1
 
-  def __init__(self, task, semaphore=None):
+  def __init__(self, task, semaphore=None, task_args=None, task_kwargs=None):
     """Create a new _BackgroundTask object.
 
     If semaphore is supplied, it will be acquired for the duration of the
     steps that are run in the background. This can be used to limit the
     number of simultaneous parallel tasks.
+
+    Args:
+      task: The task (a functor) to run in the background.
+      semaphore: The lock to hold while |task| runs.
+      task_args: A list of args to pass to the |task|.
+      task_kwargs: A dict of optional args to pass to the |task|.
     """
     multiprocessing.Process.__init__(self)
     self._task = task
@@ -76,6 +82,8 @@ class _BackgroundTask(multiprocessing.Process):
     self._killing = multiprocessing.Event()
     self._output = None
     self._parent_pid = None
+    self._task_args = task_args if task_args else ()
+    self._task_kwargs = task_kwargs if task_kwargs else {}
 
   def _WaitForStartup(self):
     # TODO(davidjames): Use python-2.7 syntax to simplify this.
@@ -270,7 +278,7 @@ class _BackgroundTask(multiprocessing.Process):
         cls.SILENT_TIMEOUT -= cls.SILENT_TIMEOUT_STEP
 
         # Actually launch the task.
-        self._task()
+        self._task(*self._task_args, **self._task_kwargs)
       except results_lib.StepFailure as ex:
         error = str(ex)
       except BaseException as ex:
@@ -353,7 +361,7 @@ class _BackgroundTask(multiprocessing.Process):
     # First, start all the steps.
     bg_tasks = collections.deque()
     for step in steps:
-      task = cls(step, semaphore)
+      task = cls(step, semaphore=semaphore)
       task.start()
       bg_tasks.append(task)
 
@@ -379,7 +387,7 @@ class _BackgroundTask(multiprocessing.Process):
         raise BackgroundFailure('\n' + ''.join(tracebacks))
 
   @staticmethod
-  def TaskRunner(queue, task, onexit=None):
+  def TaskRunner(queue, task, onexit=None, task_args=None, task_kwargs=None):
     """Run task(*input) for each input in the queue.
 
     Returns when it encounters an _AllTasksComplete object on the queue.
@@ -391,7 +399,16 @@ class _BackgroundTask(multiprocessing.Process):
         be run.
       task: Function to run on each queued input.
       onexit: Function to run after all inputs are processed.
+      task_args: A list of args to pass to the |task|.
+      task_kwargs: A dict of optional args to pass to the |task|.
     """
+    if task_args is None:
+      task_args = []
+    elif not isinstance(task_args, list):
+      task_args = list(task_args)
+    if task_kwargs is None:
+      task_kwargs = {}
+
     tracebacks = []
     while True:
       # Wait for a new item to show up on the queue. This is a blocking wait,
@@ -400,11 +417,15 @@ class _BackgroundTask(multiprocessing.Process):
       if isinstance(x, _AllTasksComplete):
         # All tasks are complete, so we should exit.
         break
+      elif not isinstance(x, list):
+        x = task_args + list(x)
+      else:
+        x = task_args + x
 
       # If no tasks failed yet, process the remaining tasks.
       if not tracebacks:
         try:
-          task(*x)
+          task(*x, **task_kwargs)
         except BaseException:
           tracebacks.append(traceback.format_exc())
 
@@ -488,12 +509,13 @@ class _AllTasksComplete(object):
 
 
 @contextlib.contextmanager
-def BackgroundTaskRunner(task, queue=None, processes=None, onexit=None):
+def BackgroundTaskRunner(task, *args, **kwargs):
   """Run the specified task on each queued input in a pool of processes.
 
   This context manager starts a set of workers in the background, who each
-  wait for input on the specified queue. These workers run task(*input) for
-  each input on the queue.
+  wait for input on the specified queue. For each input on the queue, these
+  workers run task(*args + *input, **kwargs). Note that certain kwargs will
+  not pass through to the task (see Args below for the list).
 
   The output from these tasks is saved to a temporary file. When control
   returns to the context manager, the background output is printed in order,
@@ -504,13 +526,13 @@ def BackgroundTaskRunner(task, queue=None, processes=None, onexit=None):
   BackgroundFailure is raised with full stack traces of all exceptions.
 
   Example:
-    # This will run somefunc('small', 'cow') in the background
+    # This will run somefunc(1, 'small', 'cow', foo='bar' in the background
     # while "more random stuff" is being executed.
 
-    def somefunc(arg1, arg2):
+    def somefunc(arg1, arg2, arg3, foo=None):
       ...
     ...
-    with BackgroundTaskRunner(somefunc) as queue:
+    with BackgroundTaskRunner(somefunc, 1, foo='bar') as queue:
       ... do random stuff ...
       queue.put(['small', 'cow'])
       ... do more random stuff ...
@@ -525,13 +547,19 @@ def BackgroundTaskRunner(task, queue=None, processes=None, onexit=None):
       processed.
   """
 
+  queue = kwargs.pop('queue', None)
+  processes = kwargs.pop('processes', None)
+  onexit = kwargs.pop('onexit', None)
+
   if queue is None:
     queue = multiprocessing.Queue()
 
   if not processes:
     processes = multiprocessing.cpu_count()
 
-  child = functools.partial(_BackgroundTask.TaskRunner, queue, task, onexit)
+  child = functools.partial(_BackgroundTask.TaskRunner, queue, task,
+                            onexit=onexit, task_args=args,
+                            task_kwargs=kwargs)
   steps = [child] * processes
   with _BackgroundTask.ParallelTasks(steps):
     try:

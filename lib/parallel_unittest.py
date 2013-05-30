@@ -51,7 +51,16 @@ class ParallelMock(partial_mock.PartialMock):
       for step in steps:
         step()
 
-  def TaskRunner(self, queue, task, onexit=None):
+  def TaskRunner(self, queue, task, onexit=None, task_args=None,
+                 task_kwargs=None):
+    # Setup of these matches the original code.
+    if task_args is None:
+      task_args = []
+    elif not isinstance(task_args, list):
+      task_args = list(task_args)
+    if task_kwargs is None:
+      task_kwargs = {}
+
     try:
       while True:
         # Wait for a new item to show up on the queue. This is a blocking wait,
@@ -60,7 +69,8 @@ class ParallelMock(partial_mock.PartialMock):
         if isinstance(x, parallel._AllTasksComplete):
           # All tasks are complete, so we should exit.
           break
-        task(*x)
+        x = task_args + list(x)
+        task(*x, **task_kwargs)
     finally:
       if onexit:
         onexit()
@@ -79,11 +89,11 @@ class BackgroundTaskVerifier(partial_mock.PartialMock):
   ATTRS = ('BackgroundTaskRunner',)
 
   @contextlib.contextmanager
-  def BackgroundTaskRunner(self, task, queue=None, processes=None, onexit=None):
-    if queue is None:
-      queue = multiprocessing.Queue()
+  def BackgroundTaskRunner(self, task, *args, **kwargs):
+    queue = kwargs.setdefault('queue', multiprocessing.Queue())
+    args = [task] + list(args)
     try:
-      with self.backup['BackgroundTaskRunner'](task, queue, processes, onexit):
+      with self.backup['BackgroundTaskRunner'](*args, **kwargs):
         yield queue
     finally:
       try:
@@ -160,6 +170,37 @@ class TestHelloWorld(TestBackgroundWrapper):
   def testMultipleHelloWorlds(self):
     """Test that multiple threads can be created."""
     parallel.RunParallelSteps([self.testParallelHelloWorld] * 2)
+
+
+def _BackgroundTaskRunnerArgs(results, arg1, arg2, kwarg1=None, kwarg2=None):
+  """Helper for TestBackgroundTaskRunnerArgs
+
+  We specifically want a module function to test against and not a class member.
+  """
+  results.put((arg1, arg2, kwarg1, kwarg2))
+
+
+class TestBackgroundTaskRunnerArgs(TestBackgroundWrapper):
+
+  def testArgs(self):
+    """Test that we can pass args down to the task."""
+    results = multiprocessing.Queue()
+    arg2s = set((1, 2, 3))
+    with parallel.BackgroundTaskRunner(_BackgroundTaskRunnerArgs, results,
+                                       'arg1', kwarg1='kwarg1') as queue:
+      for arg2 in arg2s:
+        queue.put((arg2,))
+
+    # Since the queue is unordered, need to handle arg2 specially.
+    result_arg2s = set()
+    for _ in xrange(3):
+      result = results.get()
+      self.assertEquals(result[0], 'arg1')
+      result_arg2s.add(result[1])
+      self.assertEquals(result[2], 'kwarg1')
+      self.assertEquals(result[3], None)
+    self.assertEquals(arg2s, result_arg2s)
+    self.assertEquals(results.empty(), True)
 
 
 class TestFastPrinting(TestBackgroundWrapper):
