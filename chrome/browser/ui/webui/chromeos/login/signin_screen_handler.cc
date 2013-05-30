@@ -334,7 +334,8 @@ SigninScreenHandler::SigninScreenHandler(
       is_first_update_state_call_(true),
       offline_login_active_(false),
       last_network_state_(NetworkStateInformer::UNKNOWN),
-      has_pending_auth_ui_(false) {
+      has_pending_auth_ui_(false),
+      ignore_next_user_abort_frame_error_(false) {
   DCHECK(network_state_informer_);
   DCHECK(error_screen_actor_);
   network_state_informer_->AddObserver(this);
@@ -433,7 +434,7 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME);
 
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
-   builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);
+    builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);
 }
 
 void SigninScreenHandler::Show(bool oobe_ui) {
@@ -722,6 +723,7 @@ void SigninScreenHandler::ReloadGaiaScreen() {
   }
   LOG(WARNING) << "Reload auth extension frame.";
   frame_state_ = FRAME_STATE_LOADING;
+  ignore_next_user_abort_frame_error_ = true;
   CallJS("login.GaiaSigninScreen.doReload");
 }
 
@@ -1067,6 +1069,8 @@ void SigninScreenHandler::LoadAuthExtension(
       test_pass_.clear();
     }
   }
+  frame_state_ = FRAME_STATE_LOADING;
+  ignore_next_user_abort_frame_error_ = true;
   CallJS("login.GaiaSigninScreen.loadAuthExtension", params);
 }
 
@@ -1475,9 +1479,21 @@ void SigninScreenHandler::HandleFrameLoadingCompleted(int status) {
     LOG(INFO) << "Gaia frame is loaded";
     frame_state_ = FRAME_STATE_LOADED;
   } else {
+    // Ignore net::ERR_ABORTED frame error once.
+    if (ignore_next_user_abort_frame_error_ &&
+        frame_error_ == net::ERR_ABORTED) {
+      LOG(WARNING) << "Ignore gaia frame error: "  << frame_error_;
+      ignore_next_user_abort_frame_error_ = false;
+      return;
+    }
+
     LOG(WARNING) << "Gaia frame error: "  << frame_error_;
     frame_state_ = FRAME_STATE_ERROR;
   }
+
+  // Frame load okay and other frame error clears the flag.
+  ignore_next_user_abort_frame_error_ = false;
+
   if (network_state_informer_->state() != NetworkStateInformer::ONLINE)
     return;
   if (frame_state_ == FRAME_STATE_LOADED) {
