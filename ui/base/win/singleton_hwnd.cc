@@ -17,8 +17,8 @@ SingletonHwnd* SingletonHwnd::GetInstance() {
 void SingletonHwnd::AddObserver(Observer* observer) {
 
   if (!hwnd()) {
-    if (!MessageLoop::current() ||
-        MessageLoop::current()->type() != MessageLoop::TYPE_UI) {
+    if (!base::MessageLoop::current() ||
+        base::MessageLoop::current()->type() != base::MessageLoop::TYPE_UI) {
       // Creating this window in (e.g.) a renderer inhibits shutdown on
       // Windows. See http://crbug.com/230122 and http://crbug.com/236039.
       DLOG(ERROR) << "Cannot create windows on non-UI thread!";

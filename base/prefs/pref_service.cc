@@ -79,7 +79,7 @@ void PrefService::InitFromStorage(bool async) {
     read_error_callback_.Run(user_pref_store_->ReadPrefs());
   } else {
     // Guarantee that initialization happens after this function returned.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&PersistentPrefStore::ReadPrefsAsync,
                    user_pref_store_.get(),

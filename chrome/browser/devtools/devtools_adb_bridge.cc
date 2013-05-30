@@ -585,7 +585,7 @@ DevToolsAdbBridge::RefCountedAdbThread::RefCountedAdbThread() {
   }
 }
 
-MessageLoop* DevToolsAdbBridge::RefCountedAdbThread::message_loop() {
+base::MessageLoop* DevToolsAdbBridge::RefCountedAdbThread::message_loop() {
   return thread_ ? thread_->message_loop() : NULL;
 }
 

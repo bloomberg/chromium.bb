@@ -66,7 +66,7 @@ bool BrowserGpuChannelHostFactory::IsIOThread() {
   return BrowserThread::CurrentlyOn(BrowserThread::IO);
 }
 
-MessageLoop* BrowserGpuChannelHostFactory::GetMainLoop() {
+base::MessageLoop* BrowserGpuChannelHostFactory::GetMainLoop() {
   return BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::UI);
 }
 

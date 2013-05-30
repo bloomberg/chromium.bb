@@ -547,7 +547,7 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
   return rv;
 }
 
-MessageLoop* RenderThreadImpl::GetMessageLoop() {
+base::MessageLoop* RenderThreadImpl::GetMessageLoop() {
   return message_loop();
 }
 
@@ -1084,7 +1084,7 @@ bool RenderThreadImpl::IsIOThread() {
          ChildProcess::current()->io_message_loop();
 }
 
-MessageLoop* RenderThreadImpl::GetMainLoop() {
+base::MessageLoop* RenderThreadImpl::GetMainLoop() {
   return message_loop();
 }
 

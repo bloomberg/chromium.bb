@@ -56,7 +56,7 @@ bool MockRenderThread::Send(IPC::Message* msg) {
   return true;
 }
 
-MessageLoop* MockRenderThread::GetMessageLoop() {
+base::MessageLoop* MockRenderThread::GetMessageLoop() {
   return NULL;
 }
 

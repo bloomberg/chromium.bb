@@ -411,8 +411,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
     scoped_ptr<base::win::TextServicesMessageFilter> tsf_message_filter(
       new base::win::TextServicesMessageFilter);
     if (tsf_message_filter->Init()) {
-      MessageLoopForUI::current()->SetMessageFilter(
-        tsf_message_filter.PassAs<MessageLoopForUI::MessageFilter>());
+      base::MessageLoopForUI::current()->SetMessageFilter(
+        tsf_message_filter.PassAs<base::MessageLoopForUI::MessageFilter>());
     }
   }
 #endif

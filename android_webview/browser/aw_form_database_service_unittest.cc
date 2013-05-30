@@ -49,7 +49,7 @@ class AwFormDatabaseServiceTest : public Test {
   // The path to the temporary directory used for the test operations.
   base::ScopedTempDir temp_dir_;
   // A message loop for UI thread.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   JNIEnv* env_;

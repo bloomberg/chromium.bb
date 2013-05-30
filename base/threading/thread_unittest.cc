@@ -88,7 +88,8 @@ class CaptureToEventList : public Thread {
 
 // Observer that writes a value into |event_list| when a message loop has been
 // destroyed.
-class CapturingDestructionObserver : public MessageLoop::DestructionObserver {
+class CapturingDestructionObserver
+    : public base::MessageLoop::DestructionObserver {
  public:
   // |event_list| must remain valid throughout the observer's lifetime.
   explicit CapturingDestructionObserver(EventList* event_list)
@@ -106,8 +107,9 @@ class CapturingDestructionObserver : public MessageLoop::DestructionObserver {
 };
 
 // Task that adds a destruction observer to the current message loop.
-void RegisterDestructionObserver(MessageLoop::DestructionObserver* observer) {
-  MessageLoop::current()->AddDestructionObserver(observer);
+void RegisterDestructionObserver(
+    base::MessageLoop::DestructionObserver* observer) {
+  base::MessageLoop::current()->AddDestructionObserver(observer);
 }
 
 }  // namespace

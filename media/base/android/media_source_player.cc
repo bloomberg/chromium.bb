@@ -117,7 +117,7 @@ void MediaDecoderJob::DecodeInternal(
             start_wallclock_time + start_presentation_timestamp);
       }
       if (time_to_render >= base::TimeDelta()) {
-        MessageLoop::current()->PostDelayedTask(
+        base::MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
             base::Bind(&MediaDecoderJob::ReleaseOutputBuffer,
                        weak_this_.GetWeakPtr(), outputBufferIndex, size,

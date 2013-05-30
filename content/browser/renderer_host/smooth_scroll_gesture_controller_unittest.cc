@@ -123,20 +123,20 @@ class SmoothScrollGestureControllerTest : public testing::Test {
 #endif
 
     // Process all pending tasks to avoid leaks.
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void PostQuitMessageAndRun() {
     // Allow the message loop to process pending synthetic scrolls, then quit.
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, MessageLoop::QuitClosure(),
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::MessageLoop::QuitClosure(),
         TimeDelta::FromMilliseconds(
             controller_.GetSyntheticScrollMessageInterval().InMilliseconds() *
             3));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
 
   scoped_ptr<TestBrowserContext> browser_context_;
   MockRenderProcessHost* process_;  // Deleted automatically by the widget.

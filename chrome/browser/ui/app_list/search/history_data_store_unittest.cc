@@ -91,7 +91,7 @@ class HistoryDataStoreTest : public testing::Test {
       run_loop_->Quit();
   }
 
-  MessageLoopForUI message_loop_;
+  base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   base::ScopedTempDir temp_dir_;
   base::FilePath data_file_;

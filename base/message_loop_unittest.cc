@@ -1420,7 +1420,7 @@ void RunTest_RecursivePosts(MessageLoop::Type message_loop_type,
 
 #if defined(OS_WIN)
 
-class DispatcherImpl : public MessageLoopForUI::Dispatcher {
+class DispatcherImpl : public base::MessageLoopForUI::Dispatcher {
  public:
   DispatcherImpl() : dispatch_count_(0) {}
 

@@ -64,7 +64,7 @@ class DeferredSequencedTaskRunnerTest : public testing::Test,
           new base::DeferredSequencedTaskRunner(loop_.message_loop_proxy())) {
   }
 
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   scoped_refptr<base::DeferredSequencedTaskRunner> runner_;
   mutable base::Lock lock_;
   std::vector<int> executed_task_ids_;

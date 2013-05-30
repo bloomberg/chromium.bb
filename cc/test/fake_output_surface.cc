@@ -36,7 +36,7 @@ void FakeOutputSurface::SendFrameToParentCompositor(
     CompositorFrame* frame) {
   frame->AssignTo(&last_sent_frame_);
   ++num_sent_frames_;
-  MessageLoop::current()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&FakeOutputSurface::SendFrameAck,
                             weak_ptr_factory_.GetWeakPtr()));
 }

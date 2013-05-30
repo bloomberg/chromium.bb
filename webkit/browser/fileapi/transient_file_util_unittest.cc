@@ -34,7 +34,7 @@ class TransientFileUtilTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     file_system_context_ = NULL;
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void CreateAndRegisterTemporaryFile(
@@ -65,7 +65,7 @@ class TransientFileUtilTest : public testing::Test {
   FileSystemFileUtil* file_util() { return transient_file_util_.get(); }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::ScopedTempDir data_dir_;
   scoped_refptr<FileSystemContext> file_system_context_;
   scoped_ptr<TransientFileUtil> transient_file_util_;
@@ -110,7 +110,7 @@ TEST_F(TransientFileUtilTest, TransientFile) {
   }
 
   // The file's now scoped out.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Now the temporary file and the transient filesystem must be gone too.
   ASSERT_FALSE(file_util::PathExists(temp_path));

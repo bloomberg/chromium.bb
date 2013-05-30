@@ -97,7 +97,7 @@ std::string ThemeSource::GetMimeType(const std::string& path) const {
   return "image/png";
 }
 
-MessageLoop* ThemeSource::MessageLoopForRequestPath(
+base::MessageLoop* ThemeSource::MessageLoopForRequestPath(
     const std::string& path) const {
   std::string uncached_path;
   webui::ParsePathAndScale(GURL(GetThemePath() + path), &uncached_path, NULL);

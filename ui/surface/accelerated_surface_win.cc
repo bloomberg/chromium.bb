@@ -174,7 +174,7 @@ PresentThread::PresentThread(const char* name, uint64 adapter_luid)
 void PresentThread::SetAdapterLUID(uint64 adapter_luid) {
   base::AutoLock locked(lock_);
 
-  CHECK(message_loop() == MessageLoop::current());
+  CHECK(message_loop() == base::MessageLoop::current());
 
   if (adapter_luid_ == adapter_luid)
     return;

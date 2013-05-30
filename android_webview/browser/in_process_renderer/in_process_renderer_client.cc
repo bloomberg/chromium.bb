@@ -29,8 +29,9 @@ int GetInProcessRendererId() {
 
 }
 
-MessageLoop* InProcessRendererClient::OverrideCompositorMessageLoop() const {
- MessageLoop* rv = content::BrowserThread::UnsafeGetMessageLoopForThread(
+base::MessageLoop* InProcessRendererClient::OverrideCompositorMessageLoop()
+    const {
+  base::MessageLoop* rv = content::BrowserThread::UnsafeGetMessageLoopForThread(
       content::BrowserThread::UI);
   DCHECK(rv);
   return rv;

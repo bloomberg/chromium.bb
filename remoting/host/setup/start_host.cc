@@ -27,7 +27,7 @@ using remoting::HostStarter;
 bool g_started = false;
 
 // The main message loop.
-MessageLoop* g_message_loop = NULL;
+base::MessageLoop* g_message_loop = NULL;
 
 // Lets us hide the PIN that a user types.
 void SetEcho(bool echo) {

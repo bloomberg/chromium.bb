@@ -63,7 +63,7 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
   }
 
   void SendEndEventOnSavedUtteranceId() {
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(
             &MockTtsPlatformImpl::SendEvent,
             ptr_factory_.GetWeakPtr(),

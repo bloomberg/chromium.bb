@@ -58,7 +58,7 @@ TEST(OneShotEventTest, PostDefaultsToCurrentMessageLoop) {
   OneShotEvent event;
   scoped_refptr<base::TestSimpleTaskRunner> runner(
       new base::TestSimpleTaskRunner);
-  MessageLoop loop;
+  base::MessageLoop loop;
   int runner_i = 0;
   int loop_i = 0;
 

@@ -25,7 +25,7 @@ const int kNoSocketId = 0;
 
 namespace {
 
-MessageLoop* g_io_thread;
+base::MessageLoop* g_io_thread;
 net::URLRequestContext* g_request_context;
 
 class WebSocketStreamHandleBridgeImpl
@@ -231,7 +231,7 @@ void WebSocketStreamHandleBridgeImpl::DoOnClose() {
 
 void WebSocketStreamHandleBridgeImpl::DoOnError(
     int error_code, const char* error_msg) {
-  DCHECK(MessageLoop::current() == message_loop_);
+  DCHECK(base::MessageLoop::current() == message_loop_);
   base::subtle::NoBarrier_AtomicIncrement(&num_pending_tasks_, -1);
   if (delegate_)
     delegate_->DidFail(handle_, error_code, ASCIIToUTF16(error_msg));

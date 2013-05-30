@@ -48,7 +48,7 @@ class AddDBThreadObserverTask : public history::HistoryDBTask {
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
                              history::HistoryDatabase* db) OVERRIDE {
-    MessageLoop::current()->AddDestructionObserver(history_worker_.get());
+    base::MessageLoop::current()->AddDestructionObserver(history_worker_.get());
     return true;
   }
 

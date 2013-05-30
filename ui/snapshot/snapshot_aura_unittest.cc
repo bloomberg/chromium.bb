@@ -66,7 +66,8 @@ class SnapshotAuraTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
-    helper_.reset(new aura::test::AuraTestHelper(MessageLoopForUI::current()));
+    helper_.reset(
+        new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
     helper_->SetUp();
   }
 

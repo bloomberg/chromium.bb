@@ -12,11 +12,11 @@ using base::TimeDelta;
 namespace {
 
 // The message loops on which each timer should be tested.
-const MessageLoop::Type testing_message_loops[] = {
-  MessageLoop::TYPE_DEFAULT,
-  MessageLoop::TYPE_IO,
+const base::MessageLoop::Type testing_message_loops[] = {
+  base::MessageLoop::TYPE_DEFAULT,
+  base::MessageLoop::TYPE_IO,
 #if !defined(OS_IOS)  // iOS does not allow direct running of the UI loop.
-  MessageLoop::TYPE_UI,
+  base::MessageLoop::TYPE_UI,
 #endif
 };
 
@@ -35,7 +35,7 @@ class OneShotTimerTester {
  private:
   void Run() {
     *did_run_ = true;
-    MessageLoop::current()->QuitWhenIdle();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
   bool* did_run_;
   base::OneShotTimer<OneShotTimerTester> timer_;
@@ -56,7 +56,7 @@ class OneShotSelfDeletingTimerTester {
   void Run() {
     *did_run_ = true;
     timer_.reset();
-    MessageLoop::current()->QuitWhenIdle();
+    base::MessageLoop::current()->QuitWhenIdle();
   }
   bool* did_run_;
   scoped_ptr<base::OneShotTimer<OneShotSelfDeletingTimerTester> > timer_;
@@ -76,7 +76,7 @@ class RepeatingTimerTester {
   void Run() {
     if (--counter_ == 0) {
       *did_run_ = true;
-      MessageLoop::current()->QuitWhenIdle();
+      base::MessageLoop::current()->QuitWhenIdle();
     }
   }
   bool* did_run_;
@@ -84,26 +84,26 @@ class RepeatingTimerTester {
   base::RepeatingTimer<RepeatingTimerTester> timer_;
 };
 
-void RunTest_OneShotTimer(MessageLoop::Type message_loop_type) {
-  MessageLoop loop(message_loop_type);
+void RunTest_OneShotTimer(base::MessageLoop::Type message_loop_type) {
+  base::MessageLoop loop(message_loop_type);
 
   bool did_run = false;
   OneShotTimerTester f(&did_run);
   f.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(did_run);
 }
 
-void RunTest_OneShotTimer_Cancel(MessageLoop::Type message_loop_type) {
-  MessageLoop loop(message_loop_type);
+void RunTest_OneShotTimer_Cancel(base::MessageLoop::Type message_loop_type) {
+  base::MessageLoop loop(message_loop_type);
 
   bool did_run_a = false;
   OneShotTimerTester* a = new OneShotTimerTester(&did_run_a);
 
   // This should run before the timer expires.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, a);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, a);
 
   // Now start the timer.
   a->Start();
@@ -112,44 +112,45 @@ void RunTest_OneShotTimer_Cancel(MessageLoop::Type message_loop_type) {
   OneShotTimerTester b(&did_run_b);
   b.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_FALSE(did_run_a);
   EXPECT_TRUE(did_run_b);
 }
 
-void RunTest_OneShotSelfDeletingTimer(MessageLoop::Type message_loop_type) {
-  MessageLoop loop(message_loop_type);
+void RunTest_OneShotSelfDeletingTimer(
+    base::MessageLoop::Type message_loop_type) {
+  base::MessageLoop loop(message_loop_type);
 
   bool did_run = false;
   OneShotSelfDeletingTimerTester f(&did_run);
   f.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(did_run);
 }
 
-void RunTest_RepeatingTimer(MessageLoop::Type message_loop_type) {
-  MessageLoop loop(message_loop_type);
+void RunTest_RepeatingTimer(base::MessageLoop::Type message_loop_type) {
+  base::MessageLoop loop(message_loop_type);
 
   bool did_run = false;
   RepeatingTimerTester f(&did_run);
   f.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(did_run);
 }
 
-void RunTest_RepeatingTimer_Cancel(MessageLoop::Type message_loop_type) {
-  MessageLoop loop(message_loop_type);
+void RunTest_RepeatingTimer_Cancel(base::MessageLoop::Type message_loop_type) {
+  base::MessageLoop loop(message_loop_type);
 
   bool did_run_a = false;
   RepeatingTimerTester* a = new RepeatingTimerTester(&did_run_a);
 
   // This should run before the timer expires.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, a);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, a);
 
   // Now start the timer.
   a->Start();
@@ -158,7 +159,7 @@ void RunTest_RepeatingTimer_Cancel(MessageLoop::Type message_loop_type) {
   RepeatingTimerTester b(&did_run_b);
   b.Start();
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_FALSE(did_run_a);
   EXPECT_TRUE(did_run_b);
@@ -181,8 +182,8 @@ class DelayTimerTarget {
   bool signaled_;
 };
 
-void RunTest_DelayTimer_NoCall(MessageLoop::Type message_loop_type) {
-  MessageLoop loop(message_loop_type);
+void RunTest_DelayTimer_NoCall(base::MessageLoop::Type message_loop_type) {
+  base::MessageLoop loop(message_loop_type);
 
   // If Delay is never called, the timer shouldn't go off.
   DelayTimerTarget target;
@@ -192,13 +193,13 @@ void RunTest_DelayTimer_NoCall(MessageLoop::Type message_loop_type) {
   bool did_run = false;
   OneShotTimerTester tester(&did_run);
   tester.Start();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ASSERT_FALSE(target.signaled());
 }
 
-void RunTest_DelayTimer_OneCall(MessageLoop::Type message_loop_type) {
-  MessageLoop loop(message_loop_type);
+void RunTest_DelayTimer_OneCall(base::MessageLoop::Type message_loop_type) {
+  base::MessageLoop loop(message_loop_type);
 
   DelayTimerTarget target;
   base::DelayTimer<DelayTimerTarget> timer(FROM_HERE,
@@ -208,7 +209,7 @@ void RunTest_DelayTimer_OneCall(MessageLoop::Type message_loop_type) {
   bool did_run = false;
   OneShotTimerTester tester(&did_run, 100 /* milliseconds */);
   tester.Start();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ASSERT_TRUE(target.signaled());
 }
@@ -230,8 +231,8 @@ struct ResetHelper {
   DelayTimerTarget *const target_;
 };
 
-void RunTest_DelayTimer_Reset(MessageLoop::Type message_loop_type) {
-  MessageLoop loop(message_loop_type);
+void RunTest_DelayTimer_Reset(base::MessageLoop::Type message_loop_type) {
+  base::MessageLoop loop(message_loop_type);
 
   // If Delay is never called, the timer shouldn't go off.
   DelayTimerTarget target;
@@ -250,7 +251,7 @@ void RunTest_DelayTimer_Reset(MessageLoop::Type message_loop_type) {
   bool did_run = false;
   OneShotTimerTester tester(&did_run, 300);
   tester.Start();
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   ASSERT_TRUE(target.signaled());
 }
@@ -263,8 +264,8 @@ class DelayTimerFatalTarget {
 };
 
 
-void RunTest_DelayTimer_Deleted(MessageLoop::Type message_loop_type) {
-  MessageLoop loop(message_loop_type);
+void RunTest_DelayTimer_Deleted(base::MessageLoop::Type message_loop_type) {
+  base::MessageLoop loop(message_loop_type);
 
   DelayTimerFatalTarget target;
 
@@ -355,7 +356,7 @@ TEST(TimerTest, MessageLoopShutdown) {
     OneShotTimerTester c(&did_run);
     OneShotTimerTester d(&did_run);
     {
-      MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+      base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
       a.Start();
       b.Start();
     }  // MessageLoop destructs by falling out of scope.
@@ -369,7 +370,7 @@ void TimerTestCallback() {
 
 TEST(TimerTest, NonRepeatIsRunning) {
   {
-    MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+    base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
     base::Timer timer(false, false);
     EXPECT_FALSE(timer.IsRunning());
     timer.Start(FROM_HERE, TimeDelta::FromDays(1),
@@ -382,7 +383,7 @@ TEST(TimerTest, NonRepeatIsRunning) {
 
   {
     base::Timer timer(true, false);
-    MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+    base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
     EXPECT_FALSE(timer.IsRunning());
     timer.Start(FROM_HERE, TimeDelta::FromDays(1),
                 base::Bind(&TimerTestCallback));
@@ -398,7 +399,7 @@ TEST(TimerTest, NonRepeatIsRunning) {
 TEST(TimerTest, NonRepeatMessageLoopDeath) {
   base::Timer timer(false, false);
   {
-    MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+    base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
     EXPECT_FALSE(timer.IsRunning());
     timer.Start(FROM_HERE, TimeDelta::FromDays(1),
                 base::Bind(&TimerTestCallback));
@@ -409,7 +410,7 @@ TEST(TimerTest, NonRepeatMessageLoopDeath) {
 }
 
 TEST(TimerTest, RetainRepeatIsRunning) {
-  MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   base::Timer timer(FROM_HERE, TimeDelta::FromDays(1),
                     base::Bind(&TimerTestCallback), true);
   EXPECT_FALSE(timer.IsRunning());
@@ -422,7 +423,7 @@ TEST(TimerTest, RetainRepeatIsRunning) {
 }
 
 TEST(TimerTest, RetainNonRepeatIsRunning) {
-  MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   base::Timer timer(FROM_HERE, TimeDelta::FromDays(1),
                     base::Bind(&TimerTestCallback), false);
   EXPECT_FALSE(timer.IsRunning());
@@ -446,25 +447,25 @@ void ClearAllCallbackHappened() {
 
 void SetCallbackHappened1() {
   g_callback_happened1 = true;
-  MessageLoop::current()->QuitWhenIdle();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void SetCallbackHappened2() {
   g_callback_happened2 = true;
-  MessageLoop::current()->QuitWhenIdle();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 TEST(TimerTest, ContinuationStopStart) {
   {
     ClearAllCallbackHappened();
-    MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+    base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
     base::Timer timer(false, false);
     timer.Start(FROM_HERE, TimeDelta::FromMilliseconds(10),
                 base::Bind(&SetCallbackHappened1));
     timer.Stop();
     timer.Start(FROM_HERE, TimeDelta::FromMilliseconds(40),
                 base::Bind(&SetCallbackHappened2));
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     EXPECT_FALSE(g_callback_happened1);
     EXPECT_TRUE(g_callback_happened2);
   }
@@ -473,14 +474,14 @@ TEST(TimerTest, ContinuationStopStart) {
 TEST(TimerTest, ContinuationReset) {
   {
     ClearAllCallbackHappened();
-    MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+    base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
     base::Timer timer(false, false);
     timer.Start(FROM_HERE, TimeDelta::FromMilliseconds(10),
                 base::Bind(&SetCallbackHappened1));
     timer.Reset();
     // Since Reset happened before task ran, the user_task must not be cleared:
     ASSERT_FALSE(timer.user_task().is_null());
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
     EXPECT_TRUE(g_callback_happened1);
   }
 }

@@ -81,7 +81,7 @@ class TokenValidatorFactoryImplTest : public testing::Test {
     return response;
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<RsaKeyPair> key_pair_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<TokenValidatorFactoryImpl> token_validator_factory_;

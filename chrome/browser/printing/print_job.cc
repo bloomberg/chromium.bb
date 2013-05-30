@@ -106,7 +106,7 @@ PrintJobWorker* PrintJob::DetachWorker(PrintJobWorkerOwner* new_owner) {
   return NULL;
 }
 
-MessageLoop* PrintJob::message_loop() {
+base::MessageLoop* PrintJob::message_loop() {
   return ui_message_loop_;
 }
 

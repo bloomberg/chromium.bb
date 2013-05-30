@@ -51,7 +51,7 @@ using fileapi::FileSystemTaskRunners;
 using fileapi::FileSystemURL;
 
 namespace {
-MessageLoop* g_io_thread;
+base::MessageLoop* g_io_thread;
 webkit_blob::BlobStorageController* g_blob_storage_controller;
 
 void RegisterBlob(const GURL& blob_url, const base::FilePath& file_path) {

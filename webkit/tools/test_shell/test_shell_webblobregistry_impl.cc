@@ -19,7 +19,7 @@ using webkit_blob::BlobData;
 
 namespace {
 
-MessageLoop* g_io_thread;
+base::MessageLoop* g_io_thread;
 webkit_blob::BlobStorageController* g_blob_storage_controller;
 
 // Creates a new BlobData from WebBlobData.

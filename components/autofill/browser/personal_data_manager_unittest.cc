@@ -302,7 +302,7 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& profiles1 =
       personal_data_->GetProfiles();
@@ -346,7 +346,7 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   const std::vector<AutofillProfile*>& profiles3 =
       personal_data_->GetProfiles();
@@ -1929,7 +1929,7 @@ TEST_F(PersonalDataManagerTest, AggregateExistingVerifiedProfileWithConflict) {
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Simulate a form submission with conflicting info.
   FormData form;
@@ -1987,7 +1987,7 @@ TEST_F(PersonalDataManagerTest,
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   // Simulate a form submission with conflicting expiration year.
   FormData form;

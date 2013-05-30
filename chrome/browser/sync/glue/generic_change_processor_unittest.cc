@@ -70,7 +70,7 @@ class GenericChangeProcessorTest : public testing::Test {
   }
 
  private:
-  MessageLoop loop;
+  base::MessageLoop loop;
 
   syncer::SyncMergeResult sync_merge_result_;
   base::WeakPtrFactory<syncer::SyncMergeResult> merge_result_ptr_factory_;

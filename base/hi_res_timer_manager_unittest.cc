@@ -13,7 +13,7 @@
 #if defined(OS_WIN)
 // http://crbug.com/114048
 TEST(HiResTimerManagerTest, DISABLED_ToggleOnOff) {
-  MessageLoop loop;
+  base::MessageLoop loop;
   scoped_ptr<base::PowerMonitor> power_monitor(new base::PowerMonitor());
   HighResolutionTimerManager manager;
 

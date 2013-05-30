@@ -457,7 +457,7 @@ BrowserThread::GetMessageLoopProxyForThread(ID identifier) {
 }
 
 // static
-MessageLoop* BrowserThread::UnsafeGetMessageLoopForThread(ID identifier) {
+base::MessageLoop* BrowserThread::UnsafeGetMessageLoopForThread(ID identifier) {
   if (g_globals == NULL)
     return NULL;
 

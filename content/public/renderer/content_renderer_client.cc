@@ -160,7 +160,8 @@ bool ContentRendererClient::AllowBrowserPlugin(
   return false;
 }
 
-MessageLoop* ContentRendererClient::OverrideCompositorMessageLoop() const {
+base::MessageLoop* ContentRendererClient::OverrideCompositorMessageLoop()
+    const {
   return NULL;
 }
 

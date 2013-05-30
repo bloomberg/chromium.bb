@@ -79,7 +79,7 @@ void UIModelWorker::Stop() {
 
 void UIModelWorker::RegisterForLoopDestruction() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoop::current()->AddDestructionObserver(this);
+  base::MessageLoop::current()->AddDestructionObserver(this);
 }
 
 syncer::SyncerError UIModelWorker::DoWorkAndWaitUntilDoneImpl(

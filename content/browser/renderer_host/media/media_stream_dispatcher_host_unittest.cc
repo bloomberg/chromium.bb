@@ -142,7 +142,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     // MediaStreamManager must be created and called on IO thread.
-    message_loop_.reset(new MessageLoop(base::MessageLoop::TYPE_IO));
+    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
     ui_thread_.reset(new TestBrowserThread(BrowserThread::UI,
                                            message_loop_.get()));
     io_thread_.reset(new TestBrowserThread(BrowserThread::IO,

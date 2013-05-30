@@ -574,7 +574,7 @@ void InProcessViewRenderer::Invalidate() {
 
 void InProcessViewRenderer::EnsureContinuousInvalidation() {
   if (continuous_invalidate_ && !continuous_invalidate_task_pending_) {
-    MessageLoop::current()->PostTask(FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&InProcessViewRenderer::Invalidate,
                    weak_factory_.GetWeakPtr()));
     continuous_invalidate_task_pending_ = true;

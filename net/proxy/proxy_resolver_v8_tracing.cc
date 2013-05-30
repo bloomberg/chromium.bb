@@ -471,7 +471,7 @@ ProxyResolverV8* ProxyResolverV8Tracing::Job::v8_resolver() {
   return parent_->v8_resolver_.get();
 }
 
-MessageLoop* ProxyResolverV8Tracing::Job::worker_loop() {
+base::MessageLoop* ProxyResolverV8Tracing::Job::worker_loop() {
   return parent_->thread_->message_loop();
 }
 

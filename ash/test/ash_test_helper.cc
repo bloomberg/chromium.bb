@@ -90,7 +90,7 @@ void AshTestHelper::TearDown() {
 
 void AshTestHelper::RunAllPendingInMessageLoop() {
 #if !defined(OS_MACOSX)
-  DCHECK(MessageLoopForUI::current() == message_loop_);
+  DCHECK(base::MessageLoopForUI::current() == message_loop_);
   base::RunLoop run_loop(aura::Env::GetInstance()->GetDispatcher());
   run_loop.RunUntilIdle();
 #endif

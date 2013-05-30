@@ -339,7 +339,7 @@ TEST_F(P2PSocketHostStunTcpTest, SendDataNoAuth) {
 
 // Verify that asynchronous writes are handled correctly.
 TEST_F(P2PSocketHostStunTcpTest, AsyncWrites) {
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
 
   socket_->set_async_write(true);
 

@@ -54,7 +54,7 @@ class TestAccountsClient {
 
  private:
   GURL CreateGURLWithPath(const string& path);
-  MessageLoopForIO io_loop_;
+  base::MessageLoopForIO io_loop_;
   const string server_;
   const string account_space_;
   vector<string> usernames_;

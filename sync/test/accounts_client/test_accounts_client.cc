@@ -135,7 +135,7 @@ GURL TestAccountsClient::CreateGURLWithPath(const string& path) {
 
 
 bool TestAccountsClient::SendRequest(const GURL& url, string* response) {
-  MessageLoop* loop = MessageLoop::current();
+  base::MessageLoop* loop = base::MessageLoop::current();
   scoped_refptr<URLRequestContextGetter> context_getter(
       new URLRequestContextGetter(loop->message_loop_proxy()));
 
@@ -148,7 +148,7 @@ bool TestAccountsClient::SendRequest(const GURL& url, string* response) {
   fetcher->SetUploadData("application/json", "");
   fetcher->Start();
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
     run_loop.QuitClosure(),
     kRequestTimeout);
   run_loop.Run();

@@ -1293,7 +1293,7 @@ TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
   scheduler()->ScheduleLocalNudge(zero(), ModelTypeSet(BOOKMARKS), FROM_HERE);
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 // Tests that we don't crash trying to run two canaries at once if we receive

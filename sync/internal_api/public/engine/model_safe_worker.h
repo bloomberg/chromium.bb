@@ -66,7 +66,7 @@ class WorkerLoopDestructionObserver {
 // work and will notify its observer.
 class SYNC_EXPORT ModelSafeWorker
     : public base::RefCountedThreadSafe<ModelSafeWorker>,
-      public MessageLoop::DestructionObserver {
+      public base::MessageLoop::DestructionObserver {
  public:
   // Subclass should implement to observe destruction of the loop where
   // it actually does work.

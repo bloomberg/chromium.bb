@@ -2173,7 +2173,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
             &MediaStreamDevicesControllerBrowserTest::FinishAudioTest,
             this));
 
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 }
 
@@ -2230,7 +2230,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
             &MediaStreamDevicesControllerBrowserTest::FinishVideoTest,
             this));
 
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
   }
 }
 

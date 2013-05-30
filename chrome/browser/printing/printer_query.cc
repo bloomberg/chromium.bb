@@ -56,7 +56,7 @@ PrintJobWorker* PrinterQuery::DetachWorker(PrintJobWorkerOwner* new_owner) {
   return worker_.release();
 }
 
-MessageLoop* PrinterQuery::message_loop() {
+base::MessageLoop* PrinterQuery::message_loop() {
   return io_message_loop_;
 }
 

@@ -64,7 +64,7 @@ void Env::RemoveObserver(EnvObserver* observer) {
 }
 
 #if !defined(OS_MACOSX)
-MessageLoop::Dispatcher* Env::GetDispatcher() {
+base::MessageLoop::Dispatcher* Env::GetDispatcher() {
 #if defined(USE_X11)
   return base::MessagePumpAuraX11::Current();
 #else

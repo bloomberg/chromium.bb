@@ -55,7 +55,7 @@ void PasswordModelWorker::CallDoWorkAndSignalTask(
 }
 
 void PasswordModelWorker::RegisterForPasswordLoopDestruction() {
-  MessageLoop::current()->AddDestructionObserver(this);
+  base::MessageLoop::current()->AddDestructionObserver(this);
 }
 
 }  // namespace browser_sync

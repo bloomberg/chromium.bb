@@ -42,7 +42,7 @@ WebDataServiceConsumer* WebDataRequest::GetConsumer() const {
   return consumer_;
 }
 
-MessageLoop* WebDataRequest::GetMessageLoop() const {
+base::MessageLoop* WebDataRequest::GetMessageLoop() const {
   return message_loop_;
 }
 

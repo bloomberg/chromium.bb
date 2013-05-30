@@ -26,7 +26,7 @@ bool DispatcherWin::Dispatch(const base::NativeEvent& msg) {
   return true;
 }
 
-MessageLoop::Dispatcher* CreateDispatcher() {
+base::MessageLoop::Dispatcher* CreateDispatcher() {
   return new DispatcherWin;
 }
 

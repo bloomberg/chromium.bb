@@ -55,10 +55,10 @@ PyUITestBase::~PyUITestBase() {
 }
 
 // static, refer .h for why it needs to be static
-MessageLoop* PyUITestBase::message_loop_ = NULL;
+base::MessageLoop* PyUITestBase::message_loop_ = NULL;
 
 // static
-MessageLoop* PyUITestBase::GetSharedMessageLoop(
+base::MessageLoop* PyUITestBase::GetSharedMessageLoop(
     base::MessageLoop::Type msg_loop_type) {
   if (!message_loop_)  // Create a shared instance of MessageLoop
     message_loop_ = new base::MessageLoop(msg_loop_type);

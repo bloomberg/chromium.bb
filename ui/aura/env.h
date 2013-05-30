@@ -24,7 +24,7 @@ class Window;
 
 #if !defined(USE_X11)
 // Creates a platform-specific native event dispatcher.
-MessageLoop::Dispatcher* CreateDispatcher();
+base::MessageLoop::Dispatcher* CreateDispatcher();
 #endif
 
 // A singleton object that tracks general state within Aura.
