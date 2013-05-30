@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginInvoke)) {
   LoadAndWait(GetURL("self_delete_plugin_invoke.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, NPObjectReleasedOnDestruction) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(NPObjectReleasedOnDestruction)) {
   NavigateToURL(shell(), GetURL("npobject_released_on_destruction.html"));
   NavigateAway();
 }
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, NPObjectReleasedOnDestruction) {
 // exception.  Should be run for in and out of process plugins, but
 // the more interesting case is out of process, where we must route
 // the exception to the correct renderer.
-IN_PROC_BROWSER_TEST_F(PluginTest, NPObjectSetException) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(NPObjectSetException)) {
   LoadAndWait(GetURL("npobject_set_exception.html"));
 }
 
@@ -209,24 +209,24 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Arguments)) {
 }
 
 // Test invoking many plugins within a single page.
-IN_PROC_BROWSER_TEST_F(PluginTest, ManyPlugins) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(ManyPlugins)) {
   LoadAndWait(GetURL("many_plugins.html"));
 }
 
 // Test various calls to GetURL from a plugin.
-IN_PROC_BROWSER_TEST_F(PluginTest, GetURL) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(GetURL)) {
   LoadAndWait(GetURL("geturl.html"));
 }
 
 // Test various calls to GetURL for javascript URLs with
 // non NULL targets from a plugin.
-IN_PROC_BROWSER_TEST_F(PluginTest, GetJavaScriptURL) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(GetJavaScriptURL)) {
   LoadAndWait(GetURL("get_javascript_url.html"));
 }
 
 // Test that calling GetURL with a javascript URL and target=_self
 // works properly when the plugin is embedded in a subframe.
-IN_PROC_BROWSER_TEST_F(PluginTest, GetJavaScriptURL2) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(GetJavaScriptURL2)) {
   LoadAndWait(GetURL("get_javascript_url2.html"));
 }
 
@@ -237,14 +237,14 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_GetURLRedirectNotification) {
 
 // Tests that identity is preserved for NPObjects passed from a plugin
 // into JavaScript.
-IN_PROC_BROWSER_TEST_F(PluginTest, NPObjectIdentity) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(NPObjectIdentity)) {
   LoadAndWait(GetURL("npobject_identity.html"));
 }
 
 // Tests that if an NPObject is proxies back to its original process, the
 // original pointer is returned and not a proxy.  If this fails the plugin
 // will crash.
-IN_PROC_BROWSER_TEST_F(PluginTest, NPObjectProxy) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(NPObjectProxy)) {
   LoadAndWait(GetURL("npobject_proxy.html"));
 }
 
@@ -252,7 +252,8 @@ IN_PROC_BROWSER_TEST_F(PluginTest, NPObjectProxy) {
 // Tests if a plugin executing a self deleting script in the context of
 // a synchronous paint event works correctly
 // http://crbug.com/44960
-IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInvokeInSynchronousPaint) {
+IN_PROC_BROWSER_TEST_F(PluginTest,
+                       MAYBE(SelfDeletePluginInvokeInSynchronousPaint)) {
   LoadAndWait(GetURL("execute_script_delete_in_paint.html"));
 }
 #endif
@@ -260,25 +261,25 @@ IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInvokeInSynchronousPaint) {
 // Tests that if a plugin executes a self resizing script in the context of a
 // synchronous paint, the plugin doesn't use deallocated memory.
 // http://crbug.com/139462
-IN_PROC_BROWSER_TEST_F(PluginTest, ResizeDuringPaint) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(ResizeDuringPaint)) {
   LoadAndWait(GetURL("resize_during_paint.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInNewStream) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginInNewStream)) {
   LoadAndWait(GetURL("self_delete_plugin_stream.html"));
 }
 
 // This test asserts on Mac in plugin_host in the NPNVWindowNPObject case.
 #if !(defined(OS_MACOSX) && !defined(NDEBUG))
 // If this test flakes use http://crbug.com/95558.
-IN_PROC_BROWSER_TEST_F(PluginTest, DeletePluginInDeallocate) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(DeletePluginInDeallocate)) {
   LoadAndWait(GetURL("plugin_delete_in_deallocate.html"));
 }
 #endif
 
 #if defined(OS_WIN)
 
-IN_PROC_BROWSER_TEST_F(PluginTest, VerifyPluginWindowRect) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(VerifyPluginWindowRect)) {
   LoadAndWait(GetURL("verify_plugin_window_rect.html"));
 }
 
@@ -301,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(VerifyNPObjectLifetimeTest)) {
 }
 
 // Tests that we don't crash or assert if NPP_New fails
-IN_PROC_BROWSER_TEST_F(PluginTest, NewFails) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(NewFails)) {
   LoadAndWait(GetURL("new_fails.html"));
 }
 
@@ -321,27 +322,27 @@ IN_PROC_BROWSER_TEST_F(PluginTest,
 #if !defined(OS_MACOSX)
 // Disabled on Mac because the plugin side isn't implemented yet, see
 // "TODO(port)" in plugin_javascript_open_popup.cc.
-IN_PROC_BROWSER_TEST_F(PluginTest, OpenPopupWindowWithPlugin) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(OpenPopupWindowWithPlugin)) {
   LoadAndWait(GetURL("get_javascript_open_popup_with_plugin.html"));
 }
 #endif
 
 // Test checking the privacy mode is off.
-IN_PROC_BROWSER_TEST_F(PluginTest, PrivateDisabled) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(PrivateDisabled)) {
   LoadAndWait(GetURL("private.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, ScheduleTimer) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(ScheduleTimer)) {
   LoadAndWait(GetURL("schedule_timer.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, PluginThreadAsyncCall) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(PluginThreadAsyncCall)) {
   LoadAndWait(GetURL("plugin_thread_async_call.html"));
 }
 
 // Test checking the privacy mode is on.
 // If this flakes on Linux, use http://crbug.com/104380
-IN_PROC_BROWSER_TEST_F(PluginTest, PrivateEnabled) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(PrivateEnabled)) {
   GURL url = GetURL("private.html");
   url = GURL(url.spec() + "?private");
   LoadAndWaitInWindow(CreateOffTheRecordBrowser(), url);
@@ -350,12 +351,12 @@ IN_PROC_BROWSER_TEST_F(PluginTest, PrivateEnabled) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Test a browser hang due to special case of multiple
 // plugin instances indulged in sync calls across renderer.
-IN_PROC_BROWSER_TEST_F(PluginTest, MultipleInstancesSyncCalls) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(MultipleInstancesSyncCalls)) {
   LoadAndWait(GetURL("multiple_instances_sync_calls.html"));
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(PluginTest, GetURLRequestFailWrite) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(GetURLRequestFailWrite)) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath().AppendASCII("npapi").
                        AppendASCII("plugin_url_request_fail_write.html")));
@@ -363,13 +364,13 @@ IN_PROC_BROWSER_TEST_F(PluginTest, GetURLRequestFailWrite) {
 }
 
 #if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(PluginTest, EnsureScriptingWorksInDestroy) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(EnsureScriptingWorksInDestroy)) {
   LoadAndWait(GetURL("ensure_scripting_works_in_destroy.html"));
 }
 
 // This test uses a Windows Event to signal to the plugin that it should crash
 // on NP_Initialize.
-IN_PROC_BROWSER_TEST_F(PluginTest, NoHangIfInitCrashes) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(NoHangIfInitCrashes)) {
   HANDLE crash_event = CreateEvent(NULL, TRUE, FALSE, L"TestPluginCrashOnInit");
   SetEvent(crash_event);
   LoadAndWait(GetURL("no_hang_if_init_crashes.html"));
@@ -378,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, NoHangIfInitCrashes) {
 #endif
 
 // If this flakes on Mac, use http://crbug.com/111508
-IN_PROC_BROWSER_TEST_F(PluginTest, PluginReferrerTest) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(PluginReferrerTest)) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath().AppendASCII("npapi").
                        AppendASCII("plugin_url_request_referrer_test.html")));
@@ -407,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_PluginConvertPointTest) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(PluginTest, Flash) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Flash)) {
   TestPlugin("flash.html");
 }
 
@@ -427,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Quicktime)) {
 }
 
 // Disabled - http://crbug.com/44662
-IN_PROC_BROWSER_TEST_F(PluginTest, MediaPlayerNew) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(MediaPlayerNew)) {
   TestPlugin("wmp_new.html");
 }
 
@@ -437,11 +438,11 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_MediaPlayerOld) {
 }
 
 // Disabled - http://crbug.com/44673
-IN_PROC_BROWSER_TEST_F(PluginTest, Real) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Real)) {
   TestPlugin("real.html");
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, FlashOctetStream) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(FlashOctetStream)) {
   TestPlugin("flash-octet-stream.html");
 }
 
@@ -459,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_Java) {
   TestPlugin("Java.html");
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, Silverlight) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Silverlight)) {
   TestPlugin("silverlight.html");
 }
 #endif  // defined(OS_WIN)
