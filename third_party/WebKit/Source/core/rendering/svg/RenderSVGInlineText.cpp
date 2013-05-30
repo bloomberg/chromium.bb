@@ -26,6 +26,7 @@
 #include "core/rendering/svg/RenderSVGInlineText.h"
 
 #include "core/css/CSSFontSelector.h"
+#include "core/css/FontSize.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/rendering/svg/RenderSVGText.h"
@@ -235,7 +236,7 @@ void RenderSVGInlineText::computeNewScaledFontForStyle(RenderObject* renderer, c
     FontDescription fontDescription(style->fontDescription());
 
     // FIXME: We need to better handle the case when we compute very small fonts below (below 1pt).
-    fontDescription.setComputedSize(StyleResolver::getComputedSizeFromSpecifiedSize(document, scalingFactor, fontDescription.isAbsoluteSize(), fontDescription.computedSize(), DoNotUseSmartMinimumForFontSize));
+    fontDescription.setComputedSize(FontSize::getComputedSizeFromSpecifiedSize(document, scalingFactor, fontDescription.isAbsoluteSize(), fontDescription.computedSize(), DoNotUseSmartMinimumForFontSize));
 
     scaledFont = Font(fontDescription, 0, 0);
     scaledFont.update(styleResolver->fontSelector());

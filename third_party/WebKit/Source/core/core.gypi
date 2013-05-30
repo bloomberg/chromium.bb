@@ -656,6 +656,8 @@
             'css/FontFeatureValue.h',
             'css/FontLoader.h',
             'css/FontLoader.cpp',
+            'css/FontSize.cpp',
+            'css/FontSize.h',
             'css/FontValue.cpp',
             'css/FontValue.h',
             'css/InspectorCSSOMWrappers.cpp',
