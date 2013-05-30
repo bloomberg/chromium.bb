@@ -54,7 +54,6 @@ CONTENT_EXPORT extern const char kDisableGLMultisampling[];
 CONTENT_EXPORT extern const char kDisableGpuProcessPrelaunch[];
 extern const char kDisableGpuSandbox[];
 extern const char kReduceGpuSandbox[];
-extern const char kEnableGpuSandbox[];
 extern const char kDisableGpuWatchdog[];
 CONTENT_EXPORT extern const char kDisableHangMonitor[];
 CONTENT_EXPORT extern const char kDisableHTMLNotifications[];
