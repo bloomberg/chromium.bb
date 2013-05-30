@@ -141,6 +141,7 @@ public:
 
     // Pass the edit command to the plugin.
     bool executeEditCommand(const WebString& name);
+    bool executeEditCommand(const WebString& name, const WebString& value);
 
     // Resource load events for the plugin's source data:
     void didReceiveResponse(const WebCore::ResourceResponse&);

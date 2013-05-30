@@ -71,6 +71,7 @@ public:
     // of the corresponding object element.
     virtual bool getFormValue(WebString&) { return false; }
     virtual bool supportsKeyboardFocus() const { return false; }
+    virtual bool supportsEditCommands() const { return false; }
 
     virtual bool canProcessDrag() const { return false; }
 
@@ -122,6 +123,7 @@ public:
     virtual WebString selectionAsMarkup() const { return WebString(); }
 
     virtual bool executeEditCommand(const WebString& name) { return false; }
+    virtual bool executeEditCommand(const WebString& name, const WebString& value) { return false; }
 
     // If the given position is over a link, returns the absolute url.
     // Otherwise an empty url is returned.

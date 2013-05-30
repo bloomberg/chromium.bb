@@ -309,6 +309,14 @@ WebPluginContainerImpl* WebFrameImpl::pluginContainerFromFrame(Frame* frame)
     return static_cast<WebPluginContainerImpl *>(pluginDocument->pluginWidget());
 }
 
+WebPluginContainerImpl* WebFrameImpl::pluginContainerFromNode(WebCore::Frame* frame, const WebNode& node)
+{
+    WebPluginContainerImpl* pluginContainer = pluginContainerFromFrame(frame);
+    if (pluginContainer)
+        return pluginContainer;
+    return static_cast<WebPluginContainerImpl*>(node.pluginContainer());
+}
+
 // Simple class to override some of PrintContext behavior. Some of the methods
 // made virtual so that they can be overridden by ChromePluginPrintContext.
 class ChromePrintContext : public PrintContext {
@@ -1202,9 +1210,7 @@ bool WebFrameImpl::executeCommand(const WebString& name, const WebNode& node)
     if (command[command.length() - 1] == UChar(':'))
         command = command.substring(0, command.length() - 1);
 
-    WebPluginContainerImpl* pluginContainer = pluginContainerFromFrame(frame());
-    if (!pluginContainer)
-        pluginContainer = static_cast<WebPluginContainerImpl*>(node.pluginContainer());
+    WebPluginContainerImpl* pluginContainer = pluginContainerFromNode(frame(), node);
     if (pluginContainer && pluginContainer->executeEditCommand(name))
         return true;
 
@@ -1233,10 +1239,14 @@ bool WebFrameImpl::executeCommand(const WebString& name, const WebNode& node)
     return result;
 }
 
-bool WebFrameImpl::executeCommand(const WebString& name, const WebString& value)
+bool WebFrameImpl::executeCommand(const WebString& name, const WebString& value, const WebNode& node)
 {
     ASSERT(frame());
     String webName = name;
+
+    WebPluginContainerImpl* pluginContainer = pluginContainerFromNode(frame(), node);
+    if (pluginContainer && pluginContainer->executeEditCommand(name, value))
+        return true;
 
     // moveToBeginningOfDocument and moveToEndfDocument are only handled by WebKit for editable nodes.
     if (!frame()->editor()->canEdit() && webName == "moveToBeginningOfDocument")

@@ -39,6 +39,7 @@
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
 #include "WebPlugin.h"
+#include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
@@ -346,6 +347,11 @@ bool WebPluginContainerImpl::executeEditCommand(const WebString& name)
 
     copy();
     return true;
+}
+
+bool WebPluginContainerImpl::executeEditCommand(const WebString& name, const WebString& value)
+{
+    return m_webPlugin->executeEditCommand(name, value);
 }
 
 WebElement WebPluginContainerImpl::element()
@@ -752,6 +758,11 @@ void WebPluginContainerImpl::handleKeyboardEvent(KeyboardEvent* event)
         webEvent.modifiers |= currentInputEvent->modifiers &
             (WebInputEvent::CapsLockOn | WebInputEvent::NumLockOn);
     }
+
+    // Give the client a chance to issue edit comamnds.
+    WebViewImpl* view = WebViewImpl::fromPage(m_element->document()->frame()->page());
+    if (m_webPlugin->supportsEditCommands() && view->client())
+        view->client()->handleCurrentKeyboardEvent();
 
     WebCursorInfo cursorInfo;
     if (m_webPlugin->handleInputEvent(webEvent, cursorInfo))
