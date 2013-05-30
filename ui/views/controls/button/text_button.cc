@@ -118,18 +118,24 @@ TextButtonDefaultBorder::~TextButtonDefaultBorder() {
 void TextButtonDefaultBorder::Paint(const View& view, gfx::Canvas* canvas) {
   const TextButton* button = static_cast<const TextButton*>(&view);
   int state = button->state();
+  bool animating = button->GetAnimation()->is_animating();
 
   Painter* painter = normal_painter_.get();
+  // Use the hot painter when we're hovered. Also use the hot painter when we're
+  // STATE_NORMAL and |animating| so that we show throb animations started from
+  // CustomButton::StartThrobbing which should start throbbing the button
+  // regardless of whether it is hovered.
   if (button->show_multiple_icon_states() &&
       ((state == TextButton::STATE_HOVERED) ||
-       (state == TextButton::STATE_PRESSED))) {
-    painter = (state == TextButton::STATE_HOVERED) ?
-        hot_painter_.get() : pushed_painter_.get();
+       (state == TextButton::STATE_PRESSED) ||
+       ((state == TextButton::STATE_NORMAL) && animating))) {
+    painter = (state == TextButton::STATE_PRESSED) ?
+        pushed_painter_.get() : hot_painter_.get();
   }
   if (painter) {
-    if (button->GetAnimation()->is_animating()) {
+    if (animating) {
       // TODO(pkasting): Really this should crossfade between states so it could
-      // handle the case of having a non-NULL |normal_set_|.
+      // handle the case of having a non-NULL |normal_painter_|.
       canvas->SaveLayerAlpha(static_cast<uint8>(
           button->GetAnimation()->CurrentValueBetween(0, 255)));
       painter->Paint(canvas, view.size());
