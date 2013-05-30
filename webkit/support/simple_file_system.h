@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_SYSTEM_H_
-#define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_SYSTEM_H_
+#ifndef WEBKIT_SUPPORT_SIMPLE_FILE_SYSTEM_H_
+#define WEBKIT_SUPPORT_SIMPLE_FILE_SYSTEM_H_
 
 #include <vector>
 
@@ -157,4 +157,4 @@ class SimpleFileSystem
   DISALLOW_COPY_AND_ASSIGN(SimpleFileSystem);
 };
 
-#endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_SYSTEM_H_
+#endif  // WEBKIT_SUPPORT_SIMPLE_FILE_SYSTEM_H_

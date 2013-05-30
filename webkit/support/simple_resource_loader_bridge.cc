@@ -30,7 +30,7 @@
 // perform URL loads.  See renderer/resource_dispatcher.h for details on an
 // alternate implementation that defers fetching to another process.
 
-#include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
+#include "webkit/support/simple_resource_loader_bridge.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -71,12 +71,12 @@
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/resource_request_body.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/tools/test_shell/simple_appcache_system.h"
-#include "webkit/tools/test_shell/simple_file_system.h"
-#include "webkit/tools/test_shell/simple_file_writer.h"
-#include "webkit/tools/test_shell/simple_socket_stream_bridge.h"
-#include "webkit/tools/test_shell/test_shell_request_context.h"
-#include "webkit/tools/test_shell/test_shell_webblobregistry_impl.h"
+#include "webkit/support/simple_appcache_system.h"
+#include "webkit/support/simple_file_system.h"
+#include "webkit/support/simple_file_writer.h"
+#include "webkit/support/simple_socket_stream_bridge.h"
+#include "webkit/support/test_shell_request_context.h"
+#include "webkit/support/test_shell_webblobregistry_impl.h"
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 #include "crypto/nss_util.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_SOCKET_STREAM_BRIDGE_H_
-#define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_SOCKET_STREAM_BRIDGE_H_
+#ifndef WEBKIT_SUPPORT_SIMPLE_SOCKET_STREAM_BRIDGE_H_
+#define WEBKIT_SUPPORT_SIMPLE_SOCKET_STREAM_BRIDGE_H_
 
 #include "base/basictypes.h"
 
@@ -32,4 +32,4 @@ class SimpleSocketStreamBridge {
   DISALLOW_IMPLICIT_CONSTRUCTORS(SimpleSocketStreamBridge);
 };
 
-#endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_SOCKET_STREAM_BRIDGE_H_
+#endif  // WEBKIT_SUPPORT_SIMPLE_SOCKET_STREAM_BRIDGE_H_

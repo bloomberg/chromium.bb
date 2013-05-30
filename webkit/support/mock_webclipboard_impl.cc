@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/tools/test_shell/mock_webclipboard_impl.h"
+#include "webkit/support/mock_webclipboard_impl.h"
 
 #include <algorithm>
 

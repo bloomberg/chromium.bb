@@ -1856,7 +1856,7 @@
             '../tools/json_schema_compiler/test/json_schema_compiler_tests.gyp:json_schema_compiler_tests',
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/webkit.gyp:test_shell_test_support',
+            '../webkit/support/webkit_support.gyp:test_mock_plugin_list',
           ],
           # TODO(scr): Use this in browser_tests too.
           'includes': [

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/tools/test_shell/simple_dom_storage_system.h"
+#include "webkit/support/simple_dom_storage_system.h"
 
 #include "base/auto_reset.h"
 #include "googleurl/src/gurl.h"

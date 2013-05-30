@@ -20,8 +20,8 @@
 #include "ui/android/ui_jni_registrar.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gl/android/gl_jni_registrar.h"
+#include "webkit/support/simple_resource_loader_bridge.h"
 #include "webkit/support/test_webkit_platform_support.h"
-#include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
 namespace {
 

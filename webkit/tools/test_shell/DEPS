@@ -1,7 +1,0 @@
-include_rules = [
-  "+breakpad",
-  "+mac",
-  "+third_party/zlib",
-  "+ui",
-  "+webkit/support"
-]

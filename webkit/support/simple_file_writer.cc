@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/tools/test_shell/simple_file_writer.h"
+#include "webkit/support/simple_file_writer.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -14,7 +14,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
+#include "webkit/support/simple_resource_loader_bridge.h"
 
 using fileapi::FileSystemURL;
 using fileapi::FileSystemContext;
