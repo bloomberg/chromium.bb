@@ -11,7 +11,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/util/time.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
+#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 
 using content::NavigationEntry;
 

@@ -7,8 +7,8 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace gfx {
