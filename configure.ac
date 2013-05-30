@@ -291,11 +291,19 @@ AM_CONDITIONAL(ENABLE_TABLET_SHELL,
 AC_ARG_ENABLE(colord,
               AS_HELP_STRING([--disable-colord],
                              [do not build colord CMS support]),,
-	      enable_colord=yes)
-AM_CONDITIONAL(ENABLE_COLORD,
-	       test "x$enable_colord" = "xyes")
-if test x$enable_colord = xyes; then
-  PKG_CHECK_MODULES(COLORD, colord >= 0.1.27)
+	      enable_colord=auto)
+AM_CONDITIONAL(ENABLE_COLORD, test "x$enable_colord" = "xyes")
+if test "x$enable_colord" != "xno"; then
+	PKG_CHECK_MODULES(COLORD,
+			  colord >= 0.1.27,
+			  have_colord=yes,
+			  have_colord=no)
+	if test "x$have_colord" = "xno" -a "x$enable_colord" = "xyes"; then
+	  AC_MSG_ERROR([colord support explicitly requested, but colord couldn't be found])
+	fi
+	if test "x$have_colord" = "xyes"; then
+	     enable_colord=yes
+	fi
 fi
 
 AC_ARG_ENABLE(wcap-tools, [  --disable-wcap-tools],, enable_wcap_tools=yes)
@@ -319,14 +327,25 @@ if test "x$GCC" = "xyes"; then
 fi
 AC_SUBST(GCC_CFLAGS)
 
-AC_ARG_ENABLE(libunwind, AS_HELP_STRING([  --disable-libunwind],
-                                        [Disable libunwind usage for backtraces]),,
-              enable_libunwind=yes)
-if test "x$enable_libunwind" = xyes; then
-    PKG_CHECK_MODULES(LIBUNWIND, libunwind)
-    AC_DEFINE(HAVE_LIBUNWIND, 1, [Have libunwind support])
-fi
+AC_ARG_ENABLE(libunwind,
+              AS_HELP_STRING([--disable-libunwind],
+                             [Disable libunwind usage for backtraces]),,
+              enable_libunwind=auto)
 AM_CONDITIONAL(HAVE_LIBUNWIND, [test "x$enable_libunwind" = xyes])
+if test "x$enable_libunwind" != "xno"; then
+        PKG_CHECK_MODULES(LIBUNWIND,
+                          libunwind,
+                          have_libunwind=yes,
+                          have_libunwind=no)
+        if test "x$have_libunwind" = "xno" -a "x$enable_libunwind" = "xyes"; then
+          AC_MSG_ERROR([libunwind support explicitly requested, but libunwind couldn't be found])
+        fi
+        if test "x$have_libunwind" = "xyes"; then
+             enable_libunwind=yes
+             AC_DEFINE(HAVE_LIBUNWIND, 1, [Have libunwind support])
+        fi
+fi
+
 
 if test "x$WESTON_NATIVE_BACKEND" = "x"; then
 	WESTON_NATIVE_BACKEND="drm-backend.so"
