@@ -21,3 +21,5 @@ ScopedJavaRefTest.RefCounts
 # Death tests are not supported with apks.
 *DeathTest*
 
+# http://crbug.com/245043
+StackContainer.BufferAlignment
