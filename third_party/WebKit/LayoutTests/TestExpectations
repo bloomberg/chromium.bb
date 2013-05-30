@@ -1510,7 +1510,7 @@ crbug.com/238858 [ Win7 ] virtual/gpu/fast/hidpi/image-set-background-repeat.htm
 crbug.com/238858 [ Linux Win ] virtual/gpu/fast/hidpi/image-set-border-image-comparison.html [ Pass Timeout ImageOnlyFailure ]
 crbug.com/238858 [ Win ] virtual/gpu/fast/hidpi/image-set-border-image-dynamic.html [ Pass Timeout ]
 crbug.com/238858 [ Win7 ] virtual/gpu/fast/hidpi/image-set-border-image-simple.html [ ImageOnlyFailure Pass Timeout ]
-crbug.com/238858 virtual/gpu/fast/hidpi/image-set-in-content-dynamic.html [ Pass Timeout ]
+crbug.com/238858 crbug.com/245280 virtual/gpu/fast/hidpi/image-set-in-content-dynamic.html [ Crash Pass Timeout ]
 crbug.com/238858 [ Linux ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ Pass Timeout ]
 crbug.com/238858 [ Win ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ Pass Timeout ImageOnlyFailure ]
 crbug.com/238858 crbug.com/244369 virtual/gpu/fast/hidpi/image-set-simple.html [ Crash Pass Timeout ]
