@@ -270,7 +270,7 @@ void VideoDecodeDemoInstance::InitializeDecoders() {
   for (int i = 0; i < kNumDecoders; ++i) {
     DecoderClient* client = new DecoderClient(
         this, new pp::VideoDecoder_Dev(
-            this, *context_, PP_VIDEODECODER_H264PROFILE_BASELINE));
+            this, *context_, PP_VIDEODECODER_H264PROFILE_MAIN));
     assert(!client->decoder()->is_null());
     assert(video_decoders_.insert(std::make_pair(
         client->decoder()->pp_resource(), client)).second);
