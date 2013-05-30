@@ -770,7 +770,7 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
     // Save to be fetched file to DB for restore in case of crash.
     DriveMetadata metadata;
     metadata.set_resource_id(entry.resource_id());
-    metadata.set_md5_checksum(entry.file_md5());
+    metadata.set_md5_checksum(std::string());
     metadata.set_conflicted(false);
     metadata.set_to_be_fetched(true);
 
