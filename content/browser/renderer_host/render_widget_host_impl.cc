@@ -1245,8 +1245,13 @@ void RenderWidgetHostImpl::ForwardInputEvent(
 
   if (overscroll_controller_.get() &&
       !overscroll_controller_->WillDispatchEvent(input_event, latency_info)) {
-    // Reset the wheel-event state when appropriate.
-    if (input_event.type == WebKit::WebInputEvent::MouseWheel) {
+    if (input_event.type == WebKit::WebInputEvent::MouseMove) {
+      // Since this mouse-move event has been consumed, there will be no ACKs.
+      // So reset the state here so that future mouse-move events do reach the
+      // renderer.
+      mouse_move_pending_ = false;
+    } else if (input_event.type == WebKit::WebInputEvent::MouseWheel) {
+      // Reset the wheel-event state when appropriate.
       mouse_wheel_pending_ = false;
     } else if (WebInputEvent::isGestureEventType(input_event.type) &&
                gesture_event_filter_->HasQueuedGestureEvents()) {

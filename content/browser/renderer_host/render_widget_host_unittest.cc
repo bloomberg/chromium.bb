@@ -3971,4 +3971,96 @@ TEST_F(RenderWidgetHostTest, UnhandledWheelEvent) {
   EXPECT_EQ(view_->unhandled_wheel_event().deltaY, -5);
 }
 
+// Tests that if a mouse-move event completes the overscroll gesture, future
+// move events do reach the renderer.
+TEST_F(RenderWidgetHostTest, OverscrollMouseMoveCompletion) {
+  host_->SetupForOverscrollControllerTest();
+  host_->set_debounce_interval_time_ms(0);
+  process_->sink().ClearMessages();
+  view_->set_bounds(gfx::Rect(0, 0, 400, 200));
+  view_->Show();
+
+  SimulateWheelEvent(0, -5, 0, true);  // sent directly
+  SimulateWheelEvent(0, -1, 0, true);  // enqueued
+  SimulateWheelEvent(-10, -3, 0, true);  // coalesced into previous event
+  SimulateWheelEvent(-15, -1, 0, true);  // coalesced into previous event
+  SimulateWheelEvent(-30, -3, 0, true);  // coalesced into previous event
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+
+  // Receive ACK the first wheel event as not processed.
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+
+  // Receive ACK for the second (coalesced) event as not processed. This will
+  // start an overcroll gesture.
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(OVERSCROLL_WEST, host_->overscroll_mode());
+  EXPECT_EQ(OVERSCROLL_WEST, host_->overscroll_delegate()->current_mode());
+  EXPECT_EQ(0U, process_->sink().message_count());
+
+  // Send a mouse-move event. This should cancel the overscroll navigation
+  // (since the amount overscrolled is not above the threshold), and so the
+  // mouse-move should reach the renderer.
+  SimulateMouseMove(5, 10, 0);
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->completed_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+
+  SendInputEventACK(WebInputEvent::MouseMove,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // Moving the mouse more should continue to send the events to the renderer.
+  SimulateMouseMove(5, 10, 0);
+  SendInputEventACK(WebInputEvent::MouseMove,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+
+  // Now try with gestures.
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchscreen);
+  SimulateGestureScrollUpdateEvent(300, -5, 0);
+  SendInputEventACK(WebInputEvent::GestureScrollBegin,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_mode());
+  EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->current_mode());
+  process_->sink().ClearMessages();
+
+  // Overscroll gesture is in progress. Send a mouse-move now. This should
+  // complete the gesture (because the amount overscrolled is above the
+  // threshold), and consume the event.
+  SimulateMouseMove(5, 10, 0);
+  EXPECT_EQ(OVERSCROLL_EAST, host_->overscroll_delegate()->completed_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
+  EXPECT_EQ(0U, process_->sink().message_count());
+
+  SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(OVERSCROLL_NONE, host_->overscroll_delegate()->current_mode());
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+  SendInputEventACK(WebInputEvent::GestureScrollEnd,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // Move mouse some more. The mouse-move events should reach the renderer.
+  SimulateMouseMove(5, 10, 0);
+  EXPECT_EQ(1U, process_->sink().message_count());
+
+  SendInputEventACK(WebInputEvent::MouseMove,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  process_->sink().ClearMessages();
+}
+
 }  // namespace content
