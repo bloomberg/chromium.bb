@@ -53,7 +53,7 @@ namespace chromeos {
 namespace {
 
 // Path for a stripped down login page that does not have OOBE elements.
-const char kLoginPath[] = "login";
+const char kLoginPath[] = "login#login";
 
 // Path for the enterprise enrollment gaia page hosting.
 const char kEnterpriseEnrollmentGaiaLoginPath[] = "gaialogin";
