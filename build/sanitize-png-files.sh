@@ -374,7 +374,7 @@ done
 
 # Make sure we have all necessary commands installed.
 install_if_not_installed pngcrush
-if [ $OPTIMIZE_LEVEL != 2 ]; then
+if [ $OPTIMIZE_LEVEL == 2 ]; then
   install_if_not_installed optipng
 
   install_if_not_installed advancecomp
@@ -401,10 +401,15 @@ for d in $DIRS; do
 done
 
 # Print the results.
-let diff=$TOTAL_OLD_BYTES-$TOTAL_NEW_BYTES
-let percent=$diff*100/$TOTAL_OLD_BYTES
-echo "Processed $PROCESSED_FILE files (out of $TOTAL_FILE files)" \
-     "in $(date -u -d @$SECONDS +%T)s"
-echo "Result : $TOTAL_OLD_BYTES => $TOTAL_NEW_BYTES bytes" \
-     "($diff bytes : $percent %)"
-
+if [ $PROCESSED_FILE == 0 ]; then
+  echo "Did not find any files (out of $TOTAL_FILE files)" \
+       "that could be optimized" \
+       "in $(date -u -d @$SECONDS +%T)s"
+else
+  let diff=$TOTAL_OLD_BYTES-$TOTAL_NEW_BYTES
+  let percent=$diff*100/$TOTAL_OLD_BYTES
+  echo "Processed $PROCESSED_FILE files (out of $TOTAL_FILE files)" \
+       "in $(date -u -d @$SECONDS +%T)s"
+  echo "Result : $TOTAL_OLD_BYTES => $TOTAL_NEW_BYTES bytes" \
+       "($diff bytes : $percent %)"
+fi
