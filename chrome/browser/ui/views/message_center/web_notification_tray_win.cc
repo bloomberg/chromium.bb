@@ -156,8 +156,11 @@ void WebNotificationTrayWin::HidePopups() {
 bool WebNotificationTrayWin::ShowMessageCenter() {
   content::RecordAction(UserMetricsAction("Notifications.ShowMessageCenter"));
 
-  scoped_ptr<message_center::MessageCenterBubble> bubble(
+  // Using MessageBubbleBase instead of MessageCenterBubble to
+  // remove dependence on implicit type conversion
+  scoped_ptr<message_center::MessageBubbleBase> bubble(
       new message_center::MessageCenterBubble(message_center()));
+
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();
   views::TrayBubbleView::AnchorAlignment alignment = GetAnchorAlignment();
