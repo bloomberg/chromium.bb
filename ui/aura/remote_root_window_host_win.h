@@ -43,34 +43,32 @@ typedef base::Callback<void(const base::FilePath&, int, void*)>
 
 // Handles the open file operation for Metro Chrome Ash. The callback passed in
 // is invoked when we receive the opened file name from the metro viewer.
-AURA_EXPORT void HandleOpenFile(
-    const string16& title,
-    const base::FilePath& default_path,
-    const string16& filter,
-    const OpenFileCompletion& callback);
+AURA_EXPORT void HandleOpenFile(const base::string16& title,
+                                const base::FilePath& default_path,
+                                const base::string16& filter,
+                                const OpenFileCompletion& callback);
 
 // Handles the open multiple file operation for Metro Chrome Ash. The callback
 // passed in is invoked when we receive the opened file names from the metro
 // viewer.
 AURA_EXPORT void HandleOpenMultipleFiles(
-    const string16& title,
+    const base::string16& title,
     const base::FilePath& default_path,
-    const string16& filter,
+    const base::string16& filter,
     const OpenMultipleFilesCompletion& callback);
 
 // Handles the save file operation for Metro Chrome Ash. The callback passed in
 // is invoked when we receive the saved file name from the metro viewer.
-AURA_EXPORT void HandleSaveFile(
-    const string16& title,
-    const base::FilePath& default_path,
-    const string16& filter,
-    int filter_index,
-    const string16& default_extension,
-    const SaveFileCompletion& callback);
+AURA_EXPORT void HandleSaveFile(const base::string16& title,
+                                const base::FilePath& default_path,
+                                const base::string16& filter,
+                                int filter_index,
+                                const base::string16& default_extension,
+                                const SaveFileCompletion& callback);
 
 // Handles the select folder for Metro Chrome Ash. The callback passed in
 // is invoked when we receive the folder name from the metro viewer.
-AURA_EXPORT void HandleSelectFolder(const string16& title,
+AURA_EXPORT void HandleSelectFolder(const base::string16& title,
                                     const SelectFolderCompletion& callback);
 
 // RootWindowHost implementaton that receives events from a different
@@ -90,27 +88,24 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   // Called when we have a message from the remote process.
   bool OnMessageReceived(const IPC::Message& message);
 
-  void HandleOpenFile(
-      const string16& title,
-      const base::FilePath& default_path,
-      const string16& filter,
-      const OpenFileCompletion& callback);
+  void HandleOpenFile(const base::string16& title,
+                      const base::FilePath& default_path,
+                      const base::string16& filter,
+                      const OpenFileCompletion& callback);
 
-  void HandleOpenMultipleFiles(
-      const string16& title,
-      const base::FilePath& default_path,
-      const string16& filter,
-      const OpenMultipleFilesCompletion& callback);
+  void HandleOpenMultipleFiles(const base::string16& title,
+                               const base::FilePath& default_path,
+                               const base::string16& filter,
+                               const OpenMultipleFilesCompletion& callback);
 
-  void HandleSaveFile(
-      const string16& title,
-      const base::FilePath& default_path,
-      const string16& filter,
-      int filter_index,
-      const string16& default_extension,
-      const SaveFileCompletion& callback);
+  void HandleSaveFile(const base::string16& title,
+                      const base::FilePath& default_path,
+                      const base::string16& filter,
+                      int filter_index,
+                      const base::string16& default_extension,
+                      const SaveFileCompletion& callback);
 
-  void HandleSelectFolder(const string16& title,
+  void HandleSelectFolder(const base::string16& title,
                           const SelectFolderCompletion& callback);
 
  private:

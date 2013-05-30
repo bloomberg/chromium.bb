@@ -11,6 +11,7 @@
 namespace aura {
 class RootWindow;
 class Window;
+
 namespace client {
 
 class AURA_EXPORT TooltipClient {
@@ -29,8 +30,9 @@ class AURA_EXPORT TooltipClient {
 AURA_EXPORT void SetTooltipClient(RootWindow* root_window,
                                   TooltipClient* client);
 AURA_EXPORT TooltipClient* GetTooltipClient(RootWindow* root_window);
-AURA_EXPORT void SetTooltipText(Window* window, string16* tooltip_text);
-AURA_EXPORT const string16 GetTooltipText(Window* window);
+
+AURA_EXPORT void SetTooltipText(Window* window, base::string16* tooltip_text);
+AURA_EXPORT const base::string16 GetTooltipText(Window* window);
 
 }  // namespace client
 }  // namespace aura

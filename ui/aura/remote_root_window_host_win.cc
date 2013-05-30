@@ -53,11 +53,10 @@ void SetVirtualKeyStates(uint32 flags) {
 
 }  // namespace
 
-void HandleOpenFile(
-    const string16& title,
-    const base::FilePath& default_path,
-    const string16& filter,
-    const OpenFileCompletion& callback) {
+void HandleOpenFile(const base::string16& title,
+                    const base::FilePath& default_path,
+                    const base::string16& filter,
+                    const OpenFileCompletion& callback) {
   DCHECK(aura::RemoteRootWindowHostWin::Instance());
   aura::RemoteRootWindowHostWin::Instance()->HandleOpenFile(title,
                                                             default_path,
@@ -65,11 +64,10 @@ void HandleOpenFile(
                                                             callback);
 }
 
-void HandleOpenMultipleFiles(
-    const string16& title,
-    const base::FilePath& default_path,
-    const string16& filter,
-    const OpenMultipleFilesCompletion& callback) {
+void HandleOpenMultipleFiles(const base::string16& title,
+                             const base::FilePath& default_path,
+                             const base::string16& filter,
+                             const OpenMultipleFilesCompletion& callback) {
   DCHECK(aura::RemoteRootWindowHostWin::Instance());
   aura::RemoteRootWindowHostWin::Instance()->HandleOpenMultipleFiles(
       title,
@@ -78,13 +76,12 @@ void HandleOpenMultipleFiles(
       callback);
 }
 
-void HandleSaveFile(
-    const string16& title,
-    const base::FilePath& default_path,
-    const string16& filter,
-    int filter_index,
-    const string16& default_extension,
-    const SaveFileCompletion& callback) {
+void HandleSaveFile(const base::string16& title,
+                    const base::FilePath& default_path,
+                    const base::string16& filter,
+                    int filter_index,
+                    const base::string16& default_extension,
+                    const SaveFileCompletion& callback) {
   DCHECK(aura::RemoteRootWindowHostWin::Instance());
   aura::RemoteRootWindowHostWin::Instance()->HandleSaveFile(title,
                                                             default_path,
@@ -94,7 +91,7 @@ void HandleSaveFile(
                                                             callback);
 }
 
-void HandleSelectFolder(const string16& title,
+void HandleSelectFolder(const base::string16& title,
                         const SelectFolderCompletion& callback) {
   DCHECK(aura::RemoteRootWindowHostWin::Instance());
   aura::RemoteRootWindowHostWin::Instance()->HandleSelectFolder(title,
@@ -167,9 +164,9 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RemoteRootWindowHostWin::HandleOpenFile(
-    const string16& title,
+    const base::string16& title,
     const base::FilePath& default_path,
-    const string16& filter,
+    const base::string16& filter,
     const OpenFileCompletion& callback) {
   if (!host_)
     return;
@@ -185,10 +182,10 @@ void RemoteRootWindowHostWin::HandleOpenFile(
 }
 
 void RemoteRootWindowHostWin::HandleOpenMultipleFiles(
-      const string16& title,
-      const base::FilePath& default_path,
-      const string16& filter,
-      const OpenMultipleFilesCompletion& callback) {
+    const base::string16& title,
+    const base::FilePath& default_path,
+    const base::string16& filter,
+    const OpenMultipleFilesCompletion& callback) {
   if (!host_)
     return;
 
@@ -203,11 +200,11 @@ void RemoteRootWindowHostWin::HandleOpenMultipleFiles(
 }
 
 void RemoteRootWindowHostWin::HandleSaveFile(
-    const string16& title,
+    const base::string16& title,
     const base::FilePath& default_path,
-    const string16& filter,
+    const base::string16& filter,
     int filter_index,
-    const string16& default_extension,
+    const base::string16& default_extension,
     const SaveFileCompletion& callback) {
   if (!host_)
     return;
@@ -226,7 +223,7 @@ void RemoteRootWindowHostWin::HandleSaveFile(
 }
 
 void RemoteRootWindowHostWin::HandleSelectFolder(
-    const string16& title,
+    const base::string16& title,
     const SelectFolderCompletion& callback) {
   if (!host_)
     return;

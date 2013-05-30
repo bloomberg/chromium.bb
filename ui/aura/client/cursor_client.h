@@ -62,7 +62,7 @@ class AURA_EXPORT CursorClient {
 
   // Used to pass the cursor resource module name to the cursor loader. This is
   // typically used to load non system cursors.
-  virtual void SetCursorResourceModule(const string16& module_name) = 0;
+  virtual void SetCursorResourceModule(const base::string16& module_name) = 0;
 
   // Used to add or remove a CursorClientObserver.
   virtual void AddObserver(CursorClientObserver* observer) = 0;
