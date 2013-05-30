@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -382,8 +383,6 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
     animateOnBoundsChange_ = YES;
     canBecomeKeyWindow_ = YES;
     activationRequestedByPanel_ = NO;
-    contentsController_.reset(
-        [[TabContentsController alloc] initWithContents:nil]);
   }
   return self;
 }
@@ -410,9 +409,6 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   frame.size.height = panelBounds.height();
   [window setFrame:frame display:NO];
 
-  [[window contentView] addSubview:[contentsController_ view]];
-  [self enableTabContentsViewAutosizing];
-
   // Add a transparent overlay on top of the whole window to process mouse
   // events - for example, user-resizing.
   NSView* superview = [[window contentView] superview];
@@ -425,28 +421,28 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   [superview addSubview:overlayView_ positioned:NSWindowAbove relativeTo:nil];
 }
 
-- (void)disableTabContentsViewAutosizing {
-  [[[self window] contentView] setAutoresizesSubviews:NO];
-}
+- (void)updateWebContentsViewFrame {
+  content::WebContents* webContents = windowShim_->panel()->GetWebContents();
+  if (!webContents)
+    return;
 
-- (void)enableTabContentsViewAutosizing {
-  NSView* contentView = [[self window] contentView];
-  NSView* controllerView = [contentsController_ view];
-
-  DCHECK([controllerView superview] == contentView);
-  DCHECK([controllerView autoresizingMask] & NSViewHeightSizable);
-  DCHECK([controllerView autoresizingMask] & NSViewWidthSizable);
-
-  // Compute the size of the controller view. Don't assume it's similar to the
+  // Compute the size of the web contents view. Don't assume it's similar to the
   // size of the contentView, because the contentView is managed by the Cocoa
   // to be (window - standard titlebar), while we have taller custom titlebar
   // instead. In coordinate system of window's contentView.
   NSRect contentFrame = [self contentRectForFrameRect:[[self window] frame]];
   contentFrame.origin = NSZeroPoint;
 
-  [controllerView setFrame:contentFrame];
-  [contentView setAutoresizesSubviews:YES];
-  [contentsController_ ensureContentsVisible];
+  [webContents->GetView()->GetNativeView() setFrame:contentFrame];
+}
+
+- (void)disableWebContentsViewAutosizing {
+  [[[self window] contentView] setAutoresizesSubviews:NO];
+}
+
+- (void)enableWebContentsViewAutosizing {
+  [self updateWebContentsViewFrame];
+  [[[self window] contentView] setAutoresizesSubviews:YES];
 }
 
 - (void)revealAnimatedWithFrame:(const NSRect&)frame {
@@ -454,7 +450,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 
   // Disable subview resizing while resizing the window to avoid renderer
   // resizes during intermediate stages of animation.
-  [self disableTabContentsViewAutosizing];
+  [self disableWebContentsViewAutosizing];
 
   // We grow the window from the bottom up to produce a 'reveal' animation.
   NSRect startFrame = NSMakeRect(NSMinX(frame), NSMinY(frame),
@@ -469,7 +465,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   // we always deactivate the controls here. If we're created as an active
   // panel, we'll get a NSWindowDidBecomeKeyNotification and reactivate the web
   // view properly. See crbug.com/97831 for more details.
-  WebContents* web_contents = [contentsController_ webContents];
+  WebContents* web_contents = windowShim_->panel()->GetWebContents();
   // RWHV may be NULL in unit tests.
   if (web_contents && web_contents->GetRenderWidgetHostView())
     web_contents->GetRenderWidgetHostView()->SetActive(false);
@@ -536,14 +532,15 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 }
 
 - (void)webContentsInserted:(WebContents*)contents {
-  [contentsController_ changeWebContents:contents];
-  DCHECK(![[contentsController_ view] isHidden]);
+  NSView* view = contents->GetView()->GetNativeView();
+  [[[self window] contentView] addSubview:view];
+  [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+
+  [self enableWebContentsViewAutosizing];
 }
 
 - (void)webContentsDetached:(WebContents*)contents {
-  DCHECK(contents == [contentsController_ webContents]);
-  [contentsController_ changeWebContents:nil];
-  [[contentsController_ view] setHidden:YES];
+  [contents->GetView()->GetNativeView() removeFromSuperview];
 }
 
 - (PanelTitlebarViewCocoa*)titlebarView {
@@ -687,7 +684,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   }
 
   // Will be enabled back in animationDidEnd callback.
-  [self disableTabContentsViewAutosizing];
+  [self disableWebContentsViewAutosizing];
 
   // Terminate previous animation, if it is still playing.
   [self terminateBoundsAnimation];
@@ -736,7 +733,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 - (void)cleanupAfterAnimation {
   playingMinimizeAnimation_ = NO;
   if (!windowShim_->panel()->IsMinimized())
-    [self enableTabContentsViewAutosizing];
+    [self enableWebContentsViewAutosizing];
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {
@@ -785,7 +782,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 - (void)windowDidBecomeKey:(NSNotification*)notification {
   // We need to activate the controls (in the "WebView"). To do this, get the
   // selected WebContents's RenderWidgetHostView and tell it to activate.
-  if (WebContents* contents = [contentsController_ webContents]) {
+  if (WebContents* contents = windowShim_->panel()->GetWebContents()) {
     if (content::RenderWidgetHostView* rwhv =
         contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);
@@ -803,6 +800,19 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
     return;
 
   [self onWindowDidResignKey];
+}
+
+- (void)windowDidResize:(NSNotification*)notification {
+  // Update the web contents view frame when the panel is not taller than the
+  // titlebar. This is to ensure that the titlebar view is not overlapped with
+  // the web contents view because the the web contents view assumes that its
+  // view will never be overlapped by another view in order to perform
+  // optimization. If we do not do this, some part of the web contents view
+  // will become visible and overlapp the bottom area of the titlebar.
+  if (NSHeight([self contentRectForFrameRect:[[self window] frame]]) <=
+          panel::kTitlebarHeight) {
+    [self updateWebContentsViewFrame];
+  }
 }
 
 - (void)activate {
@@ -826,7 +836,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 - (void)onWindowDidResignKey {
   // We need to deactivate the controls (in the "WebView"). To do this, get the
   // selected WebContents's RenderWidgetHostView and tell it to deactivate.
-  if (WebContents* contents = [contentsController_ webContents]) {
+  if (WebContents* contents = windowShim_->panel()->GetWebContents()) {
     if (content::RenderWidgetHostView* rwhv =
         contents->GetRenderWidgetHostView())
       rwhv->SetActive(false);
