@@ -1531,6 +1531,30 @@ String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionC
     return document->frame()->layerTreeAsText(layerTreeFlags);
 }
 
+void Internals::setNeedsCompositedScrolling(Element* element, unsigned needsCompositedScrolling, ExceptionCode& ec)
+{
+    if (!element) {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+
+    element->document()->updateLayout();
+
+    RenderObject* renderer = element->renderer();
+    if (!renderer || !renderer->isBox()) {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+
+    RenderLayer* layer = toRenderBox(renderer)->layer();
+    if (!layer) {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+
+    layer->setForceNeedsCompositedScrolling(static_cast<RenderLayer::ForceNeedsCompositedScrollingMode>(needsCompositedScrolling));
+}
+
 String Internals::repaintRectsAsText(Document* document, ExceptionCode& ec) const
 {
     if (!document || !document->frame()) {

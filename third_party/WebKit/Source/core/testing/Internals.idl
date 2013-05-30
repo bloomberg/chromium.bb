@@ -169,6 +169,12 @@
     [RaisesException] NodeList paintOrderListBeforePromote(Element element);
     [RaisesException] NodeList paintOrderListAfterPromote(Element element);
 
+    // The values of these constants must be kept in sync with those in RenderLayer.
+    const unsigned short DoNotForceCompositedScrolling = 0;
+    const unsigned short CompositedScrollingAlwaysOn = 1;
+    const unsigned short CompositedScrollingAlwaysOff = 2;
+    [RaisesException] void setNeedsCompositedScrolling(Element element, unsigned short value);
+
     [RaisesException] DOMString scrollingStateTreeAsText(Document document);
     [RaisesException] DOMString mainThreadScrollingReasons(Document document);
     [RaisesException] ClientRectList nonFastScrollableRects(Document document);

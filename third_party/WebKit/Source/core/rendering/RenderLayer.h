@@ -867,6 +867,13 @@ public:
     enum PaintOrderListType {BeforePromote, AfterPromote};
     void computePaintOrderList(PaintOrderListType type, Vector<RefPtr<Node> >&);
 
+    enum ForceNeedsCompositedScrollingMode {
+        DoNotForceCompositedScrolling = 0,
+        CompositedScrollingAlwaysOn = 1,
+        CompositedScrollingAlwaysOff = 2
+    };
+    void setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode);
+
 private:
     enum CollectLayersBehavior { StopAtStackingContexts, StopAtStackingContainers };
 
@@ -914,6 +921,7 @@ private:
     void updateOutOfFlowPositioned(const RenderStyle* oldStyle);
 
     void updateNeedsCompositedScrolling();
+    void didUpdateNeedsCompositedScrolling();
 
     // Returns true if the position changed.
     bool updateLayerPosition();
@@ -1297,6 +1305,8 @@ protected:
     };
 
     CompositingProperties m_compositingProperties;
+
+    ForceNeedsCompositedScrollingMode m_forceNeedsCompositedScrolling;
 
 private:
     IntRect m_blockSelectionGapsBounds;

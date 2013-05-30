@@ -35,6 +35,9 @@
   <script>
     var debugMode = false;
 
+    if (window.internals)
+      window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
+
     if (window.testRunner)
       testRunner.dumpAsText();
 
@@ -114,17 +117,22 @@
         parentscrollinglayer.style.webkitTransform = 'translateZ(0px)';
         document.body.offsetTop;
 
-        window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(false);
+        window.internals.setNeedsCompositedScrolling(parentscrollinglayer, 
+            window.internals.CompositedScrollingAlwaysOff);
         parentscrollinglayer.style.webkitTransform = '';
 
         var oldStackingOrder = getStackingOrder();
         var oldPaintOrder = getPaintOrder(childscrollinglayer);
 
-        window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
+        window.internals.setNeedsCompositedScrolling(parentscrollinglayer, 
+            window.internals.CompositedScrollingAlwaysOn);
         parentscrollinglayer.style.webkitTransform = 'translateZ(0px)';
 
         var newStackingOrder = getStackingOrder();
         var newPaintOrder = getPaintOrder(childscrollinglayer);
+
+        window.internals.setNeedsCompositedScrolling(parentscrollinglayer, 
+            window.internals.DoNotForceCompositedScrolling);
 
         // The getPaintOrder() function should return a pair of paint orders.
         // One before promotion and one after. This pair of lists should remain

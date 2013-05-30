@@ -166,6 +166,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_scrollCorner(0)
     , m_resizer(0)
     , m_enclosingPaginationLayer(0)
+    , m_forceNeedsCompositedScrolling(DoNotForceCompositedScrolling)
 {
     m_isNormalFlowOnly = shouldBeNormalFlowOnly();
     m_isSelfPaintingLayer = shouldBeSelfPaintingLayer();
@@ -466,9 +467,8 @@ void RenderLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus()
 
 bool RenderLayer::acceleratedCompositingForOverflowScrollEnabled() const
 {
-    return renderer()->frame()
-        && renderer()->frame()->page()
-        && renderer()->frame()->page()->settings()->acceleratedCompositingForOverflowScrollEnabled();
+    const Settings* settings = renderer()->document()->settings();
+    return settings && settings->acceleratedCompositingForOverflowScrollEnabled();
 }
 
 // If we are a stacking container, then this function will determine if our
@@ -2046,6 +2046,16 @@ bool RenderLayer::usesCompositedScrolling() const
 
 bool RenderLayer::needsCompositedScrolling() const
 {
+    switch (m_forceNeedsCompositedScrolling) {
+    case DoNotForceCompositedScrolling:
+        return m_needsCompositedScrolling;
+    case CompositedScrollingAlwaysOn:
+        return true;
+    case CompositedScrollingAlwaysOff:
+        return false;
+    }
+
+    ASSERT_NOT_REACHED();
     return m_needsCompositedScrolling;
 }
 
@@ -2079,6 +2089,24 @@ void RenderLayer::updateNeedsCompositedScrolling()
 
     m_needsCompositedScrolling = needsCompositedScrolling;
 
+    // Note, the z-order lists may need to be rebuilt, but our code guarantees
+    // that we have not affected stacking, so we will not dirty
+    // m_canBePromotedToStackingContainer for either us or our stacking context
+    // or container.
+    didUpdateNeedsCompositedScrolling();
+}
+
+void RenderLayer::setForceNeedsCompositedScrolling(RenderLayer::ForceNeedsCompositedScrollingMode mode)
+{
+    if (m_forceNeedsCompositedScrolling == mode)
+        return;
+
+    m_forceNeedsCompositedScrolling = mode;
+    didUpdateNeedsCompositedScrolling();
+}
+
+void RenderLayer::didUpdateNeedsCompositedScrolling()
+{
     updateIsNormalFlowOnly();
     updateSelfPaintingLayer();
 

@@ -53,12 +53,16 @@
   </style>
   <script src="resources/automatically-opt-into-composited-scrolling.js"></script>
   <script>
+    if (window.internals)
+      window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
+
     function testPermutation(count, ordering, hasPositionedAncestor, containerIsPositioned)
     {
       if (!window.internals)
         return;
 
       var container = document.getElementById('container');
+      var containerOptedIn = didOptIn(container);
 
       // Below, when we set webkitTransform to '', we want that to force an
       // immediate, synchronous style recalculation. Querying the
@@ -79,16 +83,20 @@
       // composited. To ensure that we perform the full style recalc, we need to
       // change a style property so the style is dirty, and force the style to
       // be cleaned with document.body.offsetTop (inside getStackingOrder()).
-      window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(false);
+      window.internals.setNeedsCompositedScrolling(container, 
+          window.internals.CompositedScrollingAlwaysOff);
       container.style.webkitTransform = '';
 
       var oldStackingOrder = getStackingOrder(container);
 
-      // force to promote.
-      window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
+      window.internals.setNeedsCompositedScrolling(container, 
+          window.internals.CompositedScrollingAlwaysOn);
       container.style.webkitTransform = 'translateZ(0px)';
 
       var newStackingOrder = getStackingOrder(container);
+
+      window.internals.setNeedsCompositedScrolling(container,
+          window.internals.settings.DoNotForceCompositedScrolling);
 
       var shouldOptIn = oldStackingOrder.length === newStackingOrder.length;
       for (var i = 0; i < oldStackingOrder.length; ++i) {
@@ -99,7 +107,7 @@
       }
 
       container.style.webkitTransform = '';
-      if (shouldOptIn !== didOptIn(container)) {
+      if (shouldOptIn !== containerOptedIn) {
         if (shouldOptIn)
           write("FAIL - should've automatically opted in but didn't " + count);
         else

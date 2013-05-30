@@ -214,8 +214,16 @@ public:
     String layerTreeAsText(Document*, unsigned flags, ExceptionCode&) const;
     String layerTreeAsText(Document*, ExceptionCode&) const;
 
-    PassRefPtr<NodeList> paintOrderListBeforePromote(Element* element, ExceptionCode& ec);
-    PassRefPtr<NodeList> paintOrderListAfterPromote(Element* element, ExceptionCode& ec);
+    PassRefPtr<NodeList> paintOrderListBeforePromote(Element*, ExceptionCode&);
+    PassRefPtr<NodeList> paintOrderListAfterPromote(Element*, ExceptionCode&);
+
+    enum {
+        // Values need to be kept in sync with Internals.idl.
+        DoNotForceCompositedScrolling = 0,
+        CompositedScrollingAlwaysOn = 1,
+        CompositedScrollingAlwaysOff = 2
+    };
+    void setNeedsCompositedScrolling(Element*, unsigned value, ExceptionCode&);
 
     String repaintRectsAsText(Document*, ExceptionCode&) const;
     String scrollingStateTreeAsText(Document*, ExceptionCode&) const;

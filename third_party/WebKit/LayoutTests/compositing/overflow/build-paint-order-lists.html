@@ -48,6 +48,9 @@
   <script src="resources/automatically-opt-into-composited-scrolling.js"></script>
   <script src="resources/build-paint-order-lists.js"></script>
   <script>
+    if (window.internals)
+      window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
+
     function compareStackingOrderWithPaintOrder(stackingOrder, paintOrder)
     {
       if (debugMode) {
@@ -80,6 +83,9 @@
     }
 
     function testPermutation(count) {
+      if (!window.internals)
+        return;
+
       var container = document.getElementById('container');
       // Here we want to compare paint order lists before and after promotion
       // to the actual stacking order as determined by hit-testing. So we
@@ -93,18 +99,22 @@
       container.style.webkitTransform = 'translateZ(0px)';
       document.body.offsetTop;
 
-      window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(false);
+      window.internals.setNeedsCompositedScrolling(container, 
+          window.internals.CompositedScrollingAlwaysOff);
       container.style.webkitTransform = '';
 
       var oldStackingOrder = getStackingOrder(container);
       var oldPaintOrder = getPaintOrder(container);
 
-      window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
+      window.internals.setNeedsCompositedScrolling(container, 
+          window.internals.CompositedScrollingAlwaysOn);
       container.style.webkitTransform = 'translateZ(0px)';
 
       var newStackingOrder = getStackingOrder(container);
       var newPaintOrder = getPaintOrder(container);
 
+      window.internals.setNeedsCompositedScrolling(container,
+          window.internals.DoNotForceCompositedScrolling);
       // The getPaintOrder() function should return a pair of paint orders.
       // One before promotion and one after. This pair of lists should remain
       // identical whether the element is actually currently promoted or not,
