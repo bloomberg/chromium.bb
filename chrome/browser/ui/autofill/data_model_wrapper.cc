@@ -163,8 +163,10 @@ string16 WalletAddressWrapper::GetInfo(AutofillFieldType type) {
 }
 
 string16 WalletAddressWrapper::GetDisplayText() {
-  if (!address_->is_complete_address())
+  if (!address_->is_complete_address() ||
+      GetInfo(PHONE_HOME_WHOLE_NUMBER).empty()) {
     return string16();
+  }
 
   return DataModelWrapper::GetDisplayText();
 }
@@ -191,7 +193,8 @@ gfx::Image WalletInstrumentWrapper::GetIcon() {
 string16 WalletInstrumentWrapper::GetDisplayText() {
   // TODO(dbeam): handle other instrument statuses? http://crbug.com/233048
   if (instrument_->status() == wallet::WalletItems::MaskedInstrument::EXPIRED ||
-      !instrument_->address().is_complete_address()) {
+      !instrument_->address().is_complete_address() ||
+      GetInfo(PHONE_HOME_WHOLE_NUMBER).empty()) {
     return string16();
   }
 

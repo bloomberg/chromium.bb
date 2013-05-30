@@ -6,6 +6,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
+#include "components/autofill/browser/autofill_common_test.h"
+#include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/wallet/wallet_items.h"
@@ -47,6 +49,26 @@ TEST(WalletInstrumentWrapperTest, GetDisplayTextEmptyWhenExpired) {
   instrument->status_ = wallet::WalletItems::MaskedInstrument::EXPIRED;
   WalletInstrumentWrapper wrapper(instrument.get());
   EXPECT_TRUE(wrapper.GetDisplayText().empty());
+}
+
+TEST(DataModelWrapperTest, GetDisplayTextEmptyWithoutPhone) {
+  scoped_ptr<wallet::WalletItems::MaskedInstrument> instrument(
+      wallet::GetTestMaskedInstrument());
+
+  WalletInstrumentWrapper instrument_wrapper(instrument.get());
+  ASSERT_FALSE(instrument_wrapper.GetDisplayText().empty());
+
+  WalletAddressWrapper address_wrapper(&instrument->address());
+  ASSERT_FALSE(address_wrapper.GetDisplayText().empty());
+
+  const_cast<wallet::Address*>(&instrument->address())->set_phone_number(
+      string16());
+
+  ASSERT_TRUE(instrument_wrapper.GetInfo(PHONE_HOME_WHOLE_NUMBER).empty());
+  EXPECT_TRUE(instrument_wrapper.GetDisplayText().empty());
+
+  ASSERT_TRUE(address_wrapper.GetInfo(PHONE_HOME_WHOLE_NUMBER).empty());
+  EXPECT_TRUE(address_wrapper.GetDisplayText().empty());
 }
 
 }  // autofill

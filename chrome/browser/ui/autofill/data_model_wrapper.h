@@ -151,7 +151,7 @@ class WalletInstrumentWrapper : public DataModelWrapper {
   DISALLOW_COPY_AND_ASSIGN(WalletInstrumentWrapper);
 };
 
-// A DataModelWrapper for FullWallets billing data.
+// A DataModelWrapper for FullWallet billing data.
 class FullWalletBillingWrapper : public DataModelWrapper {
  public:
   explicit FullWalletBillingWrapper(wallet::FullWallet* full_wallet);
@@ -166,7 +166,7 @@ class FullWalletBillingWrapper : public DataModelWrapper {
   DISALLOW_COPY_AND_ASSIGN(FullWalletBillingWrapper);
 };
 
-// A DataModelWrapper for FullWallets shipping data.
+// A DataModelWrapper for FullWallet shipping data.
 class FullWalletShippingWrapper : public DataModelWrapper {
  public:
   explicit FullWalletShippingWrapper(wallet::FullWallet* full_wallet);

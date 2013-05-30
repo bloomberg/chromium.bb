@@ -34,7 +34,7 @@ namespace wallet {
 class Address {
  public:
   // TODO(ahutter): Use additional fields (descriptive_name, is_post_box,
-  // is_minimal_address, is_valid, is_default) when SaveToWallet is implemented.
+  // is_valid, is_default) when SaveToWallet is implemented.
   // See http://crbug.com/164284.
 
   Address();
