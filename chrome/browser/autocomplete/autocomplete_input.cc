@@ -178,7 +178,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     // reach the renderer or else the renderer handles internally without
     // reaching the net::URLRequest logic.  We thus won't catch these above, but
     // we should still claim to handle them.
-    if (LowerCaseEqualsASCII(parsed_scheme, chrome::kViewSourceScheme) ||
+    if (LowerCaseEqualsASCII(parsed_scheme, content::kViewSourceScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, chrome::kJavaScriptScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, chrome::kDataScheme))
       return URL;
@@ -431,7 +431,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(
   int after_scheme_and_colon = parts.scheme.end() + 1;
   // For the view-source scheme, we should emphasize the scheme and host of the
   // URL qualified by the view-source prefix.
-  if (LowerCaseEqualsASCII(scheme_str, chrome::kViewSourceScheme) &&
+  if (LowerCaseEqualsASCII(scheme_str, content::kViewSourceScheme) &&
       (static_cast<int>(text.length()) > after_scheme_and_colon)) {
     // Obtain the URL prefixed by view-source and parse it.
     string16 real_url(text.substr(after_scheme_and_colon));

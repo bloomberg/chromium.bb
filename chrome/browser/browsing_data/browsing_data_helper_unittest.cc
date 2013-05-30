@@ -83,7 +83,7 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotWebSafe) {
   EXPECT_FALSE(IsWebScheme(chrome::kMailToScheme));
   EXPECT_FALSE(IsWebScheme(chrome::kMetadataScheme));
   EXPECT_FALSE(IsWebScheme(chrome::kSwappedOutScheme));
-  EXPECT_FALSE(IsWebScheme(chrome::kViewSourceScheme));
+  EXPECT_FALSE(IsWebScheme(content::kViewSourceScheme));
 }
 
 TEST_F(BrowsingDataHelperTest, WebSafeSchemesAreNotExtensions) {
@@ -108,7 +108,7 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotAllExtension) {
   EXPECT_FALSE(IsExtensionScheme(chrome::kMailToScheme));
   EXPECT_FALSE(IsExtensionScheme(chrome::kMetadataScheme));
   EXPECT_FALSE(IsExtensionScheme(chrome::kSwappedOutScheme));
-  EXPECT_FALSE(IsExtensionScheme(chrome::kViewSourceScheme));
+  EXPECT_FALSE(IsExtensionScheme(content::kViewSourceScheme));
 }
 
 TEST_F(BrowsingDataHelperTest, TestMatches) {

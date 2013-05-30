@@ -964,7 +964,7 @@ bool IsValidUrlScheme(const GURL& url, bool is_privileged) {
 
   // Additional checking for view-source. Allow only http and https
   // URLs in view source.
-  if (url.SchemeIs(chrome::kViewSourceScheme)) {
+  if (url.SchemeIs(content::kViewSourceScheme)) {
     GURL sub_url(url.path());
     if (sub_url.SchemeIs(chrome::kHttpScheme) ||
         sub_url.SchemeIs(chrome::kHttpsScheme))

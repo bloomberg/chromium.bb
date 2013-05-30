@@ -1003,7 +1003,7 @@ bool HistoryService::CanAddURL(const GURL& url) {
   if (url.SchemeIs(chrome::kJavaScriptScheme) ||
       url.SchemeIs(chrome::kChromeDevToolsScheme) ||
       url.SchemeIs(chrome::kChromeUIScheme) ||
-      url.SchemeIs(chrome::kViewSourceScheme) ||
+      url.SchemeIs(content::kViewSourceScheme) ||
       url.SchemeIs(chrome::kChromeInternalScheme))
     return false;
 

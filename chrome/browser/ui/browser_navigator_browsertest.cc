@@ -926,7 +926,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(
     BrowserNavigatorTest,
     Disposition_ViewSource_Settings_DoNothingIfIncognitoForced) {
-  std::string view_source(chrome::kViewSourceScheme);
+  std::string view_source(content::kViewSourceScheme);
   view_source.append(":");
   view_source.append(chrome::kChromeUISettingsURL);
   RunDoNothingIfIncognitoIsForcedTest(GURL(view_source));
@@ -937,7 +937,7 @@ IN_PROC_BROWSER_TEST_F(
 // case).
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_ViewSource_Settings_UseNonIncognitoWindow) {
-  std::string view_source(chrome::kViewSourceScheme);
+  std::string view_source(content::kViewSourceScheme);
   view_source.append(":");
   view_source.append(chrome::kChromeUISettingsURL);
   RunUseNonIncognitoWindowTest(GURL(view_source));
@@ -1290,7 +1290,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, ViewSourceIsntSingleton) {
   const std::string viewsource_ntp_url =
-      std::string(chrome::kViewSourceScheme) + ":" +
+      std::string(content::kViewSourceScheme) + ":" +
       chrome::kChromeUIVersionURL;
 
   chrome::NavigateParams viewsource_params(browser(),

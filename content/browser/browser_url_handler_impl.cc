@@ -15,7 +15,7 @@ namespace content {
 // Handles rewriting view-source URLs for what we'll actually load.
 static bool HandleViewSource(GURL* url,
                              BrowserContext* browser_context) {
-  if (url->SchemeIs(chrome::kViewSourceScheme)) {
+  if (url->SchemeIs(kViewSourceScheme)) {
     // Load the inner URL instead.
     *url = GURL(url->path());
 
@@ -48,12 +48,12 @@ static bool HandleViewSource(GURL* url,
 // Turns a non view-source URL into the corresponding view-source URL.
 static bool ReverseViewSource(GURL* url, BrowserContext* browser_context) {
   // No action necessary if the URL is already view-source:
-  if (url->SchemeIs(chrome::kViewSourceScheme))
+  if (url->SchemeIs(kViewSourceScheme))
     return false;
 
   url_canon::Replacements<char> repl;
-  repl.SetScheme(chrome::kViewSourceScheme,
-      url_parse::Component(0, strlen(chrome::kViewSourceScheme)));
+  repl.SetScheme(kViewSourceScheme,
+                 url_parse::Component(0, strlen(kViewSourceScheme)));
   repl.SetPath(url->spec().c_str(),
       url_parse::Component(0, url->spec().size()));
   *url = url->ReplaceComponents(repl);

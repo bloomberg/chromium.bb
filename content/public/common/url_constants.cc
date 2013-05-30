@@ -25,11 +25,11 @@ const char kJavaScriptScheme[] = "javascript";
 const char kMailToScheme[] = "mailto";
 const char kMetadataScheme[] = "metadata";
 const char kSwappedOutScheme[] = "swappedout";
-const char kViewSourceScheme[] = "view-source";
-
 }  // namespace chrome
 
 namespace content {
+
+const char kViewSourceScheme[] = "view-source";
 
 const char kAboutBlankURL[] = "about:blank";
 const char kAboutSrcDocURL[] = "about:srcdoc";

@@ -1118,13 +1118,12 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   RenderViewHostObserverArray rvh_observers;
 
   GURL navigated_url(test_server()->GetURL("files/title2.html"));
-  GURL view_source_url(chrome::kViewSourceScheme + std::string(":") +
-      navigated_url.spec());
+  GURL view_source_url(kViewSourceScheme + std::string(":") +
+                       navigated_url.spec());
 
   // Let's ensure that when we start with a blank window, navigating away to a
   // view-source URL, we create a new SiteInstance.
-  RenderViewHost* blank_rvh = shell()->web_contents()->
-      GetRenderViewHost();
+  RenderViewHost* blank_rvh = shell()->web_contents()->GetRenderViewHost();
   SiteInstance* blank_site_instance = blank_rvh->GetSiteInstance();
   EXPECT_EQ(shell()->web_contents()->GetURL(), GURL::EmptyGURL());
   EXPECT_EQ(blank_site_instance->GetSiteURL(), GURL::EmptyGURL());

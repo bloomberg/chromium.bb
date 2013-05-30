@@ -304,13 +304,13 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
   NavigationEntry* entry =
       webContents_->GetController().GetLastCommittedEntry();
   if (entry) {
-    webContents_->OpenURL(OpenURLParams(
-        GURL(chrome::kViewSourceScheme + std::string(":") +
-             entry->GetURL().spec()),
-        Referrer(),
-        NEW_FOREGROUND_TAB,
-        content::PAGE_TRANSITION_LINK,
-        false));
+    webContents_->OpenURL(
+        OpenURLParams(GURL(content::kViewSourceScheme + std::string(":") +
+                           entry->GetURL().spec()),
+                      Referrer(),
+                      NEW_FOREGROUND_TAB,
+                      content::PAGE_TRANSITION_LINK,
+                      false));
   }
 }
 

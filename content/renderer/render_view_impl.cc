@@ -3009,7 +3009,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     bool is_initial_navigation = page_id_ == -1;
     bool should_fork = HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
         (cumulative_bindings & BINDINGS_POLICY_WEB_UI) ||
-        url.SchemeIs(chrome::kViewSourceScheme) ||
+        url.SchemeIs(kViewSourceScheme) ||
         (frame->isViewSourceModeEnabled() &&
             type != WebKit::WebNavigationTypeReload);
 

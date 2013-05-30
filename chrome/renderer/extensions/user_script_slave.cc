@@ -264,7 +264,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     return;
 
   if (frame->isViewSourceModeEnabled())
-    data_source_url = GURL(chrome::kViewSourceScheme + std::string(":") +
+    data_source_url = GURL(content::kViewSourceScheme + std::string(":") +
                            data_source_url.spec());
 
   PerfTimer timer;

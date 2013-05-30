@@ -34,8 +34,8 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
   ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our view-source test page.
-  GURL url(chrome::kViewSourceScheme + std::string(":") +
-      test_server()->GetURL(kTestHtml).spec());
+  GURL url(content::kViewSourceScheme + std::string(":") +
+           test_server()->GetURL(kTestHtml).spec());
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Check that the title didn't get set.  It should not be there (because we
@@ -56,8 +56,8 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, DoesBrowserConsumeViewSourcePrefix) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Then we navigate to the same url but with the "view-source:" prefix.
-  GURL url_viewsource(chrome::kViewSourceScheme + std::string(":") +
-      url.spec());
+  GURL url_viewsource(content::kViewSourceScheme + std::string(":") +
+                      url.spec());
   ui_test_utils::NavigateToURL(browser(), url_viewsource);
 
   // The URL should still be prefixed with "view-source:".
@@ -98,8 +98,8 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest,
                        ViewSourceInMenuDisabledWhileViewingSource) {
   ASSERT_TRUE(test_server()->Start());
 
-  GURL url_viewsource(chrome::kViewSourceScheme + std::string(":") +
-      test_server()->GetURL(kTestHtml).spec());
+  GURL url_viewsource(content::kViewSourceScheme + std::string(":") +
+                      test_server()->GetURL(kTestHtml).spec());
   ui_test_utils::NavigateToURL(browser(), url_viewsource);
 
   EXPECT_FALSE(chrome::CanViewSource(browser()));
@@ -111,8 +111,8 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest,
 IN_PROC_BROWSER_TEST_F(ViewSourceTest, DISABLED_TestViewSourceReload) {
   ASSERT_TRUE(test_server()->Start());
 
-  GURL url_viewsource(chrome::kViewSourceScheme + std::string(":") +
-      test_server()->GetURL(kTestHtml).spec());
+  GURL url_viewsource(content::kViewSourceScheme + std::string(":") +
+                      test_server()->GetURL(kTestHtml).spec());
 
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,

@@ -1014,8 +1014,8 @@ void ViewSource(Browser* browser,
   if (!active_entry)
     return;
 
-  GURL view_source_url = GURL(kViewSourceScheme + std::string(":") +
-      url.spec());
+  GURL view_source_url =
+      GURL(content::kViewSourceScheme + std::string(":") + url.spec());
   active_entry->SetVirtualURL(view_source_url);
 
   // Do not restore scroller position.

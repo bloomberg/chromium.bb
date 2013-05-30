@@ -97,7 +97,7 @@ int GetIndexOfSingletonTab(NavigateParams* params) {
 
     // Skip view-source tabs. This is needed because RewriteURLIfNecessary
     // removes the "view-source:" scheme which leads to incorrect matching.
-    if (tab_url.SchemeIs(chrome::kViewSourceScheme))
+    if (tab_url.SchemeIs(content::kViewSourceScheme))
       continue;
 
     GURL rewritten_tab_url = tab_url;

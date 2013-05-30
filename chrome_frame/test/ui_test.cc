@@ -322,7 +322,7 @@ TEST_P(FullTabUITest, ViewSource) {
   // Expect notification for view-source window, handle new window event
   // and attach a new ie_mock_ to the received web browser
   std::wstring view_source_url;
-  view_source_url += UTF8ToWide(chrome::kViewSourceScheme);
+  view_source_url += UTF8ToWide(content::kViewSourceScheme);
   view_source_url += L":";
   view_source_url += GetSimplePageUrl();
   std::wstring url_in_new_window = kChromeProtocolPrefix;
@@ -565,7 +565,7 @@ TEST_F(ContextMenuTest, CFViewSource) {
   // Expect notification for view-source window, handle new window event
   // and attach a new ie_mock_ to the received web browser
   std::wstring view_source_url;
-  view_source_url += UTF8ToWide(chrome::kViewSourceScheme);
+  view_source_url += UTF8ToWide(content::kViewSourceScheme);
   view_source_url += L":";
   view_source_url += GetSimplePageUrl();
   std::wstring url_in_new_window = kChromeProtocolPrefix;

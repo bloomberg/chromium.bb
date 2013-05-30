@@ -1545,7 +1545,7 @@ base::string16 FormatUrlWithOffsets(
   if (offsets_for_adjustment)
     original_offsets = *offsets_for_adjustment;
 
-  // Special handling for view-source:.  Don't use chrome::kViewSourceScheme
+  // Special handling for view-source:.  Don't use content::kViewSourceScheme
   // because this library shouldn't depend on chrome.
   const char* const kViewSource = "view-source";
   // Reject "view-source:view-source:..." to avoid deep recursion.

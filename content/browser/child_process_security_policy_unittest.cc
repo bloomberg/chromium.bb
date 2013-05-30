@@ -108,7 +108,7 @@ TEST_F(ChildProcessSecurityPolicyTest, IsPseudoSchemeTest) {
 
   EXPECT_TRUE(p->IsPseudoScheme(chrome::kAboutScheme));
   EXPECT_TRUE(p->IsPseudoScheme(chrome::kJavaScriptScheme));
-  EXPECT_TRUE(p->IsPseudoScheme(chrome::kViewSourceScheme));
+  EXPECT_TRUE(p->IsPseudoScheme(kViewSourceScheme));
 
   EXPECT_FALSE(p->IsPseudoScheme("registered-pseudo-scheme"));
   p->RegisterPseudoScheme("registered-pseudo-scheme");

@@ -194,7 +194,7 @@ const string16& NavigationEntryImpl::GetTitleForDisplay(
 }
 
 bool NavigationEntryImpl::IsViewSourceMode() const {
-  return virtual_url_.SchemeIs(chrome::kViewSourceScheme);
+  return virtual_url_.SchemeIs(kViewSourceScheme);
 }
 
 void NavigationEntryImpl::SetTransitionType(

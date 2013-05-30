@@ -87,8 +87,7 @@ void WebContentsDelegate::ViewSourceForTab(WebContents* source,
   // Fall back implementation based entirely on the view-source scheme.
   // It suffers from http://crbug.com/523 and that is why browser overrides
   // it with proper implementation.
-  GURL url = GURL(chrome::kViewSourceScheme + std::string(":") +
-                      page_url.spec());
+  GURL url = GURL(kViewSourceScheme + std::string(":") + page_url.spec());
   OpenURLFromTab(source, OpenURLParams(url, Referrer(),
                                        NEW_FOREGROUND_TAB,
                                        PAGE_TRANSITION_LINK, false));
@@ -98,8 +97,7 @@ void WebContentsDelegate::ViewSourceForFrame(WebContents* source,
                                              const GURL& frame_url,
                                              const PageState& page_state) {
   // Same as ViewSourceForTab, but for given subframe.
-  GURL url = GURL(chrome::kViewSourceScheme + std::string(":") +
-                      frame_url.spec());
+  GURL url = GURL(kViewSourceScheme + std::string(":") + frame_url.spec());
   OpenURLFromTab(source, OpenURLParams(url, Referrer(),
                                        NEW_FOREGROUND_TAB,
                                        PAGE_TRANSITION_LINK, false));

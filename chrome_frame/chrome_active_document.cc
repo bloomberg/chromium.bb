@@ -271,7 +271,7 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   // For gcf: URLs allow only about and view-source schemes to pass through for
   // further inspection.
   bool is_safe_scheme = cf_url.gurl().SchemeIs(chrome::kAboutScheme) ||
-      cf_url.gurl().SchemeIs(chrome::kViewSourceScheme);
+      cf_url.gurl().SchemeIs(content::kViewSourceScheme);
   if (cf_url.is_chrome_protocol() && !is_safe_scheme &&
       !GetConfigBool(false, kAllowUnsafeURLs)) {
     DLOG(ERROR) << __FUNCTION__ << " gcf: not allowed:" << url;
@@ -872,7 +872,7 @@ void ChromeActiveDocument::OnFindInPage() {
 
 void ChromeActiveDocument::OnViewSource() {
   DCHECK(navigation_info_->url.is_valid());
-  HostNavigate(GURL(chrome::kViewSourceScheme + std::string(":") +
+  HostNavigate(GURL(content::kViewSourceScheme + std::string(":") +
       navigation_info_->url.spec()), GURL(), NEW_WINDOW);
 }
 

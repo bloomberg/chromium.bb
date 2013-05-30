@@ -95,7 +95,7 @@ GURL URLRequestMockHTTPJob::GetMockUrl(const base::FilePath& path) {
 
 // static
 GURL URLRequestMockHTTPJob::GetMockViewSourceUrl(const base::FilePath& path) {
-  std::string url = chrome::kViewSourceScheme;
+  std::string url = kViewSourceScheme;
   url.append(":");
   url.append(GetMockUrl(path).spec());
   return GURL(url);

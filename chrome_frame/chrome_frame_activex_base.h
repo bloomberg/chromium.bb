@@ -1076,7 +1076,7 @@ END_MSG_MAP()
     // using chrome frame full tab mode by using 'cf:' protocol handler.
     // Also change the disposition to NEW_WINDOW since IE6 doesn't have tabs.
     if (url_to_open.has_scheme() &&
-        (url_to_open.SchemeIs(chrome::kViewSourceScheme) ||
+        (url_to_open.SchemeIs(content::kViewSourceScheme) ||
         url_to_open.SchemeIs(chrome::kAboutScheme))) {
       std::wstring chrome_url;
       chrome_url.append(kChromeProtocolPrefix);
