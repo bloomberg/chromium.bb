@@ -512,7 +512,7 @@ int SimpleSynchronousEntry::InitializeForOpen() {
       return net::ERR_FAILED;
     }
   }
-
+  RecordSyncOpenResult(OPEN_ENTRY_SUCCESS);
   initialized_ = true;
   return net::OK;
 }
@@ -545,6 +545,7 @@ int SimpleSynchronousEntry::InitializeForCreate() {
       return net::ERR_FAILED;
     }
   }
+  RecordSyncCreateResult(CREATE_ENTRY_SUCCESS);
   initialized_ = true;
   return net::OK;
 }
