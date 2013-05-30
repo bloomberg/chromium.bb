@@ -323,12 +323,6 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
     operation_context->set_quota_limit_type(quota::kQuotaLimitTypeLimited);
   }
 
-  // Temporarily disable returning unlimited storage policy for non-PERSISTENT
-  // storage. Since it may hurt performance for all FileSystem operation.
-  if (url.type() != kFileSystemTypePersistent &&
-      operation_context->quota_limit_type() == quota::kQuotaLimitTypeUnlimited)
-    operation_context->set_quota_limit_type(quota::kQuotaLimitTypeLimited);
-
   return new LocalFileSystemOperation(context, operation_context.Pass());
 }
 

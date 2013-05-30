@@ -70,6 +70,8 @@ class CallbackQueue {
 typedef CallbackQueue<GlobalUsageCallback,
                       Tuple2<int64, int64> >
     GlobalUsageCallbackQueue;
+typedef CallbackQueue<UsageCallback, Tuple1<int64> >
+    UsageCallbackQueue;
 typedef CallbackQueue<AvailableSpaceCallback,
                       Tuple2<QuotaStatusCode, int64> >
     AvailableSpaceCallbackQueue;

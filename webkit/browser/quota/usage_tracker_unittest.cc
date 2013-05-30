@@ -136,6 +136,15 @@ class UsageTrackerTest : public testing::Test {
     quota_client_.UpdateUsage(origin, delta);
   }
 
+  void GetGlobalLimitedUsage(int64* limited_usage) {
+    bool done = false;
+    usage_tracker_.GetGlobalLimitedUsage(base::Bind(
+        &DidGetUsage, &done, limited_usage));
+    message_loop_.RunUntilIdle();
+
+    EXPECT_TRUE(done);
+  }
+
   void GetGlobalUsage(int64* usage, int64* unlimited_usage) {
     bool done = false;
     usage_tracker_.GetGlobalUsage(base::Bind(
@@ -261,7 +270,7 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   GetGlobalUsage(&usage, &unlimited_usage);
   GetHostUsage(host, &host_usage);
   EXPECT_EQ(400, usage);
-  EXPECT_EQ(400, unlimited_usage);
+  EXPECT_EQ(0, unlimited_usage);
   EXPECT_EQ(400, host_usage);
 
   SetUsageCacheEnabled(origin, true);
@@ -273,5 +282,43 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   EXPECT_EQ(0, unlimited_usage);
   EXPECT_EQ(500, host_usage);
 }
+
+TEST_F(UsageTrackerTest, LimitedGlobalUsageTest) {
+  const GURL kNormal("http://normal");
+  const GURL kUnlimited("http://unlimited");
+  const GURL kNonCached("http://non_cached");
+  const GURL kNonCachedUnlimited("http://non_cached-unlimited");
+
+  GrantUnlimitedStoragePolicy(kUnlimited);
+  GrantUnlimitedStoragePolicy(kNonCachedUnlimited);
+
+  SetUsageCacheEnabled(kNonCached, false);
+  SetUsageCacheEnabled(kNonCachedUnlimited, false);
+
+  UpdateUsageWithoutNotification(kNormal, 1);
+  UpdateUsageWithoutNotification(kUnlimited, 2);
+  UpdateUsageWithoutNotification(kNonCached, 4);
+  UpdateUsageWithoutNotification(kNonCachedUnlimited, 8);
+
+  int64 limited_usage = 0;
+  int64 total_usage = 0;
+  int64 unlimited_usage = 0;
+
+  GetGlobalLimitedUsage(&limited_usage);
+  GetGlobalUsage(&total_usage, &unlimited_usage);
+  EXPECT_EQ(1 + 4, limited_usage);
+  EXPECT_EQ(1 + 2 + 4 + 8, total_usage);
+  EXPECT_EQ(2 + 8, unlimited_usage);
+
+  UpdateUsageWithoutNotification(kNonCached, 16 - 4);
+  UpdateUsageWithoutNotification(kNonCachedUnlimited, 32 - 8);
+
+  GetGlobalLimitedUsage(&limited_usage);
+  GetGlobalUsage(&total_usage, &unlimited_usage);
+  EXPECT_EQ(1 + 16, limited_usage);
+  EXPECT_EQ(1 + 2 + 16 + 32, total_usage);
+  EXPECT_EQ(2 + 32, unlimited_usage);
+}
+
 
 }  // namespace quota

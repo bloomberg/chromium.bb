@@ -65,6 +65,8 @@ class WEBKIT_STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
   typedef std::map<QuotaClient::ID, ClientUsageTracker*> ClientTrackerMap;
 
   friend class ClientUsageTracker;
+  void AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
+                                          int64 limited_usage);
   void AccumulateClientGlobalUsage(AccumulateInfo* info,
                                    int64 usage,
                                    int64 unlimited_usage);
@@ -75,6 +77,7 @@ class WEBKIT_STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
   const StorageType type_;
   ClientTrackerMap client_tracker_map_;
 
+  UsageCallbackQueue global_limited_usage_callbacks_;
   GlobalUsageCallbackQueue global_usage_callbacks_;
   HostUsageCallbackMap host_usage_callbacks_;
 
@@ -88,8 +91,8 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
                            public base::NonThreadSafe,
                            public base::SupportsWeakPtr<ClientUsageTracker> {
  public:
-  typedef base::Callback<void(int64 cached_usage,
-                              int64 non_cached_usage)> HostUsageAccumulator;
+  typedef base::Callback<void(int64 limited_usage,
+                              int64 unlimited_usage)> HostUsageAccumulator;
   typedef base::Callback<void(const GURL& origin,
                               int64 usage)> OriginUsageAccumulator;
   typedef std::map<std::string, std::set<GURL> > OriginSetByHost;
@@ -100,6 +103,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
                      SpecialStoragePolicy* special_storage_policy);
   virtual ~ClientUsageTracker();
 
+  void GetGlobalLimitedUsage(const UsageCallback& callback);
   void GetGlobalUsage(const GlobalUsageCallback& callback);
   void GetHostUsage(const std::string& host, const UsageCallback& callback);
   void UpdateUsageCache(const GURL& origin, int64 delta);
@@ -120,18 +124,22 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
 
   struct AccumulateInfo {
     int pending_jobs;
-    int64 cached_usage;
-    int64 non_cached_usage;
+    int64 limited_usage;
+    int64 unlimited_usage;
 
-    AccumulateInfo() : pending_jobs(0), cached_usage(0), non_cached_usage(0) {}
+    AccumulateInfo()
+        : pending_jobs(0), limited_usage(0), unlimited_usage(0) {}
   };
 
+  void AccumulateLimitedOriginUsage(AccumulateInfo* info,
+                                    const UsageCallback& callback,
+                                    int64 usage);
   void DidGetOriginsForGlobalUsage(const GlobalUsageCallback& callback,
                                    const std::set<GURL>& origins);
   void AccumulateHostUsage(AccumulateInfo* info,
                            const GlobalUsageCallback& callback,
-                           int64 cached_usage,
-                           int64 non_cached_usage);
+                           int64 limited_usage,
+                           int64 unlimited_usage);
 
   void DidGetOriginsForHostUsage(const std::string& host,
                                  const std::set<GURL>& origins);

@@ -29,11 +29,11 @@ void DidGetOriginUsage(const OriginUsageAccumulator& accumulator,
 }
 
 void DidGetHostUsage(const UsageCallback& callback,
-                     int64 cached_usage,
-                     int64 non_cached_usage) {
-  DCHECK_GE(cached_usage, 0);
-  DCHECK_GE(non_cached_usage, 0);
-  callback.Run(cached_usage + non_cached_usage);
+                     int64 limited_usage,
+                     int64 unlimited_usage) {
+  DCHECK_GE(limited_usage, 0);
+  DCHECK_GE(unlimited_usage, 0);
+  callback.Run(limited_usage + unlimited_usage);
 }
 
 void NoopHostUsageCallback(int64 usage) {}
@@ -95,7 +95,35 @@ ClientUsageTracker* UsageTracker::GetClientTracker(QuotaClient::ID client_id) {
 }
 
 void UsageTracker::GetGlobalLimitedUsage(const UsageCallback& callback) {
-  GetGlobalUsage(base::Bind(&DidGetGlobalUsageForLimitedGlobalUsage, callback));
+  if (global_usage_callbacks_.HasCallbacks()) {
+    global_usage_callbacks_.Add(base::Bind(
+        &DidGetGlobalUsageForLimitedGlobalUsage, callback));
+    return;
+  }
+
+  if (!global_limited_usage_callbacks_.Add(callback))
+    return;
+
+  AccumulateInfo* info = new AccumulateInfo;
+  // Calling GetGlobalLimitedUsage(accumulator) may synchronously
+  // return if the usage is cached, which may in turn dispatch
+  // the completion callback before we finish looping over
+  // all clients (because info->pending_clients may reach 0
+  // during the loop).
+  // To avoid this, we add one more pending client as a sentinel
+  // and fire the sentinel callback at the end.
+  info->pending_clients = client_tracker_map_.size() + 1;
+  UsageCallback accumulator = base::Bind(
+      &UsageTracker::AccumulateClientGlobalLimitedUsage,
+      weak_factory_.GetWeakPtr(), base::Owned(info));
+
+  for (ClientTrackerMap::iterator iter = client_tracker_map_.begin();
+       iter != client_tracker_map_.end();
+       ++iter)
+    iter->second->GetGlobalLimitedUsage(accumulator);
+
+  // Fire the sentinel as we've now called GetGlobalUsage for all clients.
+  accumulator.Run(0);
 }
 
 void UsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
@@ -186,12 +214,22 @@ void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,
   client_tracker->SetUsageCacheEnabled(origin, enabled);
 }
 
+void UsageTracker::AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
+                                                      int64 limited_usage) {
+  info->usage += limited_usage;
+  if (--info->pending_clients)
+    return;
+
+  // All the clients have returned their usage data.  Dispatch the
+  // pending callbacks.
+  global_limited_usage_callbacks_.Run(MakeTuple(info->usage));
+}
+
 void UsageTracker::AccumulateClientGlobalUsage(AccumulateInfo* info,
                                                int64 usage,
                                                int64 unlimited_usage) {
   info->usage += usage;
   info->unlimited_usage += unlimited_usage;
-
   if (--info->pending_clients)
     return;
 
@@ -250,6 +288,35 @@ ClientUsageTracker::~ClientUsageTracker() {
     special_storage_policy_->RemoveObserver(this);
 }
 
+void ClientUsageTracker::GetGlobalLimitedUsage(const UsageCallback& callback) {
+  if (!global_usage_retrieved_) {
+    GetGlobalUsage(base::Bind(&DidGetGlobalUsageForLimitedGlobalUsage,
+                              callback));
+    return;
+  }
+
+  if (non_cached_limited_origins_by_host_.empty()) {
+    callback.Run(global_limited_usage_);
+    return;
+  }
+
+  AccumulateInfo* info = new AccumulateInfo;
+  info->pending_jobs = non_cached_limited_origins_by_host_.size() + 1;
+  UsageCallback accumulator = base::Bind(
+      &ClientUsageTracker::AccumulateLimitedOriginUsage, AsWeakPtr(),
+      base::Owned(info), callback);
+
+  for (OriginSetByHost::iterator host_itr =
+           non_cached_limited_origins_by_host_.begin();
+       host_itr != non_cached_limited_origins_by_host_.end(); ++host_itr) {
+    for (std::set<GURL>::iterator origin_itr = host_itr->second.begin();
+         origin_itr != host_itr->second.end(); ++origin_itr)
+      client_->GetOriginUsage(*origin_itr, type_, accumulator);
+  }
+
+  accumulator.Run(global_limited_usage_);
+}
+
 void ClientUsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
   if (global_usage_retrieved_ &&
       non_cached_limited_origins_by_host_.empty() &&
@@ -274,8 +341,8 @@ void ClientUsageTracker::GetHostUsage(
     return;
   }
 
-  if (!host_usage_accumulators_.Add(host, base::Bind(
-          &DidGetHostUsage, callback)))
+  if (!host_usage_accumulators_.Add(
+          host, base::Bind(&DidGetHostUsage, callback)))
     return;
   client_->GetOriginsForHost(type_, host, base::Bind(
       &ClientUsageTracker::DidGetOriginsForHostUsage, AsWeakPtr(), host));
@@ -362,6 +429,17 @@ void ClientUsageTracker::SetUsageCacheEnabled(const GURL& origin,
   }
 }
 
+void ClientUsageTracker::AccumulateLimitedOriginUsage(
+    AccumulateInfo* info,
+    const UsageCallback& callback,
+    int64 usage) {
+  info->limited_usage += usage;
+  if (--info->pending_jobs)
+    return;
+
+  callback.Run(info->limited_usage);
+}
+
 void ClientUsageTracker::DidGetOriginsForGlobalUsage(
     const GlobalUsageCallback& callback,
     const std::set<GURL>& origins) {
@@ -394,23 +472,19 @@ void ClientUsageTracker::DidGetOriginsForGlobalUsage(
 void ClientUsageTracker::AccumulateHostUsage(
     AccumulateInfo* info,
     const GlobalUsageCallback& callback,
-    int64 cached_usage,
-    int64 non_cached_usage) {
-  info->cached_usage += cached_usage;
-  info->non_cached_usage += non_cached_usage;
+    int64 limited_usage,
+    int64 unlimited_usage) {
+  info->limited_usage += limited_usage;
+  info->unlimited_usage += unlimited_usage;
   if (--info->pending_jobs)
     return;
 
-  int64 total_usage = info->cached_usage + info->non_cached_usage;
-  int64 unlimited_usage = global_unlimited_usage_ + info->non_cached_usage;
-
-  DCHECK_GE(total_usage, 0);
-  DCHECK_GE(unlimited_usage, 0);
-  if (unlimited_usage > total_usage)
-    unlimited_usage = total_usage;
+  DCHECK_GE(info->limited_usage, 0);
+  DCHECK_GE(info->unlimited_usage, 0);
 
   global_usage_retrieved_ = true;
-  callback.Run(total_usage, unlimited_usage);
+  callback.Run(info->limited_usage + info->unlimited_usage,
+               info->unlimited_usage);
 }
 
 void ClientUsageTracker::DidGetOriginsForHostUsage(
@@ -458,25 +532,24 @@ void ClientUsageTracker::AccumulateOriginUsage(AccumulateInfo* info,
     if (usage < 0)
       usage = 0;
 
-    if (IsUsageCacheEnabledForOrigin(origin)) {
-      info->cached_usage += usage;
+    if (IsStorageUnlimited(origin))
+      info->unlimited_usage += usage;
+    else
+      info->limited_usage += usage;
+    if (IsUsageCacheEnabledForOrigin(origin))
       AddCachedOrigin(origin, usage);
-    } else {
-      info->non_cached_usage += usage;
-    }
   }
   if (--info->pending_jobs)
     return;
 
   AddCachedHost(host);
   host_usage_accumulators_.Run(
-      host, MakeTuple(info->cached_usage, info->non_cached_usage));
+      host, MakeTuple(info->limited_usage, info->unlimited_usage));
 }
 
 void ClientUsageTracker::AddCachedOrigin(
     const GURL& origin, int64 new_usage) {
-  if (!IsUsageCacheEnabledForOrigin(origin))
-    return;
+  DCHECK(IsUsageCacheEnabledForOrigin(origin));
 
   std::string host = net::GetHostOrSpecFromURL(origin);
   int64* usage = &cached_usage_by_host_[host][origin];
