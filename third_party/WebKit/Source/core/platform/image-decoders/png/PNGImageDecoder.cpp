@@ -40,10 +40,10 @@
 #include "core/platform/image-decoders/png/PNGImageDecoder.h"
 
 #include "core/platform/PlatformInstrumentation.h"
-#include "png.h"
-#include <wtf/OwnArrayPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/OwnArrayPtr.h"
+#include "wtf/PassOwnPtr.h"
 
+#include "png.h"
 #if USE(QCMSLIB)
 #include "qcms.h"
 #endif
