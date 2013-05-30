@@ -1482,8 +1482,8 @@ void LauncherView::ButtonPressed(views::Button* sender,
         Shell::GetInstance()->ToggleAppList(GetWidget()->GetNativeView());
         // By setting us as DnD recipient, the app list knows that we can
         // handle items.
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-                ash::switches::kAshDragAndDropAppListToLauncher))
+        if (!CommandLine::ForCurrentProcess()->HasSwitch(
+                 ash::switches::kAshDisableDragAndDropAppListToLauncher))
           Shell::GetInstance()->SetDragAndDropHostOfCurrentAppList(this);
         break;
     }

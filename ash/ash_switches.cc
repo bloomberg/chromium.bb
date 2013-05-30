@@ -138,9 +138,9 @@ const char kForceAshToDesktop[] = "ash-force-desktop";
 
 #endif
 
-// Allow items to be dragged from the app launcher list into the launcher.
-const char kAshDragAndDropAppListToLauncher[] =
-    "ash-drag-and-drop-applist-to-launcher";
+// Disallow items to be dragged from the app launcher list into the launcher.
+const char kAshDisableDragAndDropAppListToLauncher[] =
+    "ash-disable-drag-and-drop-applist-to-launcher";
 
 // Enables a mode which enforces all browser & application windows to be created
 // in maximized mode.

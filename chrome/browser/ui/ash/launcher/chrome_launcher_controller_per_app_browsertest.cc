@@ -182,13 +182,6 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
 
   virtual ~LauncherPerAppAppBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // TODO(skuhne): Remove this function when the drag and drop logic flag gets
-    // removed.
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(ash::switches::kAshDragAndDropAppListToLauncher);
-  }
-
   virtual void RunTestOnMainThreadLoop() OVERRIDE {
     launcher_ = ash::Launcher::ForPrimaryDisplay();
     model_ =
