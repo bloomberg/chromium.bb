@@ -36,6 +36,7 @@
         # but Android later.
         '../third_party/skia/src/core/SkPaintOptionsAndroid.cpp',
 
+        '../third_party/skia/src/ports/SkImageDecoder_empty.cpp',
         #'../third_party/skia/src/images/bmpdecoderhelper.cpp',
         #'../third_party/skia/src/images/bmpdecoderhelper.h',
         #'../third_party/skia/src/images/SkFDStream.cpp',
