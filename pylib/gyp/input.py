@@ -46,7 +46,7 @@ base_path_sections = [
 ]
 path_sections = []
 
-is_path_section_charset = set('=+?!')
+is_path_section_charset = set('=+?!%')
 is_path_section_match_re = re.compile('_(dir|file|path)s?$')
 
 def IsPathSection(section):
