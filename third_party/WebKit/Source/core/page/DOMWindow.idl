@@ -301,8 +301,6 @@
     // Constructors enabled at runtime but whose interface does not have EnabledAtRuntime
     // extended attribute.
     // FIXME: Remove these.
-    [EnabledAtRuntime=media] attribute HTMLMediaElementConstructor HTMLMediaElement;
-    [EnabledAtRuntime=media] attribute HTMLVideoElementConstructor HTMLVideoElement;
     [EnabledAtRuntime=media] attribute MediaErrorConstructor MediaError;
     [EnabledAtRuntime=media] attribute TimeRangesConstructor TimeRanges;
     [EnabledAtRuntime=media] attribute HTMLSourceElementConstructor HTMLSourceElement;

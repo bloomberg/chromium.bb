@@ -247,6 +247,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_audioSourceNode(0)
 #endif
 {
+    ASSERT(RuntimeEnabledFeatures::mediaEnabled());
+
     LOG(Media, "HTMLMediaElement::HTMLMediaElement");
     ScriptWrappable::init(this);
 
