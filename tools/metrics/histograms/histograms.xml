@@ -3760,6 +3760,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.PreconnectedNavigation" enum="PreconnectedNavigation">
+  <summary>
+    Indicate whether the navigation was preceded by a recent pre-connect
+    (pre-connect within 10 seconds). There is a high chance that loading the
+    page used a preconnected TCP session.
+  </summary>
+</histogram>
+
 <histogram name="Net.PreconnectMotivation" enum="PreconnectMotivation">
   <summary>
     When a preconnection is made, indicate what the motivation was.
@@ -13841,6 +13849,11 @@ other types of suffix sets.
   <int value="0" label="Brightness Down"/>
   <int value="1" label="Brightness Up"/>
   <int value="2" label="Brightness Absolute"/>
+</enum>
+
+<enum name="PreconnectedNavigation" type="int">
+  <int value="0" label="Page nav. preceded by a pre-connect"/>
+  <int value="1" label="No recent pre-connect to the page"/>
 </enum>
 
 <enum name="PreconnectMotivation" type="int">
