@@ -52,7 +52,7 @@ PassOwnPtr<CrossThreadHTTPHeaderMapData> HTTPHeaderMap::copyData() const
 
     HTTPHeaderMap::const_iterator end_it = end();
     for (HTTPHeaderMap::const_iterator it = begin(); it != end_it; ++it)
-        data->uncheckedAppend(make_pair(it->key.string().isolatedCopy(), it->value.isolatedCopy()));
+        data->uncheckedAppend(make_pair(it->key.string().isolatedCopy(), it->value.string().isolatedCopy()));
 
     return data.release();
 }
@@ -67,14 +67,14 @@ void HTTPHeaderMap::adopt(PassOwnPtr<CrossThreadHTTPHeaderMapData> data)
     }
 }
 
-String HTTPHeaderMap::get(const AtomicString& name) const
+AtomicString HTTPHeaderMap::get(const AtomicString& name) const
 {
-    return HashMap<AtomicString, String, CaseFoldingHash>::get(name);
+    return HashMap<AtomicString, AtomicString, CaseFoldingHash>::get(name);
 }
 
-HTTPHeaderMap::AddResult HTTPHeaderMap::add(const AtomicString& name, const String& value)
+HTTPHeaderMap::AddResult HTTPHeaderMap::add(const AtomicString& name, const AtomicString& value)
 {
-    return HashMap<AtomicString, String, CaseFoldingHash>::add(name, value);
+    return HashMap<AtomicString, AtomicString, CaseFoldingHash>::add(name, value);
 }
 
 // Adapter that allows the HashMap to take C strings as keys.
@@ -95,22 +95,22 @@ struct CaseFoldingCStringTranslator {
     }
 };
 
-String HTTPHeaderMap::get(const char* name) const
+AtomicString HTTPHeaderMap::get(const char* name) const
 {
     const_iterator i = find<const char*, CaseFoldingCStringTranslator>(name);
     if (i == end())
-        return String();
+        return nullAtom;
     return i->value;
 }
-    
+
 bool HTTPHeaderMap::contains(const char* name) const
 {
     return find<const char*, CaseFoldingCStringTranslator>(name) != end();
 }
 
-HTTPHeaderMap::AddResult HTTPHeaderMap::add(const char* name, const String& value)
+HTTPHeaderMap::AddResult HTTPHeaderMap::add(const char* name, const AtomicString& value)
 {
-    return HashMap<AtomicString, String, CaseFoldingHash>::add<const char*, CaseFoldingCStringTranslator>(name, value);
+    return HashMap<AtomicString, AtomicString, CaseFoldingHash>::add<const char*, CaseFoldingCStringTranslator>(name, value);
 }
 
 } // namespace WebCore

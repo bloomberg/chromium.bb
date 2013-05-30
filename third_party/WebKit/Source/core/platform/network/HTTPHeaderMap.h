@@ -40,7 +40,7 @@ namespace WebCore {
     typedef Vector<std::pair<String, String> > CrossThreadHTTPHeaderMapData;
 
     // FIXME: Not every header fits into a map. Notably, multiple Set-Cookie header fields are needed to set multiple cookies.
-    class HTTPHeaderMap : public HashMap<AtomicString, String, CaseFoldingHash> {
+    class HTTPHeaderMap : public HashMap<AtomicString, AtomicString, CaseFoldingHash> {
     public:
         HTTPHeaderMap();
         ~HTTPHeaderMap();
@@ -50,14 +50,14 @@ namespace WebCore {
 
         void adopt(PassOwnPtr<CrossThreadHTTPHeaderMapData>);
         
-        String get(const AtomicString& name) const;
+        AtomicString get(const AtomicString& name) const;
 
-        AddResult add(const AtomicString& name, const String& value);
+        AddResult add(const AtomicString& name, const AtomicString& value);
 
         // Alternate accessors that are faster than converting the char* to AtomicString first.
         bool contains(const char*) const;
-        String get(const char*) const;
-        AddResult add(const char* name, const String& value);
+        AtomicString get(const char*) const;
+        AddResult add(const char* name, const AtomicString& value);
         
     };
 
