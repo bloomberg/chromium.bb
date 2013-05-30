@@ -9321,6 +9321,13 @@ other types of suffix sets.
   <summary>Tracks touchpad ThreeFingerSwipe setting on startup.</summary>
 </histogram>
 
+<histogram name="Translate.AlwaysTranslateLang">
+  <summary>
+    The number of times the always translate option was selected in the
+    translate infobar.
+  </summary>
+</histogram>
+
 <histogram name="Translate.CaptureText" units="milliseconds">
   <summary>
     The time spent capturing plain text from the DOM. This is reported by
@@ -9332,6 +9339,20 @@ other types of suffix sets.
   <summary>
     A page may provide a Content-Language HTTP header or a META tag. For each
     page load, measures whether the Content-Language header exists and is valid.
+  </summary>
+</histogram>
+
+<histogram name="Translate.DeclineTranslate">
+  <summary>
+    The number of times the &quot;Nope&quot; (don't translate) was clicked in
+    the translate infobar.
+  </summary>
+</histogram>
+
+<histogram name="Translate.DeclineTranslateCloseInfobar">
+  <summary>
+    The number of times the translate infobar was closed without the user
+    translating the page.
   </summary>
 </histogram>
 
@@ -9358,14 +9379,65 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Translate.ModifyOriginalLang">
+  <summary>
+    The number of times the original language in the translate infobar has been
+    changed.
+  </summary>
+</histogram>
+
+<histogram name="Translate.ModifyTargetLang">
+  <summary>
+    The number of times the target language in the translate infobar has been
+    changed.
+  </summary>
+</histogram>
+
+<histogram name="Translate.NeverTranslateLang">
+  <summary>
+    The number of times the never translate option was selected in the translate
+    infobar.
+  </summary>
+</histogram>
+
+<histogram name="Translate.NeverTranslateSite">
+  <summary>
+    The number of times the never translate site was selected in the translate
+    infobar.
+  </summary>
+</histogram>
+
 <histogram name="Translate.PageScheme" enum="TranslateScheme">
   <summary>Counts translation target page schemes.</summary>
+</histogram>
+
+<histogram name="Translate.ReportLanguageDetectionError">
+  <summary>
+    The number of times the &quot;report this error&quot; of options menu is
+    selected in the translate infobar.
+  </summary>
 </histogram>
 
 <histogram name="Translate.RevertTranslation">
   <summary>
     The number of times the show original button was clicked in the translate
     infobar.
+  </summary>
+</histogram>
+
+<histogram name="Translate.ServerReportedUnsupportedLanguage">
+  <summary>
+    The number of times the detected language is not supported by Translate
+    Element.
+  </summary>
+</histogram>
+
+<histogram name="Translate.ShowBeforeTranslateInfobar">
+  <obsolete>
+    Deprecated 7/2010. No longer tracked.
+  </obsolete>
+  <summary>
+    The number of times an infobar proposing to translate a page has been shown.
   </summary>
 </histogram>
 
@@ -9393,6 +9465,13 @@ other types of suffix sets.
 
 <histogram name="Translate.TimeToTranslate" units="milliseconds">
   <summary>The time from starting translation to the completion.</summary>
+</histogram>
+
+<histogram name="Translate.Translate">
+  <summary>
+    The number of times the translate button was clicked in the translate
+    infobar.
+  </summary>
 </histogram>
 
 <histogram name="Translate.UnsupportedLanguageAtInitiation" enum="LanguageCode">
