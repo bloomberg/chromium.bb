@@ -101,9 +101,12 @@ void SpellCheckMessageFilter::OnRespondDocumentMarkers(
     const std::vector<uint32>& markers) {
   SpellcheckService* spellcheck =
       SpellcheckServiceFactory::GetForRenderProcessId(render_process_id_);
-  DCHECK(spellcheck);
-  spellcheck->GetFeedbackSender()->OnReceiveDocumentMarkers(render_process_id_,
-                                                            markers);
+  // Spellcheck service may not be available for a renderer process that is
+  // shutting down.
+  if (!spellcheck)
+    return;
+  spellcheck->GetFeedbackSender()->OnReceiveDocumentMarkers(
+      render_process_id_, markers);
 }
 
 #if !defined(OS_MACOSX)
