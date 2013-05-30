@@ -38,20 +38,10 @@ class Extension;
 class ActivityLog : public BrowserContextKeyedService,
                     public TabHelper::ScriptExecutionObserver {
  public:
-  enum Activity {
-    ACTIVITY_EXTENSION_API_CALL,   // Extension API invocation is called.
-    ACTIVITY_EXTENSION_API_BLOCK,  // Extension API invocation is blocked.
-    ACTIVITY_CONTENT_SCRIPT,       // Content script is executing.
-    ACTIVITY_EVENT_DISPATCH,       // Event sent to listener in extension.
-  };
-
   // Observers can listen for activity events.
   class Observer {
    public:
-    virtual void OnExtensionActivity(
-        const Extension* extension,
-        Activity activity,
-        const std::string& message) = 0;
+    virtual void OnExtensionActivity(scoped_refptr<Action> activity) = 0;
   };
 
   // ActivityLog is a singleton, so don't instantiate it with the constructor;
@@ -68,17 +58,13 @@ class ActivityLog : public BrowserContextKeyedService,
   static void RecomputeLoggingIsEnabled();
 
   // Add/remove observer.
-  void AddObserver(const Extension* extension, Observer* observer);
-  void RemoveObserver(const Extension* extension,
-                      Observer* observer);
-
-  // Check for the existence observer list by extension_id.
-  bool HasObservers(const Extension* extension) const;
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Log a successful API call made by an extension.
   // This will create an APIAction for storage in the database.
   // (Note: implemented as a wrapper for LogAPIActionInternal.)
-  void LogAPIAction(const Extension* extension,
+  void LogAPIAction(const std::string& extension_id,
                     const std::string& name,    // e.g., tabs.get
                     ListValue* args,            // the argument values e.g. 46
                     const std::string& extra);  // any extra logging info
@@ -86,14 +72,14 @@ class ActivityLog : public BrowserContextKeyedService,
   // Log an event notification delivered to an extension.
   // This will create an APIAction for storage in the database.
   // (Note: implemented as a wrapper for LogAPIActionInternal.)
-  void LogEventAction(const Extension* extension,
+  void LogEventAction(const std::string& extension_id,
                       const std::string& name,    // e.g., tabs.onUpdate
                       ListValue* args,            // arguments to the callback
                       const std::string& extra);  // any extra logging info
 
   // Log a blocked API call made by an extension.
   // This will create a BlockedAction for storage in the database.
-  void LogBlockedAction(const Extension* extension,
+  void LogBlockedAction(const std::string& extension_id,
                         const std::string& blocked_call,  // e.g., tabs.get
                         ListValue* args,                  // argument values
                         const BlockedAction::Reason reason,  // why it's blocked
@@ -101,7 +87,7 @@ class ActivityLog : public BrowserContextKeyedService,
 
   // Log an interaction between an extension and a URL.
   // This will create a DOMAction for storage in the database.
-  void LogDOMAction(const Extension* extension,
+  void LogDOMAction(const std::string& extension_id,
                     const GURL& url,                      // target URL
                     const string16& url_title,            // title of the URL
                     const std::string& api_call,          // api call
@@ -111,7 +97,7 @@ class ActivityLog : public BrowserContextKeyedService,
 
   // Log a use of the WebRequest API to redirect, cancel, or modify page
   // headers.
-  void LogWebRequestAction(const Extension* extension,
+  void LogWebRequestAction(const std::string& extension_id,
                            const GURL& url,
                            const std::string& api_call,
                            scoped_ptr<base::DictionaryValue> details,
@@ -143,7 +129,7 @@ class ActivityLog : public BrowserContextKeyedService,
   // We log callbacks and API calls very similarly, so we handle them the same
   // way internally.
   void LogAPIActionInternal(
-      const Extension* extension,
+      const std::string& extension_id,
       const std::string& api_call,
       ListValue* args,
       const std::string& extra,
@@ -159,8 +145,6 @@ class ActivityLog : public BrowserContextKeyedService,
 
   // The callback when initializing the database.
   void OnDBInitComplete();
-
-  static const char* ActivityToString(Activity activity);
 
   // The Schedule methods dispatch the calls to the database on a
   // separate thread. We dispatch to the UI thread if the DB thread doesn't
@@ -187,10 +171,6 @@ class ActivityLog : public BrowserContextKeyedService,
   }
 
   typedef ObserverListThreadSafe<Observer> ObserverList;
-  typedef std::map<const Extension*, scoped_refptr<ObserverList> >
-      ObserverMap;
-  // A map of extensions to activity observers for that extension.
-  ObserverMap observers_;
 
   // The database wrapper that does the actual database I/O.
   // We initialize this on the same thread as the ActivityLog, but then
