@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// 'use strict'; TODO(vadimt): Uncomment once crbug.com/237617 is fixed.
+'use strict';
 
 /**
  * @fileoverview The event page for Google Now for Chrome implementation.
