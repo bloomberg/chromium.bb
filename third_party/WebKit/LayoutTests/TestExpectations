@@ -1555,8 +1555,8 @@ crbug.com/243226 [ SnowLeopard ] inspector/debugger/pause-in-inline-script.html 
 crbug.com/244921 http/tests/navigation/back-twice-without-commit.html [ Failure Pass ]
 
 # Crashing on Mac 
-crbug.com/244925 [ SnowLeopard MountainLion ] fast/dom/HTMLSelectElement/select-selectedIndex-multiple.html [ Crash ]
-crbug.com/244925 [ SnowLeopard MountainLion ] fast/dom/HTMLSelectElement/select-selectedIndex.html [ Crash ]
+crbug.com/244925 [ Mac Debug ] fast/dom/HTMLSelectElement/select-selectedIndex-multiple.html [ Crash ]
+crbug.com/244925 [ Mac Debug ] fast/dom/HTMLSelectElement/select-selectedIndex.html [ Crash ]
 
 # Copy of ContentShellTestExpectations
 crbug.com/178709 plugins/document-open.html [ Failure ]
@@ -1791,6 +1791,19 @@ crbug.com/244131 [ Win Debug ] fast/forms/search-disabled-readonly.html [ Crash 
 crbug.com/244341 [ Win ] css3/filters/composited-during-animation.html [ Failure Pass Timeout ]
 crbug.com/244739 [ Win ] compositing/video-frame-size-change.html [ Pass Timeout ]
 crbug.com/244805 [ Win7 ] transitions/negative-delay.html [ Failure Pass ]
+crbug.com/245160 [ Lion Debug ] webaudio/audiobuffer.html [ Crash ]
+crbug.com/245160 [ Lion Debug ] webaudio/audiobuffersource-channels.html [ Crash ]
+crbug.com/245160 [ Lion Debug ] webaudio/audionode-connect-order.html [ Crash ]
+crbug.com/245160 [ Lion Debug ] webaudio/biquad-getFrequencyResponse.html [ Crash ]
+crbug.com/245160 [ Lion Debug ] webaudio/biquadfilternode-basic.html [ Crash ]
+crbug.com/245160 [ Lion Debug ] webaudio/convolver-setBuffer-null.html [ Crash ]
+crbug.com/245160 [ Lion Debug ] webaudio/decode-audio-data-basic.html [ Crash ]
+crbug.com/245160 [ Lion Debug ] webaudio/dynamicscompressor-basic.html [ Crash ]
+crbug.com/245160 [ Lion Debug ] webaudio/mediastreamaudiodestinationnode.html [ Crash ]
+crbug.com/245160 [ Lion Debug ] webaudio/up-mixing-mono-stereo.html [ Crash ]
+crbug.com/245160 [ Lion Debug ] webaudio/audionode.html [ Crash Failure ]
+crbug.com/245160 [ Lion Debug ] webaudio/gain-basic.html [ Crash Failure ]
+crbug.com/245160 [ Lion Debug ] webaudio/mediastreamaudiosourcenode.html [ Crash Failure ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
