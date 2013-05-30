@@ -62,6 +62,7 @@ class PermissionMessage {
     kSyncFileSystem,
     kAudio,
     kFavicon,
+    kMusicManagerPrivate,
     kEnumBoundary,
   };
 

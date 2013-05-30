@@ -5139,6 +5139,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_SYNCFILESYSTEM" desc="Permission string for synchronizing files to the user's Google Drive">
         Store data in your Google Drive account
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_MUSIC_MANAGER_PRIVATE" desc="Permission string for accessing a unique device identifier">
+        Access a unique identifier for this computer for DRM
+      </message>
 
       <!-- Extension/App error messages -->
       <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">
