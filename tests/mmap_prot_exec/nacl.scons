@@ -32,6 +32,13 @@ def MakeTempDir():
   return temporary_dir
 
 
+if not env.AllowNonStableBitcode():
+  Return()
+if env.Bit('bitcode'):
+  # mmap_prot_exec.c has an external reference to "etext", a symbol
+  # defined by the native linker, which is disallowed by PNaCl's ABI.
+  env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
+
 nexe = env.ComponentProgram('mmap_prot_exec',
                             'mmap_prot_exec.c',
                             EXTRA_LIBS=['platform',
