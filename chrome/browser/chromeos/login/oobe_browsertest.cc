@@ -207,7 +207,8 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
                                      // needs UI thread.
 };
 
-IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
+// Test is flaky - http://crbug.com/242587
+IN_PROC_BROWSER_TEST_F(OobeTest, DISABLED_NewUser) {
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
