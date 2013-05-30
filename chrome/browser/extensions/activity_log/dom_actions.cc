@@ -22,7 +22,7 @@ const char* DOMAction::kTableFieldTypes[] =
 
 DOMAction::DOMAction(const std::string& extension_id,
                      const base::Time& time,
-                     const DOMActionType verb,
+                     const DomActionType::Type verb,
                      const GURL& url,
                      const string16& url_title,
                      const std::string& api_call,
@@ -39,7 +39,7 @@ DOMAction::DOMAction(const std::string& extension_id,
 DOMAction::DOMAction(const sql::Statement& s)
     : Action(s.ColumnString(0),
           base::Time::FromInternalValue(s.ColumnInt64(1))),
-      verb_(static_cast<DOMActionType>(s.ColumnInt(2))),
+      verb_(static_cast<DomActionType::Type>(s.ColumnInt(2))),
       url_(GURL(s.ColumnString(3))),
       url_title_(s.ColumnString16(4)),
       api_call_(s.ColumnString(5)),
@@ -100,7 +100,7 @@ void DOMAction::Record(sql::Connection* db) {
 }
 
 std::string DOMAction::PrintForDebug() {
-  if (verb_ == INSERTED)
+  if (verb_ == DomActionType::INSERTED)
     return "Injected scripts (" + args_ + ") onto "
         + std::string(url_.spec());
   else
@@ -110,19 +110,19 @@ std::string DOMAction::PrintForDebug() {
 
 std::string DOMAction::VerbAsString() const {
   switch (verb_) {
-    case GETTER:
+    case DomActionType::GETTER:
       return "GETTER";
-    case SETTER:
+    case DomActionType::SETTER:
       return "SETTER";
-    case METHOD:
+    case DomActionType::METHOD:
       return "METHOD";
-    case INSERTED:
+    case DomActionType::INSERTED:
       return "INSERTED";
-    case XHR:
+    case DomActionType::XHR:
       return "XHR";
-    case WEBREQUEST:
+    case DomActionType::WEBREQUEST:
       return "WEBREQUEST";
-    case MODIFIED:    // legacy
+    case DomActionType::MODIFIED:    // legacy
       return "MODIFIED";
     default:
       NOTREACHED();

@@ -57,8 +57,8 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_DOMAction_Params)
   // List of arguments.
   IPC_STRUCT_MEMBER(ListValue, arguments)
 
-  // Extra logging information.
-  IPC_STRUCT_MEMBER(std::string, extra)
+  // Type of DOM API call.
+  IPC_STRUCT_MEMBER(int, call_type)
 IPC_STRUCT_END()
 
 // Parameters structure for ExtensionHostMsg_Request.

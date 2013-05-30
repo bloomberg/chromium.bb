@@ -14,6 +14,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/activity_log/blocked_actions.h"
+#include "chrome/browser/extensions/activity_log/dom_actions.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -31,6 +32,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
+#include "chrome/common/extensions/dom_action_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -122,7 +124,7 @@ void AddDOMActionToExtensionActivityLog(
     const string16& url_title,
     const std::string& api_call,
     scoped_ptr<ListValue> args,
-    const std::string& extra) {
+    const int call_type) {
   // The ActivityLog can only be accessed from the main (UI) thread.  If we're
   // running on the wrong thread, re-dispatch from the main thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -135,13 +137,14 @@ void AddDOMActionToExtensionActivityLog(
                                        url_title,
                                        api_call,
                                        base::Passed(&args),
-                                       extra));
+                                       call_type));
   } else {
     extensions::ActivityLog* activity_log =
         extensions::ActivityLog::GetInstance(profile);
     if (activity_log->IsLogEnabled())
-      activity_log->LogDOMAction(extension, url, url_title,
-                                 api_call, args.get(), extra);
+      activity_log->LogDOMAction(
+          extension, url, url_title, api_call, args.get(),
+          static_cast<extensions::DomActionType::Type>(call_type), "");
   }
 }
 
@@ -663,7 +666,7 @@ void ChromeRenderMessageFilter::OnAddDOMActionToExtensionActivityLog(
   AddDOMActionToExtensionActivityLog(profile_, extension,
                                      params.url, params.url_title,
                                      params.api_call, args.Pass(),
-                                     params.extra);
+                                     params.call_type);
 }
 
 void ChromeRenderMessageFilter::OnAddEventToExtensionActivityLog(

@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/dom_action_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
@@ -201,7 +202,7 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
   scoped_refptr<DOMAction> dom_action = new DOMAction(
       "punky",
       mock_clock.Now(),
-      DOMAction::MODIFIED,
+      DomActionType::MODIFIED,
       GURL("http://www.google.com"),
       string16(),
       "lets",
@@ -210,7 +211,7 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
   scoped_refptr<DOMAction> extra_dom_action = new DOMAction(
       "scoobydoo",
       mock_clock.Now(),
-      DOMAction::MODIFIED,
+      DomActionType::MODIFIED,
       GURL("http://www.google.com"),
       string16(),
       "lets",
@@ -262,7 +263,7 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
   scoped_refptr<DOMAction> dom_action = new DOMAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromDays(3),
-      DOMAction::MODIFIED,
+      DomActionType::MODIFIED,
       GURL("http://www.google.com"),
       string16(),
       "lets",
@@ -271,7 +272,7 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
   scoped_refptr<DOMAction> toonew_dom_action = new DOMAction(
       "punky",
       mock_clock.Now(),
-      DOMAction::MODIFIED,
+      DomActionType::MODIFIED,
       GURL("http://www.google.com"),
       string16(),
       "too new",
@@ -280,7 +281,7 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
   scoped_refptr<DOMAction> tooold_dom_action = new DOMAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromDays(7),
-      DOMAction::MODIFIED,
+      DomActionType::MODIFIED,
       GURL("http://www.google.com"),
       string16(),
       "too old",

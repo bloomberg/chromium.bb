@@ -313,17 +313,20 @@ void ActivityLog::LogBlockedAction(const Extension* extension,
     LOG(INFO) << action->PrintForDebug();
 }
 
-void ActivityLog::LogDOMActionInternal(const Extension* extension,
-                                       const GURL& url,
-                                       const string16& url_title,
-                                       const std::string& api_call,
-                                       const ListValue* args,
-                                       const std::string& extra,
-                                       DOMAction::DOMActionType verb) {
+void ActivityLog::LogDOMAction(const Extension* extension,
+                               const GURL& url,
+                               const string16& url_title,
+                               const std::string& api_call,
+                               const ListValue* args,
+                               DomActionType::Type call_type,
+                               const std::string& extra) {
+  if (!IsLogEnabled()) return;
+  if (call_type == DomActionType::METHOD && api_call == "XMLHttpRequest.open")
+    call_type = DomActionType::XHR;
   scoped_refptr<DOMAction> action = new DOMAction(
       extension->id(),
       base::Time::Now(),
-      verb,
+      call_type,
       url,
       url_title,
       api_call,
@@ -336,7 +339,7 @@ void ActivityLog::LogDOMActionInternal(const Extension* extension,
   if (iter != observers_.end()) {
     // TODO(felt): This is a kludge, planning to update this when new
     // UI is in place.
-    if (verb == DOMAction::INSERTED) {
+    if (call_type == DomActionType::INSERTED) {
       iter->second->Notify(&Observer::OnExtensionActivity,
                            extension,
                            ActivityLog::ACTIVITY_CONTENT_SCRIPT,
@@ -350,33 +353,6 @@ void ActivityLog::LogDOMActionInternal(const Extension* extension,
   }
   if (log_activity_to_stdout_)
     LOG(INFO) << action->PrintForDebug();
-}
-
-void ActivityLog::LogDOMAction(const Extension* extension,
-                               const GURL& url,
-                               const string16& url_title,
-                               const std::string& api_call,
-                               const ListValue* args,
-                               const std::string& extra) {
-  if (!IsLogEnabled()) return;
-  DOMAction::DOMActionType action = DOMAction::MODIFIED;
-  if (extra == "Getter") {
-    action = DOMAction::GETTER;
-  } else if (extra == "Setter") {
-    action = DOMAction::SETTER;
-  } else if (api_call == "XMLHttpRequest.open") {
-    // Has to come before the Method check because XHR is also a Method.
-    action = DOMAction::XHR;
-  } else if (extra == "Method") {
-    action = DOMAction::METHOD;
-  }
-  LogDOMActionInternal(extension,
-                       url,
-                       url_title,
-                       api_call,
-                       args,
-                       extra,
-                       action);
 }
 
 void ActivityLog::LogWebRequestAction(const Extension* extension,
@@ -403,7 +379,7 @@ void ActivityLog::LogWebRequestAction(const Extension* extension,
   scoped_refptr<DOMAction> action = new DOMAction(
       extension->id(),
       base::Time::Now(),
-      DOMAction::WEBREQUEST,
+      DomActionType::WEBREQUEST,
       url,
       null_title,
       api_call,
@@ -469,13 +445,13 @@ void ActivityLog::OnScriptsExecuted(
       }
       scoped_ptr<ListValue> script_names(new ListValue());
       script_names->Set(0, new StringValue(ext_scripts_str));
-      LogDOMActionInternal(extension,
-                           on_url,
-                           web_contents->GetTitle(),
-                           std::string(),  // no api call here
-                           script_names.get(),
-                           std::string(),  // no extras either
-                           DOMAction::INSERTED);
+      LogDOMAction(extension,
+                   on_url,
+                   web_contents->GetTitle(),
+                   std::string(),  // no api call here
+                   script_names.get(),
+                   DomActionType::INSERTED,
+                   std::string());  // no extras either
     }
   }
 }

@@ -5,6 +5,7 @@
 #include "chrome/renderer/extensions/dom_activity_logger.h"
 
 #include "base/logging.h"
+#include "chrome/common/extensions/dom_action_types.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "content/public/renderer/render_thread.h"
@@ -21,13 +22,13 @@ DOMActivityLogger::DOMActivityLogger(const std::string& extension_id,
                                      const GURL& url,
                                      const string16& title)
   : extension_id_(extension_id), url_(url), title_(title) {
-}
+}  // namespace extensions
 
 void DOMActivityLogger::log(
     const WebString& api_name,
     int argc,
     const v8::Handle<v8::Value> argv[],
-    const WebString& extra_info) {
+    const WebString& call_type) {
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   scoped_ptr<ListValue> argv_list_value(new ListValue());
   for (int i =0; i < argc; i++) {
@@ -39,7 +40,13 @@ void DOMActivityLogger::log(
   params.url_title = title_;
   params.api_call = api_name.utf8();
   params.arguments.Swap(argv_list_value.get());
-  params.extra = extra_info.utf8();
+  const std::string type = call_type.utf8();
+  if (type == "Getter")
+    params.call_type = DomActionType::GETTER;
+  else if (type == "Setter")
+    params.call_type = DomActionType::SETTER;
+  else
+    params.call_type = DomActionType::METHOD;
 
   content::RenderThread::Get()->Send(
       new ExtensionHostMsg_AddDOMActionToActivityLog(extension_id_, params));

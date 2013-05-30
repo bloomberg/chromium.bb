@@ -6,10 +6,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/activity_log/dom_actions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/dom_action_types.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -132,6 +134,7 @@ TEST_F(ActivityLogTest, LogAndFetchActions) {
                              string16(),
                              std::string("document.write"),
                              args.get(),
+                             DomActionType::METHOD,
                              std::string("extra"));
   activity_log->GetActions(
       extension->id(),

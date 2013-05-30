@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/activity_log/activity_database.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/dom_action_types.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
@@ -100,13 +101,12 @@ class ActivityLog : public BrowserContextKeyedService,
 
   // Log an interaction between an extension and a URL.
   // This will create a DOMAction for storage in the database.
-  // The technical message might be the list of content scripts that have been
-  // injected, or the DOM API call; it's what's shown under "More".
   void LogDOMAction(const Extension* extension,
                     const GURL& url,                      // target URL
                     const string16& url_title,            // title of the URL
                     const std::string& api_call,          // api call
                     const ListValue* args,                // arguments
+                    DomActionType::Type call_type,        // type of the call
                     const std::string& extra);            // extra logging info
 
   // Log a use of the WebRequest API to redirect, cancel, or modify page
@@ -148,16 +148,6 @@ class ActivityLog : public BrowserContextKeyedService,
       ListValue* args,
       const std::string& extra,
       const APIAction::Type type);
-
-  // We log content script injection and DOM API calls using the same underlying
-  // mechanism, so they have the same internal logging structure.
-  void LogDOMActionInternal(const Extension* extension,
-                            const GURL& url,
-                            const string16& url_title,
-                            const std::string& api_call,
-                            const ListValue* args,
-                            const std::string& extra,
-                            DOMAction::DOMActionType verb);
 
   // TabHelper::ScriptExecutionObserver implementation.
   // Fires when a ContentScript is executed.

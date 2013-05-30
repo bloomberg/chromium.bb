@@ -33,7 +33,7 @@ class DOMActivityLogger: public WebKit::WebDOMActivityLogger {
   virtual void log(const WebString& api_name,
                    int argc,
                    const v8::Handle<v8::Value> argv[],
-                   const WebString& extra_info);
+                   const WebString& call_type);
 
   // If extension activity logging is enabled then check (using the
   // WebKit API) if there is no logger attached to the world corresponding

@@ -207,6 +207,7 @@
         'common/extensions/csp_handler.h',
         'common/extensions/csp_validator.cc',
         'common/extensions/csp_validator.h',
+        'common/extensions/dom_action_types.h',
         'common/extensions/extension.cc',
         'common/extensions/extension.h',
         'common/extensions/extension_constants.cc',

@@ -7,6 +7,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
+#include "chrome/common/extensions/dom_action_types.h"
 #include "googleurl/src/gurl.h"
 
 namespace extensions {
@@ -15,18 +16,6 @@ namespace extensions {
 // content script insertions.
 class DOMAction : public Action {
  public:
-  // These values should not be changed. Append any additional values to the
-  // end with sequential numbers.
-  enum DOMActionType {
-    GETTER = 0,      // For Content Script DOM manipulations
-    SETTER = 1,      // For Content Script DOM manipulations
-    METHOD = 2,      // For Content Script DOM manipulations
-    INSERTED = 3,    // For when Content Scripts are added to pages
-    XHR = 4,         // When an extension core sends an XHR
-    WEBREQUEST = 5,  // When a page request is modified with the WebRequest API
-    MODIFIED = 6,    // For legacy, also used as a catch-all
-  };
-
   static const char* kTableName;
   static const char* kTableContentFields[];
   static const char* kTableFieldTypes[];
@@ -41,7 +30,7 @@ class DOMAction : public Action {
   // but args should be the name of the content script.
   DOMAction(const std::string& extension_id,
             const base::Time& time,
-            const DOMActionType verb,           // what happened
+            const DomActionType::Type verb,     // what happened
             const GURL& url,                    // the url of the page the
                                                 // script is running on
             const string16& url_title,          // the page title
@@ -70,7 +59,7 @@ class DOMAction : public Action {
   virtual ~DOMAction();
 
  private:
-  DOMActionType verb_;
+  DomActionType::Type verb_;
   GURL url_;
   string16 url_title_;
   std::string api_call_;
