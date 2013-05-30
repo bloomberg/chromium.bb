@@ -178,10 +178,12 @@ void VideoCaptureController::StopCapture(
     return;
 
   // Take back all buffers held by the |client|.
-  for (std::set<int>::iterator buffer_it = client->buffers.begin();
-       buffer_it != client->buffers.end(); ++buffer_it) {
-    int buffer_id = *buffer_it;
-    buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
+  if (buffer_pool_) {
+    for (std::set<int>::iterator buffer_it = client->buffers.begin();
+         buffer_it != client->buffers.end(); ++buffer_it) {
+      int buffer_id = *buffer_it;
+      buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
+    }
   }
   client->buffers.clear();
 
@@ -607,6 +609,9 @@ void VideoCaptureController::SendFrameInfoAndBuffers(ControllerClient* client) {
   client->event_handler->OnFrameInfo(client->controller_id,
                                      frame_info_.width, frame_info_.height,
                                      frame_info_.frame_rate);
+  if (!buffer_pool_)
+    return;
+
   for (int buffer_id = 1; buffer_id <= buffer_pool_->count(); ++buffer_id) {
     base::SharedMemoryHandle remote_handle =
         buffer_pool_->ShareToProcess(buffer_id, client->render_process_handle);
@@ -655,7 +660,8 @@ void VideoCaptureController::PostStopping() {
 
   // When clients still have some buffers, or device has not been stopped yet,
   // do nothing.
-  if (buffer_pool_->IsAnyBufferHeldForConsumers() || device_in_use_)
+  if ((buffer_pool_ && buffer_pool_->IsAnyBufferHeldForConsumers()) ||
+      device_in_use_)
     return;
 
   {
