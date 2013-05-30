@@ -996,6 +996,7 @@ void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
 
   command_updater->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, command_enabled);
   command_updater->UpdateCommandEnabled(IDC_OPTIONS, command_enabled);
+  command_updater->UpdateCommandEnabled(IDC_SHOW_SIGNIN, command_enabled);
 }
 
 void BrowserCommandController::UpdateCommandsForIncognitoAvailability() {
