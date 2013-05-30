@@ -83,6 +83,10 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
 - (NSTextField*)messageView {
   return message_.get();
 }
+
+- (NSView*)listItemView {
+  return listItemView_.get();
+}
 @end
 
 class NotificationControllerTest : public ui::CocoaTest {
@@ -249,4 +253,43 @@ TEST_F(NotificationControllerTest, Image) {
   ASSERT_TRUE([[[controller bottomSubviews] lastObject]
       isKindOfClass:[NSImageView class]]);
   EXPECT_EQ(image, [[[controller bottomSubviews] lastObject] image]);
+}
+
+TEST_F(NotificationControllerTest, List) {
+  base::ListValue* list = new base::ListValue;
+
+  base::DictionaryValue* item0 = new base::DictionaryValue;
+  item0->SetString(message_center::kItemTitleKey, "First title");
+  item0->SetString(message_center::kItemMessageKey, "first message");
+  list->Append(item0);
+
+  base::DictionaryValue* item1 = new base::DictionaryValue;
+  item1->SetString(message_center::kItemTitleKey, "Second title");
+  item1->SetString(message_center::kItemMessageKey,
+                   "second slightly longer message");
+  list->Append(item1);
+
+  base::DictionaryValue items;
+  items.Set(message_center::kItemsKey, list);
+
+  scoped_ptr<message_center::Notification> notification(
+      new message_center::Notification(
+          message_center::NOTIFICATION_TYPE_BASE_FORMAT,
+          "an_id",
+          string16(),
+          string16(),
+          string16(),
+          std::string(),
+          &items,
+          NULL));
+
+  MockMessageCenter message_center;
+  scoped_nsobject<MCNotificationController> controller(
+      [[MCNotificationController alloc] initWithNotification:notification.get()
+                                               messageCenter:&message_center]);
+  [controller view];
+
+  EXPECT_EQ(2u, [[[controller listItemView] subviews] count]);
+  EXPECT_TRUE(NSMaxY([[controller listItemView] frame]) <
+              NSMinY([[controller messageView] frame]));
 }

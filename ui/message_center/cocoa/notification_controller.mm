@@ -5,6 +5,7 @@
 #import "ui/message_center/cocoa/notification_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -65,7 +66,7 @@
     NSFontAttributeName :
         [title attribute:NSFontAttributeName atIndex:0 effectiveRange:NULL],
     NSForegroundColorAttributeName :
-        gfx::SkColorToDeviceNSColor(message_center::kRegularTextColor),
+        gfx::SkColorToCalibratedNSColor(message_center::kRegularTextColor),
   };
   [[title string] drawWithRect:frame
                        options:(NSStringDrawingUsesLineFragmentOrigin |
@@ -88,6 +89,12 @@
 @end
 
 @interface MCNotificationController (Private)
+// Returns a string with item's title in title color and item's message in
+// message color.
++ (NSAttributedString*)
+    attributedStringForItem:(const message_center::NotificationItem&)item
+                       font:(NSFont*)font;
+
 // Configures a NSBox to be borderless, titleless, and otherwise appearance-
 // free.
 - (void)configureCustomBox:(NSBox*)box;
@@ -192,13 +199,54 @@
       NSMinY(titleFrame) - messagePadding - NSHeight(messageFrame);
   messageFrame.size.height = NSHeight([message_ frame]);
 
-  // In this basic notification UI, the message body is the bottom-most
-  // vertical element. If it is out of the rootView's bounds, resize the view.
-  if (NSMinY(messageFrame) < messagePadding) {
-    CGFloat delta = messagePadding - NSMinY(messageFrame);
+  // Create the list item views (up to a maximum).
+  [listItemView_ removeFromSuperview];
+  const std::vector<message_center::NotificationItem>& items =
+      notification->items();
+  NSRect listFrame = NSZeroRect;
+  if (items.size() > 0) {
+    listFrame = [self currentContentRect];
+    listFrame.origin.y = 0;
+    listFrame.size.height = 0;
+    listItemView_.reset([[NSView alloc] initWithFrame:listFrame]);
+    CGFloat y = 0;
+
+    NSFont* font = [NSFont systemFontOfSize:message_center::kMessageFontSize];
+    CGFloat lineHeight = NSHeight([font boundingRectForFont]);
+
+    const int kNumNotifications =
+        std::min(items.size(), message_center::kNotificationMaximumItems);
+    for (int i = kNumNotifications - 1; i >= 0; --i) {
+      NSTextField* field = [self newLabelWithFrame:
+          NSMakeRect(0, y, NSWidth(listFrame), lineHeight)];
+      [[field cell] setUsesSingleLineMode:YES];
+      [field setAttributedStringValue:
+          [MCNotificationController attributedStringForItem:items[i]
+                                                       font:font]];
+      [listItemView_ addSubview:field];
+      y += lineHeight;
+    }
+    // TODO(thakis): The spacing is not completely right.
+    CGFloat listTopPadding =
+        message_center::kTextTopPadding - messageTopGap;
+    listFrame.size.height = y;
+    listFrame.origin.y =
+        NSMinY(messageFrame) - listTopPadding - NSHeight(listFrame);
+    [listItemView_ setFrame:listFrame];
+    [[self view] addSubview:listItemView_];
+  }
+
+  // If the bottom-most element so far is out of the rootView's bounds, resize
+  // the view.
+  CGFloat minY = NSMinY(messageFrame);
+  if (listItemView_ && NSMinY(listFrame) < minY)
+    minY = NSMinY(listFrame);
+  if (minY < messagePadding) {
+    CGFloat delta = messagePadding - minY;
     rootFrame.size.height += delta;
     titleFrame.origin.y += delta;
     messageFrame.origin.y += delta;
+    listFrame.origin.y += delta;
   }
 
   // Add the bottom container view.
@@ -267,10 +315,12 @@
   rootFrame.size.height += NSHeight(frame);
   titleFrame.origin.y += NSHeight(frame);
   messageFrame.origin.y += NSHeight(frame);
+  listFrame.origin.y += NSHeight(frame);
 
   [[self view] setFrame:rootFrame];
   [title_ setFrame:titleFrame];
   [message_ setFrame:messageFrame];
+  [listItemView_ setFrame:listFrame];
 
   return rootFrame;
 }
@@ -292,6 +342,42 @@
 }
 
 // Private /////////////////////////////////////////////////////////////////////
+
++ (NSAttributedString*)
+    attributedStringForItem:(const message_center::NotificationItem&)item
+                       font:(NSFont*)font {
+  NSString* text = base::SysUTF16ToNSString(
+      item.title + base::UTF8ToUTF16(" ") + item.message);
+  NSMutableAttributedString* formattedText =
+      [[[NSMutableAttributedString alloc] initWithString:text] autorelease];
+
+  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+      [[NSParagraphStyle defaultParagraphStyle] mutableCopy]);
+  [paragraphStyle setLineBreakMode:NSLineBreakByTruncatingTail];
+  NSDictionary* sharedAttribs = @{
+    NSFontAttributeName : font,
+    NSParagraphStyleAttributeName : paragraphStyle,
+  };
+  const NSRange range = NSMakeRange(0, [formattedText length] - 1);
+  [formattedText addAttributes:sharedAttribs range:range];
+
+  NSDictionary* titleAttribs = @{
+    NSForegroundColorAttributeName :
+        gfx::SkColorToCalibratedNSColor(message_center::kRegularTextColor),
+  };
+  const NSRange titleRange = NSMakeRange(0, item.title.size());
+  [formattedText addAttributes:titleAttribs range:titleRange];
+
+  NSDictionary* messageAttribs = @{
+    NSForegroundColorAttributeName :
+        gfx::SkColorToCalibratedNSColor(message_center::kDimTextColor),
+  };
+  const NSRange messageRange =
+      NSMakeRange(item.title.size() + 1, item.message.size());
+  [formattedText addAttributes:messageAttribs range:messageRange];
+
+  return formattedText;
+}
 
 - (void)configureCustomBox:(NSBox*)box {
   [box setBoxType:NSBoxCustom];
