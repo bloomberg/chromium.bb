@@ -322,7 +322,6 @@ FileSelectionHandler.prototype.updatePreviewPanelVisibility_ = function() {
         !PathUtil.isRootPath(this.fileManager_.getCurrentDirectory()));
   }
   var self = this;
-  var fm = this.fileManager_;
 
   var stopHidingAndShow = function() {
     clearTimeout(self.hidingTimeout_);
@@ -335,14 +334,12 @@ FileSelectionHandler.prototype.updatePreviewPanelVisibility_ = function() {
     self.hidingTimeout_ = setTimeout(function() {
         self.hidingTimeout_ = 0;
         setVisibility('hidden');
-        fm.onResize_();
       }, 250);
   };
 
   var show = function() {
     setVisibility('visible');
     self.previewThumbnails_.textContent = '';
-    fm.onResize_();
   };
 
   var setVisibility = function(visibility) {

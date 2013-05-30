@@ -1608,14 +1608,6 @@ DialogType.isModal = function(type) {
   };
 
   /**
-   * @param {number=} opt_timeout Timeout in milliseconds.
-   * @private
-   */
-  FileManager.prototype.requestResize_ = function(opt_timeout) {
-    setTimeout(this.onResize_.bind(this), opt_timeout || 0);
-  };
-
-  /**
    * Resize details and thumb views to fit the new window size.
    * @private
    */
