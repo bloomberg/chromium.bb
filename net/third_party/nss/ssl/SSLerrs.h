@@ -412,3 +412,12 @@ ER3(SSL_ERROR_INVALID_CHANNEL_ID_KEY, (SSL_ERROR_BASE + 127),
 
 ER3(SSL_ERROR_GET_CHANNEL_ID_FAILED, (SSL_ERROR_BASE + 128),
 "The application could not get a TLS Channel ID.")
+
+ER3(SSL_ERROR_UNSUPPORTED_HASH_ALGORITHM, (SSL_ERROR_BASE + 129),
+"Unsupported hash algorithm used by TLS peer.")
+
+ER3(SSL_ERROR_DIGEST_FAILURE, (SSL_ERROR_BASE + 130),
+"Digest function failed.")
+
+ER3(SSL_ERROR_INCORRECT_SIGNATURE_ALGORITHM, (SSL_ERROR_BASE + 131),
+"Incorrect signature algorithm specified in a digitally-signed element.")

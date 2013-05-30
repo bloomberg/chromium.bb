@@ -18,7 +18,14 @@
 #ifndef NO_PKCS11_BYPASS
 #include "blapi.h"
 #endif
+#include "pk11pub.h"
 #include "nss.h"
+
+/* This is a bodge to allow this code to be compiled against older NSS headers
+ * that don't contain the TLS 1.2 changes. */
+#ifndef CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256
+#define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
+#endif
 
 #define SET_ERROR_CODE   /* reminder */
 
@@ -782,6 +789,17 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 which, PRBool on)
 	    rv = SECFailure;
 	} else {
             if (PR_FALSE != on) {
+		/* TLS 1.2 isn't supported in bypass mode. */
+		if (ss->vrange.min >= SSL_LIBRARY_VERSION_TLS_1_2) {
+		    /* If the user requested a minimum version of TLS 1.2 then
+		     * we don't silently downgrade. */
+		    PORT_SetError(SSL_ERROR_INVALID_VERSION_RANGE);
+		    rv = SECFailure;
+		    break;
+		}
+		if (ss->vrange.max >= SSL_LIBRARY_VERSION_TLS_1_2) {
+		    ss->vrange.max = SSL_LIBRARY_VERSION_TLS_1_1;
+		}
                 if (PR_SUCCESS == SSL_BypassSetup() ) {
 #ifdef NO_PKCS11_BYPASS
                     ss->opt.bypassPKCS11   = PR_FALSE;
@@ -1895,6 +1913,24 @@ SSL_VersionRangeGet(PRFileDesc *fd, SSLVersionRange *vrange)
     return SECSuccess;
 }
 
+static PRCallOnceType checkTLS12TokenOnce;
+static PRBool tls12TokenExists;
+
+static PRStatus  
+ssl_CheckTLS12Token(void)
+{
+    tls12TokenExists =
+	PK11_TokenExists(CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256);
+    return PR_SUCCESS;
+}
+
+static PRBool
+ssl_TLS12TokenExists(void)
+{
+    (void) PR_CallOnce(&checkTLS12TokenOnce, ssl_CheckTLS12Token);
+    return tls12TokenExists;
+}
+
 SECStatus
 SSL_VersionRangeSet(PRFileDesc *fd, const SSLVersionRange *vrange)
 {
@@ -1915,6 +1951,24 @@ SSL_VersionRangeSet(PRFileDesc *fd, const SSLVersionRange *vrange)
     ssl_GetSSL3HandshakeLock(ss);
 
     ss->vrange = *vrange;
+    /* If we don't have a sufficiently up-to-date softoken then we cannot do
+     * TLS 1.2. */
+    if (ss->vrange.max >= SSL_LIBRARY_VERSION_TLS_1_2 &&
+        !ssl_TLS12TokenExists()) {
+	/* If the user requested a minimum version of 1.2, then we don't
+	 * silently downgrade. */
+	if (ss->vrange.min >= SSL_LIBRARY_VERSION_TLS_1_2) {
+	    ssl_ReleaseSSL3HandshakeLock(ss);
+	    ssl_Release1stHandshakeLock(ss);
+	    PORT_SetError(SSL_ERROR_INVALID_VERSION_RANGE);
+	    return SECFailure;
+	}
+	ss->vrange.max = SSL_LIBRARY_VERSION_TLS_1_1;
+    }
+    /* PKCS#11 bypass is not supported with TLS 1.2. */
+    if (ss->vrange.max >= SSL_LIBRARY_VERSION_TLS_1_2) {
+	ss->opt.bypassPKCS11 = PR_FALSE;
+    }
 
     ssl_ReleaseSSL3HandshakeLock(ss);
     ssl_Release1stHandshakeLock(ss);

@@ -1,0 +1,317 @@
+Index: net/third_party/nss/ssl/sslplatf.c
+===================================================================
+--- net/third_party/nss/ssl/sslplatf.c	(revision 202696)
++++ net/third_party/nss/ssl/sslplatf.c	(working copy)
+@@ -212,9 +212,8 @@
+     DWORD           dwFlags           = 0;
+     VOID           *pPaddingInfo      = NULL;
+ 
+-    /* Always encode using PKCS#1 block type, with no OID/encoded DigestInfo */
++    /* Always encode using PKCS#1 block type. */
+     BCRYPT_PKCS1_PADDING_INFO rsaPaddingInfo;
+-    rsaPaddingInfo.pszAlgId = NULL;
+ 
+     if (key->dwKeySpec != CERT_NCRYPT_KEY_SPEC) {
+         PR_SetError(SEC_ERROR_LIBRARY_FAILURE, 0);
+@@ -227,8 +226,29 @@
+ 
+     switch (keyType) {
+         case rsaKey:
+-            hashItem.data = hash->md5;
+-            hashItem.len  = sizeof(SSL3Hashes);
++            switch (hash->hashAlg) {
++                case SEC_OID_UNKNOWN:
++                    /* No OID/encoded DigestInfo. */
++                    rsaPaddingInfo.pszAlgId = NULL;
++                    break;
++                case SEC_OID_SHA1:
++                    rsaPaddingInfo.pszAlgId = BCRYPT_SHA1_ALGORITHM;
++                    break;
++                case SEC_OID_SHA256:
++                    rsaPaddingInfo.pszAlgId = BCRYPT_SHA256_ALGORITHM;
++                    break;
++                case SEC_OID_SHA384:
++                    rsaPaddingInfo.pszAlgId = BCRYPT_SHA384_ALGORITHM;
++                    break;
++                case SEC_OID_SHA512:
++                    rsaPaddingInfo.pszAlgId = BCRYPT_SHA512_ALGORITHM;
++                    break;
++                default:
++                    PORT_SetError(SSL_ERROR_UNSUPPORTED_HASH_ALGORITHM);
++                    return SECFailure;
++            }
++            hashItem.data = hash->u.raw;
++            hashItem.len  = hash->len;
+             dwFlags       = BCRYPT_PAD_PKCS1;
+             pPaddingInfo  = &rsaPaddingInfo;
+             break;
+@@ -239,8 +259,13 @@
+             } else {
+                 doDerEncode = isTLS;
+             }
+-            hashItem.data = hash->sha;
+-            hashItem.len  = sizeof(hash->sha);
++            if (hash->hashAlg == SEC_OID_UNKNOWN) {
++                hashItem.data = hash->u.s.sha;
++                hashItem.len  = sizeof(hash->u.s.sha);
++            } else {
++                hashItem.data = hash->u.raw;
++                hashItem.len  = hash->len;
++            }
+             break;
+         default:
+             PORT_SetError(SEC_ERROR_INVALID_KEY);
+@@ -315,11 +340,34 @@
+ 
+     buf->data = NULL;
+ 
++    switch (hash->hashAlg) {
++        case SEC_OID_UNKNOWN:
++            hashAlg = 0;
++            break;
++        case SEC_OID_SHA1:
++            hashAlg = CALG_SHA1;
++            break;
++        case SEC_OID_SHA256:
++            hashAlg = CALG_SHA_256;
++            break;
++        case SEC_OID_SHA384:
++            hashAlg = CALG_SHA_384;
++            break;
++        case SEC_OID_SHA512:
++            hashAlg = CALG_SHA_512;
++            break;
++        default:
++            PORT_SetError(SSL_ERROR_UNSUPPORTED_HASH_ALGORITHM);
++            return SECFailure;
++    }
++
+     switch (keyType) {
+         case rsaKey:
+-            hashAlg       = CALG_SSL3_SHAMD5;
+-            hashItem.data = hash->md5;
+-            hashItem.len  = sizeof(SSL3Hashes);
++            if (hashAlg == 0) {
++                hashAlg = CALG_SSL3_SHAMD5;
++            }
++            hashItem.data = hash->u.raw;
++            hashItem.len = hash->len;
+             break;
+         case dsaKey:
+         case ecKey:
+@@ -328,9 +376,14 @@
+             } else {
+                 doDerEncode = isTLS;
+             }
+-            hashAlg       = CALG_SHA1;
+-            hashItem.data = hash->sha;
+-            hashItem.len  = sizeof(hash->sha);
++            if (hashAlg == 0) {
++                hashAlg = CALG_SHA1;
++                hashItem.data = hash->u.s.sha;
++                hashItem.len = sizeof(hash->u.s.sha);
++            } else {
++                hashItem.data = hash->u.raw;
++                hashItem.len = hash->len;
++            }
+             break;
+         default:
+             PORT_SetError(SEC_ERROR_INVALID_KEY);
+@@ -468,11 +521,36 @@
+         goto done;    /* error code was set. */
+ 
+     sigAlg = cssmKey->KeyHeader.AlgorithmId;
++    if (keyType == rsaKey) {
++        PORT_Assert(sigAlg == CSSM_ALGID_RSA);
++        switch (hash->hashAlg) {
++            case SEC_OID_UNKNOWN:
++                break;
++            case SEC_OID_SHA1:
++                sigAlg = CSSM_ALGID_SHA1WithRSA;
++                break;
++            case SEC_OID_SHA224:
++                sigAlg = CSSM_ALGID_SHA224WithRSA;
++                break;
++            case SEC_OID_SHA256:
++                sigAlg = CSSM_ALGID_SHA256WithRSA;
++                break;
++            case SEC_OID_SHA384:
++                sigAlg = CSSM_ALGID_SHA384WithRSA;
++                break;
++            case SEC_OID_SHA512:
++                sigAlg = CSSM_ALGID_SHA512WithRSA;
++                break;
++            default:
++                PORT_SetError(SSL_ERROR_UNSUPPORTED_HASH_ALGORITHM);
++                goto done;
++        }
++    }
++
+     switch (keyType) {
+         case rsaKey:
+-            PORT_Assert(sigAlg == CSSM_ALGID_RSA);
+-            hashData.Data   = hash->md5;
+-            hashData.Length = sizeof(SSL3Hashes);
++            hashData.Data   = hash->u.raw;
++            hashData.Length = hash->len;
+             break;
+         case dsaKey:
+         case ecKey:
+@@ -483,8 +561,13 @@
+                 PORT_Assert(sigAlg == CSSM_ALGID_DSA);
+                 doDerEncode = isTLS;
+             }
+-            hashData.Data   = hash->sha;
+-            hashData.Length = sizeof(hash->sha);
++            if (hash->hashAlg == SEC_OID_UNKNOWN) {
++                hashData.Data   = hash->u.s.sha;
++                hashData.Length = sizeof(hash->u.s.sha);
++            } else {
++                hashData.Data   = hash->u.raw;
++                hashData.Length = hash->len;
++            }
+             break;
+         default:
+             PORT_SetError(SEC_ERROR_INVALID_KEY);
+Index: net/third_party/nss/ssl/ssl3ecc.c
+===================================================================
+--- net/third_party/nss/ssl/ssl3ecc.c	(revision 202696)
++++ net/third_party/nss/ssl/ssl3ecc.c	(working copy)
+@@ -31,6 +31,12 @@
+ 
+ #include <stdio.h>
+ 
++/* This is a bodge to allow this code to be compiled against older NSS headers
++ * that don't contain the TLS 1.2 changes. */
++#ifndef CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256
++#define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
++#endif
++
+ #ifdef NSS_ENABLE_ECC
+ 
+ /*
+Index: net/third_party/nss/ssl/sslsock.c
+===================================================================
+--- net/third_party/nss/ssl/sslsock.c	(revision 202696)
++++ net/third_party/nss/ssl/sslsock.c	(working copy)
+@@ -18,8 +18,15 @@
+ #ifndef NO_PKCS11_BYPASS
+ #include "blapi.h"
+ #endif
++#include "pk11pub.h"
+ #include "nss.h"
+ 
++/* This is a bodge to allow this code to be compiled against older NSS headers
++ * that don't contain the TLS 1.2 changes. */
++#ifndef CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256
++#define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
++#endif
++
+ #define SET_ERROR_CODE   /* reminder */
+ 
+ struct cipherPolicyStr {
+@@ -1895,6 +1913,24 @@
+     return SECSuccess;
+ }
+ 
++static PRCallOnceType checkTLS12TokenOnce;
++static PRBool tls12TokenExists;
++
++static PRStatus  
++ssl_CheckTLS12Token(void)
++{
++    tls12TokenExists =
++	PK11_TokenExists(CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256);
++    return PR_SUCCESS;
++}
++
++static PRBool
++ssl_TLS12TokenExists(void)
++{
++    (void) PR_CallOnce(&checkTLS12TokenOnce, ssl_CheckTLS12Token);
++    return tls12TokenExists;
++}
++
+ SECStatus
+ SSL_VersionRangeSet(PRFileDesc *fd, const SSLVersionRange *vrange)
+ {
+@@ -1915,6 +1951,24 @@
+     ssl_GetSSL3HandshakeLock(ss);
+ 
+     ss->vrange = *vrange;
++    /* If we don't have a sufficiently up-to-date softoken then we cannot do
++     * TLS 1.2. */
++    if (ss->vrange.max >= SSL_LIBRARY_VERSION_TLS_1_2 &&
++        !ssl_TLS12TokenExists()) {
++	/* If the user requested a minimum version of 1.2, then we don't
++	 * silently downgrade. */
++	if (ss->vrange.min >= SSL_LIBRARY_VERSION_TLS_1_2) {
++	    ssl_ReleaseSSL3HandshakeLock(ss);
++	    ssl_Release1stHandshakeLock(ss);
++	    PORT_SetError(SSL_ERROR_INVALID_VERSION_RANGE);
++	    return SECFailure;
++	}
++	ss->vrange.max = SSL_LIBRARY_VERSION_TLS_1_1;
++    }
++    /* PKCS#11 bypass is not supported with TLS 1.2. */
++    if (ss->vrange.max >= SSL_LIBRARY_VERSION_TLS_1_2) {
++	ss->opt.bypassPKCS11 = PR_FALSE;
++    }
+ 
+     ssl_ReleaseSSL3HandshakeLock(ss);
+     ssl_Release1stHandshakeLock(ss);
+Index: net/third_party/nss/ssl/ssl3con.c
+===================================================================
+--- net/third_party/nss/ssl/ssl3con.c	(revision 202696)
++++ net/third_party/nss/ssl/ssl3con.c	(working copy)
+@@ -31,6 +32,15 @@
+ #include "blapi.h"
+ #endif
+ 
++/* This is a bodge to allow this code to be compiled against older NSS headers
++ * that don't contain the TLS 1.2 changes. */
++#ifndef CKM_NSS_TLS_PRF_GENERAL_SHA256
++#define CKM_NSS_TLS_PRF_GENERAL_SHA256          (CKM_NSS + 21)
++#define CKM_NSS_TLS_MASTER_KEY_DERIVE_SHA256    (CKM_NSS + 22)
++#define CKM_NSS_TLS_KEY_AND_MAC_DERIVE_SHA256   (CKM_NSS + 23)
++#define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
++#endif
++
+ #include <stdio.h>
+ #ifdef NSS_ENABLE_ZLIB
+ #include "zlib.h"
+@@ -5360,16 +5737,18 @@
+     }
+ 
+     isTLS = (PRBool)(ss->ssl3.pwSpec->version > SSL_LIBRARY_VERSION_3_0);
++    isTLS12 = (PRBool)(ss->ssl3.pwSpec->version >= SSL_LIBRARY_VERSION_TLS_1_2);
+     if (ss->ssl3.platformClientKey) {
+ #ifdef NSS_PLATFORM_CLIENT_AUTH
++	keyType = CERT_GetCertKeyType(
++	    &ss->ssl3.clientCertificate->subjectPublicKeyInfo);
+ 	rv = ssl3_PlatformSignHashes(
+-	    &hashes, ss->ssl3.platformClientKey, &buf, isTLS,
+-	    CERT_GetCertKeyType(
+-		&ss->ssl3.clientCertificate->subjectPublicKeyInfo));
++	    &hashes, ss->ssl3.platformClientKey, &buf, isTLS, keyType);
+ 	ssl_FreePlatformKey(ss->ssl3.platformClientKey);
+ 	ss->ssl3.platformClientKey = (PlatformKey)NULL;
+ #endif /* NSS_PLATFORM_CLIENT_AUTH */
+     } else {
++	keyType = ss->ssl3.clientPrivateKey->keyType;
+ 	rv = ssl3_SignHashes(&hashes, ss->ssl3.clientPrivateKey, &buf, isTLS);
+ 	if (rv == SECSuccess) {
+ 	    PK11SlotInfo * slot;
+@@ -9409,9 +9978,10 @@
+     pub_bytes = spki->data + sizeof(P256_SPKI_PREFIX);
+ 
+     memcpy(signed_data, CHANNEL_ID_MAGIC, sizeof(CHANNEL_ID_MAGIC));
+-    memcpy(signed_data + sizeof(CHANNEL_ID_MAGIC), &hashes, sizeof(hashes));
++    memcpy(signed_data + sizeof(CHANNEL_ID_MAGIC), hashes.u.raw, hashes.len);
+ 
+-    rv = PK11_HashBuf(SEC_OID_SHA256, digest, signed_data, sizeof(signed_data));
++    rv = PK11_HashBuf(SEC_OID_SHA256, digest, signed_data,
++		      sizeof(CHANNEL_ID_MAGIC) + hashes.len);
+     if (rv != SECSuccess)
+ 	goto loser;
+ 

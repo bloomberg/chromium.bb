@@ -799,6 +799,7 @@ typedef struct SSL3HandshakeStateStr {
     PRUint64              sha_cx[MAX_MAC_CONTEXT_LLONGS];
     PK11Context *         md5;            /* handshake running hashes */
     PK11Context *         sha;
+    PK11Context *         tls12_handshake_hash;
 const ssl3KEADef *        kea_def;
     ssl3CipherSuite       cipher_suite;
 const ssl3CipherSuiteDef *suite_def;
@@ -820,7 +821,7 @@ const ssl3CipherSuiteDef *suite_def;
     PRUint16              finishedBytes; /* size of single finished below */
     union {
 	TLSFinished       tFinished[2]; /* client, then server */
-	SSL3Hashes        sFinished[2];
+	SSL3Finished      sFinished[2];
 	SSL3Opaque        data[72];
     }                     finishedMsgs;
 #ifdef NSS_ENABLE_ECC
@@ -834,6 +835,12 @@ const ssl3CipherSuiteDef *suite_def;
     sslRestartTarget      restartTarget;
     /* Shared state between ssl3_HandleFinished and ssl3_FinishHandshake */
     PRBool                cacheSID;
+
+    /* clientSigAndHash contains the contents of the signature_algorithms
+     * extension (if any) from the client. This is only valid for TLS 1.2
+     * or later. */
+    SSL3SignatureAndHashAlgorithm *clientSigAndHash;
+    unsigned int          numClientSigAndHash;
 
     /* This group of values is used for DTLS */
     PRUint16              sendMessageSeq;  /* The sending message sequence
@@ -1473,7 +1480,7 @@ extern PRInt32   ssl3_SendRecord(sslSocket *ss, DTLSEpoch epoch,
  * runtime to determine which versions are supported by the version of libssl
  * in use.
  */
-#define SSL_LIBRARY_VERSION_MAX_SUPPORTED SSL_LIBRARY_VERSION_TLS_1_1
+#define SSL_LIBRARY_VERSION_MAX_SUPPORTED SSL_LIBRARY_VERSION_TLS_1_2
 
 /* Rename this macro SSL_ALL_VERSIONS_DISABLED when SSL 2.0 is removed. */
 #define SSL3_ALL_VERSIONS_DISABLED(vrange) \
@@ -1639,10 +1646,12 @@ extern SECStatus ssl3_HandleECDHClientKeyExchange(sslSocket *ss,
 				     SSL3Opaque *b, PRUint32 length,
                                      SECKEYPublicKey *srvrPubKey,
                                      SECKEYPrivateKey *srvrPrivKey);
-extern SECStatus ssl3_SendECDHServerKeyExchange(sslSocket *ss);
+extern SECStatus ssl3_SendECDHServerKeyExchange(sslSocket *ss,
+			const SSL3SignatureAndHashAlgorithm *sigAndHash);
 #endif
 
-extern SECStatus ssl3_ComputeCommonKeyHash(PRUint8 * hashBuf, 
+extern SECStatus ssl3_ComputeCommonKeyHash(SECOidTag hashAlg,
+				PRUint8 * hashBuf,
 				unsigned int bufLen, SSL3Hashes *hashes, 
 				PRBool bypassPKCS11);
 extern void ssl3_DestroyCipherSpec(ssl3CipherSpec *spec, PRBool freeSrvName);
@@ -1655,12 +1664,21 @@ extern SECStatus ssl3_AppendHandshakeNumber(sslSocket *ss, PRInt32 num,
 			PRInt32 lenSize);
 extern SECStatus ssl3_AppendHandshakeVariable( sslSocket *ss, 
 			const SSL3Opaque *src, PRInt32 bytes, PRInt32 lenSize);
+extern SECStatus ssl3_AppendSignatureAndHashAlgorithm(sslSocket *ss,
+			const SSL3SignatureAndHashAlgorithm* sigAndHash);
 extern SECStatus ssl3_ConsumeHandshake(sslSocket *ss, void *v, PRInt32 bytes, 
 			SSL3Opaque **b, PRUint32 *length);
 extern PRInt32   ssl3_ConsumeHandshakeNumber(sslSocket *ss, PRInt32 bytes, 
 			SSL3Opaque **b, PRUint32 *length);
 extern SECStatus ssl3_ConsumeHandshakeVariable(sslSocket *ss, SECItem *i, 
 			PRInt32 bytes, SSL3Opaque **b, PRUint32 *length);
+extern SECOidTag ssl3_TLSHashAlgorithmToOID(int hashFunc);
+extern SECStatus ssl3_CheckSignatureAndHashAlgorithmConsistency(
+			const SSL3SignatureAndHashAlgorithm *sigAndHash,
+			CERTCertificate* cert);
+extern SECStatus ssl3_ConsumeSignatureAndHashAlgorithm(sslSocket *ss,
+			SSL3Opaque **b, PRUint32 *length,
+			SSL3SignatureAndHashAlgorithm *out);
 extern SECStatus ssl3_SignHashes(SSL3Hashes *hash, SECKEYPrivateKey *key, 
 			SECItem *buf, PRBool isTLS);
 extern SECStatus ssl3_VerifySignedHashes(SSL3Hashes *hash, 

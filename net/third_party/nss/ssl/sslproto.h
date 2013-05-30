@@ -16,6 +16,7 @@
 #define SSL_LIBRARY_VERSION_3_0			0x0300
 #define SSL_LIBRARY_VERSION_TLS_1_0		0x0301
 #define SSL_LIBRARY_VERSION_TLS_1_1		0x0302
+#define SSL_LIBRARY_VERSION_TLS_1_2		0x0303
 /* Note: this is the internal format, not the wire format */
 #define SSL_LIBRARY_VERSION_DTLS_1_0		0x0302
 

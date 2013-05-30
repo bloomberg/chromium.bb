@@ -10117,6 +10117,13 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   net::StaticSocketDataProvider data4(NULL, 0, NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&data4);
 
+  // Need one more if TLSv1.2 is enabled.
+  SSLSocketDataProvider ssl_data5(ASYNC, net::ERR_SSL_PROTOCOL_ERROR);
+  ssl_data5.cert_request_info = cert_request.get();
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data5);
+  net::StaticSocketDataProvider data5(NULL, 0, NULL, 0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data5);
+
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
@@ -10229,6 +10236,14 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   net::StaticSocketDataProvider data4(
       data2_reads, arraysize(data2_reads), NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&data4);
+
+  // Need one more if TLSv1.2 is enabled.
+  SSLSocketDataProvider ssl_data5(ASYNC, net::OK);
+  ssl_data5.cert_request_info = cert_request.get();
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data5);
+  net::StaticSocketDataProvider data5(
+      data2_reads, arraysize(data2_reads), NULL, 0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data5);
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(

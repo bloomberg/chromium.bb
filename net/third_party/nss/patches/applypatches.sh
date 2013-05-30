@@ -47,3 +47,7 @@ patch -p4 < $patches_dir/secitemarray.patch
 patch -p4 < $patches_dir/unusedvariables.patch
 
 patch -p4 < $patches_dir/handlecertstatus.patch
+
+patch -p4 < $patches_dir/tls12.patch
+
+patch -p4 < $patches_dir/tls12chromium.patch

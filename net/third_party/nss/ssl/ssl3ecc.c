@@ -31,6 +31,12 @@
 
 #include <stdio.h>
 
+/* This is a bodge to allow this code to be compiled against older NSS headers
+ * that don't contain the TLS 1.2 changes. */
+#ifndef CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256
+#define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
+#endif
+
 #ifdef NSS_ENABLE_ECC
 
 /*
@@ -217,9 +223,10 @@ params2ecName(SECKEYECParams * params)
 
 /* Caller must set hiLevel error code. */
 static SECStatus
-ssl3_ComputeECDHKeyHash(SECItem ec_params, SECItem server_ecpoint,
-			     SSL3Random *client_rand, SSL3Random *server_rand,
-			     SSL3Hashes *hashes, PRBool bypassPKCS11)
+ssl3_ComputeECDHKeyHash(SECOidTag hashAlg,
+			SECItem ec_params, SECItem server_ecpoint,
+			SSL3Random *client_rand, SSL3Random *server_rand,
+			SSL3Hashes *hashes, PRBool bypassPKCS11)
 {
     PRUint8     * hashBuf;
     PRUint8     * pBuf;
@@ -255,11 +262,14 @@ ssl3_ComputeECDHKeyHash(SECItem ec_params, SECItem server_ecpoint,
     	pBuf += server_ecpoint.len;
     PORT_Assert((unsigned int)(pBuf - hashBuf) == bufLen);
 
-    rv = ssl3_ComputeCommonKeyHash(hashBuf, bufLen, hashes, bypassPKCS11);
+    rv = ssl3_ComputeCommonKeyHash(hashAlg, hashBuf, bufLen, hashes,
+				   bypassPKCS11);
 
     PRINT_BUF(95, (NULL, "ECDHkey hash: ", hashBuf, bufLen));
-    PRINT_BUF(95, (NULL, "ECDHkey hash: MD5 result", hashes->md5, MD5_LENGTH));
-    PRINT_BUF(95, (NULL, "ECDHkey hash: SHA1 result", hashes->sha, SHA1_LENGTH));
+    PRINT_BUF(95, (NULL, "ECDHkey hash: MD5 result",
+	      hashes->u.s.md5, MD5_LENGTH));
+    PRINT_BUF(95, (NULL, "ECDHkey hash: SHA1 result",
+	      hashes->u.s.sha, SHA1_LENGTH));
 
     if (hashBuf != buf)
     	PORT_Free(hashBuf);
@@ -273,7 +283,7 @@ ssl3_SendECDHClientKeyExchange(sslSocket * ss, SECKEYPublicKey * svrPubKey)
 {
     PK11SymKey *	pms 		= NULL;
     SECStatus           rv    		= SECFailure;
-    PRBool              isTLS;
+    PRBool              isTLS, isTLS12;
     CK_MECHANISM_TYPE	target;
     SECKEYPublicKey	*pubKey = NULL;		/* Ephemeral ECDH key */
     SECKEYPrivateKey	*privKey = NULL;	/* Ephemeral ECDH key */
@@ -282,6 +292,7 @@ ssl3_SendECDHClientKeyExchange(sslSocket * ss, SECKEYPublicKey * svrPubKey)
     PORT_Assert( ss->opt.noLocks || ssl_HaveXmitBufLock(ss));
 
     isTLS = (PRBool)(ss->ssl3.pwSpec->version > SSL_LIBRARY_VERSION_3_0);
+    isTLS12 = (PRBool)(ss->ssl3.pwSpec->version >= SSL_LIBRARY_VERSION_TLS_1_2);
 
     /* Generate ephemeral EC keypair */
     if (svrPubKey->keyType != ecKey) {
@@ -300,8 +311,13 @@ ssl3_SendECDHClientKeyExchange(sslSocket * ss, SECKEYPublicKey * svrPubKey)
 					pubKey->u.ec.publicValue.data,
 					pubKey->u.ec.publicValue.len));
 
-    if (isTLS) target = CKM_TLS_MASTER_KEY_DERIVE_DH;
-    else target = CKM_SSL3_MASTER_KEY_DERIVE_DH;
+    if (isTLS12) {
+	target = CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256;
+    } else if (isTLS) {
+	target = CKM_TLS_MASTER_KEY_DERIVE_DH;
+    } else {
+	target = CKM_SSL3_MASTER_KEY_DERIVE_DH;
+    }
 
     /*  Determine the PMS */
     pms = PK11_PubDeriveWithKDF(privKey, svrPubKey, PR_FALSE, NULL, NULL,
@@ -365,7 +381,7 @@ ssl3_HandleECDHClientKeyExchange(sslSocket *ss, SSL3Opaque *b,
     SECStatus         rv;
     SECKEYPublicKey   clntPubKey;
     CK_MECHANISM_TYPE	target;
-    PRBool isTLS;
+    PRBool isTLS, isTLS12;
 
     PORT_Assert( ss->opt.noLocks || ssl_HaveRecvBufLock(ss) );
     PORT_Assert( ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss) );
@@ -384,9 +400,15 @@ ssl3_HandleECDHClientKeyExchange(sslSocket *ss, SSL3Opaque *b,
     }
 
     isTLS = (PRBool)(ss->ssl3.prSpec->version > SSL_LIBRARY_VERSION_3_0);
+    isTLS12 = (PRBool)(ss->ssl3.prSpec->version >= SSL_LIBRARY_VERSION_TLS_1_2);
 
-    if (isTLS) target = CKM_TLS_MASTER_KEY_DERIVE_DH;
-    else target = CKM_SSL3_MASTER_KEY_DERIVE_DH;
+    if (isTLS12) {
+	target = CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256;
+    } else if (isTLS) {
+	target = CKM_TLS_MASTER_KEY_DERIVE_DH;
+    } else {
+	target = CKM_SSL3_MASTER_KEY_DERIVE_DH;
+    }
 
     /*  Determine the PMS */
     pms = PK11_PubDeriveWithKDF(srvrPrivKey, &clntPubKey, PR_FALSE, NULL, NULL,
@@ -582,7 +604,7 @@ ssl3_HandleECDHServerKeyExchange(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
 {
     PRArenaPool *    arena     = NULL;
     SECKEYPublicKey *peerKey   = NULL;
-    PRBool           isTLS;
+    PRBool           isTLS, isTLS12;
     SECStatus        rv;
     int              errCode   = SSL_ERROR_RX_MALFORMED_SERVER_KEY_EXCH;
     SSL3AlertDescription desc  = illegal_parameter;
@@ -592,8 +614,12 @@ ssl3_HandleECDHServerKeyExchange(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
     SECItem          ec_params = {siBuffer, NULL, 0};
     SECItem          ec_point  = {siBuffer, NULL, 0};
     unsigned char    paramBuf[3]; /* only for curve_type == named_curve */
+    SSL3SignatureAndHashAlgorithm sigAndHash;
+
+    sigAndHash.hashAlg = SEC_OID_UNKNOWN;
 
     isTLS = (PRBool)(ss->ssl3.prSpec->version > SSL_LIBRARY_VERSION_3_0);
+    isTLS12 = (PRBool)(ss->ssl3.prSpec->version >= SSL_LIBRARY_VERSION_TLS_1_2);
 
     /* XXX This works only for named curves, revisit this when
      * we support generic curves.
@@ -625,6 +651,19 @@ ssl3_HandleECDHServerKeyExchange(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
 	    goto alert_loser;
     }
 
+    if (isTLS12) {
+	rv = ssl3_ConsumeSignatureAndHashAlgorithm(ss, &b, &length,
+						   &sigAndHash);
+	if (rv != SECSuccess) {
+	    goto loser;		/* malformed or unsupported. */
+	}
+	rv = ssl3_CheckSignatureAndHashAlgorithmConsistency(
+		&sigAndHash, ss->sec.peerCert);
+	if (rv != SECSuccess) {
+	    goto loser;
+	}
+    }
+
     rv = ssl3_ConsumeHandshakeVariable(ss, &signature, 2, &b, &length);
     if (rv != SECSuccess) {
 	goto loser;		/* malformed. */
@@ -647,10 +686,10 @@ ssl3_HandleECDHServerKeyExchange(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
     /*
      *  check to make sure the hash is signed by right guy
      */
-    rv = ssl3_ComputeECDHKeyHash(ec_params, ec_point,
-				      &ss->ssl3.hs.client_random,
-				      &ss->ssl3.hs.server_random, 
-				      &hashes, ss->opt.bypassPKCS11);
+    rv = ssl3_ComputeECDHKeyHash(sigAndHash.hashAlg, ec_params, ec_point,
+				 &ss->ssl3.hs.client_random,
+				 &ss->ssl3.hs.server_random, 
+				 &hashes, ss->opt.bypassPKCS11);
 
     if (rv != SECSuccess) {
 	errCode =
@@ -714,12 +753,14 @@ no_memory:	/* no-memory error has already been set. */
 }
 
 SECStatus
-ssl3_SendECDHServerKeyExchange(sslSocket *ss)
+ssl3_SendECDHServerKeyExchange(
+    sslSocket *ss,
+    const SSL3SignatureAndHashAlgorithm *sigAndHash)
 {
-const ssl3KEADef *     kea_def     = ss->ssl3.hs.kea_def;
+    const ssl3KEADef * kea_def     = ss->ssl3.hs.kea_def;
     SECStatus          rv          = SECFailure;
     int                length;
-    PRBool             isTLS;
+    PRBool             isTLS, isTLS12;
     SECItem            signed_hash = {siBuffer, NULL, 0};
     SSL3Hashes         hashes;
 
@@ -728,7 +769,6 @@ const ssl3KEADef *     kea_def     = ss->ssl3.hs.kea_def;
     unsigned char      paramBuf[3];
     ECName             curve;
     SSL3KEAType        certIndex;
-
 
     /* Generate ephemeral ECDH key pair and send the public key */
     curve = ssl3_GetCurveNameForServerSocket(ss);
@@ -758,16 +798,19 @@ const ssl3KEADef *     kea_def     = ss->ssl3.hs.kea_def;
 	goto loser;
     }		
 
-    rv = ssl3_ComputeECDHKeyHash(ec_params, ecdhePub->u.ec.publicValue,
-				      &ss->ssl3.hs.client_random,
-				      &ss->ssl3.hs.server_random,
-				      &hashes, ss->opt.bypassPKCS11);
+    rv = ssl3_ComputeECDHKeyHash(sigAndHash->hashAlg,
+				 ec_params,
+				 ecdhePub->u.ec.publicValue,
+				 &ss->ssl3.hs.client_random,
+				 &ss->ssl3.hs.server_random,
+				 &hashes, ss->opt.bypassPKCS11);
     if (rv != SECSuccess) {
 	ssl_MapLowLevelError(SSL_ERROR_SERVER_KEY_EXCHANGE_FAILURE);
 	goto loser;
     }
 
     isTLS = (PRBool)(ss->ssl3.pwSpec->version > SSL_LIBRARY_VERSION_3_0);
+    isTLS12 = (PRBool)(ss->ssl3.pwSpec->version >= SSL_LIBRARY_VERSION_TLS_1_2);
 
     /* XXX SSLKEAType isn't really a good choice for 
      * indexing certificates but that's all we have
@@ -791,7 +834,7 @@ const ssl3KEADef *     kea_def     = ss->ssl3.hs.kea_def;
 
     length = ec_params.len + 
 	     1 + ecdhePub->u.ec.publicValue.len + 
-	     2 + signed_hash.len;
+	     (isTLS12 ? 2 : 0) + 2 + signed_hash.len;
 
     rv = ssl3_AppendHandshakeHeader(ss, server_key_exchange, length);
     if (rv != SECSuccess) {
@@ -807,6 +850,13 @@ const ssl3KEADef *     kea_def     = ss->ssl3.hs.kea_def;
 				      ecdhePub->u.ec.publicValue.len, 1);
     if (rv != SECSuccess) {
 	goto loser; 	/* err set by AppendHandshake. */
+    }
+
+    if (isTLS12) {
+	rv = ssl3_AppendSignatureAndHashAlgorithm(ss, sigAndHash);
+	if (rv != SECSuccess) {
+	    goto loser; 	/* err set by AppendHandshake. */
+	}
     }
 
     rv = ssl3_AppendHandshakeVariable(ss, signed_hash.data,
