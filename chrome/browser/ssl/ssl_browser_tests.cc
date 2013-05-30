@@ -146,6 +146,20 @@ class SSLUITest : public InProcessBrowserTest {
         !!(entry->GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT));
   }
 
+  void CheckBrokenAuthenticatedState(WebContents* tab) {
+    ASSERT_FALSE(tab->IsCrashed());
+    NavigationEntry* entry = tab->GetController().GetActiveEntry();
+    ASSERT_TRUE(entry);
+    EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
+    EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
+              entry->GetSSL().security_style);
+    EXPECT_EQ(0U, entry->GetSSL().cert_status & net::CERT_STATUS_ALL_ERRORS);
+    EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                    SSLStatus::DISPLAYED_INSECURE_CONTENT));
+    EXPECT_TRUE(
+        !!(entry->GetSSL().content_status & SSLStatus::RAN_INSECURE_CONTENT));
+  }
+
   void CheckAuthenticationBrokenState(WebContents* tab,
                                       net::CertStatus error,
                                       bool ran_insecure_content,
@@ -1293,7 +1307,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestConnectToBadPort) {
 // - navigate to a bad HTTPS (expect unsafe content and filtered frame), then
 //   back
 // - navigate to HTTP (expect insecure content), then back
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
@@ -1378,8 +1392,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
     observer.Wait();
   }
 
-  // Our state should be insecure.
-  CheckAuthenticatedState(tab, true);
+  // Our state should be unathenticated (in the ran mixed script sense)
+  CheckBrokenAuthenticatedState(tab);
 
   // Go back, our state should be unchanged.
   {
@@ -1389,7 +1403,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
     tab->GetController().GoBack();
     observer.Wait();
   }
-  CheckAuthenticatedState(tab, true);
+
+  CheckBrokenAuthenticatedState(tab);
 }
 
 // From a bad HTTPS top frame:
