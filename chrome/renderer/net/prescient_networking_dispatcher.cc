@@ -4,10 +4,44 @@
 
 #include "chrome/renderer/net/prescient_networking_dispatcher.h"
 
+#include "base/metrics/field_trial.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/renderer/render_thread.h"
 
 using WebKit::WebPrescientNetworking;
+
+const char kMouseEventPreconnectFieldTrialName[] = "MouseEventPreconnect";
+const char kMouseEventPreconnectFieldTrialMouseDownGroup[] = "MouseDown";
+const char kMouseEventPreconnectFieldTrialMouseOverGroup[] = "MouseOver";
+const char kMouseEventPreconnectFieldTrialTapUnconfirmedGroup[] =
+    "TapUnconfirmed";
+const char kMouseEventPreconnectFieldTrialTapDownGroup[] = "TapDown";
+
+namespace {
+
+// Returns true if preconnect is enabled for given motivation.
+// The preconnect via {mouse,gesture} event is enabled for limited userbase
+// for Finch field trial.
+bool isPreconnectEnabledForMotivation(
+    WebKit::WebPreconnectMotivation motivation) {
+  std::string group =
+      base::FieldTrialList::FindFullName(kMouseEventPreconnectFieldTrialName);
+
+  switch (motivation) {
+    case WebKit::WebPreconnectMotivationLinkMouseDown:
+      return group == kMouseEventPreconnectFieldTrialMouseDownGroup;
+    case WebKit::WebPreconnectMotivationLinkMouseOver:
+      return group == kMouseEventPreconnectFieldTrialMouseOverGroup;
+    case WebKit::WebPreconnectMotivationLinkTapUnconfirmed:
+      return group == kMouseEventPreconnectFieldTrialTapUnconfirmedGroup;
+    case WebKit::WebPreconnectMotivationLinkTapDown:
+      return group == kMouseEventPreconnectFieldTrialTapDownGroup;
+    default:
+      return false;
+  }
+}
+
+} // namespace
 
 PrescientNetworkingDispatcher::~PrescientNetworkingDispatcher() {
 }
@@ -15,8 +49,7 @@ PrescientNetworkingDispatcher::~PrescientNetworkingDispatcher() {
 void PrescientNetworkingDispatcher::preconnect(
     const WebKit::WebURL& url,
     WebKit::WebPreconnectMotivation motivation) {
-  // FIXME(kouhei) actual pre-connecting is currently disabled.
-  // This should shortly be enabled via Finch field trials in upcoming patch.
-  // content::RenderThread::Get()->Send(new ChromeViewHostMsg_Preconnect(url));
+  if (isPreconnectEnabledForMotivation(motivation))
+    content::RenderThread::Get()->Send(new ChromeViewHostMsg_Preconnect(url));
 }
 
