@@ -48,34 +48,14 @@ const char kChangeStampKey[] = "CHANGE_STAMP";
 const char kSyncRootDirectoryKey[] = "SYNC_ROOT_DIR";
 const char kDriveMetadataKeyPrefix[] = "METADATA: ";
 const char kMetadataKeySeparator = ' ';
-const char kDriveBatchSyncOriginKeyPrefix[] = "BSYNC_ORIGIN: ";
 const char kDriveIncrementalSyncOriginKeyPrefix[] = "ISYNC_ORIGIN: ";
 const char kDriveDisabledOriginKeyPrefix[] = "DISABLED_ORIGIN: ";
 const size_t kDriveMetadataKeyPrefixLength = arraysize(kDriveMetadataKeyPrefix);
 
-const base::FilePath::CharType kV0FormatPathPrefix[] =
-    FILE_PATH_LITERAL("drive/");
-
-bool ParseV0FormatFileSystemURLString(const GURL& url,
-                                      GURL* origin,
-                                      base::FilePath* path) {
-  fileapi::FileSystemType mount_type;
-  base::FilePath virtual_path;
-
-  if (!fileapi::FileSystemURL::ParseFileSystemSchemeURL(
-          url, origin, &mount_type, &virtual_path) ||
-      mount_type != fileapi::kFileSystemTypeExternal) {
-    NOTREACHED() << "Failed to parse filesystem scheme URL";
-    return false;
-  }
-
-  base::FilePath::StringType prefix =
-      base::FilePath(kV0FormatPathPrefix).NormalizePathSeparators().value();
-  if (virtual_path.value().substr(0, prefix.size()) != prefix)
-    return false;
-
-  *path = base::FilePath(virtual_path.value().substr(prefix.size()));
-  return true;
+std::string RemovePrefix(const std::string& str, const std::string& prefix) {
+  if (StartsWithASCII(str, prefix, true))
+    return str.substr(prefix.size());
+  return str;
 }
 
 std::string FileSystemURLToMetadataKey(const FileSystemURL& url) {
@@ -86,8 +66,7 @@ std::string FileSystemURLToMetadataKey(const FileSystemURL& url) {
 void MetadataKeyToOriginAndPath(const std::string& metadata_key,
                                 GURL* origin,
                                 base::FilePath* path) {
-  std::string key_body(metadata_key.begin() + kDriveMetadataKeyPrefixLength - 1,
-                       metadata_key.end());
+  std::string key_body(RemovePrefix(metadata_key, kDriveMetadataKeyPrefix));
   size_t separator_position = key_body.find(kMetadataKeySeparator);
   *origin = GURL(key_body.substr(0, separator_position));
   *path = base::FilePath::FromUTF8Unsafe(
@@ -106,12 +85,6 @@ bool UpdateResourceIdMap(ResourceIdByOrigin* map,
 
   found->second = resource_id;
   return true;
-}
-
-std::string RemovePrefix(const std::string& str, const std::string& prefix) {
-  if (StartsWithASCII(str, prefix, true))
-    return str.substr(prefix.size());
-  return str;
 }
 
 }  // namespace
@@ -133,7 +106,6 @@ class DriveMetadataDB {
   SyncStatusCode ReadContents(DriveMetadataDBContents* contents);
 
   SyncStatusCode MigrateDatabaseIfNeeded();
-  SyncStatusCode MigrateFromVersion0To1Database();
 
   SyncStatusCode SetLargestChangestamp(int64 largest_changestamp);
   SyncStatusCode SetSyncRootDirectory(const std::string& resource_id);
@@ -149,8 +121,6 @@ class DriveMetadataDB {
   // origins like "UpdateOrigin(GURL, SyncStatusEnum)". And manage origins in
   // just one map like "Map<SyncStatusEnum, ResourceIDMap>".
   // http://crbug.com/211600
-  SyncStatusCode UpdateOriginAsBatchSync(const GURL& origin,
-                                         const std::string& resource_id);
   SyncStatusCode UpdateOriginAsIncrementalSync(const GURL& origin,
                                                const std::string& resource_id);
   SyncStatusCode EnableOrigin(const GURL& origin,
@@ -780,22 +750,6 @@ SyncStatusCode DriveMetadataDB::Initialize(bool* created) {
   }
 
   db_.reset(db);
-
-
-  // Deprecate legacy batch sync origin entries that are no longer needed.
-  leveldb::WriteBatch batch;
-  scoped_ptr<leveldb::Iterator> batch_origin_itr(
-      db_->NewIterator(leveldb::ReadOptions()));
-  for (batch_origin_itr->Seek(kDriveBatchSyncOriginKeyPrefix);
-       batch_origin_itr->Valid();
-       batch_origin_itr->Next()) {
-    std::string key = batch_origin_itr->key().ToString();
-    if (!StartsWithASCII(key, kDriveBatchSyncOriginKeyPrefix, true))
-      break;
-
-    batch.Delete(key);
-  }
-  status = db_->Write(leveldb::WriteOptions(), &batch);
   return LevelDBStatusToSyncStatusCode(status);
 }
 
@@ -868,79 +822,13 @@ SyncStatusCode DriveMetadataDB::MigrateDatabaseIfNeeded() {
 
   switch (database_version) {
     case 0:
-      MigrateFromVersion0To1Database();
+      drive::MigrateDatabaseFromV0ToV1(db_.get());
       // fall-through
     case 1:
       drive::MigrateDatabaseFromV1ToV2(db_.get());
       return SYNC_STATUS_OK;
   }
   return SYNC_DATABASE_ERROR_FAILED;
-}
-
-SyncStatusCode DriveMetadataDB::MigrateFromVersion0To1Database() {
-  // Version 0 database format:
-  //   key: "CHANGE_STAMP"
-  //   value: <Largest Changestamp>
-  //
-  //   key: "SYNC_ROOT_DIR"
-  //   value: <Resource ID of the sync root directory>
-  //
-  //   key: "METADATA: " +
-  //        <FileSystemURL serialized by SerializeSyncableFileSystemURL>
-  //   value: <Serialized DriveMetadata>
-  //
-  //   key: "BSYNC_ORIGIN: " + <URL string of a batch sync origin>
-  //   value: <Resource ID of the drive directory for the origin>
-  //
-  //   key: "ISYNC_ORIGIN: " + <URL string of a incremental sync origin>
-  //   value: <Resource ID of the drive directory for the origin>
-  //
-  // Version 1 database format (changed keys/fields are marked with '*'):
-  // * key: "VERSION" (new)
-  // * value: 1
-  //
-  //   key: "CHANGE_STAMP"
-  //   value: <Largest Changestamp>
-  //
-  //   key: "SYNC_ROOT_DIR"
-  //   value: <Resource ID of the sync root directory>
-  //
-  // * key: "METADATA: " + <Origin and URL> (changed)
-  // * value: <Serialized DriveMetadata>
-  //
-  //   key: "BSYNC_ORIGIN: " + <URL string of a batch sync origin>
-  //   value: <Resource ID of the drive directory for the origin>
-  //
-  //   key: "ISYNC_ORIGIN: " + <URL string of a incremental sync origin>
-  //   value: <Resource ID of the drive directory for the origin>
-  //
-  //   key: "DISABLED_ORIGIN: " + <URL string of a disabled origin>
-  //   value: <Resource ID of the drive directory for the origin>
-
-  leveldb::WriteBatch write_batch;
-  write_batch.Put(kDatabaseVersionKey, "1");
-
-  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
-  for (itr->Seek(kDriveMetadataKeyPrefix); itr->Valid(); itr->Next()) {
-    std::string key = itr->key().ToString();
-    if (!StartsWithASCII(key, kDriveMetadataKeyPrefix, true))
-      break;
-    std::string serialized_url(
-        key.begin() + kDriveMetadataKeyPrefixLength - 1, key.end());
-
-    GURL origin;
-    base::FilePath path;
-    bool success = ParseV0FormatFileSystemURLString(
-        GURL(serialized_url), &origin, &path);
-    DCHECK(success) << serialized_url;
-    std::string new_key = kDriveMetadataKeyPrefix + origin.spec() +
-        kMetadataKeySeparator + path.AsUTF8Unsafe();
-
-    write_batch.Put(new_key, itr->value());
-    write_batch.Delete(key);
-  }
-  return LevelDBStatusToSyncStatusCode(
-      db_->Write(leveldb::WriteOptions(), &write_batch));
 }
 
 SyncStatusCode DriveMetadataDB::SetLargestChangestamp(

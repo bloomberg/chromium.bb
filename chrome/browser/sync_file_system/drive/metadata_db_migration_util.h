@@ -11,8 +11,27 @@
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
+class GURL;
+
 namespace sync_file_system {
 namespace drive {
+
+// Parses a filesystem URL which contains 'drive' as a service name
+// (a.k.a. V0-format filesystem URL).
+//
+// When you parse V0-format filesystem URL, you should use this function instead
+// of DeserializeSyncableFileSystemURL() since 'drive' service name is no longer
+// used and the deserializer cannot parse the unregistered service name.
+//
+// EXAMPLE:
+// Assume following argument is given.
+//   url: 'filesystem:http://www.example.com/external/drive/foo/bar'
+// returns
+//   origin: 'http://www.example.com/'
+//   path:   'foo/bar'
+bool ParseV0FormatFileSystemURL(const GURL& url,
+                                GURL* origin,
+                                base::FilePath* path);
 
 // Adds "file:" prefix to WAPI resource ID.
 // EXAMPLE:  "xxx" => "file:xxx"
@@ -33,7 +52,10 @@ std::string AddWapiIdPrefix(const std::string& resource_id,
 //   "zzz"         =>  "zzz"
 std::string RemoveWapiIdPrefix(const std::string& resource_id);
 
-// Migrate |db| scheme from version 1 to version 2.
+// Migrate |db| schema from version 0 to version 1.
+SyncStatusCode MigrateDatabaseFromV0ToV1(leveldb::DB* db);
+
+// Migrate |db| schema from version 1 to version 2.
 SyncStatusCode MigrateDatabaseFromV1ToV2(leveldb::DB* db);
 
 }  // namespace drive

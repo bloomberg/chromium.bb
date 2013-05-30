@@ -9,12 +9,16 @@
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
+#include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/common/fileapi/file_system_types.h"
 
 namespace sync_file_system {
 namespace drive {
 
 namespace {
 
+const base::FilePath::CharType kV0FormatPathPrefix[] =
+    FILE_PATH_LITERAL("drive/");
 const char kWapiFileIdPrefix[] = "file:";
 const char kWapiFolderIdPrefix[] = "folder:";
 
@@ -25,6 +29,28 @@ std::string RemovePrefix(const std::string& str, const std::string& prefix) {
 }
 
 }  // namespace
+
+bool ParseV0FormatFileSystemURL(const GURL& url,
+                                GURL* origin,
+                                base::FilePath* path) {
+  fileapi::FileSystemType mount_type;
+  base::FilePath virtual_path;
+
+  if (!fileapi::FileSystemURL::ParseFileSystemSchemeURL(
+          url, origin, &mount_type, &virtual_path) ||
+      mount_type != fileapi::kFileSystemTypeExternal) {
+    NOTREACHED() << "Failed to parse filesystem scheme URL";
+    return false;
+  }
+
+  base::FilePath::StringType prefix =
+      base::FilePath(kV0FormatPathPrefix).NormalizePathSeparators().value();
+  if (virtual_path.value().substr(0, prefix.size()) != prefix)
+    return false;
+
+  *path = base::FilePath(virtual_path.value().substr(prefix.size()));
+  return true;
+}
 
 std::string AddWapiFilePrefix(const std::string& resource_id) {
   DCHECK(!StartsWithASCII(resource_id, kWapiFileIdPrefix, true));
@@ -68,8 +94,78 @@ std::string RemoveWapiIdPrefix(const std::string& resource_id) {
   return resource_id;
 }
 
+SyncStatusCode MigrateDatabaseFromV0ToV1(leveldb::DB* db) {
+  // Version 0 database format:
+  //   key: "CHANGE_STAMP"
+  //   value: <Largest Changestamp>
+  //
+  //   key: "SYNC_ROOT_DIR"
+  //   value: <Resource ID of the sync root directory>
+  //
+  //   key: "METADATA: " +
+  //        <FileSystemURL serialized by SerializeSyncableFileSystemURL>
+  //   value: <Serialized DriveMetadata>
+  //
+  //   key: "BSYNC_ORIGIN: " + <URL string of a batch sync origin>
+  //   value: <Resource ID of the drive directory for the origin>
+  //
+  //   key: "ISYNC_ORIGIN: " + <URL string of a incremental sync origin>
+  //   value: <Resource ID of the drive directory for the origin>
+  //
+  // Version 1 database format (changed keys/fields are marked with '*'):
+  // * key: "VERSION" (new)
+  // * value: 1
+  //
+  //   key: "CHANGE_STAMP"
+  //   value: <Largest Changestamp>
+  //
+  //   key: "SYNC_ROOT_DIR"
+  //   value: <Resource ID of the sync root directory>
+  //
+  // * key: "METADATA: " + <Origin and URL> (changed)
+  // * value: <Serialized DriveMetadata>
+  //
+  //   key: "BSYNC_ORIGIN: " + <URL string of a batch sync origin>
+  //   value: <Resource ID of the drive directory for the origin>
+  //
+  //   key: "ISYNC_ORIGIN: " + <URL string of a incremental sync origin>
+  //   value: <Resource ID of the drive directory for the origin>
+  //
+  //   key: "DISABLED_ORIGIN: " + <URL string of a disabled origin>
+  //   value: <Resource ID of the drive directory for the origin>
+
+  const char kDatabaseVersionKey[] = "VERSION";
+  const char kDriveMetadataKeyPrefix[] = "METADATA: ";
+  const char kMetadataKeySeparator = ' ';
+
+  leveldb::WriteBatch write_batch;
+  write_batch.Put(kDatabaseVersionKey, "1");
+
+  scoped_ptr<leveldb::Iterator> itr(db->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(kDriveMetadataKeyPrefix); itr->Valid(); itr->Next()) {
+    std::string key = itr->key().ToString();
+    if (!StartsWithASCII(key, kDriveMetadataKeyPrefix, true))
+      break;
+    std::string serialized_url(RemovePrefix(key, kDriveMetadataKeyPrefix));
+
+    GURL origin;
+    base::FilePath path;
+    bool success = ParseV0FormatFileSystemURL(
+        GURL(serialized_url), &origin, &path);
+    DCHECK(success) << serialized_url;
+    std::string new_key = kDriveMetadataKeyPrefix + origin.spec() +
+        kMetadataKeySeparator + path.AsUTF8Unsafe();
+
+    write_batch.Put(new_key, itr->value());
+    write_batch.Delete(key);
+  }
+
+  return LevelDBStatusToSyncStatusCode(
+      db->Write(leveldb::WriteOptions(), &write_batch));
+}
+
 SyncStatusCode MigrateDatabaseFromV1ToV2(leveldb::DB* db) {
-  // Strips prefix of WAPI resource ID.
+  // Strips prefix of WAPI resource ID, and discards batch sync origins.
   // (i.e. "file:xxxx" => "xxxx", "folder:yyyy" => "yyyy")
   //
   // Version 2 database format (changed keys/fields are marked with '*'):
@@ -83,17 +179,21 @@ SyncStatusCode MigrateDatabaseFromV1ToV2(leveldb::DB* db) {
   // * value: <Resource ID of the sync root directory> (striped)
   //
   //   key: "METADATA: " + <Origin and URL>
-  // * value: <Serialized DriveMetadata> (striped)
+  // * value: <Serialized DriveMetadata> (stripped)
+  //
+  // * key: "BSYNC_ORIGIN: " + <URL string of a batch sync origin> (deleted)
+  // * value: <Resource ID of the drive directory for the origin> (deleted)
   //
   //   key: "ISYNC_ORIGIN: " + <URL string of a incremental sync origin>
-  // * value: <Resource ID of the drive directory for the origin> (striped)
+  // * value: <Resource ID of the drive directory for the origin> (stripped)
   //
   //   key: "DISABLED_ORIGIN: " + <URL string of a disabled origin>
-  // * value: <Resource ID of the drive directory for the origin> (striped)
+  // * value: <Resource ID of the drive directory for the origin> (stripped)
 
   const char kDatabaseVersionKey[] = "VERSION";
   const char kSyncRootDirectoryKey[] = "SYNC_ROOT_DIR";
   const char kDriveMetadataKeyPrefix[] = "METADATA: ";
+  const char kDriveBatchSyncOriginKeyPrefix[] = "BSYNC_ORIGIN: ";
   const char kDriveIncrementalSyncOriginKeyPrefix[] = "ISYNC_ORIGIN: ";
   const char kDriveDisabledOriginKeyPrefix[] = "DISABLED_ORIGIN: ";
 
@@ -121,6 +221,12 @@ SyncStatusCode MigrateDatabaseFromV1ToV2(leveldb::DB* db) {
       metadata.SerializeToString(&metadata_string);
 
       write_batch.Put(key, metadata_string);
+      continue;
+    }
+
+    // Deprecate legacy batch sync origin entries that are no longer needed.
+    if (StartsWithASCII(key, kDriveBatchSyncOriginKeyPrefix, true)) {
+      write_batch.Delete(key);
       continue;
     }
 
