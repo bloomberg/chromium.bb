@@ -27,9 +27,12 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
   TestVolumeMountWatcherWin();
   virtual ~TestVolumeMountWatcherWin();
 
+  static bool GetDeviceRemovable(const base::FilePath& device_path,
+                                 bool* removable);
+
   void AddDeviceForTesting(const base::FilePath& device_path,
                            const std::string& device_id,
-                           const string16& device_name,
+                           const base::string16& device_name,
                            uint64 total_size_in_bytes);
 
   void SetAttachedDevicesFake();
@@ -38,7 +41,7 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
 
   virtual void DeviceCheckComplete(const base::FilePath& device_path);
 
-  std::vector<base::FilePath> devices_checked() const {
+  const std::vector<base::FilePath>& devices_checked() const {
       return devices_checked_;
   }
 
@@ -46,11 +49,7 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
 
   void ReleaseDeviceCheck();
 
-  bool GetDeviceRemovable(const base::FilePath& device_path,
-      bool* removable) const;
-
   // VolumeMountWatcherWin:
-
   virtual GetAttachedDevicesCallbackType
       GetAttachedDevicesCallback() const OVERRIDE;
   virtual GetDeviceDetailsCallbackType

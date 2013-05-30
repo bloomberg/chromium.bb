@@ -16,13 +16,6 @@
 
 namespace chrome {
 
-namespace {
-
-const char16 kWindowClassName[] = L"Chrome_StorageMonitorWindow";
-
-}  // namespace
-
-
 // StorageMonitorWin -------------------------------------------------------
 
 // static
@@ -59,7 +52,7 @@ StorageMonitorWin::~StorageMonitorWin() {
 void StorageMonitorWin::Init() {
   WNDCLASSEX window_class;
   base::win::InitializeWindowClass(
-      kWindowClassName,
+      L"Chrome_StorageMonitorWindow",
       &base::win::WrappedWindowProc<StorageMonitorWin::WndProcThunk>,
       0, 0, 0, NULL, NULL, NULL, NULL, NULL,
       &window_class);
@@ -125,8 +118,8 @@ void StorageMonitorWin::EjectDevice(
 
 bool StorageMonitorWin::GetMTPStorageInfoFromDeviceId(
     const std::string& storage_device_id,
-    string16* device_location,
-    string16* storage_object_id) const {
+    base::string16* device_location,
+    base::string16* storage_object_id) const {
   StorageInfo::Type type;
   StorageInfo::CrackDeviceId(storage_device_id, &type, NULL);
   return ((type == StorageInfo::MTP_OR_PTP) &&
@@ -159,6 +152,8 @@ LRESULT CALLBACK StorageMonitorWin::WndProc(HWND hwnd, UINT message,
 
 bool StorageMonitorWin::GetDeviceInfo(const base::FilePath& device_path,
                                       StorageInfo* info) const {
+  DCHECK(info);
+
   // TODO(kmadhusu) Implement PortableDeviceWatcherWin::GetDeviceInfo()
   // function when we have the functionality to add a sub directory of
   // portable device as a media gallery.

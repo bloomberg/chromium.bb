@@ -39,8 +39,8 @@ class StorageMonitorWin : public StorageMonitor {
                                      StorageInfo* device_info) const OVERRIDE;
   virtual bool GetMTPStorageInfoFromDeviceId(
       const std::string& storage_device_id,
-      string16* device_location,
-      string16* storage_object_id) const OVERRIDE;
+      base::string16* device_location,
+      base::string16* storage_object_id) const OVERRIDE;
 
   virtual void EjectDevice(
       const std::string& device_id,
@@ -57,8 +57,7 @@ class StorageMonitorWin : public StorageMonitor {
                     PortableDeviceWatcherWin* portable_device_watcher);
 
   // Gets the removable storage information given a |device_path|. On success,
-  // returns true and fills in |device_location|, |unique_id|, |name| and
-  // |removable|, and |total_size_in_bytes|.
+  // returns true and fills in |info|.
   bool GetDeviceInfo(const base::FilePath& device_path,
                      StorageInfo* info) const;
 

@@ -44,8 +44,8 @@ class VolumeMountWatcherWin {
   // Gets the information about the device mounted at |device_path|. On success,
   // returns true and fills in |info|.
   // Can block during startup while device info is still loading.
-  virtual bool GetDeviceInfo(const base::FilePath& device_path,
-                             StorageInfo* info) const;
+  bool GetDeviceInfo(const base::FilePath& device_path,
+                     StorageInfo* info) const;
 
   // Processes DEV_BROADCAST_VOLUME messages and triggers a
   // notification if appropriate.
@@ -71,7 +71,7 @@ class VolumeMountWatcherWin {
       const StorageInfo& info);
 
   // Handles mass storage device detach event on UI thread.
-  void HandleDeviceDetachEventOnUIThread(const string16& device_location);
+  void HandleDeviceDetachEventOnUIThread(const base::string16& device_location);
 
   // UI thread delegate to set up adding storage devices.
   void AddDevicesOnUIThread(std::vector<base::FilePath> removable_devices);
@@ -81,7 +81,7 @@ class VolumeMountWatcherWin {
   static void RetrieveInfoForDeviceAndAdd(
       const base::FilePath& device_path,
       const GetDeviceDetailsCallbackType& get_device_details_callback,
-      base::WeakPtr<chrome::VolumeMountWatcherWin> volume_watcher);
+      base::WeakPtr<VolumeMountWatcherWin> volume_watcher);
 
   // Mark that a device we started a metadata check for has completed.
   virtual void DeviceCheckComplete(const base::FilePath& device_path);
@@ -100,7 +100,7 @@ class VolumeMountWatcherWin {
 
   // Key: Mass storage device mount point.
   // Value: Mass storage device metadata.
-  typedef std::map<string16, StorageInfo> MountPointDeviceMetadataMap;
+  typedef std::map<base::string16, StorageInfo> MountPointDeviceMetadataMap;
 
   // Maintain a set of device attribute check calls in-flight. Only accessed
   // on the UI thread. This is to try and prevent the same device from

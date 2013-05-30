@@ -76,9 +76,9 @@ bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
       "\\\\?\\Volume{00000000-0000-0000-0000-000000000000}\\";
   unique_id[11] = device_path.value()[0];
   std::string device_id = StorageInfo::MakeDeviceId(type, unique_id);
-  string16 storage_label = path.Append(L" Drive").LossyDisplayName();
-  *info = StorageInfo(device_id, string16(), path.value(), storage_label,
-                      string16(), string16(), 1000000);
+  base::string16 storage_label = path.Append(L" Drive").LossyDisplayName();
+  *info = StorageInfo(device_id, base::string16(), path.value(), storage_label,
+                      base::string16(), base::string16(), 1000000);
 
   return true;
 }
@@ -96,10 +96,11 @@ TestVolumeMountWatcherWin::~TestVolumeMountWatcherWin() {
 void TestVolumeMountWatcherWin::AddDeviceForTesting(
     const base::FilePath& device_path,
     const std::string& device_id,
-    const string16& device_name,
+    const base::string16& device_name,
     uint64 total_size_in_bytes) {
   StorageInfo info(device_id, device_name, device_path.value(),
-                   string16(), string16(), string16(), total_size_in_bytes);
+                   base::string16(), base::string16(), base::string16(),
+                   total_size_in_bytes);
   HandleDeviceAttachEventOnUIThread(device_path, info);
 }
 
@@ -128,9 +129,10 @@ void TestVolumeMountWatcherWin::ReleaseDeviceCheck() {
   device_check_complete_event_->Signal();
 }
 
+// static
 bool TestVolumeMountWatcherWin::GetDeviceRemovable(
     const base::FilePath& device_path,
-    bool* removable) const {
+    bool* removable) {
   StorageInfo info;
   bool success = GetMassStorageDeviceDetails(device_path, &info);
   *removable = StorageInfo::IsRemovableDevice(info.device_id());
@@ -146,7 +148,6 @@ VolumeMountWatcherWin::GetAttachedDevicesCallbackType
   TestVolumeMountWatcherWin::GetAttachedDevicesCallback() const {
   if (attached_devices_fake_)
     return base::Bind(&FakeGetAttachedDevices);
-
   return base::Bind(&FakeGetSingleAttachedDevice);
 }
 
