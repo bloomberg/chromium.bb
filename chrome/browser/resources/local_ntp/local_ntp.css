@@ -242,7 +242,8 @@ body.fakebox-focused #cursor {
   border-color: #7f7f7f
 }
 
-.mv-thumb {
+.mv-thumb,
+.mv-mask {
   border: none;
   cursor: pointer;
   height: 83px;
@@ -259,6 +260,17 @@ body.fakebox-focused #cursor {
   left: 0;
   position: absolute;
   width: 140px;
+}
+
+.mv-mask {
+  opacity: 0.35;
+}
+
+.mv-page:focus .mv-mask {
+  -webkit-transition: background-color 100ms ease-in-out;
+  background: -webkit-linear-gradient(rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0) 80%, rgba(255, 255, 255, 0.9));
+  background-color: black;
 }
 
 .mv-x-hide .mv-x {

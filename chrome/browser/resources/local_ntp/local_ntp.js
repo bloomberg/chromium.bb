@@ -55,6 +55,7 @@ var CLASSES = {
   SUGGESTION_CONTENTS: 'suggestion-contents',
   SUGGESTIONS_BOX: 'suggestions-box',
   THUMBNAIL: 'mv-thumb',
+  THUMBNAIL_MASK: 'mv-mask',
   // Applied when user types. Makes fakebox non-interactive and hides
   // scrollbars. Removed on ESC.
   USER_TYPED: 'user-typed',
@@ -465,6 +466,10 @@ function createTile(page, position) {
     };
     thumbnailElement.className = CLASSES.THUMBNAIL;
     tileElement.appendChild(thumbnailElement);
+
+    // A mask to darken the thumbnail on focus.
+    var maskElement = createAndAppendElement(
+        tileElement, 'div', CLASSES.THUMBNAIL_MASK);
 
     // The button used to blacklist this page.
     var blacklistButton = createAndAppendElement(
