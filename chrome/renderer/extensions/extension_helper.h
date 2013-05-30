@@ -73,7 +73,6 @@ class ExtensionHelper
   void OnExtensionMessageInvoke(const std::string& extension_id,
                                 const std::string& function_name,
                                 const base::ListValue& args,
-                                const GURL& event_url,
                                 bool user_gesture);
   void OnExtensionDispatchOnConnect(
       int target_port_id,

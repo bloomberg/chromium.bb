@@ -139,7 +139,6 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
                                            const std::string& extension_id,
                                            const std::string& event_name,
                                            ListValue* event_args,
-                                           const GURL& event_url,
                                            UserGestureState user_gesture,
                                            const EventFilteringInfo& info) {
   if (ActivityLog::IsLogEnabled()) {
@@ -151,8 +150,11 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
   args.Set(0, Value::CreateStringValue(event_name));
   args.Set(1, event_args);
   args.Set(2, info.AsValue().release());
-  ipc_sender->Send(new ExtensionMsg_MessageInvoke(MSG_ROUTING_CONTROL,
-      extension_id, kDispatchEvent, args, event_url,
+  ipc_sender->Send(new ExtensionMsg_MessageInvoke(
+      MSG_ROUTING_CONTROL,
+      extension_id,
+      kDispatchEvent,
+      args,
       user_gesture == USER_GESTURE_ENABLED));
 
   // DispatchExtensionMessage does _not_ take ownership of event_args, so we
@@ -167,11 +169,10 @@ void EventRouter::DispatchEvent(IPC::Sender* ipc_sender,
                                 const std::string& extension_id,
                                 const std::string& event_name,
                                 scoped_ptr<ListValue> event_args,
-                                const GURL& event_url,
                                 UserGestureState user_gesture,
                                 const EventFilteringInfo& info) {
   DispatchExtensionMessage(ipc_sender, profile_id, extension_id, event_name,
-                           event_args.get(), event_url, user_gesture, info);
+                           event_args.get(), user_gesture, info);
 
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -605,6 +606,15 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
     return;
   }
 
+  // If the event is restricted to a URL, only dispatch if the extension has
+  // permission for it (or if the event originated from itself).
+  if (!event->event_url.is_empty() &&
+      event->event_url.host() != extension->id() &&
+      !extension->GetActivePermissions()->HasEffectiveAccessToURL(
+          event->event_url)) {
+    return;
+  }
+
   if (!CanDispatchEventToProfile(listener_profile, extension, event))
     return;
 
@@ -613,10 +623,9 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
                                       event->event_args.get());
   }
 
-  DispatchExtensionMessage(process, listener_profile, extension_id,
+  DispatchExtensionMessage(process, listener_profile, extension->id(),
                            event->event_name, event->event_args.get(),
-                           event->event_url, event->user_gesture,
-                           event->filter_info);
+                           event->user_gesture, event->filter_info);
   IncrementInFlightEvents(listener_profile, extension);
 }
 

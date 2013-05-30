@@ -27,29 +27,6 @@ using content::V8ValueConverter;
 
 namespace extensions {
 
-namespace {
-
-// Returns true if the extension running in the given |render_view| has
-// sufficient permissions to access the data.
-//
-// TODO(aa): This looks super suspicious. Is it correct? Can we use something
-// else already in the system? Should it be moved elsewhere?
-  bool HasSufficientPermissions(content::RenderView* render_view,
-                                const GURL& event_url) {
-  // During unit tests, we might be invoked without a v8 context. In these
-  // cases, we only allow empty event_urls and short-circuit before retrieving
-  // the render view from the current context.
-  if (!event_url.is_valid())
-    return true;
-
-  WebKit::WebDocument document =
-      render_view->GetWebView()->mainFrame()->document();
-  return GURL(document.url()).SchemeIs(extensions::kExtensionScheme) &&
-       document.securityOrigin().canRequest(event_url);
-}
-
-}  // namespace
-
 ChromeV8ContextSet::ChromeV8ContextSet() {
 }
 ChromeV8ContextSet::~ChromeV8ContextSet() {
@@ -106,8 +83,7 @@ void ChromeV8ContextSet::DispatchChromeHiddenMethod(
     const std::string& extension_id,
     const std::string& method_name,
     const base::ListValue& arguments,
-    content::RenderView* render_view,
-    const GURL& event_url) const {
+    content::RenderView* render_view) const {
   v8::HandleScope handle_scope;
 
   // We copy the context list, because calling into javascript may modify it
@@ -131,9 +107,6 @@ void ChromeV8ContextSet::DispatchChromeHiddenMethod(
       continue;
 
     if (render_view && render_view != context_render_view)
-      continue;
-
-    if (!HasSufficientPermissions(context_render_view, event_url))
       continue;
 
     v8::Local<v8::Context> context(*((*it)->v8_context()));

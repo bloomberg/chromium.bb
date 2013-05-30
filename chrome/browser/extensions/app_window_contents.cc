@@ -97,9 +97,7 @@ void AppWindowContents::NativeWindowChanged(
                                            host_->extension()->id(),
                                            "updateAppWindowProperties",
                                            args,
-                                           GURL(),
                                            false));
-
 }
 
 void AppWindowContents::NativeWindowClosed() {

@@ -71,7 +71,6 @@ class EventRouter : public content::NotificationObserver,
                             const std::string& extension_id,
                             const std::string& event_name,
                             scoped_ptr<base::ListValue> event_args,
-                            const GURL& event_url,
                             UserGestureState user_gesture,
                             const EventFilteringInfo& info);
 
@@ -175,7 +174,6 @@ class EventRouter : public content::NotificationObserver,
       const std::string& extension_id,
       const std::string& event_name,
       base::ListValue* event_args,
-      const GURL& event_url,
       UserGestureState user_gesture,
       const extensions::EventFilteringInfo& info);
 

@@ -146,7 +146,6 @@ class Dispatcher : public content::RenderProcessObserver {
   void OnMessageInvoke(const std::string& extension_id,
                        const std::string& function_name,
                        const base::ListValue& args,
-                       const GURL& event_url,
                        bool user_gesture);
   void OnDispatchOnConnect(int target_port_id,
                            const std::string& channel_name,

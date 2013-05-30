@@ -252,7 +252,6 @@ void ExtensionHelper::OnExtensionResponse(int request_id,
 void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
                                                const std::string& function_name,
                                                const base::ListValue& args,
-                                               const GURL& event_url,
                                                bool user_gesture) {
   scoped_ptr<WebScopedUserGesture> web_user_gesture;
   if (user_gesture) {
@@ -260,7 +259,7 @@ void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
   }
 
   dispatcher_->v8_context_set().DispatchChromeHiddenMethod(
-      extension_id, function_name, args, render_view(), event_url);
+      extension_id, function_name, args, render_view());
 }
 
 void ExtensionHelper::OnExtensionDispatchOnConnect(

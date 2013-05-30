@@ -552,7 +552,6 @@ void Dispatcher::OnSetChannel(int channel) {
 void Dispatcher::OnMessageInvoke(const std::string& extension_id,
                                  const std::string& function_name,
                                  const base::ListValue& args,
-                                 const GURL& event_url,
                                  bool user_gesture) {
   scoped_ptr<WebScopedUserGesture> web_user_gesture;
   if (user_gesture) {
@@ -560,7 +559,7 @@ void Dispatcher::OnMessageInvoke(const std::string& extension_id,
   }
 
   v8_context_set_.DispatchChromeHiddenMethod(
-      extension_id, function_name, args, NULL, event_url);
+      extension_id, function_name, args, NULL);
 
   // Reset the idle handler each time there's any activity like event or message
   // dispatch, for which Invoke is the chokepoint.
@@ -1359,7 +1358,7 @@ void Dispatcher::OnSuspend(const std::string& extension_id) {
   args.Set(0, new base::StringValue(kOnSuspendEvent));
   args.Set(1, new base::ListValue());
   v8_context_set_.DispatchChromeHiddenMethod(
-      extension_id, kEventDispatchFunction, args, NULL, GURL());
+      extension_id, kEventDispatchFunction, args, NULL);
 
   RenderThread::Get()->Send(new ExtensionHostMsg_SuspendAck(extension_id));
 }
@@ -1369,7 +1368,7 @@ void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
   args.Set(0, new base::StringValue(kOnSuspendCanceledEvent));
   args.Set(1, new base::ListValue());
   v8_context_set_.DispatchChromeHiddenMethod(
-      extension_id, kEventDispatchFunction, args, NULL, GURL());
+      extension_id, kEventDispatchFunction, args, NULL);
 }
 
 Feature::Context Dispatcher::ClassifyJavaScriptContext(

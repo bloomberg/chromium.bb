@@ -1099,7 +1099,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     extensions::EventRouter::DispatchEvent(
         (*it)->ipc_sender.get(), profile_id,
         (*it)->extension_id, (*it)->sub_event_name,
-        args_filtered.Pass(), GURL(),
+        args_filtered.Pass(),
         extensions::EventRouter::USER_GESTURE_UNKNOWN,
         extensions::EventFilteringInfo());
     if ((*it)->extra_info_spec &

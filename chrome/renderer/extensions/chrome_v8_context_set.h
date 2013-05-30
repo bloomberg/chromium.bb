@@ -66,8 +66,7 @@ class ChromeV8ContextSet {
   void DispatchChromeHiddenMethod(const std::string& extension_id,
                                   const std::string& method_name,
                                   const base::ListValue& arguments,
-                                  content::RenderView* render_view,
-                                  const GURL& event_url) const;
+                                  content::RenderView* render_view) const;
 
   // Cleans up contexts belonging to an unloaded extension.
   //
