@@ -32,6 +32,7 @@ class AppListServiceAsh : public AppListServiceImpl {
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
   virtual void EnableAppList() OVERRIDE;
+  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceAsh);
 };
@@ -59,6 +60,12 @@ void AppListServiceAsh::DismissAppList() {
 }
 
 void AppListServiceAsh::EnableAppList() {}
+
+gfx::NativeWindow AppListServiceAsh::GetAppListWindow() {
+  if (ash::Shell::HasInstance())
+    return ash::Shell::GetInstance()->GetAppListWindow();
+  return NULL;
+}
 
 }  // namespace
 

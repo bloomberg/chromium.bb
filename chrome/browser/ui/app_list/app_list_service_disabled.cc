@@ -43,6 +43,10 @@ class AppListServiceDisabled : public AppListService {
     return NULL;
   }
 
+  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE {
+    return NULL;
+  }
+
   DISALLOW_COPY_AND_ASSIGN(AppListServiceDisabled);
 };
 

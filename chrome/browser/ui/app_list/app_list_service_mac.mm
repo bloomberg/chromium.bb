@@ -50,7 +50,6 @@ class AppListServiceMac : public AppListServiceImpl,
   }
 
   void CreateAppList(Profile* profile);
-  NSWindow* GetNativeWindow();
   void ShowWindowNearDock();
 
   // AppListService overrides:
@@ -59,6 +58,7 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual void DismissAppList() OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual void EnableAppList() OVERRIDE;
+  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
 
   // AppShimHandler overrides:
   virtual bool OnShimLaunch(apps::AppShimHandler::Host* host) OVERRIDE;
@@ -169,7 +169,7 @@ void AppListControllerDelegateCocoa::DismissView() {
 }
 
 gfx::NativeWindow AppListControllerDelegateCocoa::GetAppListWindow() {
-  return AppListServiceMac::GetInstance()->GetNativeWindow();
+  return AppListServiceMac::GetInstance()->GetAppListWindow();
 }
 
 bool AppListControllerDelegateCocoa::CanPin() {
@@ -267,7 +267,7 @@ void AppListServiceMac::EnableAppList() {
   // TODO(tapted): Implement enable logic here for OSX.
 }
 
-NSWindow* AppListServiceMac::GetNativeWindow() {
+NSWindow* AppListServiceMac::GetAppListWindow() {
   return [window_controller_ window];
 }
 
@@ -358,7 +358,7 @@ NSPoint GetAppListWindowOrigin(NSWindow* window) {
 }
 
 void AppListServiceMac::ShowWindowNearDock() {
-  NSWindow* window = GetNativeWindow();
+  NSWindow* window = GetAppListWindow();
   DCHECK(window);
   [window setFrameOrigin:GetAppListWindowOrigin(window)];
   [window makeKeyAndOrderFront:nil];

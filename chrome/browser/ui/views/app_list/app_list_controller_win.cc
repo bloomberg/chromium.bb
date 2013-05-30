@@ -311,6 +311,7 @@ class AppListController : public AppListServiceImpl {
   virtual void DismissAppList() OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual void EnableAppList() OVERRIDE;
+  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
 
   // AppListServiceImpl overrides:
@@ -409,8 +410,7 @@ void AppListControllerDelegateWin::ViewClosing() {
 }
 
 gfx::NativeWindow AppListControllerDelegateWin::GetAppListWindow() {
-  app_list::AppListView* view = AppListController::GetInstance()->GetView();
-  return view ? view->GetWidget()->GetNativeWindow() : NULL;
+  return AppListController::GetInstance()->GetAppListWindow();
 }
 
 gfx::ImageSkia AppListControllerDelegateWin::GetWindowIcon() {
@@ -481,6 +481,12 @@ AppListController::AppListController()
       weak_factory_(this) {}
 
 AppListController::~AppListController() {
+}
+
+gfx::NativeWindow AppListController::GetAppListWindow() {
+  if (!IsAppListVisible())
+    return NULL;
+  return current_view_ ? current_view_->GetWidget()->GetNativeWindow() : NULL;
 }
 
 AppListControllerDelegate* AppListController::CreateControllerDelegate() {

@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/extension.h"
@@ -40,19 +41,15 @@ int HorizontalMargin() {
 }
 
 // Returns parent window for extension uninstall dialog.
-// For ash, use app list window if it is visible.
-// For other platforms or when app list is not visible on ash,
-// use the given browser window.
-// Note this function could return NULL if ash app list is not visible and
+// For platforms with an app list, use the app list window if it is visible.
+// For other platforms or when app list is not visible, use the given browser
+// window.
+// Note this function could return NULL if the app list is not visible and
 // there is no browser window.
 gfx::NativeWindow GetParent(Browser* browser) {
-#if defined(USE_ASH)
-  if (ash::Shell::HasInstance()) {
-    gfx::NativeWindow app_list = ash::Shell::GetInstance()->GetAppListWindow();
-    if (app_list)
-      return app_list;
-  }
-#endif
+  gfx::NativeWindow window = AppListService::Get()->GetAppListWindow();
+  if (window)
+    return window;
 
   if (browser && browser->window())
     return browser->window()->GetNativeWindow();

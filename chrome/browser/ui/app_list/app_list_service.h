@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/gfx/native_widget_types.h"
 
 class AppListControllerDelegate;
 class CommandLine;
@@ -60,6 +61,9 @@ class AppListService {
   // Enable the app list. What this does specifically will depend on the host
   // operating system and shell.
   virtual void EnableAppList() = 0;
+
+  // Get the window the app list is in, or NULL if the app list isn't visible.
+  virtual gfx::NativeWindow GetAppListWindow() = 0;
 
   // Exposed to allow testing of the controller delegate.
   virtual AppListControllerDelegate* CreateControllerDelegate() = 0;
