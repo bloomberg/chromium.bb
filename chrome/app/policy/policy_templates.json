@@ -4533,7 +4533,7 @@
 
       If you set this policy, users cannot change or override it.
 
-      An automatic reboot is scheduled at the selected time but may be delayed on the device by up to 24 hours, e.g. if a user is currently using the device or an app/extension has requested reboots to be inhibited temporarily.
+      An automatic reboot is scheduled at the selected time but may be delayed on the device by up to 24 hours if a user is currently using the device.
 
       The policy value should be specified in seconds. Values are clamped to be at least 3600 (one hour).''',
     },
@@ -4551,7 +4551,7 @@
       'caption': '''Automatically reboot after update''',
       'desc': '''Schedule an automatic reboot after a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> update has been applied.
 
-      When this policy is set to true, an automatic reboot is scheduled when a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> update has been applied and a reboot is required to complete the update process. The reboot is scheduled immediately but may be delayed on the device by up to 24 hours, e.g. if a user is currently using the device or an app/extension has requested reboots to be inhibited temporarily.
+      When this policy is set to true, an automatic reboot is scheduled when a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> update has been applied and a reboot is required to complete the update process. The reboot is scheduled immediately but may be delayed on the device by up to 24 hours if a user is currently using the device.
 
       When this policy is set to false, no automatic reboot is scheduled after applying a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> update. The update process is completed when the user next reboots the device.
 

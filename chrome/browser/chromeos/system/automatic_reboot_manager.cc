@@ -160,6 +160,8 @@ AutomaticRebootManager::AutomaticRebootManager(
   local_state_registrar_.Add(prefs::kRebootAfterUpdate,
                              base::Bind(&AutomaticRebootManager::Reschedule,
                                         base::Unretained(this)));
+  notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+      content::NotificationService::AllSources());
 
   DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
   dbus_thread_manager->GetPowerManagerClient()->AddObserver(this);
@@ -244,13 +246,20 @@ void AutomaticRebootManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // Reboots are always inhibited while a user is logged in and the device is
-  // not sleeping. Stop listening for user activity as this is no longer a
-  // relevant criterion.
-  if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
+  if (type == chrome::NOTIFICATION_APP_TERMINATING) {
+    if (UserManager::Get()->IsUserLoggedIn()) {
+      // The browser is terminating during a session, either because the session
+      // is ending or because the browser is being restarted.
+      MaybeReboot(true);
+    }
+  } else if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
+    // A session is starting. Stop listening for user activity as it no longer
+    // is a relevant criterion.
     if (ash::Shell::HasInstance())
       ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
-    notification_registrar_.RemoveAll();
+    notification_registrar_.Remove(
+        this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+        content::NotificationService::AllSources());
     login_screen_idle_timer_.reset();
   } else {
     NOTREACHED();
@@ -353,14 +362,14 @@ void AutomaticRebootManager::RequestReboot() {
   MaybeReboot(false);
 }
 
-void AutomaticRebootManager::MaybeReboot(bool ignore_logged_in_user) {
+void AutomaticRebootManager::MaybeReboot(bool ignore_session) {
   // Do not reboot if any of the following applies:
   // * No reboot has been requested.
   // * A user is interacting with the login screen.
-  // * A user is logged in and |ignore_logged_in_user| is not set.
+  // * A session is in progress and |ignore_session| is not set.
   if (!reboot_requested_ ||
       (login_screen_idle_timer_ && login_screen_idle_timer_->IsRunning()) ||
-      (!ignore_logged_in_user && UserManager::Get()->IsUserLoggedIn())) {
+      (!ignore_session && UserManager::Get()->IsUserLoggedIn())) {
     return;
   }
 

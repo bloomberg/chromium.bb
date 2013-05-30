@@ -134,6 +134,7 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
   void SetUptimeLimit(const base::TimeDelta& limit, bool expect_reboot);
   void NotifyUpdateRebootNeeded();
   void NotifyResumed(bool expect_reboot);
+  void NotifyTerminating(bool expect_reboot);
 
   void FastForwardBy(const base::TimeDelta& delta, bool expect_reboot);
   void FastForwardUntilNoTasksRemain(bool expect_reboot);
@@ -415,6 +416,16 @@ void AutomaticRebootManagerBasicTest::NotifyResumed(bool expect_reboot) {
             power_manager_client_->request_restart_call_count());
 }
 
+void AutomaticRebootManagerBasicTest::NotifyTerminating(bool expect_reboot) {
+  automatic_reboot_manager_->Observe(
+      chrome::NOTIFICATION_APP_TERMINATING,
+      content::Source<AutomaticRebootManagerBasicTest>(this),
+      content::NotificationService::NoDetails());
+  task_runner_->RunUntilIdle();
+  EXPECT_EQ(expect_reboot ? 1 : 0,
+            power_manager_client_->request_restart_call_count());
+}
+
 void AutomaticRebootManagerBasicTest::FastForwardBy(
     const base::TimeDelta& delta,
     bool expect_reboot) {
@@ -678,6 +689,76 @@ TEST_F(AutomaticRebootManagerBasicTest, ResumeAfterGracePeriod) {
   // Notify that the device has resumed from 1 hour of sleep. Verify that the
   // device reboots immediately.
   NotifyResumed(true);
+}
+
+// Chrome is running. The current uptime is 10 days.
+// Verifies that when the browser terminates, the device does not immediately
+// reboot.
+TEST_P(AutomaticRebootManagerTest, TerminateNoPolicy) {
+  task_runner_->SetUptime(base::TimeDelta::FromDays(10));
+
+  // Verify that the device does not reboot immediately.
+  CreateAutomaticRebootManager(false);
+
+  // Verify that no grace period has started.
+  VerifyNoGracePeriod();
+
+  // Notify that the browser is terminating. Verify that the device does not
+  // reboot immediately.
+  NotifyTerminating(false);
+
+  // Verify that the device does not reboot eventually.
+  FastForwardUntilNoTasksRemain(false);
+}
+
+// Chrome is running. The uptime limit is set to 24 hours. The current uptime is
+// 12 hours.
+// Verifies that when the browser terminates, it does not immediately reboot.
+TEST_P(AutomaticRebootManagerTest, TerminateBeforeGracePeriod) {
+  task_runner_->SetUptime(base::TimeDelta::FromHours(12));
+
+  // Verify that the device does not reboot immediately.
+  CreateAutomaticRebootManager(false);
+
+  // Set the uptime limit. Verify that the device does not reboot immediately.
+  SetUptimeLimit(base::TimeDelta::FromHours(24), false);
+
+  // Verify that a grace period has been scheduled to start in the future.
+  VerifyGracePeriod(uptime_limit_);
+
+  // Notify that the browser is terminating. Verify that the device does not
+  // reboot immediately.
+  NotifyTerminating(false);
+
+  // Verify that the device eventually reboots.
+  FastForwardUntilNoTasksRemain(true);
+}
+
+// Chrome is running. The uptime limit is set to 6 hours. The current uptime is
+// 12 hours.
+// Verifies that when the browser terminates while Chrome is showing the login
+// screen, the device does not immediately reboot.
+// Verifies that when the browser terminates while Chrome is running a user
+// session, the device immediately reboots.
+TEST_P(AutomaticRebootManagerTest, TerminateInGracePeriod) {
+  task_runner_->SetUptime(base::TimeDelta::FromHours(12));
+
+  // Verify that the device does not reboot immediately.
+  CreateAutomaticRebootManager(false);
+
+  // Set the uptime limit. Verify that the device does not reboot immediately.
+  SetUptimeLimit(base::TimeDelta::FromHours(6), false);
+
+  // Verify that a grace period has started.
+  VerifyGracePeriod(uptime_limit_);
+
+  // Notify that the browser is terminating. Verify that the device does not
+  // reboot immediately if Chrome is showing the login screen and that it does
+  // reboot immediately if Chrome is running a user session.
+  NotifyTerminating(is_user_logged_in_);
+
+  // Verify that the device eventually reboots.
+  FastForwardUntilNoTasksRemain(true);
 }
 
 // Chrome is running. The current uptime is 12 hours.

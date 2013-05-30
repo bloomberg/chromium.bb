@@ -44,12 +44,12 @@ namespace system {
 // * If the login screen is being shown: Reboots are inhibited while the user is
 //   interacting with the screen (determined by checking whether there has been
 //   any user activity in the past 60 seconds).
-// * If a user is logged in: Reboots are inhibited as long as the user remains
-//   logged in and the device is not suspended.
+// * If a session is in progress: Reboots are inhibited until the session ends,
+//   the browser is restarted or the device is suspended.
 //
 // If reboots are inhibited, a 24 hour grace period is started. The reboot
 // request is carried out the moment none of the inhibiting criteria apply
-// anymore (e.g. the user becomes idle on the login screen, the user logs out of
+// anymore (e.g. the user becomes idle on the login screen, the user logs exits
 // a session, the user suspends the device). If reboots remain inhibited for the
 // entire grace period, a reboot is unconditionally performed at its end.
 //
@@ -119,9 +119,8 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   // Called whenever the status of the criteria inhibiting reboots may have
   // changed. Reboots immediately if a reboot has actually been requested and
   // none of the criteria inhibiting it apply anymore. Otherwise, does nothing.
-  // If |ignore_logged_in_user|, the presence of a logged-in user does not
-  // inhibit reboots.
-  void MaybeReboot(bool ignore_logged_in_user);
+  // If |ignore_session|, a session in progress does not inhibit reboots.
+  void MaybeReboot(bool ignore_session);
 
   // Reboots immediately.
   void Reboot();
