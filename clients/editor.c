@@ -59,6 +59,7 @@ struct text_entry {
 		int32_t anchor;
 		uint32_t delete_index;
 		uint32_t delete_length;
+		bool invalid_delete;
 	} pending_commit;
 	struct wl_text_input *text_input;
 	PangoLayout *layout;
@@ -144,8 +145,13 @@ text_input_commit_string(void *data,
 		return;
 	}
 
-	text_entry_reset_preedit(entry);
+	if (entry->pending_commit.invalid_delete) {
+		fprintf(stderr, "Ignore commit. Invalid previous delete_surrounding event.\n");
+		memset(&entry->pending_commit, 0, sizeof entry->pending_commit);
+		return;
+	}
 
+	text_entry_reset_preedit(entry);
 
 	if (entry->pending_commit.delete_length) {
 		text_entry_delete_text(entry,
@@ -165,6 +171,19 @@ text_input_commit_string(void *data,
 }
 
 static void
+clear_pending_preedit(struct text_entry *entry)
+{
+	memset(&entry->pending_commit, 0, sizeof entry->pending_commit);
+
+	pango_attr_list_unref(entry->preedit_info.attr_list);
+
+	entry->preedit_info.cursor = 0;
+	entry->preedit_info.attr_list = NULL;
+
+	memset(&entry->preedit_info, 0, sizeof entry->preedit_info);
+}
+
+static void
 text_input_preedit_string(void *data,
 			  struct wl_text_input *text_input,
 			  uint32_t serial,
@@ -173,6 +192,19 @@ text_input_preedit_string(void *data,
 {
 	struct text_entry *entry = data;
 
+	if ((entry->serial - serial) > (entry->serial - entry->reset_serial)) {
+		fprintf(stderr, "Ignore preedit_string. Serial: %u, Current: %u, Reset: %u\n",
+			serial, entry->serial, entry->reset_serial);
+		clear_pending_preedit(entry);
+		return;
+	}
+
+	if (entry->pending_commit.invalid_delete) {
+		fprintf(stderr, "Ignore preedit_string. Invalid previous delete_surrounding event.\n");
+		clear_pending_preedit(entry);
+		return;
+	}
+
 	if (entry->pending_commit.delete_length) {
 		text_entry_delete_text(entry,
 				       entry->pending_commit.delete_index,
@@ -180,14 +212,12 @@ text_input_preedit_string(void *data,
 	} else {
 		text_entry_delete_selected_text(entry);
 	}
-	memset(&entry->pending_commit, 0, sizeof entry->pending_commit);
 
 	text_entry_set_preedit(entry, text, entry->preedit_info.cursor);
 	entry->preedit.commit = strdup(commit);
-	entry->preedit.attr_list = entry->preedit_info.attr_list;
+	entry->preedit.attr_list = pango_attr_list_ref(entry->preedit_info.attr_list);
 
-	entry->preedit_info.cursor = 0;
-	entry->preedit_info.attr_list = NULL;
+	clear_pending_preedit(entry);
 
 	text_entry_update(entry);
 
@@ -205,19 +235,16 @@ text_input_delete_surrounding_text(void *data,
 
 	entry->pending_commit.delete_index = entry->cursor + index;
 	entry->pending_commit.delete_length = length;
+	entry->pending_commit.invalid_delete = false;
 
 	text_length = strlen(entry->text);
 
-	if (entry->pending_commit.delete_index > text_length) {
-		fprintf(stderr, "Invalid cursor index %d\n", index);
-		entry->pending_commit.delete_length = 0;
-		return;
-	}
-
-	if (length > text_length ||
+	if (entry->pending_commit.delete_index > text_length ||
+	    length > text_length ||
 	    entry->pending_commit.delete_index + length > text_length) {
-		fprintf(stderr, "Invalid length %d\n", length);
-		entry->pending_commit.delete_length = 0;
+		fprintf(stderr, "delete_surrounding_text: Invalid index: %d," \
+			"length %u'; cursor: %u text length: %u\n", index, length, entry->cursor, text_length);
+		entry->pending_commit.invalid_delete = true;
 		return;
 	}
 }
