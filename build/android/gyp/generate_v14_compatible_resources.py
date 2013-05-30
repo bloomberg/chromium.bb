@@ -267,10 +267,7 @@ def main(argv):
                                                output_qualifiers))
         GenerateV14StyleResourcesInDir(input_dir, output_v14_dir)
       else:
-        # TODO(kkimlabs): uncomment the below line and remove 'pass' once the
-        # downstream fix (https://gerrit-int.chromium.org/#/c/38786/) is landed.
-        # ErrorIfStyleResourceExistsInDir(input_dir)
-        pass
+        ErrorIfStyleResourceExistsInDir(input_dir)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
