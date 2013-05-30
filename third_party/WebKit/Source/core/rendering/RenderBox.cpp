@@ -2263,6 +2263,16 @@ void RenderBox::computeInlineDirectionMargins(RenderBlock* containingBlock, Layo
         return;
     }
 
+    if (containingBlock->isFlexibleBox()) {
+        // We need to let flexbox handle the margin adjustment - otherwise, flexbox
+        // will think we're wider than we actually are and calculate line sizes wrong.
+        // See also http://dev.w3.org/csswg/css-flexbox/#auto-margins
+        if (marginStartLength.isAuto())
+            marginStartLength.setValue(0);
+        if (marginEndLength.isAuto())
+            marginEndLength.setValue(0);
+    }
+
     // Case One: The object is being centered in the containing block's available logical width.
     if ((marginStartLength.isAuto() && marginEndLength.isAuto() && childWidth < containerWidth)
         || (!marginStartLength.isAuto() && !marginEndLength.isAuto() && containingBlock->style()->textAlign() == WEBKIT_CENTER)) {

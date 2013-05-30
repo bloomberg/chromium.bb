@@ -863,9 +863,9 @@ bool RenderFlexibleBox::updateAutoMarginsInCrossAxis(RenderBox* child, LayoutUni
     ASSERT(availableAlignmentSpace >= 0);
 
     bool isHorizontal = isHorizontalFlow();
-    Length start = isHorizontal ? child->style()->marginTop() : child->style()->marginLeft();
-    Length end = isHorizontal ? child->style()->marginBottom() : child->style()->marginRight();
-    if (start.isAuto() && end.isAuto()) {
+    Length topOrLeft = isHorizontal ? child->style()->marginTop() : child->style()->marginLeft();
+    Length bottomOrRight = isHorizontal ? child->style()->marginBottom() : child->style()->marginRight();
+    if (topOrLeft.isAuto() && bottomOrRight.isAuto()) {
         adjustAlignmentForChild(child, availableAlignmentSpace / 2);
         if (isHorizontal) {
             child->setMarginTop(availableAlignmentSpace / 2);
@@ -876,15 +876,24 @@ bool RenderFlexibleBox::updateAutoMarginsInCrossAxis(RenderBox* child, LayoutUni
         }
         return true;
     }
-    if (start.isAuto()) {
-        adjustAlignmentForChild(child, availableAlignmentSpace);
+    if (topOrLeft.isAuto()) {
+        // For column flows, only make this adjustment if topOrLeft corresponds to the "before" margin,
+        // so that flipForRightToLeftColumn will do the right thing.
+        if (!isColumnFlow() || child->style()->isLeftToRightDirection())
+            adjustAlignmentForChild(child, availableAlignmentSpace);
+
         if (isHorizontal)
             child->setMarginTop(availableAlignmentSpace);
         else
             child->setMarginLeft(availableAlignmentSpace);
         return true;
     }
-    if (end.isAuto()) {
+    if (bottomOrRight.isAuto()) {
+        // For column flows, only make this adjustment if bottomOrRight corresponds to the "before" margin,
+        // so that flipForRightToLeftColumn will do the right thing.
+        if (isColumnFlow() && !child->style()->isLeftToRightDirection())
+            adjustAlignmentForChild(child, availableAlignmentSpace);
+
         if (isHorizontal)
             child->setMarginBottom(availableAlignmentSpace);
         else
@@ -1198,6 +1207,8 @@ void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
         mainAxisOffset += flowAwareMarginStartForChild(child);
 
         LayoutUnit childMainExtent = mainAxisExtentForChild(child);
+        // In an RTL column situation, this will apply the margin-right/margin-end on the left.
+        // This will be fixed later in flipForRightToLeftColumn.
         LayoutPoint childLocation(shouldFlipMainAxis ? totalMainExtent - mainAxisOffset - childMainExtent : mainAxisOffset,
             crossAxisOffset + flowAwareMarginBeforeForChild(child));
 
@@ -1434,6 +1445,8 @@ void RenderFlexibleBox::flipForRightToLeftColumn()
         if (child->isOutOfFlowPositioned())
             continue;
         LayoutPoint location = flowAwareLocationForChild(child);
+        // For vertical flows, setFlowAwareLocationForChild will transpose x and y,
+        // so using the y axis for a column cross axis extent is correct.
         location.setY(crossExtent - crossAxisExtentForChild(child) - location.y());
         setFlowAwareLocationForChild(child, location);
     }
