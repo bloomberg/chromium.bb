@@ -200,24 +200,24 @@ TEST(Vector2dTest, ClampVector2d) {
 
   a = Vector2d(3, 5);
   EXPECT_EQ(Vector2d(3, 5).ToString(), a.ToString());
-  a.ClampToMin(Vector2d(2, 4));
+  a.SetToMax(Vector2d(2, 4));
   EXPECT_EQ(Vector2d(3, 5).ToString(), a.ToString());
-  a.ClampToMin(Vector2d(3, 5));
+  a.SetToMax(Vector2d(3, 5));
   EXPECT_EQ(Vector2d(3, 5).ToString(), a.ToString());
-  a.ClampToMin(Vector2d(4, 2));
+  a.SetToMax(Vector2d(4, 2));
   EXPECT_EQ(Vector2d(4, 5).ToString(), a.ToString());
-  a.ClampToMin(Vector2d(8, 10));
+  a.SetToMax(Vector2d(8, 10));
   EXPECT_EQ(Vector2d(8, 10).ToString(), a.ToString());
 
-  a.ClampToMax(Vector2d(9, 11));
+  a.SetToMin(Vector2d(9, 11));
   EXPECT_EQ(Vector2d(8, 10).ToString(), a.ToString());
-  a.ClampToMax(Vector2d(8, 10));
+  a.SetToMin(Vector2d(8, 10));
   EXPECT_EQ(Vector2d(8, 10).ToString(), a.ToString());
-  a.ClampToMax(Vector2d(11, 9));
+  a.SetToMin(Vector2d(11, 9));
   EXPECT_EQ(Vector2d(8, 9).ToString(), a.ToString());
-  a.ClampToMax(Vector2d(7, 11));
+  a.SetToMin(Vector2d(7, 11));
   EXPECT_EQ(Vector2d(7, 9).ToString(), a.ToString());
-  a.ClampToMax(Vector2d(3, 5));
+  a.SetToMin(Vector2d(3, 5));
   EXPECT_EQ(Vector2d(3, 5).ToString(), a.ToString());
 }
 
@@ -226,24 +226,24 @@ TEST(Vector2dTest, ClampVector2dF) {
 
   a = Vector2dF(3.5f, 5.5f);
   EXPECT_EQ(Vector2dF(3.5f, 5.5f).ToString(), a.ToString());
-  a.ClampToMin(Vector2dF(2.5f, 4.5f));
+  a.SetToMax(Vector2dF(2.5f, 4.5f));
   EXPECT_EQ(Vector2dF(3.5f, 5.5f).ToString(), a.ToString());
-  a.ClampToMin(Vector2dF(3.5f, 5.5f));
+  a.SetToMax(Vector2dF(3.5f, 5.5f));
   EXPECT_EQ(Vector2dF(3.5f, 5.5f).ToString(), a.ToString());
-  a.ClampToMin(Vector2dF(4.5f, 2.5f));
+  a.SetToMax(Vector2dF(4.5f, 2.5f));
   EXPECT_EQ(Vector2dF(4.5f, 5.5f).ToString(), a.ToString());
-  a.ClampToMin(Vector2dF(8.5f, 10.5f));
+  a.SetToMax(Vector2dF(8.5f, 10.5f));
   EXPECT_EQ(Vector2dF(8.5f, 10.5f).ToString(), a.ToString());
 
-  a.ClampToMax(Vector2dF(9.5f, 11.5f));
+  a.SetToMin(Vector2dF(9.5f, 11.5f));
   EXPECT_EQ(Vector2dF(8.5f, 10.5f).ToString(), a.ToString());
-  a.ClampToMax(Vector2dF(8.5f, 10.5f));
+  a.SetToMin(Vector2dF(8.5f, 10.5f));
   EXPECT_EQ(Vector2dF(8.5f, 10.5f).ToString(), a.ToString());
-  a.ClampToMax(Vector2dF(11.5f, 9.5f));
+  a.SetToMin(Vector2dF(11.5f, 9.5f));
   EXPECT_EQ(Vector2dF(8.5f, 9.5f).ToString(), a.ToString());
-  a.ClampToMax(Vector2dF(7.5f, 11.5f));
+  a.SetToMin(Vector2dF(7.5f, 11.5f));
   EXPECT_EQ(Vector2dF(7.5f, 9.5f).ToString(), a.ToString());
-  a.ClampToMax(Vector2dF(3.5f, 5.5f));
+  a.SetToMin(Vector2dF(3.5f, 5.5f));
   EXPECT_EQ(Vector2dF(3.5f, 5.5f).ToString(), a.ToString());
 }
 

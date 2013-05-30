@@ -174,12 +174,12 @@ gfx::Size LabelButton::GetPreferredSize() {
   gfx::Size size(label.GetPreferredSize());
   if (image_width > 0 && size.width() > 0)
     size.Enlarge(kSpacing, 0);
-  size.ClampToMin(gfx::Size(0, image_size.height()));
+  size.SetToMax(gfx::Size(0, image_size.height()));
   const gfx::Insets insets(GetInsets());
   size.Enlarge(image_size.width() + insets.width(), insets.height());
 
   // Increase the minimum size monotonically with the preferred size.
-  size.ClampToMin(min_size_);
+  size.SetToMax(min_size_);
   min_size_ = size;
 
   // Return the largest known size clamped to the maximum size (if valid).

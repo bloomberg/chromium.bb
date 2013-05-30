@@ -16,7 +16,7 @@ namespace {
 
 const double kStepSize = 0.1;
 
-double ClampToMin(double percent) {
+double SetToMax(double percent) {
   return std::min(std::max(percent, 0.0), 1.0);
 }
 
@@ -61,9 +61,9 @@ void ProgressBarExample::CreateExampleView(View* container) {
 
 void ProgressBarExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == minus_button_)
-    current_percent_ = ClampToMin(current_percent_ - kStepSize);
+    current_percent_ = SetToMax(current_percent_ - kStepSize);
   else if (sender == plus_button_)
-    current_percent_ = ClampToMin(current_percent_ + kStepSize);
+    current_percent_ = SetToMax(current_percent_ + kStepSize);
 
   progress_bar_->SetValue(current_percent_);
 }

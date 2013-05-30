@@ -43,14 +43,14 @@ class UI_EXPORT PointBase {
     y_ -= vector.y();
   }
 
-  void ClampToMax(const Class& max) {
-    x_ = x_ <= max.x_ ? x_ : max.x_;
-    y_ = y_ <= max.y_ ? y_ : max.y_;
+  void SetToMin(const Class& other) {
+    x_ = x_ <= other.x_ ? x_ : other.x_;
+    y_ = y_ <= other.y_ ? y_ : other.y_;
   }
 
-  void ClampToMin(const Class& min) {
-    x_ = x_ >= min.x_ ? x_ : min.x_;
-    y_ = y_ >= min.y_ ? y_ : min.y_;
+  void SetToMax(const Class& other) {
+    x_ = x_ >= other.x_ ? x_ : other.x_;
+    y_ = y_ >= other.y_ ? y_ : other.y_;
   }
 
   bool IsOrigin() const {

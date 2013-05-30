@@ -705,8 +705,8 @@ gfx::Point AppListController::FindAnchorPoint(
                     view_size.height() / 2 + kSnapOffset);
 
   gfx::Point anchor = FindReferencePoint(display, cursor);
-  anchor.ClampToMin(bounds_rect.origin());
-  anchor.ClampToMax(bounds_rect.bottom_right());
+  anchor.SetToMax(bounds_rect.origin());
+  anchor.SetToMin(bounds_rect.bottom_right());
   return anchor;
 }
 

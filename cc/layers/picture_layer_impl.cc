@@ -493,11 +493,11 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
       layer_tree_impl()->resource_provider()->max_texture_size();
 
   gfx::Size default_tile_size = layer_tree_impl()->settings().default_tile_size;
-  default_tile_size.ClampToMax(gfx::Size(max_texture_size, max_texture_size));
+  default_tile_size.SetToMin(gfx::Size(max_texture_size, max_texture_size));
 
   gfx::Size max_untiled_content_size =
       layer_tree_impl()->settings().max_untiled_layer_size;
-  max_untiled_content_size.ClampToMax(
+  max_untiled_content_size.SetToMin(
       gfx::Size(max_texture_size, max_texture_size));
 
   bool any_dimension_too_large =

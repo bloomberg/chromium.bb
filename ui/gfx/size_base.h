@@ -35,14 +35,14 @@ class UI_EXPORT SizeBase {
     height_ = height < 0 ? 0 : height;
   }
 
-  void ClampToMax(const Class& max) {
-    width_ = width_ <= max.width_ ? width_ : max.width_;
-    height_ = height_ <= max.height_ ? height_ : max.height_;
+  void SetToMin(const Class& other) {
+    width_ = width_ <= other.width_ ? width_ : other.width_;
+    height_ = height_ <= other.height_ ? height_ : other.height_;
   }
 
-  void ClampToMin(const Class& min) {
-    width_ = width_ >= min.width_ ? width_ : min.width_;
-    height_ = height_ >= min.height_ ? height_ : min.height_;
+  void SetToMax(const Class& other) {
+    width_ = width_ >= other.width_ ? width_ : other.width_;
+    height_ = height_ >= other.height_ ? height_ : other.height_;
   }
 
   bool IsEmpty() const {

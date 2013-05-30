@@ -312,8 +312,8 @@ BoundedScrollView::BoundedScrollView(int min_height, int max_height)
 
 gfx::Size BoundedScrollView::GetPreferredSize() {
   gfx::Size size = contents()->GetPreferredSize();
-  size.ClampToMin(gfx::Size(size.width(), min_height_));
-  size.ClampToMax(gfx::Size(size.width(), max_height_));
+  size.SetToMax(gfx::Size(size.width(), min_height_));
+  size.SetToMin(gfx::Size(size.width(), max_height_));
   gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
   return size;

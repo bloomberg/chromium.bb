@@ -68,7 +68,7 @@ KennedyScrollBar::~KennedyScrollBar() {
 gfx::Rect KennedyScrollBar::GetTrackBounds() const {
   gfx::Rect local_bounds(GetLocalBounds());
   gfx::Size track_size = local_bounds.size();
-  track_size.ClampToMin(GetThumb()->size());
+  track_size.SetToMax(GetThumb()->size());
   local_bounds.set_size(track_size);
   return local_bounds;
 }

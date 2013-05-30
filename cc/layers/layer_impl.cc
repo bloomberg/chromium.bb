@@ -246,8 +246,8 @@ gfx::Vector2dF LayerImpl::ScrollBy(gfx::Vector2dF scroll) {
   gfx::Vector2dF max_delta = max_scroll_offset_ - scroll_offset_;
   // Clamp new_delta so that position + delta stays within scroll bounds.
   gfx::Vector2dF new_delta = (ScrollDelta() + scroll);
-  new_delta.ClampToMin(min_delta);
-  new_delta.ClampToMax(max_delta);
+  new_delta.SetToMax(min_delta);
+  new_delta.SetToMin(max_delta);
   gfx::Vector2dF unscrolled = ScrollDelta() + scroll - new_delta;
 
   SetScrollDelta(new_delta);

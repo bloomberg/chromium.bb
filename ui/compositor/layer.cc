@@ -924,7 +924,7 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     float texture_scale_factor = 1.0f / texture_->device_scale_factor();
     gfx::Size texture_size = gfx::ToFlooredSize(
         gfx::ScaleSize(texture_->size(), texture_scale_factor));
-    size.ClampToMax(texture_size);
+    size.SetToMin(texture_size);
 
     gfx::PointF uv_top_left(0.f, 0.f);
     gfx::PointF uv_bottom_right(
@@ -934,7 +934,7 @@ void Layer::RecomputeDrawsContentAndUVRect() {
   } else if (delegated_renderer_layer_.get()) {
     delegated_renderer_layer_->SetDisplaySize(
         ConvertSizeToPixel(this, delegated_frame_size_in_dip_));
-    size.ClampToMax(delegated_frame_size_in_dip_);
+    size.SetToMin(delegated_frame_size_in_dip_);
   }
   cc_layer_->SetBounds(ConvertSizeToPixel(this, size));
 }

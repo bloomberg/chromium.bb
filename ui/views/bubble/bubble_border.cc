@@ -158,11 +158,11 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
       std::max(images_->arrow_thickness + images_->border_interior_thickness,
                images_->border_thickness);
   if (is_arrow_on_horizontal(arrow_))
-    size.ClampToMin(gfx::Size(min_with_arrow_width, min_with_arrow_thickness));
+    size.SetToMax(gfx::Size(min_with_arrow_width, min_with_arrow_thickness));
   else if (has_arrow(arrow_))
-    size.ClampToMin(gfx::Size(min_with_arrow_thickness, min_with_arrow_width));
+    size.SetToMax(gfx::Size(min_with_arrow_thickness, min_with_arrow_width));
   else
-    size.ClampToMin(gfx::Size(min, min));
+    size.SetToMax(gfx::Size(min, min));
 
   int x = anchor_rect.x();
   int y = anchor_rect.y();

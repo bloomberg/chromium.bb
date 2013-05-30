@@ -903,7 +903,7 @@ void RenderWidgetHostViewAndroid::ClipContents(const gfx::Rect& clipping,
     return;
 
   gfx::Size clipped_content(content_size_in_layer_);
-  clipped_content.ClampToMax(clipping.size());
+  clipped_content.SetToMin(clipping.size());
   texture_layer_->SetBounds(clipped_content);
   texture_layer_->SetNeedsDisplay();
 
@@ -915,7 +915,7 @@ void RenderWidgetHostViewAndroid::ClipContents(const gfx::Rect& clipping,
   gfx::PointF offset(
       clipping.x() + content_size_in_layer_.width() - content_size.width(),
       clipping.y() + content_size_in_layer_.height() - content_size.height());
-  offset.ClampToMin(gfx::PointF());
+  offset.SetToMax(gfx::PointF());
 
   gfx::Vector2dF uv_scale(1.f / texture_size_in_layer_.width(),
                           1.f / texture_size_in_layer_.height());

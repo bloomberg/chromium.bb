@@ -217,7 +217,7 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
 
   // The viewport may be larger than the contents in some cases, such as
   // having a vertical scrollbar but no horizontal overflow.
-  max_scroll.ClampToMin(gfx::Vector2dF());
+  max_scroll.SetToMax(gfx::Vector2dF());
 
   root_scroll_layer_->SetMaxScrollOffset(gfx::ToFlooredVector2d(max_scroll));
 }

@@ -234,30 +234,30 @@ TEST(Vector3dFTest, ClampVector3dF) {
 
   a = Vector3dF(3.5f, 5.5f, 7.5f);
   EXPECT_EQ(Vector3dF(3.5f, 5.5f, 7.5f).ToString(), a.ToString());
-  a.ClampToMin(Vector3dF(2, 4.5f, 6.5f));
+  a.SetToMax(Vector3dF(2, 4.5f, 6.5f));
   EXPECT_EQ(Vector3dF(3.5f, 5.5f, 7.5f).ToString(), a.ToString());
-  a.ClampToMin(Vector3dF(3.5f, 5.5f, 7.5f));
+  a.SetToMax(Vector3dF(3.5f, 5.5f, 7.5f));
   EXPECT_EQ(Vector3dF(3.5f, 5.5f, 7.5f).ToString(), a.ToString());
-  a.ClampToMin(Vector3dF(4.5f, 2, 6.5f));
+  a.SetToMax(Vector3dF(4.5f, 2, 6.5f));
   EXPECT_EQ(Vector3dF(4.5f, 5.5f, 7.5f).ToString(), a.ToString());
-  a.ClampToMin(Vector3dF(3.5f, 6.5f, 6.5f));
+  a.SetToMax(Vector3dF(3.5f, 6.5f, 6.5f));
   EXPECT_EQ(Vector3dF(4.5f, 6.5f, 7.5f).ToString(), a.ToString());
-  a.ClampToMin(Vector3dF(3.5f, 5.5f, 8.5f));
+  a.SetToMax(Vector3dF(3.5f, 5.5f, 8.5f));
   EXPECT_EQ(Vector3dF(4.5f, 6.5f, 8.5f).ToString(), a.ToString());
-  a.ClampToMin(Vector3dF(8.5f, 10.5f, 12.5f));
+  a.SetToMax(Vector3dF(8.5f, 10.5f, 12.5f));
   EXPECT_EQ(Vector3dF(8.5f, 10.5f, 12.5f).ToString(), a.ToString());
 
-  a.ClampToMax(Vector3dF(9.5f, 11.5f, 13.5f));
+  a.SetToMin(Vector3dF(9.5f, 11.5f, 13.5f));
   EXPECT_EQ(Vector3dF(8.5f, 10.5f, 12.5f).ToString(), a.ToString());
-  a.ClampToMax(Vector3dF(8.5f, 10.5f, 12.5f));
+  a.SetToMin(Vector3dF(8.5f, 10.5f, 12.5f));
   EXPECT_EQ(Vector3dF(8.5f, 10.5f, 12.5f).ToString(), a.ToString());
-  a.ClampToMax(Vector3dF(7.5f, 11.5f, 13.5f));
+  a.SetToMin(Vector3dF(7.5f, 11.5f, 13.5f));
   EXPECT_EQ(Vector3dF(7.5f, 10.5f, 12.5f).ToString(), a.ToString());
-  a.ClampToMax(Vector3dF(9.5f, 9.5f, 13.5f));
+  a.SetToMin(Vector3dF(9.5f, 9.5f, 13.5f));
   EXPECT_EQ(Vector3dF(7.5f, 9.5f, 12.5f).ToString(), a.ToString());
-  a.ClampToMax(Vector3dF(9.5f, 11.5f, 11.5f));
+  a.SetToMin(Vector3dF(9.5f, 11.5f, 11.5f));
   EXPECT_EQ(Vector3dF(7.5f, 9.5f, 11.5f).ToString(), a.ToString());
-  a.ClampToMax(Vector3dF(3.5f, 5.5f, 7.5f));
+  a.SetToMin(Vector3dF(3.5f, 5.5f, 7.5f));
   EXPECT_EQ(Vector3dF(3.5f, 5.5f, 7.5f).ToString(), a.ToString());
 }
 

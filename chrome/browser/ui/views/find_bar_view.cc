@@ -310,7 +310,7 @@ void FindBarView::Layout() {
   // We extend the label bounds a bit to give the background highlighting a bit
   // of breathing room (margins around the text).
   sz.Enlarge(kMatchCountExtraWidth, 0);
-  sz.ClampToMin(gfx::Size(kMatchCountMinWidth, 0));
+  sz.SetToMax(gfx::Size(kMatchCountMinWidth, 0));
   int match_count_x =
       find_previous_button_->x() - kWhiteSpaceAfterMatchCountLabel - sz.width();
   int find_text_y = (height() - find_text_->GetPreferredSize().height()) / 2;

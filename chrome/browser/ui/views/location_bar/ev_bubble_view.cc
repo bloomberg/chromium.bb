@@ -23,7 +23,7 @@ gfx::Size EVBubbleView::GetMinimumSize() {
   // Height will be ignored by the LocationBarView.
   gfx::Size minimum(GetPreferredSize());
   static const int kMinBubbleWidth = 150;
-  minimum.ClampToMin(gfx::Size(kMinBubbleWidth, 0));
+  minimum.SetToMax(gfx::Size(kMinBubbleWidth, 0));
   return minimum;
 }
 

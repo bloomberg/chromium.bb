@@ -146,7 +146,7 @@ gfx::Size BubbleFrameView::GetPreferredSize() {
       close_->width() + 1;
   if (titlebar_extra_view_ != NULL)
     title_bar_width += titlebar_extra_view_->GetPreferredSize().width();
-  size.ClampToMin(gfx::Size(title_bar_width, 0));
+  size.SetToMax(gfx::Size(title_bar_width, 0));
   return size;
 }
 
@@ -161,14 +161,14 @@ void BubbleFrameView::Layout() {
   title_bounds.Inset(kTitleLeftInset, kTitleTopInset, 0, 0);
   gfx::Size title_size(title_->GetPreferredSize());
   const int title_width = std::max(0, close_->bounds().x() - title_bounds.x());
-  title_size.ClampToMax(gfx::Size(title_width, title_size.height()));
+  title_size.SetToMin(gfx::Size(title_width, title_size.height()));
   title_bounds.set_size(title_size);
   title_->SetBoundsRect(title_bounds);
 
   if (titlebar_extra_view_) {
     const int extra_width = close_->bounds().x() - title_->bounds().right();
     gfx::Size size = titlebar_extra_view_->GetPreferredSize();
-    size.ClampToMax(gfx::Size(std::max(0, extra_width), size.height()));
+    size.SetToMin(gfx::Size(std::max(0, extra_width), size.height()));
     gfx::Rect titlebar_extra_view_bounds(
         bounds.right() - size.width(),
         title_bounds.y(),

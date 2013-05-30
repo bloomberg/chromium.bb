@@ -329,8 +329,8 @@ NSPoint GetAppListWindowOrigin(NSWindow* window) {
   const NSSize window_size = [window frame].size;
   gfx::Rect anchor_area = display.work_area();
   anchor_area.Inset(window_size.width / 2, window_size.height / 2);
-  anchor.ClampToMin(anchor_area.origin());
-  anchor.ClampToMax(anchor_area.bottom_right());
+  anchor.SetToMax(anchor_area.origin());
+  anchor.SetToMin(anchor_area.bottom_right());
 
   // Move anchor to the dock, keeping the other axis aligned with the cursor.
   switch (dock_location) {

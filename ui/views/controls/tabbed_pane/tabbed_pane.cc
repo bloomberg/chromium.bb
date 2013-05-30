@@ -308,7 +308,7 @@ void TabbedPane::SelectTab(Tab* tab) {
 gfx::Size TabbedPane::GetPreferredSize() {
   gfx::Size size;
   for (int i = 0; i < contents_->child_count(); ++i)
-    size.ClampToMin(contents_->child_at(i)->GetPreferredSize());
+    size.SetToMax(contents_->child_at(i)->GetPreferredSize());
   size.Enlarge(0, tab_strip_->GetPreferredSize().height());
   return size;
 }

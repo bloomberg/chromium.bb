@@ -258,7 +258,7 @@ gfx::Rect ScrollbarLayer::ScrollbarLayerRectToContentRect(
       layer_rect, contents_scale_y(), contents_scale_y());
   // We should never return a rect bigger than the content_bounds().
   gfx::Size clamped_size = expanded_rect.size();
-  clamped_size.ClampToMax(content_bounds());
+  clamped_size.SetToMin(content_bounds());
   expanded_rect.set_size(clamped_size);
   return expanded_rect;
 }

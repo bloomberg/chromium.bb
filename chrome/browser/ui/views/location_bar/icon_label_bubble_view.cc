@@ -78,7 +78,7 @@ void IconLabelBubbleView::Layout() {
 
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
   gfx::Size size(GetPreLabelWidth() + width + GetBubbleOuterPadding(), 0);
-  size.ClampToMin(background_painter_->GetMinimumSize());
+  size.SetToMax(background_painter_->GetMinimumSize());
   return size;
 }
 

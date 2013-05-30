@@ -40,14 +40,14 @@ class UI_EXPORT Vector2d {
   void operator+=(const Vector2d& other) { Add(other); }
   void operator-=(const Vector2d& other) { Subtract(other); }
 
-  void ClampToMax(const Vector2d& max) {
-    x_ = x_ <= max.x_ ? x_ : max.x_;
-    y_ = y_ <= max.y_ ? y_ : max.y_;
+  void SetToMin(const Vector2d& other) {
+    x_ = x_ <= other.x_ ? x_ : other.x_;
+    y_ = y_ <= other.y_ ? y_ : other.y_;
   }
 
-  void ClampToMin(const Vector2d& min) {
-    x_ = x_ >= min.x_ ? x_ : min.x_;
-    y_ = y_ >= min.y_ ? y_ : min.y_;
+  void SetToMax(const Vector2d& other) {
+    x_ = x_ >= other.x_ ? x_ : other.x_;
+    y_ = y_ >= other.y_ ? y_ : other.y_;
   }
 
   // Gives the square of the diagonal length of the vector. Since this is

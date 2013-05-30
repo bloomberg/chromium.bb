@@ -149,8 +149,8 @@ void PageScaleAnimation::ClampTargetScrollOffset() {
   gfx::Vector2dF max_scroll_offset =
       gfx::RectF(root_layer_size_).bottom_right() -
       gfx::RectF(TargetViewportSize()).bottom_right();
-  target_scroll_offset_.ClampToMin(gfx::Vector2dF());
-  target_scroll_offset_.ClampToMax(max_scroll_offset);
+  target_scroll_offset_.SetToMax(gfx::Vector2dF());
+  target_scroll_offset_.SetToMin(max_scroll_offset);
 }
 
 gfx::SizeF PageScaleAnimation::StartViewportSize() const {

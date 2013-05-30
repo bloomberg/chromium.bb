@@ -79,7 +79,7 @@ void EntryView::Layout() {
 gfx::Size EntryView::GetPreferredSize() {
   DCHECK_EQ(1, child_count());
   gfx::Size size = child_at(0)->GetPreferredSize();
-  size.ClampToMin(gfx::Size(kMinimumWindowWidth, kEntryHeight));
+  size.SetToMax(gfx::Size(kMinimumWindowWidth, kEntryHeight));
   return size;
 }
 
