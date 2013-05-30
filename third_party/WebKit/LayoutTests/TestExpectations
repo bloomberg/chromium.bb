@@ -1838,5 +1838,4 @@ crbug.com/244479 [ Win7 Debug ] inspector/profiler/heap-snapshot-summary-expansi
 crbug.com/244481 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-canvas.html [ Timeout ]
 
 crbug.com/244678 [ Win7 Debug ] animations/3d/matrix-transform-type-animation.html [ Failure Timeout ]
-crbug.com/244761 inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Failure Pass Timeout ]
 crbug.com/245154 editing/selection/move-by-character-brute-force.html [ Pass Timeout ]

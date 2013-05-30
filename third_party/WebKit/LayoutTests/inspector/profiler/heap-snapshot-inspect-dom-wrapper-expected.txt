@@ -1,6 +1,8 @@
 Test that resolving heap snaphot object to a JS object will not crash on DOM wrapper boilerplate. Test passes if it doesn't crash.
 
-finishHeapSnapshot 1
-_callLoadCallbacks
-clearProfiles
+PASS: snapshot was taken UID = 1
+PASS: snapshot was received
+PASS: more than 2 HTMLBodyElements were found
+PASS: got at least one HTMLBodyElement wrapper
+PASS: profile was deleted
 

@@ -14,28 +14,31 @@ function handleLoad()
 function test()
 {
     WebInspector.showPanel("profiles");
-    HeapProfilerAgent.takeHeapSnapshot(step0);
     WebInspector.panels.profiles._createTemporaryProfile("HEAP");
+    var heapProfileType =  WebInspector.panels.profiles.getProfileType("HEAP");
+    InspectorTest.addSniffer(heapProfileType, "finishHeapSnapshot", finishHeapSnapshot);
+    InspectorTest.addSniffer(heapProfileType, "_snapshotReceived", snapshotReceived);
+    HeapProfilerAgent.takeHeapSnapshot(function() { });
 
-    function step0()
+    function finishHeapSnapshot(uid)
     {
-        var heapProfileType =  WebInspector.panels.profiles.getProfileType("HEAP");
+        InspectorTest.addResult("PASS: snapshot was taken UID = " + uid);
         var profiles = heapProfileType.getProfiles();
-        InspectorTest.addSniffer(heapProfileType, "finishHeapSnapshot", step1);
-        WebInspector.panels.profiles._showProfile(profiles[profiles.length - 1]);
+
+        if (!profiles.length)
+            return clear("FAILED: no profiles found");
+
+        if (profiles.length > 1)
+            return clear("FAILED: wrong number of recorded profiles was found. profiles.length = " + profiles.length);
+
+        var profile = profiles[profiles.length - 1];
+        WebInspector.panels.profiles._showProfile(profile);
     }
 
-    function step1(uid)
+    function snapshotReceived(profile)
     {
-        InspectorTest.addResult("finishHeapSnapshot " + uid);
-        var panel = WebInspector.panels.profiles;
-        var profile = panel.getProfile(WebInspector.HeapSnapshotProfileType.TypeId, uid);
-        profile.load(step2.bind(this));
-    }
-
-    function step2(snapshotProxy)
-    {
-        InspectorTest.addResult("_callLoadCallbacks");
+        InspectorTest.addResult("PASS: snapshot was received");
+        var snapshotProxy = profile._snapshotProxy;
         var snapshot = snapshotProxy._worker._worker._dispatcher._objects[snapshotProxy._objectId];
 
         var bodyWrapperIds = [];
@@ -44,11 +47,10 @@ function test()
                 bodyWrapperIds.push(it.item().id());
         }
 
-        if (bodyWrapperIds.length < 3) {
-            InspectorTest.addResult("FAILED: less than 3 HTMLBodyElement objects were detected");
-            clear();
-            return;
-        }
+        if (bodyWrapperIds.length < 3)
+            return clear("FAILED: less than 3 HTMLBodyElement objects were detected");
+
+        InspectorTest.addResult("PASS: more than 2 HTMLBodyElements were found");
 
         for (var i = 0; i < bodyWrapperIds.length; i++)
             HeapProfilerAgent.getObjectByHeapObjectId("" + bodyWrapperIds[i], undefined, didGetObjectByHeapObjectId);
@@ -66,11 +68,10 @@ function test()
 
         function requestPropertiesOfResolvedObjects()
         {
-            if (!remoteObjects.length) {
-                InspectorTest.addResult("FAILED: no resolved objects were detected");
-                clear();
-                return;
-            }
+            if (!remoteObjects.length)
+                return clear("FAILED: no resolved objects were detected");
+
+            InspectorTest.addResult("PASS: got at least one HTMLBodyElement wrapper");
 
             for (var i = 0; i < remoteObjects.length; i++)
                 remoteObjects[i].getOwnProperties(didGetOwnProperties);
@@ -85,16 +86,20 @@ function test()
             clear();
         }
 
-        function clear()
-        {
-            HeapProfilerAgent.clearProfiles(done);
-            WebInspector.panels.profiles._reset();
-        }
+    }
+
+    function clear(errorMessage)
+    {
+        if (errorMessage)
+            InspectorTest.addResult(errorMessage);
+        HeapProfilerAgent.clearProfiles(done);
+        WebInspector.panels.profiles._reset();
+        return !errorMessage;
     }
 
     function done()
     {
-        InspectorTest.addResult("clearProfiles");
+        InspectorTest.addResult("PASS: profile was deleted");
         InspectorTest.completeTest();
     }
 }
