@@ -49,7 +49,7 @@ class ListTestCasesTest(unittest.TestCase):
     )
     for expected, range_length, index, shards in test_cases:
       result = run_test_cases.filter_shards(range(range_length), index, shards)
-      self.assertEquals(
+      self.assertEqual(
           expected, result, (result, expected, range_length, index, shards))
 
 
@@ -210,7 +210,7 @@ class RunTestCasesSlow(unittest.TestCase):
         actual[pipe] += d
       self.assertEqual(data['expected'], actual, (i, data['expected'], actual))
       self.assertEqual((None, None), p.recv_any())
-      self.assertEquals(0, p.returncode)
+      self.assertEqual(0, p.returncode)
 
   @staticmethod
   def _get_output_sleep_proc(flush, env, duration):
@@ -384,7 +384,7 @@ class RunTestCasesSlow(unittest.TestCase):
     try:
       run_test_cases.run_test_cases = expect
       result = run_test_cases.main([exe, '--gtest_filter=Foo.Bar*-*.Bar2'])
-      self.assertEquals(89, result)
+      self.assertEqual(89, result)
     finally:
       run_test_cases.run_test_cases = old
 
@@ -501,7 +501,7 @@ class RunTestCasesFast(unittest.TestCase):
       },
     ]
     actual = process_output(data, ['Test.1', 'Test.2'])
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_process_output_crash_cr(self):
     # CR only is supported. Let's assume a crash.
@@ -523,7 +523,7 @@ class RunTestCasesFast(unittest.TestCase):
       },
     ]
     actual = process_output(data, ['Test.1', 'Test.2'])
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_process_output_crashes(self):
     data = '[ RUN      ] Test.1\n[ RUN      ] Test.2\n'
@@ -544,7 +544,7 @@ class RunTestCasesFast(unittest.TestCase):
       },
     ]
     actual = process_output(data, ['Test.1', 'Test.2'])
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_process_output_ok(self):
     data = (
@@ -567,7 +567,7 @@ class RunTestCasesFast(unittest.TestCase):
       },
     ]
     actual = process_output(data, ['Test.1', 'Test.2'])
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_process_output_no_time(self):
     data = (
@@ -582,7 +582,7 @@ class RunTestCasesFast(unittest.TestCase):
       },
     ]
     actual = process_output(data, ['Test.1'])
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_process_output_fail_1(self):
     data = (
@@ -605,7 +605,7 @@ class RunTestCasesFast(unittest.TestCase):
       },
     ]
     actual = process_output(data, ['Test.1', 'Test.2'])
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_process_output_crash_ok(self):
     data = (
@@ -629,7 +629,7 @@ class RunTestCasesFast(unittest.TestCase):
       },
     ]
     actual = process_output(data, ['Test.1', 'Test.2'])
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_process_output_crash_garbage_ok(self):
     data = (
@@ -652,7 +652,7 @@ class RunTestCasesFast(unittest.TestCase):
       },
     ]
     actual = process_output(data, ['Test.1', 'Test.2'])
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_process_output_missing(self):
     data = (
@@ -673,7 +673,7 @@ class RunTestCasesFast(unittest.TestCase):
       },
     ]
     actual = process_output(data, ['Test.1', 'Test.2'])
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_process_output_no_lr(self):
     data = (
@@ -689,7 +689,7 @@ class RunTestCasesFast(unittest.TestCase):
       },
     ]
     actual = process_output(data, ['Test.1'])
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_process_output_fake_ok(self):
     data = (
@@ -709,7 +709,7 @@ class RunTestCasesFast(unittest.TestCase):
       },
     ]
     actual = process_output(data, ['TestFix.TestCase'])
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_calc_cluster_default(self):
     expected = [
@@ -742,7 +742,7 @@ class RunTestCasesFast(unittest.TestCase):
         run_test_cases.calc_cluster_default(num_test_cases, jobs))
       for (num_test_cases, jobs), _ in expected
     ]
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
 
 class RunTestCasesTmp(unittest.TestCase):
@@ -854,7 +854,7 @@ class WorkerPoolTest(unittest.TestCase):
       for i in range(32):
         pool.add_task(0, mapper, i)
       results = pool.join()
-    self.assertEquals(range(-31, 1), sorted(results))
+    self.assertEqual(range(-31, 1), sorted(results))
 
   def test_exception(self):
     class FearsomeException(Exception):
@@ -870,7 +870,7 @@ class WorkerPoolTest(unittest.TestCase):
         pool.join()
         self.fail()
     except FearsomeException:
-      self.assertEquals(True, task_added)
+      self.assertEqual(True, task_added)
 
 
 if __name__ == '__main__':

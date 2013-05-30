@@ -149,11 +149,11 @@ class RunSwarmStep(unittest.TestCase):
     out, err, returncode = self._run(
         self._generate_args_with_isolated(isolated))
     if not VERBOSE:
-      self.assertEquals('', err)
-      self.assertEquals(1070, len(out), out)
-    self.assertEquals(6, returncode)
+      self.assertEqual('', err)
+      self.assertEqual(1070, len(out), out)
+    self.assertEqual(6, returncode)
     actual = list_files_tree(self.cache)
-    self.assertEquals(sorted(expected), actual)
+    self.assertEqual(sorted(expected), actual)
 
   def test_hash(self):
     # Loads the .isolated from the store as a hash.
@@ -166,11 +166,11 @@ class RunSwarmStep(unittest.TestCase):
 
     out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
     if not VERBOSE:
-      self.assertEquals('', err)
-      self.assertEquals(1070, len(out), out)
-    self.assertEquals(6, returncode)
+      self.assertEqual('', err)
+      self.assertEqual(1070, len(out), out)
+    self.assertEqual(6, returncode)
     actual = list_files_tree(self.cache)
-    self.assertEquals(sorted(expected), actual)
+    self.assertEqual(sorted(expected), actual)
 
   def test_download_isolated(self):
     out_dir = None
@@ -193,9 +193,9 @@ class RunSwarmStep(unittest.TestCase):
                          (out_dir, [sys.executable, u'repeated_files.py'],
                           out_dir + os.path.sep))
       if not VERBOSE:
-        self.assertEquals('', err)
-        self.assertEquals(expected_output, out)
-      self.assertEquals(0, returncode)
+        self.assertEqual('', err)
+        self.assertEqual(expected_output, out)
+      self.assertEqual(0, returncode)
 
       # Ensure the correct files have been placed in the temp directory.
       expected = [
@@ -222,11 +222,11 @@ class RunSwarmStep(unittest.TestCase):
     ]
     out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
     if not VERBOSE:
-      self.assertEquals('', out)
-      self.assertEquals('No command to run\n', err)
-    self.assertEquals(1, returncode)
+      self.assertEqual('', out)
+      self.assertEqual('No command to run\n', err)
+    self.assertEqual(1, returncode)
     actual = list_files_tree(self.cache)
-    self.assertEquals(sorted(expected), actual)
+    self.assertEqual(sorted(expected), actual)
 
   def test_includes(self):
     # Loads an .isolated that includes another one.
@@ -249,11 +249,11 @@ class RunSwarmStep(unittest.TestCase):
     ]
     out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
     if not VERBOSE:
-      self.assertEquals('', err)
-      self.assertEquals('Success\n', out)
-    self.assertEquals(0, returncode)
+      self.assertEqual('', err)
+      self.assertEqual('Success\n', out)
+    self.assertEqual(0, returncode)
     actual = list_files_tree(self.cache)
-    self.assertEquals(sorted(expected), actual)
+    self.assertEqual(sorted(expected), actual)
 
   def test_link_all_hash_instances(self):
     # Load an isolated file with the same file (same sha-1 hash), listed under
@@ -268,11 +268,11 @@ class RunSwarmStep(unittest.TestCase):
 
     out, err, returncode = self._run(self._generate_args_with_sha1(result_sha1))
     if not VERBOSE:
-      self.assertEquals('', err)
-      self.assertEquals('Success\n', out)
-    self.assertEquals(0, returncode)
+      self.assertEqual('', err)
+      self.assertEqual('Success\n', out)
+    self.assertEqual(0, returncode)
     actual = list_files_tree(self.cache)
-    self.assertEquals(sorted(expected), actual)
+    self.assertEqual(sorted(expected), actual)
 
   def test_delete_invalid_cache_entry(self):
     isolated_file = os.path.join(self.data_dir, 'file_with_size.isolated')

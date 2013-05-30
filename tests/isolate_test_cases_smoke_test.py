@@ -119,7 +119,7 @@ class IsolateTestCases(unittest.TestCase):
     }
     if sys.platform == 'win32':
       expected_isolated['files'][rel_gtest_fake_pass_py].pop('m')
-    self.assertEquals(expected_isolated, actual_isolated)
+    self.assertEqual(expected_isolated, actual_isolated)
 
     cmd = [
         sys.executable,

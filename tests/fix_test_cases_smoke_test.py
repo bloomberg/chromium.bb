@@ -136,7 +136,7 @@ class FixTestCases(unittest.TestCase):
     if sys.platform == 'win32':
       for value in expected_isolated['files'].itervalues():
         self.assertTrue(value.pop('m'))
-    self.assertEquals(expected_isolated, actual_isolated)
+    self.assertEqual(expected_isolated, actual_isolated)
 
     # Now verify the .isolate file was updated! (That's the magical part where
     # you say wow!)

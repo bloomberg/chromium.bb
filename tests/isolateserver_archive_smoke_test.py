@@ -87,7 +87,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
       if i != (MAX_ATTEMPTS - 1):
         print('Visible datastore inconsistency, retrying.')
         time.sleep(0.1)
-    self.assertEquals(expected, response)
+    self.assertEqual(expected, response)
 
   def test_archive_empty_file(self):
     self._archive_given_files(['empty_file.txt'])

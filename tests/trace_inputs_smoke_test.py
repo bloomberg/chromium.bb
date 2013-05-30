@@ -168,8 +168,8 @@ class TraceInputs(TraceInputsBase):
           '--blacklist', '.*do_not_care\\.txt',
         ],
         cwd=unicode(ROOT_DIR))
-    self.assertEquals(expected, actual)
-    self.assertEquals(trace_expected, trace_actual)
+    self.assertEqual(expected, actual)
+    self.assertEqual(trace_expected, trace_actual)
 
   def test_trace_json(self):
     expected = {
@@ -241,14 +241,14 @@ class TraceInputs(TraceInputsBase):
         ],
         cwd=unicode(ROOT_DIR))
     actual_json = json.loads(actual_text)
-    self.assertEquals(list, actual_json.__class__)
-    self.assertEquals(1, len(actual_json))
+    self.assertEqual(list, actual_json.__class__)
+    self.assertEqual(1, len(actual_json))
     actual_json = actual_json[0]
     # Removes the pids.
     self.assertTrue(actual_json['root'].pop('pid'))
     self.assertTrue(actual_json['root']['children'][0].pop('pid'))
-    self.assertEquals(expected, actual_json)
-    self.assertEquals(trace_expected, trace_actual)
+    self.assertEqual(expected, actual_json)
+    self.assertEqual(trace_expected, trace_actual)
 
 
 class TraceInputsImport(TraceInputsBase):
@@ -269,8 +269,8 @@ class TraceInputsImport(TraceInputsBase):
     api = self.trace_inputs.get_api()
     _, _ = self.trace_inputs.trace(self.log, command, self.cwd, api, True)
     # TODO(maruel): Check
-    #self.assertEquals(0, returncode)
-    #self.assertEquals('', output)
+    #self.assertEqual(0, returncode)
+    #self.assertEqual('', output)
     def blacklist(f):
       return f.endswith(('.pyc', '.svn', 'do_not_care.txt'))
     data = api.parse_log(self.log, blacklist, None)
@@ -420,7 +420,7 @@ class TraceInputsImport(TraceInputsBase):
     expected = self._gen_dict_wrong_path()
     actual = results.flatten()
     self.assertTrue(actual['root'].pop('pid'))
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_trace(self):
     expected = self._gen_dict_full_gyp()
@@ -428,7 +428,7 @@ class TraceInputsImport(TraceInputsBase):
     actual = results.flatten()
     self.assertTrue(actual['root'].pop('pid'))
     self.assertTrue(actual['root']['children'][0].pop('pid'))
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
     files = [
       u'tests/trace_inputs/child1.py'.replace('/', os.path.sep),
       u'tests/trace_inputs/child2.py'.replace('/', os.path.sep),
@@ -443,7 +443,7 @@ class TraceInputsImport(TraceInputsBase):
         self.trace_inputs.get_native_path_case(unicode(ROOT_DIR)),
         results.files,
         blacklist)
-    self.assertEquals(files, [f.path for f in simplified])
+    self.assertEqual(files, [f.path for f in simplified])
 
   def test_trace_multiple(self):
     # Starts parallel threads and trace parallel child processes simultaneously.
@@ -480,13 +480,13 @@ class TraceInputsImport(TraceInputsBase):
     def blacklist(f):
       return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
     actual_results = api.parse_log(self.log, blacklist, None)
-    self.assertEquals(8, len(trace_results))
-    self.assertEquals(8, len(actual_results))
+    self.assertEqual(8, len(trace_results))
+    self.assertEqual(8, len(actual_results))
 
     # Convert to dict keyed on the trace name, simpler to verify.
     trace_results = dict((i[0], i[1:]) for i in trace_results)
     actual_results = dict((x.pop('trace'), x) for x in actual_results)
-    self.assertEquals(sorted(trace_results), sorted(actual_results))
+    self.assertEqual(sorted(trace_results), sorted(actual_results))
 
     # It'd be nice to start different kinds of processes.
     expected_results = [
@@ -499,27 +499,27 @@ class TraceInputsImport(TraceInputsBase):
       self._gen_dict_full(),
       self._gen_dict_full_gyp(),
     ]
-    self.assertEquals(len(expected_results), len(trace_results))
+    self.assertEqual(len(expected_results), len(trace_results))
 
     # See the comment above about the trace that fails because it's started from
     # the wrong directory.
     busted = 4
     for index, key in enumerate(sorted(actual_results)):
-      self.assertEquals('trace%d' % (index + 1), key)
-      self.assertEquals(2, len(trace_results[key]))
+      self.assertEqual('trace%d' % (index + 1), key)
+      self.assertEqual(2, len(trace_results[key]))
       # returncode
-      self.assertEquals(0 if index != busted else 2, trace_results[key][0])
+      self.assertEqual(0 if index != busted else 2, trace_results[key][0])
       # output
-      self.assertEquals(actual_results[key]['output'], trace_results[key][1])
+      self.assertEqual(actual_results[key]['output'], trace_results[key][1])
 
-      self.assertEquals(['output', 'results'], sorted(actual_results[key]))
+      self.assertEqual(['output', 'results'], sorted(actual_results[key]))
       results = actual_results[key]['results']
       results = results.strip_root(unicode(ROOT_DIR))
       actual = results.flatten()
       self.assertTrue(actual['root'].pop('pid'))
       if index != busted:
         self.assertTrue(actual['root']['children'][0].pop('pid'))
-      self.assertEquals(expected_results[index], actual)
+      self.assertEqual(expected_results[index], actual)
 
   if sys.platform != 'win32':
     def test_trace_symlink(self):
@@ -552,7 +552,7 @@ class TraceInputsImport(TraceInputsBase):
       results = self._execute_trace(cmd)
       actual = results.flatten()
       self.assertTrue(actual['root'].pop('pid'))
-      self.assertEquals(expected, actual)
+      self.assertEqual(expected, actual)
       files = [
         # In particular, the symlink is *not* resolved.
         u'tests/trace_inputs/files2/'.replace('/', os.path.sep),
@@ -562,7 +562,7 @@ class TraceInputsImport(TraceInputsBase):
         return f.endswith(('.pyc', '.svn', 'do_not_care.txt'))
       simplified = self.trace_inputs.extract_directories(
           unicode(ROOT_DIR), results.files, blacklist)
-      self.assertEquals(files, [f.path for f in simplified])
+      self.assertEqual(files, [f.path for f in simplified])
 
   def test_trace_quoted(self):
     results = self._execute_trace([sys.executable, '-c', 'print("hi")'])
@@ -581,7 +581,7 @@ class TraceInputsImport(TraceInputsBase):
     }
     actual = results.flatten()
     self.assertTrue(actual['root'].pop('pid'))
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def _touch_expected(self, command):
     # Looks for file that were touched but not opened, using different apis.
@@ -615,7 +615,7 @@ class TraceInputsImport(TraceInputsBase):
 
     actual = results.flatten()
     self.assertTrue(actual['root'].pop('pid'))
-    self.assertEquals(expected, actual)
+    self.assertEqual(expected, actual)
 
   def test_trace_touch_only_access(self):
     self._touch_expected('access')
@@ -664,8 +664,8 @@ class TraceInputsImport(TraceInputsBase):
     api = self.trace_inputs.get_api()
     returncode, output = self.trace_inputs.trace(
         self.log, [exe], self.tempdir, api, True)
-    self.assertEquals('', output)
-    self.assertEquals(0, returncode)
+    self.assertEqual('', output)
+    self.assertEqual(0, returncode)
     data = api.parse_log(self.log, lambda _: False, None)
     self.assertEqual(1, len(data))
     if 'exception' in data[0]:

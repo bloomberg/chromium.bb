@@ -1248,7 +1248,7 @@ class IsolateLoad(IsolateBase):
       isolate.load_complete_state(options, self.cwd, None, False)
       self.fail()
     except isolate.ExecutionError, e:
-      self.assertEquals(
+      self.assertEqual(
           'PRODUCT_DIR=%s is not a directory' %
             os.path.join(native_cwd, 'tests', 'isolate'),
           e.args[0])

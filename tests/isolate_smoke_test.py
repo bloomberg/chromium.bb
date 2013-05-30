@@ -187,7 +187,7 @@ class IsolateModeBase(IsolateBase):
 
   def _expected_tree(self):
     """Verifies the files written in the temporary directory."""
-    self.assertEquals(sorted(DEPENDENCIES[self.case()]), self._result_tree())
+    self.assertEqual(sorted(DEPENDENCIES[self.case()]), self._result_tree())
 
   @staticmethod
   def _fix_file_mode(filename, read_only):
@@ -256,7 +256,7 @@ class IsolateModeBase(IsolateBase):
       expected[u'read_only'] = read_only
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
-    self.assertEquals(expected, json.load(open(self.isolated, 'r')))
+    self.assertEqual(expected, json.load(open(self.isolated, 'r')))
 
   def _expected_saved_state(self, args, read_only, empty_file, extra_vars):
     flavor = isolate.get_flavor()
@@ -278,7 +278,7 @@ class IsolateModeBase(IsolateBase):
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
     expected['variables'].update(extra_vars or {})
-    self.assertEquals(expected, json.load(open(self.saved_state(), 'r')))
+    self.assertEqual(expected, json.load(open(self.saved_state(), 'r')))
 
   def _expect_results(self, args, read_only, extra_vars, empty_file):
     self._expected_result(args, read_only, empty_file)
@@ -291,7 +291,7 @@ class IsolateModeBase(IsolateBase):
 
   def _execute(self, mode, case, args, need_output, cwd=ROOT_DIR):
     """Executes isolate.py."""
-    self.assertEquals(
+    self.assertEqual(
         case,
         self.case() + '.isolate',
         'Rename the test case to test_%s()' % case)
@@ -355,7 +355,7 @@ class IsolateModeBase(IsolateBase):
       self._execute(mode, 'missing_trailing_slash.isolate', [], True)
       self.fail()
     except subprocess.CalledProcessError as e:
-      self.assertEquals('', e.output)
+      self.assertEqual('', e.output)
       out = e.stderr
     self._expect_no_tree()
     self._expect_no_result()
@@ -365,14 +365,14 @@ class IsolateModeBase(IsolateBase):
       'Error: Input directory %s must have a trailing slash\n' %
           os.path.join(root, 'tests', 'isolate', 'files1')
     )
-    self.assertEquals(expected, out)
+    self.assertEqual(expected, out)
 
   def _test_non_existent(self, mode):
     try:
       self._execute(mode, 'non_existent.isolate', [], True)
       self.fail()
     except subprocess.CalledProcessError as e:
-      self.assertEquals('', e.output)
+      self.assertEqual('', e.output)
       out = e.stderr
     self._expect_no_tree()
     self._expect_no_result()
@@ -382,7 +382,7 @@ class IsolateModeBase(IsolateBase):
       'Error: Input file %s doesn\'t exist\n' %
           os.path.join(root, 'tests', 'isolate', 'A_file_that_do_not_exist')
     )
-    self.assertEquals(expected, out)
+    self.assertEqual(expected, out)
 
   def _test_all_items_invalid(self, mode):
     out = self._execute(mode, 'all_items_invalid.isolate',
@@ -402,12 +402,12 @@ class Isolate(unittest.TestCase):
         stderr=subprocess.STDOUT,
         cwd=ROOT_DIR)
     out = p.communicate()[0].splitlines()
-    self.assertEquals(0, p.returncode)
+    self.assertEqual(0, p.returncode)
     out = out[out.index('') + 1:]
     out = out[:out.index('')]
     modes = [re.match(r'^  (\w+) .+', l) for l in out]
     modes = tuple(m.group(1) for m in modes if m)
-    self.assertEquals(sorted(EXPECTED_MODES), sorted(modes))
+    self.assertEqual(sorted(EXPECTED_MODES), sorted(modes))
 
   def test_modes(self):
     # This is a bit redundant but make sure all combinations are tested.
@@ -417,8 +417,8 @@ class Isolate(unittest.TestCase):
       if i.endswith('.isolate')
     )
     files.remove('simple')
-    self.assertEquals(sorted(RELATIVE_CWD), files)
-    self.assertEquals(sorted(DEPENDENCIES), files)
+    self.assertEqual(sorted(RELATIVE_CWD), files)
+    self.assertEqual(sorted(DEPENDENCIES), files)
 
     if sys.platform == 'win32':
       # Symlink stuff is unsupported there, remove them from the list.
@@ -465,7 +465,7 @@ class Isolate_check(IsolateModeBase):
 
   def test_all_items_invalid(self):
     out = self._test_all_items_invalid('check')
-    self.assertEquals('', out)
+    self.assertEqual('', out)
     self._expect_no_tree()
 
   def test_no_run(self):
@@ -519,7 +519,7 @@ class Isolate_hashtable(IsolateModeBase):
 
   def _expected_hash_tree(self, empty_file):
     """Verifies the files written in the temporary directory."""
-    self.assertEquals(
+    self.assertEqual(
         sorted(self._gen_expected_tree(empty_file)),
         map(unicode, self._result_tree()))
 
@@ -537,7 +537,7 @@ class Isolate_hashtable(IsolateModeBase):
   def test_all_items_invalid(self):
     out = self._test_all_items_invalid('hashtable')
     expected = '%s  isolate_smoke_test.isolated\n' % calc_sha1(self.isolated)
-    self.assertEquals(expected, out)
+    self.assertEqual(expected, out)
     self._expected_hash_tree(None)
 
   def test_no_run(self):
@@ -560,7 +560,7 @@ class Isolate_hashtable(IsolateModeBase):
       unicode(calc_sha1(isolated_base + '.1.isolated')),
     ]
     tree.extend(isolated_hashes)
-    self.assertEquals(sorted(tree), map(unicode, self._result_tree()))
+    self.assertEqual(sorted(tree), map(unicode, self._result_tree()))
 
     # Reimplement _expected_result():
     files = self._gen_files(None, None, False)
@@ -571,14 +571,14 @@ class Isolate_hashtable(IsolateModeBase):
       u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
     }
-    self.assertEquals(expected, json.load(open(self.isolated, 'r')))
+    self.assertEqual(expected, json.load(open(self.isolated, 'r')))
 
     key = os.path.join(u'test', 'data', 'foo.txt')
     expected = {
       u'files': {key: files[key]},
       u'os': unicode(isolate.get_flavor()),
     }
-    self.assertEquals(
+    self.assertEqual(
         expected, json.load(open(isolated_base + '.0.isolated', 'r')))
 
     key = os.path.join(u'files1', 'subdir', '42.txt')
@@ -586,7 +586,7 @@ class Isolate_hashtable(IsolateModeBase):
       u'files': {key: files[key]},
       u'os': unicode(isolate.get_flavor()),
     }
-    self.assertEquals(
+    self.assertEqual(
         expected, json.load(open(isolated_base + '.1.isolated', 'r')))
 
 
@@ -619,7 +619,7 @@ class Isolate_hashtable(IsolateModeBase):
         for v in self._gen_files(False, None, False).itervalues() if 'h' in v
       ]
       expected.append(calc_sha1(self.isolated))
-      self.assertEquals(sorted(expected), self._result_tree())
+      self.assertEqual(sorted(expected), self._result_tree())
       self._expect_results(['symlink_full.py'], None, None, None)
 
     def test_symlink_partial(self):
@@ -630,7 +630,7 @@ class Isolate_hashtable(IsolateModeBase):
         for v in self._gen_files(False, None, False).itervalues() if 'h' in v
       ]
       expected.append(calc_sha1(self.isolated))
-      self.assertEquals(sorted(expected), self._result_tree())
+      self.assertEqual(sorted(expected), self._result_tree())
       self._expect_results(['symlink_partial.py'], None, None, None)
 
     def test_symlink_outside_build_root(self):
@@ -642,7 +642,7 @@ class Isolate_hashtable(IsolateModeBase):
         for v in self._gen_files(False, None, False).itervalues() if 'h' in v
       ]
       expected.append(calc_sha1(self.isolated))
-      self.assertEquals(sorted(expected), self._result_tree())
+      self.assertEqual(sorted(expected), self._result_tree())
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 
 
@@ -706,7 +706,7 @@ class Isolate_remap(IsolateModeBase):
 
 class Isolate_run(IsolateModeBase):
   def _expect_empty_tree(self):
-    self.assertEquals([], self._result_tree())
+    self.assertEqual([], self._result_tree())
 
   def test_fail(self):
     try:
@@ -785,10 +785,10 @@ class Isolate_trace_read_merge(IsolateModeBase):
     with open(filepath, 'rb') as f:
       old_content = f.read()
     out = self._execute('merge', filename, [], True) or ''
-    self.assertEquals(expected, out)
+    self.assertEqual(expected, out)
     with open(filepath, 'rb') as f:
       new_content = f.read()
-    self.assertEquals(old_content, new_content)
+    self.assertEqual(old_content, new_content)
 
   def test_fail(self):
     # Even if the process returns non-zero, the trace will still be good.
@@ -796,7 +796,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
       self._execute('trace', 'fail.isolate', ['-v'], True)
       self.fail()
     except subprocess.CalledProcessError, e:
-      self.assertEquals('', e.output)
+      self.assertEqual('', e.output)
     self._expect_no_tree()
     self._expect_results(['fail.py'], None, None, None)
     expected = self._wrap_in_condition(
@@ -806,7 +806,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
           ],
         })
     out = self._execute('read', 'fail.isolate', [], True) or ''
-    self.assertEquals(expected.splitlines(), out.splitlines())
+    self.assertEqual(expected.splitlines(), out.splitlines())
     self._check_merge('fail.isolate')
 
   def test_missing_trailing_slash(self):
@@ -830,14 +830,14 @@ class Isolate_trace_read_merge(IsolateModeBase):
     self._expect_no_tree()
     self._expect_no_result()
     expected = '\nError: No command to run\n'
-    self.assertEquals('', out)
-    self.assertEquals(expected, err)
+    self.assertEqual('', out)
+    self.assertEqual(expected, err)
 
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     out = self._execute(
         'trace', 'touch_only.isolate', ['-V', 'FLAG', 'trace'], True)
-    self.assertEquals('', out)
+    self.assertEqual('', out)
     self._expect_no_tree()
     empty = os.path.join('files1', 'test_file1.txt')
     self._expect_results(
@@ -856,12 +856,12 @@ class Isolate_trace_read_merge(IsolateModeBase):
       del expected[isolate.KEY_TOUCHED]
 
     out = self._execute('read', 'touch_only.isolate', [], True)
-    self.assertEquals(self._wrap_in_condition(expected), out)
+    self.assertEqual(self._wrap_in_condition(expected), out)
     self._check_merge('touch_only.isolate')
 
   def test_touch_root(self):
     out = self._execute('trace', 'touch_root.isolate', [], True)
-    self.assertEquals('', out)
+    self.assertEqual('', out)
     self._expect_no_tree()
     self._expect_results(['touch_root.py'], None, None, None)
     expected = self._wrap_in_condition(
@@ -872,13 +872,13 @@ class Isolate_trace_read_merge(IsolateModeBase):
           ],
         })
     out = self._execute('read', 'touch_root.isolate', [], True)
-    self.assertEquals(expected, out)
+    self.assertEqual(expected, out)
     self._check_merge('touch_root.isolate')
 
   def test_with_flag(self):
     out = self._execute(
         'trace', 'with_flag.isolate', ['-V', 'FLAG', 'trace'], True)
-    self.assertEquals('', out)
+    self.assertEqual('', out)
     self._expect_no_tree()
     self._expect_results(
         ['with_flag.py', 'trace'], None, {u'FLAG': u'trace'}, None)
@@ -892,14 +892,14 @@ class Isolate_trace_read_merge(IsolateModeBase):
       ],
     }
     out = self._execute('read', 'with_flag.isolate', [], True)
-    self.assertEquals(self._wrap_in_condition(expected), out)
+    self.assertEqual(self._wrap_in_condition(expected), out)
     self._check_merge('with_flag.isolate')
 
   if sys.platform != 'win32':
     def test_symlink_full(self):
       out = self._execute(
           'trace', 'symlink_full.isolate', [], True)
-      self.assertEquals('', out)
+      self.assertEqual('', out)
       self._expect_no_tree()
       self._expect_results(['symlink_full.py'], None, None, None)
       expected = {
@@ -912,13 +912,13 @@ class Isolate_trace_read_merge(IsolateModeBase):
         ],
       }
       out = self._execute('read', 'symlink_full.isolate', [], True)
-      self.assertEquals(self._wrap_in_condition(expected), out)
+      self.assertEqual(self._wrap_in_condition(expected), out)
       self._check_merge('symlink_full.isolate')
 
     def test_symlink_partial(self):
       out = self._execute(
           'trace', 'symlink_partial.isolate', [], True)
-      self.assertEquals('', out)
+      self.assertEqual('', out)
       self._expect_no_tree()
       self._expect_results(['symlink_partial.py'], None, None, None)
       expected = {
@@ -930,13 +930,13 @@ class Isolate_trace_read_merge(IsolateModeBase):
         ],
       }
       out = self._execute('read', 'symlink_partial.isolate', [], True)
-      self.assertEquals(self._wrap_in_condition(expected), out)
+      self.assertEqual(self._wrap_in_condition(expected), out)
       self._check_merge('symlink_partial.isolate')
 
     def test_symlink_outside_build_root(self):
       out = self._execute(
           'trace', 'symlink_outside_build_root.isolate', [], True)
-      self.assertEquals('', out)
+      self.assertEqual('', out)
       self._expect_no_tree()
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
       expected = {
@@ -949,7 +949,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
       }
       out = self._execute(
           'read', 'symlink_outside_build_root.isolate', [], True)
-      self.assertEquals(self._wrap_in_condition(expected), out)
+      self.assertEqual(self._wrap_in_condition(expected), out)
       self._check_merge('symlink_outside_build_root.isolate')
 
 
@@ -1009,8 +1009,8 @@ class IsolateNoOutdir(IsolateBase):
   def mode(self):
     """Returns the execution mode corresponding to this test case."""
     test_id = self.id().split('.')
-    self.assertEquals(3, len(test_id))
-    self.assertEquals('__main__', test_id[0])
+    self.assertEqual(3, len(test_id))
+    self.assertEqual('__main__', test_id[0])
     return re.match('^test_([a-z]+)$', test_id[2]).group(1)
 
   def filename(self):
@@ -1028,7 +1028,7 @@ class IsolateNoOutdir(IsolateBase):
       os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
     ])
-    self.assertEquals(files, list_files_tree(self.tempdir))
+    self.assertEqual(files, list_files_tree(self.tempdir))
 
   def test_hashtable(self):
     self._execute('hashtable', ['--isolate', self.filename()], False)
@@ -1046,7 +1046,7 @@ class IsolateNoOutdir(IsolateBase):
       os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
     ])
-    self.assertEquals(files, list_files_tree(self.tempdir))
+    self.assertEqual(files, list_files_tree(self.tempdir))
 
   def test_remap(self):
     self._execute('remap', ['--isolate', self.filename()], False)
@@ -1057,7 +1057,7 @@ class IsolateNoOutdir(IsolateBase):
       os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
     ])
-    self.assertEquals(files, list_files_tree(self.tempdir))
+    self.assertEqual(files, list_files_tree(self.tempdir))
 
   def test_run(self):
     self._execute('run', ['--isolate', self.filename()], False)
@@ -1068,7 +1068,7 @@ class IsolateNoOutdir(IsolateBase):
       os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
     ])
-    self.assertEquals(files, list_files_tree(self.tempdir))
+    self.assertEqual(files, list_files_tree(self.tempdir))
 
   def test_trace_read_merge(self):
     self._execute('trace', ['--isolate', self.filename()], False)
@@ -1081,12 +1081,12 @@ class IsolateNoOutdir(IsolateBase):
         'touch_root.py',
       ],
     }
-    self.assertEquals(self._wrap_in_condition(expected), output)
+    self.assertEqual(self._wrap_in_condition(expected), output)
 
     output = self._execute('merge', [], True)
     expected = 'Updating %s\n' % os.path.join(
         'root', 'tests', 'isolate', 'touch_root.isolate')
-    self.assertEquals(expected, output)
+    self.assertEqual(expected, output)
     # In theory the file is going to be updated but in practice its content
     # won't change.
 
@@ -1100,7 +1100,7 @@ class IsolateNoOutdir(IsolateBase):
       os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
     ])
-    self.assertEquals(files, list_files_tree(self.tempdir))
+    self.assertEqual(files, list_files_tree(self.tempdir))
 
 
 class IsolateOther(IsolateBase):

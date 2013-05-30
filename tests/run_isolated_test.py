@@ -47,7 +47,7 @@ class RunIsolatedTest(unittest.TestCase):
 
   def test_load_isolated_empty(self):
     m = run_isolated.load_isolated('{}')
-    self.assertEquals({}, m)
+    self.assertEqual({}, m)
 
   def test_load_isolated_good(self):
     data = {
@@ -68,7 +68,7 @@ class RunIsolatedTest(unittest.TestCase):
       u'relative_cwd': u'somewhere_else'
     }
     m = run_isolated.load_isolated(json.dumps(data))
-    self.assertEquals(data, m)
+    self.assertEqual(data, m)
 
   def test_load_isolated_bad(self):
     data = {
@@ -90,7 +90,7 @@ class RunIsolatedTest(unittest.TestCase):
       u'os': run_isolated.get_flavor(),
     }
     m = run_isolated.load_isolated(json.dumps(data))
-    self.assertEquals(data, m)
+    self.assertEqual(data, m)
 
   def test_load_isolated_os_bad(self):
     data = {
