@@ -184,6 +184,7 @@ void TestFileIO::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestFileIO, NotAllowMixedReadWrite, filter);
   RUN_CALLBACK_TEST(TestFileIO, WillWriteWillSetLength, filter);
   RUN_CALLBACK_TEST(TestFileIO, RequestOSFileHandle, filter);
+  RUN_CALLBACK_TEST(TestFileIO, RequestOSFileHandleWithOpenExclusive, filter);
   RUN_CALLBACK_TEST(TestFileIO, Mmap, filter);
 
   // TODO(viettrungluu): add tests:
@@ -1105,6 +1106,39 @@ std::string TestFileIO::TestRequestOSFileHandle() {
     return ReportError("read for native FD count mismatch", cnt);
   if (msg != buf)
     return ReportMismatch("read for native FD", buf, msg);
+  PASS();
+}
+
+// Calling RequestOSFileHandle with the FileIO that is opened with
+// PP_FILEOPENFLAG_EXCLUSIVE used to cause NaCl module to crash while loading.
+// This is a regression test for crbug.com/243241.
+std::string TestFileIO::TestRequestOSFileHandleWithOpenExclusive() {
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+
+  pp::FileSystem file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  pp::FileRef file_ref(file_system, "/file_os_fd2");
+
+  callback.WaitForResult(file_system.Open(1024, callback.GetCallback()));
+  ASSERT_EQ(PP_OK, callback.result());
+
+  pp::FileIO_Private file_io(instance_);
+  callback.WaitForResult(file_io.Open(file_ref,
+                                      PP_FILEOPENFLAG_CREATE |
+                                      PP_FILEOPENFLAG_READ |
+                                      PP_FILEOPENFLAG_WRITE |
+                                      PP_FILEOPENFLAG_EXCLUSIVE,
+                                      callback.GetCallback()));
+  ASSERT_EQ(PP_OK, callback.result());
+
+  TestCompletionCallbackWithOutput<pp::PassFileHandle> output_callback(
+      instance_->pp_instance(), callback_type());
+  output_callback.WaitForResult(
+      file_io.RequestOSFileHandle(output_callback.GetCallback()));
+  PP_FileHandle handle = output_callback.output().Release();
+  if (handle == PP_kInvalidFileHandle)
+    return "FileIO::RequestOSFileHandle() returned a bad file handle.";
+  ASSERT_EQ(PP_OK, output_callback.result());
+
   PASS();
 }
 
