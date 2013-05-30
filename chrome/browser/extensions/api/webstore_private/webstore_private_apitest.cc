@@ -249,14 +249,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   ASSERT_EQ("iladmdjkfniedhfhcfoefgojhgaiaccc", listener.id());
 }
 
-// Fails often on Windows dbg bots. http://crbug.com/177163
-#if defined(OS_WIN)
-#define MAYBE_IconUrl DISABLED_IconUrl
-#else
-#define MAYBE_IconUrl IconUrl
-#endif  // defined(OS_WIN)
 // Tests using the iconUrl parameter to the install function.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MAYBE_IconUrl) {
+// Disabled due to flaky crashes, especially on ASAN bots:
+// [ http://crbug.com/245357 ].  Was previously disabled just on Windows because
+// it failed often on Windows dbg bots: [ http://crbug.com/177163 ].
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, DISABLED_IconUrl) {
   ASSERT_TRUE(RunInstallTest("icon_url.html", "extension.crx"));
 }
 
