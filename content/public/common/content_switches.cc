@@ -554,10 +554,6 @@ const char kNoSandbox[]                     = "no-sandbox";
 // finishes.
 const char kAllowNoSandboxJob[]             = "allow-no-sandbox-job";
 
-// Use the new IndexedDB backend implemented in Chromium. By default,
-// the old backend implemented in Blink is used.
-const char kNewIndexedDB[]                  = "new-indexeddb";
-
 // Specifies a command that should be used to launch the plugin process.  Useful
 // for running the plugin process through purify or quantify.  Ex:
 //   --plugin-launcher="path\to\purify /Run=yes"
