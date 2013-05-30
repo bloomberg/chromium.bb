@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <linux/input.h>
 #include <cairo.h>
@@ -69,6 +70,7 @@ struct text_entry {
 	uint32_t content_purpose;
 	uint32_t click_to_show;
 	char *preferred_language;
+	bool button_pressed;
 };
 
 struct editor {
@@ -112,6 +114,9 @@ static void text_entry_button_handler(struct widget *widget,
 				      struct input *input, uint32_t time,
 				      uint32_t button,
 				      enum wl_pointer_button_state state, void *data);
+static int text_entry_motion_handler(struct widget *widget,
+				     struct input *input, uint32_t time,
+				     float x, float y, void *data);
 static void text_entry_insert_at_cursor(struct text_entry *entry, const char *text,
 					int32_t cursor, int32_t anchor);
 static void text_entry_set_preedit(struct text_entry *entry,
@@ -472,6 +477,7 @@ text_entry_create(struct editor *editor, const char *text)
 
 	widget_set_redraw_handler(entry->widget, text_entry_redraw_handler);
 	widget_set_button_handler(entry->widget, text_entry_button_handler);
+	widget_set_motion_handler(entry->widget, text_entry_motion_handler);
 
 	return entry;
 }
@@ -772,42 +778,42 @@ text_entry_try_invoke_preedit_action(struct text_entry *entry,
 	return 1;
 }
 
-static void
-text_entry_set_cursor_position(struct text_entry *entry,
-			       int32_t x, int32_t y)
+static bool
+text_entry_has_preedit(struct text_entry *entry)
 {
-	int index, trailing;
-	const char *text;
-
-	text_entry_commit_and_reset(entry);
-
-	pango_layout_xy_to_index(entry->layout,
-				 x * PANGO_SCALE, y * PANGO_SCALE,
-				 &index, &trailing);
-
-	text = pango_layout_get_text(entry->layout);
-	entry->cursor = g_utf8_offset_to_pointer(text + index, trailing) - text;
-
-	text_entry_update_layout(entry);
-
-	widget_schedule_redraw(entry->widget);
-
-	text_entry_update(entry);
+	return entry->preedit.text && (strlen(entry->preedit.text) > 0);
 }
 
 static void
-text_entry_set_anchor_position(struct text_entry *entry,
-			       int32_t x, int32_t y)
+text_entry_set_cursor_position(struct text_entry *entry,
+			       int32_t x, int32_t y,
+			       bool move_anchor)
 {
 	int index, trailing;
 	const char *text;
+	uint32_t cursor;
 
 	pango_layout_xy_to_index(entry->layout,
 				 x * PANGO_SCALE, y * PANGO_SCALE,
 				 &index, &trailing);
 
 	text = pango_layout_get_text(entry->layout);
-	entry->anchor = g_utf8_offset_to_pointer(text + index, trailing) - text;
+
+	cursor = g_utf8_offset_to_pointer(text + index, trailing) - text;
+
+	if (move_anchor)
+		entry->anchor = cursor;
+
+	if (text_entry_has_preedit(entry)) {
+		text_entry_commit_and_reset(entry);
+
+		assert(!text_entry_has_preedit(entry));
+	}
+
+	if (entry->cursor == cursor)
+		return;
+
+	entry->cursor = cursor;
 
 	text_entry_update_layout(entry);
 
@@ -967,11 +973,16 @@ text_entry_motion_handler(struct widget *widget,
 	struct text_entry *entry = data;
 	struct rectangle allocation;
 
+	if (!entry->button_pressed) {
+		return CURSOR_IBEAM;
+	}
+
 	widget_get_allocation(entry->widget, &allocation);
 
 	text_entry_set_cursor_position(entry,
 				       x - allocation.x - text_offset_left,
-				       y - allocation.y - text_offset_left);
+				       y - allocation.y - text_offset_left,
+				       false);
 
 	return CURSOR_IBEAM;
 }
@@ -996,16 +1007,21 @@ text_entry_button_handler(struct widget *widget,
 
 	editor = window_get_user_data(entry->window);
 
-	result = text_entry_try_invoke_preedit_action(entry, x, y, button, state);
+	if (button == BTN_LEFT) {
+		entry->button_pressed = (state == WL_POINTER_BUTTON_STATE_PRESSED);
 
-	if (result)
-		return;
-
-	if (button != BTN_LEFT) {
-		return;
+		if (state == WL_POINTER_BUTTON_STATE_PRESSED)
+			input_grab(input, entry->widget, button);
+		else
+			input_ungrab(input);
 	}
 
-	text_entry_set_cursor_position(entry, x, y);
+	if (text_entry_has_preedit(entry)) {
+		result = text_entry_try_invoke_preedit_action(entry, x, y, button, state);
+
+		if (result)
+			return;
+	}
 
 	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
 		struct wl_seat *seat = input_get_seat(input);
@@ -1013,11 +1029,7 @@ text_entry_button_handler(struct widget *widget,
 		text_entry_activate(entry, seat);
 		editor->active_entry = entry;
 
-		text_entry_set_anchor_position(entry, x, y);
-
-		widget_set_motion_handler(entry->widget, text_entry_motion_handler);
-	} else {
-		widget_set_motion_handler(entry->widget, NULL);
+		text_entry_set_cursor_position(entry, x, y, true);
 	}
 }
 
