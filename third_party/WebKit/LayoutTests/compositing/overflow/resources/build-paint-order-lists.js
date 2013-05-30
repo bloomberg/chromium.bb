@@ -3,6 +3,9 @@ function getPaintOrder(element)
   var divElementsBeforePromote = [];
   var divElementsAfterPromote = [];
   // Force a style recalc.
+  document.body.style.overflow = 'scroll';
+  document.body.offsetTop;
+  document.body.style.overflow = '';
   document.body.offsetTop;
 
   var paintOrderListBeforePromote = window.internals.paintOrderListBeforePromote(element);

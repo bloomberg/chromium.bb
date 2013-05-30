@@ -87,7 +87,11 @@ public:
 
     // Called when something outside WebKit affects the visible rect (e.g. delegated scrolling). Might schedule a layer flush.
     void didChangeVisibleRect();
-    
+
+    // Updating properties required for determining if compositing is necessary.
+    void updateCompositingRequirementsState();
+    void setNeedsUpdateCompositingRequirementsState() { m_needsUpdateCompositingRequirementsState = true; }
+
     // Rebuild the tree of compositing layers
     void updateCompositingLayers(CompositingUpdateType, RenderLayer* updateRoot = 0);
     
@@ -189,6 +193,9 @@ public:
 
     void updateViewportConstraintStatus(RenderLayer*);
     void removeViewportConstrainedLayer(RenderLayer*);
+
+    void addOutOfFlowPositionedLayer(RenderLayer*);
+    void removeOutOfFlowPositionedLayer(RenderLayer*);
 
     void resetTrackedRepaintRects();
     void setTracksRepaints(bool);
@@ -320,6 +327,7 @@ private:
     bool m_compositingLayersNeedRebuild;
     bool m_forceCompositingMode;
     bool m_inPostLayoutUpdate; // true when it's OK to trust layout information (e.g. layer sizes and positions)
+    bool m_needsUpdateCompositingRequirementsState;
 
     bool m_isTrackingRepaints; // Used for testing.
     
@@ -331,6 +339,10 @@ private:
 
     HashSet<RenderLayer*> m_viewportConstrainedLayers;
     HashSet<RenderLayer*> m_viewportConstrainedLayersNeedingUpdate;
+
+    // This is used in updateCompositingRequirementsState to avoid full tree
+    // walks while determining if layers have unclipped descendants.
+    HashSet<RenderLayer*> m_outOfFlowPositionedLayers;
 
     // Enclosing layer for overflow controls and the clipping layer
     OwnPtr<GraphicsLayer> m_overflowControlsHostLayer;

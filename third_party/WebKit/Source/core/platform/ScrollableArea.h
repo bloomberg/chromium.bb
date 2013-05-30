@@ -171,6 +171,7 @@ public:
     void serviceScrollAnimations();
 
     virtual bool usesCompositedScrolling() const { return false; }
+    virtual void updateNeedsCompositedScrolling() { }
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 

@@ -708,6 +708,7 @@ void FrameView::updateCompositingLayersAfterLayout()
 
     // This call will make sure the cached hasAcceleratedCompositing is updated from the pref
     renderView->compositor()->cacheAcceleratedCompositingFlags();
+    renderView->compositor()->updateCompositingRequirementsState();
     renderView->compositor()->updateCompositingLayers(CompositingUpdateAfterLayout);
 }
 

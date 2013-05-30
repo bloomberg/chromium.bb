@@ -602,13 +602,15 @@ public:
     // Part of the issue is with subtree relayout: we don't check if our ancestors have some descendant flags dirty, missing some updates.
     bool hasSelfPaintingLayerDescendant() const { return m_hasSelfPaintingLayerDescendant; }
 
-    // This returns true if we have an out of flow positioned descendant whose
-    // containing block is not a descendant of ours. If this is true, we cannot
-    // automatically opt into composited scrolling since this out of flow
-    // positioned descendant would become clipped by us, possibly altering the 
-    // rendering of the page.
-    // FIXME: We should ASSERT(!m_hasOutOfFlowPositionedDescendantDirty); here but we may hit the same bugs as visible content above.
+    // FIXME: We should ASSERT(!m_hasOutOfFlowPositionedDescendantDirty) here. See above.
     bool hasOutOfFlowPositionedDescendant() const { return m_hasOutOfFlowPositionedDescendant; }
+
+    void setHasOutOfFlowPositionedDescendant(bool hasDescendant) { m_hasOutOfFlowPositionedDescendant = hasDescendant; }
+    void setHasOutOfFlowPositionedDescendantDirty(bool dirty) { m_hasOutOfFlowPositionedDescendantDirty = dirty; }
+
+    bool hasUnclippedDescendant() const { return m_hasUnclippedDescendant; }
+    void setHasUnclippedDescendant(bool hasDescendant) { m_hasUnclippedDescendant = hasDescendant; }
+    void updateHasUnclippedDescendant();
 
     // Gets the nearest enclosing positioned ancestor layer (also includes
     // the <html> layer and the root layer).
@@ -872,6 +874,7 @@ public:
         CompositedScrollingAlwaysOn = 1,
         CompositedScrollingAlwaysOff = 2
     };
+
     void setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode);
 
 private:
@@ -891,6 +894,9 @@ private:
 
     void setAncestorChainHasSelfPaintingLayerDescendant();
     void dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
+
+    void setAncestorChainHasOutOfFlowPositionedDescendant();
+    void dirtyAncestorChainHasOutOfFlowPositionedDescendantStatus();
 
     bool acceleratedCompositingForOverflowScrollEnabled() const;
     void updateDescendantsAreContiguousInStackingOrder();
@@ -916,11 +922,10 @@ private:
     void updateScrollbarsAfterStyleChange(const RenderStyle* oldStyle);
     void updateScrollbarsAfterLayout();
 
-    void setAncestorChainHasOutOfFlowPositionedDescendant(RenderObject* containingBlock);
-    void dirtyAncestorChainHasOutOfFlowPositionedDescendantStatus();
     void updateOutOfFlowPositioned(const RenderStyle* oldStyle);
 
-    void updateNeedsCompositedScrolling();
+    virtual void updateNeedsCompositedScrolling() OVERRIDE;
+    void setNeedsCompositedScrolling(bool);
     void didUpdateNeedsCompositedScrolling();
 
     // Returns true if the position changed.
@@ -1085,7 +1090,7 @@ private:
     void dirtyAncestorChainVisibleDescendantStatus();
     void setAncestorChainHasVisibleDescendant();
 
-    void updateDescendantDependentFlags(HashSet<const RenderObject*>* outOfFlowDescendantContainingBlocks = 0);
+    void updateDescendantDependentFlags();
 
     // This flag is computed by RenderLayerCompositor, which knows more about 3d hierarchies than we do.
     void setHas3DTransformedDescendant(bool b) { m_has3DTransformedDescendant = b; }
@@ -1173,11 +1178,14 @@ protected:
     bool m_hasSelfPaintingLayerDescendant : 1;
     bool m_hasSelfPaintingLayerDescendantDirty : 1;
 
-    // If we have no out of flow positioned descendants and no non-descendant
-    // appears between our descendants in stacking order, then we may become a
-    // stacking context.
     bool m_hasOutOfFlowPositionedDescendant : 1;
     bool m_hasOutOfFlowPositionedDescendantDirty : 1;
+
+    // This is true if we have an out-of-flow positioned descendant whose
+    // containing block is our ancestor. If this is the case, the descendant
+    // may fall outside of our clip preventing things like opting into
+    // composited scrolling (which causes clipping of all descendants).
+    bool m_hasUnclippedDescendant : 1;
 
     bool m_needsCompositedScrolling : 1;
 

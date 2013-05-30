@@ -218,6 +218,7 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
     , m_compositingLayersNeedRebuild(false)
     , m_forceCompositingMode(false)
     , m_inPostLayoutUpdate(false)
+    , m_needsUpdateCompositingRequirementsState(false)
     , m_isTrackingRepaints(false)
     , m_rootLayerAttachment(RootLayerUnattached)
 #if !LOG_DISABLED
@@ -328,6 +329,29 @@ void RenderLayerCompositor::didChangeVisibleRect()
 bool RenderLayerCompositor::hasAnyAdditionalCompositedLayers(const RenderLayer* rootLayer) const
 {
     return m_compositedLayerCount > (rootLayer->isComposited() ? 1 : 0);
+}
+
+void RenderLayerCompositor::updateCompositingRequirementsState()
+{
+    TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateCompositingRequirementsState");
+
+    if (!m_needsUpdateCompositingRequirementsState)
+        return;
+
+    m_needsUpdateCompositingRequirementsState = false;
+
+    if (!rootRenderLayer() || !rootRenderLayer()->acceleratedCompositingForOverflowScrollEnabled())
+        return;
+
+    const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView->frameView()->scrollableAreas();
+    if (!scrollableAreas)
+        return;
+
+    for (HashSet<RenderLayer*>::iterator it = m_outOfFlowPositionedLayers.begin(); it != m_outOfFlowPositionedLayers.end(); ++it)
+        (*it)->updateHasUnclippedDescendant();
+
+    for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
+        (*it)->updateNeedsCompositedScrolling();
 }
 
 void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType updateType, RenderLayer* updateRoot)
@@ -491,6 +515,16 @@ void RenderLayerCompositor::logLayerInfo(const RenderLayer* layer, int depth)
         logReasonsForCompositing(layer), layerName.utf8().data());
 }
 #endif
+
+void RenderLayerCompositor::addOutOfFlowPositionedLayer(RenderLayer* layer)
+{
+    m_outOfFlowPositionedLayers.add(layer);
+}
+
+void RenderLayerCompositor::removeOutOfFlowPositionedLayer(RenderLayer* layer)
+{
+    m_outOfFlowPositionedLayers.remove(layer);
+}
 
 bool RenderLayerCompositor::updateBacking(RenderLayer* layer, CompositingChangeRepaint shouldRepaint)
 {
