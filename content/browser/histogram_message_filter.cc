@@ -52,15 +52,9 @@ void HistogramMessageFilter::OnGetBrowserHistogram(
   bool using_stats_collection_controller =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kStatsCollectionController);
-  bool reduced_security =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kReduceSecurityForStatsCollectionTests);
-
-  if (!using_stats_collection_controller || !reduced_security) {
+  if (!using_stats_collection_controller) {
     LOG(ERROR) << "Attempt at reading browser histogram without specifying "
-               << "--" << switches::kStatsCollectionController << " and "
-               << "--" << switches::kReduceSecurityForStatsCollectionTests
-               << " switches.";
+               << "--" << switches::kStatsCollectionController << " switch.";
     return;
   }
   base::HistogramBase* histogram =

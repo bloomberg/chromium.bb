@@ -38,8 +38,6 @@ class MemoryMeasurement(page_measurement.PageMeasurement):
     # pages.
     options.AppendExtraBrowserArg('--disable-histogram-customizer')
     options.AppendExtraBrowserArg('--memory-metrics')
-    options.AppendExtraBrowserArg(
-        '--reduce-security-for-stats-collection-tests')
 
     # Old commandline flags used for reference builds.
     options.AppendExtraBrowserArg('--dom-automation')

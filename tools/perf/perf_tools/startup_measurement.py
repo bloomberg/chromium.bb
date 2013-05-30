@@ -20,8 +20,6 @@ class PerfWarm(page_measurement.PageMeasurement):
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArg('--enable-stats-collection-bindings')
-    options.AppendExtraBrowserArg(
-          '--reduce-security-for-stats-collection-tests')
 
     # Old commandline flags used for reference builds.
     options.AppendExtraBrowserArg('--dom-automation')

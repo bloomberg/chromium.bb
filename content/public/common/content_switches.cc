@@ -245,11 +245,6 @@ const char kDisableXSSAuditor[]             = "disable-xss-auditor";
 // based tests.
 const char kDomAutomationController[]       = "dom-automation";
 
-// Loosen security. Needed for tests using some of the functionality of
-// |DOMAutomationController|.
-const char kReduceSecurityForStatsCollectionTests[] =
-    "reduce-security-for-stats-collection-tests";
-
 // Specifies if the |StatsCollectionController| needs to be bound in the
 // renderer. This binding happens on per-frame basis and hence can potentially
 // be a performance bottleneck. One should only enable it when running a test

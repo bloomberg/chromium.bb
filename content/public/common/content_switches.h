@@ -92,7 +92,6 @@ extern const char kDisableWebSecurity[];
 extern const char kEnableExperimentalWebSocket[];
 extern const char kDisableXSSAuditor[];
 CONTENT_EXPORT extern const char kDomAutomationController[];
-CONTENT_EXPORT extern const char kReduceSecurityForStatsCollectionTests[];
 CONTENT_EXPORT extern const char kStatsCollectionController[];
 CONTENT_EXPORT extern const char kEnableAcceleratedFilters[];
 extern const char kEnableAccessibilityLogging[];
