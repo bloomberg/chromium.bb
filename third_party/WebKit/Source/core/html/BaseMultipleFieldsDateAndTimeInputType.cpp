@@ -289,6 +289,11 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
 {
     ASSERT(element()->shadow());
 
+    // Element must not be attached here, because if it was attached
+    // DateTimeEditElement::customStyleForRenderer() is called in appendChild()
+    // before the field wrapper element is created.
+    ASSERT(!element()->attached());
+
     Document* document = element()->document();
     ContainerNode* container = element()->userAgentShadowRoot();
 

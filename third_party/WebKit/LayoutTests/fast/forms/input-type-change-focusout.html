@@ -5,7 +5,7 @@
 <body>
 <input id="input" type='date' />
 <script>
-description("This tests that changing an input element's type does not cause focusout event.");
+description("This tests that changing an input element's type or speech attribute does not cause focusout event.");
 
 focusoutCalled = false;
 
@@ -13,6 +13,8 @@ input.addEventListener('focusout', function() {
     focusoutCalled = true;
 });
 input.focus();
+input.setAttribute('x-webkit-speech');
+shouldBeFalse('focusoutCalled');
 input.type = 'month';
 shouldBeFalse('focusoutCalled');
 input.type = 'week';
