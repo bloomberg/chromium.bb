@@ -11,7 +11,7 @@
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/browser/fileapi/test_mount_point_provider.h"
-#include "webkit/quota/mock_special_storage_policy.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
 

@@ -1,15 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/quota/quota_temporary_storage_evictor.h"
+#include "webkit/browser/quota/quota_temporary_storage_evictor.h"
 
 #include <algorithm>
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager.h"
 
 #define UMA_HISTOGRAM_MBYTES(name, sample)          \
   UMA_HISTOGRAM_CUSTOM_COUNTS(                      \

@@ -26,9 +26,9 @@
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
 #include "webkit/browser/fileapi/test_file_set.h"
-#include "webkit/quota/mock_special_storage_policy.h"
-#include "webkit/quota/quota_manager.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
+#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/common/quota/quota_types.h"
 
 namespace fileapi {
 

@@ -17,8 +17,8 @@
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/test_mount_point_provider.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,9 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/quota/mock_quota_manager.h"
-#include "webkit/quota/mock_special_storage_policy.h"
-#include "webkit/quota/mock_storage_client.h"
+#include "webkit/browser/quota/mock_quota_manager.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
+#include "webkit/browser/quota/mock_storage_client.h"
 
 namespace quota {
 

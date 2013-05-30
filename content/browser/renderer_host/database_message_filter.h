@@ -10,7 +10,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "webkit/browser/database/database_tracker.h"
 #include "webkit/common/database/database_connections.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/common/quota/quota_types.h"
 
 namespace content {
 

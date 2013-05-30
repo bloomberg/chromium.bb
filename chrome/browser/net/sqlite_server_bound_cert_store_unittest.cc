@@ -18,7 +18,7 @@
 #include "net/test/cert_test_util.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/quota/mock_special_storage_policy.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
 
 using content::BrowserThread;
 

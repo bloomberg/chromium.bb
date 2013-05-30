@@ -10,7 +10,7 @@
 #include "content/public/browser/quota_permission_context.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "webkit/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager.h"
 
 using quota::QuotaClient;
 using quota::QuotaManager;

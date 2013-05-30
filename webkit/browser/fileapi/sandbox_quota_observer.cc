@@ -8,9 +8,9 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/browser/quota/quota_client.h"
+#include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/quota/quota_client.h"
-#include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
 

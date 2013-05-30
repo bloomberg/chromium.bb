@@ -22,7 +22,7 @@
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager.h"
 
 namespace content {
 

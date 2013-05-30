@@ -10,8 +10,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
-#include "webkit/quota/quota_client.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/browser/quota/quota_client.h"
+#include "webkit/common/quota/quota_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace webkit_database {

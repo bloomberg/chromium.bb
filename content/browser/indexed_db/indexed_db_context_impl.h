@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/common/quota/quota_types.h"
 
 class GURL;
 

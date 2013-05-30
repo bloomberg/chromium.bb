@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_
-#define WEBKIT_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_
+#ifndef WEBKIT_BROWSER_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_
+#define WEBKIT_BROWSER_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_
 
 #include <map>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/common/quota/quota_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 class GURL;
@@ -127,4 +127,4 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE QuotaTemporaryStorageEvictor
 
 }  // namespace quota
 
-#endif  // WEBKIT_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_
+#endif  // WEBKIT_BROWSER_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_

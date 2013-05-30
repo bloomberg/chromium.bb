@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,10 +18,10 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/quota/mock_special_storage_policy.h"
-#include "webkit/quota/mock_storage_client.h"
-#include "webkit/quota/quota_database.h"
-#include "webkit/quota/quota_manager.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
+#include "webkit/browser/quota/mock_storage_client.h"
+#include "webkit/browser/quota/quota_database.h"
+#include "webkit/browser/quota/quota_manager.h"
 
 using base::MessageLoopProxy;
 

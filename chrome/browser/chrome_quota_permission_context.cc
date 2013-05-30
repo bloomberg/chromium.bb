@@ -22,7 +22,7 @@
 #include "grit/locale_settings.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/common/quota/quota_types.h"
 
 using content::BrowserThread;
 using content::QuotaPermissionContext;

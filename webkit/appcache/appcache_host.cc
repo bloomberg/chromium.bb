@@ -12,7 +12,7 @@
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_request_handler.h"
-#include "webkit/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager.h"
 
 namespace appcache {
 

@@ -14,8 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/quota/quota_manager.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/common/quota/quota_types.h"
 
 namespace quota_internals {
 

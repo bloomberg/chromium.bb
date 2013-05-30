@@ -20,7 +20,7 @@
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/common/quota/quota_types.h"
 
 namespace fileapi {
 namespace {

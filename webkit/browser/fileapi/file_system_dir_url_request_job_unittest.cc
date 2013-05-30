@@ -28,7 +28,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/quota/mock_special_storage_policy.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
 namespace {

@@ -12,7 +12,7 @@
 #include "googleurl/src/gurl.h"
 
 // This class is the same as MockSpecialStoragePolicy (in
-// webkit/quota/mock_special_storage_policy.h), but it inherits
+// webkit/browser/quota/mock_special_storage_policy.h), but it inherits
 // ExtensionSpecialStoragePolicy instead of quota::SpecialStoragePolicy.
 class MockExtensionSpecialStoragePolicy : public ExtensionSpecialStoragePolicy {
  public:

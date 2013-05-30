@@ -278,8 +278,8 @@
 
         '../ui/gfx/image/image_unittest_util.h',
         '../ui/gfx/image/image_unittest_util.cc',
-        '../webkit/quota/mock_quota_manager.cc',
-        '../webkit/quota/mock_quota_manager.h',
+        '../webkit/browser/quota/mock_quota_manager.cc',
+        '../webkit/browser/quota/mock_quota_manager.h',
       ],
       'conditions': [
         ['OS!="ios"', {
@@ -1838,8 +1838,8 @@
         '../webkit/browser/fileapi/syncable/canned_syncable_file_system.cc',
         '../webkit/browser/fileapi/syncable/mock_sync_status_observer.cc',
         '../webkit/browser/fileapi/syncable/mock_sync_status_observer.h',
-        '../webkit/quota/mock_storage_client.cc',
-        '../webkit/quota/mock_storage_client.h',
+        '../webkit/browser/quota/mock_storage_client.cc',
+        '../webkit/browser/quota/mock_storage_client.h',
       ],
       'conditions': [
         ['OS!="ios"', {

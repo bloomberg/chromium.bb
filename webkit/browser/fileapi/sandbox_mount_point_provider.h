@@ -19,7 +19,7 @@
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
-#include "webkit/quota/special_storage_policy.h"
+#include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {

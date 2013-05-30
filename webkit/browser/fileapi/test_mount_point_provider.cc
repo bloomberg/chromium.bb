@@ -19,8 +19,8 @@
 #include "webkit/browser/fileapi/local_file_util.h"
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
+#include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
 

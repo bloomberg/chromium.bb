@@ -14,7 +14,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/syncable/sync_file_status.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/common/quota/quota_types.h"
 
 namespace fileapi {
 class FileSystemContext;

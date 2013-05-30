@@ -13,7 +13,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/common/blob/scoped_file.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/common/quota/quota_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace chromeos {

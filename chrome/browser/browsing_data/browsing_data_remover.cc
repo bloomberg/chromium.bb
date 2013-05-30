@@ -64,10 +64,10 @@
 #include "net/ssl/server_bound_cert_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/special_storage_policy.h"
+#include "webkit/common/quota/quota_types.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/quota/quota_manager.h"
-#include "webkit/quota/quota_types.h"
-#include "webkit/quota/special_storage_policy.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

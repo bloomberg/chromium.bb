@@ -26,9 +26,9 @@
 #include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/browser/fileapi/test_mount_point_provider.h"
+#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/quota/quota_manager.h"
-#include "webkit/quota/special_storage_policy.h"
 
 #if defined(OS_CHROMEOS)
 #include "webkit/browser/chromeos/fileapi/cros_mount_point_provider.h"

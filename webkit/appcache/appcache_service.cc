@@ -21,8 +21,8 @@
 #include "webkit/appcache/appcache_quota_client.h"
 #include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_storage_impl.h"
-#include "webkit/quota/quota_manager.h"
-#include "webkit/quota/special_storage_policy.h"
+#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/special_storage_policy.h"
 
 namespace appcache {
 

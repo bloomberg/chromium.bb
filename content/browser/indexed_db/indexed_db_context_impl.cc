@@ -24,8 +24,8 @@
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_util.h"
-#include "webkit/quota/quota_manager.h"
-#include "webkit/quota/special_storage_policy.h"
+#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/special_storage_policy.h"
 
 using webkit_database::DatabaseUtil;
 using WebKit::WebIDBDatabase;

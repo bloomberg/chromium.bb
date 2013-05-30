@@ -19,7 +19,7 @@
 #include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/browser/database/vfs_backend.h"
-#include "webkit/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"

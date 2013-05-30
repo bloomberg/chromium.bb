@@ -18,7 +18,6 @@
         '../glue/webkit_glue.gypi',
         '../media/webkit_media.gypi',
         '../plugins/webkit_plugins.gypi',
-        '../quota/webkit_quota.gypi',
         '../storage/webkit_storage.gypi',
         'webkit_support.gypi',
       ],

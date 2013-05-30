@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_QUOTA_QUOTA_TASK_H_
-#define WEBKIT_QUOTA_QUOTA_TASK_H_
+#ifndef WEBKIT_BROWSER_QUOTA_QUOTA_TASK_H_
+#define WEBKIT_BROWSER_QUOTA_QUOTA_TASK_H_
 
 #include <set>
 
@@ -76,4 +76,4 @@ class WEBKIT_STORAGE_EXPORT QuotaTaskObserver {
 };
 }
 
-#endif  // WEBKIT_QUOTA_QUOTA_TASK_H_
+#endif  // WEBKIT_BROWSER_QUOTA_QUOTA_TASK_H_

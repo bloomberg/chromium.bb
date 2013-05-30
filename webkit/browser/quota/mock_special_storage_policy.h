@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_QUOTA_MOCK_SPECIAL_STORAGE_POLICY_H_
-#define WEBKIT_QUOTA_MOCK_SPECIAL_STORAGE_POLICY_H_
+#ifndef WEBKIT_BROWSER_QUOTA_MOCK_SPECIAL_STORAGE_POLICY_H_
+#define WEBKIT_BROWSER_QUOTA_MOCK_SPECIAL_STORAGE_POLICY_H_
 
 #include <set>
 #include <string>
 
 #include "googleurl/src/gurl.h"
-#include "webkit/quota/special_storage_policy.h"
+#include "webkit/browser/quota/special_storage_policy.h"
 
 namespace quota {
 
@@ -87,4 +87,4 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
 };
 }  // namespace quota
 
-#endif  // WEBKIT_QUOTA_MOCK_SPECIAL_STORAGE_POLICY_H_
+#endif  // WEBKIT_BROWSER_QUOTA_MOCK_SPECIAL_STORAGE_POLICY_H_

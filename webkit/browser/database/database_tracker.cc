@@ -23,8 +23,8 @@
 #include "webkit/browser/database/database_quota_client.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/browser/database/databases_table.h"
-#include "webkit/quota/quota_manager.h"
-#include "webkit/quota/special_storage_policy.h"
+#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/special_storage_policy.h"
 
 namespace webkit_database {
 

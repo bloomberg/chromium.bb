@@ -13,8 +13,8 @@
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
-#include "webkit/quota/mock_quota_manager.h"
-#include "webkit/quota/mock_special_storage_policy.h"
+#include "webkit/browser/quota/mock_quota_manager.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 

@@ -104,8 +104,8 @@
 #include "testing/platform_test.h"
 #include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_tracker.h"
+#include "webkit/browser/quota/quota_manager.h"
 #include "webkit/plugins/npapi/mock_plugin_list.h"
-#include "webkit/quota/quota_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"

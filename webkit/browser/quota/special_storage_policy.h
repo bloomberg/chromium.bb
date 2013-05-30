@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_QUOTA_SPECIAL_STORAGE_POLICY_H_
-#define WEBKIT_QUOTA_SPECIAL_STORAGE_POLICY_H_
+#ifndef WEBKIT_BROWSER_QUOTA_SPECIAL_STORAGE_POLICY_H_
+#define WEBKIT_BROWSER_QUOTA_SPECIAL_STORAGE_POLICY_H_
 
 #include <string>
 
@@ -80,4 +80,4 @@ class WEBKIT_STORAGE_EXPORT SpecialStoragePolicy
 
 }  // namespace quota
 
-#endif  // WEBKIT_QUOTA_SPECIAL_STORAGE_POLICY_H_
+#endif  // WEBKIT_BROWSER_QUOTA_SPECIAL_STORAGE_POLICY_H_

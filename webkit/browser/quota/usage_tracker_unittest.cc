@@ -6,8 +6,8 @@
 #include "base/message_loop.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/quota/mock_special_storage_policy.h"
-#include "webkit/quota/usage_tracker.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
+#include "webkit/browser/quota/usage_tracker.h"
 
 namespace quota {
 

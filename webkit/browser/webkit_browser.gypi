@@ -7,6 +7,7 @@
     '../browser/blob/webkit_browser_blob.gypi',
     '../browser/database/webkit_browser_database.gypi',
     '../browser/fileapi/webkit_browser_fileapi.gypi',
+    '../browser/quota/webkit_browser_quota.gypi',
   ],
   # TODO(kinuko): Have webkit_browser target and deprecate old gypis like
   # webkit_storage.gypi.
@@ -15,6 +16,7 @@
       '<@(webkit_browser_blob_sources)',
       '<@(webkit_browser_database_sources)',
       '<@(webkit_browser_fileapi_sources)',
+      '<@(webkit_browser_quota_sources)',
     ],
   },
 }

@@ -25,9 +25,9 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/syncable/sync_file_status.h"
+#include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/quota/quota_manager.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

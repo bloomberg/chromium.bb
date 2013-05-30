@@ -8,8 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
-#include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache.h"
@@ -18,7 +18,7 @@
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/appcache_storage_impl.h"
-#include "webkit/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager.h"
 
 namespace appcache {
 

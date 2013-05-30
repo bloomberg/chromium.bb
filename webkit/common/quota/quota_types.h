@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_QUOTA_QUOTA_TYPES_H_
-#define WEBKIT_QUOTA_QUOTA_TYPES_H_
+#ifndef WEBKIT_COMMON_QUOTA_QUOTA_TYPES_H_
+#define WEBKIT_COMMON_QUOTA_QUOTA_TYPES_H_
 
-#include "webkit/quota/quota_status_code.h"
+#include "webkit/common/quota/quota_status_code.h"
 
 namespace quota {
 
@@ -24,4 +24,4 @@ enum QuotaLimitType {
 
 }  // namespace quota
 
-#endif  // WEBKIT_QUOTA_QUOTA_TYPES_H_
+#endif  // WEBKIT_COMMON_QUOTA_QUOTA_TYPES_H_

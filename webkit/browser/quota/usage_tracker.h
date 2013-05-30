@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_QUOTA_USAGE_TRACKER_H_
-#define WEBKIT_QUOTA_USAGE_TRACKER_H_
+#ifndef WEBKIT_BROWSER_QUOTA_USAGE_TRACKER_H_
+#define WEBKIT_BROWSER_QUOTA_USAGE_TRACKER_H_
 
 #include <list>
 #include <map>
@@ -15,11 +15,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/quota/quota_callbacks.h"
-#include "webkit/quota/quota_client.h"
-#include "webkit/quota/quota_task.h"
-#include "webkit/quota/quota_types.h"
-#include "webkit/quota/special_storage_policy.h"
+#include "webkit/browser/quota/quota_callbacks.h"
+#include "webkit/browser/quota/quota_client.h"
+#include "webkit/browser/quota/quota_task.h"
+#include "webkit/browser/quota/special_storage_policy.h"
+#include "webkit/common/quota/quota_types.h"
 
 namespace quota {
 
@@ -182,4 +182,4 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
 
 }  // namespace quota
 
-#endif  // WEBKIT_QUOTA_USAGE_TRACKER_H_
+#endif  // WEBKIT_BROWSER_QUOTA_USAGE_TRACKER_H_

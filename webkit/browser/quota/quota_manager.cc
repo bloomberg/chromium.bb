@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager.h"
 
 #include <algorithm>
 #include <deque>
@@ -23,10 +23,10 @@
 #include "base/task_runner_util.h"
 #include "base/time.h"
 #include "net/base/net_util.h"
-#include "webkit/quota/quota_database.h"
-#include "webkit/quota/quota_temporary_storage_evictor.h"
-#include "webkit/quota/quota_types.h"
-#include "webkit/quota/usage_tracker.h"
+#include "webkit/browser/quota/quota_database.h"
+#include "webkit/browser/quota/quota_temporary_storage_evictor.h"
+#include "webkit/browser/quota/usage_tracker.h"
+#include "webkit/common/quota/quota_types.h"
 
 #define UMA_HISTOGRAM_MBYTES(name, sample)          \
   UMA_HISTOGRAM_CUSTOM_COUNTS(                      \

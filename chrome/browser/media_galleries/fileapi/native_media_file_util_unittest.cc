@@ -24,7 +24,7 @@
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/browser/fileapi/native_file_util.h"
-#include "webkit/quota/mock_special_storage_policy.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 

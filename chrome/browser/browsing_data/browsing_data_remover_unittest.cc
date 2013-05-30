@@ -44,11 +44,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "webkit/browser/quota/mock_quota_manager.h"
+#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/common/quota/quota_types.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/quota/mock_quota_manager.h"
-#include "webkit/quota/quota_manager.h"
-#include "webkit/quota/quota_types.h"
 
 using content::BrowserThread;
 

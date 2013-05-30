@@ -24,8 +24,8 @@
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
-#include "webkit/quota/mock_special_storage_policy.h"
-#include "webkit/quota/quota_manager.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
+#include "webkit/browser/quota/quota_manager.h"
 
 using base::PlatformFileError;
 using fileapi::FileSystemContext;

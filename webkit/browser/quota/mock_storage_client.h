@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_QUOTA_MOCK_STORAGE_CLIENT_H_
-#define WEBKIT_QUOTA_MOCK_STORAGE_CLIENT_H_
+#ifndef WEBKIT_BROWSER_QUOTA_MOCK_STORAGE_CLIENT_H_
+#define WEBKIT_BROWSER_QUOTA_MOCK_STORAGE_CLIENT_H_
 
 #include <map>
 #include <set>
@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/quota/quota_client.h"
+#include "webkit/browser/quota/quota_client.h"
 
 namespace quota {
 
@@ -92,4 +92,4 @@ class MockStorageClient : public QuotaClient {
 
 }  // namespace quota
 
-#endif  // WEBKIT_QUOTA_MOCK_STORAGE_CLIENT_H_
+#endif  // WEBKIT_BROWSER_QUOTA_MOCK_STORAGE_CLIENT_H_

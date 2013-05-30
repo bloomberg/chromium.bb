@@ -13,7 +13,7 @@
 #include "third_party/WebKit/public/platform/WebFileSystemType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/common/quota/quota_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 class GURL;

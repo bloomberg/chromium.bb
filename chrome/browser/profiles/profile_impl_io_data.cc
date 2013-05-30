@@ -42,7 +42,7 @@
 #include "net/ssl/server_bound_cert_service.h"
 #include "net/url_request/protocol_intercept_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "webkit/quota/special_storage_policy.h"
+#include "webkit/browser/quota/special_storage_policy.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/app/android/chrome_data_reduction_proxy_android.h"

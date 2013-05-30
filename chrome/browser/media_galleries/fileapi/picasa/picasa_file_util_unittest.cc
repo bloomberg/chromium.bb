@@ -29,7 +29,7 @@
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
-#include "webkit/quota/mock_special_storage_policy.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
 
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperation;

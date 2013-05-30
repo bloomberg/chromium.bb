@@ -10,13 +10,13 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/time.h"
+#include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/dom_storage/dom_storage_area.h"
 #include "webkit/dom_storage/dom_storage_database.h"
 #include "webkit/dom_storage/dom_storage_namespace.h"
 #include "webkit/dom_storage/dom_storage_task_runner.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/dom_storage/session_storage_database.h"
-#include "webkit/quota/special_storage_policy.h"
 
 using file_util::FileEnumerator;
 

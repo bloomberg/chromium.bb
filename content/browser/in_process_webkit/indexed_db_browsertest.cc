@@ -25,7 +25,7 @@
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "webkit/browser/database/database_util.h"
-#include "webkit/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager.h"
 
 using quota::QuotaManager;
 using webkit_database::DatabaseUtil;

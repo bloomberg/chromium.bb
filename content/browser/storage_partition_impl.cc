@@ -14,11 +14,11 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_monster.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "webkit/browser/database/database_tracker.h"
+#include "webkit/browser/quota/quota_manager.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/quota/quota_manager.h"
 
 namespace content {
 

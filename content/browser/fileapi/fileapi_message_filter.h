@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/common/quota/quota_types.h"
 
 class GURL;
 

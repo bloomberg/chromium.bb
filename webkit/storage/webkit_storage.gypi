@@ -6,7 +6,6 @@
   'includes': [
     '../appcache/webkit_appcache.gypi',
     '../dom_storage/webkit_dom_storage.gypi',
-    '../quota/webkit_quota.gypi',
 
     # TODO(kinuko): Deprecate this when we have a new target for
     # webkit_browser.  crbug.com/239710
@@ -35,7 +34,6 @@
         '../storage/webkit_storage_export.h',
         '<@(webkit_appcache_sources)',
         '<@(webkit_dom_storage_sources)',
-        '<@(webkit_quota_sources)',
 
         # TODO(kinuko): Deprecate them when we have new targets for
         # browser|common|renderer.  crbug.com/239710

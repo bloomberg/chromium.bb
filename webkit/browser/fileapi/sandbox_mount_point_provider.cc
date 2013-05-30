@@ -27,9 +27,9 @@
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/browser/fileapi/sandbox_quota_observer.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_operation.h"
+#include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/quota/quota_manager.h"
 
 using quota::QuotaManagerProxy;
 

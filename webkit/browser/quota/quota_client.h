@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_QUOTA_QUOTA_CLIENT_H_
-#define WEBKIT_QUOTA_QUOTA_CLIENT_H_
+#ifndef WEBKIT_BROWSER_QUOTA_QUOTA_CLIENT_H_
+#define WEBKIT_BROWSER_QUOTA_QUOTA_CLIENT_H_
 
 #include <list>
 #include <set>
@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/common/quota/quota_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace quota {
@@ -76,4 +76,4 @@ typedef std::list<QuotaClient*> QuotaClientList;
 
 }  // namespace quota
 
-#endif  // WEBKIT_QUOTA_QUOTA_CLIENT_H_
+#endif  // WEBKIT_BROWSER_QUOTA_QUOTA_CLIENT_H_

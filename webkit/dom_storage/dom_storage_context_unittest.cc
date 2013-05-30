@@ -11,12 +11,12 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/dom_storage/dom_storage_area.h"
 #include "webkit/dom_storage/dom_storage_context.h"
 #include "webkit/dom_storage/dom_storage_namespace.h"
 #include "webkit/dom_storage/dom_storage_task_runner.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/quota/mock_special_storage_policy.h"
 
 namespace dom_storage {
 

@@ -13,8 +13,8 @@
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
+#include "webkit/common/quota/quota_types.h"
 #include "webkit/plugins/webkit_plugins_export.h"
-#include "webkit/quota/quota_types.h"
 
 namespace webkit {
 namespace ppapi {

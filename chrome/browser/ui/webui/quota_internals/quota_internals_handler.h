@@ -11,7 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/common/quota/quota_types.h"
 
 namespace base {
 class Value;

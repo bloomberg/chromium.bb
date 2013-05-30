@@ -26,8 +26,8 @@
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
+#include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/quota/quota_manager.h"
 
 // Example of various paths:
 //   void ObfuscatedFileUtil::DoSomething(const FileSystemURL& url) {

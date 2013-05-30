@@ -1,19 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_QUOTA_MOCK_QUOTA_MANAGER_H_
-#define WEBKIT_QUOTA_MOCK_QUOTA_MANAGER_H_
+#ifndef WEBKIT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
+#define WEBKIT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/quota/quota_client.h"
-#include "webkit/quota/quota_manager.h"
-#include "webkit/quota/quota_task.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/browser/quota/quota_client.h"
+#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_task.h"
+#include "webkit/common/quota/quota_types.h"
 
 namespace quota {
 
@@ -194,4 +194,4 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
 
 }  // namespace quota
 
-#endif  // WEBKIT_QUOTA_MOCK_QUOTA_MANAGER_H_
+#endif  // WEBKIT_BROWSER_QUOTA_MOCK_QUOTA_MANAGER_H_

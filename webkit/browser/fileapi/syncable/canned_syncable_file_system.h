@@ -16,10 +16,10 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_status.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
+#include "webkit/browser/quota/quota_callbacks.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/quota/quota_callbacks.h"
-#include "webkit/quota/quota_types.h"
+#include "webkit/common/quota/quota_types.h"
 
 namespace base {
 class MessageLoopProxy;

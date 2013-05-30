@@ -52,12 +52,8 @@ include_rules = [
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+webkit/appcache",
   "+webkit/base/origin_url_conversions.h",
-  "+webkit/common/fileapi",
-  "+webkit/common/plugins",  # Common plugins functionality.
-  "+webkit/common/user_agent",
   "+webkit/dom_storage/dom_storage_types.h",
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.
-  "+webkit/quota",
 
   # TODO(kinuko): Remove all other webkit/* dependencies after we cleaned
   # up webkit/. crbug.com/239710

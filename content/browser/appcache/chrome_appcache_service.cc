@@ -11,7 +11,7 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/appcache/appcache_storage_impl.h"
-#include "webkit/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager.h"
 
 namespace content {
 
