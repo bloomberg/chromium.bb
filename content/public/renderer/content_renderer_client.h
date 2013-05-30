@@ -186,6 +186,7 @@ class CONTENT_EXPORT ContentRendererClient {
                           const GURL& url,
                           const std::string& http_method,
                           bool is_initial_navigation,
+                          bool is_server_redirect,
                           bool* send_referrer);
 
   // Notifies the embedder that the given frame is requesting the resource at

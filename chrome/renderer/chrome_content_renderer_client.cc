@@ -873,6 +873,7 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
                                              const GURL& url,
                                              const std::string& http_method,
                                              bool is_initial_navigation,
+                                             bool is_server_redirect,
                                              bool* send_referrer) {
   DCHECK(!frame->parent());
 
@@ -915,11 +916,12 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
   bool is_extension_url = !!new_url_extension;
 
   // If the navigation would cross an app extent boundary, we also need
-  // to defer to the browser to ensure process isolation.
-  // TODO(erikkay) This is happening inside of a check to is_content_initiated
-  // which means that things like the back button won't trigger it.  Is that
-  // OK?
-  if (CrossesExtensionExtents(frame, url, *extensions, is_extension_url,
+  // to defer to the browser to ensure process isolation.  This is not necessary
+  // for server redirects, which will be transferred to a new process by the
+  // browser process when they are ready to commit.  It is necessary for client
+  // redirects, which won't be transferred in the same way.
+  if (!is_server_redirect &&
+      CrossesExtensionExtents(frame, url, *extensions, is_extension_url,
           is_initial_navigation)) {
     // Include the referrer in this case since we're going from a hosted web
     // page. (the packaged case is handled previously by the extension

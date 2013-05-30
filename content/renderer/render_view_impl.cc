@@ -3027,7 +3027,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       // Give the embedder a chance.
       should_fork = GetContentClient()->renderer()->ShouldFork(
           frame, url, request.httpMethod().utf8(), is_initial_navigation,
-          &send_referrer);
+          is_redirect, &send_referrer);
     }
 
     if (should_fork) {

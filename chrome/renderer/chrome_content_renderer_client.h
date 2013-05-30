@@ -89,6 +89,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                           const GURL& url,
                           const std::string& http_method,
                           bool is_initial_navigation,
+                          bool is_server_redirect,
                           bool* send_referrer) OVERRIDE;
   virtual bool WillSendRequest(WebKit::WebFrame* frame,
                                content::PageTransition transition_type,
