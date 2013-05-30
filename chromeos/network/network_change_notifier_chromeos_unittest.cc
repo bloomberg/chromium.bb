@@ -191,6 +191,13 @@ NotifierUpdateTestCase test_cases[] = {
       kDnsServers1 },
     false, true, true
   },
+  { "Online -> Online (same default service, first IP address update)",
+    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, "", kDnsServers1 },
+    { true, flimflam::kTypeWifi, "", kService3, kIpAddress2, kDnsServers1 },
+    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress2,
+      kDnsServers1 },
+    false, false, false
+  },
   { "Online -> Online (same default service, new IP address, same DNS)",
     { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress1,
       kDnsServers1 },

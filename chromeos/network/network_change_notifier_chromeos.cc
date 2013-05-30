@@ -147,9 +147,15 @@ void NetworkChangeNotifierChromeos::UpdateState(
     *dns_changed = true;
   }
   if (default_network->ip_address() != ip_address_) {
+    // Is this a state update with an online->online transition?
+    bool stayed_online = (!*connection_type_changed &&
+                          connection_type_ != CONNECTION_NONE);
+    // Suppress IP address change signalling on online->online transitions
+    // when getting an IP address update for the first time.
+    if (!(stayed_online && ip_address_.empty()))
+      *ip_address_changed = true;
     VLOG(1) << "IP Address changed from " << ip_address_ << " -> "
             << default_network->ip_address();
-    *ip_address_changed = true;
   }
   if (default_network->dns_servers() != dns_servers_) {
     VLOG(1) << "DNS servers changed.\n"
