@@ -38,7 +38,7 @@ include_rules = [
   "-crypto/third_party",
 
   # Allow inclusion of WebKit API files.
-  "+third_party/WebKit/Source/Platform/chromium",
+  "+third_party/WebKit/public/platform",
   "+third_party/WebKit/Source/WebKit/chromium",
 
   # Allow inclusion of third-party code:

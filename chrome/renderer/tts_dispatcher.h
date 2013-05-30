@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSpeechSynthesizer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSpeechSynthesizerClient.h"
+#include "third_party/WebKit/public/platform/WebSpeechSynthesizer.h"
+#include "third_party/WebKit/public/platform/WebSpeechSynthesizerClient.h"
 
 namespace IPC {
 class Message;

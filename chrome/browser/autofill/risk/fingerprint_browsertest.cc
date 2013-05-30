@@ -14,8 +14,8 @@
 #include "content/public/common/geoposition.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/public/platform/WebRect.h"
+#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "ui/gfx/rect.h"
 
 namespace autofill {

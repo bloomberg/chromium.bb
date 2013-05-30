@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebPrerender.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebPrerenderingSupport.h"
+#include "third_party/WebKit/public/platform/WebPrerender.h"
+#include "third_party/WebKit/public/platform/WebPrerenderingSupport.h"
 
 class GURL;
 

@@ -14,7 +14,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "extensions/common/view_type.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
 
 class GURL;
 class SkBitmap;

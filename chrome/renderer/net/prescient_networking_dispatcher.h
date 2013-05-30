@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_NET_PRESCIENT_NETWORKING_DISPATCHER_H_
 
 #include "base/compiler_specific.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebPrescientNetworking.h"
+#include "third_party/WebKit/public/platform/WebPrescientNetworking.h"
 
 class PrescientNetworkingDispatcher : public WebKit::WebPrescientNetworking {
  public:

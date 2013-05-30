@@ -9,11 +9,11 @@
 #include "chrome/common/tts_messages.h"
 #include "chrome/common/tts_utterance_request.h"
 #include "content/public/renderer/render_thread.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSpeechSynthesisUtterance.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSpeechSynthesisVoice.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
+#include "third_party/WebKit/public/platform/WebCString.h"
+#include "third_party/WebKit/public/platform/WebSpeechSynthesisUtterance.h"
+#include "third_party/WebKit/public/platform/WebSpeechSynthesisVoice.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 
 using content::RenderThread;
 using WebKit::WebSpeechSynthesizerClient;
