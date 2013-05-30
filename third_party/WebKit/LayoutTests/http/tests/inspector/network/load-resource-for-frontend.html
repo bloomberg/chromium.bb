@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script>
+function test()
+{
+    function testLoadForURL(url, next)
+    {
+        InspectorTest.addResult("Loading resource from " + url);
+        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, url, callback);
+
+        function callback(error, content)
+        {
+            if (error)
+                InspectorTest.addResult("Failed: " + error);
+            else
+                InspectorTest.addResult("Success: " + content);
+            next();
+        }
+    }
+
+    InspectorTest.runTestSuite([
+        function testLocalResource(next)
+        {
+            testLoadForURL("file:///", next);
+        },
+
+        function testNetworkResource(next)
+        {
+            testLoadForURL("http://localhost:8080/inspector/network/resources/resource.php", next);
+        },
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>

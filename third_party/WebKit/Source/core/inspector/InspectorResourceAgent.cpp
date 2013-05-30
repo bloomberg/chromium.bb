@@ -34,6 +34,10 @@
 #include "InspectorFrontend.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/inspector/IdentifiersFactory.h"
@@ -70,6 +74,8 @@
 #include <wtf/RefPtr.h>
 #include <wtf/text/StringBuilder.h>
 
+typedef WebCore::InspectorBackendDispatcher::NetworkCommandHandler::LoadResourceForFrontendCallback LoadResourceForFrontendCallback;
+
 namespace WebCore {
 
 namespace ResourceAgentState {
@@ -78,6 +84,53 @@ static const char extraRequestHeaders[] = "extraRequestHeaders";
 static const char cacheDisabled[] = "cacheDisabled";
 static const char userAgentOverride[] = "userAgentOverride";
 }
+
+namespace {
+
+class SendXHRCallback : public EventListener {
+    WTF_MAKE_NONCOPYABLE(SendXHRCallback);
+public:
+    static PassRefPtr<SendXHRCallback> create(PassRefPtr<LoadResourceForFrontendCallback> callback)
+    {
+        return adoptRef(new SendXHRCallback(callback));
+    }
+
+    virtual ~SendXHRCallback() { }
+
+    virtual bool operator==(const EventListener& other) OVERRIDE
+    {
+        return this == &other;
+    }
+
+    virtual void handleEvent(ScriptExecutionContext*, Event* event) OVERRIDE
+    {
+        if (!m_callback->isActive())
+            return;
+        if (event->type() == eventNames().errorEvent) {
+            m_callback->sendFailure("Error loading resource.");
+            return;
+        }
+        if (event->type() != eventNames().readystatechangeEvent) {
+            m_callback->sendFailure("Unexpected event type.");
+            return;
+        }
+
+        XMLHttpRequest* xhr = static_cast<XMLHttpRequest*>(event->target());
+        if (xhr->readyState() != XMLHttpRequest::DONE)
+            return;
+
+        String responseText = xhr->responseText(IGNORE_EXCEPTION);
+        m_callback->sendSuccess(responseText);
+    }
+
+private:
+    SendXHRCallback(PassRefPtr<LoadResourceForFrontendCallback> callback)
+        : EventListener(EventListener::CPPEventListenerType)
+        , m_callback(callback) { }
+    RefPtr<LoadResourceForFrontendCallback> m_callback;
+};
+
+} // namespace
 
 void InspectorResourceAgent::setFrontend(InspectorFrontend* frontend)
 {
@@ -613,7 +666,7 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
     HTTPHeaderMap::const_iterator end = xhrReplayData->headers().end();
     for (HTTPHeaderMap::const_iterator it = xhrReplayData->headers().begin(); it!= end; ++it)
         xhr->setRequestHeader(it->key, it->value, IGNORE_EXCEPTION);
-    xhr->sendFromInspector(xhrReplayData->formData(), IGNORE_EXCEPTION);
+    xhr->sendForInspectorXHRReplay(xhrReplayData->formData(), IGNORE_EXCEPTION);
 }
 
 void InspectorResourceAgent::canClearBrowserCache(ErrorString*, bool* result)
@@ -641,6 +694,44 @@ void InspectorResourceAgent::setCacheDisabled(ErrorString*, bool cacheDisabled)
     m_state->setBoolean(ResourceAgentState::cacheDisabled, cacheDisabled);
     if (cacheDisabled)
         memoryCache()->evictResources();
+}
+
+void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, const String& frameId, const String& url, PassRefPtr<LoadResourceForFrontendCallback> callback)
+{
+    Frame* frame = m_pageAgent->assertFrame(errorString, frameId);
+    if (!frame)
+        return;
+
+    Document* document = frame->document();
+    if (!document) {
+        *errorString = "No Document instance for the specified frame";
+        return;
+    }
+
+    RefPtr<XMLHttpRequest> xhr = XMLHttpRequest::create(document);
+
+    KURL kurl = KURL(ParsedURLString, url);
+    if (kurl.isLocalFile()) {
+        *errorString = "Can not load local file";
+        return;
+    }
+
+    ExceptionCode ec = 0;
+    xhr->open(ASCIILiteral("GET"), kurl, ec);
+    if (ec) {
+        *errorString = "Error opening an XMLHttpRequest";
+        return;
+    }
+
+    RefPtr<SendXHRCallback> sendXHRCallback = SendXHRCallback::create(callback);
+    xhr->addEventListener(eventNames().abortEvent, sendXHRCallback, false);
+    xhr->addEventListener(eventNames().errorEvent, sendXHRCallback, false);
+    xhr->addEventListener(eventNames().readystatechangeEvent, sendXHRCallback, false);
+    xhr->sendForInspector(ec);
+    if (ec) {
+        *errorString = "Error sending an XMLHttpRequest";
+        return;
+    }
 }
 
 void InspectorResourceAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)

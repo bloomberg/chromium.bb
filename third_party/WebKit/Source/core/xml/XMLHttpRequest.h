@@ -114,7 +114,8 @@ public:
     void setTimeout(unsigned long timeout, ExceptionCode&);
 #endif
 
-    void sendFromInspector(PassRefPtr<FormData>, ExceptionCode&);
+    void sendForInspector(ExceptionCode&);
+    void sendForInspectorXHRReplay(PassRefPtr<FormData>, ExceptionCode&);
 
     // Expose HTTP validation methods for other untrusted requests.
     static bool isAllowedHTTPMethod(const String&);
@@ -227,6 +228,7 @@ private:
     bool m_uploadComplete;
 
     bool m_sameOriginRequest;
+    bool m_allowCrossOriginRequests;
 
     // Used for onprogress tracking
     long long m_receivedLength;

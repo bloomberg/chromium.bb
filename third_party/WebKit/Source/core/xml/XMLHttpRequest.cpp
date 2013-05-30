@@ -180,6 +180,7 @@ XMLHttpRequest::XMLHttpRequest(ScriptExecutionContext* context, PassRefPtr<Secur
     , m_uploadEventsAllowed(true)
     , m_uploadComplete(false)
     , m_sameOriginRequest(true)
+    , m_allowCrossOriginRequests(false)
     , m_receivedLength(0)
     , m_lastSendLineNumber(0)
     , m_exceptionCode(0)
@@ -689,7 +690,13 @@ void XMLHttpRequest::sendBytesData(const void* data, size_t length, ExceptionCod
     createRequest(ec);
 }
 
-void XMLHttpRequest::sendFromInspector(PassRefPtr<FormData> formData, ExceptionCode& ec)
+void XMLHttpRequest::sendForInspector(ExceptionCode& ec)
+{
+    m_allowCrossOriginRequests = true;
+    send(ec);
+}
+
+void XMLHttpRequest::sendForInspectorXHRReplay(PassRefPtr<FormData> formData, ExceptionCode& ec)
 {
     m_requestEntityBody = formData ? formData->deepCopy() : 0;
     createRequest(ec);
@@ -743,7 +750,7 @@ void XMLHttpRequest::createRequest(ExceptionCode& ec)
     options.preflightPolicy = uploadEvents ? ForcePreflight : ConsiderPreflight;
     options.allowCredentials = (m_sameOriginRequest || m_includeCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
     options.credentialsRequested = m_includeCredentials ? ClientRequestedCredentials : ClientDidNotRequestCredentials;
-    options.crossOriginRequestPolicy = UseAccessControl;
+    options.crossOriginRequestPolicy = m_allowCrossOriginRequests ? AllowCrossOriginRequests : UseAccessControl;
     options.securityOrigin = securityOrigin();
     options.initiator = cachedResourceRequestInitiators().xmlhttprequest;
     options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(scriptExecutionContext()) ? DoNotEnforceContentSecurityPolicy : EnforceConnectSrcDirective;

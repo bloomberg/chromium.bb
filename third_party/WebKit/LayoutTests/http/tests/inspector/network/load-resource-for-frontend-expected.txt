@@ -1,0 +1,9 @@
+
+Running: testLocalResource
+Loading resource from file:///
+Failed: Can not load local file
+
+Running: testNetworkResource
+Loading resource from http://localhost:8080/inspector/network/resources/resource.php
+Success: Hello world
+
