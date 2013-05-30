@@ -79,9 +79,13 @@ class MEDIA_EXPORT VideoFrameStream : public DemuxerStream {
 
  private:
   enum State {
-    UNINITIALIZED,
-    NORMAL,
-    STOPPED
+    STATE_UNINITIALIZED,
+    STATE_INITIALIZING,
+    STATE_NORMAL,
+    STATE_FLUSHING_DECODER,
+    STATE_REINITIALIZING_DECODER,
+    STATE_STOPPED,
+    STATE_ERROR
   };
 
   // Called when |decoder_selector| selected the |selected_decoder|.
@@ -92,8 +96,18 @@ class MEDIA_EXPORT VideoFrameStream : public DemuxerStream {
       scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream);
 
   // Callback for VideoDecoder::Read().
-  void OnFrameRead(const VideoDecoder::Status status,
-                   const scoped_refptr<VideoFrame>& frame);
+  void OnFrameReady(const VideoDecoder::Status status,
+                    const scoped_refptr<VideoFrame>& frame);
+
+  // Callback for DemuxerStream::Read().
+  void OnBufferReady(const DemuxerStream::ReadCB& demuxer_read_cb,
+                     DemuxerStream::Status status,
+                     const scoped_refptr<DecoderBuffer>& buffer);
+
+  void ReinitializeDecoder();
+
+  // Callback for VideoDecoder reinitialization.
+  void OnDecoderReinitialized(PipelineStatus status);
 
   void ResetDecoder();
   void OnDecoderReset();
@@ -107,7 +121,9 @@ class MEDIA_EXPORT VideoFrameStream : public DemuxerStream {
 
   State state_;
 
+  StatisticsCB statistics_cb_;
   InitCB init_cb_;
+
   VideoDecoder::ReadCB read_cb_;
   base::Closure reset_cb_;
   base::Closure stop_cb_;

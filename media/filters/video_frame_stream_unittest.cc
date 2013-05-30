@@ -58,7 +58,8 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   }
 
   ~VideoFrameStreamTest() {
-    Stop();
+    if (is_initialized_)
+      Stop();
     EXPECT_FALSE(is_initialized_);
   }
 
@@ -216,8 +217,6 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   }
 
   void Stop() {
-    if (!is_initialized_)
-      return;
     EnterPendingState(DECODER_STOP);
     SatisfyPendingCallback(DECODER_STOP);
   }
@@ -314,7 +313,10 @@ TEST_P(VideoFrameStreamTest, Reset_AfterConfigChangeRead) {
 }
 
 TEST_P(VideoFrameStreamTest, Stop_BeforeInitialization) {
-  Stop();
+  EXPECT_CALL(*this, OnStopped());
+  video_frame_stream_->Stop(
+      base::Bind(&VideoFrameStreamTest::OnStopped, base::Unretained(this)));
+  message_loop_.RunUntilIdle();
 }
 
 TEST_P(VideoFrameStreamTest, Stop_DuringInitialization) {

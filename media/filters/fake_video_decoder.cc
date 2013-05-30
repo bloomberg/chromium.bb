@@ -187,15 +187,19 @@ void FakeVideoDecoder::BufferReady(DemuxerStream::Status status,
 
   DCHECK_EQ(status, DemuxerStream::kOk);
 
-  // Make sure the decoder is always configured with the latest config.
-  DCHECK(current_config_.Matches(demuxer_stream_->video_decoder_config()));
-
   if (buffer->IsEndOfStream() && decoded_frames_.empty()) {
     read_cb_.RunOrHold(kOk, VideoFrame::CreateEmptyFrame());
     return;
   }
 
   if (!buffer->IsEndOfStream()) {
+    // Make sure the decoder is always configured with the latest config.
+    DCHECK(current_config_.Matches(demuxer_stream_->video_decoder_config()))
+        << "Decoder's Current Config: "
+        << current_config_.AsHumanReadableString()
+        << "DemuxerStream's Current Config: "
+        << demuxer_stream_->video_decoder_config().AsHumanReadableString();
+
     scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateColorFrame(
         current_config_.coded_size(), 0, 0, 0, buffer->GetTimestamp());
     decoded_frames_.push_back(video_frame);
