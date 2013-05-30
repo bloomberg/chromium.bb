@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_SUPPORT_SIMPLE_FILE_WRITER_H_
-#define WEBKIT_SUPPORT_SIMPLE_FILE_WRITER_H_
+#ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_WRITER_H_
+#define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_WRITER_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -50,4 +50,4 @@ class SimpleFileWriter : public fileapi::WebFileWriterBase,
   static net::URLRequestContext* request_context_;
 };
 
-#endif  // WEBKIT_SUPPORT_SIMPLE_FILE_WRITER_H_
+#endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_WRITER_H_

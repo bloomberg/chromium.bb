@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/support/test_shell_request_context.h"
+#include "webkit/tools/test_shell/test_shell_request_context.h"
+
+#include "build/build_config.h"
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
-#include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
@@ -33,8 +34,8 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url_request_job_factory.h"
 #include "webkit/common/user_agent/user_agent.h"
-#include "webkit/support/simple_file_system.h"
-#include "webkit/support/simple_resource_loader_bridge.h"
+#include "webkit/tools/test_shell/simple_file_system.h"
+#include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
 class TestShellHttpUserAgentSettings : public net::HttpUserAgentSettings {
  public:

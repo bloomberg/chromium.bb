@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_SUPPORT_SIMPLE_RESOURCE_LOADER_BRIDGE_H__
-#define WEBKIT_SUPPORT_SIMPLE_RESOURCE_LOADER_BRIDGE_H__
+#ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_RESOURCE_LOADER_BRIDGE_H__
+#define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_RESOURCE_LOADER_BRIDGE_H__
 
 #include <string>
 #include "base/message_loop_proxy.h"
@@ -58,4 +58,4 @@ class SimpleResourceLoaderBridge {
     const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info);
 };
 
-#endif  // WEBKIT_SUPPORT_SIMPLE_RESOURCE_LOADER_BRIDGE_H__
+#endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_RESOURCE_LOADER_BRIDGE_H__

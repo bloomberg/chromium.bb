@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_SUPPORT_TEST_SHELL_WEBMIMEREGISTRY_IMPL_H_
-#define WEBKIT_SUPPORT_TEST_SHELL_WEBMIMEREGISTRY_IMPL_H_
+#ifndef WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBMIMEREGISTRY_IMPL_H_
+#define WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBMIMEREGISTRY_IMPL_H_
 
 #include <string>
 #include <vector>
@@ -42,4 +42,4 @@ class TestShellWebMimeRegistryImpl
   DISALLOW_COPY_AND_ASSIGN(TestShellWebMimeRegistryImpl);
 };
 
-#endif  // WEBKIT_SUPPORT_TEST_SHELL_WEBMIMEREGISTRY_IMPL_H_
+#endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBMIMEREGISTRY_IMPL_H_

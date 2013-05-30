@@ -254,7 +254,7 @@
             '../sandbox/sandbox.gyp:sbox_integration_tests',
             '../sandbox/sandbox.gyp:sbox_unittests',
             '../sandbox/sandbox.gyp:sbox_validation_tests',
-            '../webkit/support/webkit_support.gyp:pull_in_copy_TestNetscapePlugIn',
+            '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
             '../ui/app_list/app_list.gyp:app_list_unittests',
             '../ui/views/views.gyp:views_unittests',
           ],

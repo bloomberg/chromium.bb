@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_SUPPORT_SIMPLE_CLIPBOARD_IMPL_H_
-#define WEBKIT_SUPPORT_SIMPLE_CLIPBOARD_IMPL_H_
+#ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_CLIPBOARD_IMPL_H_
+#define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_CLIPBOARD_IMPL_H_
 
 #include "base/compiler_specific.h"
 #include "webkit/glue/clipboard_client.h"
@@ -40,4 +40,4 @@ class SimpleClipboardClient : public webkit_glue::ClipboardClient {
   virtual WriteContext* CreateWriteContext() OVERRIDE;
 };
 
-#endif  // WEBKIT_SUPPORT_SIMPLE_CLIPBOARD_IMPL_H_
+#endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_CLIPBOARD_IMPL_H_

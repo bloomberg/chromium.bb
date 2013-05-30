@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/support/simple_file_system.h"
+#include "webkit/tools/test_shell/simple_file_system.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -27,7 +27,7 @@
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/common/fileapi/directory_entry.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/support/simple_file_writer.h"
+#include "webkit/tools/test_shell/simple_file_writer.h"
 
 using base::WeakPtr;
 

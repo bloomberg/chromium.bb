@@ -7,8 +7,8 @@
 // clipboard, which allows for running them in parallel and having the tests
 // not interact with actual user actions.
 
-#ifndef WEBKIT_SUPPORT_MOCK_WEBCLIPBOARD_IMPL_H_
-#define WEBKIT_SUPPORT_MOCK_WEBCLIPBOARD_IMPL_H_
+#ifndef WEBKIT_TOOLS_TEST_SHELL_MOCK_WEBCLIPBOARD_IMPL_H_
+#define WEBKIT_TOOLS_TEST_SHELL_MOCK_WEBCLIPBOARD_IMPL_H_
 
 #include <map>
 
@@ -57,4 +57,4 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
   bool m_writeSmartPaste;
 };
 
-#endif  // WEBKIT_SUPPORT_MOCK_WEBCLIPBOARD_IMPL_H_
+#endif  // WEBKIT_TOOLS_TEST_SHELL_MOCK_WEBCLIPBOARD_IMPL_H_

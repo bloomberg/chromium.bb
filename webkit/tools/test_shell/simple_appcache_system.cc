@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/support/simple_appcache_system.h"
+#include "webkit/tools/test_shell/simple_appcache_system.h"
 
 #include <string>
 #include <vector>
@@ -13,7 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "webkit/appcache/appcache_interceptor.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
-#include "webkit/support/simple_resource_loader_bridge.h"
+#include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;

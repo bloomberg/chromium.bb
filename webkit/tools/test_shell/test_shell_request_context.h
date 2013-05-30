@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_SUPPORT_TEST_SHELL_REQUEST_CONTEXT_H_
-#define WEBKIT_SUPPORT_TEST_SHELL_REQUEST_CONTEXT_H_
+#ifndef WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_REQUEST_CONTEXT_H_
+#define WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_REQUEST_CONTEXT_H_
 
 #include "base/threading/thread.h"
 #include "net/http/http_cache.h"
@@ -53,4 +53,4 @@ class TestShellRequestContext : public net::URLRequestContext {
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 };
 
-#endif  // WEBKIT_SUPPORT_TEST_SHELL_REQUEST_CONTEXT_H_
+#endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_REQUEST_CONTEXT_H_

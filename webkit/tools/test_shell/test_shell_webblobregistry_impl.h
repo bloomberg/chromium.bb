@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_SUPPORT_TEST_SHELL_WEBBLOBREGISTRY_IMPL_H_
-#define WEBKIT_SUPPORT_TEST_SHELL_WEBBLOBREGISTRY_IMPL_H_
+#ifndef WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBBLOBREGISTRY_IMPL_H_
+#define WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBBLOBREGISTRY_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
@@ -46,4 +46,4 @@ class TestShellWebBlobRegistryImpl
   DISALLOW_COPY_AND_ASSIGN(TestShellWebBlobRegistryImpl);
 };
 
-#endif  // WEBKIT_SUPPORT_TEST_SHELL_WEBBLOBREGISTRY_IMPL_H_
+#endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBBLOBREGISTRY_IMPL_H_

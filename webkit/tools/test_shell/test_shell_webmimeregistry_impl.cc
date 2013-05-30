@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/support/test_shell_webmimeregistry_impl.h"
+#include "webkit/tools/test_shell/test_shell_webmimeregistry_impl.h"
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
