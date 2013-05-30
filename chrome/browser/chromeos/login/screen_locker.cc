@@ -10,7 +10,7 @@
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/session_state_controller.h"
+#include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -373,7 +373,7 @@ void ScreenLocker::Hide() {
   DCHECK(screen_locker_);
   base::Callback<void(void)> callback =
       base::Bind(&ScreenLocker::ScheduleDeletion);
-  ash::Shell::GetInstance()->session_state_controller()->
+  ash::Shell::GetInstance()->lock_state_controller()->
     OnLockScreenHide(callback);
 }
 

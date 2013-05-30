@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ash/wm/session_state_observer.h"
+#include "ash/wm/lock_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -43,7 +43,7 @@ class WebUIScreenLocker : public WebUILoginView,
                           public LoginDisplay::Delegate,
                           public ScreenLockerDelegate,
                           public LockWindow::Observer,
-                          public ash::SessionStateObserver,
+                          public ash::LockStateObserver,
                           public views::WidgetObserver,
                           public PowerManagerClient::Observer,
                           public content::WebContentsObserver {
@@ -92,9 +92,9 @@ class WebUIScreenLocker : public WebUILoginView,
   // LockWindow::Observer implementation.
   virtual void OnLockWindowReady() OVERRIDE;
 
-  // SessionStateObserver override.
-  virtual void OnSessionStateEvent(ash::SessionStateObserver::EventType event)
-      OVERRIDE;
+  // LockStateObserver override.
+  virtual void OnLockStateEvent(
+      ash::LockStateObserver::EventType event) OVERRIDE;
 
   // WidgetObserver override.
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;

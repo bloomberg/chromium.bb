@@ -1,8 +1,6 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "ash/wm/session_state_controller_impl2.h"
 
 #include "ash/ash_switches.h"
 #include "ash/session_state_delegate.h"
@@ -10,9 +8,10 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/wm/lock_state_controller.h"
+#include "ash/wm/lock_state_controller_impl2.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/session_state_animator.h"
-#include "ash/wm/session_state_controller.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -76,17 +75,16 @@ void HideBackground() {
 
 // Fake implementation of PowerButtonControllerDelegate that just logs requests
 // to lock the screen and shut down the device.
-class TestSessionStateControllerDelegate :
-    public SessionStateControllerDelegate {
+class TestLockStateControllerDelegate : public LockStateControllerDelegate {
  public:
-  TestSessionStateControllerDelegate()
+  TestLockStateControllerDelegate()
       : num_lock_requests_(0),
         num_shutdown_requests_(0) {}
 
   int num_lock_requests() const { return num_lock_requests_; }
   int num_shutdown_requests() const { return num_shutdown_requests_; }
 
-  // SessionStateControllerDelegate implementation.
+  // LockStateControllerDelegate implementation.
   virtual void RequestLockScreen() OVERRIDE {
     num_lock_requests_++;
   }
@@ -98,13 +96,13 @@ class TestSessionStateControllerDelegate :
   int num_lock_requests_;
   int num_shutdown_requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestSessionStateControllerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestLockStateControllerDelegate);
 };
 
-class SessionStateControllerImpl2Test : public AshTestBase {
+class LockStateControllerImpl2Test : public AshTestBase {
  public:
-  SessionStateControllerImpl2Test() : controller_(NULL), delegate_(NULL) {}
-  virtual ~SessionStateControllerImpl2Test() {}
+  LockStateControllerImpl2Test() : controller_(NULL), delegate_(NULL) {}
+  virtual ~LockStateControllerImpl2Test() {}
 
   virtual void SetUp() OVERRIDE {
     CHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
@@ -125,19 +123,19 @@ class SessionStateControllerImpl2Test : public AshTestBase {
     // TODO(antrim): once there is a way to mock time and run animations, make
     // sure that animations are finished even in simple tests.
 
-    delegate_ = new TestSessionStateControllerDelegate;
+    delegate_ = new TestLockStateControllerDelegate;
     controller_ = Shell::GetInstance()->power_button_controller();
-    state_controller_ = static_cast<SessionStateControllerImpl2*>(
-        Shell::GetInstance()->session_state_controller());
-    state_controller_->SetDelegate(delegate_);  // transfers ownership
+    lock_state_controller_ = static_cast<LockStateControllerImpl2*>(
+        Shell::GetInstance()->lock_state_controller());
+    lock_state_controller_->SetDelegate(delegate_);  // transfers ownership
     test_api_.reset(
-        new SessionStateControllerImpl2::TestApi(state_controller_));
+        new LockStateControllerImpl2::TestApi(lock_state_controller_));
     animator_api_.reset(
-        new SessionStateAnimator::TestApi(state_controller_->
+        new SessionStateAnimator::TestApi(lock_state_controller_->
             animator_.get()));
     shell_delegate_ = reinterpret_cast<TestShellDelegate*>(
         ash::Shell::GetInstance()->delegate());
-    state_delegate_ = Shell::GetInstance()->session_state_delegate();
+    session_state_delegate_ = Shell::GetInstance()->session_state_delegate();
   }
 
   virtual void TearDown() {
@@ -311,7 +309,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
 
   void ExpectUnlockedState() {
     //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
-    EXPECT_FALSE(state_delegate_->IsScreenLocked());
+    EXPECT_FALSE(session_state_delegate_->IsScreenLocked());
 
     aura::Window::Windows containers;
 
@@ -332,7 +330,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
 
   void ExpectLockedState() {
     //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
-    EXPECT_TRUE(state_delegate_->IsScreenLocked());
+    EXPECT_TRUE(session_state_delegate_->IsScreenLocked());
 
     aura::Window::Windows containers;
 
@@ -370,46 +368,46 @@ class SessionStateControllerImpl2Test : public AshTestBase {
   }
 
   void SystemLocks() {
-    state_controller_->OnLockStateChanged(true);
-    state_delegate_->LockScreen();
+    lock_state_controller_->OnLockStateChanged(true);
+    session_state_delegate_->LockScreen();
     //TODO (antrim) : restore animator_helper_->Advance(base::TimeDelta());
   }
 
   void SuccessfulAuthentication(bool* call_flag) {
     base::Closure closure = base::Bind(&CheckCalledCallback, call_flag);
-    state_controller_->OnLockScreenHide(closure);
+    lock_state_controller_->OnLockScreenHide(closure);
     //TODO (antrim) : restore animator_helper_->Advance(base::TimeDelta());
   }
 
   void SystemUnlocks() {
-    state_controller_->OnLockStateChanged(false);
-    state_delegate_->UnlockScreen();
+    lock_state_controller_->OnLockStateChanged(false);
+    session_state_delegate_->UnlockScreen();
     //TODO (antrim) : restore animator_helper_->Advance(base::TimeDelta());
   }
 
   void Initialize(bool legacy_button, user::LoginStatus status) {
     controller_->set_has_legacy_power_button_for_test(legacy_button);
-    state_controller_->OnLoginStateChanged(status);
+    lock_state_controller_->OnLoginStateChanged(status);
     SetUserLoggedIn(status != user::LOGGED_IN_NONE);
     if (status == user::LOGGED_IN_GUEST)
       SetCanLockScreen(false);
-    state_controller_->OnLockStateChanged(false);
+    lock_state_controller_->OnLockStateChanged(false);
   }
 
   PowerButtonController* controller_;  // not owned
-  SessionStateControllerImpl2* state_controller_;  // not owned
-  TestSessionStateControllerDelegate* delegate_;  // not owned
+  LockStateControllerImpl2* lock_state_controller_;  // not owned
+  TestLockStateControllerDelegate* delegate_;  // not owned
   TestShellDelegate* shell_delegate_;  // not owned
-  SessionStateDelegate* state_delegate_;  // not owned
+  SessionStateDelegate* session_state_delegate_;  // not owned
 
   scoped_ptr<ui::ScopedAnimationDurationScaleMode> animation_duration_mode_;
-  scoped_ptr<SessionStateControllerImpl2::TestApi> test_api_;
+  scoped_ptr<LockStateControllerImpl2::TestApi> test_api_;
   scoped_ptr<SessionStateAnimator::TestApi> animator_api_;
   // TODO(antrim) : restore
 //  scoped_ptr<ui::test::AnimationContainerTestHelper> animator_helper_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SessionStateControllerImpl2Test);
+  DISALLOW_COPY_AND_ASSIGN(LockStateControllerImpl2Test);
 };
 
 // Test the lock-to-shutdown flow for non-Chrome-OS hardware that doesn't
@@ -417,7 +415,7 @@ class SessionStateControllerImpl2Test : public AshTestBase {
 // time the button is pressed and shut down when it's pressed from the locked
 // state.
 // TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(SessionStateControllerImpl2Test, DISABLED_LegacyLockAndShutDown) {
+TEST_F(LockStateControllerImpl2Test, DISABLED_LegacyLockAndShutDown) {
   Initialize(true, user::LOGGED_IN_USER);
 
   ExpectUnlockedState();
@@ -436,7 +434,7 @@ TEST_F(SessionStateControllerImpl2Test, DISABLED_LegacyLockAndShutDown) {
   EXPECT_EQ(1, delegate_->num_lock_requests());
 
   // Notify that we locked successfully.
-  state_controller_->OnStartingLock();
+  lock_state_controller_->OnStartingLock();
   // We had that animation already.
   //TODO (antrim) : restore
   //  EXPECT_FALSE(animator_helper_->IsAnimating());
@@ -470,7 +468,7 @@ TEST_F(SessionStateControllerImpl2Test, DISABLED_LegacyLockAndShutDown) {
 
 // Test that we start shutting down immediately if the power button is pressed
 // while we're not logged in on an unofficial system.
-TEST_F(SessionStateControllerImpl2Test, LegacyNotLoggedIn) {
+TEST_F(LockStateControllerImpl2Test, LegacyNotLoggedIn) {
   Initialize(true, user::LOGGED_IN_NONE);
 
   PressPowerButton();
@@ -481,7 +479,7 @@ TEST_F(SessionStateControllerImpl2Test, LegacyNotLoggedIn) {
 
 // Test that we start shutting down immediately if the power button is pressed
 // while we're logged in as a guest on an unofficial system.
-TEST_F(SessionStateControllerImpl2Test, LegacyGuest) {
+TEST_F(LockStateControllerImpl2Test, LegacyGuest) {
   Initialize(true, user::LOGGED_IN_GUEST);
 
   PressPowerButton();
@@ -492,7 +490,7 @@ TEST_F(SessionStateControllerImpl2Test, LegacyGuest) {
 
 // When we hold the power button while the user isn't logged in, we should shut
 // down the machine directly.
-TEST_F(SessionStateControllerImpl2Test, ShutdownWhenNotLoggedIn) {
+TEST_F(LockStateControllerImpl2Test, ShutdownWhenNotLoggedIn) {
   Initialize(false, user::LOGGED_IN_NONE);
 
   // Press the power button and check that we start the shutdown timer.
@@ -532,7 +530,7 @@ TEST_F(SessionStateControllerImpl2Test, ShutdownWhenNotLoggedIn) {
 
 // Test that we lock the screen and deal with unlocking correctly.
 // TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(SessionStateControllerImpl2Test, DISABLED_LockAndUnlock) {
+TEST_F(LockStateControllerImpl2Test, DISABLED_LockAndUnlock) {
   Initialize(false, user::LOGGED_IN_USER);
 
   ExpectUnlockedState();
@@ -551,7 +549,7 @@ TEST_F(SessionStateControllerImpl2Test, DISABLED_LockAndUnlock) {
   EXPECT_EQ(1, delegate_->num_lock_requests());
 
   // Notify that we locked successfully.
-  state_controller_->OnStartingLock();
+  lock_state_controller_->OnStartingLock();
   // We had that animation already.
   //TODO (antrim) : restore EXPECT_FALSE(animator_helper_->IsAnimating());
 
@@ -592,7 +590,7 @@ TEST_F(SessionStateControllerImpl2Test, DISABLED_LockAndUnlock) {
 
 // Test that we deal with cancelling lock correctly.
 // TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(SessionStateControllerImpl2Test, DISABLED_LockAndCancel) {
+TEST_F(LockStateControllerImpl2Test, DISABLED_LockAndCancel) {
   Initialize(false, user::LOGGED_IN_USER);
 
   ExpectUnlockedState();
@@ -629,7 +627,8 @@ TEST_F(SessionStateControllerImpl2Test, DISABLED_LockAndCancel) {
 
 // Test that we deal with cancelling lock correctly.
 // TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(SessionStateControllerImpl2Test, DISABLED_LockAndCancelAndLockAgain) {
+TEST_F(LockStateControllerImpl2Test,
+       DISABLED_LockAndCancelAndLockAgain) {
   Initialize(false, user::LOGGED_IN_USER);
 
   ExpectUnlockedState();
@@ -666,7 +665,7 @@ TEST_F(SessionStateControllerImpl2Test, DISABLED_LockAndCancelAndLockAgain) {
 
 // Hold the power button down from the unlocked state to eventual shutdown.
 // TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(SessionStateControllerImpl2Test, DISABLED_LockToShutdown) {
+TEST_F(LockStateControllerImpl2Test, DISABLED_LockToShutdown) {
   Initialize(false, user::LOGGED_IN_USER);
 
   // Hold the power button and lock the screen.
@@ -699,7 +698,7 @@ TEST_F(SessionStateControllerImpl2Test, DISABLED_LockToShutdown) {
 
 // Hold the power button down from the unlocked state to eventual shutdown,
 // then release the button while system does locking.
-TEST_F(SessionStateControllerImpl2Test, CancelLockToShutdown) {
+TEST_F(LockStateControllerImpl2Test, CancelLockToShutdown) {
   Initialize(false, user::LOGGED_IN_USER);
 
   PressPowerButton();
@@ -716,14 +715,14 @@ TEST_F(SessionStateControllerImpl2Test, CancelLockToShutdown) {
 
   Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
 
-  EXPECT_FALSE(state_controller_->ShutdownRequested());
+  EXPECT_FALSE(lock_state_controller_->ShutdownRequested());
   EXPECT_FALSE(test_api_->lock_to_shutdown_timer_is_running());
   EXPECT_FALSE(test_api_->shutdown_timer_is_running());
 }
 
 // Test that we handle the case where lock requests are ignored.
 // TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(SessionStateControllerImpl2Test, DISABLED_Lock) {
+TEST_F(LockStateControllerImpl2Test, DISABLED_Lock) {
   // We require animations to have a duration for this test.
   ui::ScopedAnimationDurationScaleMode normal_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
@@ -752,7 +751,7 @@ TEST_F(SessionStateControllerImpl2Test, DISABLED_Lock) {
 }
 
 // Test the basic operation of the lock button (not logged in).
-TEST_F(SessionStateControllerImpl2Test, LockButtonBasicNotLoggedIn) {
+TEST_F(LockStateControllerImpl2Test, LockButtonBasicNotLoggedIn) {
   // The lock button shouldn't do anything if we aren't logged in.
   Initialize(false, user::LOGGED_IN_NONE);
 
@@ -763,7 +762,7 @@ TEST_F(SessionStateControllerImpl2Test, LockButtonBasicNotLoggedIn) {
 }
 
 // Test the basic operation of the lock button (guest).
-TEST_F(SessionStateControllerImpl2Test, LockButtonBasicGuest) {
+TEST_F(LockStateControllerImpl2Test, LockButtonBasicGuest) {
   // The lock button shouldn't do anything when we're logged in as a guest.
   Initialize(false, user::LOGGED_IN_GUEST);
 
@@ -775,7 +774,7 @@ TEST_F(SessionStateControllerImpl2Test, LockButtonBasicGuest) {
 
 // Test the basic operation of the lock button.
 // TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(SessionStateControllerImpl2Test, DISABLED_LockButtonBasic) {
+TEST_F(LockStateControllerImpl2Test, DISABLED_LockButtonBasic) {
   // If we're logged in as a regular user, we should start the lock timer and
   // the pre-lock animation.
   Initialize(false, user::LOGGED_IN_USER);
@@ -824,7 +823,7 @@ TEST_F(SessionStateControllerImpl2Test, DISABLED_LockButtonBasic) {
 
 // Test that the power button takes priority over the lock button.
 // TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(SessionStateControllerImpl2Test,
+TEST_F(LockStateControllerImpl2Test,
     DISABLED_PowerButtonPreemptsLockButton) {
   Initialize(false, user::LOGGED_IN_USER);
 
@@ -863,9 +862,9 @@ TEST_F(SessionStateControllerImpl2Test,
 // When the screen is locked without going through the usual power-button
 // slow-close path (e.g. via the wrench menu), test that we still show the
 // fast-close animation.
-TEST_F(SessionStateControllerImpl2Test, LockWithoutButton) {
+TEST_F(LockStateControllerImpl2Test, LockWithoutButton) {
   Initialize(false, user::LOGGED_IN_USER);
-  state_controller_->OnStartingLock();
+  lock_state_controller_->OnStartingLock();
 
   ExpectPreLockAnimationStarted();
   EXPECT_FALSE(test_api_->is_lock_cancellable());
@@ -877,9 +876,9 @@ TEST_F(SessionStateControllerImpl2Test, LockWithoutButton) {
 
 // When we hear that the process is exiting but we haven't had a chance to
 // display an animation, we should just blank the screen.
-TEST_F(SessionStateControllerImpl2Test, ShutdownWithoutButton) {
+TEST_F(LockStateControllerImpl2Test, ShutdownWithoutButton) {
   Initialize(false, user::LOGGED_IN_USER);
-  state_controller_->OnAppTerminating();
+  lock_state_controller_->OnAppTerminating();
 
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
@@ -891,10 +890,10 @@ TEST_F(SessionStateControllerImpl2Test, ShutdownWithoutButton) {
 
 // Test that we display the fast-close animation and shut down when we get an
 // outside request to shut down (e.g. from the login or lock screen).
-TEST_F(SessionStateControllerImpl2Test, RequestShutdownFromLoginScreen) {
+TEST_F(LockStateControllerImpl2Test, RequestShutdownFromLoginScreen) {
   Initialize(false, user::LOGGED_IN_NONE);
 
-  state_controller_->RequestShutdown();
+  lock_state_controller_->RequestShutdown();
 
   ExpectShutdownAnimationStarted();
   Advance(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
@@ -908,14 +907,14 @@ TEST_F(SessionStateControllerImpl2Test, RequestShutdownFromLoginScreen) {
   EXPECT_EQ(1, NumShutdownRequests());
 }
 
-TEST_F(SessionStateControllerImpl2Test, RequestShutdownFromLockScreen) {
+TEST_F(LockStateControllerImpl2Test, RequestShutdownFromLockScreen) {
   Initialize(false, user::LOGGED_IN_USER);
 
   SystemLocks();
   Advance(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
   ExpectPastLockAnimationFinished();
 
-  state_controller_->RequestShutdown();
+  lock_state_controller_->RequestShutdown();
 
   ExpectShutdownAnimationStarted();
   Advance(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
@@ -930,7 +929,7 @@ TEST_F(SessionStateControllerImpl2Test, RequestShutdownFromLockScreen) {
 }
 
 // TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(SessionStateControllerImpl2Test,
+TEST_F(LockStateControllerImpl2Test,
        DISABLED_RequestAndCancelShutdownFromLockScreen) {
   Initialize(false, user::LOGGED_IN_USER);
 
@@ -967,7 +966,7 @@ TEST_F(SessionStateControllerImpl2Test,
 }
 
 // Test that we ignore power button presses when the screen is turned off.
-TEST_F(SessionStateControllerImpl2Test, IgnorePowerButtonIfScreenIsOff) {
+TEST_F(LockStateControllerImpl2Test, IgnorePowerButtonIfScreenIsOff) {
   Initialize(false, user::LOGGED_IN_USER);
 
   // When the screen brightness is at 0%, we shouldn't do anything in response
@@ -988,7 +987,7 @@ TEST_F(SessionStateControllerImpl2Test, IgnorePowerButtonIfScreenIsOff) {
 
 // Test that hidden background appears and revers correctly on lock/cancel.
 // TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(SessionStateControllerImpl2Test,
+TEST_F(LockStateControllerImpl2Test,
     DISABLED_TestHiddenBackgroundLockCancel) {
   Initialize(false, user::LOGGED_IN_USER);
   HideBackground();
@@ -1018,7 +1017,7 @@ TEST_F(SessionStateControllerImpl2Test,
 
 // Test that hidden background appears and revers correctly on lock/unlock.
 // TODO(antrim): Reenable this: http://crbug.com/167048
-TEST_F(SessionStateControllerImpl2Test,
+TEST_F(LockStateControllerImpl2Test,
     DISABLED_TestHiddenBackgroundLockUnlock) {
   Initialize(false, user::LOGGED_IN_USER);
   HideBackground();

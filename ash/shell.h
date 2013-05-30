@@ -84,7 +84,7 @@ class PartialMagnificationController;
 class PowerButtonController;
 class RootWindowHostFactory;
 class ScreenAsh;
-class SessionStateController;
+class LockStateController;
 class SessionStateDelegate;
 class ShellDelegate;
 class ShellObserver;
@@ -309,8 +309,8 @@ class ASH_EXPORT Shell
   PowerButtonController* power_button_controller() {
     return power_button_controller_.get();
   }
-  SessionStateController* session_state_controller() {
-    return session_state_controller_.get();
+  LockStateController* lock_state_controller() {
+    return lock_state_controller_.get();
   }
   UserActivityDetector* user_activity_detector() {
     return user_activity_detector_.get();
@@ -537,7 +537,7 @@ class ASH_EXPORT Shell
   scoped_ptr<views::corewm::TooltipController> tooltip_controller_;
   scoped_ptr<DesktopBackgroundController> desktop_background_controller_;
   scoped_ptr<PowerButtonController> power_button_controller_;
-  scoped_ptr<SessionStateController> session_state_controller_;
+  scoped_ptr<LockStateController> lock_state_controller_;
   scoped_ptr<UserActivityDetector> user_activity_detector_;
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;

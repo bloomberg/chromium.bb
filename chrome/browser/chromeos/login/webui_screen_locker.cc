@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/login/webui_screen_locker.h"
 
 #include "ash/shell.h"
-#include "ash/wm/session_state_controller.h"
-#include "ash/wm/session_state_observer.h"
+#include "ash/wm/lock_state_controller.h"
+#include "ash/wm/lock_state_observer.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
@@ -50,7 +50,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
       webui_ready_(false),
       weak_factory_(this) {
   set_should_emit_login_prompt_visible(false);
-  ash::Shell::GetInstance()->session_state_controller()->AddObserver(this);
+  ash::Shell::GetInstance()->lock_state_controller()->AddObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 }
 
@@ -140,7 +140,8 @@ void WebUIScreenLocker::FocusUserPod() {
 
 WebUIScreenLocker::~WebUIScreenLocker() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-  ash::Shell::GetInstance()->session_state_controller()->RemoveObserver(this);
+  ash::Shell::GetInstance()->
+      lock_state_controller()->RemoveObserver(this);
   // In case of shutdown, lock_window_ may be deleted before WebUIScreenLocker.
   if (lock_window_) {
     lock_window_->RemoveObserver(this);
@@ -275,11 +276,11 @@ void WebUIScreenLocker::OnLockWindowReady() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SessionStateObserver override.
+// SessionLockStateObserver override.
 
-void WebUIScreenLocker::OnSessionStateEvent(
-    ash::SessionStateObserver::EventType event) {
-  if (event == ash::SessionStateObserver::EVENT_LOCK_ANIMATION_FINISHED) {
+void WebUIScreenLocker::OnLockStateEvent(
+    ash::LockStateObserver::EventType event) {
+  if (event == ash::LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED) {
     // Release capture if any.
     aura::client::GetCaptureClient(GetNativeWindow()->GetRootWindow())->
         SetCapture(NULL);

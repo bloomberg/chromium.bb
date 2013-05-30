@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/session_state_controller_impl2.h"
+#include "ash/wm/lock_state_controller_impl2.h"
 
 #include "ash/ash_switches.h"
 #include "ash/cancel_mode.h"
@@ -135,15 +135,15 @@ class AnimationFinishedObserver : public ui::LayerAnimationObserver {
 
 } // namespace
 
-SessionStateControllerImpl2::TestApi::TestApi(
-    SessionStateControllerImpl2* controller)
+LockStateControllerImpl2::TestApi::TestApi(
+    LockStateControllerImpl2* controller)
     : controller_(controller) {
 }
 
-SessionStateControllerImpl2::TestApi::~TestApi() {
+LockStateControllerImpl2::TestApi::~TestApi() {
 }
 
-SessionStateControllerImpl2::SessionStateControllerImpl2()
+LockStateControllerImpl2::LockStateControllerImpl2()
     : login_status_(user::LOGGED_IN_NONE),
       system_is_locked_(false),
       shutting_down_(false),
@@ -153,18 +153,18 @@ SessionStateControllerImpl2::SessionStateControllerImpl2()
   Shell::GetPrimaryRootWindow()->AddRootWindowObserver(this);
 }
 
-SessionStateControllerImpl2::~SessionStateControllerImpl2() {
+LockStateControllerImpl2::~LockStateControllerImpl2() {
   Shell::GetPrimaryRootWindow()->RemoveRootWindowObserver(this);
 }
 
-void SessionStateControllerImpl2::OnLoginStateChanged(
+void LockStateControllerImpl2::OnLoginStateChanged(
     user::LoginStatus status) {
   if (status != user::LOGGED_IN_LOCKED)
     login_status_ = status;
   system_is_locked_ = (status == user::LOGGED_IN_LOCKED);
 }
 
-void SessionStateControllerImpl2::OnAppTerminating() {
+void LockStateControllerImpl2::OnAppTerminating() {
   // If we hear that Chrome is exiting but didn't request it ourselves, all we
   // can really hope for is that we'll have time to clear the screen.
   // This is also the case when the user signs off.
@@ -180,7 +180,7 @@ void SessionStateControllerImpl2::OnAppTerminating() {
   }
 }
 
-void SessionStateControllerImpl2::OnLockStateChanged(bool locked) {
+void LockStateControllerImpl2::OnLockStateChanged(bool locked) {
   if (shutting_down_ || (system_is_locked_ == locked))
     return;
 
@@ -194,12 +194,12 @@ void SessionStateControllerImpl2::OnLockStateChanged(bool locked) {
   }
 }
 
-void SessionStateControllerImpl2::SetLockScreenDisplayedCallback(
+void LockStateControllerImpl2::SetLockScreenDisplayedCallback(
     base::Closure& callback) {
   lock_screen_displayed_callback_ = callback;
 }
 
-void SessionStateControllerImpl2::OnStartingLock() {
+void LockStateControllerImpl2::OnStartingLock() {
   if (shutting_down_ || system_is_locked_)
     return;
   if (animating_lock_)
@@ -207,13 +207,14 @@ void SessionStateControllerImpl2::OnStartingLock() {
   StartImmediatePreLockAnimation(false /* request_lock_on_completion */);
 }
 
-void SessionStateControllerImpl2::StartLockAnimationAndLockImmediately() {
+void LockStateControllerImpl2::StartLockAnimationAndLockImmediately() {
   if (animating_lock_)
     return;
   StartImmediatePreLockAnimation(true /* request_lock_on_completion */);
 }
 
-void SessionStateControllerImpl2::StartLockAnimation(bool shutdown_after_lock) {
+void LockStateControllerImpl2::StartLockAnimation(
+    bool shutdown_after_lock) {
   if (animating_lock_)
     return;
   shutdown_after_lock_ = shutdown_after_lock;
@@ -222,19 +223,19 @@ void SessionStateControllerImpl2::StartLockAnimation(bool shutdown_after_lock) {
   StartCancellablePreLockAnimation();
 }
 
-bool SessionStateControllerImpl2::LockRequested() {
+bool LockStateControllerImpl2::LockRequested() {
   return lock_fail_timer_.IsRunning();
 }
 
-bool SessionStateControllerImpl2::ShutdownRequested() {
+bool LockStateControllerImpl2::ShutdownRequested() {
   return shutting_down_;
 }
 
-bool SessionStateControllerImpl2::CanCancelLockAnimation() {
+bool LockStateControllerImpl2::CanCancelLockAnimation() {
   return can_cancel_lock_animation_;
 }
 
-void SessionStateControllerImpl2::CancelLockAnimation() {
+void LockStateControllerImpl2::CancelLockAnimation() {
   if (!CanCancelLockAnimation())
     return;
   shutdown_after_lock_ = false;
@@ -242,17 +243,17 @@ void SessionStateControllerImpl2::CancelLockAnimation() {
   CancelPreLockAnimation();
 }
 
-bool SessionStateControllerImpl2::CanCancelShutdownAnimation() {
+bool LockStateControllerImpl2::CanCancelShutdownAnimation() {
   return pre_shutdown_timer_.IsRunning() ||
          shutdown_after_lock_ ||
          lock_to_shutdown_timer_.IsRunning();
 }
 
-void SessionStateControllerImpl2::StartShutdownAnimation() {
+void LockStateControllerImpl2::StartShutdownAnimation() {
   StartCancellableShutdownAnimation();
 }
 
-void SessionStateControllerImpl2::CancelShutdownAnimation() {
+void LockStateControllerImpl2::CancelShutdownAnimation() {
   if (!CanCancelShutdownAnimation())
     return;
   if (lock_to_shutdown_timer_.IsRunning()) {
@@ -270,12 +271,12 @@ void SessionStateControllerImpl2::CancelShutdownAnimation() {
   pre_shutdown_timer_.Stop();
 }
 
-void SessionStateControllerImpl2::RequestShutdown() {
+void LockStateControllerImpl2::RequestShutdown() {
   if (!shutting_down_)
     RequestShutdownImpl();
 }
 
-void SessionStateControllerImpl2::RequestShutdownImpl() {
+void LockStateControllerImpl2::RequestShutdownImpl() {
   DCHECK(!shutting_down_);
   shutting_down_ = true;
 
@@ -286,32 +287,32 @@ void SessionStateControllerImpl2::RequestShutdownImpl() {
   StartShutdownAnimationImpl();
 }
 
-void SessionStateControllerImpl2::OnRootWindowHostCloseRequested(
+void LockStateControllerImpl2::OnRootWindowHostCloseRequested(
                                                 const aura::RootWindow*) {
   Shell::GetInstance()->delegate()->Exit();
 }
 
-void SessionStateControllerImpl2::OnLockFailTimeout() {
+void LockStateControllerImpl2::OnLockFailTimeout() {
   DCHECK(!system_is_locked_);
   // Undo lock animation.
   StartUnlockAnimationAfterUIDestroyed();
 }
 
-void SessionStateControllerImpl2::StartLockToShutdownTimer() {
+void LockStateControllerImpl2::StartLockToShutdownTimer() {
   shutdown_after_lock_ = false;
   lock_to_shutdown_timer_.Stop();
   lock_to_shutdown_timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(kLockToShutdownTimeoutMs),
-      this, &SessionStateControllerImpl2::OnLockToShutdownTimeout);
+      this, &LockStateControllerImpl2::OnLockToShutdownTimeout);
 }
 
-void SessionStateControllerImpl2::OnLockToShutdownTimeout() {
+void LockStateControllerImpl2::OnLockToShutdownTimeout() {
   DCHECK(system_is_locked_);
   StartCancellableShutdownAnimation();
 }
 
-void SessionStateControllerImpl2::StartCancellableShutdownAnimation() {
+void LockStateControllerImpl2::StartCancellableShutdownAnimation() {
   Shell* shell = ash::Shell::GetInstance();
   // Hide cursor, but let it reappear if the mouse moves.
   shell->env_filter()->set_cursor_hidden_by_filter(true);
@@ -323,24 +324,24 @@ void SessionStateControllerImpl2::StartCancellableShutdownAnimation() {
   StartPreShutdownAnimationTimer();
 }
 
-void SessionStateControllerImpl2::StartShutdownAnimationImpl() {
+void LockStateControllerImpl2::StartShutdownAnimationImpl() {
   animator_->StartGlobalAnimation(
       internal::SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS,
       internal::SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
   StartRealShutdownTimer(true);
 }
 
-void SessionStateControllerImpl2::StartPreShutdownAnimationTimer() {
+void LockStateControllerImpl2::StartPreShutdownAnimationTimer() {
   pre_shutdown_timer_.Stop();
   pre_shutdown_timer_.Start(
       FROM_HERE,
       animator_->
           GetDuration(internal::SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN),
       this,
-      &SessionStateControllerImpl2::OnPreShutdownAnimationTimeout);
+      &LockStateControllerImpl2::OnPreShutdownAnimationTimeout);
 }
 
-void SessionStateControllerImpl2::OnPreShutdownAnimationTimeout() {
+void LockStateControllerImpl2::OnPreShutdownAnimationTimeout() {
   shutting_down_ = true;
 
   Shell* shell = ash::Shell::GetInstance();
@@ -350,7 +351,7 @@ void SessionStateControllerImpl2::OnPreShutdownAnimationTimeout() {
   StartRealShutdownTimer(false);
 }
 
-void SessionStateControllerImpl2::StartRealShutdownTimer(
+void LockStateControllerImpl2::StartRealShutdownTimer(
     bool with_animation_time) {
   base::TimeDelta duration =
       base::TimeDelta::FromMilliseconds(kShutdownRequestDelayMs);
@@ -362,10 +363,10 @@ void SessionStateControllerImpl2::StartRealShutdownTimer(
       FROM_HERE,
       duration,
       this,
-      &SessionStateControllerImpl2::OnRealShutdownTimeout);
+      &LockStateControllerImpl2::OnRealShutdownTimeout);
 }
 
-void SessionStateControllerImpl2::OnRealShutdownTimeout() {
+void LockStateControllerImpl2::OnRealShutdownTimeout() {
   DCHECK(shutting_down_);
 #if defined(OS_CHROMEOS)
   if (!base::chromeos::IsRunningOnChromeOS()) {
@@ -381,17 +382,18 @@ void SessionStateControllerImpl2::OnRealShutdownTimeout() {
   delegate_->RequestShutdown();
 }
 
-void SessionStateControllerImpl2::OnLockScreenHide(
+void LockStateControllerImpl2::OnLockScreenHide(
   base::Callback<void(void)>& callback) {
   StartUnlockAnimationBeforeUIDestroyed(callback);
 }
 
-void SessionStateControllerImpl2::LockAnimationCancelled() {
+void LockStateControllerImpl2::LockAnimationCancelled() {
   can_cancel_lock_animation_ = false;
   RestoreUnlockedProperties();
 }
 
-void SessionStateControllerImpl2::PreLockAnimationFinished(bool request_lock) {
+void LockStateControllerImpl2::PreLockAnimationFinished(
+    bool request_lock) {
   can_cancel_lock_animation_ = false;
 
   if (request_lock) {
@@ -406,15 +408,14 @@ void SessionStateControllerImpl2::PreLockAnimationFinished(bool request_lock) {
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(kLockFailTimeoutMs),
       this,
-      &SessionStateControllerImpl2::OnLockFailTimeout);
+      &LockStateControllerImpl2::OnLockFailTimeout);
 }
 
-void SessionStateControllerImpl2::PostLockAnimationFinished() {
+void LockStateControllerImpl2::PostLockAnimationFinished() {
   animating_lock_ = false;
 
-  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
-      OnSessionStateEvent(
-          SessionStateObserver::EVENT_LOCK_ANIMATION_FINISHED));
+  FOR_EACH_OBSERVER(LockStateObserver, observers_,
+      OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED));
   if (!lock_screen_displayed_callback_.is_null()) {
     lock_screen_displayed_callback_.Run();
     lock_screen_displayed_callback_.Reset();
@@ -425,18 +426,19 @@ void SessionStateControllerImpl2::PostLockAnimationFinished() {
   }
 }
 
-void SessionStateControllerImpl2::UnlockAnimationAfterUIDestroyedFinished() {
+void LockStateControllerImpl2::
+UnlockAnimationAfterUIDestroyedFinished() {
   RestoreUnlockedProperties();
 }
 
-void SessionStateControllerImpl2::StartImmediatePreLockAnimation(
+void LockStateControllerImpl2::StartImmediatePreLockAnimation(
     bool request_lock_on_completion) {
   animating_lock_ = true;
 
   StoreUnlockedProperties();
 
   base::Closure next_animation_starter =
-      base::Bind(&SessionStateControllerImpl2::PreLockAnimationFinished,
+      base::Bind(&LockStateControllerImpl2::PreLockAnimationFinished,
       base::Unretained(this), request_lock_on_completion);
   AnimationFinishedObserver* observer =
       new AnimationFinishedObserver(next_animation_starter);
@@ -465,16 +467,16 @@ void SessionStateControllerImpl2::StartImmediatePreLockAnimation(
   observer->Unpause();
 
   DispatchCancelMode();
-  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
-      OnSessionStateEvent(SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
+  FOR_EACH_OBSERVER(LockStateObserver, observers_,
+      OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_STARTED));
 }
 
-void SessionStateControllerImpl2::StartCancellablePreLockAnimation() {
+void LockStateControllerImpl2::StartCancellablePreLockAnimation() {
   animating_lock_ = true;
   StoreUnlockedProperties();
 
   base::Closure next_animation_starter =
-      base::Bind(&SessionStateControllerImpl2::PreLockAnimationFinished,
+      base::Bind(&LockStateControllerImpl2::PreLockAnimationFinished,
       base::Unretained(this), true /* request_lock */);
   AnimationFinishedObserver* observer =
       new AnimationFinishedObserver(next_animation_starter);
@@ -501,15 +503,14 @@ void SessionStateControllerImpl2::StartCancellablePreLockAnimation() {
       observer);
 
   DispatchCancelMode();
-  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
-      OnSessionStateEvent(
-          SessionStateObserver::EVENT_PRELOCK_ANIMATION_STARTED));
+  FOR_EACH_OBSERVER(LockStateObserver, observers_,
+      OnLockStateEvent(LockStateObserver::EVENT_PRELOCK_ANIMATION_STARTED));
   observer->Unpause();
 }
 
-void SessionStateControllerImpl2::CancelPreLockAnimation() {
+void LockStateControllerImpl2::CancelPreLockAnimation() {
   base::Closure next_animation_starter =
-      base::Bind(&SessionStateControllerImpl2::LockAnimationCancelled,
+      base::Bind(&LockStateControllerImpl2::LockAnimationCancelled,
       base::Unretained(this));
   AnimationFinishedObserver* observer =
       new AnimationFinishedObserver(next_animation_starter);
@@ -533,9 +534,9 @@ void SessionStateControllerImpl2::CancelPreLockAnimation() {
   observer->Unpause();
 }
 
-void SessionStateControllerImpl2::StartPostLockAnimation() {
+void LockStateControllerImpl2::StartPostLockAnimation() {
   base::Closure next_animation_starter =
-      base::Bind(&SessionStateControllerImpl2::PostLockAnimationFinished,
+      base::Bind(&LockStateControllerImpl2::PostLockAnimationFinished,
       base::Unretained(this));
 
   AnimationFinishedObserver* observer =
@@ -550,7 +551,7 @@ void SessionStateControllerImpl2::StartPostLockAnimation() {
   observer->Unpause();
 }
 
-void SessionStateControllerImpl2::StartUnlockAnimationBeforeUIDestroyed(
+void LockStateControllerImpl2::StartUnlockAnimationBeforeUIDestroyed(
     base::Closure& callback) {
   animator_->StartAnimationWithCallback(
       internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
@@ -559,11 +560,12 @@ void SessionStateControllerImpl2::StartUnlockAnimationBeforeUIDestroyed(
       callback);
 }
 
-void SessionStateControllerImpl2::StartUnlockAnimationAfterUIDestroyed() {
+void LockStateControllerImpl2::StartUnlockAnimationAfterUIDestroyed() {
   base::Closure next_animation_starter =
       base::Bind(
-          &SessionStateControllerImpl2::UnlockAnimationAfterUIDestroyedFinished,
-      base::Unretained(this));
+          &LockStateControllerImpl2::
+              UnlockAnimationAfterUIDestroyedFinished,
+          base::Unretained(this));
 
   AnimationFinishedObserver* observer =
       new AnimationFinishedObserver(next_animation_starter);
@@ -586,7 +588,7 @@ void SessionStateControllerImpl2::StartUnlockAnimationAfterUIDestroyed() {
   observer->Unpause();
 }
 
-void SessionStateControllerImpl2::StoreUnlockedProperties() {
+void LockStateControllerImpl2::StoreUnlockedProperties() {
   if (!unlocked_properties_) {
     unlocked_properties_.reset(new UnlockedStateProperties());
     unlocked_properties_->background_is_hidden = IsBackgroundHidden();
@@ -601,7 +603,7 @@ void SessionStateControllerImpl2::StoreUnlockedProperties() {
   }
 }
 
-void SessionStateControllerImpl2::RestoreUnlockedProperties() {
+void LockStateControllerImpl2::RestoreUnlockedProperties() {
   if (!unlocked_properties_)
     return;
   if (unlocked_properties_->background_is_hidden) {
@@ -615,7 +617,7 @@ void SessionStateControllerImpl2::RestoreUnlockedProperties() {
   unlocked_properties_.reset();
 }
 
-void SessionStateControllerImpl2::AnimateBackgroundAppearanceIfNecessary(
+void LockStateControllerImpl2::AnimateBackgroundAppearanceIfNecessary(
     internal::SessionStateAnimator::AnimationSpeed speed,
     ui::LayerAnimationObserver* observer) {
   if (unlocked_properties_.get() &&
@@ -628,7 +630,7 @@ void SessionStateControllerImpl2::AnimateBackgroundAppearanceIfNecessary(
   }
 }
 
-void SessionStateControllerImpl2::AnimateBackgroundHidingIfNecessary(
+void LockStateControllerImpl2::AnimateBackgroundHidingIfNecessary(
     internal::SessionStateAnimator::AnimationSpeed speed,
     ui::LayerAnimationObserver* observer) {
   if (unlocked_properties_.get() &&

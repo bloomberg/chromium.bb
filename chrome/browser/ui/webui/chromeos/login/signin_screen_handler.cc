@@ -57,7 +57,7 @@
 
 #if defined(USE_AURA)
 #include "ash/shell.h"
-#include "ash/wm/session_state_controller.h"
+#include "ash/wm/lock_state_controller.h"
 #endif
 
 using content::BrowserThread;
@@ -1156,7 +1156,7 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleShutdownSystem() {
-  ash::Shell::GetInstance()->session_state_controller()->RequestShutdown();
+  ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown();
 }
 
 void SigninScreenHandler::HandleLoadWallpaper(const std::string& email) {

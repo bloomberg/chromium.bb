@@ -29,7 +29,7 @@ ash::user::LoginStatus GetCurrentLoginStatus() {
 }  // namespace
 
 PowerButtonObserver::PowerButtonObserver() {
-  ash::Shell::GetInstance()->session_state_controller()->
+  ash::Shell::GetInstance()->lock_state_controller()->
       SetDelegate(new SessionStateControllerDelegateChromeos);
 
   registrar_.Add(
@@ -89,7 +89,7 @@ void PowerButtonObserver::PowerButtonEventReceived(
 }
 
 void PowerButtonObserver::LockScreen() {
-  ash::Shell::GetInstance()->session_state_controller()->OnStartingLock();
+  ash::Shell::GetInstance()->lock_state_controller()->OnStartingLock();
 }
 
 }  // namespace chromeos

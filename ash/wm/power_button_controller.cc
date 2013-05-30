@@ -8,15 +8,16 @@
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/lock_state_controller.h"
 #include "ash/wm/session_state_animator.h"
-#include "ash/wm/session_state_controller.h"
 #include "base/command_line.h"
 #include "ui/aura/root_window.h"
 #include "ui/views/corewm/compound_event_filter.h"
 
 namespace ash {
 
-PowerButtonController::PowerButtonController(SessionStateController* controller)
+PowerButtonController::PowerButtonController(
+    LockStateController* controller)
     : power_button_down_(false),
       lock_button_down_(false),
       screen_is_off_(false),

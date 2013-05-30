@@ -50,15 +50,15 @@
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/event_rewriter_event_filter.h"
+#include "ash/wm/lock_state_controller.h"
+#include "ash/wm/lock_state_controller_impl2.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
-#include "ash/wm/session_state_controller.h"
 #include "ash/wm/session_state_controller_impl.h"
-#include "ash/wm/session_state_controller_impl2.h"
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
@@ -298,7 +298,7 @@ Shell::~Shell() {
   video_detector_.reset();
 
   power_button_controller_.reset();
-  session_state_controller_.reset();
+  lock_state_controller_.reset();
 
   mirror_window_controller_.reset();
 
@@ -530,12 +530,12 @@ void Shell::Init() {
       delegate_->IsFirstRunAfterBoot());
 
   if (command_line->HasSwitch(ash::switches::kAshDisableNewLockAnimations))
-    session_state_controller_.reset(new SessionStateControllerImpl);
+    lock_state_controller_.reset(new SessionStateControllerImpl);
   else
-    session_state_controller_.reset(new SessionStateControllerImpl2);
+    lock_state_controller_.reset(new LockStateControllerImpl2);
   power_button_controller_.reset(new PowerButtonController(
-      session_state_controller_.get()));
-  AddShellObserver(session_state_controller_.get());
+      lock_state_controller_.get()));
+  AddShellObserver(lock_state_controller_.get());
 
   mouse_cursor_filter_.reset(new internal::MouseCursorEventFilter());
   AddPreTargetHandler(mouse_cursor_filter_.get());

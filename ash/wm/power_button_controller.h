@@ -24,14 +24,14 @@ namespace test {
 class PowerButtonControllerTest;
 }
 
-class SessionStateController;
+class LockStateController;
 
 // Displays onscreen animations and locks or suspends the system in response to
 // the power button being pressed or released.
 class ASH_EXPORT PowerButtonController {
  public:
 
-  explicit PowerButtonController(SessionStateController* controller);
+  explicit PowerButtonController(LockStateController* controller);
   virtual ~PowerButtonController();
 
   void set_has_legacy_power_button_for_test(bool legacy) {
@@ -59,7 +59,7 @@ class ASH_EXPORT PowerButtonController {
   // that misreports power button releases?
   bool has_legacy_power_button_;
 
-  SessionStateController* controller_; // Not owned.
+  LockStateController* controller_; // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonController);
 };

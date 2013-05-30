@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_SESSION_STATE_CONTROLLER_H_
-#define ASH_WM_SESSION_STATE_CONTROLLER_H_
+#ifndef ASH_WM_LOCK_STATE_CONTROLLER_H_
+#define ASH_WM_LOCK_STATE_CONTROLLER_H_
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/lock_state_observer.h"
 #include "ash/wm/session_state_animator.h"
-#include "ash/wm/session_state_observer.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -28,27 +28,27 @@ class Layer;
 namespace ash {
 
 namespace test {
+class LockStateControllerImpl2Test;
 class PowerButtonControllerTest;
-class SessionStateControllerImpl2Test;
 }
 
-// Performs system-related functions on behalf of SessionStateController.
-class ASH_EXPORT SessionStateControllerDelegate {
+// Performs system-related functions on behalf of LockStateController.
+class ASH_EXPORT LockStateControllerDelegate {
  public:
-  SessionStateControllerDelegate() {}
-  virtual ~SessionStateControllerDelegate() {}
+  LockStateControllerDelegate() {}
+  virtual ~LockStateControllerDelegate() {}
 
   virtual void RequestLockScreen() = 0;
   virtual void RequestShutdown() = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SessionStateControllerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(LockStateControllerDelegate);
 };
 
 // Displays onscreen animations and locks or suspends the system in response to
 // the power button being pressed or released.
-class ASH_EXPORT SessionStateController : public aura::RootWindowObserver,
-                                          public ShellObserver {
+class ASH_EXPORT LockStateController : public aura::RootWindowObserver,
+                                       public ShellObserver {
  public:
   // Amount of time that the power button needs to be held before we lock the
   // screen.
@@ -71,10 +71,10 @@ class ASH_EXPORT SessionStateController : public aura::RootWindowObserver,
   // the animation time to finish.
   static const int kShutdownRequestDelayMs;
 
-  SessionStateController();
-  virtual ~SessionStateController();
+  LockStateController();
+  virtual ~LockStateController();
 
-  void SetDelegate(SessionStateControllerDelegate* delegate);
+  void SetDelegate(LockStateControllerDelegate* delegate);
 
   // Starts locking (with slow animation) that can be cancelled.
   // After locking and |kLockToShutdownTimeoutMs| StartShutdownAnimation()
@@ -123,24 +123,24 @@ class ASH_EXPORT SessionStateController : public aura::RootWindowObserver,
   // Callback is guaranteed to be called once and then discarded.
   virtual void SetLockScreenDisplayedCallback(base::Closure& callback) = 0;
 
-  virtual void AddObserver(SessionStateObserver* observer);
-  virtual void RemoveObserver(SessionStateObserver* observer);
-  virtual bool HasObserver(SessionStateObserver* observer);
+  virtual void AddObserver(LockStateObserver* observer);
+  virtual void RemoveObserver(LockStateObserver* observer);
+  virtual bool HasObserver(LockStateObserver* observer);
 
  protected:
   friend class test::PowerButtonControllerTest;
-  friend class test::SessionStateControllerImpl2Test;
+  friend class test::LockStateControllerImpl2Test;
 
   scoped_ptr<internal::SessionStateAnimator> animator_;
 
-  scoped_ptr<SessionStateControllerDelegate> delegate_;
+  scoped_ptr<LockStateControllerDelegate> delegate_;
 
-  ObserverList<SessionStateObserver> observers_;
+  ObserverList<LockStateObserver> observers_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SessionStateController);
+  DISALLOW_COPY_AND_ASSIGN(LockStateController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_SESSION_STATE_CONTROLLER_H_
+#endif  // ASH_WM_LOCK_STATE_CONTROLLER_H_

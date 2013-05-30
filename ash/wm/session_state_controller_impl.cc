@@ -73,9 +73,8 @@ void SessionStateControllerImpl::OnLockStateChanged(bool locked) {
         internal::SessionStateAnimator::ANIMATION_FADE_IN,
         internal::SessionStateAnimator::ANIMATION_SPEED_SHOW_LOCK_SCREEN);
     DispatchCancelMode();
-    FOR_EACH_OBSERVER(SessionStateObserver, observers_,
-        OnSessionStateEvent(
-            SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
+    FOR_EACH_OBSERVER(LockStateObserver, observers_,
+        OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_STARTED));
     lock_timer_.Stop();
     lock_fail_timer_.Stop();
 
@@ -108,8 +107,8 @@ void SessionStateControllerImpl::OnStartingLock() {
       internal::SessionStateAnimator::ANIMATION_SPEED_FAST);
 
   DispatchCancelMode();
-  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
-      OnSessionStateEvent(SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
+  FOR_EACH_OBSERVER(LockStateObserver, observers_,
+      OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_STARTED));
 
   // Hide the screen locker containers so we can make them fade in later.
   animator_->StartAnimation(
@@ -124,8 +123,8 @@ void SessionStateControllerImpl::StartLockAnimationAndLockImmediately() {
       internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE,
       internal::SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
   DispatchCancelMode();
-  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
-      OnSessionStateEvent(SessionStateObserver::EVENT_LOCK_ANIMATION_STARTED));
+  FOR_EACH_OBSERVER(LockStateObserver, observers_,
+      OnLockStateEvent(LockStateObserver::EVENT_LOCK_ANIMATION_STARTED));
   OnLockTimeout();
 }
 
@@ -137,9 +136,8 @@ void SessionStateControllerImpl::StartLockAnimation(bool shutdown_after_lock) {
       internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE,
       internal::SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
   DispatchCancelMode();
-  FOR_EACH_OBSERVER(SessionStateObserver, observers_,
-      OnSessionStateEvent(
-          SessionStateObserver::EVENT_PRELOCK_ANIMATION_STARTED));
+  FOR_EACH_OBSERVER(LockStateObserver, observers_,
+      OnLockStateEvent(LockStateObserver::EVENT_PRELOCK_ANIMATION_STARTED));
   StartLockTimer();
 }
 
