@@ -376,6 +376,23 @@ bool Internals::hasSelectorForPseudoClassInShadow(Element* host, const String& p
     return false;
 }
 
+unsigned short Internals::compareTreeScopePosition(const Node* node1, const Node* node2, ExceptionCode& ec) const
+{
+    if (!node1 || !node2) {
+        ec = INVALID_ACCESS_ERR;
+        return 0;
+    }
+    const TreeScope* treeScope1 = node1->isDocumentNode() ? static_cast<const TreeScope*>(toDocument(node1)) :
+        node1->isShadowRoot() ? static_cast<const TreeScope*>(toShadowRoot(node1)) : 0;
+    const TreeScope* treeScope2 = node2->isDocumentNode() ? static_cast<const TreeScope*>(toDocument(node2)) :
+        node2->isShadowRoot() ? static_cast<const TreeScope*>(toShadowRoot(node2)) : 0;
+    if (!treeScope1 || !treeScope2) {
+        ec = INVALID_ACCESS_ERR;
+        return 0;
+    }
+    return treeScope1->comparePosition(treeScope2);
+}
+
 unsigned Internals::numberOfActiveAnimations() const
 {
     Frame* contextFrame = frame();

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<div id="console"></div>
+<div id="sandbox"></div>
+<script>
+description("Tests for TreeScope.comparePosition().");
+
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+document.getElementById('sandbox').appendChild(
+    createDOM('div', {'id': 'a1'},
+              createDOM('div', {'id': 'a2'},
+                        createShadowRoot({'id': 'sr1'},
+                                         createDOM('div', {'id': 'b1'},
+                                                   createDOM('div', {'id': 'b2'}),
+                                                   createDOM('div', {'id': 'b3'})))),
+              createDOM('div', {'id': 'a3'},
+                        createShadowRoot({'id': 'sr2'},
+                                         createDOM('div', {'id': 'c1'},
+                                                   createDOM('div', {'id': 'c2'},
+                                                          createShadowRoot({'id': 'sr3'},
+                                                                           createDOM('div', {'id': 'c3'}))))))));
+                                
+var sr1, sr2, sr3;
+
+function testCompareTreeScopePosition()
+{
+    var sandbox = document.getElementById('sandbox');
+    document.body.offsetLeft;
+
+    sr1 = getNodeInShadowTreeStack('a2/');
+    sr2 = getNodeInShadowTreeStack('a3/');
+    sr3 = getNodeInShadowTreeStack('a3/c2/');
+
+    shouldBe('internals.compareTreeScopePosition(document, sr1)', 'Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING');
+    shouldBe('internals.compareTreeScopePosition(sr1, document)', 'Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING');
+
+    shouldBe('internals.compareTreeScopePosition(sr1, sr2)', 'Node.DOCUMENT_POSITION_FOLLOWING');
+    shouldBe('internals.compareTreeScopePosition(sr2, sr1)', 'Node.DOCUMENT_POSITION_PRECEDING');
+
+    shouldBe('internals.compareTreeScopePosition(sr2, sr3)', 'Node.DOCUMENT_POSITION_CONTAINED_BY | Node.DOCUMENT_POSITION_FOLLOWING');
+    shouldBe('internals.compareTreeScopePosition(sr3, sr2)', 'Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_PRECEDING');
+
+    shouldBe('internals.compareTreeScopePosition(sr1, sr3)', 'Node.DOCUMENT_POSITION_FOLLOWING');
+    shouldBe('internals.compareTreeScopePosition(sr3, sr1)', 'Node.DOCUMENT_POSITION_PRECEDING');
+
+    shouldBe('internals.compareTreeScopePosition(document, document)', '0');
+    shouldBe('internals.compareTreeScopePosition(sr1, sr1)', '0');
+
+    getNodeInShadowTreeStack('a3/c1').removeChild(getNodeInShadowTreeStack('a3/c2'));
+
+    shouldBe('internals.compareTreeScopePosition(sr3, sr2)', 'Node.DOCUMENT_POSITION_DISCONNECTED | Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC');
+}
+
+testCompareTreeScopePosition();
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>
