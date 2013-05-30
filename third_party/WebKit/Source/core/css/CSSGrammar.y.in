@@ -601,6 +601,9 @@ media_query_exp:
             $$ = parser->createFloatingMediaQueryExp($5, $7);
         }
     }
+    | maybe_media_restrictor maybe_space '(' error error_recovery ')' {
+        YYERROR;
+    }
     ;
 
 media_query_exp_list:
