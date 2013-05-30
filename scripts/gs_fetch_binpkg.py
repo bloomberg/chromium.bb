@@ -38,9 +38,9 @@ def Copy(ctx, uri, filename):
   finally:
     osutils.SafeUnlink(temp_path)
 
-def main(args):
+def main(argv):
   parser = GetParser()
-  options = parser.parse_args(args)
+  options = parser.parse_args(argv)
   ctx = gs.GSContext(retries=0)
   try:
     cros_build_lib.RetryCommand(Copy, ctx.DEFAULT_RETRIES, ctx, options.uri,

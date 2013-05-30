@@ -31,15 +31,15 @@ def _RunSubCommand(subcommand):
   subcommand.Run()
 
 
-def main(args):
+def main(argv):
   parser = GetOptions(commands.ListCommands())
   # Cros currently does nothing without a subcmd. Print help if no args are
   # specified.
-  if not args:
+  if not argv:
     parser.print_help()
     return 1
 
-  namespace = parser.parse_args(args)
+  namespace = parser.parse_args(argv)
   subcommand = namespace.cros_class(namespace)
   with stats.UploadContext() as queue:
     if subcommand.upload_stats:

@@ -226,14 +226,14 @@ def _CreateParser():
   return optparse.OptionParser(usage=usage, epilog=epilog)
 
 
-def main(args):
+def main(argv):
   """Main function."""
   # Create a copy of args just to be safe.
-  args = list(args)
+  argv = list(argv)
 
   # No actual options used, but --help is still supported.
   parser = _CreateParser()
-  (_options, args) = parser.parse_args(args)
+  (_options, args) = parser.parse_args(argv)
 
   if args:
     parser.print_help()

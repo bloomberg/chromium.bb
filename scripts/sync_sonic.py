@@ -21,9 +21,9 @@ def GetParser():
   return parser
 
 
-def main(args):
+def main(argv):
   parser = GetParser()
-  options = parser.parse_args(args)
+  options = parser.parse_args(argv)
 
   mc = git.ManifestCheckout.Cached(__file__)
 

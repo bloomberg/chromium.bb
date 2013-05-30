@@ -35,9 +35,9 @@ def GetParser():
   return parser
 
 
-def main(args):
+def main(argv):
   parser = GetParser()
-  options = parser.parse_args(args)
+  options = parser.parse_args(argv)
 
   # Revert any lingering local changes.
   if not osutils.SafeMakedirs(options.chrome_root) and options.reset:
