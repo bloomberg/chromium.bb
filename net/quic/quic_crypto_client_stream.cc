@@ -58,7 +58,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
       crypto_config_->LookupOrCreate(server_hostname_);
 
   if (in != NULL) {
-    DLOG(INFO) << "Client received: " << in->DebugString();
+    DVLOG(1) << "Client received: " << in->DebugString();
   }
 
   for (;;) {
@@ -72,11 +72,11 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         }
         num_client_hellos_++;
 
-        if (!cached->is_complete()) {
+        if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
           crypto_config_->FillInchoateClientHello(
               server_hostname_, cached, &crypto_negotiated_params_, &out);
           next_state_ = STATE_RECV_REJ;
-          DLOG(INFO) << "Client Sending: " << out.DebugString();
+          DVLOG(1) << "Client Sending: " << out.DebugString();
           SendHandshakeMessage(out);
           return;
         }
@@ -91,11 +91,14 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             &out,
             &error_details);
         if (error != QUIC_NO_ERROR) {
+          // Flush the cached config so that, if it's bad, the server has a
+          // chance to send us another in the future.
+          cached->InvalidateServerConfig();
           CloseConnectionWithDetails(error, error_details);
           return;
         }
         next_state_ = STATE_RECV_SHLO;
-        DLOG(INFO) << "Client Sending: " << out.DebugString();
+        DVLOG(1) << "Client Sending: " << out.DebugString();
         SendHandshakeMessage(out);
         // Be prepared to decrypt with the new server write key.
         session()->connection()->SetAlternativeDecrypter(
@@ -134,9 +137,9 @@ void QuicCryptoClientStream::DoHandshakeLoop(
                                      "Expected REJ");
           return;
         }
-        error = crypto_config_->ProcessRejection(cached, *in,
-                                                 &crypto_negotiated_params_,
-                                                 &error_details);
+        error = crypto_config_->ProcessRejection(
+            cached, *in, session()->connection()->clock()->WallNow(),
+            &crypto_negotiated_params_, &error_details);
         if (error != QUIC_NO_ERROR) {
           CloseConnectionWithDetails(error, error_details);
           return;

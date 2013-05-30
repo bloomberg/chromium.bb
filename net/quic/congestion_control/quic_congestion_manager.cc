@@ -13,12 +13,12 @@
 
 namespace {
 static const int kBitrateSmoothingPeriodMs = 1000;
-static const int kMinBitrateSmoothingPeriodMs = 500;
 static const int kHistoryPeriodMs = 5000;
 
 static const int kDefaultRetransmissionTimeMs = 500;
 static const size_t kMaxRetransmissions = 10;
 static const size_t kTailDropWindowSize = 5;
+static const size_t kTailDropMaxRetransmissions = 4;
 
 COMPILE_ASSERT(kHistoryPeriodMs >= kBitrateSmoothingPeriodMs,
                history_must_be_longer_or_equal_to_the_smoothing_period);
@@ -69,9 +69,8 @@ void QuicCongestionManager::AbandoningPacket(
 
 void QuicCongestionManager::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& frame, QuicTime feedback_receive_time) {
-  QuicBandwidth sent_bandwidth = SentBandwidth(feedback_receive_time);
   send_algorithm_->OnIncomingQuicCongestionFeedbackFrame(
-      frame, feedback_receive_time, sent_bandwidth, packet_history_map_);
+      frame, feedback_receive_time, packet_history_map_);
 }
 
 void QuicCongestionManager::OnIncomingAckFrame(const QuicAckFrame& frame,
@@ -155,7 +154,10 @@ const QuicTime::Delta QuicCongestionManager::GetRetransmissionDelay(
   // TODO(pwestin): This should take the RTT into account instead of a hard
   // coded kDefaultRetransmissionTimeMs. Ideally the variance of the RTT too.
   if (unacked_packets_count <= kTailDropWindowSize) {
-    return QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
+    if (number_retransmissions <= kTailDropMaxRetransmissions) {
+      return QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
+    }
+    number_retransmissions -= kTailDropMaxRetransmissions;
   }
 
   return QuicTime::Delta::FromMilliseconds(
@@ -165,36 +167,6 @@ const QuicTime::Delta QuicCongestionManager::GetRetransmissionDelay(
 
 const QuicTime::Delta QuicCongestionManager::SmoothedRtt() {
   return send_algorithm_->SmoothedRtt();
-}
-
-QuicBandwidth QuicCongestionManager::SentBandwidth(
-    QuicTime feedback_receive_time) const {
-  const QuicTime::Delta kBitrateSmoothingPeriod =
-      QuicTime::Delta::FromMilliseconds(kBitrateSmoothingPeriodMs);
-  const QuicTime::Delta kMinBitrateSmoothingPeriod =
-      QuicTime::Delta::FromMilliseconds(kMinBitrateSmoothingPeriodMs);
-
-  QuicByteCount sum_bytes_sent = 0;
-
-  // Sum packet from new until they are kBitrateSmoothingPeriod old.
-  SendAlgorithmInterface::SentPacketsMap::const_reverse_iterator history_rit =
-      packet_history_map_.rbegin();
-
-  QuicTime::Delta max_diff = QuicTime::Delta::Zero();
-  for (; history_rit != packet_history_map_.rend(); ++history_rit) {
-    QuicTime::Delta diff =
-        feedback_receive_time.Subtract(history_rit->second->SendTimestamp());
-    if (diff > kBitrateSmoothingPeriod) {
-      break;
-    }
-    sum_bytes_sent += history_rit->second->BytesSent();
-    max_diff = diff;
-  }
-  if (max_diff < kMinBitrateSmoothingPeriod) {
-    // No estimate.
-    return QuicBandwidth::Zero();
-  }
-  return QuicBandwidth::FromBytesAndTimeDelta(sum_bytes_sent, max_diff);
 }
 
 QuicBandwidth QuicCongestionManager::BandwidthEstimate() {

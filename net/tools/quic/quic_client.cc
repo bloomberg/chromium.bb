@@ -58,7 +58,7 @@ QuicClient::QuicClient(IPEndPoint server_address,
 QuicClient::~QuicClient() {
   if (connected()) {
     session()->connection()->SendConnectionClosePacket(
-        QUIC_PEER_GOING_AWAY, string());
+        QUIC_PEER_GOING_AWAY, "");
   }
 }
 
@@ -183,7 +183,9 @@ void QuicClient::SendRequestsAndWaitForResponse(int argc, char *argv[]) {
 }
 
 QuicReliableClientStream* QuicClient::CreateReliableClientStream() {
-  DCHECK(connected());
+  if (!connected()) {
+    return NULL;
+  }
 
   return session_->CreateOutgoingReliableStream();
 }

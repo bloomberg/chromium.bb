@@ -55,22 +55,37 @@ class StrikeRegister::InternalNode {
   uint32 data_[2];
 };
 
+// kCreationTimeFromInternalEpoch contains the number of seconds between the
+// start of the internal epoch and |creation_time_external_|. This allows us
+// to consider times that are before |creation_time_external_|.
+static const uint32 kCreationTimeFromInternalEpoch = 63115200.0;  // 2 years.
+
 StrikeRegister::StrikeRegister(unsigned max_entries,
                                uint32 current_time,
                                uint32 window_secs,
-                               const uint8 orbit[8])
+                               const uint8 orbit[8],
+                               StartupType startup)
     : max_entries_(max_entries),
       window_secs_(window_secs),
       // The horizon is initially set |window_secs| into the future because, if
       // we just crashed, then we may have accepted nonces in the span
       // [current_time...current_time+window_secs) and so we conservatively
-      // reject the whole timespan.
-      horizon_(current_time + window_secs) {
+      // reject the whole timespan unless |startup| tells us otherwise.
+      creation_time_external_(current_time),
+      internal_epoch_(current_time > kCreationTimeFromInternalEpoch
+                          ? current_time - kCreationTimeFromInternalEpoch
+                          : 0),
+      horizon_(ExternalTimeToInternal(current_time) + window_secs),
+      horizon_valid_(startup == DENY_REQUESTS_AT_STARTUP) {
   memcpy(orbit_, orbit, sizeof(orbit_));
+
+  // TODO(rtenneti): Remove the following check, Added the following to silence
+  // "is not used" error.
+  CHECK_GE(creation_time_external_, 0u);
 
   // We only have 23 bits of index available.
   CHECK_LT(max_entries, 1u << 23);
-  CHECK_GT(max_entries, 1u);  // There must be at least two entries.
+  CHECK_GT(max_entries, 1u);           // There must be at least two entries.
   CHECK_EQ(sizeof(InternalNode), 8u);  // in case of compiler changes.
   internal_nodes_ = new InternalNode[max_entries];
   external_nodes_.reset(new uint8[kExternalNodeSize * max_entries]);
@@ -98,44 +113,33 @@ void StrikeRegister::Reset() {
 }
 
 bool StrikeRegister::Insert(const uint8 nonce[32],
-                            const uint32 current_time) {
-  // If current_time is very small or very large then we assume that we have
-  // just rolled over / are about to roll over and it's 2038 or 2106. Since
-  // we don't deal with this situation we flush everything and start over.
-  // This means that we reject everything for 2 * |window_secs_| every 68
-  // years.
-  if (current_time < window_secs_ ||
-      current_time + window_secs_ < current_time) {
-    if (internal_node_head_ != kNil) {
-      Reset();
-    }
-    horizon_ = current_time;
-    return false;
-  }
+                            const uint32 current_time_external) {
+  const uint32 current_time = ExternalTimeToInternal(current_time_external);
 
   // Check to see if the orbit is correct.
   if (memcmp(nonce + sizeof(current_time), orbit_, sizeof(orbit_))) {
     return false;
   }
-  const uint32 nonce_time = TimeFromBytes(nonce);
+  const uint32 nonce_time = ExternalTimeToInternal(TimeFromBytes(nonce));
   // We have dropped one or more nonces with a time value of |horizon_|, so
   // we have to reject anything with a timestamp less than or equal to that.
-  if (nonce_time <= horizon_) {
+  if (horizon_valid_ && nonce_time <= horizon_) {
     return false;
   }
 
   // Check that the timestamp is in the current window.
-  if (nonce_time < (current_time - window_secs_) ||
+  if ((current_time > window_secs_ &&
+       nonce_time < (current_time - window_secs_)) ||
       nonce_time > (current_time + window_secs_)) {
     return false;
   }
 
   // We strip the orbit out of the nonce.
   uint8 value[24];
-  memcpy(value, nonce, sizeof(current_time));
-  memcpy(value + sizeof(current_time),
-         nonce + sizeof(current_time) + sizeof(orbit_),
-         sizeof(value) - sizeof(current_time));
+  memcpy(value, &nonce_time, sizeof(nonce_time));
+  memcpy(value + sizeof(nonce_time),
+         nonce + sizeof(nonce_time) + sizeof(orbit_),
+         sizeof(value) - sizeof(nonce_time));
 
   // Find the best match to |value| in the crit-bit tree. The best match is
   // simply the value which /could/ match |value|, if any does, so we still
@@ -275,6 +279,10 @@ uint32 StrikeRegister::TimeFromBytes(const uint8 d[4]) {
          static_cast<uint32>(d[1]) << 16 |
          static_cast<uint32>(d[2]) << 8 |
          static_cast<uint32>(d[3]);
+}
+
+uint32 StrikeRegister::ExternalTimeToInternal(uint32 external_time) {
+  return external_time - internal_epoch_;
 }
 
 uint32 StrikeRegister::BestMatch(const uint8 v[24]) const {

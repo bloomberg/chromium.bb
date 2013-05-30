@@ -716,6 +716,10 @@
         'quic/crypto/aes_128_gcm_12_encrypter_openssl.cc',
         'quic/crypto/cert_compressor.cc',
         'quic/crypto/cert_compressor.h',
+        'quic/crypto/channel_id.cc',
+        'quic/crypto/channel_id.h',
+        'quic/crypto/channel_id_nss.cc',
+        'quic/crypto/channel_id_openssl.cc',
         'quic/crypto/common_cert_set.cc',
         'quic/crypto/common_cert_set.h',
         'quic/crypto/crypto_framer.cc',
@@ -1180,6 +1184,7 @@
               'ocsp/nss_ocsp.h',
               'quic/crypto/aes_128_gcm_12_decrypter_nss.cc',
               'quic/crypto/aes_128_gcm_12_encrypter_nss.cc',
+              'quic/crypto/channel_id_nss.cc',
               'quic/crypto/p256_key_exchange_nss.cc',
               'socket/nss_ssl_util.cc',
               'socket/nss_ssl_util.h',
@@ -1212,6 +1217,7 @@
               'cert/x509_util_openssl.h',
               'quic/crypto/aes_128_gcm_12_decrypter_openssl.cc',
               'quic/crypto/aes_128_gcm_12_encrypter_openssl.cc',
+              'quic/crypto/channel_id_openssl.cc',
               'quic/crypto/p256_key_exchange_openssl.cc',
               'quic/crypto/scoped_evp_cipher_ctx.cc',
               'quic/crypto/scoped_evp_cipher_ctx.h',
@@ -1651,6 +1657,7 @@
         'quic/crypto/aes_128_gcm_12_decrypter_test.cc',
         'quic/crypto/aes_128_gcm_12_encrypter_test.cc',
         'quic/crypto/cert_compressor_test.cc',
+        'quic/crypto/channel_id_test.cc',
         'quic/crypto/common_cert_set_test.cc',
         'quic/crypto/crypto_framer_test.cc',
         'quic/crypto/crypto_handshake_test.cc',
@@ -1666,6 +1673,8 @@
         'quic/crypto/strike_register_test.cc',
         'quic/test_tools/crypto_test_utils.cc',
         'quic/test_tools/crypto_test_utils.h',
+        'quic/test_tools/crypto_test_utils_nss.cc',
+        'quic/test_tools/crypto_test_utils_openssl.cc',
         'quic/test_tools/mock_clock.cc',
         'quic/test_tools/mock_clock.h',
         'quic/test_tools/mock_crypto_client_stream.cc',
@@ -1896,11 +1905,13 @@
             'sources!': [
               'cert/nss_cert_database_unittest.cc',
               'cert/x509_util_nss_unittest.cc',
+              'quic/test_tools/crypto_test_utils_nss.cc',
               'ssl/client_cert_store_impl_unittest.cc',
             ],
           }, {  # else !use_openssl: remove the unneeded files
             'sources!': [
               'cert/x509_util_openssl_unittest.cc',
+              'quic/test_tools/crypto_test_utils_openssl.cc',
               'socket/ssl_client_socket_openssl_unittest.cc',
               'ssl/openssl_client_key_store_unittest.cc',
             ],
@@ -2682,6 +2693,8 @@
             'quic/test_tools/quic_session_peer.h',
             'quic/test_tools/crypto_test_utils.cc',
             'quic/test_tools/crypto_test_utils.h',
+            'quic/test_tools/crypto_test_utils_nss.cc',
+            'quic/test_tools/crypto_test_utils_openssl.cc',
             'quic/test_tools/mock_clock.cc',
             'quic/test_tools/mock_clock.h',
             'quic/test_tools/mock_random.cc',
@@ -2722,6 +2735,19 @@
             'tools/quic/test_tools/quic_test_utils.h',
             'tools/quic/test_tools/run_all_unittests.cc',
           ],
+	  'conditions': [
+	    [ 'use_openssl==1', {
+		# When building for OpenSSL, we need to exclude NSS specific tests.
+		'sources!': [
+                  'quic/test_tools/crypto_test_utils_nss.cc',
+		],
+	      }, {  # else !use_openssl: remove the unneeded files
+		'sources!': [
+                  'quic/test_tools/crypto_test_utils_openssl.cc',
+		],
+	      },
+	    ],
+	  ],
         }
       ]
     }],

@@ -45,7 +45,6 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
       QuicTime feedback_receive_time,
-      QuicBandwidth sent_bandwidth,
       const SentPacketsMap& sent_packets) = 0;
 
   // Called for each received ACK, with sequence number from remote peer.

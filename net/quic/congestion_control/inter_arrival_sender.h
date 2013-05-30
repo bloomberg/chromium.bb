@@ -27,11 +27,14 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
   explicit InterArrivalSender(const QuicClock* clock);
   virtual ~InterArrivalSender();
 
+  static QuicBandwidth CalculateSentBandwidth(
+      const SendAlgorithmInterface::SentPacketsMap& sent_packets_map,
+      QuicTime feedback_receive_time);
+
   // Start implementation of SendAlgorithmInterface.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
       QuicTime feedback_receive_time,
-      QuicBandwidth sent_bandwidth,
       const SentPacketsMap& sent_packets) OVERRIDE;
 
   virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,

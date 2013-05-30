@@ -98,12 +98,12 @@ void ReliableQuicStream::Close(QuicRstStreamErrorCode error) {
   session()->SendRstStream(id(), error);
 }
 
-int ReliableQuicStream::Readv(const struct iovec* iov, int iov_len) {
+int ReliableQuicStream::Readv(const struct iovec* iov, size_t iov_len) {
   if (headers_decompressed_ && decompressed_headers_.empty()) {
     return sequencer_.Readv(iov, iov_len);
   }
   size_t bytes_consumed = 0;
-  int iov_index = 0;
+  size_t iov_index = 0;
   while (iov_index < iov_len &&
          decompressed_headers_.length() > bytes_consumed) {
     int bytes_to_read = min(iov[iov_index].iov_len,
@@ -118,7 +118,7 @@ int ReliableQuicStream::Readv(const struct iovec* iov, int iov_len) {
   return bytes_consumed;
 }
 
-int ReliableQuicStream::GetReadableRegions(iovec* iov, int iov_len) {
+int ReliableQuicStream::GetReadableRegions(iovec* iov, size_t iov_len) {
   if (headers_decompressed_ && decompressed_headers_.empty()) {
     return sequencer_.GetReadableRegions(iov, iov_len);
   }

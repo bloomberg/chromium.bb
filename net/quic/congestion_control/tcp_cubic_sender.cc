@@ -35,7 +35,6 @@ TcpCubicSender::TcpCubicSender(const QuicClock* clock, bool reno)
 void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback,
     QuicTime feedback_receive_time,
-    QuicBandwidth /*sent_bandwidth*/,
     const SentPacketsMap& /*sent_packets*/) {
   if (last_received_accumulated_number_of_lost_packets_ !=
       feedback.tcp.accumulated_number_of_lost_packets) {

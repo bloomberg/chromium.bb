@@ -46,7 +46,7 @@ const char data2[] = "bar";
 
 const bool kFin = true;
 const bool kEntropyFlag = true;
-const bool kFecEntropyFlag = true;
+
 const QuicPacketEntropyHash kTestEntropyHash = 76;
 
 class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
@@ -520,9 +520,9 @@ class QuicConnectionTest : public ::testing::Test {
 
   // Sends an FEC packet that covers the packets that would have been sent.
   size_t ProcessFecPacket(QuicPacketSequenceNumber number,
-                        QuicPacketSequenceNumber min_protected_packet,
-                        bool expect_revival,
-                        bool fec_entropy_flag) {
+                          QuicPacketSequenceNumber min_protected_packet,
+                          bool expect_revival,
+                          bool entropy_flag) {
     if (expect_revival) {
       EXPECT_CALL(visitor_, OnPacket(_, _, _, _)).WillOnce(DoAll(
           SaveArg<2>(&revived_header_), Return(accept_packet_)));
@@ -536,10 +536,10 @@ class QuicConnectionTest : public ::testing::Test {
     header_.public_header.guid = guid_;
     header_.public_header.reset_flag = false;
     header_.public_header.version_flag = false;
-    header_.entropy_flag = kEntropyFlag;
+    header_.entropy_flag = entropy_flag;
     header_.fec_flag = true;
-    header_.fec_entropy_flag = fec_entropy_flag;
     header_.packet_sequence_number = number;
+    header_.is_in_fec_group = IN_FEC_GROUP;
     header_.fec_group = min_protected_packet;
     QuicFecData fec_data;
     fec_data.fec_group = header_.fec_group;
@@ -548,6 +548,7 @@ class QuicConnectionTest : public ::testing::Test {
     // with itself, depending on the number of packets.
     if (((number - min_protected_packet) % 2) == 0) {
       for (size_t i = GetStartOfFecProtectedData(
+               header_.public_header.guid_length,
                header_.public_header.version_flag);
            i < data_packet->length(); ++i) {
         data_packet->mutable_data()[i] ^= data_packet->data()[i];
@@ -604,8 +605,8 @@ class QuicConnectionTest : public ::testing::Test {
     header_.public_header.version_flag = false;
     header_.entropy_flag = entropy_flag;
     header_.fec_flag = false;
-    header_.fec_entropy_flag = false;
     header_.packet_sequence_number = number;
+    header_.is_in_fec_group = fec_group == 0u ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
     header_.fec_group = fec_group;
 
     QuicFrames frames;
@@ -625,7 +626,7 @@ class QuicConnectionTest : public ::testing::Test {
     header_.public_header.version_flag = false;
     header_.entropy_flag = false;
     header_.fec_flag = false;
-    header_.fec_entropy_flag = false;
+    header_.is_in_fec_group = fec_group == 0u ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
     header_.fec_group = fec_group;
 
     QuicConnectionCloseFrame qccf;
@@ -937,7 +938,7 @@ TEST_F(QuicConnectionTest, FECSending) {
   // Limit to one byte per packet.
   // All packets carry version info till version is negotiated.
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(kIncludeVersion, 4);
+      GetPacketLengthForOneStream(kIncludeVersion, IN_FEC_GROUP, 4);
   // And send FEC every two packets.
   connection_.options()->max_packets_per_fec_group = 2;
 
@@ -952,7 +953,7 @@ TEST_F(QuicConnectionTest, FECQueueing) {
   // Limit to one byte per packet.
   // All packets carry version info till version is negotiated.
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(kIncludeVersion, 4);
+      GetPacketLengthForOneStream(kIncludeVersion, IN_FEC_GROUP, 4);
   // And send FEC every two packets.
   connection_.options()->max_packets_per_fec_group = 2;
 
@@ -1278,14 +1279,14 @@ TEST_F(QuicConnectionTest, DontLatchUnackedPacket) {
 
 TEST_F(QuicConnectionTest, ReviveMissingPacketAfterFecPacket) {
   // Don't send missing packet 1.
-  ProcessFecPacket(2, 1, true, !kFecEntropyFlag);
+  ProcessFecPacket(2, 1, true, !kEntropyFlag);
   EXPECT_FALSE(revived_header_.entropy_flag);
 }
 
 TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPacketThenFecPacket) {
   ProcessFecProtectedPacket(1, false, kEntropyFlag);
   // Don't send missing packet 2.
-  ProcessFecPacket(3, 1, true, !kFecEntropyFlag);
+  ProcessFecPacket(3, 1, true, !kEntropyFlag);
   EXPECT_TRUE(revived_header_.entropy_flag);
 }
 
@@ -1293,13 +1294,13 @@ TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPacketsThenFecPacket) {
   ProcessFecProtectedPacket(1, false, !kEntropyFlag);
   // Don't send missing packet 2.
   ProcessFecProtectedPacket(3, false, !kEntropyFlag);
-  ProcessFecPacket(4, 1, true, kFecEntropyFlag);
+  ProcessFecPacket(4, 1, true, kEntropyFlag);
   EXPECT_TRUE(revived_header_.entropy_flag);
 }
 
 TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPacket) {
   // Don't send missing packet 1.
-  ProcessFecPacket(3, 1, false, !kFecEntropyFlag);
+  ProcessFecPacket(3, 1, false, !kEntropyFlag);
   // out of order
   ProcessFecProtectedPacket(2, true, !kEntropyFlag);
   EXPECT_FALSE(revived_header_.entropy_flag);
@@ -1308,7 +1309,7 @@ TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPacket) {
 TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPackets) {
   ProcessFecProtectedPacket(1, false, !kEntropyFlag);
   // Don't send missing packet 2.
-  ProcessFecPacket(6, 1, false, kFecEntropyFlag);
+  ProcessFecPacket(6, 1, false, kEntropyFlag);
   ProcessFecProtectedPacket(3, false, kEntropyFlag);
   ProcessFecProtectedPacket(4, false, kEntropyFlag);
   ProcessFecProtectedPacket(5, true, !kEntropyFlag);
@@ -1796,7 +1797,7 @@ TEST_F(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
   // Limit to one byte per packet.
   // All packets carry version info till version is negotiated.
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(kIncludeVersion, 4);
+      GetPacketLengthForOneStream(kIncludeVersion, NOT_IN_FEC_GROUP, 4);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_,
@@ -1811,7 +1812,7 @@ TEST_F(QuicConnectionTest, LoopThroughSendingPackets) {
   // Limit to 4 bytes per packet.
   // All packets carry version info till version is negotiated.
   connection_.options()->max_packet_length =
-      GetPacketLengthForOneStream(kIncludeVersion, 4);
+      GetPacketLengthForOneStream(kIncludeVersion, NOT_IN_FEC_GROUP, 4);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(7);
@@ -1980,7 +1981,6 @@ TEST_F(QuicConnectionTest, SendVersionNegotiationPacket) {
   header.public_header.version_flag = true;
   header.entropy_flag = false;
   header.fec_flag = false;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = 12;
   header.fec_group = 0;
 
@@ -2105,7 +2105,6 @@ TEST_F(QuicConnectionTest, DontProcessFramesIfPacketClosedConnection) {
   header_.public_header.version_flag = false;
   header_.entropy_flag = false;
   header_.fec_flag = false;
-  header_.fec_entropy_flag = false;
   header_.fec_group = 0;
 
   QuicConnectionCloseFrame qccf;

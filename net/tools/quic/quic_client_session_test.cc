@@ -77,12 +77,12 @@ TEST_F(QuicClientSessionTest, DISABLED_MaxNumConnections) {
 }
 
 TEST_F(QuicClientSessionTest, GoAwayReceived) {
-  // Initialize crypto before the client session will create a stream.
-  ASSERT_TRUE(session_->CryptoConnect());
-  // Simulate the server crypto handshake.
-  CryptoHandshakeMessage server_message;
-  server_message.set_tag(kSHLO);
-  session_->GetCryptoStream()->OnHandshakeMessage(server_message);
+  if (!Aes128Gcm12Encrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
+  CompleteCryptoHandshake();
 
   // After receiving a GoAway, I should no longer be able to create outgoing
   // streams.

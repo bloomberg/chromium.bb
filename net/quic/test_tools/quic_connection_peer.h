@@ -46,7 +46,7 @@ class QuicConnectionPeer {
 
   static size_t GetNumRetransmissionTimeouts(QuicConnection* connection);
 
-  static QuicTime::Delta GetTimeout(QuicConnection* connection);
+  static QuicTime::Delta GetNetworkTimeout(QuicConnection* connection);
 
   static bool IsSavedForRetransmission(
       QuicConnection* connection,

@@ -33,7 +33,6 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& feedback,
       QuicTime feedback_receive_time,
-      QuicBandwidth sent_bandwidth,
       const SentPacketsMap& sent_packets) OVERRIDE;
   virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,
                              QuicByteCount acked_bytes,

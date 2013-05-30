@@ -154,6 +154,11 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   uint32 max_streams_per_connection() const;
 
+  void set_max_time_before_crypto_handshake(
+      QuicTime::Delta max_time_before_crypto_handshake);
+
+  QuicTime::Delta max_time_before_crypto_handshake() const;
+
   bool negotiated();
 
   // SetDefaults sets the members to sensible, default values.
@@ -182,6 +187,9 @@ class NET_EXPORT_PRIVATE QuicConfig {
   QuicNegotiableUint32 keepalive_timeout_seconds_;
   // Maximum number of streams that the connection can support.
   QuicNegotiableUint32 max_streams_per_connection_;
+  // Maximum time till the session can be alive before crypto handshake is
+  // finished. (Not negotiated).
+  QuicTime::Delta max_time_before_crypto_handshake_;
 };
 
 }  // namespace net

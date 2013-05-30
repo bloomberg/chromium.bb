@@ -55,27 +55,25 @@ QuicPacketGenerator::~QuicPacketGenerator() {
 void QuicPacketGenerator::SetShouldSendAck(bool also_send_feedback) {
   should_send_ack_ = true;
   should_send_feedback_ = also_send_feedback;
-  SendQueuedData();
+  SendQueuedFrames();
 }
 
 
 void QuicPacketGenerator::AddControlFrame(const QuicFrame& frame) {
   queued_control_frames_.push_back(frame);
-  SendQueuedData();
+  SendQueuedFrames();
 }
 
 QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
                                                   StringPiece data,
                                                   QuicStreamOffset offset,
                                                   bool fin) {
-  SendQueuedData();
+  SendQueuedFrames();
 
   size_t total_bytes_consumed = 0;
   bool fin_consumed = false;
 
   while (delegate_->CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA)) {
-    // TODO(rch) figure out FEC.
-    // packet_creator_.MaybeStartFEC();
     QuicFrame frame;
     size_t bytes_consumed = packet_creator_->CreateStreamFrame(
         id, data, offset + total_bytes_consumed, fin, &frame);
@@ -112,8 +110,9 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   return QuicConsumedData(total_bytes_consumed, fin_consumed);
 }
 
-void QuicPacketGenerator::SendQueuedData() {
-  while (HasPendingData() && delegate_->CanWrite(NOT_RETRANSMISSION,
+void QuicPacketGenerator::SendQueuedFrames() {
+  packet_creator_->MaybeStartFEC();
+  while (HasPendingFrames() && delegate_->CanWrite(NOT_RETRANSMISSION,
              packet_creator_->HasPendingFrames() ?
                  HAS_RETRANSMITTABLE_DATA : NO_RETRANSMITTABLE_DATA)) {
     if (!AddNextPendingFrame()) {
@@ -133,6 +132,7 @@ void QuicPacketGenerator::SendQueuedData() {
       SerializedPacket serialized_fec = packet_creator_->SerializeFec();
       DCHECK(serialized_fec.packet);
       delegate_->OnSerializedPacket(serialized_fec);
+      packet_creator_->MaybeStartFEC();
     }
   }
 }
@@ -143,14 +143,14 @@ void QuicPacketGenerator::StartBatchOperations() {
 
 void QuicPacketGenerator::FinishBatchOperations() {
   should_flush_ = true;
-  SendQueuedData();
+  SendQueuedFrames();
 }
 
-bool QuicPacketGenerator::HasQueuedData() const {
-  return packet_creator_->HasPendingFrames() || HasPendingData();
+bool QuicPacketGenerator::HasQueuedFrames() const {
+  return packet_creator_->HasPendingFrames() || HasPendingFrames();
 }
 
-bool QuicPacketGenerator::HasPendingData() const {
+bool QuicPacketGenerator::HasPendingFrames() const {
   return should_send_ack_ || should_send_feedback_ ||
       !queued_control_frames_.empty();
 }
@@ -187,7 +187,6 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
 }
 
 void QuicPacketGenerator::SerializeAndSendPacket() {
-  packet_creator_->MaybeStartFEC();
   SerializedPacket serialized_packet = packet_creator_->SerializePacket();
   DCHECK(serialized_packet.packet);
   delegate_->OnSerializedPacket(serialized_packet);
@@ -196,6 +195,7 @@ void QuicPacketGenerator::SerializeAndSendPacket() {
     SerializedPacket serialized_fec = packet_creator_->SerializeFec();
     DCHECK(serialized_fec.packet);
     delegate_->OnSerializedPacket(serialized_fec);
+    packet_creator_->MaybeStartFEC();
   }
 }
 

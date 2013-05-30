@@ -95,8 +95,8 @@ class QuicConnectionHelperTest : public ::testing::Test {
     header_.public_header.reset_flag = false;
     header_.fec_flag = false;
     header_.entropy_flag = false;
-    header_.fec_entropy_flag = false;
     header_.packet_sequence_number = number;
+    header_.is_in_fec_group = fec_group == 0 ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
     header_.fec_group = fec_group;
 
     QuicFrames frames;
@@ -123,7 +123,9 @@ TEST_F(QuicConnectionHelperTest, DISABLED_TestRetransmission) {
   const int64 kDefaultRetransmissionTimeMs = 500;
 
   const char buffer[] = "foo";
-  const size_t packet_size = GetPacketHeaderSize(kIncludeVersion) +
+  const size_t packet_size =
+      GetPacketHeaderSize(
+          PACKET_8BYTE_GUID, kIncludeVersion, NOT_IN_FEC_GROUP) +
       QuicFramer::GetMinStreamFrameSize() + arraysize(buffer) - 1;
   EXPECT_CALL(*send_algorithm_,
               SentPacket(_, 1, packet_size, NOT_RETRANSMISSION));

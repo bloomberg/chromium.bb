@@ -179,9 +179,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     crypto_config_.SetDefaults();
     session_.reset(new QuicClientSession(connection_, socket, NULL,
                                          &crypto_client_stream_factory_,
-                                         "www.google.com", QuicConfig(),
+                                         "www.google.com", DefaultQuicConfig(),
                                          &crypto_config_, NULL));
-    session_->config()->SetDefaults();
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
     QuicReliableClientStream* stream =
@@ -280,7 +279,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     header_.public_header.version_flag = should_include_version;
     header_.packet_sequence_number = sequence_number;
     header_.fec_group = 0;
-    header_.fec_entropy_flag = false;
     header_.entropy_flag = false;
     header_.fec_flag = false;
   }

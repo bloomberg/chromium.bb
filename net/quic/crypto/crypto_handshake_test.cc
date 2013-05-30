@@ -40,12 +40,13 @@ class QuicCryptoServerConfigPeer {
 };
 
 TEST(QuicCryptoServerConfigTest, ServerConfig) {
-  QuicCryptoServerConfig server("source address token secret");
+  QuicRandom* rand = QuicRandom::GetInstance();
+  QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand);
   MockClock clock;
 
   scoped_ptr<CryptoHandshakeMessage>(
-      server.AddDefaultConfig(QuicRandom::GetInstance(), &clock,
-                              QuicCryptoServerConfig::kDefaultExpiry));
+      server.AddDefaultConfig(rand, &clock,
+                              QuicCryptoServerConfig::ConfigOptions()));
 }
 
 TEST(QuicCryptoServerConfigTest, SourceAddressTokens) {
@@ -54,13 +55,13 @@ TEST(QuicCryptoServerConfigTest, SourceAddressTokens) {
     return;
   }
 
-  QuicCryptoServerConfig server("source address token secret");
+  QuicRandom* rand = QuicRandom::GetInstance();
+  QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand);
   IPAddressNumber ip;
   CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
   IPEndPoint ip4 = IPEndPoint(ip, 1);
   CHECK(ParseIPLiteralToNumber("2001:db8:0::42", &ip));
   IPEndPoint ip6 = IPEndPoint(ip, 2);
-  QuicRandom* rand = QuicRandom::GetInstance();
   MockClock clock;
   clock.AdvanceTime(QuicTime::Delta::FromSeconds(1000000));
   QuicCryptoServerConfigPeer peer(&server);

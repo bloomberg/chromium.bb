@@ -22,9 +22,9 @@ namespace net {
 //      that they already have. In the event that one of them is to be
 //      compressed, it can be replaced with just the hash.
 //   2) The peer may provide a number of hashes that represent sets of
-//      pre-shared certificates. If one of those certificates is to be
-//      compressed, and it's known to the given CommonCertSets, then it can be
-//      replaced with a set hash and certificate index.
+//      pre-shared certificates (CommonCertSets). If one of those certificates
+//      is to be compressed, and it's known to the given CommonCertSets, then it
+//      can be replaced with a set hash and certificate index.
 //   3) Otherwise the certificates are compressed with zlib using a pre-shared
 //      dictionary that consists of the certificates handled with the above
 //      methods and a small chunk of common substrings.

@@ -9,6 +9,7 @@
 #include "base/strings/string_piece.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_server_config.h"
+#include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/flip_server/epoll_server.h"
@@ -103,7 +104,8 @@ QuicSession* CreateSession(QuicDispatcher* dispatcher,
 class QuicDispatcherTest : public ::testing::Test {
  public:
   QuicDispatcherTest()
-      : crypto_config_(QuicCryptoServerConfig::TESTING),
+      : crypto_config_(QuicCryptoServerConfig::TESTING,
+                       QuicRandom::GetInstance()),
         dispatcher_(config_, crypto_config_, &eps_),
         session1_(NULL),
         session2_(NULL) {

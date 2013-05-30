@@ -26,6 +26,9 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   QuicTestClient(IPEndPoint server_address, const string& server_hostname);
   QuicTestClient(IPEndPoint server_address,
                  const string& server_hostname,
+                 bool secure);
+  QuicTestClient(IPEndPoint server_address,
+                 const string& server_hostname,
                  const QuicConfig& config);
 
   virtual ~QuicTestClient();
@@ -74,7 +77,11 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   const string& response_body() {return response_;}
   bool connected() const;
 
+  void set_auto_reconnect(bool reconnect) { auto_reconnect_ = reconnect; }
+
  private:
+  void Initialize(IPEndPoint address, const string& hostname);
+
   IPEndPoint server_address_;
   IPEndPoint client_address_;
   QuicClient client_;  // The actual client
@@ -91,6 +98,10 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   // auto-connect exactly once before sending data.  If something causes a
   // connection reset, it will not automatically reconnect.
   bool never_connected_;
+  bool secure_;
+  // If true, the client will always reconnect if necessary before creating a
+  // stream.
+  bool auto_reconnect_;
 };
 
 }  // namespace test

@@ -94,7 +94,8 @@ TEST_F(ReliableQuicStreamTest, WriteAllData) {
   Initialize(kShouldProcessData);
 
   connection_->options()->max_packet_length =
-      1 + QuicPacketCreator::StreamFramePacketOverhead(1, !kIncludeVersion);
+      1 + QuicPacketCreator::StreamFramePacketOverhead(
+          1, PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP);
   // TODO(rch): figure out how to get StrEq working here.
   //EXPECT_CALL(*session_, WriteData(kStreamId, StrEq(kData1), _, _)).WillOnce(
   EXPECT_CALL(*session_, WriteData(kStreamId, _, _, _)).WillOnce(
@@ -106,7 +107,8 @@ TEST_F(ReliableQuicStreamTest, WriteData) {
   Initialize(kShouldProcessData);
 
   connection_->options()->max_packet_length =
-      1 + QuicPacketCreator::StreamFramePacketOverhead(1, !kIncludeVersion);
+      1 + QuicPacketCreator::StreamFramePacketOverhead(
+          1, PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP);
   // TODO(rch): figure out how to get StrEq working here.
   //EXPECT_CALL(*session_, WriteData(_, StrEq(kData1), _, _)).WillOnce(
   EXPECT_CALL(*session_, WriteData(_, _, _, _)).WillOnce(
@@ -309,6 +311,7 @@ TEST_F(ReliableQuicStreamTest, ProcessHeadersEarly) {
   stream2_->OnDecompressorAvailable();
   EXPECT_EQ(decompressed_headers2, stream2_->data());
 }
+
 TEST_F(ReliableQuicStreamTest, ProcessHeadersDelay) {
   Initialize(!kShouldProcessData);
 

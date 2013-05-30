@@ -41,26 +41,45 @@ const size_t kPublicFlagsOffset = 0;
 // Index into the guid offset in the header.
 const size_t kGuidOffset = kPublicFlagsSize;
 // Index into the version string in the header. (if present).
-const size_t kVersionOffset = kGuidOffset + kQuicGuidSize;
+const size_t kVersionOffset = kGuidOffset + PACKET_8BYTE_GUID;
 
 // Index into the sequence number offset in the header.
-size_t GetSequenceNumberOffset(bool include_version) {
-  return kGuidOffset + kQuicGuidSize +
+size_t GetSequenceNumberOffset(QuicGuidLength guid_length,
+                               bool include_version) {
+  return kGuidOffset + guid_length +
       (include_version ? kQuicVersionSize : 0);
 }
 
+size_t GetSequenceNumberOffset(bool include_version) {
+  return GetSequenceNumberOffset(PACKET_8BYTE_GUID, include_version);
+}
+
 // Index into the private flags offset in the data packet header.
+size_t GetPrivateFlagsOffset(QuicGuidLength guid_length, bool include_version) {
+  return GetSequenceNumberOffset(guid_length, include_version) +
+      kSequenceNumberSize;
+}
+
 size_t GetPrivateFlagsOffset(bool include_version) {
-  return GetSequenceNumberOffset(include_version) + kSequenceNumberSize;
+  return GetPrivateFlagsOffset(PACKET_8BYTE_GUID, include_version);
 }
 
 // Index into the fec group offset in the header.
+size_t GetFecGroupOffset(QuicGuidLength guid_length, bool include_version) {
+  return GetPrivateFlagsOffset(guid_length, include_version) +
+      kPrivateFlagsSize;
+}
+
 size_t GetFecGroupOffset(bool include_version) {
-  return GetPrivateFlagsOffset(include_version) + kPrivateFlagsSize;
+  return GetPrivateFlagsOffset(PACKET_8BYTE_GUID, include_version) +
+      kPrivateFlagsSize;
 }
 
 // Index into the nonce proof of the public reset packet.
-const size_t kPublicResetPacketNonceProofOffset = kGuidOffset + kQuicGuidSize;
+// Public resets always have full guids.
+const size_t kPublicResetPacketNonceProofOffset =
+    kGuidOffset + PACKET_8BYTE_GUID;
+
 // Index into the rejected sequence number of the public reset packet.
 const size_t kPublicResetPacketRejectedSequenceNumberOffset =
     kPublicResetPacketNonceProofOffset + kPublicResetNonceSize;
@@ -317,15 +336,16 @@ class QuicFramerTest : public ::testing::Test {
       return false;
     }
     if (QuicFramer::GetAssociatedDataFromEncryptedPacket(
-            encrypted, includes_version) != decrypter_->associated_data_) {
+            encrypted, PACKET_8BYTE_GUID, includes_version) !=
+                decrypter_->associated_data_) {
       LOG(ERROR) << "Decrypted incorrect associated data.  expected "
                  << QuicFramer::GetAssociatedDataFromEncryptedPacket(
-                     encrypted, includes_version)
+                     encrypted, PACKET_8BYTE_GUID, includes_version)
                  << " actual: " << decrypter_->associated_data_;
       return false;
     }
     StringPiece ciphertext(encrypted.AsStringPiece().substr(
-        GetStartOfEncryptedData(includes_version)));
+        GetStartOfEncryptedData(PACKET_8BYTE_GUID, includes_version)));
     if (ciphertext != decrypter_->ciphertext_) {
       LOG(ERROR) << "Decrypted incorrect chipertext data.  expected "
                  << ciphertext << " actual: "
@@ -495,12 +515,12 @@ TEST_F(QuicFramerTest, LargePacket) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF
   };
 
-  memset(packet + GetPacketHeaderSize(!kIncludeVersion), 0,
-         kMaxPacketSize - GetPacketHeaderSize(!kIncludeVersion) + 1);
+  memset(packet + GetPacketHeaderSize(
+             PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP), 0,
+         kMaxPacketSize - GetPacketHeaderSize(
+             PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP) + 1);
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
@@ -525,8 +545,6 @@ TEST_F(QuicFramerTest, PacketHeader) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
@@ -539,14 +557,16 @@ TEST_F(QuicFramerTest, PacketHeader) {
   EXPECT_FALSE(visitor_.header_->public_header.version_flag);
   EXPECT_FALSE(visitor_.header_->fec_flag);
   EXPECT_FALSE(visitor_.header_->entropy_flag);
-  EXPECT_FALSE(visitor_.header_->fec_entropy_flag);
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
   EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
             visitor_.header_->packet_sequence_number);
+  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
   EXPECT_EQ(0x00u, visitor_.header_->fec_group);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < GetPacketHeaderSize(!kIncludeVersion); ++i) {
+  for (size_t i = 0;
+       i < GetPacketHeaderSize(
+           PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP); ++i) {
     string expected_error;
     if (i < kGuidOffset) {
       expected_error = "Unable to read public flags.";
@@ -563,6 +583,165 @@ TEST_F(QuicFramerTest, PacketHeader) {
   }
 }
 
+TEST_F(QuicFramerTest, PacketHeaderWith4ByteGuid) {
+  QuicFramerPeer::SetLastSerializedGuid(&framer_,
+                                        GG_UINT64_C(0xFEDCBA9876543210));
+
+  unsigned char packet[] = {
+    // public flags (4 byte guid)
+    0x08,
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
+  };
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
+  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
+            visitor_.header_->public_header.guid);
+  EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
+  EXPECT_FALSE(visitor_.header_->public_header.version_flag);
+  EXPECT_FALSE(visitor_.header_->fec_flag);
+  EXPECT_FALSE(visitor_.header_->entropy_flag);
+  EXPECT_EQ(0, visitor_.header_->entropy_hash);
+  EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
+            visitor_.header_->packet_sequence_number);
+  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
+  EXPECT_EQ(0x00u, visitor_.header_->fec_group);
+
+  // Now test framing boundaries
+  for (size_t i = 0;
+       i < GetPacketHeaderSize(
+           PACKET_4BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP); ++i) {
+    string expected_error;
+    if (i < kGuidOffset) {
+      expected_error = "Unable to read public flags.";
+    } else if (i < GetSequenceNumberOffset(PACKET_4BYTE_GUID,
+                                           !kIncludeVersion)) {
+      expected_error = "Unable to read GUID.";
+    } else if (i < GetPrivateFlagsOffset(PACKET_4BYTE_GUID,
+                                         !kIncludeVersion)) {
+      expected_error = "Unable to read sequence number.";
+    } else if (i < GetFecGroupOffset(PACKET_4BYTE_GUID, !kIncludeVersion)) {
+      expected_error = "Unable to read private flags.";
+    } else {
+      expected_error = "Unable to read first fec protected packet offset.";
+    }
+    CheckProcessingFails(packet, i, expected_error, QUIC_INVALID_PACKET_HEADER);
+  }
+}
+
+TEST_F(QuicFramerTest, PacketHeader1ByteGuid) {
+  QuicFramerPeer::SetLastSerializedGuid(&framer_,
+                                        GG_UINT64_C(0xFEDCBA9876543210));
+
+  unsigned char packet[] = {
+    // public flags (1 byte guid)
+    0x04,
+    // guid
+    0x10,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
+  };
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
+  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
+            visitor_.header_->public_header.guid);
+  EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
+  EXPECT_FALSE(visitor_.header_->public_header.version_flag);
+  EXPECT_FALSE(visitor_.header_->fec_flag);
+  EXPECT_FALSE(visitor_.header_->entropy_flag);
+  EXPECT_EQ(0, visitor_.header_->entropy_hash);
+  EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
+            visitor_.header_->packet_sequence_number);
+  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
+  EXPECT_EQ(0x00u, visitor_.header_->fec_group);
+
+  // Now test framing boundaries
+  for (size_t i = 0;
+       i < GetPacketHeaderSize(
+           PACKET_1BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP); ++i) {
+    string expected_error;
+    if (i < kGuidOffset) {
+      expected_error = "Unable to read public flags.";
+    } else if (i < GetSequenceNumberOffset(PACKET_1BYTE_GUID,
+                                           !kIncludeVersion)) {
+      expected_error = "Unable to read GUID.";
+    } else if (i < GetPrivateFlagsOffset(PACKET_1BYTE_GUID, !kIncludeVersion)) {
+      expected_error = "Unable to read sequence number.";
+    } else if (i < GetFecGroupOffset(PACKET_1BYTE_GUID, !kIncludeVersion)) {
+      expected_error = "Unable to read private flags.";
+    } else {
+      expected_error = "Unable to read first fec protected packet offset.";
+    }
+    CheckProcessingFails(packet, i, expected_error, QUIC_INVALID_PACKET_HEADER);
+  }
+}
+
+TEST_F(QuicFramerTest, PacketHeaderWith0ByteGuid) {
+  QuicFramerPeer::SetLastSerializedGuid(&framer_,
+                                        GG_UINT64_C(0xFEDCBA9876543210));
+
+  unsigned char packet[] = {
+    // public flags (0 byte guid)
+    0x00,
+    // guid
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
+  };
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
+  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
+            visitor_.header_->public_header.guid);
+  EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
+  EXPECT_FALSE(visitor_.header_->public_header.version_flag);
+  EXPECT_FALSE(visitor_.header_->fec_flag);
+  EXPECT_FALSE(visitor_.header_->entropy_flag);
+  EXPECT_EQ(0, visitor_.header_->entropy_hash);
+  EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
+            visitor_.header_->packet_sequence_number);
+  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
+  EXPECT_EQ(0x00u, visitor_.header_->fec_group);
+
+  // Now test framing boundaries
+  for (size_t i = 0;
+       i < GetPacketHeaderSize(
+           PACKET_0BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP); ++i) {
+    string expected_error;
+    if (i < kGuidOffset) {
+      expected_error = "Unable to read public flags.";
+    } else if (i < GetSequenceNumberOffset(PACKET_0BYTE_GUID,
+                                           !kIncludeVersion)) {
+      expected_error = "Unable to read GUID.";
+    } else if (i < GetPrivateFlagsOffset(PACKET_0BYTE_GUID, !kIncludeVersion)) {
+      expected_error = "Unable to read sequence number.";
+    } else if (i < GetFecGroupOffset(PACKET_0BYTE_GUID, !kIncludeVersion)) {
+      expected_error = "Unable to read private flags.";
+    } else {
+      expected_error = "Unable to read first fec protected packet offset.";
+    }
+    CheckProcessingFails(packet, i, expected_error, QUIC_INVALID_PACKET_HEADER);
+  }
+}
+
 TEST_F(QuicFramerTest, PacketHeaderWithVersionFlag) {
   unsigned char packet[] = {
     // public flags (version)
@@ -571,14 +750,12 @@ TEST_F(QuicFramerTest, PacketHeaderWithVersionFlag) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '4',
+    'Q', '0', '0', '5',
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
@@ -592,14 +769,16 @@ TEST_F(QuicFramerTest, PacketHeaderWithVersionFlag) {
   EXPECT_EQ(kQuicVersion1, visitor_.header_->public_header.versions[0]);
   EXPECT_FALSE(visitor_.header_->fec_flag);
   EXPECT_FALSE(visitor_.header_->entropy_flag);
-  EXPECT_FALSE(visitor_.header_->fec_entropy_flag);
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
   EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
             visitor_.header_->packet_sequence_number);
+  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
   EXPECT_EQ(0x00u, visitor_.header_->fec_group);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < GetPacketHeaderSize(kIncludeVersion); ++i) {
+  for (size_t i = 0;
+       i < GetPacketHeaderSize(
+           PACKET_8BYTE_GUID, kIncludeVersion, NOT_IN_FEC_GROUP); ++i) {
     string expected_error;
     if (i < kGuidOffset) {
       expected_error = "Unable to read public flags.";
@@ -631,8 +810,6 @@ TEST_F(QuicFramerTest, InvalidPublicFlag) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame count
     0x01,
@@ -669,9 +846,7 @@ TEST_F(QuicFramerTest, InvalidPrivateFlag) {
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
     // private flags
-    0x08,
-    // first fec protected packet offset
-    0xFF,
+    0x10,
 
     // frame count
     0x01,
@@ -709,8 +884,6 @@ TEST_F(QuicFramerTest, PaddingFrame) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (padding frame)
     0x00,
@@ -735,8 +908,11 @@ TEST_F(QuicFramerTest, PaddingFrame) {
   ASSERT_EQ(0u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
   // A packet with no frames is not acceptable.
-  CheckProcessingFails(packet, GetPacketHeaderSize(!kIncludeVersion),
-                       "Unable to read frame type.", QUIC_INVALID_FRAME_DATA);
+  CheckProcessingFails(
+      packet,
+      GetPacketHeaderSize(
+          PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP),
+      "Unable to read frame type.", QUIC_INVALID_FRAME_DATA);
 }
 
 TEST_F(QuicFramerTest, StreamFrame) {
@@ -751,8 +927,6 @@ TEST_F(QuicFramerTest, StreamFrame) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (stream frame)
     0x01,
@@ -803,8 +977,11 @@ TEST_F(QuicFramerTest, StreamFrame) {
     } else {
       expected_error = "Unable to read frame data.";
     }
-    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
-                         expected_error, QUIC_INVALID_FRAME_DATA);
+    CheckProcessingFails(
+        packet,
+        i + GetPacketHeaderSize(
+            PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP),
+        expected_error, QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -816,14 +993,12 @@ TEST_F(QuicFramerTest, StreamFrameWithVersion) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '4',
+    'Q', '0', '0', '5',
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (stream frame)
     0x01,
@@ -876,8 +1051,10 @@ TEST_F(QuicFramerTest, StreamFrameWithVersion) {
     } else {
       expected_error = "Unable to read frame data.";
     }
-    CheckProcessingFails(packet, i + GetPacketHeaderSize(kIncludeVersion),
-                         expected_error, QUIC_INVALID_FRAME_DATA);
+    CheckProcessingFails(
+        packet, i + GetPacketHeaderSize(PACKET_8BYTE_GUID, kIncludeVersion,
+                                        NOT_IN_FEC_GROUP),
+        expected_error, QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -895,8 +1072,6 @@ TEST_F(QuicFramerTest, RejectPacket) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (stream frame)
     0x01,
@@ -951,7 +1126,6 @@ TEST_F(QuicFramerTest, RevivedStreamFrame) {
   header.public_header.version_flag = false;
   header.fec_flag = true;
   header.entropy_flag = true;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
@@ -969,11 +1143,11 @@ TEST_F(QuicFramerTest, RevivedStreamFrame) {
   EXPECT_FALSE(visitor_.header_->public_header.version_flag);
   EXPECT_TRUE(visitor_.header_->fec_flag);
   EXPECT_TRUE(visitor_.header_->entropy_flag);
-  EXPECT_FALSE(visitor_.header_->fec_entropy_flag);
   EXPECT_EQ(1 << (header.packet_sequence_number % 8),
             visitor_.header_->entropy_hash);
   EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
             visitor_.header_->packet_sequence_number);
+  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
   EXPECT_EQ(0x00u, visitor_.header_->fec_group);
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
@@ -995,8 +1169,8 @@ TEST_F(QuicFramerTest, StreamFrameInFecGroup) {
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x12, 0x34,
-    // private flags
-    0x00,
+    // private flags (fec group)
+    0x02,
     // first fec protected packet offset
     0x02,
 
@@ -1023,11 +1197,14 @@ TEST_F(QuicFramerTest, StreamFrameInFecGroup) {
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
+  EXPECT_EQ(IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
   EXPECT_EQ(GG_UINT64_C(0x341256789ABA),
             visitor_.header_->fec_group);
   EXPECT_EQ(
-      string(AsChars(packet) + GetStartOfFecProtectedData(!kIncludeVersion),
-             arraysize(packet) - GetStartOfFecProtectedData(!kIncludeVersion)),
+      string(AsChars(packet) + GetStartOfFecProtectedData(PACKET_8BYTE_GUID,
+                                                          !kIncludeVersion),
+             arraysize(packet) - GetStartOfFecProtectedData(PACKET_8BYTE_GUID,
+                                                            !kIncludeVersion)),
       visitor_.fec_protected_payload_);
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
@@ -1051,8 +1228,6 @@ TEST_F(QuicFramerTest, AckFrame) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (ack frame)
     0x02,
@@ -1128,8 +1303,11 @@ TEST_F(QuicFramerTest, AckFrame) {
     } else {
       expected_error = "Unable to read sequence number in missing packets.";
     }
-    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
-                         expected_error, QUIC_INVALID_FRAME_DATA);
+    CheckProcessingFails(
+        packet,
+        i + GetPacketHeaderSize(
+            PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP),
+        expected_error, QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -1145,8 +1323,6 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (congestion feedback frame)
     0x03,
@@ -1186,8 +1362,11 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
     } else if (i < 6) {
       expected_error = "Unable to read receive window.";
     }
-    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
-                         expected_error, QUIC_INVALID_FRAME_DATA);
+    CheckProcessingFails(
+        packet,
+        i + GetPacketHeaderSize(
+            PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP),
+        expected_error, QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -1203,8 +1382,6 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (congestion feedback frame)
     0x03,
@@ -1283,8 +1460,11 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
     } else if (i < 31) {
       expected_error = "Unable to read time delta in received packets.";
     }
-    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
-                         expected_error, QUIC_INVALID_FRAME_DATA);
+    CheckProcessingFails(
+        packet,
+        i + GetPacketHeaderSize(
+            PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP),
+        expected_error, QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -1300,8 +1480,6 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (congestion feedback frame)
     0x03,
@@ -1336,8 +1514,11 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
     } else if (i < 6) {
       expected_error = "Unable to read bitrate.";
     }
-    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
-                         expected_error, QUIC_INVALID_FRAME_DATA);
+    CheckProcessingFails(
+        packet,
+        i + GetPacketHeaderSize(
+            PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP),
+        expected_error, QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -1354,8 +1535,6 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (congestion feedback frame)
     0x03,
@@ -1381,8 +1560,6 @@ TEST_F(QuicFramerTest, RstStreamFrame) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (rst stream frame)
     0x04,
@@ -1422,8 +1599,11 @@ TEST_F(QuicFramerTest, RstStreamFrame) {
     } else {
       expected_error = "Unable to read rst stream error details.";
     }
-    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
-                         expected_error, QUIC_INVALID_RST_STREAM_DATA);
+    CheckProcessingFails(
+        packet,
+        i + GetPacketHeaderSize(
+            PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP),
+        expected_error, QUIC_INVALID_RST_STREAM_DATA);
   }
 }
 
@@ -1439,8 +1619,6 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (connection close frame)
     0x05,
@@ -1508,8 +1686,11 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
     } else {
       expected_error = "Unable to read connection close error details.";
     }
-    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
-                         expected_error, QUIC_INVALID_CONNECTION_CLOSE_DATA);
+    CheckProcessingFails(
+        packet,
+        i + GetPacketHeaderSize(
+            PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP),
+        expected_error, QUIC_INVALID_CONNECTION_CLOSE_DATA);
   }
 }
 
@@ -1525,8 +1706,6 @@ TEST_F(QuicFramerTest, GoAwayFrame) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (go away frame)
     0x06,
@@ -1568,8 +1747,11 @@ TEST_F(QuicFramerTest, GoAwayFrame) {
     } else {
       expected_error = "Unable to read goaway reason.";
     }
-    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
-                         expected_error, QUIC_INVALID_GOAWAY_DATA);
+    CheckProcessingFails(
+        packet,
+        i + GetPacketHeaderSize(
+            PACKET_8BYTE_GUID, !kIncludeVersion, NOT_IN_FEC_GROUP),
+        expected_error, QUIC_INVALID_GOAWAY_DATA);
   }
 }
 
@@ -1633,7 +1815,7 @@ TEST_F(QuicFramerTest, VersionNegotiationPacket) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '4',
+    'Q', '0', '0', '5',
     'Q', '2', '.', '0',
   };
 
@@ -1647,7 +1829,7 @@ TEST_F(QuicFramerTest, VersionNegotiationPacket) {
   EXPECT_EQ(kQuicVersion1,
             visitor_.version_negotiation_packet_->versions[0]);
 
-  for (size_t i = 0; i <= kPublicFlagsSize + kQuicGuidSize; ++i) {
+  for (size_t i = 0; i <= kPublicFlagsSize + PACKET_8BYTE_GUID; ++i) {
     string expected_error;
     QuicErrorCode error_code = QUIC_INVALID_PACKET_HEADER;
     if (i < kGuidOffset) {
@@ -1672,8 +1854,8 @@ TEST_F(QuicFramerTest, FecPacket) {
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // private flags (FEC)
-    0x01,
+    // private flags (fec group & FEC)
+    0x06,
     // first fec protected packet offset
     0x01,
 
@@ -1706,7 +1888,6 @@ TEST_F(QuicFramerTest, ConstructPaddingFramePacket) {
   header.public_header.version_flag = false;
   header.fec_flag = false;
   header.entropy_flag = false;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
@@ -1726,15 +1907,14 @@ TEST_F(QuicFramerTest, ConstructPaddingFramePacket) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (padding frame)
     0x00,
   };
 
-  memset(packet + GetPacketHeaderSize(!kIncludeVersion) + 1, 0x00,
-         kMaxPacketSize - GetPacketHeaderSize(!kIncludeVersion) - 1);
+  uint64 header_size = GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
+                                           NOT_IN_FEC_GROUP);
+  memset(packet + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
 
   scoped_ptr<QuicPacket> data(
       framer_.ConstructFrameDataPacket(header, frames).packet);
@@ -1752,7 +1932,6 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacket) {
   header.public_header.version_flag = false;
   header.fec_flag = false;
   header.entropy_flag = true;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = GG_UINT64_C(0x77123456789ABC);
   header.fec_group = 0;
 
@@ -1775,9 +1954,7 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacket) {
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
     // private flags (entropy)
-    0x02,
-    // first fec protected packet offset
-    0xFF,
+    0x01,
 
     // frame type (stream frame)
     0x01,
@@ -1812,7 +1989,6 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacketWithVersionFlag) {
   header.public_header.version_flag = true;
   header.fec_flag = false;
   header.entropy_flag = true;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = GG_UINT64_C(0x77123456789ABC);
   header.fec_group = 0;
 
@@ -1832,14 +2008,12 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacketWithVersionFlag) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '4',
+    'Q', '0', '0', '5',
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
     // private flags (entropy)
-    0x02,
-    // first fec protected packet offset
-    0xFF,
+    0x01,
 
     // frame type (stream frame)
     0x01,
@@ -1881,7 +2055,7 @@ TEST_F(QuicFramerTest, ConstructVersionNegotiationPacket) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '4',
+    'Q', '0', '0', '5',
     'Q', '2', '.', '0',
   };
 
@@ -1904,7 +2078,6 @@ TEST_F(QuicFramerTest, ConstructAckFramePacket) {
   header.public_header.version_flag = false;
   header.fec_flag = false;
   header.entropy_flag = true;
-  header.fec_entropy_flag = true;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
@@ -1929,10 +2102,8 @@ TEST_F(QuicFramerTest, ConstructAckFramePacket) {
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // private flags (entropy & fec_entropy -- not relevant)
-    0x06,
-    // first fec protected packet offset
-    0xFF,
+    // private flags (entropy)
+    0x01,
 
     // frame type (ack frame)
     0x02,
@@ -1971,7 +2142,6 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketTCP) {
   header.public_header.version_flag = false;
   header.fec_flag = false;
   header.entropy_flag = false;
-  header.fec_entropy_flag = true;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
@@ -1993,9 +2163,7 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketTCP) {
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
     // private flags
-    0x04,  // (fec_entropy_flag)
-    // first fec protected packet offset
-    0xFF,
+    0x00,
 
     // frame type (congestion feedback frame)
     0x03,
@@ -2023,7 +2191,6 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
   header.public_header.version_flag = false;
   header.fec_flag = false;
   header.entropy_flag = false;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
@@ -2056,8 +2223,6 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (congestion feedback frame)
     0x03,
@@ -2099,7 +2264,6 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketFixRate) {
   header.public_header.version_flag = false;
   header.fec_flag = false;
   header.entropy_flag = false;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
@@ -2122,8 +2286,6 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketFixRate) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (congestion feedback frame)
     0x03,
@@ -2149,7 +2311,6 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInvalidFeedback) {
   header.public_header.version_flag = false;
   header.fec_flag = false;
   header.entropy_flag = false;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
@@ -2172,7 +2333,6 @@ TEST_F(QuicFramerTest, ConstructRstFramePacket) {
   header.public_header.version_flag = false;
   header.fec_flag = false;
   header.entropy_flag = false;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
@@ -2192,8 +2352,6 @@ TEST_F(QuicFramerTest, ConstructRstFramePacket) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (rst stream frame)
     0x04,
@@ -2229,7 +2387,6 @@ TEST_F(QuicFramerTest, ConstructCloseFramePacket) {
   header.public_header.version_flag = false;
   header.fec_flag = false;
   header.entropy_flag = true;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
@@ -2256,10 +2413,8 @@ TEST_F(QuicFramerTest, ConstructCloseFramePacket) {
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // private flags
-    0x02,
-    // first fec protected packet offset
-    0xFF,
+    // private flags (entropy)
+    0x01,
 
     // frame type (connection close frame)
     0x05,
@@ -2309,7 +2464,6 @@ TEST_F(QuicFramerTest, ConstructGoAwayPacket) {
   header.public_header.version_flag = false;
   header.fec_flag = false;
   header.entropy_flag = true;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
@@ -2330,10 +2484,8 @@ TEST_F(QuicFramerTest, ConstructGoAwayPacket) {
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // private flags
-    0x02,
-    // first fec protected packet offset
-    0xFF,
+    // private flags(entropy)
+    0x01,
 
     // frame type (go away frame)
     0x06,
@@ -2397,8 +2549,8 @@ TEST_F(QuicFramerTest, ConstructFecPacket) {
   header.public_header.version_flag = false;
   header.fec_flag = true;
   header.entropy_flag = true;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = (GG_UINT64_C(0x123456789ABC));
+  header.is_in_fec_group = IN_FEC_GROUP;
   header.fec_group = GG_UINT64_C(0x123456789ABB);;
 
   QuicFecData fec_data;
@@ -2414,8 +2566,8 @@ TEST_F(QuicFramerTest, ConstructFecPacket) {
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // private flags
-    0x03,
+    // private flags (entropy & fec group & fec packet)
+    0x07,
     // first fec protected packet offset
     0x01,
 
@@ -2446,8 +2598,8 @@ TEST_F(QuicFramerTest, EncryptPacket) {
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // private flags
-    0x01,
+    // private flags (fec group & fec packet)
+    0x06,
     // first fec protected packet offset
     0x01,
 
@@ -2460,7 +2612,7 @@ TEST_F(QuicFramerTest, EncryptPacket) {
 
   scoped_ptr<QuicPacket> raw(
       QuicPacket::NewDataPacket(AsChars(packet), arraysize(packet), false,
-                                !kIncludeVersion));
+                                PACKET_8BYTE_GUID, !kIncludeVersion));
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(ENCRYPTION_NONE, sequence_number, *raw));
 
@@ -2481,8 +2633,8 @@ TEST_F(QuicFramerTest, EncryptPacketWithVersionFlag) {
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // private flags
-    0x01,
+    // private flags (fec group & fec flags)
+    0x06,
     // first fec protected packet offset
     0x01,
 
@@ -2495,7 +2647,7 @@ TEST_F(QuicFramerTest, EncryptPacketWithVersionFlag) {
 
   scoped_ptr<QuicPacket> raw(
       QuicPacket::NewDataPacket(AsChars(packet), arraysize(packet), false,
-                                kIncludeVersion));
+                                PACKET_8BYTE_GUID, kIncludeVersion));
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(ENCRYPTION_NONE, sequence_number, *raw));
 
@@ -2532,7 +2684,6 @@ TEST_F(QuicFramerTest, DISABLED_Truncation) {
   header.public_header.version_flag = false;
   header.fec_flag = false;
   header.entropy_flag = false;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
@@ -2589,7 +2740,6 @@ TEST_F(QuicFramerTest, CleanTruncation) {
   header.public_header.version_flag = false;
   header.fec_flag = false;
   header.entropy_flag = true;
-  header.fec_entropy_flag = false;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
   header.fec_group = 0;
 
@@ -2673,10 +2823,8 @@ TEST_F(QuicFramerTest, EntropyFlagTest) {
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // Entropy
-    0x02,
-    // first fec protected packet offset
-    0xFF,
+    // private flags (Entropy)
+    0x01,
 
     // frame type (stream frame)
     0x01,
@@ -2704,7 +2852,7 @@ TEST_F(QuicFramerTest, EntropyFlagTest) {
   EXPECT_FALSE(visitor_.header_->fec_flag);
 };
 
-TEST_F(QuicFramerTest, FecEntropyFlagTest) {
+TEST_F(QuicFramerTest, FecEntropyTest) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x0C,
@@ -2714,7 +2862,7 @@ TEST_F(QuicFramerTest, FecEntropyFlagTest) {
     // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // Flags: Entropy, FEC-Entropy, FEC
+    // private flags (Entropy & fec group & FEC)
     0x07,
     // first fec protected packet offset
     0xFF,
@@ -2742,7 +2890,6 @@ TEST_F(QuicFramerTest, FecEntropyFlagTest) {
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_TRUE(visitor_.header_->fec_flag);
   EXPECT_TRUE(visitor_.header_->entropy_flag);
-  EXPECT_TRUE(visitor_.header_->fec_entropy_flag);
   EXPECT_EQ(1 << 4, visitor_.header_->entropy_hash);
 };
 
@@ -2757,9 +2904,7 @@ TEST_F(QuicFramerTest, StopPacketProcessing) {
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
     // Entropy
-    0x02,
-    // first fec protected packet offset
-    0xFF,
+    0x01,
 
     // frame type (stream frame)
     0x01,
@@ -2821,8 +2966,6 @@ TEST_F(QuicFramerTest, ConnectionCloseWithInvalidAck) {
     0x34, 0x12,
     // private flags
     0x00,
-    // first fec protected packet offset
-    0xFF,
 
     // frame type (connection close frame)
     0x05,

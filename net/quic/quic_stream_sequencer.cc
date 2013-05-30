@@ -139,10 +139,10 @@ bool QuicStreamSequencer::MaybeCloseStream() {
   return false;
 }
 
-int QuicStreamSequencer::GetReadableRegions(iovec* iov, int iov_len) {
+int QuicStreamSequencer::GetReadableRegions(iovec* iov, size_t iov_len) {
   FrameMap::iterator it = frames_.begin();
-  int index = 0;
-  uint64 offset = num_bytes_consumed_;
+  size_t index = 0;
+  QuicStreamOffset offset = num_bytes_consumed_;
   while (it != frames_.end() && index < iov_len) {
     if (it->first != offset) return index;
 
@@ -157,9 +157,9 @@ int QuicStreamSequencer::GetReadableRegions(iovec* iov, int iov_len) {
   return index;
 }
 
-int QuicStreamSequencer::Readv(const struct iovec* iov, int iov_len) {
+int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
   FrameMap::iterator it = frames_.begin();
-  int iov_index = 0;
+  size_t iov_index = 0;
   size_t iov_offset = 0;
   size_t frame_offset = 0;
   size_t initial_bytes_consumed = num_bytes_consumed_;

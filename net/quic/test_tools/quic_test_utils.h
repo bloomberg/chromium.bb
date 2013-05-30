@@ -37,9 +37,13 @@ void CompareQuicDataWithHexError(const std::string& description,
 
 // Returns the length of the QuicPacket that will be created if it contains
 // a stream frame that has |payload| bytes.
-size_t GetPacketLengthForOneStream(bool include_version, size_t payload);
+size_t GetPacketLengthForOneStream(
+    bool include_version, InFecGroup is_in_fec_group, size_t payload);
 
 string SerializeUncompressedHeaders(const SpdyHeaderBlock& headers);
+
+// Returns QuicConfig set to default values.
+QuicConfig DefaultQuicConfig();
 
 class MockFramerVisitor : public QuicFramerVisitorInterface {
  public:
@@ -318,10 +322,9 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MockSendAlgorithm();
   virtual ~MockSendAlgorithm();
 
-  MOCK_METHOD4(OnIncomingQuicCongestionFeedbackFrame,
+  MOCK_METHOD3(OnIncomingQuicCongestionFeedbackFrame,
                void(const QuicCongestionFeedbackFrame&,
                     QuicTime feedback_receive_time,
-                    QuicBandwidth sent_bandwidth,
                     const SentPacketsMap&));
   MOCK_METHOD3(OnIncomingAck,
                void(QuicPacketSequenceNumber, QuicByteCount, QuicTime::Delta));

@@ -338,7 +338,12 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Sets (or resets) the idle state connection timeout. Also, checks and times
   // out the connection if network timer has expired for |timeout|.
-  void SetConnectionTimeout(QuicTime::Delta timeout);
+  void SetIdleNetworkTimeout(QuicTime::Delta timeout);
+  // Sets (or resets) the total time delta the connection can be alive for.
+  // Also, checks and times out the connection if timer has expired for
+  // |timeout|. Used to limit the time a connection can be alive before crypto
+  // handshake finishes.
+  void SetOverallConnectionTimeout(QuicTime::Delta timeout);
 
   // If the connection has timed out, this will close the connection and return
   // true.  Otherwise, it will return false and will reset the timeout alarm.
@@ -600,7 +605,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicPacketGenerator packet_generator_;
 
   // Network idle time before we kill of this connection.
-  QuicTime::Delta timeout_;
+  QuicTime::Delta idle_network_timeout_;
+  // Overall connection timeout.
+  QuicTime::Delta overall_connection_timeout_;
+  // Connection creation time.
+  QuicTime creation_time_;
 
   // Statistics for this session.
   QuicConnectionStats stats_;
@@ -637,7 +646,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // True if the last ack received from the peer may have been truncated.  False
   // otherwise.
   bool received_truncated_ack_;
-
   bool send_ack_in_response_to_packet_;
 
   // Set to true if the udp packet headers have a new self or peer address.

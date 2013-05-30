@@ -11,7 +11,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "net/base/ip_endpoint.h"
-// TODO(rtenneti): Delete this when NSS is supported.
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/quic_framer.h"
@@ -252,7 +251,7 @@ TEST_F(EndToEndTest, SeparateFinPacket) {
 
   client_->SendMessage(request);
 
-  client_->SendData(std::string(), true);
+  client_->SendData(string(), true);
 
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
@@ -261,7 +260,7 @@ TEST_F(EndToEndTest, SeparateFinPacket) {
   request.AddBody("foo", true);
 
   client_->SendMessage(request);
-  client_->SendData(std::string(), true);
+  client_->SendData(string(), true);
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
@@ -333,7 +332,9 @@ TEST_F(EndToEndTest, RequestOverMultiplePackets) {
   size_t ciphertext_size = NullEncrypter().GetCiphertextSize(min_payload_size);
   // TODO(satyashekhar): Fix this when versioning is implemented.
   client_->options()->max_packet_length =
-      GetPacketHeaderSize(!kIncludeVersion) + ciphertext_size;
+      GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
+                          NOT_IN_FEC_GROUP) +
+      ciphertext_size;
 
   // Make sure our request is too large to fit in one packet.
   EXPECT_GT(strlen(kLargeRequest), min_payload_size);
@@ -363,7 +364,9 @@ TEST_F(EndToEndTest, MultipleFramesRandomOrder) {
   size_t ciphertext_size = NullEncrypter().GetCiphertextSize(min_payload_size);
   // TODO(satyashekhar): Fix this when versioning is implemented.
   client_->options()->max_packet_length =
-      GetPacketHeaderSize(!kIncludeVersion) + ciphertext_size;
+      GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
+                          NOT_IN_FEC_GROUP) +
+      ciphertext_size;
   client_->options()->random_reorder = true;
 
   // Make sure our request is too large to fit in one packet.

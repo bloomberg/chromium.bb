@@ -100,7 +100,6 @@ class QuicNetworkTransactionTest : public PlatformTest {
     header.packet_sequence_number = num;
     header.entropy_flag = false;
     header.fec_flag = false;
-    header.fec_entropy_flag = false;
     header.fec_group = 0;
 
     QuicRstStreamFrame rst(stream_id, QUIC_STREAM_NO_ERROR);
@@ -117,7 +116,6 @@ class QuicNetworkTransactionTest : public PlatformTest {
     header.packet_sequence_number = num;
     header.entropy_flag = false;
     header.fec_flag = false;
-    header.fec_entropy_flag = false;
     header.fec_group = 0;
 
     QuicAckFrame ack_frame(0, QuicTime::Zero(), 0);
@@ -139,7 +137,6 @@ class QuicNetworkTransactionTest : public PlatformTest {
     header.packet_sequence_number = 2;
     header.entropy_flag = false;
     header.fec_flag = false;
-    header.fec_entropy_flag = false;
     header.fec_group = 0;
 
     QuicAckFrame ack(largest_received, QuicTime::Zero(), least_unacked);
@@ -218,7 +215,6 @@ class QuicNetworkTransactionTest : public PlatformTest {
     header_.fec_group = 0;
     header_.entropy_flag = false;
     header_.fec_flag = false;
-    header_.fec_entropy_flag = false;
   }
 
   void CreateSession() {

@@ -223,7 +223,8 @@ QuicConfig::QuicConfig() :
     idle_connection_state_lifetime_seconds_(
         kICSL, QuicNegotiableValue::PRESENCE_REQUIRED),
     keepalive_timeout_seconds_(kKATO, QuicNegotiableValue::PRESENCE_OPTIONAL),
-    max_streams_per_connection_(kMSPC, QuicNegotiableValue::PRESENCE_REQUIRED) {
+    max_streams_per_connection_(kMSPC, QuicNegotiableValue::PRESENCE_REQUIRED),
+    max_time_before_crypto_handshake_(QuicTime::Delta::Zero()) {
   idle_connection_state_lifetime_seconds_.set(0, 0);
   keepalive_timeout_seconds_.set(0, 0);
 }
@@ -267,6 +268,15 @@ uint32 QuicConfig::max_streams_per_connection() const {
   return max_streams_per_connection_.GetUint32();
 }
 
+void QuicConfig::set_max_time_before_crypto_handshake(
+    QuicTime::Delta max_time_before_crypto_handshake) {
+  max_time_before_crypto_handshake_ = max_time_before_crypto_handshake;
+}
+
+QuicTime::Delta QuicConfig::max_time_before_crypto_handshake() const {
+  return max_time_before_crypto_handshake_;
+}
+
 bool QuicConfig::negotiated() {
   return congestion_control_.negotiated() &&
       idle_connection_state_lifetime_seconds_.negotiated() &&
@@ -277,11 +287,13 @@ bool QuicConfig::negotiated() {
 void QuicConfig::SetDefaults() {
   congestion_control_.set(QuicTagVector(1, kQBIC), kQBIC);
   idle_connection_state_lifetime_seconds_.set(kDefaultTimeoutSecs,
-                                              kDefaultTimeoutSecs);
+                                              kDefaultInitialTimeoutSecs);
   // kKATO is optional. Return 0 if not negotiated.
   keepalive_timeout_seconds_.set(0, 0);
   max_streams_per_connection_.set(kDefaultMaxStreamsPerConnection,
                                   kDefaultMaxStreamsPerConnection);
+  max_time_before_crypto_handshake_ = QuicTime::Delta::FromSeconds(
+      kDefaultMaxTimeForCryptoHandshakeSecs);
 }
 
 void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {

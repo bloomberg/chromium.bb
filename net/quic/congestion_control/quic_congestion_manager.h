@@ -102,7 +102,6 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
   // Get the current(last) rtt. Infinite is returned if invalid.
   const QuicTime::Delta rtt();
 
-  QuicBandwidth SentBandwidth(QuicTime feedback_receive_time) const;
   void CleanupPacketHistory();
 
   const QuicClock* clock_;

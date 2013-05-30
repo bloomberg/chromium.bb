@@ -12,6 +12,7 @@
 #include "net/quic/crypto/aes_128_gcm_12_decrypter.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/cert_compressor.h"
+#include "net/quic/crypto/channel_id.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_server_config_protobuf.h"
 #include "net/quic/crypto/crypto_utils.h"
@@ -40,18 +41,35 @@ namespace net {
 // static
 const char QuicCryptoServerConfig::TESTING[] = "secret string for testing";
 
+QuicCryptoServerConfig::ConfigOptions::ConfigOptions()
+    : expiry_time(QuicWallTime::Zero()),
+      channel_id_enabled(false) { }
+
 QuicCryptoServerConfig::QuicCryptoServerConfig(
-    StringPiece source_address_token_secret)
+    StringPiece source_address_token_secret,
+    QuicRandom* rand)
     : strike_register_lock_(),
+      server_nonce_strike_register_lock_(),
       strike_register_max_entries_(1 << 10),
       strike_register_window_secs_(600),
       source_address_token_future_secs_(3600),
-      source_address_token_lifetime_secs_(86400) {
+      source_address_token_lifetime_secs_(86400),
+      server_nonce_strike_register_max_entries_(1 << 10),
+      server_nonce_strike_register_window_secs_(120) {
   crypto::HKDF hkdf(source_address_token_secret, StringPiece() /* no salt */,
                     "QUIC source address token key",
                     CryptoSecretBoxer::GetKeySize(),
                     0 /* no fixed IV needed */);
   source_address_token_boxer_.SetKey(hkdf.server_write_key());
+
+  // Generate a random key and orbit for server nonces.
+  rand->RandBytes(server_nonce_orbit_, sizeof(server_nonce_orbit_));
+  const size_t key_size = server_nonce_boxer_.GetKeySize();
+  scoped_ptr<uint8[]> key_bytes(new uint8[key_size]);
+  rand->RandBytes(key_bytes.get(), key_size);
+
+  server_nonce_boxer_.SetKey(
+      StringPiece(reinterpret_cast<char*>(key_bytes.get()), key_size));
 }
 
 QuicCryptoServerConfig::~QuicCryptoServerConfig() {
@@ -62,7 +80,7 @@ QuicCryptoServerConfig::~QuicCryptoServerConfig() {
 QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
     QuicRandom* rand,
     const QuicClock* clock,
-    uint64 expiry_time)  {
+    const ConfigOptions& options) {
   CryptoHandshakeMessage msg;
 
   const string curve25519_private_key =
@@ -94,14 +112,14 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
   msg.SetValue(kVERS, static_cast<uint16>(0));
   msg.SetStringPiece(kPUBS, encoded_public_values);
 
-  if (expiry_time == 0) {
+  if (options.expiry_time.IsZero()) {
     const QuicWallTime now = clock->WallNow();
     const QuicWallTime expiry = now.Add(QuicTime::Delta::FromSeconds(
         60 * 60 * 24 * 180 /* 180 days, ~six months */));
     const uint64 expiry_seconds = expiry.ToUNIXSeconds();
     msg.SetValue(kEXPY, expiry_seconds);
   } else {
-    msg.SetValue(kEXPY, expiry_time);
+    msg.SetValue(kEXPY, options.expiry_time.ToUNIXSeconds());
   }
 
   char scid_bytes[16];
@@ -111,6 +129,10 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
   char orbit_bytes[kOrbitSize];
   rand->RandBytes(orbit_bytes, sizeof(orbit_bytes));
   msg.SetStringPiece(kORBT, StringPiece(orbit_bytes, sizeof(orbit_bytes)));
+
+  if (options.channel_id_enabled) {
+    msg.SetTaglist(kPDMD, kCHID, 0);
+  }
 
   scoped_ptr<QuicData> serialized(CryptoFramer::ConstructHandshakeMessage(msg));
 
@@ -187,6 +209,18 @@ CryptoHandshakeMessage* QuicCryptoServerConfig::AddConfig(
     return NULL;
   }
 
+  const QuicTag* proof_demand_tags;
+  size_t num_proof_demand_tags;
+  if (msg->GetTaglist(kPDMD, &proof_demand_tags, &num_proof_demand_tags) ==
+      QUIC_NO_ERROR) {
+    for (size_t i = 0; i < num_proof_demand_tags; i++) {
+      if (proof_demand_tags[i] == kCHID) {
+        config->channel_id_enabled = true;
+        break;
+      }
+    }
+  }
+
   for (size_t i = 0; i < kexs_len; i++) {
     const QuicTag tag = kexs_tags[i];
     string private_key;
@@ -252,6 +286,8 @@ CryptoHandshakeMessage* QuicCryptoServerConfig::AddConfig(
     return NULL;
   }
 
+  // FIXME(agl): this is mismatched with |DefaultConfig|, which generates a
+  // random id.
   scoped_ptr<SecureHash> sha256(SecureHash::Create(SecureHash::SHA256));
   sha256->Update(protobuf->config().data(), protobuf->config().size());
   char id_bytes[16];
@@ -267,9 +303,9 @@ CryptoHandshakeMessage* QuicCryptoServerConfig::AddConfig(
 CryptoHandshakeMessage* QuicCryptoServerConfig::AddDefaultConfig(
     QuicRandom* rand,
     const QuicClock* clock,
-    uint64 expiry_time) {
+    const ConfigOptions& options) {
   scoped_ptr<QuicServerConfigProtobuf> config(
-      DefaultConfig(rand, clock, expiry_time));
+      DefaultConfig(rand, clock, options));
   return AddConfig(config.get());
 }
 
@@ -311,15 +347,14 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     valid_source_address_token = true;
   }
 
-  const string fresh_source_address_token =
-      NewSourceAddressToken(client_ip, rand, now);
+  StringPiece sni;
+  if (client_hello.GetStringPiece(kSNI, &sni) &&
+      !CryptoUtils::IsValidSNI(sni)) {
+    *error_details = "Invalid SNI name";
+    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
 
-  // If we previously sent a REJ to this client then we may have stored a
-  // server nonce in |params|. In which case, we know that the connection
-  // is unique because the server nonce will be mixed into the key generation.
-  bool unique_by_server_nonce = !params->server_nonce.empty();
-  // If we can't ensure uniqueness by a server nonce, then we will try and use
-  // the strike register.
+  // The client nonce is used first to try and establish uniqueness.
   bool unique_by_strike_register = false;
 
   StringPiece client_nonce;
@@ -334,7 +369,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
           strike_register_max_entries_,
           static_cast<uint32>(now.ToUNIXSeconds()),
           strike_register_window_secs_,
-          config->orbit));
+          config->orbit,
+          StrikeRegister::DENY_REQUESTS_AT_STARTUP));
     }
     unique_by_strike_register = strike_register_->Insert(
         reinterpret_cast<const uint8*>(client_nonce.data()),
@@ -343,23 +379,21 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
 
   StringPiece server_nonce;
   client_hello.GetStringPiece(kServerNonceTag, &server_nonce);
-  const bool server_nonce_matches = server_nonce == params->server_nonce;
+
+  // If the client nonce didn't establish uniqueness then an echoed server
+  // nonce may.
+  bool unique_by_server_nonce = false;
+  if (!unique_by_strike_register && !server_nonce.empty()) {
+    unique_by_server_nonce = ValidateServerNonce(server_nonce, now);
+  }
 
   out->Clear();
-
-  StringPiece sni;
-  if (client_hello.GetStringPiece(kSNI, &sni) &&
-      !CryptoUtils::IsValidSNI(sni)) {
-    *error_details = "Invalid SNI name";
-    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
-  }
 
   StringPiece scid;
   if (!client_hello.GetStringPiece(kSCID, &scid) ||
       scid.as_string() != config->id ||
       !valid_source_address_token ||
       !client_nonce_well_formed ||
-      !server_nonce_matches ||
       (!unique_by_strike_register &&
        !unique_by_server_nonce)) {
     // If the client didn't provide a server config ID, or gave the wrong one,
@@ -367,14 +401,9 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     // give the client enough information to do better next time.
     out->set_tag(kREJ);
     out->SetStringPiece(kSCFG, config->serialized);
-    out->SetStringPiece(kSourceAddressTokenTag, fresh_source_address_token);
-    if (params->server_nonce.empty()) {
-      CryptoUtils::GenerateNonce(
-          now, rand, StringPiece(reinterpret_cast<const char*>(config->orbit),
-                                 sizeof(config->orbit)),
-          &params->server_nonce);
-    }
-    out->SetStringPiece(kServerNonceTag, params->server_nonce);
+    out->SetStringPiece(kSourceAddressTokenTag,
+                        NewSourceAddressToken(client_ip, rand, now));
+    out->SetStringPiece(kServerNonceTag, NewServerNonce(rand, now));
 
     // The client may have requested a certificate chain.
     const QuicTag* their_proof_demands;
@@ -402,11 +431,12 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
 
         const string compressed = CertCompressor::CompressChain(
             *certs, their_common_set_hashes, their_cached_cert_hashes,
-            config->common_cert_sets.get());
+            config->common_cert_sets);
 
         // kMaxUnverifiedSize is the number of bytes that the certificate chain
         // and signature can consume before we will demand a valid
         // source-address token.
+        // TODO(agl): make this configurable.
         static const size_t kMaxUnverifiedSize = 400;
         if (valid_source_address_token ||
             signature.size() + compressed.size() < kMaxUnverifiedSize) {
@@ -475,6 +505,54 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
                      client_hello_serialized.length());
   hkdf_suffix.append(config->serialized);
 
+  StringPiece cetv_ciphertext;
+  if (config->channel_id_enabled &&
+      client_hello.GetStringPiece(kCETV, &cetv_ciphertext)) {
+    CryptoHandshakeMessage client_hello_copy(client_hello);
+    client_hello_copy.Erase(kCETV);
+    client_hello_copy.Erase(kPAD);
+
+    const QuicData& client_hello_serialized = client_hello_copy.GetSerialized();
+    string hkdf_input;
+    hkdf_input.append(QuicCryptoConfig::kCETVLabel,
+                      strlen(QuicCryptoConfig::kCETVLabel) + 1);
+    hkdf_input.append(reinterpret_cast<char*>(&guid), sizeof(guid));
+    hkdf_input.append(client_hello_serialized.data(),
+                      client_hello_serialized.length());
+    hkdf_input.append(config->serialized);
+
+    CrypterPair crypters;
+    CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
+                            client_nonce, server_nonce, hkdf_input,
+                            CryptoUtils::SERVER, &crypters);
+
+    scoped_ptr<QuicData> cetv_plaintext(crypters.decrypter->DecryptPacket(
+        0 /* sequence number */, StringPiece() /* associated data */,
+        cetv_ciphertext));
+    if (!cetv_plaintext.get()) {
+      *error_details = "CETV decryption failure";
+      return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+    }
+
+    scoped_ptr<CryptoHandshakeMessage> cetv(CryptoFramer::ParseMessage(
+        cetv_plaintext->AsStringPiece()));
+    if (!cetv.get()) {
+      *error_details = "CETV parse error";
+      return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+    }
+
+    StringPiece key, signature;
+    if (cetv->GetStringPiece(kCIDK, &key) &&
+        cetv->GetStringPiece(kCIDS, &signature)) {
+      if (!ChannelIDVerifier::Verify(key, hkdf_input, signature)) {
+        *error_details = "ChannelID signature failure";
+        return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+      }
+
+      params->channel_id = key.as_string();
+    }
+  }
+
   string hkdf_input;
   size_t label_len = strlen(QuicCryptoConfig::kInitialLabel) + 1;
   hkdf_input.reserve(label_len + hkdf_suffix.size());
@@ -482,7 +560,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   hkdf_input.append(hkdf_suffix);
 
   CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
-                          client_nonce, params->server_nonce, hkdf_input,
+                          client_nonce, server_nonce, hkdf_input,
                           CryptoUtils::SERVER, &params->initial_crypters);
 
   string forward_secure_public_value;
@@ -511,12 +589,13 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   forward_secure_hkdf_input.append(hkdf_suffix);
 
   CryptoUtils::DeriveKeys(params->forward_secure_premaster_secret, params->aead,
-                          client_nonce, params->server_nonce,
-                          forward_secure_hkdf_input, CryptoUtils::SERVER,
+                          client_nonce, server_nonce, forward_secure_hkdf_input,
+                          CryptoUtils::SERVER,
                           &params->forward_secure_crypters);
 
   out->set_tag(kSHLO);
-  out->SetStringPiece(kSourceAddressTokenTag, fresh_source_address_token);
+  out->SetStringPiece(kSourceAddressTokenTag,
+                      NewSourceAddressToken(client_ip, rand, now));
   out->SetStringPiece(kPUBS, forward_secure_public_value);
   return QUIC_NO_ERROR;
 }
@@ -602,7 +681,73 @@ bool QuicCryptoServerConfig::ValidateSourceAddressToken(
   return true;
 }
 
-QuicCryptoServerConfig::Config::Config() {}
+// kServerNoncePlaintextSize is the number of bytes in an unencrypted server
+// nonce.
+static const size_t kServerNoncePlaintextSize =
+    4 /* timestamp */ + 20 /* random bytes */;
+
+string QuicCryptoServerConfig::NewServerNonce(QuicRandom* rand,
+                                              QuicWallTime now) const {
+  const uint32 timestamp = static_cast<uint32>(now.ToUNIXSeconds());
+
+  uint8 server_nonce[kServerNoncePlaintextSize];
+  COMPILE_ASSERT(sizeof(server_nonce) > sizeof(timestamp), nonce_too_small);
+  server_nonce[0] = static_cast<uint8>(timestamp >> 24);
+  server_nonce[1] = static_cast<uint8>(timestamp >> 16);
+  server_nonce[2] = static_cast<uint8>(timestamp >> 8);
+  server_nonce[3] = static_cast<uint8>(timestamp);
+  rand->RandBytes(&server_nonce[sizeof(timestamp)],
+                  sizeof(server_nonce) - sizeof(timestamp));
+
+  return server_nonce_boxer_.Box(
+      rand,
+      StringPiece(reinterpret_cast<char*>(server_nonce), sizeof(server_nonce)));
+}
+
+bool QuicCryptoServerConfig::ValidateServerNonce(StringPiece token,
+                                                 QuicWallTime now) const {
+  string storage;
+  StringPiece plaintext;
+  if (!server_nonce_boxer_.Unbox(token, &storage, &plaintext)) {
+    return false;
+  }
+
+  // plaintext contains:
+  //   uint32 timestamp
+  //   uint8[20] random bytes
+
+  if (plaintext.size() != kServerNoncePlaintextSize) {
+    // This should never happen because the value decrypted correctly.
+    LOG(DFATAL) << "Seemingly valid server nonce had incorrect length.";
+    return false;
+  }
+
+  uint8 server_nonce[32];
+  memcpy(server_nonce, plaintext.data(), 4);
+  memcpy(server_nonce + 4, server_nonce_orbit_, sizeof(server_nonce_orbit_));
+  memcpy(server_nonce + 4 + sizeof(server_nonce_orbit_), plaintext.data() + 4,
+         20);
+  COMPILE_ASSERT(4 + sizeof(server_nonce_orbit_) + 20 == sizeof(server_nonce),
+                 bad_nonce_buffer_length);
+
+  bool is_unique;
+  {
+    base::AutoLock auto_lock(server_nonce_strike_register_lock_);
+    if (server_nonce_strike_register_.get() == NULL) {
+      server_nonce_strike_register_.reset(new StrikeRegister(
+          server_nonce_strike_register_max_entries_,
+          static_cast<uint32>(now.ToUNIXSeconds()),
+          server_nonce_strike_register_window_secs_, server_nonce_orbit_,
+          StrikeRegister::NO_STARTUP_PERIOD_NEEDED));
+    }
+    is_unique = server_nonce_strike_register_->Insert(
+        server_nonce, static_cast<uint32>(now.ToUNIXSeconds()));
+  }
+
+  return is_unique;
+}
+
+QuicCryptoServerConfig::Config::Config() : channel_id_enabled(false) { }
 
 QuicCryptoServerConfig::Config::~Config() { STLDeleteElements(&key_exchanges); }
 

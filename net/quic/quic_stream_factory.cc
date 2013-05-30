@@ -226,6 +226,10 @@ QuicStreamFactory::QuicStreamFactory(
       random_generator_(random_generator),
       clock_(clock),
       weak_factory_(this) {
+  config_.SetDefaults();
+  config_.set_idle_connection_state_lifetime(
+      QuicTime::Delta::FromSeconds(30),
+      QuicTime::Delta::FromSeconds(30));
 }
 
 QuicStreamFactory::~QuicStreamFactory() {
@@ -386,12 +390,8 @@ QuicClientSession* QuicStreamFactory::CreateSession(
   QuicClientSession* session =
       new QuicClientSession(connection, socket, this,
                             quic_crypto_client_stream_factory_,
-                            host_port_proxy_pair.first.host(), QuicConfig(),
+                            host_port_proxy_pair.first.host(), config_,
                             crypto_config, net_log.net_log());
-  session->config()->SetDefaults();
-  session->config()->set_idle_connection_state_lifetime(
-      QuicTime::Delta::FromSeconds(30),
-      QuicTime::Delta::FromSeconds(30));
   all_sessions_.insert(session);  // owning pointer
   return session;
 }

@@ -17,14 +17,15 @@ class CryptoServerTest : public ::testing::Test {
  public:
   CryptoServerTest()
       : rand_(QuicRandom::GetInstance()),
-        config_(QuicCryptoServerConfig::TESTING),
+        config_(QuicCryptoServerConfig::TESTING, rand_),
         addr_(ParseIPLiteralToNumber("192.0.2.33", &ip_) ?
               ip_ : IPAddressNumber(), 1) {
   }
 
   virtual void SetUp() {
     scoped_ptr<CryptoHandshakeMessage> msg(
-        config_.AddDefaultConfig(rand_, &clock_, 0));
+        config_.AddDefaultConfig(rand_, &clock_,
+        QuicCryptoServerConfig::ConfigOptions()));
   }
 
   void ShouldSucceed(const CryptoHandshakeMessage& message) {

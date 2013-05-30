@@ -31,7 +31,6 @@ FixRateSender::~FixRateSender() {
 void FixRateSender::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback,
     QuicTime feedback_receive_time,
-    QuicBandwidth /*sent_bandwidth*/,
     const SentPacketsMap& /*sent_packets*/) {
   DCHECK(feedback.type == kFixRate) <<
       "Invalid incoming CongestionFeedbackType:" << feedback.type;

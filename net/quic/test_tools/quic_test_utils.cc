@@ -235,7 +235,7 @@ bool PacketSavingConnection::SendOrQueuePacket(
 }
 
 MockSession::MockSession(QuicConnection* connection, bool is_server)
-    : QuicSession(connection, QuicConfig(), is_server) {
+    : QuicSession(connection, DefaultQuicConfig(), is_server) {
   ON_CALL(*this, WriteData(_, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
@@ -250,8 +250,7 @@ TestSession::TestSession(QuicConnection* connection,
       crypto_stream_(NULL) {
 }
 
-TestSession::~TestSession() {
-}
+TestSession::~TestSession() {}
 
 void TestSession::SetCryptoStream(QuicCryptoStream* stream) {
   crypto_stream_ = stream;
@@ -365,7 +364,6 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   header.entropy_flag = false;
   header.entropy_hash = 0;
   header.fec_flag = false;
-  header.fec_entropy_flag = false;
   header.fec_group = 0;
 
   QuicStreamFrame stream_frame(kCryptoStreamId, false, 0,
@@ -383,13 +381,16 @@ QuicPacket* ConstructHandshakePacket(QuicGuid guid, QuicTag tag) {
   return ConstructPacketFromHandshakeMessage(guid, message, false);
 }
 
-size_t GetPacketLengthForOneStream(bool include_version, size_t payload) {
+size_t GetPacketLengthForOneStream(
+    bool include_version, InFecGroup is_in_fec_group, size_t payload) {
   // TODO(wtc): the hardcoded use of NullEncrypter here seems wrong.
   size_t packet_length = NullEncrypter().GetCiphertextSize(payload) +
-      QuicPacketCreator::StreamFramePacketOverhead(1, include_version);
+      QuicPacketCreator::StreamFramePacketOverhead(
+          1, PACKET_8BYTE_GUID, include_version, is_in_fec_group);
 
   size_t ack_length = NullEncrypter().GetCiphertextSize(
-      QuicFramer::GetMinAckFrameSize()) + GetPacketHeaderSize(include_version);
+      QuicFramer::GetMinAckFrameSize()) +
+      GetPacketHeaderSize(PACKET_8BYTE_GUID, include_version, is_in_fec_group);
   // Make sure that if we change the size of the packet length for one stream
   // or the ack frame; that all our test are configured correctly.
   DCHECK_GE(packet_length, ack_length);
@@ -399,6 +400,12 @@ size_t GetPacketLengthForOneStream(bool include_version, size_t payload) {
 QuicPacketEntropyHash TestEntropyCalculator::ReceivedEntropyHash(
     QuicPacketSequenceNumber sequence_number) const {
   return 1u;
+}
+
+QuicConfig DefaultQuicConfig() {
+  QuicConfig config;
+  config.SetDefaults();
+  return config;
 }
 
 bool TestDecompressorVisitor::OnDecompressedData(StringPiece data) {

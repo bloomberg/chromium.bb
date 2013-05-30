@@ -76,7 +76,13 @@ QuicSession::QuicSession(QuicConnection* connection,
       largest_peer_created_stream_id_(0),
       goaway_received_(false),
       goaway_sent_(false) {
-  connection->set_visitor(visitor_shim_.get());
+  set_max_open_streams(config_.max_streams_per_connection());
+
+  connection_->set_visitor(visitor_shim_.get());
+  connection_->SetIdleNetworkTimeout(config_.idle_connection_state_lifetime());
+  connection_->SetOverallConnectionTimeout(
+      config_.max_time_before_crypto_handshake());
+  // TODO(satyamshekhar): Set congestion control and ICSL also.
 }
 
 QuicSession::~QuicSession() {
@@ -114,16 +120,17 @@ bool QuicSession::OnPacket(const IPEndPoint& self_address,
 
   while (!decompression_blocked_streams_.empty()) {
     QuicHeaderId header_id = decompression_blocked_streams_.begin()->first;
-    if (header_id == decompressor_.current_header_id()) {
-      QuicStreamId stream_id = decompression_blocked_streams_.begin()->second;
-      decompression_blocked_streams_.erase(header_id);
-      ReliableQuicStream* stream = GetStream(stream_id);
-      if (!stream) {
-        connection()->SendConnectionClose(
-            QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED);
-      }
-      stream->OnDecompressorAvailable();
+    if (header_id != decompressor_.current_header_id()) {
+      break;
     }
+    QuicStreamId stream_id = decompression_blocked_streams_.begin()->second;
+    decompression_blocked_streams_.erase(header_id);
+    ReliableQuicStream* stream = GetStream(stream_id);
+    if (!stream) {
+      connection()->SendConnectionClose(
+          QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED);
+    }
+    stream->OnDecompressorAvailable();
   }
   return true;
 }
@@ -232,8 +239,9 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
     case HANDSHAKE_CONFIRMED:
       LOG_IF(DFATAL, !config_.negotiated())
           << "Handshake confirmed without parameter negotiation.";
-      connection_->SetConnectionTimeout(
+      connection_->SetIdleNetworkTimeout(
           config_.idle_connection_state_lifetime());
+      connection_->SetOverallConnectionTimeout(QuicTime::Delta::Infinite());
       max_open_streams_ = config_.max_streams_per_connection();
       break;
 

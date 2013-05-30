@@ -49,7 +49,7 @@ bool QuicFecGroup::Update(const QuicPacketHeader& header,
 
 bool QuicFecGroup::UpdateFec(
     QuicPacketSequenceNumber fec_packet_sequence_number,
-    bool fec_entropy_flag,
+    bool fec_packet_entropy,
     const QuicFecData& fec) {
   if (min_protected_packet_ != kNoSequenceNumber) {
     return false;
@@ -63,7 +63,7 @@ bool QuicFecGroup::UpdateFec(
     }
     ++it;
   }
-  if (!UpdateParity(fec.redundancy, fec_entropy_flag)) {
+  if (!UpdateParity(fec.redundancy, fec_packet_entropy)) {
     return false;
   }
   min_protected_packet_ = fec.fec_group;

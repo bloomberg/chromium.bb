@@ -72,8 +72,8 @@ class InterArrivalSenderTest : public ::testing::Test {
             feedback_sequence_number_, receive_time));
     feedback_sequence_number_++;
 
-    sender_.OnIncomingQuicCongestionFeedbackFrame(
-        feedback, send_clock_.Now(), QuicBandwidth::Zero(), sent_packets_);
+    sender_.OnIncomingQuicCongestionFeedbackFrame(feedback, send_clock_.Now(),
+                                                  sent_packets_);
   }
 
   void SendFeedbackMessageNPackets(int n,
@@ -95,7 +95,7 @@ class InterArrivalSenderTest : public ::testing::Test {
       feedback_sequence_number_++;
     }
     sender_.OnIncomingQuicCongestionFeedbackFrame(feedback, send_clock_.Now(),
-        QuicBandwidth::Zero(), sent_packets_);
+                                                  sent_packets_);
   }
 
   QuicTime::Delta SenderDeltaSinceStart() {

@@ -108,11 +108,11 @@ bool HexChar(char c, uint8* value) {
     return true;
   }
   if (c >= 'a' && c <= 'f') {
-    *value = c - 'a';
+    *value = c - 'a' + 10;
     return true;
   }
   if (c >= 'A' && c <= 'F') {
-    *value = c - 'A';
+    *value = c - 'A' + 10;
     return true;
   }
   return false;
@@ -121,7 +121,8 @@ bool HexChar(char c, uint8* value) {
 }  // anonymous namespace
 
 CryptoTestUtils::FakeClientOptions::FakeClientOptions()
-    : dont_verify_certs(false) {
+    : dont_verify_certs(false),
+      channel_id_enabled(false) {
 }
 
 // static
@@ -136,7 +137,8 @@ int CryptoTestUtils::HandshakeWithFakeServer(
       new PacketSavingConnection(guid, addr, true);
   TestSession server_session(server_conn, QuicConfig(), true);
 
-  QuicCryptoServerConfig crypto_config(QuicCryptoServerConfig::TESTING);
+  QuicCryptoServerConfig crypto_config(QuicCryptoServerConfig::TESTING,
+                                       QuicRandom::GetInstance());
   SetupCryptoServerConfigForTest(
       server_session.connection()->clock(),
       server_session.connection()->random_generator(),
@@ -173,8 +175,11 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   crypto_config.SetDefaults();
   // TODO(rtenneti): Enable testing of ProofVerifier.
   // if (!options.dont_verify_certs) {
-  //  crypto_config.SetProofVerifier(ProofVerifierForTesting());
+  //   crypto_config.SetProofVerifier(ProofVerifierForTesting());
   // }
+  if (options.channel_id_enabled) {
+    crypto_config.SetChannelIDSigner(ChannelIDSignerForTesting());
+  }
   QuicCryptoClientStream client("test.example.com", &client_session,
                                 &crypto_config);
   client_session.SetCryptoStream(&client);
@@ -196,9 +201,10 @@ void CryptoTestUtils::SetupCryptoServerConfigForTest(
     QuicConfig* config,
     QuicCryptoServerConfig* crypto_config) {
   config->SetDefaults();
+  QuicCryptoServerConfig::ConfigOptions options;
+  options.channel_id_enabled = true;
   scoped_ptr<CryptoHandshakeMessage> scfg(
-      crypto_config->AddDefaultConfig(
-          rand, clock, QuicCryptoServerConfig::kDefaultExpiry));
+      crypto_config->AddDefaultConfig(rand, clock, options));
 }
 
 // static

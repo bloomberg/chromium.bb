@@ -30,18 +30,44 @@ namespace net {
 // This code is based on djb's public domain critbit tree from qhasm.
 //
 // A critbit tree has external and internal nodes. External nodes are just the
-// nonce values (which are stored without the orbit values included). Internal
-// nodes contain the bit number at which the tree is branching and exactly two
-// children. The critical bit is stored as a byte number and a byte
-// (|otherbits|) which has all the bits set /except/ the one in question.
+// nonce values (which are stored with internal times, see below, and without
+// the orbit values included). Internal nodes contain the bit number at which
+// the tree is branching and exactly two children. The critical bit is stored
+// as a byte number and a byte (|otherbits|) which has all the bits set
+// /except/ the one in question.
 //
 // Internal nodes have exactly two children: an internal node with only a
 // single child would be useless.
 //
 // The branching bit number (considering the MSB to be the 1st bit) is
 // monotonically increasing as you go down the tree.
+//
+// There are two distinct time representations used. External times are those
+// which are exposed to the users of this class. They are expected to be a
+// count of the number of seconds since the UNIX epoch. Internal times are a
+// count of the number of seconds since a point in time a couple of years
+// before the creation time given to the constructor. (See
+// |ExternalTimeToInternal|) This avoids having to worry about overflow since
+// we assume that no process will run for 130 years.
 class NET_EXPORT_PRIVATE StrikeRegister {
  public:
+  enum StartupType {
+    // DENY_REQUESTS_AT_STARTUP is the typical mode for a strike register.
+    // Because servers can crash and the strike-register memory-based, the
+    // state of the strike-register may be lost at any time. Thus the previous
+    // instance of the server may have accepted an nonce with time
+    // now+window_secs, which was forgotten in the crash. Therefore
+    // DENY_REQUESTS_AT_STARTUP causes the strike-register to reject all
+    // requests timestampped before window_secs + the creation time (the
+    // quiescent period).
+    DENY_REQUESTS_AT_STARTUP,
+    // NO_STARTUP_PERIOD_NEEDED indicates that no quiescent period is required.
+    // This may be because the strike-register is using an orbit randomly
+    // generated at startup and therefore nonces accepted by the previous
+    // instance of the strike-register are invalid for that reason.
+    NO_STARTUP_PERIOD_NEEDED,
+  };
+
   // An external node takes 24 bytes as we don't record the orbit.
   static const uint32 kExternalNodeSize;
 
@@ -56,18 +82,18 @@ class NET_EXPORT_PRIVATE StrikeRegister {
   static const uint32 kExternalFlag;
 
   // Construct a new set which can hold, at most, |max_entries| (which must be
-  // less than 2**23). Once constructed, all nonces created before
-  // |current_time| (in seconds) will be rejected. In the future, all nonces
-  // that are outside +/- |window_secs| from the current time will be rejected.
-  // Additionally, all nonces that have an orbit value other than |orbit| will
-  // be rejected.
+  // less than 2**23). See the comments around StartupType about initial
+  // behaviour. Otherwise, all nonces that are outside +/- |window_secs| from
+  // the current time will be rejected. Additionally, all nonces that have an
+  // orbit value other than |orbit| will be rejected.
   //
   // (Note that this code is independent of the actual units of time used, but
   // you should use seconds.)
   StrikeRegister(unsigned max_entries,
-                 uint32 current_time,
+                 uint32 current_time_external,
                  uint32 window_secs,
-                 const uint8 orbit[8]);
+                 const uint8 orbit[8],
+                 StartupType startup);
 
   ~StrikeRegister();
 
@@ -97,6 +123,10 @@ class NET_EXPORT_PRIVATE StrikeRegister {
 
   // TimeFromBytes returns a big-endian uint32 from |d|.
   static uint32 TimeFromBytes(const uint8 d[4]);
+
+  // ExternalTimeToInternal converts an external time value into an internal
+  // time value using |creation_time_external_|.
+  uint32 ExternalTimeToInternal(uint32 external_time);
 
   // BestMatch returns either kNil, or an external node index which could
   // possibly match |v|.
@@ -130,8 +160,16 @@ class NET_EXPORT_PRIVATE StrikeRegister {
 
   const uint32 max_entries_;
   const uint32 window_secs_;
+  // creation_time_external_ contains the uint32, external time when this
+  // object was created (i.e. the value passed to the constructor). This is
+  // used to translate external times to internal times.
+  const uint32 creation_time_external_;
+  // internal_epoch_ contains the external time value of the start of internal
+  // time.
+  const uint32 internal_epoch_;
   uint8 orbit_[8];
   uint32 horizon_;
+  bool horizon_valid_;
 
   uint32 internal_node_free_head_;
   uint32 external_node_free_head_;

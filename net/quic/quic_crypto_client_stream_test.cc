@@ -51,11 +51,10 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
   QuicCryptoClientStreamTest()
       : addr_(),
         connection_(new PacketSavingConnection(1, addr_, true)),
-        session_(connection_, QuicConfig(), true),
-        stream_(new QuicCryptoClientStream(kServerHostname, &session_,
+        session_(new TestSession(connection_, DefaultQuicConfig(), true)),
+        stream_(new QuicCryptoClientStream(kServerHostname, session_.get(),
                                            &crypto_config_)) {
-    session_.SetCryptoStream(stream_.get());
-    session_.config()->SetDefaults();
+    session_->SetCryptoStream(stream_.get());
     crypto_config_.SetDefaults();
   }
 
@@ -71,7 +70,7 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
 
   IPEndPoint addr_;
   PacketSavingConnection* connection_;
-  TestSession session_;
+  scoped_ptr<TestSession> session_;
   scoped_ptr<QuicCryptoClientStream> stream_;
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;
@@ -138,7 +137,7 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
 
   CompleteCryptoHandshake();
 
-  const QuicConfig* config = session_.config();
+  const QuicConfig* config = session_->config();
   EXPECT_EQ(kQBIC, config->congestion_control());
   EXPECT_EQ(kDefaultTimeoutSecs,
             config->idle_connection_state_lifetime().ToSeconds());
@@ -158,13 +157,36 @@ TEST_F(QuicCryptoClientStreamTest, InvalidHostname) {
     return;
   }
 
-  stream_.reset(new QuicCryptoClientStream("invalid", &session_,
+  stream_.reset(new QuicCryptoClientStream("invalid", session_.get(),
                                            &crypto_config_));
-  session_.SetCryptoStream(stream_.get());
+  session_->SetCryptoStream(stream_.get());
 
   CompleteCryptoHandshake();
   EXPECT_TRUE(stream_->encryption_established());
   EXPECT_TRUE(stream_->handshake_confirmed());
+}
+
+TEST_F(QuicCryptoClientStreamTest, ExpiredServerConfig) {
+  // Seed the config with a cached server config.
+  CompleteCryptoHandshake();
+
+  connection_ = new PacketSavingConnection(1, addr_, true);
+  session_.reset(new TestSession(connection_, QuicConfig(), true));
+  stream_.reset(new QuicCryptoClientStream(kServerHostname, session_.get(),
+                                           &crypto_config_));
+
+  session_->SetCryptoStream(stream_.get());
+  session_->config()->SetDefaults();
+
+  // Advance time 5 years to ensure that we pass the expiry time of the cached
+  // server config.
+  reinterpret_cast<MockClock*>(const_cast<QuicClock*>(connection_->clock()))
+      ->AdvanceTime(QuicTime::Delta::FromSeconds(60 * 60 * 24 * 365 * 5));
+
+  // Check that a client hello was sent and that CryptoConnect doesn't fail
+  // with an error.
+  EXPECT_TRUE(stream_->CryptoConnect());
+  ASSERT_EQ(1u, connection_->packets_.size());
 }
 
 }  // namespace

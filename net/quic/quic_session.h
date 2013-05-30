@@ -106,7 +106,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Returns mutable config for this session. Returned config is owned
   // by QuicSession.
-  virtual QuicConfig* config();
+  QuicConfig* config();
 
   // Returns true if the stream existed previously and has been closed.
   // Returns false if the stream is still active or if the stream has

@@ -36,7 +36,6 @@ Value* NetLogQuicPacketHeaderCallback(const QuicPacketHeader* header,
                   base::Uint64ToString(header->packet_sequence_number));
   dict->SetInteger("entropy_flag", header->entropy_flag);
   dict->SetInteger("fec_flag", header->fec_flag);
-  dict->SetInteger("fec_entropy_flag", header->fec_entropy_flag);
   dict->SetInteger("fec_group", header->fec_group);
   return dict;
 }

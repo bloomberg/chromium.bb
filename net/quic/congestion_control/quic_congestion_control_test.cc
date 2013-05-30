@@ -22,7 +22,6 @@ class QuicCongestionManagerPeer : public QuicCongestionManager {
                                      CongestionFeedbackType congestion_type)
       : QuicCongestionManager(clock, congestion_type) {
   }
-  using QuicCongestionManager::SentBandwidth;
   using QuicCongestionManager::BandwidthEstimate;
 };
 
@@ -48,7 +47,6 @@ TEST_F(QuicCongestionControlTest, FixedRateSenderAPI) {
   congestion_feedback.fix_rate.bitrate = QuicBandwidth::FromKBytesPerSecond(30);
   manager_->OnIncomingQuicCongestionFeedbackFrame(congestion_feedback,
                                                   clock_.Now());
-  EXPECT_TRUE(manager_->SentBandwidth(clock_.Now()).IsZero());
   EXPECT_TRUE(manager_->TimeUntilSend(
     clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA).IsZero());
   manager_->SentPacket(1, clock_.Now(), kMaxPacketSize, NOT_RETRANSMISSION);

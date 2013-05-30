@@ -43,7 +43,6 @@ class QuicStreamFactoryTest : public ::testing::Test {
     header.public_header.version_flag = true;
     header.packet_sequence_number = num;
     header.entropy_flag = false;
-    header.fec_entropy_flag = false;
     header.fec_flag = false;
     header.fec_group = 0;
 
@@ -61,7 +60,6 @@ class QuicStreamFactoryTest : public ::testing::Test {
     header.public_header.version_flag = false;
     header.packet_sequence_number = 2;
     header.entropy_flag = false;
-    header.fec_entropy_flag = false;
     header.fec_flag = false;
     header.fec_group = 0;
 
@@ -90,7 +88,6 @@ class QuicStreamFactoryTest : public ::testing::Test {
     header.public_header.version_flag = false;
     header.packet_sequence_number = sequence_number;
     header.entropy_flag = false;
-    header.fec_entropy_flag = false;
     header.fec_flag = false;
     header.fec_group = 0;
 

@@ -225,7 +225,8 @@ TEST_P(QuicPacketCreatorTest, CreateStreamFrameTooLarge) {
   }
   // A string larger than fits into a frame.
   creator_.options()->max_packet_length = GetPacketLengthForOneStream(
-      QuicPacketCreatorPeer::SendVersionInPacket(&creator_), 4);
+      QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
+      NOT_IN_FEC_GROUP, 4);
   QuicFrame frame;
   size_t consumed = creator_.CreateStreamFrame(1u, "testTooLong", 0u, true,
                                                &frame);
@@ -243,7 +244,9 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
   EXPECT_FALSE(creator_.HasPendingFrames());
   EXPECT_EQ(max_plaintext_size -
             GetPacketHeaderSize(
-                QuicPacketCreatorPeer::SendVersionInPacket(&creator_)),
+                creator_.options()->send_guid_length,
+                QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
+                NOT_IN_FEC_GROUP),
             creator_.BytesFree());
 
   // Add a variety of frame types and then a padding frame.
@@ -284,7 +287,9 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
   EXPECT_FALSE(creator_.HasPendingFrames());
   EXPECT_EQ(max_plaintext_size -
             GetPacketHeaderSize(
-                QuicPacketCreatorPeer::SendVersionInPacket(&creator_)),
+                creator_.options()->send_guid_length,
+                QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
+                NOT_IN_FEC_GROUP),
             creator_.BytesFree());
 }
 

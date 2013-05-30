@@ -32,6 +32,8 @@ const QuicTag kCHLO = TAG('C', 'H', 'L', 'O');  // Client hello
 const QuicTag kSHLO = TAG('S', 'H', 'L', 'O');  // Server hello
 const QuicTag kSCFG = TAG('S', 'C', 'F', 'G');  // Server config
 const QuicTag kREJ  = TAG('R', 'E', 'J', '\0'); // Reject
+const QuicTag kCETV = TAG('C', 'E', 'T', 'V');  // Client encrypted tag-value
+                                                // pairs
 
 // Key exchange methods
 const QuicTag kP256 = TAG('P', '2', '5', '6');  // ECDH, Curve P-256
@@ -47,6 +49,7 @@ const QuicTag kINAR = TAG('I', 'N', 'A', 'R');  // Inter arrival
 
 // Proof types (i.e. certificate types)
 const QuicTag kX509 = TAG('X', '5', '0', '9');  // X.509 certificate
+const QuicTag kCHID = TAG('C', 'H', 'I', 'D');  // Channel ID.
 
 // Client hello tags
 const QuicTag kVERS = TAG('V', 'E', 'R', 'S');  // Version
@@ -71,6 +74,10 @@ const QuicTag kPROF = TAG('P', 'R', 'O', 'F');  // Proof (signature).
 const QuicTag kCCS  = TAG('C', 'C', 'S', 0);    // Common certificate set
 const QuicTag kCCRT = TAG('C', 'C', 'R', 'T');  // Cached certificate
 const QuicTag kEXPY = TAG('E', 'X', 'P', 'Y');  // Expiry
+
+// CETV tags
+const QuicTag kCIDK = TAG('C', 'I', 'D', 'K');  // ChannelID key
+const QuicTag kCIDS = TAG('C', 'I', 'D', 'S');  // ChannelID signature
 
 // Universal tags
 const QuicTag kPAD  = TAG('P', 'A', 'D', '\0'); // Padding

@@ -186,8 +186,8 @@ class QuicConnectionHelperTest : public ::testing::Test {
     header_.public_header.version_flag = true;
     header_.packet_sequence_number = sequence_number;
     header_.entropy_flag = false;
-    header_.fec_entropy_flag = false;
     header_.fec_flag = false;
+    header_.is_in_fec_group = NOT_IN_FEC_GROUP;
     header_.fec_group = 0;
   }
 

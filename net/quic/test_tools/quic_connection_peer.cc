@@ -63,8 +63,9 @@ size_t QuicConnectionPeer::GetNumRetransmissionTimeouts(
 }
 
 // static
-QuicTime::Delta QuicConnectionPeer::GetTimeout(QuicConnection* connection) {
-  return connection->timeout_;
+QuicTime::Delta QuicConnectionPeer::GetNetworkTimeout(
+    QuicConnection* connection) {
+  return connection->idle_network_timeout_;
 }
 
 // static

@@ -14,6 +14,7 @@
 #include "crypto/secure_hash.h"
 #include "net/base/net_util.h"
 #include "net/quic/crypto/cert_compressor.h"
+#include "net/quic/crypto/channel_id.h"
 #include "net/quic/crypto/common_cert_set.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_utils.h"
@@ -45,7 +46,7 @@ CryptoHandshakeMessage::CryptoHandshakeMessage(
       tag_value_map_(other.tag_value_map_),
       minimum_size_(other.minimum_size_) {
   // Don't copy serialized_. scoped_ptr doesn't have a copy constructor.
-  // The new object can reconstruct serialized_ lazily.
+  // The new object can lazily reconstruct serialized_.
 }
 
 CryptoHandshakeMessage::~CryptoHandshakeMessage() {}
@@ -75,6 +76,10 @@ const QuicData& CryptoHandshakeMessage::GetSerialized() const {
   return *serialized_.get();
 }
 
+void CryptoHandshakeMessage::MarkDirty() {
+  serialized_.reset();
+}
+
 void CryptoHandshakeMessage::Insert(QuicTagValueMap::const_iterator begin,
                                     QuicTagValueMap::const_iterator end) {
   tag_value_map_.insert(begin, end);
@@ -84,7 +89,7 @@ void CryptoHandshakeMessage::SetTaglist(QuicTag tag, ...) {
   // Warning, if sizeof(QuicTag) > sizeof(int) then this function will break
   // because the terminating 0 will only be promoted to int.
   COMPILE_ASSERT(sizeof(QuicTag) <= sizeof(int),
-                 crypto_tag_not_be_larger_than_int_or_varargs_will_break);
+                 crypto_tag_may_not_be_larger_than_int_or_varargs_will_break);
 
   vector<QuicTag> tags;
   va_list ap;
@@ -108,6 +113,10 @@ void CryptoHandshakeMessage::SetTaglist(QuicTag tag, ...) {
 
 void CryptoHandshakeMessage::SetStringPiece(QuicTag tag, StringPiece value) {
   tag_value_map_[tag] = value.as_string();
+}
+
+void CryptoHandshakeMessage::Erase(QuicTag tag) {
+  tag_value_map_.erase(tag);
 }
 
 QuicErrorCode CryptoHandshakeMessage::GetTaglist(QuicTag tag,
@@ -179,15 +188,6 @@ QuicErrorCode CryptoHandshakeMessage::GetNthValue24(QuicTag tag,
   }
 }
 
-bool CryptoHandshakeMessage::GetString(QuicTag tag, string* out) const {
-  QuicTagValueMap::const_iterator it = tag_value_map_.find(tag);
-  if (it == tag_value_map_.end()) {
-    return false;
-  }
-  *out = it->second;
-  return true;
-}
-
 QuicErrorCode CryptoHandshakeMessage::GetUint16(QuicTag tag,
                                                 uint16* out) const {
   return GetPOD(tag, out, sizeof(uint16));
@@ -218,6 +218,9 @@ size_t CryptoHandshakeMessage::size() const {
 }
 
 void CryptoHandshakeMessage::set_minimum_size(size_t min_bytes) {
+  if (min_bytes == minimum_size_) {
+    return;
+  }
   serialized_.reset();
   minimum_size_ = min_bytes;
 }
@@ -327,17 +330,22 @@ QuicCryptoNegotiatedParameters::QuicCryptoNegotiatedParameters()
 QuicCryptoNegotiatedParameters::~QuicCryptoNegotiatedParameters() {}
 
 CrypterPair::CrypterPair() {}
+
 CrypterPair::~CrypterPair() {}
 
 // static
 const char QuicCryptoConfig::kInitialLabel[] = "QUIC key expansion";
 
+// static
+const char QuicCryptoConfig::kCETVLabel[] = "QUIC CETV block";
+
+// static
 const char QuicCryptoConfig::kForwardSecureLabel[] =
     "QUIC forward secure key expansion";
 
 QuicCryptoConfig::QuicCryptoConfig()
     : version(0),
-      common_cert_sets(new CommonCertSetsQUIC) {
+      common_cert_sets(CommonCertSets::GetInstanceQUIC()) {
 }
 
 QuicCryptoConfig::~QuicCryptoConfig() {}
@@ -353,8 +361,25 @@ QuicCryptoClientConfig::CachedState::CachedState()
 
 QuicCryptoClientConfig::CachedState::~CachedState() {}
 
-bool QuicCryptoClientConfig::CachedState::is_complete() const {
-  return !server_config_.empty() && server_config_valid_;
+bool QuicCryptoClientConfig::CachedState::IsComplete(QuicWallTime now) const {
+  if (server_config_.empty() || !server_config_valid_) {
+    return false;
+  }
+
+  const CryptoHandshakeMessage* scfg = GetServerConfig();
+  if (!scfg) {
+    // Should be impossible short of cache corruption.
+    DCHECK(false);
+    return false;
+  }
+
+  uint64 expiry_seconds;
+  if (scfg->GetUint64(kEXPY, &expiry_seconds) != QUIC_NO_ERROR ||
+      now.ToUNIXSeconds() >= expiry_seconds) {
+    return false;
+  }
+
+  return true;
 }
 
 const CryptoHandshakeMessage*
@@ -370,27 +395,57 @@ QuicCryptoClientConfig::CachedState::GetServerConfig() const {
   return scfg_.get();
 }
 
-bool QuicCryptoClientConfig::CachedState::SetServerConfig(StringPiece scfg) {
-  if (scfg == server_config_) {
-    return true;
+QuicErrorCode QuicCryptoClientConfig::CachedState::SetServerConfig(
+    StringPiece server_config, QuicWallTime now, string* error_details) {
+  const bool matches_existing = server_config == server_config_;
+
+  // Even if the new server config matches the existing one, we still wish to
+  // reject it if it has expired.
+  scoped_ptr<CryptoHandshakeMessage> new_scfg_storage;
+  const CryptoHandshakeMessage* new_scfg;
+
+  if (!matches_existing) {
+    new_scfg_storage.reset(CryptoFramer::ParseMessage(server_config));
+    new_scfg = new_scfg_storage.get();
+  } else {
+    new_scfg = GetServerConfig();
   }
 
-  scfg_.reset(CryptoFramer::ParseMessage(scfg));
-  if (!scfg_.get()) {
-    return false;
+  if (!new_scfg) {
+    *error_details = "SCFG invalid";
+    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
-  server_config_ = scfg.as_string();
+
+  uint64 expiry_seconds;
+  if (new_scfg->GetUint64(kEXPY, &expiry_seconds) != QUIC_NO_ERROR) {
+    *error_details = "SCFG missing EXPY";
+    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  }
+
+  if (now.ToUNIXSeconds() >= expiry_seconds) {
+    *error_details = "SCFG has expired";
+    return QUIC_CRYPTO_SERVER_CONFIG_EXPIRED;
+  }
+
+  if (!matches_existing) {
+    server_config_ = server_config.as_string();
+    server_config_valid_ = false;
+    scfg_.reset(new_scfg_storage.release());
+  }
+  return QUIC_NO_ERROR;
+}
+
+void QuicCryptoClientConfig::CachedState::InvalidateServerConfig() {
+  server_config_.clear();
+  scfg_.reset();
   server_config_valid_ = false;
-  return true;
 }
 
 void QuicCryptoClientConfig::CachedState::SetProof(const vector<string>& certs,
                                                    StringPiece signature) {
-  bool has_changed = signature != server_config_sig_;
+  bool has_changed =
+      signature != server_config_sig_ || certs_.size() != certs.size();
 
-  if (certs_.size() != certs.size()) {
-    has_changed = true;
-  }
   if (!has_changed) {
     for (size_t i = 0; i < certs_.size(); i++) {
       if (certs_[i] != certs[i]) {
@@ -442,6 +497,7 @@ void QuicCryptoClientConfig::CachedState::set_source_address_token(
 
 void QuicCryptoClientConfig::SetDefaults() {
   // Version must be 0.
+  // TODO(agl): this version stuff is obsolete now.
   version = QuicCryptoConfig::CONFIG_VERSION;
 
   // Key exchange methods.
@@ -490,7 +546,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     out->SetTaglist(kPDMD, kX509, 0);
   }
 
-  if (common_cert_sets.get()) {
+  if (common_cert_sets) {
     out->SetStringPiece(kCCS, common_cert_sets->GetCommonHashes());
   }
 
@@ -527,20 +583,9 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
   if (!scfg) {
     // This should never happen as our caller should have checked
-    // cached->is_complete() before calling this function.
+    // cached->IsComplete() before calling this function.
     *error_details = "Handshake not ready";
     return QUIC_CRYPTO_INTERNAL_ERROR;
-  }
-
-  uint64 expiry_seconds;
-  if (scfg->GetUint64(kEXPY, &expiry_seconds) != QUIC_NO_ERROR) {
-    *error_details = "SCFG missing EXPY";
-    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
-  }
-
-  if (static_cast<uint64>(now.ToUNIXSeconds()) >= expiry_seconds) {
-    *error_details = "SCFG expired";
-    return QUIC_CRYPTO_SERVER_CONFIG_EXPIRED;
   }
 
   StringPiece scid;
@@ -549,13 +594,6 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
   out->SetStringPiece(kSCID, scid);
-
-  // Calculate the mutual algorithms that the connection is going to use.
-  if (scfg->GetUint16(kVERS, &out_params->version) != QUIC_NO_ERROR ||
-      out_params->version != QuicCryptoConfig::CONFIG_VERSION) {
-    *error_details = "Bad version";
-    return QUIC_CRYPTO_VERSION_NOT_SUPPORTED;
-  }
 
   const QuicTag* their_aeads;
   const QuicTag* their_key_exchanges;
@@ -569,9 +607,9 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   }
 
   size_t key_exchange_index;
-  if (!QuicUtils::FindMutualTag(aead, their_aeads, num_their_aeads,
-                                QuicUtils::PEER_PRIORITY, &out_params->aead,
-                                NULL) ||
+  if (!QuicUtils::FindMutualTag(
+          aead, their_aeads, num_their_aeads, QuicUtils::PEER_PRIORITY,
+          &out_params->aead, NULL) ||
       !QuicUtils::FindMutualTag(
           kexs, their_key_exchanges, num_their_key_exchanges,
           QuicUtils::PEER_PRIORITY, &out_params->key_exchange,
@@ -607,8 +645,8 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
           Curve25519KeyExchange::NewPrivateKey(rand)));
       break;
     case kP256:
-      out_params->client_key_exchange
-          .reset(P256KeyExchange::New(P256KeyExchange::NewPrivateKey()));
+      out_params->client_key_exchange.reset(P256KeyExchange::New(
+          P256KeyExchange::NewPrivateKey()));
       break;
     default:
       DCHECK(false);
@@ -622,6 +660,68 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
   out->SetStringPiece(kPUBS, out_params->client_key_exchange->public_value());
+
+  bool do_channel_id = false;
+  if (channel_id_signer_.get()) {
+    const QuicTag* their_proof_demands;
+    size_t num_their_proof_demands;
+    if (scfg->GetTaglist(kPDMD, &their_proof_demands,
+                         &num_their_proof_demands) == QUIC_NO_ERROR) {
+      for (size_t i = 0; i < num_their_proof_demands; i++) {
+        if (their_proof_demands[i] == kCHID) {
+          do_channel_id = true;
+          break;
+        }
+      }
+    }
+  }
+
+  if (do_channel_id) {
+    // In order to calculate the encryption key for the CETV block we need to
+    // serialise the client hello as it currently is (i.e. without the CETV
+    // block). For this, the client hello is serialized without padding.
+    const size_t orig_min_size = out->minimum_size();
+    out->set_minimum_size(0);
+
+    CryptoHandshakeMessage cetv;
+    cetv.set_tag(kCETV);
+
+    string hkdf_input;
+    const QuicData& client_hello_serialized = out->GetSerialized();
+    hkdf_input.append(QuicCryptoConfig::kCETVLabel,
+                      strlen(QuicCryptoConfig::kCETVLabel) + 1);
+    hkdf_input.append(reinterpret_cast<char*>(&guid), sizeof(guid));
+    hkdf_input.append(client_hello_serialized.data(),
+                      client_hello_serialized.length());
+    hkdf_input.append(cached->server_config());
+
+    string key, signature;
+    if (!channel_id_signer_->Sign(server_hostname, hkdf_input,
+                                  &key, &signature)) {
+      *error_details = "Channel ID signature failed";
+      return QUIC_INTERNAL_ERROR;
+    }
+
+    cetv.SetStringPiece(kCIDK, key);
+    cetv.SetStringPiece(kCIDS, signature);
+
+    CrypterPair crypters;
+    CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
+                            out_params->aead, out_params->client_nonce,
+                            out_params->server_nonce, hkdf_input,
+                            CryptoUtils::CLIENT, &crypters);
+
+    const QuicData& cetv_plaintext = cetv.GetSerialized();
+    scoped_ptr<QuicData> cetv_ciphertext(crypters.encrypter->EncryptPacket(
+        0 /* sequence number */,
+        StringPiece() /* associated data */,
+        cetv_plaintext.AsStringPiece()));
+
+    out->SetStringPiece(kCETV, cetv_ciphertext->AsStringPiece());
+    out->MarkDirty();
+
+    out->set_minimum_size(orig_min_size);
+  }
 
   out_params->hkdf_input_suffix.clear();
   out_params->hkdf_input_suffix.append(reinterpret_cast<char*>(&guid),
@@ -648,9 +748,15 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
 QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     CachedState* cached,
     const CryptoHandshakeMessage& rej,
+    QuicWallTime now,
     QuicCryptoNegotiatedParameters* out_params,
     string* error_details) {
   DCHECK(error_details != NULL);
+
+  if (rej.tag() != kREJ) {
+    *error_details = "Message is not REJ";
+    return QUIC_CRYPTO_INTERNAL_ERROR;
+  }
 
   StringPiece scfg;
   if (!rej.GetStringPiece(kSCFG, &scfg)) {
@@ -658,9 +764,9 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
   }
 
-  if (!cached->SetServerConfig(scfg)) {
-    *error_details = "Invalid SCFG";
-    return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+  QuicErrorCode error = cached->SetServerConfig(scfg, now, error_details);
+  if (error != QUIC_NO_ERROR) {
+    return error;
   }
 
   StringPiece token;
@@ -669,8 +775,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
   }
 
   StringPiece nonce;
-  if (rej.GetStringPiece(kServerNonceTag, &nonce) && nonce.size() ==
-      kNonceSize) {
+  if (rej.GetStringPiece(kServerNonceTag, &nonce)) {
     out_params->server_nonce = nonce.as_string();
   }
 
@@ -679,7 +784,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
       rej.GetStringPiece(kCertificateTag, &cert_bytes)) {
     vector<string> certs;
     if (!CertCompressor::DecompressChain(cert_bytes, out_params->cached_certs,
-                                         common_cert_sets.get(), &certs)) {
+                                         common_cert_sets, &certs)) {
       *error_details = "Certificate data invalid";
       return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
     }
@@ -737,6 +842,10 @@ const ProofVerifier* QuicCryptoClientConfig::proof_verifier() const {
 
 void QuicCryptoClientConfig::SetProofVerifier(ProofVerifier* verifier) {
   proof_verifier_.reset(verifier);
+}
+
+void QuicCryptoClientConfig::SetChannelIDSigner(ChannelIDSigner* signer) {
+  channel_id_signer_.reset(signer);
 }
 
 }  // namespace net

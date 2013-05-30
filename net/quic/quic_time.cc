@@ -104,6 +104,11 @@ QuicWallTime QuicWallTime::FromUNIXSeconds(uint64 seconds) {
   return QuicWallTime(seconds);
 }
 
+// static
+QuicWallTime QuicWallTime::Zero() {
+  return QuicWallTime(0);
+}
+
 uint64 QuicWallTime::ToUNIXSeconds() const {
   return seconds_;
 }
@@ -114,6 +119,10 @@ bool QuicWallTime::IsAfter(QuicWallTime other) const {
 
 bool QuicWallTime::IsBefore(QuicWallTime other) const {
   return seconds_ < other.seconds_;
+}
+
+bool QuicWallTime::IsZero() const {
+  return seconds_ == 0;
 }
 
 QuicTime::Delta QuicWallTime::AbsoluteDifference(QuicWallTime other) const {

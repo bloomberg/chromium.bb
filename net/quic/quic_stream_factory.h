@@ -154,6 +154,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // clear the data in the map.
   CryptoConfigMap all_crypto_configs_;
 
+  QuicConfig config_;
+
   JobMap active_jobs_;
   JobRequestsMap job_requests_map_;
   RequestMap active_requests_;

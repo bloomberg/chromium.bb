@@ -76,30 +76,30 @@ TEST(CommonCertSets, FindGIA) {
   StringPiece gia(reinterpret_cast<const char*>(kGIACertificate),
                   sizeof(kGIACertificate));
 
-  CommonCertSetsQUIC sets;
+  const CommonCertSets* sets(CommonCertSets::GetInstanceQUIC());
 
   const uint64 in_hash = GG_UINT64_C(0xde8086f914a3af54);
   uint64 hash;
   uint32 index;
-  ASSERT_TRUE(sets.MatchCert(
+  ASSERT_TRUE(sets->MatchCert(
       gia,
       StringPiece(reinterpret_cast<const char*>(&in_hash), sizeof(in_hash)),
       &hash, &index));
   EXPECT_EQ(in_hash, hash);
 
-  StringPiece gia_copy = sets.GetCert(hash, index);
+  StringPiece gia_copy = sets->GetCert(hash, index);
   EXPECT_FALSE(gia_copy.empty());
   ASSERT_EQ(gia.size(), gia_copy.size());
   EXPECT_TRUE(0 == memcmp(gia.data(), gia_copy.data(), gia.size()));
 }
 
 TEST(CommonCertSets, NonMatch) {
-  CommonCertSetsQUIC sets;
+  const CommonCertSets* sets(CommonCertSets::GetInstanceQUIC());
   StringPiece not_a_cert("hello");
   const uint64 in_hash = GG_UINT64_C(0xde8086f914a3af54);
   uint64 hash;
   uint32 index;
-  EXPECT_FALSE(sets.MatchCert(
+  EXPECT_FALSE(sets->MatchCert(
       not_a_cert,
       StringPiece(reinterpret_cast<const char*>(&in_hash), sizeof(in_hash)),
       &hash, &index));

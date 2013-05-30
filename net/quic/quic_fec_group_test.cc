@@ -35,7 +35,7 @@ const bool kEntropyFlag[] = {
   true,
 };
 
-const bool kTestFecEntropy = false;
+const bool kTestFecPacketEntropy = false;
 
 }  // namespace
 
@@ -157,7 +157,7 @@ TEST_F(QuicFecGroupTest, UpdateFecIfReceivedPacketIsNotCovered) {
   fec.redundancy = redundancy;
 
   header.packet_sequence_number = 2;
-  ASSERT_FALSE(group.UpdateFec(2, kTestFecEntropy, fec));
+  ASSERT_FALSE(group.UpdateFec(2, kTestFecPacketEntropy, fec));
 }
 
 TEST_F(QuicFecGroupTest, ProtectsPacketsBefore) {
@@ -206,7 +206,7 @@ TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithFecData) {
   fec.redundancy = kData[0];
 
   QuicFecGroup group;
-  ASSERT_TRUE(group.UpdateFec(3, kTestFecEntropy, fec));
+  ASSERT_TRUE(group.UpdateFec(3, kTestFecPacketEntropy, fec));
 
   EXPECT_FALSE(group.ProtectsPacketsBefore(1));
   EXPECT_FALSE(group.ProtectsPacketsBefore(2));

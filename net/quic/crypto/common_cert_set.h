@@ -19,6 +19,9 @@ class NET_EXPORT_PRIVATE CommonCertSets {
  public:
   virtual ~CommonCertSets();
 
+  // GetInstanceQUIC returns the standard QUIC common certificate sets.
+  static const CommonCertSets* GetInstanceQUIC();
+
   // GetCommonHashes returns a StringPiece containing the hashes of common sets
   // supported by this object. The 64-bit hashes are concatenated in the
   // StringPiece.
@@ -37,26 +40,6 @@ class NET_EXPORT_PRIVATE CommonCertSets {
                          base::StringPiece common_set_hashes,
                          uint64* out_hash,
                          uint32* out_index) const = 0;
-};
-
-// CommonCertSetsQUIC implements the CommonCertSets interface using the default
-// certificate sets.
-class NET_EXPORT_PRIVATE CommonCertSetsQUIC : public CommonCertSets {
- public:
-  CommonCertSetsQUIC();
-
-  // CommonCertSets interface.
-  virtual base::StringPiece GetCommonHashes() const OVERRIDE;
-
-  virtual base::StringPiece GetCert(uint64 hash, uint32 index) const OVERRIDE;
-
-  virtual bool MatchCert(base::StringPiece cert,
-                         base::StringPiece common_set_hashes,
-                         uint64* out_hash,
-                         uint32* out_index) const OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CommonCertSetsQUIC);
 };
 
 }  // namespace net

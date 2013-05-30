@@ -38,30 +38,37 @@ class QuicCryptoServerConfigPeer;
 // need to consider locking.
 class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
  public:
-  enum {
-    // kDefaultExpiry can be passed to DefaultConfig to select the default
-    // expiry time.
-    kDefaultExpiry = 0,
+  // ConfigOptions contains options for generating server configs.
+  struct NET_EXPORT_PRIVATE ConfigOptions {
+    ConfigOptions();
+
+    // expiry_time is the time, in UNIX seconds, when the server config will
+    // expire. If unset, it defaults to the current time plus six months.
+    QuicWallTime expiry_time;
+    // channel_id_enabled controls whether the server config will indicate
+    // support for ChannelIDs.
+    bool channel_id_enabled;
   };
 
   // |source_address_token_secret|: secret key material used for encrypting and
   //     decrypting source address tokens. It can be of any length as it is fed
   //     into a KDF before use. In tests, use TESTING.
-  explicit QuicCryptoServerConfig(
-      base::StringPiece source_address_token_secret);
+  // |server_nonce_entropy|: an entropy source used to generate the orbit and
+  //     key for server nonces, which are always local to a given instance of a
+  //     server.
+  QuicCryptoServerConfig(base::StringPiece source_address_token_secret,
+                         QuicRandom* server_nonce_entropy);
   ~QuicCryptoServerConfig();
 
   // TESTING is a magic parameter for passing to the constructor in tests.
   static const char TESTING[];
 
   // DefaultConfig generates a QuicServerConfigProtobuf protobuf suitable for
-  // using in tests. If |expiry_time| is non-zero then it's used as the expiry
-  // for the server config in UNIX epoch seconds. Otherwise the default expiry
-  // time is six months from now.
+  // using in tests.
   static QuicServerConfigProtobuf* DefaultConfig(
       QuicRandom* rand,
       const QuicClock* clock,
-      uint64 expiry_time);
+      const ConfigOptions& options);
 
   // AddConfig adds a QuicServerConfigProtobuf to the availible configurations.
   // It returns the SCFG message from the config if successful. The caller
@@ -74,7 +81,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   CryptoHandshakeMessage* AddDefaultConfig(
       QuicRandom* rand,
       const QuicClock* clock,
-      uint64 expiry_time);
+      const ConfigOptions& options);
 
   // ProcessClientHello processes |client_hello| and decides whether to accept
   // or reject the connection. If the connection is to be accepted, |out| is
@@ -159,6 +166,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     // tag_value_map contains the raw key/value pairs for the config.
     QuicTagValueMap tag_value_map;
 
+    // channel_id_enabled is true if the config in |serialized| specifies that
+    // ChannelIDs are supported.
+    bool channel_id_enabled;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Config);
   };
@@ -176,6 +187,17 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
                                   const IPEndPoint& ip,
                                   QuicWallTime now) const;
 
+  // NewServerNonce generates and encrypts a random nonce.
+  std::string NewServerNonce(QuicRandom* rand, QuicWallTime now) const;
+
+  // ValidateServerNonce decrypts |token| and verifies that it hasn't been
+  // previously used and is recent enough that it is plausible that it was part
+  // of a very recently provided rejection ("recent" will be on the order of
+  // 10-30 seconds). If so, it records that it has been used and returns true.
+  // Otherwise it returns false.
+  bool ValidateServerNonce(base::StringPiece echoed_server_nonce,
+                           QuicWallTime now) const;
+
   std::map<ServerConfigID, Config*> configs_;
 
   ServerConfigID active_config_;
@@ -188,6 +210,21 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // source_address_token_boxer_ is used to protect the source-address tokens
   // that are given to clients.
   CryptoSecretBoxer source_address_token_boxer_;
+
+  // server_nonce_boxer_ is used to encrypt and validate suggested server
+  // nonces.
+  CryptoSecretBoxer server_nonce_boxer_;
+
+  // server_nonce_orbit_ contains the random, per-server orbit values that this
+  // server will use to generate server nonces (the moral equivalent of a SYN
+  // cookies).
+  uint8 server_nonce_orbit_[8];
+
+  mutable base::Lock server_nonce_strike_register_lock_;
+  // server_nonce_strike_register_ contains a data structure that keeps track of
+  // previously observed server nonces from this server, in order to prevent
+  // replay attacks.
+  mutable scoped_ptr<StrikeRegister> server_nonce_strike_register_;
 
   // proof_source_ contains an object that can provide certificate chains and
   // signatures.
@@ -203,6 +240,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   uint32 strike_register_window_secs_;
   uint32 source_address_token_future_secs_;
   uint32 source_address_token_lifetime_secs_;
+  uint32 server_nonce_strike_register_max_entries_;
+  uint32 server_nonce_strike_register_window_secs_;
 };
 
 }  // namespace net

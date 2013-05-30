@@ -15,7 +15,8 @@ namespace net {
 namespace tools {
 namespace test {
 
-BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers) {
+BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers,
+                           bool secure) {
   StringPiece uri = const_headers->request_uri();
   if (uri.empty()) {
     return NULL;
@@ -28,7 +29,8 @@ BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers) {
   if (!uri.starts_with("https://") &&
       !uri.starts_with("http://")) {
     // If we have a relative URL, set some defaults.
-    string full_uri = "https:/www.google.com";
+    string full_uri = secure ? "https://www.google.com" :
+                               "http://www.google.com";
     full_uri.append(uri.as_string());
     headers->SetRequestUri(full_uri);
   }
@@ -36,27 +38,35 @@ BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers) {
 }
 
 QuicTestClient::QuicTestClient(IPEndPoint address, const string& hostname)
-    : server_address_(address),
-      client_(address, hostname),
-      stream_(NULL),
-      stream_error_(QUIC_STREAM_NO_ERROR),
-      connection_error_(QUIC_NO_ERROR),
-      bytes_read_(0),
-      bytes_written_(0),
-      never_connected_(true) {
+    : client_(address, hostname) {
+  Initialize(address, hostname);
+}
+
+QuicTestClient::QuicTestClient(IPEndPoint address,
+                               const string& hostname,
+                               bool secure)
+    : client_(address, hostname) {
+  Initialize(address, hostname);
+  secure_ = secure;
 }
 
 QuicTestClient::QuicTestClient(IPEndPoint address,
                                const string& hostname,
                                const QuicConfig& config)
-    : server_address_(address),
-      client_(address, hostname, config),
-      stream_(NULL),
-      stream_error_(QUIC_STREAM_NO_ERROR),
-      connection_error_(QUIC_NO_ERROR),
-      bytes_read_(0),
-      bytes_written_(0),
-      never_connected_(true) {
+    : client_(address, hostname, config) {
+  Initialize(address, hostname);
+}
+
+void QuicTestClient::Initialize(IPEndPoint address, const string& hostname) {
+  server_address_ = address;
+  stream_ = NULL;
+  stream_error_ = QUIC_STREAM_NO_ERROR;
+  connection_error_ = QUIC_NO_ERROR;
+  bytes_read_ = 0;
+  bytes_written_= 0;
+  never_connected_ =true;
+  secure_ = true;
+  auto_reconnect_ = false;
 }
 
 QuicTestClient::~QuicTestClient() {
@@ -84,7 +94,8 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   QuicReliableClientStream* stream = GetOrCreateStream();
   if (!stream) { return 0; }
 
-  scoped_ptr<BalsaHeaders> munged_headers(MungeHeaders(message.headers()));
+  scoped_ptr<BalsaHeaders> munged_headers(MungeHeaders(message.headers(),
+                                          secure_));
   return GetOrCreateStream()->SendRequest(
       munged_headers.get() ? *munged_headers.get() : *message.headers(),
       message.body(),
@@ -115,7 +126,7 @@ string QuicTestClient::SendSynchronousRequest(const string& uri) {
 }
 
 QuicReliableClientStream* QuicTestClient::GetOrCreateStream() {
-  if (never_connected_ == true) {
+  if (never_connected_ == true || auto_reconnect_) {
     if (!connected()) {
       Connect();
     }
@@ -125,7 +136,9 @@ QuicReliableClientStream* QuicTestClient::GetOrCreateStream() {
   }
   if (!stream_) {
     stream_ = client_.CreateReliableClientStream();
-    stream_->set_visitor(this);
+    if (stream_ != NULL) {
+      stream_->set_visitor(this);
+    }
   }
   return stream_;
 }
@@ -135,6 +148,10 @@ bool QuicTestClient::connected() const {
 }
 
 void QuicTestClient::WaitForResponse() {
+  if (stream_ == NULL) {
+    // The client has likely disconnected.
+    return;
+  }
   client_.WaitForStreamToClose(stream_->id());
 }
 

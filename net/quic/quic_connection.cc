@@ -84,7 +84,10 @@ QuicConnection::QuicConnection(QuicGuid guid,
       debug_visitor_(NULL),
       packet_creator_(guid_, &framer_, random_generator_, is_server),
       packet_generator_(this, &packet_creator_),
-      timeout_(QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs)),
+      idle_network_timeout_(
+          QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs)),
+      overall_connection_timeout_(QuicTime::Delta::Infinite()),
+      creation_time_(clock_->ApproximateNow()),
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_last_sent_packet_(clock_->ApproximateNow()),
       time_largest_observed_(QuicTime::Zero()),
@@ -98,7 +101,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       send_ack_in_response_to_packet_(false),
       address_migrating_(false) {
   helper_->SetConnection(this);
-  helper_->SetTimeoutAlarm(timeout_);
+  helper_->SetTimeoutAlarm(idle_network_timeout_);
   framer_.set_visitor(this);
   framer_.set_entropy_calculator(&entropy_manager_);
   outgoing_ack_.sent_info.least_unacked = 0;
@@ -122,6 +125,7 @@ QuicConnection::~QuicConnection() {
        it != queued_packets_.end(); ++it) {
     delete it->packet;
   }
+  LOG(ERROR) << "Quic connection " << write_blocked_;
 }
 
 bool QuicConnection::SelectMutualVersion(
@@ -313,6 +317,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
 }
 
 void QuicConnection::OnFecProtectedPayload(StringPiece payload) {
+  DCHECK_EQ(IN_FEC_GROUP, last_header_.is_in_fec_group);
   DCHECK_NE(0u, last_header_.fec_group);
   QuicFecGroup* group = GetFecGroup();
   if (group != NULL) {
@@ -349,7 +354,7 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
 
   received_truncated_ack_ =
       incoming_ack.received_info.missing_packets.size() >=
-      QuicFramer::GetMaxUnackedPackets(last_header_.public_header.version_flag);
+      QuicFramer::GetMaxUnackedPackets(last_header_);
 
   UpdatePacketInformationReceivedByPeer(incoming_ack);
   UpdatePacketInformationSentByPeer(incoming_ack);
@@ -406,8 +411,7 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
   // We can't have too many unacked packets, or our ack frames go over
   // kMaxPacketSize.
   DCHECK_LE(incoming_ack.received_info.missing_packets.size(),
-            QuicFramer::GetMaxUnackedPackets(
-                last_header_.public_header.version_flag));
+            QuicFramer::GetMaxUnackedPackets(last_header_));
 
   if (incoming_ack.sent_info.least_unacked < peer_least_packet_awaiting_ack_) {
     DLOG(ERROR) << ENDPOINT << "Peer's sent low least_unacked: "
@@ -565,11 +569,12 @@ void QuicConnection::UpdatePacketInformationSentByPeer(
 }
 
 void QuicConnection::OnFecData(const QuicFecData& fec) {
+  DCHECK_EQ(IN_FEC_GROUP, last_header_.is_in_fec_group);
   DCHECK_NE(0u, last_header_.fec_group);
   QuicFecGroup* group = GetFecGroup();
   if (group != NULL) {
     group->UpdateFec(last_header_.packet_sequence_number,
-                     last_header_.fec_entropy_flag, fec);
+                     last_header_.entropy_flag, fec);
   }
 }
 
@@ -802,8 +807,6 @@ bool QuicConnection::WriteQueuedPackets() {
 }
 
 void QuicConnection::RecordPacketReceived(const QuicPacketHeader& header) {
-  DLOG(INFO) << ENDPOINT << "Recording received packet: "
-             << header.packet_sequence_number;
   QuicPacketSequenceNumber sequence_number = header.packet_sequence_number;
   DCHECK(IsAwaitingPacket(outgoing_ack_.received_info, sequence_number));
 
@@ -1259,7 +1262,8 @@ void QuicConnection::MaybeProcessRevivedPacket() {
   revived_header.public_header.version_flag = false;
   revived_header.public_header.reset_flag = false;
   revived_header.fec_flag = false;
-  revived_header.fec_group = kNoFecOffset;
+  revived_header.is_in_fec_group = NOT_IN_FEC_GROUP;
+  revived_header.fec_group = 0;
   group_map_.erase(last_header_.fec_group);
   delete group;
 
@@ -1369,12 +1373,25 @@ void QuicConnection::CloseFecGroupsBefore(
 }
 
 bool QuicConnection::HasQueuedData() const {
-  return !queued_packets_.empty() || packet_generator_.HasQueuedData();
+  return !queued_packets_.empty() || packet_generator_.HasQueuedFrames();
 }
 
-void QuicConnection::SetConnectionTimeout(QuicTime::Delta timeout) {
-  timeout_ = timeout;
-  CheckForTimeout();
+void QuicConnection::SetIdleNetworkTimeout(QuicTime::Delta timeout) {
+  // if (timeout < idle_network_timeout_) {
+    idle_network_timeout_ = timeout;
+    CheckForTimeout();
+  // } else {
+  //   idle_network_timeout_ = timeout;
+  // }
+}
+
+void QuicConnection::SetOverallConnectionTimeout(QuicTime::Delta timeout) {
+  // if (timeout < overall_connection_timeout_) {
+    overall_connection_timeout_ = timeout;
+    CheckForTimeout();
+  // } else {
+  //   overall_connection_timeout_ = timeout;
+  // }
 }
 
 bool QuicConnection::CheckForTimeout() {
@@ -1386,12 +1403,38 @@ bool QuicConnection::CheckForTimeout() {
   DVLOG(1) << ENDPOINT << "last packet "
            << time_of_last_packet.ToDebuggingValue()
            << " now:" << now.ToDebuggingValue()
-           << " delta:" << delta.ToMicroseconds();
-  if (delta >= timeout_) {
+           << " delta:" << delta.ToMicroseconds()
+           << " network_timeout: " << idle_network_timeout_.ToMicroseconds();
+  if (delta >= idle_network_timeout_) {
+    DVLOG(1) << ENDPOINT << "Connection timedout due to no network activity.";
     SendConnectionClose(QUIC_CONNECTION_TIMED_OUT);
     return true;
   }
-  helper_->SetTimeoutAlarm(timeout_.Subtract(delta));
+
+  // Next timeout delta.
+  QuicTime::Delta timeout = idle_network_timeout_.Subtract(delta);
+
+  if (!overall_connection_timeout_.IsInfinite()) {
+    QuicTime::Delta connected_time = now.Subtract(creation_time_);
+    DVLOG(1) << ENDPOINT << "connection time: "
+             << connected_time.ToMilliseconds() << " overall timeout: "
+             << overall_connection_timeout_.ToMilliseconds();
+    if (connected_time >= overall_connection_timeout_) {
+      DVLOG(1) << ENDPOINT <<
+          "Connection timedout due to overall connection timeout.";
+      SendConnectionClose(QUIC_CONNECTION_TIMED_OUT);
+      return true;
+    }
+
+    // Take the min timeout.
+    QuicTime::Delta connection_timeout =
+        overall_connection_timeout_.Subtract(connected_time);
+    if (connection_timeout < timeout) {
+      timeout = connection_timeout;
+    }
+  }
+
+  helper_->SetTimeoutAlarm(timeout);
   return false;
 }
 

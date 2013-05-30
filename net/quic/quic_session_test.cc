@@ -60,9 +60,8 @@ class TestStream : public ReliableQuicStream {
 class TestSession : public QuicSession {
  public:
   TestSession(QuicConnection* connection, bool is_server)
-      : QuicSession(connection, QuicConfig(), is_server),
+      : QuicSession(connection, DefaultQuicConfig(), is_server),
         crypto_stream_(this) {
-    config()->SetDefaults();
   }
 
   virtual QuicCryptoStream* GetCryptoStream() OVERRIDE {
@@ -93,7 +92,6 @@ class TestSession : public QuicSession {
   }
 
   TestCryptoStream crypto_stream_;
-  QuicConfig config_;
 };
 
 class QuicSessionTest : public ::testing::Test {
@@ -235,11 +233,11 @@ TEST_F(QuicSessionTest, SendGoAway) {
 
 TEST_F(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {
   EXPECT_EQ(kDefaultInitialTimeoutSecs,
-            QuicConnectionPeer::GetTimeout(connection_).ToSeconds());
+            QuicConnectionPeer::GetNetworkTimeout(connection_).ToSeconds());
   CryptoHandshakeMessage msg;
   session_.crypto_stream_.OnHandshakeMessage(msg);
   EXPECT_EQ(kDefaultTimeoutSecs,
-            QuicConnectionPeer::GetTimeout(connection_).ToSeconds());
+            QuicConnectionPeer::GetNetworkTimeout(connection_).ToSeconds());
 }
 
 }  // namespace

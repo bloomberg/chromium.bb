@@ -16,6 +16,7 @@
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
@@ -62,7 +63,8 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
               ip_ : IPAddressNumber(), 1),
         connection_(new PacketSavingConnection(guid_, addr_, true)),
         session_(connection_, QuicConfig(), true),
-        crypto_config_(QuicCryptoServerConfig::TESTING),
+        crypto_config_(QuicCryptoServerConfig::TESTING,
+                       QuicRandom::GetInstance()),
         stream_(crypto_config_, &session_) {
     config_.SetDefaults();
     session_.config()->SetDefaults();
@@ -242,9 +244,26 @@ TEST_F(QuicCryptoServerStreamTest, WithoutCertificates) {
 
   // Only 2 client hellos need to be sent in the no-certs case: one to get the
   // source-address token and the second to finish.
+  // TODO(rtenneti): Enable testing of ProofVerifier.
   EXPECT_EQ(2, CompleteCryptoHandshake());
   EXPECT_TRUE(stream_.encryption_established());
   EXPECT_TRUE(stream_.handshake_confirmed());
+}
+
+TEST_F(QuicCryptoServerStreamTest, ChannelID) {
+  if (!Aes128Gcm12Encrypter::IsSupported()) {
+    LOG(INFO) << "AES GCM not supported. Test skipped.";
+    return;
+  }
+
+  client_options_.channel_id_enabled = true;
+  // TODO(rtenneti): Enable testing of ProofVerifier.
+  EXPECT_EQ(2, CompleteCryptoHandshake());
+  EXPECT_TRUE(stream_.encryption_established());
+  EXPECT_TRUE(stream_.handshake_confirmed());
+  // TODO(rtenneti): Enable testing of ChannelID.
+  // EXPECT_EQ(CryptoTestUtils::ChannelIDKeyForHostname("test.example.com"),
+  //          stream_.crypto_negotiated_params().channel_id);
 }
 
 }  // namespace

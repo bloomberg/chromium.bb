@@ -4,6 +4,8 @@
 
 #include "net/quic/congestion_control/inter_arrival_sender.h"
 
+namespace net {
+
 namespace {
 const int64 kProbeBitrateKBytesPerSecond = 1200;  // 9.6 Mbit/s
 const float kPacketLossBitrateReduction = 0.7f;
@@ -12,9 +14,11 @@ const float kMaxBitrateReduction = 0.9f;
 const float kMinBitrateReduction = 0.05f;
 const uint64 kMinBitrateKbit = 10;
 const int kInitialRttMs = 60;  // At a typical RTT 60 ms.
-}
 
-namespace net {
+static const int kBitrateSmoothingPeriodMs = 1000;
+static const int kMinBitrateSmoothingPeriodMs = 500;
+
+}  // namespace
 
 InterArrivalSender::InterArrivalSender(const QuicClock* clock)
     : probing_(true),
@@ -37,16 +41,52 @@ InterArrivalSender::InterArrivalSender(const QuicClock* clock)
 InterArrivalSender::~InterArrivalSender() {
 }
 
+// TODO(pwestin): this is really inefficient (4% CPU on the GFE loadtest).
+// static
+QuicBandwidth InterArrivalSender::CalculateSentBandwidth(
+    const SendAlgorithmInterface::SentPacketsMap& sent_packets_map,
+    QuicTime feedback_receive_time) {
+  const QuicTime::Delta kBitrateSmoothingPeriod =
+      QuicTime::Delta::FromMilliseconds(kBitrateSmoothingPeriodMs);
+  const QuicTime::Delta kMinBitrateSmoothingPeriod =
+      QuicTime::Delta::FromMilliseconds(kMinBitrateSmoothingPeriodMs);
+
+  QuicByteCount sum_bytes_sent = 0;
+
+  // Sum packet from new until they are kBitrateSmoothingPeriod old.
+  SendAlgorithmInterface::SentPacketsMap::const_reverse_iterator history_rit =
+      sent_packets_map.rbegin();
+
+  QuicTime::Delta max_diff = QuicTime::Delta::Zero();
+  for (; history_rit != sent_packets_map.rend(); ++history_rit) {
+    QuicTime::Delta diff =
+        feedback_receive_time.Subtract(history_rit->second->SendTimestamp());
+    if (diff > kBitrateSmoothingPeriod) {
+      break;
+    }
+    sum_bytes_sent += history_rit->second->BytesSent();
+    max_diff = diff;
+  }
+  if (max_diff < kMinBitrateSmoothingPeriod) {
+    // No estimate.
+    return QuicBandwidth::Zero();
+  }
+  return QuicBandwidth::FromBytesAndTimeDelta(sum_bytes_sent, max_diff);
+}
+
 void InterArrivalSender::OnIncomingQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback,
     QuicTime feedback_receive_time,
-    QuicBandwidth sent_bandwidth,
     const SentPacketsMap& sent_packets) {
   DCHECK(feedback.type == kInterArrival);
 
   if (feedback.type != kInterArrival) {
     return;
   }
+
+  QuicBandwidth sent_bandwidth = CalculateSentBandwidth(sent_packets,
+                                                        feedback_receive_time);
+
   TimeMap::const_iterator received_it;
   for (received_it = feedback.inter_arrival.received_packet_times.begin();
       received_it != feedback.inter_arrival.received_packet_times.end();

@@ -87,12 +87,12 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // Enables flushing and flushes queued data.
   void FinishBatchOperations();
 
-  bool HasQueuedData() const;
+  bool HasQueuedFrames() const;
 
  private:
-  void SendQueuedData();
+  void SendQueuedFrames();
 
-  bool HasPendingData() const;
+  bool HasPendingFrames() const;
   bool AddNextPendingFrame();
   void SerializeAndSendPacket();
 

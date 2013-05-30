@@ -17,6 +17,7 @@
 
 namespace net {
 
+class ChannelIDSigner;
 class CommonCertSets;
 class KeyExchange;
 class ProofVerifier;
@@ -40,6 +41,9 @@ class NET_EXPORT_PRIVATE CryptoHandshakeMessage {
   // GetSerialized returns the serialized form of this message and caches the
   // result. Subsequently altering the message does not invalidate the cache.
   const QuicData& GetSerialized() const;
+
+  // MarkDirty invalidates the cache created by |GetSerialized|.
+  void MarkDirty();
 
   // SetValue sets an element with the given tag to the raw, memory contents of
   // |v|.
@@ -75,6 +79,9 @@ class NET_EXPORT_PRIVATE CryptoHandshakeMessage {
 
   void SetStringPiece(QuicTag tag, base::StringPiece value);
 
+  // Erase removes a tag/value, if present, from the message.
+  void Erase(QuicTag tag);
+
   // GetTaglist finds an element with the given tag containing zero or more
   // tags. If such a tag doesn't exist, it returns false. Otherwise it sets
   // |out_tags| and |out_len| to point to the array of tags and returns true.
@@ -91,7 +98,6 @@ class NET_EXPORT_PRIVATE CryptoHandshakeMessage {
   QuicErrorCode GetNthValue24(QuicTag tag,
                               unsigned index,
                               base::StringPiece* out) const;
-  bool GetString(QuicTag tag, std::string* out) const;
   QuicErrorCode GetUint16(QuicTag tag, uint16* out) const;
   QuicErrorCode GetUint32(QuicTag tag, uint32* out) const;
   QuicErrorCode GetUint64(QuicTag tag, uint64* out) const;
@@ -174,6 +180,11 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   // client_key_exchange is used by clients to store the ephemeral KeyExchange
   // for the connection.
   scoped_ptr<KeyExchange> client_key_exchange;
+  // channel_id is set by servers to a ChannelID key when the client correctly
+  // proves possession of the corresponding private key. It consists of 32
+  // bytes of x coordinate, followed by 32 bytes of y coordinate. Both values
+  // are big-endian and the pair is a P-256 public key.
+  std::string channel_id;
 };
 
 // QuicCryptoConfig contains common configuration between clients and servers.
@@ -189,6 +200,10 @@ class NET_EXPORT_PRIVATE QuicCryptoConfig {
   // (non-forward secure) keys for the connection in order to tie the resulting
   // key to this protocol.
   static const char kInitialLabel[];
+
+  // kCETVLabel is a constant that is used when deriving the keys for the
+  // encrypted tag/value block in the client hello.
+  static const char kCETVLabel[];
 
   // kForwardSecureLabel is a constant that is used when deriving the forward
   // secure keys for the connection in order to tie the resulting key to this
@@ -206,7 +221,7 @@ class NET_EXPORT_PRIVATE QuicCryptoConfig {
   // Authenticated encryption with associated data (AEAD) algorithms.
   QuicTagVector aead;
 
-  scoped_ptr<CommonCertSets> common_cert_sets;
+  const CommonCertSets* common_cert_sets;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoConfig);
@@ -225,19 +240,25 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     CachedState();
     ~CachedState();
 
-    // is_complete returns true if this object contains enough information to
-    // perform a handshake with the server.
-    bool is_complete() const;
+    // IsComplete returns true if this object contains enough information to
+    // perform a handshake with the server. |now| is used to judge whether any
+    // cached server config has expired.
+    bool IsComplete(QuicWallTime now) const;
 
     // GetServerConfig returns the parsed contents of |server_config|, or NULL
     // if |server_config| is empty. The return value is owned by this object
     // and is destroyed when this object is.
     const CryptoHandshakeMessage* GetServerConfig() const;
 
-    // SetServerConfig checks that |scfg| parses correctly and stores it in
-    // |server_config|. It returns true if the parsing succeeds and false
-    // otherwise.
-    bool SetServerConfig(base::StringPiece scfg);
+    // SetServerConfig checks that |server_config| parses correctly and stores
+    // it in |server_config_|. |now| is used to judge whether |server_config|
+    // has expired.
+    QuicErrorCode SetServerConfig(base::StringPiece server_config,
+                                  QuicWallTime now,
+                                  std::string* error_details);
+
+    // InvalidateServerConfig clears the cached server config (if any).
+    void InvalidateServerConfig();
 
     // SetProof stores a certificate chain and signature.
     void SetProof(const std::vector<std::string>& certs,
@@ -293,7 +314,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // FillClientHello sets |out| to be a CHLO message based on the configuration
   // of this object. This object must have cached enough information about
   // |server_hostname| in order to perform a handshake. This can be checked
-  // with the |is_complete| member of |CachedState|.
+  // with the |IsComplete| member of |CachedState|.
   //
   // |clock| and |rand| are used to generate the nonce and |out_params| is
   // filled with the results of the handshake that the server is expected to
@@ -308,12 +329,14 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
                                 std::string* error_details) const;
 
   // ProcessRejection processes a REJ message from a server and updates the
-  // cached information about that server. After this, |is_complete| may return
+  // cached information about that server. After this, |IsComplete| may return
   // true for that server's CachedState. If the rejection message contains
   // state about a future handshake (i.e. an nonce value from the server), then
-  // it will be saved in |out_params|.
+  // it will be saved in |out_params|. |now| is used to judge whether the
+  // server config in the rejection message has expired.
   QuicErrorCode ProcessRejection(CachedState* cached,
                                  const CryptoHandshakeMessage& rej,
+                                 QuicWallTime now,
                                  QuicCryptoNegotiatedParameters* out_params,
                                  std::string* error_details);
 
@@ -334,12 +357,18 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // the server.
   void SetProofVerifier(ProofVerifier* verifier);
 
+  // SetChannelIDSigner sets a ChannelIDSigner that will be called when the
+  // server supports channel IDs to sign a message proving possession of the
+  // given ChannelID. This object takes ownership of |signer|.
+  void SetChannelIDSigner(ChannelIDSigner* signer);
+
  private:
   // cached_states_ maps from the server hostname to the cached information
   // about that server.
   std::map<std::string, CachedState*> cached_states_;
 
   scoped_ptr<ProofVerifier> proof_verifier_;
+  scoped_ptr<ChannelIDSigner> channel_id_signer_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientConfig);
 };

@@ -108,12 +108,19 @@ class NET_EXPORT_PRIVATE QuicWallTime {
   // since the UNIX epoch.
   static QuicWallTime FromUNIXSeconds(uint64 seconds);
 
+  // Zero returns a QuicWallTime set to zero. IsZero will return true for this
+  // value.
+  static QuicWallTime Zero();
+
   // ToUNIXSeconds converts a QuicWallTime into a count of seconds since the
   // UNIX epoch.
   uint64 ToUNIXSeconds() const;
 
   bool IsAfter(QuicWallTime other) const;
   bool IsBefore(QuicWallTime other) const;
+
+  // IsZero returns true if this object is the result of calling |Zero|.
+  bool IsZero() const;
 
   // AbsoluteDifference returns the absolute value of the time difference
   // between |this| and |other|.

@@ -29,7 +29,6 @@ class TcpCubicSenderTest : public ::testing::Test {
   TcpCubicSenderTest()
      : rtt_(QuicTime::Delta::FromMilliseconds(60)),
        one_ms_(QuicTime::Delta::FromMilliseconds(1)),
-       fake_bandwidth_(QuicBandwidth::Zero()),
        sender_(new TcpCubicSenderPeer(&clock_, true)),
        receiver_(new TcpReceiver()),
        sequence_number_(1),
@@ -59,7 +58,6 @@ class TcpCubicSenderTest : public ::testing::Test {
 
   const QuicTime::Delta rtt_;
   const QuicTime::Delta one_ms_;
-  const QuicBandwidth fake_bandwidth_;
   MockClock clock_;
   SendAlgorithmInterface::SentPacketsMap not_used_;
   scoped_ptr<TcpCubicSenderPeer> sender_;
@@ -79,7 +77,7 @@ TEST_F(TcpCubicSenderTest, SimpleSender) {
   // Get default QuicCongestionFeedbackFrame from receiver.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now(),
-                                                 fake_bandwidth_, not_used_);
+                                                 not_used_);
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(
       clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA).IsZero());
@@ -100,7 +98,7 @@ TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
   // Get default QuicCongestionFeedbackFrame from receiver.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now(),
-                                                 fake_bandwidth_, not_used_);
+                                                 not_used_);
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(
       clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA).IsZero());
@@ -129,7 +127,7 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
   // Get default QuicCongestionFeedbackFrame from receiver.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now(),
-                                                 fake_bandwidth_, not_used_);
+                                                 not_used_);
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(
       clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA).IsZero());
@@ -172,7 +170,7 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
   // Get default QuicCongestionFeedbackFrame from receiver.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now(),
-                                                 fake_bandwidth_, not_used_);
+                                                 not_used_);
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(
       clock_.Now(), NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA).IsZero());

@@ -117,7 +117,10 @@ void QuicConnectionHelper::SetSendAlarm(QuicTime alarm_time) {
 }
 
 void QuicConnectionHelper::SetTimeoutAlarm(QuicTime::Delta delay) {
-  DCHECK(!timeout_alarm_registered_);
+  // CheckForTimeout will call SetTimeoutAlarm for the remaining time if alarm
+  // goes off before the delay.
+  if (timeout_alarm_registered_)
+    return;
   timeout_alarm_registered_ = true;
   task_runner_->PostDelayedTask(
       FROM_HERE,
