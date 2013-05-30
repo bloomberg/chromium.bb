@@ -14,6 +14,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/chrome_browser_window.h"
+#import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #include "chrome/browser/ui/panels/panel.h"
 
 class PanelCocoa;
@@ -30,6 +31,7 @@ class PanelCocoa;
   IBOutlet PanelTitlebarViewCocoa* titlebar_view_;
   scoped_ptr<PanelCocoa> windowShim_;
   scoped_nsobject<NSString> pendingWindowTitle_;
+  scoped_nsobject<TabContentsController> contentsController_;
   NSViewAnimation* boundsAnimation_;  // Lifetime controlled manually, needs
                                       // more then just |release| to terminate.
   BOOL animateOnBoundsChange_;
@@ -51,13 +53,11 @@ class PanelCocoa;
 - (void)webContentsInserted:(content::WebContents*)contents;
 - (void)webContentsDetached:(content::WebContents*)contents;
 
-- (void)updateWebContentsViewFrame;
-
 // Sometimes (when we animate the size of the window) we want to stop resizing
 // the WebContents's Cocoa view to avoid unnecessary rendering and issues
 // that can be caused by sizes near 0.
-- (void)disableWebContentsViewAutosizing;
-- (void)enableWebContentsViewAutosizing;
+- (void)disableTabContentsViewAutosizing;
+- (void)enableTabContentsViewAutosizing;
 
 // Shows the window for the first time. Only happens once.
 - (void)revealAnimatedWithFrame:(const NSRect&)frame;

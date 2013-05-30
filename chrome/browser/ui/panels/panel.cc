@@ -517,10 +517,7 @@ void Panel::Initialize(const GURL& url,
   // Set up hosting for web contents.
   panel_host_.reset(new PanelHost(this, profile_));
   panel_host_->Init(url);
-  content::WebContents* web_contents = GetWebContents();
-  // The contents might be NULL for most of our tests.
-  if (web_contents)
-    native_panel_->AttachWebContents(web_contents);
+  native_panel_->AttachWebContents(GetWebContents());
 
   // Close when the extension is unloaded or the browser is exiting.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
