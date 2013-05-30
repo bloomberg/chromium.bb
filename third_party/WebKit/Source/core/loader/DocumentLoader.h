@@ -63,7 +63,6 @@ namespace WebCore {
     class Page;
     class ResourceLoader;
     class SharedBuffer;
-    class SubstituteResource;
 
     typedef HashSet<RefPtr<ResourceLoader> > ResourceLoaderSet;
 

@@ -34,11 +34,14 @@
 namespace WebCore {
 
 inline ArchiveResource::ArchiveResource(PassRefPtr<SharedBuffer> data, const KURL& url, const String& mimeType, const String& textEncoding, const String& frameName, const ResourceResponse& response)
-    : SubstituteResource(url, response, data)
+    : m_url(url)
+    , m_response(response)
+    , m_data(data)
     , m_mimeType(mimeType)
     , m_textEncoding(textEncoding)
     , m_frameName(frameName)
 {
+    ASSERT(m_data);
 }
 
 PassRefPtr<ArchiveResource> ArchiveResource::create(PassRefPtr<SharedBuffer> data, const KURL& url, const String& mimeType, const String& textEncoding, const String& frameName, const ResourceResponse& response)

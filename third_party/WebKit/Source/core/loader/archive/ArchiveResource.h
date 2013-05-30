@@ -29,17 +29,24 @@
 #ifndef ArchiveResource_h
 #define ArchiveResource_h
 
-#include "core/loader/SubstituteResource.h"
+#include "core/platform/KURL.h"
+#include "core/platform/SharedBuffer.h"
+#include "core/platform/network/ResourceResponse.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class ArchiveResource : public SubstituteResource {
+class ArchiveResource : public RefCounted<ArchiveResource> {
 public:
     static PassRefPtr<ArchiveResource> create(PassRefPtr<SharedBuffer>, const KURL&, const ResourceResponse&);
     static PassRefPtr<ArchiveResource> create(PassRefPtr<SharedBuffer>, const KURL&,
         const String& mimeType, const String& textEncoding, const String& frameName,
         const ResourceResponse& = ResourceResponse());
 
+    const KURL& url() const { return m_url; }
+    const ResourceResponse& response() const { return m_response; }
+    SharedBuffer* data() const { return m_data.get(); }
     const String& mimeType() const { return m_mimeType; }
     const String& textEncoding() const { return m_textEncoding; }
     const String& frameName() const { return m_frameName; }
@@ -47,6 +54,9 @@ public:
 private:
     ArchiveResource(PassRefPtr<SharedBuffer>, const KURL&, const String& mimeType, const String& textEncoding, const String& frameName, const ResourceResponse&);
 
+    KURL m_url;
+    ResourceResponse m_response;
+    RefPtr<SharedBuffer> m_data;
     String m_mimeType;
     String m_textEncoding;
     String m_frameName;
