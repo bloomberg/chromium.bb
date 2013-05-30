@@ -87,7 +87,7 @@ static inline bool isCSSTokenAString(int yytype)
 
 %}
 
-%expect 29
+%expect 28
 
 %nonassoc LOWEST_PREC
 
@@ -886,7 +886,7 @@ before_page_rule:
     ;
 
 page:
-    before_page_rule PAGE_SYM maybe_space page_selector at_rule_header_end_maybe_space
+    before_page_rule PAGE_SYM maybe_space page_selector at_rule_header_end
     '{' at_rule_body_start maybe_space_before_declaration declarations_and_margins closing_brace {
         if ($4)
             $$ = parser->createPageRule(parser->sinkFloatingSelector($4));
@@ -905,18 +905,18 @@ page:
     ;
 
 page_selector:
-    IDENT {
+    IDENT maybe_space {
         $$ = parser->createFloatingSelectorWithTagName(QualifiedName(nullAtom, $1, parser->m_defaultNamespace));
         $$->setForPage();
     }
-    | IDENT pseudo_page {
+    | IDENT pseudo_page maybe_space {
         $$ = $2;
         if ($$) {
             $$->prependTagSelector(QualifiedName(nullAtom, $1, parser->m_defaultNamespace));
             $$->setForPage();
         }
     }
-    | pseudo_page {
+    | pseudo_page maybe_space {
         $$ = $1;
         if ($$)
             $$->setForPage();
