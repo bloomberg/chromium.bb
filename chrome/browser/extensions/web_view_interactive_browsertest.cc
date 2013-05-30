@@ -380,12 +380,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PopupPositioning) {
 
 // Tests that moving browser plugin (without resize/UpdateRects) correctly
 // repositions popup.
-#if defined(OS_MACOSX)
-#define MAYBE_PopupPositioningMoved DISABLED_PopupPositioningMoved
-#else
-#define MAYBE_PopupPositioningMoved PopupPositioningMoved
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_PopupPositioningMoved) {
+// Started flakily failing after a Blink roll: http://crbug.com/245332
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PopupPositioningMoved) {
   SetupTest(
       "web_view/popup_positioning_moved",
       "files/extensions/platform_apps/web_view/popup_positioning_moved"
