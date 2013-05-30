@@ -1,0 +1,11 @@
+Click on a listbox scrollbar should not dispatch change evnet.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS select1.selectedIndex is -1
+PASS changeEventCounter is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

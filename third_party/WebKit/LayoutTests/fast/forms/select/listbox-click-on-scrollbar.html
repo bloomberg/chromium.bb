@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../js/resources/js-test-pre.js"></script>
+<select id="select1" multiple size="4">
+<option>1</option>
+<option>2</option>
+<option>3</option>
+<option>4</option>
+<option>5</option>
+<option>6</option>
+<option>7</option>
+<option>8</option>
+</select>
+
+<script>
+description('Click on a listbox scrollbar should not dispatch change evnet.');
+jsTestIsAsync = true;
+var select1 = document.getElementById('select1');
+var changeEventCounter = 0;
+select1.onchange = function() {
+    testFailed('A change event was dispatched.');
+    ++changeEventCounter;
+}
+
+window.onload = function() {
+    if (!window.eventSender)
+        debug('Click on the scrollbar. The test passes if nothing is printed.');
+    else {
+        eventSender.mouseMoveTo(select1.offsetLeft + select1.offsetWidth - 2, select1.offsetTop + select1.offsetHeight - 2);
+        eventSender.mouseDown();
+        eventSender.mouseUp();
+        shouldBe('select1.selectedIndex', '-1');
+        shouldBe('changeEventCounter', '0');
+        finishJSTest();
+    }
+};
+</script>
+
+<script src="../../js/resources/js-test-post.js"></script>
+</html>

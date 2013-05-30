@@ -1338,6 +1338,9 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
             event->setDefaultHandled();
         }
     } else if (event->type() == eventNames().mouseupEvent && event->isMouseEvent() && static_cast<MouseEvent*>(event)->button() == LeftButton && document()->frame()->eventHandler()->autoscrollRenderer() != renderer()) {
+        // We didn't start this click/drag on any options.
+        if (m_lastOnChangeSelection.isEmpty())
+            return;
         // This makes sure we fire dispatchFormControlChangeEvent for a single
         // click. For drag selection, onChange will fire when the autoscroll
         // timer stops.
