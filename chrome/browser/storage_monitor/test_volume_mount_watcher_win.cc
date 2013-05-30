@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 
@@ -16,9 +17,25 @@ namespace test {
 
 namespace {
 
+base::FilePath GetTempRoot() {
+  base::ScopedTempDir temp_dir;
+  temp_dir.CreateUniqueTempDir();
+  base::FilePath temp_root = temp_dir.path();
+  while (temp_root.DirName() != temp_root)
+    temp_root = temp_root.DirName();
+  return temp_root;
+}
+
 std::vector<base::FilePath> FakeGetSingleAttachedDevice() {
   std::vector<base::FilePath> result;
   result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(2));  // C
+
+  // Make sure we are adding the drive on which ScopedTempDir will make
+  // test directories.
+  base::FilePath temp_root = GetTempRoot();
+  if (temp_root != VolumeMountWatcherWin::DriveNumberToFilePath(2))
+    result.push_back(temp_root);
+
   return result;
 }
 
@@ -51,7 +68,8 @@ bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
 
   StorageInfo::Type type = StorageInfo::FIXED_MASS_STORAGE;
   if (path.value() != ASCIIToUTF16("N:\\") &&
-      path.value() != ASCIIToUTF16("C:\\")) {
+      path.value() != ASCIIToUTF16("C:\\") &&
+      path.value() != GetTempRoot().value()) {
     type = StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM;
   }
   std::string unique_id =

@@ -151,7 +151,7 @@ void StorageMonitorWinTest::DoMassStorageDeviceAttachedTest(
   volume_broadcast.dbcv_unitmask = 0x0;
   volume_broadcast.dbcv_flags = 0x0;
 
-  int expect_attach_calls = 0;
+  int expect_attach_calls = observer_.attach_calls();
   for (DeviceIndices::const_iterator it = device_indices.begin();
        it != device_indices.end(); ++it) {
     volume_broadcast.dbcv_unitmask |= 0x1 << *it;
@@ -291,6 +291,7 @@ TEST_F(StorageMonitorWinTest, DevicesAttached) {
 
 TEST_F(StorageMonitorWinTest, PathMountDevices) {
   PreAttachDevices();
+  int init_storages = monitor_->GetAttachedStorage().size();
 
   volume_mount_watcher_->AddDeviceForTesting(
       base::FilePath(FILE_PATH_LITERAL("F:\\mount1")),
@@ -302,7 +303,7 @@ TEST_F(StorageMonitorWinTest, PathMountDevices) {
       base::FilePath(FILE_PATH_LITERAL("F:\\mount2")),
       "dcim:mount2", L"mount2", 100);
   RunUntilIdle();
-  EXPECT_EQ(9, monitor_->GetAttachedStorage().size());
+  EXPECT_EQ(init_storages + 3, monitor_->GetAttachedStorage().size());
 
   StorageInfo info;
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
