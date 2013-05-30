@@ -30,8 +30,6 @@ struct IndexedDBHostMsg_FactoryOpen_Params;
 namespace WebKit {
 class WebIDBCursor;
 class WebIDBDatabase;
-class WebIDBIndex;
-class WebIDBObjectStore;
 struct WebIDBMetadata;
 }
 
@@ -93,8 +91,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   // Helper templates.
   template <class ReturnType>
-  ReturnType* GetOrTerminateProcess(
-    IDMap<ReturnType, IDMapOwnPointer>* map, int32 ipc_return_object_id);
+  ReturnType* GetOrTerminateProcess(IDMap<ReturnType, IDMapOwnPointer>* map,
+                                    int32 ipc_return_object_id);
 
   template <typename ObjectType>
   void DestroyObject(IDMap<ObjectType, IDMapOwnPointer>* map,
@@ -113,7 +111,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     ~DatabaseDispatcherHost();
 
     void CloseAll();
-    bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
+    bool OnMessageReceived(const IPC::Message& message, bool* msg_is_ok);
     void Send(IPC::Message* message);
 
     void OnCreateObjectStore(
@@ -123,7 +121,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                              int64 object_store_id);
     void OnCreateTransaction(
         const IndexedDBHostMsg_DatabaseCreateTransaction_Params&);
-    void OnOpen(int32 ipc_database_id, int32 ipc_thread_id,
+    void OnOpen(int32 ipc_database_id,
+                int32 ipc_thread_id,
                 int32 ipc_callbacks_id);
     void OnClose(int32 ipc_database_id);
     void OnDestroyed(int32 ipc_database_id);
@@ -132,13 +131,11 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnPut(const IndexedDBHostMsg_DatabasePut_Params& params);
     void OnSetIndexKeys(
         const IndexedDBHostMsg_DatabaseSetIndexKeys_Params& params);
-    void OnSetIndexesReady(
-        int32 ipc_database_id,
-        int64 transaction_id,
-        int64 object_store_id,
-        const std::vector<int64>& ids);
-    void OnOpenCursor(
-        const IndexedDBHostMsg_DatabaseOpenCursor_Params& params);
+    void OnSetIndexesReady(int32 ipc_database_id,
+                           int64 transaction_id,
+                           int64 object_store_id,
+                           const std::vector<int64>& ids);
+    void OnOpenCursor(const IndexedDBHostMsg_DatabaseOpenCursor_Params& params);
     void OnCount(const IndexedDBHostMsg_DatabaseCount_Params& params);
     void OnDeleteRange(
         const IndexedDBHostMsg_DatabaseDeleteRange_Params& params);
@@ -169,7 +166,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     explicit CursorDispatcherHost(IndexedDBDispatcherHost* parent);
     ~CursorDispatcherHost();
 
-    bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
+    bool OnMessageReceived(const IPC::Message& message, bool* msg_is_ok);
     void Send(IPC::Message* message);
 
     void OnAdvance(int32 ipc_object_store_id,
@@ -184,7 +181,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                     int32 ipc_thread_id,
                     int32 ipc_callbacks_id,
                     int n);
-    void OnPrefetchReset(int32 ipc_cursor_id, int used_prefetches,
+    void OnPrefetchReset(int32 ipc_cursor_id,
+                         int used_prefetches,
                          int unused_prefetches);
     void OnDelete(int32 ipc_object_store_id,
                   int32 ipc_thread_id,

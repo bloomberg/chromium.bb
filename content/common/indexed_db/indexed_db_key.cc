@@ -4,6 +4,7 @@
 
 #include "content/common/indexed_db/indexed_db_key.h"
 
+#include <string>
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -60,7 +61,7 @@ static IndexedDBKey::KeyArray CopyKeyArray(const WebIDBKey& other) {
   }
   return result;
 }
-} // namespace
+}  // namespace
 
 IndexedDBKey::IndexedDBKey()
     : type_(WebIDBKey::NullType),
@@ -104,6 +105,8 @@ IndexedDBKey::IndexedDBKey(const string16& key)
 IndexedDBKey::~IndexedDBKey() {}
 
 int IndexedDBKey::Compare(const IndexedDBKey& other) const {
+  DCHECK(IsValid());
+  DCHECK(other.IsValid());
   if (type_ != other.type_)
     return type_ > other.type_ ? -1 : 1;
 
@@ -121,15 +124,17 @@ int IndexedDBKey::Compare(const IndexedDBKey& other) const {
     case WebIDBKey::StringType:
       return -other.string_.compare(string_);
     case WebIDBKey::DateType:
+      return (date_ < other.date_) ? -1 : (date_ > other.date_) ? 1 : 0;
     case WebIDBKey::NumberType:
       return (number_ < other.number_) ? -1 : (number_ > other.number_) ? 1 : 0;
     case WebIDBKey::InvalidType:
     case WebIDBKey::NullType:
-    default:
-      // This is a placeholder for WebKit::WebIDBKey::MinType
+    case WebIDBKey::MinType:
       NOTREACHED();
       return 0;
   }
+  NOTREACHED();
+  return 0;
 }
 
 bool IndexedDBKey::IsLessThan(const IndexedDBKey& other) const {
@@ -138,6 +143,20 @@ bool IndexedDBKey::IsLessThan(const IndexedDBKey& other) const {
 
 bool IndexedDBKey::IsEqual(const IndexedDBKey& other) const {
   return !Compare(other);
+}
+
+bool IndexedDBKey::IsValid() const {
+  if (type_ == WebIDBKey::InvalidType || type_ == WebIDBKey::NullType)
+    return false;
+
+  if (type_ == WebIDBKey::ArrayType) {
+    for (size_t i = 0; i < array_.size(); i++) {
+      if (!array_[i].IsValid())
+        return false;
+    }
+  }
+
+  return true;
 }
 
 IndexedDBKey::operator WebIDBKey() const {
@@ -154,11 +173,12 @@ IndexedDBKey::operator WebIDBKey() const {
       return WebIDBKey::createInvalid();
     case WebIDBKey::NullType:
       return WebIDBKey::createNull();
-    default:
-      // This is a placeholder for WebKit::WebIDBKey::MinType
+    case WebIDBKey::MinType:
       NOTREACHED();
       return WebIDBKey::createInvalid();
   }
+  NOTREACHED();
+  return WebIDBKey::createInvalid();
 }
 
 }  // namespace content

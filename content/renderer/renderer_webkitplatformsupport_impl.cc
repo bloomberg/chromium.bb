@@ -362,8 +362,9 @@ RendererWebKitPlatformSupportImpl::createLocalStorageNamespace(
 
 WebIDBFactory* RendererWebKitPlatformSupportImpl::idbFactory() {
   if (!web_idb_factory_) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
-      web_idb_factory_.reset(WebIDBFactory::create());
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewIndexedDB))
+        web_idb_factory_.reset(WebIDBFactory::create());
     else
       web_idb_factory_.reset(new RendererWebIDBFactoryImpl());
   }
