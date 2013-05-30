@@ -245,7 +245,6 @@ void SyncClient::OnGetResourceEntryById(
     const std::string& resource_id,
     const FileCacheEntry& cache_entry,
     FileError error,
-    const base::FilePath& /* drive_file_path */,
     scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

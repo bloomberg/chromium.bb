@@ -64,7 +64,7 @@ class FileSystem : public FileSystemInterface,
   virtual void CheckForUpdates() OVERRIDE;
   virtual void GetResourceEntryById(
       const std::string& resource_id,
-      const GetResourceEntryWithFilePathCallback& callback) OVERRIDE;
+      const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
                       const GURL& next_feed,
                       const SearchCallback& callback) OVERRIDE;
@@ -295,9 +295,8 @@ class FileSystem : public FileSystemInterface,
   // ResourceMetadata::GetResourceEntryById() is complete.
   // |callback| must not be null.
   void GetResourceEntryByIdAfterGetEntry(
-      const GetResourceEntryWithFilePathCallback& callback,
+      const GetResourceEntryCallback& callback,
       FileError error,
-      const base::FilePath& file_path,
       scoped_ptr<ResourceEntry> entry);
 
   // Part of RefreshDirectory(). Called after

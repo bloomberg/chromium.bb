@@ -390,11 +390,10 @@ FileError ResourceMetadata::RemoveEntry(const std::string& resource_id,
 
 void ResourceMetadata::GetResourceEntryByIdOnUIThread(
     const std::string& resource_id,
-    const GetResourceEntryWithFilePathCallback& callback) {
+    const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  base::FilePath* file_path = new base::FilePath;
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   ResourceEntry* entry_ptr = entry.get();
   base::PostTaskAndReplyWithResult(
@@ -403,30 +402,24 @@ void ResourceMetadata::GetResourceEntryByIdOnUIThread(
       base::Bind(&ResourceMetadata::GetResourceEntryById,
                  base::Unretained(this),
                  resource_id,
-                 file_path,
                  entry_ptr),
-      base::Bind(&RunGetResourceEntryWithFilePathCallback,
+      base::Bind(&RunGetResourceEntryCallback,
                  callback,
-                 base::Owned(file_path),
                  base::Passed(&entry)));
 }
 
 FileError ResourceMetadata::GetResourceEntryById(
     const std::string& resource_id,
-    base::FilePath* out_file_path,
     ResourceEntry* out_entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!resource_id.empty());
+  DCHECK(out_entry);
 
   scoped_ptr<ResourceEntry> entry = storage_->GetEntry(resource_id);
   if (!entry)
     return FILE_ERROR_NOT_FOUND;
 
-  if (out_file_path)
-    *out_file_path = GetFilePath(resource_id);
-  if (out_entry)
-    *out_entry = *entry;
-
+  out_entry->Swap(entry.get());
   return FILE_ERROR_OK;
 }
 

@@ -39,17 +39,6 @@ namespace {
 
 //================================ Helper functions ============================
 
-// Helper function for binding |path| to GetResourceEntryWithFilePathCallback
-// and create GetResourceEntryCallback.
-void RunGetResourceEntryWithFilePathCallback(
-    const GetResourceEntryWithFilePathCallback& callback,
-    const base::FilePath& path,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(!callback.is_null());
-  callback.Run(error, path, entry.Pass());
-}
-
 // Callback for ResourceMetadata::GetLargestChangestamp.
 // |callback| must not be null.
 void OnGetLargestChangestamp(
@@ -179,7 +168,7 @@ void FileSystem::RemoveObserver(FileSystemObserver* observer) {
 
 void FileSystem::GetResourceEntryById(
     const std::string& resource_id,
-    const GetResourceEntryWithFilePathCallback& callback) {
+    const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!resource_id.empty());
   DCHECK(!callback.is_null());
@@ -192,24 +181,19 @@ void FileSystem::GetResourceEntryById(
 }
 
 void FileSystem::GetResourceEntryByIdAfterGetEntry(
-    const GetResourceEntryWithFilePathCallback& callback,
+    const GetResourceEntryCallback& callback,
     FileError error,
-    const base::FilePath& file_path,
     scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath(), scoped_ptr<ResourceEntry>());
+    callback.Run(error, scoped_ptr<ResourceEntry>());
     return;
   }
   DCHECK(entry.get());
 
-  CheckLocalModificationAndRun(
-      entry.Pass(),
-      base::Bind(&RunGetResourceEntryWithFilePathCallback,
-                 callback,
-                 file_path));
+  CheckLocalModificationAndRun(entry.Pass(), callback);
 }
 
 void FileSystem::TransferFileFromRemoteToLocal(

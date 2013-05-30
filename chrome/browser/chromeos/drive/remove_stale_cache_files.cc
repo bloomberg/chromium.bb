@@ -26,7 +26,7 @@ void CollectStaleCacheFiles(
     const FileCacheEntry& cache_entry) {
   ResourceEntry entry;
   FileError error = resource_metadata->GetResourceEntryById(
-      resource_id, NULL, &entry);
+      resource_id, &entry);
 
   // The entry is not found or the MD5 does not match.
   if (error != FILE_ERROR_OK ||

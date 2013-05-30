@@ -169,7 +169,7 @@ class FileSystemInterface {
   // |callback| must not be null.
   virtual void GetResourceEntryById(
       const std::string& resource_id,
-      const GetResourceEntryWithFilePathCallback& callback) = 0;
+      const GetResourceEntryCallback& callback) = 0;
 
   // Initiates transfer of |remote_src_file_path| to |local_dest_file_path|.
   // |remote_src_file_path| is the virtual source path on the Drive file system.

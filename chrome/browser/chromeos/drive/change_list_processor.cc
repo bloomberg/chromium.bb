@@ -163,8 +163,9 @@ void ChangeListProcessor::ApplyEntryMap(
 
 void ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
   // Lookup the entry.
-  FileError error =
-      resource_metadata_->GetResourceEntryById(entry.resource_id(), NULL, NULL);
+  ResourceEntry existing_entry;
+  FileError error = resource_metadata_->GetResourceEntryById(
+      entry.resource_id(), &existing_entry);
 
   if (error == FILE_ERROR_OK) {
     if (entry.deleted()) {

@@ -27,7 +27,7 @@ FileError GetFileLocalState(internal::ResourceMetadata* metadata,
                             ResourceEntry* entry,
                             base::FilePath* drive_file_path,
                             base::FilePath* cache_file_path) {
-  FileError error = metadata->GetResourceEntryById(resource_id, NULL, entry);
+  FileError error = metadata->GetResourceEntryById(resource_id, entry);
   if (error != FILE_ERROR_OK)
     return error;
 

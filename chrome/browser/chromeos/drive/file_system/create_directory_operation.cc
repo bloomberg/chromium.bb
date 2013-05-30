@@ -105,7 +105,7 @@ base::FilePath CreateDirectoryOperation::GetExistingDeepestDirectory(
     resource_id = child_resource_id;
   }
 
-  FileError error = metadata->GetResourceEntryById(resource_id, NULL, entry);
+  FileError error = metadata->GetResourceEntryById(resource_id, entry);
   DCHECK_EQ(FILE_ERROR_OK, error);
 
   if (!entry->file_info().is_directory())

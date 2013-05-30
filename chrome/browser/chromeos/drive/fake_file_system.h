@@ -53,7 +53,7 @@ class FakeFileSystem : public FileSystemInterface {
   virtual void CheckForUpdates() OVERRIDE;
   virtual void GetResourceEntryById(
       const std::string& resource_id,
-      const GetResourceEntryWithFilePathCallback& callback) OVERRIDE;
+      const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void TransferFileFromRemoteToLocal(
       const base::FilePath& remote_src_file_path,
       const base::FilePath& local_dest_file_path,
@@ -139,49 +139,11 @@ class FakeFileSystem : public FileSystemInterface {
   virtual void Reload() OVERRIDE;
 
  private:
-  // Callback to return the result of GetFilePath.
-  typedef base::Callback<void(const base::FilePath& file_path)>
-      GetFilePathCallback;
-
-  // Returns the path for the |resource_id| via |callback|.
-  // How the method works:
-  // 1) Gets AboutResource from the drive service to obtain root resource id.
-  // 2) Gets ResourceEntry from the drive service to get the base name,
-  //    prepends it to the |file_path|. Unless it is root, also tries for
-  //    the parent recursively.
-  void GetFilePath(const std::string& resource_id,
-                   const GetFilePathCallback& callback);
-  void GetFilePathAfterGetAboutResource(
-      const std::string& resource_id,
-      const GetFilePathCallback& callback,
-      google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::AboutResource> about_resource);
-  void GetFilePathInternal(
-      const std::string& root_resource_id,
-      const std::string& resource_id,
-      const base::FilePath& file_path,
-      const GetFilePathCallback& callback);
-  void GetFilePathAfterGetResourceEntry(
-      const std::string& root_resource_id,
-      const base::FilePath& remaining_file_path,
-      const GetFilePathCallback& callback,
-      google_apis::GDataErrorCode error_in,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
-
-  // Helpers of GetResourceEntryById.
-  // How the method works:
-  // 1) Gets ResourceEntry from the drive service.
-  // 2) Gets the file path of the resource.
-  // 3) Runs the |callback|.
+  // Helper of GetResourceEntryById.
   void GetResourceEntryByIdAfterGetResourceEntry(
-      const GetResourceEntryWithFilePathCallback& callback,
+      const GetResourceEntryCallback& callback,
       google_apis::GDataErrorCode error_in,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
-  void GetResourceEntryByIdAfterGetFilePath(
-      const GetResourceEntryWithFilePathCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry,
-      const base::FilePath& parent_file_path);
 
   // Helpers of GetFileContentByPath.
   // How the method works:

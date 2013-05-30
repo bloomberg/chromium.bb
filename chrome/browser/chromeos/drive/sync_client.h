@@ -110,7 +110,6 @@ class SyncClient : public FileSystemObserver, public FileCacheObserver {
   void OnGetResourceEntryById(const std::string& resource_id,
                               const FileCacheEntry& cache_entry,
                               FileError error,
-                              const base::FilePath& file_path,
                               scoped_ptr<ResourceEntry> entry);
 
   // Called when a cache entry is obtained.

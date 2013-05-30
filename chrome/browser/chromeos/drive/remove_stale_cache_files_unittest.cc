@@ -82,9 +82,8 @@ TEST_F(RemoveStaleCacheFilesTest, RemoveStaleCacheFiles) {
   EXPECT_TRUE(cache_->GetCacheEntry(resource_id, md5, &cache_entry));
 
   ResourceEntry entry;
-  EXPECT_EQ(
-      FILE_ERROR_NOT_FOUND,
-      resource_metadata_->GetResourceEntryById(resource_id, NULL, &entry));
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
+            resource_metadata_->GetResourceEntryById(resource_id, &entry));
 
   // Remove stale cache files.
   RemoveStaleCacheFiles(cache_.get(), resource_metadata_.get());

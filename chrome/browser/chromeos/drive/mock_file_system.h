@@ -28,7 +28,7 @@ class MockFileSystem : public FileSystemInterface {
   MOCK_METHOD0(CheckForUpdates, void());
   MOCK_METHOD2(GetResourceEntryById,
                void(const std::string& resource_id,
-                    const GetResourceEntryWithFilePathCallback& callback));
+                    const GetResourceEntryCallback& callback));
   MOCK_METHOD3(Search, void(const std::string& search_query,
                             const GURL& next_feed,
                             const SearchCallback& callback));

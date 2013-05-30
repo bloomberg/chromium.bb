@@ -41,11 +41,11 @@ ACTION_P(MockUpdateFileByResourceId, error) {
   arg2.Run(error);
 }
 
-// Action used to set mock expectations for GetFileInfoByResourceId().
-ACTION_P2(MockUpdateFileByResourceId, error, md5) {
+// Action used to set mock expectations for GetResourceEntryById().
+ACTION_P2(MockGetResourceEntryById, error, md5) {
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   entry->mutable_file_specific_info()->set_file_md5(md5);
-  arg1.Run(error, base::FilePath(), entry.Pass());
+  arg1.Run(error, entry.Pass());
 }
 
 }  // namespace
@@ -161,8 +161,7 @@ class SyncClientTest : public testing::Test {
   // Sets the expectation for MockFileSystem::GetFileByResourceId(),
   // that simulates successful retrieval of a file for the given resource ID.
   void SetExpectationForGetFileByResourceId(const std::string& resource_id) {
-    EXPECT_CALL(*mock_file_system_,
-                GetFileByResourceId(resource_id, _, _, _))
+    EXPECT_CALL(*mock_file_system_, GetFileByResourceId(resource_id, _, _, _))
         .WillOnce(
             MockGetFileByResourceId(
                 FILE_ERROR_OK,
@@ -171,27 +170,21 @@ class SyncClientTest : public testing::Test {
 
   // Sets the expectation for MockFileSystem::UpdateFileByResourceId(),
   // that simulates successful uploading of a file for the given resource ID.
-  void SetExpectationForUpdateFileByResourceId(
-      const std::string& resource_id) {
-    EXPECT_CALL(*mock_file_system_,
-                UpdateFileByResourceId(resource_id, _, _))
+  void SetExpectationForUpdateFileByResourceId(const std::string& resource_id) {
+    EXPECT_CALL(*mock_file_system_, UpdateFileByResourceId(resource_id, _, _))
         .WillOnce(MockUpdateFileByResourceId(FILE_ERROR_OK));
   }
 
-  // Sets the expectation for MockFileSystem::GetFileInfoByResourceId(),
+  // Sets the expectation for MockFileSystem::GetResourceEntryById(),
   // that simulates successful retrieval of file info for the given resource
   // ID.
   //
   // This is used for testing StartCheckingExistingPinnedFiles(), hence we
   // are only interested in the MD5 value in ResourceEntry.
-  void SetExpectationForGetFileInfoByResourceId(
-      const std::string& resource_id,
-      const std::string& new_md5) {
-    EXPECT_CALL(*mock_file_system_,
-                GetResourceEntryById(resource_id, _))
-        .WillOnce(MockUpdateFileByResourceId(
-            FILE_ERROR_OK,
-            new_md5));
+  void SetExpectationForGetFileInfoByResourceId(const std::string& resource_id,
+                                                const std::string& new_md5) {
+    EXPECT_CALL(*mock_file_system_, GetResourceEntryById(resource_id, _))
+        .WillOnce(MockGetResourceEntryById(FILE_ERROR_OK, new_md5));
   }
 
   // Returns the resource IDs in the queue to be fetched.

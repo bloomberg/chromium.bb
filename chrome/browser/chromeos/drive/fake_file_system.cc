@@ -56,7 +56,7 @@ void FakeFileSystem::CheckForUpdates() {
 
 void FakeFileSystem::GetResourceEntryById(
     const std::string& resource_id,
-    const GetResourceEntryWithFilePathCallback& callback) {
+    const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drive_service_->GetResourceEntry(
@@ -256,109 +256,20 @@ void FakeFileSystem::GetCacheEntryByResourceId(
 void FakeFileSystem::Reload() {
 }
 
-// Implementation of GetFilePath.
-void FakeFileSystem::GetFilePath(const std::string& resource_id,
-                                 const GetFilePathCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  drive_service_->GetAboutResource(
-      base::Bind(
-          &FakeFileSystem::GetFilePathAfterGetAboutResource,
-          weak_ptr_factory_.GetWeakPtr(), resource_id, callback));
-}
-
-void FakeFileSystem::GetFilePathAfterGetAboutResource(
-    const std::string& resource_id,
-    const GetFilePathCallback& callback,
-    google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::AboutResource> about_resource) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // We assume the call always success for test.
-  DCHECK_EQ(util::GDataToFileError(error), FILE_ERROR_OK);
-  DCHECK(about_resource);
-
-  GetFilePathInternal(about_resource->root_folder_id(), resource_id,
-                      base::FilePath(), callback);
-}
-
-void FakeFileSystem::GetFilePathInternal(
-    const std::string& root_resource_id,
-    const std::string& resource_id,
-    const base::FilePath& file_path,
-    const GetFilePathCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (resource_id == root_resource_id) {
-    // Reached to the root. Append the drive root path, and run |callback|.
-    callback.Run(util::GetDriveMyDriveRootPath().Append(file_path));
-    return;
-  }
-
-  drive_service_->GetResourceEntry(
-      resource_id,
-      base::Bind(
-          &FakeFileSystem::GetFilePathAfterGetResourceEntry,
-          weak_ptr_factory_.GetWeakPtr(),
-          root_resource_id, file_path, callback));
-}
-
-void FakeFileSystem::GetFilePathAfterGetResourceEntry(
-    const std::string& root_resource_id,
-    const base::FilePath& remaining_file_path,
-    const GetFilePathCallback& callback,
-    google_apis::GDataErrorCode error_in,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // We assume the call always success for test.
-  DCHECK_EQ(util::GDataToFileError(error_in), FILE_ERROR_OK);
-  DCHECK(resource_entry);
-
-  ResourceEntry entry = ConvertToResourceEntry(*resource_entry);
-  base::FilePath file_path =
-      base::FilePath::FromUTF8Unsafe(entry.base_name()).Append(
-          remaining_file_path);
-
-  GetFilePathInternal(root_resource_id, entry.parent_resource_id(),
-                      file_path, callback);
-}
-
 // Implementation of GetResourceEntryById.
 void FakeFileSystem::GetResourceEntryByIdAfterGetResourceEntry(
-    const GetResourceEntryWithFilePathCallback& callback,
+    const GetResourceEntryCallback& callback,
     google_apis::GDataErrorCode error_in,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FileError error = util::GDataToFileError(error_in);
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath(), scoped_ptr<ResourceEntry>());
-    return;
+  scoped_ptr<ResourceEntry> entry;
+  if (error == FILE_ERROR_OK) {
+    DCHECK(resource_entry);
+    entry.reset(new ResourceEntry(ConvertToResourceEntry(*resource_entry)));
   }
-
-  DCHECK(resource_entry);
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry(
-      ConvertToResourceEntry(*resource_entry)));
-
-  const std::string parent_resource_id = entry->parent_resource_id();
-  GetFilePath(
-      parent_resource_id,
-      base::Bind(
-          &FakeFileSystem::GetResourceEntryByIdAfterGetFilePath,
-          weak_ptr_factory_.GetWeakPtr(),
-          callback, error, base::Passed(&entry)));
-}
-
-void FakeFileSystem::GetResourceEntryByIdAfterGetFilePath(
-    const GetResourceEntryWithFilePathCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry,
-    const base::FilePath& parent_file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::FilePath file_path = parent_file_path.Append(
-      base::FilePath::FromUTF8Unsafe(entry->base_name()));
-  callback.Run(error, file_path, entry.Pass());
+  callback.Run(error, entry.Pass());
 }
 
 // Implementation of GetFileContentByPath.

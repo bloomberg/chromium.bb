@@ -19,7 +19,7 @@ class DummyFileSystem : public FileSystemInterface {
   virtual void CheckForUpdates() OVERRIDE {}
   virtual void GetResourceEntryById(
       const std::string& resource_id,
-      const GetResourceEntryWithFilePathCallback& callback) OVERRIDE {}
+      const GetResourceEntryCallback& callback) OVERRIDE {}
   virtual void TransferFileFromRemoteToLocal(
       const base::FilePath& remote_src_file_path,
       const base::FilePath& local_dest_file_path,

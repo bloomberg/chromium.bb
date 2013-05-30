@@ -202,13 +202,11 @@ class ResourceMetadata {
   // Finds an entry (a file or a directory) by |resource_id|.
   // |callback| must not be null.
   // Must be called on the UI thread.
-  void GetResourceEntryByIdOnUIThread(
-      const std::string& resource_id,
-      const GetResourceEntryWithFilePathCallback& callback);
+  void GetResourceEntryByIdOnUIThread(const std::string& resource_id,
+                                      const GetResourceEntryCallback& callback);
 
   // Synchronous version of GetResourceEntryByIdOnUIThread().
   FileError GetResourceEntryById(const std::string& resource_id,
-                                 base::FilePath* out_file_path,
                                  ResourceEntry* out_entry);
 
   // Finds an entry (a file or a directory) by |file_path|.

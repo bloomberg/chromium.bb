@@ -46,52 +46,15 @@ class FakeFileSystemTest : public ::testing::Test {
 TEST_F(FakeFileSystemTest, GetResourceEntryById) {
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<ResourceEntry> entry;
-  base::FilePath file_path;
+  const std::string resource_id = "folder:sub_dir_folder_resource_id";
 
   fake_file_system_->GetResourceEntryById(
-      "folder:sub_dir_folder_resource_id",
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  ASSERT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(
-      util::GetDriveMyDriveRootPath().AppendASCII(
-          "Directory 1/Sub Directory Folder"),
-      file_path);
-  EXPECT_TRUE(entry);  // Just make sure something is returned.
-}
-
-TEST_F(FakeFileSystemTest,
-       GetResourceEntryById_PathCompatibleWithGetResourceEntryByPath) {
-  const std::string document_resource_id = "document:5_document_resource_id";
-
-  FileError error = FILE_ERROR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
-  base::FilePath file_path;
-
-  // Get resource entry by resource id.
-  fake_file_system_->GetResourceEntryById(
-      document_resource_id,
-      google_apis::test_util::CreateCopyResultCallback(
-          &error, &file_path, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  ASSERT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(entry);
-  EXPECT_TRUE(entry->file_specific_info().is_hosted_document());
-
-  // Get resource entry by path given by GetResourceEntryById.
-  error = FILE_ERROR_FAILED;
-  entry.reset();
-  fake_file_system_->GetResourceEntryByPath(
-      file_path,
+      resource_id,
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(FILE_ERROR_OK, error);
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(document_resource_id, entry->resource_id());
+  EXPECT_EQ(resource_id, entry->resource_id());
 }
 
 TEST_F(FakeFileSystemTest, GetFileContentByPath) {

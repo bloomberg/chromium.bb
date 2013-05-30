@@ -83,7 +83,7 @@ FileError CheckPreConditionForEnsureFileDownloadedByResourceId(
     const std::string& resource_id,
     base::FilePath* cache_file_path,
     ResourceEntry* entry) {
-  FileError error = metadata->GetResourceEntryById(resource_id, NULL, entry);
+  FileError error = metadata->GetResourceEntryById(resource_id, entry);
   if (error != FILE_ERROR_OK)
     return error;
   return CheckPreConditionForEnsureFileDownloaded(
