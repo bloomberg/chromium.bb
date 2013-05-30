@@ -87,7 +87,7 @@ static inline bool isCSSTokenAString(int yytype)
 
 %}
 
-%expect 26
+%expect 11
 
 %nonassoc LOWEST_PREC
 
@@ -584,7 +584,7 @@ maybe_media_value:
     /*empty*/ {
         $$ = 0;
     }
-    | ':' maybe_space expr maybe_space {
+    | ':' maybe_space expr {
         $$ = $3;
     }
     ;
