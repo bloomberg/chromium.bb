@@ -171,6 +171,16 @@ NativeAppModalDialog* NativeAppModalDialog::CreateNativeJavaScriptPrompt(
     JavaScriptAppModalDialog* dialog,
     gfx::NativeWindow parent_window) {
   JavaScriptAppModalDialogViews* d = new JavaScriptAppModalDialogViews(dialog);
-  views::DialogDelegate::CreateDialogWidget(d, NULL, parent_window);
+  views::Widget* widget =
+      views::DialogDelegate::CreateDialogWidget(d, NULL, parent_window);
+  views::Widget* parent_widget = parent_window ?
+      views::Widget::GetWidgetForNativeWindow(parent_window) : NULL;
+  // Horizontally center the dialog window within the parent window's bounds.
+  if (widget && parent_widget) {
+    gfx::Rect bounds(widget->GetWindowBoundsInScreen());
+    gfx::Rect parent_bounds(parent_widget->GetWindowBoundsInScreen());
+    bounds.set_x(parent_bounds.CenterPoint().x() - bounds.width() / 2);
+    widget->SetBounds(bounds);
+  }
   return d;
 }
