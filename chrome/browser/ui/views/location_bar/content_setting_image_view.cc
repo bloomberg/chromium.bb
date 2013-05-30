@@ -45,17 +45,23 @@ ContentSettingImageView::ContentSettingImageView(
               content_type)),
       background_painter_(new views::HorizontalPainter(background_images)),
       icon_(new views::ImageView),
-      text_label_(NULL),
+      text_label_(new views::Label),
       slide_animator_(this),
       pause_animation_(false),
       pause_animation_state_(0.0),
-      bubble_widget_(NULL),
-      font_(font),
-      text_size_(0) {
-  SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, 0));
+      bubble_widget_(NULL) {
   icon_->SetHorizontalAlignment(views::ImageView::LEADING);
   AddChildView(icon_);
+
+  text_label_->SetVisible(false);
+  text_label_->set_border(
+      views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
+  text_label_->SetFont(font);
+  text_label_->SetEnabledColor(font_color);
+  text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  text_label_->SetElideBehavior(views::Label::NO_ELIDE);
+  AddChildView(text_label_);
+
   TouchableLocationBarView::Init(this);
 
   slide_animator_.SetSlideDuration(kAnimationDurationMS);
@@ -99,19 +105,8 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
   // mechanism to show one after the other, but it doesn't seem important now.
   int string_id = content_setting_image_model_->explanatory_string_id();
   if (string_id && !background_showing()) {
-    // Initialize animated string. It will be cleared when animation is
-    // completed.
-    if (!text_label_) {
-      text_label_ = new views::Label;
-      text_label_->SetElideBehavior(views::Label::NO_ELIDE);
-      text_label_->SetFont(font_);
-      SetLayoutManager(new views::BoxLayout(
-          views::BoxLayout::kHorizontal, kHorizMargin, 0, kIconLabelSpacing));
-      AddChildView(text_label_);
-    }
     text_label_->SetText(l10n_util::GetStringUTF16(string_id));
-    text_size_ = font_.GetStringWidth(text_label_->text());
-    text_size_ += kHorizMargin;
+    text_label_->SetVisible(true);
     slide_animator_.Show();
   }
 
@@ -122,10 +117,7 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
 void ContentSettingImageView::AnimationEnded(const ui::Animation* animation) {
   slide_animator_.Reset();
   if (!pause_animation_) {
-    SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 0, 0));
-    RemoveChildView(text_label_);  // will also delete the view.
-    text_label_ = NULL;
+    text_label_->SetVisible(false);
     parent_->Layout();
     parent_->SchedulePaint();
   }
@@ -146,11 +138,7 @@ void ContentSettingImageView::AnimationCanceled(
 
 gfx::Size ContentSettingImageView::GetPreferredSize() {
   // Height will be ignored by the LocationBarView.
-  gfx::Size preferred_size(views::View::GetPreferredSize());
-  int non_label_width = preferred_size.width() -
-      (text_label_ ? text_label_->GetPreferredSize().width() : 0);
-
-  int visible_text_size = 0;
+  gfx::Size size(icon_->GetPreferredSize());
   if (background_showing()) {
     double state = slide_animator_.GetCurrentValue();
     // The fraction of the animation we'll spend animating the string into view,
@@ -163,11 +151,23 @@ gfx::Size ContentSettingImageView::GetPreferredSize() {
       size_fraction = state / kOpenFraction;
     if (state > (1.0 - kOpenFraction))
       size_fraction = (1.0 - state) / kOpenFraction;
-    visible_text_size = size_fraction * text_size_;
+    size.Enlarge(
+        size_fraction * (text_label_->GetPreferredSize().width() +
+            GetTotalSpacingWhileAnimating()), 0);
+    size.ClampToMin(background_painter_->GetMinimumSize());
   }
+  return size;
+}
 
-  preferred_size.set_width(non_label_width + visible_text_size);
-  return preferred_size;
+void ContentSettingImageView::Layout() {
+  const int icon_width = icon_->GetPreferredSize().width();
+  icon_->SetBounds(
+      std::min((width() - icon_width) / 2, kHorizMargin), 0,
+      icon_width, height());
+  text_label_->SetBounds(
+      icon_->bounds().right() + kIconLabelSpacing, 0,
+      std::max(width() - GetTotalSpacingWhileAnimating() - icon_width, 0),
+      text_label_->GetPreferredSize().height());
 }
 
 bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
@@ -204,6 +204,10 @@ void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
     pause_animation_ = false;
     slide_animator_.Show();
   }
+}
+
+int ContentSettingImageView::GetTotalSpacingWhileAnimating() const {
+  return kHorizMargin * 2 + kIconLabelSpacing;
 }
 
 void ContentSettingImageView::OnClick() {

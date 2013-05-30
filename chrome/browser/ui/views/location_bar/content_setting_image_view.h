@@ -67,6 +67,7 @@ class ContentSettingImageView : public TouchableLocationBarView,
 
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
@@ -79,7 +80,7 @@ class ContentSettingImageView : public TouchableLocationBarView,
     return slide_animator_.is_animating() || pause_animation_;
   }
 
-  // Invoked when the user clicks on the control.
+  int GetTotalSpacingWhileAnimating() const;
   void OnClick();
 
   LocationBarView* parent_;  // Weak, owns us.
@@ -91,10 +92,6 @@ class ContentSettingImageView : public TouchableLocationBarView,
   bool pause_animation_;
   double pause_animation_state_;
   views::Widget* bubble_widget_;
-
-  // TODO(pkasting): Eliminate these.
-  gfx::Font font_;
-  int text_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageView);
 };
