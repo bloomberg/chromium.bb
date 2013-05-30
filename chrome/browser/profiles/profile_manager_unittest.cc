@@ -20,6 +20,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -426,6 +427,37 @@ TEST_F(ProfileManagerTest, InitProfileInfoCacheForAProfile) {
             UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
   EXPECT_EQ(avatar_index,
             cache.GetAvatarIconIndexOfProfileAtIndex(profile_index));
+}
+
+TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_TRUE(profile_manager);
+
+  Profile* profile = profile_manager->GetLastUsedProfileAllowedByPolicy();
+  ASSERT_TRUE(profile);
+  EXPECT_FALSE(profile->IsOffTheRecord());
+  PrefService* prefs = profile->GetPrefs();
+  EXPECT_EQ(IncognitoModePrefs::ENABLED,
+            IncognitoModePrefs::GetAvailability(prefs));
+
+  // Attach an incognito Profile to the TestingProfile.
+  ASSERT_FALSE(profile->GetOffTheRecordProfile());
+  TestingProfile* incognito_profile = new TestingProfile();
+  incognito_profile->set_incognito(true);
+  EXPECT_TRUE(incognito_profile->IsOffTheRecord());
+  TestingProfile* testing_profile = static_cast<TestingProfile*>(profile);
+  testing_profile->SetOffTheRecordProfile(incognito_profile);
+  ASSERT_TRUE(profile->GetOffTheRecordProfile());
+
+  IncognitoModePrefs::SetAvailability(prefs, IncognitoModePrefs::DISABLED);
+  EXPECT_FALSE(
+      profile_manager->GetLastUsedProfileAllowedByPolicy()->IsOffTheRecord());
+
+  // GetLastUsedProfileAllowedByPolicy() returns the incognito Profile when
+  // incognito mode is forced.
+  IncognitoModePrefs::SetAvailability(prefs, IncognitoModePrefs::FORCED);
+  EXPECT_TRUE(
+      profile_manager->GetLastUsedProfileAllowedByPolicy()->IsOffTheRecord());
 }
 
 #if !defined(OS_ANDROID)

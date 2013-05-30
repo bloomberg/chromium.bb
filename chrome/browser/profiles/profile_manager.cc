@@ -21,6 +21,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
@@ -244,6 +245,16 @@ Profile* ProfileManager::GetDefaultProfileOrOffTheRecord() {
 Profile* ProfileManager::GetLastUsedProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   return profile_manager->GetLastUsedProfile(profile_manager->user_data_dir_);
+}
+
+// static
+Profile* ProfileManager::GetLastUsedProfileAllowedByPolicy() {
+  Profile* profile = GetLastUsedProfile();
+  if (IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
+      IncognitoModePrefs::FORCED) {
+    return profile->GetOffTheRecordProfile();
+  }
+  return profile;
 }
 
 // static

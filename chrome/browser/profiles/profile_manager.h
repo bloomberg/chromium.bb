@@ -109,7 +109,14 @@ class ProfileManager : public base::NonThreadSafe,
   Profile* GetLastUsedProfile(const base::FilePath& user_data_dir);
 
   // Same as instance method but provides the default user_data_dir as well.
+  // If the Profile is going to be used to open a new window then consider using
+  // GetLastUsedProfileAllowedByPolicy() instead.
   static Profile* GetLastUsedProfile();
+
+  // Same as GetLastUsedProfile() but returns the incognito Profile if
+  // incognito mode is forced. This should be used if the last used Profile
+  // will be used to open new browser windows.
+  static Profile* GetLastUsedProfileAllowedByPolicy();
 
   // Get the path of the last used profile, or if that's undefined, the default
   // profile.
