@@ -407,9 +407,12 @@ void RenderWidgetHostViewAura::ApplyEventFilterForPopupExit(
   if (event->type() != ui::ET_MOUSE_PRESSED || !event->target())
     return;
 
-  DCHECK(popup_parent_host_view_);
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (target != window_ && target != popup_parent_host_view_->window_) {
+  if (target != window_ &&
+      (!popup_parent_host_view_ ||
+       target != popup_parent_host_view_->window_)) {
+    // Note: popup_parent_host_view_ may be NULL when there are multiple
+    // popup children per view. See: RenderWidgetHostViewAura::InitAsPopup().
     in_shutdown_ = true;
     host_->Shutdown();
   }
