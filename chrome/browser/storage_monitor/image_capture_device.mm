@@ -5,7 +5,6 @@
 #import "chrome/browser/storage_monitor/image_capture_device.h"
 
 #include "base/file_util.h"
-#include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
