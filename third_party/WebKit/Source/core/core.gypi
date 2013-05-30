@@ -949,8 +949,6 @@
             'inspector/InspectorInputAgent.h',
             'inspector/InspectorInstrumentation.cpp',
             'inspector/InspectorInstrumentation.h',
-            'inspector/InspectorInstrumentationInl.h',
-            'inspector/InspectorInstrumentationImpl.cpp',
             'inspector/InspectorInstrumentationCustomInl.h',
             'inspector/InspectorLayerTreeAgent.cpp',
             'inspector/InspectorLayerTreeAgent.h',
