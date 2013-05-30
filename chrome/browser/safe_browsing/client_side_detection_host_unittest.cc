@@ -219,6 +219,10 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     // We need to create this here since we don't call
     // DidNavigateMainFramePostCommit in this test.
     csd_host_->browse_info_.reset(new BrowseInfo);
+
+    // By default this is set to false. Turn it on as if we are in canary or
+    // dev channel
+    csd_host_->malware_report_enabled_ = true;
   }
 
   static void RunAllPendingOnIO(base::WaitableEvent* event) {

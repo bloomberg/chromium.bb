@@ -137,6 +137,8 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   int unsafe_unique_page_id_;
   scoped_ptr<SafeBrowsingUIManager::UnsafeResource> unsafe_resource_;
 
+  // Whether the malware bad ip matching and report feature is enabled.
+  bool malware_report_enabled_;
   DISALLOW_COPY_AND_ASSIGN(ClientSideDetectionHost);
 };
 

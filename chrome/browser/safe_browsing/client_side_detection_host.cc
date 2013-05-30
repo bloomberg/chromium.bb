@@ -19,6 +19,7 @@
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
@@ -249,7 +250,8 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
     : content::WebContentsObserver(tab),
       csd_service_(NULL),
       weak_factory_(this),
-      unsafe_unique_page_id_(-1) {
+      unsafe_unique_page_id_(-1),
+      malware_report_enabled_(false) {
   DCHECK(tab);
   // Note: csd_service_ and sb_service will be NULL here in testing.
   csd_service_ = g_browser_process->safe_browsing_detection_service();
@@ -264,6 +266,13 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
     database_manager_ = sb_service->database_manager();
     ui_manager_->AddObserver(this);
   }
+
+  // Only enable the malware bad IP matching and report feature for canary
+  // and dev channel.
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  malware_report_enabled_ = (
+      channel == chrome::VersionInfo::CHANNEL_DEV ||
+      channel == chrome::VersionInfo::CHANNEL_CANARY);
 }
 
 ClientSideDetectionHost::~ClientSideDetectionHost() {
@@ -380,14 +389,17 @@ void ClientSideDetectionHost::OnPhishingDetectionDone(
       browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
       verdict->IsInitialized()) {
-    scoped_ptr<ClientMalwareRequest> malware_verdict(new ClientMalwareRequest);
-    // Start browser-side malware feature extraction.  Once we're done it will
-    // send the malware client verdict request.
-    malware_verdict->set_url(verdict->url());
-    feature_extractor_->ExtractMalwareFeatures(
-        browse_info_.get(),
-        malware_verdict.get());
-    MalwareFeatureExtractionDone(malware_verdict.Pass());
+    if (malware_report_enabled_) {
+      scoped_ptr<ClientMalwareRequest> malware_verdict(
+          new ClientMalwareRequest);
+      // Start browser-side malware feature extraction.  Once we're done it will
+      // send the malware client verdict request.
+      malware_verdict->set_url(verdict->url());
+      feature_extractor_->ExtractMalwareFeatures(
+          browse_info_.get(),
+          malware_verdict.get());
+      MalwareFeatureExtractionDone(malware_verdict.Pass());
+    }
 
     // We only send phishing verdict to the server if the verdict is phishing or
     // if a SafeBrowsing interstitial was already shown for this site.  E.g., a
