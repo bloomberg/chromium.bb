@@ -160,6 +160,9 @@ def FindAndCopyFiles(src_files, root, search_dirs, dst_dir):
         Trace('Skipping "%s", destination "%s" is newer.' % (
             src_file, dst_file))
         continue
+    dst_path = os.path.dirname(dst_file)
+    if not os.path.exists(dst_path):
+      buildbot_common.MakeDir(dst_path)
     buildbot_common.CopyFile(src_file, dst_file)
 
 

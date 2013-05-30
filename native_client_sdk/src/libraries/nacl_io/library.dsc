@@ -78,7 +78,8 @@
       'FILES': [
         "auto_lock.h",
         "macros.h",
-        "ref_object.h"
+        "ref_object.h",
+        "thread_safe_queue.h"
       ],
       'DEST': 'include/utils',
     }
