@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Type_Error) {
   TestSimplePlayback("bear-320x240-video-only.webm", kWebMAudioOnly, kError);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaSourceTest, DISABLED_ConfigChangeVideo) {
+IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
   ASSERT_NO_FATAL_FAILURE(
       RunTest("mse_config_change.html", NULL, NULL, kEnded));
 }

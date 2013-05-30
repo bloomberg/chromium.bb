@@ -37,6 +37,14 @@
           srcBuffer.timestampOffset = APPEND_TIME;
           srcBuffer.append(new Uint8Array(e.target.response));
           mediaSource.endOfStream();
+          // Video total duration should include the second appended segtment.
+          // Video duration is a float value so we check it within a range.
+          if (!video.duration ||
+              Math.abs(video.duration - TOTAL_DURATION) > DELTA) {
+            failTest('Unexpected video.duration = ' + video.duration +
+                     ', expected duration = ' + TOTAL_DURATION);
+            return;
+          }
           video.play();
         });
         xhr.send();
@@ -74,14 +82,6 @@
             failTest('Unexpected dimensions for second video segment.');
             return;
           }
-        }
-        // Video playback might start before second source is appended, so we
-        // delay check for duration till currentTime > APPEND_TIME.
-        // Video duration is a float value so we check it within a range.
-        if (!video.duration ||
-            Math.abs(video.duration - TOTAL_DURATION) > DELTA) {
-          failTest('Unexpected video.duration = ' + video.duration +
-                   ', expected duration = ' + TOTAL_DURATION);
         }
       }
 
