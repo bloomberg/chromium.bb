@@ -7,7 +7,7 @@
 #include "content/common/child_thread.h"
 #include "content/common/database_messages.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/sqlite/sqlite3.h"
 
 using WebKit::Platform;

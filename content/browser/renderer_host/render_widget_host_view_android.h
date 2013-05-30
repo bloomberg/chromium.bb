@@ -20,7 +20,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d_f.h"
 

@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_FILEAPI_WEBBLOBREGISTRY_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebBlobRegistry.h"
+#include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 
 namespace WebKit {
 class WebBlobData;

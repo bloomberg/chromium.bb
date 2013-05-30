@@ -13,7 +13,7 @@
 #include "base/safe_numerics.h"
 #include "base/sys_byteorder.h"
 #include "content/common/sandbox_linux.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/linux/WebFontFamily.h"
+#include "third_party/WebKit/public/platform/linux/WebFontFamily.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontRenderStyle.h"
 
 namespace content {

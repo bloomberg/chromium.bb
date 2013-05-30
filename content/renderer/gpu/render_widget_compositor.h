@@ -12,7 +12,7 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "skia/ext/refptr.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
+#include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 #include "ui/gfx/rect.h"
 
 class SkPicture;

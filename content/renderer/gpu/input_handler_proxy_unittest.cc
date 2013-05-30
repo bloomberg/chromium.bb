@@ -9,10 +9,10 @@
 #include "content/renderer/gpu/input_handler_proxy_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatSize.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurve.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
+#include "third_party/WebKit/public/platform/WebFloatPoint.h"
+#include "third_party/WebKit/public/platform/WebFloatSize.h"
+#include "third_party/WebKit/public/platform/WebGestureCurve.h"
+#include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 using WebKit::WebActiveWheelFlingParameters;

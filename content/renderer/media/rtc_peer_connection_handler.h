@@ -9,9 +9,9 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/peer_connection_handler_base.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandler.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCStatsRequest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCStatsResponse.h"
+#include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
+#include "third_party/WebKit/public/platform/WebRTCStatsRequest.h"
+#include "third_party/WebKit/public/platform/WebRTCStatsResponse.h"
 
 namespace WebKit {
 class WebFrame;

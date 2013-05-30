@@ -4,8 +4,8 @@
 
 #include "content/public/common/page_state.h"
 
-#include "third_party/WebKit/Source/Platform/chromium/public/WebHTTPBody.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebHTTPBody.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/glue/glue_serialize_deprecated.h"

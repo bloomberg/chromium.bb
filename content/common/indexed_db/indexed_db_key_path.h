@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBKeyPath.h"
+#include "third_party/WebKit/public/platform/WebIDBKeyPath.h"
 
 namespace content {
 

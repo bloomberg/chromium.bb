@@ -9,10 +9,10 @@
 #include "content/common/child_thread.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common_child/indexed_db/indexed_db_dispatcher.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBKeyPath.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBMetadata.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
+#include "third_party/WebKit/public/platform/WebIDBKeyPath.h"
+#include "third_party/WebKit/public/platform/WebIDBMetadata.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "webkit/glue/worker_task_runner.h"
 
 using WebKit::WebIDBCallbacks;

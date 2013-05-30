@@ -10,7 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
+#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 
 namespace WebKit {
 class WebElement;

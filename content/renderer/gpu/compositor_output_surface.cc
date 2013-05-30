@@ -16,7 +16,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/ipc_sync_channel.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 using WebKit::WebGraphicsContext3D;
 

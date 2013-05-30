@@ -6,9 +6,9 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "content/common/media/media_stream_options.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
+#include "third_party/WebKit/public/platform/WebCString.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
 namespace {

@@ -9,12 +9,12 @@
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandler.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
+#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
+#include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
 
 namespace content {

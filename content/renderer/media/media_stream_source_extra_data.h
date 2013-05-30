@@ -11,7 +11,7 @@
 #include "content/renderer/media/media_stream_source_observer.h"
 #include "media/base/audio_capturer_source.h"
 #include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 
 namespace content {
 

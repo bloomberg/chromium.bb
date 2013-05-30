@@ -10,7 +10,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBDatabase.h"
+#include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 #include "webkit/base/origin_url_conversions.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_manager.h"

@@ -12,8 +12,8 @@
 #include "content/common/worker_messages.h"
 #include "content/worker/shared_worker_devtools_agent.h"
 #include "content/worker/worker_thread.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
 
 namespace content {

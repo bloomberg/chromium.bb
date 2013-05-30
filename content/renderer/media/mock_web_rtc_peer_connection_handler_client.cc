@@ -5,8 +5,8 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 using testing::_;
 

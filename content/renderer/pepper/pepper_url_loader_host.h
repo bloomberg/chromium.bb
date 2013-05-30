@@ -12,7 +12,7 @@
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 
 namespace WebKit {
 class WebFrame;

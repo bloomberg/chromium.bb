@@ -23,7 +23,7 @@
 #include "base/scoped_native_library.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 #include "content/browser/gamepad/gamepad_standard_mappings.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
+#include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace content {
 

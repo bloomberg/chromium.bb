@@ -23,7 +23,7 @@
 #include "content/common/content_export.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
+#include "third_party/WebKit/public/platform/WebFilterOperation.h"
 
 #ifndef CONTENT_COMMON_CC_MESSAGES_H_
 #define CONTENT_COMMON_CC_MESSAGES_H_

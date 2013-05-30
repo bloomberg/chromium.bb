@@ -6,7 +6,7 @@
 
 #include "content/renderer/gpu/input_event_filter.h"
 #include "content/renderer/gpu/input_handler_manager.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
+#include "third_party/WebKit/public/platform/Platform.h"
 
 namespace content {
 

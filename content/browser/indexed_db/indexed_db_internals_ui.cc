@@ -23,7 +23,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
 #include "grit/content_resources.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/zlib/google/zip.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/base/origin_url_conversions.h"

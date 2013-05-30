@@ -38,14 +38,14 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_hardware_config.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebBlobRegistry.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFileInfo.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebHyphenator.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamCenter.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamCenterClient.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
+#include "third_party/WebKit/public/platform/WebBlobRegistry.h"
+#include "third_party/WebKit/public/platform/WebFileInfo.h"
+#include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "third_party/WebKit/public/platform/WebHyphenator.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "webkit/base/file_path_string_conversions.h"
@@ -57,13 +57,13 @@
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/win/WebSandboxSupport.h"
+#include "third_party/WebKit/public/platform/win/WebSandboxSupport.h"
 #endif
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
 #include "content/common/mac/font_loader.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/mac/WebSandboxSupport.h"
+#include "third_party/WebKit/public/platform/mac/WebSandboxSupport.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
@@ -72,8 +72,8 @@
 
 #include "base/synchronization/lock.h"
 #include "content/common/child_process_sandbox_support_impl_linux.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/linux/WebFontFamily.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/linux/WebSandboxSupport.h"
+#include "third_party/WebKit/public/platform/linux/WebFontFamily.h"
+#include "third_party/WebKit/public/platform/linux/WebSandboxSupport.h"
 #endif
 
 #if defined(OS_POSIX)

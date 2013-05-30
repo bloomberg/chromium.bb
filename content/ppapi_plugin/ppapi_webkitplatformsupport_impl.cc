@@ -13,18 +13,18 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
 #include "ppapi/proxy/plugin_globals.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 #if defined(OS_WIN)
-#include "third_party/WebKit/Source/Platform/chromium/public/win/WebSandboxSupport.h"
+#include "third_party/WebKit/public/platform/win/WebSandboxSupport.h"
 #elif defined(OS_MACOSX)
-#include "third_party/WebKit/Source/Platform/chromium/public/mac/WebSandboxSupport.h"
+#include "third_party/WebKit/public/platform/mac/WebSandboxSupport.h"
 #elif defined(OS_POSIX)
 #if !defined(OS_ANDROID)
 #include "content/common/child_process_sandbox_support_impl_linux.h"
 #endif
-#include "third_party/WebKit/Source/Platform/chromium/public/linux/WebFontFamily.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/linux/WebSandboxSupport.h"
+#include "third_party/WebKit/public/platform/linux/WebFontFamily.h"
+#include "third_party/WebKit/public/platform/linux/WebSandboxSupport.h"
 
 #endif
 

@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCDTMFSenderHandler.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCDTMFSenderHandlerClient.h"
+#include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandler.h"
+#include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandlerClient.h"
 #include "third_party/libjingle/source/talk/app/webrtc/dtmfsenderinterface.h"
 
 namespace content {

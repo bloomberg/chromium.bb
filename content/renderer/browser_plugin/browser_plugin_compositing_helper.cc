@@ -12,7 +12,7 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/render_thread_impl.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/size_conversions.h"

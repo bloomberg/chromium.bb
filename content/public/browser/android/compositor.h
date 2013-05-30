@@ -11,7 +11,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
 class Layer;

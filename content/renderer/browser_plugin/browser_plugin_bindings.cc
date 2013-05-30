@@ -15,7 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMMessageEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"

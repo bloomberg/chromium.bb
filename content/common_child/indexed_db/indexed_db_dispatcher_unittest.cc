@@ -7,8 +7,8 @@
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common_child/indexed_db/indexed_db_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBCallbacks.h"
+#include "third_party/WebKit/public/platform/WebData.h"
+#include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
 
 using WebKit::WebData;
 using WebKit::WebIDBCallbacks;

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
+#include "third_party/WebKit/public/platform/WebMediaStream.h"
 
 namespace content {
 

@@ -21,7 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 #include "ui/gl/gl_switches.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"

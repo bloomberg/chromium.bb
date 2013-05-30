@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/test/render_view_test.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "webkit/glue/cpp_binding_example.h"

@@ -9,9 +9,9 @@
 
 #include "base/compiler_specific.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCSessionDescription.h"
+#include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
+#include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
 namespace WebKit {

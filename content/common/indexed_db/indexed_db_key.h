@@ -11,7 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBKey.h"
+#include "third_party/WebKit/public/platform/WebIDBKey.h"
 
 namespace content {
 

@@ -10,9 +10,9 @@
 #include "content/common/child_thread.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/common/thread_safe_sender.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebBlobData.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/WebKit/public/platform/WebBlobData.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/blob/blob_data.h"
 

@@ -13,10 +13,10 @@
 #include "base/gtest_prod_util.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db_key.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBCallbacks.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBCursor.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBKey.h"
+#include "third_party/WebKit/public/platform/WebData.h"
+#include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
+#include "third_party/WebKit/public/platform/WebIDBCursor.h"
+#include "third_party/WebKit/public/platform/WebIDBKey.h"
 
 namespace content {
 

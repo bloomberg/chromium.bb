@@ -9,8 +9,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCDataChannelHandler.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCDataChannelHandlerClient.h"
+#include "third_party/WebKit/public/platform/WebRTCDataChannelHandler.h"
+#include "third_party/WebKit/public/platform/WebRTCDataChannelHandlerClient.h"
 
 namespace content {
 

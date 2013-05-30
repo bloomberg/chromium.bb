@@ -16,7 +16,7 @@
 #include "base/time.h"
 #include "cc/resources/sync_point_helper.h"
 #include "content/common/gpu/client/gl_helper_scaling.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
+#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"

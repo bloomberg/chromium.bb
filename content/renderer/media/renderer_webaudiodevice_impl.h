@@ -9,8 +9,8 @@
 #include "base/threading/thread_checker.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebAudioDevice.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
+#include "third_party/WebKit/public/platform/WebAudioDevice.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace media {
 class AudioOutputDevice;

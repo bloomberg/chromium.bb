@@ -10,8 +10,8 @@
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_fifo.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebAudioDestinationConsumer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
+#include "third_party/WebKit/public/platform/WebAudioDestinationConsumer.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace content {
 

@@ -8,9 +8,9 @@
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/WebKit/public/platform/WebData.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "webkit/base/file_path_string_conversions.h"
 
 namespace content {

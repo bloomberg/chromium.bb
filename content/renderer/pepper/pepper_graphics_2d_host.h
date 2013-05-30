@@ -14,7 +14,7 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 namespace gfx {

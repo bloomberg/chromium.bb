@@ -6,7 +6,7 @@
 
 #include "content/common/child_thread.h"
 #include "content/common_child/indexed_db/indexed_db_dispatcher.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabase;

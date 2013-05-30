@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
+#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "webkit/glue/resource_type.h"
 
 namespace net {

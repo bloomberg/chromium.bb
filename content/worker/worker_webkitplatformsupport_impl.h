@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/webkitplatformsupport_impl.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBFactory.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMimeRegistry.h"
+#include "third_party/WebKit/public/platform/WebIDBFactory.h"
+#include "third_party/WebKit/public/platform/WebMimeRegistry.h"
 
 namespace WebKit {
 class WebFileUtilities;

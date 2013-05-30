@@ -10,7 +10,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 
 namespace content {
 

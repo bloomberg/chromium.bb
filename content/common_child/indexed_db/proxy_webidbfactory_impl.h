@@ -5,10 +5,10 @@
 #ifndef CONTENT_COMMON_CHILD_INDEXED_DB_PROXY_WEBIDBFACTORY_IMPL_H_
 #define CONTENT_COMMON_CHILD_INDEXED_DB_PROXY_WEBIDBFACTORY_IMPL_H_
 
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBCallbacks.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBDatabaseCallbacks.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBFactory.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
+#include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
+#include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
+#include "third_party/WebKit/public/platform/WebIDBFactory.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace WebKit {
 class WebString;

@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
+#include "third_party/WebKit/public/platform/WebMediaStream.h"
 
 namespace webrtc {
 class MediaStreamInterface;

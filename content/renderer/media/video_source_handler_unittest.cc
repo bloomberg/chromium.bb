@@ -12,8 +12,8 @@
 #include "content/renderer/media/video_source_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/libjingle/source/talk/media/base/videorenderer.h"
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideoframe.h"
 

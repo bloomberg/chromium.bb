@@ -14,7 +14,7 @@
 #include "content/browser/gamepad/gamepad_standard_mappings.h"
 #include "content/browser/gamepad/xbox_data_fetcher_mac.h"
 #include "content/common/gamepad_hardware_buffer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
+#include "third_party/WebKit/public/platform/WebGamepads.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/hid/IOHIDManager.h>
