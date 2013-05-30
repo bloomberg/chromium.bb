@@ -55,6 +55,13 @@
       ],
       'message': 'Generating JNI bindings from <(RULE_INPUT_PATH)',
       'process_outputs_as_sources': 1,
+      'conditions': [
+        ['jni_generator_jarjar_file != ""', {
+          'inputs': [
+            '<(jni_generator_jarjar_file)',
+          ],
+        }]
+      ],
     },
   ],
   # This target exports a hard dependency because it generates header

@@ -1312,6 +1312,11 @@
         # Copy it out one scope.
         'android_webview_build%': '<(android_webview_build)',
       }],  # OS=="android"
+      ['android_webview_build==1', {
+        # When building the WebView in the Android tree, jarjar will remap all
+        # the class names, so the JNI generator needs to know this.
+        'jni_generator_jarjar_file': '../android_webview/build/jarjar-rules.txt',
+      }],
       ['OS=="mac"', {
         # Enable clang on mac by default!
         'clang%': 1,
