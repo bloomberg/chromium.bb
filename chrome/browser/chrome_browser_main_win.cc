@@ -258,7 +258,7 @@ void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
   base::ScopedNativeLibrary library(base::FilePath(L"kernel32.dll"));
   // Get the function pointer for RegisterApplicationRestart.
   RegisterApplicationRestartProc register_application_restart =
-      static_cast<RegisterApplicationRestartProc>(
+      reinterpret_cast<RegisterApplicationRestartProc>(
           library.GetFunctionPointer("RegisterApplicationRestart"));
   if (!register_application_restart) {
     LOG(WARNING) << "Cannot find RegisterApplicationRestart in kernel32.dll";
