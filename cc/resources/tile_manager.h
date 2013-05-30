@@ -62,6 +62,8 @@ scoped_ptr<base::Value> TileManagerBinPriorityAsValue(
 // created, and unregister from the manager when they are deleted.
 class CC_EXPORT TileManager : public WorkerPoolClient {
  public:
+  typedef base::hash_set<uint32_t> PixelRefSet;
+
   static scoped_ptr<TileManager> Create(
       TileManagerClient* client,
       ResourceProvider* resource_provider,
@@ -116,7 +118,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   void UnregisterTile(Tile* tile);
 
   // Virtual for test
-  virtual void DispatchMoreTasks();
+  virtual void ScheduleTasks();
 
  private:
   // Data that is passed to raster tasks.
@@ -129,8 +131,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       int source_frame_number;
   };
 
-  RasterTaskMetadata GetRasterTaskMetadata(const Tile& tile) const;
-
   void AssignBinsToTiles();
   void SortTiles();
   void AssignGpuMemoryToTiles();
@@ -142,20 +142,19 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
     client_->ScheduleManageTiles();
     manage_tiles_pending_ = true;
   }
-  bool DispatchImageDecodeTasksForTile(Tile* tile);
-  void DispatchOneImageDecodeTask(
-      scoped_refptr<Tile> tile, skia::LazyPixelRef* pixel_ref);
+  RasterWorkerPool::Task CreateImageDecodeTask(
+      Tile* tile, skia::LazyPixelRef* pixel_ref);
   void OnImageDecodeTaskCompleted(
       scoped_refptr<Tile> tile,
-      uint32_t pixel_ref_id);
-  bool CanDispatchRasterTask(Tile* tile) const;
-  scoped_ptr<ResourcePool::Resource> PrepareTileForRaster(Tile* tile);
-  void DispatchOneRasterTask(scoped_refptr<Tile> tile);
+      uint32_t pixel_ref_id,
+      bool was_canceled);
+  RasterTaskMetadata GetRasterTaskMetadata(const Tile& tile) const;
+  RasterWorkerPool::Task CreateRasterTask(Tile* tile);
   void OnRasterTaskCompleted(
       scoped_refptr<Tile> tile,
       scoped_ptr<ResourcePool::Resource> resource,
       PicturePileImpl::Analysis* analysis,
-      int manage_tiles_call_count_when_dispatched);
+      bool was_canceled);
   void DidFinishTileInitialization(Tile* tile);
   void DidTileTreeBinChange(Tile* tile,
                             TileManagerBin new_tree_bin,
@@ -163,9 +162,13 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   scoped_ptr<Value> GetMemoryRequirementsAsValue() const;
   void AddRequiredTileForActivation(Tile* tile);
 
+  static void RunImageDecodeTask(
+      skia::LazyPixelRef* pixel_ref,
+      int layer_id,
+      RenderingStatsInstrumentation* stats_instrumentation);
   static void RunAnalyzeAndRasterTask(
-      const RasterWorkerPool::RasterCallback& analyze_task,
-      const RasterWorkerPool::RasterCallback& raster_task,
+      const RasterWorkerPool::PictureTask::Callback& analyze_task,
+      const RasterWorkerPool::PictureTask::Callback& raster_task,
       PicturePileImpl* picture_pile);
   static void RunAnalyzeTask(
       PicturePileImpl::Analysis* analysis,
@@ -183,16 +186,11 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
       const RasterTaskMetadata& metadata,
       RenderingStatsInstrumentation* stats_instrumentation,
       PicturePileImpl* picture_pile);
-  static void RunImageDecodeTask(
-      skia::LazyPixelRef* pixel_ref,
-      int layer_id,
-      RenderingStatsInstrumentation* stats_instrumentation);
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
   bool manage_tiles_pending_;
-  int manage_tiles_call_count_;
 
   GlobalStateThatImpactsTilePriority global_state_;
 
@@ -202,8 +200,8 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   typedef std::set<Tile*> TileSet;
   TileSet tiles_that_need_to_be_initialized_for_activation_;
 
-  typedef base::hash_set<uint32_t> PixelRefSet;
-  PixelRefSet pending_decode_tasks_;
+  typedef base::hash_map<uint32_t, RasterWorkerPool::Task> PixelRefMap;
+  PixelRefMap pending_decode_tasks_;
 
   typedef std::queue<scoped_refptr<Tile> > TileQueue;
   TileQueue tiles_with_pending_upload_;
@@ -217,7 +215,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   bool use_color_estimator_;
   bool did_initialize_visible_tile_;
 
-  size_t pending_tasks_;
   size_t max_pending_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);

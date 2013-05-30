@@ -31,7 +31,7 @@ class ScopedPtrHashMap {
 
   ~ScopedPtrHashMap() { clear(); }
 
-  void swap(ScopedPtrHashMap<Key, Value*>& other) {
+  void swap(ScopedPtrHashMap<Key, Value>& other) {
     data_.swap(other.data_);
   }
 

@@ -5,9 +5,9 @@
 #ifndef CC_RESOURCES_MANAGED_TILE_STATE_H_
 #define CC_RESOURCES_MANAGED_TILE_STATE_H_
 
-#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/resources/platform_color.h"
+#include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/tile_manager.h"
@@ -113,11 +113,10 @@ class CC_EXPORT ManagedTileState {
   scoped_ptr<base::Value> AsValue() const;
 
   // Persisted state: valid all the time.
-  typedef base::hash_set<uint32_t> PixelRefSet;
-  PixelRefSet decoded_pixel_refs;
   TileVersion tile_version;
-  PicturePileImpl::Analysis picture_pile_analysis;
   bool picture_pile_analyzed;
+  PicturePileImpl::Analysis picture_pile_analysis;
+  RasterWorkerPool::Task raster_task;
 
   // Ephemeral state, valid only during TileManager::ManageTiles.
   bool is_in_never_bin_on_both_trees() const {
