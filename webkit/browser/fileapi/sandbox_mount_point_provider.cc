@@ -153,6 +153,7 @@ SandboxMountPointProvider::SandboxMountPointProvider(
       sandbox_file_util_(
           new AsyncFileUtilAdapter(
               new ObfuscatedFileUtil(
+                  special_storage_policy,
                   profile_path.Append(kFileSystemDirectory)))),
       file_system_usage_cache_(new FileSystemUsageCache(file_task_runner)),
       quota_observer_(new SandboxQuotaObserver(

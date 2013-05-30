@@ -5,6 +5,7 @@
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
 
 #include <set>
+#include <utility>
 
 #include "base/file_util.h"
 #include "base/format_macros.h"
@@ -55,17 +56,6 @@ const char* LastPathKey() {
 
 namespace fileapi {
 
-SandboxOriginDatabase::OriginRecord::OriginRecord() {
-}
-
-SandboxOriginDatabase::OriginRecord::OriginRecord(
-    const std::string& origin_in, const base::FilePath& path_in)
-    : origin(origin_in), path(path_in) {
-}
-
-SandboxOriginDatabase::OriginRecord::~OriginRecord() {
-}
-
 SandboxOriginDatabase::SandboxOriginDatabase(
     const base::FilePath& file_system_directory)
     : file_system_directory_(file_system_directory) {
@@ -74,12 +64,16 @@ SandboxOriginDatabase::SandboxOriginDatabase(
 SandboxOriginDatabase::~SandboxOriginDatabase() {
 }
 
-bool SandboxOriginDatabase::Init(RecoveryOption recovery_option) {
+bool SandboxOriginDatabase::Init(InitOption init_option,
+                                 RecoveryOption recovery_option) {
   if (db_)
     return true;
 
-  std::string path =
-      FilePathToString(file_system_directory_.Append(kOriginDatabaseName));
+  base::FilePath db_path = GetDatabasePath();
+  if (init_option == FAIL_IF_NONEXISTENT && !file_util::PathExists(db_path))
+    return false;
+
+  std::string path = FilePathToString(db_path);
   leveldb::Options options;
   options.create_if_missing = true;
   leveldb::DB* db;
@@ -117,7 +111,7 @@ bool SandboxOriginDatabase::Init(RecoveryOption recovery_option) {
         return false;
       if (!file_util::CreateDirectory(file_system_directory_))
         return false;
-      return Init(FAIL_ON_CORRUPTION);
+      return Init(init_option, FAIL_ON_CORRUPTION);
   }
   NOTREACHED();
   return false;
@@ -126,7 +120,7 @@ bool SandboxOriginDatabase::Init(RecoveryOption recovery_option) {
 bool SandboxOriginDatabase::RepairDatabase(const std::string& db_path) {
   DCHECK(!db_.get());
   if (!leveldb::RepairDB(db_path, leveldb::Options()).ok() ||
-      !Init(FAIL_ON_CORRUPTION)) {
+      !Init(FAIL_IF_NONEXISTENT, FAIL_ON_CORRUPTION)) {
     LOG(WARNING) << "Failed to repair SandboxOriginDatabase.";
     return false;
   }
@@ -214,7 +208,7 @@ void SandboxOriginDatabase::ReportInitStatus(const leveldb::Status& status) {
 }
 
 bool SandboxOriginDatabase::HasOriginPath(const std::string& origin) {
-  if (!Init(REPAIR_ON_CORRUPTION))
+  if (!Init(FAIL_IF_NONEXISTENT, REPAIR_ON_CORRUPTION))
     return false;
   if (origin.empty())
     return false;
@@ -231,7 +225,7 @@ bool SandboxOriginDatabase::HasOriginPath(const std::string& origin) {
 
 bool SandboxOriginDatabase::GetPathForOrigin(
     const std::string& origin, base::FilePath* directory) {
-  if (!Init(REPAIR_ON_CORRUPTION))
+  if (!Init(CREATE_IF_NONEXISTENT, REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(directory);
   if (origin.empty())
@@ -264,7 +258,7 @@ bool SandboxOriginDatabase::GetPathForOrigin(
 }
 
 bool SandboxOriginDatabase::RemovePathForOrigin(const std::string& origin) {
-  if (!Init(REPAIR_ON_CORRUPTION))
+  if (!Init(CREATE_IF_NONEXISTENT, REPAIR_ON_CORRUPTION))
     return false;
   leveldb::Status status =
       db_->Delete(leveldb::WriteOptions(), OriginToOriginKey(origin));
@@ -276,9 +270,11 @@ bool SandboxOriginDatabase::RemovePathForOrigin(const std::string& origin) {
 
 bool SandboxOriginDatabase::ListAllOrigins(
     std::vector<OriginRecord>* origins) {
-  if (!Init(REPAIR_ON_CORRUPTION))
-    return false;
   DCHECK(origins);
+  if (!Init(CREATE_IF_NONEXISTENT, REPAIR_ON_CORRUPTION)) {
+    origins->clear();
+    return false;
+  }
   scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(leveldb::ReadOptions()));
   std::string origin_key_prefix = OriginToOriginKey(std::string());
   iter->Seek(origin_key_prefix);
@@ -298,9 +294,17 @@ void SandboxOriginDatabase::DropDatabase() {
   db_.reset();
 }
 
+base::FilePath SandboxOriginDatabase::GetDatabasePath() const {
+  return file_system_directory_.Append(kOriginDatabaseName);
+}
+
+void SandboxOriginDatabase::RemoveDatabase() {
+  DropDatabase();
+  file_util::Delete(GetDatabasePath(), true /* recursive */);
+}
+
 bool SandboxOriginDatabase::GetLastPathNumber(int* number) {
-  if (!Init(REPAIR_ON_CORRUPTION))
-    return false;
+  DCHECK(db_);
   DCHECK(number);
   std::string number_string;
   leveldb::Status status =

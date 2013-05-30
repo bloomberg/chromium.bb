@@ -16,7 +16,6 @@
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/sandbox_directory_database.h"
-#include "webkit/browser/fileapi/sandbox_origin_database.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/storage/webkit_storage_export.h"
@@ -25,11 +24,16 @@ namespace base {
 class Time;
 }
 
+namespace quota {
+class SpecialStoragePolicy;
+}
+
 class GURL;
 
 namespace fileapi {
 
 class FileSystemOperationContext;
+class SandboxOriginDatabaseInterface;
 
 // The overall implementation philosophy of this class is that partial failures
 // should leave us with an intact database; we'd prefer to leak the occasional
@@ -55,7 +59,9 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
     virtual bool HasFileSystemType(FileSystemType type) const = 0;
   };
 
-  explicit ObfuscatedFileUtil(const base::FilePath& file_system_directory);
+  ObfuscatedFileUtil(
+      quota::SpecialStoragePolicy* special_storage_policy,
+      const base::FilePath& file_system_directory);
   virtual ~ObfuscatedFileUtil();
 
   // FileSystemFileUtil overrides.
@@ -250,9 +256,14 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
 
   typedef std::map<std::string, SandboxDirectoryDatabase*> DirectoryMap;
   DirectoryMap directories_;
-  scoped_ptr<SandboxOriginDatabase> origin_database_;
+  scoped_ptr<SandboxOriginDatabaseInterface> origin_database_;
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   base::FilePath file_system_directory_;
   base::OneShotTimer<ObfuscatedFileUtil> timer_;
+
+  // If this instance is initialized for an isolated origin, this should
+  // only see a single origin.
+  GURL isolated_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtil);
 };

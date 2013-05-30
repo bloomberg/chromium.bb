@@ -5,14 +5,9 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_SANDBOX_ORIGIN_DATABASE_H_
 #define WEBKIT_BROWSER_FILEAPI_SANDBOX_ORIGIN_DATABASE_H_
 
-#include <string>
-#include <utility>
-#include <vector>
-
-#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/fileapi/sandbox_origin_database_interface.h"
 
 namespace leveldb {
 class DB;
@@ -27,35 +22,24 @@ namespace fileapi {
 
 // All methods of this class other than the constructor may be used only from
 // the browser's FILE thread.  The constructor may be used on any thread.
-class WEBKIT_STORAGE_EXPORT_PRIVATE SandboxOriginDatabase {
+class WEBKIT_STORAGE_EXPORT_PRIVATE SandboxOriginDatabase
+    : public SandboxOriginDatabaseInterface {
  public:
-  struct WEBKIT_STORAGE_EXPORT_PRIVATE OriginRecord {
-    std::string origin;
-    base::FilePath path;
-
-    OriginRecord();
-    OriginRecord(const std::string& origin, const base::FilePath& path);
-    ~OriginRecord();
-  };
-
   // Only one instance of SandboxOriginDatabase should exist for a given path
   // at a given time.
   explicit SandboxOriginDatabase(const base::FilePath& file_system_directory);
-  ~SandboxOriginDatabase();
+  virtual ~SandboxOriginDatabase();
 
-  bool HasOriginPath(const std::string& origin);
+  // SandboxOriginDatabaseInterface overrides.
+  virtual bool HasOriginPath(const std::string& origin) OVERRIDE;
+  virtual bool GetPathForOrigin(const std::string& origin,
+                                base::FilePath* directory) OVERRIDE;
+  virtual bool RemovePathForOrigin(const std::string& origin) OVERRIDE;
+  virtual bool ListAllOrigins(std::vector<OriginRecord>* origins) OVERRIDE;
+  virtual void DropDatabase() OVERRIDE;
 
-  // This will produce a unique path and add it to its database, if it's not
-  // already present.
-  bool GetPathForOrigin(const std::string& origin, base::FilePath* directory);
-
-  // Also returns success if the origin is not found.
-  bool RemovePathForOrigin(const std::string& origin);
-
-  bool ListAllOrigins(std::vector<OriginRecord>* origins);
-
-  // This will release all database resources in use; call it to save memory.
-  void DropDatabase();
+  base::FilePath GetDatabasePath() const;
+  void RemoveDatabase();
 
  private:
   enum RecoveryOption {
@@ -64,7 +48,12 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE SandboxOriginDatabase {
     FAIL_ON_CORRUPTION,
   };
 
-  bool Init(RecoveryOption recovery_option);
+  enum InitOption {
+    CREATE_IF_NONEXISTENT,
+    FAIL_IF_NONEXISTENT,
+  };
+
+  bool Init(InitOption init_option, RecoveryOption recovery_option);
   bool RepairDatabase(const std::string& db_path);
   void HandleError(const tracked_objects::Location& from_here,
                    const leveldb::Status& status);
