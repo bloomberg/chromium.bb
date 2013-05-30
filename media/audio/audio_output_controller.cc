@@ -313,16 +313,11 @@ void AudioOutputController::WaitTillDataReady() {
     return;
 
   base::TimeTicks start = base::TimeTicks::Now();
+  const base::TimeDelta kMaxWait = base::TimeDelta::FromMilliseconds(20);
 #if defined(OS_WIN)
-  // Wait for up to 683ms for DataReady().  683ms was chosen because it's larger
-  // than the playback time of the WaveOut buffer size using the minimum
-  // supported sample rate: 2048 / 3000 = ~683ms.
-  // TODO(davemoore): We think this can be reduced to 20ms based on
-  // http://crrev.com/180102 but will do that in separate cl for mergability.
-  const base::TimeDelta kMaxWait = base::TimeDelta::FromMilliseconds(683);
+  // Sleep(0) on windows lets the other threads run.
   const base::TimeDelta kSleep = base::TimeDelta::FromMilliseconds(0);
 #else
-  const base::TimeDelta kMaxWait = base::TimeDelta::FromMilliseconds(20);
   // We want to sleep for a bit here, as otherwise a backgrounded renderer won't
   // get enough cpu to send the data and the high priority thread in the browser
   // will use up a core causing even more skips.
