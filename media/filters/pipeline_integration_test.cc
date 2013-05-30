@@ -441,6 +441,14 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
   EXPECT_EQ("-3.59,-2.06,-0.43,2.15,0.77,-0.95,", GetAudioHash());
 }
 
+TEST_F(PipelineIntegrationTest, F32PlaybackHashed) {
+  ASSERT_TRUE(Start(GetTestDataFilePath("sfx_f32le.wav"), PIPELINE_OK, true));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_EQ(std::string(kNullVideoHash), GetVideoHash());
+  EXPECT_EQ("3.03,2.86,2.99,3.31,3.57,4.06,", GetAudioHash());
+}
+
 TEST_F(PipelineIntegrationTest, BasicPlaybackEncrypted) {
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   set_need_key_cb(base::Bind(&FakeEncryptedMedia::NeedKey,

@@ -455,10 +455,12 @@ void FFmpegAudioDecoder::RunDecodeLoop(
         // AudioBus::ToInterleaved() to convert the data as necessary.
         int skip_frames = start_sample;
         int total_frames = av_frame_->nb_samples;
+        int frames_to_interleave = decoded_audio_size / bytes_per_frame_;
         if (codec_context_->sample_fmt == AV_SAMPLE_FMT_FLT) {
           DCHECK_EQ(converter_bus_->channels(), 1);
           total_frames *= codec_context_->channels;
           skip_frames *= codec_context_->channels;
+          frames_to_interleave *= codec_context_->channels;
         }
 
         converter_bus_->set_frames(total_frames);
@@ -467,11 +469,10 @@ void FFmpegAudioDecoder::RunDecodeLoop(
               av_frame_->extended_data[i]));
         }
 
-        const int frames_to_interleave = decoded_audio_size / bytes_per_frame_;
-        DCHECK_EQ(frames_to_interleave, converter_bus_->frames() - skip_frames);
-
         output = new DataBuffer(decoded_audio_size);
         output->SetDataSize(decoded_audio_size);
+
+        DCHECK_EQ(frames_to_interleave, converter_bus_->frames() - skip_frames);
         converter_bus_->ToInterleavedPartial(
             skip_frames, frames_to_interleave, bits_per_channel_ / 8,
             output->GetWritableData());
