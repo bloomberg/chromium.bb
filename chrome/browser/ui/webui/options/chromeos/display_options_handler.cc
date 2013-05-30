@@ -251,7 +251,7 @@ void DisplayOptionsHandler::HandleMirroring(const base::ListValue* args) {
 
 void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
   DCHECK(!args->empty());
-  int display_id = GetDisplayId(args);
+  int64 display_id = GetDisplayId(args);
   if (display_id == gfx::Display::kInvalidDisplayID)
     return;
 
