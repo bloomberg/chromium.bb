@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/gl/gl_wgl_api_implementation.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace gfx {
 
@@ -62,6 +63,14 @@ void RealWGLApi::Initialize(DriverWGL* driver) {
 }
 
 TraceWGLApi::~TraceWGLApi() {
+}
+
+bool GetGLWindowSystemBindingInfoWGL(GLWindowSystemBindingInfo* info) {
+  const char* extensions = wglGetExtensionsStringEXT();
+  *info = GLWindowSystemBindingInfo();
+  if (extensions)
+    info->extensions = extensions;
+  return true;
 }
 
 }  // namespace gfx

@@ -111,6 +111,15 @@ struct GPU_EXPORT GPUInfo {
   // The GL_EXTENSIONS string.  "" if we are not using OpenGL.
   std::string gl_extensions;
 
+  // GL window system binding vendor.  "" if not available.
+  std::string gl_ws_vendor;
+
+  // GL window system binding version.  "" if not available.
+  std::string gl_ws_version;
+
+  // GL window system binding extensions.  "" if not available.
+  std::string gl_ws_extensions;
+
   // The device semantics, i.e. whether the Vista and Windows 7 specific
   // semantics are available.
   bool can_lose_context;

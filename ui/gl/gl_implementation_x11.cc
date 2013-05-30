@@ -229,4 +229,16 @@ void ClearGLBindings() {
   UnloadGLNativeLibraries();
 }
 
+bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
+  switch (GetGLImplementation()) {
+    case kGLImplementationDesktopGL:
+      return GetGLWindowSystemBindingInfoGLX(info);
+    case kGLImplementationEGLGLES2:
+      return GetGLWindowSystemBindingInfoEGL(info);
+    default:
+      return false;
+  }
+  return false;
+}
+
 }  // namespace gfx

@@ -143,4 +143,8 @@ void ClearGLBindings() {
   UnloadGLNativeLibraries();
 }
 
+bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
+  return false;
+}
+
 }  // namespace gfx

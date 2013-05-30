@@ -15,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 
 namespace {
@@ -99,6 +100,14 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->gl_extensions = GetGLString(GL_EXTENSIONS);
   gpu_info->gl_version_string = GetGLString(GL_VERSION);
   std::string glsl_version_string = GetGLString(GL_SHADING_LANGUAGE_VERSION);
+
+  gfx::GLWindowSystemBindingInfo window_system_binding_info;
+  if (GetGLWindowSystemBindingInfo(&window_system_binding_info)) {
+    gpu_info->gl_ws_vendor = window_system_binding_info.vendor;
+    gpu_info->gl_ws_version = window_system_binding_info.version;
+    gpu_info->gl_ws_extensions = window_system_binding_info.extensions;
+  }
+
   // TODO(kbr): remove once the destruction of a current context automatically
   // clears the current context.
   context->ReleaseCurrent(surface.get());
@@ -123,6 +132,9 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
       context_gpu_info.pixel_shader_version;
   basic_gpu_info->vertex_shader_version =
       context_gpu_info.vertex_shader_version;
+  basic_gpu_info->gl_ws_vendor = context_gpu_info.gl_ws_vendor;
+  basic_gpu_info->gl_ws_version = context_gpu_info.gl_ws_version;
+  basic_gpu_info->gl_ws_extensions = context_gpu_info.gl_ws_extensions;
 
   if (!context_gpu_info.driver_vendor.empty())
     basic_gpu_info->driver_vendor = context_gpu_info.driver_vendor;

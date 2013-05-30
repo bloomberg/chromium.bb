@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/gl/gl_glx_api_implementation.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace gfx {
 
@@ -62,6 +63,25 @@ void RealGLXApi::Initialize(DriverGLX* driver) {
 }
 
 TraceGLXApi::~TraceGLXApi() {
+}
+
+bool GetGLWindowSystemBindingInfoGLX(GLWindowSystemBindingInfo* info) {
+  Display* display = glXGetCurrentDisplay();
+  const int kDefaultScreen = 0;
+  const char* vendor =
+      glXQueryServerString(display, kDefaultScreen, GLX_VENDOR);
+  const char* version =
+      glXQueryServerString(display, kDefaultScreen, GLX_VERSION);
+  const char* extensions =
+      glXQueryServerString(display, kDefaultScreen, GLX_EXTENSIONS);
+  *info = GLWindowSystemBindingInfo();
+  if (vendor)
+    info->vendor = vendor;
+  if (version)
+    info->version = version;
+  if (extensions)
+    info->extensions = extensions;
+  return true;
 }
 
 }  // namespace gfx

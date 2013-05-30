@@ -25,6 +25,9 @@ TEST(GPUInfoBasicTest, EmptyGPUInfo) {
   EXPECT_EQ(gpu_info.gl_vendor, "");
   EXPECT_EQ(gpu_info.gl_renderer, "");
   EXPECT_EQ(gpu_info.gl_extensions, "");
+  EXPECT_EQ(gpu_info.gl_ws_vendor, "");
+  EXPECT_EQ(gpu_info.gl_ws_version, "");
+  EXPECT_EQ(gpu_info.gl_ws_extensions, "");
   EXPECT_EQ(gpu_info.can_lose_context, false);
 }
 

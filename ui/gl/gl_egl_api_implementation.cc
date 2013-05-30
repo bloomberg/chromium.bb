@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/gl/gl_egl_api_implementation.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace gfx {
 
@@ -62,6 +63,21 @@ void RealEGLApi::Initialize(DriverEGL* driver) {
 }
 
 TraceEGLApi::~TraceEGLApi() {
+}
+
+bool GetGLWindowSystemBindingInfoEGL(GLWindowSystemBindingInfo* info) {
+  EGLDisplay display = eglGetCurrentDisplay();
+  const char* vendor = eglQueryString(display, EGL_VENDOR);
+  const char* version = eglQueryString(display, EGL_VERSION);
+  const char* extensions = eglQueryString(display, EGL_EXTENSIONS);
+  *info = GLWindowSystemBindingInfo();
+  if (vendor)
+    info->vendor = vendor;
+  if (version)
+    info->version = version;
+  if (extensions)
+    info->extensions = extensions;
+  return true;
 }
 
 }  // namespace gfx

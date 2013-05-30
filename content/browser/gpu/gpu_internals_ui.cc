@@ -156,6 +156,12 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
                                              gpu_info.gl_version_string));
   basic_info->Append(NewDescriptionValuePair("GL_EXTENSIONS",
                                              gpu_info.gl_extensions));
+  basic_info->Append(NewDescriptionValuePair("Window system binding vendor",
+                                             gpu_info.gl_ws_vendor));
+  basic_info->Append(NewDescriptionValuePair("Window system binding version",
+                                             gpu_info.gl_ws_version));
+  basic_info->Append(NewDescriptionValuePair("Window system binding extensions",
+                                             gpu_info.gl_ws_extensions));
 
   base::DictionaryValue* info = new base::DictionaryValue();
   info->Set("basic_info", basic_info);

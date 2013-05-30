@@ -12,11 +12,13 @@
 namespace gfx {
 
 class GLContext;
+struct GLWindowSystemBindingInfo;
 
 void InitializeGLBindingsGLX();
 void InitializeGLExtensionBindingsGLX(GLContext* context);
 void InitializeDebugGLBindingsGLX();
 void ClearGLBindingsGLX();
+bool GetGLWindowSystemBindingInfoGLX(GLWindowSystemBindingInfo* info);
 
 class GL_EXPORT GLXApiBase : public GLXApi {
  public:
