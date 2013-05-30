@@ -15,15 +15,15 @@
   See cpp_binding_example.{h|cc} for an example.
 */
 
-#ifndef WEBKIT_GLUE_CPP_BOUND_CLASS_H_
-#define WEBKIT_GLUE_CPP_BOUND_CLASS_H_
+#ifndef WEBKIT_RENDERER_CPP_BOUND_CLASS_H_
+#define WEBKIT_RENDERER_CPP_BOUND_CLASS_H_
 
 #include <map>
 #include <vector>
 
 #include "base/callback.h"
-#include "webkit/glue/cpp_variant.h"
 #include "webkit/glue/webkit_glue_export.h"
+#include "webkit/renderer/cpp_variant.h"
 
 namespace WebKit {
 class WebFrame;
@@ -144,4 +144,4 @@ class WEBKIT_GLUE_EXPORT CppBoundClass {
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_GLUE_CPP_BOUND_CLASS_H_
+#endif  // WEBKIT_RENDERER_CPP_BOUND_CLASS_H_

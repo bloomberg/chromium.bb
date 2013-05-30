@@ -10,8 +10,8 @@
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
-#include "webkit/glue/cpp_bound_class.h"
 #include "webkit/plugins/webplugininfo.h"
+#include "webkit/renderer/cpp_bound_class.h"
 
 struct ChromeViewHostMsg_GetPluginInfo_Status;
 

@@ -33,7 +33,7 @@
 #ifndef CPP_BINDING_EXAMPLE_H__
 #define CPP_BINDING_EXAMPLE_H__
 
-#include "webkit/glue/cpp_bound_class.h"
+#include "webkit/renderer/cpp_bound_class.h"
 
 namespace webkit_glue {
 

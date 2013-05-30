@@ -15,8 +15,8 @@
   For a usage example, see cpp_binding_example.{h|cc}.
 */
 
-#ifndef WEBKIT_GLUE_CPP_VARIANT_H__
-#define WEBKIT_GLUE_CPP_VARIANT_H__
+#ifndef WEBKIT_RENDERER_CPP_VARIANT_H__
+#define WEBKIT_RENDERER_CPP_VARIANT_H__
 
 #include <string>
 #include <vector>
@@ -113,4 +113,4 @@ class WEBKIT_GLUE_EXPORT CppVariant : public NPVariant {
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_GLUE_CPP_VARIANT_H__
+#endif  // WEBKIT_RENDERER_CPP_VARIANT_H__

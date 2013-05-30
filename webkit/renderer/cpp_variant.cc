@@ -5,12 +5,12 @@
 // This file contains definitions for CppVariant.
 
 #include <limits>
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
-#include "webkit/glue/cpp_variant.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "webkit/renderer/cpp_variant.h"
 
 using WebKit::WebBindings;
 
@@ -256,7 +256,8 @@ bool CppVariant::Invoke(const std::string& method, const CppVariant* args,
   NPObject* np_object = value.objectValue;
   if (WebBindings::hasMethod(NULL, np_object, method_name)) {
     NPVariant r;
-    bool status = WebBindings::invoke(NULL, np_object, method_name, args, arg_count, &r);
+    bool status =
+        WebBindings::invoke(NULL, np_object, method_name, args, arg_count, &r);
     result.Set(r);
     return status;
   } else {

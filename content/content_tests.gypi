@@ -478,7 +478,6 @@
         '../webkit/dom_storage/dom_storage_database_unittest.cc',
         '../webkit/dom_storage/dom_storage_map_unittest.cc',
         '../webkit/dom_storage/session_storage_database_unittest.cc',
-        '../webkit/glue/cpp_variant_unittest.cc',
         '../webkit/glue/glue_serialize_unittest.cc',
         '../webkit/glue/multipart_response_delegate_unittest.cc',
         '../webkit/glue/resource_request_body_unittest.cc',
@@ -520,6 +519,7 @@
         '../webkit/browser/quota/quota_manager_unittest.cc',
         '../webkit/browser/quota/quota_temporary_storage_evictor_unittest.cc',
         '../webkit/browser/quota/usage_tracker_unittest.cc',
+        '../webkit/renderer/cpp_variant_unittest.cc',
         '../webkit/renderer/fileapi/webfilewriter_base_unittest.cc',
       ],
       'conditions': [
@@ -556,6 +556,7 @@
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:glue_common',
+            '../webkit/support/webkit_support.gyp:glue_renderer',
             '../webkit/support/webkit_support.gyp:plugins',
             '../webkit/support/webkit_support.gyp:plugins_common',
             '../webkit/support/webkit_support.gyp:webkit_base',
@@ -721,6 +722,7 @@
             '../ui/ui.gyp:ui',
             '../webkit/support/webkit_support.gyp:clearkeycdmadapter',
             '../webkit/support/webkit_support.gyp:glue',
+            '../webkit/support/webkit_support.gyp:glue_renderer',
           ],
           'include_dirs': [
             '..',
@@ -822,12 +824,12 @@
             'test/layout_browsertest.h',
             'test/layout_test_http_server.cc',
             'test/layout_test_http_server.h',
-            '../webkit/glue/cpp_binding_example.cc',
-            '../webkit/glue/cpp_binding_example.h',
             '../webkit/plugins/ppapi/mock_platform_image_2d.cc',
             '../webkit/plugins/ppapi/mock_platform_image_2d.h',
             '../webkit/plugins/ppapi/mock_plugin_delegate.cc',
             '../webkit/plugins/ppapi/mock_plugin_delegate.h',
+            '../webkit/renderer/cpp_binding_example.cc',
+            '../webkit/renderer/cpp_binding_example.h',
           ],
           'conditions': [
             ['chromeos==0', {

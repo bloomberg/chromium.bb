@@ -147,6 +147,34 @@
     },
 
     {
+      'target_name': 'glue_renderer',
+      'type': '<(component)',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'defines': [
+        'WEBKIT_EXTENSIONS_IMPLEMENTATION',
+        'WEBKIT_GLUE_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base_i18n',
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        'glue_common',
+      ],
+
+      'include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit',
+      ],
+
+      'sources': [
+        '../renderer/cpp_bound_class.cc',
+        '../renderer/cpp_bound_class.h',
+        '../renderer/cpp_variant.cc',
+        '../renderer/cpp_variant.h',
+      ],
+    },
+
+    {
       'target_name': 'glue',
       'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -190,10 +218,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui',
       ],
       'sources': [
-        'cpp_bound_class.cc',
-        'cpp_bound_class.h',
-        'cpp_variant.cc',
-        'cpp_variant.h',
         'cursor_utils.cc',
         'cursor_utils.h',
         'fling_curve_configuration.cc',

@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_EXTERNAL_HOST_BINDINGS_H_
 
 #include "ipc/ipc_sender.h"
-#include "webkit/glue/cpp_bound_class.h"
+#include "webkit/renderer/cpp_bound_class.h"
 
 // ExternalHostBindings is the class backing the "externalHost" object
 // accessible from Javascript

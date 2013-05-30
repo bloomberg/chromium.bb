@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_DOM_AUTOMATION_CONTROLLER_H_
 
 #include "ipc/ipc_sender.h"
-#include "webkit/glue/cpp_bound_class.h"
+#include "webkit/renderer/cpp_bound_class.h"
 
 /* DomAutomationController class:
    Bound to Javascript window.domAutomationController object.

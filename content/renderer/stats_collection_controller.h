@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_STATS_COLLECTION_CONTROLLER_H_
 
 #include "ipc/ipc_sender.h"
-#include "webkit/glue/cpp_bound_class.h"
+#include "webkit/renderer/cpp_bound_class.h"
 
 namespace content {
 
