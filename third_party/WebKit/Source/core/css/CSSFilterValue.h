@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebKitCSSFilterValue_h
-#define WebKitCSSFilterValue_h
+#ifndef CSSFilterValue_h
+#define CSSFilterValue_h
 
 #include "core/css/CSSValueList.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class WebKitCSSFilterValue : public CSSValueList {
+class CSSFilterValue : public CSSValueList {
 public:
     // NOTE: these have to match the values in the IDL
     enum FilterOperationType {
@@ -53,24 +53,24 @@ public:
 
     static bool typeUsesSpaceSeparator(FilterOperationType);
 
-    static PassRefPtr<WebKitCSSFilterValue> create(FilterOperationType type)
+    static PassRefPtr<CSSFilterValue> create(FilterOperationType type)
     {
-        return adoptRef(new WebKitCSSFilterValue(type));
+        return adoptRef(new CSSFilterValue(type));
     }
 
     String customCssText() const;
 
     FilterOperationType operationType() const { return m_type; }
 
-    PassRefPtr<WebKitCSSFilterValue> cloneForCSSOM() const;
+    PassRefPtr<CSSFilterValue> cloneForCSSOM() const;
 
-    bool equals(const WebKitCSSFilterValue&) const;
+    bool equals(const CSSFilterValue&) const;
 
     void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    WebKitCSSFilterValue(FilterOperationType);
-    WebKitCSSFilterValue(const WebKitCSSFilterValue& cloneFrom);
+    CSSFilterValue(FilterOperationType);
+    CSSFilterValue(const CSSFilterValue& cloneFrom);
 
     FilterOperationType m_type;
 };

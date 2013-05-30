@@ -27,35 +27,43 @@
  * SUCH DAMAGE.
  */
 
-#ifndef WebKitCSSArrayFunctionValue_h
-#define WebKitCSSArrayFunctionValue_h
+#include "config.h"
+#include "core/css/CSSArrayFunctionValue.h"
 
-#include "core/css/CSSValueList.h"
-#include <wtf/PassRefPtr.h>
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 
 namespace WebCore {
 
-class WebKitCSSArrayFunctionValue : public CSSValueList {
-public:
-    static PassRefPtr<WebKitCSSArrayFunctionValue> create()
-    {
-        return adoptRef(new WebKitCSSArrayFunctionValue());
-    }
+CSSArrayFunctionValue::CSSArrayFunctionValue()
+    : CSSValueList(CSSArrayFunctionValueClass, CommaSeparator)
+{
+}
 
-    String customCssText() const;
+CSSArrayFunctionValue::CSSArrayFunctionValue(const CSSArrayFunctionValue& cloneFrom)
+    : CSSValueList(cloneFrom)
+{
+}
 
-    PassRefPtr<WebKitCSSArrayFunctionValue> cloneForCSSOM() const;
+String CSSArrayFunctionValue::customCssText() const
+{
+    return "array(" + CSSValueList::customCssText() + ')';
+}
 
-    bool equals(const WebKitCSSArrayFunctionValue&) const;
+PassRefPtr<CSSArrayFunctionValue> CSSArrayFunctionValue::cloneForCSSOM() const
+{
+    return adoptRef(new CSSArrayFunctionValue(*this));
+}
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
+bool CSSArrayFunctionValue::equals(const CSSArrayFunctionValue& other) const
+{
+    return CSSValueList::equals(other);
+}
 
-private:
-    WebKitCSSArrayFunctionValue();
-    WebKitCSSArrayFunctionValue(const WebKitCSSArrayFunctionValue& cloneFrom);
-};
+void CSSArrayFunctionValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+{
+    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
+    CSSValueList::reportDescendantMemoryUsage(memoryObjectInfo);
+}
 
 } // namespace WebCore
 
-
-#endif

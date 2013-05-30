@@ -31,13 +31,14 @@
 #include "config.h"
 #include "V8CSSValue.h"
 
+
+#include "V8CSSFilterValue.h"
 #include "V8CSSMixFunctionValue.h"
 #include "V8CSSPrimitiveValue.h"
 #include "V8CSSTransformValue.h"
 #include "V8CSSValueList.h"
 #include "V8SVGColor.h"
 #include "V8SVGPaint.h"
-#include "V8WebKitCSSFilterValue.h"
 #include "core/css/CSSMixFunctionValue.h"
 
 namespace WebCore {
@@ -47,10 +48,10 @@ v8::Handle<v8::Object> wrap(CSSValue* impl, v8::Handle<v8::Object> creationConte
     ASSERT(impl);
     if (impl->isCSSTransformValue())
         return wrap(static_cast<CSSTransformValue*>(impl), creationContext, isolate);
-    if (impl->isWebKitCSSFilterValue())
-        return wrap(static_cast<WebKitCSSFilterValue*>(impl), creationContext, isolate);
     if (impl->isCSSMixFunctionValue())
         return wrap(static_cast<CSSMixFunctionValue*>(impl), creationContext, isolate);
+    if (impl->isCSSFilterValue())
+        return wrap(static_cast<CSSFilterValue*>(impl), creationContext, isolate);
     if (impl->isValueList())
         return wrap(static_cast<CSSValueList*>(impl), creationContext, isolate);
     if (impl->isPrimitiveValue())

@@ -23,35 +23,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebKitCSSKeyframesRule_h
-#define WebKitCSSKeyframesRule_h
+#ifndef CSSKeyframesRule_h
+#define CSSKeyframesRule_h
 
 #include "core/css/CSSRule.h"
 #include "core/css/StyleRule.h"
-#include <wtf/Forward.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/Forward.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
 class CSSRuleList;
 class StyleKeyframe;
-class WebKitCSSKeyframeRule;
+class CSSKeyframeRule;
 
 class StyleRuleKeyframes : public StyleRuleBase {
 public:
     static PassRefPtr<StyleRuleKeyframes> create() { return adoptRef(new StyleRuleKeyframes()); }
-    
+
     ~StyleRuleKeyframes();
-    
+
     const Vector<RefPtr<StyleKeyframe> >& keyframes() const { return m_keyframes; }
-    
+
     void parserAppendKeyframe(PassRefPtr<StyleKeyframe>);
     void wrapperAppendKeyframe(PassRefPtr<StyleKeyframe>);
     void wrapperRemoveKeyframe(unsigned);
 
-    String name() const { return m_name; }    
+    String name() const { return m_name; }
     void setName(const String& name) { m_name = AtomicString(name); }
-    
+
     int findKeyframeIndex(const String& key) const;
 
     PassRefPtr<StyleRuleKeyframes> copy() const { return adoptRef(new StyleRuleKeyframes(*this)); }
@@ -66,11 +66,11 @@ private:
     AtomicString m_name;
 };
 
-class WebKitCSSKeyframesRule : public CSSRule {
+class CSSKeyframesRule : public CSSRule {
 public:
-    static PassRefPtr<WebKitCSSKeyframesRule> create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet) { return adoptRef(new WebKitCSSKeyframesRule(rule, sheet)); }
+    static PassRefPtr<CSSKeyframesRule> create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSKeyframesRule(rule, sheet)); }
 
-    virtual ~WebKitCSSKeyframesRule();
+    virtual ~CSSKeyframesRule();
 
     virtual CSSRule::Type type() const OVERRIDE { return WEBKIT_KEYFRAMES_RULE; }
     virtual String cssText() const OVERRIDE;
@@ -84,20 +84,20 @@ public:
 
     void insertRule(const String& rule);
     void deleteRule(const String& key);
-    WebKitCSSKeyframeRule* findRule(const String& key);
+    CSSKeyframeRule* findRule(const String& key);
 
     // For IndexedGetter and CSSRuleList.
     unsigned length() const;
-    WebKitCSSKeyframeRule* item(unsigned index) const;
+    CSSKeyframeRule* item(unsigned index) const;
 
 private:
-    WebKitCSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);
+    CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);
 
     RefPtr<StyleRuleKeyframes> m_keyframesRule;
-    mutable Vector<RefPtr<WebKitCSSKeyframeRule> > m_childRuleCSSOMWrappers;
+    mutable Vector<RefPtr<CSSKeyframeRule> > m_childRuleCSSOMWrappers;
     mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
 };
 
 } // namespace WebCore
 
-#endif // WebKitCSSKeyframesRule_h
+#endif // CSSKeyframesRule_h

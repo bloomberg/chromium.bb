@@ -24,9 +24,12 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSCharsetRule.h"
+#include "core/css/CSSFilterRule.h"
 #include "core/css/CSSFontFaceRule.h"
 #include "core/css/CSSHostRule.h"
 #include "core/css/CSSImportRule.h"
+#include "core/css/CSSKeyframeRule.h"
+#include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/CSSPageRule.h"
 #include "core/css/CSSRegionRule.h"
@@ -36,9 +39,6 @@
 #include "core/css/CSSViewportRule.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRuleImport.h"
-#include "core/css/WebKitCSSFilterRule.h"
-#include "core/css/WebKitCSSKeyframeRule.h"
-#include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/MemoryInstrumentationVector.h"
 
@@ -218,7 +218,7 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
         rule = CSSImportRule::create(static_cast<StyleRuleImport*>(self), parentSheet);
         break;
     case Keyframes:
-        rule = WebKitCSSKeyframesRule::create(static_cast<StyleRuleKeyframes*>(self), parentSheet);
+        rule = CSSKeyframesRule::create(static_cast<StyleRuleKeyframes*>(self), parentSheet);
         break;
 #if ENABLE(CSS_DEVICE_ADAPTATION)
     case Viewport:
@@ -229,7 +229,7 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
         rule = CSSHostRule::create(static_cast<StyleRuleHost*>(self), parentSheet);
         break;
     case Filter:
-        rule = WebKitCSSFilterRule::create(static_cast<StyleRuleFilter*>(self), parentSheet);
+        rule = CSSFilterRule::create(static_cast<StyleRuleFilter*>(self), parentSheet);
         break;
     case Unknown:
     case Charset:

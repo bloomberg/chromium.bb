@@ -32,17 +32,17 @@
 #include "V8CSSRule.h"
 
 #include "V8CSSCharsetRule.h"
+#include "V8CSSFilterRule.h"
 #include "V8CSSFontFaceRule.h"
 #include "V8CSSHostRule.h"
 #include "V8CSSImportRule.h"
+#include "V8CSSKeyframeRule.h"
+#include "V8CSSKeyframesRule.h"
 #include "V8CSSMediaRule.h"
 #include "V8CSSPageRule.h"
 #include "V8CSSRegionRule.h"
 #include "V8CSSStyleRule.h"
 #include "V8CSSSupportsRule.h"
-#include "V8WebKitCSSFilterRule.h"
-#include "V8WebKitCSSKeyframeRule.h"
-#include "V8WebKitCSSKeyframesRule.h"
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
 #include "V8CSSViewportRule.h"
@@ -72,9 +72,9 @@ v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContex
     case CSSRule::PAGE_RULE:
         return wrap(static_cast<CSSPageRule*>(impl), creationContext, isolate);
     case CSSRule::WEBKIT_KEYFRAME_RULE:
-        return wrap(static_cast<WebKitCSSKeyframeRule*>(impl), creationContext, isolate);
+        return wrap(static_cast<CSSKeyframeRule*>(impl), creationContext, isolate);
     case CSSRule::WEBKIT_KEYFRAMES_RULE:
-        return wrap(static_cast<WebKitCSSKeyframesRule*>(impl), creationContext, isolate);
+        return wrap(static_cast<CSSKeyframesRule*>(impl), creationContext, isolate);
     case CSSRule::SUPPORTS_RULE:
         return wrap(static_cast<CSSSupportsRule*>(impl), creationContext, isolate);
 #if ENABLE(CSS_DEVICE_ADAPTATION)
@@ -86,7 +86,7 @@ v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContex
     case CSSRule::HOST_RULE:
         return wrap(static_cast<CSSHostRule*>(impl), creationContext, isolate);
     case CSSRule::WEBKIT_FILTER_RULE:
-        return wrap(static_cast<WebKitCSSFilterRule*>(impl), creationContext, isolate);
+        return wrap(static_cast<CSSFilterRule*>(impl), creationContext, isolate);
     }
     return V8CSSRule::createWrapper(impl, creationContext, isolate);
 }

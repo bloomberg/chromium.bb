@@ -28,36 +28,36 @@
  */
 
 #include "config.h"
-#include "core/css/WebKitCSSFilterRule.h"
+#include "core/css/CSSFilterRule.h"
 
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
-WebKitCSSFilterRule::WebKitCSSFilterRule(StyleRuleFilter* filterRule, CSSStyleSheet* parent)
+CSSFilterRule::CSSFilterRule(StyleRuleFilter* filterRule, CSSStyleSheet* parent)
     : CSSRule(parent)
     , m_filterRule(filterRule)
 {
 }
 
-WebKitCSSFilterRule::~WebKitCSSFilterRule()
+CSSFilterRule::~CSSFilterRule()
 {
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->clearParentRule();
 }
 
-CSSStyleDeclaration* WebKitCSSFilterRule::style() const
+CSSStyleDeclaration* CSSFilterRule::style() const
 {
     if (!m_propertiesCSSOMWrapper)
-        m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(m_filterRule->mutableProperties(), const_cast<WebKitCSSFilterRule*>(this));
+        m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(m_filterRule->mutableProperties(), const_cast<CSSFilterRule*>(this));
     return m_propertiesCSSOMWrapper.get();
 }
 
-String WebKitCSSFilterRule::cssText() const
+String CSSFilterRule::cssText() const
 {
     StringBuilder result;
     result.appendLiteral("@-webkit-filter ");
@@ -75,7 +75,7 @@ String WebKitCSSFilterRule::cssText() const
     return result.toString();
 }
 
-void WebKitCSSFilterRule::reattach(StyleRuleBase* rule)
+void CSSFilterRule::reattach(StyleRuleBase* rule)
 {
     ASSERT(rule);
     ASSERT_WITH_SECURITY_IMPLICATION(rule->isFilterRule());
@@ -84,7 +84,7 @@ void WebKitCSSFilterRule::reattach(StyleRuleBase* rule)
         m_propertiesCSSOMWrapper->reattach(m_filterRule->mutableProperties());
 }
 
-void WebKitCSSFilterRule::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+void CSSFilterRule::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     CSSRule::reportMemoryUsage(memoryObjectInfo);

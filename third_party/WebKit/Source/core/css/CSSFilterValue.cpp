@@ -24,27 +24,27 @@
  */
 
 #include "config.h"
-#include "core/css/WebKitCSSFilterValue.h"
+#include "core/css/CSSFilterValue.h"
 
 #include "core/css/CSSValueList.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-WebKitCSSFilterValue::WebKitCSSFilterValue(FilterOperationType operationType)
-    : CSSValueList(WebKitCSSFilterClass, typeUsesSpaceSeparator(operationType) ? SpaceSeparator : CommaSeparator)
+CSSFilterValue::CSSFilterValue(FilterOperationType operationType)
+    : CSSValueList(CSSFilterClass, typeUsesSpaceSeparator(operationType) ? SpaceSeparator : CommaSeparator)
     , m_type(operationType)
 {
 }
 
-bool WebKitCSSFilterValue::typeUsesSpaceSeparator(FilterOperationType operationType)
+bool CSSFilterValue::typeUsesSpaceSeparator(FilterOperationType operationType)
 {
     return operationType != CustomFilterOperation;
 }
 
-String WebKitCSSFilterValue::customCssText() const
+String CSSFilterValue::customCssText() const
 {
     String result;
     switch (m_type) {
@@ -91,23 +91,23 @@ String WebKitCSSFilterValue::customCssText() const
     return result + CSSValueList::customCssText() + ")";
 }
 
-WebKitCSSFilterValue::WebKitCSSFilterValue(const WebKitCSSFilterValue& cloneFrom)
+CSSFilterValue::CSSFilterValue(const CSSFilterValue& cloneFrom)
     : CSSValueList(cloneFrom)
     , m_type(cloneFrom.m_type)
 {
 }
 
-PassRefPtr<WebKitCSSFilterValue> WebKitCSSFilterValue::cloneForCSSOM() const
+PassRefPtr<CSSFilterValue> CSSFilterValue::cloneForCSSOM() const
 {
-    return adoptRef(new WebKitCSSFilterValue(*this));
+    return adoptRef(new CSSFilterValue(*this));
 }
 
-bool WebKitCSSFilterValue::equals(const WebKitCSSFilterValue& other) const
+bool CSSFilterValue::equals(const CSSFilterValue& other) const
 {
     return m_type == other.m_type && CSSValueList::equals(other);
 }
 
-void WebKitCSSFilterValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+void CSSFilterValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     CSSValueList::reportDescendantMemoryUsage(memoryObjectInfo);

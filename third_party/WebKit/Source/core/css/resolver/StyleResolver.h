@@ -107,7 +107,6 @@ class StyleSheet;
 class StyleSheetList;
 class StyledElement;
 class ViewportStyleResolver;
-class WebKitCSSFilterValue;
 
 class MediaQueryResult {
     WTF_MAKE_NONCOPYABLE(MediaQueryResult); WTF_MAKE_FAST_ALLOCATED;

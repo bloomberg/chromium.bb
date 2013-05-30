@@ -25,6 +25,7 @@
 
 #include "CSSPropertyNames.h"
 #include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSFilterValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSParserMode.h"
 #include "core/css/CSSParserValues.h"
@@ -32,7 +33,6 @@
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/MediaQuery.h"
-#include "core/css/WebKitCSSFilterValue.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/graphics/Color.h"
 #include <wtf/HashMap.h>
@@ -44,6 +44,7 @@
 namespace WebCore {
 
 class AnimationParseContext;
+class CSSArrayFunctionValue;
 class CSSBorderImageSliceValue;
 class CSSMixFunctionValue;
 class CSSPrimitiveValue;
@@ -65,8 +66,6 @@ class StyleRuleKeyframes;
 class StyleKeyframe;
 class StyleSheetContents;
 class StyledElement;
-
-class WebKitCSSArrayFunctionValue;
 
 struct CSSParserLocation;
 
@@ -235,14 +234,14 @@ public:
     PassRefPtr<CSSValue> parseImageSet(CSSParserValueList*);
 
     PassRefPtr<CSSValueList> parseFilter();
-    PassRefPtr<WebKitCSSFilterValue> parseBuiltinFilterArguments(CSSParserValueList*, WebKitCSSFilterValue::FilterOperationType);
+    PassRefPtr<CSSFilterValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSFilterValue::FilterOperationType);
     PassRefPtr<CSSMixFunctionValue> parseMixFunction(CSSParserValue*);
-    PassRefPtr<WebKitCSSArrayFunctionValue> parseCustomFilterArrayFunction(CSSParserValue*);
+    PassRefPtr<CSSArrayFunctionValue> parseCustomFilterArrayFunction(CSSParserValue*);
     PassRefPtr<CSSValueList> parseCustomFilterTransform(CSSParserValueList*);
     PassRefPtr<CSSValueList> parseCustomFilterParameters(CSSParserValueList*);
-    PassRefPtr<WebKitCSSFilterValue> parseCustomFilterFunctionWithAtRuleReferenceSyntax(CSSParserValue*);
-    PassRefPtr<WebKitCSSFilterValue> parseCustomFilterFunctionWithInlineSyntax(CSSParserValue*);
-    PassRefPtr<WebKitCSSFilterValue> parseCustomFilterFunction(CSSParserValue*);
+    PassRefPtr<CSSFilterValue> parseCustomFilterFunctionWithAtRuleReferenceSyntax(CSSParserValue*);
+    PassRefPtr<CSSFilterValue> parseCustomFilterFunctionWithInlineSyntax(CSSParserValue*);
+    PassRefPtr<CSSFilterValue> parseCustomFilterFunction(CSSParserValue*);
     bool parseFilterRuleSrc();
     PassRefPtr<CSSShaderValue> parseFilterRuleSrcUriAndFormat(CSSParserValueList*);
 

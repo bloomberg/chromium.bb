@@ -27,8 +27,10 @@
 #include "CSSPropertyNames.h"
 #include "FontFamilyNames.h"
 #include "core/css/BasicShapeFunctions.h"
+#include "core/css/CSSArrayFunctionValue.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBorderImage.h"
+#include "core/css/CSSFilterValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSMixFunctionValue.h"
@@ -65,14 +67,12 @@
 #include "core/rendering/style/RenderStyle.h"
 #include <wtf/text/StringBuilder.h>
 
-#include "core/css/WebKitCSSArrayFunctionValue.h"
 #include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
 
-#include "core/css/WebKitCSSFilterValue.h"
 #include "core/rendering/style/StyleCustomFilterProgram.h"
 
 namespace WebCore {
@@ -793,7 +793,7 @@ static PassRefPtr<CSSValue> computedTransform(RenderObject* renderer, const Rend
 
 static PassRefPtr<CSSValue> valueForCustomFilterArrayParameter(const CustomFilterArrayParameter* arrayParameter)
 {
-    RefPtr<WebKitCSSArrayFunctionValue> arrayParameterValue = WebKitCSSArrayFunctionValue::create();
+    RefPtr<CSSArrayFunctionValue> arrayParameterValue = CSSArrayFunctionValue::create();
     for (unsigned i = 0, size = arrayParameter->size(); i < size; ++i)
         arrayParameterValue->append(cssValuePool().createValue(arrayParameter->valueAt(i), CSSPrimitiveValue::CSS_NUMBER));
     return arrayParameterValue.release();
@@ -843,7 +843,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
 
     RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
 
-    RefPtr<WebKitCSSFilterValue> filterValue;
+    RefPtr<CSSFilterValue> filterValue;
 
     Vector<RefPtr<FilterOperation> >::const_iterator end = style->filter().operations().end();
     for (Vector<RefPtr<FilterOperation> >::const_iterator it = style->filter().operations().begin(); it != end; ++it) {
@@ -851,67 +851,67 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
         switch (filterOperation->getOperationType()) {
         case FilterOperation::REFERENCE: {
             ReferenceFilterOperation* referenceOperation = static_cast<ReferenceFilterOperation*>(filterOperation);
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::ReferenceFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::ReferenceFilterOperation);
             filterValue->append(cssValuePool().createValue(referenceOperation->url(), CSSPrimitiveValue::CSS_STRING));
             break;
         }
         case FilterOperation::GRAYSCALE: {
             BasicColorMatrixFilterOperation* colorMatrixOperation = static_cast<BasicColorMatrixFilterOperation*>(filterOperation);
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::GrayscaleFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::GrayscaleFilterOperation);
             filterValue->append(cssValuePool().createValue(colorMatrixOperation->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         }
         case FilterOperation::SEPIA: {
             BasicColorMatrixFilterOperation* colorMatrixOperation = static_cast<BasicColorMatrixFilterOperation*>(filterOperation);
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::SepiaFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::SepiaFilterOperation);
             filterValue->append(cssValuePool().createValue(colorMatrixOperation->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         }
         case FilterOperation::SATURATE: {
             BasicColorMatrixFilterOperation* colorMatrixOperation = static_cast<BasicColorMatrixFilterOperation*>(filterOperation);
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::SaturateFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::SaturateFilterOperation);
             filterValue->append(cssValuePool().createValue(colorMatrixOperation->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         }
         case FilterOperation::HUE_ROTATE: {
             BasicColorMatrixFilterOperation* colorMatrixOperation = static_cast<BasicColorMatrixFilterOperation*>(filterOperation);
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::HueRotateFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::HueRotateFilterOperation);
             filterValue->append(cssValuePool().createValue(colorMatrixOperation->amount(), CSSPrimitiveValue::CSS_DEG));
             break;
         }
         case FilterOperation::INVERT: {
             BasicComponentTransferFilterOperation* componentTransferOperation = static_cast<BasicComponentTransferFilterOperation*>(filterOperation);
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::InvertFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::InvertFilterOperation);
             filterValue->append(cssValuePool().createValue(componentTransferOperation->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         }
         case FilterOperation::OPACITY: {
             BasicComponentTransferFilterOperation* componentTransferOperation = static_cast<BasicComponentTransferFilterOperation*>(filterOperation);
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::OpacityFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::OpacityFilterOperation);
             filterValue->append(cssValuePool().createValue(componentTransferOperation->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         }
         case FilterOperation::BRIGHTNESS: {
             BasicComponentTransferFilterOperation* brightnessOperation = static_cast<BasicComponentTransferFilterOperation*>(filterOperation);
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::BrightnessFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::BrightnessFilterOperation);
             filterValue->append(cssValuePool().createValue(brightnessOperation->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         }
         case FilterOperation::CONTRAST: {
             BasicComponentTransferFilterOperation* contrastOperation = static_cast<BasicComponentTransferFilterOperation*>(filterOperation);
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::ContrastFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::ContrastFilterOperation);
             filterValue->append(cssValuePool().createValue(contrastOperation->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         }
         case FilterOperation::BLUR: {
             BlurFilterOperation* blurOperation = static_cast<BlurFilterOperation*>(filterOperation);
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::BlurFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::BlurFilterOperation);
             filterValue->append(zoomAdjustedPixelValue(blurOperation->stdDeviation().value(), style));
             break;
         }
         case FilterOperation::DROP_SHADOW: {
             DropShadowFilterOperation* dropShadowOperation = static_cast<DropShadowFilterOperation*>(filterOperation);
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::DropShadowFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::DropShadowFilterOperation);
             // We want our computed style to look like that of a text shadow (has neither spread nor inset style).
             ShadowData shadowData = ShadowData(dropShadowOperation->location(), dropShadowOperation->stdDeviation(), 0, Normal, dropShadowOperation->color());
             filterValue->append(valueForShadow(&shadowData, CSSPropertyTextShadow, style));
@@ -923,7 +923,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
             break;
         case FilterOperation::CUSTOM: {
             CustomFilterOperation* customOperation = static_cast<CustomFilterOperation*>(filterOperation);
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::CustomFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::CustomFilterOperation);
             
             // The output should be verbose, even if the values are the default ones.
             
@@ -980,7 +980,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
             break;
         }
         default:
-            filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::UnknownFilterOperation);
+            filterValue = CSSFilterValue::create(CSSFilterValue::UnknownFilterOperation);
             break;
         }
         list->append(filterValue.release());

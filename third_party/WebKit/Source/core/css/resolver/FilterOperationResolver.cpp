@@ -29,12 +29,13 @@
 #include "config.h"
 #include "core/css/resolver/FilterOperationResolver.h"
 
+
+#include "core/css/CSSFilterValue.h"
 #include "core/css/CSSMixFunctionValue.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSShaderValue.h"
 #include "core/css/ShadowValue.h"
-#include "core/css/WebKitCSSFilterValue.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
@@ -56,34 +57,34 @@ static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, RenderStyl
 }
 
 
-static FilterOperation::OperationType filterOperationForType(WebKitCSSFilterValue::FilterOperationType type)
+static FilterOperation::OperationType filterOperationForType(CSSFilterValue::FilterOperationType type)
 {
     switch (type) {
-    case WebKitCSSFilterValue::ReferenceFilterOperation:
+    case CSSFilterValue::ReferenceFilterOperation:
         return FilterOperation::REFERENCE;
-    case WebKitCSSFilterValue::GrayscaleFilterOperation:
+    case CSSFilterValue::GrayscaleFilterOperation:
         return FilterOperation::GRAYSCALE;
-    case WebKitCSSFilterValue::SepiaFilterOperation:
+    case CSSFilterValue::SepiaFilterOperation:
         return FilterOperation::SEPIA;
-    case WebKitCSSFilterValue::SaturateFilterOperation:
+    case CSSFilterValue::SaturateFilterOperation:
         return FilterOperation::SATURATE;
-    case WebKitCSSFilterValue::HueRotateFilterOperation:
+    case CSSFilterValue::HueRotateFilterOperation:
         return FilterOperation::HUE_ROTATE;
-    case WebKitCSSFilterValue::InvertFilterOperation:
+    case CSSFilterValue::InvertFilterOperation:
         return FilterOperation::INVERT;
-    case WebKitCSSFilterValue::OpacityFilterOperation:
+    case CSSFilterValue::OpacityFilterOperation:
         return FilterOperation::OPACITY;
-    case WebKitCSSFilterValue::BrightnessFilterOperation:
+    case CSSFilterValue::BrightnessFilterOperation:
         return FilterOperation::BRIGHTNESS;
-    case WebKitCSSFilterValue::ContrastFilterOperation:
+    case CSSFilterValue::ContrastFilterOperation:
         return FilterOperation::CONTRAST;
-    case WebKitCSSFilterValue::BlurFilterOperation:
+    case CSSFilterValue::BlurFilterOperation:
         return FilterOperation::BLUR;
-    case WebKitCSSFilterValue::DropShadowFilterOperation:
+    case CSSFilterValue::DropShadowFilterOperation:
         return FilterOperation::DROP_SHADOW;
-    case WebKitCSSFilterValue::CustomFilterOperation:
+    case CSSFilterValue::CustomFilterOperation:
         return FilterOperation::CUSTOM;
-    case WebKitCSSFilterValue::UnknownFilterOperation:
+    case CSSFilterValue::UnknownFilterOperation:
         return FilterOperation::NONE;
     }
     return FilterOperation::NONE;
@@ -163,7 +164,7 @@ static PassRefPtr<CustomFilterParameter> parseCustomFilterParameter(const String
     if (!values->length())
         return 0;
 
-    if (parameterValue->isWebKitCSSArrayFunctionValue())
+    if (parameterValue->isCSSArrayFunctionValue())
         return parseCustomFilterArrayParameter(name, values);
 
     // If the first value of the list is a transform function,
@@ -225,7 +226,7 @@ static bool parseCustomFilterParameterList(CSSValue* parametersValue, CustomFilt
     return true;
 }
 
-static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithAtRuleReferenceSyntax(WebKitCSSFilterValue* filterValue)
+static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithAtRuleReferenceSyntax(CSSFilterValue* filterValue)
 {
     // FIXME: Implement style resolution for the custom filter at-rule reference syntax.
     UNUSED_PARAM(filterValue);
@@ -251,7 +252,7 @@ static PassRefPtr<CustomFilterProgram> lookupCustomFilterProgram(CSSShaderValue*
     return program.release();
 }
 
-static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSyntax(WebKitCSSFilterValue* filterValue, StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
+static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSyntax(CSSFilterValue* filterValue, StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
 {
     CSSValue* shadersValue = filterValue->itemWithoutBoundsCheck(0);
     ASSERT_WITH_SECURITY_IMPLICATION(shadersValue->isValueList());
@@ -354,7 +355,7 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
     return CustomFilterOperation::create(program.release(), parameterList, meshRows, meshColumns, meshType);
 }
 
-static PassRefPtr<CustomFilterOperation> createCustomFilterOperation(WebKitCSSFilterValue* filterValue, StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
+static PassRefPtr<CustomFilterOperation> createCustomFilterOperation(CSSFilterValue* filterValue, StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
 {
     ASSERT(filterValue->length());
     bool isAtRuleReferenceSyntax = filterValue->itemWithoutBoundsCheck(0)->isPrimitiveValue();
@@ -382,10 +383,10 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
     FilterOperations operations;
     for (CSSValueListIterator i = inValue; i.hasMore(); i.advance()) {
         CSSValue* currValue = i.value();
-        if (!currValue->isWebKitCSSFilterValue())
+        if (!currValue->isCSSFilterValue())
             continue;
 
-        WebKitCSSFilterValue* filterValue = static_cast<WebKitCSSFilterValue*>(i.value());
+        CSSFilterValue* filterValue = static_cast<CSSFilterValue*>(i.value());
         FilterOperation::OperationType operationType = filterOperationForType(filterValue->operationType());
 
         if (operationType == FilterOperation::VALIDATED_CUSTOM) {
@@ -439,9 +440,9 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
 
         CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->itemWithoutBoundsCheck(0)->isPrimitiveValue() ? toCSSPrimitiveValue(filterValue->itemWithoutBoundsCheck(0)) : 0;
         switch (filterValue->operationType()) {
-        case WebKitCSSFilterValue::GrayscaleFilterOperation:
-        case WebKitCSSFilterValue::SepiaFilterOperation:
-        case WebKitCSSFilterValue::SaturateFilterOperation: {
+        case CSSFilterValue::GrayscaleFilterOperation:
+        case CSSFilterValue::SepiaFilterOperation:
+        case CSSFilterValue::SaturateFilterOperation: {
             double amount = 1;
             if (filterValue->length() == 1) {
                 amount = firstValue->getDoubleValue();
@@ -452,7 +453,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
             operations.operations().append(BasicColorMatrixFilterOperation::create(amount, operationType));
             break;
         }
-        case WebKitCSSFilterValue::HueRotateFilterOperation: {
+        case CSSFilterValue::HueRotateFilterOperation: {
             double angle = 0;
             if (filterValue->length() == 1)
                 angle = firstValue->computeDegrees();
@@ -460,11 +461,11 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
             operations.operations().append(BasicColorMatrixFilterOperation::create(angle, operationType));
             break;
         }
-        case WebKitCSSFilterValue::InvertFilterOperation:
-        case WebKitCSSFilterValue::BrightnessFilterOperation:
-        case WebKitCSSFilterValue::ContrastFilterOperation:
-        case WebKitCSSFilterValue::OpacityFilterOperation: {
-            double amount = (filterValue->operationType() == WebKitCSSFilterValue::BrightnessFilterOperation) ? 0 : 1;
+        case CSSFilterValue::InvertFilterOperation:
+        case CSSFilterValue::BrightnessFilterOperation:
+        case CSSFilterValue::ContrastFilterOperation:
+        case CSSFilterValue::OpacityFilterOperation: {
+            double amount = (filterValue->operationType() == CSSFilterValue::BrightnessFilterOperation) ? 0 : 1;
             if (filterValue->length() == 1) {
                 amount = firstValue->getDoubleValue();
                 if (firstValue->isPercentage())
@@ -474,7 +475,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
             operations.operations().append(BasicComponentTransferFilterOperation::create(amount, operationType));
             break;
         }
-        case WebKitCSSFilterValue::BlurFilterOperation: {
+        case CSSFilterValue::BlurFilterOperation: {
             Length stdDeviation = Length(0, Fixed);
             if (filterValue->length() >= 1)
                 stdDeviation = convertToFloatLength(firstValue, style, rootStyle, zoomFactor);
@@ -484,7 +485,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
             operations.operations().append(BlurFilterOperation::create(stdDeviation, operationType));
             break;
         }
-        case WebKitCSSFilterValue::DropShadowFilterOperation: {
+        case CSSFilterValue::DropShadowFilterOperation: {
             if (filterValue->length() != 1)
                 return false;
 
@@ -502,7 +503,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderSt
             operations.operations().append(DropShadowFilterOperation::create(location, blur, color.isValid() ? color : Color::transparent, operationType));
             break;
         }
-        case WebKitCSSFilterValue::UnknownFilterOperation:
+        case CSSFilterValue::UnknownFilterOperation:
         default:
             ASSERT_NOT_REACHED();
             break;

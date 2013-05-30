@@ -27,38 +27,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef WebKitCSSFilterRule_h
-#define WebKitCSSFilterRule_h
+[
+    InterfaceName=WebKitCSSFilterRule
+] interface CSSFilterRule : CSSRule {
+    readonly attribute CSSStyleDeclaration style;
 
-#include "core/css/CSSRule.h"
-
-namespace WebCore {
-
-class CSSStyleDeclaration;
-class StyleRuleFilter;
-class StyleRuleCSSStyleDeclaration;
-
-class WebKitCSSFilterRule : public CSSRule {
-public:
-    static PassRefPtr<WebKitCSSFilterRule> create(StyleRuleFilter* rule, CSSStyleSheet* sheet) { return adoptRef(new WebKitCSSFilterRule(rule, sheet)); }
-
-    virtual ~WebKitCSSFilterRule();
-
-    virtual CSSRule::Type type() const OVERRIDE { return WEBKIT_FILTER_RULE; }
-    virtual String cssText() const OVERRIDE;
-    virtual void reattach(StyleRuleBase*) OVERRIDE;
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
-    CSSStyleDeclaration* style() const;
-
-private:
-    WebKitCSSFilterRule(StyleRuleFilter*, CSSStyleSheet* parent);
-
-    RefPtr<StyleRuleFilter> m_filterRule;
-    mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+    // FIXME: We should expose the filter name once the CSSOM for the @filter rule is specified.
 };
-
-}
-
-
-#endif // WebKitCSSFilterRule_h

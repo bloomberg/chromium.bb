@@ -30,6 +30,7 @@
 #include "SVGNames.h"
 #include "core/css/CSSHostRule.h"
 #include "core/css/CSSImportRule.h"
+#include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSPropertySourceData.h"
@@ -43,7 +44,6 @@
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/StyleSheetList.h"
-#include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
@@ -510,7 +510,7 @@ static PassRefPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
         return static_cast<CSSMediaRule*>(rule)->cssRules();
 
     if (rule->type() == CSSRule::WEBKIT_KEYFRAMES_RULE)
-        return static_cast<WebKitCSSKeyframesRule*>(rule)->cssRules();
+        return static_cast<CSSKeyframesRule*>(rule)->cssRules();
 
     if (rule->type() == CSSRule::HOST_RULE)
         return static_cast<CSSHostRule*>(rule)->cssRules();

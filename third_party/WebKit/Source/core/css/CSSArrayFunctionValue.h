@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (C) 2012 Adobe Systems Incorporated. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,7 +13,7 @@
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER “AS IS” AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE
@@ -27,8 +27,35 @@
  * SUCH DAMAGE.
  */
 
-interface WebKitCSSFilterRule : CSSRule {
-    readonly attribute CSSStyleDeclaration style;
+#ifndef CSSArrayFunctionValue_h
+#define CSSArrayFunctionValue_h
 
-    // FIXME: We should expose the filter name once the CSSOM for the @filter rule is specified.
+#include "core/css/CSSValueList.h"
+#include "wtf/PassRefPtr.h"
+
+namespace WebCore {
+
+class CSSArrayFunctionValue : public CSSValueList {
+public:
+    static PassRefPtr<CSSArrayFunctionValue> create()
+    {
+        return adoptRef(new CSSArrayFunctionValue());
+    }
+
+    String customCssText() const;
+
+    PassRefPtr<CSSArrayFunctionValue> cloneForCSSOM() const;
+
+    bool equals(const CSSArrayFunctionValue&) const;
+
+    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
+
+private:
+    CSSArrayFunctionValue();
+    CSSArrayFunctionValue(const CSSArrayFunctionValue& cloneFrom);
 };
+
+} // namespace WebCore
+
+
+#endif

@@ -34,6 +34,7 @@
 #include <wtf/MemoryInstrumentationVector.h>
 #include "HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
+#include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/MediaQueryEvaluator.h"
@@ -43,7 +44,6 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "weborigin/SecurityOrigin.h"

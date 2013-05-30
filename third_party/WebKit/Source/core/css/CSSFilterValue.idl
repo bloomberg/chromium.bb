@@ -24,8 +24,9 @@
  */
 
 [
-        DoNotCheckConstants
-] interface WebKitCSSFilterValue : CSSValueList {
+    DoNotCheckConstants,
+    InterfaceName=WebKitCSSFilterValue
+] interface CSSFilterValue : CSSValueList {
 
     // OperationTypes
 

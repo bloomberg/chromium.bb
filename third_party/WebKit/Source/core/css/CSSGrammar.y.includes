@@ -26,6 +26,8 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
+#include "core/css/CSSKeyframeRule.h"
+#include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSParserMode.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -35,8 +37,6 @@
 #include "core/css/MediaQueryExp.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/css/WebKitCSSKeyframeRule.h"
-#include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/dom/Document.h"
 #include <wtf/FastMalloc.h>
 #include <stdlib.h>

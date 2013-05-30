@@ -29,6 +29,7 @@
 
 #include "CSSValueKeywords.h"
 #include "RuntimeEnabledFeatures.h"
+#include "core/css/CSSArrayFunctionValue.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSBorderImage.h"
@@ -41,6 +42,8 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
+#include "core/css/CSSKeyframeRule.h"
+#include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSMixFunctionValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -68,10 +71,6 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/css/WebKitCSSArrayFunctionValue.h"
-#include "core/css/WebKitCSSFilterValue.h"
-#include "core/css/WebKitCSSKeyframeRule.h"
-#include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -8022,32 +8021,32 @@ bool CSSParser::isCompositeOperator(int ident)
     return ident >= CSSValueClear && ident <= CSSValueXor;
 }
 
-static void filterInfoForName(const CSSParserString& name, WebKitCSSFilterValue::FilterOperationType& filterType, unsigned& maximumArgumentCount)
+static void filterInfoForName(const CSSParserString& name, CSSFilterValue::FilterOperationType& filterType, unsigned& maximumArgumentCount)
 {
     if (equalIgnoringCase(name, "grayscale("))
-        filterType = WebKitCSSFilterValue::GrayscaleFilterOperation;
+        filterType = CSSFilterValue::GrayscaleFilterOperation;
     else if (equalIgnoringCase(name, "sepia("))
-        filterType = WebKitCSSFilterValue::SepiaFilterOperation;
+        filterType = CSSFilterValue::SepiaFilterOperation;
     else if (equalIgnoringCase(name, "saturate("))
-        filterType = WebKitCSSFilterValue::SaturateFilterOperation;
+        filterType = CSSFilterValue::SaturateFilterOperation;
     else if (equalIgnoringCase(name, "hue-rotate("))
-        filterType = WebKitCSSFilterValue::HueRotateFilterOperation;
+        filterType = CSSFilterValue::HueRotateFilterOperation;
     else if (equalIgnoringCase(name, "invert("))
-        filterType = WebKitCSSFilterValue::InvertFilterOperation;
+        filterType = CSSFilterValue::InvertFilterOperation;
     else if (equalIgnoringCase(name, "opacity("))
-        filterType = WebKitCSSFilterValue::OpacityFilterOperation;
+        filterType = CSSFilterValue::OpacityFilterOperation;
     else if (equalIgnoringCase(name, "brightness("))
-        filterType = WebKitCSSFilterValue::BrightnessFilterOperation;
+        filterType = CSSFilterValue::BrightnessFilterOperation;
     else if (equalIgnoringCase(name, "contrast("))
-        filterType = WebKitCSSFilterValue::ContrastFilterOperation;
+        filterType = CSSFilterValue::ContrastFilterOperation;
     else if (equalIgnoringCase(name, "blur("))
-        filterType = WebKitCSSFilterValue::BlurFilterOperation;
+        filterType = CSSFilterValue::BlurFilterOperation;
     else if (equalIgnoringCase(name, "drop-shadow(")) {
-        filterType = WebKitCSSFilterValue::DropShadowFilterOperation;
+        filterType = CSSFilterValue::DropShadowFilterOperation;
         maximumArgumentCount = 4;  // x-offset, y-offset, blur-radius, color -- spread and inset style not allowed.
     }
     else if (equalIgnoringCase(name, "custom("))
-        filterType = WebKitCSSFilterValue::CustomFilterOperation;
+        filterType = CSSFilterValue::CustomFilterOperation;
 }
 
 static bool acceptCommaOperator(CSSParserValueList* argsList)
@@ -8060,7 +8059,7 @@ static bool acceptCommaOperator(CSSParserValueList* argsList)
     return true;
 }
 
-PassRefPtr<WebKitCSSArrayFunctionValue> CSSParser::parseCustomFilterArrayFunction(CSSParserValue* value)
+PassRefPtr<CSSArrayFunctionValue> CSSParser::parseCustomFilterArrayFunction(CSSParserValue* value)
 {
     ASSERT(value->unit == CSSParserValue::Function && value->function);
 
@@ -8072,7 +8071,7 @@ PassRefPtr<WebKitCSSArrayFunctionValue> CSSParser::parseCustomFilterArrayFunctio
         return 0;
 
     // array() values are comma separated.
-    RefPtr<WebKitCSSArrayFunctionValue> arrayFunction = WebKitCSSArrayFunctionValue::create();
+    RefPtr<CSSArrayFunctionValue> arrayFunction = CSSArrayFunctionValue::create();
     while (true) {
         // We parse pairs <Value, Comma> at each step.
         CSSParserValue* currentParserValue = arrayArgsParserValueList->current();
@@ -8217,7 +8216,7 @@ PassRefPtr<CSSValueList> CSSParser::parseCustomFilterParameters(CSSParserValueLi
     return paramList;
 }
 
-PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunctionWithAtRuleReferenceSyntax(CSSParserValue* value)
+PassRefPtr<CSSFilterValue> CSSParser::parseCustomFilterFunctionWithAtRuleReferenceSyntax(CSSParserValue* value)
 {
     //
     // Custom filter function "at-rule reference" syntax:
@@ -8239,7 +8238,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunctionWithAtRuleR
     if (arg->unit != CSSPrimitiveValue::CSS_IDENT)
         return 0;
 
-    RefPtr<WebKitCSSFilterValue> filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::CustomFilterOperation);
+    RefPtr<CSSFilterValue> filterValue = CSSFilterValue::create(CSSFilterValue::CustomFilterOperation);
 
     RefPtr<CSSValue> filterName = createPrimitiveStringValue(arg);
     filterValue->append(filterName);
@@ -8260,7 +8259,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunctionWithAtRuleR
 }
 
 // FIXME: The custom filters "inline" syntax is deprecated. We will remove it eventually.
-PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunctionWithInlineSyntax(CSSParserValue* value)
+PassRefPtr<CSSFilterValue> CSSParser::parseCustomFilterFunctionWithInlineSyntax(CSSParserValue* value)
 {
     //
     // Custom filter function "inline" syntax:
@@ -8288,7 +8287,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunctionWithInlineS
     if (!argsList)
         return 0;
 
-    RefPtr<WebKitCSSFilterValue> filterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::CustomFilterOperation);
+    RefPtr<CSSFilterValue> filterValue = CSSFilterValue::create(CSSFilterValue::CustomFilterOperation);
 
     // 1. Parse the shader URLs: <vertex-shader>[wsp<fragment-shader>]
     RefPtr<CSSValueList> shadersList = CSSValueList::createSpaceSeparated();
@@ -8365,7 +8364,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunctionWithInlineS
     return filterValue;
 }
 
-PassRefPtr<WebKitCSSFilterValue> CSSParser::parseCustomFilterFunction(CSSParserValue* value)
+PassRefPtr<CSSFilterValue> CSSParser::parseCustomFilterFunction(CSSParserValue* value)
 {
     ASSERT(value->function);
 
@@ -8467,18 +8466,18 @@ StyleRuleBase* CSSParser::createFilterRule(const CSSParserString& filterName)
 }
 
 
-PassRefPtr<WebKitCSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParserValueList* args, WebKitCSSFilterValue::FilterOperationType filterType)
+PassRefPtr<CSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParserValueList* args, CSSFilterValue::FilterOperationType filterType)
 {
-    RefPtr<WebKitCSSFilterValue> filterValue = WebKitCSSFilterValue::create(filterType);
+    RefPtr<CSSFilterValue> filterValue = CSSFilterValue::create(filterType);
     ASSERT(args);
 
     switch (filterType) {
-    case WebKitCSSFilterValue::GrayscaleFilterOperation:
-    case WebKitCSSFilterValue::SepiaFilterOperation:
-    case WebKitCSSFilterValue::SaturateFilterOperation:
-    case WebKitCSSFilterValue::InvertFilterOperation:
-    case WebKitCSSFilterValue::OpacityFilterOperation:
-    case WebKitCSSFilterValue::ContrastFilterOperation: {
+    case CSSFilterValue::GrayscaleFilterOperation:
+    case CSSFilterValue::SepiaFilterOperation:
+    case CSSFilterValue::SaturateFilterOperation:
+    case CSSFilterValue::InvertFilterOperation:
+    case CSSFilterValue::OpacityFilterOperation:
+    case CSSFilterValue::ContrastFilterOperation: {
         // One optional argument, 0-1 or 0%-100%, if missing use 100%.
         if (args->size() > 1)
             return 0;
@@ -8491,8 +8490,8 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParse
             double amount = value->fValue;
 
             // Saturate and Contrast allow values over 100%.
-            if (filterType != WebKitCSSFilterValue::SaturateFilterOperation
-                && filterType != WebKitCSSFilterValue::ContrastFilterOperation) {
+            if (filterType != CSSFilterValue::SaturateFilterOperation
+                && filterType != CSSFilterValue::ContrastFilterOperation) {
                 double maxAllowed = value->unit == CSSPrimitiveValue::CSS_PERCENTAGE ? 100.0 : 1.0;
                 if (amount > maxAllowed)
                     return 0;
@@ -8502,7 +8501,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParse
         }
         break;
     }
-    case WebKitCSSFilterValue::BrightnessFilterOperation: {
+    case CSSFilterValue::BrightnessFilterOperation: {
         // One optional argument, if missing use 100%.
         if (args->size() > 1)
             return 0;
@@ -8516,7 +8515,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParse
         }
         break;
     }
-    case WebKitCSSFilterValue::HueRotateFilterOperation: {
+    case CSSFilterValue::HueRotateFilterOperation: {
         // hue-rotate() takes one optional angle.
         if (args->size() > 1)
             return 0;
@@ -8530,7 +8529,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParse
         }
         break;
     }
-    case WebKitCSSFilterValue::BlurFilterOperation: {
+    case CSSFilterValue::BlurFilterOperation: {
         // Blur takes a single length. Zero parameters are allowed.
         if (args->size() > 1)
             return 0;
@@ -8544,7 +8543,7 @@ PassRefPtr<WebKitCSSFilterValue> CSSParser::parseBuiltinFilterArguments(CSSParse
         }
         break;
     }
-    case WebKitCSSFilterValue::DropShadowFilterOperation: {
+    case CSSFilterValue::DropShadowFilterOperation: {
         // drop-shadow() takes a single shadow.
         RefPtr<CSSValueList> shadowValueList = parseShadow(args, CSSPropertyWebkitFilter);
         if (!shadowValueList || shadowValueList->length() != 1)
@@ -8570,11 +8569,11 @@ PassRefPtr<CSSValueList> CSSParser::parseFilter()
         if (value->unit != CSSPrimitiveValue::CSS_URI && (value->unit != CSSParserValue::Function || !value->function))
             return 0;
 
-        WebKitCSSFilterValue::FilterOperationType filterType = WebKitCSSFilterValue::UnknownFilterOperation;
+        CSSFilterValue::FilterOperationType filterType = CSSFilterValue::UnknownFilterOperation;
 
         // See if the specified primitive is one we understand.
         if (value->unit == CSSPrimitiveValue::CSS_URI) {
-            RefPtr<WebKitCSSFilterValue> referenceFilterValue = WebKitCSSFilterValue::create(WebKitCSSFilterValue::ReferenceFilterOperation);
+            RefPtr<CSSFilterValue> referenceFilterValue = CSSFilterValue::create(CSSFilterValue::ReferenceFilterOperation);
             list->append(referenceFilterValue);
             referenceFilterValue->append(CSSSVGDocumentValue::create(value->string));
         } else {
@@ -8583,15 +8582,15 @@ PassRefPtr<CSSValueList> CSSParser::parseFilter()
 
             filterInfoForName(name, filterType, maximumArgumentCount);
 
-            if (filterType == WebKitCSSFilterValue::UnknownFilterOperation)
+            if (filterType == CSSFilterValue::UnknownFilterOperation)
                 return 0;
 
-            if (filterType == WebKitCSSFilterValue::CustomFilterOperation) {
+            if (filterType == CSSFilterValue::CustomFilterOperation) {
                 // Make sure parsing fails if custom filters are disabled.
                 if (!m_context.isCSSCustomFilterEnabled)
                     return 0;
 
-                RefPtr<WebKitCSSFilterValue> filterValue = parseCustomFilterFunction(value);
+                RefPtr<CSSFilterValue> filterValue = parseCustomFilterFunction(value);
                 if (!filterValue)
                     return 0;
                 list->append(filterValue.release());
@@ -8601,7 +8600,7 @@ PassRefPtr<CSSValueList> CSSParser::parseFilter()
             if (!args)
                 return 0;
 
-            RefPtr<WebKitCSSFilterValue> filterValue = parseBuiltinFilterArguments(args, filterType);
+            RefPtr<CSSFilterValue> filterValue = parseBuiltinFilterArguments(args, filterType);
             if (!filterValue)
                 return 0;
 

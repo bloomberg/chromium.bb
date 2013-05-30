@@ -27,6 +27,8 @@
 #ifndef ScopedStyleResolver_h
 #define ScopedStyleResolver_h
 
+#include "core/css/CSSKeyframeRule.h"
+#include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSToStyleMap.h"
@@ -39,8 +41,6 @@
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
 #include "core/css/SiblingTraversalStrategies.h"
-#include "core/css/WebKitCSSKeyframeRule.h"
-#include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/platform/LinkHash.h"
 #include "core/platform/ScrollTypes.h"

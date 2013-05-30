@@ -3196,7 +3196,7 @@ sub GenerateImplementationIndexedPropertyAccessors
     # FIXME: Support generated named enumerator bindings.
     my $hasEnumerator = $indexedGetterFunction;
     # FIXME: Remove the special cases. Interfaces that have indexedPropertyGetter should have indexedPropertyEnumerator.
-    $hasEnumerator = 0 if $interfaceName eq "WebKitCSSKeyframesRule";
+    $hasEnumerator = 0 if $interfaceName eq "CSSKeyframesRule";
     $hasEnumerator = 0 if $interfaceName eq "HTMLAppletElement";
     $hasEnumerator = 0 if $interfaceName eq "HTMLEmbedElement";
     $hasEnumerator = 0 if $interfaceName eq "HTMLObjectElement";

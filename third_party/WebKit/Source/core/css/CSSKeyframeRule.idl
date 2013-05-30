@@ -27,7 +27,10 @@
  */
 
 // Introduced in DOM Level ?:
-interface WebKitCSSKeyframeRule : CSSRule {
+[
+    InterfaceName=WebKitCSSKeyframeRule
+]
+interface CSSKeyframeRule : CSSRule {
 
     attribute DOMString keyText;
     readonly attribute CSSStyleDeclaration style;

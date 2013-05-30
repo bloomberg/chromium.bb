@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebKitCSSKeyframeRule_h
-#define WebKitCSSKeyframeRule_h
+#ifndef CSSKeyframeRule_h
+#define CSSKeyframeRule_h
 
 #include "core/css/CSSRule.h"
 
@@ -34,7 +34,7 @@ class CSSStyleDeclaration;
 class MutableStylePropertySet;
 class StylePropertySet;
 class StyleRuleCSSStyleDeclaration;
-class WebKitCSSKeyframesRule;
+class CSSKeyframesRule;
 
 class StyleKeyframe : public RefCounted<StyleKeyframe> {
     WTF_MAKE_FAST_ALLOCATED;
@@ -49,29 +49,29 @@ public:
     void setKeyText(const String& s) { m_key = s; }
 
     void getKeys(Vector<float>& keys) const   { parseKeyString(m_key, keys); }
-    
+
     const StylePropertySet* properties() const { return m_properties.get(); }
     MutableStylePropertySet* mutableProperties();
     void setProperties(PassRefPtr<StylePropertySet>);
-    
+
     String cssText() const;
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
     StyleKeyframe();
-    
+
     static void parseKeyString(const String&, Vector<float>& keys);
-    
+
     RefPtr<StylePropertySet> m_properties;
     // FIXME: This should be a parsed vector of floats.
     // comma separated list of keys
     String m_key;
 };
 
-class WebKitCSSKeyframeRule : public CSSRule {
+class CSSKeyframeRule : public CSSRule {
 public:
-    virtual ~WebKitCSSKeyframeRule();
+    virtual ~CSSKeyframeRule();
 
     virtual CSSRule::Type type() const OVERRIDE { return WEBKIT_KEYFRAME_RULE; }
     virtual String cssText() const OVERRIDE { return m_keyframe->cssText(); }
@@ -84,14 +84,14 @@ public:
     CSSStyleDeclaration* style() const;
 
 private:
-    WebKitCSSKeyframeRule(StyleKeyframe*, WebKitCSSKeyframesRule* parent);
+    CSSKeyframeRule(StyleKeyframe*, CSSKeyframesRule* parent);
 
     RefPtr<StyleKeyframe> m_keyframe;
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
-    
-    friend class WebKitCSSKeyframesRule;
+
+    friend class CSSKeyframesRule;
 };
 
 } // namespace WebCore
 
-#endif // WebKitCSSKeyframeRule_h
+#endif // CSSKeyframeRule_h

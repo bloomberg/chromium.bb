@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/css/WebKitCSSMatrix.h"
+#include "core/css/CSSMatrix.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
@@ -32,27 +32,27 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/dom/ExceptionCode.h"
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
 namespace WebCore {
 
-WebKitCSSMatrix::WebKitCSSMatrix(const TransformationMatrix& m)
+CSSMatrix::CSSMatrix(const TransformationMatrix& m)
     : m_matrix(m)
 {
     ScriptWrappable::init(this);
 }
 
-WebKitCSSMatrix::WebKitCSSMatrix(const String& s, ExceptionCode& ec)
+CSSMatrix::CSSMatrix(const String& s, ExceptionCode& ec)
 {
     ScriptWrappable::init(this);
     setMatrixValue(s, ec);
 }
 
-WebKitCSSMatrix::~WebKitCSSMatrix()
+CSSMatrix::~CSSMatrix()
 {
 }
 
-void WebKitCSSMatrix::setMatrixValue(const String& string, ExceptionCode& ec)
+void CSSMatrix::setMatrixValue(const String& string, ExceptionCode& ec)
 {
     if (string.isEmpty())
         return;
@@ -90,25 +90,25 @@ void WebKitCSSMatrix::setMatrixValue(const String& string, ExceptionCode& ec)
 }
 
 // Perform a concatenation of the matrices (this * secondMatrix)
-PassRefPtr<WebKitCSSMatrix> WebKitCSSMatrix::multiply(WebKitCSSMatrix* secondMatrix) const
+PassRefPtr<CSSMatrix> CSSMatrix::multiply(CSSMatrix* secondMatrix) const
 {
     if (!secondMatrix)
         return 0;
 
-    return WebKitCSSMatrix::create(TransformationMatrix(m_matrix).multiply(secondMatrix->m_matrix));
+    return CSSMatrix::create(TransformationMatrix(m_matrix).multiply(secondMatrix->m_matrix));
 }
 
-PassRefPtr<WebKitCSSMatrix> WebKitCSSMatrix::inverse(ExceptionCode& ec) const
+PassRefPtr<CSSMatrix> CSSMatrix::inverse(ExceptionCode& ec) const
 {
     if (!m_matrix.isInvertible()) {
         ec = NOT_SUPPORTED_ERR;
         return 0;
     }
 
-    return WebKitCSSMatrix::create(m_matrix.inverse());
+    return CSSMatrix::create(m_matrix.inverse());
 }
 
-PassRefPtr<WebKitCSSMatrix> WebKitCSSMatrix::translate(double x, double y, double z) const
+PassRefPtr<CSSMatrix> CSSMatrix::translate(double x, double y, double z) const
 {
     if (std::isnan(x))
         x = 0;
@@ -116,10 +116,10 @@ PassRefPtr<WebKitCSSMatrix> WebKitCSSMatrix::translate(double x, double y, doubl
         y = 0;
     if (std::isnan(z))
         z = 0;
-    return WebKitCSSMatrix::create(TransformationMatrix(m_matrix).translate3d(x, y, z));
+    return CSSMatrix::create(TransformationMatrix(m_matrix).translate3d(x, y, z));
 }
 
-PassRefPtr<WebKitCSSMatrix> WebKitCSSMatrix::scale(double scaleX, double scaleY, double scaleZ) const
+PassRefPtr<CSSMatrix> CSSMatrix::scale(double scaleX, double scaleY, double scaleZ) const
 {
     if (std::isnan(scaleX))
         scaleX = 1;
@@ -127,10 +127,10 @@ PassRefPtr<WebKitCSSMatrix> WebKitCSSMatrix::scale(double scaleX, double scaleY,
         scaleY = scaleX;
     if (std::isnan(scaleZ))
         scaleZ = 1;
-    return WebKitCSSMatrix::create(TransformationMatrix(m_matrix).scale3d(scaleX, scaleY, scaleZ));
+    return CSSMatrix::create(TransformationMatrix(m_matrix).scale3d(scaleX, scaleY, scaleZ));
 }
 
-PassRefPtr<WebKitCSSMatrix> WebKitCSSMatrix::rotate(double rotX, double rotY, double rotZ) const
+PassRefPtr<CSSMatrix> CSSMatrix::rotate(double rotX, double rotY, double rotZ) const
 {
     if (std::isnan(rotX))
         rotX = 0;
@@ -145,10 +145,10 @@ PassRefPtr<WebKitCSSMatrix> WebKitCSSMatrix::rotate(double rotX, double rotY, do
         rotY = 0;
     if (std::isnan(rotZ))
         rotZ = 0;
-    return WebKitCSSMatrix::create(TransformationMatrix(m_matrix).rotate3d(rotX, rotY, rotZ));
+    return CSSMatrix::create(TransformationMatrix(m_matrix).rotate3d(rotX, rotY, rotZ));
 }
 
-PassRefPtr<WebKitCSSMatrix> WebKitCSSMatrix::rotateAxisAngle(double x, double y, double z, double angle) const
+PassRefPtr<CSSMatrix> CSSMatrix::rotateAxisAngle(double x, double y, double z, double angle) const
 {
     if (std::isnan(x))
         x = 0;
@@ -158,36 +158,35 @@ PassRefPtr<WebKitCSSMatrix> WebKitCSSMatrix::rotateAxisAngle(double x, double y,
         z = 0;
     if (std::isnan(angle))
         angle = 0;
-    if (x == 0 && y == 0 && z == 0)
+    if (!x && !y && !z)
         z = 1;
-    return WebKitCSSMatrix::create(TransformationMatrix(m_matrix).rotate3d(x, y, z, angle));
+    return CSSMatrix::create(TransformationMatrix(m_matrix).rotate3d(x, y, z, angle));
 }
 
-PassRefPtr<WebKitCSSMatrix> WebKitCSSMatrix::skewX(double angle) const
+PassRefPtr<CSSMatrix> CSSMatrix::skewX(double angle) const
 {
     if (std::isnan(angle))
         angle = 0;
-    return WebKitCSSMatrix::create(TransformationMatrix(m_matrix).skewX(angle));
+    return CSSMatrix::create(TransformationMatrix(m_matrix).skewX(angle));
 }
 
-PassRefPtr<WebKitCSSMatrix> WebKitCSSMatrix::skewY(double angle) const
+PassRefPtr<CSSMatrix> CSSMatrix::skewY(double angle) const
 {
     if (std::isnan(angle))
         angle = 0;
-    return WebKitCSSMatrix::create(TransformationMatrix(m_matrix).skewY(angle));
+    return CSSMatrix::create(TransformationMatrix(m_matrix).skewY(angle));
 }
 
-String WebKitCSSMatrix::toString() const
+String CSSMatrix::toString() const
 {
     // FIXME - Need to ensure valid CSS floating point values (https://bugs.webkit.org/show_bug.cgi?id=20674)
     if (m_matrix.isAffine())
-        return String::format("matrix(%f, %f, %f, %f, %f, %f)",
-                                m_matrix.a(), m_matrix.b(), m_matrix.c(), m_matrix.d(), m_matrix.e(), m_matrix.f());
+        return String::format("matrix(%f, %f, %f, %f, %f, %f)", m_matrix.a(), m_matrix.b(), m_matrix.c(), m_matrix.d(), m_matrix.e(), m_matrix.f());
     return String::format("matrix3d(%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)",
-                            m_matrix.m11(), m_matrix.m12(), m_matrix.m13(), m_matrix.m14(),
-                            m_matrix.m21(), m_matrix.m22(), m_matrix.m23(), m_matrix.m24(),
-                            m_matrix.m31(), m_matrix.m32(), m_matrix.m33(), m_matrix.m34(),
-                            m_matrix.m41(), m_matrix.m42(), m_matrix.m43(), m_matrix.m44());
+    m_matrix.m11(), m_matrix.m12(), m_matrix.m13(), m_matrix.m14(),
+    m_matrix.m21(), m_matrix.m22(), m_matrix.m23(), m_matrix.m24(),
+    m_matrix.m31(), m_matrix.m32(), m_matrix.m33(), m_matrix.m34(),
+    m_matrix.m41(), m_matrix.m42(), m_matrix.m43(), m_matrix.m44());
 }
 
 } // namespace WebCore

@@ -86,8 +86,8 @@ public:
     bool isCSSTransformValue() const { return m_classType == CSSTransformClass; }
     bool isCSSLineBoxContainValue() const { return m_classType == LineBoxContainClass; }
     bool isCalculationValue() const {return m_classType == CalculationClass; }
-    bool isWebKitCSSFilterValue() const { return m_classType == WebKitCSSFilterClass; }
-    bool isWebKitCSSArrayFunctionValue() const { return m_classType == WebKitCSSArrayFunctionValueClass; }
+    bool isCSSFilterValue() const { return m_classType == CSSFilterClass; }
+    bool isCSSArrayFunctionValue() const { return m_classType == CSSArrayFunctionValueClass; }
     bool isCSSMixFunctionValue() const { return m_classType == CSSMixFunctionValueClass; }
     bool isCSSShaderValue() const { return m_classType == CSSShaderClass; }
     bool isVariableValue() const { return m_classType == VariableClass; }
@@ -159,8 +159,8 @@ protected:
         // List class types must appear after ValueListClass.
         ValueListClass,
         ImageSetClass,
-        WebKitCSSFilterClass,
-        WebKitCSSArrayFunctionValueClass,
+        CSSFilterClass,
+        CSSArrayFunctionValueClass,
         CSSMixFunctionValueClass,
         CSSTransformClass,
         // Do not append non-list class types here.

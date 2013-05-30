@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (C) 2013 Adobe Systems Incorporated. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -13,7 +13,7 @@
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER “AS IS” AND ANY
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE
@@ -27,43 +27,38 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/css/WebKitCSSArrayFunctionValue.h"
+#ifndef CSSFilterRule_h
+#define CSSFilterRule_h
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/css/CSSRule.h"
 
 namespace WebCore {
 
-WebKitCSSArrayFunctionValue::WebKitCSSArrayFunctionValue()
-    : CSSValueList(WebKitCSSArrayFunctionValueClass, CommaSeparator)
-{
+class CSSStyleDeclaration;
+class StyleRuleFilter;
+class StyleRuleCSSStyleDeclaration;
+
+class CSSFilterRule : public CSSRule {
+public:
+    static PassRefPtr<CSSFilterRule> create(StyleRuleFilter* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSFilterRule(rule, sheet)); }
+
+    virtual ~CSSFilterRule();
+
+    virtual CSSRule::Type type() const OVERRIDE { return WEBKIT_FILTER_RULE; }
+    virtual String cssText() const OVERRIDE;
+    virtual void reattach(StyleRuleBase*) OVERRIDE;
+    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
+
+    CSSStyleDeclaration* style() const;
+
+private:
+    CSSFilterRule(StyleRuleFilter*, CSSStyleSheet* parent);
+
+    RefPtr<StyleRuleFilter> m_filterRule;
+    mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+};
+
 }
 
-WebKitCSSArrayFunctionValue::WebKitCSSArrayFunctionValue(const WebKitCSSArrayFunctionValue& cloneFrom)
-    : CSSValueList(cloneFrom)
-{
-}
 
-String WebKitCSSArrayFunctionValue::customCssText() const
-{
-    return "array(" + CSSValueList::customCssText() + ')';
-}
-
-PassRefPtr<WebKitCSSArrayFunctionValue> WebKitCSSArrayFunctionValue::cloneForCSSOM() const
-{
-    return adoptRef(new WebKitCSSArrayFunctionValue(*this));
-}
-
-bool WebKitCSSArrayFunctionValue::equals(const WebKitCSSArrayFunctionValue& other) const
-{
-    return CSSValueList::equals(other);
-}
-
-void WebKitCSSArrayFunctionValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    CSSValueList::reportDescendantMemoryUsage(memoryObjectInfo);
-}
-
-} // namespace WebCore
-
+#endif // CSSFilterRule_h

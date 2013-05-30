@@ -28,14 +28,15 @@
 
 // Introduced in DOM Level ?:
 [
-] interface WebKitCSSKeyframesRule : CSSRule {
+    InterfaceName=WebKitCSSKeyframesRule
+] interface CSSKeyframesRule : CSSRule {
 
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString name;
     readonly attribute CSSRuleList cssRules;
     
-    [ImplementedAs=item] getter WebKitCSSKeyframeRule(unsigned long index);
+    [ImplementedAs=item] getter CSSKeyframeRule(unsigned long index);
     void insertRule([Default=Undefined] optional DOMString rule);
     void deleteRule([Default=Undefined] optional DOMString key);
-    WebKitCSSKeyframeRule findRule([Default=Undefined] optional DOMString key);
+    CSSKeyframeRule findRule([Default=Undefined] optional DOMString key);
 };
 
