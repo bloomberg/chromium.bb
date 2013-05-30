@@ -40,7 +40,7 @@
       '../wtf/wtf.gyp:wtf',
       '../wtf/wtf_tests.gyp:run_all_tests',
       '../config.gyp:unittest_config',
-      '<(DEPTH)/url/url.gyp:url',
+      '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
     ],
     'sources': [
       '<@(weborigin_test_files)',
@@ -48,6 +48,7 @@
     'conditions': [
       ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and linux_use_tcmalloc==1', {
         'dependencies': [
+          '<(DEPTH)/base/base.gyp:base',
           '<(DEPTH)/base/allocator/allocator.gyp:allocator',
         ]
       }]
