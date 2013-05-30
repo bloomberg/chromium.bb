@@ -117,6 +117,7 @@ TtsController* TtsController::GetInstance() {
 
 TtsController::TtsController()
     : current_utterance_(NULL),
+      paused_(false),
       platform_impl_(NULL) {
 }
 
@@ -131,7 +132,15 @@ TtsController::~TtsController() {
 }
 
 void TtsController::SpeakOrEnqueue(Utterance* utterance) {
-  if (IsSpeaking() && utterance->can_enqueue()) {
+  // If we're paused and we get an utterance that can't be queued,
+  // flush the queue but stay in the paused state.
+  if (paused_ && !utterance->can_enqueue()) {
+    Stop();
+    paused_ = true;
+    return;
+  }
+
+  if (paused_ || (IsSpeaking() && utterance->can_enqueue())) {
     utterance_queue_.push(utterance);
   } else {
     Stop();
@@ -198,6 +207,7 @@ void TtsController::SpeakNow(Utterance* utterance) {
 }
 
 void TtsController::Stop() {
+  paused_ = false;
   if (current_utterance_ && !current_utterance_->extension_id().empty()) {
 #if !defined(OS_ANDROID)
     ExtensionTtsEngineStop(current_utterance_);
@@ -212,6 +222,32 @@ void TtsController::Stop() {
                                    std::string());
   FinishCurrentUtterance();
   ClearUtteranceQueue(true);  // Send events.
+}
+
+void TtsController::Pause() {
+  paused_ = true;
+  if (current_utterance_ && !current_utterance_->extension_id().empty()) {
+#if !defined(OS_ANDROID)
+    ExtensionTtsEnginePause(current_utterance_);
+#endif
+  } else if (current_utterance_) {
+    GetPlatformImpl()->clear_error();
+    GetPlatformImpl()->Pause();
+  }
+}
+
+void TtsController::Resume() {
+  paused_ = false;
+  if (current_utterance_ && !current_utterance_->extension_id().empty()) {
+#if !defined(OS_ANDROID)
+    ExtensionTtsEngineResume(current_utterance_);
+#endif
+  } else if (current_utterance_) {
+    GetPlatformImpl()->clear_error();
+    GetPlatformImpl()->Resume();
+  } else {
+    SpeakNextUtterance();
+  }
 }
 
 void TtsController::OnTtsEvent(int utterance_id,
@@ -259,6 +295,9 @@ void TtsController::FinishCurrentUtterance() {
 }
 
 void TtsController::SpeakNextUtterance() {
+  if (paused_)
+    return;
+
   // Start speaking the next utterance in the queue.  Keep trying in case
   // one fails but there are still more in the queue to try.
   while (!utterance_queue_.empty() && !current_utterance_) {

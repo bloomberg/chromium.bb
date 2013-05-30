@@ -40,6 +40,10 @@ const char *TtsEventTypeToString(TtsEventType event_type) {
       return constants::kEventTypeCancelled;
     case TTS_EVENT_ERROR:
       return constants::kEventTypeError;
+    case TTS_EVENT_PAUSE:
+      return constants::kEventTypePause;
+    case TTS_EVENT_RESUME:
+      return constants::kEventTypeResume;
     default:
       NOTREACHED();
       return constants::kEventTypeError;
@@ -63,6 +67,10 @@ TtsEventType TtsEventTypeFromString(const std::string& str) {
     return TTS_EVENT_CANCELLED;
   if (str == constants::kEventTypeError)
     return TTS_EVENT_ERROR;
+  if (str == constants::kEventTypePause)
+    return TTS_EVENT_PAUSE;
+  if (str == constants::kEventTypeResume)
+    return TTS_EVENT_RESUME;
 
   NOTREACHED();
   return TTS_EVENT_ERROR;
@@ -274,6 +282,16 @@ bool TtsStopSpeakingFunction::RunImpl() {
   return true;
 }
 
+bool TtsPauseFunction::RunImpl() {
+  TtsController::GetInstance()->Pause();
+  return true;
+}
+
+bool TtsResumeFunction::RunImpl() {
+  TtsController::GetInstance()->Resume();
+  return true;
+}
+
 bool TtsIsSpeakingFunction::RunImpl() {
   SetResult(Value::CreateBooleanValue(
       TtsController::GetInstance()->IsSpeaking()));
@@ -301,35 +319,8 @@ bool TtsGetVoicesFunction::RunImpl() {
     ListValue* event_types = new ListValue();
     for (std::set<TtsEventType>::iterator iter = voice.events.begin();
          iter != voice.events.end(); ++iter) {
-      const char* event_name_constant = NULL;
-      switch (*iter) {
-        case TTS_EVENT_START:
-          event_name_constant = constants::kEventTypeStart;
-          break;
-        case TTS_EVENT_END:
-          event_name_constant = constants::kEventTypeEnd;
-          break;
-        case TTS_EVENT_WORD:
-          event_name_constant = constants::kEventTypeWord;
-          break;
-        case TTS_EVENT_SENTENCE:
-          event_name_constant = constants::kEventTypeSentence;
-          break;
-        case TTS_EVENT_MARKER:
-          event_name_constant = constants::kEventTypeMarker;
-          break;
-        case TTS_EVENT_INTERRUPTED:
-          event_name_constant = constants::kEventTypeInterrupted;
-          break;
-        case TTS_EVENT_CANCELLED:
-          event_name_constant = constants::kEventTypeCancelled;
-          break;
-        case TTS_EVENT_ERROR:
-          event_name_constant = constants::kEventTypeError;
-          break;
-      }
-      if (event_name_constant)
-        event_types->Append(Value::CreateStringValue(event_name_constant));
+      const char* event_name_constant = TtsEventTypeToString(*iter);
+      event_types->Append(Value::CreateStringValue(event_name_constant));
     }
     result_voice->Set(constants::kEventTypesKey, event_types);
 
@@ -353,6 +344,8 @@ TtsAPI::TtsAPI(Profile* profile) {
   registry->RegisterFunction<TtsIsSpeakingFunction>();
   registry->RegisterFunction<TtsSpeakFunction>();
   registry->RegisterFunction<TtsStopSpeakingFunction>();
+  registry->RegisterFunction<TtsPauseFunction>();
+  registry->RegisterFunction<TtsResumeFunction>();
 }
 
 TtsAPI::~TtsAPI() {

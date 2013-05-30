@@ -13,8 +13,8 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["start", "end", "word", "sentence", "marker", "interrupted", "cancelled", "error"],
-            "description": "The type can be 'start' as soon as speech has started, 'word' when a word boundary is reached, 'sentence' when a sentence boundary is reached, 'marker' when an SSML mark element is reached, 'end' when the end of the utterance is reached, 'interrupted' when the utterance is stopped or interrupted before reaching the end, 'cancelled' when it's removed from the queue before ever being synthesized, or 'error' when any other error occurs."
+            "enum": ["start", "end", "word", "sentence", "marker", "interrupted", "cancelled", "error", "pause", "resume"],
+            "description": "The type can be 'start' as soon as speech has started, 'word' when a word boundary is reached, 'sentence' when a sentence boundary is reached, 'marker' when an SSML mark element is reached, 'end' when the end of the utterance is reached, 'interrupted' when the utterance is stopped or interrupted before reaching the end, 'cancelled' when it's removed from the queue before ever being synthesized, or 'error' when any other error occurs. When pausing speech, a 'pause' event is fired if a particular utterance is paused in the middle, and 'resume' if an utterance resumes speech. Note that pause and resume events may not fire if speech is paused in-between utterances."
           },
           "charIndex": {
             "type": "number",
@@ -177,7 +177,19 @@
       {
         "name": "stop",
         "type": "function",
-        "description": "Stops any current speech.",
+        "description": "Stops any current speech and flushes the queue of any pending utterances. In addition, if speech was paused, it will now be un-paused for the next call to speak.",
+        "parameters": []
+      },
+      {
+        "name": "pause",
+        "type": "function",
+        "description": "Pauses speech synthesis, potentially in the middle of an utterance. A call to resume or stop will un-pause speech.",
+        "parameters": []
+      },
+      {
+        "name": "resume",
+        "type": "function",
+        "description": "If speech was paused, resumes speaking where it left off.",
         "parameters": []
       },
       {

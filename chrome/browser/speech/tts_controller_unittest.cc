@@ -28,6 +28,8 @@ class DummyTtsPlatformImpl : public TtsPlatformImpl {
   }
   virtual bool IsSpeaking() OVERRIDE { return false; }
   virtual bool StopSpeaking() OVERRIDE { return true; }
+  virtual void Pause() OVERRIDE {}
+  virtual void Resume() OVERRIDE {}
   virtual void GetVoices(std::vector<VoiceData>* out_voices) OVERRIDE {}
   virtual std::string error() OVERRIDE { return std::string(); }
   virtual void clear_error() OVERRIDE {}

@@ -20,6 +20,8 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
       const VoiceData& voice,
       const UtteranceContinuousParameters& params) OVERRIDE;
   virtual bool StopSpeaking() OVERRIDE;
+  virtual void Pause() OVERRIDE;
+  virtual void Resume() OVERRIDE;
   virtual bool IsSpeaking() OVERRIDE;
   virtual void GetVoices(std::vector<VoiceData>* out_voices) OVERRIDE;
 

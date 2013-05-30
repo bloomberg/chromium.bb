@@ -40,6 +40,8 @@ extern const char kEventTypeMarker[];
 extern const char kEventTypeInterrupted[];
 extern const char kEventTypeCancelled[];
 extern const char kEventTypeError[];
+extern const char kEventTypePause[];
+extern const char kEventTypeResume[];
 
 extern const char kErrorUndeclaredEventType[];
 extern const char kErrorUtteranceTooLong[];
@@ -48,6 +50,7 @@ extern const char kErrorInvalidGender[];
 extern const char kErrorInvalidRate[];
 extern const char kErrorInvalidPitch[];
 extern const char kErrorInvalidVolume[];
+extern const char kErrorMissingPauseOrResume[];
 
 }  // namespace tts_extension_api_constants.
 #endif  // CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_CONSTANTS_H_

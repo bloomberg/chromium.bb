@@ -24,6 +24,8 @@ class Extension;
 namespace tts_engine_events {
 extern const char kOnSpeak[];
 extern const char kOnStop[];
+extern const char kOnPause[];
+extern const char kOnResume[];
 }
 
 // Return a list of all available voices registered by extensions.
@@ -46,6 +48,12 @@ void ExtensionTtsEngineSpeak(Utterance* utterance,
 // Stop speaking the given utterance by sending an event to the extension
 // associated with this utterance.
 void ExtensionTtsEngineStop(Utterance* utterance);
+
+// Pause in the middle of speaking this utterance.
+void ExtensionTtsEnginePause(Utterance* utterance);
+
+// Resume speaking this utterance.
+void ExtensionTtsEngineResume(Utterance* utterance);
 
 // Hidden/internal extension function used to allow TTS engine extensions
 // to send events back to the client that's calling tts.speak().

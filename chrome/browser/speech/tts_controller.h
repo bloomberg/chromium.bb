@@ -31,7 +31,9 @@ enum TtsEventType {
   TTS_EVENT_MARKER,
   TTS_EVENT_INTERRUPTED,
   TTS_EVENT_CANCELLED,
-  TTS_EVENT_ERROR
+  TTS_EVENT_ERROR,
+  TTS_EVENT_PAUSE,
+  TTS_EVENT_RESUME
 };
 
 enum TtsGenderType {
@@ -251,8 +253,16 @@ class TtsController {
   // immediately.
   void SpeakOrEnqueue(Utterance* utterance);
 
-  // Stop all utterances and flush the queue.
+  // Stop all utterances and flush the queue. Implies leaving pause mode
+  // as well.
   void Stop();
+
+  // Pause the speech queue. Some engines may support pausing in the middle
+  // of an utterance.
+  void Pause();
+
+  // Resume speaking.
+  void Resume();
 
   // Handle events received from the speech engine. Events are forwarded to
   // the callback function, and in addition, completion and error events
@@ -316,6 +326,9 @@ class TtsController {
 
   // The current utterance being spoken.
   Utterance* current_utterance_;
+
+  // Whether the queue is paused or not.
+  bool paused_;
 
   // A queue of utterances to speak after the current one finishes.
   std::queue<Utterance*> utterance_queue_;

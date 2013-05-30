@@ -35,6 +35,8 @@ const char kEventTypeMarker[] = "marker";
 const char kEventTypeInterrupted[] = "interrupted";
 const char kEventTypeCancelled[] = "cancelled";
 const char kEventTypeError[] = "error";
+const char kEventTypePause[] = "pause";
+const char kEventTypeResume[] = "resume";
 
 const char kErrorUndeclaredEventType[] =
     "Cannot send an event type that is not declared in the extension manifest.";
@@ -44,5 +46,8 @@ const char kErrorInvalidGender[] = "Invalid gender.";
 const char kErrorInvalidRate[] = "Invalid rate.";
 const char kErrorInvalidPitch[] = "Invalid pitch.";
 const char kErrorInvalidVolume[] = "Invalid volume.";
+const char kErrorMissingPauseOrResume[] =
+    "A TTS engine extension should either listen for both onPause and onResume "
+    "events, or neither.";
 
 }  // namespace tts_extension_api_constants.

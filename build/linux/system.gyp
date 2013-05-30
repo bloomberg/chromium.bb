@@ -517,6 +517,8 @@
                      'spd_say',
                      'spd_stop',
                      'spd_close',
+                     'spd_pause',
+                     'spd_resume',
                      'spd_set_notification_on',
                      'spd_set_voice_rate',
                      'spd_set_voice_pitch',

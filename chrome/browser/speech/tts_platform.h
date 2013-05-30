@@ -49,6 +49,13 @@ class TtsPlatformImpl {
   // to |out_voices|.
   virtual void GetVoices(std::vector<VoiceData>* out_voices) = 0;
 
+  // Pause the current utterance, if any, until a call to Resume,
+  // Speak, or StopSpeaking.
+  virtual void Pause() = 0;
+
+  // Resume speaking the current utterance, if it was paused.
+  virtual void Resume() = 0;
+
   virtual std::string error();
   virtual void clear_error();
   virtual void set_error(const std::string& error);

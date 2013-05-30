@@ -89,11 +89,11 @@ void TtsMessageFilter::OnSpeak(const TtsUtteranceRequest& request) {
 }
 
 void TtsMessageFilter::OnPause() {
-  // TODO(dmazzoni): Not supported by TtsController yet.
+  TtsController::GetInstance()->Pause();
 }
 
 void TtsMessageFilter::OnResume() {
-  // TODO(dmazzoni): Not supported by TtsController yet.
+  TtsController::GetInstance()->Resume();
 }
 
 void TtsMessageFilter::OnCancel() {
@@ -129,6 +129,12 @@ void TtsMessageFilter::OnTtsEvent(Utterance* utterance,
     case TTS_EVENT_ERROR:
       Send(new TtsMsg_SpeakingErrorOccurred(
           utterance->src_id(), error_message));
+      break;
+    case TTS_EVENT_PAUSE:
+      Send(new TtsMsg_DidPauseSpeaking(utterance->src_id()));
+      break;
+    case TTS_EVENT_RESUME:
+      Send(new TtsMsg_DidResumeSpeaking(utterance->src_id()));
       break;
   }
 }

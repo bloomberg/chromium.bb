@@ -38,6 +38,8 @@ class TtsPlatformImplLinux : public TtsPlatformImpl {
       const VoiceData& voice,
       const UtteranceContinuousParameters& params) OVERRIDE;
   virtual bool StopSpeaking() OVERRIDE;
+  virtual void Pause() OVERRIDE;
+  virtual void Resume() OVERRIDE;
   virtual bool IsSpeaking() OVERRIDE;
   virtual void GetVoices(std::vector<VoiceData>* out_voices) OVERRIDE;
 
@@ -198,6 +200,18 @@ bool TtsPlatformImplLinux::StopSpeaking() {
   return true;
 }
 
+void TtsPlatformImplLinux::Pause() {
+  if (!PlatformImplAvailable())
+    return;
+  libspeechd_loader_.spd_pause(conn_);
+}
+
+void TtsPlatformImplLinux::Resume() {
+  if (!PlatformImplAvailable())
+    return;
+  libspeechd_loader_.spd_resume(conn_);
+}
+
 bool TtsPlatformImplLinux::IsSpeaking() {
   return current_notification_ == SPD_EVENT_BEGIN;
 }
@@ -247,6 +261,8 @@ void TtsPlatformImplLinux::GetVoices(
     voice.events.insert(TTS_EVENT_END);
     voice.events.insert(TTS_EVENT_CANCELLED);
     voice.events.insert(TTS_EVENT_MARKER);
+    voice.events.insert(TTS_EVENT_PAUSE);
+    voice.events.insert(TTS_EVENT_RESUME);
   }
 }
 
@@ -254,13 +270,18 @@ void TtsPlatformImplLinux::OnSpeechEvent(SPDNotificationType type) {
   TtsController* controller = TtsController::GetInstance();
   switch (type) {
   case SPD_EVENT_BEGIN:
-  case SPD_EVENT_RESUME:
     controller->OnTtsEvent(utterance_id_, TTS_EVENT_START, 0, std::string());
     break;
+  case SPD_EVENT_RESUME:
+    controller->OnTtsEvent(utterance_id_, TTS_EVENT_RESUME, 0, std::string());
+    break;
   case SPD_EVENT_END:
-  case SPD_EVENT_PAUSE:
     controller->OnTtsEvent(
         utterance_id_, TTS_EVENT_END, utterance_.size(), std::string());
+    break;
+  case SPD_EVENT_PAUSE:
+    controller->OnTtsEvent(
+        utterance_id_, TTS_EVENT_PAUSE, utterance_.size(), std::string());
     break;
   case SPD_EVENT_CANCEL:
     controller->OnTtsEvent(

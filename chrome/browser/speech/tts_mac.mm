@@ -63,6 +63,10 @@ class TtsPlatformImplMac : public TtsPlatformImpl {
 
   virtual bool StopSpeaking() OVERRIDE;
 
+  virtual void Pause() OVERRIDE;
+
+  virtual void Resume() OVERRIDE;
+
   virtual bool IsSpeaking() OVERRIDE;
 
   virtual void GetVoices(std::vector<VoiceData>* out_voices) OVERRIDE;
@@ -86,6 +90,8 @@ class TtsPlatformImplMac : public TtsPlatformImpl {
   int utterance_id_;
   std::string utterance_;
   bool sent_start_event_;
+  int last_char_index_;
+  bool paused_;
 
   friend struct DefaultSingletonTraits<TtsPlatformImplMac>;
 
@@ -105,6 +111,7 @@ bool TtsPlatformImplMac::Speak(
     const UtteranceContinuousParameters& params) {
   // TODO: convert SSML to SAPI xml. http://crbug.com/88072
   utterance_ = utterance;
+  paused_ = false;
 
   NSString* utterance_nsstring =
       [NSString stringWithUTF8String:utterance_.c_str()];
@@ -165,7 +172,26 @@ bool TtsPlatformImplMac::StopSpeaking() {
     [speech_synthesizer_ stopSpeaking];
     speech_synthesizer_.reset(nil);
   }
+  paused_ = false;
   return true;
+}
+
+void TtsPlatformImplMac::Pause() {
+  if (speech_synthesizer_.get() && utterance_id_ && !paused_) {
+    [speech_synthesizer_ pauseSpeakingAtBoundary:NSSpeechImmediateBoundary];
+    paused_ = true;
+    TtsController::GetInstance()->OnTtsEvent(
+        utterance_id_, TTS_EVENT_PAUSE, last_char_index_, "");
+  }
+}
+
+void TtsPlatformImplMac::Resume() {
+  if (speech_synthesizer_.get() && utterance_id_ && paused_) {
+    [speech_synthesizer_ continueSpeaking];
+    paused_ = false;
+    TtsController::GetInstance()->OnTtsEvent(
+        utterance_id_, TTS_EVENT_RESUME, last_char_index_, "");
+  }
 }
 
 bool TtsPlatformImplMac::IsSpeaking() {
@@ -223,6 +249,8 @@ void TtsPlatformImplMac::GetVoices(std::vector<VoiceData>* outVoices) {
     data.events.insert(TTS_EVENT_ERROR);
     data.events.insert(TTS_EVENT_CANCELLED);
     data.events.insert(TTS_EVENT_INTERRUPTED);
+    data.events.insert(TTS_EVENT_PAUSE);
+    data.events.insert(TTS_EVENT_RESUME);
   }
 }
 
@@ -247,11 +275,13 @@ void TtsPlatformImplMac::OnSpeechEvent(
   }
   controller->OnTtsEvent(
       utterance_id_, event_type, char_index, error_message);
+  last_char_index_ = char_index;
 }
 
 TtsPlatformImplMac::TtsPlatformImplMac() {
   utterance_id_ = -1;
   sent_start_event_ = true;
+  paused_ = false;
 
   delegate_.reset([[ChromeTtsDelegate alloc] initWithPlatformImplMac:this]);
 }

@@ -33,6 +33,20 @@ class TtsStopSpeakingFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("tts.stop", TTS_STOP)
 };
 
+class TtsPauseFunction : public SyncExtensionFunction {
+ private:
+  virtual ~TtsPauseFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION("tts.pause", TTS_PAUSE)
+};
+
+class TtsResumeFunction : public SyncExtensionFunction {
+ private:
+  virtual ~TtsResumeFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION("tts.resume", TTS_RESUME)
+};
+
 class TtsIsSpeakingFunction : public SyncExtensionFunction {
  private:
   virtual ~TtsIsSpeakingFunction() {}

@@ -34,6 +34,10 @@ class TtsPlatformImplChromeOs
     return false;
   }
 
+  virtual void Pause() OVERRIDE {}
+
+  virtual void Resume() OVERRIDE {}
+
   virtual bool IsSpeaking() OVERRIDE {
     return false;
   }

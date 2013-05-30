@@ -24,8 +24,13 @@ using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
+using ::testing::SaveArg;
 using ::testing::StrictMock;
 using ::testing::_;
+
+namespace {
+int g_saved_utterance_id;
+}
 
 class MockTtsPlatformImpl : public TtsPlatformImpl {
  public:
@@ -45,12 +50,25 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
 
   MOCK_METHOD0(StopSpeaking, bool(void));
 
+  MOCK_METHOD0(Pause, void(void));
+
+  MOCK_METHOD0(Resume, void(void));
+
   MOCK_METHOD0(IsSpeaking, bool(void));
 
   MOCK_METHOD1(GetVoices, void(std::vector<VoiceData>*));
 
   void SetErrorToEpicFail() {
     set_error("epic fail");
+  }
+
+  void SendEndEventOnSavedUtteranceId() {
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(
+            &MockTtsPlatformImpl::SendEvent,
+            ptr_factory_.GetWeakPtr(),
+            false, g_saved_utterance_id, TTS_EVENT_END, 0, std::string()),
+        base::TimeDelta());
   }
 
   void SendEndEvent(int utterance_id,
@@ -275,6 +293,35 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformWordCallbacks) {
           Return(true)));
   ASSERT_TRUE(RunExtensionTest("tts/word_callbacks")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformPauseResume) {
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .Times(AnyNumber());
+
+  InSequence s;
+  EXPECT_CALL(mock_platform_impl_, Speak(_, "test 1", _, _, _))
+      .WillOnce(DoAll(
+          Invoke(&mock_platform_impl_,
+                 &MockTtsPlatformImpl::SendEndEvent),
+          Return(true)));
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak(_, "test 2", _, _, _))
+      .WillOnce(DoAll(
+          SaveArg<0>(&g_saved_utterance_id),
+          Return(true)));
+  EXPECT_CALL(mock_platform_impl_, Pause());
+  EXPECT_CALL(mock_platform_impl_, Resume())
+      .WillOnce(
+          InvokeWithoutArgs(
+              &mock_platform_impl_,
+              &MockTtsPlatformImpl::SendEndEventOnSavedUtteranceId));
+  ASSERT_TRUE(RunExtensionTest("tts/pause_resume")) << message_;
+}
+
+//
+// TTS Engine tests.
+//
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, RegisterEngine) {
   EXPECT_CALL(mock_platform_impl_, IsSpeaking())

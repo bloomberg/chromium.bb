@@ -69,6 +69,13 @@ bool TtsPlatformImplAndroid::StopSpeaking() {
   return true;
 }
 
+void TtsPlatformImplAndroid::Pause() {
+  StopSpeaking();
+}
+
+void TtsPlatformImplAndroid::Resume() {
+}
+
 bool TtsPlatformImplAndroid::IsSpeaking() {
   return (utterance_id_ != 0);
 }
