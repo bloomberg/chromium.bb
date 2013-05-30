@@ -561,9 +561,14 @@ void AutocompleteController::UpdateKeywordDescriptions(
       if (i->keyword != last_keyword) {
         const TemplateURL* template_url = i->GetTemplateURL(profile_, false);
         if (template_url) {
-          i->description = l10n_util::GetStringFUTF16(
-              IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,
-              template_url->AdjustedShortNameForLocaleDirection());
+          // For extension keywords, just make the description the extension
+          // name -- don't assume that the normal search keyword description is
+          // applicable.
+          i->description = template_url->AdjustedShortNameForLocaleDirection();
+          if (!template_url->IsExtensionKeyword()) {
+            i->description = l10n_util::GetStringFUTF16(
+                IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION, i->description);
+          }
           i->description_class.push_back(
               ACMatchClassification(0, ACMatchClassification::DIM));
         }
