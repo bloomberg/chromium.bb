@@ -11,7 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "webkit/media/media_stream_client.h"
+#include "webkit/renderer/media/media_stream_client.h"
 
 namespace WebKit {
 class WebFrame;

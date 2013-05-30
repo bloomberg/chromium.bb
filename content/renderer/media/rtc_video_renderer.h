@@ -9,7 +9,7 @@
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "ui/gfx/size.h"
-#include "webkit/media/video_frame_provider.h"
+#include "webkit/renderer/media/video_frame_provider.h"
 
 namespace base {
 class MessageLoopProxy;

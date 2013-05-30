@@ -1,0 +1,6 @@
+include_rules = [
+# TODO(ddorwin): encrypted_media_browsertest.cc uses functions from
+# key_systems, but being a browser test it really shouldn't need to
+# reach into renderer code like this.
+  "+webkit/renderer/media/crypto/key_systems.h",
+]

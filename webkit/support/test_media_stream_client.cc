@@ -10,8 +10,8 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
-#include "webkit/media/media_stream_audio_renderer.h"
-#include "webkit/media/simple_video_frame_provider.h"
+#include "webkit/renderer/media/media_stream_audio_renderer.h"
+#include "webkit/renderer/media/simple_video_frame_provider.h"
 
 using namespace WebKit;
 

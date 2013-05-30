@@ -26,7 +26,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
-#include "webkit/media/media_stream_audio_renderer.h"
+#include "webkit/renderer/media/media_stream_audio_renderer.h"
 
 namespace content {
 namespace {

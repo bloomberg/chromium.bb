@@ -56,9 +56,9 @@
             'widevine_cdm_binaries',
           ],
           'sources': [
-            '<(DEPTH)/webkit/media/crypto/ppapi/cdm_wrapper.cc',
-            '<(DEPTH)/webkit/media/crypto/ppapi/cdm/content_decryption_module.h',
-            '<(DEPTH)/webkit/media/crypto/ppapi/linked_ptr.h',
+            '<(DEPTH)/webkit/renderer/media/crypto/ppapi/cdm_wrapper.cc',
+            '<(DEPTH)/webkit/renderer/media/crypto/ppapi/cdm/content_decryption_module.h',
+            '<(DEPTH)/webkit/renderer/media/crypto/ppapi/linked_ptr.h',
           ],
           'conditions': [
             [ 'os_posix == 1 and OS != "mac"', {

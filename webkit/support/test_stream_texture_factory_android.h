@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "webkit/media/android/stream_texture_factory_android.h"
+#include "webkit/renderer/media/android/stream_texture_factory_android.h"
 
 namespace webkit_support {
 

@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "content/common/media/media_player_messages_android.h"
-#include "webkit/media/android/webmediaplayer_android.h"
-#include "webkit/media/android/webmediaplayer_manager_android.h"
+#include "webkit/renderer/media/android/webmediaplayer_android.h"
+#include "webkit/renderer/media/android/webmediaplayer_manager_android.h"
 
 namespace content {
 

@@ -204,14 +204,14 @@
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/weburlresponse_extradata_impl.h"
-#include "webkit/media/webmediaplayer_impl.h"
-#include "webkit/media/webmediaplayer_ms.h"
-#include "webkit/media/webmediaplayer_params.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
+#include "webkit/renderer/media/webmediaplayer_impl.h"
+#include "webkit/renderer/media/webmediaplayer_ms.h"
+#include "webkit/renderer/media/webmediaplayer_params.h"
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
@@ -228,8 +228,8 @@
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHitTestResult.h"
 #include "ui/gfx/rect_f.h"
-#include "webkit/media/android/webmediaplayer_android.h"
-#include "webkit/media/android/webmediaplayer_manager_android.h"
+#include "webkit/renderer/media/android/webmediaplayer_android.h"
+#include "webkit/renderer/media/android/webmediaplayer_manager_android.h"
 #elif defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
 //   * theming

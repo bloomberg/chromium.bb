@@ -17,7 +17,6 @@ include_rules = [
   "+webkit/common/fileapi",
   "+webkit/glue",
   "+webkit/glue/plugins",
-  "+webkit/media",
   "+webkit/plugins",
   "+webkit/renderer",
 

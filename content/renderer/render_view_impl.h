@@ -56,8 +56,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
+#include "webkit/renderer/media/webmediaplayer_delegate.h"
 
 #if defined(OS_ANDROID)
 #include "content/renderer/android/content_detector.h"

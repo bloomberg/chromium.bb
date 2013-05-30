@@ -22,7 +22,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaRequest.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
-#include "webkit/media/media_stream_client.h"
+#include "webkit/renderer/media/media_stream_client.h"
 
 namespace webkit_media {
 class MediaStreamAudioRenderer;

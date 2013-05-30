@@ -12,7 +12,7 @@
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_pull_fifo.h"
 #include "media/base/audio_renderer_sink.h"
-#include "webkit/media/media_stream_audio_renderer.h"
+#include "webkit/renderer/media/media_stream_audio_renderer.h"
 
 namespace media {
 class AudioOutputDevice;

@@ -8,7 +8,7 @@
 #include <map>
 
 #include "content/public/renderer/render_view_observer.h"
-#include "webkit/media/android/webmediaplayer_proxy_android.h"
+#include "webkit/renderer/media/android/webmediaplayer_proxy_android.h"
 
 namespace webkit_media {
 class WebMediaPlayerAndroid;

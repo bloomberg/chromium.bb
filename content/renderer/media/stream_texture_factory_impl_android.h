@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/gpu/stream_texture_host_android.h"
-#include "webkit/media/android/stream_texture_factory_android.h"
+#include "webkit/renderer/media/android/stream_texture_factory_android.h"
 
 namespace WebKit {
 class WebGraphicsContext3D;

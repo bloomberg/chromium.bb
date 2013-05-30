@@ -51,9 +51,9 @@
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
 #include "webkit/glue/worker_task_runner.h"
-#include "webkit/media/audio_decoder.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/webplugininfo.h"
+#include "webkit/renderer/media/audio_decoder.h"
 
 #if defined(OS_ANDROID)
 #include "webkit/glue/fling_animator_impl_android.h"

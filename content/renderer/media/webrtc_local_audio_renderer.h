@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
-#include "webkit/media/media_stream_audio_renderer.h"
+#include "webkit/renderer/media/media_stream_audio_renderer.h"
 
 namespace media {
 class AudioBus;

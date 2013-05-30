@@ -19,7 +19,7 @@
 #include "content/test/content_browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "media/base/media_switches.h"
-#include "webkit/media/crypto/key_systems.h"
+#include "webkit/renderer/media/crypto/key_systems.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 

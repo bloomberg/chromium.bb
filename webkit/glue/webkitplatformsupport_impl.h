@@ -25,7 +25,7 @@
 #include "webkit/glue/webthemeengine_impl_mac.h"
 #elif defined(OS_ANDROID)
 #include "webkit/glue/webthemeengine_impl_android.h"
-#include "webkit/media/audio_decoder.h"
+#include "webkit/renderer/media/audio_decoder.h"
 #endif
 
 namespace base {
