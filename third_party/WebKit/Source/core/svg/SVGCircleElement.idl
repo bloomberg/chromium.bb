@@ -24,13 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGCircleElement : SVGStyledElement,
-                                               SVGTests,
-                                               SVGLangSpace,
-                                               SVGExternalResourcesRequired,
-                                               SVGTransformable {
+interface SVGCircleElement : SVGStyledElement,
+                             SVGTests,
+                             SVGLangSpace,
+                             SVGExternalResourcesRequired,
+                             SVGTransformable {
     readonly attribute SVGAnimatedLength cx;
     readonly attribute SVGAnimatedLength cy;
     readonly attribute SVGAnimatedLength r;

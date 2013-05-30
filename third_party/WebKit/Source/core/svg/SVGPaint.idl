@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGPaint : SVGColor {
+interface SVGPaint : SVGColor {
     const unsigned short SVG_PAINTTYPE_UNKNOWN = 0;
     const unsigned short SVG_PAINTTYPE_RGBCOLOR = 1;
     const unsigned short SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR = 2;

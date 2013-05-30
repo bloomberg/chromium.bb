@@ -24,10 +24,9 @@
  */
 
 [
-    Conditional=SVG,
     DoNotCheckConstants
 ] interface SVGFEDisplacementMapElement : SVGStyledElement,
-                           SVGFilterPrimitiveStandardAttributes {
+                                          SVGFilterPrimitiveStandardAttributes {
     // Channel Selectors
     const unsigned short SVG_CHANNEL_UNKNOWN = 0;
     const unsigned short SVG_CHANNEL_R       = 1;

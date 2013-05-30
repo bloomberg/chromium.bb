@@ -23,12 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGMarkerElement : SVGStyledElement,
-                                               SVGLangSpace,
-                                               SVGExternalResourcesRequired,
-                                               SVGFitToViewBox { 
+interface SVGMarkerElement : SVGStyledElement,
+                             SVGLangSpace,
+                             SVGExternalResourcesRequired,
+                             SVGFitToViewBox {
     // Marker Unit Types
     const unsigned short SVG_MARKERUNITS_UNKNOWN        = 0;
     const unsigned short SVG_MARKERUNITS_USERSPACEONUSE = 1;

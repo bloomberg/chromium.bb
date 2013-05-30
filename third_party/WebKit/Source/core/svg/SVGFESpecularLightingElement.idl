@@ -23,10 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGFESpecularLightingElement : SVGStyledElement,
-                           SVGFilterPrimitiveStandardAttributes {
+interface SVGFESpecularLightingElement : SVGStyledElement,
+                                         SVGFilterPrimitiveStandardAttributes {
     readonly attribute SVGAnimatedString in1;
     readonly attribute SVGAnimatedNumber surfaceScale;
     readonly attribute SVGAnimatedNumber specularConstant;

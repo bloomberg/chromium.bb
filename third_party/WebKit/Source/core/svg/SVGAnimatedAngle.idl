@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGAnimatedAngle {
+interface SVGAnimatedAngle {
     readonly attribute SVGAngle baseVal;
     readonly attribute SVGAngle animVal;
 };

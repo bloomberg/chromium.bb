@@ -24,10 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-    
-] interface SVGTransformable : SVGLocatable {
+interface SVGTransformable : SVGLocatable {
     readonly attribute SVGAnimatedTransformList transform;
 };
 

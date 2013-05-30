@@ -23,10 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGFEGaussianBlurElement : SVGStyledElement,
-                           SVGFilterPrimitiveStandardAttributes {
+interface SVGFEGaussianBlurElement : SVGStyledElement,
+                                     SVGFilterPrimitiveStandardAttributes {
     readonly attribute SVGAnimatedString in1;
     readonly attribute SVGAnimatedNumber stdDeviationX;
     readonly attribute SVGAnimatedNumber stdDeviationY;

@@ -12,7 +12,7 @@ core/loader/appcache/DOMApplicationCache
 core/page/DOMWindow
 core/page/EventSource
 core/page/Performance
-core/svg/SVGElementInstance conditional=SVG
+core/svg/SVGElementInstance
 core/workers/DedicatedWorkerContext
 core/workers/SharedWorker
 core/workers/SharedWorkerContext

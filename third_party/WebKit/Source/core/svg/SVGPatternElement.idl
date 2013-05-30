@@ -23,15 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGPatternElement : SVGStyledElement,
-                                                SVGURIReference,
-                                                SVGTests,
-                                                SVGLangSpace,
-                                                SVGExternalResourcesRequired,
-                                                SVGFitToViewBox
-                                             /* SVGUnitTypes */ {
+interface SVGPatternElement : SVGStyledElement,
+                              SVGURIReference,
+                              SVGTests,
+                              SVGLangSpace,
+                              SVGExternalResourcesRequired,
+                              SVGFitToViewBox
+                              /* SVGUnitTypes */ {
     readonly attribute SVGAnimatedEnumeration   patternUnits;
     readonly attribute SVGAnimatedEnumeration   patternContentUnits;
     readonly attribute SVGAnimatedTransformList patternTransform;

@@ -23,12 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGMaskElement : SVGStyledElement,
-                                             SVGTests,
-                                             SVGLangSpace,
-                                             SVGExternalResourcesRequired {
+interface SVGMaskElement : SVGStyledElement,
+                           SVGTests,
+                           SVGLangSpace,
+                           SVGExternalResourcesRequired {
     readonly attribute SVGAnimatedEnumeration maskUnits;
     readonly attribute SVGAnimatedEnumeration maskContentUnits;
 

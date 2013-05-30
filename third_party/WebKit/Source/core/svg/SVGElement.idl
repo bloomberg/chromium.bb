@@ -21,7 +21,6 @@
  */
 
 [
-    Conditional=SVG,
     CustomToV8
 ] interface SVGElement : Element {
     [Reflect] attribute DOMString id;

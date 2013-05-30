@@ -23,15 +23,13 @@
 // TODO: no css::ViewCSS available!
 // TODO: Fix SVGSVGElement inheritance (css::DocumentCSS)! 
 // TODO: no events::DocumentEvent available!
-[
-    Conditional=SVG
-] interface SVGSVGElement : SVGStyledElement,
-                                            SVGTests,
-                                            SVGLangSpace,
-                                            SVGExternalResourcesRequired,
-                                            SVGTransformable,
-                                            SVGFitToViewBox,
-                                            SVGZoomAndPan {
+interface SVGSVGElement : SVGStyledElement,
+                          SVGTests,
+                          SVGLangSpace,
+                          SVGExternalResourcesRequired,
+                          SVGTransformable,
+                          SVGFitToViewBox,
+                          SVGZoomAndPan {
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;
     readonly attribute SVGAnimatedLength width;

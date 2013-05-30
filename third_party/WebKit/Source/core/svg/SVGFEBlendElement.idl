@@ -24,10 +24,9 @@
  */
 
 [
-    Conditional=SVG,
     DoNotCheckConstants
 ] interface SVGFEBlendElement : SVGStyledElement,
-                           SVGFilterPrimitiveStandardAttributes {
+                                SVGFilterPrimitiveStandardAttributes {
     // Blend Mode Types
     const unsigned short SVG_FEBLEND_MODE_UNKNOWN  = 0;
     const unsigned short SVG_FEBLEND_MODE_NORMAL   = 1;

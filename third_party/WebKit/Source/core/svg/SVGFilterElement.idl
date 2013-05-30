@@ -24,13 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGFilterElement : SVGStyledElement,
-                                               SVGURIReference,
-                                               SVGLangSpace,
-                                               SVGExternalResourcesRequired
-                                            /* SVGUnitTypes */ {  
+interface SVGFilterElement : SVGStyledElement,
+                             SVGURIReference,
+                             SVGLangSpace,
+                             SVGExternalResourcesRequired
+                             /* SVGUnitTypes */ {
     readonly attribute SVGAnimatedEnumeration filterUnits;
     readonly attribute SVGAnimatedEnumeration primitiveUnits;
     readonly attribute SVGAnimatedLength      x;

@@ -25,7 +25,6 @@
  */
 
 [
-    Conditional=SVG,
     EventTarget
 ] interface SVGElementInstance : EventTarget
 {

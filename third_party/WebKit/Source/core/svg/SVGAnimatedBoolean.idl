@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGAnimatedBoolean {
+interface SVGAnimatedBoolean {
     [StrictTypeChecking, SetterRaisesException] attribute boolean baseVal;
     readonly attribute boolean animVal;
 };

@@ -20,7 +20,6 @@
  */
 
 [
-    Conditional=SVG,
     CustomToV8
 ] interface SVGDocument : Document {
     readonly attribute SVGSVGElement        rootElement;

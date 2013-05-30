@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGAnimatedEnumeration {
+interface SVGAnimatedEnumeration {
     [StrictTypeChecking, SetterRaisesException] attribute unsigned short baseVal;
     readonly attribute unsigned short animVal;
 };

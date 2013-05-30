@@ -24,12 +24,11 @@
  */
 
 [
-    Conditional=SVG,
     DoNotCheckConstants
 ] interface SVGGradientElement : SVGStyledElement,
-                       SVGURIReference,
-                       SVGExternalResourcesRequired
-                       /* SVGUnitTypes */ {
+                                 SVGURIReference,
+                                 SVGExternalResourcesRequired
+                                 /* SVGUnitTypes */ {
     // Spread Method Types
     const unsigned short SVG_SPREADMETHOD_UNKNOWN = 0;
     const unsigned short SVG_SPREADMETHOD_PAD     = 1;

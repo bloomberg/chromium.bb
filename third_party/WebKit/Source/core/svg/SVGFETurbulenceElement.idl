@@ -24,10 +24,9 @@
  */
 
 [
-    Conditional=SVG,
     DoNotCheckConstants
 ] interface SVGFETurbulenceElement : SVGStyledElement,
-                           SVGFilterPrimitiveStandardAttributes {
+                                     SVGFilterPrimitiveStandardAttributes {
     // Turbulence Types
     const unsigned short SVG_TURBULENCE_TYPE_UNKNOWN      = 0;
     const unsigned short SVG_TURBULENCE_TYPE_FRACTALNOISE = 1;

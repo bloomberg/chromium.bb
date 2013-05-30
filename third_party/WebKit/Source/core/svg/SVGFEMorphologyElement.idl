@@ -24,10 +24,9 @@
  */
 
 [
-    Conditional=SVG,
     DoNotCheckConstants
 ] interface SVGFEMorphologyElement : SVGStyledElement,
-                           SVGFilterPrimitiveStandardAttributes {
+                                     SVGFilterPrimitiveStandardAttributes {
     // Morphology Operators
     const unsigned short SVG_MORPHOLOGY_OPERATOR_UNKNOWN  = 0;
     const unsigned short SVG_MORPHOLOGY_OPERATOR_ERODE    = 1;

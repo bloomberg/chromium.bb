@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGAnimatedInteger {
+interface SVGAnimatedInteger {
     [StrictTypeChecking, SetterRaisesException] attribute long baseVal;
     readonly attribute long animVal;
 };

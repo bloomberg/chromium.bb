@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=SVG,
     DoNotGenerateToV8
 ] interface SVGRenderingIntent {
     // Rendering Intent Types

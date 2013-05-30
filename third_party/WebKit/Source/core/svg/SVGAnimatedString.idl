@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-[
-    Conditional=SVG
-] interface SVGAnimatedString {
+interface SVGAnimatedString {
     [SetterRaisesException] attribute DOMString baseVal;
     readonly attribute DOMString animVal;
 };

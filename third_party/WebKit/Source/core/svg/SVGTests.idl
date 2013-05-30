@@ -25,8 +25,6 @@
  */
 
 [
-    Conditional=SVG,
-    
     DoNotGenerateToV8
 ] interface SVGTests {
     readonly attribute SVGStringList requiredFeatures;

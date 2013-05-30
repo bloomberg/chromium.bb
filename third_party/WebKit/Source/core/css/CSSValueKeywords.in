@@ -937,7 +937,7 @@ wrap
 // -webkit-line-align
 edges
 
-alphabetic condition=SVG
+alphabetic
 
 // position
 sticky
