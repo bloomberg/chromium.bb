@@ -69,6 +69,8 @@
         'color_constants.cc',
         'color_constants.h',
         'context_menu_controller.h',
+        'controls/button/blue_button.cc',
+        'controls/button/blue_button.h',
         'controls/button/button.cc',
         'controls/button/button.h',
         'controls/button/button_dropdown.cc',

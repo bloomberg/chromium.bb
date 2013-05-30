@@ -38,7 +38,7 @@ class VIEWS_EXPORT Button : public View {
   };
 
   // Button styles with associated images and border painters.
-  // TODO(msw): Add "Blue Button", Menu, ComboBox, etc.
+  // TODO(msw): Add Menu, ComboBox, etc.
   enum ButtonStyle {
     STYLE_BUTTON = 0,
     STYLE_TEXTBUTTON,

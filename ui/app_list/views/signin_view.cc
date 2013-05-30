@@ -8,7 +8,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
@@ -82,10 +82,10 @@ SigninView::SigninView(SigninDelegate* delegate, int width)
                               kHeadingPadding - title_descender);
   layout->AddView(text);
 
-  views::LabelButton* signin_button = new views::LabelButton(
+  views::BlueButton* signin_button = new views::BlueButton(
       this,
       delegate_->GetSigninButtonText());
-  signin_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  signin_button->SetFont(*button_font_);
   layout->StartRowWithPadding(0, kButtonSetId, 0,
                               kButtonPadding - text_descender);
   layout->AddView(signin_button);
