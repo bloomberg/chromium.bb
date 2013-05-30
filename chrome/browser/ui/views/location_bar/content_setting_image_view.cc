@@ -154,7 +154,7 @@ gfx::Size ContentSettingImageView::GetPreferredSize() {
     size.Enlarge(
         size_fraction * (text_label_->GetPreferredSize().width() +
             GetTotalSpacingWhileAnimating()), 0);
-    size.ClampToMin(background_painter_->GetMinimumSize());
+    size.SetToMax(background_painter_->GetMinimumSize());
   }
   return size;
 }
