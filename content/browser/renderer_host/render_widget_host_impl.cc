@@ -60,8 +60,8 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/vector2d_conversions.h"
+#include "webkit/common/webpreferences.h"
 #include "webkit/glue/webcursor.h"
-#include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 

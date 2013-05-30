@@ -45,7 +45,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/glue/webpreferences.h"
+#include "webkit/common/webpreferences.h"
+#include "webkit/renderer/webpreferences_renderer.h"
 
 namespace printing {
 

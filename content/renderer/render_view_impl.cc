@@ -212,6 +212,7 @@
 #include "webkit/renderer/media/webmediaplayer_impl.h"
 #include "webkit/renderer/media/webmediaplayer_ms.h"
 #include "webkit/renderer/media/webmediaplayer_params.h"
+#include "webkit/renderer/webpreferences_renderer.h"
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
