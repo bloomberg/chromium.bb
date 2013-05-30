@@ -52,6 +52,13 @@ class IconLabelBubbleView : public views::View {
   gfx::Size GetSizeForLabelWidth(int width) const;
 
  private:
+  // Amount of padding at the edges of the bubble.  If |by_icon| is true, this
+  // is the padding next to the icon; otherwise it's the padding next to the
+  // label.  (We increase padding next to the label by the amount of padding
+  // "built in" to the icon in order to make the bubble appear to have
+  // symmetrical padding.)
+  static int GetBubbleOuterPadding(bool by_icon);
+
   // views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 

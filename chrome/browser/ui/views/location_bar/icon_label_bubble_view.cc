@@ -15,18 +15,6 @@
 #include "ui/views/painter.h"
 
 
-namespace {
-// Amount of padding at the edges of the bubble.
-//
-// This can't be statically initialized because
-// LocationBarView::GetItemPadding() depends on whether we are using desktop or
-// touch layout, and this in turn depends on the command line.
-int GetBubbleOuterPadding() {
-  return LocationBarView::GetItemPadding() - LocationBarView::kBubblePadding;
-}
-}  // namespace
-
-
 IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
                                          int contained_image,
                                          const gfx::Font& font,
@@ -90,19 +78,24 @@ gfx::Size IconLabelBubbleView::GetPreferredSize() {
 }
 
 void IconLabelBubbleView::Layout() {
-  image_->SetBounds(GetBubbleOuterPadding() +
-      (is_extension_icon_ ? LocationBarView::kIconInternalPadding : 0), 0,
-      image_->GetPreferredSize().width(), height());
+  image_->SetBounds(GetBubbleOuterPadding(!is_extension_icon_), 0,
+                    image_->GetPreferredSize().width(), height());
   const int pre_label_width = GetPreLabelWidth();
   label_->SetBounds(pre_label_width, 0,
-                    width() - pre_label_width - GetBubbleOuterPadding(),
+                    width() - pre_label_width - GetBubbleOuterPadding(false),
                     label_->GetPreferredSize().height());
 }
 
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
-  gfx::Size size(GetPreLabelWidth() + width + GetBubbleOuterPadding(), 0);
+  gfx::Size size(GetPreLabelWidth() + width + GetBubbleOuterPadding(false), 0);
   size.SetToMax(background_painter_->GetMinimumSize());
   return size;
+}
+
+// static
+int IconLabelBubbleView::GetBubbleOuterPadding(bool by_icon) {
+  return LocationBarView::GetItemPadding() - LocationBarView::kBubblePadding +
+      (by_icon ? 0 : LocationBarView::kIconInternalPadding);
 }
 
 void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
@@ -111,6 +104,6 @@ void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
 
 int IconLabelBubbleView::GetPreLabelWidth() const {
   const int image_width = image_->GetPreferredSize().width();
-  return GetBubbleOuterPadding() +
+  return GetBubbleOuterPadding(true) +
       (image_width ? (image_width + LocationBarView::GetItemPadding()) : 0);
 }

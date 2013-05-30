@@ -255,9 +255,9 @@ void LocationBarView::Init() {
   // Determine the font for use inside the bubbles.
   gfx::Font bubble_font(font);
   int bubble_font_y_offset;
-  // The bubble background images have 1 px thick edges, and then we want at
-  // least 1 px of padding inside that before any content.
-  const int kBubbleInteriorVerticalPadding = 2;
+  // The bubble background images have 1 px thick edges, which we don't want to
+  // overlap.
+  const int kBubbleInteriorVerticalPadding = 1;
   CalculateFontAndOffsetForHeight(
       location_height - ((kBubblePadding + kBubbleInteriorVerticalPadding) * 2),
       &bubble_font, &bubble_font_y_offset);

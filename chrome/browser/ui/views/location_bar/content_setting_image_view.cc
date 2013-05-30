@@ -25,12 +25,7 @@ const int kBackgroundImages[] = {
   IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_C,
   IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_R,
 };
-
 const int kStayOpenTimeMS = 3200;  // Time spent with animation fully open.
-
-// Margins for animated box (pixels).
-const int kHorizMargin = 4;
-const int kIconLabelSpacing = 4;
 }
 
 
@@ -143,6 +138,12 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
       content_setting_image_model_->get_content_settings_type());
 }
 
+// static
+int ContentSettingImageView::GetBubbleOuterPadding(bool by_icon) {
+  return LocationBarView::GetItemPadding() - LocationBarView::kBubblePadding +
+      (by_icon ? 0 : LocationBarView::kIconInternalPadding);
+}
+
 void ContentSettingImageView::AnimationEnded(const ui::Animation* animation) {
   slide_animator_.Reset();
   if (!pause_animation_) {
@@ -191,10 +192,10 @@ gfx::Size ContentSettingImageView::GetPreferredSize() {
 void ContentSettingImageView::Layout() {
   const int icon_width = icon_->GetPreferredSize().width();
   icon_->SetBounds(
-      std::min((width() - icon_width) / 2, kHorizMargin), 0,
+      std::min((width() - icon_width) / 2, GetBubbleOuterPadding(true)), 0,
       icon_width, height());
   text_label_->SetBounds(
-      icon_->bounds().right() + kIconLabelSpacing, 0,
+      icon_->bounds().right() + LocationBarView::GetItemPadding(), 0,
       std::max(width() - GetTotalSpacingWhileAnimating() - icon_width, 0),
       text_label_->GetPreferredSize().height());
 }
@@ -236,7 +237,8 @@ void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
 }
 
 int ContentSettingImageView::GetTotalSpacingWhileAnimating() const {
-  return kHorizMargin * 2 + kIconLabelSpacing;
+  return GetBubbleOuterPadding(true) + LocationBarView::GetItemPadding() +
+      GetBubbleOuterPadding(false);
 }
 
 void ContentSettingImageView::OnClick() {

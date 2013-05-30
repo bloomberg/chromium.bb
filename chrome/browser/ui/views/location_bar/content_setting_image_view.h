@@ -58,6 +58,13 @@ class ContentSettingImageView : public TouchableLocationBarView,
   // intervening "stay open" period.
   static const int kAnimationDurationMS;
 
+  // Amount of padding at the edges of the bubble.  If |by_icon| is true, this
+  // is the padding next to the icon; otherwise it's the padding next to the
+  // label.  (We increase padding next to the label by the amount of padding
+  // "built in" to the icon in order to make the bubble appear to have
+  // symmetrical padding.)
+  static int GetBubbleOuterPadding(bool by_icon);
+
   // ui::AnimationDelegate:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
