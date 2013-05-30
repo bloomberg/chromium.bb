@@ -97,8 +97,10 @@ std::string LogEntry::GetHtmlText(bool show_desc) const {
   std::string text;
   if (log_level == LOG_LEVEL_DEBUG)
     text += "<i>";
-  else if (log_level == LOG_LEVEL_ERROR)
+  else if (log_level == LOG_LEVEL_USER)
     text += "<b>";
+  else if (log_level == LOG_LEVEL_ERROR)
+    text += "<b><i>";
 
   text += event;
   if (show_desc && !description.empty())
@@ -106,8 +108,10 @@ std::string LogEntry::GetHtmlText(bool show_desc) const {
 
   if (log_level == LOG_LEVEL_DEBUG)
     text += "</i>";
-  else if (log_level == LOG_LEVEL_ERROR)
+  else if (log_level == LOG_LEVEL_USER)
     text += "</b>";
+  else if (log_level == LOG_LEVEL_ERROR)
+    text += "</i></b>";
   return text;
 }
 

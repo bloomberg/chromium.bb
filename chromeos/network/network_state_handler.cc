@@ -123,8 +123,8 @@ void NetworkStateHandler::SetTechnologyEnabled(
     bool enabled,
     const network_handler::ErrorCallback& error_callback) {
   std::string technology = GetTechnologyForType(type);
-  NET_LOG_EVENT("SetTechnologyEnabled",
-                base::StringPrintf("%s:%d", technology.c_str(), enabled));
+  NET_LOG_USER("SetTechnologyEnabled",
+               base::StringPrintf("%s:%d", technology.c_str(), enabled));
   shill_property_handler_->SetTechnologyEnabled(
       technology, enabled, error_callback);
   // Signal Technology state changed -> ENABLING
@@ -255,7 +255,7 @@ void NetworkStateHandler::GetNetworkList(NetworkStateList* list) const {
 }
 
 void NetworkStateHandler::RequestScan() const {
-  NET_LOG_EVENT("RequestScan", "");
+  NET_LOG_USER("RequestScan", "");
   shill_property_handler_->RequestScan();
 }
 
@@ -267,7 +267,7 @@ void NetworkStateHandler::WaitForScan(const std::string& type,
 }
 
 void NetworkStateHandler::ConnectToBestWifiNetwork() {
-  NET_LOG_EVENT("ConnectToBestWifiNetwork", "");
+  NET_LOG_USER("ConnectToBestWifiNetwork", "");
   WaitForScan(flimflam::kTypeWifi,
               base::Bind(&internal::ShillPropertyHandler::ConnectToBestServices,
                          shill_property_handler_->AsWeakPtr()));

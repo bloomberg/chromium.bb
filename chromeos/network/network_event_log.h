@@ -31,8 +31,9 @@ enum StringOrder {
 // Used to set the detail level for logging.
 enum LogLevel {
   LOG_LEVEL_ERROR = 0,
-  LOG_LEVEL_EVENT = 1,
-  LOG_LEVEL_DEBUG = 2
+  LOG_LEVEL_USER = 1,
+  LOG_LEVEL_EVENT = 2,
+  LOG_LEVEL_DEBUG = 3
 };
 
 // Default log level.
@@ -93,7 +94,11 @@ CHROMEOS_EXPORT std::string ValueAsString(const base::Value& value);
 #define NET_LOG_ERROR(event, desc) NET_LOG_LEVEL(                       \
     ::chromeos::network_event_log::LOG_LEVEL_ERROR, event, desc)
 
-// Important events, e.g. connection request
+// User initiated events, e.g. connection request
+#define NET_LOG_USER(event, desc) NET_LOG_LEVEL(                        \
+    ::chromeos::network_event_log::LOG_LEVEL_USER, event, desc)
+
+// Important events, e.g. state updates
 #define NET_LOG_EVENT(event, desc) NET_LOG_LEVEL(                       \
     ::chromeos::network_event_log::LOG_LEVEL_EVENT, event, desc)
 

@@ -83,6 +83,7 @@ std::string NetworkStateToHtmlTableHeader() {
       WrapWithTH("Type") +
       WrapWithTH("State") +
       WrapWithTH("Path") +
+      WrapWithTH("Connect") +
       WrapWithTH("Error") +
       WrapWithTH("IP Addr") +
       WrapWithTH("Security") +
@@ -103,6 +104,7 @@ std::string NetworkStateToHtmlTableRow(const NetworkState* network) {
       WrapWithTD(network->type()) +
       WrapWithTD(network->connection_state()) +
       WrapWithTD(network->path()) +
+      WrapWithTD(base::IntToString(network->connectable())) +
       WrapWithTD(network->error()) +
       WrapWithTD(network->ip_address()) +
       WrapWithTD(network->security()) +

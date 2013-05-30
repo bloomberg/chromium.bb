@@ -150,6 +150,7 @@ void NetworkConnectionHandler::ConnectToNetwork(
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback,
     bool ignore_error_state) {
+  NET_LOG_USER("ConnectToNetwork", service_path);
   const NetworkState* network =
       network_state_handler_->GetNetworkState(service_path);
   if (!network) {
@@ -213,6 +214,7 @@ void NetworkConnectionHandler::DisconnectNetwork(
     const std::string& service_path,
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) {
+  NET_LOG_USER("DisconnectNetwork", service_path);
   const NetworkState* network =
       network_state_handler_->GetNetworkState(service_path);
   if (!network) {
