@@ -26,6 +26,7 @@ namespace remoting {
 class NativeMessagingHost {
  public:
   NativeMessagingHost(
+      scoped_ptr<DaemonController> daemon_controller,
       base::PlatformFile input,
       base::PlatformFile output,
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
@@ -79,11 +80,10 @@ class NativeMessagingHost {
                                 DaemonController::AsyncResult result);
   void SendConfigResponse(scoped_ptr<base::DictionaryValue> response,
                           scoped_ptr<base::DictionaryValue> config);
-  void SendUsageStatsConsentResponse(
-      scoped_ptr<base::DictionaryValue> response,
-      bool supported,
-      bool allowed,
-      bool set_by_policy);
+  void SendUsageStatsConsentResponse(scoped_ptr<base::DictionaryValue> response,
+                                     bool supported,
+                                     bool allowed,
+                                     bool set_by_policy);
   void SendAsyncResult(scoped_ptr<base::DictionaryValue> response,
                        DaemonController::AsyncResult result);
 

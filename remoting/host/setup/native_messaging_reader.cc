@@ -73,8 +73,7 @@ NativeMessagingReader::Core::Core(
       read_task_runner_(read_task_runner) {
 }
 
-NativeMessagingReader::Core::~Core() {
-}
+NativeMessagingReader::Core::~Core() {}
 
 void NativeMessagingReader::Core::ReadMessage() {
   DCHECK(read_task_runner_->RunsTasksOnCurrentThread());
@@ -85,8 +84,11 @@ void NativeMessagingReader::Core::ReadMessage() {
     int read_result = read_stream_.ReadUntilComplete(
         reinterpret_cast<char*>(&message_length), kMessageHeaderSize);
     if (read_result != kMessageHeaderSize) {
-      LOG(ERROR) << "Failed to read message header, read returned "
-                 << read_result;
+      // 0 means EOF which is normal and should not be logged as an error.
+      if (read_result != 0) {
+        LOG(ERROR) << "Failed to read message header, read returned "
+                   << read_result;
+      }
       NotifyEof();
       return;
     }
@@ -98,8 +100,8 @@ void NativeMessagingReader::Core::ReadMessage() {
     }
 
     std::string message_json(message_length, '\0');
-    read_result = read_stream_.ReadUntilComplete(
-        string_as_array(&message_json), message_length);
+    read_result = read_stream_.ReadUntilComplete(string_as_array(&message_json),
+                                                 message_length);
     if (read_result != static_cast<int>(message_length)) {
       LOG(ERROR) << "Failed to read message body, read returned "
                  << read_result;
@@ -115,16 +117,17 @@ void NativeMessagingReader::Core::ReadMessage() {
     }
 
     // Notify callback of new message.
-    caller_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &NativeMessagingReader::InvokeMessageCallback, reader_,
-        base::Passed(&message)));
+    caller_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&NativeMessagingReader::InvokeMessageCallback,
+                              reader_, base::Passed(&message)));
   }
 }
 
 void NativeMessagingReader::Core::NotifyEof() {
   DCHECK(read_task_runner_->RunsTasksOnCurrentThread());
-  caller_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &NativeMessagingReader::InvokeEofCallback, reader_));
+  caller_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&NativeMessagingReader::InvokeEofCallback, reader_));
 }
 
 NativeMessagingReader::NativeMessagingReader(base::PlatformFile handle)
@@ -147,9 +150,9 @@ void NativeMessagingReader::Start(MessageCallback message_callback,
 
   // base::Unretained is safe since |core_| is only deleted via the
   // DeleteSoon task which is posted from this class's dtor.
-  read_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &NativeMessagingReader::Core::ReadMessage,
-      base::Unretained(core_.get())));
+  read_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&NativeMessagingReader::Core::ReadMessage,
+                            base::Unretained(core_.get())));
 }
 
 void NativeMessagingReader::InvokeMessageCallback(

@@ -33,7 +33,8 @@ int main(int argc, char** argv) {
 
   base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
   base::RunLoop run_loop;
-  remoting::NativeMessagingHost host(read_file, write_file,
+  remoting::NativeMessagingHost host(remoting::DaemonController::Create(),
+                                     read_file, write_file,
                                      message_loop.message_loop_proxy(),
                                      run_loop.QuitClosure());
   host.Start();

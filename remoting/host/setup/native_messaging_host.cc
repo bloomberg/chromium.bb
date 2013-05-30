@@ -37,6 +37,7 @@ scoped_ptr<base::DictionaryValue> ConfigDictionaryFromMessage(
 namespace remoting {
 
 NativeMessagingHost::NativeMessagingHost(
+    scoped_ptr<DaemonController> daemon_controller,
     base::PlatformFile input,
     base::PlatformFile output,
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
@@ -45,7 +46,7 @@ NativeMessagingHost::NativeMessagingHost(
       quit_closure_(quit_closure),
       native_messaging_reader_(input),
       native_messaging_writer_(output),
-      daemon_controller_(DaemonController::Create()),
+      daemon_controller_(daemon_controller.Pass()),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
@@ -70,10 +71,16 @@ void NativeMessagingHost::Shutdown() {
 
 void NativeMessagingHost::ProcessMessage(scoped_ptr<base::Value> message) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  // Don't process any more messages if Shutdown() has been called.
+  if (quit_closure_.is_null())
+    return;
+
   const base::DictionaryValue* message_dict;
   if (!message->GetAsDictionary(&message_dict)) {
     LOG(ERROR) << "Expected DictionaryValue";
     Shutdown();
+    return;
   }
 
   scoped_ptr<base::DictionaryValue> response_dict(new base::DictionaryValue());
