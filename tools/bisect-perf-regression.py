@@ -503,7 +503,7 @@ class GitSourceControl(SourceControl):
     Returns:
         Returns a list of commits that touched this file.
     """
-    cmd = ['log', '--format=%H', '%s^1..%s' % (revision_start, revision_end),
+    cmd = ['log', '--format=%H', '%s~1..%s' % (revision_start, revision_end),
            filename]
     output = CheckRunGit(cmd)
 
