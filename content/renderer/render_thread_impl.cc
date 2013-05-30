@@ -674,7 +674,10 @@ static void AdjustRuntimeFeaturesFromArgs(const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kDisableGeolocation))
     WebRuntimeFeatures::enableGeolocation(false);
 
-#if !defined(OS_ANDROID) || defined(GOOGLE_TV)
+#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
+  if (command_line.HasSwitch(switches::kEnableWebKitMediaSource))
+    WebRuntimeFeatures::enableWebKitMediaSource(true);
+#else
   if (command_line.HasSwitch(switches::kDisableWebKitMediaSource))
     WebRuntimeFeatures::enableWebKitMediaSource(false);
 #endif

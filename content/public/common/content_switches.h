@@ -120,7 +120,11 @@ extern const char kEnableGpuClientTracing[];
 extern const char kEnableMemoryBenchmarking[];
 extern const char kEnableSkiaBenchmarking[];
 CONTENT_EXPORT extern const char kEnableLogging[];
+#if defined(ANDROID) && !defined(GOOGLE_TV)
+extern const char kEnableWebKitMediaSource[];
+#else
 extern const char kDisableWebKitMediaSource[];
+#endif
 CONTENT_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableUserMediaScreenCapturing[];

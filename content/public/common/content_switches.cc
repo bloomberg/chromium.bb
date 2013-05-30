@@ -356,8 +356,13 @@ const char kEnableSkiaBenchmarking[]         = "enable-skia-benchmarking";
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
 
-// Disable prefixed Media Source API (i.e., the WebKitMediaSource object).
-const char kDisableWebKitMediaSource[]     = "disable-webkit-media-source";
+// Enable for Android (see http://crbug.com/233420) or disable for desktop the
+// prefixed Media Source API (i.e., the WebKitMediaSource object).
+#if defined(ANDROID) && !defined(GOOGLE_TV)
+const char kEnableWebKitMediaSource[]       = "enable-webkit-media-source";
+#else
+const char kDisableWebKitMediaSource[]      = "disable-webkit-media-source";
+#endif
 
 // Use fake device for MediaStream to replace actual camera and microphone.
 const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
