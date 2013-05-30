@@ -56,6 +56,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/favicon_url.h"
+#include "extensions/common/constants.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -878,7 +879,7 @@ bool PrerenderManager::IsValidHttpMethod(const std::string& method) {
 
 // static
 bool PrerenderManager::DoesURLHaveValidScheme(const GURL& url) {
-  return IsWebURL(url);
+  return IsWebURL(url) || url.SchemeIs(extensions::kExtensionScheme);
 }
 
 DictionaryValue* PrerenderManager::GetAsValue() const {

@@ -2752,7 +2752,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, MAYBE_TabsApi) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Checks that non-http/https subresource cancels the prerender.
+// Checks that non-http/https/chrome-extension subresource cancels the
+// prerender.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderCancelSubresourceUnsupportedScheme) {
   GURL image_url = GURL("invalidscheme://www.google.com/test.jpg");
@@ -2768,7 +2769,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToDestURL();
 }
 
-// Checks that non-http/https subresource cancels the prerender on redirect.
+// Checks that non-http/https/chrome-extension subresource cancels the prerender
+// on redirect.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderCancelSubresourceRedirectUnsupportedScheme) {
   GURL image_url = test_server()->GetURL(
@@ -2784,6 +2786,41 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   PrerenderTestURL(replacement_path, FINAL_STATUS_UNSUPPORTED_SCHEME, 1);
   NavigateToDestURL();
 }
+
+// Checks that chrome-extension subresource does not cancel the prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderKeepSubresourceExtensionScheme) {
+  GURL image_url = GURL("chrome-extension://abcdefg/test.jpg");
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
+  std::string replacement_path;
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_image.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+}
+
+// Checks that redirect to chrome-extension subresource does not cancel the
+// prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderKeepSubresourceRedirectExtensionScheme) {
+  GURL image_url = test_server()->GetURL(
+      CreateServerRedirect("chrome-extension://abcdefg/test.jpg"));
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
+  std::string replacement_path;
+  ASSERT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
+      "files/prerender/prerender_with_image.html",
+      replacement_text,
+      &replacement_path));
+  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+}
+
 
 // Checks that non-http/https main page redirects cancel the prerender.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
