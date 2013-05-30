@@ -636,21 +636,47 @@ TEST_F(FileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
 
 TEST_F(FileSystemTest, ChangeFeed_AddFileToNewDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
-  // Add file to a new directory.
+  ASSERT_FALSE(EntryExists(base::FilePath(
+      FILE_PATH_LITERAL("drive/root/New Directory/New File.txt"))));
+
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/New Directory")))))
       .Times(1);
 
-  ASSERT_TRUE(
-      LoadChangeFeed("chromeos/gdata/delta_file_added_in_new_directory.json"));
+  // This adds "drive/root/New Directory" and then
+  // "drive/root/New Directory/New File.txt" on the server.
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> entry;
+  fake_drive_service_->AddNewDirectory(
+      fake_drive_service_->GetRootResourceId(),
+      "New Directory",
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_CREATED, error);
 
+  error = google_apis::GDATA_OTHER_ERROR;
+  fake_drive_service_->AddNewFile(
+      "text/plain",
+      "hello world",
+      entry->resource_id(),
+      "New File.txt",
+      false,
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_CREATED, error);
+
+  // Load the change list.
+  file_system_->CheckForUpdates();
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Verify that the update is reflected.
   EXPECT_TRUE(
       EntryExists(base::FilePath(
           FILE_PATH_LITERAL("drive/root/New Directory"))));
   EXPECT_TRUE(EntryExists(base::FilePath(
-      FILE_PATH_LITERAL("drive/root/New Directory/File in new dir.gdoc"))));
+      FILE_PATH_LITERAL("drive/root/New Directory/New File.txt"))));
 }
 
 TEST_F(FileSystemTest, ChangeFeed_AddFileToNewButDeletedDirectory) {
@@ -666,21 +692,9 @@ TEST_F(FileSystemTest, ChangeFeed_AddFileToNewButDeletedDirectory) {
 
 TEST_F(FileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
-
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 2 excludeDir-test"))));
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
+  ASSERT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
       "drive/root/Directory 1"))));
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 1/SubDirectory File 1.txt"))));
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 1/Sub Directory Folder"))));
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 1/Sub Directory Folder/"
-      "Sub Sub Directory Folder"))));
 
-  // This will move "Directory 1" from "drive/root/" to
-  // "drive/root/Directory 2/".
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -692,11 +706,30 @@ TEST_F(FileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL(
           "drive/root/Directory 2 excludeDir-test/Directory 1"))))).Times(1);
-  ASSERT_TRUE(LoadChangeFeed(
-      "chromeos/gdata/delta_dir_moved_from_root_to_directory.json"));
 
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 2 excludeDir-test"))));
+  // This will move "Directory 1" from "drive/root/" to
+  // "drive/root/Directory 2 excludeDir-test/" on the server.
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  fake_drive_service_->AddResourceToDirectory(
+      "folder:sub_dir_folder_2_self_link",
+      "folder:1_folder_resource_id",
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+
+  error = google_apis::GDATA_OTHER_ERROR;
+  fake_drive_service_->RemoveResourceFromDirectory(
+      fake_drive_service_->GetRootResourceId(),
+      "folder:1_folder_resource_id",
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+
+  // Load the change list.
+  file_system_->CheckForUpdates();
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Verify that the update is reflected.
   EXPECT_FALSE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
       "drive/root/Directory 1"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
@@ -714,15 +747,7 @@ TEST_F(FileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
 
 TEST_F(FileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
   ASSERT_TRUE(LoadRootFeedDocument());
-
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 1"))));
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 1/Sub Directory Folder"))));
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 1/Sub Directory Folder/"
-      "Sub Sub Directory Folder"))));
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
+  ASSERT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
       "drive/root/Directory 1/SubDirectory File 1.txt"))));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -730,16 +755,30 @@ TEST_F(FileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
       .Times(1);
-  ASSERT_TRUE(LoadChangeFeed(
-      "chromeos/gdata/delta_file_moved_from_directory_to_root.json"));
 
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 1"))));
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 1/Sub Directory Folder"))));
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 1/Sub Directory Folder/"
-      "Sub Sub Directory Folder"))));
+  // This will move "drive/root/Directory 1/SubDirectory File 1.txt"
+  // to "drive/root/SubDirectory File 1.txt" on the server.
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  fake_drive_service_->AddResourceToDirectory(
+      fake_drive_service_->GetRootResourceId(),
+      "file:subdirectory_file_1_id",
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+
+  error = google_apis::GDATA_OTHER_ERROR;
+  fake_drive_service_->RemoveResourceFromDirectory(
+      "folder:1_folder_resource_id",
+      "file:subdirectory_file_1_id",
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+
+  // Load the change list.
+  file_system_->CheckForUpdates();
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Verify that the update is reflected.
   EXPECT_FALSE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
       "drive/root/Directory 1/SubDirectory File 1.txt"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
@@ -748,22 +787,27 @@ TEST_F(FileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
 
 TEST_F(FileSystemTest, ChangeFeed_FileRenamedInDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument());
-
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 1"))));
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
+  ASSERT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
       "drive/root/Directory 1/SubDirectory File 1.txt"))));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
       .Times(1);
-  ASSERT_TRUE(LoadChangeFeed(
-      "chromeos/gdata/delta_file_renamed_in_directory.json"));
 
-  EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
-      "drive/root/Directory 1"))));
+  // Rename on the server.
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  fake_drive_service_->RenameResource(
+      "file:subdirectory_file_1_id",
+      "New SubDirectory File 1.txt",
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+
+  // Load the change list.
+  file_system_->CheckForUpdates();
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Verify that the update is reflected.
   EXPECT_FALSE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
       "drive/root/Directory 1/SubDirectory File 1.txt"))));
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL(
