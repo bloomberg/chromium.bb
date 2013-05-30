@@ -28,6 +28,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
+#include "media/base/media.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/url_request/url_fetcher.h"
@@ -1044,6 +1045,9 @@ int HostProcessMain() {
   // Enable support for SSL server sockets, which must be done while still
   // single-threaded.
   net::EnableSSLServerSockets();
+
+  // Ensures runtime specific CPU features are initialized.
+  media::InitializeCPUSpecificMediaFeatures();
 
   // Create the main message loop and start helper threads.
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
