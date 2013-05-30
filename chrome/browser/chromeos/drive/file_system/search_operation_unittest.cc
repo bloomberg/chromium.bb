@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/search_operation.h"
 
+#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -70,11 +71,11 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
   ASSERT_EQ(google_apis::HTTP_CREATED, gdata_error);
 
   // As the result of the first Search(), only entries in the current file
-  // system snapshot are expected to be returned (i.e. "New Directory 1!"
-  // shouldn't be included in the search result even though it matches
-  // "Directory 1".
-  const SearchResultPair kExpectedResults[] = {
-      { "drive/root/Directory 1", true }
+  // system snapshot are expected to be returned in the "right" path. New
+  // entries like "New Directory 1!" is temporarily added to "drive/other".
+  const SearchResultPair kExpectedResultsBeforeLoad[] = {
+      { "drive/root/Directory 1", true },
+      { "drive/other/New Directory 1!", true },
   };
 
   FileError error = FILE_ERROR_FAILED;
@@ -88,8 +89,41 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(GURL(), next_feed);
-  ASSERT_EQ(1U, results->size());
-  EXPECT_EQ(kExpectedResults[0].path, results->at(0).path.AsUTF8Unsafe());
+  ASSERT_EQ(ARRAYSIZE_UNSAFE(kExpectedResultsBeforeLoad), results->size());
+  for (size_t i = 0; i < results->size(); i++) {
+    EXPECT_EQ(kExpectedResultsBeforeLoad[i].path,
+              results->at(i).path.AsUTF8Unsafe());
+    EXPECT_EQ(kExpectedResultsBeforeLoad[i].is_directory,
+              results->at(i).entry.file_info().is_directory());
+  }
+
+  // Load the change from FakeDriveService.
+  internal::ChangeListLoader change_list_loader(
+      blocking_task_runner(), metadata(), scheduler());
+  change_list_loader.CheckForUpdates(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Now the new entry must be reported to be in the right directory.
+  const SearchResultPair kExpectedResultsAfterLoad[] = {
+      { "drive/root/Directory 1", true },
+      { "drive/root/New Directory 1!", true },
+  };
+  error = FILE_ERROR_FAILED;
+  operation.Search("\"Directory 1\"", GURL(),
+                   google_apis::test_util::CreateCopyResultCallback(
+                       &error, &next_feed, &results));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(GURL(), next_feed);
+  ASSERT_EQ(ARRAYSIZE_UNSAFE(kExpectedResultsAfterLoad), results->size());
+  for (size_t i = 0; i < results->size(); i++) {
+    EXPECT_EQ(kExpectedResultsAfterLoad[i].path,
+              results->at(i).path.AsUTF8Unsafe());
+    EXPECT_EQ(kExpectedResultsAfterLoad[i].is_directory,
+              results->at(i).entry.file_info().is_directory());
+  }
 }
 
 TEST_F(SearchOperationTest, ContentSearchEmptyResult) {
