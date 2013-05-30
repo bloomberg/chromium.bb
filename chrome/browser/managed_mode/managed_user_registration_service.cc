@@ -9,14 +9,11 @@
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/managed_mode/managed_user_refresh_token_fetcher.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
-#include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
@@ -55,11 +52,9 @@ SyncData CreateLocalSyncData(const std::string& id,
 }  // namespace
 
 ManagedUserRegistrationService::ManagedUserRegistrationService(
-    PrefService* prefs,
-    scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher)
+    PrefService* prefs)
     : weak_ptr_factory_(this),
       prefs_(prefs),
-      token_fetcher_(token_fetcher.Pass()),
       pending_managed_user_acknowledged_(false) {
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
@@ -108,9 +103,7 @@ void ManagedUserRegistrationService::Register(
   }
 
   callback_ = callback;
-  browser_sync::DeviceInfo::CreateLocalDeviceInfo(
-      base::Bind(&ManagedUserRegistrationService::FetchToken,
-                 weak_ptr_factory_.GetWeakPtr(), name));
+  OnReceivedToken("abcdef");  // TODO(bauerb): This is a stub implementation.
 }
 
 ProfileManager::CreateCallback
@@ -275,24 +268,8 @@ void ManagedUserRegistrationService::OnManagedUserAcknowledged(
   DispatchCallbackIfReady();
 }
 
-void ManagedUserRegistrationService::FetchToken(
-    const string16& name,
-    const browser_sync::DeviceInfo& device_info) {
-  token_fetcher_->Start(
-      pending_managed_user_id_, name, device_info.client_name(),
-      base::Bind(&ManagedUserRegistrationService::OnReceivedToken,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ManagedUserRegistrationService::OnReceivedToken(
-    const GoogleServiceAuthError& error,
-    const std::string& token) {
-  if (error.state() != GoogleServiceAuthError::NONE) {
-    DispatchCallback(error);
-    return;
-  }
-
-  DCHECK(!token.empty());
+void ManagedUserRegistrationService::OnReceivedToken(const std::string& token) {
+  DCHECK(pending_managed_user_token_.empty());
   pending_managed_user_token_ = token;
   DispatchCallbackIfReady();
 }

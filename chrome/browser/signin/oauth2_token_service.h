@@ -148,6 +148,12 @@ class OAuth2TokenService {
     Consumer* const consumer_;
   };
 
+  // Informs the consumer of |request| fetch results.
+  static void InformConsumer(base::WeakPtr<RequestImpl> request,
+                             const GoogleServiceAuthError& error,
+                             const std::string& access_token,
+                             const base::Time& expiration_date);
+
  private:
   // Class that fetches an OAuth2 access token for a given set of scopes and
   // OAuth2 refresh token.

@@ -324,7 +324,10 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     if (robot_auth_fetch_status_ == DM_STATUS_SUCCESS) {
       net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(0);
       ASSERT_TRUE(url_fetcher);
-      url_fetcher->SetMaxRetriesOn5xx(0);
+      // The logic in GaiaOAuthClient seems broken, it always retries 1x on
+      // non-200 response codes, even if the retries are set to 0.  Seems like
+      // its num_retries_ > source->GetMaxRetriesOn5xx() should have a >=?
+      url_fetcher->SetMaxRetriesOn5xx(-2);
       url_fetcher->set_status(net::URLRequestStatus());
       url_fetcher->set_response_code(url_fetcher_response_code_);
       url_fetcher->SetResponseString(url_fetcher_response_string_);

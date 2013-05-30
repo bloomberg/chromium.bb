@@ -5,10 +5,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/managed_mode/managed_user_refresh_token_fetcher.h"
 #include "chrome/browser/managed_mode/managed_user_registration_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
@@ -31,8 +28,6 @@ using syncer::SyncErrorFactory;
 using syncer::SyncMergeResult;
 
 namespace {
-
-const char kManagedUserToken[] = "managedusertoken";
 
 class MockChangeProcessor : public SyncChangeProcessor {
  public:
@@ -67,22 +62,6 @@ SyncChange MockChangeProcessor::GetChange(const std::string& id) const {
   return SyncChange();
 }
 
-class MockManagedUserRefreshTokenFetcher
-    : public ManagedUserRefreshTokenFetcher {
- public:
-  MockManagedUserRefreshTokenFetcher() {}
-  virtual ~MockManagedUserRefreshTokenFetcher() {}
-
-  // ManagedUserRefreshTokenFetcher implementation:
-  virtual void Start(const std::string& managed_user_id,
-                     const string16& name,
-                     const std::string& device_name,
-                     const TokenCallback& callback) OVERRIDE {
-    GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
-    callback.Run(error, kManagedUserToken);
-  }
-};
-
 }  // namespace
 
 class ManagedUserRegistrationServiceTest : public ::testing::Test {
@@ -115,8 +94,6 @@ class ManagedUserRegistrationServiceTest : public ::testing::Test {
   void OnManagedUserRegistered(const GoogleServiceAuthError& error,
                                const std::string& token);
 
-  base::MessageLoop message_loop_;
-  base::RunLoop run_loop_;
   base::WeakPtrFactory<ManagedUserRegistrationServiceTest> weak_ptr_factory_;
   TestingPrefServiceSyncable prefs_;
   scoped_ptr<ManagedUserRegistrationService> service_;
@@ -137,15 +114,12 @@ class ManagedUserRegistrationServiceTest : public ::testing::Test {
 
 ManagedUserRegistrationServiceTest::ManagedUserRegistrationServiceTest()
     : weak_ptr_factory_(this),
+      service_(new ManagedUserRegistrationService(&prefs_)),
       change_processor_(NULL),
       sync_data_id_(0),
       received_callback_(false),
       error_(GoogleServiceAuthError::NUM_STATES) {
   ManagedUserRegistrationService::RegisterUserPrefs(prefs_.registry());
-  scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher(
-      new MockManagedUserRefreshTokenFetcher);
-  service_.reset(
-      new ManagedUserRegistrationService(&prefs_, token_fetcher.Pass()));
 }
 
 ManagedUserRegistrationServiceTest::~ManagedUserRegistrationServiceTest() {
@@ -206,8 +180,6 @@ void ManagedUserRegistrationServiceTest::Acknowledge() {
                    SyncData::CreateRemoteData(++sync_data_id_, specifics)));
   }
   service()->ProcessSyncChanges(FROM_HERE, new_changes);
-
-  run_loop_.Run();
 }
 
 void ManagedUserRegistrationServiceTest::ResetService() {
@@ -222,7 +194,6 @@ void ManagedUserRegistrationServiceTest::OnManagedUserRegistered(
   received_callback_ = true;
   error_ = error;
   token_ = token;
-  run_loop_.Quit();
 }
 
 TEST_F(ManagedUserRegistrationServiceTest, MergeEmpty) {

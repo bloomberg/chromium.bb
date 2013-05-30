@@ -33,7 +33,7 @@ scoped_ptr<OAuth2TokenService::Request>
       ProfileSyncServiceAndroid::GetProfileSyncServiceAndroid();
   sync_service->FetchOAuth2Token(
       scope_list.front(),
-      base::Bind(&RequestImpl::InformConsumer,
+      base::Bind(&OAuth2TokenService::InformConsumer,
                  request->AsWeakPtr()));
   return request.PassAs<Request>();
 }
