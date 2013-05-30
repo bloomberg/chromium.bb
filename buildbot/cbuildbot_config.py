@@ -1120,7 +1120,6 @@ internal_paladin.add_config('butterfly-paladin',
 internal_paladin.add_config('falco-paladin',
   boards=['falco'],
   paladin_builder_name='falco paladin',
-  important=False,
 )
 
 internal_paladin.add_config('fox-wtm2-paladin',
@@ -1152,13 +1151,11 @@ internal_paladin.add_config('parrot-paladin',
 internal_paladin.add_config('peppy-paladin',
   boards=['peppy'],
   paladin_builder_name='peppy paladin',
-  important=False,
 )
 
 internal_paladin.add_config('slippy-paladin',
   boards=['slippy'],
   paladin_builder_name='slippy paladin',
-  important=False,
 )
 
 internal_paladin.add_config('sonic-paladin',
