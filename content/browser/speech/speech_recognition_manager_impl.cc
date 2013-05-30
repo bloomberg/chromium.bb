@@ -89,6 +89,17 @@ int SpeechRecognitionManagerImpl::CreateSession(
   if (delegate_)
     delegate_->GetDiagnosticInformation(&can_report_metrics, &hardware_info);
 
+  // The legacy api cannot use continuous mode.
+  DCHECK(!config.is_legacy_api || !config.continuous);
+
+#if !defined(OS_ANDROID)
+  // A SpeechRecognitionEngine (and corresponding Config) is required only
+  // when using SpeechRecognizerImpl, which performs the audio capture and
+  // endpointing in the browser. This is not the case of Android where, not
+  // only the speech recognition, but also the audio capture and endpointing
+  // activities performed outside of the browser (delegated via JNI to the
+  // Android API implementation).
+
   SpeechRecognitionEngineConfig remote_engine_config;
   remote_engine_config.language = config.language;
   remote_engine_config.grammars = config.grammars;
@@ -115,14 +126,17 @@ int SpeechRecognitionManagerImpl::CreateSession(
 
   google_remote_engine->SetConfig(remote_engine_config);
 
-  // The legacy api cannot use continuous mode.
-  DCHECK(!config.is_legacy_api || !config.continuous);
-
   session.recognizer = new SpeechRecognizerImpl(
       this,
       session_id,
       !config.continuous,
       google_remote_engine);
+#else
+  // TODO(janx): Implement a SpeechRecognizerImplAndroid with a JNI interface
+  // forwarding calls to Android's platform speech recognition service (see
+  // crbug.com/222352).
+  session.recognizer = NULL;
+#endif
   return session_id;
 }
 

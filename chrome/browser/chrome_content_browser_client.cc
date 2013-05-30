@@ -1839,9 +1839,11 @@ void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
 // TODO(tommi): Rename from Get to Create.
 content::SpeechRecognitionManagerDelegate*
     ChromeContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
-#if defined(ENABLE_INPUT_SPEECH)
+#if !defined(OS_ANDROID)
   return new speech::ChromeSpeechRecognitionManagerDelegate();
 #else
+  // TODO(janx): Implement speech::AndroidSpeechRecognitionManagerDelegate
+  // (see crbug.com/222352).
   return NULL;
 #endif
 }

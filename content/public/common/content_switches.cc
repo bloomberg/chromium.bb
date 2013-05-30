@@ -205,15 +205,18 @@ const char kDisableSpeechInput[]            = "disable-speech-input";
 // Specifies the request key for the continuous speech recognition webservice.
 const char kSpeechRecognitionWebserviceKey[] = "speech-service-key";
 
-// Enables web speech synthesis api.
-const char kEnableSpeechSynthesis[]            = "enable-speech-synthesis";
+// Enables the synthesis part of the Web Speech API.
+const char kEnableSpeechSynthesis[]          = "enable-speech-synthesis";
 
 #if defined(OS_ANDROID)
-// Enable web audio API.
-const char kEnableWebAudio[]                = "enable-webaudio";
-
 // WebRTC is enabled by default on Android.
 const char kDisableWebRTC[]                 = "disable-webrtc";
+
+// Enable the recognition part of the Web Speech API.
+const char kEnableSpeechRecognition[]       = "enable-speech-recognition";
+
+// Enable web audio API.
+const char kEnableWebAudio[]                = "enable-webaudio";
 #else
 // Disable web audio API.
 const char kDisableWebAudio[]               = "disable-webaudio";

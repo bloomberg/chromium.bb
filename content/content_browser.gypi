@@ -1218,13 +1218,14 @@
           '-ljnigraphics',
         ],
       },
-      'sources!': [
-        'browser/geolocation/network_location_provider.cc',
-        'browser/geolocation/network_location_provider.h',
-        'browser/geolocation/network_location_request.cc',
-        'browser/geolocation/network_location_request.h',
-        'browser/tracing/tracing_ui.cc',
-        'browser/tracing/tracing_ui.h',
+      'sources/': [
+        ['exclude', '^browser/geolocation/network_location_provider\\.(cc|h)$'],
+        ['exclude', '^browser/geolocation/network_location_request\\.(cc|h)$'],
+        ['exclude', '^browser/tracing/tracing_ui'],
+        ['exclude', '^browser/speech/'],
+        ['include', '^browser/speech/speech_recognition_dispatcher_host'],
+        ['include', '^browser/speech/speech_recognition_manager_impl'],
+        ['include', '^browser/speech/speech_recognizer\\.h$'],
       ],
     }],
     ['OS=="mac"', {
@@ -1351,7 +1352,7 @@
     }],
     ['input_speech==0', {
       'sources/': [
-        ['exclude', '^browser/speech/'],
+        ['exclude', '^browser/speech/input_tag_speech_dispatcher_host'],
       ],
     }, {  # input_speech==1
       'dependencies': [

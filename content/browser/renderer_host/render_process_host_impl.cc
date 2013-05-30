@@ -639,10 +639,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new InputTagSpeechDispatcherHost(
       IsGuest(), GetID(), storage_partition_impl_->GetURLRequestContext(),
       browser_context->GetSpeechRecognitionPreferences()));
+#endif
   channel_->AddFilter(new SpeechRecognitionDispatcherHost(
       GetID(), storage_partition_impl_->GetURLRequestContext(),
       browser_context->GetSpeechRecognitionPreferences()));
-#endif
   channel_->AddFilter(new FileAPIMessageFilter(
       GetID(),
       storage_partition_impl_->GetURLRequestContext(),
@@ -841,8 +841,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableTouchDragDrop,
     switches::kDisableTouchEditing,
 #if defined(OS_ANDROID)
-    switches::kEnableWebAudio,
     switches::kDisableWebRTC,
+    switches::kEnableSpeechRecognition,
+    switches::kEnableWebAudio,
 #else
     switches::kDisableWebAudio,
 #endif

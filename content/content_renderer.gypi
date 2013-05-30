@@ -346,8 +346,6 @@
       'sources!': [
         'renderer/input_tag_speech_dispatcher.cc',
         'renderer/input_tag_speech_dispatcher.h',
-        'renderer/speech_recognition_dispatcher.cc',
-        'renderer/speech_recognition_dispatcher.h',
       ]
     }],
     ['toolkit_uses_gtk == 1', {

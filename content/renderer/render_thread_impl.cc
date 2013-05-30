@@ -644,8 +644,6 @@ static void AdjustRuntimeFeatureDefaultsForPlatform() {
 
 #if defined(OS_ANDROID)
   WebRuntimeFeatures::enableWebAudio(false);
-  // Web Speech API Speech recognition is not implemented on Android yet.
-  WebRuntimeFeatures::enableScriptedSpeech(false);
   // Android does not support the Gamepad API.
   WebRuntimeFeatures::enableGamepad(false);
   // input[type=week] in Android is incomplete. crbug.com/135938
@@ -682,13 +680,19 @@ static void AdjustRuntimeFeaturesFromArgs(const CommandLine& command_line) {
 #endif
 
 #if defined(OS_ANDROID)
-  if (command_line.HasSwitch(switches::kDisableWebRTC))
+  if (command_line.HasSwitch(switches::kDisableWebRTC)) {
     WebRuntimeFeatures::enableMediaStream(false);
-#endif
-
-#if defined(OS_ANDROID)
-  if (command_line.HasSwitch(switches::kDisableWebRTC))
     WebRuntimeFeatures::enablePeerConnection(false);
+  }
+
+  if (!command_line.HasSwitch(switches::kEnableSpeechRecognition))
+    WebRuntimeFeatures::enableScriptedSpeech(false);
+
+  if (command_line.HasSwitch(switches::kEnableWebAudio))
+    WebRuntimeFeatures::enableWebAudio(true);
+#else
+  if (command_line.HasSwitch(switches::kDisableWebAudio))
+    WebRuntimeFeatures::enableWebAudio(false);
 #endif
 
   if (command_line.HasSwitch(switches::kDisableFullScreen))
@@ -696,14 +700,6 @@ static void AdjustRuntimeFeaturesFromArgs(const CommandLine& command_line) {
 
   if (command_line.HasSwitch(switches::kDisableEncryptedMedia))
     WebRuntimeFeatures::enableEncryptedMedia(false);
-
-#if defined(OS_ANDROID)
-  if (command_line.HasSwitch(switches::kEnableWebAudio))
-    WebRuntimeFeatures::enableWebAudio(true);
-#else
-  if (command_line.HasSwitch(switches::kDisableWebAudio))
-    WebRuntimeFeatures::enableWebAudio(false);
-#endif
 
   if (command_line.HasSwitch(switches::kEnableWebMIDI))
     WebRuntimeFeatures::enableWebMIDI(true);

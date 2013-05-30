@@ -773,13 +773,11 @@ void BrowserMainLoop::BrowserThreadsStarted() {
   GpuDataManagerImpl::GetInstance()->Initialize();
 #endif  // !OS_IOS
 
-#if defined(ENABLE_INPUT_SPEECH)
   {
     TRACE_EVENT0("startup",
       "BrowserMainLoop::BrowserThreadsStarted:InitSpeechRecognition");
     speech_recognition_manager_.reset(new SpeechRecognitionManagerImpl());
   }
-#endif
 
 #if !defined(OS_IOS)
   // Alert the clipboard class to which threads are allowed to access the

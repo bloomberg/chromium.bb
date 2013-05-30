@@ -78,8 +78,9 @@ CONTENT_EXPORT extern const char kDisableSpeechInput[];
 extern const char kSpeechRecognitionWebserviceKey[];
 CONTENT_EXPORT extern const char kEnableSpeechSynthesis[];
 #if defined(OS_ANDROID)
-CONTENT_EXPORT extern const char kEnableWebAudio[];
 CONTENT_EXPORT extern const char kDisableWebRTC[];
+CONTENT_EXPORT extern const char kEnableSpeechRecognition[];
+CONTENT_EXPORT extern const char kEnableWebAudio[];
 #else
 CONTENT_EXPORT extern const char kDisableWebAudio[];
 #endif
