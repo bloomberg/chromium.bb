@@ -22,7 +22,7 @@ function test()
 
     function finishHeapSnapshot(uid)
     {
-        InspectorTest.addResult("PASS: snapshot was taken UID = " + uid);
+        InspectorTest.addResult("PASS: snapshot was taken");
         var profiles = heapProfileType.getProfiles();
 
         if (!profiles.length)
