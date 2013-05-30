@@ -26,7 +26,7 @@ void LanguageHangulHandler::GetLocalizedValues(
   RegisterTitle(localized_strings, "languageHangulPage",
                 IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE);
 
-  localized_strings->SetString("hangul_keyboard_layout",
+  localized_strings->SetString("hangulKeyboardLayout",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT));
 
   localized_strings->Set("HangulkeyboardLayoutList", GetKeyboardLayoutList());

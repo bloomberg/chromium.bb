@@ -73,30 +73,30 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
 
   RegisterTitle(localized_strings, "languagePage",
                 IDS_OPTIONS_SETTINGS_LANGUAGES_AND_INPUT_DIALOG_TITLE);
-  localized_strings->SetString("ok_button", l10n_util::GetStringUTF16(IDS_OK));
+  localized_strings->SetString("okButton", l10n_util::GetStringUTF16(IDS_OK));
   localized_strings->SetString("configure",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE));
-  localized_strings->SetString("input_method",
+  localized_strings->SetString("inputMethod",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD));
-  localized_strings->SetString("please_add_another_input_method",
+  localized_strings->SetString("pleaseAddAnotherInputMethod",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_INPUT_METHOD));
-  localized_strings->SetString("input_method_instructions",
+  localized_strings->SetString("inputMethodInstructions",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_INSTRUCTIONS));
-  localized_strings->SetString("switch_input_methods_hint",
+  localized_strings->SetString("switchInputMethodsHint",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_SWITCH_INPUT_METHODS_HINT));
-  localized_strings->SetString("select_previous_input_method_hint",
+  localized_strings->SetString("selectPreviousInputMethodHint",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_SELECT_PREVIOUS_INPUT_METHOD_HINT));
-  localized_strings->SetString("restart_button",
+  localized_strings->SetString("restartButton",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_SIGN_OUT_BUTTON));
-  localized_strings->SetString("extension_ime_label",
+  localized_strings->SetString("extensionImeLable",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_IME));
-  localized_strings->SetString("extension_ime_description",
+  localized_strings->SetString("extensionImeDescription",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_DESCRIPTION));
   localized_strings->SetString("noInputMethods",

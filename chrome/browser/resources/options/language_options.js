@@ -521,7 +521,7 @@ cr.define('options', function() {
 
       if (languageCode == this.prospectiveUiLanguageCode_) {
         uiLanguageMessage.textContent =
-            loadTimeData.getString('is_displayed_in_this_language');
+            loadTimeData.getString('isDisplayedInThisLanguage');
         showMutuallyExclusiveNodes(
             [uiLanguageButton, uiLanguageMessage, uiLanguageNotification], 1);
       } else if (languageCode in loadTimeData.getValue('uiLanguageCodeSet')) {
@@ -532,7 +532,7 @@ cr.define('options', function() {
           uiLanguageMessage.hidden = true;
         } else {
           uiLanguageButton.textContent =
-              loadTimeData.getString('display_in_this_language');
+              loadTimeData.getString('displayInThisLanguage');
           showMutuallyExclusiveNodes(
               [uiLanguageButton, uiLanguageMessage, uiLanguageNotification], 0);
           uiLanguageButton.onclick = function(e) {
@@ -541,7 +541,7 @@ cr.define('options', function() {
         }
       } else {
         uiLanguageMessage.textContent =
-            loadTimeData.getString('cannot_be_displayed_in_this_language');
+            loadTimeData.getString('cannotBeDisplayedInThisLanguage');
         showMutuallyExclusiveNodes(
             [uiLanguageButton, uiLanguageMessage, uiLanguageNotification], 1);
       }
@@ -574,7 +574,7 @@ cr.define('options', function() {
       if (languageCode == this.spellCheckDictionary_) {
         if (!(languageCode in this.spellcheckDictionaryDownloadStatus_)) {
           spellCheckLanguageMessage.textContent =
-              loadTimeData.getString('is_used_for_spell_checking');
+              loadTimeData.getString('isUsedForSpellChecking');
           showMutuallyExclusiveNodes(
               [spellCheckLanguageButton, spellCheckLanguageMessage], 1);
         } else if (this.spellcheckDictionaryDownloadStatus_[languageCode] ==
@@ -590,7 +590,7 @@ cr.define('options', function() {
       } else if (languageCode in
           loadTimeData.getValue('spellCheckLanguageCodeSet')) {
         spellCheckLanguageButton.textContent =
-            loadTimeData.getString('use_this_for_spell_checking');
+            loadTimeData.getString('useThisForSpellChecking');
         showMutuallyExclusiveNodes(
             [spellCheckLanguageButton, spellCheckLanguageMessage], 0);
         spellCheckLanguageButton.languageCode = languageCode;
@@ -599,7 +599,7 @@ cr.define('options', function() {
         spellCheckLanguageMessage.hidden = true;
       } else {
         spellCheckLanguageMessage.textContent =
-            loadTimeData.getString('cannot_be_used_for_spell_checking');
+            loadTimeData.getString('cannotBeUsedForSpellChecking');
         showMutuallyExclusiveNodes(
             [spellCheckLanguageButton, spellCheckLanguageMessage], 1);
       }
@@ -715,8 +715,8 @@ cr.define('options', function() {
       if (this.preloadEngines_.length == 1 && !checkbox.checked) {
         // Don't allow disabling the last input method.
         this.showNotification_(
-            loadTimeData.getString('please_add_another_input_method'),
-            loadTimeData.getString('ok_button'));
+            loadTimeData.getString('pleaseAddAnotherInputMethod'),
+            loadTimeData.getString('okButton'));
         checkbox.checked = true;
         return;
       }

@@ -6,11 +6,10 @@
       <span>&nbsp;</span>
       <span class="link"><span class="link-color"></span></span>
     </div>
-    <!-- TODO(kevers): Fix format of i18n-content labels -->
     <div class="language-options-header">
-      <div i18n-content="add_language_instructions"></div>
+      <div i18n-content="addLanguageInstructions"></div>
 <if expr="pp_ifdef('chromeos')">
-      <div i18n-content="input_method_instructions"></div>
+      <div i18n-content="inputMethodInstructions"></div>
 </if>
     </div>
     <div class="language-options">
@@ -19,7 +18,7 @@
         <list id="language-options-list"></list>
         <div class="language-options-lower-left">
           <button id="language-options-add-button"
-            i18n-content="add_button">
+            i18n-content="addButton">
           </button>
         </div>
         <div id="language-options-list-dropmarker"></div>
@@ -32,42 +31,42 @@
 <if expr="os == 'win32' or pp_ifdef('chromeos')">
         <div class="language-options-contents">
           <button id="language-options-ui-language-button"
-              i18n-content="display_in_this_language">
+              i18n-content="displayInThisLanguage">
           </button>
           <span id="language-options-ui-language-message" hidden></span>
         </div>
 </if>
         <div id="language-options-spellcheck" class="language-options-contents">
           <button id="language-options-spell-check-language-button"
-              i18n-content="use_this_for_spell_checking">
+              i18n-content="useThisForSpellChecking">
           </button>
           <span id="language-options-spell-check-language-message" hidden>
           </span>
           <span id="language-options-dictionary-downloading-message"
-              i18n-content="downloading_dictionary" hidden>
+              i18n-content="downloadingDictionary" hidden>
           </span>
         </div>
         <div id="language-options-dictionary-download-failed-message"
             class="language-options-notification" hidden>
-          <div i18n-content="download_failed"></div>
+          <div i18n-content="downloadFailed"></div>
           <div id="language-options-dictionary-download-fail-help-message"
-            i18n-content="download_fail_help" hidden>
+            i18n-content="downloadFailHelp" hidden>
           </div>
           <button id="dictionary-download-retry-button"
-              i18n-content="retry_button">
+              i18n-content="retryButton">
           </button>
         </div>
         <div id="language-options-ui-notification-bar"
              class="language-options-notification" hidden>
-          <div i18n-content="restart_required"></div>
+          <div i18n-content="restartRequired"></div>
 <if expr="pp_ifdef('chromeos')">
           <button id="language-options-ui-restart-button"
-                  i18n-content="restart_button">
+                  i18n-content="restartButton">
           </button>
 </if>
         </div>
 <if expr="pp_ifdef('chromeos')">
-        <h3 i18n-content="input_method"></h3>
+        <h3 i18n-content="inputMethod"></h3>
         <div id="language-options-input-method-template" class="input-method"
             hidden>
           <div class="checkbox">
@@ -89,8 +88,8 @@
     </div>
     <div class="language-options-footer">
 <if expr="pp_ifdef('chromeos')">
-      <div i18n-content="switch_input_methods_hint"></div>
-      <div i18n-content="select_previous_input_method_hint"></div>
+      <div i18n-content="switchInputMethodsHint"></div>
+      <div i18n-content="selectPreviousInputMethodHint"></div>
       <button id="edit-dictionary-button"
           class="link-button standalone-link-button"
           i18n-content="languageDictionaryOverlayTitle"></button>
@@ -100,7 +99,7 @@
         <label>
           <input id="enable-spell-check" pref="browser.enable_spellchecking"
               metric="Options_SpellCheck" type="checkbox">
-          <span i18n-content="enable_spell_check"></span>
+          <span i18n-content="enableSpellCheck"></span>
         </label>
         <button id="edit-dictionary-button" class="link-button"
             i18n-content="languageDictionaryOverlayTitle" hidden></button>
@@ -110,7 +109,7 @@
           <input id="enable-auto-spell-correction"
               pref="browser.enable_autospellcorrect"
               metric="Options_AutoSpellCorrection" type="checkbox">
-          <span i18n-content="enable_auto_spell_correction"></span>
+          <span i18n-content="enableAutoSpellCorrection"></span>
         </label>
       </div>
 </if>

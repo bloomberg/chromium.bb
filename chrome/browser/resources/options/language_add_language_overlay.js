@@ -14,7 +14,7 @@ cr.define('options', function() {
    */
   function AddLanguageOverlay() {
     OptionsPage.call(this, 'addLanguage',
-                     loadTimeData.getString('add_button'),
+                     loadTimeData.getString('addButton'),
                      'add-language-overlay-page');
   }
 
