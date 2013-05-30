@@ -9330,6 +9330,18 @@ static inline bool isEqualToCSSIdentifier(CharacterType* cssString, const char* 
 }
 
 template <typename CharacterType>
+static inline bool isEqualToCSSCaseSensitiveIdentifier(CharacterType* string, const char* constantString)
+{
+    ASSERT(*constantString);
+
+    do {
+        if (*string++ != *constantString++)
+            return false;
+    } while (*constantString);
+    return true;
+}
+
+template <typename CharacterType>
 static CharacterType* checkAndSkipEscape(CharacterType* currentCharacter)
 {
     // Returns with 0, if escape check is failed. Otherwise
@@ -10247,7 +10259,7 @@ inline bool CSSParser::detectCSSVariablesToken(int length)
     if (length < sizeof("-webkit-var-*") - 1)
         return false;
     CharacterType* name = tokenStart<CharacterType>();
-    return name[11] == '-' && isIdentifierStartAfterDash(name + 12) && isEqualToCSSIdentifier(name + 1, "webkit-var");
+    return name[11] == '-' && isIdentifierStartAfterDash(name + 12) && isEqualToCSSCaseSensitiveIdentifier(name + 1, "webkit-var");
 }
 
 
