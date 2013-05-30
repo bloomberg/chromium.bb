@@ -457,7 +457,9 @@ void TransparencyWin::compositeOpaqueComposite()
 
     // Note that we need to specify the source layer subset, since the bitmap
     // may have been cached and it could be larger than what we're using.
-    SkIRect sourceRect = { 0, 0, m_layerSize.width(), m_layerSize.height() };
+    SkRect sourceRect = SkRect::MakeWH(
+        SkIntToScalar(m_layerSize.width()),
+        SkIntToScalar(m_layerSize.height()));
     m_destContext->drawBitmapRect(*bitmap, &sourceRect, destRect, &paint);
     m_destContext->restore();
 }
@@ -491,7 +493,9 @@ void TransparencyWin::compositeTextComposite()
 
     // Note that we need to specify the source layer subset, since the bitmap
     // may have been cached and it could be larger than what we're using.
-    SkIRect sourceRect = { 0, 0, m_layerSize.width(), m_layerSize.height() };
+    SkRect sourceRect = SkRect::MakeWH(
+        SkIntToScalar(m_layerSize.width()),
+        SkIntToScalar(m_layerSize.height()));
     m_destContext->drawBitmapRect(bitmap, &sourceRect, destRect, 0);
     m_destContext->restore();
 }

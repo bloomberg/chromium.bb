@@ -1091,13 +1091,13 @@ void GraphicsContext::drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar
     }
 }
 
-void GraphicsContext::drawBitmapRect(const SkBitmap& bitmap, const SkIRect* isrc,
+void GraphicsContext::drawBitmapRect(const SkBitmap& bitmap, const SkRect* src,
     const SkRect& dst, const SkPaint* paint)
 {
     if (paintingDisabled())
         return;
 
-    m_canvas->drawBitmapRect(bitmap, isrc, dst, paint);
+    m_canvas->drawBitmapRectToRect(bitmap, src, dst, paint);
 
     if (m_trackOpaqueRegion)
         m_opaqueRegion.didDrawRect(this, dst, *paint, &bitmap);
