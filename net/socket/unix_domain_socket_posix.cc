@@ -55,10 +55,13 @@ UnixDomainSocket::AuthCallback NoAuthentication() {
 // static
 UnixDomainSocket* UnixDomainSocket::CreateAndListenInternal(
     const std::string& path,
+    const std::string& fallback_path,
     StreamListenSocket::Delegate* del,
     const AuthCallback& auth_callback,
     bool use_abstract_namespace) {
   SocketDescriptor s = CreateAndBind(path, use_abstract_namespace);
+  if (s == kInvalidSocket && !fallback_path.empty())
+    s = CreateAndBind(fallback_path, use_abstract_namespace);
   if (s == kInvalidSocket)
     return NULL;
   UnixDomainSocket* sock = new UnixDomainSocket(s, del, auth_callback);
@@ -71,7 +74,7 @@ scoped_refptr<UnixDomainSocket> UnixDomainSocket::CreateAndListen(
     const std::string& path,
     StreamListenSocket::Delegate* del,
     const AuthCallback& auth_callback) {
-  return CreateAndListenInternal(path, del, auth_callback, false);
+  return CreateAndListenInternal(path, "", del, auth_callback, false);
 }
 
 #if defined(SOCKET_ABSTRACT_NAMESPACE_SUPPORTED)
@@ -79,10 +82,11 @@ scoped_refptr<UnixDomainSocket> UnixDomainSocket::CreateAndListen(
 scoped_refptr<UnixDomainSocket>
 UnixDomainSocket::CreateAndListenWithAbstractNamespace(
     const std::string& path,
+    const std::string& fallback_path,
     StreamListenSocket::Delegate* del,
     const AuthCallback& auth_callback) {
   return make_scoped_refptr(
-      CreateAndListenInternal(path, del, auth_callback, true));
+      CreateAndListenInternal(path, fallback_path, del, auth_callback, true));
 }
 #endif
 
@@ -160,7 +164,8 @@ UnixDomainSocketFactory::~UnixDomainSocketFactory() {}
 
 scoped_refptr<StreamListenSocket> UnixDomainSocketFactory::CreateAndListen(
     StreamListenSocket::Delegate* delegate) const {
-  return UnixDomainSocket::CreateAndListen(path_, delegate, auth_callback_);
+  return UnixDomainSocket::CreateAndListen(
+      path_, delegate, auth_callback_);
 }
 
 #if defined(SOCKET_ABSTRACT_NAMESPACE_SUPPORTED)
@@ -168,8 +173,10 @@ scoped_refptr<StreamListenSocket> UnixDomainSocketFactory::CreateAndListen(
 UnixDomainSocketWithAbstractNamespaceFactory::
 UnixDomainSocketWithAbstractNamespaceFactory(
     const std::string& path,
+    const std::string& fallback_path,
     const UnixDomainSocket::AuthCallback& auth_callback)
-    : UnixDomainSocketFactory(path, auth_callback) {}
+    : UnixDomainSocketFactory(path, auth_callback),
+      fallback_path_(fallback_path) {}
 
 UnixDomainSocketWithAbstractNamespaceFactory::
 ~UnixDomainSocketWithAbstractNamespaceFactory() {}
@@ -178,7 +185,7 @@ scoped_refptr<StreamListenSocket>
 UnixDomainSocketWithAbstractNamespaceFactory::CreateAndListen(
     StreamListenSocket::Delegate* delegate) const {
   return UnixDomainSocket::CreateAndListenWithAbstractNamespace(
-      path_, delegate, auth_callback_);
+      path_, fallback_path_, delegate, auth_callback_);
 }
 
 #endif

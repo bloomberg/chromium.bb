@@ -39,6 +39,7 @@ namespace net {
 namespace {
 
 const char kSocketFilename[] = "unix_domain_socket_for_testing";
+const char kFallbackSocketName[] = "unix_domain_socket_for_testing_2";
 const char kInvalidSocketPath[] = "/invalid/path";
 const char kMsg[] = "hello";
 
@@ -51,10 +52,14 @@ enum EventType {
   EVENT_READ,
 };
 
-string MakeSocketPath() {
+string MakeSocketPath(const string& socket_file_name) {
   base::FilePath temp_dir;
   file_util::GetTempDir(&temp_dir);
-  return temp_dir.Append(kSocketFilename).value();
+  return temp_dir.Append(socket_file_name).value();
+}
+
+string MakeSocketPath() {
+  return MakeSocketPath(kSocketFilename);
 }
 
 class EventManager : public base::RefCounted<EventManager> {
@@ -254,8 +259,28 @@ TEST_F(UnixDomainSocketTestWithInvalidPath, CreateAndListenWithInvalidPath) {
 TEST_F(UnixDomainSocketTestWithInvalidPath,
        CreateAndListenWithAbstractNamespace) {
   socket_ = UnixDomainSocket::CreateAndListenWithAbstractNamespace(
-      file_path_.value(), socket_delegate_.get(), MakeAuthCallback());
+      file_path_.value(), "", socket_delegate_.get(), MakeAuthCallback());
   EXPECT_FALSE(socket_.get() == NULL);
+}
+
+TEST_F(UnixDomainSocketTest, TestFallbackName) {
+  scoped_refptr<UnixDomainSocket> existing_socket =
+      UnixDomainSocket::CreateAndListenWithAbstractNamespace(
+          file_path_.value(), "", socket_delegate_.get(), MakeAuthCallback());
+  EXPECT_FALSE(existing_socket.get() == NULL);
+  // First, try to bind socket with the same name with no fallback name.
+  socket_ =
+      UnixDomainSocket::CreateAndListenWithAbstractNamespace(
+          file_path_.value(), "", socket_delegate_.get(), MakeAuthCallback());
+  EXPECT_TRUE(socket_.get() == NULL);
+  // Now with a fallback name.
+  socket_ = UnixDomainSocket::CreateAndListenWithAbstractNamespace(
+      file_path_.value(),
+      MakeSocketPath(kFallbackSocketName),
+      socket_delegate_.get(),
+      MakeAuthCallback());
+  EXPECT_FALSE(socket_.get() == NULL);
+  existing_socket = NULL;
 }
 #endif
 

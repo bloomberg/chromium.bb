@@ -34,7 +34,7 @@ net::StreamListenSocketFactory* CreateSocketFactory() {
         switches::kRemoteDebuggingSocketName);
   }
   return new net::UnixDomainSocketWithAbstractNamespaceFactory(
-      socket_name, base::Bind(&content::CanUserConnectToDevTools));
+      socket_name, "", base::Bind(&content::CanUserConnectToDevTools));
 #else
   // See if the user specified a port on the command line (useful for
   // automation). If not, use an ephemeral port by specifying 0.

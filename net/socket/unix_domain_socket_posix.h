@@ -45,9 +45,11 @@ class NET_EXPORT UnixDomainSocket : public StreamListenSocket {
 
 #if defined(SOCKET_ABSTRACT_NAMESPACE_SUPPORTED)
   // Same as above except that the created socket uses the abstract namespace
-  // which is a Linux-only feature.
+  // which is a Linux-only feature. If |fallback_path| is not empty,
+  // make the second attempt with the provided fallback name.
   static scoped_refptr<UnixDomainSocket> CreateAndListenWithAbstractNamespace(
       const std::string& path,
+      const std::string& fallback_path,
       StreamListenSocket::Delegate* del,
       const AuthCallback& auth_callback);
 #endif
@@ -60,6 +62,7 @@ class NET_EXPORT UnixDomainSocket : public StreamListenSocket {
 
   static UnixDomainSocket* CreateAndListenInternal(
       const std::string& path,
+      const std::string& fallback_path,
       StreamListenSocket::Delegate* del,
       const AuthCallback& auth_callback,
       bool use_abstract_namespace);
@@ -103,6 +106,7 @@ class NET_EXPORT UnixDomainSocketWithAbstractNamespaceFactory
  public:
   UnixDomainSocketWithAbstractNamespaceFactory(
       const std::string& path,
+      const std::string& fallback_path,
       const UnixDomainSocket::AuthCallback& auth_callback);
   virtual ~UnixDomainSocketWithAbstractNamespaceFactory();
 
@@ -111,6 +115,8 @@ class NET_EXPORT UnixDomainSocketWithAbstractNamespaceFactory
       StreamListenSocket::Delegate* delegate) const OVERRIDE;
 
  private:
+  std::string fallback_path_;
+
   DISALLOW_COPY_AND_ASSIGN(UnixDomainSocketWithAbstractNamespaceFactory);
 };
 #endif

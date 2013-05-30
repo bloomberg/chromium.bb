@@ -34,7 +34,7 @@ namespace {
 const char kFrontEndURL[] =
     "http://chrome-devtools-frontend.appspot.com/static/%s/devtools.html";
 const char kDefaultSocketName[] = "chrome_devtools_remote";
-const char kTetheringSocketName[] = "chrome_devtools_tethering_%d";
+const char kTetheringSocketName[] = "chrome_devtools_tethering_%d_%d";
 
 // Delegate implementation for the devtools http handler on android. A new
 // instance of this gets created each time devtools is enabled.
@@ -92,9 +92,11 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
   virtual scoped_refptr<net::StreamListenSocket> CreateSocketForTethering(
       net::StreamListenSocket::Delegate* delegate,
       std::string* name) OVERRIDE {
-    *name = base::StringPrintf(kTetheringSocketName, ++last_tethering_socket_);
+    *name = base::StringPrintf(
+        kTetheringSocketName, getpid(), ++last_tethering_socket_);
     return net::UnixDomainSocket::CreateAndListenWithAbstractNamespace(
         *name,
+        "",
         delegate,
         base::Bind(&content::CanUserConnectToDevTools));
   }
@@ -148,6 +150,7 @@ void DevToolsServer::Start() {
   protocol_handler_ = content::DevToolsHttpHandler::Start(
       new net::UnixDomainSocketWithAbstractNamespaceFactory(
           socket_name_,
+          base::StringPrintf("%s_%d", socket_name_.c_str(), getpid()),
           base::Bind(&content::CanUserConnectToDevTools)),
       use_bundled_frontend_resources_ ?
           "" :
