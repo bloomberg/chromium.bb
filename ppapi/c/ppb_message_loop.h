@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_message_loop.idl modified Mon Apr  1 12:14:25 2013. */
+/* From ppb_message_loop.idl modified Thu May  9 14:59:57 2013. */
 
 #ifndef PPAPI_C_PPB_MESSAGE_LOOP_H_
 #define PPAPI_C_PPB_MESSAGE_LOOP_H_
@@ -55,15 +55,15 @@
  *    - Call Run() with the message loop resource.
  *
  *   Your callbacks should look like this:
- *      @code
- *      void DoMyWork(void* user_data, int32_t status) {
- *        if (status != PP_OK) {
- *          Cleanup();  // e.g. free user_data.
- *          return;
- *        }
- *        ... do your work...
- *      }
- *      @endcode
+ *   @code
+ *   void DoMyWork(void* user_data, int32_t status) {
+ *     if (status != PP_OK) {
+ *       Cleanup();  // e.g. free user_data.
+ *       return;
+ *     }
+ *     ... do your work...
+ *   }
+ *   @endcode
  * For a C++ example, see ppapi/utility/threading/simple_thread.h
  *
  * (You can also create the message loop resource on the background thread,
@@ -134,12 +134,12 @@
  * Therefore, you should check for errors from PostWork and destroy any
  * associated memory to avoid leaks. If you're using the C++
  * CompletionCallbackFactory, use the following pattern:
- *
- *   pp::CompletionCallback callback = factory_.NewOptionalCallback(...);
- *   int32_t result = message_loop.PostWork(callback);
- *   if (result != PP_OK)
- *     callback.Run(result);
- *
+ * @code
+ * pp::CompletionCallback callback = factory_.NewOptionalCallback(...);
+ * int32_t result = message_loop.PostWork(callback);
+ * if (result != PP_OK)
+ *   callback.Run(result);
+ * @endcode
  * This will run the callback with an error value, and assumes that the
  * implementation of your callback checks the "result" argument and returns
  * immediately on error.

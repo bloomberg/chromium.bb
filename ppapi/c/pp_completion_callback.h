@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_completion_callback.idl modified Thu Mar 28 15:25:03 2013. */
+/* From pp_completion_callback.idl modified Thu May  9 14:59:57 2013. */
 
 #ifndef PPAPI_C_PP_COMPLETION_CALLBACK_H_
 #define PPAPI_C_PP_COMPLETION_CALLBACK_H_
@@ -96,7 +96,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_CompletionCallback_Flag, 4);
  *               callback, and the callback will be invoked later (barring
  *               system or thread shutdown; see PPB_MessageLoop for details).
  *               Required callbacks are the default.
- *
+ *               <br /><br />
  *               NOTE: If you use a required callback on a background thread,
  *               you must have created and attached a PPB_MessageLoop.
  *               Otherwise, the system can not run your callback on that thread,
@@ -113,7 +113,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_CompletionCallback_Flag, 4);
  *               callbacks, but can provide better performance for some APIs
  *               (especially APIs with buffered reads, such as PPB_URLLoader or
  *               PPB_FileIO).
- *
+ *               <br /><br />
  *               NOTE: If you use an optional callback on a background thread,
  *               and you have not created and attached a PPB_MessageLoop, then
  *               the method you invoke will fail without running and return
@@ -124,10 +124,10 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_CompletionCallback_Flag, 4);
  *               run to completion and return an appropriate code when finished
  *               (see below for more information). Blocking completion
  *               callbacks are only supported on background threads.
- *
+ *               <br /><br />
  *               <code>PP_BlockUntilComplete()</code> provides a convenient way
  *               to specify blocking behavior. Refer to
- *                <code>PP_BlockUntilComplete</code> for more information.
+ *               <code>PP_BlockUntilComplete</code> for more information.
  *
  * When the callback is run asynchronously, the result parameter passed to
  * <code>func</code> is an int32_t that, if negative indicates an error code
