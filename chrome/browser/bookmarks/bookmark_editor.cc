@@ -41,7 +41,7 @@ int BookmarkEditor::EditDetails::GetWindowTitleId() const {
     case EditDetails::NEW_FOLDER:
       dialog_title = urls.empty() ?
           IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW :
-          IDS_BOOKMARK_MANAGER_BOOKMARK_ALL_TABS;
+          IDS_BOOKMARK_ALL_TABS_DIALOG_TITLE;
       break;
     default:
       NOTREACHED();
