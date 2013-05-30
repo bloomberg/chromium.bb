@@ -6,9 +6,9 @@
 #define WEBKIT_GLUE_FLING_ANIMATOR_IMPL_ANDROID_H_
 
 #include "base/android/scoped_java_ref.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurve.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/WebKit/public/platform/WebFloatPoint.h"
+#include "third_party/WebKit/public/platform/WebGestureCurve.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point_f.h"
 #include "webkit/glue/webkit_glue_export.h"

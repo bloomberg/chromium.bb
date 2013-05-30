@@ -5,8 +5,8 @@
 #include "webkit/renderer/compositor_bindings/web_layer_impl_fixed_bounds.h"
 
 #include "cc/layers/layer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/WebKit/public/platform/WebFloatPoint.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 
 using cc::Layer;

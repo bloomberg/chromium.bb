@@ -6,7 +6,7 @@
 #define WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_RENDERING_STATS_IMPL_H_
 
 #include "cc/debug/rendering_stats.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
+#include "third_party/WebKit/public/platform/WebRenderingStats.h"
 
 namespace WebKit {
 

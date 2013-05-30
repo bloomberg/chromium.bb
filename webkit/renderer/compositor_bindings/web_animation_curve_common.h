@@ -6,7 +6,7 @@
 #define WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_ANIMATION_CURVE_COMMON_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationCurve.h"
+#include "third_party/WebKit/public/platform/WebAnimationCurve.h"
 
 namespace cc { class TimingFunction; }
 

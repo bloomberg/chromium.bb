@@ -33,8 +33,8 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request_status.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "webkit/glue/resource_type.h"
 #include "webkit/glue/webkit_glue_export.h"
 

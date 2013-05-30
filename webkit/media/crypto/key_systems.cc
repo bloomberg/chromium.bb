@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "net/base/mime_util.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebCString.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "webkit/media/crypto/key_systems_info.h"
 
 namespace webkit_media {

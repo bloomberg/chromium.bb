@@ -5,7 +5,7 @@
 #include "webkit/renderer/compositor_bindings/web_scrollbar_layer_impl.h"
 
 #include "cc/layers/scrollbar_layer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
+#include "third_party/WebKit/public/platform/WebScrollbar.h"
 #include "webkit/renderer/compositor_bindings/scrollbar_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 

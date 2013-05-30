@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/content_layer_client.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayer.h"
+#include "third_party/WebKit/public/platform/WebContentLayer.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 #include "webkit/renderer/compositor_bindings/webkit_compositor_bindings_export.h"
 

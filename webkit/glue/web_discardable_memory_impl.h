@@ -7,7 +7,7 @@
 
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebDiscardableMemory.h"
+#include "third_party/WebKit/public/platform/WebDiscardableMemory.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {

@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
 
 namespace WebKit {
 class WebURLLoader;

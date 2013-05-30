@@ -4,8 +4,8 @@
 
 #include "webkit/renderer/compositor_bindings/web_to_ccscrollbar_theme_painter_adapter.h"
 
-#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemePainter.h"
+#include "third_party/WebKit/public/platform/WebRect.h"
+#include "third_party/WebKit/public/platform/WebScrollbarThemePainter.h"
 
 using WebKit::WebScrollbarThemePainter;
 

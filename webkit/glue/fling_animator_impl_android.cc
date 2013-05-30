@@ -8,8 +8,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "jni/OverScroller_jni.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatSize.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurveTarget.h"
+#include "third_party/WebKit/public/platform/WebFloatSize.h"
+#include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/vector2d.h"
 

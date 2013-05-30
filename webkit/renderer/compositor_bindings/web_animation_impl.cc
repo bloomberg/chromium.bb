@@ -7,8 +7,8 @@
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_id_provider.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationCurve.h"
+#include "third_party/WebKit/public/platform/WebAnimation.h"
+#include "third_party/WebKit/public/platform/WebAnimationCurve.h"
 #include "webkit/renderer/compositor_bindings/web_float_animation_curve_impl.h"
 #include "webkit/renderer/compositor_bindings/web_transform_animation_curve_impl.h"
 

@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/resources/texture_mailbox.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
+#include "third_party/WebKit/public/platform/WebExternalTextureLayer.h"
 #include "webkit/renderer/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace WebKit {

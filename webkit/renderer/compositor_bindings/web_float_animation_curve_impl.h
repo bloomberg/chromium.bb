@@ -6,7 +6,7 @@
 #define WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_FLOAT_ANIMATION_CURVE_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatAnimationCurve.h"
+#include "third_party/WebKit/public/platform/WebFloatAnimationCurve.h"
 #include "webkit/renderer/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace cc {

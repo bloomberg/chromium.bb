@@ -6,8 +6,8 @@
 
 #include "base/guid.h"
 #include "media/filters/chunk_demuxer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebCString.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "webkit/media/websourcebuffer_impl.h"
 
 using ::WebKit::WebString;

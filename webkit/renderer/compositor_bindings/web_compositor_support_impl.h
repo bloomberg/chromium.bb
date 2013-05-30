@@ -7,9 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
+#include "third_party/WebKit/public/platform/WebCompositorSupport.h"
+#include "third_party/WebKit/public/platform/WebLayer.h"
+#include "third_party/WebKit/public/platform/WebTransformOperations.h"
 
 namespace WebKit {
 class WebGraphicsContext3D;

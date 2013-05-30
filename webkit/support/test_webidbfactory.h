@@ -7,7 +7,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/threading/thread_local.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebIDBFactory.h"
+#include "third_party/WebKit/public/platform/WebIDBFactory.h"
 
 // Wrap a WebKit::WebIDBFactory to rewrite the data directory to
 // a scoped temp directory. In multiprocess Chromium this is rewritten

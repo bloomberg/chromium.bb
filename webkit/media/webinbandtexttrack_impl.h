@@ -5,7 +5,7 @@
 #ifndef WEBKIT_MEDIA_WEBINANDTEXTTRACK_IMPL_H_
 #define WEBKIT_MEDIA_WEBINANDTEXTTRACK_IMPL_H_
 
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInbandTextTrack.h"
 
 namespace webkit_media {

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/input/scrollbar.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemePainter.h"
+#include "third_party/WebKit/public/platform/WebScrollbarThemePainter.h"
 
 namespace WebKit {
 class WebScrollbar;

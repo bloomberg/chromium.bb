@@ -6,7 +6,7 @@
 #define WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_SCROLLBAR_LAYER_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarLayer.h"
+#include "third_party/WebKit/public/platform/WebScrollbarLayer.h"
 #include "webkit/renderer/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace WebKit {

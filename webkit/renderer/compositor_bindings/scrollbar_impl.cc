@@ -5,8 +5,8 @@
 #include "webkit/renderer/compositor_bindings/scrollbar_impl.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemeGeometry.h"
+#include "third_party/WebKit/public/platform/WebScrollbar.h"
+#include "third_party/WebKit/public/platform/WebScrollbarThemeGeometry.h"
 
 using WebKit::WebScrollbar;
 

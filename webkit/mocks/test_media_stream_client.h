@@ -10,7 +10,7 @@
 #define WEBKIT_MOCKS_TEST_MEDIA_STREAM_CLIENT_H_
 
 #include "base/callback_forward.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "webkit/media/media_stream_client.h"
 
 namespace WebKit {

@@ -6,9 +6,9 @@
 
 #include "base/auto_reset.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebStorageArea.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebStorageNamespace.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/WebKit/public/platform/WebStorageArea.h"
+#include "third_party/WebKit/public/platform/WebStorageNamespace.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/dom_storage/dom_storage_area.h"

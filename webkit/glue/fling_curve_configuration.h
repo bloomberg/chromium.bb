@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/synchronization/lock.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/WebKit/public/platform/WebFloatPoint.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 
 namespace WebKit {
 class WebGestureCurve;

@@ -6,7 +6,7 @@
 #define WEBKIT_GLUE_WEBFALLBACKTHEMEENGINE_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFallbackThemeEngine.h"
+#include "third_party/WebKit/public/platform/WebFallbackThemeEngine.h"
 
 namespace ui {
 class FallbackTheme;

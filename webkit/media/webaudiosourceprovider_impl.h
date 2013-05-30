@@ -7,7 +7,7 @@
 
 #include "base/synchronization/lock.h"
 #include "media/base/audio_renderer_sink.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProvider.h"
 
 namespace WebKit {

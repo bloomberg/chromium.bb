@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/animation/transform_operations.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
+#include "third_party/WebKit/public/platform/WebTransformOperations.h"
 #include "webkit/renderer/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace webkit {

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/platform_file.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebHyphenator.h"
+#include "third_party/WebKit/public/platform/WebHyphenator.h"
 
 typedef struct _HyphenDict HyphenDict;
 

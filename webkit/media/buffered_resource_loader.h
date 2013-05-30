@@ -12,9 +12,9 @@
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
 #include "media/base/seekable_buffer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURLLoader.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURLLoaderClient.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/WebURLLoader.h"
+#include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "webkit/media/active_loader.h"
 

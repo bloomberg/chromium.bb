@@ -5,10 +5,10 @@
 #ifndef WEBKIT_GLUE_TOUCH_FLING_GESTURE_CURVE_H_
 #define WEBKIT_GLUE_TOUCH_FLING_GESTURE_CURVE_H_
 
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatSize.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurve.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/WebKit/public/platform/WebFloatPoint.h"
+#include "third_party/WebKit/public/platform/WebFloatSize.h"
+#include "third_party/WebKit/public/platform/WebGestureCurve.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {

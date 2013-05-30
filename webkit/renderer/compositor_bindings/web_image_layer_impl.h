@@ -6,7 +6,7 @@
 #define WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_IMAGE_LAYER_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebImageLayer.h"
+#include "third_party/WebKit/public/platform/WebImageLayer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/renderer/compositor_bindings/webkit_compositor_bindings_export.h"
 

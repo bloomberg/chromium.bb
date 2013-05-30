@@ -19,7 +19,7 @@
 #include "media/base/android/webaudio_media_codec_info.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebAudioBus.h"
+#include "third_party/WebKit/public/platform/WebAudioBus.h"
 
 namespace webkit_media {
 

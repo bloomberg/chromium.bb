@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSocketStreamHandle.h"
+#include "third_party/WebKit/public/platform/WebSocketStreamHandle.h"
 
 namespace webkit_glue {
 

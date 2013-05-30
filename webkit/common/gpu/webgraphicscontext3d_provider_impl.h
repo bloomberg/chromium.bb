@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3DProvider.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
 #include "webkit/common/gpu/webkit_gpu_export.h"
 
 namespace cc { class ContextProvider; }

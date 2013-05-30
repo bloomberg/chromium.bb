@@ -8,8 +8,8 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/net_errors.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
 
 using WebKit::WebString;
 using WebKit::WebURLError;

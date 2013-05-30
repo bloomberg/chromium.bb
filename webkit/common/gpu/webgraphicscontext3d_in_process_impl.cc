@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/synchronization/lock.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_bindings_skia_in_process.h"
 #include "ui/gl/gl_context.h"

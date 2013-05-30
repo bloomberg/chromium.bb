@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "cc/layers/compositing_reasons.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositingReasons.h"
+#include "third_party/WebKit/public/platform/WebCompositingReasons.h"
 
 #define COMPILE_ASSERT_MATCHING_ENUMS(cc_name, webkit_name)             \
     COMPILE_ASSERT(                                                     \

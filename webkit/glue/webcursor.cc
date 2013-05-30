@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebImage.h"
+#include "third_party/WebKit/public/platform/WebImage.h"
 
 using WebKit::WebCursorInfo;
 

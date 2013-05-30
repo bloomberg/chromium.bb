@@ -6,10 +6,10 @@
 
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/resource_update_queue.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayerClient.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureMailbox.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/WebKit/public/platform/WebExternalTextureLayerClient.h"
+#include "third_party/WebKit/public/platform/WebExternalTextureMailbox.h"
+#include "third_party/WebKit/public/platform/WebFloatRect.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 using cc::TextureLayer;
