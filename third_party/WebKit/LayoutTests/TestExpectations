@@ -981,8 +981,6 @@ webkit.org/b/82776 storage/indexeddb/pending-version-change-on-exit.html [ Skip 
 
 webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
-crbug.com/122462 http/tests/inspector/inspect-element.html [ Failure Slow ]
-
 webkit.org/b/83647 [ Linux Win ] fast/multicol/cell-shrinkback.html [ ImageOnlyFailure ]
 
 # IETC grid layout
