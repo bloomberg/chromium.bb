@@ -40,6 +40,7 @@
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_util.h"
@@ -50,6 +51,7 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
@@ -61,7 +63,11 @@
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/default_server_bound_cert_store.h"
 #include "net/ssl/server_bound_cert_service.h"
+#include "net/url_request/data_protocol_handler.h"
+#include "net/url_request/file_protocol_handler.h"
+#include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_throttler_manager.h"
 #include "net/websockets/websocket_job.h"
 
@@ -188,6 +194,8 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
   context->set_proxy_service(globals->proxy_script_fetcher_proxy_service.get());
   context->set_http_transaction_factory(
       globals->proxy_script_fetcher_http_transaction_factory.get());
+  context->set_job_factory(
+      globals->proxy_script_fetcher_url_request_job_factory.get());
   context->set_cookie_store(globals->system_cookie_store.get());
   context->set_server_bound_cert_service(
       globals->system_server_bound_cert_service.get());
@@ -547,6 +555,22 @@ void IOThread::Init() {
       new net::HttpNetworkSession(session_params));
   globals_->proxy_script_fetcher_http_transaction_factory.reset(
       new net::HttpNetworkLayer(network_session));
+  scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
+      new net::URLRequestJobFactoryImpl());
+  job_factory->SetProtocolHandler(chrome::kDataScheme,
+                                  new net::DataProtocolHandler());
+  job_factory->SetProtocolHandler(chrome::kFileScheme,
+                                  new net::FileProtocolHandler());
+#if !defined(DISABLE_FTP_SUPPORT)
+  globals_->proxy_script_fetcher_ftp_transaction_factory.reset(
+      new net::FtpNetworkLayer(globals_->host_resolver.get()));
+  job_factory->SetProtocolHandler(
+      chrome::kFtpScheme,
+      new net::FtpProtocolHandler(
+          globals_->proxy_script_fetcher_ftp_transaction_factory.get()));
+#endif
+  globals_->proxy_script_fetcher_url_request_job_factory =
+      job_factory.PassAs<net::URLRequestJobFactory>();
 
   globals_->throttler_manager.reset(new net::URLRequestThrottlerManager());
   globals_->throttler_manager->set_net_log(net_log_);

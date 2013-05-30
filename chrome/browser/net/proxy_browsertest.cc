@@ -26,6 +26,25 @@
 
 namespace {
 
+// PAC script that sends all requests to an invalid proxy server.
+const base::FilePath::CharType kPACScript[] = FILE_PATH_LITERAL(
+    "bad_server.pac");
+
+// Verify kPACScript is installed as the PAC script.
+void VerifyProxyScript(Browser* browser) {
+  ui_test_utils::NavigateToURL(browser, GURL("http://google.com"));
+
+  // Verify we get the ERR_PROXY_CONNECTION_FAILED screen.
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      "var textContent = document.body.textContent;"
+      "var hasError = textContent.indexOf('ERR_PROXY_CONNECTION_FAILED') >= 0;"
+      "domAutomationController.send(hasError);",
+      &result));
+  EXPECT_TRUE(result);
+}
+
 // This class observes chrome::NOTIFICATION_AUTH_NEEDED and supplies
 // the credential which is required by the test proxy server.
 // "foo:bar" is the required username and password for our test proxy server.
@@ -121,6 +140,115 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
   const string16 result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(EqualsASCII(result, "PASS"));
   EXPECT_TRUE(observer.auth_handled());
+}
+
+// Fetch PAC script via an http:// URL.
+class HttpProxyScriptBrowserTest : public InProcessBrowserTest {
+ public:
+  HttpProxyScriptBrowserTest()
+      : http_server_(net::SpawnedTestServer::TYPE_HTTP,
+                     net::SpawnedTestServer::kLocalhost,
+                     base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+  }
+  virtual ~HttpProxyScriptBrowserTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(http_server_.Start());
+    InProcessBrowserTest::SetUp();
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    base::FilePath pac_script_path(FILE_PATH_LITERAL("files"));
+    command_line->AppendSwitchASCII(switches::kProxyPacUrl, http_server_.GetURL(
+        pac_script_path.Append(kPACScript).MaybeAsASCII()).spec());
+  }
+
+ private:
+  net::SpawnedTestServer http_server_;
+
+  DISALLOW_COPY_AND_ASSIGN(HttpProxyScriptBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(HttpProxyScriptBrowserTest, Verify) {
+  VerifyProxyScript(browser());
+}
+
+// Fetch PAC script via a file:// URL.
+class FileProxyScriptBrowserTest : public InProcessBrowserTest {
+ public:
+  FileProxyScriptBrowserTest() {}
+  virtual ~FileProxyScriptBrowserTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitchASCII(switches::kProxyPacUrl,
+        ui_test_utils::GetTestUrl(
+            base::FilePath(base::FilePath::kCurrentDirectory),
+            base::FilePath(kPACScript)).spec());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FileProxyScriptBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(FileProxyScriptBrowserTest, Verify) {
+  VerifyProxyScript(browser());
+}
+
+// Fetch PAC script via an ftp:// URL.
+class FtpProxyScriptBrowserTest : public InProcessBrowserTest {
+ public:
+  FtpProxyScriptBrowserTest()
+      : ftp_server_(net::SpawnedTestServer::TYPE_FTP,
+                    net::SpawnedTestServer::kLocalhost,
+                    base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+  }
+  virtual ~FtpProxyScriptBrowserTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(ftp_server_.Start());
+    InProcessBrowserTest::SetUp();
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    base::FilePath pac_script_path(kPACScript);
+    command_line->AppendSwitchASCII(
+        switches::kProxyPacUrl,
+        ftp_server_.GetURL(pac_script_path.MaybeAsASCII()).spec());
+  }
+
+ private:
+  net::SpawnedTestServer ftp_server_;
+
+  DISALLOW_COPY_AND_ASSIGN(FtpProxyScriptBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(FtpProxyScriptBrowserTest, Verify) {
+  VerifyProxyScript(browser());
+}
+
+// Fetch PAC script via a data: URL.
+class DataProxyScriptBrowserTest : public InProcessBrowserTest {
+ public:
+  DataProxyScriptBrowserTest() {}
+  virtual ~DataProxyScriptBrowserTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    std::string contents;
+    // Read in kPACScript contents.
+    ASSERT_TRUE(file_util::ReadFileToString(ui_test_utils::GetTestFilePath(
+        base::FilePath(base::FilePath::kCurrentDirectory),
+        base::FilePath(kPACScript)),
+        &contents));
+    command_line->AppendSwitchASCII(switches::kProxyPacUrl,
+        std::string("data:,") + contents);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DataProxyScriptBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(DataProxyScriptBrowserTest, Verify) {
+  VerifyProxyScript(browser());
 }
 
 }  // namespace

@@ -57,6 +57,7 @@ class SSLConfigService;
 class TransportSecurityState;
 class URLRequestContext;
 class URLRequestContextGetter;
+class URLRequestJobFactory;
 class URLRequestThrottlerManager;
 class URLSecurityManager;
 }  // namespace net
@@ -122,6 +123,10 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<net::ProxyService> proxy_script_fetcher_proxy_service;
     scoped_ptr<net::HttpTransactionFactory>
         proxy_script_fetcher_http_transaction_factory;
+    scoped_ptr<net::FtpTransactionFactory>
+        proxy_script_fetcher_ftp_transaction_factory;
+    scoped_ptr<net::URLRequestJobFactory>
+        proxy_script_fetcher_url_request_job_factory;
     scoped_ptr<net::URLRequestThrottlerManager> throttler_manager;
     scoped_ptr<net::URLSecurityManager> url_security_manager;
     // TODO(willchan): Remove proxy script fetcher context since it's not
