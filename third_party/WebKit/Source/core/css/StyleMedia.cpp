@@ -67,7 +67,7 @@ bool StyleMedia::matchMedium(const String& query) const
     RefPtr<RenderStyle> rootStyle = styleResolver->styleForElement(documentElement, 0 /*defaultParent*/, DisallowStyleSharing, MatchOnlyUserAgentRules);
 
     RefPtr<MediaQuerySet> media = MediaQuerySet::create();
-    if (!media->parse(query))
+    if (!media->set(query))
         return false;
 
     MediaQueryEvaluator screenEval(type(), m_frame, rootStyle.get());

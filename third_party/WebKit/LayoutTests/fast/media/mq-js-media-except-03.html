@@ -19,6 +19,7 @@ function test() {
     try {
         // this shouldn't throw
         document.styleSheets[0].media.mediaText = ",,,,";
+        document.getElementById("result").innerHTML = "Success. This text should be green.";
     } catch (e) {
         document.getElementById("result").innerHTML = "Failure. ,,,, should be valid media descriptor.";
         document.getElementById("details").innerHTML = "Caught exception: " + e;

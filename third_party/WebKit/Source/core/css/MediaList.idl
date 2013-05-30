@@ -27,7 +27,7 @@
 [
 ] interface MediaList {
 
-             [TreatNullAs=NullString, TreatReturnedNullStringAs=Null, SetterRaisesException] attribute DOMString mediaText;
+    [TreatNullAs=NullString, TreatReturnedNullStringAs=Null] attribute DOMString mediaText;
     readonly attribute unsigned long length;
 
     [TreatReturnedNullStringAs=Null] getter DOMString item([Default=Undefined] optional unsigned long index);

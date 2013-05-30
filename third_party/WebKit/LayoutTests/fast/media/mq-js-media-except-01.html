@@ -13,9 +13,10 @@ p#result { color: green;}
 function test() {
     try {
        document.styleSheets[0].cssRules[0].media.deleteMedium("all and (");
+        document.getElementById("result").innerHTML = "Success. This text should be green.";
     }
     catch(e) {
-        document.getElementById("result").innerHTML = "Success."
+        document.getElementById("result").innerHTML = "Failure. 'all and (' is not a valid medium and should be ignored."
         document.getElementById("details").innerHTML = "Following exception was caught: " + e;
     }
 }

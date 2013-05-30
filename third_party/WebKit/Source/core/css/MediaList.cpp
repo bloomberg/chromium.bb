@@ -35,9 +35,9 @@
 namespace WebCore {
 
 /* MediaList is used to store 3 types of media related entities which mean the same:
+ *
  * Media Queries, Media Types and Media Descriptors.
- * Currently MediaList always tries to parse media queries and if parsing fails,
- * tries to fallback to Media Descriptors if m_fallbackToDescriptor flag is set.
+ *
  * Slight problem with syntax error handling:
  * CSS 2.1 Spec (http://www.w3.org/TR/CSS21/media.html)
  * specifies that failing media type parsing is a syntax error
@@ -63,33 +63,21 @@ namespace WebCore {
  */
 
 MediaQuerySet::MediaQuerySet()
-    : m_fallbackToDescriptor(false)
+    : m_parserMode(MediaQueryNormalMode)
     , m_lastLine(0)
 {
 }
 
-MediaQuerySet::MediaQuerySet(const String& mediaString, bool fallbackToDescriptor)
-    : m_fallbackToDescriptor(fallbackToDescriptor)
+MediaQuerySet::MediaQuerySet(const String& mediaString, MediaQueryParserMode mode)
+    : m_parserMode(mode)
     , m_lastLine(0)
 {
-    bool success = parse(mediaString);
-    // FIXME: parsing can fail. The problem with failing constructor is that
-    // we would need additional flag saying MediaList is not valid
-    // Parse can fail only when fallbackToDescriptor == false, i.e when HTML4 media descriptor
-    // forward-compatible syntax is not in use.
-    // DOMImplementationCSS seems to mandate that media descriptors are used
-    // for both html and svg, even though svg:style doesn't use media descriptors
-    // Currently the only places where parsing can fail are
-    // creating <svg:style>, creating css media / import rules from js
-
-    // FIXME: This doesn't make much sense.
-    if (!success)
-        parse("invalid");
+    set(mediaString);
 }
 
 MediaQuerySet::MediaQuerySet(const MediaQuerySet& o)
     : RefCounted<MediaQuerySet>()
-    , m_fallbackToDescriptor(o.m_fallbackToDescriptor)
+    , m_parserMode(o.m_parserMode)
     , m_lastLine(o.m_lastLine)
     , m_queries(o.m_queries.size())
 {
@@ -117,7 +105,7 @@ static String parseMediaDescriptor(const String& string)
     return string.left(i);
 }
 
-PassOwnPtr<MediaQuery> MediaQuerySet::parseMediaQuery(const String& queryString)
+PassOwnPtr<MediaQuery> MediaQuerySet::parseMediaQuery(const String& queryString, MediaQueryParserMode mode)
 {
     CSSParser parser(CSSStrictMode);
     OwnPtr<MediaQuery> parsedQuery = parser.parseMediaQuery(queryString);
@@ -125,20 +113,29 @@ PassOwnPtr<MediaQuery> MediaQuerySet::parseMediaQuery(const String& queryString)
     if (parsedQuery)
         return parsedQuery.release();
 
-    if (m_fallbackToDescriptor) {
+    switch (mode) {
+    case MediaQueryForwardCompatibleSyntaxMode: {
         String medium = parseMediaDescriptor(queryString);
         if (!medium.isNull())
             return adoptPtr(new MediaQuery(MediaQuery::None, medium, nullptr));
+        // Fall through.
     }
-
-    return adoptPtr(new MediaQuery(MediaQuery::None, "not all", nullptr));
+    case MediaQueryNormalMode:
+        return adoptPtr(new MediaQuery(MediaQuery::None, "not all", nullptr));
+    case MediaQueryStrictMode:
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+    return nullptr;
 }
 
-bool MediaQuerySet::parse(const String& mediaString)
+void MediaQuerySet::parseMediaQueryList(const String& mediaString, MediaQueryParserMode mode, Vector<OwnPtr<MediaQuery> >& result)
 {
     if (mediaString.isEmpty()) {
-        m_queries.clear();
-        return true;
+        result.clear();
+        return;
     }
 
     Vector<String> list;
@@ -146,42 +143,79 @@ bool MediaQuerySet::parse(const String& mediaString)
     // other allowed matching pairs such as (), [], {}, "", and ''.
     mediaString.split(',', /* allowEmptyEntries */ true, list);
 
-    Vector<OwnPtr<MediaQuery> > result;
     result.reserveInitialCapacity(list.size());
 
     for (unsigned i = 0; i < list.size(); ++i) {
         String queryString = list[i].stripWhiteSpace();
-        if (OwnPtr<MediaQuery> parsedQuery = parseMediaQuery(queryString))
+        OwnPtr<MediaQuery> parsedQuery = parseMediaQuery(queryString, mode);
+        if (parsedQuery)
             result.uncheckedAppend(parsedQuery.release());
     }
+}
 
+bool MediaQuerySet::set(const String& mediaString)
+{
+    Vector<OwnPtr<MediaQuery> > result;
+    parseMediaQueryList(mediaString, parserMode(), result);
     m_queries.swap(result);
     return true;
 }
 
 bool MediaQuerySet::add(const String& queryString)
 {
-    if (OwnPtr<MediaQuery> parsedQuery = parseMediaQuery(queryString)) {
-        m_queries.append(parsedQuery.release());
+    // To "parse a media query" for a given string means to follow "the parse
+    // a media query list" steps and return "null" if more than one media query
+    // is returned, or else the returned media query.
+    Vector<OwnPtr<MediaQuery> > queries;
+    parseMediaQueryList(queryString, MediaQueryStrictMode, queries);
+
+    // Only continue if exactly one media query is found, as described above.
+    if (queries.size() != 1)
         return true;
+
+    OwnPtr<MediaQuery> newQuery = queries[0].release();
+    ASSERT(newQuery);
+
+    // If comparing with any of the media queries in the collection of media
+    // queries returns true terminate these steps.
+    for (size_t i = 0; i < m_queries.size(); ++i) {
+        MediaQuery* query = m_queries[i].get();
+        if (*query == *newQuery)
+            return true;
     }
-    return false;
+
+    m_queries.append(newQuery.release());
+    return true;
 }
 
 bool MediaQuerySet::remove(const String& queryStringToRemove)
 {
-    OwnPtr<MediaQuery> parsedQuery = parseMediaQuery(queryStringToRemove);
-    if (!parsedQuery)
-        return false;
+    // To "parse a media query" for a given string means to follow "the parse
+    // a media query list" steps and return "null" if more than one media query
+    // is returned, or else the returned media query.
+    Vector<OwnPtr<MediaQuery> > queries;
+    parseMediaQueryList(queryStringToRemove, MediaQueryStrictMode, queries);
 
+    // Only continue if exactly one media query is found, as described above.
+    if (queries.size() != 1)
+        return true;
+
+    OwnPtr<MediaQuery> newQuery = queries[0].release();
+    ASSERT(newQuery);
+
+    // Remove any media query from the collection of media queries for which
+    // comparing with the media query returns true.
+    bool found = false;
     for (size_t i = 0; i < m_queries.size(); ++i) {
         MediaQuery* query = m_queries[i].get();
-        if (*query == *parsedQuery) {
+        if (*query == *newQuery) {
             m_queries.remove(i);
-            return true;
+            --i;
+            found = true;
         }
     }
-    return false;
+
+    return found;
 }
 
 void MediaQuerySet::addMediaQuery(PassOwnPtr<MediaQuery> mediaQuery)
@@ -228,15 +262,12 @@ MediaList::~MediaList()
 {
 }
 
-void MediaList::setMediaText(const String& value, ExceptionCode& ec)
+void MediaList::setMediaText(const String& value)
 {
     CSSStyleSheet::RuleMutationScope mutationScope(m_parentRule);
 
-    bool success = m_mediaQueries->parse(value);
-    if (!success) {
-        ec = SYNTAX_ERR;
-        return;
-    }
+    m_mediaQueries->set(value);
+
     if (m_parentStyleSheet)
         m_parentStyleSheet->didMutate();
 }
@@ -268,10 +299,10 @@ void MediaList::appendMedium(const String& medium, ExceptionCode& ec)
 
     bool success = m_mediaQueries->add(medium);
     if (!success) {
-        // FIXME: Should this really be INVALID_CHARACTER_ERR?
         ec = INVALID_CHARACTER_ERR;
         return;
     }
+
     if (m_parentStyleSheet)
         m_parentStyleSheet->didMutate();
 }

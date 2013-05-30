@@ -36,6 +36,12 @@ class Document;
 class MediaList;
 class MediaQuery;
 
+enum MediaQueryParserMode {
+    MediaQueryNormalMode,
+    MediaQueryForwardCompatibleSyntaxMode,
+    MediaQueryStrictMode,
+};
+
 class MediaQuerySet : public RefCounted<MediaQuerySet> {
 public:
     static PassRefPtr<MediaQuerySet> create()
@@ -44,15 +50,15 @@ public:
     }
     static PassRefPtr<MediaQuerySet> create(const String& mediaString)
     {
-        return adoptRef(new MediaQuerySet(mediaString, false));
+        return adoptRef(new MediaQuerySet(mediaString, MediaQueryNormalMode));
     }
     static PassRefPtr<MediaQuerySet> createAllowingDescriptionSyntax(const String& mediaString)
     {
-        return adoptRef(new MediaQuerySet(mediaString, true));
+        return adoptRef(new MediaQuerySet(mediaString, MediaQueryForwardCompatibleSyntaxMode));
     }
     ~MediaQuerySet();
 
-    bool parse(const String&);
+    bool set(const String&);
     bool add(const String&);
     bool remove(const String&);
 
@@ -71,13 +77,16 @@ public:
 
 private:
     MediaQuerySet();
-    MediaQuerySet(const String& mediaQuery, bool fallbackToDescription);
+    MediaQuerySet(const String& mediaQuery, MediaQueryParserMode);
     MediaQuerySet(const MediaQuerySet&);
 
-    PassOwnPtr<MediaQuery> parseMediaQuery(const String&);
+    PassOwnPtr<MediaQuery> parseMediaQuery(const String&, MediaQueryParserMode);
+    void parseMediaQueryList(const String&, MediaQueryParserMode, Vector<OwnPtr<MediaQuery> >& result);
 
-    unsigned m_fallbackToDescriptor : 1; // true if failed media query parsing should fallback to media description parsing.
-    signed m_lastLine : 31;
+    MediaQueryParserMode parserMode() const { return static_cast<MediaQueryParserMode>(m_parserMode); }
+
+    unsigned m_parserMode : 2;
+    unsigned m_lastLine : 30;
     Vector<OwnPtr<MediaQuery> > m_queries;
 };
 
@@ -100,7 +109,7 @@ public:
     void appendMedium(const String& newMedium, ExceptionCode&);
 
     String mediaText() const { return m_mediaQueries->mediaText(); }
-    void setMediaText(const String&, ExceptionCode&);
+    void setMediaText(const String&);
 
     // Not part of CSSOM.
     CSSRule* parentRule() const { return m_parentRule; }
