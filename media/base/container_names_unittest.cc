@@ -111,36 +111,91 @@ void TestFile(MediaContainerName expected, const base::FilePath& filename) {
       << "Failure with file " << filename.value();
 }
 
-// Test several OGG files to ensure that the container is detected properly.
 TEST(ContainerNamesTest, FileCheckOGG) {
   TestFile(CONTAINER_OGG, GetTestDataFilePath("bear.ogv"));
   TestFile(CONTAINER_OGG, GetTestDataFilePath("9ch.ogg"));
 }
 
-// Test several WAV files to ensure that the container is detected properly.
 TEST(ContainerNamesTest, FileCheckWAV) {
   TestFile(CONTAINER_WAV, GetTestDataFilePath("4ch.wav"));
   TestFile(CONTAINER_WAV, GetTestDataFilePath("sfx_f32le.wav"));
   TestFile(CONTAINER_WAV, GetTestDataFilePath("sfx_s16le.wav"));
 }
 
-// Test several MOV files to ensure that the container is detected properly.
 TEST(ContainerNamesTest, FileCheckMOV) {
   TestFile(CONTAINER_MOV, GetTestDataFilePath("bear-1280x720.mp4"));
   TestFile(CONTAINER_MOV, GetTestDataFilePath("sfx.m4a"));
 }
 
-// Test several WEBM files to ensure that the container is detected properly.
 TEST(ContainerNamesTest, FileCheckWEBM) {
   TestFile(CONTAINER_WEBM, GetTestDataFilePath("bear-320x240.webm"));
   TestFile(CONTAINER_WEBM, GetTestDataFilePath("no_streams.webm"));
   TestFile(CONTAINER_WEBM, GetTestDataFilePath("webm_ebml_element"));
 }
 
-// Test several MP3 files to ensure that the container is detected properly.
 TEST(ContainerNamesTest, FileCheckMP3) {
   TestFile(CONTAINER_MP3, GetTestDataFilePath("id3_test.mp3"));
   TestFile(CONTAINER_MP3, GetTestDataFilePath("sfx.mp3"));
+}
+
+TEST(ContainerNamesTest, FileCheckAC3) {
+  TestFile(CONTAINER_AC3, GetTestDataFilePath("bear.ac3"));
+}
+
+TEST(ContainerNamesTest, FileCheckAAC) {
+  TestFile(CONTAINER_AAC, GetTestDataFilePath("bear.adts"));
+}
+
+TEST(ContainerNamesTest, FileCheckAIFF) {
+  TestFile(CONTAINER_AIFF, GetTestDataFilePath("bear.aiff"));
+}
+
+TEST(ContainerNamesTest, FileCheckASF) {
+  TestFile(CONTAINER_ASF, GetTestDataFilePath("bear.asf"));
+}
+
+TEST(ContainerNamesTest, FileCheckAVI) {
+  TestFile(CONTAINER_AVI, GetTestDataFilePath("bear.avi"));
+}
+
+TEST(ContainerNamesTest, FileCheckEAC3) {
+  TestFile(CONTAINER_EAC3, GetTestDataFilePath("bear.eac3"));
+}
+
+TEST(ContainerNamesTest, FileCheckFLAC) {
+  TestFile(CONTAINER_FLAC, GetTestDataFilePath("bear.flac"));
+}
+
+TEST(ContainerNamesTest, FileCheckFLV) {
+  TestFile(CONTAINER_FLV, GetTestDataFilePath("bear.flv"));
+}
+
+TEST(ContainerNamesTest, FileCheckH261) {
+  TestFile(CONTAINER_H261, GetTestDataFilePath("bear.h261"));
+}
+
+TEST(ContainerNamesTest, FileCheckH263) {
+  TestFile(CONTAINER_H263, GetTestDataFilePath("bear.h263"));
+}
+
+TEST(ContainerNamesTest, FileCheckMJPEG) {
+  TestFile(CONTAINER_MJPEG, GetTestDataFilePath("bear.mjpeg"));
+}
+
+TEST(ContainerNamesTest, FileCheckMPEG2PS) {
+  TestFile(CONTAINER_MPEG2PS, GetTestDataFilePath("bear.mpeg"));
+}
+
+TEST(ContainerNamesTest, FileCheckMPEG2TS) {
+  TestFile(CONTAINER_MPEG2TS, GetTestDataFilePath("bear.m2ts"));
+}
+
+TEST(ContainerNamesTest, FileCheckRM) {
+  TestFile(CONTAINER_RM, GetTestDataFilePath("bear.rm"));
+}
+
+TEST(ContainerNamesTest, FileCheckSWF) {
+  TestFile(CONTAINER_SWF, GetTestDataFilePath("bear.swf"));
 }
 
 // Try a few non containers.

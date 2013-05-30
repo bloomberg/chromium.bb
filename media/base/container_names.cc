@@ -231,7 +231,7 @@ static bool CheckBink(const uint8* buffer, int buffer_size) {
 // Additional checks for a CAF container.
 static bool CheckCaf(const uint8* buffer, int buffer_size) {
   // Reference: Apple Core Audio Format Specification 1.0
-  // (http://goo.gl/Vgb9r)
+  // (https://developer.apple.com/library/mac/#documentation/MusicAudio/Reference/CAFSpec/CAF_spec/CAF_spec.html)
   RCHECK(buffer_size >= 52);
   BitReader reader(buffer, buffer_size);
 
@@ -272,7 +272,7 @@ static bool kExtAudioIdValid[8] = { true, false, true, false, false, false,
 // Additional checks for a DTS container.
 static bool CheckDts(const uint8* buffer, int buffer_size) {
   // Reference: ETSI TS 102 114 V1.3.1 (2011-08)
-  // (http://goo.gl/FhHrk)
+  // (http://www.etsi.org/deliver/etsi_ts/102100_102199/102114/01.03.01_60/ts_102114v010301p.pdf)
   RCHECK(buffer_size > 11);
 
   int offset = 0;
@@ -327,7 +327,7 @@ static bool CheckDts(const uint8* buffer, int buffer_size) {
 // Checks for a DV container.
 static bool CheckDV(const uint8* buffer, int buffer_size) {
   // Reference: SMPTE 314M (Annex A has differences with IEC 61834).
-  // (http://goo.gl/kMn6p)
+  // (http://standards.smpte.org/content/978-1-61482-454-1/st-314-2005/SEC1.body.pdf)
   RCHECK(buffer_size > 11);
 
   int offset = 0;
@@ -390,7 +390,7 @@ static bool CheckDV(const uint8* buffer, int buffer_size) {
 // Checks for a GSM container.
 static bool CheckGsm(const uint8* buffer, int buffer_size) {
   // Reference: ETSI EN 300 961 V8.1.1
-  // (http://goo.gl/h2VDS)
+  // (http://www.etsi.org/deliver/etsi_en/300900_300999/300961/08.01.01_60/en_300961v080101p.pdf)
   // also http://tools.ietf.org/html/rfc3551#page-24
   // GSM files have a 33 byte block, only first 4 bits are fixed.
   RCHECK(buffer_size >= 1024);  // Need enough data to do a decent check.
@@ -947,7 +947,7 @@ static bool CheckMpeg4BitStream(const uint8* buffer, int buffer_size) {
 // Additional checks for a MOV/QuickTime/MPEG4 container.
 static bool CheckMov(const uint8* buffer, int buffer_size) {
   // Reference: ISO/IEC 14496-12:2005(E).
-  // (http://goo.gl/OWH0Q)
+  // (http://standards.iso.org/ittf/PubliclyAvailableStandards/c061988_ISO_IEC_14496-12_2012.zip)
   RCHECK(buffer_size > 8);
 
   int offset = 0;
@@ -1298,7 +1298,7 @@ enum VC1StartCodes {
 // Checks for a VC1 bitstream container.
 static bool CheckVC1(const uint8* buffer, int buffer_size) {
   // Reference: SMPTE 421M
-  // (http://goo.gl/fLvaE)
+  // (http://standards.smpte.org/content/978-1-61482-555-5/st-421-2006/SEC1.body.pdf)
   // However, no length ... simply scan for start code values.
   // Expect to see SEQ | [ [ ENTRY ] PIC* ]*
   // Note tags are very similar to H.264.
