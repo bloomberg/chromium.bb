@@ -86,6 +86,9 @@ class OperationTestBase : public testing::Test {
     return blocking_task_runner_;
   }
   internal::ResourceMetadata* metadata() { return metadata_.get(); }
+  FakeFreeDiskSpaceGetter* fake_free_disk_space_getter() {
+    return fake_free_disk_space_getter_.get();
+  }
   internal::FileCache* cache() { return cache_.get(); }
 
  private:

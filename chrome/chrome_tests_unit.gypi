@@ -584,6 +584,7 @@
         'browser/chromeos/drive/file_system_unittest.cc',
         'browser/chromeos/drive/file_system/create_directory_operation_unittest.cc',
         'browser/chromeos/drive/file_system/create_file_operation_unittest.cc',
+        'browser/chromeos/drive/file_system/download_operation_unittest.cc',
         'browser/chromeos/drive/file_system/move_operation_unittest.cc',
         'browser/chromeos/drive/file_system/operation_test_base.cc',
         'browser/chromeos/drive/file_system/operation_test_base.h',

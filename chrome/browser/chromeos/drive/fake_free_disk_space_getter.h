@@ -19,6 +19,9 @@ class FakeFreeDiskSpaceGetter : public internal::FreeDiskSpaceGetterInterface {
   FakeFreeDiskSpaceGetter();
   virtual ~FakeFreeDiskSpaceGetter();
 
+  // Resets this instance.
+  void Reset();
+
   // If this function is not called, AmountOfFreeDiskSpace() will return 0
   // repeatedly.
   //

@@ -12,6 +12,10 @@ FakeFreeDiskSpaceGetter::FakeFreeDiskSpaceGetter() {
 FakeFreeDiskSpaceGetter::~FakeFreeDiskSpaceGetter() {
 }
 
+void FakeFreeDiskSpaceGetter::Reset() {
+  fake_values_.clear();
+}
+
 int64 FakeFreeDiskSpaceGetter::AmountOfFreeDiskSpace() {
   if (fake_values_.empty())
     return 0;
