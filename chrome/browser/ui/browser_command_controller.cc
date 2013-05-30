@@ -387,9 +387,12 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       CloseTab(browser_);
       break;
     case IDC_SELECT_NEXT_TAB:
+      content::RecordAction(content::UserMetricsAction("Accel_SelectNextTab"));
       SelectNextTab(browser_);
       break;
     case IDC_SELECT_PREVIOUS_TAB:
+      content::RecordAction(
+          content::UserMetricsAction("Accel_SelectPreviousTab"));
       SelectPreviousTab(browser_);
       break;
     case IDC_TABPOSE:

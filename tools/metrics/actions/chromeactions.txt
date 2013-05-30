@@ -72,6 +72,8 @@
 0xa2654c422408df28	Accel_Reload_F3
 0x6db94baf96eb6cfd	Accel_Reload_R
 0xe315330404ef14a8	Accel_Search_LWin
+0x01b760c64064556f	Accel_SelectNextTab
+0x86e5b771da4dc62f	Accel_SelectPreviousTab
 0x178d1faf1167b4ca	Accel_ShutDown_PowerButton
 0x7974ffb673dd5475	Accel_VolumeDown_F9
 0xbe6aee0aaab8ed8a	Accel_VolumeMute_F8
