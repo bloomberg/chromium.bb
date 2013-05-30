@@ -3,19 +3,19 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/api/music_manager_private/music_manager_private_api.h"
+
 #include "chrome/browser/extensions/api/music_manager_private/device_id.h"
 
 using content::BrowserThread;
 
 namespace {
 
-const char kDeviceIDNotSupported[] =
+const char kDeviceIdNotSupported[] =
     "Device ID API is not supported on this platform.";
 
 }
 
 namespace extensions {
-
 namespace api {
 
 MusicManagerPrivateGetDeviceIdFunction::
@@ -27,21 +27,29 @@ MusicManagerPrivateGetDeviceIdFunction::
 }
 
 bool MusicManagerPrivateGetDeviceIdFunction::RunImpl() {
-  std::string salt = this->extension_id();
-  std::string result = device_id::GetDeviceID(salt);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DeviceId::GetDeviceId(
+      this->extension_id(),
+      base::Bind(
+          &MusicManagerPrivateGetDeviceIdFunction::DeviceIdCallback,
+          this));
+  return true;  // Still processing!
+}
+
+void MusicManagerPrivateGetDeviceIdFunction::DeviceIdCallback(
+    const std::string& device_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   bool response;
-  if (result.empty()) {
-    SetError(kDeviceIDNotSupported);
+  if (device_id.empty()) {
+    SetError(kDeviceIdNotSupported);
     response = false;
   } else {
-    SetResult(Value::CreateStringValue(result));
+    SetResult(Value::CreateStringValue(device_id));
     response = true;
   }
 
   SendResponse(response);
-  return response;
 }
 
 } // namespace api
-
 } // namespace extensions

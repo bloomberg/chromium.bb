@@ -4,35 +4,13 @@
 
 #include "chrome/browser/extensions/api/music_manager_private/device_id.h"
 
-#include "base/base64.h"
-#include "base/file_util.h"
-#include "base/files/file_path.h"
-#include "base/logging.h"
-#if defined(OS_CHROMEOS)
-#include "chromeos/cryptohome/cryptohome_library.h"
-#endif
+#include "base/bind.h"
+#include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/hmac.h"
-#if defined(ENABLE_RLZ)
-#include "rlz/lib/machine_id.h"
-#endif
 
 namespace {
-
-// Return a unique identifier for the machine/device. Currently, this is only
-// supported on Windows (with RLZ enabled) and ChromeOS.
-std::string GetMachineID() {
-#if defined(OS_WIN) && defined(ENABLE_RLZ)
-  std::string result;
-  rlz_lib::GetMachineId(&result);
-  return result;
-#elif defined(OS_CHROMEOS)
-  chromeos::CryptohomeLibrary* c_home = chromeos::CryptohomeLibrary::Get();
-  return c_home->GetSystemSalt();
-#else
-  // Not implemented for other platforms.
-  return "";
-#endif
-}
 
 // Compute HMAC-SHA256(|key|, |text|) as a string.
 bool ComputeHmacSha256(const std::string& key,
@@ -42,31 +20,46 @@ bool ComputeHmacSha256(const std::string& key,
   const size_t digest_length = hmac.DigestLength();
   std::vector<uint8> digest(digest_length);
   bool result = hmac.Init(key) &&
-      hmac.Sign(text, &digest[0], digest.size()) &&
-      base::Base64Encode(std::string(reinterpret_cast<char*>(&digest[0]),
-                                     digest.size()),
-                         signature_return);
+      hmac.Sign(text, &digest[0], digest.size());
+  if (result) {
+    *signature_return = StringToLowerASCII(base::HexEncode(digest.data(),
+                                                           digest.size()));
+  }
   return result;
 }
 
-}
+void GetMachineIdCallback(const std::string& extension_id,
+                          const extensions::api::DeviceId::IdCallback& callback,
+                          const std::string& machine_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-namespace device_id {
-
-std::string GetDeviceID(const std::string& salt) {
-  CHECK(!salt.empty());
-  std::string machine_id = GetMachineID();
   if (machine_id.empty()) {
-    DLOG(WARNING) << "API is not supported on current platform.";
-    return "";
+    callback.Run("");
   }
 
   std::string device_id;
-  if (!ComputeHmacSha256(machine_id, salt, &device_id)) {
+  if (!ComputeHmacSha256(machine_id, extension_id, &device_id)) {
     DLOG(ERROR) << "Error while computing HMAC-SHA256 of device id.";
-    return "";
+    callback.Run("");
   }
-  return device_id;
+  callback.Run(device_id);
 }
 
-}  // namespace device_id
+}
+
+namespace extensions {
+namespace api {
+
+/* static */
+void DeviceId::GetDeviceId(const std::string& extension_id,
+                           const IdCallback& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  CHECK(!extension_id.empty());
+
+  // Forward call to platform specific implementation, then compute the HMAC
+  // in the callback.
+  GetMachineId(base::Bind(&GetMachineIdCallback, extension_id, callback));
+}
+
+}  // namespace api
+}  // namespace extensions
