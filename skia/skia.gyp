@@ -110,7 +110,9 @@
         #'../third_party/skia/src/ports/SkImageRef_ashmem.h',
         #'../third_party/skia/src/ports/SkOSEvent_android.cpp',
         #'../third_party/skia/src/ports/SkOSEvent_dummy.cpp',
+        '../third_party/skia/src/ports/SkOSFile_posix.cpp',
         '../third_party/skia/src/ports/SkOSFile_stdio.cpp',
+        '../third_party/skia/src/ports/SkOSFile_win.cpp', 
         #'../third_party/skia/src/ports/SkThread_none.cpp',
         '../third_party/skia/src/ports/SkThread_pthread.cpp',
         '../third_party/skia/src/ports/SkThread_win.cpp',
@@ -500,7 +502,7 @@
         }],
         [ 'OS == "win"', {
           'sources!': [
-            '../third_party/skia/src/core/SkMMapStream.cpp',
+            '../third_party/skia/src/ports/SkOSFile_posix.cpp',
             '../third_party/skia/src/ports/SkThread_pthread.cpp',
             '../third_party/skia/src/ports/SkTime_Unix.cpp',
             'ext/SkThread_chrome.cc',
