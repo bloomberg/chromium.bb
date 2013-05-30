@@ -443,58 +443,103 @@ Here's a brief summary of the push messaging errors:
 
 <h2 id="test">Testing</h2>
 
-<p>
-To test push messaging locally,
-<a href="packaging.html">package</a> a test version of
-your app or extension on the Extensions management page
-(go to <strong>chrome://extensions</strong> in your browser).
-Your app or extension doesn't need to be running, just installed.
-You need to get the channel ID at install time
-using
-{{?is_apps}}$ref:app.runtime.onLaunched.{{/is_apps}}
-{{^is_apps}}$ref:runtime.onInstalled.{{/is_apps}}
-Then, use that channel ID on the server to send a test
-push message through the system.
-If all goes well,
-your app or extension should start
-and you should receive the test push message.
-</p>
+<h3 id="test-local">Testing locally</h3>
 
 <p>
-To test that push messaging works in the cloud,
-you need to publish to the Chrome Web Store first.
-Once you have published,
-you need to copy the Chrome Web Store install key in the installed
-<code>manifest.json</code> to your source manifest
-and then install a test version of your app or extension
-on the Extensions management page.
-This ensures that you are testing the published version.
-To get the key:
+To test push messaging locally:
 </p>
 
 <ol>
-  <li>Go to your
-  <a href="http://www.chromium.org/user-experience/user-data-directory">user data directory</a>.
-  Example on Mac OS X: <code>~/Library/Application\ Support/Google/Chrome/Default/Extensions</code></li>
-  <li>Go to the installed extension directory with the appropriate Chrome Web Store app ID.
-  <li>Open the installed <code>manifest.json</code>
-  (pico is a quick way to open the file).</li>
-  <li>Copy the "key" in the installed <code>manifest.json</code> and
-  paste it into your app's source manifest file.</li>
+  <li><a href="packaging.html">Package</a> a test version of
+  your app or extension on the Extensions management page
+  (chrome://extensions).
+  Your app or extension doesn't need to be running; it just needs
+  to be installed.</li>
+
+  <li>Get the channel ID at install time using
+  {{?is_apps}}$ref:app.runtime.onLaunched.{{/is_apps}}
+  {{^is_apps}}$ref:runtime.onInstalled.{{/is_apps}}</li>
+
+  <li>Use that channel ID on the server to send a test
+  push message through the system.
+  If all goes well,
+  your app or extension should start
+  and you should receive the test push message.
+  </li>
 </ol>
 
-<p class="note">
-The Chrome Web Store app ID is in the URL of any dashboard
-or store page that's dedicated to your app or extension.
-For example, the URL
-<code>https://chrome.google.com/extensions/detail/aaaaaaaaaabbbbbbbbbbcccccccccc?hl=en</code>
-has the app ID <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>.
+<h3 id="test-cloud">Testing in the cloud</h3>
+
+<p>To test push messaging in the cloud, you must first make sure that the
+app or extension you are testing passes an ownership check.
+The Push Messaging server checks that the ID of an app or extension
+that calls the pushMessaging API matches the ID of the app or extension
+in the Chrome Web Store. This ownership check is designed to prevent people
+from sending messages to your app or extension without your permission.
+If your app or extension attempts to use the pushMessaging API and
+the ownership check fails, it will receive
+HTTP status code 500 (Internal Server Error).
 </p>
 
 <p>
-Each time you reload your extension for testing,
-you need to check that the key is present.
+One circumstance in which the ownership check commonly fails is when you are
+developing an app and you run the app without uploading it and re-downloading
+it from the Chrome Web Store. In this situation your app may not have a
+<a href="manifest.html#key">key</a> field in its manifest.json file.
+The <code>key</code> field gives an app its Chrome Web Store ID
+(a 32 character alphabetic code, such as "bafimiidcfafikaonocgmmcpbbhfjjik").
+If you run a version of your app without a key, the app will use a
+randomly generated ID that will not match the app's ID in the Chrome Web Store.
+For example, if you upload your app to the Chrome Web Store from the directory
+original_app_dir, then download the app and unpack it to downloaded_app_dir,
+and then run the exact same app as an unpacked extension from original_app_dir,
+the manifest.json file of the app in original_app_dir would not have
+the downloaded key, and the app's ID would appear to be different than
+the ID of the downloaded app.
+</p>
+
+<p>
+To test push messaging in the cloud:
+</p>
+
+<ol>
+  <li>Publish your app or extension to the Chrome Web Store.</li>
+
+  <li>Determine the Chrome Web Store ID of your app or extension.
+  The Chrome Web Store ID is in the URL of any dashboard
+  or Chrome Web Store page that's dedicated to your app or extension.
+  For example, the URL
+  <code>https://chrome.google.com/extensions/detail/aaaaaaaaaabbbbbbbbbbcccccccccc?hl=en</code>
+  has the ID <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>.</li>
+
+
+  <li>Install your app or extension from the Chrome Web Store.</li>
+  
+  <li>Get the key from the installed app or extension:
+
+    <ol style="list-style-type: lower-alpha;">
+      <li>Go to your
+      <a href="http://www.chromium.org/user-experience/user-data-directory">user data directory</a>.
+      </li>
+
+      <li>Look in the file <code>Default/Extensions/&lt;<i>ID</i>&gt;/&lt;<i>versionString</i>&gt;/manifest.json</code>.
+      </li>
+
+      <li>Copy the key field.</li>
+    </ol>
+  </li>
+
+  <li>Paste the key field into manifest.json in
+  the test version of your app or extension.</li>
+
+  <li>Install a test version of your app or extension on the
+  Extensions management page (chrome://extensions).</li>
+</ol>
+
+<p>
+Each time you reload your app or extension for testing,
+you need to check that the key is present in the manifest file.
 And anytime you wish to update the published version in the Chrome Web Store,
-you need to remove this key
-because the store doesn't allow manifests with this key.
+you need to remove the key because the Store does not currently allow manifests
+with keys.
 </p>
