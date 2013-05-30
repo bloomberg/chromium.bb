@@ -35,14 +35,12 @@ class ContentSettingImageView : public TouchableLocationBarView,
                                 public views::View,
                                 public views::WidgetObserver {
  public:
-  // |background_images| is the array of images used to draw
-  // the label animation background (if any).
   ContentSettingImageView(ContentSettingsType content_type,
-                          const int background_images[],
                           LocationBarView* parent,
                           const gfx::Font& font,
                           int font_y_offset,
-                          SkColor font_color);
+                          SkColor text_color,
+                          SkColor parent_background_color);
   virtual ~ContentSettingImageView();
 
   // TouchableLocationBarView:

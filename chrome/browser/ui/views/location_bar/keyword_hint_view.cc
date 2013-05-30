@@ -25,15 +25,18 @@
 KeywordHintView::KeywordHintView(Profile* profile,
                                  const gfx::Font& font,
                                  int font_y_offset,
-                                 const LocationBarView* location_bar_view)
+                                 SkColor text_color,
+                                 SkColor background_color)
     : profile_(profile),
       tab_image_(new views::ImageView()) {
-  leading_label_ = CreateLabel(font, font_y_offset, location_bar_view);
+  leading_label_ =
+      CreateLabel(font, font_y_offset, text_color, background_color);
   tab_image_->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_OMNIBOX_KEYWORD_HINT_TAB));
   AddChildView(tab_image_);
-  trailing_label_ = CreateLabel(font, font_y_offset, location_bar_view);
+  trailing_label_ =
+      CreateLabel(font, font_y_offset, text_color, background_color);
 }
 
 KeywordHintView::~KeywordHintView() {
@@ -90,17 +93,15 @@ void KeywordHintView::Layout() {
                              trailing_size.height());
 }
 
-views::Label* KeywordHintView::CreateLabel(
-    const gfx::Font& font,
-    int font_y_offset,
-    const LocationBarView* location_bar_view) {
+views::Label* KeywordHintView::CreateLabel(const gfx::Font& font,
+                                           int font_y_offset,
+                                           SkColor text_color,
+                                           SkColor background_color) {
   views::Label* label = new views::Label();
   label->set_border(views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
   label->SetFont(font);
-  label->SetEnabledColor(location_bar_view->GetColor(
-      ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT));
-  label->SetBackgroundColor(location_bar_view->GetColor(
-      ToolbarModel::NONE, LocationBarView::BACKGROUND));
+  label->SetEnabledColor(text_color);
+  label->SetBackgroundColor(background_color);
   AddChildView(label);
   return label;
 }

@@ -3,16 +3,27 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
+#include "grit/theme_resources.h"
+#include "ui/views/painter.h"
 
 
-EVBubbleView::EVBubbleView(const int background_images[],
-                           int contained_image,
-                           const gfx::Font& font,
+namespace {
+const int kBackgroundImages[] = {
+  IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L,
+  IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C,
+  IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R,
+};
+}
+
+
+EVBubbleView::EVBubbleView(const gfx::Font& font,
                            int font_y_offset,
-                           SkColor color,
+                           SkColor text_color,
+                           SkColor parent_background_color,
                            LocationBarView* location_bar)
-    : IconLabelBubbleView(background_images, contained_image, font,
-                          font_y_offset, color, true),
+    : IconLabelBubbleView(kBackgroundImages, IDR_OMNIBOX_HTTPS_VALID, font,
+                          font_y_offset, text_color, parent_background_color,
+                          true),
       page_info_helper_(this, location_bar) {
 }
 

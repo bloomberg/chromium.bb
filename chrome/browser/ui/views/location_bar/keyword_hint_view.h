@@ -11,7 +11,6 @@
 #include "ui/gfx/size.h"
 #include "ui/views/view.h"
 
-class LocationBarView;
 class Profile;
 
 namespace gfx {
@@ -36,7 +35,8 @@ class KeywordHintView : public views::View {
   KeywordHintView(Profile* profile,
                   const gfx::Font& font,
                   int font_y_offset,
-                  const LocationBarView* location_bar_view);
+                  SkColor text_color,
+                  SkColor background_color);
   virtual ~KeywordHintView();
 
   void SetKeyword(const string16& keyword);
@@ -50,7 +50,8 @@ class KeywordHintView : public views::View {
  private:
   views::Label* CreateLabel(const gfx::Font& font,
                             int font_y_offset,
-                            const LocationBarView* location_bar_view);
+                            SkColor text_color,
+                            SkColor background_color);
 
   Profile* profile_;
   views::Label* leading_label_;

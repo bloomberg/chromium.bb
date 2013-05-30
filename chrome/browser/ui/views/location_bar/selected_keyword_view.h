@@ -20,11 +20,10 @@ class Size;
 // SelectedKeywordView displays the tab-to-search UI in the location bar view.
 class SelectedKeywordView : public IconLabelBubbleView {
  public:
-  SelectedKeywordView(const int background_images[],
-                      int contained_image,
-                      const gfx::Font& font,
+  SelectedKeywordView(const gfx::Font& font,
                       int font_y_offset,
-                      SkColor color,
+                      SkColor text_color,
+                      SkColor parent_background_color,
                       Profile* profile);
   virtual ~SelectedKeywordView();
 
@@ -34,7 +33,7 @@ class SelectedKeywordView : public IconLabelBubbleView {
 
   // The current keyword, or an empty string if no keyword is displayed.
   void SetKeyword(const string16& keyword);
-  string16 keyword() const { return keyword_; }
+  const string16& keyword() const { return keyword_; }
 
  private:
   // The keyword we're showing. If empty, no keyword is selected.

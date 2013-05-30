@@ -33,7 +33,8 @@ class IconLabelBubbleView : public views::View {
                       int contained_image,
                       const gfx::Font& font,
                       int font_y_offset,
-                      SkColor color,
+                      SkColor text_color,
+                      SkColor parent_background_color,
                       bool elide_in_middle);
   virtual ~IconLabelBubbleView();
 

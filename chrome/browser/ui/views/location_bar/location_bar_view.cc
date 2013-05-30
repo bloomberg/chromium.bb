@@ -263,15 +263,11 @@ void LocationBarView::Init() {
       &bubble_font, &bubble_font_y_offset);
   bubble_font_y_offset += kBubbleInteriorVerticalPadding;
 
-  const int kEVBubbleBackgroundImages[] = {
-    IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L,
-    IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C,
-    IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R,
-  };
-  ev_bubble_view_ =
-      new EVBubbleView(kEVBubbleBackgroundImages, IDR_OMNIBOX_HTTPS_VALID,
-                       bubble_font, bubble_font_y_offset,
-                       GetColor(ToolbarModel::EV_SECURE, SECURITY_TEXT), this);
+  const SkColor background_color =
+      GetColor(ToolbarModel::NONE, LocationBarView::BACKGROUND);
+  ev_bubble_view_ = new EVBubbleView(
+      bubble_font, bubble_font_y_offset,
+      GetColor(ToolbarModel::EV_SECURE, SECURITY_TEXT), background_color, this);
   ev_bubble_view_->set_drag_controller(this);
   AddChildView(ev_bubble_view_);
 
@@ -281,15 +277,10 @@ void LocationBarView::Init() {
   SetLocationEntryFocusable(true);
   location_entry_view_ = location_entry_->AddToView(this);
 
-  const int kSelectedKeywordBackgroundImages[] = {
-    IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L,
-    IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C,
-    IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R,
-  };
   const SkColor text_color = GetColor(ToolbarModel::NONE, TEXT);
   selected_keyword_view_ = new SelectedKeywordView(
-      kSelectedKeywordBackgroundImages, IDR_KEYWORD_SEARCH_MAGNIFIER,
-      bubble_font, bubble_font_y_offset, text_color, profile_);
+      bubble_font, bubble_font_y_offset, text_color, background_color,
+      profile_);
   AddChildView(selected_keyword_view_);
 
   suggested_text_view_ = new views::Label(string16(), font);
@@ -302,7 +293,10 @@ void LocationBarView::Init() {
   suggested_text_view_->SetVisible(false);
   AddChildView(suggested_text_view_);
 
-  keyword_hint_view_ = new KeywordHintView(profile_, font, font_y_offset, this);
+  keyword_hint_view_ = new KeywordHintView(
+      profile_, font, font_y_offset,
+      GetColor(ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT),
+      background_color);
   AddChildView(keyword_hint_view_);
 
   search_token_view_ = new views::Label(string16(), font);
@@ -313,16 +307,11 @@ void LocationBarView::Init() {
   search_token_separator_view_ = new LocationBarSeparatorView();
   AddChildView(search_token_separator_view_);
 
-  const int kCSBubbleBackgroundImages[] = {
-    IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_L,
-    IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_C,
-    IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_R,
-  };
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingImageView* content_blocked_view =
-        new ContentSettingImageView(
-            static_cast<ContentSettingsType>(i), kCSBubbleBackgroundImages,
-            this, bubble_font, bubble_font_y_offset, text_color);
+        new ContentSettingImageView(static_cast<ContentSettingsType>(i), this,
+                                    bubble_font, bubble_font_y_offset,
+                                    text_color, background_color);
     content_setting_views_.push_back(content_blocked_view);
     content_blocked_view->SetVisible(false);
     AddChildView(content_blocked_view);

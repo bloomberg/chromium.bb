@@ -12,17 +12,28 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/painter.h"
 
 
-SelectedKeywordView::SelectedKeywordView(const int background_images[],
-                                         int contained_image,
-                                         const gfx::Font& font,
+namespace {
+const int kBackgroundImages[] = {
+  IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L,
+  IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C,
+  IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R,
+};
+}
+
+
+SelectedKeywordView::SelectedKeywordView(const gfx::Font& font,
                                          int font_y_offset,
-                                         SkColor color,
+                                         SkColor text_color,
+                                         SkColor parent_background_color,
                                          Profile* profile)
-    : IconLabelBubbleView(background_images, contained_image, font,
-                          font_y_offset, color, false),
+    : IconLabelBubbleView(kBackgroundImages, IDR_KEYWORD_SEARCH_MAGNIFIER, font,
+                          font_y_offset, text_color, parent_background_color,
+                          false),
       profile_(profile) {
   full_label_.SetFont(font);
   full_label_.SetVisible(false);

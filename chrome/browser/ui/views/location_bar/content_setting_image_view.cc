@@ -10,15 +10,22 @@
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
 
 namespace {
+const int kBackgroundImages[] = {
+  IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_L,
+  IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_C,
+  IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_R,
+};
+
 const int kStayOpenTimeMS = 3200;  // Time spent with animation fully open.
 
 // Margins for animated box (pixels).
@@ -34,16 +41,16 @@ const int ContentSettingImageView::kAnimationDurationMS =
 
 ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType content_type,
-    const int background_images[],
     LocationBarView* parent,
     const gfx::Font& font,
     int font_y_offset,
-    SkColor font_color)
+    SkColor text_color,
+    SkColor parent_background_color)
     : parent_(parent),
       content_setting_image_model_(
           ContentSettingImageModel::CreateContentSettingImageModel(
               content_type)),
-      background_painter_(new views::HorizontalPainter(background_images)),
+      background_painter_(new views::HorizontalPainter(kBackgroundImages)),
       icon_(new views::ImageView),
       text_label_(new views::Label),
       slide_animator_(this),
@@ -57,7 +64,29 @@ ContentSettingImageView::ContentSettingImageView(
   text_label_->set_border(
       views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
   text_label_->SetFont(font);
-  text_label_->SetEnabledColor(font_color);
+  text_label_->SetEnabledColor(text_color);
+  // Calculate the actual background color for the label.  The background images
+  // are painted atop |parent_background_color|.  We grab the color of the
+  // middle pixel of the middle image of the background, which we treat as the
+  // representative color of the entire background (reasonable, given the
+  // current appearance of these images).  Then we alpha-blend it over the
+  // parent background color to determine the actual color the label text will
+  // sit atop.
+  const SkBitmap& bitmap(
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          kBackgroundImages[1])->GetRepresentation(
+          ui::SCALE_FACTOR_100P).sk_bitmap());
+  SkAutoLockPixels pixel_lock(bitmap);
+  SkColor background_image_color =
+      bitmap.getColor(bitmap.width() / 2, bitmap.height() / 2);
+  // Tricky bit: We alpha blend an opaque version of |background_image_color|
+  // against |parent_background_color| using the original image grid color's
+  // alpha. This is because AlphaBlend(a, b, 255) always returns |a| unchanged
+  // even if |a| is a color with non-255 alpha.
+  text_label_->SetBackgroundColor(
+      color_utils::AlphaBlend(SkColorSetA(background_image_color, 255),
+                              parent_background_color,
+                              SkColorGetA(background_image_color)));
   text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label_->SetElideBehavior(views::Label::NO_ELIDE);
   AddChildView(text_label_);
