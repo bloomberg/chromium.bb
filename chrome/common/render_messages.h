@@ -252,6 +252,7 @@ IPC_STRUCT_TRAITS_BEGIN(LanguageDetectionDetails)
   IPC_STRUCT_TRAITS_MEMBER(cld_language)
   IPC_STRUCT_TRAITS_MEMBER(is_cld_reliable)
   IPC_STRUCT_TRAITS_MEMBER(adopted_language)
+  IPC_STRUCT_TRAITS_MEMBER(contents)
 IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------

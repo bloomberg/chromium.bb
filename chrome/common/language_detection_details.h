@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
@@ -32,6 +33,9 @@ struct LanguageDetectionDetails {
 
   // The adopted language
   std::string adopted_language;
+
+  // The contents which is used for detection
+  string16 contents;
 };
 
 #endif  // CHROME_COMMON_LANGUAGE_DETECTION_DETAILS_H_

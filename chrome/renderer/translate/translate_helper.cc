@@ -124,6 +124,10 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   details.is_cld_reliable = is_cld_reliable;
   details.adopted_language = language;
 
+  // TODO(hajimehoshi): If this affects performance, it should be set only if
+  // translate-internals tab exists.
+  details.contents = contents;
+
   Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
       routing_id(),
       details,

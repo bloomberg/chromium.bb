@@ -7,6 +7,14 @@
 
   cr.define('cr.translateInternals', function() {
 
+    var detectionLogs_ = null;
+
+    function detectionLogs() {
+      if (detectionLogs_ === null)
+        detectionLogs_ = [];
+      return detectionLogs_;
+    }
+
     /**
      * Initializes UI and sends a message to the browser for
      * initialization.
@@ -14,6 +22,9 @@
     function initialize() {
       cr.ui.decorate('tabbox', cr.ui.TabBox);
       chrome.send('requestInfo');
+
+      var button = $('detection-logs-dump');
+      button.addEventListener('click', onDetectionLogsDump);
     }
 
     /**
@@ -211,6 +222,8 @@
      * @param {Object} detail The object which represents the logs.
      */
     function onLanguageDetectionInfoAdded(detail) {
+      cr.translateInternals.detectionLogs().push(detail);
+
       var tr = document.createElement('tr');
 
       var date = new Date(detail['time']);
@@ -225,9 +238,19 @@
                  'detection-logs-is-cld-reliable'),
         createTD(formatLanguageCode(detail['language']),
                  'detection-logs-language'),
+        createTD(formatLanguageCode(detail['content']),
+                 'detection-logs-content'),
       ].forEach(function(td) {
         tr.appendChild(td);
       });
+
+      // TD (and TR) can't use the CSS property 'max-height', so DIV
+      // in the content is needed.
+      var contentTD = tr.querySelector('.detection-logs-content');
+      var div = document.createElement('div');
+      div.textContent = contentTD.textContent;
+      contentTD.textContent = '';
+      contentTD.appendChild(div);
 
       var tbody = $('detection-logs').getElementsByTagName('tbody')[0];
       tbody.appendChild(tr);
@@ -281,7 +304,27 @@
       }
     }
 
+    /**
+     * The callback of button#detetion-logs-dump.
+     */
+    function onDetectionLogsDump() {
+      var data = JSON.stringify(cr.translateInternals.detectionLogs());
+      var blob = new Blob([data], {'type': 'text/json'});
+      var url = webkitURL.createObjectURL(blob);
+      var filename = 'translate_internals_detect_logs_dump.json';
+
+      var a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', filename);
+
+      var event = document.createEvent('MouseEvent');
+      event.initMouseEvent('click', true, true, window, 0,
+                           0, 0, 0, 0, 0, 0, 0, 0, 0, null);
+      a.dispatchEvent(event);
+    }
+
     return {
+      detectionLogs: detectionLogs,
       initialize: initialize,
       messageHandler: messageHandler,
       onLanguageDetectionInfoAdded: onLanguageDetectionInfoAdded,
