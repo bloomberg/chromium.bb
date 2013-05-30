@@ -337,6 +337,11 @@ bool SessionBackend::AppendCommandsToFile(net::FileStream* file,
         return false;
       }
     }
+#if defined(OS_CHROMEOS)
+    // TODO(gspencer): Remove this once we find a better place to do it.
+    // See issue http://crbug.com/245015
+    file->FlushSync();
+#endif
   }
   return true;
 }
