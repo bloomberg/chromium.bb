@@ -39,7 +39,9 @@ Widget* DialogDelegate::CreateDialogWidget(DialogDelegate* dialog,
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
   params.delegate = dialog;
-  if (DialogDelegate::UseNewStyle()) {
+  const bool use_new_style = dialog ?
+      dialog->UseNewStyleForThisDialog() : DialogDelegate::UseNewStyle();
+  if (use_new_style) {
     // Note: Transparent widgets cannot host native Windows textfield controls.
     params.transparent = true;
     params.remove_standard_frame = true;
@@ -48,7 +50,7 @@ Widget* DialogDelegate::CreateDialogWidget(DialogDelegate* dialog,
   params.parent = parent;
   params.top_level = true;
   widget->Init(params);
-  if (DialogDelegate::UseNewStyle()) {
+  if (use_new_style) {
 #if defined(USE_AURA)
     // TODO(msw): Add a matching shadow type and remove the bubble frame border?
     corewm::SetShadowType(widget->GetNativeWindow(), corewm::SHADOW_TYPE_NONE);
@@ -155,8 +157,9 @@ ClientView* DialogDelegate::CreateClientView(Widget* widget) {
 }
 
 NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
-  return UseNewStyle() ? CreateNewStyleFrameView(widget) :
-                         WidgetDelegate::CreateNonClientFrameView(widget);
+  if (UseNewStyleForThisDialog())
+    return CreateNewStyleFrameView(widget);
+  return WidgetDelegate::CreateNonClientFrameView(widget);
 }
 
 // static
@@ -191,6 +194,10 @@ NonClientFrameView* DialogDelegate::CreateNewStyleFrameView(
   if (force_opaque_border)
     widget->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   return frame;
+}
+
+bool DialogDelegate::UseNewStyleForThisDialog() const {
+  return UseNewStyle();
 }
 
 const DialogClientView* DialogDelegate::GetDialogClientView() const {

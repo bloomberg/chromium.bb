@@ -31,7 +31,8 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
  public:
   virtual ~DialogDelegate();
 
-  // Returns whether to use the new dialog style.
+  // Returns whether to use the new dialog style in general.
+  // See UseNewStyleForThisDialog() for dialog-specific styling.
   static bool UseNewStyle();
 
   // Create a |dialog| window Widget with the specified |context| or |parent|.
@@ -95,6 +96,9 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   // TODO(wittman): Remove once WinAura is in place.
   static NonClientFrameView* CreateNewStyleFrameView(Widget* widget,
                                                      bool force_opaque_border);
+
+  // Returns whether this particular dialog should use the new dialog style.
+  virtual bool UseNewStyleForThisDialog() const;
 
   // Called when the window has been closed.
   virtual void OnClose() {}

@@ -40,13 +40,6 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
       extra_view_(NULL),
       footnote_view_(NULL),
       notified_delegate_(false) {
-  // When using the new style, the background color is set on the bubble frame,
-  // so a transparent background is fine.
-  if (!DialogDelegate::UseNewStyle()) {
-    const SkColor color = owner->GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_DialogBackground);
-    set_background(views::Background::CreateSolidBackground(color));
-  }
 }
 
 DialogClientView::~DialogClientView() {
@@ -263,6 +256,15 @@ void DialogClientView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   ClientView::ViewHierarchyChanged(details);
   if (details.is_add && details.child == this) {
+    // The old dialog style needs an explicit background color, while the new
+    // dialog style simply inherits the bubble's frame view color.
+    const DialogDelegate* dialog = GetDialogDelegate();
+    const bool use_new_style = dialog ?
+        dialog->UseNewStyleForThisDialog() : DialogDelegate::UseNewStyle();
+    if (!use_new_style)
+      set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
+          GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
+
     focus_manager_ = GetFocusManager();
     if (focus_manager_)
       GetFocusManager()->AddFocusChangeListener(this);
