@@ -791,6 +791,12 @@ void HTMLAnchorElement::PrefetchEventHandler::handleClick(Event* event)
 
 bool HTMLAnchorElement::PrefetchEventHandler::shouldPrefetch(const KURL& url)
 {
+    if (m_anchorElement->hasEventListeners(eventNames().clickEvent))
+        return false;
+
+    if (!url.protocolIsInHTTPFamily())
+        return false;
+
     Document* document = m_anchorElement->document();
     if (!document)
         return false;
