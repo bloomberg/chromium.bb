@@ -146,12 +146,13 @@ text_input_commit_string(void *data,
 
 	text_entry_reset_preedit(entry);
 
-	text_entry_delete_selected_text(entry);
 
 	if (entry->pending_commit.delete_length) {
 		text_entry_delete_text(entry,
 				       entry->pending_commit.delete_index,
 				       entry->pending_commit.delete_length);
+	} else {
+		text_entry_delete_selected_text(entry);
 	}
 
 	text_entry_insert_at_cursor(entry, text,
@@ -172,7 +173,15 @@ text_input_preedit_string(void *data,
 {
 	struct text_entry *entry = data;
 
-	text_entry_delete_selected_text(entry);
+	if (entry->pending_commit.delete_length) {
+		text_entry_delete_text(entry,
+				       entry->pending_commit.delete_index,
+				       entry->pending_commit.delete_length);
+	} else {
+		text_entry_delete_selected_text(entry);
+	}
+	memset(&entry->pending_commit, 0, sizeof entry->pending_commit);
+
 	text_entry_set_preedit(entry, text, entry->preedit_info.cursor);
 	entry->preedit.commit = strdup(commit);
 	entry->preedit.attr_list = entry->preedit_info.attr_list;
