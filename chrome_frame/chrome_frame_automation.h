@@ -238,7 +238,7 @@ class AutomationProxyCacheEntry
     return thread_.get();
   }
 
-  MessageLoop* message_loop() const {
+  base::MessageLoop* message_loop() const {
     return thread_->message_loop();
   }
 

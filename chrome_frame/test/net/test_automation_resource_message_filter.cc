@@ -66,7 +66,7 @@ bool TestAutomationResourceMessageFilter::RegisterRequest(
   // request messages to that loop.
   base::AutoLock lock(requests_lock_);
   DCHECK(requests_.end() == requests_.find(job->id()));
-  RequestJob request_job = { MessageLoop::current(), job };
+  RequestJob request_job = { base::MessageLoop::current(), job };
   requests_[job->id()] = request_job;
   return true;
 }

@@ -57,7 +57,7 @@ END_MSG_MAP()
 
  private:
   unsigned long remove_mask_;
-  MessageLoopForUI loop_;
+  base::MessageLoopForUI loop_;
 };
 
 #endif  // CHROME_FRAME_DELETE_CHROME_HISTORY_H_

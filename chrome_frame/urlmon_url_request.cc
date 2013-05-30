@@ -1408,7 +1408,7 @@ UrlmonUrlRequestManager::UrlmonUrlRequestManager()
       GetConfigBool(true, kUseBackgroundThreadForSubResources);
   if (background_worker_thread_enabled_) {
     base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_UI;
+    options.message_loop_type = base::MessageLoop::TYPE_UI;
     background_thread_->StartWithOptions(options);
   }
 }

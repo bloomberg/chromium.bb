@@ -79,14 +79,14 @@ class UrlTaskChain {
   void Run() {
     EXPECT_EQ(0, delegate_.response_started_count());
 
-    MessageLoopForIO loop;
+    base::MessageLoopForIO loop;
 
     net::TestURLRequestContext context;
     TestURLRequest r(GURL(url_), &delegate_, &context);
     r.Start();
     EXPECT_TRUE(r.is_pending());
 
-    MessageLoop::current()->Run();
+    base::MessageLoop::current()->Run();
 
     EXPECT_EQ(1, delegate_.response_started_count());
     EXPECT_FALSE(delegate_.received_data_before_response());
@@ -118,16 +118,16 @@ DWORD WINAPI FetchUrl(void* param) {
 }
 
 struct QuitMessageHit {
-  explicit QuitMessageHit(MessageLoopForUI* loop) : loop_(loop), hit_(false) {
-  }
+  explicit QuitMessageHit(base::MessageLoopForUI* loop)
+      : loop_(loop), hit_(false) {}
 
-  MessageLoopForUI* loop_;
+  base::MessageLoopForUI* loop_;
   bool hit_;
 };
 
 void QuitMessageLoop(QuitMessageHit* msg) {
   msg->hit_ = true;
-  msg->loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  msg->loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 }  // end namespace
@@ -135,7 +135,7 @@ void QuitMessageLoop(QuitMessageHit* msg) {
 TEST_F(TestServerTest, TestServer) {
   // The web server needs a loop to exist on this thread during construction
   // the loop must be created before we construct the server.
-  MessageLoopForUI loop;
+  base::MessageLoopForUI loop;
 
   test_server::SimpleWebServer server(1337);
   test_server::SimpleWebServer redirected_server(server.host(), 1338);
@@ -177,7 +177,7 @@ TEST_F(TestServerTest, TestServer) {
   DWORD tid = 0;
   base::win::ScopedHandle worker(::CreateThread(
       NULL, 0, FetchUrl, &redir_task, 0, &tid));
-  loop.MessageLoop::Run();
+  loop.base::MessageLoop::Run();
 
   EXPECT_FALSE(quit_msg.hit_);
   if (!quit_msg.hit_) {

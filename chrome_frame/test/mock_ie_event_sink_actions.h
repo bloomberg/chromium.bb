@@ -307,8 +307,8 @@ ACTION(DoCloseWindow) {
 }
 
 ACTION_P(DelayDoCloseWindow, delay) {
-  DCHECK(MessageLoop::current());
-  MessageLoop::current()->PostDelayedTask(
+  DCHECK(base::MessageLoop::current());
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE, base::Bind(DoCloseWindowNow, arg0),
       base::TimeDelta::FromMilliseconds(delay));
 }

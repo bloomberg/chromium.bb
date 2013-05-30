@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef CHROME_FRAME_TEST_PROXY_FACTORY_MOCK_H_
@@ -39,9 +39,8 @@ class MockProxyFactory : public ProxyFactory {
                      void** automation_server_id);
 
   base::Thread thread_;
-  MessageLoop* loop_;
+  base::MessageLoop* loop_;
 };
-
 
 #endif  // CHROME_FRAME_TEST_PROXY_FACTORY_MOCK_H_
 

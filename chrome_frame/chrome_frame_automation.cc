@@ -225,7 +225,7 @@ AutomationProxyCacheEntry::~AutomationProxyCacheEntry() {
   // The AutomationProxy class uses the SyncChannel which assumes the existence
   // of a MessageLoop instance.
   // We leak the AutomationProxy pointer here to avoid a crash.
-  if (MessageLoop::current() == NULL) {
+  if (base::MessageLoop::current() == NULL) {
     proxy_.release();
   }
 }

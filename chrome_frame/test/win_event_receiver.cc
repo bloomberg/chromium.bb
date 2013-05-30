@@ -116,7 +116,7 @@ WindowWatchdog::ProcessExitObserver::ProcessExitObserver(
     object_watcher_.StartWatching(process_handle_, this);
   } else {
     // Process is gone, so the window must be gone too. Notify our observer!
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&ProcessExitObserver::OnObjectSignaled,
                               weak_factory_.GetWeakPtr(), HANDLE(NULL)));
   }

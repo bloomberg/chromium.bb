@@ -211,9 +211,9 @@ class TimedMsgLoop {
     if (snapshot_on_timeout_)
       timeout_closure_.Reset(base::Bind(&TimedMsgLoop::SnapshotAndQuit));
     else
-      timeout_closure_.Reset(MessageLoop::QuitClosure());
+      timeout_closure_.Reset(base::MessageLoop::QuitClosure());
     loop_.PostDelayedTask(FROM_HERE, timeout_closure_.callback(), duration);
-    loop_.MessageLoop::Run();
+    loop_.base::MessageLoop::Run();
     timeout_closure_.Cancel();
   }
 
@@ -235,7 +235,7 @@ class TimedMsgLoop {
   void QuitAfter(base::TimeDelta delay) {
     timeout_closure_.Cancel();
     quit_loop_invoked_ = true;
-    loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), delay);
+    loop_.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(), delay);
   }
 
   bool WasTimedOut() const {
@@ -249,10 +249,10 @@ class TimedMsgLoop {
  private:
   static void SnapshotAndQuit() {
     TakeSnapshotAndLog();
-    MessageLoop::current()->Quit();
+    base::MessageLoop::current()->Quit();
   }
 
-  MessageLoopForUI loop_;
+  base::MessageLoopForUI loop_;
   base::CancelableClosure timeout_closure_;
   bool snapshot_on_timeout_;
   bool quit_loop_invoked_;

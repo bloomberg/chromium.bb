@@ -743,7 +743,7 @@ void CFUrlRequestUnittestRunner::StartInitializationTimeout() {
   timeout_closure_.Reset(
       base::Bind(&CFUrlRequestUnittestRunner::OnInitializationTimeout,
                  base::Unretained(this)));
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       timeout_closure_.callback(),
       TestTimeouts::action_max_timeout());
@@ -825,8 +825,8 @@ void CFUrlRequestUnittestRunner::PreMainMessageLoopRun() {
 }
 
 bool CFUrlRequestUnittestRunner::MainMessageLoopRun(int* result_code) {
-  DCHECK(MessageLoop::current());
-  DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+  DCHECK(base::MessageLoop::current());
+  DCHECK(base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI);
 
   // We need to allow IO on the main thread for these tests.
   base::ThreadRestrictions::SetIOAllowed(true);

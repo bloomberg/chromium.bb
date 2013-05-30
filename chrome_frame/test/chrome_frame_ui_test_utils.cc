@@ -658,8 +658,8 @@ void AccEventObserver::OnEventReceived(DWORD event,
                                        LONG object_id,
                                        LONG child_id) {
   // Process events in a separate task to stop reentrancy problems.
-  DCHECK(MessageLoop::current());
-  MessageLoop::current()->PostTask(
+  DCHECK(base::MessageLoop::current());
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,  base::Bind(&EventHandler::Handle, event_handler_.get(), event,
                              hwnd, object_id, child_id));
 }

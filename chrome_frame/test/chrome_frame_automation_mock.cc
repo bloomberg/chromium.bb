@@ -9,11 +9,12 @@
 const base::TimeDelta kLongWaitTimeout = base::TimeDelta::FromSeconds(25);
 
 TEST(ChromeFrame, Launch) {
-  MessageLoopForUI loop;
+  base::MessageLoopForUI loop;
   AutomationMockLaunch mock_launch(&loop,
                                    kLongWaitTimeout.InMilliseconds());
 
-  loop.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), kLongWaitTimeout);
+  loop.PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(), kLongWaitTimeout);
 
   mock_launch.Navigate("about:blank");
   base::RunLoop run_loop(NULL);
@@ -22,11 +23,12 @@ TEST(ChromeFrame, Launch) {
 }
 
 TEST(ChromeFrame, Navigate) {
-  MessageLoopForUI loop;
+  base::MessageLoopForUI loop;
   AutomationMockNavigate mock_navigate(&loop,
                                        kLongWaitTimeout.InMilliseconds());
 
-  loop.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), kLongWaitTimeout);
+  loop.PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(), kLongWaitTimeout);
 
   mock_navigate.NavigateRelativeFile(L"postmessage_basic_frame.html");
   base::RunLoop run_loop(NULL);
@@ -35,11 +37,12 @@ TEST(ChromeFrame, Navigate) {
 }
 
 TEST(ChromeFrame, PostMessage) {
-  MessageLoopForUI loop;
+  base::MessageLoopForUI loop;
   AutomationMockPostMessage mock_postmessage(&loop,
                                              kLongWaitTimeout.InMilliseconds());
 
-  loop.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), kLongWaitTimeout);
+  loop.PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(), kLongWaitTimeout);
 
   mock_postmessage.NavigateRelativeFile(L"postmessage_basic_frame.html");
   base::RunLoop run_loop(NULL);
@@ -48,11 +51,12 @@ TEST(ChromeFrame, PostMessage) {
 }
 
 TEST(ChromeFrame, RequestStart) {
-  MessageLoopForUI loop;
+  base::MessageLoopForUI loop;
   AutomationMockHostNetworkRequestStart mock_request_start(
       &loop, kLongWaitTimeout.InMilliseconds());
 
-  loop.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), kLongWaitTimeout);
+  loop.PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(), kLongWaitTimeout);
 
   mock_request_start.NavigateRelative(L"postmessage_basic_frame.html");
   base::RunLoop run_loop(NULL);

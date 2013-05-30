@@ -24,7 +24,7 @@ class AutomationMockDelegate
     : public CWindowImpl<T>,
       public ChromeFramePlugin<T> {
  public:
-  AutomationMockDelegate(MessageLoop* caller_message_loop,
+  AutomationMockDelegate(base::MessageLoop* caller_message_loop,
       int launch_timeout, bool perform_version_check,
       const std::wstring& profile_name,
       const std::wstring& language,
@@ -137,12 +137,12 @@ class AutomationMockDelegate
   void QuitMessageLoop() {
     // Quit on the caller message loop has to be called on the caller
     // thread.
-    caller_message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    caller_message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
  private:
   testing::StrictMock<MockWebServer> mock_server_;
-  MessageLoop* caller_message_loop_;
+  base::MessageLoop* caller_message_loop_;
   GURL url_;
   bool is_connected_;
   bool navigation_result_;
@@ -152,7 +152,7 @@ class AutomationMockLaunch
     : public AutomationMockDelegate<AutomationMockLaunch> {
  public:
   typedef AutomationMockDelegate<AutomationMockLaunch> Base;
-  AutomationMockLaunch(MessageLoop* caller_message_loop,
+  AutomationMockLaunch(base::MessageLoop* caller_message_loop,
                        int launch_timeout)
       : Base(caller_message_loop, launch_timeout, true, L"", L"", false,
              false) {
@@ -170,7 +170,7 @@ class AutomationMockNavigate
     : public AutomationMockDelegate<AutomationMockNavigate> {
  public:
   typedef AutomationMockDelegate<AutomationMockNavigate> Base;
-  AutomationMockNavigate(MessageLoop* caller_message_loop,
+  AutomationMockNavigate(base::MessageLoop* caller_message_loop,
                          int launch_timeout)
       : Base(caller_message_loop, launch_timeout, true, L"", L"", false,
              false) {
@@ -185,7 +185,7 @@ class AutomationMockPostMessage
     : public AutomationMockDelegate<AutomationMockPostMessage> {
  public:
   typedef AutomationMockDelegate<AutomationMockPostMessage> Base;
-  AutomationMockPostMessage(MessageLoop* caller_message_loop,
+  AutomationMockPostMessage(base::MessageLoop* caller_message_loop,
                             int launch_timeout)
       : Base(caller_message_loop, launch_timeout, true, L"", L"", false,
              false),
@@ -213,7 +213,7 @@ class AutomationMockHostNetworkRequestStart
     : public AutomationMockDelegate<AutomationMockHostNetworkRequestStart> {
  public:
   typedef AutomationMockDelegate<AutomationMockHostNetworkRequestStart> Base;
-  AutomationMockHostNetworkRequestStart(MessageLoop* caller_message_loop,
+  AutomationMockHostNetworkRequestStart(base::MessageLoop* caller_message_loop,
       int launch_timeout)
       : Base(caller_message_loop, launch_timeout, true, L"", L"", false,
              false),

@@ -328,7 +328,7 @@ class SimpleWebServer : public net::StreamListenSocket::Delegate {
 
     virtual void WriteContents(net::StreamListenSocket* socket) const {
       SimpleResponse::WriteContents(socket);
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     }
   };
 

@@ -44,7 +44,7 @@ class TestAutomationResourceMessageFilter
   AutomationProvider* automation_;
   // declare the request map.
   struct RequestJob {
-    MessageLoop* loop_;
+    base::MessageLoop* loop_;
     scoped_refptr<URLRequestAutomationJob> job_;
   };
   typedef std::map<int, RequestJob> RequestMap;

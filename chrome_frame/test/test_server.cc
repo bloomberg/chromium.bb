@@ -38,7 +38,8 @@ void Request::ParseHeaders(const std::string& headers) {
   if (pos != std::string::npos) {
     headers_ = headers.substr(pos + 2);
 
-    base::StringTokenizer tokenizer(headers.begin(), headers.begin() + pos, " ");
+    base::StringTokenizer tokenizer(
+        headers.begin(), headers.begin() + pos, " ");
     std::string* parse[] = { &method_, &path_, &version_ };
     int field = 0;
     while (tokenizer.GetNext() && field < arraysize(parse)) {
@@ -153,7 +154,8 @@ SimpleWebServer::~SimpleWebServer() {
 }
 
 void SimpleWebServer::Construct(const std::string& address, int port) {
-  CHECK(MessageLoop::current()) << "SimpleWebServer requires a message loop";
+  CHECK(base::MessageLoop::current())
+      << "SimpleWebServer requires a message loop";
   net::EnsureWinsockInit();
   AddResponse(&quit_);
   host_ = address;
@@ -356,7 +358,7 @@ void ConfigurableConnection::SendChunk() {
 
   cur_pos_ += bytes_to_send;
   if (cur_pos_ < size) {
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&ConfigurableConnection::SendChunk, this),
         base::TimeDelta::FromMilliseconds(options_.timeout_));
   } else {
@@ -393,7 +395,7 @@ void ConfigurableConnection::SendWithOptions(const std::string& headers,
     socket_->Send(content);
     // Post a task to close the socket since StreamListenSocket doesn't like
     // instances to go away from within its callbacks.
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&ConfigurableConnection::Close, this));
 
     return;
@@ -412,7 +414,7 @@ void ConfigurableConnection::SendWithOptions(const std::string& headers,
     data_.append("\r\n");
   }
 
-  MessageLoop::current()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE, base::Bind(&ConfigurableConnection::SendChunk, this),
       base::TimeDelta::FromMilliseconds(options.timeout_));
 }

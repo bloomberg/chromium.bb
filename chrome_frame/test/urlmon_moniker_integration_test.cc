@@ -66,7 +66,7 @@ class RunTestServer : public base::Thread {
   }
 
   bool Start() {
-    bool ret = StartWithOptions(Options(MessageLoop::TYPE_UI, 0));
+    bool ret = StartWithOptions(Options(base::MessageLoop::TYPE_UI, 0));
     if (ret) {
       message_loop()->PostTask(FROM_HERE,
                                base::Bind(&RunTestServer::StartServer, this));
