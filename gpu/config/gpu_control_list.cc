@@ -762,6 +762,10 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
           LOG(WARNING) << "Malformed exceptions entry " << entry->id();
           return NULL;
         }
+        // Exception should inherit vendor_id from parent, otherwise if only
+        // device_ids are specified in Exception, the info will be incomplete.
+        if (exception->vendor_id_ == 0 && entry->vendor_id_ != 0)
+          exception->vendor_id_ = entry->vendor_id_;
         if (exception->contains_unknown_fields_) {
           LOG(WARNING) << "Exception with unknown fields " << entry->id();
           entry->contains_unknown_fields_ = true;

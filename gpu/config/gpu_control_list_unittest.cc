@@ -440,5 +440,58 @@ TEST_F(GpuControlListTest, IgnorableEntries) {
   EXPECT_FALSE(control_list->needs_more_info());
 }
 
+TEST_F(GpuControlListTest, ExceptionWithoutVendorId) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "name": "gpu control list",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "os": {
+              "type": "linux"
+            },
+            "vendor_id": "0x8086",
+            "exceptions": [
+              {
+                "device_id": ["0x2a06"],
+                "driver_version": {
+                  "op": ">=",
+                  "number": "8.1"
+                }
+              },
+              {
+                "device_id": ["0x2a02"],
+                "driver_version": {
+                  "op": ">=",
+                  "number": "9.1"
+                }
+              }
+            ],
+            "features": [
+              "test_feature_0"
+            ]
+          }
+        ]
+      }
+  );
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = kIntelVendorId;
+  gpu_info.gpu.device_id = 0x2a02;
+  gpu_info.driver_version = "9.1";
+
+  scoped_ptr<GpuControlList> control_list(Create());
+  EXPECT_TRUE(control_list->LoadList(json, GpuControlList::kAllOs));
+
+  std::set<int> features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_EMPTY_SET(features);
+
+  gpu_info.driver_version = "9.0";
+  features = control_list->MakeDecision(
+      GpuControlList::kOsLinux, kOsVersion, gpu_info);
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
+}
+
 }  // namespace gpu
 
