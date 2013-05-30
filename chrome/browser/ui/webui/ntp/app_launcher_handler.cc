@@ -230,6 +230,10 @@ void AppLauncherHandler::Observe(int type,
       if (!extension->is_app())
         return;
 
+      PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+      if (!ShouldDisplayInNewTabPage(extension, prefs))
+        return;
+
       scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
       if (app_info.get()) {
         visible_apps_.insert(extension->id());
@@ -250,6 +254,10 @@ void AppLauncherHandler::Observe(int type,
           content::Details<extensions::UnloadedExtensionInfo>(
               details)->extension;
       if (!extension->is_app())
+        return;
+
+      PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+      if (!ShouldDisplayInNewTabPage(extension, prefs))
         return;
 
       scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
