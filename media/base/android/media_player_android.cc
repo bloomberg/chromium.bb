@@ -76,4 +76,12 @@ void MediaPlayerAndroid::OnSeekRequestAck() {
   NOTREACHED() << "Unexpected ipc received";
 }
 
+GURL MediaPlayerAndroid::GetUrl() {
+  return GURL();
+}
+
+GURL MediaPlayerAndroid::GetFirstPartyForCookies() {
+  return GURL();
+}
+
 }  // namespace media

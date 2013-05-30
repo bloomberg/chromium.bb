@@ -38,11 +38,11 @@ class MediaPlayerManagerImpl
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Fullscreen video playback controls.
-  void FullscreenPlayerPlay();
-  void FullscreenPlayerPause();
-  void FullscreenPlayerSeek(int msec);
-  void ExitFullscreen(bool release_media_player);
-  void SetVideoSurface(jobject surface);
+  virtual void FullscreenPlayerPlay();
+  virtual void FullscreenPlayerPause();
+  virtual void FullscreenPlayerSeek(int msec);
+  virtual void ExitFullscreen(bool release_media_player);
+  virtual void SetVideoSurface(jobject surface);
 
   // media::MediaPlayerManager overrides.
   virtual void OnTimeUpdate(
@@ -89,31 +89,39 @@ class MediaPlayerManagerImpl
   // method of MediaPlayerManager or the derived classes constructors.
   explicit MediaPlayerManagerImpl(RenderViewHost* render_view_host);
 
- private:
   // Message handlers.
-  void OnEnterFullscreen(int player_id);
-  void OnExitFullscreen(int player_id);
-  void OnInitialize(int player_id, const GURL& url,
-                    bool is_media_source,
-                    const GURL& first_party_for_cookies);
-  void OnStart(int player_id);
-  void OnSeek(int player_id, base::TimeDelta time);
-  void OnPause(int player_id);
-  void OnReleaseResources(int player_id);
-  void OnDestroyPlayer(int player_id);
-  void OnDemuxerReady(
+  virtual void OnEnterFullscreen(int player_id);
+  virtual void OnExitFullscreen(int player_id);
+  virtual void OnInitialize(
+      int player_id,
+      const GURL& url,
+      bool is_media_source,
+      const GURL& first_party_for_cookies);
+  virtual void OnStart(int player_id);
+  virtual void OnSeek(int player_id, base::TimeDelta time);
+  virtual void OnPause(int player_id);
+  virtual void OnReleaseResources(int player_id);
+  virtual void OnDestroyPlayer(int player_id);
+  virtual void OnDemuxerReady(
       int player_id,
       const media::MediaPlayerHostMsg_DemuxerReady_Params& params);
-  void OnReadFromDemuxerAck(
+  virtual void OnReadFromDemuxerAck(
       int player_id,
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
   void OnMediaSeekRequestAck(int player_id);
 
 #if defined(GOOGLE_TV)
-  void OnNotifyExternalSurface(
+  virtual void OnNotifyExternalSurface(
       int player_id, bool is_request, const gfx::RectF& rect);
 #endif
 
+  // Adds a given player to the list.
+  void AddPlayer(media::MediaPlayerAndroid* player);
+
+  // Removes the player with the specified id.
+  void RemovePlayer(int player_id);
+
+ private:
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;
 

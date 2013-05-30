@@ -129,16 +129,10 @@ void MediaPlayerManagerImpl::OnInitialize(
     int player_id, const GURL& url,
     bool is_media_source,
     const GURL& first_party_for_cookies) {
-  for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
-      it != players_.end(); ++it) {
-    if ((*it)->player_id() == player_id) {
-      players_.erase(it);
-      break;
-    }
-  }
+  RemovePlayer(player_id);
 
   RenderProcessHost* host = render_view_host()->GetProcess();
-  players_.push_back(media::MediaPlayerAndroid::Create(
+  AddPlayer(media::MediaPlayerAndroid::Create(
       player_id, url, is_media_source, first_party_for_cookies,
       host->GetBrowserContext()->IsOffTheRecord(), this));
 }
@@ -201,13 +195,7 @@ void MediaPlayerManagerImpl::OnReleaseResources(int player_id) {
 }
 
 void MediaPlayerManagerImpl::OnDestroyPlayer(int player_id) {
-  for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
-      it != players_.end(); ++it) {
-    if ((*it)->player_id() == player_id) {
-      players_.erase(it);
-      break;
-    }
-  }
+  RemovePlayer(player_id);
   if (fullscreen_player_id_ == player_id)
     fullscreen_player_id_ = -1;
 }
@@ -389,6 +377,21 @@ void MediaPlayerManagerImpl::RequestMediaResources(
 void MediaPlayerManagerImpl::ReleaseMediaResources(
     MediaPlayerAndroid* player) {
   // Nothing needs to be done.
+}
+
+void MediaPlayerManagerImpl::AddPlayer(MediaPlayerAndroid* player) {
+  DCHECK(!GetPlayer(player->player_id()));
+  players_.push_back(player);
+}
+
+void MediaPlayerManagerImpl::RemovePlayer(int player_id) {
+  for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
+      it != players_.end(); ++it) {
+    if ((*it)->player_id() == player_id) {
+      players_.erase(it);
+      break;
+    }
+  }
 }
 
 }  // namespace content

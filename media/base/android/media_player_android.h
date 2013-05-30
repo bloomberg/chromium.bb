@@ -75,6 +75,8 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual bool CanPause() = 0;
   virtual bool CanSeekForward() = 0;
   virtual bool CanSeekBackward() = 0;
+  virtual GURL GetUrl();
+  virtual GURL GetFirstPartyForCookies();
 
   // Methods for DeumxerStreamPlayer.
   // Informs DemuxerStreamPlayer that the demuxer is ready.

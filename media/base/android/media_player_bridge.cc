@@ -417,4 +417,12 @@ bool MediaPlayerBridge::IsPlayerReady() {
   return prepared_;
 }
 
+GURL MediaPlayerBridge::GetUrl() {
+  return url_;
+}
+
+GURL MediaPlayerBridge::GetFirstPartyForCookies() {
+  return first_party_for_cookies_;
+}
+
 }  // namespace media
