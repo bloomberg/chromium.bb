@@ -65,12 +65,12 @@ namespace WebCore
 static bool LookupAltName(const String& name, String& altName)
 {
     struct FontCodepage {
-        WCHAR* name;
+        const WCHAR* name;
         int codePage;
     };
 
     struct NamePair {
-        WCHAR* name;
+        const WCHAR* name;
         FontCodepage altNameCodepage;
     };
 
