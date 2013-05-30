@@ -87,7 +87,7 @@ static inline bool isCSSTokenAString(int yytype)
 
 %}
 
-%expect 11
+%expect 10
 
 %nonassoc LOWEST_PREC
 
@@ -590,7 +590,7 @@ maybe_media_value:
     ;
 
 media_query_exp:
-    maybe_media_restrictor maybe_space '(' maybe_space media_feature maybe_space maybe_media_value ')' maybe_space {
+    maybe_media_restrictor maybe_space '(' maybe_space media_feature maybe_space maybe_media_value ')' {
         // If restrictor is specified, media query expression is invalid.
         // Create empty media query expression and continue parsing media query.
         if ($1 != MediaQuery::None)
