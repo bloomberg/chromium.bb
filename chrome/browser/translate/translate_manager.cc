@@ -392,6 +392,8 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   if (!prefs->GetBoolean(prefs::kEnableTranslate)) {
     TranslateManagerMetrics::ReportInitiationStatus(
         TranslateManagerMetrics::INITIATION_STATUS_DISABLED_BY_PREFS);
+    const std::string& locale = g_browser_process->GetApplicationLocale();
+    TranslateManagerMetrics::ReportLocalesOnDisabledByPrefs(locale);
     return;
   }
 

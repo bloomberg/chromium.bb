@@ -16,6 +16,7 @@ enum MetricsNameIndex {
   UMA_LANGUAGE_DETECTION_ERROR,
   UMA_SERVER_REPORTED_UNSUPPORTED_LANGUAGE,
   UMA_UNSUPPORTED_LANGUAGE_AT_INITIATION,
+  UMA_LOCALES_ON_DISABLED_BY_PREFS,
   UMA_MAX,
 };
 
@@ -48,6 +49,8 @@ void ReportLanguageDetectionError();
 void ReportUnsupportedLanguage();
 
 void ReportUnsupportedLanguageAtInitiation(const std::string& language);
+
+void ReportLocalesOnDisabledByPrefs(const std::string& locale);
 
 // Provides UMA entry names for unit tests.
 const char* GetMetricsName(MetricsNameIndex index);

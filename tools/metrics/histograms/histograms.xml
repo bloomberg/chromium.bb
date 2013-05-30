@@ -9407,6 +9407,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Translate.LocalesOnDisabledByPrefs" enum="LanguageCode">
+  <summary>
+    Logs the user locale when the Translate feature is disabled by the user.
+    This is recorded each time a webpage is loaded and prefs for translation is
+    checked. This allows us to investigate the correlation between the user
+    locale and the usage rates of the Translate.
+  </summary>
+</histogram>
+
 <histogram name="Translate.PageScheme" enum="TranslateScheme">
   <summary>Counts translation target page schemes.</summary>
 </histogram>

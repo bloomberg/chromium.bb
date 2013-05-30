@@ -169,3 +169,13 @@ TEST(TranslateManagerMetricsTest, ReportedUnsupportedLanguageAtInitiation) {
   TranslateManagerMetrics::ReportUnsupportedLanguageAtInitiation("en");
   EXPECT_EQ(1, recorder.GetCount(ENGLISH));
 }
+
+TEST(TranslateManagerMetricsTest, ReportedLocalesOnDisabledByPrefs) {
+  const int ENGLISH = 25966;
+
+  MetricsRecorder recorder(TranslateManagerMetrics::GetMetricsName(
+      TranslateManagerMetrics::UMA_LOCALES_ON_DISABLED_BY_PREFS));
+  EXPECT_EQ(0, recorder.GetTotalCount());
+  TranslateManagerMetrics::ReportLocalesOnDisabledByPrefs("en");
+  EXPECT_EQ(1, recorder.GetCount(ENGLISH));
+}
