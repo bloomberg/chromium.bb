@@ -25,9 +25,8 @@ class IndexedDBContextImpl;
 class IndexedDBQuotaClient : public quota::QuotaClient,
                              public quota::QuotaTaskObserver {
  public:
-  CONTENT_EXPORT IndexedDBQuotaClient(
-      base::MessageLoopProxy* tracker_thread,
-      IndexedDBContextImpl* indexed_db_context);
+  CONTENT_EXPORT IndexedDBQuotaClient(base::MessageLoopProxy* tracker_thread,
+                                      IndexedDBContextImpl* indexed_db_context);
   CONTENT_EXPORT virtual ~IndexedDBQuotaClient();
 
   // QuotaClient method overrides
@@ -44,6 +43,7 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
   virtual void DeleteOriginData(const GURL& origin,
                                 quota::StorageType type,
                                 const DeletionCallback& callback) OVERRIDE;
+
  private:
   scoped_refptr<base::MessageLoopProxy> webkit_thread_message_loop_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;

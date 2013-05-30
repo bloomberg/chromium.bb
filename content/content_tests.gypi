@@ -233,6 +233,7 @@
       'type': '<(gtest_target_type)',
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
+        'content_browser',
         'content_common',
         'test_support_content',
         'browser/speech/proto/speech_proto.gyp:speech_proto',
