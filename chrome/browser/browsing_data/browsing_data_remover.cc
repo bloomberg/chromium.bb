@@ -16,8 +16,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/download/chrome_download_manager_delegate.h"
-#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -72,7 +71,6 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DOMStorageContext;
-using content::DownloadManager;
 using content::UserMetricsAction;
 
 bool BrowsingDataRemover::is_removing_ = false;
@@ -340,14 +338,12 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if ((remove_mask & REMOVE_DOWNLOADS) && may_delete_history) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
-    DownloadManager* download_manager =
+    content::DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(profile_);
     download_manager->RemoveDownloadsBetween(delete_begin_, delete_end_);
-    DownloadService* download_service =
-        DownloadServiceFactory::GetForProfile(profile_);
-    ChromeDownloadManagerDelegate* download_manager_delegate =
-        download_service->GetDownloadManagerDelegate();
-    download_manager_delegate->ClearLastDownloadPath();
+    DownloadPrefs* download_prefs = DownloadPrefs::FromDownloadManager(
+        download_manager);
+    download_prefs->SetSaveFilePath(download_prefs->DownloadPath());
   }
 
   // We ignore the REMOVE_COOKIES request if UNPROTECTED_WEB is not set,

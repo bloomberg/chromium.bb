@@ -4,7 +4,9 @@
 
 #include "chrome/browser/download/save_package_file_picker.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/i18n/file_util_icu.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
@@ -23,6 +25,11 @@
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/drive/download_handler.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
+#endif
 
 using content::RenderProcessHost;
 using content::SavePageType;
@@ -60,51 +67,86 @@ const int kIndexToIDS[] = {
   0, IDS_SAVE_PAGE_DESC_HTML_ONLY, IDS_SAVE_PAGE_DESC_COMPLETE,
 };
 
-void OnSavePackageDownloadCreated(
-    content::DownloadItem* download) {
+void OnSavePackageDownloadCreated(content::DownloadItem* download) {
   ChromeDownloadManagerDelegate::DisableSafeBrowsing(download);
 }
+
+#if defined(OS_CHROMEOS)
+void OnSavePackageDownloadCreatedChromeOS(
+    Profile* profile,
+    const base::FilePath& drive_path,
+    content::DownloadItem* download) {
+  drive::DownloadHandler::GetForProfile(profile)->SetDownloadParams(
+      drive_path, download);
+  OnSavePackageDownloadCreated(download);
+}
+
+// Trampoline callback between SubstituteDriveDownloadPath() and |callback|.
+void ContinueSettingUpDriveDownload(
+    const content::SavePackagePathPickedCallback& callback,
+    content::SavePageType save_type,
+    Profile* profile,
+    const base::FilePath& drive_path,
+    const base::FilePath& drive_tmp_download_path) {
+  if (drive_tmp_download_path.empty())  // Substitution failed.
+    return;
+  callback.Run(drive_tmp_download_path, save_type, base::Bind(
+      &OnSavePackageDownloadCreatedChromeOS, profile, drive_path));
+}
+#endif
 
 }  // anonymous namespace
 
 bool SavePackageFilePicker::ShouldSaveAsMHTML() const {
-  return can_save_as_complete_ &&
-         CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kSavePageAsMHTML);
+#if !defined(OS_CHROMEOS)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kSavePageAsMHTML))
+    return false;
+#endif
+  return can_save_as_complete_;
 }
 
 SavePackageFilePicker::SavePackageFilePicker(
     content::WebContents* web_contents,
-    const base::FilePath& suggested_path_const,
-    const base::FilePath::StringType& default_extension_const,
+    const base::FilePath& suggested_path,
+    const base::FilePath::StringType& default_extension,
     bool can_save_as_complete,
     DownloadPrefs* download_prefs,
     const content::SavePackagePathPickedCallback& callback)
     : render_process_id_(web_contents->GetRenderProcessHost()->GetID()),
       can_save_as_complete_(can_save_as_complete),
+      download_prefs_(download_prefs),
       callback_(callback) {
-  base::FilePath suggested_path = suggested_path_const;
-  base::FilePath::StringType default_extension = default_extension_const;
-  int file_type_index = SavePackageTypeToIndex(
-      static_cast<SavePageType>(download_prefs->save_file_type()));
-  DCHECK_NE(-1, file_type_index);
-
+  base::FilePath suggested_path_copy = suggested_path;
+  base::FilePath::StringType default_extension_copy = default_extension;
+  int file_type_index = 0;
   ui::SelectFileDialog::FileTypeInfo file_type_info;
+
+#if defined(OS_CHROMEOS)
+  file_type_info.support_drive = true;
+#else
+  file_type_index = SavePackageTypeToIndex(
+      static_cast<SavePageType>(download_prefs_->save_file_type()));
+  DCHECK_NE(-1, file_type_index);
+#endif
 
   // TODO(benjhayden): Merge the first branch with the second when all of the
   // platform-specific file selection dialog implementations fully support
   // switching save-as file formats, and remove the flag/switch.
   if (ShouldSaveAsMHTML()) {
-    default_extension = FILE_PATH_LITERAL("mhtml");
-    suggested_path = suggested_path.ReplaceExtension(default_extension);
-  } else if (can_save_as_complete) {
+    default_extension_copy = FILE_PATH_LITERAL("mhtml");
+    suggested_path_copy = suggested_path_copy.ReplaceExtension(
+        default_extension_copy);
+  } else if (can_save_as_complete_) {
+    // NOTE: this branch will never run on chromeos because ShouldSaveAsHTML()
+    // == can_save_as_complete_ on chromeos.
     bool add_extra_extension = false;
     base::FilePath::StringType extra_extension;
-    if (!suggested_path.Extension().empty() &&
-        suggested_path.Extension().compare(FILE_PATH_LITERAL("htm")) &&
-        suggested_path.Extension().compare(FILE_PATH_LITERAL("html"))) {
+    if (!suggested_path_copy.Extension().empty() &&
+        !suggested_path_copy.MatchesExtension(FILE_PATH_LITERAL(".htm")) &&
+        !suggested_path_copy.MatchesExtension(FILE_PATH_LITERAL(".html"))) {
       add_extra_extension = true;
-      extra_extension = suggested_path.Extension().substr(1);
+      extra_extension = suggested_path_copy.Extension().substr(1);
     }
 
     static const size_t kNumberExtensions = arraysize(kIndexToIDS) - 1;
@@ -145,8 +187,7 @@ SavePackageFilePicker::SavePackageFilePicker(
     // The contents can not be saved as complete-HTML, so do not show the file
     // filters.
     file_type_info.extensions.resize(1);
-    file_type_info.extensions[0].push_back(
-        suggested_path.Extension());
+    file_type_info.extensions[0].push_back(suggested_path_copy.Extension());
 
     if (!file_type_info.extensions[0][0].empty()) {
       // Drop the .
@@ -163,16 +204,16 @@ SavePackageFilePicker::SavePackageFilePicker(
     select_file_dialog_->SelectFile(
         ui::SelectFileDialog::SELECT_SAVEAS_FILE,
         string16(),
-        suggested_path,
+        suggested_path_copy,
         &file_type_info,
         file_type_index,
-        default_extension,
+        default_extension_copy,
         platform_util::GetTopLevel(web_contents->GetView()->GetNativeView()),
         NULL);
   } else {
-    // Just use 'suggested_path' instead of opening the dialog prompt.
+    // Just use 'suggested_path_copy' instead of opening the dialog prompt.
     // Go through FileSelected() for consistency.
-    FileSelected(suggested_path, file_type_index, NULL);
+    FileSelected(suggested_path_copy, file_type_index, NULL);
   }
 }
 
@@ -183,47 +224,62 @@ void SavePackageFilePicker::SetShouldPromptUser(bool should_prompt) {
   g_should_prompt_for_filename = should_prompt;
 }
 
-void SavePackageFilePicker::FileSelected(const base::FilePath& path,
-                                         int index,
-                                         void* unused_params) {
+void SavePackageFilePicker::FileSelected(
+    const base::FilePath& path, int index, void* unused_params) {
+  scoped_ptr<SavePackageFilePicker> delete_this(this);
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
-  if (process) {
-    SavePageType save_type = content::SAVE_PAGE_TYPE_UNKNOWN;
-    PrefService* prefs = Profile::FromBrowserContext(
-        process->GetBrowserContext())->GetPrefs();
-    if (ShouldSaveAsMHTML()) {
-      save_type = content::SAVE_PAGE_TYPE_AS_MHTML;
-    } else {
-      // The option index is not zero-based.
-      DCHECK(index >= kSelectFileHtmlOnlyIndex &&
-             index <= kSelectFileCompleteIndex);
-      save_type = kIndexToSaveType[index];
-      if (select_file_dialog_ &&
-          select_file_dialog_->HasMultipleFileTypeChoices())
-        prefs->SetInteger(prefs::kSaveFileType, save_type);
-    }
+  if (!process)
+    return;
+  SavePageType save_type = content::SAVE_PAGE_TYPE_UNKNOWN;
 
-    UMA_HISTOGRAM_ENUMERATION("Download.SavePageType",
-                              save_type,
-                              content::SAVE_PAGE_TYPE_MAX);
-
-    StringPrefMember save_file_path;
-    save_file_path.Init(prefs::kSaveFileDefaultDirectory, prefs);
-#if defined(OS_POSIX)
-    std::string path_string = path.DirName().value();
-#elif defined(OS_WIN)
-    std::string path_string = WideToUTF8(path.DirName().value());
+  if (ShouldSaveAsMHTML()) {
+    save_type = content::SAVE_PAGE_TYPE_AS_MHTML;
+  } else {
+#if defined(OS_CHROMEOS)
+    save_type = content::SAVE_PAGE_TYPE_AS_ONLY_HTML;
+#else
+    // The option index is not zero-based.
+    DCHECK(index >= kSelectFileHtmlOnlyIndex &&
+           index <= kSelectFileCompleteIndex);
+    save_type = kIndexToSaveType[index];
+    if (select_file_dialog_ &&
+        select_file_dialog_->HasMultipleFileTypeChoices())
+      download_prefs_->SetSaveFileType(save_type);
 #endif
-    // If user change the default saving directory, we will remember it just
-    // like IE and FireFox.
-    if (!process->GetBrowserContext()->IsOffTheRecord() &&
-        save_file_path.GetValue() != path_string)
-      save_file_path.SetValue(path_string);
-
-    callback_.Run(path, save_type, base::Bind(&OnSavePackageDownloadCreated));
   }
 
-  delete this;
+  UMA_HISTOGRAM_ENUMERATION("Download.SavePageType",
+                            save_type,
+                            content::SAVE_PAGE_TYPE_MAX);
+
+  base::FilePath path_copy(path);
+  file_util::NormalizeFileNameEncoding(&path_copy);
+
+  download_prefs_->SetSaveFilePath(path_copy.DirName());
+
+#if defined(OS_CHROMEOS)
+  if (drive::util::IsUnderDriveMountPoint(path_copy)) {
+    // Here's a map to the callback chain:
+    // SubstituteDriveDownloadPath ->
+    //   ContinueSettingUpDriveDownload ->
+    //     callback_ = SavePackage::OnPathPicked ->
+    //       download_created_callback = OnSavePackageDownloadCreatedChromeOS
+    Profile* profile = Profile::FromBrowserContext(
+        process->GetBrowserContext());
+    drive::DownloadHandler* drive_download_handler =
+        drive::DownloadHandler::GetForProfile(profile);
+    drive_download_handler->SubstituteDriveDownloadPath(
+        path_copy, NULL, base::Bind(&ContinueSettingUpDriveDownload,
+                                    callback_,
+                                    save_type,
+                                    profile,
+                                    path_copy));
+    return;
+  }
+#endif
+
+  callback_.Run(path_copy, save_type,
+                base::Bind(&OnSavePackageDownloadCreated));
 }
 
 void SavePackageFilePicker::FileSelectionCanceled(void* unused_params) {

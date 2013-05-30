@@ -56,6 +56,7 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
 
   prompt_for_download_.Init(prefs::kPromptForDownload, prefs);
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs);
+  save_file_path_.Init(prefs::kSaveFileDefaultDirectory, prefs);
   save_file_type_.Init(prefs::kSaveFileType, prefs);
 
   // We store any file extension that should be opened automatically at
@@ -107,6 +108,10 @@ void DownloadPrefs::RegisterUserPrefs(
       prefs::kDownloadDefaultDirectory,
       default_download_path,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterFilePathPref(
+      prefs::kSaveFileDefaultDirectory,
+      default_download_path,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
 #if defined(OS_CHROMEOS)
   // Ensure that the download directory specified in the preferences exists.
@@ -142,6 +147,23 @@ base::FilePath DownloadPrefs::DownloadPath() const {
     return download_util::GetDefaultDownloadDirectory();
 #endif
   return *download_path_;
+}
+
+void DownloadPrefs::SetDownloadPath(const base::FilePath& path) {
+  download_path_.SetValue(path);
+  SetSaveFilePath(path);
+}
+
+base::FilePath DownloadPrefs::SaveFilePath() const {
+  return *save_file_path_;
+}
+
+void DownloadPrefs::SetSaveFilePath(const base::FilePath& path) {
+  save_file_path_.SetValue(path);
+}
+
+void DownloadPrefs::SetSaveFileType(int type) {
+  save_file_type_.SetValue(type);
 }
 
 bool DownloadPrefs::PromptForDownload() const {

@@ -18,6 +18,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/history/download_row.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,12 +41,6 @@
 #include "content/test/net/url_request_mock_http_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/download/save_package_file_picker_chromeos.h"
-#else
-#include "chrome/browser/download/save_package_file_picker.h"
-#endif
-
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
@@ -65,7 +60,9 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
 
   DownloadPersistedObserver(Profile* profile, const PersistedFilter& filter)
     : profile_(profile),
-      filter_(filter) {
+      filter_(filter),
+      waiting_(false),
+      persisted_(false) {
     DownloadServiceFactory::GetForProfile(profile_)->
       GetDownloadHistory()->AddObserver(this);
   }
@@ -87,7 +84,7 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
 
   virtual void OnDownloadStored(DownloadItem* item,
                                 const history::DownloadRow& info) OVERRIDE {
-    persisted_ = filter_.Run(item, info);
+    persisted_ = persisted_ || filter_.Run(item, info);
     if (persisted_ && waiting_)
       base::MessageLoopForUI::current()->Quit();
   }
@@ -293,6 +290,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     browser()->profile()->GetPrefs()->SetFilePath(
         prefs::kDownloadDefaultDirectory, save_dir_.path());
+    browser()->profile()->GetPrefs()->SetFilePath(
+        prefs::kSaveFileDefaultDirectory, save_dir_.path());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
@@ -754,11 +753,7 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
       GetDownloadManager())->DownloadPath();
   base::FilePath full_file_name = download_dir.AppendASCII(std::string(
       "Test page for saving page feature.mhtml"));
-#if defined(OS_CHROMEOS)
-  SavePackageFilePickerChromeOS::SetShouldPromptUser(false);
-#else
   SavePackageFilePicker::SetShouldPromptUser(false);
-#endif
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, -1,
       DownloadItem::COMPLETE));
@@ -772,18 +767,14 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
   persisted.WaitForPersisted();
 
-  EXPECT_TRUE(file_util::PathExists(full_file_name));
+  ASSERT_TRUE(file_util::PathExists(full_file_name));
   int64 actual_file_size = -1;
   EXPECT_TRUE(file_util::GetFileSize(full_file_name, &actual_file_size));
   EXPECT_LE(kFileSizeMin, actual_file_size);
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
-#if defined(OS_CHROMEOS)
-  SavePackageFilePickerChromeOS::SetShouldPromptUser(false);
-#else
   SavePackageFilePicker::SetShouldPromptUser(false);
-#endif
   GURL url("data:text/plain,foo");
   ui_test_utils::NavigateToURL(browser(), url);
   scoped_refptr<content::MessageLoopRunner> loop_runner(
@@ -796,7 +787,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
   base::FilePath download_dir = DownloadPrefs::FromDownloadManager(
       GetDownloadManager())->DownloadPath();
   base::FilePath filename = download_dir.AppendASCII("dataurl.txt");
-  EXPECT_TRUE(file_util::PathExists(filename));
+  ASSERT_TRUE(file_util::PathExists(filename));
   std::string contents;
   EXPECT_TRUE(file_util::ReadFileToString(filename, &contents));
   EXPECT_EQ("foo", contents);

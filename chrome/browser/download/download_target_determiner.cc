@@ -59,7 +59,6 @@ DownloadTargetDeterminerDelegate::~DownloadTargetDeterminerDelegate() {
 DownloadTargetDeterminer::DownloadTargetDeterminer(
     DownloadItem* download,
     DownloadPrefs* download_prefs,
-    const base::FilePath& last_selected_directory,
     DownloadTargetDeterminerDelegate* delegate,
     const content::DownloadTargetCallback& callback)
     : next_state_(STATE_GENERATE_TARGET_PATH),
@@ -72,7 +71,6 @@ DownloadTargetDeterminer::DownloadTargetDeterminer(
       download_(download),
       download_prefs_(download_prefs),
       delegate_(delegate),
-      last_selected_directory_(last_selected_directory),
       completion_callback_(callback),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -159,11 +157,11 @@ DownloadTargetDeterminer::Result
         default_filename);
     should_prompt_ = ShouldPromptForDownload(generated_filename);
     base::FilePath target_directory;
-    if (should_prompt_ && !last_selected_directory_.empty()) {
+    if (should_prompt_) {
       DCHECK(!download_prefs_->IsDownloadPathManaged());
       // If the user is going to be prompted and the user has been prompted
       // before, then always prefer the last directory that the user selected.
-      target_directory = last_selected_directory_;
+      target_directory = download_prefs_->SaveFilePath();
     } else {
       target_directory = download_prefs_->DownloadPath();
     }
@@ -284,6 +282,7 @@ void DownloadTargetDeterminer::PromptUserForDownloadPathDone(
     return;
   }
   virtual_path_ = virtual_path;
+  download_prefs_->SetSaveFilePath(virtual_path_.DirName());
   DoLoop();
 }
 
@@ -585,14 +584,12 @@ void DownloadTargetDeterminer::OnDownloadDestroyed(
 void DownloadTargetDeterminer::Start(
     content::DownloadItem* download,
     DownloadPrefs* download_prefs,
-    const base::FilePath& last_selected_directory,
     DownloadTargetDeterminerDelegate* delegate,
     const content::DownloadTargetCallback& callback) {
   // DownloadTargetDeterminer owns itself and will self destruct when the job is
   // complete or the download item is destroyed. The callback is always invoked
   // asynchronously.
-  new DownloadTargetDeterminer(download, download_prefs,
-                               last_selected_directory, delegate, callback);
+  new DownloadTargetDeterminer(download, download_prefs, delegate, callback);
 }
 
 // static

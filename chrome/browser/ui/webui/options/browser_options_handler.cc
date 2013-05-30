@@ -1290,6 +1290,7 @@ void BrowserOptionsHandler::FileSelected(const base::FilePath& path, int index,
   content::RecordAction(UserMetricsAction("Options_SetDownloadDirectory"));
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   pref_service->SetFilePath(prefs::kDownloadDefaultDirectory, path);
+  pref_service->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
 }
 
 void BrowserOptionsHandler::OnCloudPrintSetupClosed() {

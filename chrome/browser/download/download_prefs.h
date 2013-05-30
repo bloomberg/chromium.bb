@@ -38,7 +38,11 @@ class DownloadPrefs {
       content::BrowserContext* browser_context);
 
   base::FilePath DownloadPath() const;
+  void SetDownloadPath(const base::FilePath& path);
+  base::FilePath SaveFilePath() const;
+  void SetSaveFilePath(const base::FilePath& path);
   int save_file_type() const { return *save_file_type_; }
+  void SetSaveFileType(int type);
 
   // Returns true if the prompt_for_download preference has been set and the
   // download location is not managed (which means the user shouldn't be able
@@ -72,6 +76,7 @@ class DownloadPrefs {
 
   BooleanPrefMember prompt_for_download_;
   FilePathPrefMember download_path_;
+  FilePathPrefMember save_file_path_;
   IntegerPrefMember save_file_type_;
 
   // Set of file extensions to open at download completion.

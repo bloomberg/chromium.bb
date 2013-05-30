@@ -511,8 +511,6 @@
         'browser/download/all_download_item_notifier.h',
         'browser/download/save_package_file_picker.cc',
         'browser/download/save_package_file_picker.h',
-        'browser/download/save_package_file_picker_chromeos.cc',
-        'browser/download/save_package_file_picker_chromeos.h',
         'browser/enumerate_modules_model_win.cc',
         'browser/enumerate_modules_model_win.h',
         'browser/extensions/scoped_gaia_auth_extension.cc',

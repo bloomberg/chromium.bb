@@ -479,6 +479,9 @@ class DownloadTest : public InProcessBrowserTest {
     browser->profile()->GetPrefs()->SetFilePath(
         prefs::kDownloadDefaultDirectory,
         downloads_directory_.path());
+    browser->profile()->GetPrefs()->SetFilePath(
+        prefs::kSaveFileDefaultDirectory,
+        downloads_directory_.path());
 
     return true;
   }
@@ -1394,6 +1397,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   EXPECT_EQ(2, window_count);
   incognito->profile()->GetPrefs()->SetFilePath(
       prefs::kDownloadDefaultDirectory,
+      GetDownloadsDirectory());
+  incognito->profile()->GetPrefs()->SetFilePath(
+      prefs::kSaveFileDefaultDirectory,
       GetDownloadsDirectory());
 
   download_items.clear();
@@ -2941,4 +2947,30 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_DenyDanger) {
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::CANCELLED));
   EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadPrefs_SaveFilePath) {
+  DownloadPrefs* on_prefs = DownloadServiceFactory::GetForProfile(
+      browser()->profile())->GetDownloadManagerDelegate()->download_prefs();
+  DownloadPrefs* off_prefs = DownloadServiceFactory::GetForProfile(
+      browser()->profile()->GetOffTheRecordProfile())
+    ->GetDownloadManagerDelegate()->download_prefs();
+  base::FilePath dir(on_prefs->SaveFilePath());
+  EXPECT_EQ(dir.value(), off_prefs->SaveFilePath().value());
+
+  on_prefs->SetSaveFilePath(dir.AppendASCII("on"));
+  EXPECT_EQ(dir.AppendASCII("on").value(), on_prefs->SaveFilePath().value());
+  EXPECT_EQ(dir.AppendASCII("on").value(), off_prefs->SaveFilePath().value());
+
+  on_prefs->SetSaveFilePath(dir);
+  EXPECT_EQ(dir.value(), on_prefs->SaveFilePath().value());
+  EXPECT_EQ(dir.value(), off_prefs->SaveFilePath().value());
+
+  off_prefs->SetSaveFilePath(dir.AppendASCII("off"));
+  EXPECT_EQ(dir.value(), on_prefs->SaveFilePath().value());
+  EXPECT_EQ(dir.AppendASCII("off").value(), off_prefs->SaveFilePath().value());
+
+  on_prefs->SetSaveFilePath(dir.AppendASCII("on"));
+  EXPECT_EQ(dir.AppendASCII("on").value(), on_prefs->SaveFilePath().value());
+  EXPECT_EQ(dir.AppendASCII("off").value(), off_prefs->SaveFilePath().value());
 }

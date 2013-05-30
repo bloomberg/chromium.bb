@@ -19,7 +19,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
@@ -288,7 +287,6 @@ void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   browser_sync::SyncPrefs::RegisterUserPrefs(registry);
   chrome::RegisterInstantUserPrefs(registry);
   ChromeContentBrowserClient::RegisterUserPrefs(registry);
-  ChromeDownloadManagerDelegate::RegisterUserPrefs(registry);
   ChromeVersionService::RegisterUserPrefs(registry);
   chrome_browser_net::HttpServerPropertiesManager::RegisterUserPrefs(
       registry);

@@ -55,10 +55,6 @@ class DownloadTargetDeterminer
   // |download_prefs| is required and must outlive |download|. It is used for
   //   determining the user's preferences regarding the default downloads
   //   directory, prompting and auto-open behavior.
-  // |last_selected_directory| is the most recent directory that was chosen by
-  //   the user. If the user needs to be prompted, then this directory will be
-  //   used as the directory for the download instead of the user's default
-  //   downloads directory.
   // |delegate| is required and must live until |callback| is invoked.
   // |callback| will be scheduled asynchronously on the UI thread after download
   //   determination is complete or after |download| is destroyed.
@@ -66,7 +62,6 @@ class DownloadTargetDeterminer
   // Start() should be called on the UI thread.
   static void Start(content::DownloadItem* download,
                     DownloadPrefs* download_prefs,
-                    const base::FilePath& last_selected_directory,
                     DownloadTargetDeterminerDelegate* delegate,
                     const content::DownloadTargetCallback& callback);
 
@@ -120,7 +115,6 @@ class DownloadTargetDeterminer
   DownloadTargetDeterminer(
       content::DownloadItem* download,
       DownloadPrefs* download_prefs,
-      const base::FilePath& last_selected_directory,
       DownloadTargetDeterminerDelegate* delegate,
       const content::DownloadTargetCallback& callback);
 
@@ -244,7 +238,6 @@ class DownloadTargetDeterminer
   content::DownloadItem* download_;
   DownloadPrefs* download_prefs_;
   DownloadTargetDeterminerDelegate* delegate_;
-  base::FilePath last_selected_directory_;
   content::DownloadTargetCallback completion_callback_;
   CancelableRequestConsumer history_consumer_;
 

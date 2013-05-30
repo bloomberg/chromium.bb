@@ -193,9 +193,6 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
   // Sets the AutoOpenBasedOnExtension user preference for |path|.
   void EnableAutoOpenBasedOnExtension(const base::FilePath& path);
 
-  // Set the kDownloadDefaultDirectory user preference to |path|.
-  void SetDefaultDownloadPath(const base::FilePath& path);
-
   // Set the kDownloadDefaultDirectory managed preference to |path|.
   void SetManagedDownloadPath(const base::FilePath& path);
 
@@ -232,10 +229,6 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
     return download_prefs_.get();
   }
 
-  void set_last_selected_directory(const base::FilePath& path) {
-    last_selected_directory_ = path;
-  }
-
  private:
   // Verifies that |target_path|, |disposition|, |expected_danger_type| and
   // |intermediate_path| matches the expectations of |test_case|. Posts
@@ -252,7 +245,6 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
   NullWebContentsDelegate web_contents_delegate_;
   base::ScopedTempDir test_download_dir_;
   base::FilePath test_virtual_dir_;
-  base::FilePath last_selected_directory_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 };
@@ -270,7 +262,7 @@ void DownloadTargetDeterminerTest::SetUp() {
   web_contents()->SetDelegate(&web_contents_delegate_);
   ASSERT_TRUE(test_download_dir_.CreateUniqueTempDir());
   test_virtual_dir_ = test_download_dir().Append(FILE_PATH_LITERAL("virtual"));
-  SetDefaultDownloadPath(test_download_dir());
+  download_prefs_->SetDownloadPath(test_download_dir());
   delegate_.SetupDefaults();
 }
 
@@ -342,12 +334,6 @@ void DownloadTargetDeterminerTest::EnableAutoOpenBasedOnExtension(
   EXPECT_TRUE(download_prefs_->EnableAutoOpenBasedOnExtension(path));
 }
 
-void DownloadTargetDeterminerTest::SetDefaultDownloadPath(
-    const base::FilePath& path) {
-  profile()->GetTestingPrefService()->
-      SetFilePath(prefs::kDownloadDefaultDirectory, path);
-}
-
 void DownloadTargetDeterminerTest::SetManagedDownloadPath(
     const base::FilePath& path) {
   profile()->GetTestingPrefService()->
@@ -375,7 +361,7 @@ void DownloadTargetDeterminerTest::RunTestCase(
   base::WeakPtrFactory<DownloadTargetDeterminerTest> factory(this);
   base::RunLoop run_loop;
   DownloadTargetDeterminer::Start(
-      item, download_prefs_.get(), last_selected_directory_, delegate(),
+      item, download_prefs_.get(), delegate(),
       base::Bind(&DownloadTargetDeterminerTest::DownloadTargetVerifier,
                  factory.GetWeakPtr(), run_loop.QuitClosure(), test_case));
   run_loop.Run();
@@ -801,7 +787,7 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_LastSavePath) {
 
   {
     SCOPED_TRACE(testing::Message()
-                 << "Running with empty last_selected_directory");
+                 << "Running with default download path");
     base::FilePath prompt_path =
         GetPathInDownloadDir(FILE_PATH_LITERAL("foo.txt"));
     EXPECT_CALL(*delegate(), PromptUserForDownloadPath(_, prompt_path, _));
@@ -813,7 +799,7 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_LastSavePath) {
   {
     SCOPED_TRACE(testing::Message()
                  << "Running with local last_selected_directory");
-    set_last_selected_directory(test_download_dir().AppendASCII("foo"));
+    download_prefs()->SetSaveFilePath(test_download_dir().AppendASCII("foo"));
     base::FilePath prompt_path =
         GetPathInDownloadDir(FILE_PATH_LITERAL("foo/foo.txt"));
     EXPECT_CALL(*delegate(), PromptUserForDownloadPath(_, prompt_path, _));
@@ -827,7 +813,7 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_LastSavePath) {
                  << "Running with virtual last_selected_directory");
     base::FilePath last_selected_dir = test_virtual_dir().AppendASCII("foo");
     base::FilePath virtual_path = last_selected_dir.AppendASCII("foo.txt");
-    set_last_selected_directory(last_selected_dir);
+    download_prefs()->SetSaveFilePath(last_selected_dir);
     EXPECT_CALL(*delegate(), PromptUserForDownloadPath(
         _, last_selected_dir.AppendASCII("foo.txt"), _));
     EXPECT_CALL(*delegate(), DetermineLocalPath(_, virtual_path, _))
@@ -842,7 +828,7 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_LastSavePath) {
 // directory.
 TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_DefaultVirtual) {
   // The default download directory is the virutal path.
-  SetDefaultDownloadPath(test_virtual_dir());
+  download_prefs()->SetDownloadPath(test_virtual_dir());
 
   {
     SCOPED_TRACE(testing::Message() << "Automatic Safe Download");
@@ -1027,7 +1013,7 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_LocalPathFailed) {
   base::FilePath expected_virtual_path(
       GetPathInDownloadDir(FILE_PATH_LITERAL("virtual/foo.txt")));
   // The default download directory is the virtual path.
-  SetDefaultDownloadPath(test_virtual_dir());
+  download_prefs()->SetDownloadPath(test_virtual_dir());
   // Simulate failed call to DetermineLocalPath.
   EXPECT_CALL(*delegate(), DetermineLocalPath(
       _, GetPathInDownloadDir(FILE_PATH_LITERAL("virtual/foo.txt")), _))
@@ -1461,9 +1447,7 @@ TEST_F(DownloadTargetDeterminerTest,
   base::FilePath full_overridden_path =
       GetPathInDownloadDir(overridden_path.value());
 
-  // The last selected directory is this one. Since the test case is a SAVE_AS
-  // download, it should use this directory for the generated path.
-  set_last_selected_directory(GetPathInDownloadDir(
+  download_prefs()->SetSaveFilePath(GetPathInDownloadDir(
       FILE_PATH_LITERAL("last_selected")));
 
   EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _))

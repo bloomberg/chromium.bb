@@ -44,10 +44,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/download_handler.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/download/save_package_file_picker_chromeos.h"
 #endif
 
-using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadItem;
@@ -153,17 +151,6 @@ void CheckDownloadUrlDone(
 
 }  // namespace
 
-// static
-void ChromeDownloadManagerDelegate::RegisterUserPrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  const base::FilePath& default_download_path =
-      download_util::GetDefaultDownloadDirectory();
-  registry->RegisterFilePathPref(
-      prefs::kSaveFileDefaultDirectory,
-      default_download_path,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-}
-
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
     : profile_(profile),
       next_download_id_(0),
@@ -185,8 +172,8 @@ DownloadId ChromeDownloadManagerDelegate::GetNextId() {
   if (!profile_->IsOffTheRecord())
     return DownloadId(this, next_download_id_++);
 
-  return BrowserContext::GetDownloadManager(profile_->GetOriginalProfile())->
-      GetDelegate()->GetNextId();
+  return content::BrowserContext::GetDownloadManager(
+      profile_->GetOriginalProfile())->GetDelegate()->GetNextId();
 }
 
 bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
@@ -194,7 +181,6 @@ bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
     const content::DownloadTargetCallback& callback) {
   DownloadTargetDeterminer::Start(download,
                                   download_prefs_.get(),
-                                  last_download_path_,
                                   this,
                                   callback);
   return true;
@@ -312,32 +298,13 @@ bool ChromeDownloadManagerDelegate::GenerateFileHash() {
 }
 
 void ChromeDownloadManagerDelegate::GetSaveDir(
-    BrowserContext* browser_context,
+    content::BrowserContext* browser_context,
     base::FilePath* website_save_dir,
     base::FilePath* download_save_dir,
     bool* skip_dir_check) {
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  PrefService* prefs = profile->GetPrefs();
-
-  // Check whether the preference for the preferred directory for
-  // saving file has been explicitly set. If not, and the preference
-  // for the default download directory has been set, initialize it
-  // with the latter. Note that the defaults for both are the same.
-  const PrefService::Preference* download_default_directory =
-      prefs->FindPreference(prefs::kDownloadDefaultDirectory);
-  if (!download_default_directory->IsDefaultValue() &&
-      prefs->FindPreference(
-          prefs::kSaveFileDefaultDirectory)->IsDefaultValue()) {
-    prefs->Set(prefs::kSaveFileDefaultDirectory,
-               *(download_default_directory->GetValue()));
-  }
-
-  // Get the directory from preference.
-  *website_save_dir = prefs->GetFilePath(prefs::kSaveFileDefaultDirectory);
+  *website_save_dir = download_prefs_->SaveFilePath();
   DCHECK(!website_save_dir->empty());
-
-  *download_save_dir = prefs->GetFilePath(prefs::kDownloadDefaultDirectory);
-
+  *download_save_dir = download_prefs_->DownloadPath();
   *skip_dir_check = false;
 #if defined(OS_CHROMEOS)
   *skip_dir_check = drive::util::IsUnderDriveMountPoint(*website_save_dir);
@@ -351,13 +318,6 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
     bool can_save_as_complete,
     const content::SavePackagePathPickedCallback& callback) {
   // Deletes itself.
-#if defined(OS_CHROMEOS)
-  new SavePackageFilePickerChromeOS(
-      web_contents,
-      suggested_path,
-      can_save_as_complete,
-      callback);
-#else
   new SavePackageFilePicker(
       web_contents,
       suggested_path,
@@ -365,7 +325,6 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
       can_save_as_complete,
       download_prefs_.get(),
       callback);
-#endif
 }
 
 void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
@@ -398,10 +357,6 @@ void ChromeDownloadManagerDelegate::CheckForFileExistence(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&file_util::PathExists, download->GetTargetFilePath()),
       callback);
-}
-
-void ChromeDownloadManagerDelegate::ClearLastDownloadPath() {
-  last_download_path_.clear();
 }
 
 DownloadProtectionService*
@@ -465,20 +420,7 @@ void ChromeDownloadManagerDelegate::PromptUserForDownloadPath(
     const base::FilePath& suggested_path,
     const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DownloadFilePicker::ShowFilePicker(
-      download,
-      suggested_path,
-      base::Bind(&ChromeDownloadManagerDelegate::OnDownloadPathSelected,
-                 this,
-                 callback));
-}
-
-void ChromeDownloadManagerDelegate::OnDownloadPathSelected(
-    const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback,
-    const base::FilePath& virtual_path) {
-  if (!virtual_path.empty())
-    last_download_path_ = virtual_path.DirName();
-  callback.Run(virtual_path);
+  DownloadFilePicker::ShowFilePicker(download, suggested_path, callback);
 }
 
 void ChromeDownloadManagerDelegate::DetermineLocalPath(

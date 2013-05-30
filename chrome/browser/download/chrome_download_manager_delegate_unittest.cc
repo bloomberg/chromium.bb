@@ -113,7 +113,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
     base::FilePath return_path = MockPromptUserForDownloadPath(download,
                                                                suggested_path,
                                                                callback);
-    OnDownloadPathSelected(callback, return_path);
+    callback.Run(return_path);
   }
 
   MOCK_METHOD3(
@@ -249,6 +249,7 @@ base::FilePath ChromeDownloadManagerDelegateTest::GetPathInDownloadDir(
 void ChromeDownloadManagerDelegateTest::SetDefaultDownloadPath(
     const base::FilePath& path) {
   pref_service_->SetFilePath(prefs::kDownloadDefaultDirectory, path);
+  pref_service_->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
 }
 
 void ChromeDownloadManagerDelegateTest::DetermineDownloadTarget(
@@ -298,7 +299,6 @@ DownloadPrefs* ChromeDownloadManagerDelegateTest::download_prefs() {
 
 TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_LastSavePath) {
   GURL download_url("http://example.com/foo.txt");
-  delegate()->ClearLastDownloadPath();
 
   scoped_ptr<content::MockDownloadItem> save_as_download(
       CreateActiveDownloadItem(0));
@@ -356,11 +356,9 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_LastSavePath) {
     VerifyAndClearExpectations();
   }
 
-  // Clear the last download path.
-  delegate()->ClearLastDownloadPath();
-
   {
     // The prompt path for the next download should be the default.
+    download_prefs()->SetSaveFilePath(download_prefs()->DownloadPath());
     DownloadTarget result;
     base::FilePath expected_prompt_path(GetPathInDownloadDir("foo.txt"));
     EXPECT_CALL(*delegate(),
