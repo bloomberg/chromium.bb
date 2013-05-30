@@ -1616,6 +1616,10 @@ body[new-ui] .table-header-splitter {
   width: 5px;
 }
 
+body[new-ui] .table-header-splitter:last-child {
+  display: none;
+}
+
 /* Container for a table header. */
 .table-header {
   background-color: #f5f5f5;
