@@ -52,23 +52,25 @@ TEST_F(IndexMetadataTest, Serialize) {
 class SimpleIndexFileTest : public testing::Test {
  public:
   bool CompareTwoEntryMetadata(const EntryMetadata& a, const EntryMetadata& b) {
-    return a.hash_key_ == b.hash_key_ &&
-        a.last_used_time_ == b.last_used_time_ &&
-        a.entry_size_ == b.entry_size_;
+    return a.last_used_time_ == b.last_used_time_ &&
+           a.entry_size_ == b.entry_size_;
   }
 
 };
 
 TEST_F(SimpleIndexFileTest, Serialize) {
   SimpleIndex::EntrySet entries;
-  EntryMetadata entries_array[] = {
-    EntryMetadata(11, Time::FromInternalValue(22), 33),
-    EntryMetadata(22, Time::FromInternalValue(33), 44),
-    EntryMetadata(33, Time::FromInternalValue(44), 55)
-  };
-  SimpleIndexFile::IndexMetadata index_metadata(arraysize(entries_array), 456);
-  for (uint32 i = 0; i < arraysize(entries_array); ++i) {
-    SimpleIndex::InsertInEntrySet(entries_array[i], &entries);
+  static const uint64 kHashes[] = { 11, 22, 33 };
+  static const size_t kNumHashes = arraysize(kHashes);
+  EntryMetadata metadata_entries[kNumHashes];
+
+  SimpleIndexFile::IndexMetadata index_metadata(static_cast<uint64>(kNumHashes),
+                                                456);
+  for (size_t i = 0; i < kNumHashes; ++i) {
+    uint64 hash = kHashes[i];
+    metadata_entries[i] =
+        EntryMetadata(Time::FromInternalValue(hash), hash);
+    SimpleIndex::InsertInEntrySet(hash, metadata_entries[i], &entries);
   }
 
   scoped_ptr<Pickle> pickle = SimpleIndexFile::Serialize(
@@ -81,11 +83,10 @@ TEST_F(SimpleIndexFileTest, Serialize) {
   EXPECT_TRUE(new_entries.get() != NULL);
   EXPECT_EQ(entries.size(), new_entries->size());
 
-  for (uint32 i = 0; i < arraysize(entries_array); ++i) {
-    SimpleIndex::EntrySet::iterator it =
-        new_entries->find(entries_array[i].GetHashKey());
+  for (size_t i = 0; i < kNumHashes; ++i) {
+    SimpleIndex::EntrySet::iterator it = new_entries->find(kHashes[i]);
     EXPECT_TRUE(new_entries->end() != it);
-    EXPECT_TRUE(CompareTwoEntryMetadata(it->second, entries_array[i]));
+    EXPECT_TRUE(CompareTwoEntryMetadata(it->second, metadata_entries[i]));
   }
 }
 

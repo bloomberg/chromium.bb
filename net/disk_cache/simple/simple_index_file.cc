@@ -111,12 +111,15 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::Deserialize(const char* data,
   scoped_ptr<SimpleIndex::EntrySet> index_file_entries(
       new SimpleIndex::EntrySet());
   while (index_file_entries->size() < index_metadata.GetNumberOfEntries()) {
+    uint64 hash_key;
     EntryMetadata entry_metadata;
-    if (!entry_metadata.Deserialize(&pickle_it)) {
+    if (!pickle_it.ReadUInt64(&hash_key) ||
+        !entry_metadata.Deserialize(&pickle_it)) {
       LOG(WARNING) << "Invalid EntryMetadata in Simple Index file.";
       return scoped_ptr<SimpleIndex::EntrySet>(NULL);
     }
-    SimpleIndex::InsertInEntrySet(entry_metadata, index_file_entries.get());
+    SimpleIndex::InsertInEntrySet(
+        hash_key, entry_metadata, index_file_entries.get());
   }
 
   return index_file_entries.Pass();
@@ -131,6 +134,7 @@ scoped_ptr<Pickle> SimpleIndexFile::Serialize(
   index_metadata.Serialize(pickle.get());
   for (SimpleIndex::EntrySet::const_iterator it = entries.begin();
        it != entries.end(); ++it) {
+    pickle->WriteUInt64(it->first);
     it->second.Serialize(pickle.get());
   }
   SimpleIndexFile::PickleHeader* header_p =

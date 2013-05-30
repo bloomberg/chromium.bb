@@ -39,11 +39,8 @@ namespace disk_cache {
 class NET_EXPORT_PRIVATE EntryMetadata {
  public:
   EntryMetadata();
-  EntryMetadata(uint64 hash_key,
-                base::Time last_used_time,
-                uint64 entry_size);
+  EntryMetadata(base::Time last_used_time, uint64 entry_size);
 
-  uint64 GetHashKey() const { return hash_key_; }
   base::Time GetLastUsedTime() const;
   void SetLastUsedTime(const base::Time& last_used_time);
 
@@ -63,7 +60,6 @@ class NET_EXPORT_PRIVATE EntryMetadata {
 
   // When adding new members here, you should update the Serialize() and
   // Deserialize() methods.
-  uint64 hash_key_;
 
   // This is the serialized format from Time::ToInternalValue().
   // If you want to make calculations/comparisons, you should use the
@@ -110,7 +106,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // use a hash_set.
   typedef base::hash_map<uint64, EntryMetadata> EntrySet;
 
-  static void InsertInEntrySet(const EntryMetadata& entry_metadata,
+  static void InsertInEntrySet(uint64 hash_key,
+                               const EntryMetadata& entry_metadata,
                                EntrySet* entry_set);
 
   // Executes the |callback| when the index is ready. Allows multiple callbacks.

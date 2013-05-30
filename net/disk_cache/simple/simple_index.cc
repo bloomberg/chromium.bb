@@ -106,18 +106,11 @@ bool GetMTime(const base::FilePath& path, base::Time* out_mtime) {
 
 namespace disk_cache {
 
-EntryMetadata::EntryMetadata() : hash_key_(0),
-                                 last_used_time_(0),
-                                 entry_size_(0) {
-}
+EntryMetadata::EntryMetadata() : last_used_time_(0), entry_size_(0) {}
 
-EntryMetadata::EntryMetadata(uint64 hash_key,
-                             base::Time last_used_time,
-                             uint64 entry_size) :
-    hash_key_(hash_key),
-    last_used_time_(last_used_time.ToInternalValue()),
-    entry_size_(entry_size) {
-}
+EntryMetadata::EntryMetadata(base::Time last_used_time, uint64 entry_size)
+    : last_used_time_(last_used_time.ToInternalValue()),
+      entry_size_(entry_size) {}
 
 base::Time EntryMetadata::GetLastUsedTime() const {
   return base::Time::FromInternalValue(last_used_time_);
@@ -129,23 +122,18 @@ void EntryMetadata::SetLastUsedTime(const base::Time& last_used_time) {
 
 void EntryMetadata::Serialize(Pickle* pickle) const {
   DCHECK(pickle);
-  COMPILE_ASSERT(sizeof(EntryMetadata) ==
-                 (sizeof(uint64) + sizeof(int64) + sizeof(uint64)),
-                 EntryMetadata_has_three_member_variables);
-  pickle->WriteUInt64(hash_key_);
+  COMPILE_ASSERT(sizeof(EntryMetadata) == (sizeof(int64) + sizeof(uint64)),
+                 EntryMetadata_has_two_member_variables);
   pickle->WriteInt64(last_used_time_);
   pickle->WriteUInt64(entry_size_);
 }
 
 bool EntryMetadata::Deserialize(PickleIterator* it) {
   DCHECK(it);
-  return it->ReadUInt64(&hash_key_) &&
-      it->ReadInt64(&last_used_time_) &&
-      it->ReadUInt64(&entry_size_);
+  return it->ReadInt64(&last_used_time_) && it->ReadUInt64(&entry_size_);
 }
 
 void EntryMetadata::MergeWith(const EntryMetadata& from) {
-  DCHECK_EQ(hash_key_, from.hash_key_);
   if (last_used_time_ == 0)
     last_used_time_ = from.last_used_time_;
   if (entry_size_ == 0)
@@ -227,12 +215,12 @@ scoped_ptr<std::vector<uint64> > SimpleIndex::RemoveEntriesBetween(
   scoped_ptr<std::vector<uint64> > ret_hashes(new std::vector<uint64>());
   for (EntrySet::iterator it = entries_set_.begin(), end = entries_set_.end();
        it != end;) {
-    EntryMetadata metadata = it->second;
+    EntryMetadata& metadata = it->second;
     base::Time entry_time = metadata.GetLastUsedTime();
     if (initial_time <= entry_time && entry_time < extended_end_time) {
-      ret_hashes->push_back(metadata.GetHashKey());
-      entries_set_.erase(it++);
+      ret_hashes->push_back(it->first);
       cache_size_ -= metadata.GetEntrySize();
+      entries_set_.erase(it++);
     } else {
       it++;
     }
@@ -251,8 +239,8 @@ void SimpleIndex::Insert(const std::string& key) {
   // It will be updated later when the SimpleEntryImpl finishes opening or
   // creating the new entry, and then UpdateEntrySize will be called.
   const uint64 hash_key = simple_util::GetEntryHashKey(key);
-  InsertInEntrySet(EntryMetadata(hash_key, base::Time::Now(), 0),
-                   &entries_set_);
+  InsertInEntrySet(
+      hash_key, EntryMetadata(base::Time::Now(), 0), &entries_set_);
   if (!initialized_)
     removed_entries_.erase(hash_key);
   PostponeWritingToDisk();
@@ -302,7 +290,7 @@ void SimpleIndex::StartEvictionIfNeeded() {
   scoped_ptr<std::vector<uint64> > entry_hashes(new std::vector<uint64>());
   for (EntrySet::const_iterator it = entries_set_.begin(),
        end = entries_set_.end(); it != end; ++it) {
-    entry_hashes->push_back(it->second.GetHashKey());
+    entry_hashes->push_back(it->first);
   }
   std::sort(entry_hashes->begin(), entry_hashes->end(),
             CompareHashesForTimestamp(entries_set_));
@@ -368,11 +356,11 @@ void SimpleIndex::EvictionDone(scoped_ptr<int> result) {
 
 // static
 void SimpleIndex::InsertInEntrySet(
+    uint64 hash_key,
     const disk_cache::EntryMetadata& entry_metadata,
     EntrySet* entry_set) {
   DCHECK(entry_set);
-  entry_set->insert(
-      std::make_pair(entry_metadata.GetHashKey(), entry_metadata));
+  entry_set->insert(std::make_pair(hash_key, entry_metadata));
 }
 
 void SimpleIndex::PostponeWritingToDisk() {
@@ -512,13 +500,11 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndex::RestoreFromDisk(
       last_used_time = FileEnumerator::GetLastModifiedTime(find_info);
 
     int64 file_size = FileEnumerator::GetFilesize(find_info);
-    EntrySet::iterator it = index_file_entries->find(hash_key);
-    if (it == index_file_entries->end()) {
-      InsertInEntrySet(EntryMetadata(hash_key, last_used_time, file_size),
-                       index_file_entries.get());
-    } else {
-      // Summing up the total size of the entry through all the *_[0-2] files
-      it->second.SetEntrySize(it->second.GetEntrySize() + file_size);
+    std::pair<EntrySet::iterator, bool> ret = index_file_entries->insert(
+        std::make_pair(hash_key, EntryMetadata(last_used_time, file_size)));
+    if (ret.second == false) {
+      EntryMetadata* current_entry = &ret.first->second;
+      current_entry->SetEntrySize(current_entry->GetEntrySize() + file_size);
     }
   }
   return index_file_entries.Pass();
@@ -555,18 +541,14 @@ void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
   // Recalculate the cache size while merging the two sets.
   for (EntrySet::const_iterator it = index_file_entries->begin();
        it != index_file_entries->end(); ++it) {
-    // If there is already an entry in the current entries_set_, we need to
-    // merge the new data there with the data loaded in the initialization.
-    EntrySet::iterator current_entry = entries_set_.find(it->first);
-    if (current_entry != entries_set_.end()) {
+    std::pair<EntrySet::iterator, bool> ret = entries_set_.insert(*it);
+    EntryMetadata& current_entry = ret.first->second;
+    if (ret.second == false) {
       // When Merging, existing valid data in the |current_entry| will prevail.
-      cache_size_ -= current_entry->second.GetEntrySize();
-      current_entry->second.MergeWith(it->second);
-      cache_size_ += current_entry->second.GetEntrySize();
-    } else {
-      InsertInEntrySet(it->second, &entries_set_);
-      cache_size_ += it->second.GetEntrySize();
+      cache_size_ -= current_entry.GetEntrySize();
+      current_entry.MergeWith(it->second);
     }
+    cache_size_ += current_entry.GetEntrySize();
   }
   initialized_ = true;
   removed_entries_.clear();

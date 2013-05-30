@@ -18,7 +18,6 @@
 
 namespace {
 
-const uint64 kTestHashKey = 4364515;
 const int64 kTestLastUsedTimeInternal = 12345;
 const base::Time kTestLastUsedTime =
     base::Time::FromInternalValue(kTestLastUsedTimeInternal);
@@ -31,9 +30,7 @@ namespace disk_cache {
 class EntryMetadataTest  : public testing::Test {
  public:
   EntryMetadata NewEntryMetadataWithValues() {
-    return EntryMetadata(kTestHashKey,
-                         kTestLastUsedTime,
-                         kTestEntrySize);
+    return EntryMetadata(kTestLastUsedTime, kTestEntrySize);
   }
 
   void CheckEntryMetadataValues(const EntryMetadata& entry_metadata) {
@@ -49,7 +46,6 @@ TEST_F(EntryMetadataTest, Basics) {
 
   entry_metadata = NewEntryMetadataWithValues();
   CheckEntryMetadataValues(entry_metadata);
-  EXPECT_EQ(kTestHashKey, entry_metadata.GetHashKey());
 
   const base::Time new_time = base::Time::FromInternalValue(5);
   entry_metadata.SetLastUsedTime(new_time);
@@ -66,7 +62,6 @@ TEST_F(EntryMetadataTest, Serialize) {
   EntryMetadata new_entry_metadata;
   new_entry_metadata.Deserialize(&it);
   CheckEntryMetadataValues(new_entry_metadata);
-  EXPECT_EQ(kTestHashKey, new_entry_metadata.GetHashKey());
 }
 
 TEST_F(EntryMetadataTest, Merge) {
@@ -74,22 +69,22 @@ TEST_F(EntryMetadataTest, Merge) {
   // MergeWith assumes the hash_key of both entries is the same, so we
   // initialize it to be that way.
   base::Time dummy_time = base::Time::FromInternalValue(0);
-  EntryMetadata entry_metadata_b(entry_metadata_a.GetHashKey(), dummy_time, 0);
+  EntryMetadata entry_metadata_b(dummy_time, 0);
   entry_metadata_b.MergeWith(entry_metadata_a);
   CheckEntryMetadataValues(entry_metadata_b);
 
-  EntryMetadata entry_metadata_c(entry_metadata_a.GetHashKey(), dummy_time, 0);
+  EntryMetadata entry_metadata_c(dummy_time, 0);
   entry_metadata_a.MergeWith(entry_metadata_c);
   CheckEntryMetadataValues(entry_metadata_a);
 
-  EntryMetadata entry_metadata_d(entry_metadata_a.GetHashKey(), dummy_time, 0);
+  EntryMetadata entry_metadata_d(dummy_time, 0);
   const base::Time new_time = base::Time::FromInternalValue(5);
   entry_metadata_d.SetLastUsedTime(new_time);
   entry_metadata_d.MergeWith(entry_metadata_a);
   EXPECT_EQ(entry_metadata_a.GetEntrySize(), entry_metadata_d.GetEntrySize());
   EXPECT_EQ(new_time, entry_metadata_d.GetLastUsedTime());
 
-  EntryMetadata entry_metadata_e(entry_metadata_a.GetHashKey(), dummy_time, 0);
+  EntryMetadata entry_metadata_e(dummy_time, 0);
   const uint64 entry_size = 9999999;
   entry_metadata_e.SetEntrySize(entry_size);
   entry_metadata_e.MergeWith(entry_metadata_a);
@@ -151,9 +146,8 @@ TEST_F(SimpleIndexTest, IndexSizeCorrectOnMerge) {
   {
     scoped_ptr<EntrySet> entries(new EntrySet());
     const uint64 hash_key = simple_util::GetEntryHashKey("eleven");
-    entries->insert(std::make_pair(hash_key, EntryMetadata(hash_key,
-                                                           base::Time::Now(),
-                                                           11)));
+    entries->insert(
+        std::make_pair(hash_key, EntryMetadata(base::Time::Now(), 11)));
     index.MergeInitializingSet(entries.Pass(), false);
   }
   EXPECT_EQ(25U, index.cache_size_);
