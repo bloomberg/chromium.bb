@@ -2324,7 +2324,7 @@ void DiskCacheEntryTest::SimpleCacheMakeBadChecksumEntry(const char* key) {
   ASSERT_NE(base::kInvalidPlatformFileValue, entry_file0);
 
   const std::string bad_data = "HAHAHA";
-  DCHECK_LE(bad_data.size(), data.size());
+  EXPECT_LE(bad_data.size(), data.size());
   int64 file_offset =
       disk_cache::simple_util::GetFileOffsetFromKeyAndDataOffset(key, 0);
   ASSERT_EQ(implicit_cast<int>(bad_data.size()),
@@ -2347,7 +2347,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
   EXPECT_EQ(net::OK, OpenEntry(key, &entry));
 
   const int kReadBufferSize = 200;
-  DCHECK_GE(kReadBufferSize, entry->GetDataSize(0));
+  EXPECT_GE(kReadBufferSize, entry->GetDataSize(0));
   scoped_refptr<net::IOBuffer> read_buffer(new net::IOBuffer(kReadBufferSize));
   EXPECT_EQ(net::ERR_CACHE_CHECKSUM_MISMATCH,
             ReadData(entry, 0, 0, read_buffer, kReadBufferSize));
@@ -2369,7 +2369,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
   EXPECT_EQ(net::OK, OpenEntry(key, &entry));
 
   const int kReadBufferSize = 200;
-  DCHECK_GE(kReadBufferSize, entry->GetDataSize(0));
+  EXPECT_GE(kReadBufferSize, entry->GetDataSize(0));
   scoped_refptr<net::IOBuffer> read_buffer(new net::IOBuffer(kReadBufferSize));
   EXPECT_EQ(net::ERR_CACHE_CHECKSUM_MISMATCH,
             ReadData(entry, 0, 0, read_buffer, kReadBufferSize));
@@ -2701,6 +2701,39 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOptimistic6) {
   // Check that we are not leaking.
   EXPECT_TRUE(
       static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
+  entry->Close();
+}
+
+// Confirm that IO buffers are not referenced by the Simple Cache after a write
+// completes.
+TEST_F(DiskCacheEntryTest, SimpleCacheOptimisticWriteReleases) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char key[] = "the first key";
+  disk_cache::Entry* entry = NULL;
+
+  // First, an optimistic create.
+  ASSERT_EQ(net::OK,
+            cache_->CreateEntry(key, &entry, net::CompletionCallback()));
+
+  ASSERT_TRUE(entry);
+  const int kWriteSize = 512;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kWriteSize));
+  EXPECT_TRUE(buffer1->HasOneRef());
+
+  // An optimistic write happens only when there is an empty queue of pending
+  // operations. To ensure the queue is empty, we issue a write and wait until
+  // it completes.
+  EXPECT_EQ(kWriteSize,
+            WriteData(entry, 0, 0, buffer1, kWriteSize, false));
+  EXPECT_TRUE(buffer1->HasOneRef());
+
+  // Finally, we should perform an optimistic write and confirm that all
+  // references to the IO buffer have been released.
+  EXPECT_EQ(kWriteSize, entry->WriteData(
+      1, 0, buffer1, kWriteSize, net::CompletionCallback(), false));
+  EXPECT_TRUE(buffer1->HasOneRef());
   entry->Close();
 }
 

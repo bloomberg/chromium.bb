@@ -287,9 +287,17 @@ int SimpleEntryImpl::WriteData(int stream_index,
     // prevents from previous possibly-conflicting writes that could be stacked
     // in the |pending_operations_|. We could optimize this for when we have
     // only read operations enqueued.
+    // TODO(gavinp,pasko): For performance, don't use a copy of an IOBuffer
+    // here to avoid paying the price of the RefCountedThreadSafe atomic
+    // operations.
+    IOBuffer* buf_copy = NULL;
+    if (buf) {
+      buf_copy = new IOBuffer(buf_len);
+      memcpy(buf_copy->data(), buf->data(), buf_len);
+    }
     pending_operations_.push(
         base::Bind(&SimpleEntryImpl::WriteDataInternal, this, stream_index,
-                   offset, make_scoped_refptr(buf), buf_len,
+                   offset, make_scoped_refptr(buf_copy), buf_len,
                    CompletionCallback(), truncate));
     ret_value = buf_len;
   } else {
