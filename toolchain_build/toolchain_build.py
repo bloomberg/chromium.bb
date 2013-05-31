@@ -209,7 +209,7 @@ def WithDepsOptions(options):
 # These are libraries that go into building the compiler itself.
 HOST_GCC_LIBS = {
     'gmp': {
-        'tar_src': 'third_party/gmp/gmp-5.1.1.tar.bz2',
+        'tar_src': 'third_party/gmp/gmp-5.1.2.tar.bz2',
         'unpack_commands': UnpackSrc(False),
         'hashed_inputs': {'src': 'src'},
         'commands': CommandsInBuild([
