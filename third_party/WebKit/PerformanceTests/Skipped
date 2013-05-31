@@ -68,3 +68,7 @@ DOM/Events.html
 DOM/GetElement.html
 DOM/GridSort.html
 DOM/Template.html
+
+# Crashy, crbug.com/245702
+Parser/query-selector-deep.html
+Parser/query-selector-id-deep.html
