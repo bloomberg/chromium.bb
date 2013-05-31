@@ -2222,10 +2222,10 @@ static void
 drm_destroy(struct weston_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
-	struct udev_seat *seat, *next;
+	struct udev_input *input, *next;
 
-	wl_list_for_each_safe(seat, next, &ec->seat_list, base.link)
-		udev_seat_destroy(seat);
+	wl_list_for_each_safe(input, next, &ec->seat_list, base.link)
+		udev_input_destroy(input);
 
 	wl_event_source_remove(d->udev_drm_source);
 	wl_event_source_remove(d->drm_source);
@@ -2282,7 +2282,7 @@ static void
 vt_func(struct weston_compositor *compositor, int event)
 {
 	struct drm_compositor *ec = (struct drm_compositor *) compositor;
-	struct udev_seat *seat;
+	struct udev_input *input;
 	struct drm_sprite *sprite;
 	struct drm_output *output;
 
@@ -2297,13 +2297,13 @@ vt_func(struct weston_compositor *compositor, int event)
 		compositor->state = ec->prev_state;
 		drm_compositor_set_modes(ec);
 		weston_compositor_damage_all(compositor);
-		wl_list_for_each(seat, &compositor->seat_list, base.link)
-			udev_seat_enable(seat, ec->udev);
+		wl_list_for_each(input, &compositor->seat_list, base.link)
+			udev_input_enable(input, ec->udev);
 		break;
 	case TTY_LEAVE_VT:
 		weston_log("leaving VT\n");
-		wl_list_for_each(seat, &compositor->seat_list, base.link)
-			udev_seat_disable(seat);
+		wl_list_for_each(input, &compositor->seat_list, base.link)
+			udev_input_disable(input);
 
 		compositor->focus = 0;
 		ec->prev_state = compositor->state;
@@ -2431,7 +2431,7 @@ drm_compositor_create(struct wl_display *display,
 	struct drm_compositor *ec;
 	struct udev_device *drm_device;
 	struct wl_event_loop *loop;
-	struct udev_seat *udev_seat, *next;
+	struct udev_input *udev_input, *next;
 	const char *path;
 	uint32_t key;
 
@@ -2563,8 +2563,8 @@ err_udev_monitor:
 	udev_monitor_unref(ec->udev_monitor);
 err_drm_source:
 	wl_event_source_remove(ec->drm_source);
-	wl_list_for_each_safe(udev_seat, next, &ec->base.seat_list, base.link)
-		udev_seat_destroy(udev_seat);
+	wl_list_for_each_safe(udev_input, next, &ec->base.seat_list, base.link)
+		udev_input_destroy(udev_input);
 err_sprite:
 	ec->base.renderer->destroy(&ec->base);
 	gbm_device_destroy(ec->gbm);

@@ -751,11 +751,11 @@ static void
 fbdev_compositor_destroy(struct weston_compositor *base)
 {
 	struct fbdev_compositor *compositor = to_fbdev_compositor(base);
-	struct udev_seat *seat, *next;
+	struct udev_input *input, *next;
 
 	/* Destroy all inputs. */
-	wl_list_for_each_safe(seat, next, &compositor->base.seat_list, base.link)
-		udev_seat_destroy(seat);
+	wl_list_for_each_safe(input, next, &compositor->base.seat_list, base.link)
+		udev_input_destroy(input);
 
 	/* Destroy the output. */
 	weston_compositor_shutdown(&compositor->base);
@@ -771,7 +771,7 @@ static void
 vt_func(struct weston_compositor *base, int event)
 {
 	struct fbdev_compositor *compositor = to_fbdev_compositor(base);
-	struct udev_seat *seat;
+	struct udev_input *input;
 	struct weston_output *output;
 
 	switch (event) {
@@ -786,13 +786,13 @@ vt_func(struct weston_compositor *base, int event)
 
 		weston_compositor_damage_all(&compositor->base);
 
-		wl_list_for_each(seat, &compositor->base.seat_list, base.link)
-			udev_seat_enable(seat, compositor->udev);
+		wl_list_for_each(input, &compositor->base.seat_list, base.link)
+			udev_input_enable(input, compositor->udev);
 		break;
 	case TTY_LEAVE_VT:
 		weston_log("leaving VT\n");
-		wl_list_for_each(seat, &compositor->base.seat_list, base.link)
-			udev_seat_disable(seat);
+		wl_list_for_each(input, &compositor->base.seat_list, base.link)
+			udev_input_disable(input);
 
 		wl_list_for_each(output, &compositor->base.output_list, link) {
 			fbdev_output_disable(output);
@@ -884,7 +884,7 @@ fbdev_compositor_create(struct wl_display *display, int *argc, char *argv[],
 	if (fbdev_output_create(compositor, param->device) < 0)
 		goto out_pixman;
 
-	udev_seat_create(&compositor->base, compositor->udev, seat);
+	udev_input_create(&compositor->base, compositor->udev, seat);
 
 	return &compositor->base;
 
