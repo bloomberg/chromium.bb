@@ -127,6 +127,16 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
         return 0;
 
     GraphicsLayer* newGraphicsLayer = renderLayer->backing()->graphicsLayer();
+    m_clipLayer->setSublayerTransform(SkMatrix44());
+
+    if (!newGraphicsLayer->drawsContent()) {
+        if (renderLayer->usesCompositedScrolling()) {
+            ASSERT(renderLayer->backing() && renderLayer->backing()->scrollingContentsLayer());
+            newGraphicsLayer = renderLayer->backing()->scrollingContentsLayer();
+        } else
+            ASSERT_NOT_REACHED();
+    }
+
     if (m_currentGraphicsLayer != newGraphicsLayer) {
         if (m_currentGraphicsLayer)
             clearGraphicsLayerLinkHighlightPointer();
@@ -138,11 +148,10 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
     return renderLayer;
 }
 
-static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, RenderObject* targetRenderer, RenderLayer* compositedLayer, FloatQuad& compositedSpaceQuad)
+static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, RenderObject* targetRenderer, RenderObject* compositedRenderer, FloatQuad& compositedSpaceQuad)
 {
     ASSERT(targetRenderer);
-    ASSERT(compositedLayer);
-    RenderLayerModelObject* compositedRenderer = compositedLayer->renderer();
+    ASSERT(compositedRenderer);
 
     for (unsigned i = 0; i < 4; ++i) {
         IntPoint point;
@@ -156,7 +165,6 @@ static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpace
         point = targetRenderer->frame()->view()->contentsToWindow(point);
         point = compositedRenderer->frame()->view()->windowToContents(point);
         FloatPoint floatPoint = compositedRenderer->absoluteToLocal(point, UseTransforms);
-        floatPoint.moveBy(-compositedLayer->backing()->compositedBounds().location());
 
         switch (i) {
         case 0: compositedSpaceQuad.setP1(floatPoint); break;
@@ -189,11 +197,17 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositin
     m_node->renderer()->absoluteQuads(quads);
     ASSERT(quads.size());
 
+    // Adjust for offset between target graphics layer and the node's renderer.
+    FloatPoint positionAdjust = IntPoint(m_currentGraphicsLayer->offsetFromRenderer());
+
     Path newPath;
     for (unsigned quadIndex = 0; quadIndex < quads.size(); ++quadIndex) {
+        FloatQuad absoluteQuad = quads[quadIndex];
+        absoluteQuad.move(-positionAdjust.x(), -positionAdjust.y());
+
         // Transform node quads in target absolute coords to local coordinates in the compositor layer.
         FloatQuad transformedQuad;
-        convertTargetSpaceQuadToCompositedLayer(quads[quadIndex], m_node->renderer(), compositingLayer, transformedQuad);
+        convertTargetSpaceQuadToCompositedLayer(absoluteQuad, m_node->renderer(), compositingLayer->renderer(), transformedQuad);
 
         // FIXME: for now, we'll only use rounded paths if we have a single node quad. The reason for this is that
         // we may sometimes get a chain of adjacent boxes (e.g. for text nodes) which end up looking like sausage
