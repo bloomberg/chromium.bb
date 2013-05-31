@@ -7,8 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -31,6 +29,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
+#include "chromeos/network/network_state_handler.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -122,7 +121,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     WizardController::default_controller()->is_official_build_ = true;
 
     // Clear portal list (as it is by default in OOBE).
-    CrosLibrary::Get()->GetNetworkLibrary()->SetCheckPortalList("");
+    NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
 
     // Set up the mocks for all screens.
     MOCK(mock_network_screen_, network_screen_,
@@ -179,8 +178,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
   OnExit(ScreenObserver::UPDATE_INSTALLED);
 
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
-  EXPECT_EQ("ethernet,wifi,cellular",
-            CrosLibrary::Get()->GetNetworkLibrary()->GetCheckPortalList());
+  EXPECT_EQ(
+      "ethernet,wifi,cellular",
+      NetworkHandler::Get()->network_state_handler()->check_portal_list());
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
@@ -235,12 +235,14 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
   EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_enrollment_screen_, Hide()).Times(0);
   OnExit(ScreenObserver::EULA_ACCEPTED);
+  content::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(WizardController::default_controller()->GetEnrollmentScreen(),
             WizardController::default_controller()->current_screen());
   EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
-  EXPECT_EQ("ethernet,wifi,cellular",
-            CrosLibrary::Get()->GetNetworkLibrary()->GetCheckPortalList());
+  EXPECT_EQ(
+      "ethernet,wifi,cellular",
+      NetworkHandler::Get()->network_state_handler()->check_portal_list());
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowEulaDeclined) {

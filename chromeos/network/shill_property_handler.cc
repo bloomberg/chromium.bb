@@ -162,6 +162,17 @@ void ShillPropertyHandler::SetTechnologyEnabled(
   }
 }
 
+void ShillPropertyHandler::SetCheckPortalList(
+    const std::string& check_portal_list) {
+  base::StringValue value(check_portal_list);
+  shill_manager_->SetProperty(
+      flimflam::kCheckPortalListProperty,
+      value,
+      base::Bind(&base::DoNothing),
+      base::Bind(&network_handler::ShillErrorCallbackFunction,
+                 "", network_handler::ErrorCallback()));
+}
+
 void ShillPropertyHandler::RequestScan() const {
   shill_manager_->RequestScan(
       "",
@@ -296,6 +307,12 @@ bool ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
     }
   } else if (key == flimflam::kProfilesProperty) {
     listener_->ProfileListChanged();
+  } else if (key == flimflam::kCheckPortalListProperty) {
+    std::string check_portal_list;
+    if (value.GetAsString(&check_portal_list)) {
+      listener_->CheckPortalListChanged(check_portal_list);
+      notify_manager_changed = true;
+    }
   }
   return notify_manager_changed;
 }

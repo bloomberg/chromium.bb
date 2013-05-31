@@ -38,11 +38,6 @@ NetworkLibraryImplStub::NetworkLibraryImplStub()
       pin_entered_(false),
       network_priority_order_(0),
       weak_pointer_factory_(this) {
-  // Emulate default setting of the CheckPortalList when OOBE is done.
-  if (IsEthernetEnabled())
-    check_portal_list_ = "ethernet,wifi,cellular";
-  else
-    check_portal_list_ = "wifi,cellular";
 }
 
 NetworkLibraryImplStub::~NetworkLibraryImplStub() {
@@ -630,18 +625,6 @@ void NetworkLibraryImplStub::CallRemoveNetwork(const Network* network) {}
 
 /////////////////////////////////////////////////////////////////////////////
 // NetworkLibrary implementation.
-
-void NetworkLibraryImplStub::SetCheckPortalList(const
-    std::string& check_portal_list) {
-  check_portal_list_ = check_portal_list;
-}
-
-void NetworkLibraryImplStub::SetDefaultCheckPortalList() {
-  if (IsEthernetEnabled())
-    SetCheckPortalList("ethernet,wifi,cellular");
-  else
-    SetCheckPortalList("wifi,cellular");
-}
 
 void NetworkLibraryImplStub::ChangePin(const std::string& old_pin,
                                        const std::string& new_pin) {

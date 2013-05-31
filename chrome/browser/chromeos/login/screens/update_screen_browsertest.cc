@@ -55,8 +55,6 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
         = mock_dbus_thread_manager->fake_update_engine_client();
 
     mock_network_library_ = cros_mock_->mock_network_library();
-    EXPECT_CALL(*mock_network_library_, SetDefaultCheckPortalList())
-        .Times(1);
     EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _))
         .Times(AnyNumber());
 

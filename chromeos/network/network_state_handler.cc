@@ -70,6 +70,8 @@ const char NetworkStateHandler::kMatchTypeDefault[] = "default";
 const char NetworkStateHandler::kMatchTypeWireless[] = "wireless";
 const char NetworkStateHandler::kMatchTypeMobile[] = "mobile";
 const char NetworkStateHandler::kMatchTypeNonVirtual[] = "non-virtual";
+const char NetworkStateHandler::kDefaultCheckPortalList[] =
+    "ethernet,wifi,cellular";
 
 NetworkStateHandler::NetworkStateHandler() {
 }
@@ -306,6 +308,12 @@ void NetworkStateHandler::SetConnectingNetwork(
     NET_LOG_ERROR("SetConnectingNetwork to unknown network", service_path);
 }
 
+void NetworkStateHandler::SetCheckPortalList(
+    const std::string& check_portal_list) {
+  NET_LOG_EVENT("SetCheckPortalList", check_portal_list);
+  shill_property_handler_->SetCheckPortalList(check_portal_list);
+}
+
 void NetworkStateHandler::GetNetworkStatePropertiesForTest(
     base::DictionaryValue* dictionary) const {
   for (ManagedStateList::const_iterator iter = network_list_.begin();
@@ -459,6 +467,11 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
 
   if (key == flimflam::kScanningProperty && device->scanning() == false)
     ScanCompleted(device->type());
+}
+
+void NetworkStateHandler::CheckPortalListChanged(
+    const std::string& check_portal_list) {
+  check_portal_list_ = check_portal_list;
 }
 
 void NetworkStateHandler::NotifyManagerPropertyChanged() {

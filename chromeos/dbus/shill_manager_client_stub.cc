@@ -88,6 +88,7 @@ void ShillManagerClientStub::SetProperty(const std::string& name,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
   stub_properties_.SetWithoutPathExpansion(name, value.DeepCopy());
+  CallNotifyObserversPropertyChanged(name, 0);
   if (callback.is_null())
     return;
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);

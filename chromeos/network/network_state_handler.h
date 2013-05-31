@@ -162,7 +162,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Set the user initiated connecting network.
   void SetConnectingNetwork(const std::string& service_path);
 
+  // Set the list of devices on which portal check is enabled.
+  void SetCheckPortalList(const std::string& check_portal_list);
+
   const std::string& connecting_network() const { return connecting_network_; }
+  const std::string& check_portal_list() const { return check_portal_list_; }
 
   // Generates a DictionaryValue of all NetworkState properties. Currently
   // provided for debugging purposes only.
@@ -176,6 +180,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
   static const char kMatchTypeWireless[];
   static const char kMatchTypeMobile[];
   static const char kMatchTypeNonVirtual[];
+
+  // Default set of comma separated interfaces on which to enable
+  // portal checking.
+  static const char kDefaultCheckPortalList[];
 
  protected:
   friend class NetworkHandler;
@@ -210,6 +218,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
       const std::string& device_path,
       const std::string& key,
       const base::Value& value) OVERRIDE;
+
+  // Called by ShillPropertyHandler when the portal check list manager property
+  // changes.
+  virtual void CheckPortalListChanged(
+      const std::string& check_portal_list) OVERRIDE;
 
   // Sends NetworkManagerChanged() to observers and logs an event.
   virtual void NotifyManagerPropertyChanged() OVERRIDE;
@@ -280,6 +293,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // changes to something other than Connecting (after observers are notified).
   // TODO(stevenjb): Move this to NetworkConfigurationHandler.
   std::string connecting_network_;
+
+  // List of interfaces on which portal check is enabled.
+  std::string check_portal_list_;
 
   // Callbacks to run when a scan for the technology type completes.
   ScanCompleteCallbackMap scan_complete_callbacks_;

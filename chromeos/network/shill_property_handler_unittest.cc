@@ -71,6 +71,10 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     ++manager_updates_;
   }
 
+  virtual void CheckPortalListChanged(
+      const std::string& check_portal_list) OVERRIDE {
+  }
+
   virtual void ManagedStateListChanged(
       ManagedState::ManagedType type) OVERRIDE {
     AddStateListUpdate(GetTypeString(type));

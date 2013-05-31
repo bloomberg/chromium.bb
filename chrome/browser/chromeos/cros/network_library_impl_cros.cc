@@ -35,13 +35,6 @@ struct NetworkLibraryImplCros::IPParameterInfo {
   int dhcp_usage_mask;
 };
 
-namespace {
-
-// List of interfaces that have portal check enabled by default.
-const char kDefaultCheckPortalList[] = "ethernet,wifi,cellular";
-
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////
 
 NetworkLibraryImplCros::NetworkLibraryImplCros()
@@ -293,16 +286,6 @@ void NetworkLibraryImplCros::CallDeleteRememberedNetwork(
 
 //////////////////////////////////////////////////////////////////////////////
 // NetworkLibrary implementation.
-
-void NetworkLibraryImplCros::SetCheckPortalList(
-    const std::string& check_portal_list) {
-  base::StringValue value(check_portal_list);
-  CrosSetNetworkManagerProperty(flimflam::kCheckPortalListProperty, value);
-}
-
-void NetworkLibraryImplCros::SetDefaultCheckPortalList() {
-  SetCheckPortalList(kDefaultCheckPortalList);
-}
 
 void NetworkLibraryImplCros::ChangePin(const std::string& old_pin,
                                        const std::string& new_pin) {

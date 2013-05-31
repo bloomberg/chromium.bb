@@ -23,8 +23,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -57,6 +55,7 @@
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -609,8 +608,8 @@ void WizardController::InitiateOOBEUpdate() {
 void WizardController::PerformPostEulaActions() {
   // Now that EULA has been accepted (for official builds), enable portal check.
   // ChromiumOS builds would go though this code path too.
-  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-      SetDefaultCheckPortalList();
+  NetworkHandler::Get()->network_state_handler()->SetCheckPortalList(
+      NetworkStateHandler::kDefaultCheckPortalList);
   host_->CheckForAutoEnrollment();
   NetworkPortalDetector* detector = NetworkPortalDetector::GetInstance();
   if (NetworkPortalDetector::IsEnabledInCommandLine() && detector)

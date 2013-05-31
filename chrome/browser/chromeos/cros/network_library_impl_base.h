@@ -148,9 +148,6 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual bool wifi_scanning() const OVERRIDE;
   virtual bool cellular_initializing() const OVERRIDE;
   virtual bool offline_mode() const OVERRIDE;
-  virtual std::string GetCheckPortalList() const OVERRIDE;
-  // virtual SetCheckPortalList implemented in derived classes.
-  // virtual SetDefaultCheckPortalList implemented in derived classes.
   virtual const std::string& IPAddress() const OVERRIDE;
 
   virtual const NetworkDevice* FindNetworkDeviceByPath(
