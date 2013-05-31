@@ -1106,19 +1106,14 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
   // If we're not using GTK theming, draw our own border over the edge pixels
   // of the background.
   if (!GtkThemeService::GetFrom(browser_->profile())->UsingNativeTheme()) {
-    int left, center, right;
     if (popup_window_mode_) {
-      left = right = IDR_LOCATIONBG_POPUPMODE_EDGE;
-      center = IDR_LOCATIONBG_POPUPMODE_CENTER;
+      NineBox(IDR_LOCATIONBG_POPUPMODE_EDGE,
+              IDR_LOCATIONBG_POPUPMODE_CENTER,
+              IDR_LOCATIONBG_POPUPMODE_EDGE,
+              0, 0, 0, 0, 0, 0).RenderToWidget(widget);
     } else {
-      left = IDR_LOCATIONBG_L;
-      center = IDR_LOCATIONBG_C;
-      right = IDR_LOCATIONBG_R;
+      NineBox(IDR_LOCATION_BAR_BORDER, 5, 5, 4, 4).RenderToWidget(widget);
     }
-
-    NineBox background(left, center, right,
-                       0, 0, 0, 0, 0, 0);
-    background.RenderToWidget(widget);
   }
 
   // Draw ExtensionAction backgrounds and borders, if necessary.  The borders

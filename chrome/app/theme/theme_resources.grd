@@ -408,23 +408,9 @@
       <structure type="chrome_scaled_image" name="IDR_KILLED_TAB" file="killtab.png" />
       <structure type="chrome_scaled_image" name="IDR_LAPTOP_FAVICON" file="common/favicon_laptop.png" />
       <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_HTTP" file="common/location_bar_http.png" />
-      <if expr="not pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_C" file="omnibox_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_L" file="omnibox_left.png" />
-      </if>
-      <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_C" file="common/browser_omnibox_middle.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_L" file="common/browser_omnibox_left.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="omnibox_popup_center.png" />
       <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_POPUPMODE_EDGE" file="omnibox_popup_edge.png" />
-      <if expr="not pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_R" file="omnibox_right.png" />
-      </if>
-      <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_R" file="common/browser_omnibox_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_BORDER" file="common/browser_omnibox_border.png" />
-      </if>
+      <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_BORDER" file="common/browser_omnibox_border.png" />
       <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="common/keyword_search_bubble_center.png" />
       <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="common/keyword_search_bubble_left.png" />
       <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="common/keyword_search_bubble_right.png" />
