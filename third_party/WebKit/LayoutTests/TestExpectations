@@ -1020,9 +1020,6 @@ webkit.org/b/85106 tables/mozilla/other/slashlogo.html [ Slow ]
 # Skip it because it seems its frame loading notifications leak to the next test.
 webkit.org/b/85949 http/tests/loading/post-in-iframe-with-back-navigation.html [ Skip ]
 
-webkit.org/b/86439 inspector/extensions/extensions-events.html [ Timeout ]
-webkit.org/b/86439 [ Debug ] inspector/extensions/extensions-sidebar.html [ Pass Timeout ]
-
 webkit.org/b/86114 [ Debug ] animations/combo-transform-translate+scale.html [ Failure Pass ]
 
 webkit.org/b/92279 [ Release ] http/tests/inspector/resource-har-pages.html [ Failure Timeout ]
