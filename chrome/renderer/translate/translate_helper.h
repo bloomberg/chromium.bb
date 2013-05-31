@@ -27,7 +27,7 @@ class TranslateHelper : public content::RenderViewObserver {
   virtual ~TranslateHelper();
 
   // Informs us that the page's text has been extracted.
-  void PageCaptured(const string16& contents);
+  void PageCaptured(int page_id, const string16& contents);
 
  protected:
   // The following methods are protected so they can be overridden in
@@ -155,9 +155,12 @@ class TranslateHelper : public content::RenderViewObserver {
   // if the page is being closed.
   WebKit::WebFrame* GetMainFrame();
 
+  // ID to represent a page which TranslateHelper captured and determined a
+  // content language.
+  int page_id_;
+
   // The states associated with the current translation.
   bool translation_pending_;
-  int page_id_;
   std::string source_lang_;
   std::string target_lang_;
 

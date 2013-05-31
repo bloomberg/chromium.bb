@@ -74,8 +74,8 @@ const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
 //
 TranslateHelper::TranslateHelper(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
-      translation_pending_(false),
       page_id_(-1),
+      translation_pending_(false),
       weak_method_factory_(this) {
 }
 
@@ -83,7 +83,7 @@ TranslateHelper::~TranslateHelper() {
   CancelPendingTranslation();
 }
 
-void TranslateHelper::PageCaptured(const string16& contents) {
+void TranslateHelper::PageCaptured(int page_id, const string16& contents) {
   // Get the document language as set by WebKit from the http-equiv
   // meta tag for "content-language".  This may or may not also
   // have a value derived from the actual Content-Language HTTP
@@ -94,8 +94,9 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   // relevant for things like langauge textbooks).  This distinction
   // shouldn't affect translation.
   WebFrame* main_frame = GetMainFrame();
-  if (!main_frame)
+  if (!main_frame || render_view()->GetPageId() != page_id)
     return;
+  page_id_ = page_id;
   WebDocument document = main_frame->document();
   std::string content_language = document.contentLanguage().utf8();
   WebElement html_element = document.documentElement();
@@ -137,7 +138,6 @@ void TranslateHelper::PageCaptured(const string16& contents) {
 void TranslateHelper::CancelPendingTranslation() {
   weak_method_factory_.InvalidateWeakPtrs();
   translation_pending_ = false;
-  page_id_ = -1;
   source_lang_.clear();
   target_lang_.clear();
 }
@@ -471,21 +471,21 @@ void TranslateHelper::OnTranslatePage(int page_id,
                                       const std::string& source_lang,
                                       const std::string& target_lang) {
   WebFrame* main_frame = GetMainFrame();
-  if (!main_frame || render_view()->GetPageId() != page_id)
+  if (!main_frame ||
+      page_id_ != page_id ||
+      render_view()->GetPageId() != page_id)
     return;  // We navigated away, nothing to do.
 
-  if (translation_pending_ && page_id == page_id_ &&
-      target_lang_ == target_lang) {
-    // A similar translation is already under way, nothing to do.
+  // A similar translation is already under way, nothing to do.
+  if (translation_pending_ && target_lang_ == target_lang)
     return;
-  }
 
   // Any pending translation is now irrelevant.
   CancelPendingTranslation();
 
   // Set our states.
   translation_pending_ = true;
-  page_id_ = page_id;
+
   // If the source language is undetermined, we'll let the translate element
   // detect it.
   source_lang_ = (source_lang != chrome::kUnknownLanguageCode) ?
@@ -509,7 +509,7 @@ void TranslateHelper::OnTranslatePage(int page_id,
 }
 
 void TranslateHelper::OnRevertTranslation(int page_id) {
-  if (render_view()->GetPageId() != page_id)
+  if (page_id_ != page_id || render_view()->GetPageId() != page_id)
     return;  // We navigated away, nothing to do.
 
   if (!IsTranslateLibAvailable()) {

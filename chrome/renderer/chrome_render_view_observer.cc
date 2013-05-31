@@ -728,7 +728,7 @@ void ChromeRenderViewObserver::CapturePageInfo(int page_id,
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
                       base::TimeTicks::Now() - capture_begin_time);
   if (translate_helper_)
-    translate_helper_->PageCaptured(contents);
+    translate_helper_->PageCaptured(page_id, contents);
 
   // Skip indexing if this is not a new load.  Note that the case where
   // page_id == last_indexed_page_id_ is more complicated, since we need to
