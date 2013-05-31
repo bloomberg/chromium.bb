@@ -159,6 +159,7 @@ RenderViewHostImpl::RenderViewHostImpl(
     RenderViewHostDelegate* delegate,
     RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
+    int main_frame_routing_id,
     bool swapped_out,
     SessionStorageNamespace* session_storage)
     : RenderWidgetHostImpl(widget_delegate, instance->GetProcess(), routing_id),
@@ -190,6 +191,12 @@ RenderViewHostImpl::RenderViewHostImpl(
   DCHECK(session_storage_namespace_);
   DCHECK(instance_);
   CHECK(delegate_);  // http://crbug.com/82827
+
+  if (main_frame_routing_id == MSG_ROUTING_NONE)
+    main_frame_routing_id = GetProcess()->GetNextRoutingID();
+
+  main_render_frame_host_.reset(
+      new RenderFrameHostImpl(this, main_frame_routing_id, is_swapped_out_));
 
   GetProcess()->EnableSendQueue();
 
@@ -253,6 +260,7 @@ bool RenderViewHostImpl::CreateRenderView(
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
   params.web_preferences = delegate_->GetWebkitPrefs();
   params.view_id = GetRoutingID();
+  params.main_frame_routing_id = main_render_frame_host_->routing_id();
   params.surface_id = surface_id();
   params.session_storage_namespace_id = session_storage_namespace_->id();
   params.frame_name = frame_name;
@@ -1035,6 +1043,7 @@ bool RenderViewHostImpl::IsRenderView() const {
 
 void RenderViewHostImpl::CreateNewWindow(
     int route_id,
+    int main_frame_route_id,
     const ViewHostMsg_CreateWindow_Params& params,
     SessionStorageNamespace* session_storage_namespace) {
   ViewHostMsg_CreateWindow_Params validated_params(params);
@@ -1045,8 +1054,8 @@ void RenderViewHostImpl::CreateNewWindow(
   FilterURL(policy, GetProcess(), true,
             &validated_params.opener_security_origin);
 
-  delegate_->CreateNewWindow(route_id, validated_params,
-                             session_storage_namespace);
+  delegate_->CreateNewWindow(route_id, main_frame_route_id,
+                             validated_params, session_storage_namespace);
 }
 
 void RenderViewHostImpl::CreateNewWidget(int route_id,

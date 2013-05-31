@@ -12,6 +12,7 @@ WebContents::CreateParams::CreateParams(BrowserContext* context)
     : browser_context(context),
       site_instance(NULL),
       routing_id(MSG_ROUTING_NONE),
+      main_frame_routing_id(MSG_ROUTING_NONE),
       context(NULL) {}
 
 WebContents::CreateParams::CreateParams(
@@ -19,6 +20,7 @@ WebContents::CreateParams::CreateParams(
     : browser_context(context),
       site_instance(site),
       routing_id(MSG_ROUTING_NONE),
+      main_frame_routing_id(MSG_ROUTING_NONE),
       context(NULL) {}
 
 }  // namespace content

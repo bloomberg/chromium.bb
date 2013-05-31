@@ -1861,4 +1861,10 @@ TEST_F(RenderViewImplTest, NavigateFrame) {
   EXPECT_EQ(output, L"hello \n\nworld");
 }
 
+// This test ensures that a RenderFrame object is created for the top level
+// frame in the RenderView.
+TEST_F(RenderViewImplTest, BasicRenderFrame) {
+  EXPECT_TRUE(view()->main_render_frame_.get());
+}
+
 }  // namespace content

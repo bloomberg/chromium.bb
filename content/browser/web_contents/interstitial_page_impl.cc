@@ -497,7 +497,7 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
       new SessionStorageNamespaceImpl(dom_storage_context);
 
   RenderViewHostImpl* render_view_host = new RenderViewHostImpl(
-      site_instance, this, this, MSG_ROUTING_NONE, false,
+      site_instance, this, this, MSG_ROUTING_NONE, MSG_ROUTING_NONE, false,
       session_storage_namespace_impl);
   web_contents_->RenderViewForInterstitialPageCreated(render_view_host);
   return render_view_host;
@@ -666,6 +666,7 @@ gfx::Rect InterstitialPageImpl::GetRootWindowResizerRect() const {
 
 void InterstitialPageImpl::CreateNewWindow(
     int route_id,
+    int main_frame_route_id,
     const ViewHostMsg_CreateWindow_Params& params,
     SessionStorageNamespace* session_storage_namespace) {
   NOTREACHED() << "InterstitialPage does not support showing popups yet.";

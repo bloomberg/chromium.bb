@@ -655,6 +655,9 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // The ID of the view to be created.
   IPC_STRUCT_MEMBER(int32, view_id)
 
+  // The ID of the main frame hosted in the view.
+  IPC_STRUCT_MEMBER(int32, main_frame_routing_id)
+
   // The ID of the rendering surface.
   IPC_STRUCT_MEMBER(int32, surface_id)
 
@@ -1325,9 +1328,10 @@ IPC_MESSAGE_ROUTED1(ViewMsg_Snapshot,
 // Sent by the renderer when it is creating a new window.  The browser creates
 // a tab for it and responds with a ViewMsg_CreatingNew_ACK.  If route_id is
 // MSG_ROUTING_NONE, the view couldn't be created.
-IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_CreateWindow,
+IPC_SYNC_MESSAGE_CONTROL1_4(ViewHostMsg_CreateWindow,
                             ViewHostMsg_CreateWindow_Params,
                             int /* route_id */,
+                            int /* main_frame_route_id */,
                             int32 /* surface_id */,
                             int64 /* cloned_session_storage_namespace_id */)
 

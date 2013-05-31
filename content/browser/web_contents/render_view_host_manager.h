@@ -116,7 +116,8 @@ class CONTENT_EXPORT RenderViewHostManager
   // For arguments, see WebContentsImpl constructor.
   void Init(BrowserContext* browser_context,
             SiteInstance* site_instance,
-            int routing_id);
+            int routing_id,
+            int main_frame_routing_id);
 
   // Returns the currently active RenderViewHost.
   //

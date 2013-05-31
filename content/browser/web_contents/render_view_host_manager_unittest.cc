@@ -332,7 +332,7 @@ TEST_F(RenderViewHostManagerTest, Init) {
   RenderViewHostManager manager(web_contents.get(), web_contents.get(),
                                 web_contents.get());
 
-  manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
   RenderViewHost* host = manager.current_host();
   ASSERT_TRUE(host);
@@ -359,7 +359,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   RenderViewHostManager manager(web_contents.get(), web_contents.get(),
                                 web_contents.get());
 
-  manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
   RenderViewHost* host;
 
@@ -452,7 +452,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   RenderViewHostManager manager(web_contents.get(), web_contents.get(),
                                 web_contents.get());
 
-  manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
@@ -599,7 +599,7 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
   RenderViewHostManager manager(web_contents.get(), web_contents.get(),
                                 web_contents.get());
 
-  manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   EXPECT_FALSE(manager.current_host()->IsRenderViewLive());
 
   const GURL kUrl("chrome://foo");
@@ -645,7 +645,8 @@ TEST_F(RenderViewHostManagerTest, WebUIInNewTab) {
       TestWebContents::Create(browser_context(), blank_instance));
   RenderViewHostManager manager1(web_contents1.get(), web_contents1.get(),
                                  web_contents1.get());
-  manager1.Init(browser_context(), blank_instance, MSG_ROUTING_NONE);
+  manager1.Init(
+      browser_context(), blank_instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   // Test the case that new RVH is considered live.
   manager1.current_host()->CreateRenderView(string16(), -1, -1);
 
@@ -674,7 +675,8 @@ TEST_F(RenderViewHostManagerTest, WebUIInNewTab) {
       TestWebContents::Create(browser_context(), webui_instance));
   RenderViewHostManager manager2(web_contents2.get(), web_contents2.get(),
                                  web_contents2.get());
-  manager2.Init(browser_context(), webui_instance, MSG_ROUTING_NONE);
+  manager2.Init(
+      browser_context(), webui_instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   // Make sure the new RVH is considered live.  This is usually done in
   // RenderWidgetHost::Init when opening a new tab from a link.
   manager2.current_host()->CreateRenderView(string16(), -1, -1);
@@ -901,7 +903,7 @@ TEST_F(RenderViewHostManagerTest, NoSwapOnGuestNavigations) {
   RenderViewHostManager manager(web_contents.get(), web_contents.get(),
                                 web_contents.get());
 
-  manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
 
   RenderViewHost* host;
 

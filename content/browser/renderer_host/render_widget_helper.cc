@@ -250,6 +250,7 @@ void RenderWidgetHelper::CreateNewWindow(
     bool no_javascript_access,
     base::ProcessHandle render_process,
     int* route_id,
+    int* main_frame_route_id,
     int* surface_id,
     SessionStorageNamespace* session_storage_namespace) {
   if (params.opener_suppressed || no_javascript_access) {
@@ -259,32 +260,38 @@ void RenderWidgetHelper::CreateNewWindow(
     // it. Because of this, we will immediately show and navigate the window
     // in OnCreateWindowOnUI, using the params provided here.
     *route_id = MSG_ROUTING_NONE;
+    *main_frame_route_id = MSG_ROUTING_NONE;
     *surface_id = 0;
   } else {
     *route_id = GetNextRoutingID();
+    *main_frame_route_id = GetNextRoutingID();
     *surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
         render_process_id_, *route_id);
     // Block resource requests until the view is created, since the HWND might
     // be needed if a response ends up creating a plugin.
     resource_dispatcher_host_->BlockRequestsForRoute(
         render_process_id_, *route_id);
+    resource_dispatcher_host_->BlockRequestsForRoute(
+        render_process_id_, *main_frame_route_id);
   }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&RenderWidgetHelper::OnCreateWindowOnUI,
-                 this, params, *route_id,
+                 this, params, *route_id, *main_frame_route_id,
                  make_scoped_refptr(session_storage_namespace)));
 }
 
 void RenderWidgetHelper::OnCreateWindowOnUI(
     const ViewHostMsg_CreateWindow_Params& params,
     int route_id,
+    int main_frame_route_id,
     SessionStorageNamespace* session_storage_namespace) {
   RenderViewHostImpl* host =
       RenderViewHostImpl::FromID(render_process_id_, params.opener_id);
   if (host)
-    host->CreateNewWindow(route_id, params, session_storage_namespace);
+    host->CreateNewWindow(route_id, main_frame_route_id, params,
+        session_storage_namespace);
 }
 
 void RenderWidgetHelper::OnResumeRequestsForView(int route_id) {

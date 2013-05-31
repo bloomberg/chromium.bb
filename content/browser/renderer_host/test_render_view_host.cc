@@ -240,11 +240,13 @@ TestRenderViewHost::TestRenderViewHost(
     RenderViewHostDelegate* delegate,
     RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
+    int main_frame_routing_id,
     bool swapped_out)
     : RenderViewHostImpl(instance,
                          delegate,
                          widget_delegate,
                          routing_id,
+                         main_frame_routing_id,
                          swapped_out,
                          CreateSessionStorageNamespace(instance)),
       render_view_created_(false),

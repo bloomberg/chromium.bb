@@ -120,6 +120,7 @@ class MockRenderThread : public RenderThread {
   void OnCreateWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     int* route_id,
+    int* main_frame_route_id,
     int* surface_id,
     int64* cloned_session_storage_namespace_id);
 
@@ -146,6 +147,7 @@ class MockRenderThread : public RenderThread {
 
   // Routing id that will be assigned to a CreateWindow Widget.
   int32 new_window_routing_id_;
+  int32 new_window_main_frame_routing_id_;
 
   // The last known good deserializer for sync messages.
   scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;

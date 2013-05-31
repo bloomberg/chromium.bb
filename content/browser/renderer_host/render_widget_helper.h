@@ -148,6 +148,7 @@ class RenderWidgetHelper
       bool no_javascript_access,
       base::ProcessHandle render_process,
       int* route_id,
+      int* main_frame_route_id,
       int* surface_id,
       SessionStorageNamespace* session_storage_namespace);
   void CreateNewWidget(int opener_id,
@@ -196,6 +197,7 @@ class RenderWidgetHelper
   void OnCreateWindowOnUI(
       const ViewHostMsg_CreateWindow_Params& params,
       int route_id,
+      int main_frame_route_id,
       SessionStorageNamespace* session_storage_namespace);
 
   // Called on the IO thread after a window was created on the UI thread.

@@ -39,7 +39,8 @@ using WebKit::WebURLRequest;
 namespace {
 const int32 kOpenerId = -2;
 const int32 kRouteId = 5;
-const int32 kNewWindowRouteId = 6;
+const int32 kMainFrameRouteId = 6;
+const int32 kNewWindowRouteId = 7;
 const int32 kSurfaceId = 42;
 
 }  // namespace
@@ -170,6 +171,7 @@ void RenderViewTest::SetUp() {
       WebPreferences(),
       new SharedRenderViewCounter(0),
       kRouteId,
+      kMainFrameRouteId,
       kSurfaceId,
       dom_storage::kInvalidSessionStorageNamespaceId,
       string16(),

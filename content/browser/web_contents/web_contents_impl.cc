@@ -1162,7 +1162,8 @@ void WebContentsImpl::Observe(int type,
 
 void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   render_manager_.Init(
-      params.browser_context, params.site_instance, params.routing_id);
+      params.browser_context, params.site_instance, params.routing_id,
+      params.main_frame_routing_id);
 
   view_.reset(GetContentClient()->browser()->
       OverrideCreateWebContentsView(this, &render_view_host_delegate_view_));
@@ -1378,12 +1379,15 @@ void WebContentsImpl::LostMouseLock() {
 
 void WebContentsImpl::CreateNewWindow(
     int route_id,
+    int main_frame_route_id,
     const ViewHostMsg_CreateWindow_Params& params,
     SessionStorageNamespace* session_storage_namespace) {
   if (delegate_ && !delegate_->ShouldCreateWebContents(
           this, route_id, params.window_container_type, params.frame_name,
           params.target_url)) {
     GetRenderViewHost()->GetProcess()->ResumeRequestsForView(route_id);
+    GetRenderViewHost()->GetProcess()->ResumeRequestsForView(
+        main_frame_route_id);
     return;
   }
 
@@ -1424,6 +1428,7 @@ void WebContentsImpl::CreateNewWindow(
       session_storage_namespace);
   CreateParams create_params(GetBrowserContext(), site_instance);
   create_params.routing_id = route_id;
+  create_params.main_frame_routing_id = main_frame_route_id;
   if (!is_guest) {
     create_params.context = view_->GetNativeView();
     create_params.initial_size = view_->GetContainerSize();

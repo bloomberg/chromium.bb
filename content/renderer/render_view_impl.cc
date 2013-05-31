@@ -101,6 +101,7 @@
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/plugin_channel_host.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl_params.h"
@@ -756,6 +757,9 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
 }
 
 void RenderViewImpl::Initialize(RenderViewImplParams* params) {
+  main_render_frame_.reset(new RenderFrameImpl(
+      this, params->main_frame_routing_id));
+
 #if defined(ENABLE_PLUGINS)
   pepper_helper_.reset(new PepperPluginDelegateImpl(this));
 #else
@@ -970,6 +974,7 @@ RenderViewImpl* RenderViewImpl::Create(
     const WebPreferences& webkit_prefs,
     SharedRenderViewCounter* counter,
     int32 routing_id,
+    int32 main_frame_routing_id,
     int32 surface_id,
     int64 session_storage_namespace_id,
     const string16& frame_name,
@@ -986,6 +991,7 @@ RenderViewImpl* RenderViewImpl::Create(
       webkit_prefs,
       counter,
       routing_id,
+      main_frame_routing_id,
       surface_id,
       session_storage_namespace_id,
       frame_name,
@@ -2044,12 +2050,14 @@ WebView* RenderViewImpl::createView(
     params.target_url = request.url();
 
   int32 routing_id = MSG_ROUTING_NONE;
+  int32 main_frame_routing_id = MSG_ROUTING_NONE;
   int32 surface_id = 0;
   int64 cloned_session_storage_namespace_id;
 
   RenderThread::Get()->Send(
       new ViewHostMsg_CreateWindow(params,
                                    &routing_id,
+                                   &main_frame_routing_id,
                                    &surface_id,
                                    &cloned_session_storage_namespace_id));
   if (routing_id == MSG_ROUTING_NONE)
@@ -2077,6 +2085,7 @@ WebView* RenderViewImpl::createView(
       transferred_preferences,
       shared_popup_counter_,
       routing_id,
+      main_frame_routing_id,
       surface_id,
       cloned_session_storage_namespace_id,
       string16(),  // WebCore will take care of setting the correct name.

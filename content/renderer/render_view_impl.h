@@ -35,6 +35,7 @@
 #include "content/public/common/top_controls_state.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_pepper_helper.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
@@ -214,6 +215,7 @@ class CONTENT_EXPORT RenderViewImpl
       const WebPreferences& webkit_prefs,
       SharedRenderViewCounter* counter,
       int32 routing_id,
+      int32 main_frame_routing_id,
       int32 surface_id,
       int64 session_storage_namespace_id,
       const string16& frame_name,
@@ -874,6 +876,7 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, NavigateFrame);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            ShouldUpdateSelectionTextFromContextMenuParams);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, BasicRenderFrame);
 
   typedef std::map<GURL, double> HostZoomLevels;
 
@@ -1374,6 +1377,8 @@ class CONTENT_EXPORT RenderViewImpl
   bool cached_has_main_frame_vertical_scrollbar_;
 
   // Helper objects ------------------------------------------------------------
+
+  scoped_ptr<RenderFrameImpl> main_render_frame_;
 
   RendererWebCookieJarImpl cookie_jar_;
 

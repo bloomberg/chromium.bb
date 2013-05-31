@@ -107,6 +107,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   // WebContentsImpl overrides
   virtual void CreateNewWindow(
       int route_id,
+      int main_frame_route_id,
       const ViewHostMsg_CreateWindow_Params& params,
       SessionStorageNamespace* session_storage_namespace) OVERRIDE;
   virtual void CreateNewWidget(int route_id,

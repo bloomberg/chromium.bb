@@ -64,7 +64,8 @@ RenderViewHostManager::~RenderViewHostManager() {
 
 void RenderViewHostManager::Init(BrowserContext* browser_context,
                                  SiteInstance* site_instance,
-                                 int routing_id) {
+                                 int routing_id,
+                                 int main_frame_routing_id) {
   // Create a RenderViewHost, once we have an instance.  It is important to
   // immediately give this SiteInstance to a RenderViewHost so that it is
   // ref counted.
@@ -73,7 +74,7 @@ void RenderViewHostManager::Init(BrowserContext* browser_context,
   render_view_host_ = static_cast<RenderViewHostImpl*>(
       RenderViewHostFactory::Create(
           site_instance, render_view_delegate_, render_widget_delegate_,
-          routing_id, false, delegate_->
+          routing_id, main_frame_routing_id, false, delegate_->
           GetControllerForRenderManager().GetSessionStorageNamespace(
               site_instance)));
 
@@ -624,7 +625,7 @@ int RenderViewHostManager::CreateRenderView(
     new_render_view_host = static_cast<RenderViewHostImpl*>(
         RenderViewHostFactory::Create(instance,
             render_view_delegate_, render_widget_delegate_, MSG_ROUTING_NONE,
-            swapped_out, delegate_->
+            MSG_ROUTING_NONE, swapped_out, delegate_->
             GetControllerForRenderManager().GetSessionStorageNamespace(
                 instance)));
 

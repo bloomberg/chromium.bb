@@ -28,6 +28,7 @@ class RenderViewHostFactory {
       RenderViewHostDelegate* delegate,
       RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
+      int main_frame_routing_id,
       bool swapped_out,
       SessionStorageNamespace* session_storage);
 
@@ -47,6 +48,7 @@ class RenderViewHostFactory {
       RenderViewHostDelegate* delegate,
       RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
+      int main_frame_routing_id,
       bool swapped_out,
       SessionStorageNamespace* session_storage_namespace) = 0;
 

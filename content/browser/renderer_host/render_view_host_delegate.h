@@ -364,6 +364,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // the Windows function which is actually a #define.
   virtual void CreateNewWindow(
       int route_id,
+      int main_frame_route_id,
       const ViewHostMsg_CreateWindow_Params& params,
       SessionStorageNamespace* session_storage_namespace) {}
 

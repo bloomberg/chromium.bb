@@ -32,6 +32,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
       RenderViewHostDelegate* delegate,
       RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
+      int main_frame_routing_id,
       bool swapped_out,
       SessionStorageNamespace* session_storage) OVERRIDE;
 

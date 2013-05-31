@@ -446,6 +446,7 @@ bool RenderMessageFilter::OffTheRecord() const {
 void RenderMessageFilter::OnCreateWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     int* route_id,
+    int* main_frame_route_id,
     int* surface_id,
     int64* cloned_session_storage_namespace_id) {
   bool no_javascript_access;
@@ -460,6 +461,7 @@ void RenderMessageFilter::OnCreateWindow(
 
   if (!can_create_window) {
     *route_id = MSG_ROUTING_NONE;
+    *main_frame_route_id = MSG_ROUTING_NONE;
     *surface_id = 0;
     return;
   }
@@ -474,6 +476,7 @@ void RenderMessageFilter::OnCreateWindow(
                                          no_javascript_access,
                                          peer_handle(),
                                          route_id,
+                                         main_frame_route_id,
                                          surface_id,
                                          cloned_namespace);
 }
