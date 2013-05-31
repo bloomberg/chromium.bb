@@ -29,7 +29,7 @@ std::ostream& operator<<(std::ostream& os, const Component& part) {
 
 }  // namespace url_parse
 
-struct segment_case {
+struct SegmentCase {
   const std::string input;
   const std::string result;
   const url_parse::Component scheme;
@@ -42,7 +42,7 @@ struct segment_case {
   const url_parse::Component ref;
 };
 
-static const segment_case segment_cases[] = {
+static const SegmentCase segment_cases[] = {
   { "http://www.google.com/", "http",
     url_parse::Component(0, 4), // scheme
     url_parse::Component(), // username
@@ -202,7 +202,7 @@ TEST(URLFixerUpperTest, SegmentURL) {
   url_parse::Parsed parts;
 
   for (size_t i = 0; i < arraysize(segment_cases); ++i) {
-    segment_case value = segment_cases[i];
+    SegmentCase value = segment_cases[i];
     result = URLFixerUpper::SegmentURL(value.input, &parts);
     EXPECT_EQ(value.result, result);
     EXPECT_EQ(value.scheme, parts.scheme);
@@ -245,7 +245,7 @@ static bool IsMatchingFileURL(const std::string& url,
                                           full_file_path.value());
 }
 
-struct fixup_case {
+struct FixupCase {
   const std::string input;
   const std::string desired_tld;
   const std::string output;
@@ -327,14 +327,14 @@ struct fixup_case {
 
 TEST(URLFixerUpperTest, FixupURL) {
   for (size_t i = 0; i < arraysize(fixup_cases); ++i) {
-    fixup_case value = fixup_cases[i];
+    FixupCase value = fixup_cases[i];
     EXPECT_EQ(value.output, URLFixerUpper::FixupURL(value.input,
         value.desired_tld).possibly_invalid_spec())
         << "input: " << value.input;
   }
 
   // Check the TLD-appending functionality
-  fixup_case tld_cases[] = {
+  FixupCase tld_cases[] = {
     {"google", "com", "http://www.google.com/"},
     {"google.", "com", "http://www.google.com/"},
     {"google..", "com", "http://www.google.com/"},
@@ -355,7 +355,7 @@ TEST(URLFixerUpperTest, FixupURL) {
     {"http://google:123", "com", "http://www.google.com:123/"},
   };
   for (size_t i = 0; i < arraysize(tld_cases); ++i) {
-    fixup_case value = tld_cases[i];
+    FixupCase value = tld_cases[i];
     EXPECT_EQ(value.output, URLFixerUpper::FixupURL(value.input,
         value.desired_tld).possibly_invalid_spec());
   }
@@ -394,7 +394,7 @@ TEST(URLFixerUpperTest, FixupFile) {
   cur[1] = '|';
   EXPECT_EQ(golden, URLFixerUpper::FixupURL(cur, std::string()));
 
-  fixup_case file_cases[] = {
+  FixupCase file_cases[] = {
     {"c:\\This%20is a non-existent file.txt", "",
      "file:///C:/This%2520is%20a%20non-existent%20file.txt"},
 
@@ -433,7 +433,7 @@ TEST(URLFixerUpperTest, FixupFile) {
 #define HOME "/home/"
 #endif
   URLFixerUpper::home_directory_override = "/foo";
-  fixup_case file_cases[] = {
+  FixupCase file_cases[] = {
     // File URLs go through GURL, which tries to escape intelligently.
     {"/This%20is a non-existent file.txt", "",
      "file:///This%2520is%20a%20non-existent%20file.txt"},
@@ -473,7 +473,7 @@ TEST(URLFixerUpperTest, FixupRelativeFile) {
 
   // make sure we pass through good URLs
   for (size_t i = 0; i < arraysize(fixup_cases); ++i) {
-    fixup_case value = fixup_cases[i];
+    FixupCase value = fixup_cases[i];
     base::FilePath input = base::FilePath::FromUTF8Unsafe(value.input);
     EXPECT_EQ(value.output,
         URLFixerUpper::FixupRelativeFile(dir, input).possibly_invalid_spec());
