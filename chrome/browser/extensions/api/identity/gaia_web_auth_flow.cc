@@ -15,10 +15,12 @@ namespace extensions {
 
 GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
                                  Profile* profile,
+                                 chrome::HostDesktopType host_desktop_type,
                                  const std::string& extension_id,
                                  const OAuth2Info& oauth2_info)
     : delegate_(delegate),
-      profile_(profile) {
+      profile_(profile),
+      host_desktop_type_(host_desktop_type) {
   const char kOAuth2RedirectPathFormat[] = "/%s#";
   const char kOAuth2AuthorizeFormat[] =
       "%s?response_type=token&approval_prompt=force&authuser=0&"
@@ -77,23 +79,9 @@ void GaiaWebAuthFlow::OnUbertokenFailure(const GoogleServiceAuthError& error) {
 }
 
 void GaiaWebAuthFlow::OnAuthFlowFailure(WebAuthFlow::Failure failure) {
-  GaiaWebAuthFlow::Failure gaia_failure;
-
-  switch (failure) {
-    case WebAuthFlow::WINDOW_CLOSED:
-      gaia_failure = GaiaWebAuthFlow::WINDOW_CLOSED;
-      break;
-    case WebAuthFlow::LOAD_FAILED:
-      gaia_failure = GaiaWebAuthFlow::LOAD_FAILED;
-      break;
-    default:
-      NOTREACHED() << "Unexpected error from web auth flow: " << failure;
-      gaia_failure = GaiaWebAuthFlow::LOAD_FAILED;
-      break;
-  }
-
+  DCHECK(failure == WebAuthFlow::WINDOW_CLOSED);
   delegate_->OnGaiaFlowFailure(
-      gaia_failure,
+      GaiaWebAuthFlow::WINDOW_CLOSED,
       GoogleServiceAuthError(GoogleServiceAuthError::NONE),
       std::string());
 }
@@ -163,10 +151,13 @@ void GaiaWebAuthFlow::OnAuthFlowTitleChange(const std::string& title) {
 }
 
 scoped_ptr<WebAuthFlow> GaiaWebAuthFlow::CreateWebAuthFlow(GURL url) {
+  gfx::Rect initial_bounds;
   return scoped_ptr<WebAuthFlow>(new WebAuthFlow(this,
                                                  profile_,
                                                  url,
-                                                 WebAuthFlow::INTERACTIVE));
+                                                 WebAuthFlow::INTERACTIVE,
+                                                 initial_bounds,
+                                                 host_desktop_type_));
 }
 
 }  // extensions

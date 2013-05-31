@@ -6,7 +6,6 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
-#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -189,37 +188,6 @@ BrowserContextKeyedService* IdentityAPITestFactory(
     content::BrowserContext* profile) {
   return new IdentityAPI(static_cast<Profile*>(profile));
 }
-
-// Waits for a specific GURL to generate a NOTIFICATION_LOAD_STOP
-// event, and closes the window embedding the webcontents.
-class WaitForGURLAndCloseWindow : public content::WindowedNotificationObserver {
- public:
-  explicit WaitForGURLAndCloseWindow(GURL url)
-      : WindowedNotificationObserver(
-            content::NOTIFICATION_LOAD_STOP,
-            content::NotificationService::AllSources()),
-        url_(url) {}
-
-  // NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    content::NavigationController* web_auth_flow_controller =
-        content::Source<content::NavigationController>(source).ptr();
-    content::WebContents* web_contents =
-        web_auth_flow_controller->GetWebContents();
-
-    if (web_contents->GetURL() == url_) {
-      web_contents->GetEmbedderWebContents()->Close();
-      // Condtionally invoke parent class so that Wait will not exit
-      // until the target URL arrives.
-      content::WindowedNotificationObserver::Observe(type, source, details);
-    }
-  }
-
- private:
-  GURL url_;
-};
 
 }  // namespace
 
@@ -572,23 +540,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_EQ(std::string(errors::kUserRejected), error);
-  EXPECT_FALSE(func->login_ui_shown());
-  EXPECT_TRUE(func->scope_ui_shown());
-}
-
-IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
-                       InteractiveApprovalLoadFailed) {
-  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
-  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
-  EXPECT_CALL(*func.get(), HasLoginToken())
-      .WillOnce(Return(true));
-  TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
-      TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
-  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
-  func->set_scope_ui_failure(GaiaWebAuthFlow::LOAD_FAILED);
-  std::string error = utils::RunFunctionAndReturnError(
-      func.get(), "[{\"interactive\": true}]", browser());
-  EXPECT_EQ(std::string(errors::kPageLoadFailure), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
 }
@@ -1010,13 +961,16 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, UserCloseWindow) {
       utils::CreateEmptyExtension());
   function->set_extension(empty_extension.get());
 
-  WaitForGURLAndCloseWindow popup_observer(auth_url);
+  content::WindowedNotificationObserver popup_observer(
+      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+      content::NotificationService::AllSources());
 
   std::string args = "[{\"interactive\": true, \"url\": \"" +
       auth_url.spec() + "\"}]";
   RunFunctionAsync(function, args);
 
   popup_observer.Wait();
+  content::Source<Browser>(popup_observer.source())->window()->Close();
 
   EXPECT_EQ(std::string(errors::kUserRejected), WaitForError(function));
 }
@@ -1042,29 +996,6 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, InteractionRequired) {
                                                        browser());
 
   EXPECT_EQ(std::string(errors::kInteractionRequired), error);
-}
-
-IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, LoadFailed) {
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL(
-          "chrome/test/data/extensions/api_test/identity")));
-  ASSERT_TRUE(https_server.Start());
-  GURL auth_url(https_server.GetURL("files/five_hundred.html"));
-
-  scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
-      new IdentityLaunchWebAuthFlowFunction());
-  scoped_refptr<Extension> empty_extension(
-      utils::CreateEmptyExtension());
-  function->set_extension(empty_extension.get());
-
-  std::string args = "[{\"interactive\": true, \"url\": \"" +
-      auth_url.spec() + "\"}]";
-  std::string error = utils::RunFunctionAndReturnError(function, args,
-                                                       browser());
-
-  EXPECT_EQ(std::string(errors::kPageLoadFailure), error);
 }
 
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, NonInteractiveSuccess) {

@@ -41,7 +41,6 @@ extern const char kUserNotSignedIn[];
 extern const char kInteractionRequired[];
 extern const char kInvalidRedirect[];
 extern const char kOffTheRecord[];
-extern const char kPageLoadFailure[];
 }  // namespace identity_constants
 
 // identity.getAuthToken fetches an OAuth 2 function for the
