@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/WorkerScriptDebugServer.h"
 
+#include "bindings/v8/V8ScriptRunner.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/workers/WorkerContext.h"
@@ -64,8 +65,7 @@ void WorkerScriptDebugServer::addListener(ScriptDebugListener* listener)
     v8::Debug::SetDebugEventListener2(&WorkerScriptDebugServer::v8DebugEventCallback, v8::External::New(this));
     
     v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.get()->Get(v8::String::NewSymbol("getWorkerScripts")));
-    v8::Handle<v8::Value> argv[] = { v8Undefined() };
-    v8::Handle<v8::Value> value = getScriptsFunction->Call(m_debuggerScript.get(), 0, argv);
+    v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerContext, m_debuggerScript.get(), 0, 0, debuggerContext->GetIsolate());
     if (value.IsEmpty())
         return;
     ASSERT(!value->IsUndefined() && value->IsArray());

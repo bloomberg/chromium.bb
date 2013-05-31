@@ -38,6 +38,7 @@
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8RecursionScope.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerContext.h"
@@ -101,8 +102,7 @@ v8::Local<v8::Value> V8WorkerContextEventListener::callListenerFunction(ScriptEx
     }
 
     v8::Handle<v8::Value> parameters[1] = { jsEvent };
-    V8RecursionScope recursionScope(context);
-    v8::Local<v8::Value> result = handlerFunction->Call(receiver, 1, parameters);
+    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(handlerFunction, context, receiver, WTF_ARRAY_LENGTH(parameters), parameters);
 
     InspectorInstrumentation::didCallFunction(cookie);
 

@@ -92,14 +92,9 @@ ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSou
     ASSERT(!value.IsEmpty());
     ASSERT(value->IsFunction());
 
-    V8RecursionScope::MicrotaskSuppression recursionScope;
     v8::Local<v8::Object> windowGlobal = inspectedContext->Global();
-    v8::Handle<v8::Value> args[] = {
-      scriptHostWrapper,
-      windowGlobal,
-      v8::Number::New(id),
-    };
-    v8::Local<v8::Value> injectedScriptValue = v8::Function::Cast(*value)->Call(windowGlobal, 3, args);
+    v8::Handle<v8::Value> args[] = { scriptHostWrapper, windowGlobal, v8::Number::New(id) };
+    v8::Local<v8::Value> injectedScriptValue = V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), inspectedContext, windowGlobal, WTF_ARRAY_LENGTH(args), args, inspectedContext->GetIsolate());
     return ScriptObject(inspectedScriptState, v8::Handle<v8::Object>::Cast(injectedScriptValue));
 }
 

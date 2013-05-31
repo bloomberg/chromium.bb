@@ -34,6 +34,7 @@
 
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8RecursionScope.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/EventNames.h"
 
@@ -55,8 +56,7 @@ v8::Local<v8::Value> V8WorkerContextErrorHandler::callListenerFunction(ScriptExe
         v8::Local<v8::Function> callFunction = v8::Local<v8::Function>::Cast(listener);
         v8::Local<v8::Object> thisValue = v8::Context::GetCurrent()->Global();
         v8::Handle<v8::Value> parameters[3] = { v8String(errorEvent->message(), isolate), v8String(errorEvent->filename(), isolate), v8Integer(errorEvent->lineno(), isolate) };
-        V8RecursionScope recursionScope(context);
-        returnValue = callFunction->Call(thisValue, 3, parameters);
+        returnValue = V8ScriptRunner::callFunction(callFunction, context, thisValue, WTF_ARRAY_LENGTH(parameters), parameters);
     }
     return returnValue;
 }

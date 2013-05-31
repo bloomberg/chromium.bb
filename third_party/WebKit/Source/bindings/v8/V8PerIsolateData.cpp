@@ -32,6 +32,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ObjectConstructor.h"
+#include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/MemoryInstrumentationHashMap.h"
 #include "wtf/MemoryInstrumentationVector.h"
@@ -211,7 +212,7 @@ v8::Handle<v8::Value> V8PerIsolateData::constructorOfToString(const v8::Argument
     v8::Handle<v8::Value> value = args.Callee()->Get(v8::String::NewSymbol("toString"));
     if (!value->IsFunction()) 
         return v8::String::Empty(args.GetIsolate());
-    return v8::Handle<v8::Function>::Cast(value)->Call(args.This(), 0, 0);
+    return V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(value), v8::Context::GetCurrent(), args.This(), 0, 0, v8::Isolate::GetCurrent());
 }
 
 } // namespace WebCore
