@@ -51,8 +51,7 @@ class _OfflineRenderServletDelegate(RenderServlet.Delegate):
                           object_store_creator,
                           host_file_system,
                           app_samples_file_system,
-                          '/static' if channel == 'stable' else
-                              '/%s/static' % channel,
+                          '' if channel == 'stable' else '/%s' % channel,
                           compiled_host_fs_factory)
 
 class InstanceServlet(object):

@@ -1,0 +1,45 @@
+[
+  {
+    "title": "H1",
+    "href": "/absolute_path/h1.html"
+  },
+  {
+    "title": "H2",
+    "href": "/absolute_path/h2.html",
+    "items": [
+      {
+        "title": "H3",
+        "items": [
+          {
+            "title": "X1",
+            "href": "http://example.com"
+          },
+          {
+            "title": "Y",
+            "href": "/absolute_path/y.html"
+          },
+          {
+            "title": "X2",
+            "href": "https://example.com"
+          },
+          {
+            "title": "X3",
+            "href": "/test.html"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "X1",
+    "href": "http://example.com"
+  },
+  {
+    "title": "X2",
+    "href": "https://example.com"
+  },
+  {
+    "title": "X3",
+    "href": "/test.html"
+  }
+]

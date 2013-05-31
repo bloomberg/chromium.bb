@@ -58,7 +58,7 @@ class _PatchServletDelegate(RenderServlet.Delegate):
                           patched_file_system,
                           self._delegate.CreateAppSamplesFileSystem(
                               base_object_store_creator),
-                          '/_patch/%s/static' % self._issue,
+                          '/_patch/%s' % self._issue,
                           compiled_fs_factory)
 
 class PatchServlet(Servlet):

@@ -14,17 +14,21 @@ class SidenavDataSource(object):
   menu.
   """
   class Factory(object):
-    def __init__(self, compiled_fs_factory, json_path):
+    def __init__(self, compiled_fs_factory, json_path, base_path):
       self._cache = compiled_fs_factory.Create(self._CreateSidenavDict,
                                                SidenavDataSource)
       self._json_path = json_path
+      self._base_path = base_path
 
     def Create(self, path):
       """Create a SidenavDataSource, binding it to |path|. |path| is the url
       of the page that is being rendered. It is used to determine which item
       in the sidenav should be highlighted.
       """
-      return SidenavDataSource(self._cache, self._json_path, path)
+      return SidenavDataSource(self._cache,
+                               self._json_path,
+                               path,
+                               self._base_path)
 
     def _AddLevels(self, items, level):
       """Levels represent how deeply this item is nested in the sidenav. We
@@ -40,14 +44,15 @@ class SidenavDataSource(object):
       self._AddLevels(items, 2);
       return items
 
-  def __init__(self, cache, json_path, path):
+  def __init__(self, cache, json_path, path, base_path):
     self._cache = cache
     self._json_path = json_path
-    self._file_name = path.split('/')[-1]
+    self._href = '/' + path
+    self._file_dir = base_path
 
   def _AddSelected(self, items):
     for item in items:
-      if item.get('fileName', '') == self._file_name:
+      if item.get('href', '') == self._href:
         item['selected'] = True
         return True
       if 'items' in item:
@@ -56,8 +61,21 @@ class SidenavDataSource(object):
           return True
     return False
 
+  def _QualifyHrefs(self, items):
+    for item in items:
+      if 'items' in item:
+        self._QualifyHrefs(item['items'])
+
+      href = item.get('href')
+      if href is not None and not href.startswith(('http://', 'https://')):
+        if not href.startswith('/'):
+          logging.warn('Paths in sidenav must be qualified. %s is not.' % href)
+          href = '/' + href
+        item['href'] = '%s%s' % (self._file_dir, href)
+
   def get(self, key):
     sidenav = copy.deepcopy(self._cache.GetFromFile(
         '%s/%s_sidenav.json' % (self._json_path, key)))
     self._AddSelected(sidenav)
+    self._QualifyHrefs(sidenav)
     return sidenav

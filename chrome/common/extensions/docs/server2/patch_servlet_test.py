@@ -46,7 +46,7 @@ class PatchServletTest(unittest.TestCase):
     patched_response.headers.pop('cache-control', None)
     unpatched_response.headers.pop('cache-control', None)
     patched_content = patched_response.content.ToString().replace(
-        '/_patch/%s/static/' % issue, '/static/')
+        '/_patch/%s/' % issue, '/')
     unpatched_content = unpatched_response.content.ToString()
 
     self.assertEqual(patched_response.status, unpatched_response.status)

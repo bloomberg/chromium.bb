@@ -1,27 +1,27 @@
 [
   {
     "title": "Bob",
-    "fileName": "www.bob.com"
+    "href": "/www.bob.com"
   },
   {
     "title": "Jim",
-    "fileName": "www.jim.com",
+    "href": "/www.jim.com",
     "items": [
       {
         "title": "A",
-        "fileName": "www.a.com"
+        "href": "/www.a.com"
       },
       {
         "title": "B",
-        "fileName": "www.b.com",
+        "href": "/www.b.com",
         "items": [
           {
             "title": "C",
-            "fileName": "www.c.com",
+            "href": "/www.c.com",
             "items": [
               {
                 "title": "D",
-                "fileName": "www.d.com"
+                "href": "/www.d.com"
               }
             ]
           }

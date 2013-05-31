@@ -90,7 +90,11 @@ class RenderServlet(Servlet):
 
     headers = {'x-frame-options': 'sameorigin'}
     if content is None:
-      return Response.NotFound(templates.Render('404'), headers=headers)
+      doc_class = path.split('/', 1)[0]
+      content = templates.Render('%s/404' % doc_class)
+      if not content:
+        content = templates.Render('extensions/404')
+      return Response.NotFound(content, headers=headers)
 
     if not content:
       logging.error('%s had empty content' % path)

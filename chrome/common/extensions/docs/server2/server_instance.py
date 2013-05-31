@@ -40,7 +40,7 @@ class ServerInstance(object):
                object_store_creator,
                host_file_system,
                app_samples_file_system,
-               static_path,
+               base_path,
                compiled_fs_factory):
     self.channel = channel
 
@@ -95,7 +95,8 @@ class ServerInstance(object):
 
     self.sidenav_data_source_factory = SidenavDataSource.Factory(
         self.compiled_host_fs_factory,
-        svn_constants.JSON_PATH)
+        svn_constants.JSON_PATH,
+        base_path)
 
     self.template_data_source_factory = TemplateDataSource.Factory(
         channel,
@@ -108,7 +109,7 @@ class ServerInstance(object):
         self.ref_resolver_factory,
         svn_constants.PUBLIC_TEMPLATE_PATH,
         svn_constants.PRIVATE_TEMPLATE_PATH,
-        static_path)
+        base_path)
 
     self.example_zipper = ExampleZipper(
         self.compiled_host_fs_factory,
@@ -128,7 +129,7 @@ class ServerInstance(object):
                           object_store_creator,
                           file_system,
                           EmptyDirFileSystem(),
-                          '/static',
+                          '',
                           CompiledFileSystem.Factory(file_system,
                                                      object_store_creator))
 
@@ -145,5 +146,5 @@ class ServerInstance(object):
         object_store_creator,
         file_system,
         EmptyDirFileSystem(),
-        '/static',
+        '',
         CompiledFileSystem.Factory(file_system, object_store_creator))

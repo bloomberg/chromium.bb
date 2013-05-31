@@ -51,7 +51,7 @@ class TemplateDataSource(object):
                  ref_resolver_factory,
                  public_template_path,
                  private_template_path,
-                 static_path):
+                 base_path):
       self._branch_info = _MakeChannelDict(channel_name)
       self._api_data_source_factory = api_data_source_factory
       self._api_list_data_source_factory = api_list_data_source_factory
@@ -63,7 +63,7 @@ class TemplateDataSource(object):
       self._ref_resolver = ref_resolver_factory.Create()
       self._public_template_path = public_template_path
       self._private_template_path = private_template_path
-      self._static_resources = static_path
+      self._static_resources = '%s/static' % base_path
 
     def _CreateTemplate(self, template_name, text):
       return Handlebar(self._ref_resolver.ResolveAllLinks(text))

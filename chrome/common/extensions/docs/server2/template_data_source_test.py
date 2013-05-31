@@ -73,7 +73,7 @@ class TemplateDataSourceTest(unittest.TestCase):
         reference_resolver_factory,
         '.',
         '.',
-        '/static'))
+        ''))
 
   def testSimple(self):
     self._base_path = os.path.join(self._base_path, 'simple')
