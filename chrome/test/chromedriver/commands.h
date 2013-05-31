@@ -19,6 +19,7 @@ class DictionaryValue;
 class Value;
 }
 
+class DeviceManager;
 class Log;
 class Status;
 class URLRequestContextGetter;
@@ -34,13 +35,15 @@ struct NewSessionParams {
   NewSessionParams(Log* log,
                    SessionMap* session_map,
                    scoped_refptr<URLRequestContextGetter> context_getter,
-                   const SyncWebSocketFactory& socket_factory);
+                   const SyncWebSocketFactory& socket_factory,
+                   DeviceManager* device_manager);
   ~NewSessionParams();
 
   Log* log;
   SessionMap* session_map;
   scoped_refptr<URLRequestContextGetter> context_getter;
   SyncWebSocketFactory socket_factory;
+  DeviceManager* device_manager;
 };
 
 // Creates a new session.

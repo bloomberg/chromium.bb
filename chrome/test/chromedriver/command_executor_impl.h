@@ -25,7 +25,9 @@ class DictionaryValue;
 class Value;
 }
 
+class Adb;
 class ChromeLauncherImpl;
+class DeviceManager;
 class Log;
 class URLRequestContextGetter;
 
@@ -55,6 +57,8 @@ class CommandExecutorImpl : public CommandExecutor {
   SyncWebSocketFactory socket_factory_;
   SessionMap session_map_;
   SynchronizedMap<std::string, Command> command_map_;
+  scoped_ptr<Adb> adb_;
+  scoped_ptr<DeviceManager> device_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandExecutorImpl);
 };

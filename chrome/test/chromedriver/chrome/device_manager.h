@@ -5,51 +5,65 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_DEVICE_MANAGER_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_DEVICE_MANAGER_H_
 
+#include <list>
 #include <string>
-#include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/threading/thread.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 
-namespace base {
-class WaitableEvent;
-}  // namespace base
-
+class Adb;
 class Status;
+class DeviceManager;
+
+class Device {
+ public:
+  ~Device();
+
+  Status StartChrome(const std::string& package, int port);
+  Status StopChrome();
+
+ private:
+  friend class DeviceManager;
+
+  Device(const std::string& device_serial,
+         Adb* adb,
+         base::Callback<void()> release_callback);
+
+  const std::string serial_;
+  std::string active_package_;
+  Adb* adb_;
+  base::Callback<void()> release_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(Device);
+};
 
 class DeviceManager {
  public:
-  DeviceManager();
+  explicit DeviceManager(Adb* adb);
   ~DeviceManager();
 
-  Status StartChrome(const std::string& device_serial,
-                     const std::string& package,
-                     int port);
-  Status GetDevices(std::vector<std::string>* devices);
+  // Returns a device which will not be reassigned during its lifetime.
+  Status AcquireDevice(scoped_ptr<Device>* device);
+
+  // Returns a device with the same guarantees as AcquireDevice, but fails
+  // if the device with the given serial number is not avaliable.
+  Status AcquireSpecificDevice(const std::string& device_serial,
+                               scoped_ptr<Device>* device);
 
  private:
-  Status ForwardPort(const std::string& device_serial,
-                     int local_port,
-                     const std::string& remote_abstract);
-  Status SetChromeFlags(const std::string& device_serial);
-  Status ClearAppData(const std::string& device_serial,
-                      const std::string& package);
-  Status Launch(const std::string& device_serial, const std::string& package);
+  void ReleaseDevice(const std::string& device_serial);
 
-  Status Init();
-  Status ExecuteCommand(const std::string& command, std::string* response);
-  Status ExecuteHostCommand(const std::string& device_serial,
-                            const std::string& host_command,
-                            std::string* response);
-  Status ExecuteHostShellCommand(const std::string& device_serial,
-                                 const std::string& shell_command,
-                                 std::string* response);
-  void ExecuteCommandOnIOThread(const std::string& command,
-                                std::string* response,
-                                bool* success,
-                                base::WaitableEvent* event);
+  Device* LockDevice(const std::string& device_serial);
+  bool IsDeviceLocked(const std::string& device_serial);
 
-  base::Thread thread_;
+  base::Lock devices_lock_;
+  std::list<std::string> active_devices_;
+  Adb* adb_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceManager);
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_DEVICE_MANAGER_H_

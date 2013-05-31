@@ -13,6 +13,7 @@
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
+#include "chrome/test/chromedriver/chrome/device_manager.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/version.h"
@@ -49,11 +50,13 @@ NewSessionParams::NewSessionParams(
     Log* log,
     SessionMap* session_map,
     scoped_refptr<URLRequestContextGetter> context_getter,
-    const SyncWebSocketFactory& socket_factory)
+    const SyncWebSocketFactory& socket_factory,
+    DeviceManager* device_manager)
     : log(log),
       session_map(session_map),
       context_getter(context_getter),
-      socket_factory(socket_factory) {}
+      socket_factory(socket_factory),
+      device_manager(device_manager) {}
 
 NewSessionParams::~NewSessionParams() {}
 
@@ -89,6 +92,7 @@ Status ExecuteNewSession(
                         port,
                         bound_params.socket_factory,
                         bound_params.log,
+                        bound_params.device_manager,
                         capabilities,
                         devtools_event_listeners,
                         &chrome);
