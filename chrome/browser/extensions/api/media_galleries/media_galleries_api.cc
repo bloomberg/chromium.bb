@@ -54,7 +54,6 @@ namespace {
 
 const char kDisallowedByPolicy[] =
     "Media Galleries API is disallowed by policy: ";
-const char kInvalidInteractive[] = "Unknown value for interactive.";
 
 const char kDeviceIdKey[] = "deviceId";
 const char kGalleryIdKey[] = "galleryId";
@@ -116,7 +115,7 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
     case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NONE:
       NOTREACHED();
   }
-  error_ = kInvalidInteractive;
+  NOTREACHED();
   return false;
 }
 
