@@ -113,13 +113,13 @@ void MediaPlayerManagerImpl::ExitFullscreen(bool release_media_player) {
   if (release_media_player)
     player->Release();
   else
-    player->SetVideoSurface(NULL);
+    player->SetVideoSurface(gfx::ScopedJavaSurface());
 }
 
-void MediaPlayerManagerImpl::SetVideoSurface(jobject surface) {
+void MediaPlayerManagerImpl::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
-    player->SetVideoSurface(surface);
+    player->SetVideoSurface(surface.Pass());
     Send(new MediaPlayerMsg_DidEnterFullscreen(
         routing_id(), player->player_id()));
   }
@@ -179,7 +179,7 @@ void MediaPlayerManagerImpl::OnExitFullscreen(int player_id) {
   if (fullscreen_player_id_ == player_id) {
     MediaPlayerAndroid* player = GetPlayer(player_id);
     if (player)
-      player->SetVideoSurface(NULL);
+      player->SetVideoSurface(gfx::ScopedJavaSurface());
     video_view_.DestroyContentVideoView();
     fullscreen_player_id_ = -1;
   }
@@ -218,16 +218,18 @@ void MediaPlayerManagerImpl::OnDemuxerReady(
 
 #if defined(GOOGLE_TV)
 void MediaPlayerManagerImpl::AttachExternalVideoSurface(int player_id,
-                                                           jobject surface) {
+                                                        jobject surface) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (player)
-    player->SetVideoSurface(surface);
+  if (player) {
+    player->SetVideoSurface(
+        gfx::ScopedJavaSurface::AcquireExternalSurface(surface));
+  }
 }
 
 void MediaPlayerManagerImpl::DetachExternalVideoSurface(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
-    player->SetVideoSurface(NULL);
+    player->SetVideoSurface(gfx::ScopedJavaSurface());
 }
 
 void MediaPlayerManagerImpl::OnNotifyExternalSurface(

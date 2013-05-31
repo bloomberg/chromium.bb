@@ -41,7 +41,7 @@ static void SetSurfacePeer(
       if (player &&
           player != host->media_player_manager()->GetFullscreenPlayer()) {
         gfx::ScopedJavaSurface surface(surface_texture_bridge.get());
-        player->SetVideoSurface(surface.j_surface().obj());
+        player->SetVideoSurface(surface.Pass());
       }
     }
   }

@@ -42,7 +42,7 @@ class MediaPlayerManagerImpl
   virtual void FullscreenPlayerPause();
   virtual void FullscreenPlayerSeek(int msec);
   virtual void ExitFullscreen(bool release_media_player);
-  virtual void SetVideoSurface(jobject surface);
+  virtual void SetVideoSurface(gfx::ScopedJavaSurface surface);
 
   // media::MediaPlayerManager overrides.
   virtual void OnTimeUpdate(

@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/media_export.h"
+#include "ui/gl/android/scoped_java_surface.h"
 
 namespace media {
 
@@ -47,7 +48,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
       MediaPlayerManager* manager);
 
   // Passing an external java surface object to the player.
-  virtual void SetVideoSurface(jobject surface) = 0;
+  virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) = 0;
 
   // Start playing the media.
   virtual void Start() = 0;

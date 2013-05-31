@@ -50,7 +50,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual void Initialize();
 
   // MediaPlayerAndroid implementation.
-  virtual void SetVideoSurface(jobject surface) OVERRIDE;
+  virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Pause() OVERRIDE;
   virtual void SeekTo(base::TimeDelta time) OVERRIDE;

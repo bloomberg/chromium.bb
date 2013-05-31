@@ -127,9 +127,9 @@ void MediaPlayerBridge::SetMediaPlayerListener() {
   listener_.CreateMediaPlayerListener(j_context, j_media_player_.obj());
 }
 
-void MediaPlayerBridge::SetVideoSurface(jobject surface) {
+void MediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   if (j_media_player_.is_null()) {
-    if (surface == NULL)
+    if (surface.IsSurfaceEmpty())
       return;
     Prepare();
   }
@@ -138,7 +138,7 @@ void MediaPlayerBridge::SetVideoSurface(jobject surface) {
   CHECK(env);
 
   JNI_MediaPlayer::Java_MediaPlayer_setSurface(
-      env, j_media_player_.obj(), surface);
+      env, j_media_player_.obj(), surface.j_surface().obj());
 }
 
 void MediaPlayerBridge::Prepare() {
@@ -287,7 +287,7 @@ void MediaPlayerBridge::Release() {
     pending_seek_ = GetCurrentTime();
   prepared_ = false;
   pending_play_ = false;
-  SetVideoSurface(NULL);
+  SetVideoSurface(gfx::ScopedJavaSurface());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   JNI_MediaPlayer::Java_MediaPlayer_release(env, j_media_player_.obj());

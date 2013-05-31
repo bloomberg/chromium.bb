@@ -117,7 +117,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   virtual ~MediaSourcePlayer();
 
   // MediaPlayerAndroid implementation.
-  virtual void SetVideoSurface(jobject surface) OVERRIDE;
+  virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Pause() OVERRIDE;
   virtual void SeekTo(base::TimeDelta timestamp) OVERRIDE;

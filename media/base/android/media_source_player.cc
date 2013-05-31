@@ -221,8 +221,8 @@ MediaSourcePlayer::~MediaSourcePlayer() {
   Release();
 }
 
-void MediaSourcePlayer::SetVideoSurface(jobject surface) {
-  use_empty_surface_ =  surface ? false : true;
+void MediaSourcePlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
+  use_empty_surface_ =  surface.IsSurfaceEmpty();
 
   // If we haven't processed a surface change event, do so now.
   if (active_decoding_tasks_ > 0) {
@@ -237,7 +237,7 @@ void MediaSourcePlayer::SetVideoSurface(jobject surface) {
   if (HasVideo()) {
     video_decoder_job_.reset(new VideoDecoderJob(
         base::MessageLoopProxy::current(), video_codec_,
-        gfx::Size(width_, height_), surface));
+        gfx::Size(width_, height_), surface.j_surface().obj()));
   }
 
   // Inform the fullscreen view the player is ready.

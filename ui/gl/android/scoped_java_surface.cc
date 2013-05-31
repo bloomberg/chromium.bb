@@ -27,7 +27,8 @@ ScopedJavaSurface::ScopedJavaSurface() {
 }
 
 ScopedJavaSurface::ScopedJavaSurface(
-    const base::android::JavaRef<jobject>& surface) {
+    const base::android::JavaRef<jobject>& surface)
+    : auto_release_(true) {
   JNIEnv* env = base::android::AttachCurrentThread();
   RegisterNativesIfNeeded(env);
   DCHECK(env->IsInstanceOf(surface.obj(), g_Surface_clazz));
@@ -44,11 +45,44 @@ ScopedJavaSurface::ScopedJavaSurface(
   j_surface_.Reset(tmp);
 }
 
+ScopedJavaSurface::ScopedJavaSurface(RValue rvalue) {
+  MoveFrom(*rvalue.object);
+}
+
+ScopedJavaSurface& ScopedJavaSurface::operator=(RValue rhs) {
+  MoveFrom(*rhs.object);
+  return *this;
+}
+
 ScopedJavaSurface::~ScopedJavaSurface() {
-  if (!j_surface_.is_null()) {
+  if (auto_release_ && !j_surface_.is_null()) {
     JNIEnv* env = base::android::AttachCurrentThread();
     JNI_Surface::Java_Surface_release(env, j_surface_.obj());
   }
+}
+
+void ScopedJavaSurface::SetAutoRelease(bool auto_release) {
+  auto_release_ = auto_release;
+}
+
+void ScopedJavaSurface::MoveFrom(ScopedJavaSurface& other) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  j_surface_.Reset(env, other.j_surface_.Release());
+  auto_release_ = other.auto_release_;
+}
+
+bool ScopedJavaSurface::IsSurfaceEmpty() {
+  return j_surface_.is_null();
+}
+
+// static
+ScopedJavaSurface ScopedJavaSurface::AcquireExternalSurface(jobject surface) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> surface_ref;
+  surface_ref.Reset(env, surface);
+  gfx::ScopedJavaSurface scoped_surface(surface_ref);
+  scoped_surface.SetAutoRelease(false);
+  return scoped_surface;
 }
 
 }  // namespace gfx
