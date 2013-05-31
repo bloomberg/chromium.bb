@@ -85,7 +85,6 @@ class MediaControls : public HTMLDivElement {
 
     virtual void changedClosedCaptionsVisibility();
     virtual void refreshClosedCaptionsButtonVisibility();
-    virtual void toggleClosedCaptionTrackList() { }
     virtual void closedCaptionTracksChanged();
 
     virtual void enteredFullscreen();

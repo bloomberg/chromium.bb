@@ -70,9 +70,6 @@ public:
     virtual void setPreferredLanguage(String);
     virtual Vector<String> preferredLanguages() const;
 
-    virtual String displayNameForTrack(TextTrack*) const;
-    virtual Vector<RefPtr<TextTrack> > sortedTrackListForMenu(TextTrackList*);
-
     virtual bool testingMode() const { return m_testingMode; }
     virtual void setTestingMode(bool override) { m_testingMode = override; }
 

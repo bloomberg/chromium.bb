@@ -24,13 +24,12 @@
  */
 
 #include "config.h"
-
-#include "core/html/track/TextTrackList.h"
 #include "core/page/CaptionUserPreferences.h"
+
+#include "core/html/track/TextTrack.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
 #include "core/page/Settings.h"
-#include <wtf/NonCopyingSort.h>
 
 namespace WebCore {
 
@@ -155,39 +154,6 @@ void CaptionUserPreferences::setPreferredLanguage(String language)
 {
     m_userPreferredLanguage = language;
     notify();
-}
-
-static String trackDisplayName(TextTrack* track)
-{
-    if (track->label().isEmpty() && track->language().isEmpty())
-        return textTrackNoLabelText();
-    if (!track->label().isEmpty())
-        return track->label();
-    return track->language();
-}
-
-String CaptionUserPreferences::displayNameForTrack(TextTrack* track) const
-{
-    return trackDisplayName(track);
-}
-    
-static bool textTrackCompare(const RefPtr<TextTrack>& a, const RefPtr<TextTrack>& b)
-{
-    return codePointCompare(trackDisplayName(a.get()), trackDisplayName(b.get())) < 0;
-}
-
-Vector<RefPtr<TextTrack> > CaptionUserPreferences::sortedTrackListForMenu(TextTrackList* trackList)
-{
-    ASSERT(trackList);
-
-    Vector<RefPtr<TextTrack> > tracksForMenu;
-
-    for (unsigned i = 0, length = trackList->length(); i < length; ++i)
-        tracksForMenu.append(trackList->item(i));
-
-    nonCopyingSort(tracksForMenu.begin(), tracksForMenu.end(), textTrackCompare);
-
-    return tracksForMenu;
 }
 
 int CaptionUserPreferences::textTrackSelectionScore(TextTrack* track, HTMLMediaElement*) const

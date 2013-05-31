@@ -1111,12 +1111,6 @@ webkit.org/b/92570 [ Mac Win Debug ] inspector/debugger/dom-breakpoints.html [ P
 webkit.org/b/92570 [ Win Debug ] inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
 webkit.org/b/92570 [ Win Debug ] inspector/timeline/timeline-start-time.html [ Failure Pass Timeout ]
 
-# Chromium still has the CC toggle button, not the menu of tracks.
-webkit.org/b/101670 media/video-controls-captions-trackmenu.html [ Timeout ]
-webkit.org/b/101670 media/video-controls-captions-trackmenu-localized.html [ Timeout ]
-webkit.org/b/101670 media/video-controls-captions-trackmenu-hide-on-click.html [ Timeout ]
-webkit.org/b/101670 media/track/track-user-preferences.html [ Timeout ]
-
 webkit.org/b/92941 accessibility/loading-iframe-updates-axtree.html [ Timeout ]
 
 webkit.org/b/93566 [ Debug ] fast/parser/iframe-sets-parent-to-javascript-url.html [ Failure Pass ]

@@ -43,12 +43,6 @@ using namespace HTMLNames;
 
 class Event;
 
-// FIXME: These constants may need to be tweaked to better match the seeking in the QuickTime plug-in.
-static const double cSkipRepeatDelay = 0.1;
-static const double cSkipTime = 0.2;
-static const double cScanRepeatDelay = 1.5;
-static const double cScanMaximumRate = 8;
-
 HTMLMediaElement* toParentMediaElement(Node* node)
 {
     if (!node)
@@ -69,24 +63,6 @@ MediaControlElementType mediaControlElementType(Node* node)
     if (element->hasTagName(inputTag))
         return static_cast<MediaControlInputElement*>(element)->displayType();
     return static_cast<MediaControlDivElement*>(element)->displayType();
-}
-
-const AtomicString& trackIndexAttributeName()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, name, ("x-webkit-track-index", AtomicString::ConstructFromLiteral));
-    return name;
-}
-
-int trackListIndexForElement(Element* element)
-{
-    const AtomicString trackIndexAttributeValue = element->getAttribute(trackIndexAttributeName());
-    if (trackIndexAttributeValue.isNull() || trackIndexAttributeValue.isEmpty())
-        return HTMLMediaElement::textTracksIndexNotFound();
-    bool ok;
-    int trackIndex = trackIndexAttributeValue.toInt(&ok);
-    if (!ok)
-        return HTMLMediaElement::textTracksIndexNotFound();
-    return trackIndex;
 }
 
 MediaControlElement::MediaControlElement(MediaControlElementType displayType, HTMLElement* element)

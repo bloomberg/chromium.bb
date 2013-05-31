@@ -68,17 +68,12 @@ enum MediaControlElementType {
     MediaTextTrackDisplay,
     MediaExitFullscreenButton,
     MediaOverlayPlayButton,
-    MediaClosedCaptionsContainer,
-    MediaClosedCaptionsTrackList,
 };
 
 HTMLMediaElement* toParentMediaElement(Node*);
 inline HTMLMediaElement* toParentMediaElement(RenderObject* renderer) { return toParentMediaElement(renderer->node()); }
 
 MediaControlElementType mediaControlElementType(Node*);
-
-const AtomicString& trackIndexAttributeName();
-int trackListIndexForElement(Element*);
 
 // ----------------------------
 

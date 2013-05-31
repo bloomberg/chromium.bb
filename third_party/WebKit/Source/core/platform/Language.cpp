@@ -141,9 +141,4 @@ size_t indexOfBestMatchingLanguageInList(const String& language, const Vector<St
     return languageList.size();
 }
 
-String displayNameForLanguageLocale(const String& localeName)
-{
-    return localeName;
-}
-
 }

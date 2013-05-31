@@ -2734,30 +2734,6 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
         trackToEnable->setMode(TextTrack::showingKeyword());
 }
 
-void HTMLMediaElement::setSelectedTextTrack(TextTrack* trackToSelect)
-{
-    TextTrackList* trackList = textTracks();
-    if (!trackList || !trackList->length())
-        return;
-    if (trackToSelect && !trackList->contains(trackToSelect))
-        return;
-
-    for (int i = 0, length = trackList->length(); i < length; ++i) {
-        TextTrack* track = trackList->item(i);
-        if (!trackToSelect || track != trackToSelect)
-            track->setMode(TextTrack::disabledKeyword());
-        else
-            track->setMode(TextTrack::showingKeyword());
-    }
-
-    CaptionUserPreferences* captionPreferences = document()->page() ? document()->page()->group().captionPreferences() : 0;
-    if (captionPreferences) {
-        captionPreferences->setShouldShowCaptions(trackToSelect);
-        if (trackToSelect && trackToSelect->language().length())
-            captionPreferences->setPreferredLanguage(trackToSelect->language());
-    }
-}
-
 void HTMLMediaElement::configureTextTracks()
 {
     TrackGroup captionAndSubtitleTracks(TrackGroup::CaptionsAndSubtitles);

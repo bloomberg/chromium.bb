@@ -227,10 +227,6 @@ public:
     void configureTextTracks();
     void configureTextTrackGroup(const TrackGroup&);
 
-    void setSelectedTextTrack(TextTrack*);
-    static int textTracksOffIndex() { return -1; }
-    static int textTracksIndexNotFound() { return -2; }
-
     bool userPrefersCaptions() const;
     bool textTracksAreReady() const;
     void configureTextTrackDisplay();
