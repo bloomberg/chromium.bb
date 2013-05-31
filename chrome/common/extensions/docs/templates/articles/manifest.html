@@ -40,7 +40,11 @@ are <b>name</b> and <b>version</b>.
   "<a href="background_pages.html">background</a>": {"persistent": true, ...},
   "<a href="override.html">chrome_url_overrides</a>": {...},
   "<a href="content_scripts.html">content_scripts</a>": [...],
-  "<a href="../extensions/contentSecurityPolicy.html">content_security_policy</a>": "<em>policyString</em>",
+{{?is_apps}}
+  "<a href="app_csp.html">content_security_policy</a>": "<em>policyString</em>",
+{{:is_apps}}
+  "<a href="contentSecurityPolicy.html">content_security_policy</a>": "<em>policyString</em>",
+{{/is_apps}}
   "<a href="fileBrowserHandler.html">file_browser_handlers</a>": [...],
   "<a href="#file_handlers">file_handlers</a>": {...},
   "<a href="#homepage_url">homepage_url</a>": "http://<em>path/to/homepage</em>",

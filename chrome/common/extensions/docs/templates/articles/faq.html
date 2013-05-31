@@ -32,7 +32,9 @@ try the
     <li><a href="#faq-dev-05">Can extensions create UI outside of the rendered web page?</a></li>
     <li><a href="#faq-interact-chrome">Can extensions listen to clicks on Chrome tabs and navigation buttons?</a>
     <li><a href="#faq-dev-11">Can two extensions communicate with each other?</a></li>
+{{^is_apps}}
     <li><a href="#faq-dev-13">Can extensions use Google Analytics?</a></li>
+{{/is_apps}}
     <li><a href="#faq-dev-15">Can extensions modify chrome:// URLs?</a></li>
     <li><a href="#faq-open-popups">Can extensions open browser/page action popups without user interaction?</a></li>
     <li><a href="#faq-persist-popups">Can extensions keep popups open after the user clicks away from them?</a></li>
@@ -226,6 +228,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   for more information.
 </p>
 
+{{^is_apps}}
 <h3 id="faq-dev-13">Can extensions use Google Analytics?</h3>
 <p>
   Yes, since extensions are built just like websites, they can use
@@ -235,6 +238,7 @@ cros,beta,#.#.###.#,#.#.###.#,mm/dd/yy,mm/dd/yy,#####,#####,#####</pre>
   <a href="tut_analytics.html">this tutorial</a> for more information on doing
   this.
 </p>
+{{/is_apps}}
 
 <h3 id="faq-dev-15">Can extensions modify chrome:// URLs?</h3>
 <p>
