@@ -27,6 +27,7 @@ tree {
   background-image: -webkit-canvas(tree-triangle);
   background-position: 50% 50%;
   background-repeat: no-repeat;
+  background-size: 8px 5px;
   display: inline-block;
   height: 16px;
   opacity: .6;
