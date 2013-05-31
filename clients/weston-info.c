@@ -84,6 +84,7 @@ struct seat_info {
 	struct wl_seat *seat;
 
 	uint32_t capabilities;
+	char *name;
 };
 
 struct weston_info {
@@ -233,6 +234,7 @@ print_seat_info(void *data)
 
 	print_global_info(data);
 
+	printf("\tname: %s\n", seat->name);
 	printf("\tcapabilities:");
 
 	if (seat->capabilities & WL_SEAT_CAPABILITY_POINTER)
@@ -253,8 +255,17 @@ seat_handle_capabilities(void *data, struct wl_seat *wl_seat,
 	seat->capabilities = caps;
 }
 
+static void
+seat_handle_name(void *data, struct wl_seat *wl_seat,
+		 const char *name)
+{
+	struct seat_info *seat = data;
+	seat->name = strdup(name);
+}
+
 static const struct wl_seat_listener seat_listener = {
 	seat_handle_capabilities,
+	seat_handle_name,
 };
 
 static void
@@ -266,7 +277,7 @@ add_seat_info(struct weston_info *info, uint32_t id, uint32_t version)
 	seat->global.print = print_seat_info;
 
 	seat->seat = wl_registry_bind(info->registry,
-				      id, &wl_seat_interface, 1);
+				      id, &wl_seat_interface, 2);
 	wl_seat_add_listener(seat->seat, &seat_listener, seat);
 
 	info->roundtrip_needed = true;
