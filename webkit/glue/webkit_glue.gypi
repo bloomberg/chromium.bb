@@ -84,6 +84,8 @@
       'sources': [
         'multipart_response_delegate.cc',
         'multipart_response_delegate.h',
+        '../common/webdropdata.cc',
+        '../common/webdropdata.h',
         'weburlrequest_extradata_impl.cc',
         'weburlrequest_extradata_impl.h',
         'weburlresponse_extradata_impl.cc',
@@ -230,9 +232,6 @@
         'webclipboard_impl.h',
         'webcookie.cc',
         'webcookie.h',
-        'webdropdata.cc',
-        'webdropdata_win.cc',
-        'webdropdata.h',
         'webfallbackthemeengine_impl.cc',
         'webfallbackthemeengine_impl.h',
         'webfileutilities_impl.cc',

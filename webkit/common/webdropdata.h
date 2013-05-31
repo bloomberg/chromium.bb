@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -6,8 +6,8 @@
 // union of all the types of data that can be dropped in a platform neutral
 // way.
 
-#ifndef WEBKIT_GLUE_WEBDROPDATA_H_
-#define WEBKIT_GLUE_WEBDROPDATA_H_
+#ifndef WEBKIT_COMMON_WEBDROPDATA_H_
+#define WEBKIT_COMMON_WEBDROPDATA_H_
 
 #include <map>
 #include <string>
@@ -75,15 +75,6 @@ struct WEBKIT_GLUE_EXPORT WebDropData {
   std::string file_contents;
 
   std::map<base::string16, base::string16> custom_data;
-
-  // Convert to a WebDragData object.
-  WebKit::WebDragData ToDragData() const;
-
-  // Helper method for converting Window's specific IDataObject to a WebDropData
-  // object.  TODO(tc): Move this to the browser side since it's Windows
-  // specific and no longer used in webkit.
-  static void PopulateWebDropData(IDataObject* data_object,
-                                  WebDropData* drop_data);
 };
 
-#endif  // WEBKIT_GLUE_WEBDROPDATA_H_
+#endif  // WEBKIT_COMMON_WEBDROPDATA_H_

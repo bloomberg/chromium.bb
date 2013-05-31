@@ -19,7 +19,7 @@
 #include "content/test/test_web_contents.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 namespace content {
 

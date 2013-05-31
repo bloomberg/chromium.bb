@@ -146,7 +146,7 @@
 #include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_base_types.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)

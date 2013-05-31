@@ -15,7 +15,7 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/window_open_disposition.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 using WebKit::WebDragOperationsMask;
 using content::OpenURLParams;

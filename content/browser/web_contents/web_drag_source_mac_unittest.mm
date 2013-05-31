@@ -8,7 +8,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 namespace content {
 

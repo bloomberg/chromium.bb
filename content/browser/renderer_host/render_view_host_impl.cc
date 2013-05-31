@@ -68,7 +68,7 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "ui/snapshot/snapshot.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)

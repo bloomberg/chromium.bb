@@ -200,8 +200,8 @@
 #include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/base/file_path_string_conversions.h"
+#include "webkit/common/webdropdata.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/weburlresponse_extradata_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -629,6 +629,71 @@ bool TouchEnabled() {
 #else
   return false;
 #endif
+}
+
+WebDragData WebDropDataToDragData(const WebDropData& drop_data) {
+  std::vector<WebDragData::Item> item_list;
+
+  // These fields are currently unused when dragging into WebKit.
+  DCHECK(drop_data.download_metadata.empty());
+  DCHECK(drop_data.file_contents.empty());
+  DCHECK(drop_data.file_description_filename.empty());
+
+  if (!drop_data.text.is_null()) {
+    WebDragData::Item item;
+    item.storageType = WebDragData::Item::StorageTypeString;
+    item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeText);
+    item.stringData = drop_data.text.string();
+    item_list.push_back(item);
+  }
+
+  // TODO(dcheng): Do we need to distinguish between null and empty URLs? Is it
+  // meaningful to write an empty URL to the clipboard?
+  if (!drop_data.url.is_empty()) {
+    WebDragData::Item item;
+    item.storageType = WebDragData::Item::StorageTypeString;
+    item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeURIList);
+    item.stringData = WebString::fromUTF8(drop_data.url.spec());
+    item.title = drop_data.url_title;
+    item_list.push_back(item);
+  }
+
+  if (!drop_data.html.is_null()) {
+    WebDragData::Item item;
+    item.storageType = WebDragData::Item::StorageTypeString;
+    item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeHTML);
+    item.stringData = drop_data.html.string();
+    item.baseURL = drop_data.html_base_url;
+    item_list.push_back(item);
+  }
+
+  for (std::vector<WebDropData::FileInfo>::const_iterator it =
+           drop_data.filenames.begin();
+       it != drop_data.filenames.end();
+       ++it) {
+    WebDragData::Item item;
+    item.storageType = WebDragData::Item::StorageTypeFilename;
+    item.filenameData = it->path;
+    item.displayNameData = it->display_name;
+    item_list.push_back(item);
+  }
+
+  for (std::map<base::string16, base::string16>::const_iterator it =
+           drop_data.custom_data.begin();
+       it != drop_data.custom_data.end();
+       ++it) {
+    WebDragData::Item item;
+    item.storageType = WebDragData::Item::StorageTypeString;
+    item.stringType = it->first;
+    item.stringData = it->second;
+    item_list.push_back(item);
+  }
+
+  WebDragData result;
+  result.initialize();
+  result.setItems(item_list);
+  result.setFilesystemId(drop_data.filesystem_id);
+  return result;
 }
 
 }  // namespace
@@ -5177,7 +5242,7 @@ void RenderViewImpl::OnDragTargetDragEnter(const WebDropData& drop_data,
                                            WebDragOperationsMask ops,
                                            int key_modifiers) {
   WebDragOperation operation = webview()->dragTargetDragEnter(
-      drop_data.ToDragData(),
+      WebDropDataToDragData(drop_data),
       client_point,
       screen_point,
       ops,

@@ -54,7 +54,7 @@
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 namespace content {
 WebContentsViewPort* CreateWebContentsView(

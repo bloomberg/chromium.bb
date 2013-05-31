@@ -20,7 +20,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 InstallExtensionHandler::InstallExtensionHandler() {
 }

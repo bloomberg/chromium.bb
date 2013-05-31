@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 #include <utility>
 
-#include "base/string_util.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
@@ -81,67 +81,4 @@ WebDropData::WebDropData()
 }
 
 WebDropData::~WebDropData() {
-}
-
-WebDragData WebDropData::ToDragData() const {
-  std::vector<WebDragData::Item> item_list;
-
-  // These fields are currently unused when dragging into WebKit.
-  DCHECK(download_metadata.empty());
-  DCHECK(file_contents.empty());
-  DCHECK(file_description_filename.empty());
-
-  if (!text.is_null()) {
-    WebDragData::Item item;
-    item.storageType = WebDragData::Item::StorageTypeString;
-    item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeText);
-    item.stringData = text.string();
-    item_list.push_back(item);
-  }
-
-  // TODO(dcheng): Do we need to distinguish between null and empty URLs? Is it
-  // meaningful to write an empty URL to the clipboard?
-  if (!url.is_empty()) {
-    WebDragData::Item item;
-    item.storageType = WebDragData::Item::StorageTypeString;
-    item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeURIList);
-    item.stringData = WebString::fromUTF8(url.spec());
-    item.title = url_title;
-    item_list.push_back(item);
-  }
-
-  if (!html.is_null()) {
-    WebDragData::Item item;
-    item.storageType = WebDragData::Item::StorageTypeString;
-    item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeHTML);
-    item.stringData = html.string();
-    item.baseURL = html_base_url;
-    item_list.push_back(item);
-  }
-
-  for (std::vector<FileInfo>::const_iterator it =
-           filenames.begin(); it != filenames.end(); ++it) {
-    WebDragData::Item item;
-    item.storageType = WebDragData::Item::StorageTypeFilename;
-    item.filenameData = it->path;
-    item.displayNameData = it->display_name;
-    item_list.push_back(item);
-  }
-
-  for (std::map<base::string16, base::string16>::const_iterator it =
-           custom_data.begin();
-       it != custom_data.end();
-       ++it) {
-    WebDragData::Item item;
-    item.storageType = WebDragData::Item::StorageTypeString;
-    item.stringType = it->first;
-    item.stringData = it->second;
-    item_list.push_back(item);
-  }
-
-  WebDragData result;
-  result.initialize();
-  result.setItems(item_list);
-  result.setFilesystemId(filesystem_id);
-  return result;
 }

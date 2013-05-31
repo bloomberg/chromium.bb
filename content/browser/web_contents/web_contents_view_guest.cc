@@ -18,7 +18,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;

@@ -36,7 +36,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperationCopy;

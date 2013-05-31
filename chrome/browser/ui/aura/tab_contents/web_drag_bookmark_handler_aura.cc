@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 using content::WebContents;
 

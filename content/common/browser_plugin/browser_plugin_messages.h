@@ -24,8 +24,8 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "webkit/common/webdropdata.h"
 #include "webkit/common/cursors/webcursor.h"
-#include "webkit/glue/webdropdata.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

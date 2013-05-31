@@ -20,8 +20,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
+#include "webkit/common/webdropdata.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
-#include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebClipboard;

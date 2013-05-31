@@ -20,7 +20,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/point.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationCopy;
@@ -57,6 +57,38 @@ int GetModifierFlags() {
   if (::GetKeyState(VK_RWIN) & kHighBitMaskShort)
     modifier_state |= WebKit::WebInputEvent::MetaKey;
   return modifier_state;
+}
+
+// Helper method for converting Window's specific IDataObject to a WebDropData
+// object.
+void PopulateWebDropData(IDataObject* data_object, WebDropData* drop_data) {
+  base::string16 url_str;
+  if (ui::ClipboardUtil::GetUrl(
+          data_object, &url_str, &drop_data->url_title, false)) {
+    GURL test_url(url_str);
+    if (test_url.is_valid())
+      drop_data->url = test_url;
+  }
+  std::vector<base::string16> filenames;
+  ui::ClipboardUtil::GetFilenames(data_object, &filenames);
+  for (size_t i = 0; i < filenames.size(); ++i)
+    drop_data->filenames.push_back(
+        WebDropData::FileInfo(filenames[i], base::string16()));
+  base::string16 text;
+  ui::ClipboardUtil::GetPlainText(data_object, &text);
+  if (!text.empty()) {
+    drop_data->text = NullableString16(text, false);
+  }
+  base::string16 html;
+  std::string html_base_url;
+  ui::ClipboardUtil::GetHtml(data_object, &html, &html_base_url);
+  if (!html.empty()) {
+    drop_data->html = NullableString16(html, false);
+  }
+  if (!html_base_url.empty()) {
+    drop_data->html_base_url = GURL(html_base_url);
+  }
+  ui::ClipboardUtil::GetWebCustomData(data_object, &drop_data->custom_data);
 }
 
 }  // namespace
@@ -132,7 +164,7 @@ DWORD WebDragDest::OnDragEnter(IDataObject* data_object,
   // TODO(tc): PopulateWebDropData can be slow depending on what is in the
   // IDataObject.  Maybe we can do this in a background thread.
   drop_data_.reset(new WebDropData());
-  WebDropData::PopulateWebDropData(data_object, drop_data_.get());
+  PopulateWebDropData(data_object, drop_data_.get());
 
   if (drop_data_->url.is_empty())
     ui::OSExchangeDataProviderWin::GetPlainTextURL(data_object,

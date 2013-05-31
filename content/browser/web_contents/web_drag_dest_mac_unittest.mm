@@ -13,7 +13,7 @@
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 using content::RenderViewHostImplTestHarness;
 

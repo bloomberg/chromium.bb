@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 
 namespace content {

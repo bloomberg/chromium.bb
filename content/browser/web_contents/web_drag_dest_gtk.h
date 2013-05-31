@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 namespace content {
 

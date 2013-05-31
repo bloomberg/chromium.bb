@@ -12,7 +12,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/vector2d.h"
-#include "webkit/glue/webdropdata.h"
+#include "webkit/common/webdropdata.h"
 
 #define IPC_MESSAGE_START DragMsgStart
 
