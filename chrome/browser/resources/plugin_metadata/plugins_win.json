@@ -1,5 +1,5 @@
 {
-  "x-version": 8,
+  "x-version": 9,
   "google-talk": {
     "mime_types": [
     ],
@@ -371,5 +371,18 @@
     ],
     "name": "Chrome PDF Viewer",
     "group_name_matcher": "*Chrome PDF Viewer*"
+  },
+  "google-update": {
+    "mime-types": [
+    ],
+    "versions": [
+      {
+        "version": "0",
+        "status": "requires_authorization",
+        "comment": "Google Update plug-in is versioned but kept automatically up-to-date"
+      }
+    ],
+    "name": "Google Update",
+    "group_name_matcher": "Google Update"
   }
 }
