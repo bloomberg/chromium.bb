@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_
-#define CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_
+#ifndef CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_
+#define CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_
 
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -16,6 +16,8 @@ class Transform;
 
 namespace content {
 
+class WebContents;
+
 class SynchronousCompositorClient;
 
 // Interface for embedders that wish to direct compositing operations
@@ -23,6 +25,11 @@ class SynchronousCompositorClient;
 // kEnableSyncrhonousRendererCompositor flag is specified.
 class SynchronousCompositor {
  public:
+  // Must be called once per WebContents instance. Will create the compositor
+  // instance as needed, but only if |client| is non-NULL.
+  static void SetClientForWebContents(WebContents* contents,
+                                      SynchronousCompositorClient* client);
+
   // Allows changing or resetting the client to NULL (this must be used if
   // the client is being deleted prior to the DidDestroyCompositor() call
   // being received by the client). Ownership of |client| remains with
@@ -50,4 +57,4 @@ class SynchronousCompositor {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_
+#endif  // CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_

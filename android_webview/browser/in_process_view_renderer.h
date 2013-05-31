@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "android_webview/browser/browser_view_renderer_impl.h"
 
 #include "base/memory/weak_ptr.h"
-#include "content/public/renderer/android/synchronous_compositor_client.h"
+#include "content/public/browser/android/synchronous_compositor_client.h"
 
 namespace content {
 class SynchronousCompositor;
@@ -28,10 +28,6 @@ class InProcessViewRenderer : public BrowserViewRenderer,
 
   static InProcessViewRenderer* FromWebContents(
       content::WebContents* contents);
-  static InProcessViewRenderer* FromId(
-      int render_process_id, int render_view_id);
-  void BindSynchronousCompositor(
-      content::SynchronousCompositor* compositor);
 
   // BrowserViewRenderer overrides
   virtual void SetContents(
@@ -52,6 +48,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual gfx::Rect GetScreenRect() OVERRIDE;
 
   // SynchronousCompositorClient overrides
+  virtual void DidInitializeCompositor(
+      content::SynchronousCompositor* compositor) OVERRIDE;
   virtual void DidDestroyCompositor(
       content::SynchronousCompositor* compositor) OVERRIDE;
   virtual void SetContinuousInvalidate(bool invalidate) OVERRIDE;

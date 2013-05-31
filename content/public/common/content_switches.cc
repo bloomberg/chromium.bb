@@ -464,11 +464,6 @@ const char kForceCompositingMode[]          = "force-compositing-mode";
 // via field trials.
 const char kDisableForceCompositingMode[]   = "disable-force-compositing-mode";
 
-// Enable the synchronous renderer compositor API. See
-// ContentRendererClient::DidCreateSynchronousCompositor()
-const char kEnableSynchronousRendererCompositor[] =
-    "enable-synchronous-renderer-compositor";
-
 // Some field trials may be randomized in the browser, and the randomly selected
 // outcome needs to be propagated to the renderer. For instance, this is used
 // to modify histograms recorded in the renderer, or to get the renderer to

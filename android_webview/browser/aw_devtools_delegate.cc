@@ -5,7 +5,7 @@
 #include "android_webview/browser/aw_devtools_delegate.h"
 
 #include "android_webview/browser/browser_view_renderer_impl.h"
-#include "android_webview/browser/in_process_renderer/in_process_view_renderer.h"
+#include "android_webview/browser/in_process_view_renderer.h"
 #include "android_webview/common/aw_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"

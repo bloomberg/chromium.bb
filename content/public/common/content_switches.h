@@ -141,7 +141,6 @@ CONTENT_EXPORT extern const char kEnableSoftwareCompositingGLAdapter[];
 CONTENT_EXPORT extern const char kEnableSmoothScrolling[];
 CONTENT_EXPORT extern const char kEnableStatsTable[];
 extern const char kEnableStrictSiteIsolation[];
-CONTENT_EXPORT extern const char kEnableSynchronousRendererCompositor[];
 CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
 CONTENT_EXPORT extern const char kDisableThreadedCompositing[];
 extern const char kEnableVirtualGLContexts[];

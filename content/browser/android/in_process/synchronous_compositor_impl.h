@@ -2,19 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_IMPL_H_
-#define CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_IMPL_H_
+#ifndef CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_IMPL_H_
+#define CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_IMPL_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/input/layer_scroll_offset_delegate.h"
-#include "content/public/renderer/android/synchronous_compositor.h"
-#include "content/renderer/android/synchronous_compositor_output_surface.h"
-
-namespace cc {
-class OutputSurface;
-}
+#include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
+#include "content/public/browser/android/synchronous_compositor.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
 
@@ -25,12 +21,10 @@ namespace content {
 // from the Compositor thread.
 class SynchronousCompositorImpl
     : public SynchronousCompositor,
-      public SynchronousCompositorOutputSurfaceDelegate {
+      public SynchronousCompositorOutputSurfaceDelegate,
+      public WebContentsUserData<SynchronousCompositorImpl> {
  public:
-  explicit SynchronousCompositorImpl(int32 routing_id);
-  virtual ~SynchronousCompositorImpl();
-
-  scoped_ptr<cc::OutputSurface> CreateOutputSurface();
+  static SynchronousCompositorImpl* FromRoutingID(int routing_id);
 
   // SynchronousCompositor
   virtual bool IsHwReady() OVERRIDE;
@@ -43,20 +37,29 @@ class SynchronousCompositorImpl
       gfx::Rect clip) OVERRIDE;
 
   // SynchronousCompositorOutputSurfaceDelegate
+  virtual void DidBindOutputSurface(
+      SynchronousCompositorOutputSurface* output_surface) OVERRIDE;
+  virtual void DidDestroySynchronousOutputSurface(
+      SynchronousCompositorOutputSurface* output_surface) OVERRIDE;
   virtual void SetContinuousInvalidate(bool enable) OVERRIDE;
-  virtual void DidCreateSynchronousOutputSurface() OVERRIDE;
-  virtual void DidDestroySynchronousOutputSurface() OVERRIDE;
 
  private:
+  explicit SynchronousCompositorImpl(WebContents* contents);
+  virtual ~SynchronousCompositorImpl();
+  friend class WebContentsUserData<SynchronousCompositorImpl>;
+
+  void DidCreateSynchronousOutputSurface(
+      SynchronousCompositorOutputSurface* output_surface);
   bool CalledOnValidThread() const;
 
   int routing_id_;
   SynchronousCompositorClient* compositor_client_;
   SynchronousCompositorOutputSurface* output_surface_;
+  WebContents* contents_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_IMPL_H_
+#endif  // CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_IMPL_H_

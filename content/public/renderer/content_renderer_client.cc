@@ -160,13 +160,4 @@ bool ContentRendererClient::AllowBrowserPlugin(
   return false;
 }
 
-base::MessageLoop* ContentRendererClient::OverrideCompositorMessageLoop()
-    const {
-  return NULL;
-}
-
-bool ContentRendererClient::ShouldCreateCompositorInputHandler() const {
-  return true;
-}
-
 }  // namespace content

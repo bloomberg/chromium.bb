@@ -62,8 +62,7 @@
 #include "webkit/renderer/compositor_bindings/web_rendering_stats_impl.h"
 
 #if defined(OS_ANDROID)
-#include "content/renderer/android/synchronous_compositor_impl.h"
-#include "content/renderer/android/synchronous_compositor_output_surface.h"
+#include "content/renderer/android/synchronous_compositor_factory.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -306,12 +305,10 @@ bool RenderWidget::AllowPartialSwap() const {
 
 bool RenderWidget::UsingSynchronousRendererCompositor() const {
 #if defined(OS_ANDROID)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSynchronousRendererCompositor)) {
-    return true;
-  }
-#endif
+  return SynchronousCompositorFactory::GetInstance() != NULL;
+#else
   return false;
+#endif
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
@@ -586,8 +583,9 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
 #if defined(OS_ANDROID)
-  if (GetSynchronousCompositor()) {
-    return GetSynchronousCompositor()->CreateOutputSurface();
+   if (SynchronousCompositorFactory* factory =
+       SynchronousCompositorFactory::GetInstance()) {
+    return factory->CreateOutputSurface(routing_id());
   }
 #endif
 
@@ -629,17 +627,6 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
       new MailboxOutputSurface(routing_id(), context, NULL) :
           new CompositorOutputSurface(routing_id(), context, NULL));
 }
-
-#if defined(OS_ANDROID)
-SynchronousCompositorImpl* RenderWidget::GetSynchronousCompositor() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!synchronous_compositor_ &&
-      command_line.HasSwitch(switches::kEnableSynchronousRendererCompositor)) {
-    synchronous_compositor_.reset(new SynchronousCompositorImpl(routing_id()));
-  }
-  return synchronous_compositor_.get();
-}
-#endif
 
 void RenderWidget::OnViewContextSwapBuffersAborted() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersAborted");

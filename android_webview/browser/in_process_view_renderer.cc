@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/in_process_renderer/in_process_view_renderer.h"
+#include "android_webview/browser/in_process_view_renderer.h"
 
 #include <android/bitmap.h>
 
@@ -12,9 +12,9 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/renderer/android/synchronous_compositor.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -278,9 +278,8 @@ InProcessViewRenderer::InProcessViewRenderer(
 }
 
 InProcessViewRenderer::~InProcessViewRenderer() {
-  if (compositor_)
-    compositor_->SetClient(NULL);
   SetContents(NULL);
+  DCHECK(compositor_ == NULL);
 }
 
 // static
@@ -289,34 +288,12 @@ InProcessViewRenderer* InProcessViewRenderer::FromWebContents(
   return UserData::GetInstance(contents);
 }
 
-// static
-InProcessViewRenderer* InProcessViewRenderer::FromId(int render_process_id,
-                                                     int render_view_id) {
-  const content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-  if (!rvh) return NULL;
-  return InProcessViewRenderer::FromWebContents(
-      content::WebContents::FromRenderViewHost(rvh));
-}
-
-void InProcessViewRenderer::BindSynchronousCompositor(
-    content::SynchronousCompositor* compositor) {
-  DCHECK(compositor && compositor_ != compositor);
-  if (compositor_)
-    compositor_->SetClient(NULL);
-  compositor_ = compositor;
-  hardware_initialized_ = false;
-  hardware_failed_ = false;
-  compositor_->SetClient(this);
-
-  if (attached_to_window_)
-    client_->RequestProcessMode();
-}
-
 void InProcessViewRenderer::SetContents(
     content::ContentViewCore* content_view_core) {
   // First remove association from the prior ContentViewCore / WebContents.
   if (web_contents_) {
+    content::SynchronousCompositor::SetClientForWebContents(web_contents_,
+                                                            NULL);
     web_contents_->SetUserData(kUserDataKey, NULL);
     DCHECK(!web_contents_);  // WebContentsGone should have been called.
   }
@@ -326,10 +303,14 @@ void InProcessViewRenderer::SetContents(
 
   web_contents_ = content_view_core->GetWebContents();
   web_contents_->SetUserData(kUserDataKey, new UserData(this));
+  content::SynchronousCompositor::SetClientForWebContents(web_contents_, this);
+  // Currently the logic in this class relies on |compositor_| remaining NULL
+  // until the DidInitializeCompositor() call, hence it is not set here.
 }
 
 void InProcessViewRenderer::WebContentsGone() {
   web_contents_ = NULL;
+  compositor_ = NULL;
 }
 
 bool InProcessViewRenderer::PrepareDrawGL(int x, int y) {
@@ -549,12 +530,21 @@ gfx::Rect InProcessViewRenderer::GetScreenRect() {
   return gfx::Rect(client_->GetLocationOnScreen(), gfx::Size(width_, height_));
 }
 
+void InProcessViewRenderer::DidInitializeCompositor(
+    content::SynchronousCompositor* compositor) {
+  DCHECK(compositor && compositor_ == NULL);
+  compositor_ = compositor;
+  hardware_initialized_ = false;
+  hardware_failed_ = false;
+
+  if (attached_to_window_)
+    client_->RequestProcessMode();
+}
+
 void InProcessViewRenderer::DidDestroyCompositor(
     content::SynchronousCompositor* compositor) {
-  // Allow for transient hand-over when two compositors may reference
-  // a single client.
-  if (compositor_ == compositor)
-    compositor_ = NULL;
+  DCHECK(compositor_ == compositor);
+  compositor_ = NULL;
 }
 
 void InProcessViewRenderer::SetContinuousInvalidate(bool invalidate) {

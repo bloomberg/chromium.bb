@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/android/synchronous_compositor_output_surface.h"
+#include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -11,10 +11,11 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
+#include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/public/browser/android/synchronous_compositor_client.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/renderer/android/synchronous_compositor_client.h"
-#include "content/public/renderer/content_renderer_client.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -87,20 +88,24 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
 };
 
 SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
-    SynchronousCompositorOutputSurfaceDelegate* delegate)
+    int routing_id)
     : cc::OutputSurface(
           CreateWebGraphicsContext3D(),
           scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
-      delegate_(delegate),
+      routing_id_(routing_id),
       needs_begin_frame_(false),
       did_swap_buffer_(false),
       current_sw_canvas_(NULL) {
   capabilities_.deferred_gl_initialization = true;
+  // Cannot call out to GetDelegate() here as the output surface is not
+  // constructed on the correct thread.
 }
 
 SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() {
   DCHECK(CalledOnValidThread());
-  delegate_->DidDestroySynchronousOutputSurface();
+  SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
+  if (delegate)
+    delegate->DidDestroySynchronousOutputSurface(this);
 }
 
 bool SynchronousCompositorOutputSurface::ForcedDrawToSoftwareDevice() const {
@@ -112,7 +117,9 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   DCHECK(CalledOnValidThread());
   if (!cc::OutputSurface::BindToClient(surface_client))
     return false;
-  delegate_->DidCreateSynchronousOutputSurface();
+  SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
+  if (delegate)
+    delegate->DidBindOutputSurface(this);
   return true;
 }
 
@@ -131,7 +138,9 @@ void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(
     bool enable) {
   DCHECK(CalledOnValidThread());
   needs_begin_frame_ = enable;
-  delegate_->SetContinuousInvalidate(needs_begin_frame_);
+  SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
+  if (delegate)
+    delegate->SetContinuousInvalidate(needs_begin_frame_);
 }
 
 void SynchronousCompositorOutputSurface::SwapBuffers(
@@ -193,12 +202,15 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
 }
 
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading
-// requirement: SynchronousCompositorOutputSurface() must only be used by
-// embedders that supply their own compositor loop via
-// OverrideCompositorMessageLoop().
+// requirement: SynchronousCompositorOutputSurface() must only be used on the UI
+// thread.
 bool SynchronousCompositorOutputSurface::CalledOnValidThread() const {
-  return base::MessageLoop::current() && (base::MessageLoop::current() ==
-      GetContentClient()->renderer()->OverrideCompositorMessageLoop());
+  return BrowserThread::CurrentlyOn(BrowserThread::UI);
+}
+
+SynchronousCompositorOutputSurfaceDelegate*
+SynchronousCompositorOutputSurface::GetDelegate() {
+  return SynchronousCompositorImpl::FromRoutingID(routing_id_);
 }
 
 }  // namespace content

@@ -118,6 +118,10 @@
 #include "third_party/webrtc/system_wrappers/interface/event_tracer.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "content/renderer/android/synchronous_compositor_factory.h"
+#endif
+
 using base::ThreadRestrictions;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
@@ -744,11 +748,13 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   bool enable = command_line.HasSwitch(switches::kEnableThreadedCompositing);
   if (enable) {
-    base::MessageLoop* override_loop =
-        GetContentClient()->renderer()->OverrideCompositorMessageLoop();
-    if (override_loop) {
-      compositor_message_loop_proxy_ = override_loop->message_loop_proxy();
-    } else {
+#if defined(OS_ANDROID)
+    if (SynchronousCompositorFactory* factory =
+        SynchronousCompositorFactory::GetInstance())
+      compositor_message_loop_proxy_ =
+          factory->GetCompositorMessageLoop();
+#endif
+    if (!compositor_message_loop_proxy_) {
       compositor_thread_.reset(new base::Thread("Compositor"));
       compositor_thread_->Start();
 #if defined(OS_ANDROID)
@@ -762,11 +768,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
                      false));
     }
 
-    if (GetContentClient()->renderer()->ShouldCreateCompositorInputHandler()) {
-      input_handler_manager_.reset(
-          new InputHandlerManager(this, compositor_message_loop_proxy_));
-      AddFilter(input_handler_manager_->GetMessageFilter());
-    }
+    input_handler_manager_.reset(
+        new InputHandlerManager(this, compositor_message_loop_proxy_));
+    AddFilter(input_handler_manager_->GetMessageFilter());
   }
 
   scoped_refptr<base::MessageLoopProxy> output_surface_loop;

@@ -1,49 +1,47 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
-#define CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
+#ifndef CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
+#define CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/output/output_surface.h"
-#include "content/public/renderer/android/synchronous_compositor.h"
+#include "content/public/browser/android/synchronous_compositor.h"
 
 namespace content {
 
 class SynchronousCompositorClient;
-class SynchronousCompositorOutputSurfaceDelegate;
+class SynchronousCompositorOutputSurface;
 class WebGraphicsContext3DCommandBufferImpl;
 
 class SynchronousCompositorOutputSurfaceDelegate {
  public:
+   virtual void DidBindOutputSurface(
+      SynchronousCompositorOutputSurface* output_surface) = 0;
+  virtual void DidDestroySynchronousOutputSurface(
+      SynchronousCompositorOutputSurface* output_surface) = 0;
   virtual void SetContinuousInvalidate(bool enable) = 0;
-  virtual void DidCreateSynchronousOutputSurface() = 0;
-  virtual void DidDestroySynchronousOutputSurface() = 0;
 
  protected:
   SynchronousCompositorOutputSurfaceDelegate() {}
   virtual ~SynchronousCompositorOutputSurfaceDelegate() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorOutputSurfaceDelegate);
 };
 
 // Specialization of the output surface that adapts it to implement the
 // content::SynchronousCompositor public API. This class effects an "inversion
 // of control" - enabling drawing to be  orchestrated by the embedding
 // layer, instead of driven by the compositor internals - hence it holds two
-// 'client' pointers (|client_| in the OutputSurface baseclass and |delegate_|)
-// which represent the consumers of the two roles in plays.
+// 'client' pointers (|client_| in the OutputSurface baseclass and
+// GetDelegate()) which represent the consumers of the two roles in plays.
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when BindToClient is called.
 class SynchronousCompositorOutputSurface
     : NON_EXPORTED_BASE(public cc::OutputSurface) {
  public:
-  explicit SynchronousCompositorOutputSurface(
-      SynchronousCompositorOutputSurfaceDelegate* delegate);
+  explicit SynchronousCompositorOutputSurface(int routing_id);
   virtual ~SynchronousCompositorOutputSurface();
 
   // OutputSurface.
@@ -69,8 +67,9 @@ class SynchronousCompositorOutputSurface
   void UpdateCompositorClientSettings();
   void NotifyCompositorSettingsChanged();
   bool CalledOnValidThread() const;
+  SynchronousCompositorOutputSurfaceDelegate* GetDelegate();
 
-  SynchronousCompositorOutputSurfaceDelegate* delegate_;
+  int routing_id_;
   bool needs_begin_frame_;
   bool did_swap_buffer_;
 
@@ -82,4 +81,4 @@ class SynchronousCompositorOutputSurface
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_ANDROID_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
+#endif  // CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_

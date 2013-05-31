@@ -5,7 +5,6 @@
 #include "android_webview/lib/main/aw_main_delegate.h"
 
 #include "android_webview/browser/aw_content_browser_client.h"
-#include "android_webview/browser/in_process_renderer/in_process_renderer_client.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
@@ -60,7 +59,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitch(cc::switches::kEnableCompositorFrameMessage);
     cl->AppendSwitch(switches::kEnableWebViewSynchronousAPIs);
   } else {
-    cl->AppendSwitch(switches::kEnableSynchronousRendererCompositor);
     cl->AppendSwitch(switches::kEnableBeginFrameScheduling);
   }
 
@@ -123,14 +121,7 @@ content::ContentBrowserClient*
 
 content::ContentRendererClient*
     AwMainDelegate::CreateContentRendererClient() {
-  // None of this makes sense for multiprocess.
-  DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
-  // During transition period allow running in either threading mode; eventually
-  // only the compositor/UI thread merge mode will be supported.
-  const bool no_merge_threads = UIAndRendererCompositorThreadsNotMerged();
-  content_renderer_client_.reset(
-      no_merge_threads ? new AwContentRendererClient() :
-                         new InProcessRendererClient());
+  content_renderer_client_.reset(new AwContentRendererClient());
   return content_renderer_client_.get();
 }
 
