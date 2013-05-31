@@ -57,7 +57,7 @@ struct Cookie {
          const std::string& value,
          const std::string& domain,
          const std::string& path,
-         int expiry,
+         double expiry,
          bool secure,
          bool session)
       : name(name), value(value), domain(domain), path(path), expiry(expiry),
@@ -67,7 +67,7 @@ struct Cookie {
   std::string value;
   std::string domain;
   std::string path;
-  int expiry;
+  double expiry;
   bool secure;
   bool session;
 };
@@ -81,7 +81,7 @@ base::DictionaryValue* CreateDictionaryFrom(const Cookie& cookie) {
   if (!cookie.path.empty())
     dict->SetString("path", cookie.path);
   if (!cookie.session)
-    dict->SetInteger("expiry", cookie.expiry);
+    dict->SetDouble("expiry", cookie.expiry);
   dict->SetBoolean("secure", cookie.secure);
   return dict;
 }
@@ -106,9 +106,9 @@ Status GetVisibleCookies(WebView* web_view,
     cookie_dict->GetString("domain", &domain);
     std::string path;
     cookie_dict->GetString("path", &path);
-    double expiry_tmp = 0;
-    cookie_dict->GetDouble("expires", &expiry_tmp);
-    int expiry = static_cast<int>(expiry_tmp/1000);
+    double expiry = 0;
+    cookie_dict->GetDouble("expires", &expiry);
+    expiry /= 1000;  // Convert from millisecond to second.
     bool session = false;
     cookie_dict->GetBoolean("session", &session);
     bool secure = false;
