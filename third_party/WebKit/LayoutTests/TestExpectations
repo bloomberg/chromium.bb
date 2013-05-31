@@ -32,7 +32,7 @@ crbug.com/24182 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/events/tabindex-focus-blur-all.html [ Slow ]
 crbug.com/24182 [ Win Linux Debug ] fast/frames/invalid.html [ Slow ]
 webkit.org/b/24182 [ Debug ] fast/dom/css-delete-doc.html [ Slow ]
-webkit.org/b/102463 fast/forms/validation-message-appearance.html [ ImageOnlyFailure Pass Failure ]
+webkit.org/b/102463 fast/forms/validation-message-appearance.html [ ImageOnlyFailure Pass ]
 webkit.org/b/103744 [ Debug ] svg/dom/viewspec-parser-7.html [ Timeout ]
 webkit.org/b/103744 [ Debug ] svg/dom/viewspec-parser-6.html [ Timeout ]
 webkit.org/b/106606 [ Debug ] fast/canvas/webgl/context-release-upon-reload.html [ Slow ]
@@ -1549,9 +1549,6 @@ crbug.com/242876 [ Mac ] webaudio/javascriptaudionode.html [ Crash ]
 
 crbug.com/243226 [ SnowLeopard ] inspector/debugger/pause-in-inline-script.html [ Timeout ]
 
-# Need to update the test.
-crbug.com/243298 fast/forms/validationMessage.html [ Failure ]
-
 # Seems to be flaky on all platforms
 crbug.com/244921 http/tests/navigation/back-twice-without-commit.html [ Failure Pass ]
 
@@ -1650,8 +1647,6 @@ crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-
 crbug.com/243291 [ Debug ] css3/filters/custom/custom-filter-nonseparable-blend-mode-saturation.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/effect-custom-combined-missing.html [ Crash ]
 crbug.com/243291 [ Debug ] css3/filters/custom/effect-custom-transform-parameters.html [ Crash ]
-crbug.com/243298 fast/forms/number/number-validation-message.html [ Crash Failure ]
-crbug.com/243298 fast/forms/date/input-date-validation-message.html [ Crash Failure ]
 crbug.com/243300 [ Debug ] fast/events/popup-when-select-change.html [ Crash ]
 crbug.com/243300 [ Debug ] fast/frames/frame-name-reset.html [ Crash ]
 crbug.com/243300 [ Debug ] http/tests/security/popup-allowed-by-sandbox-when-allowed.html [ Crash ]

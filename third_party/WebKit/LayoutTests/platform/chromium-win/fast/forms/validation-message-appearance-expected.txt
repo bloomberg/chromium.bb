@@ -23,8 +23,8 @@ layer at (10,44) size 318x85
     RenderBlock {DIV} at (9,9) size 17x17
     RenderBlock {DIV} at (32,9) size 277x67
       RenderBlock {DIV} at (0,0) size 277x19
-        RenderText {#text} at (0,0) size 94x18
-          text run at (0,0) width 94: "value missing"
+        RenderText {#text} at (0,0) size 157x18
+          text run at (0,0) width 157: "Please fill out this field."
       RenderBlock {DIV} at (0,19) size 277x48 [color=#444444]
         RenderText {#text} at (0,0) size 139x16
           text run at (0,0) width 139: "Needs at least 8 letters."
