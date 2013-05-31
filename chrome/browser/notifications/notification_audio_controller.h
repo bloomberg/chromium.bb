@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string_piece.h"
+#include "media/audio/audio_parameters.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -45,6 +46,8 @@ class NotificationAudioController {
 
   ~NotificationAudioController();
 
+  void UseFakeAudioOutputForTest();
+
   // Request the current number of audio handlers to the audio thread. |on_get|
   // will be called with the result when finished.
   void GetAudioHandlersSizeForTest(const base::Callback<void(size_t)>& on_get);
@@ -66,6 +69,8 @@ class NotificationAudioController {
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   ScopedVector<AudioHandler> audio_handlers_;
+
+  media::AudioParameters::Format output_format_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationAudioController);
 };

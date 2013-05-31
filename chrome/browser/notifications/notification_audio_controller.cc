@@ -190,8 +190,9 @@ class NotificationAudioController::AudioHandler
   const std::string& notification_id() const { return notification_id_; }
   const Profile* profile() const { return profile_; }
 
-  // Start playing the sound. Returns true when it's successfully scheduled.
-  bool StartPlayingSound();
+  // Start playing the sound with the specified format. Returns true when it's
+  // successfully scheduled.
+  bool StartPlayingSound(media::AudioParameters::Format format);
 
   // Stops the playing sound request.
   void StopPlayingSound();
@@ -232,11 +233,12 @@ NotificationAudioController::AudioHandler::AudioHandler(
 NotificationAudioController::AudioHandler::~AudioHandler() {
 }
 
-bool NotificationAudioController::AudioHandler::StartPlayingSound() {
+bool NotificationAudioController::AudioHandler::StartPlayingSound(
+    media::AudioParameters::Format format) {
   DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
 
   media::AudioParameters params = media::AudioParameters(
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      format,
       media::GuessChannelLayout(wav_audio_.num_channels()),
       wav_audio_.num_channels(),
       wav_audio_.sample_rate(),
@@ -297,7 +299,8 @@ void NotificationAudioController::AudioHandler::OnError(
 //
 
 NotificationAudioController::NotificationAudioController()
-    : message_loop_(media::AudioManager::Get()->GetMessageLoop()) {
+    : message_loop_(media::AudioManager::Get()->GetMessageLoop()),
+      output_format_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY) {
 }
 
 NotificationAudioController::~NotificationAudioController() {
@@ -334,6 +337,10 @@ void NotificationAudioController::OnNotificationSoundFinished(
   audio_handlers_.erase(it);
 }
 
+void NotificationAudioController::UseFakeAudioOutputForTest() {
+  output_format_ = media::AudioParameters::AUDIO_FAKE;
+}
+
 void NotificationAudioController::GetAudioHandlersSizeForTest(
     const base::Callback<void(size_t)>& on_get) {
   base::PostTaskAndReplyWithResult(
@@ -364,7 +371,7 @@ void NotificationAudioController::PlayNotificationSound(
       notification_id,
       profile,
       data));
-  if (new_handler->StartPlayingSound())
+  if (new_handler->StartPlayingSound(output_format_))
     audio_handlers_.push_back(new_handler.release());
 }
 

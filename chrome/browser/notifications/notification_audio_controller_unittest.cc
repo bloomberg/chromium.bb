@@ -35,6 +35,7 @@ class NotificationAudioControllerTest : public testing::Test {
   NotificationAudioControllerTest() {
     audio_manager_.reset(media::AudioManager::Create());
     notification_audio_controller_ = new NotificationAudioController();
+    notification_audio_controller_->UseFakeAudioOutputForTest();
   }
 
   virtual ~NotificationAudioControllerTest() {
