@@ -53,6 +53,8 @@
             'chromium/public/WebCookieJar.h',
             'chromium/public/WebCursorInfo.h',
             'chromium/public/WebData.h',
+            'chromium/public/WebDeviceMotionData.h',
+            'chromium/public/WebDeviceMotionListener.h',
             'chromium/public/WebDiscardableMemory.h',
             'chromium/public/WebDragData.h',
             'chromium/public/WebExternalTextureLayer.h',

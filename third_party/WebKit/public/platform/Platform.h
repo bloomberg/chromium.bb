@@ -54,6 +54,7 @@ class WebBlobRegistry;
 class WebClipboard;
 class WebCompositorSupport;
 class WebCookieJar;
+class WebDeviceMotionListener;
 class WebDiscardableMemory;
 class WebFallbackThemeEngine;
 class WebFileSystem;
@@ -509,6 +510,13 @@ public:
 
     virtual void didStartWorkerRunLoop(const WebWorkerRunLoop&) { }
     virtual void didStopWorkerRunLoop(const WebWorkerRunLoop&) { }
+
+
+    // Device Motion / Orientation ----------------------------------------
+
+    // Sets a Listener to listen for device motion data updates.
+    // If null, the platform stops providing device motion data to the current listener.
+    virtual void setDeviceMotionListener(WebKit::WebDeviceMotionListener*) { }
 
 protected:
     virtual ~Platform() { }

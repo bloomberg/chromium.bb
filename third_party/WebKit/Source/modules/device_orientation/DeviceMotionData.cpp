@@ -25,6 +25,7 @@
 
 #include "config.h"
 #include "modules/device_orientation/DeviceMotionData.h"
+#include <public/WebDeviceMotionData.h>
 
 namespace WebCore {
 
@@ -72,6 +73,24 @@ PassRefPtr<DeviceMotionData> DeviceMotionData::create(PassRefPtr<Acceleration> a
                                                       PassRefPtr<RotationRate> rotationRate, bool canProvideInterval, double interval)
 {
     return adoptRef(new DeviceMotionData(acceleration, accelerationIncludingGravity, rotationRate, canProvideInterval, interval));
+}
+
+PassRefPtr<DeviceMotionData> DeviceMotionData::create(const WebKit::WebDeviceMotionData& data)
+{
+    return DeviceMotionData::create(
+        DeviceMotionData::Acceleration::create(
+            data.hasAccelerationX, data.accelerationX,
+            data.hasAccelerationY, data.accelerationY,
+            data.hasAccelerationZ, data.accelerationZ),
+        DeviceMotionData::Acceleration::create(
+            data.hasAccelerationIncludingGravityX, data.accelerationIncludingGravityX,
+            data.hasAccelerationIncludingGravityY, data.accelerationIncludingGravityY,
+            data.hasAccelerationIncludingGravityZ, data.accelerationIncludingGravityZ),
+        DeviceMotionData::RotationRate::create(
+            data.hasRotationRateAlpha, data.rotationRateAlpha,
+            data.hasRotationRateBeta, data.rotationRateBeta,
+            data.hasRotationRateGamma, data.rotationRateGamma),
+        true, data.interval);
 }
 
 DeviceMotionData::DeviceMotionData()

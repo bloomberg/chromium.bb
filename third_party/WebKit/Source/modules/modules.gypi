@@ -185,6 +185,8 @@
       'device_orientation/DeviceMotionController.h',
       'device_orientation/DeviceMotionData.cpp',
       'device_orientation/DeviceMotionData.h',
+      'device_orientation/DeviceMotionDispatcher.cpp',
+      'device_orientation/DeviceMotionDispatcher.h',
       'device_orientation/DeviceMotionEvent.h',
       'device_orientation/DeviceMotionEvent.cpp',
       'device_orientation/DeviceRotationRate.cpp',

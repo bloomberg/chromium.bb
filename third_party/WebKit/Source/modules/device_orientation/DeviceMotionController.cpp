@@ -27,23 +27,24 @@
 #include "config.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 
-#include "modules/device_orientation/DeviceMotionClient.h"
+#include "core/dom/Document.h"
+#include "core/page/DOMWindow.h"
 #include "modules/device_orientation/DeviceMotionData.h"
+#include "modules/device_orientation/DeviceMotionDispatcher.h"
 #include "modules/device_orientation/DeviceMotionEvent.h"
-#include "core/page/Page.h"
 
 namespace WebCore {
 
-DeviceMotionController::DeviceMotionController(DeviceMotionClient* client)
-    : DeviceController(client)
+DeviceMotionController::DeviceMotionController(Document* document)
+    : m_document(document)
+    , m_isActive(false)
+    , m_timer(this, &DeviceMotionController::fireDeviceEvent)
 {
-    ASSERT(m_client);
-    deviceMotionClient()->setController(this);
 }
 
-PassOwnPtr<DeviceMotionController> DeviceMotionController::create(DeviceMotionClient* client)
+DeviceMotionController::~DeviceMotionController()
 {
-    return adoptPtr(new DeviceMotionController(client));
+    stopUpdating();
 }
 
 void DeviceMotionController::didChangeDeviceMotion(DeviceMotionData* deviceMotionData)
@@ -51,19 +52,33 @@ void DeviceMotionController::didChangeDeviceMotion(DeviceMotionData* deviceMotio
     dispatchDeviceEvent(DeviceMotionEvent::create(eventNames().devicemotionEvent, deviceMotionData));
 }
 
-DeviceMotionClient* DeviceMotionController::deviceMotionClient()
-{
-    return static_cast<DeviceMotionClient*>(m_client);
-}
-
 bool DeviceMotionController::hasLastData()
 {
-    return deviceMotionClient()->lastMotion();
+    return DeviceMotionDispatcher::instance().latestDeviceMotionData();
 }
 
 PassRefPtr<Event> DeviceMotionController::getLastEvent()
 {
-    return DeviceMotionEvent::create(eventNames().devicemotionEvent, deviceMotionClient()->lastMotion());
+    return DeviceMotionEvent::create(eventNames().devicemotionEvent,
+        DeviceMotionDispatcher::instance().latestDeviceMotionData());
+}
+
+void DeviceMotionController::fireDeviceEvent(Timer<DeviceMotionController>* timer)
+{
+    ASSERT_UNUSED(timer, timer == &m_timer);
+    ASSERT(hasLastData());
+
+    m_timer.stop();
+    dispatchDeviceEvent(getLastEvent());
+}
+
+void DeviceMotionController::dispatchDeviceEvent(PassRefPtr<Event> prpEvent)
+{
+    RefPtr<Event> event = prpEvent;
+    if (m_document && m_document->domWindow()
+        && !m_document->activeDOMObjectsAreSuspended()
+        && !m_document->activeDOMObjectsAreStopped())
+        m_document->domWindow()->dispatchEvent(event);
 }
 
 const char* DeviceMotionController::supplementName()
@@ -71,21 +86,36 @@ const char* DeviceMotionController::supplementName()
     return "DeviceMotionController";
 }
 
-DeviceMotionController* DeviceMotionController::from(Page* page)
+DeviceMotionController* DeviceMotionController::from(Document* document)
 {
-    return static_cast<DeviceMotionController*>(Supplement<Page>::from(page, supplementName()));
+    DeviceMotionController* controller = static_cast<DeviceMotionController*>(Supplement<ScriptExecutionContext>::from(document, supplementName()));
+    if (!controller) {
+        controller = new DeviceMotionController(document);
+        Supplement<ScriptExecutionContext>::provideTo(document, supplementName(), adoptPtr(controller));
+    }
+    return controller;
 }
 
-bool DeviceMotionController::isActiveAt(Page* page)
+void DeviceMotionController::startUpdating()
 {
-    if (DeviceMotionController* self = DeviceMotionController::from(page))
-        return self->isActive();
-    return false;
+    if (m_isActive)
+        return;
+
+    DeviceMotionDispatcher::instance().addController(this);
+    m_isActive = true;
+
+    if (hasLastData() && !m_timer.isActive())
+        // Make sure to fire the device motion data as soon as possible.
+        m_timer.startOneShot(0);
 }
 
-void provideDeviceMotionTo(Page* page, DeviceMotionClient* client)
+void DeviceMotionController::stopUpdating()
 {
-    DeviceMotionController::provideTo(page, DeviceMotionController::supplementName(), DeviceMotionController::create(client));
+    if (!m_isActive)
+        return;
+
+    DeviceMotionDispatcher::instance().removeController(this);
+    m_isActive = false;
 }
 
 } // namespace WebCore

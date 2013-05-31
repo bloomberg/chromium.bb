@@ -1530,8 +1530,8 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
     else if (eventType == eventNames().beforeunloadEvent && allowsBeforeUnloadListeners(this))
         addBeforeUnloadEventListener(this);
     else if (eventType == eventNames().devicemotionEvent && RuntimeEnabledFeatures::deviceMotionEnabled()) {
-        if (DeviceMotionController* controller = DeviceMotionController::from(page()))
-            controller->addDeviceEventListener(this);
+        if (DeviceMotionController* controller = DeviceMotionController::from(document()))
+            controller->startUpdating();
     } else if (eventType == eventNames().deviceorientationEvent && RuntimeEnabledFeatures::deviceOrientationEnabled()) {
         if (DeviceOrientationController* controller = DeviceOrientationController::from(page()))
             controller->addDeviceEventListener(this);
@@ -1557,8 +1557,8 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
     else if (eventType == eventNames().beforeunloadEvent && allowsBeforeUnloadListeners(this))
         removeBeforeUnloadEventListener(this);
     else if (eventType == eventNames().devicemotionEvent) {
-        if (DeviceMotionController* controller = DeviceMotionController::from(page()))
-            controller->removeDeviceEventListener(this);
+        if (DeviceMotionController* controller = DeviceMotionController::from(document()))
+            controller->stopUpdating();
     } else if (eventType == eventNames().deviceorientationEvent) {
         if (DeviceOrientationController* controller = DeviceOrientationController::from(page()))
             controller->removeDeviceEventListener(this);
@@ -1613,8 +1613,8 @@ void DOMWindow::removeAllEventListeners()
 {
     EventTarget::removeAllEventListeners();
 
-    if (DeviceMotionController* controller = DeviceMotionController::from(page()))
-        controller->removeAllDeviceEventListeners(this);
+    if (DeviceMotionController* controller = DeviceMotionController::from(document()))
+        controller->stopUpdating();
     if (DeviceOrientationController* controller = DeviceOrientationController::from(page()))
         controller->removeAllDeviceEventListeners(this);
     if (Document* document = this->document())

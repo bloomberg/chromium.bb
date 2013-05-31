@@ -3606,6 +3606,7 @@
             'platform/chromium/support/WebCString.cpp',
             'platform/chromium/support/WebCursorInfo.cpp',
             'platform/chromium/support/WebData.cpp',
+            'platform/chromium/support/WebDeviceMotionData.cpp',
             'platform/chromium/support/WebFilterOperation.cpp',
             'platform/chromium/support/WebFilterOperations.cpp',
             'platform/chromium/support/WebFloatQuad.cpp',

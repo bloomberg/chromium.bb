@@ -27,31 +27,41 @@
 #ifndef DeviceMotionController_h
 #define DeviceMotionController_h
 
-#include "core/page/DeviceController.h"
+#include "core/dom/Event.h"
+#include "core/platform/Supplementable.h"
+#include "core/platform/Timer.h"
 
 namespace WebCore {
 
-class DeviceMotionClient;
 class DeviceMotionData;
+class Document;
 
-class DeviceMotionController : public DeviceController {
+// FIXME: This class doesn't inherit from DeviceController anymore, which is a temporary
+// solution. Once device orientation switches to the client-less design, move some of
+// the methods in this class to the DeviceController.
+class DeviceMotionController : public Supplement<ScriptExecutionContext> {
+
 public:
-    ~DeviceMotionController() { };
-
-    static PassOwnPtr<DeviceMotionController> create(DeviceMotionClient*);
-
-    void didChangeDeviceMotion(DeviceMotionData*);
-    DeviceMotionClient* deviceMotionClient();
-
-    virtual bool hasLastData() OVERRIDE;
-    virtual PassRefPtr<Event> getLastEvent() OVERRIDE;
+    virtual ~DeviceMotionController();
 
     static const char* supplementName();
-    static DeviceMotionController* from(Page*);
-    static bool isActiveAt(Page*);
+    static DeviceMotionController* from(Document*);
+
+    void didChangeDeviceMotion(DeviceMotionData*);
+    bool hasLastData();
+    PassRefPtr<Event> getLastEvent();
+    void dispatchDeviceEvent(const PassRefPtr<Event>);
+    void startUpdating();
+    void stopUpdating();
 
 private:
-    explicit DeviceMotionController(DeviceMotionClient*);
+    explicit DeviceMotionController(Document*);
+
+    void fireDeviceEvent(Timer<DeviceMotionController>*);
+
+    Document* m_document;
+    bool m_isActive;
+    Timer<DeviceMotionController> m_timer;
 };
 
 } // namespace WebCore
