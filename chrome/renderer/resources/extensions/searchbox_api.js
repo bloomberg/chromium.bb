@@ -16,52 +16,6 @@ if (!chrome.embeddedSearch) {
     // DEPRECATED. TODO(sreeram): Remove once google.com no longer uses this.
     native function NavigateContentWindow();
 
-    function escapeHTML(text) {
-      return text.replace(/[<>&"']/g, function(match) {
-        switch (match) {
-          case '<': return '&lt;';
-          case '>': return '&gt;';
-          case '&': return '&amp;';
-          case '"': return '&quot;';
-          case "'": return '&apos;';
-        }
-      });
-    }
-
-    var safeObjects = {};
-
-    // Returns the |restrictedText| wrapped in a ShadowDOM.
-    function SafeWrap(restrictedText, height, opt_width, opt_fontSize,
-        opt_direction) {
-      var node = document.createElement('div');
-      var nodeShadow = safeObjects.createShadowRoot.apply(node);
-      nodeShadow.applyAuthorStyles = true;
-      nodeShadow.innerHTML =
-          '<div dir="auto" style="' +
-              (opt_width ? 'width: ' + opt_width + 'px !important;' : '') +
-              'height: ' + height + 'px !important;' +
-              'font-family: \'' + GetFont() + '\', \'Arial\' !important;' +
-              (opt_fontSize ?
-                  'font-size: ' + opt_fontSize + 'px !important;' : '') +
-              'overflow: hidden !important;' +
-              'text-overflow: ellipsis !important;' +
-              'white-space: nowrap !important"' +
-              (opt_direction ? ' dir="' + opt_direction + '"' : '') +
-              '>' +
-            restrictedText +
-          '</div>';
-      safeObjects.defineProperty(node, 'webkitShadowRoot', { value: null });
-      return node;
-    }
-
-    chrome.embeddedSearchOnWindowReady = function() {
-      // |embeddedSearchOnWindowReady| is used for initializing window context
-      // and should be called only once per context.
-      safeObjects.createShadowRoot = Element.prototype.webkitCreateShadowRoot;
-      safeObjects.defineProperty = Object.defineProperty;
-      delete window.chrome.embeddedSearchOnWindowReady;
-    };
-
     // =========================================================================
     //                           Exported functions
     // =========================================================================
@@ -111,33 +65,10 @@ if (!chrome.embeddedSearch) {
       native function GetSuggestionData();
       native function GetMostVisitedItemData();
 
-      function SafeWrapSuggestion(restrictedText) {
-        return SafeWrap(restrictedText, 22);
-      }
-
-      // If shadowDom is to be used, wraps the AutocompleteResult query and URL
-      // into ShadowDOM nodes so that the JS cannot access them and deletes the
-      // raw values. Else if iframes are to be used, replaces the
-      // destination_url with the chrome search URL that should be used as the
-      // iframe.
-      // TODO(shishir): Remove code to support ShadowDOM once server side
-      // changes are live.
       function GetAutocompleteResultsWrapper() {
         var autocompleteResults = DedupeAutocompleteResults(
             GetAutocompleteResults());
-        var userInput = GetQuery();
         for (var i = 0, result; result = autocompleteResults[i]; ++i) {
-          // TODO(shishir): Fix the naming violations (chrome_search ->
-          // chrome-search etc) when the server supports both names.
-          var className = result.is_search ? 'chrome_search' : 'chrome_url';
-          var combinedElement = '<span class=' + className + '>' +
-              escapeHTML(result.contents) + '</span>';
-          if (result.description) {
-            combinedElement +=
-                '<span class=chrome_separator> &ndash; </span>' +
-                '<span class=chrome_title>' +
-                escapeHTML(result.description) + '</span>';
-          }
           result.destination_url = null;
           result.contents = null;
           result.description = null;
@@ -322,15 +253,9 @@ if (!chrome.embeddedSearch) {
       native function UndoMostVisitedDeletion();
       native function NavigateNewTabPage();
 
-      function SafeWrapMostVisited(restrictedText, width, opt_direction) {
-        return SafeWrap(restrictedText, 18, width, 11, opt_direction);
-      }
-
       function GetMostVisitedItemsWrapper() {
         var mostVisitedItems = GetMostVisitedItems();
         for (var i = 0, item; item = mostVisitedItems[i]; ++i) {
-          var title = escapeHTML(item.title);
-          var domain = escapeHTML(item.domain);
           // These properties are private data and should not be returned to
           // the page. They are only accessible via getMostVisitedItemData().
           item.url = null;

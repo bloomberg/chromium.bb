@@ -351,14 +351,6 @@ static const char kSupportsInstantScript[] =
 
 // Extended API.
 
-// Per-context initialization.
-static const char kDispatchOnWindowReady[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearchOnWindowReady &&"
-    "    typeof window.chrome.embeddedSearchOnWindowReady == 'function') {"
-    "  window.chrome.embeddedSearchOnWindowReady();"
-    "}";
-
 static const char kDispatchAutocompleteResultsEventScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -1435,11 +1427,6 @@ void SearchBoxExtension::DispatchCancel(WebKit::WebFrame* frame) {
 // static
 void SearchBoxExtension::DispatchResize(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchResizeEventScript);
-}
-
-// static
-void SearchBoxExtension::DispatchOnWindowReady(WebKit::WebFrame* frame) {
-  Dispatch(frame, kDispatchOnWindowReady);
 }
 
 // static
