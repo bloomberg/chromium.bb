@@ -30,7 +30,6 @@ class PPAPI_THUNK_EXPORT PPB_Graphics3D_API {
   virtual int32_t GetAttribMaxValue(int32_t attribute, int32_t* value) = 0;
 
   // Graphics3DTrusted API.
-  virtual PP_Bool InitCommandBuffer() = 0;
   virtual PP_Bool SetGetBuffer(int32_t shm_id) = 0;
   virtual PP_Graphics3DTrustedState GetState() = 0;
   virtual int32_t CreateTransferBuffer(uint32_t size) = 0;

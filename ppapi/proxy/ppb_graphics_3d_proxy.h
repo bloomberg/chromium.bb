@@ -33,7 +33,6 @@ class Graphics3D : public PPB_Graphics3D_Shared {
   bool Init(gpu::gles2::GLES2Implementation* share_gles2);
 
   // Graphics3DTrusted API. These are not implemented in the proxy.
-  virtual PP_Bool InitCommandBuffer() OVERRIDE;
   virtual PP_Bool SetGetBuffer(int32_t shm_id) OVERRIDE;
   virtual PP_Graphics3DTrustedState GetState() OVERRIDE;
   virtual PP_Bool Flush(int32_t put_offset) OVERRIDE;
@@ -84,7 +83,6 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
                    HostResource share_context,
                    const std::vector<int32_t>& attribs,
                    HostResource* result);
-  void OnMsgInitCommandBuffer(const HostResource& context);
   void OnMsgSetGetBuffer(const HostResource& context,
                          int32 id);
   void OnMsgGetState(const HostResource& context,

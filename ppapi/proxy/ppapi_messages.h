@@ -843,8 +843,6 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics3D_Create,
                            ppapi::HostResource /* share_context */,
                            std::vector<int32_t> /* attrib_list */,
                            ppapi::HostResource /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBGraphics3D_InitCommandBuffer,
-                           ppapi::HostResource /* context */)
 IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBGraphics3D_SetGetBuffer,
                            ppapi::HostResource /* context */,
                            int32 /* transfer_buffer_id */)

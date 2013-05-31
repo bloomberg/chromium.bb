@@ -34,7 +34,7 @@ PP_Bool InitCommandBuffer(PP_Resource context) {
   EnterGraphics3D enter(context, true);
   if (enter.failed())
     return PP_FALSE;
-  return enter.object()->InitCommandBuffer();
+  return PP_TRUE;
 }
 
 PP_Bool SetGetBuffer(PP_Resource context, int32_t transfer_buffer_id) {

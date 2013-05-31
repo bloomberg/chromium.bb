@@ -127,10 +127,6 @@ PP_Resource PPB_Graphics3D_Impl::CreateRaw(PP_Instance instance,
   return graphics_3d->GetReference();
 }
 
-PP_Bool PPB_Graphics3D_Impl::InitCommandBuffer() {
-  return PP_FromBool(GetCommandBuffer()->Initialize());
-}
-
 PP_Bool PPB_Graphics3D_Impl::SetGetBuffer(int32_t transfer_buffer_id) {
   GetCommandBuffer()->SetGetBuffer(transfer_buffer_id);
   return PP_TRUE;

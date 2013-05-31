@@ -60,8 +60,7 @@ void PpapiCommandBufferProxy::SetChannelErrorCallback(
 }
 
 bool PpapiCommandBufferProxy::Initialize() {
-  return Send(new PpapiHostMsg_PPBGraphics3D_InitCommandBuffer(
-      ppapi::API_ID_PPB_GRAPHICS_3D, resource_));
+  return true;
 }
 
 gpu::CommandBuffer::State PpapiCommandBufferProxy::GetState() {

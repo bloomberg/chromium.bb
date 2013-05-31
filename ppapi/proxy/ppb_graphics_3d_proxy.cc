@@ -206,15 +206,8 @@ bool Graphics3D::Init(gpu::gles2::GLES2Implementation* share_gles2) {
       new LockingCommandBuffer(command_buffer_.get()));
 
   ScopedNoLocking already_locked(this);
-  if (!command_buffer_->Initialize())
-    return false;
-
   return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize,
                          share_gles2);
-}
-
-PP_Bool Graphics3D::InitCommandBuffer() {
-  return PP_FALSE;
 }
 
 PP_Bool Graphics3D::SetGetBuffer(int32_t /* transfer_buffer_id */) {
@@ -351,8 +344,6 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 #if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_Create,
                         OnMsgCreate)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_InitCommandBuffer,
-                        OnMsgInitCommandBuffer)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_SetGetBuffer,
                         OnMsgSetGetBuffer)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_GetState,
@@ -401,16 +392,6 @@ void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
                                              share_context.host_resource(),
                                              &attribs.front()));
   }
-}
-
-void PPB_Graphics3D_Proxy::OnMsgInitCommandBuffer(
-    const HostResource& context) {
-  EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
-  if (enter.failed())
-    return;
-
-  if (!enter.object()->InitCommandBuffer())
-    return;
 }
 
 void PPB_Graphics3D_Proxy::OnMsgSetGetBuffer(

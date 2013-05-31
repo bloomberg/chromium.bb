@@ -106,6 +106,8 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
       gpu_preference);
   if (!command_buffer_)
     return false;
+  if (!command_buffer_->Initialize())
+    return false;
 
   command_buffer_->SetChannelErrorCallback(
       base::Bind(&PlatformContext3DImpl::OnContextLost,

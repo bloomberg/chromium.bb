@@ -25,7 +25,6 @@ class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
                                const int32_t* attrib_list);
 
   // PPB_Graphics3D_API trusted implementation.
-  virtual PP_Bool InitCommandBuffer() OVERRIDE;
   virtual PP_Bool SetGetBuffer(int32_t transfer_buffer_id) OVERRIDE;
   virtual PP_Graphics3DTrustedState GetState() OVERRIDE;
   virtual int32_t CreateTransferBuffer(uint32_t size) OVERRIDE;

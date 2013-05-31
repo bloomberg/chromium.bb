@@ -128,8 +128,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       software_(software),
       last_flush_count_(0),
       last_memory_allocation_valid_(false),
-      parent_stub_for_initialization_(),
-      parent_texture_for_initialization_(0),
       watchdog_(watchdog),
       sync_point_wait_count_(0),
       delayed_work_scheduled_(false),
@@ -548,13 +546,6 @@ void GpuCommandBufferStub::OnInitialize(
   decoder_->SetStreamTextureManager(channel_->stream_texture_manager());
 #endif
 
-  if (parent_stub_for_initialization_) {
-    decoder_->SetParent(parent_stub_for_initialization_->decoder_.get(),
-                        parent_texture_for_initialization_);
-    parent_stub_for_initialization_.reset();
-    parent_texture_for_initialization_ = 0;
-  }
-
   if (!command_buffer_->SetSharedStateBuffer(shared_state_shm.Pass())) {
     DLOG(ERROR) << "Failed to map shared stae buffer.";
     OnInitializeFailed(reply_message);
@@ -599,18 +590,11 @@ void GpuCommandBufferStub::OnSetParent(int32 parent_route_id,
     parent_stub = channel_->LookupCommandBuffer(parent_route_id);
   }
 
-  bool result = true;
+  bool result = false;
   if (scheduler_) {
     gpu::gles2::GLES2Decoder* parent_decoder =
         parent_stub ? parent_stub->decoder_.get() : NULL;
     result = decoder_->SetParent(parent_decoder, parent_texture_id);
-  } else {
-    // If we don't have a scheduler, it means that Initialize hasn't been called
-    // yet. Keep around the requested parent stub and texture so that we can set
-    // it in Initialize().
-    parent_stub_for_initialization_ = parent_stub ?
-        parent_stub->AsWeakPtr() : base::WeakPtr<GpuCommandBufferStub>();
-    parent_texture_for_initialization_ = parent_texture_id;
   }
   GpuCommandBufferMsg_SetParent::WriteReplyParams(reply_message, result);
   Send(reply_message);

@@ -229,11 +229,6 @@ class GpuCommandBufferStub
   bool last_memory_allocation_valid_;
   GpuMemoryAllocation last_memory_allocation_;
 
-  // SetParent may be called before Initialize, in which case we need to keep
-  // around the parent stub, so that Initialize can set the parent correctly.
-  base::WeakPtr<GpuCommandBufferStub> parent_stub_for_initialization_;
-  uint32 parent_texture_for_initialization_;
-
   GpuWatchdog* watchdog_;
 
   ObserverList<DestructionObserver> destruction_observers_;
