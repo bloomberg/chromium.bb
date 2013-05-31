@@ -517,8 +517,8 @@
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_KEYWORD_HINT_TAB" file="common/omnibox_keyword_hint_tab.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_PDF_ICON" file="pdf.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_CENTER" file="common/omnibox_popup_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_EDGE" file="common/omnibox_popup_edge.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_CENTER" file="common/omnibox_popup_border_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_POPUP_BORDER_EDGE" file="common/omnibox_popup_border_edge.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH" file="common/omnibox_search.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_DARK" file="common/omnibox_search_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_SELECTED" file="common/omnibox_search_selected.png" />

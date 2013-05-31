@@ -203,9 +203,9 @@ LocationBarView::LocationBarView(Browser* browser,
     set_id(VIEW_ID_OMNIBOX);
 
   const int kOmniboxPopupImages[] = {
-    IDR_OMNIBOX_POPUP_EDGE,
-    IDR_OMNIBOX_POPUP_CENTER,
-    IDR_OMNIBOX_POPUP_EDGE,
+    IDR_OMNIBOX_POPUP_BORDER_EDGE,
+    IDR_OMNIBOX_POPUP_BORDER_CENTER,
+    IDR_OMNIBOX_POPUP_BORDER_EDGE,
   };
   background_painter_.reset(
       is_popup_mode_ ?

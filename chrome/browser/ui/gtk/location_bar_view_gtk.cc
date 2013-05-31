@@ -1107,9 +1107,9 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
   // of the background.
   if (!GtkThemeService::GetFrom(browser_->profile())->UsingNativeTheme()) {
     if (popup_window_mode_) {
-      NineBox(IDR_OMNIBOX_POPUP_EDGE,
-              IDR_OMNIBOX_POPUP_CENTER,
-              IDR_OMNIBOX_POPUP_EDGE,
+      NineBox(IDR_OMNIBOX_POPUP_BORDER_EDGE,
+              IDR_OMNIBOX_POPUP_BORDER_CENTER,
+              IDR_OMNIBOX_POPUP_BORDER_EDGE,
               0, 0, 0, 0, 0, 0).RenderToWidget(widget);
     } else {
       NineBox(IDR_OMNIBOX_BORDER, 5, 5, 4, 4).RenderToWidget(widget);
