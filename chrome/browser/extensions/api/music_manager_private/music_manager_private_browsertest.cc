@@ -5,10 +5,8 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 
-// This API is supported only on a subset of platforms.
-#if defined(OS_CHROMEOS) || \
-    defined(OS_LINUX) || \
-    (defined(OS_WIN) && defined(ENABLE_RLZ))
+// Supported on all platforms, but on Windows only if RLZ is enabled.
+#if !defined(OS_WIN) || defined(ENABLE_RLZ)
 
 class MusicManagerPrivateTest : public extensions::PlatformAppBrowserTest {
 };
