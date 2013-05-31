@@ -16,7 +16,6 @@ namespace wallet {
 
 // Server specified type for address with complete details.
 const char kFullAddress[] = "FULL";
-const char kTrue[] = "true";
 
 namespace {
 
@@ -71,10 +70,6 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
     DVLOG(1) << "Response from Google Wallet missing administrative area name";
   }
 
-  std::string is_minimal_address;
-  if (!dictionary.GetString("is_minimal_address", &is_minimal_address))
-    DVLOG(1) << "Response from Google Wallet missing is_minimal_address bit";
-
   Address* address = new Address(country_name_code,
                                  recipient_name,
                                  address_line_1,
@@ -84,7 +79,12 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
                                  postal_code_number,
                                  phone_number,
                                  object_id);
-  address->set_is_complete_address(is_minimal_address != kTrue);
+
+  bool is_minimal_address = false;
+  if (dictionary.GetBoolean("is_minimal_address", &is_minimal_address))
+    address->set_is_complete_address(!is_minimal_address);
+  else
+    DVLOG(1) << "Response from Google Wallet missing is_minimal_address bit";
 
   return address;
 }

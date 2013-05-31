@@ -88,7 +88,7 @@ const char kValidAddress[] =
     "{"
     "  \"id\":\"id\","
     "  \"phone_number\":\"phone_number\","
-    "  \"is_minimal_address\":\"true\","
+    "  \"is_minimal_address\":true,"
     "  \"postal_address\":"
     "  {"
     "    \"recipient_name\":\"recipient_name\","
