@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 
+#include "base/debug/trace_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -23,6 +24,7 @@ namespace prerender {
 // static
 PrerenderManager* PrerenderManagerFactory::GetForProfile(
     Profile* profile) {
+  TRACE_EVENT0("browser", "PrerenderManagerFactory::GetForProfile")
   if (!PrerenderManager::IsPrerenderingPossible())
     return NULL;
   return static_cast<PrerenderManager*>(
