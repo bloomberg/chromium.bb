@@ -59,12 +59,12 @@ public:
         m_nativeImage->bitmap().allocPixels();
     }
 
-    virtual IntSize size() const
+    virtual IntSize size() const OVERRIDE
     {
         return m_size;
     }
 
-    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame()
+    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE
     {
         if (m_size.isZero())
             return 0;
@@ -73,23 +73,21 @@ public:
     }
 
     // Stub implementations of pure virtual Image functions.
-    virtual void destroyDecodedData(bool)
+    virtual void destroyDecodedData() OVERRIDE
     {
     }
 
-    virtual unsigned int decodedSize() const
+    virtual unsigned decodedSize() const OVERRIDE
     {
         return 0u;
     }
 
-    virtual bool currentFrameKnownToBeOpaque()
+    virtual bool currentFrameKnownToBeOpaque() OVERRIDE
     {
         return false;
     }
 
-    virtual void draw(WebCore::GraphicsContext*, const WebCore::FloatRect&,
-                      const WebCore::FloatRect&, WebCore::ColorSpace,
-                      WebCore::CompositeOperator, WebCore::BlendMode)
+    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, ColorSpace, CompositeOperator, BlendMode) OVERRIDE
     {
     }
 

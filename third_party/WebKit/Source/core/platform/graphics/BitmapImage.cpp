@@ -112,43 +112,32 @@ bool BitmapImage::hasSingleSecurityOrigin() const
 }
 
 
-void BitmapImage::destroyDecodedData(bool destroyAll)
+void BitmapImage::destroyDecodedData()
 {
-    unsigned frameBytesCleared = 0;
-    const size_t clearBeforeFrame = destroyAll ? m_frames.size() : m_currentFrame;
-
-    // Because we can advance frames without always needing to decode the actual
-    // bitmap data, |m_currentFrame| may be larger than m_frames.size();
-    // make sure not to walk off the end of the container in this case.
-    for (size_t i = 0; i < std::min(clearBeforeFrame, m_frames.size()); ++i) {
+    for (size_t i = 0; i < m_frames.size(); ++i) {
         // The underlying frame isn't actually changing (we're just trying to
         // save the memory for the framebuffer data), so we don't need to clear
         // the metadata.
-        unsigned frameBytes = m_frames[i].m_frameBytes;
-        if (m_frames[i].clear(false))
-            frameBytesCleared += frameBytes;
+        m_frames[i].clear(false);
     }
 
-    destroyMetadataAndNotify(frameBytesCleared);
-
-    m_source.clear(destroyAll, clearBeforeFrame, data(), m_allDataReceived);
-    return;
+    destroyMetadataAndNotify(m_source.clearCacheExceptFrame(m_currentFrame));
 }
 
-void BitmapImage::destroyDecodedDataIfNecessary(bool destroyAll)
+void BitmapImage::destroyDecodedDataIfNecessary()
 {
     // Animated images >5MB are considered large enough that we'll only hang on
     // to one frame at a time.
-    static const unsigned cLargeAnimationCutoff = 5242880;
-    unsigned allFrameBytes = 0;
+    static const size_t cLargeAnimationCutoff = 5242880;
+    size_t allFrameBytes = 0;
     for (size_t i = 0; i < m_frames.size(); ++i)
         allFrameBytes += m_frames[i].m_frameBytes;
 
     if (allFrameBytes > cLargeAnimationCutoff)
-        destroyDecodedData(destroyAll);
+        destroyDecodedData();
 }
 
-void BitmapImage::destroyMetadataAndNotify(unsigned frameBytesCleared)
+void BitmapImage::destroyMetadataAndNotify(size_t frameBytesCleared)
 {
     m_isSolidColor = false;
     m_checkedForSolidColor = false;
@@ -582,7 +571,7 @@ void BitmapImage::resetAnimation()
     m_animationFinished = false;
     
     // For extremely large animations, when the animation is reset, we just throw everything away.
-    destroyDecodedDataIfNecessary(true);
+    destroyDecodedDataIfNecessary();
 }
 
 unsigned BitmapImage::decodedSize() const
@@ -612,7 +601,6 @@ bool BitmapImage::internalAdvanceAnimation(bool skippingFrames)
 
     ++m_currentFrame;
     bool advancedAnimation = true;
-    bool destroyAll = false;
     if (m_currentFrame >= frameCount()) {
         ++m_repetitionsComplete;
 
@@ -626,12 +614,10 @@ bool BitmapImage::internalAdvanceAnimation(bool skippingFrames)
             m_desiredFrameStartTime = 0;
             --m_currentFrame;
             advancedAnimation = false;
-        } else {
+        } else
             m_currentFrame = 0;
-            destroyAll = true;
-        }
     }
-    destroyDecodedDataIfNecessary(destroyAll);
+    destroyDecodedDataIfNecessary();
 
     // We need to draw this frame if we advanced to it while not skipping, or if
     // while trying to skip frames we hit the last frame and thus had to stop.
