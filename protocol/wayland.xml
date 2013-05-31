@@ -1172,7 +1172,7 @@
     </request>
    </interface>
 
-  <interface name="wl_seat" version="1">
+  <interface name="wl_seat" version="2">
     <description summary="group of input devices">
       A seat is a group of keyboards, pointer and touch devices. This
       object is published as a global during start up, or when such a
@@ -1197,6 +1197,15 @@
 	enum containing the complete set of capabilities this seat has.
       </description>
       <arg name="capabilities" type="uint"/>
+    </event>
+
+    <event name="name">
+      <description summary="unique identifier for this seat">
+	In a multiseat configuration this can be used by the client to help
+	identify which physical devices the seat represents. Based on
+	the seat configuration used by the compositor.
+      </description>
+      <arg name="name" type="string"/>
     </event>
 
     <request name="get_pointer">
