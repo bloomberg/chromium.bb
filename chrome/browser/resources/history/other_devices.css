@@ -64,16 +64,6 @@
   text-decoration: none;
 }
 
-.device-show-more-tabs:not(:hover),
-.device-show-more-tabs:not(:focus) {
-  text-decoration: none;
-}
-
-.device-show-more-tabs:hover,
-.device-show-more-tabs:focus {
-  text-decoration: underline;
-}
-
 .device-show-more-tabs,
 .device-show-more-tabs:active,
 .device-show-more-tabs:visited,

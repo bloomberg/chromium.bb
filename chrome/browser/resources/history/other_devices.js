@@ -285,12 +285,14 @@ Device.prototype.createSessionContents_ = function(maxNumTabs) {
   }
 
   if (numTabsHidden > 0) {
-    var a = createElementWithClassName('a', 'device-show-more-tabs');
-    a.addEventListener('click', this.view_.increaseRowHeight.bind(
+    var moreLinkButton = createElementWithClassName('button',
+        'device-show-more-tabs link-button');
+    moreLinkButton.addEventListener('click', this.view_.increaseRowHeight.bind(
         this.view_, this.row_, numTabsHidden));
     var xMore = loadTimeData.getString('xMore');
-    a.appendChild(document.createTextNode(xMore.replace('$1', numTabsHidden)));
-    contents.appendChild(a);
+    moreLinkButton.appendChild(
+        document.createTextNode(xMore.replace('$1', numTabsHidden)));
+    contents.appendChild(moreLinkButton);
   }
 
   return contents;
