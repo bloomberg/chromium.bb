@@ -240,7 +240,7 @@ void WebRTCAudioDeviceTest::CreateChannel(const char* name) {
   static const int kRenderProcessId = 1;
   audio_render_host_ = new AudioRendererHost(
       kRenderProcessId, audio_manager_.get(), mirroring_manager_.get(),
-      media_internals_.get(), media_stream_manager_.get());
+      media_internals_.get());
   audio_render_host_->OnChannelConnected(base::GetCurrentProcId());
 
   audio_input_renderer_host_ = new AudioInputRendererHost(

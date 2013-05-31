@@ -61,13 +61,10 @@ class MEDIA_EXPORT AudioOutputIPC {
 
   // Sends a request to create an AudioOutputController object in the peer
   // process and configures it to use the specified audio |params| including
-  // number of synchronized input channels.|session_id| is used by the browser
-  // to select the correct input device if the input channel in |params| is
-  // valid, otherwise it will be ignored.  Once the stream has been created,
+  // number of synchronized input channels.  Once the stream has been created,
   // the implementation will notify |delegate| by calling OnStreamCreated().
   virtual void CreateStream(AudioOutputIPCDelegate* delegate,
-                            const AudioParameters& params,
-                            int session_id) = 0;
+                            const AudioParameters& params) = 0;
 
   // Starts playing the stream.  This should generate a call to
   // AudioOutputController::Play().

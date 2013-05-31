@@ -138,9 +138,8 @@ void PepperPlatformAudioOutputImpl::InitializeOnIOThread(
     const media::AudioParameters& params) {
   DCHECK(ChildProcess::current()->io_message_loop_proxy()->
       BelongsToCurrentThread());
-  const int kSessionId = 0;
   if (ipc_)
-    ipc_->CreateStream(this, params, kSessionId);
+    ipc_->CreateStream(this, params);
 }
 
 void PepperPlatformAudioOutputImpl::StartPlaybackOnIOThread() {

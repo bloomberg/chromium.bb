@@ -24,8 +24,7 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
       const std::string& device_id) OVERRIDE;
 
   virtual AudioOutputStream* MakeAudioOutputStream(
-      const AudioParameters& params,
-      const std::string& input_device_id) OVERRIDE;
+      const AudioParameters& params) OVERRIDE;
   virtual AudioInputStream* MakeAudioInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual void ReleaseOutputStream(AudioOutputStream* stream) OVERRIDE;
@@ -35,8 +34,7 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   virtual AudioOutputStream* MakeLinearOutputStream(
       const AudioParameters& params) OVERRIDE;
   virtual AudioOutputStream* MakeLowLatencyOutputStream(
-      const AudioParameters& params,
-      const std::string& input_device_id) OVERRIDE;
+      const AudioParameters& params) OVERRIDE;
   virtual AudioInputStream* MakeLinearInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLowLatencyInputStream(

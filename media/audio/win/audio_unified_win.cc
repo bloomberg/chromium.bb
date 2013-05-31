@@ -109,14 +109,12 @@ static double FrameCountToMilliseconds(int num_frames,
 namespace media {
 
 WASAPIUnifiedStream::WASAPIUnifiedStream(AudioManagerWin* manager,
-                                         const AudioParameters& params,
-                                         const std::string& input_device_id)
+                                         const AudioParameters& params)
     : creating_thread_id_(base::PlatformThread::CurrentId()),
       manager_(manager),
       params_(params),
       input_channels_(params.input_channels()),
       output_channels_(params.channels()),
-      input_device_id_(input_device_id),
       share_mode_(CoreAudioUtil::GetShareMode()),
       audio_io_thread_(NULL),
       opened_(false),
@@ -330,8 +328,7 @@ bool WASAPIUnifiedStream::Open() {
     return false;
 
   // Capture side (always event driven but format depends on varispeed or not):
-  // TODO(henrika): Open the correct input device with |input_device_id_|,
-  // http://crbug.com/147327.
+
   ScopedComPtr<IAudioClient> audio_input_client =
       CoreAudioUtil::CreateDefaultClient(eCapture, eConsole);
   if (!audio_input_client)

@@ -301,7 +301,7 @@ AudioOutputStream* AudioManagerWin::MakeLinearOutputStream(
 // - PCMWaveOutAudioOutputStream: Based on the waveOut API.
 // - WASAPIAudioOutputStream: Based on Core Audio (WASAPI) API.
 AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
-    const AudioParameters& params, const std::string& input_device_id) {
+    const AudioParameters& params) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   if (params.channels() > kWinMaxChannels)
     return NULL;
@@ -316,7 +316,7 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
   // TODO(crogers): support more than stereo input.
   if (params.input_channels() > 0) {
     DVLOG(1) << "WASAPIUnifiedStream is created.";
-    return new WASAPIUnifiedStream(this, params, input_device_id);
+    return new WASAPIUnifiedStream(this, params);
   }
 
   return new WASAPIAudioOutputStream(this, params, eConsole);

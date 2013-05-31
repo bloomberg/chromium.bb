@@ -81,18 +81,6 @@ class MEDIA_EXPORT AudioOutputDevice
   AudioOutputDevice(scoped_ptr<AudioOutputIPC> ipc,
                     const scoped_refptr<base::MessageLoopProxy>& io_loop);
 
-  // Initialize function for clients wishing to have unified input and
-  // output, |params| may specify |input_channels| > 0, representing a
-  // number of input channels which will be at the same sample-rate
-  // and buffer-size as the output as specified in |params|. |session_id| is
-  // used for the browser to select the correct input device.
-  // In this case, the callback's RenderIO() method will be called instead
-  // of Render(), providing the synchronized input data at the same time as
-  // when new output data is to be rendered.
-  void InitializeUnifiedStream(const AudioParameters& params,
-                               RenderCallback* callback,
-                               int session_id);
-
   // AudioRendererSink implementation.
   virtual void Initialize(const AudioParameters& params,
                           RenderCallback* callback) OVERRIDE;
@@ -155,10 +143,6 @@ class MEDIA_EXPORT AudioOutputDevice
 
   // State of Play() / Pause() calls before OnStreamCreated() is called.
   bool play_on_start_;
-
-  // The media session ID used to identify which input device to be started.
-  // Only used by Unified IO.
-  int session_id_;
 
   // Our audio thread callback class.  See source file for details.
   class AudioThreadCallback;

@@ -215,8 +215,7 @@ class AudioUnifiedStreamWrapper {
 
  private:
   AudioOutputStream* CreateOutputStream() {
-    AudioOutputStream* aos = audio_man_->MakeAudioOutputStream(params_,
-                                                               std::string());
+    AudioOutputStream* aos = audio_man_->MakeAudioOutputStream(params_);
     EXPECT_TRUE(aos);
     return aos;
   }

@@ -24,11 +24,13 @@
 // webrtc::AudioDeviceModule which makes it possible for a user (e.g. webrtc::
 // VoiceEngine) to register this class as an external AudioDeviceModule (ADM).
 // Then WebRtcAudioDeviceImpl::SetSessionId() needs to be called to set the
-// session id that tells which device to use. The user can then call
-// WebRtcAudioDeviceImpl::StartPlayout() and
-// WebRtcAudioDeviceImpl::StartRecording() from the render process to initiate
-// and start audio rendering and capturing in the browser process. IPC is
-// utilized to set up the media streams.
+// session id that tells which device to use. The user can either get the
+// session id from the MediaStream or use a value of 1 (AudioInputDeviceManager
+// ::kFakeOpenSessionId), the later will open the default device without going
+// through the MediaStream. The user can then call WebRtcAudioDeviceImpl::
+// StartPlayout() and WebRtcAudioDeviceImpl::StartRecording() from the render
+// process to initiate and start audio rendering and capturing in the browser
+// process. IPC is utilized to set up the media streams.
 //
 // Usage example:
 //
@@ -37,7 +39,7 @@
 //   {
 //      scoped_refptr<WebRtcAudioDeviceImpl> external_adm;
 //      external_adm = new WebRtcAudioDeviceImpl();
-//      external_adm->SetSessionId(session_id);
+//      external_adm->SetSessionId(1);
 //      VoiceEngine* voe = VoiceEngine::Create();
 //      VoEBase* base = VoEBase::GetInterface(voe);
 //      base->Init(external_adm);

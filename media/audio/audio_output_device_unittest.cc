@@ -49,9 +49,8 @@ class MockAudioOutputIPC : public AudioOutputIPC {
   MockAudioOutputIPC() {}
   virtual ~MockAudioOutputIPC() {}
 
-  MOCK_METHOD3(CreateStream, void(AudioOutputIPCDelegate* delegate,
-                                  const AudioParameters& params,
-                                  int session_id));
+  MOCK_METHOD2(CreateStream, void(AudioOutputIPCDelegate* delegate,
+                                  const AudioParameters& params));
   MOCK_METHOD0(PlayStream, void());
   MOCK_METHOD0(PauseStream, void());
   MOCK_METHOD0(CloseStream, void());
@@ -170,7 +169,7 @@ AudioOutputDeviceTest::~AudioOutputDeviceTest() {
 void AudioOutputDeviceTest::StartAudioDevice() {
   audio_device_->Start();
 
-  EXPECT_CALL(*audio_output_ipc_, CreateStream(audio_device_.get(), _, 0));
+  EXPECT_CALL(*audio_output_ipc_, CreateStream(audio_device_.get(), _));
 
   io_loop_.RunUntilIdle();
 }
