@@ -271,7 +271,7 @@ deps = {
     (Var("googlecode_url") % "webrtc") + "/stable/webrtc@" + Var("webrtc_revision"),
 
   "src/third_party/openmax_dl":
-    (Var("googlecode_url") % "webrtc") + "/deps/third_party/openmax@3720",
+    (Var("googlecode_url") % "webrtc") + "/deps/third_party/openmax@4148",
 
   "src/third_party/jsoncpp/source/include":
     (Var("sourceforge_url") % {"repo": "jsoncpp"}) +
