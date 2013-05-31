@@ -217,7 +217,7 @@ def link_file(outfile, infile, action):
       os_link(infile, outfile)
     except OSError:
       # Probably a different file system.
-      logging.warn(
+      logging.warning(
           'Failed to hardlink, failing back to copy %s to %s' % (
             infile, outfile))
       readable_copy(outfile, infile)
@@ -1229,7 +1229,7 @@ class Cache(object):
       # Ensure that all files listed in the state still exist and add new ones.
       previous = set(filename for filename, _ in self.state)
       if len(previous) != len(self.state):
-        logging.warn('Cache state is corrupted, found duplicate files')
+        logging.warning('Cache state is corrupted, found duplicate files')
         self._state_need_to_be_saved = True
         self.state = []
 
@@ -1242,19 +1242,19 @@ class Cache(object):
           continue
         # An untracked file.
         if not RE_IS_SHA1.match(filename):
-          logging.warn('Removing unknown file %s from cache', filename)
+          logging.warning('Removing unknown file %s from cache', filename)
           os.remove(self.path(filename))
           continue
         # Insert as the oldest file. It will be deleted eventually if not
         # accessed.
         self._add(filename, False)
-        logging.warn('Add unknown file %s to cache', filename)
+        logging.warning('Add unknown file %s to cache', filename)
         added += 1
 
       if added:
-        logging.warn('Added back %d unknown files', added)
+        logging.warning('Added back %d unknown files', added)
       if previous:
-        logging.warn('Removed %d lost files', len(previous))
+        logging.warning('Removed %d lost files', len(previous))
         # Set explicitly in case self._add() wasn't called.
         self._state_need_to_be_saved = True
         # Filter out entries that were not found while keeping the previous
@@ -1314,13 +1314,23 @@ class Cache(object):
 
     # Ensure enough free space.
     self._free_disk = get_free_space(self.cache_dir)
+    trimmed_due_to_space = False
     while (
         self.policies.min_free_space and
         self.state and
         self._free_disk < self.policies.min_free_space):
+      trimmed_due_to_space = True
       self.remove_lru_file()
       self._free_disk = get_free_space(self.cache_dir)
-
+    if trimmed_due_to_space:
+      total = sum(i[1] for i in self.state)
+      logging.warning(
+          'Trimmed due to not enough free disk space: %.1fkb free, %.1fkb '
+          'cache (%.1f%% of its maximum capacity)',
+          self._free_disk / 1024.,
+          total / 1024.,
+          100. * self.policies.max_cache_size / float(total),
+          )
     self.save()
 
   def retrieve(self, priority, item, size):
@@ -1350,6 +1360,13 @@ class Cache(object):
       if item in self._pending_queue:
         # Already pending. The same object could be referenced multiple times.
         return
+      # TODO(maruel): It should look at the free disk space, the current cache
+      # size and the size of the new item on every new item:
+      # - Trim the cache as more entries are listed when free disk space is low,
+      #   otherwise if the amount of data downloaded during the run > free disk
+      #   space, it'll crash.
+      # - Make sure there's enough free disk space to fit all dependencies of
+      #   this run! If not, abort early.
       self.remote.add_item(priority, item, path, size)
       self._pending_queue.add(item)
 
@@ -1787,7 +1804,7 @@ def main():
       '--min-free-space',
       type='int',
       metavar='NNN',
-      default=1*1024*1024*1024,
+      default=2*1024*1024*1024,
       help='Trim if disk free space becomes lower than this value, '
            'default=%default')
   group.add_option(
@@ -1800,7 +1817,8 @@ def main():
   parser.add_option_group(group)
 
   options, args = parser.parse_args()
-  level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]
+  levels = [logging.WARNING, logging.INFO, logging.DEBUG]
+  level = levels[min(len(levels) - 1, options.verbose)]
 
   logging_console = logging.StreamHandler()
   logging_console.setFormatter(logging.Formatter(

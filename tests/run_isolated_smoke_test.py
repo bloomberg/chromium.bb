@@ -146,10 +146,9 @@ class RunSwarmStep(unittest.TestCase):
       self._store('gtest_fake.py'),
       calc_sha1(isolated),
     ]
-    out, err, returncode = self._run(
+    out, _, returncode = self._run(
         self._generate_args_with_isolated(isolated))
     if not VERBOSE:
-      self.assertEqual('', err)
       self.assertEqual(1070, len(out), out)
     self.assertEqual(6, returncode)
     actual = list_files_tree(self.cache)
