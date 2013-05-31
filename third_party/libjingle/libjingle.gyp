@@ -876,7 +876,7 @@
           'dependencies': [
             '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
             '<(DEPTH)/third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
-            '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
+            '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine',
             '<@(libjingle_peerconnection_additional_deps)',
             'libjingle_webrtc_common',
           ],
