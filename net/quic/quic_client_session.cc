@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
@@ -17,6 +18,25 @@
 #include "net/udp/datagram_client_socket.h"
 
 namespace net {
+
+namespace {
+
+// Note: these values must be kept in sync with the corresponding values in:
+// tools/metrics/histograms/histograms.xml
+enum HandshakeState {
+  STATE_STARTED = 0,
+  STATE_ENCRYPTION_ESTABLISHED = 1,
+  STATE_HANDSHAKE_CONFIRMED = 2,
+  STATE_FAILED = 3,
+  NUM_HANDSHAKE_STATES = 4
+};
+
+void RecordHandshakeState(HandshakeState state) {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicHandshakeState", state,
+                            NUM_HANDSHAKE_STATES);
+}
+
+}  // namespace
 
 QuicClientSession::QuicClientSession(
     QuicConnection* connection,
@@ -53,6 +73,20 @@ QuicClientSession::~QuicClientSession() {
   DCHECK(callback_.is_null());
   connection()->set_debug_visitor(NULL);
   net_log_.EndEvent(NetLog::TYPE_QUIC_SESSION);
+
+  if (IsEncryptionEstablished())
+    RecordHandshakeState(STATE_ENCRYPTION_ESTABLISHED);
+  if (IsCryptoHandshakeConfirmed())
+    RecordHandshakeState(STATE_HANDSHAKE_CONFIRMED);
+  else
+    RecordHandshakeState(STATE_FAILED);
+
+  UMA_HISTOGRAM_COUNTS("Net.QuicNumSentClientHellos",
+                       crypto_stream_->num_sent_client_hellos());
+  if (IsCryptoHandshakeConfirmed()) {
+    UMA_HISTOGRAM_COUNTS("Net.QuicNumSentClientHellosCryptoHandshakeConfirmed",
+                         crypto_stream_->num_sent_client_hellos());
+  }
 }
 
 QuicReliableClientStream* QuicClientSession::CreateOutgoingReliableStream() {
@@ -82,6 +116,7 @@ QuicCryptoClientStream* QuicClientSession::GetCryptoStream() {
 };
 
 int QuicClientSession::CryptoConnect(const CompletionCallback& callback) {
+  RecordHandshakeState(STATE_STARTED);
   if (!crypto_stream_->CryptoConnect()) {
     // TODO(wtc): change crypto_stream_.CryptoConnect() to return a
     // QuicErrorCode and map it to a net error code.

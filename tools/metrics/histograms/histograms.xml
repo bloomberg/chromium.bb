@@ -4051,6 +4051,24 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicCryptoHandshakeState" enum="QuicHandshakeState">
+  <summary>
+    The state of a QUIC connection's crypto hanshake as it progresses from
+    starting to confirmation or failure.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicNumSentClientHellos">
+  <summary>The number of client hello messages sent.</summary>
+</histogram>
+
+<histogram name="Net.QuicNumSentClientHellosCryptoHandshakeConfirmed">
+  <summary>
+    The number of client hello messages sent when the crypto handshake was
+    confirmed.
+  </summary>
+</histogram>
+
 <histogram name="Net.RenegotiationExtensionSupported">
   <summary>
     True if the HTTP request was sent to a server which supports the TLS
@@ -14120,6 +14138,13 @@ other types of suffix sets.
   <int value="20" label="DOMAIN_TWIMG_COM"/>
   <int value="21" label="DOMAIN_AKAMAIHD_NET"/>
   <int value="22" label="DOMAIN_NUM_EVENTS"/>
+</enum>
+
+<enum name="QuicHandshakeState" type="int">
+  <int value="0" label="STARTED"/>
+  <int value="1" label="ENCRYPTION_ESTABLISHED"/>
+  <int value="2" label="HANDSHAKE_CONFIRMED"/>
+  <int value="3" label="FAILED"/>
 </enum>
 
 <enum name="ResolutionCategory" type="int">
