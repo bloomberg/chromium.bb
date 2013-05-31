@@ -250,6 +250,7 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
     case base::Value::TYPE_INTEGER:
     case base::Value::TYPE_DOUBLE:
     case base::Value::TYPE_STRING:
+    case base::Value::TYPE_LIST:
       pref_service->Set(pref_name.c_str(), *value);
       break;
 

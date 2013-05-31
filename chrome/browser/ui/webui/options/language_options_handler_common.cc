@@ -76,7 +76,9 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
 #endif  // !OS_MACOSX
     { "addLanguageTitle", IDS_OPTIONS_LANGUAGES_ADD_TITLE },
     { "addLanguageSelectLabel", IDS_OPTIONS_LANGUAGES_ADD_SELECT_LABEL },
-    { "restartButton", IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON }
+    { "restartButton", IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON },
+    { "dontTranslateInThisLanguage",
+      IDS_OPTIONS_LANGUAGES_DONT_TRANSLATE_IN_THIS_LANGUAGE },
   };
 
 #if defined(ENABLE_SETTINGS_APP)

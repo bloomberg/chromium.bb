@@ -30,6 +30,44 @@ cr.define('options', function() {
     FAILED: 2
   };
 
+  /**
+   * The preference is a boolean that enables/disables spell checking.
+   * @type {string}
+   * @const
+   */
+  var ENABLE_SPELL_CHECK_PREF = 'browser.enable_spellchecking';
+
+  /**
+   * The preference is a CSV string that describes preload engines
+   * (i.e. active input methods).
+   * @type {string}
+   * @const
+   */
+  var PRELOAD_ENGINES_PREF = 'settings.language.preload_engines';
+
+  /**
+   * The preference that lists the extension IMEs that are enabled in the
+   * language menu.
+   * @type {string}
+   * @const
+   */
+  var ENABLED_EXTENSION_IME_PREF = 'settings.language.enabled_extension_imes';
+
+  /**
+   * The preference that lists the languages which are not translated.
+   * @type {string}
+   * @const
+   */
+  var TRANSLATE_LANGUAGE_BLACKLIST_PREF = 'translate_language_blacklist';
+
+  /**
+   * The preference key that is a string that describes the spell check
+   * dictionary language, like "en-US".
+   * @type {string}
+   * @const
+   */
+  var SPELL_CHECK_DICTIONARY_PREF = 'spellcheck.dictionary';
+
   /////////////////////////////////////////////////////////////////////////////
   // LanguageOptions class:
 
@@ -71,37 +109,11 @@ cr.define('options', function() {
     spellcheckDictionaryDownloadFailures_: 0,
 
     /**
-     * The preference is a boolean that enables/disables spell checking.
-     * @type {string}
-     * @private
-     * @const
-     */
-    enableSpellCheckPref_: 'browser.enable_spellchecking',
-
-    /**
-     * The preference is a CSV string that describes preload engines
-     * (i.e. active input methods).
-     * @type {string}
-     * @private
-     * @const
-     */
-    preloadEnginesPref_: 'settings.language.preload_engines',
-
-    /**
      * The list of preload engines, like ['mozc', 'pinyin'].
      * @type {Array}
      * @private
      */
     preloadEngines_: [],
-
-    /**
-     * The preference that lists the extension IMEs that are enabled in the
-     * language menu.
-     * @type {string}
-     * @private
-     * @const
-     */
-    enabledExtensionImePref_: 'settings.language.enabled_extension_imes',
 
     /**
      * The list of extension IMEs that are enabled out of the language menu.
@@ -111,13 +123,11 @@ cr.define('options', function() {
     enabledExtensionImes_: [],
 
     /**
-     * The preference key that is a string that describes the spell check
-     * dictionary language, like "en-US".
-     * @type {string}
+     * The list of the languages which is not translated.
+     * @type {Array}
      * @private
-     * @const
      */
-    spellCheckDictionaryPref_: 'spellcheck.dictionary',
+    translateLanguageBlacklist_: [],
 
     /**
      * The preference is a string that describes the spell check dictionary
@@ -163,7 +173,15 @@ cr.define('options', function() {
         this.initializeInputMethodList_();
         this.initializeLanguageCodeToInputMethodIdsMap_();
       }
-      Preferences.getInstance().addEventListener(this.spellCheckDictionaryPref_,
+
+      var checkbox = $('dont-translate-in-this-language');
+      checkbox.addEventListener('click',
+          this.handleDontTranslateCheckboxClick_.bind(this));
+
+      Preferences.getInstance().addEventListener(
+          TRANSLATE_LANGUAGE_BLACKLIST_PREF,
+          this.handleTranslateLanguageBlacklistPrefChange_.bind(this));
+      Preferences.getInstance().addEventListener(SPELL_CHECK_DICTIONARY_PREF,
           this.handleSpellCheckDictionaryPrefChange_.bind(this));
 
       // Set up add button.
@@ -201,7 +219,7 @@ cr.define('options', function() {
         // Handle spell check enable/disable.
         if (!cr.isMac) {
           Preferences.getInstance().addEventListener(
-              this.enableSpellCheckPref_,
+              ENABLE_SPELL_CHECK_PREF,
               this.updateEnableSpellCheck_.bind(this));
         }
       }
@@ -243,10 +261,10 @@ cr.define('options', function() {
 
       // Listen to pref change once the input method list is initialized.
       Preferences.getInstance().addEventListener(
-          this.preloadEnginesPref_,
+          PRELOAD_ENGINES_PREF,
           this.handlePreloadEnginesPrefChange_.bind(this));
       Preferences.getInstance().addEventListener(
-          this.enabledExtensionImePref_,
+          ENABLED_EXTENSION_IME_PREF,
           this.handleEnabledExtensionsPrefChange_.bind(this));
     },
 
@@ -372,6 +390,8 @@ cr.define('options', function() {
           languageCode = specifiedLanguageCode;
         }
       }
+
+      this.updateDontTranslateCheckbox_(languageCode);
 
       if (cr.isWindows || cr.isChromeOS)
         this.updateUiLanguageButton_(languageCode);
@@ -606,6 +626,28 @@ cr.define('options', function() {
     },
 
     /**
+     * Updates the checkbox for stopping translation.
+     * @param {string} languageCode Language code (ex. "fr").
+     * @private
+     */
+    updateDontTranslateCheckbox_: function(languageCode) {
+      var dontTranslate = $('language-options-dont-translate');
+      var checkbox = $('dont-translate-in-this-language');
+
+      // TODO(hajimehoshi): Create more general function to determine this.
+      if (this.isTranslatableLanguage_(languageCode)) {
+        dontTranslate.hidden = false;
+      } else {
+        dontTranslate.hidden = true;
+        return;
+      }
+
+      var lang = this.convertLangCodeForTranslation_(languageCode);
+      var checked = (this.translateLanguageBlacklist_.indexOf(lang) != -1);
+      checkbox.checked = checked;
+    },
+
+    /**
      * Updates the input method list.
      * @param {string} languageCode Language code (ex. "fr").
      * @private
@@ -700,6 +742,33 @@ cr.define('options', function() {
     },
 
     /**
+     * Handles don't-translate checkbox's click event.
+     * @param {Event} e Click event.
+     * @private
+     */
+    handleDontTranslateCheckboxClick_: function(e) {
+      var checkbox = e.target;
+      var checked = checkbox.checked;
+
+      var languageOptionsList = $('language-options-list');
+      var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
+
+      var langCode = this.convertLangCodeForTranslation_(selectedLanguageCode);
+      var blacklist = this.translateLanguageBlacklist_;
+      if (checked && blacklist.indexOf(langCode) == -1) {
+        blacklist.push(langCode);
+      } else if (!checked && blacklist.indexOf(langCode) != -1) {
+        blacklist = blacklist.filter(function(blacklistedLangCode) {
+          return blacklistedLangCode != langCode;
+        });
+      }
+      this.translateLanguageBlacklist_ = blacklist;
+
+      Preferences.setListPref(TRANSLATE_LANGUAGE_BLACKLIST_PREF,
+                              this.translateLanguageBlacklist_, true);
+    },
+
+    /**
      * Handles input method checkbox's click event.
      * @param {Event} e Click event.
      * @private
@@ -757,12 +826,25 @@ cr.define('options', function() {
      * @param {Event} e Change event.
      * @private
      */
-     updateEnableSpellCheck_: function() {
+    updateEnableSpellCheck_: function() {
        var value = !$('enable-spell-check').checked;
        $('language-options-spell-check-language-button').disabled = value;
        if (!cr.IsMac)
          $('edit-dictionary-button').hidden = value;
      },
+
+    /**
+     * Handles translateLanguageBlacklistPref change.
+     * @param {Event} e Change event.
+     * @private
+     */
+    handleTranslateLanguageBlacklistPrefChange_: function(e) {
+      var languageOptionsList = $('language-options-list');
+      var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
+      this.translateLanguageBlacklist_ = e.value.value;
+
+      this.updateDontTranslateCheckbox_(selectedLanguageCode);
+    },
 
     /**
      * Handles spellCheckDictionaryPref change.
@@ -786,7 +868,7 @@ cr.define('options', function() {
     handleSpellCheckLanguageButtonClick_: function(e) {
       var languageCode = e.target.languageCode;
       // Save the preference.
-      Preferences.setStringPref(this.spellCheckDictionaryPref_,
+      Preferences.setStringPref(SPELL_CHECK_DICTIONARY_PREF,
                                 languageCode, true);
       chrome.send('spellCheckLanguageChange', [languageCode]);
     },
@@ -855,7 +937,7 @@ cr.define('options', function() {
      * @private
      */
     saveEnabledExtensionPref_: function() {
-      Preferences.setStringPref(this.enabledExtensionImePref_,
+      Preferences.setStringPref(ENABLED_EXTENSION_IME_PREF,
                                 this.enabledExtensionImes_.join(','), true);
     },
 
@@ -900,7 +982,7 @@ cr.define('options', function() {
      * @private
      */
     savePreloadEnginesPref_: function() {
-      Preferences.setStringPref(this.preloadEnginesPref_,
+      Preferences.setStringPref(PRELOAD_ENGINES_PREF,
                                 this.preloadEngines_.join(','), true);
     },
 
@@ -1059,7 +1141,52 @@ cr.define('options', function() {
               $('language-options-list').getSelectedLanguageCode()) {
         this.updateSpellCheckLanguageButton_(languageCode);
       }
-    }
+    },
+
+    /*
+     * Converts the language code for Translation. There are some differences
+     * between the language set for Translation and that for Accept-Language.
+     * @param {string} languageCode The language code like 'fr'.
+     * @return {string} The converted language code.
+     * @private
+     */
+    convertLangCodeForTranslation_: function(languageCode) {
+      var tokens = languageCode.split('-');
+      var main = tokens[0];
+      var dialect = tokens[1];
+
+      // See also: chrome/renderer/translate/translate_helper.cc.
+      var synonyms = {
+        'nb': 'no',
+        'he': 'iw',
+        'jv': 'jw',
+        'fil': 'tl',
+      };
+
+      if (main in synonyms) {
+        return synonyms[main];
+      } else if (main == 'zh') {
+        // In Translation, general Chinese is not used.
+        assert(dialect);
+        return languageCode;
+      }
+
+      return main;
+    },
+
+    /*
+     * Checks whether or not |languageCode| is supported for Translation.
+     * @param {string} languageCode The language code like 'fr'.
+     * @return {boolean} Retruns true if |languageCode| is supported for
+     *    Translation.
+     * @private
+     */
+    isTranslatableLanguage_: function(languageCode) {
+      if (languageCode == 'zh')
+        return false;
+
+      return true;
+    },
   };
 
   /**

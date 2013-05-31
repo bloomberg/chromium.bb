@@ -23,9 +23,6 @@
         </div>
         <div id="language-options-list-dropmarker"></div>
       </div>
-<!-- Chrome uses the native OS spellchecker in OS X, so don't display the
-     dictionary pane. -->
-<if expr="not is_macosx">
       <div class="language-options-right">
         <h3 id="language-options-language-name"></h3>
 <if expr="os == 'win32' or pp_ifdef('chromeos')">
@@ -36,6 +33,9 @@
           <span id="language-options-ui-language-message" hidden></span>
         </div>
 </if>
+<!-- Chrome uses the native OS spellchecker in OS X, so don't display the
+     dictionary pane. -->
+<if expr="not is_macosx">
         <div id="language-options-spellcheck" class="language-options-contents">
           <button id="language-options-spell-check-language-button"
               i18n-content="useThisForSpellChecking">
@@ -50,20 +50,31 @@
             class="language-options-notification" hidden>
           <div i18n-content="downloadFailed"></div>
           <div id="language-options-dictionary-download-fail-help-message"
-            i18n-content="downloadFailHelp" hidden>
+              i18n-content="downloadFailHelp" hidden>
           </div>
           <button id="dictionary-download-retry-button"
               i18n-content="retryButton">
           </button>
         </div>
         <div id="language-options-ui-notification-bar"
-             class="language-options-notification" hidden>
+            class="language-options-notification" hidden>
           <div i18n-content="restartRequired"></div>
 <if expr="pp_ifdef('chromeos')">
           <button id="language-options-ui-restart-button"
-                  i18n-content="restartButton">
+              i18n-content="restartButton">
           </button>
 </if>
+        </div>
+</if>
+        <div id="language-options-dont-translate"
+            class="language-options-contents">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" id="dont-translate-in-this-language">
+              <span class="dont-translate-label"
+                  i18n-content="dontTranslateInThisLanguage"></span>
+            </label>
+          </div>
         </div>
 <if expr="pp_ifdef('chromeos')">
         <h3 i18n-content="inputMethod"></h3>
@@ -84,7 +95,6 @@
         </div>
 </if>
       </div>
-</if>
     </div>
     <div class="language-options-footer">
 <if expr="pp_ifdef('chromeos')">
