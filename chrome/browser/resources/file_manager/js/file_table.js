@@ -21,10 +21,44 @@ function FileTableColumnModel(tableColumns) {
 }
 
 /**
- * Inherits from cr.ui.Table.
+ * Inherits from cr.ui.TableColumnModel.
  */
 FileTableColumnModel.prototype.__proto__ =
     cr.ui.table.TableColumnModel.prototype;
+
+/**
+ * Minimum width of column.
+ * @private
+ * @const
+ * @type {number}
+ */
+FileTableColumnModel.MIN_WIDTH_ = 10;
+
+/**
+ * Sets column width so that the column dividers move to the specified position.
+ * This function also check the width of each column and keep the width larger
+ * than MIN_WIDTH_.
+ *
+ * @private
+ * @param {Array.<number>} newPos Positions of each column dividers.
+ */
+FileTableColumnModel.prototype.applyColumnPositions_ = function(newPos) {
+  // Check the minimum width and adjust the positions.
+  for (var i = 0; i < newPos.length - 2; i++) {
+    if (newPos[i + 1] - newPos[i] < FileTableColumnModel.MIN_WIDTH_) {
+      newPos[i + 1] = newPos[i] + FileTableColumnModel.MIN_WIDTH_;
+    }
+  }
+  for (var i = newPos.length - 1; i >= 2; i--) {
+    if (newPos[i] - newPos[i - 1] < FileTableColumnModel.MIN_WIDTH_) {
+      newPos[i - 1] = newPos[i] - FileTableColumnModel.MIN_WIDTH_;
+    }
+  }
+  // Set the new width of columns
+  for (var i = 0; i < this.columns_.length - 1; i++) {
+    this.columns_[i].width = newPos[i + 1] - newPos[i];
+  }
+};
 
 /**
  * Normalizes widths to make their sum 100% if possible. Uses the proportional
@@ -34,27 +68,117 @@ FileTableColumnModel.prototype.__proto__ =
  * @override
  */
 FileTableColumnModel.prototype.normalizeWidths = function(contentWidth) {
-  var fixedWidth = 0;
-  var flexibleWidth = 0;
-  var fixedColumns = ['size', 'selection'];
-
+  var totalWidth = 0;
   // Some columns have fixed width.
-  for (var index = 0; index < this.size; index++) {
-    var column = this.columns_[index];
-    if (fixedColumns.indexOf(column.id) > -1)
-      fixedWidth += column.width;
-    else
-      flexibleWidth += column.width;
+  for (var i = 0; i < this.size - 1; i++) {
+    totalWidth += this.columns_[i].width;
   }
+  var newTotalWidth =
+      Math.max(contentWidth - this.columns_[this.size - 1].width, 0);
+  var positions = [0];
+  var sum = 0;
+  for (var i = 0; i < this.size - 1; i++) {
+    var column = this.columns_[i];
+    sum += column.width;
+    positions[i + 1] = ~~(newTotalWidth * sum / totalWidth);
+  }
+  this.applyColumnPositions_(positions);
+};
 
-  var factor = Math.max(0, contentWidth - fixedWidth) / flexibleWidth;
-  for (var index = 0; index < this.size; index++) {
-    var column = this.columns_[index];
-    if (fixedColumns.indexOf(column.id) > -1)
-      continue;
-    // Limits the minimum width to 1px to avoid flexibleWidth=0.
-    column.width = Math.max(1, column.width * factor);
+/**
+ * Handles to the start of column resizing by splitters.
+ */
+FileTableColumnModel.prototype.handleSplitterDragStart = function() {
+  this.columnPos_ = [0];
+  for (var i = 0; i < this.columns_.length; i++) {
+    this.columnPos_[i + 1] = this.columns_[i].width + this.columnPos_[i];
   }
+};
+
+/**
+ * Handles to the end of column resizing by splitters.
+ */
+FileTableColumnModel.prototype.handleSplitterDragEnd = function() {
+  this.columnPos_ = null;
+};
+
+/**
+ * Sets the width of column with keeping the total width of table.
+ * @param {number} columnIndex Index of column that is resized.
+ * @param {number} columnWidth New width of the column.
+ */
+FileTableColumnModel.prototype.setWidthAndKeepTotal = function(
+    columnIndex, columnWidth) {
+  if (columnIndex < 0 ||
+      columnIndex >= this.columns_.length - 1 ||
+      !this.columnPos_)
+    return;
+
+  // Skip to resize 'selection' column
+  var nextColumn = this.columns_[columnIndex + 1];
+  if (nextColumn && nextColumn.id == 'selection')
+    return;
+  // Calculate new positions of column splitters.
+  var newPosStart =
+      this.columnPos_[columnIndex] + Math.max(columnWidth,
+                                              FileTableColumnModel.MIN_WIDTH_);
+  var newPos = [];
+  var posEnd = this.columnPos_[this.columns_.length - 1];
+  for (var i = 0; i < columnIndex + 1; i++) {
+    newPos[i] = this.columnPos_[i];
+  }
+  for (var i = columnIndex + 1; i < this.columns_.length - 1; i++) {
+    var posStart = this.columnPos_[columnIndex + 1];
+    newPos[i] = (posEnd - newPosStart) *
+                (this.columnPos_[i] - posStart) /
+                (posEnd - posStart) +
+                newPosStart;
+    // Faster alternative to Math.floor for non-negative numbers.
+    newPos[i] = ~~newPos[i];
+  }
+  newPos[columnIndex] = this.columnPos_[columnIndex];
+  newPos[this.columns_.length - 1] = posEnd;
+  this.applyColumnPositions_(newPos);
+
+  // Notifiy about resizing
+  cr.dispatchSimpleEvent(this, 'resize');
+};
+
+/**
+ * Custom splitter that resizes column with retaining the sum of all the column
+ * width.
+ */
+var FileTableSplitter = cr.ui.define('div');
+
+/**
+ * Inherits from cr.ui.TableSplitter.
+ */
+FileTableSplitter.prototype.__proto__ = cr.ui.TableSplitter.prototype;
+
+/**
+ * Handles the drag start event.
+ */
+FileTableSplitter.prototype.handleSplitterDragStart = function() {
+  cr.ui.TableSplitter.prototype.handleSplitterDragStart.call(this);
+  this.table_.columnModel.handleSplitterDragStart();
+};
+
+/**
+ * Handles the drag move event.
+ * @param {number} deltaX Horizontal mouse move offset.
+ */
+FileTableSplitter.prototype.handleSplitterDragMove = function(deltaX) {
+  this.table_.columnModel.setWidthAndKeepTotal(this.columnIndex,
+                                               this.columnWidth_ + deltaX,
+                                               true);
+};
+
+/**
+ * Handles the drag end event.
+ */
+FileTableSplitter.prototype.handleSplitterDragEnd = function() {
+  cr.ui.TableSplitter.prototype.handleSplitterDragEnd.call(this);
+  this.table_.columnModel.handleSplitterDragEnd();
 };
 
 /**
@@ -87,9 +211,9 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
     new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
                                 fullPage ? 386 : 324),
     new cr.ui.table.TableColumn('size', str('SIZE_COLUMN_LABEL'),
-                                60, true),
+                                110, true),
     new cr.ui.table.TableColumn('type', str('TYPE_COLUMN_LABEL'),
-                                fullPage ? 160 : 160),
+                                fullPage ? 110 : 110),
     new cr.ui.table.TableColumn('modificationTime',
                                 str('DATE_COLUMN_LABEL'),
                                 fullPage ? 150 : 210)
@@ -180,6 +304,18 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
       handleSelectionChange();
     }
   });
+
+  // Override header#redraw to use FileTableSplitter.
+  self.header_.redraw = function() {
+    this.__proto__.redraw.call(this);
+    // Extend table splitters
+    var splitters = this.querySelectorAll('.table-header-splitter');
+    for (var i = 0; i < splitters.length; i++) {
+      if (splitters[i] instanceof FileTableSplitter)
+        continue;
+      FileTableSplitter.decorate(splitters[i]);
+    }
+  };
 };
 
 /**
