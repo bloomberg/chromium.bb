@@ -1591,6 +1591,8 @@ crbug.com/244118 [ Mac ] fast/forms/month/month-appearance-pseudo-elements.html 
 crbug.com/244118 [ Mac ] fast/forms/time/time-appearance-pseudo-elements.html [ ImageOnlyFailure Pass ]
 crbug.com/244118 [ Mac ] fast/forms/week/week-appearance-pseudo-elements.html [ ImageOnlyFailure Pass ]
 crbug.com/244118 [ Win ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ ImageOnlyFailure Pass ]
+# Crashes according to crbug.com/245294
+crbug.com/244118 [ Linux ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Crash ImageOnlyFailure ]
 crbug.com/244118 [ Win Linux ] fast/forms/date/date-appearance-basic.html [ ImageOnlyFailure Pass ]
 crbug.com/244118 [ Win Linux ] fast/forms/date/date-appearance-l10n.html [ ImageOnlyFailure Pass ]
 crbug.com/244118 [ Win Linux ] fast/forms/datetimelocal/datetimelocal-appearance-basic.html [ ImageOnlyFailure Pass ]
@@ -1854,7 +1856,7 @@ crbug.com/245566 [ Linux Win Debug ] editing/execCommand/delete-no-scroll.html [
 crbug.com/245567 http/tests/xmlhttprequest/send-undefined-and-null.html [ Failure Pass ]
 
 # This test seems to intermittently crash.
-crbug.com/245294 [ Mac Linux ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Crash Pass ]
+crbug.com/245294 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Crash Pass ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
