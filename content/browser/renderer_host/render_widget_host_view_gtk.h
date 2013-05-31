@@ -25,7 +25,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/webcursor.h"
+#include "webkit/common/cursors/webcursor.h"
 #include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
 
 typedef struct _GtkClipboard GtkClipboard;

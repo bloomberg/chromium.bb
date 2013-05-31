@@ -4,7 +4,7 @@
 
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
-#include "webkit/glue/webcursor.h"
+#include "webkit/common/cursors/webcursor.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 
 using WebKit::WebInputEvent;

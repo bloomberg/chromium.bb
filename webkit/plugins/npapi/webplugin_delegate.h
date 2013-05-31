@@ -13,7 +13,7 @@
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/native_widget_types.h"
-#include "webkit/glue/webcursor.h"
+#include "webkit/common/cursors/webcursor.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 class GURL;

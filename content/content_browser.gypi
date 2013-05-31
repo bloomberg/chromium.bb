@@ -1102,6 +1102,7 @@
         '../printing/printing.gyp:printing',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/surface/surface.gyp:surface',
+        '../webkit/support/webkit_support.gyp:webkit_common',
         '../webkit/support/webkit_support.gyp:webkit_resources',
         '../webkit/support/webkit_support.gyp:webkit_storage',
         '../webkit/support/webkit_support.gyp:webkit_strings',

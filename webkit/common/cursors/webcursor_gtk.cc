@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webcursor.h"
+#include "webkit/common/cursors/webcursor.h"
 
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
@@ -16,7 +16,7 @@ using WebKit::WebCursorInfo;
 namespace {
 
 // webcursor_gtk_data.h is taken directly from WebKit's CursorGtk.h.
-#include "webkit/glue/webcursor_gtk_data.h"
+#include "webkit/common/cursors/webcursor_gtk_data.h"
 
 // This helper function is taken directly from WebKit's CursorGtk.cpp.
 // It attempts to create a custom cursor from the data inlined in

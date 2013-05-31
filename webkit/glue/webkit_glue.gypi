@@ -84,17 +84,6 @@
       'sources': [
         'multipart_response_delegate.cc',
         'multipart_response_delegate.h',
-        'webcursor.cc',
-        'webcursor.h',
-        'webcursor_android.cc',
-        'webcursor_aura.cc',
-        'webcursor_aurawin.cc',
-        'webcursor_aurax11.cc',
-        'webcursor_null.cc',
-        'webcursor_gtk.cc',
-        'webcursor_gtk_data.h',
-        'webcursor_mac.mm',
-        'webcursor_win.cc',
         'weburlrequest_extradata_impl.cc',
         'weburlrequest_extradata_impl.h',
         'weburlresponse_extradata_impl.cc',
@@ -107,22 +96,6 @@
             '<(DEPTH)/build/linux/system.gyp:gtk',
           ],
           'sources/': [['exclude', '_x11\\.cc$']],
-        }],
-        ['use_aura==1', {
-          'sources!': [
-            'webcursor_mac.mm',
-            'webcursor_win.cc',
-          ],
-        }],
-        ['use_aura==1 and use_x11==1', {
-          'link_settings': {
-            'libraries': [ '-lXcursor', ],
-          },
-        }],
-        ['use_ozone==0', {
-          'sources!': [
-            'webcursor_null.cc',
-          ],
         }],
         ['OS!="mac"', {
           'sources/': [['exclude', '_mac\\.(cc|mm)$']],
@@ -207,6 +180,7 @@
         'plugins',
         'user_agent',
         'webkit_base',
+        'webkit_common',
         'webkit_media',
         'webkit_resources',
         'webkit_storage',

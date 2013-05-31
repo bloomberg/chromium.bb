@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_CURSOR_UTILS_H_
 #define WEBKIT_GLUE_CURSOR_UTILS_H_
 
-#include "webkit/glue/webcursor.h"
+#include "webkit/common/cursors/webcursor.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {

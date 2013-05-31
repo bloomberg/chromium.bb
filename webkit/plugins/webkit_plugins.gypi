@@ -107,6 +107,7 @@
         'plugins_common',
         'user_agent',
         'webkit_base',
+        'webkit_common',
         'webkit_storage',
       ],
       'sources': [

@@ -16,7 +16,7 @@
 
 #include "content/common/content_param_traits_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "webkit/glue/webcursor.h"
+#include "webkit/common/cursors/webcursor.h"
 
 namespace net {
 class IPEndPoint;

@@ -52,6 +52,7 @@ include_rules = [
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+webkit/appcache",
   "+webkit/base/origin_url_conversions.h",
+  "+webkit/common/cursors/webcursor.h",
   "+webkit/dom_storage/dom_storage_types.h",
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.
 
@@ -66,7 +67,6 @@ include_rules = [
   "+webkit/glue/glue_serialize.h",
   "+webkit/glue/image_decoder.h",
   "+webkit/glue/resource_type.h",
-  "+webkit/glue/webcursor.h",
   "+webkit/glue/webdropdata.h",
   "+webkit/glue/webkit_glue.h",
   "+webkit/glue/webmenuitem.h",

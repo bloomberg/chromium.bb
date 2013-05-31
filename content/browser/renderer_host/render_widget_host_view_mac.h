@@ -23,7 +23,7 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "ui/base/cocoa/base_view.h"
-#include "webkit/glue/webcursor.h"
+#include "webkit/common/cursors/webcursor.h"
 
 namespace content {
 class CompositingIOSurfaceMac;

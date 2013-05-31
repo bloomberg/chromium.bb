@@ -17,7 +17,7 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/webcursor.h"
+#include "webkit/common/cursors/webcursor.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 

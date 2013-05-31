@@ -32,6 +32,7 @@
         'plugins_common',
         'user_agent',
         'webkit_base',
+        'webkit_common',
         'webkit_media',
         'webkit_storage',
         'webkit_support_common',

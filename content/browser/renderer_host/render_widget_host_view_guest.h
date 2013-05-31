@@ -16,7 +16,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d_f.h"
-#include "webkit/glue/webcursor.h"
+#include "webkit/common/cursors/webcursor.h"
 
 #if defined(TOOLKIT_GTK)
 #include "webkit/plugins/npapi/gtk_plugin_container_manager.h"

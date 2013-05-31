@@ -31,7 +31,7 @@
 #include "ui/compositor/compositor_observer.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/webcursor.h"
+#include "webkit/common/cursors/webcursor.h"
 
 namespace aura {
 class WindowTracker;

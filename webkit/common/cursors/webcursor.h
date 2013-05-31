@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBCURSOR_H_
-#define WEBKIT_GLUE_WEBCURSOR_H_
+#ifndef WEBKIT_COMMON_CURSORS_WEBCURSOR_H_
+#define WEBKIT_COMMON_CURSORS_WEBCURSOR_H_
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/common/webkit_common_export.h"
 
 #include <vector>
 
@@ -35,7 +35,7 @@ class PickleIterator;
 // specific methods are provided to translate the cross-platform cursor into a
 // platform specific cursor.  It is also possible to serialize / de-serialize a
 // WebCursor.
-class WEBKIT_GLUE_EXPORT WebCursor {
+class WEBKIT_COMMON_EXPORT WebCursor {
  public:
   struct CursorInfo {
     explicit CursorInfo(WebKit::WebCursorInfo::Type cursor_type)
@@ -184,4 +184,4 @@ class WEBKIT_GLUE_EXPORT WebCursor {
 #endif
 };
 
-#endif  // WEBKIT_GLUE_WEBCURSOR_H_
+#endif  // WEBKIT_COMMON_CURSORS_WEBCURSOR_H_

@@ -5,7 +5,6 @@
 #include "webkit/glue/cursor_utils.h"
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
-#include "webkit/glue/webcursor.h"
 
 using WebKit::WebCursorInfo;
 

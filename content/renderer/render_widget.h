@@ -35,7 +35,7 @@
 #include "ui/gfx/vector2d.h"
 #include "ui/gfx/vector2d_f.h"
 #include "ui/surface/transport_dib.h"
-#include "webkit/glue/webcursor.h"
+#include "webkit/common/cursors/webcursor.h"
 
 struct ViewHostMsg_UpdateRect_Params;
 struct ViewMsg_Resize_Params;

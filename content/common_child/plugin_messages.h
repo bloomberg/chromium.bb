@@ -13,7 +13,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/webcursor.h"
+#include "webkit/common/cursors/webcursor.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
