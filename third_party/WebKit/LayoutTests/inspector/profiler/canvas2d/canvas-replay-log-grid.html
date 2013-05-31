@@ -46,7 +46,9 @@ function test()
 
     InspectorTest.override(profileType, "_isSingleFrameMode", function() { return false; }, true /*sticky*/);
     InspectorTest.addSniffer(profileType, "_didStartCapturingFrame", didStartCapturingFrame);
-    profilesPanel.toggleRecordButton();
+
+    profileType._onProfilerEnableButtonClick(true);
+    InspectorTest.addSniffer(profileType, "_updateDecorationElement", profilesPanel.toggleRecordButton.bind(profilesPanel));
 
     var profileHeader;
     var profileView;

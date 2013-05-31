@@ -111,6 +111,8 @@ void InspectorCanvasAgent::disable(ErrorString*)
     m_state->setBoolean(CanvasAgentState::canvasAgentEnabled, m_enabled);
     m_instrumentingAgents->setInspectorCanvasAgent(0);
     m_framesWithUninstrumentedCanvases.clear();
+    if (m_frontend)
+        m_frontend->traceLogsRemoved(0, 0);
 }
 
 void InspectorCanvasAgent::dropTraceLog(ErrorString* errorString, const TraceLogId& traceLogId)
@@ -290,10 +292,12 @@ void InspectorCanvasAgent::findFramesWithUninstrumentedCanvases()
     m_framesWithUninstrumentedCanvases.clear();
     ScriptProfiler::visitNodeWrappers(&nodeVisitor);
 
-    for (FramesWithUninstrumentedCanvases::iterator it = m_framesWithUninstrumentedCanvases.begin(); it != m_framesWithUninstrumentedCanvases.end(); ++it) {
-        String frameId = m_pageAgent->frameId(it->key);
-        if (!frameId.isEmpty())
-            m_frontend->contextCreated(frameId);
+    if (m_frontend) {
+        for (FramesWithUninstrumentedCanvases::iterator it = m_framesWithUninstrumentedCanvases.begin(); it != m_framesWithUninstrumentedCanvases.end(); ++it) {
+            String frameId = m_pageAgent->frameId(it->key);
+            if (!frameId.isEmpty())
+                m_frontend->contextCreated(frameId);
+        }
     }
 }
 
