@@ -57,7 +57,8 @@ const char kSecurityError[] = "Security error";
 const char kInvalidCallingPage[] = "Invalid calling page. This function can't "
     "be called from a background page.";
 const char kUserCancelled[] = "User cancelled";
-const char kWritableFileError[] = "Invalid file for writing";
+const char kWritableFileError[] =
+    "Cannot write to file in a restricted location";
 const char kRequiresFileSystemWriteError[] =
     "Operation requires fileSystem.write permission";
 const char kUnknownIdError[] = "Unknown id";
@@ -66,6 +67,11 @@ namespace file_system = extensions::api::file_system;
 namespace ChooseEntry = file_system::ChooseEntry;
 
 namespace {
+
+const int kBlacklistedPaths[] = {
+  chrome::DIR_APP,
+  chrome::DIR_USER_DATA,
+};
 
 #if defined(OS_MACOSX)
 // Retrieves the localized display name for the base name of the given path.
@@ -196,10 +202,22 @@ bool GetFilePathOfFileEntry(const std::string& filesystem_name,
                                          error);
 }
 
-bool DoCheckWritableFile(const base::FilePath& path) {
+bool DoCheckWritableFile(const base::FilePath& path,
+                         const base::FilePath& extension_directory) {
   // Don't allow links.
   if (file_util::PathExists(path) && file_util::IsLink(path))
     return false;
+
+  if (extension_directory == path || extension_directory.IsParent(path))
+    return false;
+
+  for (size_t i = 0; i < arraysize(kBlacklistedPaths); i++) {
+    base::FilePath blacklisted_path;
+    if (PathService::Get(kBlacklistedPaths[i], &blacklisted_path) &&
+        (blacklisted_path == path || blacklisted_path.IsParent(path))) {
+      return false;
+    }
+  }
 
   // Create the file if it doesn't already exist.
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
@@ -216,11 +234,12 @@ bool DoCheckWritableFile(const base::FilePath& path) {
 }
 
 void CheckLocalWritableFile(const base::FilePath& path,
+                            const base::FilePath& extension_directory,
                             const base::Closure& on_success,
                             const base::Closure& on_failure) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      DoCheckWritableFile(path) ? on_success : on_failure);
+      DoCheckWritableFile(path, extension_directory) ? on_success : on_failure);
 }
 
 #if defined(OS_CHROMEOS)
@@ -340,7 +359,8 @@ void FileSystemEntryFunction::CheckWritableFile(const base::FilePath& path) {
   }
 #endif
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CheckLocalWritableFile, path, on_success, on_failure));
+      base::Bind(&CheckLocalWritableFile, path, extension_->path(), on_success,
+                 on_failure));
 }
 
 void FileSystemEntryFunction::RegisterFileSystemAndSendResponse(
