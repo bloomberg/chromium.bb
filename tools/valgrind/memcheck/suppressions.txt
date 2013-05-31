@@ -7314,3 +7314,21 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content19WorkerMessageFilter16OnChannelClosingEv
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelClosedEv
 }
+{
+   bug_245828
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
+   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
+   fun:_ZN7content13BrowserThread16PostTaskAndReplyENS0_2IDERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESB_
+   fun:_ZN7content23DevToolsHttpHandlerImpl4StopEv
+   fun:_ZN7content21ShellDevToolsDelegate4StopEv
+   fun:_ZN7content21ShellBrowserMainParts22PostMainMessageLoopRunEv
+   fun:_ZN7content15BrowserMainLoop25ShutdownThreadsAndCleanUpEv
+   fun:_ZN7content21BrowserMainRunnerImpl8ShutdownEv
+   fun:_Z16ShellBrowserMainRKN7content18MainFunctionParamsE
+   fun:_ZN7content17ShellMainDelegate10RunProcessERKSsRKNS_18MainFunctionParamsE
+   fun:_ZN7content23RunNamedProcessTypeMainERKSsRKNS_18MainFunctionParamsEPNS_19ContentMainDelegateE
+   fun:_ZN7content21ContentMainRunnerImpl3RunEv
+   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
+}
