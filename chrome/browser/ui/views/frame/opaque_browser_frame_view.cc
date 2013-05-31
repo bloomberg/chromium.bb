@@ -40,6 +40,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/window/frame_background.h"
 #include "ui/views/window/window_shape.h"
@@ -233,9 +234,13 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
     return gfx::Rect();
 
   gfx::Rect bounds = GetBoundsForTabStripAndAvatarArea(tabstrip);
-  const int space_left_of_tabstrip = browser_view()->ShouldShowAvatar() ?
+  int space_left_of_tabstrip = browser_view()->ShouldShowAvatar() ?
       (kAvatarLeftSpacing + avatar_bounds_.width() + kAvatarRightSpacing) :
       kTabStripIndent;
+  if (avatar_label() && avatar_label()->bounds().width()) {
+    space_left_of_tabstrip += views::kRelatedControlHorizontalSpacing +
+                              avatar_label()->bounds().width();
+  }
   bounds.Inset(space_left_of_tabstrip, 0, 0, 0);
   return bounds;
 }
@@ -1019,9 +1024,19 @@ void OpaqueBrowserFrameView::LayoutAvatar() {
   avatar_bounds_.SetRect(NonClientBorderThickness() + kAvatarLeftSpacing,
       avatar_y, incognito_icon.width(),
       browser_view()->ShouldShowAvatar() ? (avatar_bottom - avatar_y) : 0);
-
   if (avatar_button())
     avatar_button()->SetBoundsRect(avatar_bounds_);
+
+  if (avatar_label()) {
+    gfx::Size size = avatar_label()->GetPreferredSize();
+    int label_height = std::min(avatar_bounds_.height(), size.height());
+    gfx::Rect label_bounds(
+        avatar_bounds_.right() + views::kRelatedControlHorizontalSpacing,
+        avatar_y + (avatar_bounds_.height() - label_height) / 2,
+        size.width(),
+        browser_view()->ShouldShowAvatar() ? size.height() : 0);
+    avatar_label()->SetBoundsRect(label_bounds);
+  }
 }
 
 gfx::Rect OpaqueBrowserFrameView::CalculateClientAreaBounds(int width,

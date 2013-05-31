@@ -25,6 +25,7 @@ class WebContents;
 
 namespace views {
 class CustomButton;
+class Label;
 class Link;
 class Separator;
 }
@@ -88,18 +89,36 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   // NativeTheme.
   void SetBackgroundColors();
 
+  // Create the menu contents for a normal profile.
+  void InitMenuContents(AvatarMenuModel* avatar_menu_model);
+
+  // Create the managed user specific contents of the menu.
+  void InitManagedUserContents(AvatarMenuModel* avatar_menu_model);
+
   scoped_ptr<AvatarMenuModel> avatar_menu_model_;
   gfx::Rect anchor_rect_;
   Browser* browser_;
   std::vector<ProfileItemView*> item_views_;
 
-  // These will be non-NULL iff
+  // Used to separate the link entry in the avatar menu from the other entries.
+  views::Separator* separator_;
+
+  // This will be non-NULL if and only if
   // avatar_menu_model_->ShouldShowAddNewProfileLink() returns true.  See
   // OnAvatarMenuModelChanged().
-  views::Separator* separator_;
   views::View* buttons_view_;
 
+  // This will be non-NULL if and only if |expanded_| is false and
+  // avatar_menu_model_->GetManagedUserInformation() returns a non-empty string.
+  // See OnAvatarMenuModelChanged().
+  views::Label* managed_user_info_;
+  views::Separator* separator_switch_users_;
+  views::Link* switch_profile_link_;
+
   static AvatarMenuBubbleView* avatar_bubble_;
+
+  // Is set to true if the managed user has clicked on Switch Users.
+  bool expanded_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenuBubbleView);
   FRIEND_TEST_ALL_PREFIXES(AvatarMenuButtonTest, SignOut);

@@ -8243,6 +8243,14 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         The passphrase you entered is incorrect.
       </message>
 
+      <!-- Managed User Avatar Menu -->
+      <message name="IDS_MANAGED_USER_INFO" desc="A text which explains that the user is managed by a custodian.">
+        This user is managed by <ph name="CUSTODIAN_NAME">$1<ex>custodian@gmail.com</ex></ph>. Usage and history from this user may be tracked.
+      </message>
+      <message name="IDS_MANAGED_USER_AVATAR_LABEL" desc="A label for the managed user">
+        Managed user
+      </message>
+
       <!-- Managed Mode Block Interstitial data -->
       <message name="IDS_BLOCK_INTERSTITIAL_TITLE" desc="A title for the managed mode block interstitial page.">
         Page blocked
@@ -11551,6 +11559,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Add New User
         </message>
       </if>
+      <message name="IDS_PROFILES_SWITCH_PROFILE_LINK" desc="Link in the managed user bubble view to switch to a different profile.">
+        Switch Users
+      </message>
       <message name="IDS_PROFILES_CREATE_NEW_PROFILE_LINK" desc="Link in the avatar menu bubble view to create a new profile.">
         New user
       </message>

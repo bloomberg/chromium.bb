@@ -9,12 +9,24 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/background.h"
+#include "ui/views/controls/label.h"
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
 
 BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
@@ -25,6 +37,35 @@ BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
 BrowserNonClientFrameView::~BrowserNonClientFrameView() {
 }
 
+void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
+                                                  bool is_visible) {
+  if (!is_visible)
+    return;
+  // The first time UpdateAvatarInfo() is called the window is not visible so
+  // DrawTaskBarDecoration() has no effect. Therefore we need to call it again
+  // once the window is visible.
+  UpdateAvatarInfo();
+}
+
+void BrowserNonClientFrameView::OnThemeChanged() {
+  UpdateAvatarLabelStyle();
+}
+
+void BrowserNonClientFrameView::UpdateAvatarLabelStyle() {
+  if (!avatar_label_.get())
+    return;
+
+  ui::ThemeProvider* tp = frame_->GetThemeProvider();
+  SkColor color_background = tp->GetColor(
+      ThemeProperties::COLOR_TOOLBAR);
+  avatar_label_->set_background(
+      views::Background::CreateSolidBackground(color_background));
+  avatar_label_->SetBackgroundColor(color_background);
+  SkColor color_label = tp->GetColor(
+      ThemeProperties::COLOR_BOOKMARK_TEXT);
+  avatar_label_->SetEnabledColor(color_label);
+}
+
 void BrowserNonClientFrameView::UpdateAvatarInfo() {
   if (browser_view_->ShouldShowAvatar()) {
     if (!avatar_button_.get()) {
@@ -32,9 +73,27 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
           new AvatarMenuButton(browser_view_->browser(),
                                browser_view_->IsOffTheRecord()));
       AddChildView(avatar_button_.get());
+#if defined(ENABLE_MANAGED_USERS)
+      Profile* profile = browser_view_->browser()->profile();
+      ManagedUserService* service =
+          ManagedUserServiceFactory::GetForProfile(profile);
+      if (service->ProfileIsManaged() && !avatar_label_.get()) {
+        ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+        avatar_label_.reset(new views::Label(
+            l10n_util::GetStringUTF16(IDS_MANAGED_USER_AVATAR_LABEL),
+            rb.GetFont(ui::ResourceBundle::BoldFont)));
+        UpdateAvatarLabelStyle();
+        AddChildView(avatar_label_.get());
+      }
+#endif
       frame_->GetRootView()->Layout();
     }
   } else if (avatar_button_.get()) {
+    // The avatar label can just be there if there is also an avatar button.
+    if (avatar_label_.get()) {
+      RemoveChildView(avatar_label_.get());
+      avatar_label_.reset();
+    }
     RemoveChildView(avatar_button_.get());
     avatar_button_.reset();
     frame_->GetRootView()->Layout();
@@ -70,14 +129,4 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   chrome::DrawTaskbarDecoration(
       frame_->GetNativeWindow(),
       AvatarMenuModel::ShouldShowAvatarMenu() ? &avatar : NULL);
-}
-
-void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
-                                                  bool is_visible) {
-  if (!is_visible)
-    return;
-  // The first time UpdateAvatarInfo() is called the window is not visible so
-  // DrawTaskBarDecoration() has no effect. Therefore we need to call it again
-  // once the window is visible.
-  UpdateAvatarInfo();
 }

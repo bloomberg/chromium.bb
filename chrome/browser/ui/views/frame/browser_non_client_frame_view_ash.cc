@@ -34,6 +34,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -132,6 +134,10 @@ BrowserNonClientFrameViewAsh::GetTabStripInsets(bool force_restored) const {
   int left = avatar_button() ? kAvatarSideSpacing +
       browser_view()->GetOTRAvatarIcon().width() + kAvatarSideSpacing :
       kTabstripLeftSpacing;
+  if (avatar_label()) {
+    left += avatar_label()->GetPreferredSize().width() +
+            views::kRelatedControlHorizontalSpacing;
+  }
   int right = frame_painter_->GetRightInset() + kTabstripRightSpacing;
   return TabStripInsets(NonClientTopBorderHeight(force_restored), left, right);
 }
@@ -408,6 +414,8 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
     if (immersive_controller->IsEnabled() &&
         !immersive_controller->IsRevealed()) {
       avatar_button()->SetBoundsRect(gfx::Rect());
+      if (avatar_label())
+        avatar_label()->SetBoundsRect(gfx::Rect());
       return;
     }
   }
@@ -423,6 +431,16 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
                           incognito_icon.width(),
                           avatar_bottom - avatar_y);
   avatar_button()->SetBoundsRect(avatar_bounds);
+  if (avatar_label()) {
+    gfx::Size size = avatar_label()->GetPreferredSize();
+    int label_height = std::min(avatar_bounds.height(), size.height());
+    gfx::Rect label_bounds(
+        avatar_bounds.right() + views::kRelatedControlHorizontalSpacing,
+        avatar_y + (avatar_bounds.height() - label_height) / 2,
+        size.width(),
+        size.height());
+    avatar_label()->SetBoundsRect(label_bounds);
+  }
 }
 
 bool BrowserNonClientFrameViewAsh::ShouldPaint() const {

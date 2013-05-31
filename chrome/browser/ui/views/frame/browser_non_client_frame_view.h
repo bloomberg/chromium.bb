@@ -12,6 +12,10 @@ class AvatarMenuButton;
 class BrowserFrame;
 class BrowserView;
 
+namespace views {
+class Label;
+}
+
 // A specialization of the NonClientFrameView object that provides additional
 // Browser-specific methods.
 class BrowserNonClientFrameView : public views::NonClientFrameView {
@@ -34,6 +38,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
 
   AvatarMenuButton* avatar_button() const { return avatar_button_.get(); }
 
+  views::Label* avatar_label() const { return avatar_label_.get(); }
+
   // Returns the bounds within which the TabStrip should be laid out.
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const = 0;
 
@@ -51,10 +57,14 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   // Overriden from views::View.
   virtual void VisibilityChanged(views::View* starting_from,
                                  bool is_visible) OVERRIDE;
+  virtual void OnThemeChanged() OVERRIDE;
 
  protected:
   BrowserView* browser_view() const { return browser_view_; }
   BrowserFrame* frame() const { return frame_; }
+
+  // Determine the color of the label text and the label background.
+  void UpdateAvatarLabelStyle();
 
   // Updates the title and icon of the avatar button.
   void UpdateAvatarInfo();
@@ -69,6 +79,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   // Menu button that displays that either the incognito icon or the profile
   // icon.  May be NULL for some frame styles.
   scoped_ptr<AvatarMenuButton> avatar_button_;
+
+  // Avatar label that is used for a managed user.
+  scoped_ptr<views::Label> avatar_label_;
 };
 
 namespace chrome {

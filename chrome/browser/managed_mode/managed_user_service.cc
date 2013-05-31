@@ -240,6 +240,12 @@ void ManagedUserService::GetCategoryNames(CategoryList* list) {
   ManagedModeSiteList::GetCategoryNames(list);
 }
 
+std::string ManagedUserService::GetCustodianEmailAddress() const {
+  DCHECK(ProfileIsManaged());
+  // TODO(akuegel): Replace the dummy value by the real value.
+  return "custodian@gmail.com";
+}
+
 std::string ManagedUserService::GetDebugPolicyProviderName() const {
   // Save the string space in official builds.
 #ifdef NDEBUG
