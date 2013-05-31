@@ -7303,3 +7303,14 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN3ash4test11AshTestBase13UpdateDisplayERKSs
    fun:_ZN3ash8internal44MirrorWindowControllerTest_MirrorCursor_Test8TestBodyEv
 }
+{
+   bug_245714
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content17WorkerServiceImplC1Ev
+   fun:_ZN22DefaultSingletonTraitsIN7content17WorkerServiceImplEE3NewEv
+   fun:_ZN9SingletonIN7content17WorkerServiceImplE22DefaultSingletonTraitsIS1_ES1_E3getEv
+   fun:_ZN7content17WorkerServiceImpl11GetInstanceEv
+   fun:_ZN7content19WorkerMessageFilter16OnChannelClosingEv
+   fun:_ZN3IPC12ChannelProxy7Context15OnChannelClosedEv
+}
