@@ -1134,23 +1134,26 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
 
 def UploadSymbols(buildroot, board, official):
   """Upload debug symbols for this build."""
-  cmd = ['./upload_symbols',
-        '--board=%s' % board,
-        '--yes',
-        '--verbose']
+  # TODO(build): Convert this to an import.  This is troublesome though
+  # because uploading symbols requires `sym_upload` which is a compiled
+  # binary inside the chroot from breakpad.
+  cmd = [
+      'upload_symbols',
+      '--board', board,
+      '--yes',
+      '--debug',
+  ]
 
   if official:
     cmd += ['--official_build']
 
-  cwd = os.path.join(buildroot, 'src', 'scripts')
-
   try:
-    cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd, enter_chroot=True,
-                                           combine_stdout_stderr=True)
-  except cros_build_lib.RunCommandError, e:
+    _RunBuildScript(buildroot, cmd, chromite_cmd=True, capture_output=False,
+                    enter_chroot=True)
+  except cros_build_lib.RunCommandError:
     # TODO(davidjames): Convert this to a fatal error.
+    # See http://crbug.com/212437
     cros_build_lib.PrintBuildbotStepWarnings()
-    logging.warn('\n%s', e.result.output)
 
 
 def PushImages(buildroot, board, branch_name, archive_url, dryrun, profile,
