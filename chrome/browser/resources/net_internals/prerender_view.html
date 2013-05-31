@@ -24,12 +24,14 @@
       <tr>
         <th>URL</th>
         <th>Duration</th>
+        <th>Loaded</th>
       </tr>
     </thead>
     <tbody id=prerender-view-active-table>
       <tr jsselect="active">
         <td><a jsvalues=".href:url" jscontent="url" target="_blank"></a></td>
         <td jscontent="duration"></td>
+        <td jscontent="is_loaded"></td>
       </tr>
     </tbody>
   </table>

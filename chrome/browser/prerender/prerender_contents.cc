@@ -702,6 +702,8 @@ Value* PrerenderContents::GetAsValue() const {
   base::TimeTicks current_time = base::TimeTicks::Now();
   base::TimeDelta duration = current_time - load_start_time_;
   dict_value->SetInteger("duration", duration.InSeconds());
+  dict_value->SetBoolean("is_loaded", prerender_contents_ &&
+                                      !prerender_contents_->IsLoading());
   return dict_value;
 }
 
