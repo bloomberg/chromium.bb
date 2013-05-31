@@ -7,15 +7,8 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
-#include "base/threading/thread.h"
-#include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/profile_import_process_messages.h"
-#include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension.h"
@@ -28,7 +21,6 @@
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 #include "chrome/utility/profile_import_handler.h"
 #include "content/public/utility/utility_thread.h"
-#include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/zlib/google/zip.h"
@@ -38,15 +30,33 @@
 #include "webkit/glue/image_decoder.h"
 
 #if defined(OS_WIN)
+#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
-#include "content/public/common/content_switches.h"
+#include "chrome/common/chrome_paths.h"
 #include "printing/emf_win.h"
 #include "ui/gfx/gdi_util.h"
 #endif  // defined(OS_WIN)
 
+#if defined(ENABLE_PRINTING)
+#include "chrome/common/child_process_logging.h"
+#include "printing/backend/print_backend.h"
+#endif
+
 namespace chrome {
+
+namespace {
+
+bool Send(IPC::Message* message) {
+  return content::UtilityThread::Get()->Send(message);
+}
+
+void ReleaseProcessIfNeeded() {
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+}
+
+}  // namespace
 
 ChromeContentUtilityClient::ChromeContentUtilityClient() {
 #if !defined(OS_ANDROID)
@@ -112,10 +122,6 @@ bool ChromeContentUtilityClient::OnMessageReceived(
   return handled;
 }
 
-bool ChromeContentUtilityClient::Send(IPC::Message* message) {
-  return content::UtilityThread::Get()->Send(message);
-}
-
 void ChromeContentUtilityClient::OnUnpackExtension(
     const base::FilePath& extension_path,
     const std::string& extension_id,
@@ -140,7 +146,7 @@ void ChromeContentUtilityClient::OnUnpackExtension(
         unpacker.error_message()));
   }
 
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+  ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnUnpackWebResource(
@@ -157,7 +163,7 @@ void ChromeContentUtilityClient::OnUnpackWebResource(
         unpacker.error_message()));
   }
 
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+  ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnParseUpdateManifest(const std::string& xml) {
@@ -169,7 +175,7 @@ void ChromeContentUtilityClient::OnParseUpdateManifest(const std::string& xml) {
     Send(new ChromeUtilityHostMsg_ParseUpdateManifest_Succeeded(
         manifest.results()));
   }
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+  ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnDecodeImage(
@@ -182,7 +188,7 @@ void ChromeContentUtilityClient::OnDecodeImage(
   } else {
     Send(new ChromeUtilityHostMsg_DecodeImage_Succeeded(decoded_image));
   }
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+  ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnDecodeImageBase64(
@@ -227,7 +233,7 @@ void ChromeContentUtilityClient::OnCreateZipFile(
     Send(new ChromeUtilityHostMsg_CreateZipFile_Succeeded());
   else
     Send(new ChromeUtilityHostMsg_CreateZipFile_Failed());
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+  ReleaseProcessIfNeeded();
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -256,7 +262,7 @@ void ChromeContentUtilityClient::OnRenderPDFPagesToMetafile(
   if (!succeeded) {
     Send(new ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Failed());
   }
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+  ReleaseProcessIfNeeded();
 }
 
 #if defined(OS_WIN)
@@ -418,7 +424,7 @@ void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(
   } else {
     Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
   }
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+  ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
@@ -433,7 +439,7 @@ void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
   } else {
     Send(new ChromeUtilityHostMsg_ParseJSON_Failed(error));
   }
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+  ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
@@ -455,7 +461,7 @@ void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed(
         printer_name));
   }
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+  ReleaseProcessIfNeeded();
 }
 
 void ChromeContentUtilityClient::OnStartupPing() {
@@ -470,7 +476,7 @@ void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
       IPC::PlatformFileForTransitToPlatformFile(zip_file), &results);
   Send(new ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished(
       results));
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+  ReleaseProcessIfNeeded();
 }
 
 }  // namespace chrome

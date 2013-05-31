@@ -10,18 +10,16 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
+#include "base/string16.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
-#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
 #include "printing/pdf_render_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/rect.h"
 
 #define IPC_MESSAGE_START ChromeUtilityMsgStart
 
@@ -135,17 +133,17 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
 // images and message catalogs from the extension. See extensions::Unpacker for
 // details.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackExtension_Succeeded,
-                     DictionaryValue /* manifest */)
+                     base::DictionaryValue /* manifest */)
 
 // Reply when the utility process has failed while unpacking an extension.
 // |error_message| is a user-displayable explanation of what went wrong.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackExtension_Failed,
-                     string16 /* error_message, if any */)
+                     base::string16 /* error_message, if any */)
 
 // Reply when the utility process is done unpacking and parsing JSON data
 // from a web resource.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackWebResource_Succeeded,
-                     DictionaryValue /* json data */)
+                     base::DictionaryValue /* json data */)
 
 // Reply when the utility process has failed while unpacking and parsing a
 // web resource.  |error_message| is a user-readable explanation of what
@@ -185,7 +183,7 @@ IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Failed)
 // so we put the result Value into a ListValue. Handlers should examine the
 // first (and only) element of the ListValue for the actual result.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ParseJSON_Succeeded,
-                     ListValue)
+                     base::ListValue)
 
 // Reply when the utility process failed in parsing a JSON string.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ParseJSON_Failed,
