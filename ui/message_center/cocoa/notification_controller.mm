@@ -176,12 +176,13 @@
   // The message_center:: constants are relative to capHeight at the top and
   // relative to the baseline at the bottom, but NSTextField uses the full line
   // height for its height.
-  CGFloat titleTopGap = [[title_ font] ascender] - [[title_ font] capHeight];
-  CGFloat titleBottomGap = fabs([[title_ font] descender]);
+  CGFloat titleTopGap =
+      roundf([[title_ font] ascender] - [[title_ font] capHeight]);
+  CGFloat titleBottomGap = roundf(fabs([[title_ font] descender]));
   CGFloat titlePadding = message_center::kTextTopPadding - titleTopGap;
 
   CGFloat messageTopGap =
-      [[message_ font] ascender] - [[message_ font] capHeight];
+      roundf([[message_ font] ascender] - [[message_ font] capHeight]);
   CGFloat messagePadding =
       message_center::kTextTopPadding - titleBottomGap - messageTopGap;
 
