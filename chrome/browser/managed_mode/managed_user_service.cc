@@ -37,6 +37,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/generated_resources.h"
+#include "net/base/escape.h"
 #include "policy/policy_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -48,6 +49,9 @@ namespace {
 
 const char kManagedModeFinchActive[] = "Active";
 const char kManagedModeFinchName[] = "ManagedModeLaunch";
+const char kManagedUserAccessRequestKeyPrefix[] =
+    "X-ManagedUser-AccessRequests:";
+const char kManagedUserAccessRequestTime[] = "timestamp";
 const char kManagedUserPseudoEmail[] = "managed_user@localhost";
 
 std::string CanonicalizeHostname(const std::string& hostname) {
@@ -409,6 +413,26 @@ void ManagedUserService::SetManualBehaviorForHosts(
   }
   policy_provider->SetPolicy(policy::key::kContentPackManualBehaviorHosts,
                              dict.PassAs<Value>());
+}
+
+void ManagedUserService::AddAccessRequest(const GURL& url) {
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
+  policy::ManagedModePolicyProvider* policy_provider =
+      connector->managed_mode_policy_provider();
+
+  // Escape the URL.
+  std::string output(net::EscapeQueryParamValue(url.spec(), true));
+
+  // Add the prefix.
+  std::string key(kManagedUserAccessRequestKeyPrefix + output);
+
+  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+
+  // TODO(sergiu): Use sane time here when it's ready.
+  dict->SetDouble(kManagedUserAccessRequestTime, base::Time::Now().ToJsTime());
+
+  policy_provider->SetPolicy(key, dict.PassAs<Value>());
 }
 
 ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForURL(

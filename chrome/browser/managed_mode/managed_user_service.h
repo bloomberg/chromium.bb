@@ -90,6 +90,11 @@ class ManagedUserService : public BrowserContextKeyedService,
   void SetManualBehaviorForHosts(const std::vector<std::string>& hostnames,
                                  ManualBehavior behavior);
 
+  // Adds an access request for the given URL. The requests are stored using
+  // a prefix followed by a URIEncoded version of the URL. Each entry contains
+  // a dictionary which currently has the timestamp of the request in it.
+  void AddAccessRequest(const GURL& url);
+
   // Returns the manual behavior for the given URL.
   ManualBehavior GetManualBehaviorForURL(const GURL& url);
 

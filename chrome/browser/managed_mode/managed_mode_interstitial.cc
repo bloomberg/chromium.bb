@@ -9,6 +9,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -96,7 +98,12 @@ void ManagedModeInterstitial::CommandReceived(const std::string& command) {
     UMA_HISTOGRAM_ENUMERATION("ManagedMode.BlockingInterstitialCommand",
                               ACCESS_REQUEST,
                               HISTOGRAM_BOUNDING_VALUE);
-    // TODO(bauerb): Store actual request here.
+
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+    ManagedUserService* managed_user_service =
+        ManagedUserServiceFactory::GetForProfile(profile);
+    managed_user_service->AddAccessRequest(url_);
     DVLOG(1) << "Sent access request for " << url_.spec();
 
     return;
