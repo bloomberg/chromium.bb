@@ -406,10 +406,6 @@ int WebGraphicsContext3DCommandBufferImpl::height() {
   return cached_height_;
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::isGLES2Compliant() {
-  return true;
-}
-
 bool WebGraphicsContext3DCommandBufferImpl::setParentContext(
     WebGraphicsContext3D* parent_context) {
   WebGraphicsContext3DCommandBufferImpl* parent_context_impl =
@@ -522,10 +518,6 @@ int WebGraphicsContext3DCommandBufferImpl::GetChannelID() {
 
 int WebGraphicsContext3DCommandBufferImpl::GetContextID() {
   return command_buffer_->GetRouteID();
-}
-
-WebGLId WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
-  return parent_texture_id_;
 }
 
 void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {

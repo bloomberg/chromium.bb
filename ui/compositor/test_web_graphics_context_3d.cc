@@ -33,10 +33,6 @@ int TestWebGraphicsContext3D::height() {
   return 0;
 }
 
-bool TestWebGraphicsContext3D::isGLES2Compliant() {
-  return false;
-}
-
 bool TestWebGraphicsContext3D::readBackFramebuffer(
     unsigned char* pixels,
     size_t bufferSize,
@@ -44,10 +40,6 @@ bool TestWebGraphicsContext3D::readBackFramebuffer(
     int width,
     int height) {
   return false;
-}
-
-WebKit::WebGLId TestWebGraphicsContext3D::getPlatformTextureId() {
-  return 0;
 }
 
 bool TestWebGraphicsContext3D::isContextLost() {

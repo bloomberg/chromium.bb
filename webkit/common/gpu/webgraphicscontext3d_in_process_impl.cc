@@ -279,17 +279,9 @@ int WebGraphicsContext3DInProcessImpl::height() {
   return cached_height_;
 }
 
-bool WebGraphicsContext3DInProcessImpl::isGLES2Compliant() {
-  return is_gles2_;
-}
-
 bool WebGraphicsContext3DInProcessImpl::setParentContext(
     WebGraphicsContext3D* parent_context) {
   return false;
-}
-
-WebGLId WebGraphicsContext3DInProcessImpl::getPlatformTextureId() {
-  return texture_;
 }
 
 void WebGraphicsContext3DInProcessImpl::prepareTexture() {

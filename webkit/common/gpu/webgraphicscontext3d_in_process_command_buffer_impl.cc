@@ -111,11 +111,6 @@ class GLInProcessContext {
       const int32* attrib_list,
       gfx::GpuPreference gpu_preference);
 
-  // For an offscreen frame buffer GLInProcessContext, return the texture ID
-  // with respect to the parent GLInProcessContext. Returns zero if
-  // GLInProcessContext does not have a parent.
-  uint32 GetParentTextureId();
-
   // Create a new texture in the parent's GLInProcessContext.  Returns zero if
   // GLInProcessContext does not have a parent.
   uint32 CreateParentTexture(const gfx::Size& size);
@@ -398,10 +393,6 @@ void GLInProcessContext::PumpCommands() {
 
 bool GLInProcessContext::GetBufferChanged(int32 transfer_buffer_id) {
   return gpu_scheduler_->SetGetBuffer(transfer_buffer_id);
-}
-
-uint32 GLInProcessContext::GetParentTextureId() {
-  return 0;
 }
 
 uint32 GLInProcessContext::CreateParentTexture(const gfx::Size& size) {
@@ -935,18 +926,9 @@ int WebGraphicsContext3DInProcessCommandBufferImpl::height() {
   return cached_height_;
 }
 
-bool WebGraphicsContext3DInProcessCommandBufferImpl::isGLES2Compliant() {
-  return true;
-}
-
 bool WebGraphicsContext3DInProcessCommandBufferImpl::setParentContext(
     WebGraphicsContext3D* parent_context) {
   return false;
-}
-
-WebGLId WebGraphicsContext3DInProcessCommandBufferImpl::getPlatformTextureId() {
-  DCHECK(context_);
-  return context_->GetParentTextureId();
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::prepareTexture() {

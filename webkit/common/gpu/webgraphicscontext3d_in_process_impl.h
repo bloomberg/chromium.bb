@@ -73,8 +73,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessImpl :
   virtual int width();
   virtual int height();
 
-  virtual bool isGLES2Compliant();
-
   virtual bool setParentContext(WebGraphicsContext3D* parent_context);
 
   virtual void reshape(int width, int height);
@@ -85,7 +83,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessImpl :
   virtual bool readBackFramebuffer(unsigned char* pixels, size_t buffer_size,
                                    WebGLId framebuffer, int width, int height);
 
-  virtual WebGLId getPlatformTextureId();
   virtual void prepareTexture();
   virtual void postSubBufferCHROMIUM(int x, int y, int width, int height);
 
