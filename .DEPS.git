@@ -476,6 +476,19 @@ hooks = [
     'action':
          [
     'python',
+    'src/build/util/lastchange.py',
+    '-s',
+    'src/third_party/WebKit',
+    '-o',
+    'src/build/util/LASTCHANGE.blink'
+],
+    'pattern':
+         '.'
+},
+    {
+    'action':
+         [
+    'python',
     'src/build/gyp_chromium'
 ],
     'pattern':
