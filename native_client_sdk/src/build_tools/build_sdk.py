@@ -56,6 +56,13 @@ CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
 NACLPORTS_REV = 757
 
+# TODO(binji): horrible hack to make the Windows builders go green...
+# Windows has a path length limit of 255 characters, after joining cwd with a
+# relative path. Some of the Windows builders are over by just a little bit, so
+# we'll temporarily use a shorter build directory name to make it all work.
+# See http://crbug.com/245453
+GYPBUILD_DIR = 'gb'  # Was 'gypbuild'
+
 options = None
 
 
@@ -434,16 +441,20 @@ TOOLCHAIN_LIBS = {
 
 
 def GypNinjaInstall(pepperdir, platform, toolchains):
-  build_dir = 'gypbuild'
+  build_dir = GYPBUILD_DIR
   ninja_out_dir = os.path.join(OUT_DIR, build_dir, 'Release')
   tools_files = [
-    ['dump_syms', 'dump_syms'],
     ['sel_ldr', 'sel_ldr_x86_32'],
     ['ncval_x86_32', 'ncval_x86_32'],
     ['ncval_arm', 'ncval_arm'],
     ['irt_core_newlib_x32.nexe', 'irt_core_x86_32.nexe'],
     ['irt_core_newlib_x64.nexe', 'irt_core_x86_64.nexe'],
   ]
+
+  # TODO(binji): dump_syms doesn't currently build on Windows. See
+  # http://crbug.com/245456
+  if platform != 'win':
+    tools_files.append(['dump_syms', 'dump_syms'])
 
   if platform != 'mac':
     # Mac doesn't build 64-bit binaries.
@@ -473,10 +484,10 @@ def GypNinjaInstall(pepperdir, platform, toolchains):
       tc_dir = 'tc_' + tc
       lib_dir = 'lib' + archname
       if archname == 'arm':
-        build_dir = 'gypbuild-arm'
+        build_dir = GYPBUILD_DIR + '-arm'
         tcdir = '%s_arm_%s' % (platform, tc)
       else:
-        build_dir = 'gypbuild'
+        build_dir = GYPBUILD_DIR
         tcdir = '%s_x86_%s' % (platform, tc)
 
       ninja_out_dir = os.path.join(OUT_DIR, build_dir, 'Release')
@@ -528,6 +539,11 @@ def GypNinjaBuild_NaCl(platform, rel_out_dir):
 
 
 def GypNinjaBuild_Breakpad(platform, rel_out_dir):
+  # TODO(binji): dump_syms doesn't currently build on Windows. See
+  # http://crbug.com/245456
+  if platform == 'win':
+    return
+
   gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
   out_dir = MakeNinjaRelPath(rel_out_dir)
   gyp_file = os.path.join(SRC_DIR, 'breakpad', 'breakpad.gyp')
@@ -593,8 +609,8 @@ def NinjaBuild(targets, out_dir):
 def BuildStepBuildToolchains(pepperdir, platform, toolchains):
   buildbot_common.BuildStep('SDK Items')
 
-  GypNinjaBuild_NaCl(platform, 'gypbuild')
-  GypNinjaBuild_Breakpad(platform, 'gypbuild')
+  GypNinjaBuild_NaCl(platform, GYPBUILD_DIR)
+  GypNinjaBuild_Breakpad(platform, GYPBUILD_DIR)
 
   tcname = platform + '_x86'
   newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
@@ -602,10 +618,10 @@ def BuildStepBuildToolchains(pepperdir, platform, toolchains):
   pnacldir = os.path.join(pepperdir, 'toolchain', tcname + '_pnacl')
 
   if set(toolchains) & set(['glibc', 'newlib']):
-    GypNinjaBuild_PPAPI('ia32', 'gypbuild')
+    GypNinjaBuild_PPAPI('ia32', GYPBUILD_DIR)
 
   if 'arm' in toolchains:
-    GypNinjaBuild_PPAPI('arm', 'gypbuild-arm')
+    GypNinjaBuild_PPAPI('arm', GYPBUILD_DIR + '-arm')
 
   GypNinjaInstall(pepperdir, platform, toolchains)
 
@@ -632,7 +648,7 @@ def BuildStepBuildToolchains(pepperdir, platform, toolchains):
 
     for arch in ('ia32', 'arm'):
       # Fill in the latest native pnacl shim library from the chrome build.
-      build_dir = 'gypbuild-pnacl-' + arch
+      build_dir = GYPBUILD_DIR + '-pnacl-' + arch
       GypNinjaBuild_Pnacl(build_dir, arch)
       pnacl_libdir_map = {'ia32': 'x86-64', 'arm': 'arm'}
       release_build_dir = os.path.join(OUT_DIR, build_dir, 'Release',
