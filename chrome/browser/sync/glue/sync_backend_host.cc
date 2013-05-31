@@ -704,7 +704,7 @@ void SyncBackendHost::ConfigureDataTypes(
   // until they succeed or the backend is shut down.
 
   syncer::ModelTypeSet types_to_download = registrar_->ConfigureDataTypes(
-      GetDataTypesInState(ENABLED, config_state_map),
+      GetDataTypesInState(CONFIGURE_ACTIVE, config_state_map),
       syncer::Union(GetDataTypesInState(DISABLED, config_state_map),
                     GetDataTypesInState(FAILED, config_state_map)));
   types_to_download.RemoveAll(syncer::ProxyTypes());

@@ -33,6 +33,7 @@
 #include "sync/api/sync_data.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/change_record.h"
+#include "sync/internal_api/public/data_type_debug_info_listener.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/write_node.h"
@@ -100,9 +101,9 @@ class ProfileSyncServicePreferenceTest
   }
 
   // DataTypeDebugInfoListener implementation.
-  virtual void OnDataTypeAssociationComplete(
-      const syncer::DataTypeAssociationStats& association_stats) OVERRIDE {
-    association_stats_ = association_stats;
+  virtual void OnSingleDataTypeConfigureComplete(
+      const syncer::DataTypeConfigurationStats& configuration_stats) OVERRIDE {
+    association_stats_ = configuration_stats.association_stats;
   }
   virtual void OnConfigureComplete() OVERRIDE {
     // Do nothing.

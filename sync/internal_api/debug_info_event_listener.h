@@ -78,8 +78,8 @@ class SYNC_EXPORT_PRIVATE DebugInfoEventListener
   virtual void GetAndClearDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE;
 
   // DataTypeDebugInfoListener implementation.
-  virtual void OnDataTypeAssociationComplete(
-      const DataTypeAssociationStats& association_stats) OVERRIDE;
+  virtual void OnSingleDataTypeConfigureComplete(
+      const DataTypeConfigurationStats& configuration_stats) OVERRIDE;
   virtual void OnConfigureComplete() OVERRIDE;
 
   // Returns a weak pointer to this object.

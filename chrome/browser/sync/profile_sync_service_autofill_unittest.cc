@@ -49,6 +49,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/data_type_debug_info_listener.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/write_node.h"
@@ -473,9 +474,9 @@ class ProfileSyncServiceAutofillTest
      public syncer::DataTypeDebugInfoListener {
  public:
   // DataTypeDebugInfoListener implementation.
-  virtual void OnDataTypeAssociationComplete(
-      const syncer::DataTypeAssociationStats& association_stats) OVERRIDE {
-    association_stats_ = association_stats;
+  virtual void OnSingleDataTypeConfigureComplete(
+      const syncer::DataTypeConfigurationStats& configuration_stats) OVERRIDE {
+    association_stats_ = configuration_stats.association_stats;
   }
   virtual void OnConfigureComplete() OVERRIDE {
     // Do nothing.

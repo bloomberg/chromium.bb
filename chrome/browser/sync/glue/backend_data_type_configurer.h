@@ -19,9 +19,13 @@ namespace browser_sync {
 class BackendDataTypeConfigurer {
  public:
   enum DataTypeConfigState {
-    ENABLED,   // Actively being synced.
-    DISABLED,  // Not syncing. Disabled by user.
-    FAILED,    // Not syncing due to unrecoverable error.
+    CONFIGURE_ACTIVE,     // Actively being configured. Data of such types
+                          // will be downloaded if not present locally.
+    CONFIGURE_INACTIVE,   // Already configured or to be configured in future.
+                          // Data of such types is left as it is, no
+                          // downloading or purging.
+    DISABLED,             // Not syncing. Disabled by user.
+    FAILED,               // Not syncing due to unrecoverable error.
   };
   typedef std::map<syncer::ModelType, DataTypeConfigState>
       DataTypeConfigStateMap;

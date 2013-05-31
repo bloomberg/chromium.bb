@@ -7,8 +7,7 @@
 namespace syncer {
 
 DataTypeAssociationStats::DataTypeAssociationStats()
-  : model_type(UNSPECIFIED),
-    num_local_items_before_association(0),
+  : num_local_items_before_association(0),
     num_sync_items_before_association(0),
     num_local_items_after_association(0),
     num_sync_items_after_association(0),

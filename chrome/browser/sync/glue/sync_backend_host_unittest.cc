@@ -215,7 +215,9 @@ class SyncBackendHostTest : public testing::Test {
                           syncer::ModelTypeSet types_to_remove) {
     BackendDataTypeConfigurer::DataTypeConfigStateMap config_state_map;
     BackendDataTypeConfigurer::SetDataTypesState(
-        BackendDataTypeConfigurer::ENABLED, types_to_add,  &config_state_map);
+        BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
+        types_to_add,
+        &config_state_map);
     BackendDataTypeConfigurer::SetDataTypesState(
         BackendDataTypeConfigurer::DISABLED,
         types_to_remove, &config_state_map);

@@ -380,7 +380,7 @@ ModelTypeSet EncryptableUserTypes() {
 }
 
 ModelTypeSet PriorityUserTypes() {
-  return ModelTypeSet(PRIORITY_PREFERENCES);
+  return ModelTypeSet(PRIORITY_PREFERENCES, MANAGED_USERS);
 }
 
 ModelTypeSet ControlTypes() {

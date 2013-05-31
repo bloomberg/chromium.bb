@@ -7,7 +7,6 @@
 
 #include "base/time.h"
 #include "sync/base/sync_export.h"
-#include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {
 
@@ -15,9 +14,6 @@ namespace syncer {
 struct SYNC_EXPORT DataTypeAssociationStats {
   DataTypeAssociationStats();
   ~DataTypeAssociationStats();
-
-  // The datatype that was associated.
-  ModelType model_type;
 
   // The state of the world before association.
   int num_local_items_before_association;
@@ -39,10 +35,8 @@ struct SYNC_EXPORT DataTypeAssociationStats {
   // Whether a datatype unrecoverable error was encountered during association.
   bool had_error;
 
-  // Time spent on downloading data for association.
-  base::TimeDelta download_time;
-
-  // Time waiting for local model loading and preceding data types to finish.
+  // Waiting time within association manager for loading local models and
+  // associating other types.
   base::TimeDelta association_wait_time;
 
   // Time spent on association.
