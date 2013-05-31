@@ -1085,13 +1085,6 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableQuickofficeComponentApp),
   },
-  {
-    "enable-kiosk-app-settings",
-    IDS_FLAGS_ENABLE_KIOSK_APP_SETTINGS_NAME,
-    IDS_FLAGS_ENABLE_KIOSK_APP_SETTINGS_DESCRIPTION,
-    kOsCrOSOwnerOnly,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableKioskAppSettings),
-  },
 #endif  // defined(OS_CHROMEOS)
   {
     "views-textfield",

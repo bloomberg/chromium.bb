@@ -14,6 +14,10 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/extensions/chromeos/kiosk_apps_handler.h"
+#endif
+
 namespace {
 
 content::WebUIDataSource* CreateExtensionsHTMLSource() {
@@ -54,6 +58,13 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
       new InstallExtensionHandler();
   install_extension_handler->GetLocalizedValues(source);
   web_ui->AddMessageHandler(install_extension_handler);
+
+#if defined(OS_CHROMEOS)
+  chromeos::KioskAppsHandler* kiosk_app_handler =
+      new chromeos::KioskAppsHandler();
+  kiosk_app_handler->GetLocalizedValues(source);
+  web_ui->AddMessageHandler(kiosk_app_handler);
+#endif
 
   content::WebUIDataSource::Add(profile, source);
 }

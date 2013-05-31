@@ -8,6 +8,10 @@
 <include src="extension_list.js"></include>
 <include src="pack_extension_overlay.js"></include>
 
+<if expr="pp_ifdef('chromeos')">
+<include src="chromeos/kiosk_apps.js"></include>
+</if>
+
 // Used for observing function of the backend datasource for this page by
 // tests.
 var webuiResponded = false;
@@ -112,6 +116,20 @@ cr.define('extensions', function() {
       var extensionCommandsOverlay =
           extensions.ExtensionCommandsOverlay.getInstance();
       extensionCommandsOverlay.initializePage();
+
+      // Initialize the kiosk overlay.
+      if (cr.isChromeOS && loadTimeData.getBoolean('enableKiosk')) {
+        var kioskOverlay = extensions.KioskAppsOverlay.getInstance();
+        kioskOverlay.initialize();
+
+        $('add-kiosk-app').hidden = false;
+        $('add-kiosk-app').addEventListener('click', function() {
+          ExtensionSettings.showOverlay($('kiosk-apps-page'));
+          kioskOverlay.didShowPage();
+        });
+
+        extensions.KioskDisableBailoutConfirm.getInstance().initialize();
+      }
 
       cr.ui.overlay.setupOverlay($('dropTargetOverlay'));
 

@@ -15,47 +15,56 @@ KioskAppSettingsWebUITest.prototype = {
   /**
    * Browse to the kiosk app settings page.
    */
-  browsePreload: 'chrome://settings-frame/kioskAppsOverlay',
+  browsePreload: 'chrome://extensions-frame/',
 
   /**
-   * Mock apps data.
+   * Mock settings data.
+   * @private
    */
-  apps_: [
-    {
-      id: 'app_1',
-      name: 'App1 Name',
-      iconURL: '',
-      autoLaunch: false,
-      isLoading: false,
-    },
-    {
-      id: 'app_2',
-      name: '',  // no name
-      iconURL: '',
-      autoLaunch: false,
-      isLoading: true,
-    },
-  ],
+  settings_: {
+    apps: [
+      {
+        id: 'app_1',
+        name: 'App1 Name',
+        iconURL: '',
+        autoLaunch: false,
+        isLoading: false,
+      },
+      {
+        id: 'app_2',
+        name: '',  // no name
+        iconURL: '',
+        autoLaunch: false,
+        isLoading: true,
+      },
+    ],
+    disableBailout: false
+  },
 
   /**
    * Register a mock dictionary handler.
    */
   preLoad: function() {
     this.makeAndRegisterMockHandler(
-        ['getKioskApps',
+        ['getKioskAppSettings',
          'addKioskApp',
          'removeKioskApp',
          'enableKioskAutoLaunch',
          'disableKioskAutoLaunch'
         ]);
-    this.mockHandler.stubs().getKioskApps().
+    this.mockHandler.stubs().getKioskAppSettings().
         will(callFunction(function() {
-          KioskAppsOverlay.setApps(this.apps_);
+          extensions.KioskAppsOverlay.setSettings(this.settings_);
         }.bind(this)));
     this.mockHandler.stubs().addKioskApp(ANYTHING);
     this.mockHandler.stubs().removeKioskApp(ANYTHING);
     this.mockHandler.stubs().enableKioskAutoLaunch(ANYTHING);
     this.mockHandler.stubs().disableKioskAutoLaunch(ANYTHING);
+  },
+
+  setUp: function() {
+    // Shows the kiosk apps management overlay.
+    cr.dispatchSimpleEvent($('add-kiosk-app'), 'click');
   }
 };
 
@@ -65,10 +74,10 @@ TEST_F('KioskAppSettingsWebUITest', 'testOpenKioskAppSettings', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   var appItems = $('kiosk-app-list').items;
-  assertEquals(this.apps_.length, appItems.length);
-  assertEquals(this.apps_[0].name, appItems[0].name.textContent);
+  assertEquals(this.settings_.apps.length, appItems.length);
+  assertEquals(this.settings_.apps[0].name, appItems[0].name.textContent);
   assertFalse(appItems[0].icon.classList.contains('spinner'));
-  assertEquals(this.apps_[1].id, appItems[1].name.textContent);
+  assertEquals(this.settings_.apps[1].id, appItems[1].name.textContent);
   assertTrue(appItems[1].icon.classList.contains('spinner'));
 });
 
@@ -133,7 +142,7 @@ TEST_F('KioskAppSettingsWebUITest', 'testUpdateApp', function() {
     autoLaunch: true,
     isLoading: false,
   };
-  KioskAppsOverlay.updateApp(newApp2);
+  extensions.KioskAppsOverlay.updateApp(newApp2);
 
   assertEquals('app_2', appItems[1].data.id);
   expectEquals(newName, appItems[1].data.name, newName);
@@ -144,7 +153,7 @@ TEST_F('KioskAppSettingsWebUITest', 'testUpdateApp', function() {
 
 // Verify that showError makes error banner visible.
 TEST_F('KioskAppSettingsWebUITest', 'testShowError', function() {
-  KioskAppsOverlay.showError('A bad app');
+  extensions.KioskAppsOverlay.showError('A bad app');
   expectTrue($('kiosk-apps-error-banner').classList.contains('visible'));
 });
 
@@ -152,29 +161,29 @@ TEST_F('KioskAppSettingsWebUITest', 'testShowError', function() {
 // the check only remains when the confirmation UI is acknowledged.
 TEST_F('KioskAppSettingsWebUITest', 'testCheckDisableBailout', function() {
   var checkbox = $('kiosk-disable-bailout-shortcut');
-  var confirmOverlay = KioskDisableBailoutConfirm.getInstance();
-  expectFalse(confirmOverlay.visible);
+  var confirmOverlay = $('kiosk-disable-bailout-confirm-overlay');
+  expectFalse(confirmOverlay.classList.contains('showing'));
 
   // Un-checking the box does not trigger confirmation.
   checkbox.checked = false;
   cr.dispatchSimpleEvent(checkbox, 'change');
-  expectFalse(confirmOverlay.visible);
+  expectFalse(confirmOverlay.classList.contains('showing'));
 
   // Checking the box trigger confirmation.
   checkbox.checked = true;
   cr.dispatchSimpleEvent(checkbox, 'change');
-  expectTrue(confirmOverlay.visible);
+  expectTrue(confirmOverlay.classList.contains('showing'));
 
   // Confirm it and the check remains.
   cr.dispatchSimpleEvent($('kiosk-disable-bailout-confirm-button'), 'click');
   expectTrue(checkbox.checked);
-  expectFalse(confirmOverlay.visible);
+  expectFalse(confirmOverlay.classList.contains('showing'));
 
   // And canceling resets the check.
   checkbox.checked = true;
   cr.dispatchSimpleEvent(checkbox, 'change');
-  expectTrue(confirmOverlay.visible);
+  expectTrue(confirmOverlay.classList.contains('showing'));
   cr.dispatchSimpleEvent($('kiosk-disable-bailout-cancel-button'), 'click');
   expectFalse(checkbox.checked);
-  expectFalse(confirmOverlay.visible);
+  expectFalse(confirmOverlay.classList.contains('showing'));
 });

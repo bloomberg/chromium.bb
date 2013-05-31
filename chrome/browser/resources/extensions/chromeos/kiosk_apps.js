@@ -2,65 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
-
+cr.define('extensions', function() {
   /**
    * Encapsulated handling of ChromeOS kiosk apps options page.
-   * @extends {options.OptionsPage}
    * @constructor
    */
   function KioskAppsOverlay() {
-    OptionsPage.call(this,
-                     'kioskAppsOverlay',
-                     loadTimeData.getString('kioskOverlayTitle'),
-                     'kiosk-apps-page');
   }
 
   cr.addSingletonGetter(KioskAppsOverlay);
 
   KioskAppsOverlay.prototype = {
-    __proto__: OptionsPage.prototype,
-
     /**
      * Clear error timer id.
      * @type {?number}
      */
     clearErrorTimer_: null,
 
-    /** @override */
-    initializePage: function() {
-      // Call base class implementation to starts preference initialization.
-      OptionsPage.prototype.initializePage.call(this);
+    /**
+     * Initialize the page.
+     */
+    initialize: function() {
+      extensions.KioskAppList.decorate($('kiosk-app-list'));
 
-      options.KioskAppList.decorate($('kiosk-app-list'));
+      var overlay = $('kiosk-apps-page');
+      cr.ui.overlay.setupOverlay(overlay);
+      overlay.addEventListener('cancelOverlay', this.handleDismiss_.bind(this));
 
       $('kiosk-options-overlay-confirm').onclick =
-          OptionsPage.closeOverlay.bind(OptionsPage);
+          this.handleDismiss_.bind(this);
       $('kiosk-app-id-edit').addEventListener('keypress',
           this.handleAppIdInputKeyPressed_);
-
-      Preferences.getInstance().addEventListener(
-          'cros.accounts.deviceLocalAccounts',
-          this.loadAppsIfVisible_.bind(this));
-      Preferences.getInstance().addEventListener(
-          'cros.accounts.deviceLocalAccountAutoLoginId',
-          this.loadAppsIfVisible_.bind(this));
     },
 
-    /** @override */
-    didShowPage: function() {
-      this.loadAppsIfVisible_();
-      $('kiosk-app-id-edit').focus();
-    },
-
-    /**
-     * Loads the apps if the overlay page is visible.
-     * @private
+    /*
+     * Invoked when the page is shown.
      */
-    loadAppsIfVisible_: function() {
-      if (this.visible)
-        chrome.send('getKioskApps');
+    didShowPage: function() {
+      chrome.send('getKioskAppSettings');
+      $('kiosk-app-id-edit').focus();
     },
 
     /**
@@ -92,15 +72,26 @@ cr.define('options', function() {
         chrome.send('addKioskApp', [e.target.value]);
         e.target.value = '';
       }
+    },
+
+    /**
+     * Handles the overlay being dismissed.
+     * @private
+     */
+    handleDismiss_: function() {
+      ExtensionSettings.showOverlay(null);
     }
   };
 
   /**
    * Sets apps to be displayed in kiosk-app-list.
-   * @param {!Array.<!Object>} apps An array of app info objects.
+   * @param {!Object.<{apps: !Array.<Object>, disableBailout: boolean}>}
+   *     settings An object containing an array of app info objects and
+   *     disable bailout shortcut flag.
    */
-  KioskAppsOverlay.setApps = function(apps) {
-    $('kiosk-app-list').setApps(apps);
+  KioskAppsOverlay.setSettings = function(settings) {
+    $('kiosk-app-list').setApps(settings.apps);
+    $('kiosk-disable-bailout-shortcut').checked = settings.disableBailout;
   };
 
   /**

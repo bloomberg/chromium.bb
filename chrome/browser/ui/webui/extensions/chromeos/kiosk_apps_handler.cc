@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/chromeos/kiosk_apps_handler.h"
+#include "chrome/browser/ui/webui/extensions/chromeos/kiosk_apps_handler.h"
 
 #include <algorithm>
 #include <set>
@@ -10,15 +10,18 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
+#include "base/chromeos/chromeos_version.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
-#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/public/browser/browser_thread.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -26,7 +29,6 @@
 #include "ui/webui/web_ui_util.h"
 
 namespace chromeos {
-namespace options {
 
 namespace {
 
@@ -97,8 +99,8 @@ KioskAppsHandler::~KioskAppsHandler() {
 }
 
 void KioskAppsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("getKioskApps",
-      base::Bind(&KioskAppsHandler::HandleGetKioskApps,
+  web_ui()->RegisterMessageCallback("getKioskAppSettings",
+      base::Bind(&KioskAppsHandler::HandleGetKioskAppSettings,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("addKioskApp",
       base::Bind(&KioskAppsHandler::HandleAddKioskApp,
@@ -112,55 +114,64 @@ void KioskAppsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("disableKioskAutoLaunch",
       base::Bind(&KioskAppsHandler::HandleDisableKioskAutoLaunch,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("setDisableBailoutShortcut",
+      base::Bind(&KioskAppsHandler::HandleSetDisableBailoutShortcut,
+                 base::Unretained(this)));
 }
 
-void KioskAppsHandler::GetLocalizedValues(
-    base::DictionaryValue* localized_strings) {
-  DCHECK(localized_strings);
-
-  RegisterTitle(localized_strings,
-                "kioskOverlayTitle",
-                IDS_OPTIONS_KIOSK_OVERLAY_TITLE);
-
-  localized_strings->SetString(
+void KioskAppsHandler::GetLocalizedValues(content::WebUIDataSource* source) {
+  source->AddBoolean(
+      "enableKiosk",
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableAppMode) &&
+      (chromeos::UserManager::Get()->IsCurrentUserOwner() ||
+          !base::chromeos::IsRunningOnChromeOS()));
+  source->AddString(
+      "addKioskAppButton",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ADD_KIOSK_APP_BUTTON));
+  source->AddString(
+      "kioskOverlayTitle",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_OVERLAY_TITLE));
+  source->AddString(
       "addKioskApp",
       l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_ADD_APP));
-  localized_strings->SetString(
+  source->AddString(
       "kioskAppIdEditHint",
       l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_ADD_APP_HINT));
-  localized_strings->SetString(
+  source->AddString(
       "enableAutoLaunchButton",
       l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_ENABLE_AUTO_LAUNCH));
-  localized_strings->SetString(
+  source->AddString(
       "disableAutoLaunchButton",
       l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_DISABLE_AUTO_LAUNCH));
-  localized_strings->SetString(
+  source->AddString(
       "autoLaunch",
       l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_AUTO_LAUNCH));
-  localized_strings->SetString(
+  source->AddString(
       "invalidApp",
       l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_INVALID_APP));
-  localized_strings->SetString(
+  source->AddString(
       "kioskDiableBailoutShortcutLabel",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_LABEL));
-  localized_strings->SetString(
+  source->AddString(
       "kioskDisableBailoutShortcutWarningBold",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_BOLD));
   const string16 product_os_name =
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME);
-  localized_strings->SetString(
+  source->AddString(
       "kioskDisableBailoutShortcutWarning",
       l10n_util::GetStringFUTF16(
           IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_FORMAT,
           product_os_name));
-  localized_strings->SetString(
+  source->AddString(
       "kioskDisableBailoutShortcutConfirm",
       l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL));
-  localized_strings->SetString(
+  source->AddString(
       "kioskDisableBailoutShortcutCancel",
       l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
+  source->AddString("done", l10n_util::GetStringUTF16(IDS_DONE));
 }
 
 void KioskAppsHandler::OnKioskAppDataChanged(const std::string& app_id) {
@@ -171,39 +182,54 @@ void KioskAppsHandler::OnKioskAppDataChanged(const std::string& app_id) {
   base::DictionaryValue app_dict;
   PopulateAppDict(app_data, &app_dict);
 
-  web_ui()->CallJavascriptFunction("options.KioskAppsOverlay.updateApp",
+  web_ui()->CallJavascriptFunction("extensions.KioskAppsOverlay.updateApp",
                                    app_dict);
 }
 
 void KioskAppsHandler::OnKioskAppDataLoadFailure(const std::string& app_id) {
   base::StringValue app_id_value(app_id);
-  web_ui()->CallJavascriptFunction("options.KioskAppsOverlay.showError",
+  web_ui()->CallJavascriptFunction("extensions.KioskAppsOverlay.showError",
                                    app_id_value);
 }
 
-void KioskAppsHandler::SendKioskApps() {
+void KioskAppsHandler::OnKioskAppsSettingsChanged() {
+  SendKioskAppSettings();
+}
+
+void KioskAppsHandler::SendKioskAppSettings() {
   if (!initialized_)
     return;
+
+  bool enable_bailout_shortcut;
+  if (!CrosSettings::Get()->GetBoolean(
+          kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled,
+          &enable_bailout_shortcut)) {
+    enable_bailout_shortcut = true;
+  }
+
+  base::DictionaryValue settings;
+  settings.SetBoolean("disableBailout", !enable_bailout_shortcut);
 
   KioskAppManager::Apps apps;
   kiosk_app_manager_->GetApps(&apps);
 
-  base::ListValue apps_list;
+  scoped_ptr<base::ListValue> apps_list(new base::ListValue);
   for (size_t i = 0; i < apps.size(); ++i) {
     const KioskAppManager::App& app_data = apps[i];
 
     scoped_ptr<base::DictionaryValue> app_info(new base::DictionaryValue);
     PopulateAppDict(app_data, app_info.get());
-    apps_list.Append(app_info.release());
+    apps_list->Append(app_info.release());
   }
+  settings.SetWithoutPathExpansion("apps", apps_list.release());
 
-  web_ui()->CallJavascriptFunction("options.KioskAppsOverlay.setApps",
-                                   apps_list);
+  web_ui()->CallJavascriptFunction("extensions.KioskAppsOverlay.setSettings",
+                                   settings);
 }
 
-void KioskAppsHandler::HandleGetKioskApps(const base::ListValue* args) {
+void KioskAppsHandler::HandleGetKioskAppSettings(const base::ListValue* args) {
   initialized_ = true;
-  SendKioskApps();
+  SendKioskAppSettings();
 }
 
 void KioskAppsHandler::HandleAddKioskApp(const base::ListValue* args) {
@@ -246,5 +272,14 @@ void KioskAppsHandler::HandleDisableKioskAutoLaunch(
   kiosk_app_manager_->SetAutoLaunchApp("");
 }
 
-}  // namespace options
+void KioskAppsHandler::HandleSetDisableBailoutShortcut(
+    const base::ListValue* args) {
+  bool disable_bailout_shortcut;
+  CHECK(args->GetBoolean(0, &disable_bailout_shortcut));
+
+  CrosSettings::Get()->SetBoolean(
+      kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled,
+      !disable_bailout_shortcut);
+}
+
 }  // namespace chromeos

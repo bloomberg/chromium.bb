@@ -104,10 +104,6 @@ const char kEnableTouchpadThreeFingerSwipe[]
 // than the kiosk app mode.
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
 
-// Enable kiosk app settings UI.
-// TODO(xiyuan): Remove this flag after http://crbug.com/228860.
-const char kEnableKioskAppSettings[]        = "enable-kiosk-app-settings";
-
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[]       = "enable-request-tablet-site";
 

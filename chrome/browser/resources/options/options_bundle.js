@@ -31,7 +31,6 @@
   <include src="chromeos/display_options.js"></include>
   <include src="chromeos/display_overscan.js"></include>
   <include src="chromeos/keyboard_overlay.js"></include>
-  <include src="chromeos/kiosk_apps.js"></include>
   <include src="chromeos/pointer_overlay.js"></include>
   var AccountsOptions = options.AccountsOptions;
   var ChangePictureOptions = options.ChangePictureOptions;
@@ -41,8 +40,6 @@
   var BluetoothOptions = options.BluetoothOptions;
   var BluetoothPairing = options.BluetoothPairing;
   var KeyboardOverlay = options.KeyboardOverlay;
-  var KioskAppsOverlay = options.KioskAppsOverlay;
-  var KioskDisableBailoutConfirm = options.KioskDisableBailoutConfirm;
   var PointerOverlay = options.PointerOverlay;
   var UIAccountTweaks = uiAccountTweaks.UIAccountTweaks;
 </if>

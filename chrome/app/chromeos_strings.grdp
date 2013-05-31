@@ -2686,11 +2686,8 @@ Battery full
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION" desc="Label for cellular network modem PRL (Preferred Roaming List) version under chrome://options/internet">
     PRL version:
   </message>
-  <message name="IDS_OPTIONS_KIOSK" desc="Name of the kiosk management section on chrome settings page.">
-    Kiosk
-  </message>
-  <message name="IDS_OPTIONS_KIOSK_MANAGE_BUTTON" desc="Label of the button to bring up kiosk management overlay in the kiosk management section on chrome settings page.">
-    Manage kiosk applications
+  <message name="IDS_EXTENSIONS_ADD_KIOSK_APP_BUTTON" desc="Label of the button to bring up kiosk management overlay on chrome extensions page.">
+    Add kiosk application...
   </message>
   <message name="IDS_OPTIONS_KIOSK_OVERLAY_TITLE" desc="The title text of the kiosk settings overlay.">
     Manage Kiosk Applications

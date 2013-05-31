@@ -440,17 +440,6 @@ cr.define('options', function() {
         };
       }
 
-      // Kiosk section (CrOS only).
-      if (cr.isChromeOS) {
-        if (loadTimeData.getBoolean('enableKioskSection')) {
-          $('kiosk-section').hidden = false;
-
-          $('manage-kiosk-apps-button').onclick = function(event) {
-            OptionsPage.navigateToPage('kioskAppsOverlay');
-          };
-        }
-      }
-
       // System section.
       if (!cr.isChromeOS) {
         var updateGpuRestartButton = function() {

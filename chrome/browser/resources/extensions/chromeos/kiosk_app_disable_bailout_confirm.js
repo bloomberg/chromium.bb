@@ -2,45 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
-
+cr.define('extensions', function() {
   /**
    * A confirmation overlay for disabling kiosk app bailout shortcut.
-   * @extends {options.OptionsPage}
    * @constructor
    */
   function KioskDisableBailoutConfirm() {
-    OptionsPage.call(this,
-                     'kioskDisableBailoutConfirm',
-                     '',
-                     'kiosk-disable-bailout-confirm-overlay');
   }
 
   cr.addSingletonGetter(KioskDisableBailoutConfirm);
 
   KioskDisableBailoutConfirm.prototype = {
-    __proto__: OptionsPage.prototype,
-
-    /** @override */
-    initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+    /**
+     * Initialize the page.
+     */
+    initialize: function() {
+      var overlay = $('kiosk-disable-bailout-confirm-overlay');
+      cr.ui.overlay.setupOverlay(overlay);
+      overlay.addEventListener('cancelOverlay', this.handleCancel);
 
       var el = $('kiosk-disable-bailout-shortcut');
-      el.customChangeHandler = this.handleDisableBailoutShortcutChange_;
+      el.addEventListener('change', this.handleDisableBailoutShortcutChange_);
 
       $('kiosk-disable-bailout-confirm-button').onclick = function(e) {
-        OptionsPage.closeOverlay();
-        Preferences.setBooleanPref(
-            'cros.accounts.deviceLocalAccountAutoLoginBailoutEnabled',
-            false, true);
+        ExtensionSettings.showOverlay($('kiosk-apps-page'));
+        chrome.send('setDisableBailoutShortcut', [true]);
       };
       $('kiosk-disable-bailout-cancel-button').onclick = this.handleCancel;
     },
 
-    /** @override */
+    /** Handles overlay being canceled. */
     handleCancel: function() {
-      OptionsPage.closeOverlay();
+      ExtensionSettings.showOverlay($('kiosk-apps-page'));
       $('kiosk-disable-bailout-shortcut').checked = false;
     },
 
@@ -51,12 +44,14 @@ cr.define('options', function() {
      * @private
      */
     handleDisableBailoutShortcutChange_: function() {
-      // Let default processing happening if user un-checks the box.
-      if (!$('kiosk-disable-bailout-shortcut').checked)
+      // Just set the pref if user un-checks the box.
+      if (!$('kiosk-disable-bailout-shortcut').checked) {
+        chrome.send('setDisableBailoutShortcut', [false]);
         return false;
+      }
 
       // Otherwise, show the confirmation overlay.
-      OptionsPage.showPageByName('kioskDisableBailoutConfirm', false);
+      ExtensionSettings.showOverlay($('kiosk-disable-bailout-confirm-overlay'));
       return true;
     }
   };
