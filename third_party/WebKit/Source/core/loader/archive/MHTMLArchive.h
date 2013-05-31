@@ -41,17 +41,22 @@ namespace WebCore {
 
 class KURL;
 class MHTMLParser;
-class Page;
 class SharedBuffer;
+
+struct SerializedResource;
 
 class MHTMLArchive : public RefCounted<MHTMLArchive> {
 public:
     static PassRefPtr<MHTMLArchive> create();
     static PassRefPtr<MHTMLArchive> create(const KURL&, SharedBuffer*);
 
-    static PassRefPtr<SharedBuffer> generateMHTMLData(Page*);
+    enum EncodingPolicy {
+        UseDefaultEncoding,
+        UseBinaryEncoding
+    };
+
     // Binary encoding results in smaller MHTML files but they might not work in other browsers.
-    static PassRefPtr<SharedBuffer> generateMHTMLDataUsingBinaryEncoding(Page*);
+    static PassRefPtr<SharedBuffer> generateMHTMLData(const Vector<SerializedResource>&, EncodingPolicy, const String& title, const String& mimeType);
 
     virtual ~MHTMLArchive();
     ArchiveResource* mainResource() { return m_mainResource.get(); }
@@ -59,8 +64,6 @@ public:
     const Vector<RefPtr<MHTMLArchive> >& subframeArchives() const { return m_subframeArchives; }
 
 private:
-    static PassRefPtr<SharedBuffer> generateMHTMLData(Page*, bool useBinaryEncoding);
-
     friend class MHTMLParser;
     MHTMLArchive();
 

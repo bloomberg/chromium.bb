@@ -2501,6 +2501,7 @@
             'platform/ScrollbarThemeComposite.h',
             'platform/SecureTextInput.cpp',
             'platform/SecureTextInput.h',
+            'platform/SerializedResource.h',
             'platform/SharedBuffer.cpp',
             'platform/SharedBufferChunkReader.cpp',
             'platform/SharedTimer.h',

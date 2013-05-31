@@ -52,6 +52,7 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/SerializedResource.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "core/rendering/style/StyleCachedImage.h"
@@ -170,18 +171,7 @@ void SerializerMarkupAccumulator::appendEndTag(Node* node)
         MarkupAccumulator::appendEndTag(node);
 }
 
-PageSerializer::Resource::Resource()
-{
-}
-
-PageSerializer::Resource::Resource(const KURL& url, const String& mimeType, PassRefPtr<SharedBuffer> data)
-    : url(url)
-    , mimeType(mimeType)
-    , data(data)
-{
-}
-
-PageSerializer::PageSerializer(Vector<PageSerializer::Resource>* resources)
+PageSerializer::PageSerializer(Vector<SerializedResource>* resources)
     : m_resources(resources)
     , m_blankFrameCounter(0)
 {
@@ -218,7 +208,7 @@ void PageSerializer::serializeFrame(Frame* frame)
     }
     String text = accumulator.serializeNodes(document->documentElement(), IncludeNode);
     CString frameHTML = textEncoding.encode(text.characters(), text.length(), WTF::EntitiesForUnencodables);
-    m_resources->append(Resource(url, document->suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
+    m_resources->append(SerializedResource(url, document->suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
     m_resourceURLs.add(url);
 
     for (Vector<Node*>::iterator iter = nodes.begin(); iter != nodes.end(); ++iter) {
@@ -286,7 +276,7 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet* styleSheet, const KUR
         ASSERT(textEncoding.isValid());
         String textString = cssText.toString();
         CString text = textEncoding.encode(textString.characters(), textString.length(), WTF::EntitiesForUnencodables);
-        m_resources->append(Resource(url, String("text/css"), SharedBuffer::create(text.data(), text.length())));
+        m_resources->append(SerializedResource(url, String("text/css"), SharedBuffer::create(text.data(), text.length())));
         m_resourceURLs.add(url);
     }
 }
@@ -309,7 +299,7 @@ void PageSerializer::addImageToResources(CachedImage* image, RenderObject* image
     }
 
     String mimeType = image->response().mimeType();
-    m_resources->append(Resource(url, mimeType, data));
+    m_resources->append(SerializedResource(url, mimeType, data));
     m_resourceURLs.add(url);
 }
 

@@ -32,12 +32,9 @@
 
 #include "core/loader/archive/MHTMLArchive.h"
 
-#include "core/dom/Document.h"
 #include "core/loader/archive/MHTMLParser.h"
-#include "core/page/Frame.h"
-#include "core/page/Page.h"
-#include "core/page/PageSerializer.h"
 #include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/SerializedResource.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/text/QuotedPrintable.h"
 #include "weborigin/SchemeRegistry.h"
@@ -124,22 +121,8 @@ PassRefPtr<MHTMLArchive> MHTMLArchive::create(const KURL& url, SharedBuffer* dat
     return mainArchive.release();
 }
 
-PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(Page* page)
+PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(const Vector<SerializedResource>& resources, EncodingPolicy encodingPolicy, const String& title, const String& mimeType)
 {
-    return generateMHTMLData(page, false);
-}
-
-PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLDataUsingBinaryEncoding(Page* page)
-{
-    return generateMHTMLData(page, true);
-}
-
-PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(Page* page, bool useBinaryEncoding)
-{
-    Vector<PageSerializer::Resource> resources;
-    PageSerializer pageSerializer(&resources);
-    pageSerializer.serialize(page);
-
     String boundary = generateRandomBoundary();
     String endOfResourceBoundary = "--" + boundary + "\r\n";
 
@@ -151,13 +134,13 @@ PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(Page* page, bool useBin
     stringBuilder.append("From: <Saved by WebKit>\r\n");
     stringBuilder.append("Subject: ");
     // We replace non ASCII characters with '?' characters to match IE's behavior.
-    stringBuilder.append(replaceNonPrintableCharacters(page->mainFrame()->document()->title()));
+    stringBuilder.append(replaceNonPrintableCharacters(title));
     stringBuilder.append("\r\nDate: ");
     stringBuilder.append(dateString);
     stringBuilder.append("\r\nMIME-Version: 1.0\r\n");
     stringBuilder.append("Content-Type: multipart/related;\r\n");
     stringBuilder.append("\ttype=\"");
-    stringBuilder.append(page->mainFrame()->document()->suggestedMIMEType());
+    stringBuilder.append(mimeType);
     stringBuilder.append("\";\r\n");
     stringBuilder.append("\tboundary=\"");
     stringBuilder.append(boundary);
@@ -170,7 +153,7 @@ PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(Page* page, bool useBin
     mhtmlData->append(asciiString.data(), asciiString.length());
 
     for (size_t i = 0; i < resources.size(); ++i) {
-        const PageSerializer::Resource& resource = resources[i];
+        const SerializedResource& resource = resources[i];
 
         stringBuilder.clear();
         stringBuilder.append(endOfResourceBoundary);
@@ -178,7 +161,7 @@ PassRefPtr<SharedBuffer> MHTMLArchive::generateMHTMLData(Page* page, bool useBin
         stringBuilder.append(resource.mimeType);
 
         const char* contentEncoding = 0;
-        if (useBinaryEncoding)
+        if (encodingPolicy == UseBinaryEncoding)
             contentEncoding = binary;
         else if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(resource.mimeType) || MIMETypeRegistry::isSupportedNonImageMIMEType(resource.mimeType))
             contentEncoding = quotedPrintable;
