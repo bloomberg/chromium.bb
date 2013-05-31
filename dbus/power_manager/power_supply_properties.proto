@@ -10,12 +10,54 @@ package power_manager;
 
 // Power supply status sent from powerd to Chrome.
 message PowerSupplyProperties {
+  enum ExternalPower {
+    // AC/line/mains power is connected. This is generally the
+    // highest-power source that can be attached to the system, but the
+    // system may be drawing power at a high enough rate that the battery
+    // is discharging rather than charging; see BatteryState.
+    AC = 0;
+
+    // A USB power source (SDP, DCP, CDP, or ACA) is connected. The battery
+    // may be charging or discharging depending on the instantaneous power
+    // consumption and the negotiated current; see BatteryState.
+    USB = 1;
+
+    // No external power source is connected.
+    DISCONNECTED = 2;
+
+    // Next value to use: 3
+  }
+
   enum BatteryState {
+    // The battery is full or close to full.
+    FULL = 0;
+
+    // The battery is being charged but is not yet full.
+    CHARGING = 1;
+
+    // The battery is discharging. Note that an external power source may
+    // be connected but not supplying enough power to offset the system's
+    // instantaneous power consumption; see ExternalPower. This state is
+    // also used if the battery is neither charging nor discharging (i.e.
+    // current is zero) in a non-full state, which may indicate a battery
+    // defect.
+    DISCHARGING = 2;
+
+    // The system doesn't have a battery.
+    NOT_PRESENT = 3;
+
+    // Next value to use: 4
+  }
+
+  // Deprecated; use ExternalPower and BatteryState instead.
+  // TODO(derat): Remove this after updating Chrome and powerd to use the
+  // new enums instead.
+  enum OldBatteryState {
     // Line power is connected and the battery is full or being charged.
-    CHARGING = 0;
+    OLD_CHARGING = 0;
 
     // Line power is disconnected.
-    DISCHARGING = 1;
+    OLD_DISCHARGING = 1;
 
     // Line power is connected and the battery isn't full, but it also
     // isn't charging (or discharging).  This can occur if the EC believes
@@ -31,11 +73,11 @@ message PowerSupplyProperties {
     // Next value to use: 4
   }
 
-  // Does the system have a battery?
-  optional bool battery_is_present = 8;
+  // Current external power source.
+  optional ExternalPower external_power = 14;
 
   // Current state of the battery.
-  optional BatteryState battery_state = 13;
+  optional BatteryState battery_state = 15;
 
   // Estimated battery charge as a percent of its total capacity, in the
   // range [0.0, 100.0].
@@ -53,5 +95,11 @@ message PowerSupplyProperties {
   // source just changed.
   optional bool is_calculating_battery_time = 12 [default = false];
 
-  // Next ID to use: 14
+  // Deprecated: Use |external_power| and |battery_state| instead.
+  optional OldBatteryState old_battery_state = 13;
+
+  // Deprecated: Use |battery_state == NOT_PRESENT| instead.
+  optional bool battery_is_present = 8;
+
+  // Next ID to use: 16
 }
