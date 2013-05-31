@@ -305,26 +305,36 @@ function sanitize_file {
 function sanitize_dir {
   local dir=$1
   for f in $(find $dir -name "*.png"); do
-    sanitize_file $f
+    if $using_cygwin ; then
+      sanitize_file $(cygpath -w $f)
+    else
+      sanitize_file $f
+    fi
   done
 }
 
 function install_if_not_installed {
   local program=$1
-  dpkg -s $program > /dev/null 2>&1
+  local package=$2
+  which $program > /dev/null 2>&1
   if [ "$?" != "0" ]; then
-    read -p "Couldn't find $program. Do you want to install? (y/n)"
-    [ "$REPLY" == "y" ] && sudo apt-get install $program
-    [ "$REPLY" == "y" ] || exit
+    if $using_cygwin ; then
+      echo "Couldn't find $program.  Please run setup.exe and install the $package package."
+      exit 1
+    else
+      read -p "Couldn't find $program. Do you want to install? (y/n)"
+      [ "$REPLY" == "y" ] && sudo apt-get install $package
+      [ "$REPLY" == "y" ] || exit
+    fi
   fi
 }
 
 function fail_if_not_installed {
   local program=$1
   local url=$2
-  which $program > /dev/null
+  which $program > /dev/null 2>&1
   if [ $? != 0 ]; then
-    echo "Couldn't find $program. Please download and install it from $url"
+    echo "Couldn't find $program. Please download and install it from $url ."
     exit 1
   fi
 }
@@ -355,6 +365,12 @@ if [ ! -e ../.gclient ]; then
   exit 1
 fi
 
+if [ "$(expr substr $(uname -s) 1 6)" == "CYGWIN" ]; then
+  using_cygwin=true
+else
+  using_cygwin=false
+fi
+
 OPTIMIZE_LEVEL=1
 # Parse options
 while getopts o:h opts
@@ -373,18 +389,29 @@ do
 done
 
 # Make sure we have all necessary commands installed.
-install_if_not_installed pngcrush
+install_if_not_installed pngcrush pngcrush
 if [ $OPTIMIZE_LEVEL == 2 ]; then
-  install_if_not_installed optipng
+  install_if_not_installed optipng optipng
 
-  install_if_not_installed advancecomp
-  fail_if_not_installed advdef "http://advancemame.sourceforge.net/comp-download.html"
+  if $using_cygwin ; then
+    fail_if_not_installed advdef "http://advancemame.sourceforge.net/comp-readme.html"
+  else
+    install_if_not_installed advdef advancecomp
+  fi
 
-  fail_if_not_installed pngout "http://www.jonof.id.au/kenutils"
+  if $using_cygwin ; then
+    pngout_url="http://www.advsys.net/ken/utils.htm"
+  else
+    pngout_url="http://www.jonof.id.au/kenutils"
+  fi
+  fail_if_not_installed pngout $pngout_url
 fi
 
 # Create tmp directory for crushed png file.
 TMP_DIR=$(mktemp -d)
+if $using_cygwin ; then
+  TMP_DIR=$(cygpath -w $TMP_DIR)
+fi
 
 # Make sure we cleanup temp dir
 trap "rm -rf $TMP_DIR" EXIT
@@ -395,6 +422,9 @@ set ${DIRS:=$ALL_DIRS}
 
 echo "Optimize level=$OPTIMIZE_LEVEL"
 for d in $DIRS; do
+  if $using_cygwin ; then
+    d=$(cygpath -w $d)
+  fi
   echo "Sanitizing png files in $d"
   sanitize_dir $d
   echo

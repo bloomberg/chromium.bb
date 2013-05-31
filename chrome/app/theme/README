@@ -1,3 +1,6 @@
-Please run pngcrush on all new icons. For example:
+Please run src/build/sanitize-png-files.sh on all new icons. For example:
+  build/sanitize-png-files.sh -o2 new_pngs_dir
+
+If this script does not work for some reason, at least pngcrush the files:
   mkdir crushed
-  pngcrush -d crushed -brute -reduce -rem text -rem mkBT -rem mkTS new/*.png
+  pngcrush -d crushed -brute -reduce -rem alla new/*.png
