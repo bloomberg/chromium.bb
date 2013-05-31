@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
-#include "googleurl/src/gurl.h"
 
 namespace content {
 class WebContents;
@@ -18,7 +17,7 @@ class WebContents;
 class InstantExtendedContextMenuObserver
     : public RenderViewContextMenuObserver {
  public:
-  InstantExtendedContextMenuObserver(content::WebContents* contents, GURL url);
+  explicit InstantExtendedContextMenuObserver(content::WebContents* contents);
   virtual ~InstantExtendedContextMenuObserver();
 
   // RenderViewContextMenuObserver implementation.
@@ -26,14 +25,9 @@ class InstantExtendedContextMenuObserver
   virtual bool IsCommandIdEnabled(int command_id) OVERRIDE;
 
  private:
-  bool IsInstantOverlay();
-  bool IsLocalPage();
-
-  // The source web contents of the context menu.
-  content::WebContents* contents_;
-
-  // The page URL.
-  GURL url_;
+  // Whether the source web contents of the context menu corresponds to an
+  // Instant overlay.
+  const bool is_instant_overlay_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantExtendedContextMenuObserver);
 };

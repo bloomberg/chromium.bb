@@ -12,6 +12,7 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/task_manager/renderer_resource.h"
 #include "chrome/browser/task_manager/resource_provider.h"
@@ -44,18 +45,6 @@ bool IsContentsPrerendering(WebContents* web_contents) {
       prerender::PrerenderManagerFactory::GetForProfile(profile);
   return prerender_manager &&
          prerender_manager->IsWebContentsPrerendering(web_contents, NULL);
-}
-
-bool IsContentsInstant(WebContents* web_contents) {
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->instant_controller() &&
-        it->instant_controller()->instant()->
-            GetOverlayContents() == web_contents) {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 bool IsContentsBackgroundPrinted(WebContents* web_contents) {
@@ -107,7 +96,7 @@ TabContentsResource::TabContentsResource(
                        web_contents->GetRenderViewHost()),
       web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      is_instant_overlay_(IsContentsInstant(web_contents)) {
+      is_instant_overlay_(chrome::IsInstantOverlay(web_contents)) {
   if (!prerender_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     prerender_icon_ = rb.GetImageSkiaNamed(IDR_PRERENDER);
@@ -304,7 +293,7 @@ void TabContentsResourceProvider::Add(WebContents* web_contents) {
   // pages, prerender pages, and background printed pages.
   if (!chrome::FindBrowserWithWebContents(web_contents) &&
       !IsContentsPrerendering(web_contents) &&
-      !IsContentsInstant(web_contents) &&
+      !chrome::IsInstantOverlay(web_contents) &&
       !IsContentsBackgroundPrinted(web_contents)) {
     return;
   }

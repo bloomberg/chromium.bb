@@ -17,6 +17,9 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -602,6 +605,15 @@ int GetInstantLoaderStalenessTimeoutSec() {
   timeout_sec = base::RandInt(timeout_sec * 0.85, timeout_sec * 1.15);
 
   return timeout_sec;
+}
+
+bool IsInstantOverlay(const content::WebContents* contents) {
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (it->instant_controller() &&
+        it->instant_controller()->instant()->GetOverlayContents() == contents)
+      return true;
+  }
+  return false;
 }
 
 void EnableInstantExtendedAPIForTesting() {

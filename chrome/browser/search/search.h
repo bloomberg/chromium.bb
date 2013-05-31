@@ -170,6 +170,9 @@ bool IsPrivilegedURLForInstant(const GURL& url);
 // InstantLoader.
 int GetInstantLoaderStalenessTimeoutSec();
 
+// Returns true if |contents| corresponds to an Instant overlay.
+bool IsInstantOverlay(const content::WebContents* contents);
+
 // -----------------------------------------------------
 // The following APIs are exposed for use in tests only.
 // -----------------------------------------------------

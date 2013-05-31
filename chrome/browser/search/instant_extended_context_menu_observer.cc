@@ -6,13 +6,11 @@
 
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
-#include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/common/url_constants.h"
+#include "chrome/browser/search/search.h"
 
 InstantExtendedContextMenuObserver::InstantExtendedContextMenuObserver(
-    content::WebContents* contents, GURL url) : contents_(contents), url_(url) {
+    content::WebContents* contents)
+    : is_instant_overlay_(chrome::IsInstantOverlay(contents)) {
 }
 
 InstantExtendedContextMenuObserver::~InstantExtendedContextMenuObserver() {
@@ -24,9 +22,7 @@ bool InstantExtendedContextMenuObserver::IsCommandIdSupported(int command_id) {
     case IDC_FORWARD:
     case IDC_PRINT:
     case IDC_RELOAD:
-      return IsInstantOverlay();
-    case IDC_CONTENT_CONTEXT_TRANSLATE:
-      return IsLocalPage();
+      return is_instant_overlay_;
     default:
       return false;
   }
@@ -35,20 +31,4 @@ bool InstantExtendedContextMenuObserver::IsCommandIdSupported(int command_id) {
 bool InstantExtendedContextMenuObserver::IsCommandIdEnabled(int command_id) {
   DCHECK(IsCommandIdSupported(command_id));
   return false;
-}
-
-bool InstantExtendedContextMenuObserver::IsInstantOverlay() {
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->instant_controller()) {
-      content::WebContents* overlay_contents =
-          it->instant_controller()->instant()->GetOverlayContents();
-      if (overlay_contents && overlay_contents == contents_)
-        return true;
-    }
-  }
-  return false;
-}
-
-bool InstantExtendedContextMenuObserver::IsLocalPage() {
-  return url_.host() == chrome::kChromeSearchLocalNtpHost;
 }
